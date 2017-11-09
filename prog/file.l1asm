@@ -1,0 +1,91 @@
+// file.l1asm
+// file demo
+//
+// data section
+.data
+	Q, 1, fopenaddr
+	@, 0, 35
+	Q, 1, fputcaddr
+	@, 8, 45
+	Q, 1, moduleaddr
+	@, 16, 100
+	B, 11, loadstr
+	@, 24, "file mod.."
+	B, 10, fopenstr
+	@, 35, "file_open"
+	B, 10, fputcstr
+	@, 45, "file_putc"
+	Q, 1, zero
+	@, 55, 0
+	Q, 1, one
+	@, 63, 1
+	Q, 1, access
+	@, 71, 2
+	Q, 1, fileaddr
+	@, 79, 87
+	B, 5, filestr
+	@, 87, "test"
+	Q, 1, filestroffs
+	@, 92, 4
+	B, 15, modulestr
+	@, 100, "libl1vmfile.so"
+	Q, 1, loadstraddr
+	@, 115, 24
+	Q, 1, two
+	@, 123, 2 
+	Q, 1, fcloseaddr
+	@, 131, 139
+	B, 11, fclosestr
+	@, 139, "file_close"
+.dend
+// code section
+.code
+	loada zero, 0, I0
+	loada one, 0, I1
+	loada two, 0, I2
+	loada moduleaddr, 0, I10
+	loada fopenaddr, 0, I11
+	loada fputcaddr, 0, I12
+	loada fcloseaddr, 0, I13
+	loada, loadstraddr, 0, I30
+// print message
+	intr0, 6, I30, 0, 0
+	intr0, 7, 0, 0, 0
+// load file module
+	intr0 0, I10, I0, 0
+// set functions
+	intr0 2, I0, I0, I11
+	intr0 2, I0, I1, I12
+	intr0 2, I0, I2, I13
+// fopen
+	loada fileaddr, 0, I20
+	loada filestroffs, 0, I21
+// copy file name
+	movi I0, I22
+:copystr	
+	pushb I20, I21, I30
+	stpushb I30
+	intr0 4, I30, 0, 0
+	intr0 7, 0, 0, 0
+	subi I21, I1, I21
+	lsi I21, I0, I40
+	jmpi I40, :copystrend
+	jmp :copystr
+:copystrend
+	loada, access, 0, I22
+	stpushb I22
+	stpushb I0
+// call fopen
+	intr0 3, I0, I0, 0
+// call fputc 
+	stpushb I0
+	stpushb I0
+	intr0 3, I0, I1, 0
+// call fclose 
+	stpushb I0
+	intr0, 3, I0, I2, 0
+// close file module
+	intr0, 1, I0, 0, 0
+// exit
+	intr0 255, 0, 0, 0
+.cend

@@ -1,0 +1,24 @@
+.data
+Q, 1, zero
+@, 0, 0
+F, 1, x
+@, 8, 23.0
+F, 1, y
+@, 16, 42.0
+F, 1, z
+@, 24, 0.0
+.dend
+.code
+loada zero, 0, 0
+:main
+loadd x, 0, 1
+loadd y, 0, 2
+muld 1, 2, 3
+load z, 0, 4
+pulld 3, 4, 0
+loadd z, 0, 4
+intr0 5, 4, 0, 0
+intr0 7, 0, 0, 0
+intr0 255, 0, 0, 0
+rts
+.cend

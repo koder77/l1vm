@@ -1,0 +1,17 @@
+.data
+Q, 1, zero
+@, 0, 0
+B, 13, hello
+@, 8, "Hello world!"
+Q, 1, helloaddr
+@, 21, 8
+.dend
+.code
+loada zero, 0, 0
+:main
+loada helloaddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+intr0 255, 0, 0, 0
+rts
+.cend

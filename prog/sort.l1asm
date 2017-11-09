@@ -1,0 +1,80 @@
+	// bubble sort demo
+	//
+	// data section
+.data
+	Q, 1, i
+	@, 0, 1Q
+	Q, 1, zero
+	@, 8, 0Q
+	Q, 1, maxnum
+	@, 16, 20000Q
+	Q, 1, offset
+	@, 24, 8Q
+	Q, 1, arrayoffs
+	@, 32, 40Q
+	Q, 20000Q, array
+	@, 40, 0Q
+.dend
+	// code section
+.code
+	loada, maxnum, 0, I0
+	loada, i, 0, I1
+	loada, maxnum, 0, I2
+	loada, arrayoffs, 0, I3
+	loada, i, 0, I4
+	loada, offset, 0, I32
+	loada, zero, 0, I30
+:initarray
+	pullqw, I2, I3, I30
+	subi, I2, I4, I2
+	addi, I30, I32, I30
+//	intr0, 4, I2, 0, 0
+	inclsijmpi, I1, I0, :initarray
+	// sort
+	// run sort loop as long as I10 = 0
+:start-sort
+	loada, zero, 0, I10
+	loada, i, 0, I1
+	// zero
+	loada, zero, 0, I9
+	loada, zero, 0, I11
+	loada, offset, 0, I12
+	loada, arrayoffs, 0, I3
+	loada, zero, 0, I40
+:sort-loop
+	pushqw, I3, I11, I13
+	pushqw, I3, I12, I14
+	gri I13, I14, I20
+	jmpi I20, :swap
+:sort-loop-cont
+//	loada, offset, 0, I32
+//	loada, i, 0, I1
+	addi, I11, I32, I11
+	addi, I12, I32, I12
+	addi, I40, I1, I40
+//	intr0, 4, I40, 0, 0
+//	loada, maxnum, 0, I0
+	lsi I40, I0, I21
+	jmpi, I21, :sort-loop
+	loada, zero, 0, I9
+	neqi, I10, I9, I20
+	jmpi, I20, :start-sort
+	// print sorted array
+	loada, zero, 0, I9
+	loada, arrayoffs, 0, I3
+	loada, zero, 0, I40
+	loada, maxnum, 0, I0
+:loop
+//	intr0, 4, I40, 0, 0
+	pushqw, I3, I9, I20
+	intr0, 4, I20, 0, 0
+	addi, I9, I32, I9
+	inclsijmpi, I40, I0, :loop
+	intr0, 5, 0, 0, 0
+:swap
+	pullqw, I14, I3, I11
+	pullqw, I13, I3, I12
+	// set I10 to 1 = did swap
+	loada, i, 0, I10
+	jmp, :sort-loop-cont
+.cend

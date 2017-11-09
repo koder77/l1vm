@@ -1,0 +1,22 @@
+// hello.l1asm
+// Hello world demo
+// data section
+.data
+	Q, 1, helloaddr
+	@, 0, 8Q
+	B, 13, hellostr
+	@, 8, "Hello world!"
+	Q, 1, returncode
+	@, 21, 0Q
+.dend
+// code section
+.code
+	loada returncode, 0, I1
+	loada helloaddr, 0, I0
+	// print string
+	intr0 6, I0, 0, 0
+	// print newline
+	intr0 7, 0, 0, 0
+	// exit with returncode 0
+	intr0 255, I1, 0, 0
+.cend

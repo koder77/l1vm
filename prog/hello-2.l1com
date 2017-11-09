@@ -1,0 +1,11 @@
+// new N dialect demo
+//
+(main func)
+	(set int64 1 zero 0)
+	(set string 13 hello "Hello world!")
+	// print string
+	(6 hello 0 0 intr0)
+	// print newline
+	(7 0 0 0 intr0)
+	(255 zero 0 0 intr0)
+(funcend)

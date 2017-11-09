@@ -1,0 +1,29 @@
+// data section
+.data
+	Q, 1, max
+	@, 0, 10Q
+	Q, 1, one
+	@, 8, 1Q
+	Q, 1, messageaddr
+	@, 16, 24Q
+	B, 13, message
+	@, 24, "Hello world!"
+.dend
+// code section
+.code
+	loada, max, 0, I1
+	loada, one, 0, I0
+:loop
+	loadl, :print, I10
+	intr1, 0, I10, 0, 0
+	inclsijmpi, I0, I1, :loop
+	// join threads
+	intr1, 1, 0, 0, 0
+	intr0, 255, 0, 0, 0
+	// run as thread function
+:print
+	loada, messageaddr, 0, I50
+	intr0, 6, I50, 0, 0
+	intr0, 7, 0, 0, 0
+	intr0, 255, 0, 0, 0
+.cend

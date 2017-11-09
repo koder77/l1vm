@@ -1,0 +1,49 @@
+//	math expression test program
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 x 23)
+	(set int64 1 y 42)
+	(set int64 1 z 0)
+	(set int64 1 ret 0)
+	((((x y +)(x y *) +)((x y /)(x y -) *) +) z =)
+	// print z
+	(4 z 0 0 intr0)
+	// print newline
+	(7 0 0 0 intr0)
+	(x y :test call)
+    (z stpopi)
+	((z zero +) ret =)
+	(loadreg)
+	// print ret
+	(4 ret 0 0 intr0)
+	// print newline
+	(7 0 0 0 intr0)
+	// new:
+	(x :square call)
+	(z stpopi)
+	((z zero +) ret =)
+	(loadreg)
+	// print ret
+	(4 ret 0 0 intr0)
+	// print newline
+	(7 0 0 0 intr0)
+	(255 zero 0 0 intr0)
+(funcend)
+(test func)
+	(set int64 1 xtest 0)
+	(set int64 1 ytest 0)
+	(set int64 1 rettest 0)
+	(xtest stpopi)
+	(ytest stpopi)
+	((xtest ytest *) rettest =)
+	(rettest stpushi)
+(funcend)
+(square func)
+	(set int64 1 x@square 0)
+	(set int64 1 ret@square 0)
+	(ASM)
+	stpopi	I1
+	muli I1, I1, I2
+	stpushi I2
+	(ASM_END)
+(funcend)

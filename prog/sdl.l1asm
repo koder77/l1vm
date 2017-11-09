@@ -1,0 +1,110 @@
+// sdl.l1asm
+// SDL demo
+//
+// data section
+.data
+	Q, 1, zero
+	@, 0, 0Q
+	Q, 1, one
+	@, 8, 1Q
+	Q, 1, two
+	@, 16, 2Q 
+	Q, 1, three
+	@, 24, 3Q
+	Q, 1, width
+	@, 32, 1280Q
+	Q, 1, height
+	@, 40, 900Q
+	Q, 1, maxcol
+	@, 48, 255Q
+	Q, 1, sdlmoduleaddr
+	@, 56, 88Q
+	Q, 1, sdlopenaddr
+	@, 64, 127Q
+	Q, 1, sdlquitaddr
+	@, 72, 102Q
+	Q, 1, sdlpixeladdr
+	@, 80, 111Q
+	B, 14, sdlmodulestr
+	@, 88, "libl1vmsdl.so"
+	B, 9, sdlquitstr
+	@, 102, "sdl_quit"
+	B, 16, sdlpixelstr
+	@, 111, "sdl_pixel_alpha"
+	B, 16, sdlopenstr
+	@, 127, "sdl_open_screen"
+	Q, 1, sdlupdateaddr
+	@, 143, 151Q
+	B, 11, sdlupadtestr
+	@, 151, "sdl_update"
+	Q, 1, bit 
+	@, 162, 32Q
+	Q, 1, delay
+	@, 170, 20000Q
+.dend
+// code section
+.code
+	loada zero, 0, I0
+	loada one, 0, I1
+	loada two, 0, I2
+	loada three, 0, I3
+	loada sdlmoduleaddr, 0, I10
+	loada sdlopenaddr, 0, I11
+	loada sdlpixeladdr, 0, I12
+	loada sdlupdateaddr, 0, I13
+	loada sdlquitaddr, 0, I14
+// load sdl module
+	intr0 0, I10, I0, 0
+// set functions
+	intr0 2, I0, I0, I11
+	intr0 2, I0, I1, I12
+	intr0 2, I0, I2, I13
+	intr0 2, I0, I3, I14
+// open screeen
+	loada width, 0, I20
+	loada height, 0, I21
+	loada bit, 0, I22
+	stpushi I20
+	stpushi I21
+	stpushb I22
+	intr0 3, I0, I0, 0
+	stpopb I50
+// draw gfx
+// I30 = y
+	movi I0, I30
+// I32 = color
+	movi I0, I32
+	loada maxcol, 0, I33
+:yloop
+// x = 0
+	movi I0, I31
+:xloop
+// call sdl pixel
+	stpushi I31
+	stpushi I30
+	stpushb I32
+	stpushb I32
+	stpushb I32
+	stpushb I33
+	intr0 3, I0, I1, 0
+	addi I32, I1, I32
+	gri I32, I33, I40
+	jmpi I40, :reset_color
+	jmp :nextx
+:reset_color
+	movi I0, I32
+:nextx
+	inclsijmpi I31, I20, :xloop
+	inclsijmpi I30, I21, :yloop
+// call sdl update
+	intr0, 3, I0, I2, 0
+:wait
+	loada delay, 0, I50
+	intr0 8, I50, 0, 0
+	loada zero, 0, I0
+	loada three, 0, I3
+	intr0 3, I0, I3, 0
+	intr0 1, I0, 0, 0
+	intr0 255, 0, 0, 0
+.cend
+

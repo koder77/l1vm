@@ -1,0 +1,44 @@
+	// data section
+.data
+    Q, 1, x
+	@, 0, 5Q
+	Q, 1, y
+    @, 8, 10Q
+    Q, 1, z
+    @, 16, 77Q
+    Q, 1, max
+    @, 24, 1000000001Q
+//	@, 24, 2001Q
+    Q, 1, null
+    @, 32, 0Q
+    Q, 1, one
+    @, 40, 1Q
+.dend 
+    // code section
+.code
+	// I0 = loop counter
+	loada, one, 0, I0
+	// I1 = loop counter max
+	loada, max, 0, I1
+	// I2 = sum of calculations 
+	loada, null, 0, I2
+	// I3 = x
+	loada, x, 0, I3
+	// I4 = y
+	loada, y, 0, I4
+	// I5 = z
+	loada, z, 0, I5
+:loop
+	muli, I0, I3, I6
+	muli, I0, I4, I7
+	muli, I0, I5, I8
+	// sum
+	addi, I2, I6, I2
+	addi, I2, I7, I2
+	addi, I2, I8, I2
+	// check loop
+	inclsijmpi, I0, I1, :loop
+	// print result
+	intr0, 4, I2, 0, 0
+	intr0, 5, 0, 0, 0
+.cend

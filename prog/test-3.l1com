@@ -1,0 +1,14 @@
+// new N dialect demo
+//
+(main func)
+	(set int64 1 zero 0)
+	(set double 1 x 23.0)
+	(set double 1 y 42.0)
+	(set double 1 z 0.0)
+	((x y *) z =)
+	// print z
+	(5 z 0 0 intr0)
+	// print newline
+	(7 0 0 0 intr0)
+	(255 zero 0 0 intr0)
+(funcend)
