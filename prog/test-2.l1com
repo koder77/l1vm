@@ -5,14 +5,18 @@
 	(set int64 1 y 42)
 	(set int64 1 z 0)
 	(set int64 1 ret 0)
-	((((x y +)(x y *) +)((x y /)(x y -) *) +) z =)
+	(((((x y +)(x y *) +)((x y /)(x y -) *) +) z =) ret =)
 	// print z
 	(4 z 0 0 intr0)
 	// print newline
 	(7 0 0 0 intr0)
+	// print ret
+	(4 ret 0 0 intr0)
+	// print newline
+	(7 0 0 0 intr0)
 	(x y :test call)
     (z stpopi)
-	((z zero +) ret =)
+	(z ret =)
 	(loadreg)
 	// print ret
 	(4 ret 0 0 intr0)
@@ -21,7 +25,7 @@
 	// new:
 	(x :square call)
 	(z stpopi)
-	((z zero +) ret =)
+	(z ret =)
 	(loadreg)
 	// print ret
 	(4 ret 0 0 intr0)
