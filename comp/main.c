@@ -917,14 +917,55 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									
 									if (getvartype (ast[level].expr[j][last_arg - 1]) == INTEGER)
 									{
-										strcpy ((char *) code_temp, "pullqw ");
-										sprintf ((char *) str, "%i", target);
-										strcat ((char *) code_temp, (const char *) str);
-										strcat ((char *) code_temp, ", ");
-										sprintf ((char *) str, "%i", reg);
-										strcat ((char *) code_temp, (const char *) str);
-										strcat ((char *) code_temp, ", 0\n");
-										
+										if (last_arg == 1)
+										{
+											// some kind of "ret =)" assign expression
+											// use target of higher level
+											
+											strcpy ((char *) code_temp, "pullqw ");
+											sprintf ((char *) str, "%i", target);
+											strcat ((char *) code_temp, (const char *) str);
+											strcat ((char *) code_temp, ", ");
+											sprintf ((char *) str, "%i", reg);
+											strcat ((char *) code_temp, (const char *) str);
+											strcat ((char *) code_temp, ", 0\n");
+										}
+										else
+										{
+											target = get_regi (ast[level].expr[j][last_arg - 2]);
+											if (target == -1)
+											{
+												// variable is not in register, load it
+												
+												reg = get_free_regi ();
+												set_regi (reg, ast[level].expr[j][e]);
+												
+												// write code loada
+												
+												code_line++;
+												if (code_line >= MAXLINES)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+												
+												strcpy ((char *) code[code_line], "loada ");
+												strcat ((char *) code[code_line], (const char *) ast[level].expr[j][e]);
+												strcat ((char *) code[code_line], ", 0, ");
+												sprintf ((char *) str, "%i", reg);
+												strcat ((char *) code[code_line], (const char *) str);
+												strcat ((char *) code[code_line], "\n");
+											}
+											
+											strcpy ((char *) code_temp, "pullqw ");
+											sprintf ((char *) str, "%i", target);
+											strcat ((char *) code_temp, (const char *) str);
+											strcat ((char *) code_temp, ", ");
+											sprintf ((char *) str, "%i", reg);
+											strcat ((char *) code_temp, (const char *) str);
+											strcat ((char *) code_temp, ", 0\n");
+										}
+											
 										printf ("%s\n", code_temp);
 										
 										code_line++;
@@ -951,14 +992,52 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									
 									if (getvartype (ast[level].expr[j][last_arg - 1]) == DOUBLE)
 									{
-										strcpy ((char *) code_temp, "pulld ");
-										sprintf ((char *) str, "%i", target);
-										strcat ((char *) code_temp, (const char *) str);
-										strcat ((char *) code_temp, ", ");
-										sprintf ((char *) str, "%i", reg);
-										strcat ((char *) code_temp, (const char *) str);
-										strcat ((char *) code_temp, ", 0\n");
-										
+										if (last_arg == 1)
+										{
+											strcpy ((char *) code_temp, "pulld ");
+											sprintf ((char *) str, "%i", target);
+											strcat ((char *) code_temp, (const char *) str);
+											strcat ((char *) code_temp, ", ");
+											sprintf ((char *) str, "%i", reg);
+											strcat ((char *) code_temp, (const char *) str);
+											strcat ((char *) code_temp, ", 0\n");
+										}
+										else
+										{
+											target = get_regd (ast[level].expr[j][last_arg - 2]);
+											if (target == -1)
+											{
+												// variable is not in register, load it
+												
+												reg = get_free_regd ();
+												set_regd (reg, ast[level].expr[j][e]);
+												
+												// write code loada
+												
+												code_line++;
+												if (code_line >= MAXLINES)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+												
+												strcpy ((char *) code[code_line], "loadd ");
+												strcat ((char *) code[code_line], (const char *) ast[level].expr[j][e]);
+												strcat ((char *) code[code_line], ", 0, ");
+												sprintf ((char *) str, "%i", reg);
+												strcat ((char *) code[code_line], (const char *) str);
+												strcat ((char *) code[code_line], "\n");
+											}
+											
+											strcpy ((char *) code_temp, "pulld ");
+											sprintf ((char *) str, "%i", target);
+											strcat ((char *) code_temp, (const char *) str);
+											strcat ((char *) code_temp, ", ");
+											sprintf ((char *) str, "%i", reg);
+											strcat ((char *) code_temp, (const char *) str);
+											strcat ((char *) code_temp, ", 0\n");
+										}
+											
 										printf ("%s\n", code_temp);
 										
 										code_line++;
@@ -985,6 +1064,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									
 									ok = 1;
 								}
+								
 								if (ast[level].expr[j][last_arg][0] == ':')
 								{
 									// operator is label name
@@ -1696,14 +1776,14 @@ S2 parse_line (U1 *line, S2 start, S2 end)
                                                 sprintf ((char *) str, "%i", reg);
                                                 strcat ((char *) code[code_line], (const char *) str);
                                                 strcat ((char *) code[code_line], "\n");
-                                            }
+                                            //}
                                             
                                             strcat ((char *) code_temp, (const char *) str);
                                             if (v <= last_arg - 1 && last_arg_2 >= 2)
                                             {
                                                 strcat ((char *) code_temp, ", ");
                                             }
-                                       // }
+										}
 									}
 									else
 									{
@@ -1744,7 +1824,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									{
 										// variable is not in register, load it
 									
-                                        if (translate[t].assemb_op == MOVI && v == 1)
+                                        if (translate[t].assemb_op == MOVD && v == 1)
                                         {
                                             // is target register, don't load variable into it
                                             
