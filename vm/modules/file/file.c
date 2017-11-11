@@ -24,7 +24,7 @@ struct file
 struct file files[MAXFILES];
 
 
-int file_open (U1 *sp, U1 *sp_top)
+U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 {
     // first argument: U1 filehandle number -> on stack top
     // second argument: U1 access
@@ -41,7 +41,7 @@ int file_open (U1 *sp, U1 *sp_top)
         // nothing on stack!! can't pop!!
         
         printf ("FATAL ERROR: file_open: stack pointer can't pop empty stack!\n");
-        return (1);
+        return (NULL);
     }
     
     printf ("file_open: sp: %i handle\n", *sp);
@@ -65,7 +65,7 @@ int file_open (U1 *sp, U1 *sp_top)
            if (sp == sp_top)
            {
                printf ("FATAL ERROR: file_open: stack corrupt!\n");
-               return (1);
+               return (NULL);
            }
        }
     }
@@ -74,13 +74,13 @@ int file_open (U1 *sp, U1 *sp_top)
     if (handle < 0 || handle >= MAXFILES)
     {
         printf ("ERROR: file_open: handle out of range!\n");
-        return (1);
+        return (NULL);
     }
     
     if (files[handle].state == FILEOPEN)
     {
         printf ("ERROR: file_open: handle %i already open!\n", handle);
-        return (1);
+        return (NULL);
     }
     
     strcpy ((char *) files[handle].name, (char *) name);
@@ -105,7 +105,7 @@ int file_open (U1 *sp, U1 *sp_top)
             
         default:
             printf ("ERROR: file_open: unknown file mode! %i\n", access);
-            return (1);
+            return (NULL);
     }
         
     printf ("file_open: filename: '%s'\n", files[handle].name);    
@@ -114,14 +114,14 @@ int file_open (U1 *sp, U1 *sp_top)
     if (files[handle].fptr == NULL)
     {
         printf ("ERROR: file_open: can't open file %s!\n", files[handle].name);
-        return (1);
+        return (NULL);
     }
     
     files[handle].state = FILEOPEN;
-    return (0);
+    return (sp);
 }
 
-int file_close (U1 *sp, U1 *sp_top)
+U1 *file_close (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 {
 	// first argument: U1 filehandle number -> on stack top
 	
@@ -132,7 +132,7 @@ int file_close (U1 *sp, U1 *sp_top)
 		// nothing on stack!! can't pop!!
 		
 		printf ("FATAL ERROR: file_close: stack pointer can't pop empty stack!\n");
-		return (1);
+		return (NULL);
 	}
 
 	handle = *sp;
@@ -141,15 +141,15 @@ int file_close (U1 *sp, U1 *sp_top)
 	if (handle < 0 || handle >= MAXFILES)
 	{
 		printf ("ERROR: file_close: handle out of range!\n");
-		return (1);
+		return (NULL);
 	}
 	
 	fclose (files[handle].fptr);
 	files[handle].state = FILECLOSED;
-	return (0);
+	return (sp);
 }
 	
-int file_putc (U1 *sp, U1 *sp_top)
+U1 *file_putc (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 {
     // first argument: U1 filehandle number -> on stack top
     // second argument: U1 byte to write
@@ -161,7 +161,7 @@ int file_putc (U1 *sp, U1 *sp_top)
         // nothing on stack!! can't pop!!
         
         printf ("FATAL ERROR: file_open: stack pointer can't pop empty stack!\n");
-        return (1);
+        return (NULL);
     }
     
     handle = *sp;
@@ -175,14 +175,14 @@ int file_putc (U1 *sp, U1 *sp_top)
     if (handle < 0 || handle >= MAXFILES)
     {
         printf ("ERROR: file_putc: handle out of range!\n");
-        return (1);
+        return (NULL);
     }
     
     if (fputc (ch, files[handle].fptr) != ch)
     {
         printf ("ERROR: file_putc: can't write to file %s!\n", files[handle].name);
-        return (1);
+        return (NULL);
     }
-    return (0);
+    return (sp);
 }
 
