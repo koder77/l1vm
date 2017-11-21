@@ -8,7 +8,7 @@
 	Q, 1, one
 	@, 8, 1Q
 	Q, 1, two
-	@, 16, 2Q 
+	@, 16, 2Q
 	Q, 1, three
 	@, 24, 3Q
 	Q, 1, width
@@ -37,7 +37,7 @@
 	@, 143, 151Q
 	B, 11, sdlupadtestr
 	@, 151, "sdl_update"
-	Q, 1, bit 
+	Q, 1, bit
 	@, 162, 32Q
 	Q, 1, delay
 	@, 170, 20000Q
@@ -107,4 +107,3 @@
 	intr0 1, I0, 0, 0
 	intr0 255, 0, 0, 0
 .cend
-

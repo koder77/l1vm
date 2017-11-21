@@ -2,7 +2,7 @@
  * This file translate.h is part of L1vm.
  *
  * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2017
- * 
+ *
  * L1vm is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -68,4 +68,3 @@ struct translate translate[] =
 	{ "movi", 2, { INTEGER, INTEGER, EMPTY, EMPTY }, MOVI},
 	{ "movd", 2, { DOUBLE, DOUBLE, EMPTY, EMPTY }, MOVD}
 };
-	

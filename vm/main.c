@@ -2,7 +2,7 @@
  * This file main.c is part of L1vm.
  *
  * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2017
- * 
+ *
  * L1vm is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -86,7 +86,7 @@ struct threaddata threaddata[MAXCPUCORES];
 S2 load_module (U1 *name, S8 ind)
 {
     modules[ind].lptr = dlopen ((const char *) name, RTLD_LAZY);
-    if (!modules[ind].lptr) 
+    if (!modules[ind].lptr)
 	{
         printf ("error load module %s!\n", (const char *) name);
         return (1);
@@ -103,12 +103,12 @@ void free_module (S8 ind ALIGN)
 
 S2 set_module_func (S8 ind ALIGN, S8 func_ind ALIGN, U1 *func_name)
 {
-	dlerror (); 
+	dlerror ();
 
     // load the symbols (handle to function)
     modules[ind].func[func_ind] = dlsym (modules[ind].lptr, (const char *) func_name);
     const char* dlsym_error = dlerror ();
-    if (dlsym_error) 
+    if (dlsym_error)
 	{
         printf ("error set module %s, function: '%s'!\n", modules[ind].name, func_name);
 		printf ("%s\n", dlsym_error);
@@ -132,34 +132,37 @@ S2 run (S8 cpu_core ALIGN)
 {
 	S8 i ALIGN;
 	U1 eoffs;                  // offset to next opcode
-	S8 regi[MAXREG];   // integer registers 
+	S8 regi[MAXREG];   // integer registers
 	F8 regd[MAXREG];          // double registers
 	S8 arg1 ALIGN;
 	S8 arg2 ALIGN;
 	S8 arg3 ALIGN;
 	S8 arg4 ALIGN;	   // opcode arguments
-	
+
 	S8 ep ALIGN = 0; // execution pointer in code segment
 	S8 dp ALIGN = 0; // execution pointer dthread
 	S8 startpos ALIGN;
-	
+
 	U1 *sp;   // stack pointer
 	U1 *sp_top;    // stack pointer start address
 	U1 *sp_bottom;  // stack bottom
 	U1 *srcptr, *dstptr;
 
 	U1 *bptr;
-	
+
 	// jump call stack for jsr, jsra
 	S8 jumpstack[MAXSUBJUMPS];
 	S8 jumpstack_ind ALIGN = -1;		// empty
-	
+
 	// threads
 	S8 new_cpu ALIGN;
-	
+
+    // thread attach to CPU core
+	cpu_set_t cpuset;
+
 	// for data input
 	U1 input_str[MAXINPUT];
-	
+
 	// jumpoffsets
 	S8 *jumpoffs;
 	S8 offset ALIGN;
@@ -169,35 +172,35 @@ S2 run (S8 cpu_core ALIGN)
 		printf ("ERROR: can't allocate %lli bytes for jumpoffsets!\n", code_size);
 		pthread_exit ((void *) 1);
 	}
-	
+
 	sp_top = threaddata[cpu_core].sp_top_thread;
 	sp_bottom = threaddata[cpu_core].sp_bottom_thread;
 	sp = threaddata[cpu_core].sp_thread;
-	
+
 	printf ("%lli sp top: %lli\n", cpu_core, (S8) sp_top);
 	printf ("%lli sp bottom: %lli\n", cpu_core, (S8) sp_bottom);
 	printf ("%lli sp: %lli\n", cpu_core, (S8) sp);
-	
+
 	printf ("%lli sp caller top: %lli\n", cpu_core, (S8) threaddata[cpu_core].sp_top);
 	printf ("%lli sp caller bottom: %lli\n", cpu_core, (S8) threaddata[cpu_core].sp_bottom);
-	
+
 	startpos = threaddata[cpu_core].ep_startpos;
 	if (threaddata[cpu_core].sp != threaddata[cpu_core].sp_top)
 	{
 		// something on mother thread stack, copy it
-		
+
 		srcptr = threaddata[cpu_core].sp_top;
 		dstptr = threaddata[cpu_core].sp_top_thread;
-		
+
 		while (srcptr >= threaddata[cpu_core].sp)
 		{
 			// printf ("dstptr stack: %lli\n", (S8) dstptr);
 			*dstptr-- = *srcptr--;
 		}
 	}
-	
+
 	cpu_ind = cpu_core;
-	
+
 	// jumptable for indirect threading execution
 	static void *jumpt[] =
 	{
@@ -216,10 +219,10 @@ S2 run (S8 cpu_core ALIGN)
 		&&movi, &&movd, &&loadl, &&jmpa,
 		&&jsr, &&jsra, &&rts, &&load
 	};
-	
+
 	//printf ("setting jump offset table...\n");
-	
-	// setup jump offset table    
+
+	// setup jump offset table
 	for (i = 16; i < code_size; i = i + offset)
 	{
 		//printf ("opcode: %i\n", code[i]);
@@ -231,7 +234,7 @@ S2 run (S8 cpu_core ALIGN)
 		if (code[i] == JMP)
 		{
 			bptr = (U1 *) &arg1;
-			
+
 			*bptr = code[i + 1];
 			bptr++;
 			*bptr = code[i + 2];
@@ -247,15 +250,15 @@ S2 run (S8 cpu_core ALIGN)
 			*bptr = code[i + 7];
 			bptr++;
 			*bptr = code[i + 8];
-			
+
 			jumpoffs[i] = arg1;
 			offset = 9;
 		}
-		
+
 		if (code[i] == JMPI)
 		{
 			bptr = (U1 *) &arg1;
-			
+
 			*bptr = code[i + 2];
 			bptr++;
 			*bptr = code[i + 3];
@@ -271,15 +274,15 @@ S2 run (S8 cpu_core ALIGN)
 			*bptr = code[i + 8];
 			bptr++;
 			*bptr = code[i + 9];
-			
+
 			jumpoffs[i] = arg1;
 			offset = 10;
 		}
-		
+
 		if (code[i] == INCLSIJMPI || code[i] == DECGRIJMPI)
 		{
 			bptr = (U1 *) &arg1;
-			
+
 			*bptr = code[i + 3];
 			bptr++;
 			*bptr = code[i + 4];
@@ -295,15 +298,15 @@ S2 run (S8 cpu_core ALIGN)
 			*bptr = code[i + 9];
 			bptr++;
 			*bptr = code[i + 10];
-			
+
 			jumpoffs[i] = arg1;
 			offset = 11;
 		}
-		
+
 		if (code[i] == JSR)
 		{
 			bptr = (U1 *) &arg1;
-			
+
 			*bptr = code[i + 1];
 			bptr++;
 			*bptr = code[i + 2];
@@ -319,15 +322,15 @@ S2 run (S8 cpu_core ALIGN)
 			*bptr = code[i + 7];
 			bptr++;
 			*bptr = code[i + 8];
-			
+
 			jumpoffs[i] = arg1;
 			offset = 9;
 		}
-		
+
 		if (offset == 0)
 		{
 			// not set yet, do it!
-			
+
 			switch (code[i])
 			{
 				case STPUSHB:
@@ -338,38 +341,38 @@ S2 run (S8 cpu_core ALIGN)
 				case STPOPD:
 					offset = 2;
 					break;
-					
+
 				case LOADA:
 				case LOADD:
 					offset = 18;
 					break;
-				
+
 				case INTR0:
 				case INTR1:
 					offset = 5;
 					break;
-					
+
 				case MOVI:
 				case MOVD:
 					offset = 3;
 					break;
-					
+
 				case LOADL:
 					offset = 10;
 					break;
-					
+
 				case JMPA:
 					offset = 2;
 					break;
-					
+
 				case JSRA:
 					offset = 2;
 					break;
-					
+
 				case RTS:
 					offset = 1;
 					break;
-					
+
 				case LOAD:
 					offset = 18;
 					break;
@@ -381,10 +384,10 @@ S2 run (S8 cpu_core ALIGN)
 			free (jumpoffs);
 			pthread_exit ((void *) 1);
 		}
-		
+
 		if (i >= code_size) break;
 	}
-	
+
 	// debug
 #if DEBUG
 	printf ("code DUMP:\n");
@@ -394,43 +397,43 @@ S2 run (S8 cpu_core ALIGN)
 	}
 	printf ("DUMP END\n");
 #endif
-	
-	// init registers   
+
+	// init registers
 	for (i = 0; i < 256; i++)
 	{
 		regi[i] = 0;
 		regd[i] = 0.0;
 	}
-	
+
 	printf ("l1vm\nready...\n");
 	printf ("modules loaded: %lli\n", modules_ind + 1);
 	printf ("CPU %lli ready\n", cpu_ind);
 	printf ("codesize: %lli\n", code_size);
 	printf ("datasize: %lli\n", data_mem_size);
 	printf ("ep: %lli\n\n", startpos);
-	
+
 #if DEBUG
 	printf ("stack pointer sp: %lli\n", (S8) sp);
 #endif
-	
+
 	ep = startpos; eoffs = 0;
-	
+
 	EXE_NEXT();
-	
+
 	// arg2 = data offset
 	pushb:
-	#if DEBUG 
-	printf ("%lli PUSHB\n", cpu_core); 
+	#if DEBUG
+	printf ("%lli PUSHB\n", cpu_core);
 	#endif
 	arg1 = regi[code[ep + 1]];
 	arg2 = regi[code[ep + 2]];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = data[arg1 + arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	pushw:
 	#if DEBUG
 	printf ("%lli PUSHW\n", cpu_core);
@@ -438,16 +441,16 @@ S2 run (S8 cpu_core ALIGN)
 	arg1 = regi[code[ep + 1]];
 	arg2 = regi[code[ep + 2]];
 	arg3 = code[ep + 3];
-	
+
 	bptr = (U1 *) &regi[arg3];
-	
+
 	*bptr = data[arg1 + arg2];
 	bptr++;
 	*bptr = data[arg1 + arg2 + 1];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	pushdw:
 	#if DEBUG
 	printf ("%lli PUSHDW\n", cpu_core);
@@ -455,9 +458,9 @@ S2 run (S8 cpu_core ALIGN)
 	arg1 = regi[code[ep + 1]];
 	arg2 = regi[code[ep + 2]];
 	arg3 = code[ep + 3];
-	
+
 	bptr = (U1 *) &regi[arg3];
-	
+
 	*bptr = data[arg1 + arg2];
 	bptr++;
 	*bptr = data[arg1 + arg2 + 1];
@@ -465,10 +468,10 @@ S2 run (S8 cpu_core ALIGN)
 	*bptr = data[arg1 + arg2 + 2];
 	bptr++;
 	*bptr = data[arg1 + arg2 + 3];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	pushqw:
 	#if DEBUG
 	printf ("%lli PUSHQW\n", cpu_core);
@@ -476,13 +479,13 @@ S2 run (S8 cpu_core ALIGN)
 	arg1 = regi[code[ep + 1]];
 	arg2 = regi[code[ep + 2]];
 	arg3 = code[ep + 3];
-	
+
 	//printf ("PUSHQW: ep: %li\n", ep);
 	//printf ("arg1: %li: asm: %li\n", arg1, code[ep + 1]);
 	//printf ("arg2: %li\n", arg2);
-	
+
 	bptr = (U1 *) &regi[arg3];
-	
+
 	*bptr = data[arg1 + arg2];
 	bptr++;
 	*bptr = data[arg1 + arg2 + 1];
@@ -498,10 +501,10 @@ S2 run (S8 cpu_core ALIGN)
 	*bptr = data[arg1 + arg2 + 6];
 	bptr++;
 	*bptr = data[arg1 + arg2 + 7];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	pushd:
 	#if DEBUG
 	printf ("%lli PUSHD\n", cpu_core);
@@ -509,9 +512,9 @@ S2 run (S8 cpu_core ALIGN)
 	arg1 = regi[code[ep + 1]];
 	arg2 = regi[code[ep + 2]];
 	arg3 = code[ep + 3];
-	
+
 	bptr = (U1 *) &regd[arg3];
-	
+
 	*bptr = data[arg1 + arg2];
 	bptr++;
 	*bptr = data[arg1 + arg2 + 1];
@@ -527,11 +530,11 @@ S2 run (S8 cpu_core ALIGN)
 	*bptr = data[arg1 + arg2 + 6];
 	bptr++;
 	*bptr = data[arg1 + arg2 + 7];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
-	
+
+
 	pullb:
 	#if DEBUG
 	printf ("%lli PULLB\n", cpu_core);
@@ -539,12 +542,12 @@ S2 run (S8 cpu_core ALIGN)
 	arg1 = code[ep + 1];
 	arg2 = regi[code[ep + 2]];
 	arg3 = regi[code[ep + 3]];
-	
+
 	data[arg2 + arg3] = regi[arg1];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	pullw:
 	#if DEBUG
 	printf ("%lli PULLW\n", cpu_core);
@@ -552,16 +555,16 @@ S2 run (S8 cpu_core ALIGN)
 	arg1 = code[ep + 1];
 	arg2 = regi[code[ep + 2]];
 	arg3 = regi[code[ep + 3]];
-	
+
 	bptr = (U1 *) &regi[arg1];
-	
+
 	data[arg2 + arg3] = *bptr;
 	bptr++;
 	data[arg2 + arg3 + 1] = *bptr;
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	pulldw:
 	#if DEBUG
 	printf ("%lli PULLDW\n", cpu_core);
@@ -569,9 +572,9 @@ S2 run (S8 cpu_core ALIGN)
 	arg1 = code[ep + 1];
 	arg2 = regi[code[ep + 2]];
 	arg3 = regi[code[ep + 3]];
-	
+
 	bptr = (U1 *) &regi[arg1];
-	
+
 	data[arg2 + arg3] = *bptr;
 	bptr++;
 	data[arg2 + arg3 + 1] = *bptr;
@@ -579,24 +582,24 @@ S2 run (S8 cpu_core ALIGN)
 	data[arg2 + arg3 + 2] = *bptr;
 	bptr++;
 	data[arg2 + arg3 + 3] = *bptr;
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	pullqw:
 	#if DEBUG
 	printf ("%lli PULLQW\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = regi[code[ep + 2]];
 	arg3 = regi[code[ep + 3]];
-	
+
 	//printf ("PULLQW\n");
 	//printf ("data: %li\n", arg2);
 	//printf ("offset: %li\n", arg3);
-	
+
 	bptr = (U1 *) &regi[arg1];
-	
+
 	data[arg2 + arg3] = *bptr;
 	bptr++;
 	data[arg2 + arg3 + 1] = *bptr;
@@ -612,20 +615,20 @@ S2 run (S8 cpu_core ALIGN)
 	data[arg2 + arg3 + 6] = *bptr;
 	bptr++;
 	data[arg2 + arg3 + 7] = *bptr;
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	pulld:
 	#if DEBUG
 	printf ("%lli PULLD\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = regi[code[ep + 2]];
 	arg3 = regi[code[ep + 3]];
-	
+
 	bptr = (U1 *) &regd[arg1];
-	
+
 	data[arg2 + arg3] = *bptr;
 	bptr++;
 	data[arg2 + arg3 + 1] = *bptr;
@@ -641,398 +644,398 @@ S2 run (S8 cpu_core ALIGN)
 	data[arg2 + arg3 + 6] = *bptr;
 	bptr++;
 	data[arg2 + arg3 + 7] = *bptr;
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
-	
+
+
 	addi:
 	#if DEBUG
 	printf ("%lli ADDI\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] + regi[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	subi:
 	#if DEBUG
 	printf ("%lli SUBI\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] - regi[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	muli:
 	#if DEBUG
 	printf ("%lli MULI\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] * regi[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	divi:
 	#if DEBUG
 	printf ("%lli DIVI\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] / regi[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	addd:
 	#if DEBUG
 	printf ("%lli ADDD\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regd[arg3] = regd[arg1] + regd[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	subd:
 	#if DEBUG
 	printf ("%lli SUBD\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regd[arg3] = regd[arg1] - regd[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	muld:
 	#if DEBUG
 	printf ("%lli MULD\n", cpu_core);
-	#endif   
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regd[arg3] = regd[arg1] * regd[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	divd:
 	#if DEBUG
 	printf ("%lli DIVD\n", cpu_core);
-	#endif   
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regd[arg3] = regd[arg1] / regd[arg2];
-	
+
 	eoffs = 4;
-	EXE_NEXT();   
-	
+	EXE_NEXT();
+
 	smuli:
 	#if DEBUG
 	printf ("%lli SMULI\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] << regi[arg2];
-	
+
 	eoffs = 4;
-	EXE_NEXT();   
-	
+	EXE_NEXT();
+
 	sdivi:
 	#if DEBUG
 	printf ("%lli SDIVI\n", cpu_core);
-	#endif   
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] >> regi[arg2];
-	
+
 	eoffs = 4;
-	EXE_NEXT();      
-	
+	EXE_NEXT();
+
 	andi:
 	#if DEBUG
 	printf ("%lli ANDI\n", cpu_core);
-	#endif   
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] && regi[arg2];
-	
+
 	eoffs = 4;
-	EXE_NEXT();      
-	
+	EXE_NEXT();
+
 	ori:
 	#if DEBUG
 	printf ("%lli ORI\n", cpu_core);
-	#endif   
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] || regi[arg2];
-	
+
 	eoffs = 4;
-	EXE_NEXT();     
-	
-	
+	EXE_NEXT();
+
+
 	bandi:
 	#if DEBUG
 	printf ("%lli BANDI\n", cpu_core);
-	#endif   
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] & regi[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	bori:
 	#if DEBUG
 	printf ("%lli BORI\n", cpu_core);
-	#endif   
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] | regi[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	bxori:
 	#if DEBUG
 	printf ("%lli BXORI\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] ^ regi[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	modi:
 	#if DEBUG
 	printf ("%lli MODI\n", cpu_core);
-	#endif   
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] % regi[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
-	
+
+
 	eqi:
 	#if DEBUG
 	printf ("%lli EQI\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] == regi[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	neqi:
 	#if DEBUG
 	printf ("%lli NEQI\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] != regi[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	gri:
 	#if DEBUG
 	printf ("%lli GRI\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] > regi[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	lsi:
 	#if DEBUG
 	printf ("%lli LSI\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] < regi[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	greqi:
 	#if DEBUG
 	printf ("%lli GREQI\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] >= regi[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	lseqi:
 	#if DEBUG
 	printf ("%lli LSEQI\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regi[arg1] <= regi[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
-	
+
+
 	eqd:
 	#if DEBUG
 	printf ("%lli EQD\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regd[arg1] == regd[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	neqd:
 	#if DEBUG
 	printf ("%lli NEQD\n", cpu_core);
-	#endif   
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regd[arg1] != regd[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	grd:
 	#if DEBUG
 	printf ("%lli GRD\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regd[arg1] > regd[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	lsd:
 	#if DEBUG
 	printf ("%lli LSD\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regd[arg1] < regd[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	greqd:
 	#if DEBUG
 	printf ("%lli GREQD\n", cpu_core);
-	#endif   
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regd[arg1] >= regd[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
+
 	lseqd:
 	#if DEBUG
 	printf ("%lli LSEQD\n", cpu_core);
-	#endif   
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-	
+
 	regi[arg3] = regd[arg1] <= regd[arg2];
-	
+
 	eoffs = 4;
 	EXE_NEXT();
-	
-	
+
+
 	jmp:
 	#if DEBUG
 	printf ("%lli JMP\n", cpu_core);
-	#endif	
+	#endif
 	arg1 = jumpoffs[ep];
-	
+
 	eoffs = 0;
 	ep = arg1;
-	
+
 	EXE_NEXT();
-	
+
 	jmpi:
 	#if DEBUG
 	printf ("%lli JMPI\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
-	
+
 	arg2 = jumpoffs[ep];
-	
+
 	if (regi[arg1] == 1)
 	{
 		eoffs = 0;
@@ -1042,73 +1045,73 @@ S2 run (S8 cpu_core ALIGN)
 		#endif
 		EXE_NEXT();
 	}
-	
+
 	eoffs = 10;
-	
+
 	EXE_NEXT();
-	
-	
+
+
 	stpushb:
 	#if DEBUG
 	printf("%lli STPUSHB\n", cpu_core);
-	#endif   
+	#endif
 	arg1 = code[ep + 1];
-	
+
 	if (sp >= sp_bottom)
 	{
 		sp--;
-		
+
 		bptr = (U1 *) &regi[arg1];
-		
+
 		*sp = *bptr;
 	}
 	else
 	{
 		// fatal ERROR: stack pointer can't go below address ZERO!
-		
+
 		printf ("FATAL ERROR: stack pointer can't go below address 0!\n");
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
 	eoffs = 2;
-	
-	EXE_NEXT(); 
-	
+
+	EXE_NEXT();
+
 	stpopb:
 	#if DEBUG
 	printf("%lli STPOPB\n", cpu_core);
-	#endif   
+	#endif
 	if (sp == sp_top)
 	{
 		// nothing on stack!! can't pop!!
-		
+
 		printf ("FATAL ERROR: stack pointer can't pop empty stack!\n");
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
-	
+
 	bptr = (U1 *) &regi[arg1];
-	
+
 	*bptr = *sp;
-	
+
 	sp++;
 	eoffs = 2;
-	
+
 	EXE_NEXT();
-	
+
 	stpushi:
 	#if DEBUG
 	printf("%lli STPUSHI\n", cpu_core);
-	#endif	
-	
+	#endif
+
 	arg1 = code[ep + 1];
-	
+
 	if (sp >= sp_bottom + 8)
 	{
 		// set stack pointer to lower address
-		
+
 		bptr = (U1 *) &regi[arg1];
-		
+
 		sp--;
 		*sp-- = *bptr;
 		bptr++;
@@ -1129,34 +1132,34 @@ S2 run (S8 cpu_core ALIGN)
 	else
 	{
 		// fatal ERROR: stack pointer can't go below address ZERO!
-		
+
 		printf ("FATAL ERROR: stack pointer can't go below address 0!\n");
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
-	
+
 	eoffs = 2;
-	
+
 	EXE_NEXT();
-	
+
 	stpopi:
 	#if DEBUG
 	printf("%lli STPOPI\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
-	
+
 	if (sp == sp_top)
 	{
 		// nothing on stack!! can't pop!!
-		
+
 		printf ("FATAL ERROR: stack pointer can't pop empty stack!\n");
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
-	
+
 	bptr = (U1 *) &regi[arg1];
 	bptr += 7;
-	
+
 	*bptr = *sp++;
 	bptr--;
 	*bptr = *sp++;
@@ -1174,21 +1177,21 @@ S2 run (S8 cpu_core ALIGN)
 	*bptr = *sp++;
 
 	eoffs = 2;
-	
+
 	EXE_NEXT();
-	
+
 	stpushd:
 	#if DEBUG
 	printf("%lli STPUSHD\n", cpu_core);
-	#endif   
+	#endif
 	arg1 = code[ep + 1];
-	
+
 	if (sp >= sp_bottom + 8)
 	{
 		// set stack pointer to lower address
-		
+
 		bptr = (U1 *) &regd[arg1];
-		
+
 		sp--;
 		*sp-- = *bptr;
 		bptr++;
@@ -1209,33 +1212,33 @@ S2 run (S8 cpu_core ALIGN)
 	else
 	{
 		// fatal ERROR: stack pointer can't go below address ZERO!
-		
+
 		printf ("FATAL ERROR: stack pointer can't go below address 0!\n");
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
 	eoffs = 2;
-	
+
 	EXE_NEXT();
-	
+
 	stpopd:
 	#if DEBUG
 	printf("%lli STPOPD\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
-	
+
 	if (sp == sp_top)
 	{
 		// nothing on stack!! can't pop!!
-		
+
 		printf ("FATAL ERROR: stack pointer can't pop empty stack!\n");
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
-	
+
 	bptr = (U1 *) &regd[arg1];
 	bptr += 7;
-	
+
 	*bptr = *sp++;
 	bptr--;
 	*bptr = *sp++;
@@ -1251,18 +1254,18 @@ S2 run (S8 cpu_core ALIGN)
 	*bptr = *sp++;
 	bptr--;
 	*bptr = *sp++;
-	
+
 	eoffs = 2;
-	
+
 	EXE_NEXT();
-	
+
 	loada:
 	#if DEBUG
 	printf ("%lli LOADA\n", cpu_core);
-	#endif    
+	#endif
 	// data
 	bptr = (U1 *) &arg1;
-	
+
 	*bptr = code[ep + 1];
 	bptr++;
 	*bptr = code[ep + 2];
@@ -1278,13 +1281,13 @@ S2 run (S8 cpu_core ALIGN)
 	*bptr = code[ep + 7];
 	bptr++;
 	*bptr = code[ep + 8];
-	
+
 	// offset
-	
+
 	//printf ("arg1: %li\n", arg1);
-	
+
 	bptr = (U1 *) &arg2;
-	
+
 	*bptr = code[ep + 9];
 	bptr++;
 	*bptr = code[ep + 10];
@@ -1300,13 +1303,13 @@ S2 run (S8 cpu_core ALIGN)
 	*bptr = code[ep + 15];
 	bptr++;
 	*bptr = code[ep + 16];
-	
+
 	//printf ("arg2: %li\n", arg2);
-	
+
 	arg3 = code[ep + 17];
-	
+
 	bptr = (U1 *) &regi[arg3];
-	
+
 	*bptr = data[arg1 + arg2];
 	bptr++;
 	*bptr = data[arg1 + arg2 + 1];
@@ -1322,19 +1325,19 @@ S2 run (S8 cpu_core ALIGN)
 	*bptr = data[arg1 + arg2 + 6];
 	bptr++;
 	*bptr = data[arg1 + arg2 + 7];
-	
+
 	//printf ("LOADA: %li\n", regi[arg3]);
-	
+
 	eoffs = 18;
 	EXE_NEXT();
-	
+
 	loadd:
 	#if DEBUG
 	printf ("%lli LOADD\n", cpu_core);
-	#endif    
+	#endif
 	// data
 	bptr = (U1 *) &arg1;
-	
+
 	*bptr = code[ep + 1];
 	bptr++;
 	*bptr = code[ep + 2];
@@ -1350,13 +1353,13 @@ S2 run (S8 cpu_core ALIGN)
 	*bptr = code[ep + 7];
 	bptr++;
 	*bptr = code[ep + 8];
-	
+
 	// offset
-	
+
 	//printf ("arg1: %li\n", arg1);
-	
+
 	bptr = (U1 *) &arg2;
-	
+
 	*bptr = code[ep + 9];
 	bptr++;
 	*bptr = code[ep + 10];
@@ -1372,13 +1375,13 @@ S2 run (S8 cpu_core ALIGN)
 	*bptr = code[ep + 15];
 	bptr++;
 	*bptr = code[ep + 16];
-	
+
 	//printf ("arg2: %li\n", arg2);
-	
+
 	arg3 = code[ep + 17];
-	
+
 	bptr = (U1 *) &regd[arg3];
-	
+
 	*bptr = data[arg1 + arg2];
 	bptr++;
 	*bptr = data[arg1 + arg2 + 1];
@@ -1394,25 +1397,25 @@ S2 run (S8 cpu_core ALIGN)
 	*bptr = data[arg1 + arg2 + 6];
 	bptr++;
 	*bptr = data[arg1 + arg2 + 7];
-	
+
 	//printf ("LOADD: %li\n", regd[arg3]);
-	
+
 	eoffs = 18;
 	EXE_NEXT();
-	
+
 	intr0:
-	   
+
 	arg1 = code[ep + 1];
 	#if DEBUG
 	printf ("%lli INTR0: %lli\n", cpu_core, arg1);
-	#endif 
+	#endif
 	switch (arg1)
 	{
 		case 0:
 			//printf ("LOADMODULE\n");
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
-			
+
 			if (load_module ((U1 *) &data[regi[arg2]], regi[arg3]) != 0)
 			{
 				printf ("EXIT!\n");
@@ -1421,21 +1424,21 @@ S2 run (S8 cpu_core ALIGN)
 			}
 			eoffs = 5;
 			break;
-			
+
 		case 1:
 			//printf ("FREEMODULE\n");
 			arg2 = code[ep + 2];
-			
+
 			free_module (regi[arg2]);
 			eoffs = 5;
 			break;
-			
+
 		case 2:
 			//printf ("SETMODULEFUNC\n");
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
 			arg4 = code[ep + 4];
-			
+
 			if (set_module_func (regi[arg2], regi[arg3], (U1 *) &data[regi[arg4]]) != 0)
 			{
 				printf ("EXIT!\n");
@@ -1444,50 +1447,50 @@ S2 run (S8 cpu_core ALIGN)
 			}
 			eoffs = 5;
 			break;
-			
+
 		case 3:
 			//printf ("CALLMODULEFUNC\n");
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
-			
+
 			sp = call_module_func (regi[arg2], regi[arg3],  (U1 *) sp, sp_top, sp_bottom);
 			eoffs = 5;
 			break;
-			
+
 		case 4:
 			//printf ("PRINTI\n");
 			arg2 = code[ep + 2];
 			printf ("%lli\n", regi[arg2]);
 			eoffs = 5;
 			break;
-			
+
 		case 5:
 			//printf ("PRINTD\n");
 			arg2 = code[ep + 2];
 			printf ("%.10lf", regd[arg2]);
 			eoffs = 5;
 			break;
-			
+
 		case 6:
 			//printf ("PRINTSTR\n");
 			arg2 = code[ep + 2];
 			printf ("%s", (char *) &data[regi[arg2]]);
 			eoffs = 5;
 			break;
-			
+
 		case 7:
 			//printf ("PRINTNEWLINE\n");
 			printf ("\n");
 			eoffs = 5;
 			break;
-			
+
 		case 8:
 			printf ("DELAY\n");
 			arg2 = code[ep + 2];
 			usleep (regi[arg2] * 1000);
 			eoffs = 5;
 			break;
-		
+
 		case 9:
 			//printf ("INPUTI\n");
 			arg2 = code[ep + 2];
@@ -1501,7 +1504,7 @@ S2 run (S8 cpu_core ALIGN)
 			}
 			eoffs = 5;
 			break;
-			
+
 		case 10:
 			//printf ("INPUTD\n");
 			arg2 = code[ep + 2];
@@ -1515,7 +1518,7 @@ S2 run (S8 cpu_core ALIGN)
 			}
 			eoffs = 5;
 			break;
-		
+
 		case 11:
 			//printf ("INPUTS\n");
 			arg2 = code[ep + 2];
@@ -1532,14 +1535,14 @@ S2 run (S8 cpu_core ALIGN)
 			}
 			eoffs = 5;
 			break;
-		
+
 		case 12:
 			//printf ("SHELLARGSNUM\n");
 			arg2 = code[ep + 2];
 			regi[arg2] = shell_args_ind + 1;
 			eoffs = 5;
 			break;
-			
+
 		case 13:
 			//printf ("GETSHELLARG\n");
 			arg2 = code[ep + 2];
@@ -1553,13 +1556,13 @@ S2 run (S8 cpu_core ALIGN)
 			strncpy ((char *) &data[regi[arg3]], (const char *) shell_args[regi[arg2]], MAXSHELLARGLEN);
 			eoffs = 5;
 			break;
-			
+
 		case 14:
 			//printf("SHOWSTACKPOINTER\n");
 			printf ("stack pointer sp: %lli\n", (S8) sp);
 			eoffs = 5;
 			break;
-			
+
 		case 255:
 			printf ("EXIT\n");
 			arg2 = code[ep + 2];
@@ -1571,25 +1574,25 @@ S2 run (S8 cpu_core ALIGN)
 			pthread_exit ((void *) retcode);
 	}
 	EXE_NEXT();
-	
+
 	intr1:
 	#if DEBUG
 	printf("%lli INTR1\n", cpu_core);
-	#endif    
+	#endif
 	// special interrupt
 	arg1 = code[ep + 1];
-	
+
 	switch (arg1)
 	{
 		case 0:
 			// run new CPU instance
 			arg2 = code[ep + 2];
 			arg2 = regi[arg2];
-			
+
 			if (cpu_ind >= max_cpu - 1)
 			{
 				// maximum of CPU cores used, no new core possible
-				
+
 				printf ("ERROR: can't start new CPU core!\n");
 				free (jumpoffs);
 				pthread_exit ((void *) 1);
@@ -1598,17 +1601,17 @@ S2 run (S8 cpu_core ALIGN)
 			// sp_top = threaddata[cpu_core].sp_top_thread;
 			// sp_bottom = threaddata[cpu_core].sp_bottom_thread;
 			// sp = threaddata[cpu_core].sp_thread;
-			
+
 			new_cpu = cpu_ind + 1;
-			
+
 			printf ("current CPU: %lli, starts new CPU: %lli\n", cpu_core, new_cpu);
 			pthread_mutex_lock (&data_mutex);
 			threaddata[new_cpu].sp = sp;
 			threaddata[new_cpu].sp_top = sp_top;
 			threaddata[new_cpu].sp_bottom = sp_bottom;
-			
+
 			threaddata[new_cpu].sp_top_thread = sp_top + (new_cpu * stack_size);
-			threaddata[new_cpu].sp_bottom_thread = sp_bottom + (new_cpu * stack_size); 
+			threaddata[new_cpu].sp_bottom_thread = sp_bottom + (new_cpu * stack_size);
 			threaddata[new_cpu].sp_thread = threaddata[new_cpu].sp_top_thread - (sp_top - sp);
 			threaddata[new_cpu].ep_startpos = arg2;
 			pthread_mutex_unlock (&data_mutex);
@@ -1618,12 +1621,20 @@ S2 run (S8 cpu_core ALIGN)
 				free (jumpoffs);
 				pthread_exit ((void *) 1);
 			}
+
+            CPU_ZERO (&cpuset);
+            CPU_SET (new_cpu, &cpuset);
+
+            if (pthread_setaffinity_np (threaddata[new_cpu].id, sizeof(cpu_set_t), &cpuset) != 0)
+            {
+                    printf ("ERROR: setting pthread affinity of thread: %lli\n", new_cpu);
+            }
 			pthread_mutex_lock (&data_mutex);
 			threaddata[new_cpu].status = RUNNING;
 			pthread_mutex_unlock (&data_mutex);
 			eoffs = 5;
 			break;
-			
+
 		case 1:
 			// join threads
 			printf ("JOINING THREADS...\n");
@@ -1646,19 +1657,19 @@ S2 run (S8 cpu_core ALIGN)
 					// no child threads running, joining done
 					wait = 0;
 				}
-				
+
 				usleep (200);
 			}
 
 			eoffs = 5;
 			break;
-			
+
 		case 2:
 			// lock data_mutex
 			pthread_mutex_lock (&data_mutex);
 			eoffs = 5;
 			break;
-			
+
 		case 3:
 			// unlock data_mutex
 			pthread_mutex_unlock (&data_mutex);
@@ -1666,19 +1677,19 @@ S2 run (S8 cpu_core ALIGN)
 			break;
 	}
 	EXE_NEXT();
-	
+
 	//  superopcodes for counter loops
 	inclsijmpi:
 	#if DEBUG
 	printf ("%lli INCLSIJMPI\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
-	
+
 	arg3 = jumpoffs[ep];
-	
+
 	//printf ("jump to: %li\n", arg3);
-	
+
 	regi[arg1]++;
 	if (regi[arg1] < regi[arg2])
 	{
@@ -1687,20 +1698,20 @@ S2 run (S8 cpu_core ALIGN)
 		dp = code[ep + 4];
 		EXE_NEXT();
 	}
-	
+
 	eoffs = 11;
-	
+
 	EXE_NEXT();
-	
+
 	decgrijmpi:
 	#if DEBUG
 	printf ("%lli DECGRIJMPI\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
-	
+
 	arg3 = jumpoffs[ep];
-	
+
 	regi[arg1]--;
 	if (regi[arg1] > regi[arg2])
 	{
@@ -1709,43 +1720,43 @@ S2 run (S8 cpu_core ALIGN)
 		dp = code[ep + 4];
 		EXE_NEXT();
 	}
-	
+
 	eoffs = 11;
-	
+
 	EXE_NEXT();
-	
+
 	movi:
 	#if DEBUG
 	printf ("%lli MOVI\n", cpu_core);
 	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
-	
+
 	regi[arg2] = regi[arg1];
-	
+
 	eoffs = 3;
 	EXE_NEXT();
-	
+
 	movd:
 	#if DEBUG
 	printf ("%lli MOVD\n", cpu_core);
 	#endif
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
-	
+
 	regd[arg2] = regd[arg1];
-	
+
 	eoffs = 3;
 	EXE_NEXT();
-	
+
 	loadl:
 	#if DEBUG
 	printf ("%lli LOADL\n", cpu_core);
-	#endif    
+	#endif
 	// data
 	bptr = (U1 *) &arg1;
 	arg2 = code[ep + 9];
-	
+
 	*bptr = code[ep + 1];
 	bptr++;
 	*bptr = code[ep + 2];
@@ -1761,92 +1772,92 @@ S2 run (S8 cpu_core ALIGN)
 	*bptr = code[ep + 7];
 	bptr++;
 	*bptr = code[ep + 8];
-	
+
 	regi[arg2] = arg1;
-	
+
 	eoffs = 10;
 	EXE_NEXT();
-	
+
 	jmpa:
 	#if DEBUG
 	printf ("%lli JMPA\n", cpu_core);
-	#endif    
+	#endif
 	arg1 = code[ep + 1];
-	
+
 	eoffs = 0;
 	ep = regi[arg1];
 	#if DEBUG
 	printf ("%lli JUMP TO %lli\n", cpu_core, ep);
 	#endif
 	EXE_NEXT();
-	
+
 	jsr:
 	#if DEBUG
 	printf ("%lli JSR\n", cpu_core);
 	#endif
 	arg1 = jumpoffs[ep];
-	
+
 	if (jumpstack_ind == MAXSUBJUMPS - 1)
 	{
 		printf ("ERROR: jumpstack full, no more jsr!\n");
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
-	
+
 	jumpstack_ind++;
 	jumpstack[jumpstack_ind] = ep + 9;
-	
+
 	eoffs = 0;
 	ep = arg1;
-	
+
 	EXE_NEXT();
-	
+
 	jsra:
 	#if DEBUG
 	printf ("%lli JSRA\n", cpu_core);
 	#endif
-	
+
 	arg1 = code[ep + 1];
-	
+
 	#if DEBUG
 	printf ("%lli JUMP TO %lli\n", cpu_core, ep);
 	#endif
-	
+
 	if (jumpstack_ind == MAXSUBJUMPS - 1)
 	{
 		printf ("ERROR: jumpstack full, no more jsr!\n");
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
-	
+
 	jumpstack_ind++;
 	jumpstack[jumpstack_ind] = ep + 2;
-	
+
 	eoffs = 0;
 	ep = regi[arg1];
-	
+
 	EXE_NEXT();
-	
+
 	rts:
 	#if DEBUG
 	printf ("%lli RTS\n", cpu_core);
 	#endif
-	
+
 	ep = jumpstack[jumpstack_ind];
 	eoffs = 0;
 	jumpstack_ind--;
-	
+
 	// printf ("RTS: return to: %lli\n\n", ep);
-	
+
 	EXE_NEXT();
-	
+
 	load:
 	#if DEBUG
 	printf ("%lli LOAD\n", cpu_core);
-	#endif    
+	#endif
 	// data
 	bptr = (U1 *) &arg1;
-	
+
 	*bptr = code[ep + 1];
 	bptr++;
 	*bptr = code[ep + 2];
@@ -1862,13 +1873,13 @@ S2 run (S8 cpu_core ALIGN)
 	*bptr = code[ep + 7];
 	bptr++;
 	*bptr = code[ep + 8];
-	
+
 	// offset
-	
+
 	//printf ("arg1: %li\n", arg1);
-	
+
 	bptr = (U1 *) &arg2;
-	
+
 	*bptr = code[ep + 9];
 	bptr++;
 	*bptr = code[ep + 10];
@@ -1884,15 +1895,15 @@ S2 run (S8 cpu_core ALIGN)
 	*bptr = code[ep + 15];
 	bptr++;
 	*bptr = code[ep + 16];
-	
+
 	//printf ("arg2: %li\n", arg2);
-	
+
 	arg3 = code[ep + 17];
-	
+
 	regi[arg3] = arg1 + arg2;
-	
+
 	//printf ("LOAD: %li\n", regi[arg3]);
-	
+
 	eoffs = 18;
 	EXE_NEXT();
 }
@@ -1900,16 +1911,16 @@ S2 run (S8 cpu_core ALIGN)
 void break_handler (void)
 {
 	/* break - handling
-	 * 
+	 *
 	 * if user answer is 'y', the engine will shutdown
 	 *
 	 */
-	
+
 	U1 answ[2];
-	
+
 	printf ("\nexe: break,  exit now (y/n)? ");
 	scanf ("%1s", answ);
-		
+
 	if (strcmp ((const char *) answ, "y") == 0 || strcmp ((const char *) answ, "Y") == 0)
 	{
 		cleanup ();
@@ -1921,12 +1932,12 @@ int main (int ac, char *av[])
 {
 	S8 i ALIGN;
 	S8 arglen ALIGN;
-	S8 strind ALIGN; 
+	S8 strind ALIGN;
 	S8 avind ALIGN;
 	pthread_t id;
 
 	S8 new_cpu ALIGN;
-	
+
     if (ac > 1)
     {
         for (i = 2; i < ac; i++)
@@ -1937,7 +1948,7 @@ int main (int ac, char *av[])
                 if (av[i][0] == '-' && av[i][1] == 'M')
                 {
                     // try load module (shared library)
-                    
+
                     if (modules_ind < MODULES)
                     {
                         modules_ind++;
@@ -1948,7 +1959,7 @@ int main (int ac, char *av[])
                             strind++;
                         }
                         modules[modules_ind].name[strind] = '\0';
-                        
+
                         if (load_module (modules[modules_ind].name, modules_ind) == 0)
                         {
                             printf ("module: %s loaded\n", modules[modules_ind].name);
@@ -1979,27 +1990,27 @@ int main (int ac, char *av[])
 		exit (1);
 	}
     load_object ((U1 *) av[1]);
-    
+
 	signal (SIGINT, (void *) break_handler);
-	
+
 	// set all higher threads as STOPPED = unused
 	for (i = 1; i < max_cpu; i++)
 	{
 		threaddata[i].status = STOP;
 	}
 	threaddata[0].status = RUNNING;		// main thread will run
-	
+
 	new_cpu = 0;
 	// threaddata[new_cpu].sp = (U1 *) &data[data_mem_size - (max_cpu * stack_size) - 1];
 	threaddata[new_cpu].sp = (U1 *) &data + (data_mem_size - ((max_cpu - 1) * stack_size) - 1);
 	threaddata[new_cpu].sp_top = threaddata[new_cpu].sp;
 	threaddata[new_cpu].sp_bottom = threaddata[new_cpu].sp_top - stack_size + 1;
-	
+
 	threaddata[new_cpu].sp_thread = threaddata[new_cpu].sp + (new_cpu * stack_size);
 	threaddata[new_cpu].sp_top_thread = threaddata[new_cpu].sp_top + (new_cpu * stack_size);
-	threaddata[new_cpu].sp_bottom_thread = threaddata[new_cpu].sp_bottom + (new_cpu * stack_size); 
+	threaddata[new_cpu].sp_bottom_thread = threaddata[new_cpu].sp_bottom + (new_cpu * stack_size);
 	threaddata[new_cpu].ep_startpos = 16;
-	
+
     if (pthread_create (&id, NULL, (void *) run, (void*) new_cpu) != 0)
 	{
 		printf ("ERROR: can't start new thread!\n");

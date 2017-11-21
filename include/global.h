@@ -2,7 +2,7 @@
  * This file global.h is part of L1vm.
  *
  * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2017
- * 
+ *
  * L1vm is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,6 +18,7 @@
  */
 
 //  global.h
+#define _GNU_SOURCE
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,7 +31,9 @@
 #include <inttypes.h>
 #include <unistd.h>
 #include <sys/time.h>
+
 #include <pthread.h>
+#include <sched.h>
 
 typedef unsigned char           U1;		/* UBYTE   */
 typedef int16_t                 S2;     /* INT     */
@@ -59,7 +62,7 @@ typedef double                  F8;     /* DOUBLE */
 // machine
 #define MAXREG				256			// registers (integer and double float)
 
-#define MACHINE_BIG_ENDIAN      0       // endianess of host machine        
+#define MACHINE_BIG_ENDIAN      0       // endianess of host machine
 
 #define MAXLINELEN      512
 #define MAXARGS         64
@@ -104,6 +107,15 @@ typedef double                  F8;     /* DOUBLE */
 // jump call stack, for jsr, jsra
 #define MAXSUBJUMPS		256
 
+
+// ERROR codes returned by VM
+#define ERR_FILE_EOF	1
+#define ERR_FILE_OPEN	2
+#define ERR_FILE_WRITE	3
+#define ERR_WRONG_POS	4
+#define ERR_OK			0
+
+
 struct threaddata
 {
 	U1 *sp;			// stack pointer of mother thread
@@ -135,7 +147,7 @@ struct data_info
     S8 end;
 	S8 type_size;
 	U1 type;
-	
+
 	// compiler
 	U1 value_str[MAXLINELEN];
 	U1 type_str[2];

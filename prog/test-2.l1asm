@@ -34,14 +34,12 @@ addi 3, 4, 7
 muli 5, 6, 8
 addi 7, 8, 9
 load z, 0, 10
-pullqw 9, 10, 0
-load ret, 0, 10
-pullqw 9, 10, 0
-loada z, 0, 10
+pushb 9, 0, 11
+load ret, 0, 12
+pushb 11, 0, 13
 intr0 4, 10, 0, 0
 intr0 7, 0, 0, 0
-loada ret, 0, 11
-intr0 4, 11, 0, 0
+intr0 4, 12, 0, 0
 intr0 7, 0, 0, 0
 stpushi I0
 stpushi I1
@@ -55,12 +53,16 @@ stpushi I8
 stpushi I9
 stpushi I10
 stpushi I11
+stpushi I12
+stpushi I13
 stpushi 1
 stpushi 2
 jsr :test
 stpopi 10
-load ret, 0, 12
-pullqw 10, 12, 0
+load ret, 0, 14
+pullqw 10, 14, 0
+stpopi I13
+stpopi I12
 stpopi I11
 stpopi I10
 stpopi I9
@@ -73,8 +75,8 @@ stpopi I3
 stpopi I2
 stpopi I1
 stpopi I0
-loada ret, 0, 11
-intr0 4, 11, 0, 0
+loada ret, 0, 12
+intr0 4, 12, 0, 0
 intr0 7, 0, 0, 0
 stpushi I0
 stpushi I1
@@ -88,11 +90,15 @@ stpushi I8
 stpushi I9
 stpushi I10
 stpushi I11
+stpushi I12
+stpushi I13
 stpushi 1
 jsr :square
 stpopi 10
-load ret, 0, 12
-pullqw 10, 12, 0
+load ret, 0, 14
+pullqw 10, 14, 0
+stpopi I13
+stpopi I12
 stpopi I11
 stpopi I10
 stpopi I9
@@ -105,8 +111,8 @@ stpopi I3
 stpopi I2
 stpopi I1
 stpopi I0
-loada ret, 0, 11
-intr0 4, 11, 0, 0
+loada ret, 0, 12
+intr0 4, 12, 0, 0
 intr0 7, 0, 0, 0
 intr0 255, 0, 0, 0
 rts
@@ -118,8 +124,7 @@ loada ytest, 0, 2
 stpopi 2
 muli 1, 2, 3
 load rettest, 0, 4
-pullqw 3, 4, 0
-loada rettest, 0, 4
+pushb 3, -1, 5
 stpushi 4
 rts
 :square
