@@ -20,8 +20,6 @@
 //  l1comp RISC compiler
 //
 
-// TODO: line: 558
-
 #include "../include/global.h"
 #include "../include/opcodes.h"
 #include "translate.h"
@@ -2366,6 +2364,7 @@ S2 write_asm (U1 *name)
 int main (int ac, char *av[])
 {
     printf ("l1com <file>\n");
+	printf ("\nCompiler for bra(et, a programming language with brackets ;-)\n");
 
     if (ac < 2)
     {

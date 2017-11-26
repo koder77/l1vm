@@ -128,8 +128,9 @@ void cleanup (void)
 	if (data) free (data);
 }
 
-S2 run (S8 cpu_core ALIGN)
+S2 run (void *arg)
 {
+	S8 cpu_core ALIGN = (S8) arg;
 	S8 i ALIGN;
 	U1 eoffs;                  // offset to next opcode
 	S8 regi[MAXREG];   // integer registers
@@ -2011,7 +2012,7 @@ int main (int ac, char *av[])
 	threaddata[new_cpu].sp_bottom_thread = threaddata[new_cpu].sp_bottom + (new_cpu * stack_size);
 	threaddata[new_cpu].ep_startpos = 16;
 
-    if (pthread_create (&id, NULL, (void *) run, (void*) new_cpu) != 0)
+    if (pthread_create (&id, NULL, (void *) run, (void *) new_cpu) != 0)
 	{
 		printf ("ERROR: can't start new thread!\n");
 		cleanup ();
