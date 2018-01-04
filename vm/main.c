@@ -56,7 +56,7 @@ S8 modules_ind ALIGN = -1;    // no module loaded = -1
 S8 cpu_ind ALIGN = 0;
 S8 max_cpu ALIGN = MAXCPUCORES;    // number of threads that can be runned
 
-typedef U1* (*dll_func)(U1 *sp, U1 *sp_top, U1 *sp_bottom);
+typedef U1* (*dll_func)(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 
 struct module
 {
@@ -117,9 +117,9 @@ S2 set_module_func (S8 ind ALIGN, S8 func_ind ALIGN, U1 *func_name)
     return (0);
 }
 
-U1 *call_module_func (S8 ind ALIGN, S8 func_ind ALIGN, U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *call_module_func (S8 ind ALIGN, S8 func_ind ALIGN, U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-    return (*modules[ind].func[func_ind])(sp, sp_top, sp_bottom);
+    return (*modules[ind].func[func_ind])(sp, sp_top, sp_bottom, data);
 }
 
 void cleanup (void)
@@ -1037,7 +1037,7 @@ S2 run (void *arg)
 
 	arg2 = jumpoffs[ep];
 
-	if (regi[arg1] == 1)
+	if (regi[arg1] != 0)
 	{
 		eoffs = 0;
 		ep = arg2;
@@ -1454,14 +1454,14 @@ S2 run (void *arg)
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
 
-			sp = call_module_func (regi[arg2], regi[arg3],  (U1 *) sp, sp_top, sp_bottom);
+			sp = call_module_func (regi[arg2], regi[arg3], (U1 *) sp, sp_top, sp_bottom, (U1 *) data);
 			eoffs = 5;
 			break;
 
 		case 4:
 			//printf ("PRINTI\n");
 			arg2 = code[ep + 2];
-			printf ("%lli\n", regi[arg2]);
+			printf ("%lli", regi[arg2]);
 			eoffs = 5;
 			break;
 

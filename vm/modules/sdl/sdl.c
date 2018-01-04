@@ -31,7 +31,7 @@ static TTF_Font *font = NULL;
 
 // sdl gfx functions --------------------------------------
 
-U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// top of stack: byte bit
 	// second: quadword height
@@ -86,13 +86,13 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	}
 }
 
-U1 *sdl_quit (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sdl_quit (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	SDL_Quit ();
 	return (sp);
 }
 
-U1 *sdl_update (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sdl_update (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// printf ("sdl_update...\n");
 	SDL_Flip (surf);
@@ -101,7 +101,7 @@ U1 *sdl_update (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 
 // text functions -----------------------------------------
 
-U1 *sdl_font_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sdl_font_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// top of stack: quadword size
 	// 2: byte array name, zero terminated
@@ -151,7 +151,7 @@ U1 *sdl_font_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	return (sp);
 }
 
-U1 *sdl_text_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sdl_text_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// top of stack: byte array, text
 	// 2: byte blue
@@ -251,7 +251,7 @@ U1 *sdl_text_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 
 // graphics functions -------------------------------------
 
-U1 *sdl_pixel_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sdl_pixel_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// top of stack: byte alpha
 	// 2: byte blue
@@ -319,7 +319,7 @@ U1 *sdl_pixel_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	return (sp);
 }
 
-U1 *sdl_line_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sdl_line_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// top of stack: byte alpha
 	// 2: byte blue
@@ -401,7 +401,7 @@ U1 *sdl_line_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	return (sp);
 }
 
-U1 *sdl_rectangle_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sdl_rectangle_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// top of stack: byte alpha
 	// 2: byte blue
@@ -483,7 +483,7 @@ U1 *sdl_rectangle_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	return (sp);
 }
 
-U1 *sdl_rectangle_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sdl_rectangle_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// top of stack: byte alpha
 	// 2: byte blue
@@ -565,7 +565,7 @@ U1 *sdl_rectangle_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	return (sp);
 }
 
-U1 *sdl_circle_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sdl_circle_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// top of stack: byte alpha
 	// 2: byte blue
@@ -639,7 +639,7 @@ U1 *sdl_circle_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	return (sp);
 }
 
-U1 *sdl_circle_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sdl_circle_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// top of stack: byte alpha
 	// 2: byte blue
@@ -713,7 +713,7 @@ U1 *sdl_circle_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	return (sp);
 }
 
-U1 *sdl_ellipse_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sdl_ellipse_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// top of stack: byte alpha
 	// 2: byte blue
@@ -795,7 +795,7 @@ U1 *sdl_ellipse_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	return (sp);
 }
 
-U1 *sdl_ellipse_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sdl_ellipse_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// top of stack: byte alpha
 	// 2: byte blue
@@ -877,7 +877,7 @@ U1 *sdl_ellipse_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	return (sp);
 }
 
-U1 *sdl_pie_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sdl_pie_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// top of stack: byte alpha
 	// 2: byte blue
@@ -967,7 +967,7 @@ U1 *sdl_pie_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	return (sp);
 }
 
-U1 *sdl_pie_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sdl_pie_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// top of stack: byte alpha
 	// 2: byte blue
@@ -1057,7 +1057,7 @@ U1 *sdl_pie_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	return (sp);
 }
 
-U1 *sdl_trigon_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sdl_trigon_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// top of stack: byte alpha
 	// 2: byte blue
@@ -1155,7 +1155,7 @@ U1 *sdl_trigon_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	return (sp);
 }
 
-U1 *sdl_trigon_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sdl_trigon_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// top of stack: byte alpha
 	// 2: byte blue
@@ -1250,5 +1250,92 @@ U1 *sdl_trigon_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	}
 
 	filledTrigonRGBA (surf, x1, y1, x2, y2, x3, y3, r, g, b, alpha);
+	return (sp);
+}
+
+/*
+ * Return the pixel value at (x, y)
+ * NOTE: The surface must be locked before calling this!
+ */
+Uint32 getpixel (SDL_Surface *surface, Sint16 x, Sint16 y)
+{
+    Uint8 bpp = surface->format->BytesPerPixel;
+    /* Here p is the address to the pixel we want to retrieve */
+    Uint8 *p = (Uint8 *) surface->pixels + y * surface->pitch + x * bpp;
+
+    switch (bpp)
+    {
+        case 1:
+            return *p;
+
+        case 2:
+            return *(Uint16 *)p;
+
+        case 3:
+            if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+            {
+                return p[0] << 16 | p[1] << 8 | p[2];
+            }
+            else
+            {
+                return p[0] | p[1] << 8 | p[2] << 16;
+            }
+
+        case 4:
+            return *(Uint32 *)p;
+
+        default:
+            return 0;       /* shouldn't happen, but avoids warnings */
+    }
+}
+
+U1 *sdl_get_pixelcolor (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// top of stack: quadword y
+	// 2: quadword x
+	S8 x ALIGN, y ALIGN;
+	Uint32 pixel;
+	Uint8 r, g, b;
+	U1 err = 0;
+
+	sp = stpopi ((U1 *) &y, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		err = 1;
+	}
+
+	sp = stpopi ((U1 *) &x, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		err = 1;
+	}
+
+	if (err == 1)
+	{
+		printf ("sdl_get_pixelcolor: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (SDL_LockSurface (surf) < 0)
+	{
+		printf ("sdl_get_pixelcolor: can't lock surface!\n");
+
+//	-1 = ERROR code!
+		sp = stpushi (-1, sp, sp_bottom);
+		sp = stpushi (-1, sp, sp_bottom);
+		sp = stpushi (-1, sp, sp_bottom);
+
+		return (sp);
+	}
+
+	pixel = getpixel (surf, x, y);
+    SDL_UnlockSurface (surf);
+    SDL_GetRGB (pixel, surf->format, &r, &g, &b);
+
+	sp = stpushi (b, sp, sp_bottom);
+	sp = stpushi (g, sp, sp_bottom);
+	sp = stpushi (r, sp, sp_bottom);
 	return (sp);
 }

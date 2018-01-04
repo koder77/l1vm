@@ -7,8 +7,8 @@ Q, 1, helloaddr
 @, 21, 8
 .dend
 .code
-loada zero, 0, 0
 :main
+loada zero, 0, 0
 loada helloaddr, 0, 1
 intr0 6, 1, 0, 0
 intr0 7, 0, 0, 0

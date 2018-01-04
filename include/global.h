@@ -49,7 +49,7 @@ typedef double                  F8;     /* DOUBLE */
 
 //#define DEBUG					1
 
-#define M_ARM	0
+//#define M_ARM	1
 
 /* set alignment for Android ARM */
 #if M_ARM
@@ -140,7 +140,7 @@ struct t_var
 	U1 base;
 };
 
-#define MAXDATAINFO             1024 // data names
+#define MAXDATAINFO             4096 // data names
 
 struct data_info
 {

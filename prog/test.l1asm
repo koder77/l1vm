@@ -11,26 +11,26 @@ Q, 1, ret
 @, 32, 0
 .dend
 .code
-loada zero, 0, 0
 :main
+loada zero, 0, 0
 loada x, 0, 1
 loada y, 0, 2
 addi 1, 2, 3
 muli 1, 2, 4
 divi 1, 2, 5
 subi 1, 2, 6
-addi 3, 4, 7
-muli 5, 6, 8
-addi 7, 8, 9
-load z, 0, 10
-pullqw 9, 10, 0
-intr0 4, 9, 0, 0
+addi 
+muli 
+addi 
+load z, 0, 7
+pullqw 6, 7, 0
+loada z, 0, 8
+intr0 4, 8, 0, 0
 intr0 7, 0, 0, 0
-movi 1, 9
-intr0 4, 9, 0, 0
+movi 1, 8
+intr0 4, 8, 0, 0
 intr0 7, 0, 0, 0
 stpushi I0
-stpushi I1
 stpushi I2
 stpushi I3
 stpushi I4
@@ -38,14 +38,13 @@ stpushi I5
 stpushi I6
 stpushi I7
 stpushi I8
-stpushi I9
 jsr :test
-loada ret, 0, 10
-stpopi 10
-addi 10, 0, 11
-load z, 0, 12
-pullqw 11, 12, 0
-stpopi I9
+stpopi 1
+load ret, 0, 9
+pullqw 1, 9, 0
+addi 1, 0, 9
+load z, 0, 10
+pullqw 9, 10, 0
 stpopi I8
 stpopi I7
 stpopi I6
@@ -53,18 +52,21 @@ stpopi I5
 stpopi I4
 stpopi I3
 stpopi I2
-stpopi I1
 stpopi I0
-intr0 4, 10, 0, 0
+loada ret, 0, 1
+intr0 4, 1, 0, 0
 intr0 7, 0, 0, 0
-intr0 255, 0, 0, 0
+loada zero, 0, 2
+intr0 255, 2, 0, 0
 rts
 :test
-loada x, 0, 0
-loada y, 0, 1
-muli 0, 1, 2
-load z, 0, 3
-pullqw 2, 3, 0
-stpushi 2
+loada zero, 0, 0
+loada x, 0, 1
+loada y, 0, 2
+muli 1, 2, 3
+load z, 0, 4
+pullqw 3, 4, 0
+loada z, 0, 5
+stpushi 5
 rts
 .cend

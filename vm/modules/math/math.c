@@ -23,7 +23,7 @@
 
 // math functions --------------------------------------
 
-U1 *int2double (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *int2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	U1 err = 0;
 	S8 intval;
@@ -55,7 +55,7 @@ U1 *int2double (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	return (sp);
 }
 
-U1 *double2int (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *double2int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	U1 err = 0;
 	S8 intval;
@@ -83,7 +83,7 @@ U1 *double2int (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	return (sp);
 }
 
-U1 *sqrtdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *sqrtdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	F8 value, returnval;
 
@@ -107,7 +107,7 @@ U1 *sqrtdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	return (sp);
 }
 
-U1 *logdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *logdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	F8 value, returnval;
 
@@ -131,7 +131,7 @@ U1 *logdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	return (sp);
 }
 
-U1 *log2double (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *log2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	F8 value, returnval;
 	F8 m_ln2 = 0.69314718055994530942;

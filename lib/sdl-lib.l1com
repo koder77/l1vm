@@ -18,6 +18,9 @@
     (set string 19 pie_fillstr@sdl "sdl_pie_fill_alpha")
     (set string 17 trigonstr@sdl "sdl_trigon_alpha")
     (set string 22 trigon_fillstr@sdl "sdl_trigon_fill_alpha")
+    (set string 13 font_ttfstr@sdl "sdl_font_ttf")
+    (set string 13 text_ttfstr@sdl "sdl_text_ttf")
+    (set string 19 get_pixelcolorstr@sdl "sdl_get_pixelcolor")
     (set string 11 updatestr@sdl "sdl_update")
     (set int64 1 open@sdl 0)
     (set int64 1 quit@sdl 1)
@@ -34,6 +37,9 @@
     (set int64 1 pie_fill@sdl 12)
     (set int64 1 trigon@sdl 13)
     (set int64 1 trigon_fill@sdl 14)
+    (set int64 1 font_ttf@sdl 15)
+    (set int64 1 text_ttf@sdl 16)
+    (set int64 1 get_pixelcolor@sdl 17)
     (set int64 1 get@sdl 0)
     // call arguments
     (set int64 1 width@sdl 0)
@@ -63,11 +69,22 @@
     (2 mod@sdl trigon@sdl trigonstr@sdladdr intr0)
     (2 mod@sdl trigon_fill@sdl trigon_fillstr@sdladdr intr0)
     (2 mod@sdl update@sdl updatestr@sdladdr intr0)
+    (2 mod@sdl font_ttf@sdl font_ttfstr@sdladdr intr0)
+    (2 mod@sdl text_ttf@sdl text_ttfstr@sdladdr intr0)
+    (2 mod@sdl get_pixelcolor@sdl get_pixelcolorstr@sdladdr intr0)
     // open screen
     (width@sdl stpushi)
     (height@sdl stpushi)
     (bit@sdl stpushb)
     (3 mod@sdl open@sdl 0 intr0)
+(funcend)
+(sdl_font_ttf func)
+    // arguments on stack: fontname (zero terminated), size
+    (3 mod@sdl font_ttf@sdl 0 intr0)
+(funcend)
+(sdl_text_ttf func)
+    // arguments on stack: x, y, r, g, b, text (zero terminated)
+    (3 mod@sdl text_ttf@sdl 0 intr0)
 (funcend)
 (sdl_pixel func)
     // arguments on stack: x, y, r, g, b, alpha
@@ -117,6 +134,11 @@
 (sdl_trigon_fill func)
     // arguments: x1, y1, x2, y2, x3, y3, r, g, b, alpha
     (3 mod@sdl trigon_fill@sdl 0 intr0)
+(funcend)
+(sdl_get_pixelcolor func)
+    // arguments: x, y
+    // return: r, g, b
+    (3 mod@sdl get_pixelcolor@sdl 0 intr0)
 (funcend)
 (sdl_update func)
     (3 mod@sdl update@sdl 0 intr0)

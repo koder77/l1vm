@@ -40,7 +40,7 @@ struct file
 struct file files[MAXFILES];
 
 
-U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     // first argument: U1 filehandle number -> on stack top
     // second argument: U1 access
@@ -150,7 +150,7 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom)
     return (sp);
 }
 
-U1 *file_close (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *file_close (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// first argument: U1 filehandle number -> on stack top
 
@@ -178,7 +178,7 @@ U1 *file_close (U1 *sp, U1 *sp_top, U1 *sp_bottom)
 	return (sp);
 }
 
-U1 *file_seek (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *file_seek (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     // first argument: U1 filehandle number
     // second argument: offset
@@ -251,7 +251,7 @@ U1 *file_seek (U1 *sp, U1 *sp_top, U1 *sp_bottom)
     return (sp);
 }
 
-U1 *file_putc (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *file_putc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     // first argument: U1 filehandle number -> on stack top
     // second argument: U1 byte to write
@@ -304,7 +304,7 @@ U1 *file_putc (U1 *sp, U1 *sp_top, U1 *sp_bottom)
     return (sp);
 }
 
-U1 *file_getc (U1 *sp, U1 *sp_top, U1 *sp_bottom)
+U1 *file_getc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     // first argument: U1 filehandle number -> on stack top
     // return value: char of file

@@ -8,7 +8,7 @@
 	Q, 1, zero
 	@, 8, 0Q
 	Q, 1, maxnum
-	@, 16, 10000Q
+	@, 16, 100000Q
 	Q, 1, offset
 	@, 24, 8Q
 	Q, 1, arrayoffs
@@ -17,7 +17,7 @@
 	@, 40, "l1vm bubble sort demo by Stefan Pietzonke (C) 2017"
 	Q, 1, messageaddr
 	@, 92, 40Q
-	Q, 10000Q, array
+	Q, 100000Q, array
 	@, 100, 0Q
 .dend
 	// code section
@@ -84,8 +84,10 @@
 	loada, maxnum, 0, I0
 :loop
 //	intr0, 4, I40, 0, 0
+//	intr0, 7, 0, 0, 0
 	pushqw, I3, I9, I20
 	intr0, 4, I20, 0, 0
+	intr0, 7, 0, 0, 0
 	addi, I9, I32, I9
 	inclsijmpi, I40, I0, :loop
 	loada, messageaddr, 0, I50

@@ -1,7 +1,7 @@
 // data section
 .data
 	Q, 1, max
-	@, 0, 10Q
+	@, 0, 4Q
 	Q, 1, one
 	@, 8, 1Q
 	Q, 1, messageaddr

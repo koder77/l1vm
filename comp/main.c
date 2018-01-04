@@ -40,7 +40,7 @@ struct ast
 struct ast ast[MAXBRACKETLEVEL];
 S8 ast_level ALIGN;
 
-S8 data_ind = -1;
+S8 data_ind ALIGN = -1;
 
 // assembly text output
 U1 data[MAXLINES][MAXLINELEN];
@@ -383,6 +383,19 @@ S2 getvartype_real (U1 *name)
 	return (ret);
 }
 
+void init_ast (void)
+{
+	S4 i, j;
+	for (i = 0; i < MAXBRACKETLEVEL; i++)
+	{
+		for (j = 0; j <= MAXEXPRESSION; j++)
+		{
+			ast[i].expr_reg[j] = -2;
+			ast[i].expr_type[j] = -2;
+		}
+	}
+}
+
 S2 get_ast (U1 *line)
 {
     S4 slen;
@@ -581,14 +594,27 @@ S2 get_label_pos (U1 *labelname)
 	return (label_index);
 }
 
+U1 *get_variable_value (S8 maxind, U1 *name)
+{
+	S8 i ALIGN;
+
+	for (i = 0; i < maxind; i++)
+	{
+		if (strcmp ((const char *) name, (const char *) data_info[i].name) == 0)
+		{
+			return (data_info[i].value_str);
+		}
+	}
+	return (NULL);		// variable name not found, return empty string
+}
 
 S2 parse_line (U1 *line, S2 start, S2 end)
 {
 	S8 datai ALIGN;
 	F8 datad ALIGN;
-    S4 level, j, last_arg, last_arg_2, t, v, reg, reg2,  target, e;
+    S4 level, j, last_arg, last_arg_2, t, v, reg, reg2,  target, e, exp;
 	U1 ok;
-
+	S8 i ALIGN;
 	U1 str[MAXLINELEN];
 	U1 code_temp[MAXLINELEN];
 
@@ -610,12 +636,13 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 	// walking the AST
 	for (level = ast_level; level >= 0; level--)
 	{
+		printf ("level: %i, expr max: %i\n", level, ast[level].expr_max);
 		if (ast[level].expr_max > -1)
 		{
 			for (j = 0; j <= ast[level].expr_max; j++)
 			{
-				printf ("ast level %i: expression args: %i\n", level, ast[level].expr_args[j]);
-				if (ast[level].expr_args[j] >= 0)
+				printf ("ast level %i:  j: %i, expression args: %i\n", level, j, ast[level].expr_args[j]);
+				if (ast[level].expr_args[j] > -1 )
 				{
 					if (strcmp ((const char *) ast[level].expr[j][0], "set") == 0)
 					{
@@ -713,11 +740,20 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							{
 								if (checkdigit (ast[level].expr[j][4]) != 1)
 								{
-									printf ("error: line %lli: value not a number!\n", linenum);
-									return (1);
+									if (get_variable_value (data_ind, ast[level].expr[j][4]) != 0)
+									{
+										strcpy ((char *) data_info[data_ind].value_str, (const char *) get_variable_value (data_ind, ast[level].expr[j][4]));
+									}
+									else
+									{
+										printf ("error: line %lli: value not a number and not a variable!\n", linenum);
+										return (1);
+									}
 								}
-
-								strcpy ((char *) data_info[data_ind].value_str, (const char *) ast[level].expr[j][4]);
+								else
+								{
+									strcpy ((char *) data_info[data_ind].value_str, (const char *) ast[level].expr[j][4]);
+								}
 							}
 
 							if (data_info[data_ind].type == STRING)
@@ -762,8 +798,38 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							strcpy ((char *) data[data_line], "@, ");
 							sprintf ((char *) str, "%lli", data_info[data_ind].offset);
 							strcat ((char *) data[data_line], (const char *) str);
-							strcat ((char *) data[data_line], ", ");
+							strcat ((char *) data[data_line], "Q, ");
 							strcat ((char *) data[data_line], (const char *) data_info[data_ind].value_str);
+
+							if (ast[level].expr_args[j] > 4)
+							{
+								for (i = 5; i <= ast[level].expr_args[j]; i++)
+								{
+									if ((data_info[data_ind].type >= BYTE && data_info[data_ind].type <= QUADWORD) || data_info[data_ind].type == DOUBLEFLOAT)
+									{
+										if (checkdigit (ast[level].expr[j][i]) != 1)
+										{
+											if (get_variable_value (data_ind, ast[level].expr[j][i]) != 0)
+											{
+												strcpy ((char *) data_info[data_ind].value_str, (const char *) get_variable_value (data_ind, ast[level].expr[j][i]));
+											}
+											else
+											{
+												printf ("error: line %lli: value not a number and not a variable!\n", linenum);
+												return (1);
+											}
+										}
+										else
+										{
+											strcpy ((char *) data_info[data_ind].value_str, (const char *) ast[level].expr[j][i]);
+										}
+									}
+									strcat ((char *) data[data_line], ", ");
+									strcat ((char *) data[data_line], (const char *) data_info[data_ind].value_str);
+								}
+								strcat ((char *) data[data_line], ", ;");
+							}
+
 							strcat ((char *) data[data_line], "\n");
 						}
 						else
@@ -796,8 +862,40 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							strcpy ((char *) data[data_line], "@, ");
 							sprintf ((char *) str, "%lli", data_info[data_ind].offset);
 							strcat ((char *) data[data_line], (const char *) str);
-							strcat ((char *) data[data_line], ", ");
+							strcat ((char *) data[data_line], "Q, ");
 							strcat ((char *) data[data_line], (const char *) data_info[data_ind].value_str);
+
+							printf ("data_line: ast expr args: %lli", ast[level].expr_args[j]);
+
+							if (ast[level].expr_args[j] > 4 && data_info[data_ind].type != STRING)
+							{
+								for (i = 5; i <= ast[level].expr_args[j]; i++)
+								{
+									if ((data_info[data_ind].type >= BYTE && data_info[data_ind].type <= QUADWORD) || data_info[data_ind].type == DOUBLEFLOAT)
+									{
+										if (checkdigit (ast[level].expr[j][i]) != 1)
+										{
+											if (get_variable_value (data_ind, ast[level].expr[j][i]) != 0)
+											{
+												strcpy ((char *) data_info[data_ind].value_str, (const char *) get_variable_value (data_ind, ast[level].expr[j][i]));
+											}
+											else
+											{
+												printf ("error: line %lli: value not a number and not a variable!\n", linenum);
+												return (1);
+											}
+										}
+										else
+										{
+											strcpy ((char *) data_info[data_ind].value_str, (const char *) ast[level].expr[j][i]);
+										}
+									}
+									strcat ((char *) data[data_line], ", ");
+									strcat ((char *) data[data_line], (const char *) data_info[data_ind].value_str);
+								}
+								strcat ((char *) data[data_line], ", ;");
+							}
+
 							strcat ((char *) data[data_line], "\n");
 
 							if (data_info[data_ind].type == STRING)
@@ -849,11 +947,11 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 								strcpy ((char *) data[data_line], "@, ");
 								strcat ((char *) data[data_line], (const char *) str);
-								strcat ((char *) data[data_line], ", ");
+								strcat ((char *) data[data_line], "Q, ");
 
 								sprintf ((char *) str, "%lli", data_info[data_ind - 1].offset);
 								strcat ((char *) data[data_line], (const char *) str);
-								strcat ((char *) data[data_line], "\n");
+								strcat ((char *) data[data_line], "Q\n");
 							}
 						}
 					}
@@ -1836,29 +1934,73 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							if (level < ast_level)
 							{
 								printf ("level < ast_level\n");
-								// use registers from previous operations
+								// use registers from previous operation
 
-								if (last_arg > 1)
-								{
-									for (e = 0; e <= ast[level + 1].expr_max; e = e + 2)
+								// if (last_arg == 1)
+							//	{
+
+
+									printf ("use previous registers\n");
+
+									/*
+									for (e = level; e <= ast_level; e++)
 									{
-										if (ast[level + 1].expr_reg[e] != -1)
+										printf ("level: %i\n", e);
+										for (exp = 0; exp < MAXEXPRESSION; exp++)
 										{
-											sprintf ((char *) str, "%i", ast[level + 1].expr_reg[e]);
-											strcat ((char *) code_temp, (const char *) str);
-											strcat ((char *) code_temp, ", ");
+											printf ("ast exp reg: %i\n", ast[e].expr_reg[exp]);
+										}
+										printf ("\n\n");
+									}
+								*/
 
-											sprintf ((char *) str, "%i", ast[level + 1].expr_reg[e + 1]);
-											strcat ((char *) code_temp, (const char *) str);
-											strcat ((char *) code_temp, ", ");
 
-											if (ast[level + 1].expr_type[e] == INTEGER)
+
+
+
+									e = level + 1;
+									printf ("level: %i\n", e);
+									int found_exp = 0;
+										int found_level = 0;
+										int target_reg = 0;
+										int t;
+										for (exp = 0; exp <= ast[e].expr_max; exp = exp + 2)
+										{
+											// if (ast[e].expr_reg[ast[e].expr_max] != -1)
+											//{
+											printf ("ast exp reg: %i\n", ast[e - 1].expr_reg[exp]);
+
+											if (ast[e].expr_reg[exp] >= 0)
+											{
+												sprintf ((char *) str, "%i", ast[e].expr_reg[exp]);
+												strcat ((char *) code_temp, (const char *) str);
+												strcat ((char *) code_temp, ", ");
+												ast[e].expr_reg[exp] = -1;
+												found_exp++;
+												found_level = e;
+											}
+
+											if (ast[e].expr_reg[exp + 1] >= 0)
+											{
+												sprintf ((char *) str, "%i", ast[e].expr_reg[exp + 1]);
+												strcat ((char *) code_temp, (const char *) str);
+												strcat ((char *) code_temp, ", ");
+												ast[e].expr_reg[exp + 1] = -1;
+											}
+
+											if (found_exp > 0) break;
+											// }
+										}
+
+											if (found_exp > 0)
+											{
+											if (ast[e].expr_type[exp] == INTEGER)
 											{
 												reg = get_free_regi ();
 												set_regi (reg, (U1 *) "temp");
 											}
 
-											if (ast[level + 1].expr_type[e] == DOUBLE)
+											if (ast[e].expr_type[exp] == DOUBLE)
 											{
 												reg = get_free_regd ();
 												set_regd (reg, (U1 *) "temp");
@@ -1868,8 +2010,23 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											strcat ((char *) code_temp, (const char *) str);
 
 											target = reg;
-											ast[level].expr_reg[j] = reg;
-											ast[level].expr_type[j] = ast[level + 1].expr_type[e];
+
+											int t = 0;
+											while (t < MAXEXPRESSION)
+											{
+												if (ast[found_level - 1].expr_reg[t] == -2)
+												{
+													target_reg = t;
+													break;
+												}
+												t++;
+											}
+
+											ast[found_level - 1].expr_reg[target_reg] = reg;
+											ast[found_level - 1].expr_type[target_reg] = ast[e].expr_type[exp];
+
+											ast[e].expr_type[j] = ast[e - 1].expr_type[exp];
+
 											code_line++;
 											if (code_line >= MAXLINES)
 											{
@@ -1882,14 +2039,12 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 											printf ("%s\n", code[code_line]);
 
-											ast[level + 1].expr_reg[e] = -1;
-											ast[level + 1].expr_reg[e + 1] = -1;
 
-											break;
-										}
-									}
+
+												found_exp = 0;
+											}
+
 									continue;
-								}
 							}
 
 							if (opcode[translate[t].assemb_op].args == 1)
@@ -2302,7 +2457,7 @@ S2 write_asm (U1 *name)
 	U1 rbuf[MAXLINELEN + 1];                        /* read-buffer for one line */
 	char *read;
 
-	S8 i;
+	S8 i ALIGN;
 
 	slen = strlen ((const char *) name);
 	U1 ok, err = 0;
@@ -2365,6 +2520,8 @@ int main (int ac, char *av[])
 {
     printf ("l1com <file>\n");
 	printf ("\nCompiler for bra(et, a programming language with brackets ;-)\n");
+
+	init_ast ();
 
     if (ac < 2)
     {
