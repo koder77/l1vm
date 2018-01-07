@@ -428,7 +428,7 @@ S2 load_object (U1 *name)
 	data = (U1 *) calloc (data_mem_size, sizeof (U1));
 	if (data == NULL)
 	{
-		printf ("ERROR: can't allocate %lli bytes for data!\n", data_size);
+		printf ("ERROR: can't allocate %lli bytes for data!\n", data_mem_size);
 		return (1);
 	}
 

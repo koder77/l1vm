@@ -61,6 +61,9 @@ typedef double                  F8;     /* DOUBLE */
 #define TRUE					1
 #define FALSE					0
 
+// data memory bounds checking
+#define MEMCHECK				1 
+
 
 // machine
 #define MAXREG				256			// registers (integer and double float)

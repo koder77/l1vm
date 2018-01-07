@@ -430,6 +430,16 @@ S2 run (void *arg)
 	arg2 = regi[code[ep + 2]];
 	arg3 = code[ep + 3];
 
+    #if MEMCHECK
+    if (arg1 + arg2 < 0 || arg1 + arg2 >= data_size)
+    {
+        printf ("FATAL ERROR: data access out of range!\n");
+        printf ("address: %lli, offset: %lli\n", arg1, arg2);
+        free (jumpoffs);
+        pthread_exit ((void *) 1);
+    }
+    #endif
+
 	regi[arg3] = data[arg1 + arg2];
 
 	eoffs = 4;
@@ -442,6 +452,16 @@ S2 run (void *arg)
 	arg1 = regi[code[ep + 1]];
 	arg2 = regi[code[ep + 2]];
 	arg3 = code[ep + 3];
+
+    #if MEMCHECK
+    if (arg1 + arg2 < 0 || arg1 + arg2 >= data_size)
+    {
+        printf ("FATAL ERROR: data access out of range!\n");
+        printf ("address: %lli, offset: %lli\n", arg1, arg2);
+        free (jumpoffs);
+        pthread_exit ((void *) 1);
+    }
+    #endif
 
 	bptr = (U1 *) &regi[arg3];
 
@@ -459,6 +479,16 @@ S2 run (void *arg)
 	arg1 = regi[code[ep + 1]];
 	arg2 = regi[code[ep + 2]];
 	arg3 = code[ep + 3];
+
+    #if MEMCHECK
+    if (arg1 + arg2 < 0 || arg1 + arg2 >= data_size)
+    {
+        printf ("FATAL ERROR: data access out of range!\n");
+        printf ("address: %lli, offset: %lli\n", arg1, arg2);
+        free (jumpoffs);
+        pthread_exit ((void *) 1);
+    }
+    #endif
 
 	bptr = (U1 *) &regi[arg3];
 
@@ -480,6 +510,16 @@ S2 run (void *arg)
 	arg1 = regi[code[ep + 1]];
 	arg2 = regi[code[ep + 2]];
 	arg3 = code[ep + 3];
+
+    #if MEMCHECK
+    if (arg1 + arg2 < 0 || arg1 + arg2 >= data_size)
+    {
+        printf ("FATAL ERROR: data access out of range!\n");
+        printf ("address: %lli, offset: %lli\n", arg1, arg2);
+        free (jumpoffs);
+        pthread_exit ((void *) 1);
+    }
+    #endif
 
 	//printf ("PUSHQW: ep: %li\n", ep);
 	//printf ("arg1: %li: asm: %li\n", arg1, code[ep + 1]);
@@ -514,6 +554,16 @@ S2 run (void *arg)
 	arg2 = regi[code[ep + 2]];
 	arg3 = code[ep + 3];
 
+    #if MEMCHECK
+    if (arg1 + arg2 < 0 || arg1 + arg2 >= data_size)
+    {
+        printf ("FATAL ERROR: data access out of range!\n");
+        printf ("address: %lli, offset: %lli\n", arg1, arg2);
+        free (jumpoffs);
+        pthread_exit ((void *) 1);
+    }
+    #endif
+
 	bptr = (U1 *) &regd[arg3];
 
 	*bptr = data[arg1 + arg2];
@@ -544,6 +594,16 @@ S2 run (void *arg)
 	arg2 = regi[code[ep + 2]];
 	arg3 = regi[code[ep + 3]];
 
+    #if MEMCHECK
+    if (arg2 + arg3 < 0 || arg2 + arg3 >= data_size)
+    {
+        printf ("FATAL ERROR: data access out of range!\n");
+        printf ("address: %lli, offset: %lli\n", arg2, arg3);
+        free (jumpoffs);
+        pthread_exit ((void *) 1);
+    }
+    #endif
+
 	data[arg2 + arg3] = regi[arg1];
 
 	eoffs = 4;
@@ -556,6 +616,16 @@ S2 run (void *arg)
 	arg1 = code[ep + 1];
 	arg2 = regi[code[ep + 2]];
 	arg3 = regi[code[ep + 3]];
+
+    #if MEMCHECK
+    if (arg2 + arg3 < 0 || arg2 + arg3 >= data_size)
+    {
+        printf ("FATAL ERROR: data access out of range!\n");
+        printf ("address: %lli, offset: %lli\n", arg2, arg3);
+        free (jumpoffs);
+        pthread_exit ((void *) 1);
+    }
+    #endif
 
 	bptr = (U1 *) &regi[arg1];
 
@@ -573,6 +643,16 @@ S2 run (void *arg)
 	arg1 = code[ep + 1];
 	arg2 = regi[code[ep + 2]];
 	arg3 = regi[code[ep + 3]];
+
+    #if MEMCHECK
+    if (arg2 + arg3 < 0 || arg2 + arg3 >= data_size)
+    {
+        printf ("FATAL ERROR: data access out of range!\n");
+        printf ("address: %lli, offset: %lli\n", arg2, arg3);
+        free (jumpoffs);
+        pthread_exit ((void *) 1);
+    }
+    #endif
 
 	bptr = (U1 *) &regi[arg1];
 
@@ -594,6 +674,16 @@ S2 run (void *arg)
 	arg1 = code[ep + 1];
 	arg2 = regi[code[ep + 2]];
 	arg3 = regi[code[ep + 3]];
+
+    #if MEMCHECK
+    if (arg2 + arg3 < 0 || arg2 + arg3 >= data_size)
+    {
+        printf ("FATAL ERROR: data access out of range!\n");
+        printf ("address: %lli, offset: %lli\n", arg2, arg3);
+        free (jumpoffs);
+        pthread_exit ((void *) 1);
+    }
+    #endif
 
 	//printf ("PULLQW\n");
 	//printf ("data: %li\n", arg2);
@@ -627,6 +717,16 @@ S2 run (void *arg)
 	arg1 = code[ep + 1];
 	arg2 = regi[code[ep + 2]];
 	arg3 = regi[code[ep + 3]];
+
+    #if MEMCHECK
+    if (arg2 + arg3 < 0 || arg2 + arg3 >= data_size)
+    {
+        printf ("FATAL ERROR: data access out of range!\n");
+        printf ("address: %lli, offset: %lli\n", arg2, arg3);
+        free (jumpoffs);
+        pthread_exit ((void *) 1);
+    }
+    #endif
 
 	bptr = (U1 *) &regd[arg1];
 
@@ -697,6 +797,13 @@ S2 run (void *arg)
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
+    if (regi[arg2] == 0)
+    {
+        printf ("FATAL ERROR: division by zero!\n");
+		free (jumpoffs);
+		pthread_exit ((void *) 1);
+    }
+
 	regi[arg3] = regi[arg1] / regi[arg2];
 
 	eoffs = 4;
@@ -748,6 +855,13 @@ S2 run (void *arg)
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
+
+    if (regi[arg2] == 0.0)
+    {
+        printf ("FATAL ERROR: division by zero!\n");
+		free (jumpoffs);
+		pthread_exit ((void *) 1);
+    }
 
 	regd[arg3] = regd[arg1] / regd[arg2];
 
