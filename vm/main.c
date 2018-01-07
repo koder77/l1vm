@@ -797,12 +797,14 @@ S2 run (void *arg)
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-    if (regi[arg2] == 0)
+    #if DIVISIONCHECK
+    if (iszero (regi[arg2]))
     {
         printf ("FATAL ERROR: division by zero!\n");
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
     }
+    #endif
 
 	regi[arg3] = regi[arg1] / regi[arg2];
 
@@ -856,12 +858,14 @@ S2 run (void *arg)
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-    if (regi[arg2] == 0.0)
+    #if DIVISIONCHECK
+    if (iszero (regd[arg2]))
     {
         printf ("FATAL ERROR: division by zero!\n");
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
     }
+    #endif
 
 	regd[arg3] = regd[arg1] / regd[arg2];
 

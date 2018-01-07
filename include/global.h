@@ -35,6 +35,8 @@
 #include <pthread.h>
 #include <sched.h>
 
+#include <math.h>
+
 // switch on on Linux
 #define CPU_SET_AFFINITY	1
 
@@ -62,8 +64,10 @@ typedef double                  F8;     /* DOUBLE */
 #define FALSE					0
 
 // data memory bounds checking
-#define MEMCHECK				1 
+#define MEMCHECK				1
 
+// division by zero checking
+#define DIVISIONCHECK 1
 
 // machine
 #define MAXREG				256			// registers (integer and double float)
