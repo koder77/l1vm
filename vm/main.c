@@ -1708,7 +1708,20 @@ S2 run (void *arg)
 			arg2 = code[ep + 2];
 			arg2 = regi[arg2];
 
-			if (cpu_ind >= max_cpu - 1)
+            // search for a free CPU core
+            // if none free found set new_cpu to -1, to indicate all CPU cores are used!!
+            new_cpu = -1;
+            pthread_mutex_lock (&data_mutex);
+            for (i = 0; i < max_cpu; i++)
+            {
+                if (threaddata[i].status == STOP)
+                {
+                    new_cpu = i;
+                    break;
+                }
+            }
+	        pthread_mutex_unlock (&data_mutex);
+			if (new_cpu == -1)
 			{
 				// maximum of CPU cores used, no new core possible
 
@@ -1721,7 +1734,8 @@ S2 run (void *arg)
 			// sp_bottom = threaddata[cpu_core].sp_bottom_thread;
 			// sp = threaddata[cpu_core].sp_thread;
 
-			new_cpu = cpu_ind + 1;
+            // run new CPU core
+            // set threaddata
 
 			printf ("current CPU: %lli, starts new CPU: %lli\n", cpu_core, new_cpu);
 			pthread_mutex_lock (&data_mutex);
@@ -1734,12 +1748,19 @@ S2 run (void *arg)
 			threaddata[new_cpu].sp_thread = threaddata[new_cpu].sp_top_thread - (sp_top - sp);
 			threaddata[new_cpu].ep_startpos = arg2;
 			pthread_mutex_unlock (&data_mutex);
+
+            // create new POSIX thread
+
 			if (pthread_create (&threaddata[new_cpu].id, NULL, (void *) run, (void*) new_cpu) != 0)
 			{
 				printf ("ERROR: can't start new thread!\n");
 				free (jumpoffs);
 				pthread_exit ((void *) 1);
 			}
+
+
+            #if CPU_SET_AFFINITY
+            // LOCK thread to CPU core
 
             CPU_ZERO (&cpuset);
             CPU_SET (new_cpu, &cpuset);
@@ -1748,6 +1769,8 @@ S2 run (void *arg)
             {
                     printf ("ERROR: setting pthread affinity of thread: %lli\n", new_cpu);
             }
+            #endif
+
 			pthread_mutex_lock (&data_mutex);
 			threaddata[new_cpu].status = RUNNING;
 			pthread_mutex_unlock (&data_mutex);
