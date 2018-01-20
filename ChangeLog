@@ -1,0 +1,5 @@
+ L1VM - (0.8)
+ BUGFIX: compiler now sets the right pull opcode, if there is something else to "pull" as a quadint!
+ In global.h file the setting flags are in one place.
+
+ -- Stefan Pietzonke <jay-t@gmx.net>  Sat 20 Jan 2018 15:00 +0100 
