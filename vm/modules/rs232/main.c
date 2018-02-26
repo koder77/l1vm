@@ -30,6 +30,14 @@ U1 *rs232_OpenComport (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 ret ALIGN;
     S8 i ALIGN = 0;
 
+	if (sp == sp_top)
+    {
+        // nothing on stack!! can't pop!!
+
+        printf ("FATAL ERROR: rs232_OpenComport: stack pointer can't pop empty stack!\n");
+        return (NULL);
+    }
+	
     while (*sp != 0)
     {
        if (i < 256)
@@ -39,13 +47,16 @@ U1 *rs232_OpenComport (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
            sp++;
            if (sp == sp_top)
            {
-               printf ("FATAL ERROR: file_open: stack corrupt!\n");
+               printf ("FATAL ERROR: rs232_OpenComport: stack corrupt!\n");
                return (NULL);
            }
        }
     }
-    mode[i] = '\0';        // end of string
+    mode[i] = '\0';   
+    // end of string
 
+    sp++;
+    
     sp = stpopi ((U1 *) &baudrate, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -62,8 +73,14 @@ U1 *rs232_OpenComport (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	printf ("rs232_open_comport: port: %lli, baud: %lli, mode: '%s'\n", portnumber, baudrate, mode);
+	
     ret = RS232_OpenComport (portnumber, baudrate, (const char *) mode);
 
+	// ret = RS232_OpenComport (0, 38400, (const char *) mode);
+	
+	printf ("rs232_open_comport: return value: %lli\n", ret);
+	
     sp = stpushi (ret, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -149,11 +166,13 @@ U1 *rs232_SendByte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     ret = RS232_SendByte (portnumber, byte);
 
+	printf ("rs232_SendByte: %02X, port: %lli\n", byte, portnumber);
+	
     sp = stpushi (ret, sp, sp_bottom);
     if (sp == NULL)
     {
         // error
-        printf ("rs232_PollComport: ERROR: stack corrupt!\n");
+        printf ("rs232_SendByte: ERROR: stack corrupt!\n");
         return (NULL);
     }
 

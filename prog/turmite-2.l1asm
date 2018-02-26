@@ -1,0 +1,147 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, one
+@, 8Q, 1
+Q, 1, two
+@, 16Q, 2
+Q, 1, width
+@, 24Q, 320
+Q, 1, height
+@, 32Q, 240
+Q, 1, bit
+@, 40Q, 32
+Q, 1, sdl_mod
+@, 48Q, 0
+Q, 1, startx
+@, 56Q, 0
+Q, 1, starty
+@, 64Q, 0
+Q, 1, x
+@, 72Q, 0
+Q, 1, y
+@, 80Q, 0
+Q, 1, color_ind
+@, 88Q, 0
+Q, 1, phase_ind
+@, 96Q, 0
+Q, 1, color_r
+@, 104Q, 0
+Q, 1, r
+@, 112Q, 0
+Q, 1, g
+@, 120Q, 0
+Q, 1, b
+@, 128Q, 0
+Q, 1, next_r
+@, 136Q, 0
+Q, 1, next_g
+@, 144Q, 0
+Q, 1, next_b
+@, 152Q, 0
+Q, 1, phase_color
+@, 160Q, 0
+Q, 1, write_color
+@, 168Q, 0
+Q, 1, next_direction
+@, 176Q, 0
+Q, 1, next_phase
+@, 184Q, 0
+Q, 1, i
+@, 192Q, 0
+Q, 1, j
+@, 200Q, 0
+Q, 1, f
+@, 208Q, 0
+Q, 1, c
+@, 216Q, 0
+Q, 1, left
+@, 224Q, 1
+Q, 1, up
+@, 232Q, 2
+Q, 1, right
+@, 240Q, 3
+Q, 1, down
+@, 248Q, 4
+Q, 1, go_left
+@, 256Q, 3
+Q, 1, go_right
+@, 264Q, 1
+Q, 1, go_forward
+@, 272Q, 0
+Q, 1, go_back
+@, 280Q, 2
+Q, 1, black
+@, 288Q, 0
+Q, 1, red
+@, 296Q, 1
+Q, 1, orange
+@, 304Q, 2
+Q, 1, yellow
+@, 312Q, 3
+Q, 1, green
+@, 320Q, 4
+Q, 1, bluegreen
+@, 328Q, 5
+Q, 1, blue
+@, 336Q, 6
+Q, 1, violet
+@, 344Q, 7
+Q, 1, halt
+@, 352Q, 255
+Q, 1, color_address
+@, 360Q, 0
+Q, 1, color_offset
+@, 368Q, 1
+Q, 1, color_max
+@, 376Q, 24
+Q, 1, phase0_address
+@, 384Q, 0
+Q, 1, phase0_offset
+@, 392Q, 0
+Q, 1, phase0_max
+@, 400Q, 0
+Q, 1, delay
+@, 408Q, 10000Q
+Q, 1, phase
+@, 416Q, 0
+Q, 1, direction
+@, 424Q, 0
+B, 5, teststr@sdl
+@, 432Q, "xyz"
+Q, 1, teststr@sdladdr
+@, 437Q, 432Q
+.dend
+.code
+:main
+loada zero, 0, 0
+loada width, 0, 1
+loada two, 0, 2
+divi 1, 2, 3
+load startx, 0, 4
+pullqw 3, 4, 0
+loada startx, 0, 5
+loada one, 0, 6
+subi 5, 6, 7
+load startx, 0, 8
+pullqw 7, 8, 0
+loada height, 0, 5
+divi 5, 2, 9
+load starty, 0, 10
+pullqw 9, 10, 0
+loada starty, 0, 11
+subi 11, 6, 12
+load starty, 0, 13
+pullqw 12, 13, 0
+load direction, 0, 11
+loada down, 0, 14
+pullqw 14, 11, 0
+loada direction, 0, 11
+intr0 4, 11, 0, 0
+intr0 7, 0, 0, 0
+intr0 255, 0, 0, 0
+rts
+:sdl_open_screen
+loada zero, 0, 0
+rts
+.cend

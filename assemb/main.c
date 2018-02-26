@@ -256,8 +256,40 @@ S2 get_args (U1 *line)
 					pos++;
 					while (line[pos] != '"')
 					{
-						args[arg_ind][arg_pos] = line[pos];
-						arg_pos++;
+						if (pos <= slen - 3)
+						{
+							if (line[pos] == '@' && line[pos + 1] == '@' && line[pos + 2] == 'q')
+							{
+								// found quote code, insert it into string
+								args[arg_ind][arg_pos] = '"';
+								arg_pos++;
+								if (arg_pos >= MAXLINELEN)
+								{
+									printf ("error: line %lli: argument too long!\n", linenum);
+									return (1);
+								}
+								pos = pos + 3;
+							}
+							
+							if (line[pos] == '@' && line[pos + 1] == '@' && line[pos + 2] == 'c')
+							{
+								// found comma code, insert it into string
+								args[arg_ind][arg_pos] = ',';
+								arg_pos++;
+								if (arg_pos >= MAXLINELEN)
+								{
+									printf ("error: line %lli: argument too long!\n", linenum);
+									return (1);
+								}
+								pos = pos + 3;
+							}
+						}
+						
+						if (line[pos] != '"')
+						{
+							args[arg_ind][arg_pos] = line[pos];
+							arg_pos++;
+						}
 						if (arg_pos >= MAXLINELEN)
 						{
 							printf ("error: line %lli: argument too long!\n", linenum);
@@ -888,7 +920,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
                 	}
                 	else
                 	{
-                    	printf ("line: %lli DATA STRING: %s\n", linenum, args[2]);
+                    	printf ("line: %lli DATA STRING: '%s'\n", linenum, args[2]);
                     	if (write_data_string (offset, args[2]) != 0)
 						{
 							printf ("error: line %lli: out of data memory!\n", linenum);

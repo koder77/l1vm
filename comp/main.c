@@ -1073,7 +1073,26 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 											printf ("assign value expression\n");
 
-											strcpy ((char *) code_temp, "pullqw ");
+											if (getvartype_real (ast[level].expr[j][last_arg - 1]) == BYTE)
+											{
+												strcpy ((char *) code_temp, "pullb ");
+											}
+											
+											if (getvartype_real (ast[level].expr[j][last_arg - 1]) == WORD)
+											{
+												strcpy ((char *) code_temp, "pullw ");
+											}
+											
+											if (getvartype_real (ast[level].expr[j][last_arg - 1]) == DOUBLEWORD)
+											{
+												strcpy ((char *) code_temp, "pulldw ");
+											}
+											
+											if (getvartype_real (ast[level].expr[j][last_arg - 1]) == QUADWORD)
+											{
+												strcpy ((char *) code_temp, "pullqw ");
+											}
+											
 											sprintf ((char *) str, "%i", target);
 											strcat ((char *) code_temp, (const char *) str);
 											strcat ((char *) code_temp, ", ");
@@ -1159,7 +1178,27 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 													strcat ((char *) code[code_line], "\n");
 												}
 
-												strcpy ((char *) code_temp, "pullqw ");
+										
+												if (getvartype_real (ast[level].expr[j][last_arg - 1]) == BYTE)
+												{
+													strcpy ((char *) code_temp, "pullb ");
+												}
+											
+												if (getvartype_real (ast[level].expr[j][last_arg - 1]) == WORD)
+												{
+													strcpy ((char *) code_temp, "pullw ");
+												}
+											
+												if (getvartype_real (ast[level].expr[j][last_arg - 1]) == DOUBLEWORD)
+												{
+													strcpy ((char *) code_temp, "pulldw ");
+												}
+											
+												if (getvartype_real (ast[level].expr[j][last_arg - 1]) == QUADWORD)
+												{
+													strcpy ((char *) code_temp, "pullqw ");
+												}
+												
 												sprintf ((char *) str, "%i", reg2);
 												strcat ((char *) code_temp, (const char *) str);
 												strcat ((char *) code_temp, ", ");
@@ -1178,7 +1217,26 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												// integer
 												if (last_arg == 1)
 												{
-													strcpy ((char *) code_temp, "pullqw ");
+													if (getvartype_real (ast[level].expr[j][last_arg - 1]) == BYTE)
+													{
+														strcpy ((char *) code_temp, "pullb ");
+													}
+											
+													if (getvartype_real (ast[level].expr[j][last_arg - 1]) == WORD)
+													{
+														strcpy ((char *) code_temp, "pullw ");
+													}
+											
+													if (getvartype_real (ast[level].expr[j][last_arg - 1]) == DOUBLEWORD)
+													{
+														strcpy ((char *) code_temp, "pulldw ");
+													}
+											
+													if (getvartype_real (ast[level].expr[j][last_arg - 1]) == QUADWORD)
+													{
+														strcpy ((char *) code_temp, "pullqw ");
+													}
+													
 													sprintf ((char *) str, "%i", target);
 													strcat ((char *) code_temp, (const char *) str);
 													strcat ((char *) code_temp, ", ");
@@ -1215,7 +1273,26 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 														target = reg2;
 													}
 
-													strcpy ((char *) code_temp, "pullqw ");
+													if (getvartype_real (ast[level].expr[j][last_arg - 1]) == BYTE)
+													{
+														strcpy ((char *) code_temp, "pullb ");
+													}
+											
+													if (getvartype_real (ast[level].expr[j][last_arg - 1]) == WORD)
+													{
+														strcpy ((char *) code_temp, "pullw ");
+													}
+											
+													if (getvartype_real (ast[level].expr[j][last_arg - 1]) == DOUBLEWORD)
+													{
+														strcpy ((char *) code_temp, "pulldw ");
+													}
+											
+													if (getvartype_real (ast[level].expr[j][last_arg - 1]) == QUADWORD)
+													{
+														strcpy ((char *) code_temp, "pullqw ");
+													}		
+													
 													sprintf ((char *) str, "%i", target);
 													strcat ((char *) code_temp, (const char *) str);
 													strcat ((char *) code_temp, ", ");

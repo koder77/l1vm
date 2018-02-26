@@ -3,7 +3,7 @@
 *
 * Author: Teunis van Beelen
 *
-* Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
+* Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017 Teunis van Beelen
 *
 * Email: teuniz@gmail.com
 *
@@ -26,7 +26,7 @@
 */
 
 
-/* Last revision: December 19, 2015 */
+/* Last revision: November 22, 2017 */
 
 /* For more info and how to use this library, visit: http://www.teuniz.net/RS-232/ */
 
@@ -34,17 +34,18 @@
 #include "rs232.h"
 
 
-
 #if defined(__linux__) || defined(__FreeBSD__)   /* Linux & FreeBSD */
 
+#define RS232_PORTNR  38
 
-int Cport[38],
+
+static int Cport[RS232_PORTNR],
     error;
 
-struct termios new_port_settings,
-       old_port_settings[38];
+static struct termios new_port_settings,
+       old_port_settings[RS232_PORTNR];
 
-char comports[38][16]={"/dev/ttyS0","/dev/ttyS1","/dev/ttyS2","/dev/ttyS3","/dev/ttyS4","/dev/ttyS5",
+static char *comports[RS232_PORTNR]={"/dev/ttyS0","/dev/ttyS1","/dev/ttyS2","/dev/ttyS3","/dev/ttyS4","/dev/ttyS5",
                        "/dev/ttyS6","/dev/ttyS7","/dev/ttyS8","/dev/ttyS9","/dev/ttyS10","/dev/ttyS11",
                        "/dev/ttyS12","/dev/ttyS13","/dev/ttyS14","/dev/ttyS15","/dev/ttyUSB0",
                        "/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3","/dev/ttyUSB4","/dev/ttyUSB5",
@@ -58,7 +59,7 @@ int RS232_OpenComport(int comport_number, int baudrate, const char *mode)
   int baudr,
       status;
 
-  if((comport_number>37)||(comport_number<0))
+  if((comport_number>=RS232_PORTNR)||(comport_number<0))
   {
     printf("illegal comport number\n");
     return(1);
@@ -208,10 +209,12 @@ http://man7.org/linux/man-pages/man3/termios.3.html
     return(1);
   }
 
+ 
   error = tcgetattr(Cport[comport_number], old_port_settings + comport_number);
   if(error==-1)
   {
     close(Cport[comport_number]);
+    flock(Cport[comport_number], LOCK_UN);  /* free the port so that others can use it. */
     perror("unable to read portsettings ");
     return(1);
   }
@@ -230,13 +233,19 @@ http://man7.org/linux/man-pages/man3/termios.3.html
   error = tcsetattr(Cport[comport_number], TCSANOW, &new_port_settings);
   if(error==-1)
   {
+    tcsetattr(Cport[comport_number], TCSANOW, old_port_settings + comport_number);
     close(Cport[comport_number]);
+    flock(Cport[comport_number], LOCK_UN);  /* free the port so that others can use it. */
     perror("unable to adjust portsettings ");
     return(1);
   }
+  
+/* http://man7.org/linux/man-pages/man4/tty_ioctl.4.html */
 
   if(ioctl(Cport[comport_number], TIOCMGET, &status) == -1)
   {
+    tcsetattr(Cport[comport_number], TCSANOW, old_port_settings + comport_number);
+    flock(Cport[comport_number], LOCK_UN);  /* free the port so that others can use it. */
     perror("unable to get portstatus");
     return(1);
   }
@@ -246,6 +255,8 @@ http://man7.org/linux/man-pages/man3/termios.3.html
 
   if(ioctl(Cport[comport_number], TIOCMSET, &status) == -1)
   {
+    tcsetattr(Cport[comport_number], TCSANOW, old_port_settings + comport_number);
+    flock(Cport[comport_number], LOCK_UN);  /* free the port so that others can use it. */
     perror("unable to set portstatus");
     return(1);
   }
@@ -260,16 +271,29 @@ int RS232_PollComport(int comport_number, unsigned char *buf, int size)
 
   n = read(Cport[comport_number], buf, size);
 
+  if(n < 0)
+  {
+    if(errno == EAGAIN)  return 0;
+  }
+
   return(n);
 }
 
 
 int RS232_SendByte(int comport_number, unsigned char byte)
 {
-  int n;
-
-  n = write(Cport[comport_number], &byte, 1);
-  if(n<0)  return(1);
+  int n = write(Cport[comport_number], &byte, 1);
+  if(n < 0)
+  {
+    if(errno == EAGAIN)
+    {
+      return 0;
+    }
+    else
+    {
+      return 1;
+    }
+  }
 
   return(0);
 }
@@ -277,7 +301,20 @@ int RS232_SendByte(int comport_number, unsigned char byte)
 
 int RS232_SendBuf(int comport_number, unsigned char *buf, int size)
 {
-  return(write(Cport[comport_number], buf, size));
+  int n = write(Cport[comport_number], buf, size);
+  if(n < 0)
+  {
+    if(errno == EAGAIN)
+    {
+      return 0;
+    }
+    else
+    {
+      return -1;
+    }
+  }
+
+  return(n);
 }
 
 
@@ -301,7 +338,7 @@ void RS232_CloseComport(int comport_number)
   tcsetattr(Cport[comport_number], TCSANOW, old_port_settings + comport_number);
   close(Cport[comport_number]);
 
-  flock(Cport[comport_number], LOCK_UN); /* free the port so that others can use it. */
+  flock(Cport[comport_number], LOCK_UN);  /* free the port so that others can use it. */
 }
 
 /*
@@ -444,23 +481,24 @@ void RS232_flushRXTX(int comport_number)
 }
 
 
-#else         /* windows */
+#else  /* windows */
+
+#define RS232_PORTNR  16
+
+HANDLE Cport[RS232_PORTNR];
 
 
-HANDLE Cport[16];
-
-
-char comports[16][10]={"\\\\.\\COM1",  "\\\\.\\COM2",  "\\\\.\\COM3",  "\\\\.\\COM4",
-                       "\\\\.\\COM5",  "\\\\.\\COM6",  "\\\\.\\COM7",  "\\\\.\\COM8",
-                       "\\\\.\\COM9",  "\\\\.\\COM10", "\\\\.\\COM11", "\\\\.\\COM12",
-                       "\\\\.\\COM13", "\\\\.\\COM14", "\\\\.\\COM15", "\\\\.\\COM16"};
+char *comports[RS232_PORTNR]={"\\\\.\\COM1",  "\\\\.\\COM2",  "\\\\.\\COM3",  "\\\\.\\COM4",
+                              "\\\\.\\COM5",  "\\\\.\\COM6",  "\\\\.\\COM7",  "\\\\.\\COM8",
+                              "\\\\.\\COM9",  "\\\\.\\COM10", "\\\\.\\COM11", "\\\\.\\COM12",
+                              "\\\\.\\COM13", "\\\\.\\COM14", "\\\\.\\COM15", "\\\\.\\COM16"};
 
 char mode_str[128];
 
 
 int RS232_OpenComport(int comport_number, int baudrate, const char *mode)
 {
-  if((comport_number>15)||(comport_number<0))
+  if((comport_number>=RS232_PORTNR)||(comport_number<0))
   {
     printf("illegal comport number\n");
     return(1);
@@ -743,5 +781,41 @@ void RS232_cputs(int comport_number, const char *text)  /* sends a string to ser
 {
   while(*text != 0)   RS232_SendByte(comport_number, *(text++));
 }
+
+
+/* return index in comports matching to device name or -1 if not found */
+int RS232_GetPortnr(const char *devname)
+{
+  int i;
+
+  char str[32];
+
+#if defined(__linux__) || defined(__FreeBSD__)   /* Linux & FreeBSD */
+  strcpy(str, "/dev/");
+#else  /* windows */
+  strcpy(str, "\\\\.\\");
+#endif
+  strncat(str, devname, 16);
+  str[31] = 0;
+
+  for(i=0; i<RS232_PORTNR; i++)
+  {
+    if(!strcmp(comports[i], str))
+    {
+      return i;
+    }
+  }
+
+  return -1;  /* device not found */
+}
+
+
+
+
+
+
+
+
+
 
 

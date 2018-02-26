@@ -1,8 +1,5 @@
-L1VM README  2018-01-05
+L1VM README  2018-01-22
 =======================
-
-YES! I AM BACK! ;)
-
 L1VM is a very tiny virtual machine with RISC (or comparable style) CPU, about 60 opcodes and less than
 32 KB binary size on X86_64!
 The VM has a 64 bit core (256 registers for integer and double float) and can run object code
@@ -10,12 +7,7 @@ written in the l1asm assembly language.
 
 Code and data are in separated memories for a secure execution. Like in Harvard type CPUs (found now in DSPs or microcontrollers).
 The opcode set with 60 opcodes is my own opinion how things should work. It does not "copy" other instruction sets known in
-other "real" CPUs. It is a "cleanroom" reboot of a CPU.
-
-Why I am back? I did read the news and I was shocked what happened to the real CPUs out there:
-Intel, AMD and also ARM are fighting with bigger security breaks. You may already heard about it...
-
-I think what we really need would be a "press the reboot button" and design a new hardware CPU with security in mind this time...
+other "real" CPUs.
 
 The design goals are:
 - be small
@@ -26,17 +18,38 @@ The design goals are:
 L1VM ist under active development. As a proof of concept I rewrote the Nano VM fractalix SDL graphics demo in L1VM
 assembly.
 
-I try to write a compiler for a higher level language. This is not a simple task, but maybe
-it is worth the time invested...
+L1VM is 6 - 7 times faster than Nano VM, this comes from the much simpler design and dispatch speedup.
 
 I included a few demo programs.
 
 The source code is released under the GPL.
 
+A simple "Hello world!" in bra(et (bracket) my language for L1VM:
+
+// hello.l1com
+(main func)
+	(set int64 1 zero 0)
+	(set string 13 hello "Hello world!")
+	// print string
+	(6 hello 0 0 intr0)
+	// print newline
+	(7 0 0 0 intr0)
+	(255 zero 0 0 intr0)
+(funcend)
+
 
 Modules
 =======
 The VM modules should be installed into "/usr/local/lib".
+
+file - file module
+math - some math functions
+gpio - Raspberry Pi GPIO module
+rs232 - serial port module
+sdl - graphics primitves module, like pixels, lines...
+net - TCP/IP sockets module
+
+I will update the modules with more functions later...
 
 
 NOTE
@@ -77,5 +90,3 @@ $ l1vm test
 finally executes program "test.l1obj"
 
 ==========================================================================
-
-for Rebecca

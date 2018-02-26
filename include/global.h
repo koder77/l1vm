@@ -49,7 +49,7 @@ typedef long long               S8;     /* 64 bit long */
 typedef double                  F8;     /* DOUBLE */
 
 
-//#define DEBUG					1
+ // #define DEBUG					1
 
 //#define M_ARM	1
 
@@ -67,7 +67,7 @@ typedef double                  F8;     /* DOUBLE */
 #define MEMCHECK				1
 
 // division by zero checking
-#define DIVISIONCHECK 1
+//#define DIVISIONCHECK 1
 
 // machine
 #define MAXREG				256			// registers (integer and double float)
@@ -103,8 +103,7 @@ typedef double                  F8;     /* DOUBLE */
 
 
 
-#define MAXCPUCORES		4		// threads that can be runned
-
+#define MAXCPUCORES		4		// threads that can be runned (0) = autoconfig at runtime
 #define RUNNING			1
 #define STOP			0
 
@@ -119,11 +118,14 @@ typedef double                  F8;     /* DOUBLE */
 
 
 // ERROR codes returned by VM
-#define ERR_FILE_EOF	1
-#define ERR_FILE_OPEN	2
-#define ERR_FILE_WRITE	3
-#define ERR_WRONG_POS	4
-#define ERR_OK			0
+#define ERR_FILE_OK         0
+#define ERR_FILE_OPEN       1
+#define ERR_FILE_CLOSE      2
+#define ERR_FILE_READ       3
+#define ERR_FILE_WRITE      4
+#define ERR_FILE_NUMBER     5
+#define ERR_FILE_EOF        6
+#define ERR_FILE_FPOS       7
 
 
 struct threaddata

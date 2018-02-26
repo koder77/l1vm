@@ -12,9 +12,9 @@
 	Q, 1, three
 	@, 24, 3Q
 	Q, 1, width
-	@, 32, 1200Q
+	@, 32, 600Q
 	Q, 1, height
-	@, 40, 800Q
+	@, 40, 400Q
 	Q, 1, maxcol
 	@, 48, 255Q
 	Q, 1, sdlmoduleaddr

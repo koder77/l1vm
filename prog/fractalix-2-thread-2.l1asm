@@ -91,16 +91,16 @@
 // code section
 .code
 	loada zero, 0, I0
-	loada one, 0, I1
+	loada one, 0, 1
 	loada two, 0, I2
 	loada three, 0, I3
 // load math module
-	loada mathmoduleaddr, 0, I15
+	loada mathmoduleaddr, 0, 15
 	loada int2doubleaddr, 0, I16
 	loada logaddr, 0, I17
 	loada, sqrtaddr, 0, I18
 	loada, double2intaddr, 0, I19
-	intr0, 0, I15, I1, 0
+	intr0, 0, 15, 1, 0
 // set functions
 	intr0, 2, I1, I0, I16
 	intr0, 2, I1, I1, I17

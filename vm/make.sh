@@ -1,3 +1,3 @@
 #!/bin/sh
 
-clang-4.0 main.c load-object.c -o l1vm -ldl -lpthread -O3 -fomit-frame-pointer -funit-at-a-time -s -march=native -Wl,--export-dynamic
+clang-3.9 main.c load-object.c -o l1vm -ldl -lpthread -Os -fomit-frame-pointer -funit-at-a-time -s -Wl,--export-dynamic

@@ -1,0 +1,111 @@
+.data
+Q, 1, zero
+@, 0, 0
+Q, 1, x
+@, 8, 23
+Q, 1, y
+@, 16, 42
+Q, 1, z
+@, 24, 0
+Q, 1, ret
+@, 32, 0
+.dend
+.code
+:main
+loada zero, 0, 0
+loada x, 0, 1
+loada y, 0, 2
+addi 1, 2, 3
+muli 1, 2, 4
+divi 1, 2, 5
+subi 1, 2, 6
+addi 1, 2, 7
+muli 1, 2, 8
+divi 1, 2, 9
+subi 1, 2, 10
+addi 3, 4, 11
+muli 5, 6, 12
+addi 7, 8, 13
+muli 9, 10, 14
+addi 11, 12, 15
+addi 13, 14, 16
+addi 15, 16, 17
+load z, 0, 18
+pullqw 17, 18, 0
+load ret, 0, 19
+pullqw 17, 19, 0
+loada z, 0, 20
+intr0 4, 20, 0, 0
+intr0 7, 0, 0, 0
+loada ret, 0, 21
+intr0 4, 21, 0, 0
+intr0 7, 0, 0, 0
+movi 1, 20
+intr0 4, 20, 0, 0
+intr0 7, 0, 0, 0
+stpushi I0
+stpushi I2
+stpushi I3
+stpushi I4
+stpushi I5
+stpushi I6
+stpushi I7
+stpushi I8
+stpushi I9
+stpushi I10
+stpushi I11
+stpushi I12
+stpushi I13
+stpushi I14
+stpushi I15
+stpushi I16
+stpushi I17
+stpushi I18
+stpushi I19
+stpushi I20
+stpushi I21
+jsr :test
+stpopi 21
+load ret, 0, 1
+pullqw 21, 1, 0
+addi 21, 0, 1
+load z, 0, 22
+pullqw 1, 22, 0
+stpopi I21
+stpopi I20
+stpopi I19
+stpopi I18
+stpopi I17
+stpopi I16
+stpopi I15
+stpopi I14
+stpopi I13
+stpopi I12
+stpopi I11
+stpopi I10
+stpopi I9
+stpopi I8
+stpopi I7
+stpopi I6
+stpopi I5
+stpopi I4
+stpopi I3
+stpopi I2
+stpopi I0
+loada z, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+loada zero, 0, 2
+intr0 255, 2, 0, 0
+rts
+:test
+loada zero, 0, 0
+loada x, 0, 1
+loada y, 0, 2
+muli 1, 2, 3
+load z, 0, 4
+pullqw 3, 4, 0
+loada z, 0, 5
+stpushi 5
+rts
+.cend

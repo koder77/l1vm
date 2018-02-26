@@ -1,2 +1,2 @@
 #!/bin/sh
-clang-4.0 main.c file.c checkd.c -o l1asm -g
+clang-3.9 main.c file.c checkd.c -o l1asm -g

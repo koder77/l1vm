@@ -25,7 +25,9 @@ U1 checkdigit (U1 *str)
 {
     U1 binarystr[MAXLINELEN];
 	S2 i, j, b, str_len;
-    U1 ok = FALSE, check;
+    U1 ok = FALSE, check = FALSE;
+    U1 check_float = 0;
+    U1 number = 0;
 
     str_len = strlen ((const char *) str);
     t_var.digitstr_type = UNKNOWN;
@@ -33,12 +35,31 @@ U1 checkdigit (U1 *str)
 
     for (i = 0; i <= str_len - 1; i++)
     {
+        if ((str[i] >= '0' && str[i] <= '9') || (str[i] >= 'A' && str[i] <= 'F') || (str[i] == '-' || str[i] == '+' || str[i] == ' ' || str[i] == '.') || str[i] == 'I' || str[i] == 'F' || str[i] == 'W' || str[i] == 'D' || str[i] == 'Q' || str[i] == 'B' || str[i] == '&'|| str[i] == '$' )
+        {
+            number = 1;
+        }
+        else
+        {
+            number = 0;
+            break;
+        }
         if (str[i] == '.')
         {
-            t_var.digitstr_type = DOUBLEFLOAT;
+            check_float++;
         }
     }
+    // if more than one dot found then it maybe some kind of IP string!!!
+    if (check_float == 1)
+    {
+        t_var.digitstr_type = DOUBLEFLOAT;
+    }
 
+    if (number == 0)
+    {
+        return (FALSE);
+    }
+    
     if (t_var.digitstr_type == UNKNOWN)
     {
         /* INT, LINT, QINT or BYTE */
@@ -195,7 +216,7 @@ U1 checkdigit (U1 *str)
 
 		strcpy ((char *) t_var.digitstr, (const char *) binarystr);
 	}
-		
+
     return (check);
 }
 

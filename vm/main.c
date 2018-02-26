@@ -54,6 +54,7 @@ S8 data_ind ALIGN;
 S8 modules_ind ALIGN = -1;    // no module loaded = -1
 
 S8 cpu_ind ALIGN = 0;
+
 S8 max_cpu ALIGN = MAXCPUCORES;    // number of threads that can be runned
 
 typedef U1* (*dll_func)(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
@@ -406,7 +407,7 @@ S2 run (void *arg)
 		regd[i] = 0.0;
 	}
 
-	printf ("l1vm\nready...\n");
+	printf ("ready...\n");
 	printf ("modules loaded: %lli\n", modules_ind + 1);
 	printf ("CPU %lli ready\n", cpu_ind);
 	printf ("codesize: %lli\n", code_size);
@@ -1607,6 +1608,9 @@ S2 run (void *arg)
 			printf ("DELAY\n");
 			arg2 = code[ep + 2];
 			usleep (regi[arg2] * 1000);
+			#if DEBUG
+				printf ("delay: %lli\n", regi[arg2]);
+			#endif
 			eoffs = 5;
 			break;
 
@@ -1682,6 +1686,13 @@ S2 run (void *arg)
 			eoffs = 5;
 			break;
 
+        case 15:
+            // return number of CPU cores available
+            arg2 = code[ep + 2];
+            regi[arg2] = max_cpu;
+            eoffs = 5;
+            break;
+            
 		case 255:
 			printf ("EXIT\n");
 			arg2 = code[ep + 2];
@@ -1708,7 +1719,20 @@ S2 run (void *arg)
 			arg2 = code[ep + 2];
 			arg2 = regi[arg2];
 
-			if (cpu_ind >= max_cpu - 1)
+            // search for a free CPU core
+            // if none free found set new_cpu to -1, to indicate all CPU cores are used!!
+            new_cpu = -1;
+            pthread_mutex_lock (&data_mutex);
+            for (i = 0; i < max_cpu; i++)
+            {
+                if (threaddata[i].status == STOP)
+                {
+                    new_cpu = i;
+                    break;
+                }
+            }
+	        pthread_mutex_unlock (&data_mutex);
+			if (new_cpu == -1)
 			{
 				// maximum of CPU cores used, no new core possible
 
@@ -1721,7 +1745,8 @@ S2 run (void *arg)
 			// sp_bottom = threaddata[cpu_core].sp_bottom_thread;
 			// sp = threaddata[cpu_core].sp_thread;
 
-			new_cpu = cpu_ind + 1;
+            // run new CPU core
+            // set threaddata
 
 			printf ("current CPU: %lli, starts new CPU: %lli\n", cpu_core, new_cpu);
 			pthread_mutex_lock (&data_mutex);
@@ -1734,12 +1759,19 @@ S2 run (void *arg)
 			threaddata[new_cpu].sp_thread = threaddata[new_cpu].sp_top_thread - (sp_top - sp);
 			threaddata[new_cpu].ep_startpos = arg2;
 			pthread_mutex_unlock (&data_mutex);
+
+            // create new POSIX thread
+
 			if (pthread_create (&threaddata[new_cpu].id, NULL, (void *) run, (void*) new_cpu) != 0)
 			{
 				printf ("ERROR: can't start new thread!\n");
 				free (jumpoffs);
 				pthread_exit ((void *) 1);
 			}
+
+
+            #if CPU_SET_AFFINITY
+            // LOCK thread to CPU core
 
             CPU_ZERO (&cpuset);
             CPU_SET (new_cpu, &cpuset);
@@ -1748,6 +1780,8 @@ S2 run (void *arg)
             {
                     printf ("ERROR: setting pthread affinity of thread: %lli\n", new_cpu);
             }
+            #endif
+
 			pthread_mutex_lock (&data_mutex);
 			threaddata[new_cpu].status = RUNNING;
 			pthread_mutex_unlock (&data_mutex);
@@ -1794,6 +1828,23 @@ S2 run (void *arg)
 			pthread_mutex_unlock (&data_mutex);
 			eoffs = 5;
 			break;
+			
+		case 4:
+			// return number of current CPU core
+			arg2 = code[ep + 2];
+			regi[arg2] = cpu_core;
+		
+			eoffs = 5;
+			break;
+				
+		case 255:
+			printf ("thread EXIT\n");
+			arg2 = code[ep + 2];
+			retcode = regi[arg2];
+			pthread_mutex_lock (&data_mutex);
+			threaddata[cpu_core].status = STOP;
+			pthread_mutex_unlock (&data_mutex);
+			pthread_exit ((void *) retcode);
 	}
 	EXE_NEXT();
 
@@ -2057,6 +2108,15 @@ int main (int ac, char *av[])
 
 	S8 new_cpu ALIGN;
 
+    printf ("l1vm - 0.8.1-2\n");
+    
+#if MAXCPUCORES == 0
+    max_cpu = sysconf (_SC_NPROCESSORS_ONLN);
+    printf ("CPU cores: %lli (autoconfig)\n", max_cpu);
+#else
+    printf ("CPU cores: %lli (STATIC)\n", max_cpu);
+#endif
+    
     if (ac > 1)
     {
         for (i = 2; i < ac; i++)
