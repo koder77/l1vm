@@ -37,8 +37,31 @@
 
 #include <math.h>
 
-// switch on on Linux
-#define CPU_SET_AFFINITY	1
+
+// SETTINGS START HERE ========================================================
+
+#define MACHINE_BIG_ENDIAN      0       // endianess of host machine
+
+// settings for multi threading
+#define MAXCPUCORES				4		// threads that can be runned at a time
+
+// switch on, on Linux to LOCK a thread to CPU core
+#define CPU_SET_AFFINITY		1
+
+// debug prints ON/OFF
+//#define DEBUG					1
+
+// set to on for 64 bit data alignment (Android ARM)
+//#define M_ARM					1
+
+// CHECKS ON/OFF --------------------------------------------------------------
+// data memory bounds checking
+#define MEMCHECK				1
+
+// division by zero checking ON/OFF
+#define DIVISIONCHECK 			1
+
+// SETTINGS END HERE ==========================================================
 
 typedef unsigned char           U1;		/* UBYTE   */
 typedef int16_t                 S2;     /* INT     */
@@ -49,10 +72,13 @@ typedef long long               S8;     /* 64 bit long */
 typedef double                  F8;     /* DOUBLE */
 
 
+<<<<<<< HEAD
  // #define DEBUG					1
 
 //#define M_ARM	1
 
+=======
+>>>>>>> 4e4789084f4b17f5ecd31fd10090b6dcc81f071e
 /* set alignment for Android ARM */
 #if M_ARM
 #define ALIGN		__attribute__ ((aligned(8)))
@@ -63,16 +89,18 @@ typedef double                  F8;     /* DOUBLE */
 #define TRUE					1
 #define FALSE					0
 
+<<<<<<< HEAD
 // data memory bounds checking
 #define MEMCHECK				1
 
 // division by zero checking
 //#define DIVISIONCHECK 1
+=======
+>>>>>>> 4e4789084f4b17f5ecd31fd10090b6dcc81f071e
 
 // machine
 #define MAXREG				256			// registers (integer and double float)
 
-#define MACHINE_BIG_ENDIAN      0       // endianess of host machine
 
 #define MAXLINELEN      512
 #define MAXARGS         64
@@ -103,7 +131,10 @@ typedef double                  F8;     /* DOUBLE */
 
 
 
+<<<<<<< HEAD
 #define MAXCPUCORES		4		// threads that can be runned (0) = autoconfig at runtime
+=======
+>>>>>>> 4e4789084f4b17f5ecd31fd10090b6dcc81f071e
 #define RUNNING			1
 #define STOP			0
 

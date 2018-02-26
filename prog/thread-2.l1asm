@@ -6,10 +6,12 @@
 	@, 8, 1Q
 	Q, 1, zero
 	@, 16, 0Q
+	Q, 1, delay
+	@, 24, 10Q
 	Q, 1, messageaddr
-	@, 24, 32Q
+	@, 32, 40Q
 	B, 256, message
-	@, 32, ""
+	@, 40, ""
 .dend
 // code section
 .code
@@ -23,9 +25,11 @@
 	// get argumnet string
 	loada, messageaddr, 0, I50
 	intr0, 13, I11, I50, 0
+	loada delay, 0, I30
 :loop
 	loadl, :print, I10
 	intr1, 0, I10, 0, 0
+	intr0 8, I30, 0, 0
 	inclsijmpi, I0, I1, :loop
 	// join threads
 	intr1, 1, 0, 0, 0
