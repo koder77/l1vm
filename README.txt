@@ -7,11 +7,7 @@ written in the l1asm assembly language.
 
 Code and data are in separated memories for a secure execution. Like in Harvard type CPUs (found now in DSPs or microcontrollers).
 The opcode set with 60 opcodes is my own opinion how things should work. It does not "copy" other instruction sets known in
-<<<<<<< HEAD
 other "real" CPUs.
-=======
-other "real" CPUs. It is a "cleanroom" reboot of a CPU.
->>>>>>> 4e4789084f4b17f5ecd31fd10090b6dcc81f071e
 
 The design goals are:
 - be small
@@ -22,11 +18,8 @@ The design goals are:
 L1VM ist under active development. As a proof of concept I rewrote the Nano VM fractalix SDL graphics demo in L1VM
 assembly.
 
-<<<<<<< HEAD
 L1VM is 6 - 7 times faster than Nano VM, this comes from the much simpler design and dispatch speedup.
 
-=======
->>>>>>> 4e4789084f4b17f5ecd31fd10090b6dcc81f071e
 I included a few demo programs.
 
 The source code is released under the GPL.
