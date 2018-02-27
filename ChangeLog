@@ -1,5 +1,13 @@
- L1VM - (0.8)
- BUGFIX: compiler now sets the right pull opcode, if there is something else to "pull" as a quadint!
- In global.h file the setting flags are in one place.
+L1VM - (0.8.1-2)
+New: net library for TCP/IP socket access.
+In the global.h include the number of CPU cores can be set to zero for autoconfig at runtime.
+Bugfixes in checkd.c number parsing code. Now strings with a "." are not parsed as double float numbers.
 
- -- Stefan Pietzonke <jay-t@gmx.net>  Sat 20 Jan 2018 15:00 +0100 
+-- Stefan Pietzonke <jay-t@gmx.net>  Tue 27 Feb 2018 09:30 +0100
+
+
+L1VM - (0.8)
+BUGFIX: compiler now sets the right pull opcode, if there is something else to "pull" as a quadint!
+In global.h file the setting flags are in one place.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Sat 20 Jan 2018 15:00 +0100 
