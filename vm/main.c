@@ -2108,7 +2108,7 @@ int main (int ac, char *av[])
 
 	S8 new_cpu ALIGN;
 
-    printf ("l1vm - 0.8.1-2\n");
+    printf ("l1vm - 0.8.1-3\n");
     
 #if MAXCPUCORES == 0
     max_cpu = sysconf (_SC_NPROCESSORS_ONLN);

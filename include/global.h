@@ -103,7 +103,7 @@ typedef double                  F8;     /* DOUBLE */
 
 
 
-#define MAXCPUCORES		4		// threads that can be runned
+#define MAXCPUCORES	    5		// threads that can be runned
 
 #define RUNNING			1
 #define STOP			0
