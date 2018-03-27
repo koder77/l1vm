@@ -27,7 +27,12 @@
 #include <ctype.h>
 #include <errno.h>
 #include <string.h>
+#if __linux__
 #include <dlfcn.h>
+#endif
+#if _WIN32
+#include <Windows.h>
+#endif
 #include <inttypes.h>
 #include <unistd.h>
 #include <sys/time.h>
