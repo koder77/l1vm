@@ -33,13 +33,15 @@
 	pullqw, I2, I3, I30
 	subi, I2, I4, I2
 	addi, I30, I32, I30
-//	intr0, 4, I2, 0, 0
+	intr0, 4, I2, 0, 0
+	intr0, 7, 0, 0, 0
 	inclsijmpi, I1, I0, :initarray
 	// sort
 	// run sort loop as long as I10 = 0
 	loada, maxnum, 0, I41
 	loada, i, 0, I1
 	subi, I41, I1, I41
+	intr0 7, 0, 0, 0
 :start-sort
 //	intr0, 4, I41, 0, 0
 	loada, zero, 0, I10
@@ -73,7 +75,7 @@
 	loada, zero, 0, I9
 	neqi, I10, I9, I20
 	jmpi, I20, :start-sort
-	// print sorted array
+// print sorted array
 	loada, zero, 0, I9
 	loada, arrayoffs, 0, I3
 	loada, zero, 0, I40
@@ -82,10 +84,11 @@
 //	intr0, 4, I40, 0, 0
 	pushqw, I3, I9, I20
 	intr0, 4, I20, 0, 0
+	intr0, 7, 0, 0, 0
 	addi, I9, I32, I9
 	inclsijmpi, I40, I0, :loop
 	loada, messageaddr, 0, I50
 	intr0, 6, I50, 0, 0
 	intr0, 7, 0, 0, 0
-	intr0, 8, 0, 0, 0
+	intr0, 255, 0, 0, 0
 .cend

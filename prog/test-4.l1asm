@@ -1,14 +1,14 @@
 .data
 Q, 1, zero
-@, 0, 0
+@, 0Q, 0
 Q, 1, x
-@, 8, 23
+@, 8Q, 23
 Q, 1, y
-@, 16, 42
+@, 16Q, 42
 Q, 1, z
-@, 24, 0
+@, 24Q, 0
 Q, 1, ret
-@, 32, 0
+@, 32Q, 0
 .dend
 .code
 :main
@@ -49,9 +49,7 @@ jsr :test
 stpopi 12
 load ret, 0, 1
 pullqw 12, 1, 0
-addi 12, 0, 1
-load z, 0, 13
-pullqw 1, 13, 0
+movi 12, 11
 stpopi I12
 stpopi I11
 stpopi I10

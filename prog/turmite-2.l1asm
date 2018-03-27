@@ -5,112 +5,274 @@ Q, 1, one
 @, 8Q, 1
 Q, 1, two
 @, 16Q, 2
+Q, 1, three
+@, 24Q, 3
 Q, 1, width
-@, 24Q, 320
+@, 32Q, 320
 Q, 1, height
-@, 32Q, 240
+@, 40Q, 240
 Q, 1, bit
-@, 40Q, 32
+@, 48Q, 32
 Q, 1, sdl_mod
-@, 48Q, 0
-Q, 1, startx
 @, 56Q, 0
-Q, 1, starty
+Q, 1, startx
 @, 64Q, 0
-Q, 1, x
+Q, 1, starty
 @, 72Q, 0
-Q, 1, y
+Q, 1, x
 @, 80Q, 0
-Q, 1, color_ind
+Q, 1, y
 @, 88Q, 0
-Q, 1, phase_ind
+Q, 1, color_ind
 @, 96Q, 0
-Q, 1, color_r
+Q, 1, phase_ind
 @, 104Q, 0
-Q, 1, r
+Q, 1, color_r
 @, 112Q, 0
-Q, 1, g
+Q, 1, color_g
 @, 120Q, 0
-Q, 1, b
+Q, 1, color_b
 @, 128Q, 0
-Q, 1, next_r
+Q, 1, r
 @, 136Q, 0
-Q, 1, next_g
+Q, 1, g
 @, 144Q, 0
-Q, 1, next_b
+Q, 1, b
 @, 152Q, 0
-Q, 1, phase_color
+Q, 1, next_r
 @, 160Q, 0
-Q, 1, write_color
+Q, 1, next_g
 @, 168Q, 0
-Q, 1, next_direction
+Q, 1, next_b
 @, 176Q, 0
-Q, 1, next_phase
+Q, 1, phase_color
 @, 184Q, 0
-Q, 1, i
+Q, 1, write_color
 @, 192Q, 0
-Q, 1, j
+Q, 1, next_direction
 @, 200Q, 0
-Q, 1, f
+Q, 1, next_phase
 @, 208Q, 0
-Q, 1, c
+Q, 1, i
 @, 216Q, 0
+Q, 1, j
+@, 224Q, 0
+Q, 1, f
+@, 232Q, 0
+Q, 1, c
+@, 240Q, 0
 Q, 1, left
-@, 224Q, 1
+@, 248Q, 1
 Q, 1, up
-@, 232Q, 2
+@, 256Q, 2
 Q, 1, right
-@, 240Q, 3
+@, 264Q, 3
 Q, 1, down
-@, 248Q, 4
+@, 272Q, 4
 Q, 1, go_left
-@, 256Q, 3
+@, 280Q, 3
 Q, 1, go_right
-@, 264Q, 1
+@, 288Q, 1
 Q, 1, go_forward
-@, 272Q, 0
+@, 296Q, 0
 Q, 1, go_back
-@, 280Q, 2
-Q, 1, black
-@, 288Q, 0
-Q, 1, red
-@, 296Q, 1
-Q, 1, orange
 @, 304Q, 2
+Q, 1, black
+@, 312Q, 0
+Q, 1, red
+@, 320Q, 1
+Q, 1, orange
+@, 328Q, 2
 Q, 1, yellow
-@, 312Q, 3
+@, 336Q, 3
 Q, 1, green
-@, 320Q, 4
+@, 344Q, 4
 Q, 1, bluegreen
-@, 328Q, 5
+@, 352Q, 5
 Q, 1, blue
-@, 336Q, 6
+@, 360Q, 6
 Q, 1, violet
-@, 344Q, 7
+@, 368Q, 7
 Q, 1, halt
-@, 352Q, 255
+@, 376Q, 255
 Q, 1, color_address
-@, 360Q, 0
+@, 384Q, 408
 Q, 1, color_offset
-@, 368Q, 1
+@, 392Q, 1
 Q, 1, color_max
-@, 376Q, 24
+@, 400Q, 24
+B, 24, color
+@, 408Q, 0, 0, 0, 255, 0, 0, 255, 200, 0, 255, 255, 0, 0, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 255, ;
 Q, 1, phase0_address
-@, 384Q, 0
+@, 432Q, 464
 Q, 1, phase0_offset
-@, 392Q, 0
+@, 440Q, 8
 Q, 1, phase0_max
-@, 400Q, 0
-Q, 1, delay
-@, 408Q, 10000Q
+@, 448Q, 32
+Q, 1, phase1_address
+@, 456Q, 0
+Q, 1, phase1_offset
+@, 464Q, 8
+Q, 1, phase1_max
+@, 472Q, 32
+Q, 32, phase0
+@, 480Q, 4, 6, 1, 1, 0, 1, 0, 1, 6, 4, 0, 1, 1, 3, 2, 0, 3, 0, 2, 0, 2, 5, 3, 1, 5, 7, 1, 0, 7, 2, 0, 1, ;
+Q, 32, phase1
+@, 736Q, 4, 0, 0, 0, 0, 6, 0, 0, 6, 0, 2, 1, 1, 4, 1, 1, 3, 1, 0, 0, 2, 7, 2, 0, 5, 2, 3, 0, 7, 5, 2, 0, ;
 Q, 1, phase
-@, 416Q, 0
+@, 992Q, 0
 Q, 1, direction
-@, 424Q, 0
-B, 5, teststr@sdl
-@, 432Q, "xyz"
-Q, 1, teststr@sdladdr
-@, 437Q, 432Q
+@, 1000Q, 0
+Q, 1, delay
+@, 1008Q, 10000Q
+Q, 1, ret
+@, 1016Q, 0
+Q, 1, c
+@, 1024Q, 0
+Q, 1, zero@get_colorind
+@, 1032Q, 0
+Q, 1, i@get_colorind
+@, 1040Q, 0
+Q, 1, r@get_colorind
+@, 1048Q, 0
+Q, 1, g@get_colorind
+@, 1056Q, 0
+Q, 1, b@get_colorind
+@, 1064Q, 0
+B, 1, zero@clear_screen
+@, 1072Q, 0
+Q, 1, one@clear_screen
+@, 1073Q, 1
+Q, 1, width@clear_screen
+@, 1081Q, 0
+Q, 1, height@clear_screen
+@, 1089Q, 0
+B, 1, b@clear_screen
+@, 1097Q, 255
+Q, 1, zero
+@, 1098Q, 0
+B, 14, modulestr@sdl
+@, 1106Q, "libl1vmsdl.so"
+Q, 1, modulestr@sdladdr
+@, 1120Q, 1106Q
+B, 16, openstr@sdl
+@, 1128Q, "sdl_open_screen"
+Q, 1, openstr@sdladdr
+@, 1144Q, 1128Q
+B, 9, quitstr@sdl
+@, 1152Q, "sdl_quit"
+Q, 1, quitstr@sdladdr
+@, 1161Q, 1152Q
+B, 16, pixelstr@sdl
+@, 1169Q, "sdl_pixel_alpha"
+Q, 1, pixelstr@sdladdr
+@, 1185Q, 1169Q
+B, 15, linestr@sdl
+@, 1193Q, "sdl_line_alpha"
+Q, 1, linestr@sdladdr
+@, 1208Q, 1193Q
+B, 20, rectanglestr@sdl
+@, 1216Q, "sdl_rectangle_alpha"
+Q, 1, rectanglestr@sdladdr
+@, 1236Q, 1216Q
+B, 25, rectangle_fillstr@sdl
+@, 1244Q, "sdl_rectangle_fill_alpha"
+Q, 1, rectangle_fillstr@sdladdr
+@, 1269Q, 1244Q
+B, 17, circlestr@sdl
+@, 1277Q, "sdl_circle_alpha"
+Q, 1, circlestr@sdladdr
+@, 1294Q, 1277Q
+B, 22, circle_fillstr@sdl
+@, 1302Q, "sdl_circle_fill_alpha"
+Q, 1, circle_fillstr@sdladdr
+@, 1324Q, 1302Q
+B, 18, ellipsestr@sdl
+@, 1332Q, "sdl_ellipse_alpha"
+Q, 1, ellipsestr@sdladdr
+@, 1350Q, 1332Q
+B, 23, ellipse_fillstr@sdl
+@, 1358Q, "sdl_ellipse_fill_alpha"
+Q, 1, ellipse_fillstr@sdladdr
+@, 1381Q, 1358Q
+B, 14, piestr@sdl
+@, 1389Q, "sdl_pie_alpha"
+Q, 1, piestr@sdladdr
+@, 1403Q, 1389Q
+B, 19, pie_fillstr@sdl
+@, 1411Q, "sdl_pie_fill_alpha"
+Q, 1, pie_fillstr@sdladdr
+@, 1430Q, 1411Q
+B, 17, trigonstr@sdl
+@, 1438Q, "sdl_trigon_alpha"
+Q, 1, trigonstr@sdladdr
+@, 1455Q, 1438Q
+B, 22, trigon_fillstr@sdl
+@, 1463Q, "sdl_trigon_fill_alpha"
+Q, 1, trigon_fillstr@sdladdr
+@, 1485Q, 1463Q
+B, 13, font_ttfstr@sdl
+@, 1493Q, "sdl_font_ttf"
+Q, 1, font_ttfstr@sdladdr
+@, 1506Q, 1493Q
+B, 13, text_ttfstr@sdl
+@, 1514Q, "sdl_text_ttf"
+Q, 1, text_ttfstr@sdladdr
+@, 1527Q, 1514Q
+B, 19, get_pixelcolorstr@sdl
+@, 1535Q, "sdl_get_pixelcolor"
+Q, 1, get_pixelcolorstr@sdladdr
+@, 1554Q, 1535Q
+B, 11, updatestr@sdl
+@, 1562Q, "sdl_update"
+Q, 1, updatestr@sdladdr
+@, 1573Q, 1562Q
+Q, 1, open@sdl
+@, 1581Q, 0
+Q, 1, quit@sdl
+@, 1589Q, 1
+Q, 1, update@sdl
+@, 1597Q, 2
+Q, 1, pixel@sdl
+@, 1605Q, 3
+Q, 1, line@sdl
+@, 1613Q, 4
+Q, 1, rectangle@sdl
+@, 1621Q, 5
+Q, 1, rectangle_fill@sdl
+@, 1629Q, 6
+Q, 1, circle@sdl
+@, 1637Q, 7
+Q, 1, circle_fill@sdl
+@, 1645Q, 8
+Q, 1, ellipse@sdl
+@, 1653Q, 9
+Q, 1, ellipse_fill@sdl
+@, 1661Q, 10
+Q, 1, pie@sdl
+@, 1669Q, 11
+Q, 1, pie_fill@sdl
+@, 1677Q, 12
+Q, 1, trigon@sdl
+@, 1685Q, 13
+Q, 1, trigon_fill@sdl
+@, 1693Q, 14
+Q, 1, font_ttf@sdl
+@, 1701Q, 15
+Q, 1, text_ttf@sdl
+@, 1709Q, 16
+Q, 1, get_pixelcolor@sdl
+@, 1717Q, 17
+Q, 1, get@sdl
+@, 1725Q, 0
+Q, 1, width@sdl
+@, 1733Q, 0
+Q, 1, height@sdl
+@, 1741Q, 0
+Q, 1, bit@sdl
+@, 1749Q, 0
+Q, 1, mod@sdl
+@, 1757Q, 0
 .dend
 .code
 :main
@@ -139,9 +301,377 @@ pullqw 14, 11, 0
 loada direction, 0, 11
 intr0 4, 11, 0, 0
 intr0 7, 0, 0, 0
+stpushi I0
+stpushi I1
+stpushi I2
+stpushi I3
+stpushi I4
+stpushi I5
+stpushi I6
+stpushi I7
+stpushi I8
+stpushi I9
+stpushi I10
+stpushi I11
+stpushi I12
+stpushi I13
+stpushi 0
+stpushi 1
+stpushi 5
+loada bit, 0, 14
+stpushi 14
+jsr :sdl_open_screen
+loada ret, 0, 15
+stpopb 15
+stpopi I13
+stpopi I12
+stpopi I11
+stpopi I10
+stpopi I9
+stpopi I8
+stpopi I7
+stpopi I6
+stpopi I5
+stpopi I4
+stpopi I3
+stpopi I2
+stpopi I1
+stpopi I0
+loada width, 0, 1
+stpushi 1
+loada height, 0, 2
+stpushi 2
+jsr :clear_screen
+:draw
+loada x, 0, 1
+stpushi 1
+loada y, 0, 2
+stpushi 2
+jsr :get_pixelcolor
+stpopi 3
+load r, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load g, 0, 5
+pullqw 4, 5, 0
+stpopi 5
+load b, 0, 6
+pullqw 5, 6, 0
+load color_ind, 0, 1
+loada zero, 0, 2
+pullqw 2, 1, 0
+:get_color_ind
+loada color_ind, 0, 1
+loada three, 0, 2
+muli 1, 2, 3
+load i, 0, 4
+pullqw 3, 4, 0
+stpushi I1
+stpushi I2
+stpushi I3
+stpushi I4
+loada i, 0, 5
+stpushi 5
+jsr :get_colorind
+stpopi 6
+load color_r, 0, 7
+pullqw 6, 7, 0
+stpopi 7
+load color_b, 0, 8
+pullqw 7, 8, 0
+stpopi 7
+load color_b, 0, 8
+pullqw 7, 8, 0
+stpopi I4
+stpopi I3
+stpopi I2
+stpopi I1
+loada color_r, 0, 1
+loada r, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 5
+jmpi 5, :get_color_ind_continue
+load c, 0, 6
+loada zero, 0, 7
+pullqw 7, 6, 0
+loada color_g, 0, 6
+loada g, 0, 7
+neqi 6, 7, 8
+load f, 0, 9
+pullqw 8, 9, 0
+loada f, 0, 5
+jmpi 5, :next_b
+loada c, 0, 10
+loada one, 0, 11
+addi 10, 11, 12
+load c, 0, 13
+pullqw 12, 13, 0
+:next_b
+loada color_b, 0, 10
+loada b, 0, 14
+neqi 10, 14, 15
+load f, 0, 16
+pullqw 15, 16, 0
+loada f, 0, 5
+jmpi 5, :nextg
+loada c, 0, 17
+addi 17, 11, 18
+load c, 0, 19
+pullqw 18, 19, 0
+:next_g
+:get_color_ind_continue
+loada c, 0, 17
+loada three, 0, 20
+eqi 17, 20, 21
+load f, 0, 22
+pullqw 21, 22, 0
+loada f, 0, 5
+jmpi 5, :color_match
+loada color_ind, 0, 23
+addi 23, 11, 24
+load color_ind, 0, 25
+pullqw 24, 25, 0
+jmp :get_color_ind
+:color_match
 intr0 255, 0, 0, 0
+rts
+:get_colorind
+loada zero, 0, 0
+    loada color_address, 0, I1
+    loada color_max, 0, I2
+    loada zero, 0, I0
+    loada zero, 0, I3
+    loada color_offset, 0, I11
+    stpopi I12
+    pushqw I1, I12, I20
+    addi I12, I11, I12
+    pushqw I1, I12, I21
+    addi I12, I11, I12
+    pushqw I1, I12, I22
+    stpushi I22
+    stpushi I21
+    stpushi I20
+    rts
+rts
+:clear_screen
+loada zero, 0, 0
+stpopi 1
+load height@clear_screen, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load width@clear_screen, 0, 3
+pullqw 2, 3, 0
+loada one@clear_screen, 0, 3
+subi 1, 3, 4
+load height@clear_screen, 0, 5
+pullqw 4, 5, 0
+subi 2, 3, 1
+load width@clear_screen, 0, 6
+pullqw 1, 6, 0
+stpushi I0
+stpushi I1
+stpushi I3
+stpushi I4
+stpushi I5
+stpushi I6
+loada zero@clear_screen, 0, 2
+stpushb 2
+stpushb 2
+loada width@clear_screen, 0, 7
+stpushi 7
+loada height@clear_screen, 0, 8
+stpushi 8
+stpushb 2
+stpushb 2
+loada b@clear_screen, 0, 9
+stpushb 9
+stpushb 9
+jsr :sdl_rectangle_fill
+stpopi I6
+stpopi I5
+stpopi I4
+stpopi I3
+stpopi I1
+stpopi I0
+jsr :sdl_update
 rts
 :sdl_open_screen
 loada zero, 0, 0
+stpopi 1
+load bit@sdl, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load height@sdl, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load width@sdl, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load mod@sdl, 0, 5
+pullqw 4, 5, 0
+loada modulestr@sdladdr, 0, 5
+intr0 0, 5, 4, 0
+loada open@sdl, 0, 6
+loada openstr@sdladdr, 0, 7
+intr0 2, 4, 6, 7
+loada quit@sdl, 0, 8
+loada quitstr@sdladdr, 0, 9
+intr0 2, 4, 8, 9
+loada pixel@sdl, 0, 10
+loada pixelstr@sdladdr, 0, 11
+intr0 2, 4, 10, 11
+loada line@sdl, 0, 12
+loada linestr@sdladdr, 0, 13
+intr0 2, 4, 12, 13
+loada rectangle@sdl, 0, 14
+loada rectanglestr@sdladdr, 0, 15
+intr0 2, 4, 14, 15
+loada rectangle_fill@sdl, 0, 16
+loada rectangle_fillstr@sdladdr, 0, 17
+intr0 2, 4, 16, 17
+loada circle@sdl, 0, 18
+loada circlestr@sdladdr, 0, 19
+intr0 2, 4, 18, 19
+loada circle_fill@sdl, 0, 20
+loada circle_fillstr@sdladdr, 0, 21
+intr0 2, 4, 20, 21
+loada ellipse@sdl, 0, 22
+loada ellipsestr@sdladdr, 0, 23
+intr0 2, 4, 22, 23
+loada ellipse_fill@sdl, 0, 24
+loada ellipse_fillstr@sdladdr, 0, 25
+intr0 2, 4, 24, 25
+loada pie@sdl, 0, 26
+loada piestr@sdladdr, 0, 27
+intr0 2, 4, 26, 27
+loada pie_fill@sdl, 0, 28
+loada pie_fillstr@sdladdr, 0, 29
+intr0 2, 4, 28, 29
+loada trigon@sdl, 0, 30
+loada trigonstr@sdladdr, 0, 31
+intr0 2, 4, 30, 31
+loada trigon_fill@sdl, 0, 32
+loada trigon_fillstr@sdladdr, 0, 33
+intr0 2, 4, 32, 33
+loada update@sdl, 0, 34
+loada updatestr@sdladdr, 0, 35
+intr0 2, 4, 34, 35
+loada font_ttf@sdl, 0, 36
+loada font_ttfstr@sdladdr, 0, 37
+intr0 2, 4, 36, 37
+loada text_ttf@sdl, 0, 38
+loada text_ttfstr@sdladdr, 0, 39
+intr0 2, 4, 38, 39
+loada get_pixelcolor@sdl, 0, 40
+loada get_pixelcolorstr@sdladdr, 0, 41
+intr0 2, 4, 40, 41
+stpushi 3
+stpushi 2
+stpushb 1
+intr0 3, 4, 6, 0
+rts
+:sdl_font_ttf
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada font_ttf@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_text_ttf
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada text_ttf@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_pixel
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada pixel@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_line
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada line@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_rectangle
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada rectangle@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_rectangle_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada rectangle_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_circle
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada circle@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_circle_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada circle_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_ellipse
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada ellipse@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_ellipse_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada ellipse_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_pie
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada pie@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_pie_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada pie_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_trigon
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada trigon@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_trigon_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada trigon_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_pixelcolor
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_pixelcolor@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_update
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada update@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_quit
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada quit@sdl, 0, 2
+intr0 3, 1, 2, 0
 rts
 .cend

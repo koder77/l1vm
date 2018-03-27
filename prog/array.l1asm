@@ -24,6 +24,7 @@ loada zero, 0, 0
  loada array_addr, 0, I1
  loada array_max, 0, I2
  loada zero, 0, I0
+ loada zero, 0, I3
  loada offset, 0, I11
  :loop
  pushqw I1, I3, I10

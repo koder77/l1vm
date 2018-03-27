@@ -62,7 +62,15 @@ typedef U1* (*dll_func)(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 struct module
 {
     U1 name[512];
+    
+#if __linux__
     void *lptr;
+#endif
+    
+#if _WIN32
+    HINSTANCE lptr;
+#endif
+    
     dll_func func[MODULES_MAXFUNC];
     S8 func_ind ALIGN;
 };
@@ -86,12 +94,24 @@ struct threaddata threaddata[MAXCPUCORES];
 
 S2 load_module (U1 *name, S8 ind)
 {
+#if __linux__
     modules[ind].lptr = dlopen ((const char *) name, RTLD_LAZY);
     if (!modules[ind].lptr)
 	{
         printf ("error load module %s!\n", (const char *) name);
         return (1);
     }
+#endif
+
+#if _WIN32
+    modules[ind].lptr = LoadLibrary ((const char *) name);
+    if (! modules[ind].lptr)
+    {
+        printf ("error load module %s!\n", (const char *) name);
+        return (1);
+    }
+#endif
+
     modules[ind].func_ind = -1;
     strcpy ((char *) modules[ind].name, (const char *) name);
     return (0);
@@ -99,11 +119,18 @@ S2 load_module (U1 *name, S8 ind)
 
 void free_module (S8 ind ALIGN)
 {
+#if __linux__
     dlclose (modules[ind].lptr);
+#endif
+    
+#if _WIN32
+    FreeLibrary (modules[ind].lptr);
+#endif
 }
 
 S2 set_module_func (S8 ind ALIGN, S8 func_ind ALIGN, U1 *func_name)
 {
+#if __linux__
 	dlerror ();
 
     // load the symbols (handle to function)
@@ -116,6 +143,17 @@ S2 set_module_func (S8 ind ALIGN, S8 func_ind ALIGN, U1 *func_name)
         return (1);
     }
     return (0);
+#endif
+    
+#if _WIN32
+    modules[ind].func[func_ind] = GetProcAddress (modules[ind].lptr, (const char *) func_name);
+    if (! modules[ind].func[func_ind])
+    {
+        printf ("error set module %s, function: '%s'!\n", modules[ind].name, func_name);
+        return (1);
+    }
+    return (0);
+#endif
 }
 
 U1 *call_module_func (S8 ind ALIGN, S8 func_ind ALIGN, U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -2108,7 +2146,7 @@ int main (int ac, char *av[])
 
 	S8 new_cpu ALIGN;
 
-    printf ("l1vm - 0.8.1-3\n");
+    printf ("l1vm - 0.8.1-4\n");
     
 #if MAXCPUCORES == 0
     max_cpu = sysconf (_SC_NPROCESSORS_ONLN);

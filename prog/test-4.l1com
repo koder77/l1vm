@@ -23,7 +23,7 @@
 	(savereg)
 	(:test jsr)
 	(ret stpopi)
-	((ret zero +) z =)
+	(ret z movi)
 	(loadreg)
 	// print z
 	(4 z 0 0 intr0)

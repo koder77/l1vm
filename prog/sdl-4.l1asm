@@ -1,138 +1,138 @@
 .data
 Q, 1, zero
-@, 0, 0
+@, 0Q, 0
 Q, 1, one
-@, 8, 1
+@, 8Q, 1
 Q, 1, two
-@, 16, 2
+@, 16Q, 2
 Q, 1, three
-@, 24, 3
+@, 24Q, 3
 Q, 1, width
-@, 32, 1280Q
+@, 32Q, 1280Q
 Q, 1, height
-@, 40, 900Q
+@, 40Q, 900Q
 Q, 1, bit
-@, 48, 32
+@, 48Q, 32
 Q, 1, ret
-@, 56, 0
+@, 56Q, 0
 Q, 1, x
-@, 64, 0
+@, 64Q, 0
 Q, 1, y
-@, 72, 0
+@, 72Q, 0
 B, 1, col
-@, 80, 0
+@, 80Q, 0
 B, 1, maxcol
-@, 81, 255
+@, 81Q, 255
 Q, 1, f
-@, 82, 0
+@, 82Q, 0
 Q, 1, delay
-@, 90, 20000
+@, 90Q, 20000
 Q, 1, zero
-@, 98, 0
+@, 98Q, 0
 B, 14, modulestr@sdl
-@, 106, "libl1vmsdl.so"
+@, 106Q, "libl1vmsdl.so"
 Q, 1, modulestr@sdladdr
-@, 120, 106
+@, 120Q, 106Q
 B, 16, openstr@sdl
-@, 128, "sdl_open_screen"
+@, 128Q, "sdl_open_screen"
 Q, 1, openstr@sdladdr
-@, 144, 128
+@, 144Q, 128Q
 B, 9, quitstr@sdl
-@, 152, "sdl_quit"
+@, 152Q, "sdl_quit"
 Q, 1, quitstr@sdladdr
-@, 161, 152
+@, 161Q, 152Q
 B, 16, pixelstr@sdl
-@, 169, "sdl_pixel_alpha"
+@, 169Q, "sdl_pixel_alpha"
 Q, 1, pixelstr@sdladdr
-@, 185, 169
+@, 185Q, 169Q
 B, 15, linestr@sdl
-@, 193, "sdl_line_alpha"
+@, 193Q, "sdl_line_alpha"
 Q, 1, linestr@sdladdr
-@, 208, 193
+@, 208Q, 193Q
 B, 20, rectanglestr@sdl
-@, 216, "sdl_rectangle_alpha"
+@, 216Q, "sdl_rectangle_alpha"
 Q, 1, rectanglestr@sdladdr
-@, 236, 216
+@, 236Q, 216Q
 B, 25, rectangle_fillstr@sdl
-@, 244, "sdl_rectangle_fill_alpha"
+@, 244Q, "sdl_rectangle_fill_alpha"
 Q, 1, rectangle_fillstr@sdladdr
-@, 269, 244
+@, 269Q, 244Q
 B, 17, circlestr@sdl
-@, 277, "sdl_circle_alpha"
+@, 277Q, "sdl_circle_alpha"
 Q, 1, circlestr@sdladdr
-@, 294, 277
+@, 294Q, 277Q
 B, 22, circle_fillstr@sdl
-@, 302, "sdl_circle_fill_alpha"
+@, 302Q, "sdl_circle_fill_alpha"
 Q, 1, circle_fillstr@sdladdr
-@, 324, 302
+@, 324Q, 302Q
 B, 18, ellipsestr@sdl
-@, 332, "sdl_ellipse_alpha"
+@, 332Q, "sdl_ellipse_alpha"
 Q, 1, ellipsestr@sdladdr
-@, 350, 332
+@, 350Q, 332Q
 B, 23, ellipse_fillstr@sdl
-@, 358, "sdl_ellipse_fill_alpha"
+@, 358Q, "sdl_ellipse_fill_alpha"
 Q, 1, ellipse_fillstr@sdladdr
-@, 381, 358
+@, 381Q, 358Q
 B, 14, piestr@sdl
-@, 389, "sdl_pie_alpha"
+@, 389Q, "sdl_pie_alpha"
 Q, 1, piestr@sdladdr
-@, 403, 389
+@, 403Q, 389Q
 B, 19, pie_fillstr@sdl
-@, 411, "sdl_pie_fill_alpha"
+@, 411Q, "sdl_pie_fill_alpha"
 Q, 1, pie_fillstr@sdladdr
-@, 430, 411
+@, 430Q, 411Q
 B, 17, trigonstr@sdl
-@, 438, "sdl_trigon_alpha"
+@, 438Q, "sdl_trigon_alpha"
 Q, 1, trigonstr@sdladdr
-@, 455, 438
+@, 455Q, 438Q
 B, 22, trigon_fillstr@sdl
-@, 463, "sdl_trigon_fill_alpha"
+@, 463Q, "sdl_trigon_fill_alpha"
 Q, 1, trigon_fillstr@sdladdr
-@, 485, 463
+@, 485Q, 463Q
 B, 11, updatestr@sdl
-@, 493, "sdl_update"
+@, 493Q, "sdl_update"
 Q, 1, updatestr@sdladdr
-@, 504, 493
+@, 504Q, 493Q
 Q, 1, open@sdl
-@, 512, 0
+@, 512Q, 0
 Q, 1, quit@sdl
-@, 520, 1
+@, 520Q, 1
 Q, 1, update@sdl
-@, 528, 2
+@, 528Q, 2
 Q, 1, pixel@sdl
-@, 536, 3
+@, 536Q, 3
 Q, 1, line@sdl
-@, 544, 4
+@, 544Q, 4
 Q, 1, rectangle@sdl
-@, 552, 5
+@, 552Q, 5
 Q, 1, rectangle_fill@sdl
-@, 560, 6
+@, 560Q, 6
 Q, 1, circle@sdl
-@, 568, 7
+@, 568Q, 7
 Q, 1, circle_fill@sdl
-@, 576, 8
+@, 576Q, 8
 Q, 1, ellipse@sdl
-@, 584, 9
+@, 584Q, 9
 Q, 1, ellipse_fill@sdl
-@, 592, 10
+@, 592Q, 10
 Q, 1, pie@sdl
-@, 600, 11
+@, 600Q, 11
 Q, 1, pie_fill@sdl
-@, 608, 12
+@, 608Q, 12
 Q, 1, trigon@sdl
-@, 616, 13
+@, 616Q, 13
 Q, 1, trigon_fill@sdl
-@, 624, 14
+@, 624Q, 14
 Q, 1, get@sdl
-@, 632, 0
+@, 632Q, 0
 Q, 1, width@sdl
-@, 640, 0
+@, 640Q, 0
 Q, 1, height@sdl
-@, 648, 0
+@, 648Q, 0
 Q, 1, bit@sdl
-@, 656, 0
+@, 656Q, 0
 Q, 1, mod@sdl
-@, 664, 0
+@, 664Q, 0
 .dend
 .code
 :main
@@ -172,7 +172,7 @@ loada col, 0, 1
 loada one, 0, 2
 addi 1, 2, 3
 load col, 0, 4
-pullqw 3, 4, 0
+pullb 3, 4, 0
 loada col, 0, 1
 loada maxcol, 0, 5
 gri 1, 5, 6
@@ -183,7 +183,7 @@ jmpi 8, :reset_color
 jmp :next_y
 :reset_color
 load col, 0, 9
-pullqw 1, 9, 0
+pullb 1, 9, 0
 :next_y
 loada y, 0, 1
 addi 1, 2, 9

@@ -95,38 +95,74 @@ B, 18, socket_read_bytestr@net
 @, 509Q, "socket_read_byte"
 Q, 1, socket_read_bytestr@netaddr
 @, 527Q, 509Q
+B, 18, socket_read_int64str@net
+@, 535Q, "socket_read_int64"
+Q, 1, socket_read_int64str@netaddr
+@, 553Q, 535Q
+B, 19, socket_read_doublestr@net
+@, 561Q, "socket_read_double"
+Q, 1, socket_read_doublestr@netaddr
+@, 580Q, 561Q
+B, 20, socket_read_stringstr@net
+@, 588Q, "socket_read_string"
+Q, 1, socket_read_stringstr@netaddr
+@, 608Q, 588Q
 B, 19, socket_write_bytestr@net
-@, 535Q, "socket_write_byte"
+@, 616Q, "socket_write_byte"
 Q, 1, socket_write_bytestr@netaddr
-@, 554Q, 535Q
+@, 635Q, 616Q
+B, 20, socket_write_int64str@net
+@, 643Q, "socket_write_int64"
+Q, 1, socket_write_int64str@netaddr
+@, 663Q, 643Q
+B, 21, socket_write_doublestr@net
+@, 671Q, "socket_write_double"
+Q, 1, socket_write_doublestr@netaddr
+@, 692Q, 671Q
+B, 20, socket_write_stringstr@net
+@, 700Q, "socket_write_string"
+Q, 1, socket_write_stringstr@netaddr
+@, 720Q, 700Q
 Q, 1, init@net
-@, 562Q, 0
+@, 728Q, 0
 Q, 1, open_server_socket@net
-@, 570Q, 1
+@, 736Q, 1
 Q, 1, open_accept_server@net
-@, 578Q, 2
+@, 744Q, 2
 Q, 1, open_client_socket@net
-@, 586Q, 3
+@, 752Q, 3
 Q, 1, close_server_socket@net
-@, 594Q, 4
+@, 760Q, 4
 Q, 1, close_accept_server@net
-@, 602Q, 5
+@, 768Q, 5
 Q, 1, close_client_socket@net
-@, 610Q, 6
+@, 776Q, 6
 Q, 1, get_clientaddr@net
-@, 618Q, 7
+@, 784Q, 7
 Q, 1, get_hostname@net
-@, 626Q, 8
+@, 792Q, 8
 Q, 1, get_hostbyname@net
-@, 634Q, 9
+@, 800Q, 9
 Q, 1, get_hostbyaddr@net
-@, 642Q, 10
+@, 808Q, 10
 Q, 1, socket_read_byte@net
-@, 650Q, 11
+@, 816Q, 11
+Q, 1, socket_read_int64@net
+@, 824Q, 12
+Q, 1, socket_read_double@net
+@, 832Q, 13
+Q, 1, socket_read_string@net
+@, 840Q, 14
 Q, 1, socket_write_byte@net
-@, 658Q, 12
+@, 848Q, 15
+Q, 1, socket_write_int64@net
+@, 856Q, 16
+Q, 1, socket_write_double@net
+@, 864Q, 17
+Q, 1, socket_write_string@net
+@, 872Q, 18
 Q, 1, mod@net
-@, 666Q, 0
+@, 880Q, 0
 .dend
 .code
 :main
@@ -307,9 +343,27 @@ intr0 2, 1, 23, 24
 loada socket_read_byte@net, 0, 25
 loada socket_read_bytestr@netaddr, 0, 26
 intr0 2, 1, 25, 26
-loada socket_write_byte@net, 0, 27
-loada socket_write_bytestr@netaddr, 0, 28
+loada socket_read_int64@net, 0, 27
+loada socket_read_int64str@netaddr, 0, 28
 intr0 2, 1, 27, 28
+loada socket_read_double@net, 0, 29
+loada socket_read_doublestr@netaddr, 0, 30
+intr0 2, 1, 29, 30
+loada socket_read_string@net, 0, 31
+loada socket_read_stringstr@netaddr, 0, 32
+intr0 2, 1, 31, 32
+loada socket_write_byte@net, 0, 33
+loada socket_write_bytestr@netaddr, 0, 34
+intr0 2, 1, 33, 34
+loada socket_write_int64@net, 0, 35
+loada socket_write_int64str@netaddr, 0, 36
+intr0 2, 1, 35, 36
+loada socket_write_double@net, 0, 37
+loada socket_write_doublestr@netaddr, 0, 38
+intr0 2, 1, 37, 38
+loada socket_write_string@net, 0, 39
+loada socket_write_stringstr@netaddr, 0, 40
+intr0 2, 1, 39, 40
 intr0 3, 1, 3, 0
 rts
 :open_server_socket
@@ -378,10 +432,46 @@ loada mod@net, 0, 1
 loada socket_read_byte@net, 0, 2
 intr0 3, 1, 2, 0
 rts
+:socket_read_int64
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_read_int64@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_read_double
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_read_double@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_read_string
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_read_string@net, 0, 2
+intr0 3, 1, 2, 0
+rts
 :socket_write_byte
 loada zero, 0, 0
 loada mod@net, 0, 1
 loada socket_write_byte@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_write_int64
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_write_int64@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_write_double
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_write_double@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_write_string
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_write_string@net, 0, 2
 intr0 3, 1, 2, 0
 rts
 .cend
