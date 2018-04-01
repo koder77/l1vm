@@ -1,7 +1,8 @@
 L1VM - (0.8.1-4)
 New: port to Windows. DLL load code for Linux and Windows.
+New: library genann - neural networks library, demo code for training and running XOR function.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sun 25 Mar 2018 12:26 +0100
+-- Stefan Pietzonke <jay-t@gmx.net>  Sun 1 Apr 2018 15:08 +0200
 
 
 L1VM - (0.8.1-3)
