@@ -172,6 +172,12 @@ U1 *genann_init_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 }
 
+U1 *genann_free_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    genann_free (ann);
+    return (sp);
+}
+
 U1 *genann_train_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     S8 learning_rate ALIGN;
