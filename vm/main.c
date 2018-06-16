@@ -62,15 +62,15 @@ typedef U1* (*dll_func)(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 struct module
 {
     U1 name[512];
-    
+
 #if __linux__
     void *lptr;
 #endif
-    
+
 #if _WIN32
     HINSTANCE lptr;
 #endif
-    
+
     dll_func func[MODULES_MAXFUNC];
     S8 func_ind ALIGN;
 };
@@ -122,7 +122,7 @@ void free_module (S8 ind ALIGN)
 #if __linux__
     dlclose (modules[ind].lptr);
 #endif
-    
+
 #if _WIN32
     FreeLibrary (modules[ind].lptr);
 #endif
@@ -144,7 +144,7 @@ S2 set_module_func (S8 ind ALIGN, S8 func_ind ALIGN, U1 *func_name)
     }
     return (0);
 #endif
-    
+
 #if _WIN32
     modules[ind].func[func_ind] = GetProcAddress (modules[ind].lptr, (const char *) func_name);
     if (! modules[ind].func[func_ind])
@@ -216,7 +216,7 @@ S2 run (void *arg)
 	sp_top = threaddata[cpu_core].sp_top_thread;
 	sp_bottom = threaddata[cpu_core].sp_bottom_thread;
 	sp = threaddata[cpu_core].sp_thread;
-
+    
 	printf ("%lli sp top: %lli\n", cpu_core, (S8) sp_top);
 	printf ("%lli sp bottom: %lli\n", cpu_core, (S8) sp_bottom);
 	printf ("%lli sp: %lli\n", cpu_core, (S8) sp);
@@ -1730,7 +1730,7 @@ S2 run (void *arg)
             regi[arg2] = max_cpu;
             eoffs = 5;
             break;
-            
+
 		case 255:
 			printf ("EXIT\n");
 			arg2 = code[ep + 2];
@@ -1866,15 +1866,15 @@ S2 run (void *arg)
 			pthread_mutex_unlock (&data_mutex);
 			eoffs = 5;
 			break;
-			
+
 		case 4:
 			// return number of current CPU core
 			arg2 = code[ep + 2];
 			regi[arg2] = cpu_core;
-		
+
 			eoffs = 5;
 			break;
-				
+
 		case 255:
 			printf ("thread EXIT\n");
 			arg2 = code[ep + 2];
@@ -2147,14 +2147,14 @@ int main (int ac, char *av[])
 	S8 new_cpu ALIGN;
 
     printf ("l1vm - 0.8.1-4\n");
-    
+
 #if MAXCPUCORES == 0
     max_cpu = sysconf (_SC_NPROCESSORS_ONLN);
     printf ("CPU cores: %lli (autoconfig)\n", max_cpu);
 #else
     printf ("CPU cores: %lli (STATIC)\n", max_cpu);
 #endif
-    
+
     if (ac > 1)
     {
         for (i = 2; i < ac; i++)

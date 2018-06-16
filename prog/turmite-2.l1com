@@ -16,15 +16,15 @@
     (set int64 1 y 0)
     (set int64 1 color_ind 0)
     (set int64 1 phase_ind 0)
-    (set int64 1 color_r 0)
-    (set int64 1 color_g 0)
-    (set int64 1 color_b 0)
+    (set byte 1 color_r 0)
+    (set byte 1 color_g 0)
+    (set byte 1 color_b 0)
     (set int64 1 r 0)
     (set int64 1 g 0)
     (set int64 1 b 0)
-    (set int64 1 next_r 0)
-    (set int64 1 next_g 0)
-    (set int64 1 next_b 0)
+    (set byte 1 next_r 0)
+    (set byte 1 next_g 0)
+    (set byte 1 next_b 0)
     (set int64 1 phase_color 0)
     (set int64 1 write_color 0)
     (set int64 1 next_direction 0)
@@ -53,16 +53,16 @@
     (set int64 1 violet 7)
     (set int64 1 halt 255)
     // color array
-    (set int64 1 color_address 408)
+    (set int64 1 color_address 366)
     (set int64 1 color_offset 1)
     (set int64 1 color_max 24)
     // colors
     (set byte 24 color 0 0 0 255 0 0 255 200 0 255 255 0 0 255 0 0 255 255 0 0 255 255 0 255)
     // phases
-    (set int64 1 phase0_address 480)
+    (set int64 1 phase0_address 438)
     (set int64 1 phase0_offset 8)
     (set int64 1 phase0_max 32)
-    (set int64 1 phase1_address 736)
+    (set int64 1 phase1_address 694)
     (set int64 1 phase1_offset 8)
     (set int64 1 phase1_max 32)
     // phase
@@ -73,14 +73,15 @@
     (set int64 1 delay 10000Q)
     (set int64 1 ret 0)
     (set int64 1 c 0)
+    (set int64 1 four 4)
+    (set byte 1 alpha 255)
+    (set int64 1 phase_max 28)
     ((width two /) startx =)
     ((startx one -) startx =)
     ((height two /) starty =)
     ((starty one -) starty =)
     (down direction =)
     // (8 delay 0 0 intr0)
-    (4 direction 0 0 intr0)
-    (7 0 0 0 intr0)
     // open screeen
     (zero width height bit :sdl_open_screen call)
     (ret stpopb)
@@ -88,28 +89,42 @@
     (width height :clear_screen call)
     (loadreg)
     (:draw)
-    (x y :get_pixelcolor call)
+    (x y :sdl_get_pixelcolor call)
     (r stpopi)
     (g stpopi)
     (b stpopi)
     (loadreg)
+    (4 r 0 0 intr0)
+    (7 0 0 0 intr0)
+    (4 g 0 0 intr0)
+    (7 0 0 0 intr0)
+    (4 b 0 0 intr0)
+    (7 0 0 0 intr0)
     (zero color_ind =)
     (:get_color_ind)
     ((color_ind three *) i =)
     (i :get_colorind call)
-    (color_r stpopi)
-    (color_b stpopi)
-    (color_b stpopi)
+    (color_r stpopb)
+    (color_g stpopb)
+    (color_b stpopb)
     (loadreg)
+    (7 0 0 0 intr0)
+    (4 color_r 0 0 intr0)
+    (7 0 0 0 intr0)
+    (4 color_g 0 0 intr0)
+    (7 0 0 0 intr0)
+    (4 color_b 0 0 intr0)
+    (7 0 0 0 intr0)
+    (zero c =)
     ((color_r r !=) f =)
     (f :get_color_ind_continue jmpi)
-    (zero c =)
+    ((c one +) c =)
     ((color_g g !=) f =)
     (f :next_b jmpi)
     ((c one +) c =)
     (:next_b)
     ((color_b b !=) f =)
-    (f :nextg jmpi)
+    (f :next_g jmpi)
     ((c one +) c =)
     (:next_g)
     (:get_color_ind_continue)
@@ -118,29 +133,169 @@
     ((color_ind one +) color_ind =)
     (:get_color_ind jmp)
     (:color_match)
+    (zero phase_ind =)
+    (:phase_loop)
+    ((zero phase ==) f =)
+    (f :phase_match jmpi)
+    (phase_ind :get_phase1 call)
+    (phase_color stpopi)
+    (loadreg)
+    (:phase_match_end jmp)
+    (:phase_match)
+    (phase_ind :get_phase0 call)
+    (phase_color stpopi)
+    (loadreg)
+    (:phase_match_end)
+    ((phase_color color_ind ==) f =)
+    (f :phase_color_match jmpi)
+    ((phase_ind four +) phase_ind =)
+    (:phase_color_match_end jmp)
+    (:phase_color_match)
+    ((phase_ind one +) j =)
+    ((phase zero ==) f =)
+    (f :write_col_phase0 jmpi)
+    (j :get_phase1 call)
+    (write_color stpopi)
+    (loadreg)
+    (:phase_color_match_end jmp)
+    (:write_col_phase0)
+    (j :get_phase0 call)
+    (write_color stpopi)
+    (loadreg)
+    (:phase_color_match_end)
+    ((write_color three *) i =)
+    (i :get_colorind call)
+    (next_r stpopb)
+    (next_g stpopb)
+    (next_b stpopb)
+    (loadreg)
+    (x y next_r next_g next_b alpha :sdl_pixel call)
+    (loadreg)
+    (:sdl_update call)
+    (loadreg)
+    ((phase_ind two +) j =)
+    ((phase zero ==) f =)
+    (f :next_direction_phase0 jmpi)
+    (j :get_phase1 call)
+    (next_direction stpopi)
+    (loadreg)
+    (:next_direction_end jmp)
+    (:next_direction_phase0)
+    (j :get_phase0 call)
+    (next_direction stpopi)
+    (loadreg)
+    (:next_direction_end)
+    ((phase_ind three +) j =)
+    ((phase zero ==) f =)
+    (f :next_phase0 jmpi)
+    (j :get_phase1 call)
+    (next_phase stpopi)
+    (loadreg)
+    (:next_phase_end jmp)
+    (:next_phase0)
+    (j :get_phase0 call)
+    (next_phase stpopi)
+    (loadreg)
+    (:next_phase_end)
+    (:set_next_pos jmp)
+    ((phase_ind phase_max <=) f =)
+    (f :phase_loop jmpi)
+    (:set_next_pos)
+    ((direction next_direction +) direction =)
+    ((direction four <=) f =)
+    (f :direction_less jmpi)
+    ((direction four -) direction =)
+    (:direction_less)
+    ((direction up ==) f =)
+    (f :up jmpi)
+    ((direction down ==) f =)
+    (f :down jmpi)
+    ((direction left ==) f =)
+    (f :left jmpi)
+    ((direction right ==) f =)
+    (f :right jmpi)
+    // UP
+    (:up)
+    ((y one -) y =)
+    ((y zero >=) f =)
+    (f :up_limit jmpi)
+    ((height one -) y =)
+    (:up_limit)
+    (:draw jmp)
+    // DOWN
+    (:down)
+    ((y one +) y =)
+    ((height one -) i =)
+    ((y i <=) f =)
+    (f :down_limit jmpi)
+    (zero y =)
+    (:down_limit)
+    (:draw jmp)
+    // LEFT
+    (:left)
+    ((x one -) x =)
+    ((x zero >=) f =)
+    (f :left_limit jmpi)
+    ((width one -) x =)
+    (:left_limit)
+    (:draw jmp)
+    // RIGHT
+    (:right)
+    ((x one +) x =)
+    ((width one -) i =)
+    ((x i <=) f =)
+    (f :right_limit jmpi)
+    (zero x =)
+    (:right_limit)
+    (:draw jmp)
     // quit
     (255 0 0 0 intr0)
 (funcend)
 (get_colorind func)
-    (set int64 1 zero@get_colorind 0)
-    (set int64 1 i@get_colorind 0)
-    (set int64 1 r@get_colorind 0)
-    (set int64 1 g@get_colorind 0)
-    (set int64 1 b@get_colorind 0)
     (ASM)
-    loada color_address, 0, I1
-    loada color_max, 0, I2
-    loada zero, 0, I0
-    loada zero, 0, I3
+    // loada color_address, 0, I1
     loada color_offset, 0, I11
     stpopi I12
+    // muli I12, I11, I12
+    intr0 4, I12, 0, 0
+    intr0 7, 0, 0, 0
+    intr0 7, 0, 0, 0
+    load color, 0, I1
+    pushb I1, I12, I20
+    addi I12, I11, I12
+    pushb I1, I12, I21
+    addi I12, I11, I12
+    pushb I1, I12, I22
+    stpushb I22
+    stpushb I21
+    stpushb I20
+    rts
+    (ASM_END)
+(funcend)
+(get_phase0 func)
+    (set int64 1 zero@get_phase0 0)
+    (set int64 1 val@get_phase0 0)
+    (ASM)
+    loada zero@get_phase0, 0, I0
+    loada phase0_address, 0, I1
+    loada phase0_offset, 0, I11
+    stpopi I12
+    muli I12, I11, I12
     pushqw I1, I12, I20
-    addi I12, I11, I12
-    pushqw I1, I12, I21
-    addi I12, I11, I12
-    pushqw I1, I12, I22
-    stpushi I22
-    stpushi I21
+    stpushi I20
+    rts
+    (ASM_END)
+(funcend)
+(get_phase1 func)
+    (set int64 1 zero@get_phase1 0)
+    (set int64 1 val@get_phase1 0)
+    (ASM)
+    loada zero@get_phase1, 0, I0
+    loada phase1_address, 0, I1
+    loada phase1_offset, 0, I11
+    stpopi I12
+    muli I12, I11, I12
+    pushqw I1, I12, I20
     stpushi I20
     rts
     (ASM_END)

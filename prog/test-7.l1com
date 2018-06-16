@@ -1,38 +1,21 @@
-// new N dialect demo
+// bra(et - math expression demo ;)
 //
 (main func)
 	(set int64 1 zero 0)
-	(set int64 1 x 20)
-	(set int64 1 y 10)
-	(set int64 1 z 0)
+	(set int64 1 x 10)
+	(set int64 1 y 20)
+	(set int64 1 z 30)
 	(set int64 1 ret 0)
-	// ((((x y +)(x y *) +)((x y /)(x y -) *) +) z =)
-	((x zero /) z =)
-	// print z
-	(4 z 0 0 intr0)
-	// print newline
-	(7 0 0 0 intr0)
+	(set int64 1 a 0)
+	(((x y +)(y z +) +) ret =)
+	((x y +) a =)
 	// print ret
 	(4 ret 0 0 intr0)
 	// print newline
 	(7 0 0 0 intr0)
-	(x z movi)
-	// print z
-	(4 z 0 0 intr0)
-	// print newline
-	(7 0 0 0 intr0)
-	(savereg)
-	(:test jsr)
-	(ret stpopi)
-	((ret zero +) z =)
-	(loadreg)
-	// print z
-	(4 z 0 0 intr0)
+	// print a
+	(4 a 0 0 intr0)
 	// print newline
 	(7 0 0 0 intr0)
 	(255 zero 0 0 intr0)
-(funcend)
-(test func)
-	((x y *) z =)
-	(z stpushi)
 (funcend)

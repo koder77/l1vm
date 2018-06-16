@@ -144,8 +144,7 @@ U1 *log2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	returnval = log (value);
-	returnval = returnval / m_ln2;
+	returnval = log (value) / m_ln2;
 
 	sp = stpushd (returnval, sp, sp_bottom);
 	if (sp == NULL)

@@ -60,6 +60,7 @@ struct data_info data_info[MAXDATAINFO];
 struct label label[MAXLABELS];
 
 U1 inline_asm = 0;		// set to one, if inline assembly is used
+U1 comp_aot = 0;        // set to one, if AOT COMPILE code block
 
 // protos
 U1 checkdigit (U1 *str);
@@ -2493,6 +2494,20 @@ S2 parse (U1 *name)
 				if (pos != -1)
 				{
 					inline_asm = 0;
+					continue;
+				}
+				
+				pos = searchstr (rbuf, (U1 *) COMP_AOT_SB, 0, 0, TRUE);
+				if (pos != -1)
+				{
+					comp_aot = 1;
+					continue;
+				}
+				
+				pos = searchstr (rbuf, (U1 *) COMP_AOT_END_SB, 0, 0, TRUE);
+				if (pos != -1)
+				{
+					comp_aot = 0;
 					continue;
 				}
 

@@ -89,6 +89,9 @@ typedef double                  F8;     /* DOUBLE */
 #define ASM_SB 			"(ASM)"
 #define ASM_END_SB		"(ASM_END)"
 
+#define COMP_AOT_SB      "(COMP_AOT)"
+#define COMP_AOT_END_SB  "(COMP_AOT_END)"
+
 // data types UNKNOWN (0) -> x
 #define UNKNOWN         7
 #define BYTE            8
