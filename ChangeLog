@@ -1,3 +1,13 @@
+L1VM - (0.9)
+New: start of JIT-compiler writing:
+addi, subi, muli, divi, bandi, bori, bxori...
+addd, subd, muld, divd
+
+New: added noti, not opcode into assembler and VM.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Wed 15 Aug 2018 10:20 +0200
+
+
 L1VM - (0.8.1-4)
 New: port to Windows. DLL load code for Linux and Windows.
 New: library genann - neural networks library, demo code for training and running XOR function.
@@ -23,4 +33,4 @@ L1VM - (0.8)
 BUGFIX: compiler now sets the right pull opcode, if there is something else to "pull" as a quadint!
 In global.h file the setting flags are in one place.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sat 20 Jan 2018 15:00 +0100 
+-- Stefan Pietzonke <jay-t@gmx.net>  Sat 20 Jan 2018 15:00 +0100

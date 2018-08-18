@@ -25,7 +25,6 @@
 
 U1 *int2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	U1 err = 0;
 	S8 intval;
 	F8 doubleval;
 
@@ -35,7 +34,6 @@ U1 *int2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		err = 1;
 		printf ("int2double: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
@@ -48,7 +46,6 @@ U1 *int2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		err = 1;
 		printf ("int2double: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
@@ -57,7 +54,6 @@ U1 *int2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *double2int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	U1 err = 0;
 	S8 intval;
 	F8 doubleval;
 
@@ -65,7 +61,6 @@ U1 *double2int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		err = 1;
 		printf ("double2int: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
@@ -76,7 +71,6 @@ U1 *double2int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		err = 1;
 		printf ("double2int: ERROR: stack corrupt!\n");
 		return (NULL);
 	}

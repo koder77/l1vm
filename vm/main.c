@@ -22,14 +22,26 @@
 //  clang main.c load-object.c -o l1vm -O3 -fomit-frame-pointer -s -ldl -lpthread
 //
 
-
+#define JIT_COMPILER 1
 
 #include "../include/global.h"
+
+#if JIT_COMPILER
+#define MAXJITCODE 64
+S8 JIT_code_ind ALIGN = -1;
+
+struct JIT_code JIT_code[MAXJITCODE];
+#endif
 
 // protos
 S2 load_object (U1 *name);
 
-// #define EXE_NEXT(); ep = ep + eoffs; goto *dthread[dp++];
+#if JIT_COMPILER
+int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *regd, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start, S8 end);
+int run_jit (S8 code);
+int free_jit_code ();
+#endif
+
 #define EXE_NEXT(); ep = ep + eoffs; goto *jumpt[code[ep]];
 
 //#define EXE_NEXT(); ep = ep + eoffs; printf ("next opcode: %i\n", code[ep]); goto *jumpt[code[ep]];
@@ -46,8 +58,6 @@ U1 *code = NULL;
 // data
 U1 *data = NULL;
 
-
-// void **dthread[100];
 
 S8 code_ind ALIGN;
 S8 data_ind ALIGN;
@@ -165,6 +175,7 @@ void cleanup (void)
 {
 	if (code) free (code);
 	if (data) free (data);
+    free_jit_code ();
 }
 
 S2 run (void *arg)
@@ -180,7 +191,6 @@ S2 run (void *arg)
 	S8 arg4 ALIGN;	   // opcode arguments
 
 	S8 ep ALIGN = 0; // execution pointer in code segment
-	S8 dp ALIGN = 0; // execution pointer dthread
 	S8 startpos ALIGN;
 
 	U1 *sp;   // stack pointer
@@ -216,7 +226,7 @@ S2 run (void *arg)
 	sp_top = threaddata[cpu_core].sp_top_thread;
 	sp_bottom = threaddata[cpu_core].sp_bottom_thread;
 	sp = threaddata[cpu_core].sp_thread;
-    
+
 	printf ("%lli sp top: %lli\n", cpu_core, (S8) sp_top);
 	printf ("%lli sp bottom: %lli\n", cpu_core, (S8) sp_bottom);
 	printf ("%lli sp: %lli\n", cpu_core, (S8) sp);
@@ -257,7 +267,8 @@ S2 run (void *arg)
 		&&loada, &&loadd,
 		&&intr0, &&intr1, &&inclsijmpi, &&decgrijmpi,
 		&&movi, &&movd, &&loadl, &&jmpa,
-		&&jsr, &&jsra, &&rts, &&load
+		&&jsr, &&jsra, &&rts, &&load,
+        &&noti
 	};
 
 	//printf ("setting jump offset table...\n");
@@ -416,6 +427,10 @@ S2 run (void *arg)
 				case LOAD:
 					offset = 18;
 					break;
+
+                case NOTI:
+                    offset = 3;
+                    break;
 			}
 		}
 		if (offset == 0)
@@ -1731,6 +1746,32 @@ S2 run (void *arg)
             eoffs = 5;
             break;
 
+#if JIT_COMPILER
+        case 253:
+        // run JIT compiler
+            arg2 = code[ep + 2];
+            arg3 = code[ep + 3];
+
+            if (jit_compiler ((U1 *) code, (U1 *) data, (S8 *) jumpoffs, (S8 *) &regi, (F8 *) &regd, (U1 *) sp, sp_top, sp_bottom, regi[arg2], regi[arg3]) != 0)
+            {
+                printf ("FATAL ERROR: JIT compiler: can't compile!\n");
+                free (jumpoffs);
+            	pthread_exit ((void *) 1);
+            }
+
+            eoffs = 5;
+            break;
+
+        case 254:
+            arg2 = code[ep + 2];
+            // printf ("intr0: 254: RUN JIT CODE: %i\n", arg2);
+            run_jit (regi[arg2]);
+
+            eoffs = 5;
+            break;
+#endif
+
+
 		case 255:
 			printf ("EXIT\n");
 			arg2 = code[ep + 2];
@@ -1903,7 +1944,6 @@ S2 run (void *arg)
 	{
 		eoffs = 0;
 		ep = arg3;
-		dp = code[ep + 4];
 		EXE_NEXT();
 	}
 
@@ -1925,7 +1965,6 @@ S2 run (void *arg)
 	{
 		eoffs = 0;
 		ep = arg3;
-		dp = code[ep + 4];
 		EXE_NEXT();
 	}
 
@@ -2114,6 +2153,19 @@ S2 run (void *arg)
 
 	eoffs = 18;
 	EXE_NEXT();
+
+
+    noti:
+	#if DEBUG
+	printf ("%lli NOTI\n", cpu_core);
+	#endif
+	arg1 = code[ep + 1];
+	arg2 = code[ep + 2];
+
+	regi[arg2] = ! regi[arg1];
+
+	eoffs = 3;
+	EXE_NEXT();
 }
 
 void break_handler (void)
@@ -2146,13 +2198,17 @@ int main (int ac, char *av[])
 
 	S8 new_cpu ALIGN;
 
-    printf ("l1vm - 0.8.1-4\n");
+    printf ("l1vm - 0.9 - (C) 2017-2018 Stefan Pietzonke\n");
 
 #if MAXCPUCORES == 0
     max_cpu = sysconf (_SC_NPROCESSORS_ONLN);
     printf ("CPU cores: %lli (autoconfig)\n", max_cpu);
 #else
     printf ("CPU cores: %lli (STATIC)\n", max_cpu);
+#endif
+
+#if JIT_COMPILER
+    printf ("JIT-compiler inside: lib asmjit\n");
 #endif
 
     if (ac > 1)

@@ -2,61 +2,36 @@
 Q, 1, zero
 @, 0Q, 0
 Q, 1, x
-@, 8Q, 20
+@, 8Q, 10
 Q, 1, y
-@, 16Q, 10
+@, 16Q, 20
 Q, 1, z
-@, 24Q, 0
+@, 24Q, 30
 Q, 1, ret
 @, 32Q, 0
+Q, 1, a
+@, 40Q, 0
 .dend
 .code
 :main
 loada zero, 0, 0
 loada x, 0, 1
-divi 1, 0, 2
-load z, 0, 3
-pullqw 2, 3, 0
-loada z, 0, 4
-intr0 4, 4, 0, 0
-intr0 7, 0, 0, 0
-loada ret, 0, 5
-intr0 4, 5, 0, 0
-intr0 7, 0, 0, 0
-movi 1, 4
-intr0 4, 4, 0, 0
-intr0 7, 0, 0, 0
-stpushi I0
-stpushi I2
-stpushi I3
-stpushi I4
-stpushi I5
-jsr :test
-stpopi 5
-load ret, 0, 1
-pullqw 5, 1, 0
-addi 5, 0, 1
-load z, 0, 6
-pullqw 1, 6, 0
-stpopi I5
-stpopi I4
-stpopi I3
-stpopi I2
-stpopi I0
-loada z, 0, 1
-intr0 4, 1, 0, 0
-intr0 7, 0, 0, 0
-loada zero, 0, 2
-intr0 255, 2, 0, 0
-rts
-:test
-loada zero, 0, 0
-loada x, 0, 1
 loada y, 0, 2
-muli 1, 2, 3
-load z, 0, 4
-pullqw 3, 4, 0
-loada z, 0, 5
-stpushi 5
+addi 1, 2, 3
+loada z, 0, 4
+addi 2, 4, 5
+addi 3, 5, 6
+load ret, 0, 7
+pullqw 6, 7, 0
+addi 1, 2, 8
+load a, 0, 9
+pullqw 8, 9, 0
+loada ret, 0, 10
+intr0 4, 10, 0, 0
+intr0 7, 0, 0, 0
+loada a, 0, 11
+intr0 4, 11, 0, 0
+intr0 7, 0, 0, 0
+intr0 255, 0, 0, 0
 rts
 .cend

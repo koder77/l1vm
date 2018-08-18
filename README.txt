@@ -1,12 +1,12 @@
-L1VM README  2018-01-22
+L1VM README  2018-08-18
 =======================
-L1VM is a very tiny virtual machine with RISC (or comparable style) CPU, about 60 opcodes and less than
-32 KB binary size on X86_64!
+L1VM is a very tiny virtual machine with RISC (or comparable style) CPU, about 61 opcodes and less than
+32 KB binary size on X86_64 (without JIT-compiler)!
 The VM has a 64 bit core (256 registers for integer and double float) and can run object code
 written in the l1asm assembly language.
 
 Code and data are in separated memories for a secure execution. Like in Harvard type CPUs (found now in DSPs or microcontrollers).
-The opcode set with 60 opcodes is my own opinion how things should work. It does not "copy" other instruction sets known in
+The opcode set with 61 opcodes is my own opinion how things should work. It does not "copy" other instruction sets known in
 other "real" CPUs.
 
 The design goals are:
@@ -14,6 +14,10 @@ The design goals are:
 - be fast
 - be simple
 - be modular
+
+New:
+----
+I added a JIT-compiler using asmjit library. At the moment only few opcodes can be translated into code for direct execution.
 
 L1VM ist under active development. As a proof of concept I rewrote the Nano VM fractalix SDL graphics demo in L1VM
 assembly.
@@ -91,4 +95,3 @@ finally executes program "test.l1obj"
 
 ==========================================================================
 for Rebecca
-

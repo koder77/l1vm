@@ -174,15 +174,17 @@ struct data_info
 	U1 type_str[2];
 };
 
-#define MAXOPCODES              60
+#define MAXOPCODES              61
 
+
+#if ! JIT_COMPILER
 struct opcode
 {
     U1 op[16];
     S2 args;
     U1 type[4];
 };
-
+#endif
 
 // compiler:
 struct translate
@@ -207,7 +209,19 @@ struct label
 #define MAXSHELLARGS			32
 #define MAXSHELLARGLEN			256
 
+#if ! JIT_COMPILER
 struct opcode opcode[MAXOPCODES];
+#endif
+
+// This is type of function we will generate
+// for JIT-compiler
+typedef void (*Func)(void);
+
+struct JIT_code
+{
+	Func fn;
+};
+
 
 // 60 opcodes
 #define PUSHB   0
@@ -289,3 +303,5 @@ struct opcode opcode[MAXOPCODES];
 #define RTS		58
 
 #define LOAD    59
+
+#define NOTI	60
