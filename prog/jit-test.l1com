@@ -54,9 +54,8 @@
     load sum, 0, I30
     pullqw I10, I30, 0
     addi I4, I6, I4
-    // lseqi I4, I5, I30
-    // jmpi I30, :loop
-    inclsijmpi I4, I5, :loop
+    lseqi I4, I5, I30
+    jmpi I30, :loop
     intr0 4, I10, 0, 0
     intr0 7, 0, 0, 0
     intr0 4, I52, 0, 0

@@ -270,7 +270,7 @@ S2 get_args (U1 *line)
 								}
 								pos = pos + 3;
 							}
-							
+
 							if (line[pos] == '@' && line[pos + 1] == '@' && line[pos + 2] == 'c')
 							{
 								// found comma code, insert it into string
@@ -284,7 +284,7 @@ S2 get_args (U1 *line)
 								pos = pos + 3;
 							}
 						}
-						
+
 						if (line[pos] != '"')
 						{
 							args[arg_ind][arg_pos] = line[pos];
@@ -1538,6 +1538,7 @@ S2 dump_object (U1 *name)
 int main (int ac, char *av[])
 {
     printf ("l1asm <asm-file>\n");
+	printf ("(C) 2017-2018 Stefan Pietzonke\n");
 
     if (ac < 2)
     {

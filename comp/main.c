@@ -1078,22 +1078,22 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											{
 												strcpy ((char *) code_temp, "pullb ");
 											}
-											
+
 											if (getvartype_real (ast[level].expr[j][last_arg - 1]) == WORD)
 											{
 												strcpy ((char *) code_temp, "pullw ");
 											}
-											
+
 											if (getvartype_real (ast[level].expr[j][last_arg - 1]) == DOUBLEWORD)
 											{
 												strcpy ((char *) code_temp, "pulldw ");
 											}
-											
+
 											if (getvartype_real (ast[level].expr[j][last_arg - 1]) == QUADWORD)
 											{
 												strcpy ((char *) code_temp, "pullqw ");
 											}
-											
+
 											sprintf ((char *) str, "%i", target);
 											strcat ((char *) code_temp, (const char *) str);
 											strcat ((char *) code_temp, ", ");
@@ -1179,27 +1179,27 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 													strcat ((char *) code[code_line], "\n");
 												}
 
-										
+
 												if (getvartype_real (ast[level].expr[j][last_arg - 1]) == BYTE)
 												{
 													strcpy ((char *) code_temp, "pullb ");
 												}
-											
+
 												if (getvartype_real (ast[level].expr[j][last_arg - 1]) == WORD)
 												{
 													strcpy ((char *) code_temp, "pullw ");
 												}
-											
+
 												if (getvartype_real (ast[level].expr[j][last_arg - 1]) == DOUBLEWORD)
 												{
 													strcpy ((char *) code_temp, "pulldw ");
 												}
-											
+
 												if (getvartype_real (ast[level].expr[j][last_arg - 1]) == QUADWORD)
 												{
 													strcpy ((char *) code_temp, "pullqw ");
 												}
-												
+
 												sprintf ((char *) str, "%i", reg2);
 												strcat ((char *) code_temp, (const char *) str);
 												strcat ((char *) code_temp, ", ");
@@ -1222,22 +1222,22 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 													{
 														strcpy ((char *) code_temp, "pullb ");
 													}
-											
+
 													if (getvartype_real (ast[level].expr[j][last_arg - 1]) == WORD)
 													{
 														strcpy ((char *) code_temp, "pullw ");
 													}
-											
+
 													if (getvartype_real (ast[level].expr[j][last_arg - 1]) == DOUBLEWORD)
 													{
 														strcpy ((char *) code_temp, "pulldw ");
 													}
-											
+
 													if (getvartype_real (ast[level].expr[j][last_arg - 1]) == QUADWORD)
 													{
 														strcpy ((char *) code_temp, "pullqw ");
 													}
-													
+
 													sprintf ((char *) str, "%i", target);
 													strcat ((char *) code_temp, (const char *) str);
 													strcat ((char *) code_temp, ", ");
@@ -1278,22 +1278,22 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 													{
 														strcpy ((char *) code_temp, "pullb ");
 													}
-											
+
 													if (getvartype_real (ast[level].expr[j][last_arg - 1]) == WORD)
 													{
 														strcpy ((char *) code_temp, "pullw ");
 													}
-											
+
 													if (getvartype_real (ast[level].expr[j][last_arg - 1]) == DOUBLEWORD)
 													{
 														strcpy ((char *) code_temp, "pulldw ");
 													}
-											
+
 													if (getvartype_real (ast[level].expr[j][last_arg - 1]) == QUADWORD)
 													{
 														strcpy ((char *) code_temp, "pullqw ");
-													}		
-													
+													}
+
 													sprintf ((char *) str, "%i", target);
 													strcat ((char *) code_temp, (const char *) str);
 													strcat ((char *) code_temp, ", ");
@@ -2496,14 +2496,14 @@ S2 parse (U1 *name)
 					inline_asm = 0;
 					continue;
 				}
-				
+
 				pos = searchstr (rbuf, (U1 *) COMP_AOT_SB, 0, 0, TRUE);
 				if (pos != -1)
 				{
 					comp_aot = 1;
 					continue;
 				}
-				
+
 				pos = searchstr (rbuf, (U1 *) COMP_AOT_END_SB, 0, 0, TRUE);
 				if (pos != -1)
 				{
@@ -2612,6 +2612,7 @@ int main (int ac, char *av[])
 {
     printf ("l1com <file>\n");
 	printf ("\nCompiler for bra(et, a programming language with brackets ;-)\n");
+	printf ("(C) 2017-2018 Stefan Pietzonke\n");
 
 	init_ast ();
 

@@ -27,252 +27,256 @@ Q, 1, color_ind
 @, 96Q, 0
 Q, 1, phase_ind
 @, 104Q, 0
-Q, 1, color_r
+B, 1, color_r
 @, 112Q, 0
-Q, 1, color_g
-@, 120Q, 0
-Q, 1, color_b
-@, 128Q, 0
+B, 1, color_g
+@, 113Q, 0
+B, 1, color_b
+@, 114Q, 0
 Q, 1, r
-@, 136Q, 0
+@, 115Q, 0
 Q, 1, g
-@, 144Q, 0
+@, 123Q, 0
 Q, 1, b
-@, 152Q, 0
-Q, 1, next_r
-@, 160Q, 0
-Q, 1, next_g
-@, 168Q, 0
-Q, 1, next_b
-@, 176Q, 0
+@, 131Q, 0
+B, 1, next_r
+@, 139Q, 0
+B, 1, next_g
+@, 140Q, 0
+B, 1, next_b
+@, 141Q, 0
 Q, 1, phase_color
-@, 184Q, 0
+@, 142Q, 0
 Q, 1, write_color
-@, 192Q, 0
+@, 150Q, 0
 Q, 1, next_direction
-@, 200Q, 0
+@, 158Q, 0
 Q, 1, next_phase
-@, 208Q, 0
+@, 166Q, 0
 Q, 1, i
-@, 216Q, 0
+@, 174Q, 0
 Q, 1, j
-@, 224Q, 0
+@, 182Q, 0
 Q, 1, f
-@, 232Q, 0
+@, 190Q, 0
 Q, 1, c
-@, 240Q, 0
+@, 198Q, 0
 Q, 1, left
-@, 248Q, 1
+@, 206Q, 1
 Q, 1, up
-@, 256Q, 2
+@, 214Q, 2
 Q, 1, right
-@, 264Q, 3
+@, 222Q, 3
 Q, 1, down
-@, 272Q, 4
+@, 230Q, 4
 Q, 1, go_left
-@, 280Q, 3
+@, 238Q, 3
 Q, 1, go_right
-@, 288Q, 1
+@, 246Q, 1
 Q, 1, go_forward
-@, 296Q, 0
+@, 254Q, 0
 Q, 1, go_back
-@, 304Q, 2
+@, 262Q, 2
 Q, 1, black
-@, 312Q, 0
+@, 270Q, 0
 Q, 1, red
-@, 320Q, 1
+@, 278Q, 1
 Q, 1, orange
-@, 328Q, 2
+@, 286Q, 2
 Q, 1, yellow
-@, 336Q, 3
+@, 294Q, 3
 Q, 1, green
-@, 344Q, 4
+@, 302Q, 4
 Q, 1, bluegreen
-@, 352Q, 5
+@, 310Q, 5
 Q, 1, blue
-@, 360Q, 6
+@, 318Q, 6
 Q, 1, violet
-@, 368Q, 7
+@, 326Q, 7
 Q, 1, halt
-@, 376Q, 255
+@, 334Q, 255
 Q, 1, color_address
-@, 384Q, 408
+@, 342Q, 366
 Q, 1, color_offset
-@, 392Q, 1
+@, 350Q, 1
 Q, 1, color_max
-@, 400Q, 24
+@, 358Q, 24
 B, 24, color
-@, 408Q, 0, 0, 0, 255, 0, 0, 255, 200, 0, 255, 255, 0, 0, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 255, ;
+@, 366Q, 0, 0, 0, 255, 0, 0, 255, 200, 0, 255, 255, 0, 0, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 255, ;
 Q, 1, phase0_address
-@, 432Q, 464
+@, 390Q, 438
 Q, 1, phase0_offset
-@, 440Q, 8
+@, 398Q, 8
 Q, 1, phase0_max
-@, 448Q, 32
+@, 406Q, 32
 Q, 1, phase1_address
-@, 456Q, 0
+@, 414Q, 694
 Q, 1, phase1_offset
-@, 464Q, 8
+@, 422Q, 8
 Q, 1, phase1_max
-@, 472Q, 32
+@, 430Q, 32
 Q, 32, phase0
-@, 480Q, 4, 6, 1, 1, 0, 1, 0, 1, 6, 4, 0, 1, 1, 3, 2, 0, 3, 0, 2, 0, 2, 5, 3, 1, 5, 7, 1, 0, 7, 2, 0, 1, ;
+@, 438Q, 4, 6, 1, 1, 0, 1, 0, 1, 6, 4, 0, 1, 1, 3, 2, 0, 3, 0, 2, 0, 2, 5, 3, 1, 5, 7, 1, 0, 7, 2, 0, 1, ;
 Q, 32, phase1
-@, 736Q, 4, 0, 0, 0, 0, 6, 0, 0, 6, 0, 2, 1, 1, 4, 1, 1, 3, 1, 0, 0, 2, 7, 2, 0, 5, 2, 3, 0, 7, 5, 2, 0, ;
+@, 694Q, 4, 0, 0, 0, 0, 6, 0, 0, 6, 0, 2, 1, 1, 4, 1, 1, 3, 1, 0, 0, 2, 7, 2, 0, 5, 2, 3, 0, 7, 5, 2, 0, ;
 Q, 1, phase
-@, 992Q, 0
+@, 950Q, 0
 Q, 1, direction
-@, 1000Q, 0
+@, 958Q, 0
 Q, 1, delay
-@, 1008Q, 10000Q
+@, 966Q, 10000Q
 Q, 1, ret
-@, 1016Q, 0
+@, 974Q, 0
 Q, 1, c
-@, 1024Q, 0
-Q, 1, zero@get_colorind
-@, 1032Q, 0
-Q, 1, i@get_colorind
-@, 1040Q, 0
-Q, 1, r@get_colorind
-@, 1048Q, 0
-Q, 1, g@get_colorind
-@, 1056Q, 0
-Q, 1, b@get_colorind
-@, 1064Q, 0
+@, 982Q, 0
+Q, 1, four
+@, 990Q, 4
+B, 1, alpha
+@, 998Q, 255
+Q, 1, phase_max
+@, 999Q, 28
+Q, 1, zero@get_phase0
+@, 1007Q, 0
+Q, 1, val@get_phase0
+@, 1015Q, 0
+Q, 1, zero@get_phase1
+@, 1023Q, 0
+Q, 1, val@get_phase1
+@, 1031Q, 0
 B, 1, zero@clear_screen
-@, 1072Q, 0
+@, 1039Q, 0
 Q, 1, one@clear_screen
-@, 1073Q, 1
+@, 1040Q, 1
 Q, 1, width@clear_screen
-@, 1081Q, 0
+@, 1048Q, 0
 Q, 1, height@clear_screen
-@, 1089Q, 0
+@, 1056Q, 0
 B, 1, b@clear_screen
-@, 1097Q, 255
+@, 1064Q, 255
 Q, 1, zero
-@, 1098Q, 0
+@, 1065Q, 0
 B, 14, modulestr@sdl
-@, 1106Q, "libl1vmsdl.so"
+@, 1073Q, "libl1vmsdl.so"
 Q, 1, modulestr@sdladdr
-@, 1120Q, 1106Q
+@, 1087Q, 1073Q
 B, 16, openstr@sdl
-@, 1128Q, "sdl_open_screen"
+@, 1095Q, "sdl_open_screen"
 Q, 1, openstr@sdladdr
-@, 1144Q, 1128Q
+@, 1111Q, 1095Q
 B, 9, quitstr@sdl
-@, 1152Q, "sdl_quit"
+@, 1119Q, "sdl_quit"
 Q, 1, quitstr@sdladdr
-@, 1161Q, 1152Q
+@, 1128Q, 1119Q
 B, 16, pixelstr@sdl
-@, 1169Q, "sdl_pixel_alpha"
+@, 1136Q, "sdl_pixel_alpha"
 Q, 1, pixelstr@sdladdr
-@, 1185Q, 1169Q
+@, 1152Q, 1136Q
 B, 15, linestr@sdl
-@, 1193Q, "sdl_line_alpha"
+@, 1160Q, "sdl_line_alpha"
 Q, 1, linestr@sdladdr
-@, 1208Q, 1193Q
+@, 1175Q, 1160Q
 B, 20, rectanglestr@sdl
-@, 1216Q, "sdl_rectangle_alpha"
+@, 1183Q, "sdl_rectangle_alpha"
 Q, 1, rectanglestr@sdladdr
-@, 1236Q, 1216Q
+@, 1203Q, 1183Q
 B, 25, rectangle_fillstr@sdl
-@, 1244Q, "sdl_rectangle_fill_alpha"
+@, 1211Q, "sdl_rectangle_fill_alpha"
 Q, 1, rectangle_fillstr@sdladdr
-@, 1269Q, 1244Q
+@, 1236Q, 1211Q
 B, 17, circlestr@sdl
-@, 1277Q, "sdl_circle_alpha"
+@, 1244Q, "sdl_circle_alpha"
 Q, 1, circlestr@sdladdr
-@, 1294Q, 1277Q
+@, 1261Q, 1244Q
 B, 22, circle_fillstr@sdl
-@, 1302Q, "sdl_circle_fill_alpha"
+@, 1269Q, "sdl_circle_fill_alpha"
 Q, 1, circle_fillstr@sdladdr
-@, 1324Q, 1302Q
+@, 1291Q, 1269Q
 B, 18, ellipsestr@sdl
-@, 1332Q, "sdl_ellipse_alpha"
+@, 1299Q, "sdl_ellipse_alpha"
 Q, 1, ellipsestr@sdladdr
-@, 1350Q, 1332Q
+@, 1317Q, 1299Q
 B, 23, ellipse_fillstr@sdl
-@, 1358Q, "sdl_ellipse_fill_alpha"
+@, 1325Q, "sdl_ellipse_fill_alpha"
 Q, 1, ellipse_fillstr@sdladdr
-@, 1381Q, 1358Q
+@, 1348Q, 1325Q
 B, 14, piestr@sdl
-@, 1389Q, "sdl_pie_alpha"
+@, 1356Q, "sdl_pie_alpha"
 Q, 1, piestr@sdladdr
-@, 1403Q, 1389Q
+@, 1370Q, 1356Q
 B, 19, pie_fillstr@sdl
-@, 1411Q, "sdl_pie_fill_alpha"
+@, 1378Q, "sdl_pie_fill_alpha"
 Q, 1, pie_fillstr@sdladdr
-@, 1430Q, 1411Q
+@, 1397Q, 1378Q
 B, 17, trigonstr@sdl
-@, 1438Q, "sdl_trigon_alpha"
+@, 1405Q, "sdl_trigon_alpha"
 Q, 1, trigonstr@sdladdr
-@, 1455Q, 1438Q
+@, 1422Q, 1405Q
 B, 22, trigon_fillstr@sdl
-@, 1463Q, "sdl_trigon_fill_alpha"
+@, 1430Q, "sdl_trigon_fill_alpha"
 Q, 1, trigon_fillstr@sdladdr
-@, 1485Q, 1463Q
+@, 1452Q, 1430Q
 B, 13, font_ttfstr@sdl
-@, 1493Q, "sdl_font_ttf"
+@, 1460Q, "sdl_font_ttf"
 Q, 1, font_ttfstr@sdladdr
-@, 1506Q, 1493Q
+@, 1473Q, 1460Q
 B, 13, text_ttfstr@sdl
-@, 1514Q, "sdl_text_ttf"
+@, 1481Q, "sdl_text_ttf"
 Q, 1, text_ttfstr@sdladdr
-@, 1527Q, 1514Q
+@, 1494Q, 1481Q
 B, 19, get_pixelcolorstr@sdl
-@, 1535Q, "sdl_get_pixelcolor"
+@, 1502Q, "sdl_get_pixelcolor"
 Q, 1, get_pixelcolorstr@sdladdr
-@, 1554Q, 1535Q
+@, 1521Q, 1502Q
 B, 11, updatestr@sdl
-@, 1562Q, "sdl_update"
+@, 1529Q, "sdl_update"
 Q, 1, updatestr@sdladdr
-@, 1573Q, 1562Q
+@, 1540Q, 1529Q
 Q, 1, open@sdl
-@, 1581Q, 0
+@, 1548Q, 0
 Q, 1, quit@sdl
-@, 1589Q, 1
+@, 1556Q, 1
 Q, 1, update@sdl
-@, 1597Q, 2
+@, 1564Q, 2
 Q, 1, pixel@sdl
-@, 1605Q, 3
+@, 1572Q, 3
 Q, 1, line@sdl
-@, 1613Q, 4
+@, 1580Q, 4
 Q, 1, rectangle@sdl
-@, 1621Q, 5
+@, 1588Q, 5
 Q, 1, rectangle_fill@sdl
-@, 1629Q, 6
+@, 1596Q, 6
 Q, 1, circle@sdl
-@, 1637Q, 7
+@, 1604Q, 7
 Q, 1, circle_fill@sdl
-@, 1645Q, 8
+@, 1612Q, 8
 Q, 1, ellipse@sdl
-@, 1653Q, 9
+@, 1620Q, 9
 Q, 1, ellipse_fill@sdl
-@, 1661Q, 10
+@, 1628Q, 10
 Q, 1, pie@sdl
-@, 1669Q, 11
+@, 1636Q, 11
 Q, 1, pie_fill@sdl
-@, 1677Q, 12
+@, 1644Q, 12
 Q, 1, trigon@sdl
-@, 1685Q, 13
+@, 1652Q, 13
 Q, 1, trigon_fill@sdl
-@, 1693Q, 14
+@, 1660Q, 14
 Q, 1, font_ttf@sdl
-@, 1701Q, 15
+@, 1668Q, 15
 Q, 1, text_ttf@sdl
-@, 1709Q, 16
+@, 1676Q, 16
 Q, 1, get_pixelcolor@sdl
-@, 1717Q, 17
+@, 1684Q, 17
 Q, 1, get@sdl
-@, 1725Q, 0
+@, 1692Q, 0
 Q, 1, width@sdl
-@, 1733Q, 0
+@, 1700Q, 0
 Q, 1, height@sdl
-@, 1741Q, 0
+@, 1708Q, 0
 Q, 1, bit@sdl
-@, 1749Q, 0
+@, 1716Q, 0
 Q, 1, mod@sdl
-@, 1757Q, 0
+@, 1724Q, 0
 .dend
 .code
 :main
@@ -298,9 +302,6 @@ pullqw 12, 13, 0
 load direction, 0, 11
 loada down, 0, 14
 pullqw 14, 11, 0
-loada direction, 0, 11
-intr0 4, 11, 0, 0
-intr0 7, 0, 0, 0
 stpushi I0
 stpushi I1
 stpushi I2
@@ -312,20 +313,18 @@ stpushi I7
 stpushi I8
 stpushi I9
 stpushi I10
-stpushi I11
 stpushi I12
 stpushi I13
 stpushi 0
 stpushi 1
 stpushi 5
-loada bit, 0, 14
-stpushi 14
+loada bit, 0, 11
+stpushi 11
 jsr :sdl_open_screen
-loada ret, 0, 15
-stpopb 15
+loada ret, 0, 14
+stpopb 14
 stpopi I13
 stpopi I12
-stpopi I11
 stpopi I10
 stpopi I9
 stpopi I8
@@ -347,7 +346,7 @@ loada x, 0, 1
 stpushi 1
 loada y, 0, 2
 stpushi 2
-jsr :get_pixelcolor
+jsr :sdl_get_pixelcolor
 stpopi 3
 load r, 0, 4
 pullqw 3, 4, 0
@@ -357,11 +356,267 @@ pullqw 4, 5, 0
 stpopi 5
 load b, 0, 6
 pullqw 5, 6, 0
-load color_ind, 0, 1
-loada zero, 0, 2
-pullqw 2, 1, 0
+loada r, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+loada g, 0, 2
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+loada b, 0, 3
+intr0 4, 3, 0, 0
+intr0 7, 0, 0, 0
+load color_ind, 0, 4
+loada zero, 0, 5
+pullqw 5, 4, 0
 :get_color_ind
-loada color_ind, 0, 1
+loada color_ind, 0, 4
+loada three, 0, 5
+muli 4, 5, 6
+load i, 0, 7
+pullqw 6, 7, 0
+stpushi I1
+stpushi I2
+stpushi I3
+stpushi I4
+stpushi I5
+stpushi I6
+stpushi I7
+loada i, 0, 8
+stpushi 8
+jsr :get_colorind
+loada color_r, 0, 9
+stpopb 9
+loada color_g, 0, 10
+stpopb 10
+loada color_b, 0, 11
+stpopb 11
+stpopi I7
+stpopi I6
+stpopi I5
+stpopi I4
+stpopi I3
+stpopi I2
+stpopi I1
+intr0 7, 0, 0, 0
+loada color_r, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+loada color_g, 0, 2
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+loada color_b, 0, 3
+intr0 4, 3, 0, 0
+intr0 7, 0, 0, 0
+load c, 0, 4
+loada zero, 0, 5
+pullqw 5, 4, 0
+loada r, 0, 4
+neqi 1, 4, 5
+load f, 0, 6
+pullqw 5, 6, 0
+loada f, 0, 7
+jmpi 7, :get_color_ind_continue
+loada c, 0, 8
+loada one, 0, 9
+addi 8, 9, 10
+load c, 0, 11
+pullqw 10, 11, 0
+loada g, 0, 8
+neqi 2, 8, 12
+load f, 0, 13
+pullqw 12, 13, 0
+loada f, 0, 7
+jmpi 7, :next_b
+loada c, 0, 14
+addi 14, 9, 15
+load c, 0, 16
+pullqw 15, 16, 0
+:next_b
+loada b, 0, 14
+neqi 3, 14, 17
+load f, 0, 18
+pullqw 17, 18, 0
+loada f, 0, 7
+jmpi 7, :next_g
+loada c, 0, 19
+addi 19, 9, 20
+load c, 0, 21
+pullqw 20, 21, 0
+:next_g
+:get_color_ind_continue
+loada c, 0, 19
+loada three, 0, 22
+eqi 19, 22, 23
+load f, 0, 24
+pullqw 23, 24, 0
+loada f, 0, 7
+jmpi 7, :color_match
+loada color_ind, 0, 25
+addi 25, 9, 26
+load color_ind, 0, 27
+pullqw 26, 27, 0
+jmp :get_color_ind
+:color_match
+load phase_ind, 0, 25
+loada zero, 0, 28
+pullqw 28, 25, 0
+:phase_loop
+loada zero, 0, 25
+loada phase, 0, 28
+eqi 25, 28, 29
+load f, 0, 30
+pullqw 29, 30, 0
+loada f, 0, 7
+jmpi 7, :phase_match
+stpushi I1
+stpushi I2
+stpushi I3
+stpushi I4
+stpushi I5
+stpushi I6
+stpushi I7
+stpushi I8
+stpushi I9
+stpushi I10
+stpushi I11
+stpushi I12
+stpushi I13
+stpushi I14
+stpushi I15
+stpushi I16
+stpushi I17
+stpushi I18
+stpushi I19
+stpushi I20
+stpushi I21
+stpushi I22
+stpushi I23
+stpushi I24
+stpushi I25
+stpushi I26
+stpushi I27
+stpushi I28
+stpushi I29
+stpushi I30
+loada phase_ind, 0, 31
+stpushi 31
+jsr :get_phase1
+stpopi 32
+load phase_color, 0, 33
+pullqw 32, 33, 0
+stpopi I30
+stpopi I29
+stpopi I28
+stpopi I27
+stpopi I26
+stpopi I25
+stpopi I24
+stpopi I23
+stpopi I22
+stpopi I21
+stpopi I20
+stpopi I19
+stpopi I18
+stpopi I17
+stpopi I16
+stpopi I15
+stpopi I14
+stpopi I13
+stpopi I12
+stpopi I11
+stpopi I10
+stpopi I9
+stpopi I8
+stpopi I7
+stpopi I6
+stpopi I5
+stpopi I4
+stpopi I3
+stpopi I2
+stpopi I1
+jmp :phase_match_end
+:phase_match
+loada phase_ind, 0, 1
+stpushi 1
+jsr :get_phase0
+stpopi 2
+load phase_color, 0, 3
+pullqw 2, 3, 0
+:phase_match_end
+loada phase_color, 0, 1
+loada color_ind, 0, 2
+eqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 5
+jmpi 5, :phase_color_match
+loada phase_ind, 0, 6
+loada four, 0, 7
+addi 6, 7, 8
+load phase_ind, 0, 9
+pullqw 8, 9, 0
+jmp :phase_color_match_end
+:phase_color_match
+loada phase_ind, 0, 6
+loada one, 0, 10
+addi 6, 10, 11
+load j, 0, 12
+pullqw 11, 12, 0
+loada phase, 0, 13
+loada zero, 0, 14
+eqi 13, 14, 15
+load f, 0, 16
+pullqw 15, 16, 0
+loada f, 0, 5
+jmpi 5, :write_col_phase0
+stpushi I1
+stpushi I2
+stpushi I3
+stpushi I4
+stpushi I5
+stpushi I6
+stpushi I7
+stpushi I8
+stpushi I9
+stpushi I10
+stpushi I11
+stpushi I12
+stpushi I13
+stpushi I14
+stpushi I15
+stpushi I16
+loada j, 0, 17
+stpushi 17
+jsr :get_phase1
+stpopi 18
+load write_color, 0, 19
+pullqw 18, 19, 0
+stpopi I16
+stpopi I15
+stpopi I14
+stpopi I13
+stpopi I12
+stpopi I11
+stpopi I10
+stpopi I9
+stpopi I8
+stpopi I7
+stpopi I6
+stpopi I5
+stpopi I4
+stpopi I3
+stpopi I2
+stpopi I1
+jmp :phase_color_match_end
+:write_col_phase0
+loada j, 0, 1
+stpushi 1
+jsr :get_phase0
+stpopi 2
+load write_color, 0, 3
+pullqw 2, 3, 0
+:phase_color_match_end
+loada write_color, 0, 1
 loada three, 0, 2
 muli 1, 2, 3
 load i, 0, 4
@@ -373,85 +628,283 @@ stpushi I4
 loada i, 0, 5
 stpushi 5
 jsr :get_colorind
-stpopi 6
-load color_r, 0, 7
-pullqw 6, 7, 0
-stpopi 7
-load color_b, 0, 8
-pullqw 7, 8, 0
-stpopi 7
-load color_b, 0, 8
-pullqw 7, 8, 0
+loada next_r, 0, 6
+stpopb 6
+loada next_g, 0, 7
+stpopb 7
+loada next_b, 0, 8
+stpopb 8
 stpopi I4
 stpopi I3
 stpopi I2
 stpopi I1
-loada color_r, 0, 1
-loada r, 0, 2
-neqi 1, 2, 3
+loada x, 0, 1
+stpushi 1
+loada y, 0, 2
+stpushi 2
+loada next_r, 0, 3
+stpushb 3
+loada next_g, 0, 4
+stpushb 4
+loada next_b, 0, 5
+stpushb 5
+loada alpha, 0, 6
+stpushb 6
+jsr :sdl_pixel
+jsr :sdl_update
+loada phase_ind, 0, 1
+loada two, 0, 2
+addi 1, 2, 3
+load j, 0, 4
+pullqw 3, 4, 0
+loada phase, 0, 5
+loada zero, 0, 6
+eqi 5, 6, 7
+load f, 0, 8
+pullqw 7, 8, 0
+loada f, 0, 9
+jmpi 9, :next_direction_phase0
+stpushi I1
+stpushi I2
+stpushi I3
+stpushi I4
+stpushi I5
+stpushi I6
+stpushi I7
+stpushi I8
+stpushi I9
+loada j, 0, 10
+stpushi 10
+jsr :get_phase1
+stpopi 11
+load next_direction, 0, 12
+pullqw 11, 12, 0
+stpopi I9
+stpopi I8
+stpopi I7
+stpopi I6
+stpopi I5
+stpopi I4
+stpopi I3
+stpopi I2
+stpopi I1
+jmp :next_direction_end
+:next_direction_phase0
+loada j, 0, 1
+stpushi 1
+jsr :get_phase0
+stpopi 2
+load next_direction, 0, 3
+pullqw 2, 3, 0
+:next_direction_end
+loada phase_ind, 0, 1
+loada three, 0, 2
+addi 1, 2, 3
+load j, 0, 4
+pullqw 3, 4, 0
+loada phase, 0, 5
+loada zero, 0, 6
+eqi 5, 6, 7
+load f, 0, 8
+pullqw 7, 8, 0
+loada f, 0, 9
+jmpi 9, :next_phase0
+stpushi I1
+stpushi I2
+stpushi I3
+stpushi I4
+stpushi I5
+stpushi I6
+stpushi I7
+stpushi I8
+stpushi I9
+loada j, 0, 10
+stpushi 10
+jsr :get_phase1
+stpopi 11
+load next_phase, 0, 12
+pullqw 11, 12, 0
+stpopi I9
+stpopi I8
+stpopi I7
+stpopi I6
+stpopi I5
+stpopi I4
+stpopi I3
+stpopi I2
+stpopi I1
+jmp :next_phase_end
+:next_phase0
+loada j, 0, 1
+stpushi 1
+jsr :get_phase0
+stpopi 2
+load next_phase, 0, 3
+pullqw 2, 3, 0
+:next_phase_end
+jmp :set_next_pos
+loada phase_ind, 0, 1
+loada phase_max, 0, 2
+lseqi 1, 2, 3
 load f, 0, 4
 pullqw 3, 4, 0
 loada f, 0, 5
-jmpi 5, :get_color_ind_continue
-load c, 0, 6
-loada zero, 0, 7
-pullqw 7, 6, 0
-loada color_g, 0, 6
-loada g, 0, 7
-neqi 6, 7, 8
-load f, 0, 9
+jmpi 5, :phase_loop
+:set_next_pos
+loada direction, 0, 6
+loada next_direction, 0, 7
+addi 6, 7, 8
+load direction, 0, 9
 pullqw 8, 9, 0
+loada direction, 0, 6
+loada four, 0, 10
+lseqi 6, 10, 11
+load f, 0, 12
+pullqw 11, 12, 0
 loada f, 0, 5
-jmpi 5, :next_b
-loada c, 0, 10
-loada one, 0, 11
-addi 10, 11, 12
-load c, 0, 13
-pullqw 12, 13, 0
-:next_b
-loada color_b, 0, 10
-loada b, 0, 14
-neqi 10, 14, 15
-load f, 0, 16
-pullqw 15, 16, 0
+jmpi 5, :direction_less
+subi 6, 10, 13
+load direction, 0, 14
+pullqw 13, 14, 0
+:direction_less
+loada direction, 0, 6
+loada up, 0, 15
+eqi 6, 15, 16
+load f, 0, 17
+pullqw 16, 17, 0
 loada f, 0, 5
-jmpi 5, :nextg
-loada c, 0, 17
-addi 17, 11, 18
-load c, 0, 19
-pullqw 18, 19, 0
-:next_g
-:get_color_ind_continue
-loada c, 0, 17
-loada three, 0, 20
-eqi 17, 20, 21
-load f, 0, 22
-pullqw 21, 22, 0
+jmpi 5, :up
+loada down, 0, 18
+eqi 6, 18, 19
+load f, 0, 20
+pullqw 19, 20, 0
 loada f, 0, 5
-jmpi 5, :color_match
-loada color_ind, 0, 23
-addi 23, 11, 24
-load color_ind, 0, 25
-pullqw 24, 25, 0
-jmp :get_color_ind
-:color_match
+jmpi 5, :down
+loada left, 0, 21
+eqi 6, 21, 22
+load f, 0, 23
+pullqw 22, 23, 0
+loada f, 0, 5
+jmpi 5, :left
+loada right, 0, 24
+eqi 6, 24, 25
+load f, 0, 26
+pullqw 25, 26, 0
+loada f, 0, 5
+jmpi 5, :right
+:up
+loada y, 0, 27
+loada one, 0, 28
+subi 27, 28, 29
+load y, 0, 30
+pullqw 29, 30, 0
+loada y, 0, 27
+loada zero, 0, 31
+greqi 27, 31, 32
+load f, 0, 33
+pullqw 32, 33, 0
+loada f, 0, 5
+jmpi 5, :up_limit
+loada height, 0, 34
+subi 34, 28, 35
+load y, 0, 36
+pullqw 35, 36, 0
+:up_limit
+jmp :draw
+:down
+loada y, 0, 27
+addi 27, 28, 37
+load y, 0, 38
+pullqw 37, 38, 0
+subi 34, 28, 27
+load i, 0, 39
+pullqw 27, 39, 0
+loada y, 0, 40
+loada i, 0, 41
+lseqi 40, 41, 42
+load f, 0, 43
+pullqw 42, 43, 0
+loada f, 0, 5
+jmpi 5, :down_limit
+load y, 0, 44
+pullqw 40, 44, 0
+:down_limit
+jmp :draw
+:left
+loada x, 0, 40
+subi 40, 28, 44
+load x, 0, 45
+pullqw 44, 45, 0
+loada x, 0, 40
+greqi 40, 31, 46
+load f, 0, 47
+pullqw 46, 47, 0
+loada f, 0, 5
+jmpi 5, :left_limit
+loada width, 0, 48
+subi 48, 28, 49
+load x, 0, 50
+pullqw 49, 50, 0
+:left_limit
+jmp :draw
+:right
+loada x, 0, 40
+addi 40, 28, 51
+load x, 0, 52
+pullqw 51, 52, 0
+subi 48, 28, 40
+load i, 0, 53
+pullqw 40, 53, 0
+loada x, 0, 41
+loada i, 0, 54
+lseqi 41, 54, 55
+load f, 0, 56
+pullqw 55, 56, 0
+loada f, 0, 5
+jmpi 5, :right_limit
+load x, 0, 57
+pullqw 41, 57, 0
+:right_limit
+jmp :draw
 intr0 255, 0, 0, 0
 rts
 :get_colorind
 loada zero, 0, 0
-    loada color_address, 0, I1
-    loada color_max, 0, I2
-    loada zero, 0, I0
-    loada zero, 0, I3
     loada color_offset, 0, I11
     stpopi I12
+    intr0 4, I12, 0, 0
+    intr0 7, 0, 0, 0
+    intr0 7, 0, 0, 0
+    load color, 0, I1
+    pushb I1, I12, I20
+    addi I12, I11, I12
+    pushb I1, I12, I21
+    addi I12, I11, I12
+    pushb I1, I12, I22
+    stpushb I22
+    stpushb I21
+    stpushb I20
+    rts
+rts
+:get_phase0
+loada zero, 0, 0
+    loada zero@get_phase0, 0, I0
+    loada phase0_address, 0, I1
+    loada phase0_offset, 0, I11
+    stpopi I12
+    muli I12, I11, I12
     pushqw I1, I12, I20
-    addi I12, I11, I12
-    pushqw I1, I12, I21
-    addi I12, I11, I12
-    pushqw I1, I12, I22
-    stpushi I22
-    stpushi I21
+    stpushi I20
+    rts
+rts
+:get_phase1
+loada zero, 0, 0
+    loada zero@get_phase1, 0, I0
+    loada phase1_address, 0, I1
+    loada phase1_offset, 0, I11
+    stpopi I12
+    muli I12, I11, I12
+    pushqw I1, I12, I20
     stpushi I20
     rts
 rts

@@ -266,6 +266,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *reg
 				case LOAD:
 					offset = 18;
 					break;
+
+				case NOTI:
+					offset = 3;
+					break;
 			}
 		}
 

@@ -223,7 +223,7 @@ struct JIT_code
 };
 
 
-// 60 opcodes
+// 61 opcodes
 #define PUSHB   0
 #define PUSHW   1
 #define PUSHDW  2
