@@ -282,46 +282,6 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *reg
 
 		switch (code[i])
         {
-            case PUSHB:
-                r1 = regi[code[i + 1]];
-                r2 = regi[code[i + 2]];
-                r3 = code[i + 3];
-
-                a.mov (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), (U1) data[r1 + r2]);
-
-                run_jit = 1;
-                break;
-
-            case PUSHW:
-                r1 = regi[code[i + 1]];
-                r2 = regi[code[i + 2]];
-                r3 = code[i + 3];
-
-                a.mov (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), (S2) data[r1 + r2]);
-
-                run_jit = 1;
-                break;
-
-            case PUSHDW:
-                r1 = regi[code[i + 1]];
-                r2 = regi[code[i + 2]];
-                r3 = code[i + 3];
-
-                a.mov (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), (S4) data[r1 + r2]);
-
-                run_jit = 1;
-                break;
-
-            case PUSHQW:
-                r1 = regi[code[i + 1]];
-                r2 = regi[code[i + 2]];
-                r3 = code[i + 3];
-
-                a.mov (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), data[r1 + r2]);
-
-                run_jit = 1;
-                break;
-
             case ADDI:
 			case SUBI:
 			case MULI:
