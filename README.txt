@@ -1,4 +1,4 @@
-L1VM README  2018-08-18
+L1VM README  2018-10-04
 =======================
 L1VM is a very tiny virtual machine with RISC (or comparable style) CPU, about 61 opcodes and less than
 32 KB binary size on X86_64 (without JIT-compiler)!
@@ -52,6 +52,7 @@ gpio - Raspberry Pi GPIO module
 rs232 - serial port module
 sdl - graphics primitves module, like pixels, lines...
 net - TCP/IP sockets module
+genann - neural networks module
 
 I will update the modules with more functions later...
 
@@ -94,4 +95,3 @@ $ l1vm test
 finally executes program "test.l1obj"
 
 ==========================================================================
-for Rebecca

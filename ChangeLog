@@ -5,7 +5,9 @@ addd, subd, muld, divd
 
 New: added noti, not opcode into assembler and VM.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Wed 15 Aug 2018 10:20 +0200
+New: if blocks in the compiler. See prog/if.l1com for an example.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Sun 7 Oct 2018 14:08 +0200
 
 
 L1VM - (0.8.1-4)

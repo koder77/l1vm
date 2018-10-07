@@ -62,11 +62,21 @@ struct label label[MAXLABELS];
 U1 inline_asm = 0;		// set to one, if inline assembly is used
 U1 comp_aot = 0;        // set to one, if AOT COMPILE code block
 
+
 // protos
 U1 checkdigit (U1 *str);
 S8 get_temp_int (void);
 F8 get_temp_double (void);
 char *fgets_uni (char *str, int len, FILE *fptr);
+
+// if
+void init_if (void);
+S4 get_if_pos (void);
+S4 get_act_if (void);
+U1 get_if_label (S4 ind, U1 *label);
+U1 get_endif_label (S4 ind, U1 *label);
+void set_endif_finished (S4 ind);
+
 
 void convtabs (U1 *str)
 {
@@ -619,6 +629,11 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 	U1 str[MAXLINELEN];
 	U1 code_temp[MAXLINELEN];
 
+	S8 if_pos;
+	U1 if_label[MAXLINELEN];
+	U1 endif_label[MAXLINELEN];
+
+
 	if (get_ast (line) != 0)
 	{
 		// parsing error
@@ -866,7 +881,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							strcat ((char *) data[data_line], "Q, ");
 							strcat ((char *) data[data_line], (const char *) data_info[data_ind].value_str);
 
-							printf ("data_line: ast expr args: %lli", ast[level].expr_args[j]);
+							printf ("data_line: ast expr args: %i", ast[level].expr_args[j]);
 
 							if (ast[level].expr_args[j] > 4 && data_info[data_ind].type != STRING)
 							{
@@ -1760,6 +1775,116 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									continue;
 								}
 
+								// ((x y <) f =)
+								// (f if)
+
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "if") == 0)
+								{
+									if (getvartype (ast[level].expr[j][last_arg - 1]) == INTEGER)
+									{
+										if (getvartype_real (ast[level].expr[j][last_arg - 1]) == QUADWORD)
+										{
+											reg = get_regi (ast[level].expr[j][last_arg - 1]);
+											printf ("reg: %i\n", reg);
+											if (reg == -1)
+											{
+												// variable is not in register, load it
+
+												reg = get_free_regi ();
+												set_regi (reg, ast[level].expr[j][last_arg -1]);
+
+												// write code loada
+
+												code_line++;
+												if (code_line >= MAXLINES)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+
+												strcpy ((char *) code[code_line], "loada ");
+												strcat ((char *) code[code_line], (const char *) ast[level].expr[j][last_arg - 1]);
+												strcat ((char *) code[code_line], ", 0, ");
+												sprintf ((char *) str, "%i", reg);
+												strcat ((char *) code[code_line], (const char *) str);
+												strcat ((char *) code[code_line], "\n");
+											}
+
+											if_pos = get_if_pos ();
+							                if (if_pos == -1)
+							                {
+							                    printf ("compile: error: if: out of memory if-list\n");
+							                    return (FALSE);
+							                }
+
+											get_if_label (if_pos, if_label);
+											get_endif_label (if_pos, endif_label);
+
+											// write code jmpi to if code label
+
+											code_line++;
+											if (code_line >= MAXLINES)
+											{
+												printf ("error: line %lli: code list full!\n", linenum);
+												return (1);
+											}
+
+											strcpy ((char *) code[code_line], "jmpi ");
+											sprintf ((char *) str, "%i", reg);
+											strcat ((char *) code[code_line], (const char *) str);
+											strcat ((char *) code[code_line], ", ");
+											strcat ((char *) code[code_line], (const char *) if_label);
+											strcat ((char *) code[code_line], "\n");
+
+											// write code jmpi to endif label
+
+											code_line++;
+											if (code_line >= MAXLINES)
+											{
+												printf ("error: line %lli: code list full!\n", linenum);
+												return (1);
+											}
+
+											strcpy ((char *) code[code_line], "jmp ");
+											strcat ((char *) code[code_line], (const char *) endif_label);
+											strcat ((char *) code[code_line], "\n");
+
+											// write code label if
+
+											code_line++;
+											if (code_line >= MAXLINES)
+											{
+												printf ("error: line %lli: code list full!\n", linenum);
+												return (1);
+											}
+											strcat ((char *) code[code_line], (const char *) if_label);
+											strcat ((char *) code[code_line], "\n");
+										}
+									}
+									continue;
+								}
+
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "endif") == 0)
+								{
+									if_pos = get_act_if ();
+
+									get_endif_label (if_pos, endif_label);
+
+									code_line++;
+									if (code_line >= MAXLINES)
+									{
+										printf ("error: line %lli: code list full!\n", linenum);
+										return (1);
+									}
+
+									strcat ((char *) code[code_line], (const char *) endif_label);
+									strcat ((char *) code[code_line], "\n");
+
+									set_endif_finished (if_pos);
+
+									continue;
+								}
+
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "call") == 0)
 								{
 									// function call with arguments
@@ -2546,9 +2671,6 @@ S2 write_asm (U1 *name)
 	FILE *fptr;
 	U1 asmname[512];
 	S4 slen, pos;
-	U1 rbuf[MAXLINELEN + 1];                        /* read-buffer for one line */
-	char *read;
-
 	S8 i ALIGN;
 
 	slen = strlen ((const char *) name);
@@ -2615,6 +2737,7 @@ int main (int ac, char *av[])
 	printf ("(C) 2017-2018 Stefan Pietzonke\n");
 
 	init_ast ();
+	init_if ();
 
     if (ac < 2)
     {
