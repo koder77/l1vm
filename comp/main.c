@@ -1778,7 +1778,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 								// ((x y <) f =)
 								// (f if)
 
-								if (strcmp ((const char *) ast[level].expr[j][last_arg], "if") == 0)
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "if") == 0 && last_arg > 0)
 								{
 									if (getvartype (ast[level].expr[j][last_arg - 1]) == INTEGER)
 									{
@@ -1791,7 +1791,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												// variable is not in register, load it
 
 												reg = get_free_regi ();
-												set_regi (reg, ast[level].expr[j][last_arg -1]);
+												set_regi (reg, ast[level].expr[j][last_arg - 1]);
 
 												// write code loada
 
@@ -1860,8 +1860,26 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											strcat ((char *) code[code_line], (const char *) if_label);
 											strcat ((char *) code[code_line], "\n");
 										}
+										else
+										{
+											printf ("error: line %lli: if variable must be int64 type!\n", linenum);
+											return (1);
+										}
+									}
+									else
+									{
+										printf ("error: line %lli: if variable must be int64 type!\n", linenum);
+										return (1);
 									}
 									continue;
+								}
+
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "if") == 0 && last_arg == 0)
+								{
+									// error: no variable for if defined!
+
+									printf ("error: line %lli: if variable not set!\n", linenum);
+									return (1);
 								}
 
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "endif") == 0)
@@ -2137,117 +2155,92 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							if (level < ast_level)
 							{
 								printf ("level < ast_level\n");
-								// use registers from previous operation
+								printf ("use previous registers\n");
 
-								// if (last_arg == 1)
-							//	{
+								e = level + 1;
+								printf ("level: %i\n", e);
+								int found_exp = 0;
+								int found_level = 0;
+								int target_reg = 0;
+								int t;
+								for (exp = 0; exp <= ast[e].expr_max; exp = exp + 2)
+								{
+									// if (ast[e].expr_reg[ast[e].expr_max] != -1)
+									//{
+									printf ("ast exp reg: %i\n", ast[e - 1].expr_reg[exp]);
 
-
-									printf ("use previous registers\n");
-
-									/*
-									for (e = level; e <= ast_level; e++)
+									if (ast[e].expr_reg[exp] >= 0)
 									{
-										printf ("level: %i\n", e);
-										for (exp = 0; exp < MAXEXPRESSION; exp++)
-										{
-											printf ("ast exp reg: %i\n", ast[e].expr_reg[exp]);
-										}
-										printf ("\n\n");
+										sprintf ((char *) str, "%i", ast[e].expr_reg[exp]);
+										strcat ((char *) code_temp, (const char *) str);
+										strcat ((char *) code_temp, ", ");
+										ast[e].expr_reg[exp] = -1;
+										found_exp++;
+										found_level = e;
 									}
-								*/
 
+									if (ast[e].expr_reg[exp + 1] >= 0)
+									{
+										sprintf ((char *) str, "%i", ast[e].expr_reg[exp + 1]);
+										strcat ((char *) code_temp, (const char *) str);
+										strcat ((char *) code_temp, ", ");
+										ast[e].expr_reg[exp + 1] = -1;
+									}
 
+									if (found_exp > 0) break;
+								}
 
+								if (found_exp > 0)
+								{
+									if (ast[e].expr_type[exp] == INTEGER)
+									{
+										reg = get_free_regi ();
+										set_regi (reg, (U1 *) "temp");
+									}
 
+									if (ast[e].expr_type[exp] == DOUBLE)
+									{
+										reg = get_free_regd ();
+										set_regd (reg, (U1 *) "temp");
+									}
 
-									e = level + 1;
-									printf ("level: %i\n", e);
-									int found_exp = 0;
-										int found_level = 0;
-										int target_reg = 0;
-										int t;
-										for (exp = 0; exp <= ast[e].expr_max; exp = exp + 2)
+									sprintf ((char *) str, "%i", reg);
+									strcat ((char *) code_temp, (const char *) str);
+
+									target = reg;
+
+									int t = 0;
+									while (t < MAXEXPRESSION)
+									{
+										if (ast[found_level - 1].expr_reg[t] == -2)
 										{
-											// if (ast[e].expr_reg[ast[e].expr_max] != -1)
-											//{
-											printf ("ast exp reg: %i\n", ast[e - 1].expr_reg[exp]);
-
-											if (ast[e].expr_reg[exp] >= 0)
-											{
-												sprintf ((char *) str, "%i", ast[e].expr_reg[exp]);
-												strcat ((char *) code_temp, (const char *) str);
-												strcat ((char *) code_temp, ", ");
-												ast[e].expr_reg[exp] = -1;
-												found_exp++;
-												found_level = e;
-											}
-
-											if (ast[e].expr_reg[exp + 1] >= 0)
-											{
-												sprintf ((char *) str, "%i", ast[e].expr_reg[exp + 1]);
-												strcat ((char *) code_temp, (const char *) str);
-												strcat ((char *) code_temp, ", ");
-												ast[e].expr_reg[exp + 1] = -1;
-											}
-
-											if (found_exp > 0) break;
-											// }
+											target_reg = t;
+											break;
 										}
+										t++;
+									}
 
-											if (found_exp > 0)
-											{
-											if (ast[e].expr_type[exp] == INTEGER)
-											{
-												reg = get_free_regi ();
-												set_regi (reg, (U1 *) "temp");
-											}
+									ast[found_level - 1].expr_reg[target_reg] = reg;
+									ast[found_level - 1].expr_type[target_reg] = ast[e].expr_type[exp];
 
-											if (ast[e].expr_type[exp] == DOUBLE)
-											{
-												reg = get_free_regd ();
-												set_regd (reg, (U1 *) "temp");
-											}
+									ast[e].expr_type[j] = ast[e - 1].expr_type[exp];
 
-											sprintf ((char *) str, "%i", reg);
-											strcat ((char *) code_temp, (const char *) str);
+									code_line++;
+									if (code_line >= MAXLINES)
+									{
+										printf ("error: line %lli: code list full!\n", linenum);
+										return (1);
+									}
 
-											target = reg;
+									strcpy ((char *) code[code_line], (const char *) code_temp);
+									strcat ((char *) code[code_line], "\n");
 
-											int t = 0;
-											while (t < MAXEXPRESSION)
-											{
-												if (ast[found_level - 1].expr_reg[t] == -2)
-												{
-													target_reg = t;
-													break;
-												}
-												t++;
-											}
+									printf ("%s\n", code[code_line]);
 
-											ast[found_level - 1].expr_reg[target_reg] = reg;
-											ast[found_level - 1].expr_type[target_reg] = ast[e].expr_type[exp];
+									found_exp = 0;
+								}
 
-											ast[e].expr_type[j] = ast[e - 1].expr_type[exp];
-
-											code_line++;
-											if (code_line >= MAXLINES)
-											{
-												printf ("error: line %lli: code list full!\n", linenum);
-												return (1);
-											}
-
-											strcpy ((char *) code[code_line], (const char *) code_temp);
-											strcat ((char *) code[code_line], "\n");
-
-											printf ("%s\n", code[code_line]);
-
-
-
-												found_exp = 0;
-											}
-
-									continue;
+								continue;
 							}
 
 							if (opcode[translate[t].assemb_op].args == 1)

@@ -175,3 +175,23 @@ U1 *stpushd (F8 data, U1 *sp, U1 *sp_bottom)
 		return (NULL);			// FAIL
 	}
 }
+
+U1 *stpopd (U1 *data, U1 *sp, U1 *sp_top)
+{
+	if (sp == sp_top)
+	{
+		// nothing on stack!! can't pop!!
+		return (NULL);			// FAIL
+	}
+
+	data[7] = *sp++;
+	data[6] = *sp++;
+	data[5] = *sp++;
+	data[4] = *sp++;
+	data[3] = *sp++;
+	data[2] = *sp++;
+	data[1] = *sp++;
+	data[0] = *sp++;
+
+	return (sp);			// success
+}

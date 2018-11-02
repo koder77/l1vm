@@ -1,0 +1,52 @@
+(main func)
+    (set int64 1 zero 0)
+    (set string 13 hellostr "Hello")
+    (set string 8 worldstr " world!")
+    (set int64 1 slen 0)
+    (zero :string_init call)
+    (loadreg)
+    (hellostraddr worldstraddr :string_cat call)
+    (loadreg)
+    (6 hellostr 0 0 intr0)
+    (7 0 0 0 intr0)
+    (hellostraddr :string_len call)
+    (slen stpopi)
+    (loadreg)
+    (4 slen 0 0 intr0)
+    (7 0 0 0 intr0)
+    (255 0 0 0 intr0)
+(funcend)
+// string library
+//
+//
+(string_init func)
+    (set string 17 modulestr@string "libl1vmstring.so")
+    (set string 12 lenstr@string "string_len")
+    (set string 13 copystr@string "string_copy")
+    (set string 11 catstr@string "string_cat")
+    (set int64 1 len@string 0)
+    (set int64 1 copy@string 1)
+    (set int64 1 cat@string 2)
+    (set int64 1 mod@string 0)
+    // get argument from stack
+    (mod@string stpopi)
+    // load string module
+    (0 modulestr@stringaddr mod@string 0 intr0)
+    // set functions
+    (2 mod@string len@string lenstr@stringaddr intr0)
+    (2 mod@string copy@string copystr@stringaddr intr0)
+    (2 mod@string cat@string catstr@stringaddr intr0)
+(funcend)
+(string_len func)
+// argument: int64 string address
+// return: int64 string len
+    (3 mod@string len@string 0 intr0)
+(funcend)
+(string_copy func)
+//  arguments: string source address, string destination address
+    (3 mod@string copy@string 0 intr0)
+(funcend)
+(string_cat func)
+//  arguments: string source address, string destination address
+    (3 mod@string cat@string 0 intr0)
+(funcend)
