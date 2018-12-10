@@ -59,7 +59,7 @@ U1 checkdigit (U1 *str)
     {
         return (FALSE);
     }
-    
+
     if (t_var.digitstr_type == UNKNOWN)
     {
         /* INT, LINT, QINT or BYTE */
@@ -233,7 +233,7 @@ S8 get_temp_int (void)
 
 F8 get_temp_double (void)
 {
-    F8 num;
+    F8 num ALIGN;
 
     num = strtod ((const char *) t_var.digitstr, NULL);
     if (errno != 0) printf ("get_temp_double: error: make doublefloat!\n");

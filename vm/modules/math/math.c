@@ -25,8 +25,8 @@
 
 U1 *int2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	S8 intval;
-	F8 doubleval;
+	S8 intval ALIGN;
+	F8 doubleval ALIGN;
 
 	//printf ("int2double sp: %lli\n", (S8) sp);
 
@@ -54,8 +54,8 @@ U1 *int2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *double2int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	S8 intval;
-	F8 doubleval;
+	S8 intval ALIGN;
+	F8 doubleval ALIGN;
 
 	sp = stpopi ((U1 *) &doubleval, sp, sp_top);
 	if (sp == NULL)
@@ -79,7 +79,8 @@ U1 *double2int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *sqrtdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	F8 value, returnval;
+	F8 value ALIGN;
+	F8 returnval ALIGN;
 
 	sp = stpopi ((U1 *) &value, sp, sp_top);
 	if (sp == NULL)
@@ -103,7 +104,8 @@ U1 *sqrtdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *logdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	F8 value, returnval;
+	F8 value ALIGN;
+	F8 returnval ALIGN;
 
 	sp = stpopi ((U1 *) &value, sp, sp_top);
 	if (sp == NULL)
@@ -127,8 +129,9 @@ U1 *logdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *log2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	F8 value, returnval;
-	F8 m_ln2 = 0.69314718055994530942;
+	F8 value ALIGN;
+	F8 returnval ALIGN;
+	F8 m_ln2 ALIGN = 0.69314718055994530942;
 
 	sp = stpopi ((U1 *) &value, sp, sp_top);
 	if (sp == NULL)

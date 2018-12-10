@@ -100,7 +100,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *reg
 	S8 jit_regs[6];		// R8 (0) to R11 (3)
 
 	S8 jit_regsd[6]; 	// xmm0 (0) to xmm5 (5)
-	S8 ALIGN jit_regsd_max = 5;
+	S8 jit_regsd_max ALIGN = 5;
 
     CodeHolder jcode;                        // Create a CodeHolder.
     jcode.init(rt.getCodeInfo());            // Initialize it to be compatible with `rt`.

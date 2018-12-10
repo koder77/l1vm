@@ -24,8 +24,8 @@
 
 U1 *string_len (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	S8 slen;
-	S8 straddr;
+	S8 slen ALIGN;
+	S8 straddr ALIGN;
 
 	sp = stpopi ((U1 *) &straddr, sp, sp_top);
 	if (sp == NULL)
@@ -49,7 +49,8 @@ U1 *string_len (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *string_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	S8 strsourceaddr, strdestaddr;
+	S8 strsourceaddr ALIGN;
+	S8 strdestaddr ALIGN;
 
 	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
 	if (sp == NULL)
@@ -73,7 +74,8 @@ U1 *string_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *string_cat (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	S8 strsourceaddr, strdestaddr;
+	S8 strsourceaddr ALIGN;
+	S8 strdestaddr ALIGN;
 
 	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
 	if (sp == NULL)
@@ -92,5 +94,122 @@ U1 *string_cat (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	strcat ((char *) &data[strdestaddr], (const char *) &data[strsourceaddr]);
+	return (sp);
+}
+
+U1 *string_int64_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 num ALIGN;
+	S8 strdestaddr ALIGN;
+	S8 str_len ALIGN;
+
+	sp = stpopi ((U1 *) &str_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_int64_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_int64_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &num, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_int64_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (snprintf ((char *) &data[strdestaddr], str_len, "%lli", num) <= 0)
+	{
+		printf ("string_int64_to_string: ERROR: conversion failed!\n");
+		return (NULL);
+	}
+
+	return (sp);
+}
+
+U1 *string_byte_to_hexstring (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	U1 num;
+	S8 strdestaddr ALIGN;
+	S8 str_len ALIGN;
+
+	sp = stpopi ((U1 *) &str_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_int64_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_int64_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopb ((U1 *) &num, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_int64_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (snprintf ((char *) &data[strdestaddr], str_len, "%02x", num) <= 0)
+	{
+		printf ("string_int64_to_string: ERROR: conversion failed!\n");
+		return (NULL);
+	}
+
+	return (sp);
+}
+
+U1 *string_double_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 strdestaddr ALIGN;
+	S8 str_len ALIGN;
+	F8 num ALIGN;
+
+	sp = stpopi ((U1 *) &str_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_double_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_double_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopd ((U1 *) &num, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_double_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (snprintf ((char *) &data[strdestaddr], str_len, "%.10lf", num) <= 0)
+	{
+		printf ("string_double_to_string: ERROR: conversion failed!\n");
+		return (NULL);
+	}
+
 	return (sp);
 }

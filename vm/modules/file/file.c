@@ -181,7 +181,8 @@ U1 *file_seek (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // SEEK_END: 3, end of file
 
     U1 handle;
-    S8 offset ALIGN, origin ALIGN;
+    S8 offset ALIGN;
+    S8 origin ALIGN;
 
     if (sp == sp_top)
 	{
@@ -492,7 +493,7 @@ U1 *file_put_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // return value: ERROR CODE
 
     U1 handle;
-    S8 num;
+    S8 num ALIGN;
 
     if (sp == sp_top)
     {
@@ -550,7 +551,7 @@ U1 *file_get_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // return value: ERROR CODE, number
 
     U1 handle;
-    S8 num;
+    S8 num ALIGN;
 
     if (sp == sp_top)
     {
@@ -613,7 +614,7 @@ U1 *file_put_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // return value: ERROR CODE
 
     U1 handle;
-    F8 num;
+    F8 num ALIGN;
 
     if (sp == sp_top)
     {
@@ -671,7 +672,7 @@ U1 *file_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // return value: ERROR CODE, number
 
     U1 handle;
-    F8 num;
+    F8 num ALIGN;
 
     if (sp == sp_top)
     {
@@ -931,7 +932,7 @@ U1 *file_put_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // return value: ERROR CODE
 
     U1 handle;
-    S8 string_address;
+    S8 string_address ALIGN;
 
     if (sp == sp_top)
     {
@@ -991,7 +992,8 @@ U1 *file_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // return value: ERROR CODE
 
     U1 handle;
-    S8 string_address, slen;
+    S8 string_address ALIGN;
+    S8 slen ALIGN;
 
     if (sp == sp_top)
     {

@@ -629,7 +629,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 	U1 str[MAXLINELEN];
 	U1 code_temp[MAXLINELEN];
 
-	S8 if_pos;
+	S8 if_pos ALIGN;
 	U1 if_label[MAXLINELEN];
 	U1 endif_label[MAXLINELEN];
 

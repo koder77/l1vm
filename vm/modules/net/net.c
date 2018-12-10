@@ -77,7 +77,7 @@ char *get_ip_str (const struct sockaddr *sa, char *s, size_t maxlen)
 U1 *init_sockets (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     // set all socket handles as CLOSED
-    S8 i;
+    S8 i ALIGN;
 
     for (i = 0; i < MAXSOCKETS; i++)
     {
@@ -92,10 +92,10 @@ U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     S2 handle = -1;
     U1 *hostname;
-    S8 hostname_addr;
-    S8 port;
+    S8 hostname_addr ALIGN;
+    S8 port ALIGN;
 
-    S8 i = 0 ALIGN;
+    S8 i ALIGN = 0;
 
     NINT yes = 1;
     S2 server, error;
@@ -157,7 +157,7 @@ U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	hostname = &data[hostname_addr];
-	
+
     if (handle < 0 || handle >= MAXSOCKETS)
     {
         printf ("ERROR: open_server_socket: handle out of range!\n");
@@ -188,7 +188,7 @@ U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // convert integer port number to a string
 
     // printf ("open_server_socket: hostname: %s, port: %s, port (num): %lld\n", hostname, port_string, port);
-    
+
     if ((status = getaddrinfo ((const char *) hostname, (const char *) port_string, &hints, &servinfo)) != 0)
     {
         sp = stpushi (status, sp, sp_bottom);
@@ -286,7 +286,7 @@ U1 *open_accept_server (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     struct sockaddr_storage client;
     socklen_t addr_size;
     S2 i;
-    S8 new_handle = -1;
+    S8 new_handle ALIGN = -1;
 
     if (sp == sp_top)
     {
@@ -303,7 +303,7 @@ U1 *open_accept_server (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("open_server_socket: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-    
+
     if (handle < 0 || handle >= MAXSOCKETS)
     {
         printf ("ERROR: open_accept_server: handle out of range!\n");
@@ -406,10 +406,10 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S2 status;
     U1 port_string[256];
     U1 *hostname;
-    S8 hostname_addr;
+    S8 hostname_addr ALIGN;
     S4 i;
     S2 handle = -1, port;
-    
+
     struct addrinfo hints;
     struct addrinfo *servinfo;
     // will point to the results
@@ -464,7 +464,7 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("open_client_socket: ERROR: stack corrupt!\n");
         return (NULL);
     }
-    
+
     hostname = &data[hostname_addr];
 
     if (handle < 0 || handle >= MAXSOCKETS)
@@ -813,8 +813,8 @@ U1 *get_clientaddr (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     S2 handle;
     S2 client_len;
-    S8 ret_addr;
-    S8 i;
+    S8 ret_addr ALIGN;
+    S8 i ALIGN;
     U1 *ret_data = data;
 
     if (sp == sp_top)
@@ -832,7 +832,7 @@ U1 *get_clientaddr (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("getclientaddr: ERROR: stack corrupt!\n");
         return (NULL);
     }
-    
+
     sp = stpopi ((U1 *) &handle, sp, sp_top);
     if (sp == NULL)
     {
@@ -870,7 +870,7 @@ U1 *get_clientaddr (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         ret_data[ret_addr + i] = sockets[handle].client_ip[i];
     }
-   
+
     sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -885,10 +885,10 @@ U1 *get_hostname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     U1 hostname[256];
     S2 hostname_len;
-    S8 ret_addr;
-    S8 i;
+    S8 ret_addr ALIGN;
+    S8 i ALIGN;
     U1 *ret_data = data;
-    
+
     sp = stpopi ((U1 *) &ret_addr, sp, sp_top);
     if (sp == NULL)
     {
@@ -896,7 +896,7 @@ U1 *get_hostname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("getclientaddr: ERROR: stack corrupt!\n");
         return (NULL);
     }
-    
+
     if (gethostname ((char *) hostname, 255) == -1)
     {
         sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
@@ -914,7 +914,7 @@ U1 *get_hostname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         ret_data[ret_addr + i] = hostname[i];
     }
-    
+
     sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -928,11 +928,11 @@ U1 *get_hostname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *get_hostbyname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     U1 *hostname;
-    S8 hostname_addr;
-    S8 ret_addr;
+    S8 hostname_addr ALIGN;
+    S8 ret_addr ALIGN;
     U1 ret[256];
     S2 ret_len;
-    S8 i;
+    S8 i ALIGN;
     U1 *ret_data = data;
 
     struct hostent *hp = NULL;
@@ -945,7 +945,7 @@ U1 *get_hostbyname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("getclientaddr: ERROR: stack corrupt!\n");
         return (NULL);
     }
-    
+
     sp = stpopi ((U1 *) &hostname_addr, sp, sp_top);
     if (sp == NULL)
     {
@@ -955,7 +955,7 @@ U1 *get_hostbyname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     hostname = &data[hostname_addr];
-    
+
     hp = (struct hostent *) gethostbyname ((const char *) hostname);
     if (hp == NULL)
     {
@@ -1019,16 +1019,16 @@ U1 *get_hostbyname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *get_hostbyaddr (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     U1 *addr;
-    S8 addr_addr;
+    S8 addr_addr ALIGN;
     U1 hostname[256];
     S2 hostname_len;
-    S8 ret_addr;
-    S8 i;
-    U1 *ret_data = data; 
-    
+    S8 ret_addr ALIGN;
+    S8 i ALIGN;
+    U1 *ret_data = data;
+
     struct hostent *hp;
     struct in_addr hostaddr;
-    
+
     sp = stpopi ((U1 *) &ret_addr, sp, sp_top);
     if (sp == NULL)
     {
@@ -1036,7 +1036,7 @@ U1 *get_hostbyaddr (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("getclientaddr: ERROR: stack corrupt!\n");
         return (NULL);
     }
-    
+
     sp = stpopi ((U1 *) &addr_addr, sp, sp_top);
     if (sp == NULL)
     {
@@ -1044,7 +1044,7 @@ U1 *get_hostbyaddr (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("getclientaddr: ERROR: stack corrupt!\n");
         return (NULL);
     }
-    
+
     addr = &data[addr_addr];
 
     hostaddr.s_addr = inet_addr ((const char *) addr);
@@ -1096,10 +1096,10 @@ U1 *get_hostbyaddr (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 // helper functions endianess
 
 #if ! MACHINE_BIG_ENDIAN
-S8 htonq (S8 num)
+S8 htonq (S8 num ALIGN)
 {
     U1 *num_ptr, *new_ptr;
-    S8 newv;
+    S8 newv ALIGN;
 
     num_ptr = (U1 *) &num;
     new_ptr = (U1 *) &newv;
@@ -1116,10 +1116,10 @@ S8 htonq (S8 num)
     return (newv);
 }
 
-S8 ntohq (S8 num)
+S8 ntohq (S8 num ALIGN)
 {
     U1 *num_ptr, *new_ptr;
-    S8 newv;
+    S8 newv ALIGN;
 
     num_ptr = (U1 *) &num;
     new_ptr = (U1 *) &newv;
@@ -1137,23 +1137,23 @@ S8 ntohq (S8 num)
 }
 
 #else
-S8 htonq (S8 num)
+S8 htonq (S8 num ALIGN)
 {
 	return (num);
 }
 
-S8 ntohq (S8 num)
+S8 ntohq (S8 num ALIGN)
 {
 	return (num);
 }
 #endif
 
-F8 htond (F8 hostd)
+F8 htond (F8 hostd ALIGN)
 {
     U1 *netdptr;
     U1 *hostdptr;
     S2 i;
-    F8 netd;
+    F8 netd ALIGN;
 
     netdptr = (U1 *) &netd;
 
@@ -1172,12 +1172,12 @@ F8 htond (F8 hostd)
     return (netd);
 }
 
-F8 ntohd (F8 netd)
+F8 ntohd (F8 netd ALIGN)
 {
     U1 *netdptr;
     U1 *hostdptr;
     S2 i;
-    F8 hostd;
+    F8 hostd ALIGN;
 
     hostdptr = (U1 *) &hostd;
 
@@ -1333,7 +1333,7 @@ U1 *socket_read_byte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             printf ("socket_read_byte: ERROR: stack corrupt!\n");
             return (NULL);
         }
-        
+
         sp = stpushi (ret, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -1345,7 +1345,7 @@ U1 *socket_read_byte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     // printf ("socket_read_byte: '%c'\n", sockets[handle].buf[0]);
-    
+
     sp = stpushi (sockets[handle].buf[0], sp, sp_bottom);
     if (sp == NULL)
     {
@@ -1366,13 +1366,13 @@ U1 *socket_read_byte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *socket_read_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-    S8 ret;
+    S8 ret ALIGN;
     S2 handle;
-    S8 n;
+    S8 n ALIGN;
     U1 *ptr;
-    S8 value;
-    S8 i;
-    
+    S8 value ALIGN;
+    S8 i ALIGN;
+
     if (sp == sp_top)
     {
         // nothing on stack!! can't pop!!
@@ -1400,7 +1400,7 @@ U1 *socket_read_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             printf ("socket_read_int64: ERROR: stack corrupt!\n");
             return (NULL);
         }
-        
+
         sp = stpushi (ret, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -1410,7 +1410,7 @@ U1 *socket_read_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	}
         return (sp);
     }
-    
+
     ptr = (U1 *) &n;
 
     for (i = 0; i <= sizeof (S8) - 1; i++)
@@ -1419,7 +1419,7 @@ U1 *socket_read_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     value = ntohq (n);
-    
+
     sp = stpushi (value, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -1440,13 +1440,13 @@ U1 *socket_read_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *socket_read_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-    S8 ret;
+    S8 ret ALIGN;
     S2 handle;
-    F8 n;
+    F8 n ALIGN;
     U1 *ptr;
-    F8 value;
-    S8 i;
-    
+    F8 value ALIGN;
+    S8 i ALIGN;
+
     if (sp == sp_top)
     {
         // nothing on stack!! can't pop!!
@@ -1474,7 +1474,7 @@ U1 *socket_read_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             printf ("socket_read_double: ERROR: stack corrupt!\n");
             return (NULL);
         }
-        
+
         sp = stpushi (ret, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -1484,7 +1484,7 @@ U1 *socket_read_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	}
         return (sp);
     }
-    
+
     ptr = (U1 *) &n;
 
     for (i = 0; i <= sizeof (F8) - 1; i++)
@@ -1493,7 +1493,7 @@ U1 *socket_read_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     value = ntohd (n);
-    
+
     sp = stpushd (value, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -1515,16 +1515,16 @@ U1 *socket_read_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *socket_read_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
      /* read CRLF or LF terminated line */
-    
-    S8 ret;
-    S8 ret_addr;
+
+    S8 ret ALIGN;
+    S8 ret_addr ALIGN;
     S2 handle;
     U1 ch;
-    S8 slen;
+    S8 slen ALIGN;
     U1 end = FALSE;
     U1 error = FALSE;
-    S8 i = 0;
-    
+    S8 i ALIGN = 0;
+
     if (sp == sp_top)
     {
         // nothing on stack!! can't pop!!
@@ -1540,7 +1540,7 @@ U1 *socket_read_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("socket_read_string: ERROR: stack corrupt!\n");
         return (NULL);
     }
-    
+
     sp = stpopi ((U1 *) &ret_addr, sp, sp_top);
     if (sp == NULL)
     {
@@ -1548,7 +1548,7 @@ U1 *socket_read_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("socket_read_string: ERROR: stack corrupt!\n");
         return (NULL);
     }
-    
+
     sp = stpopi ((U1 *) &handle, sp, sp_top);
     if (sp == NULL)
     {
@@ -1556,7 +1556,7 @@ U1 *socket_read_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("socket_read_string: ERROR: stack corrupt!\n");
         return (NULL);
     }
-    
+
     while (! end)
     {
         ret = exe_sread (handle, sizeof (U1));
@@ -1564,14 +1564,14 @@ U1 *socket_read_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         {
             error = TRUE;
             end = TRUE;
-            
+
             if (i == 0)
             {
                 /* error at first read, break while */
                 break;
             }
         }
-        
+
         ch = sockets[handle].buf[0];
 
         if (ch != '\n')
@@ -1601,7 +1601,7 @@ U1 *socket_read_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             end = TRUE;
         }
     }
-    
+
     if (error == FALSE)
     {
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
@@ -1624,13 +1624,13 @@ U1 *socket_read_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
     return (sp);
 }
-            
+
 
 // write ------------------------------------------------------------
 
 U1 *socket_write_byte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-    S8 send_byte;
+    S8 send_byte ALIGN;
     U1 ret;
     S2 handle;
 
@@ -1673,13 +1673,13 @@ U1 *socket_write_byte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *socket_write_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-    S8 ret;
+    S8 ret ALIGN;
     S2 handle;
     U1 *ptr;
-    S8 n;
-    S8 send_int64;
-    S8 i;
-    
+    S8 n ALIGN;
+    S8 send_int64 ALIGN;
+    S8 i ALIGN;
+
     if (sp == sp_top)
     {
         // nothing on stack!! can't pop!!
@@ -1703,15 +1703,15 @@ U1 *socket_write_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("socket_write_int64: ERROR: stack corrupt!\n");
         return (NULL);
     }
-    
+
     n = htonq (send_int64);
     ptr = (U1 *) &n;
-    
+
     for (i = 0; i <= sizeof (S8) - 1; i++)
     {
         sockets[handle].buf[i] = *ptr++;
     }
-    
+
     ret = exe_swrite (handle, sizeof (U1));
     sp = stpushi (ret, sp, sp_bottom);
     if (sp == NULL)
@@ -1725,13 +1725,13 @@ U1 *socket_write_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *socket_write_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-    S8 ret;
+    S8 ret ALIGN;
     S2 handle;
     U1 *ptr;
-    F8 n;
-    F8 send_double;
-    S8 i;
-    
+    F8 n ALIGN;
+    F8 send_double ALIGN;
+    S8 i ALIGN;
+
     if (sp == sp_top)
     {
         // nothing on stack!! can't pop!!
@@ -1755,15 +1755,15 @@ U1 *socket_write_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("socket_write_double: ERROR: stack corrupt!\n");
         return (NULL);
     }
-    
+
     n = htond (send_double);
     ptr = (U1 *) &n;
-    
+
     for (i = 0; i <= sizeof (S8) - 1; i++)
     {
         sockets[handle].buf[i] = *ptr++;
     }
-    
+
     ret = exe_swrite (handle, sizeof (U1));
     sp = stpushi (ret, sp, sp_bottom);
     if (sp == NULL)
@@ -1778,13 +1778,13 @@ U1 *socket_write_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *socket_write_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
      /* write string + LF terminated line */
-    
-    S8 ret;
-    S8 send_addr;
+
+    S8 ret ALIGN;
+    S8 send_addr ALIGN;
     S2 handle;
     U1 end = FALSE;
-    S8 i = 0;
-    
+    S8 i ALIGN = 0;
+
     if (sp == sp_top)
     {
         // nothing on stack!! can't pop!!
@@ -1800,7 +1800,7 @@ U1 *socket_write_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("socket_write_string: ERROR: stack corrupt!\n");
         return (NULL);
     }
-    
+
     sp = stpopi ((U1 *) &handle, sp, sp_top);
     if (sp == NULL)
     {
@@ -1808,7 +1808,7 @@ U1 *socket_write_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("socket_write_string: ERROR: stack corrupt!\n");
         return (NULL);
     }
-    
+
     while (! end)
     {
         sockets[handle].buf[i] = data[send_addr + i];
@@ -1820,7 +1820,7 @@ U1 *socket_write_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         }
         i++;
     }
-    
+
     ret = exe_swrite (handle, i + 1);
     sp = stpushi (ret, sp, sp_bottom);
     if (sp == NULL)

@@ -3,6 +3,9 @@
     (set string 13 hellostr "Hello")
     (set string 8 worldstr " world!")
     (set int64 1 slen 0)
+    (set string 30 bufstr "")
+    (set int64 1 buflen 29)
+    (set byte 1 bytenum 42)
     (zero :string_init call)
     (loadreg)
     (hellostraddr worldstraddr :string_cat call)
@@ -14,6 +17,14 @@
     (loadreg)
     (4 slen 0 0 intr0)
     (7 0 0 0 intr0)
+    (slen bufstr buflen :string_int64tostring call)
+    (loadreg)
+    (6 bufstr 0 0 intr0)
+    (7 0 0 0 intr0)
+    (bytenum bufstr buflen :string_bytetohexstring call)
+    (loadreg)
+    (6 bufstr 0 0 intr0)
+    (7 0 0 0 intr0)
     (255 0 0 0 intr0)
 (funcend)
 // string library
@@ -24,9 +35,15 @@
     (set string 12 lenstr@string "string_len")
     (set string 13 copystr@string "string_copy")
     (set string 11 catstr@string "string_cat")
+    (set string 23 int64tostringstr@string "string_int64_to_string")
+    (set string 25 bytetohexstringstr@string "string_byte_to_hexstring")
+    (set string 24 doubletostringstr@string "string_double_to_string")
     (set int64 1 len@string 0)
     (set int64 1 copy@string 1)
     (set int64 1 cat@string 2)
+    (set int64 1 int64tostring@string 3)
+    (set int64 1 bytetohexstring@string 4)
+    (set int64 1 doubletostring@string 5)
     (set int64 1 mod@string 0)
     // get argument from stack
     (mod@string stpopi)
@@ -36,6 +53,9 @@
     (2 mod@string len@string lenstr@stringaddr intr0)
     (2 mod@string copy@string copystr@stringaddr intr0)
     (2 mod@string cat@string catstr@stringaddr intr0)
+    (2 mod@string int64tostring@string int64tostringstr@stringaddr intr0)
+    (2 mod@string bytetohexstring@string bytetohexstringstr@stringaddr intr0)
+    (2 mod@string doubletostring@string doubletostringstr@stringaddr intr0)
 (funcend)
 (string_len func)
 // argument: int64 string address
@@ -43,10 +63,22 @@
     (3 mod@string len@string 0 intr0)
 (funcend)
 (string_copy func)
-//  arguments: string source address, string destination address
+// arguments: string source address, string destination address
     (3 mod@string copy@string 0 intr0)
 (funcend)
 (string_cat func)
-//  arguments: string source address, string destination address
+// arguments: string source address, string destination address
     (3 mod@string cat@string 0 intr0)
+(funcend)
+(string_int64tostring func)
+// arguments: int64 number, string source address, string len
+    (3 mod@string int64tostring@string 0 intr0)
+(funcend)
+(string_bytetohexstring func)
+// arguments: byte number, string source address, string len
+    (3 mod@string bytetohexstring@string 0 intr0)
+(funcend)
+(string_doubletostring func)
+// arguments: double number, string source address, string len
+    (3 mod@string doubletostring@string 0 intr0)
 (funcend)

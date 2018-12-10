@@ -799,9 +799,12 @@ S2 parse_line (U1 *line, S2 start, S2 end)
     F8 datad ALIGN;
 
 	S8 label_pos ALIGN;
-    S8 slen, i, j, d;
+    S8 slen ALIGN;
+	S8 i ALIGN;
+	S8 j ALIGN;
+	S8 d ALIGN;
 
-	S8 type_size;
+	S8 type_size ALIGN;
 
 	U1 opcode_found, data_found;
 

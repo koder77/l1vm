@@ -94,7 +94,7 @@ S8 data_info_ind ALIGN = -1;
 pthread_mutex_t data_mutex;
 
 // return code of main thread
-S8 retcode  = 0;
+S8 retcode ALIGN = 0;
 
 // shell arguments
 U1 shell_args[MAXSHELLARGS][MAXSHELLARGLEN];
@@ -214,7 +214,7 @@ S2 run (void *arg)
 	U1 input_str[MAXINPUT];
 
 	// jumpoffsets
-	S8 *jumpoffs;
+	S8 *jumpoffs ALIGN;
 	S8 offset ALIGN;
 	jumpoffs = (S8 *) calloc (code_size, sizeof (S8));
 	if (jumpoffs == NULL)
@@ -1743,6 +1743,17 @@ S2 run (void *arg)
             // return number of CPU cores available
             arg2 = code[ep + 2];
             regi[arg2] = max_cpu;
+            eoffs = 5;
+            break;
+
+        case 16:
+            // return endianess of host machine
+            arg2 = code[ep + 2];
+#if MACHINE_BIG_ENDIAN
+            regi[arg2] = 1;
+#else
+            regi[arg2] = 0;
+#endif
             eoffs = 5;
             break;
 

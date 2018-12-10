@@ -28,10 +28,10 @@
 // htonq, ntohq, htond, ntohd
 
 #if ! MACHINE_BIG_ENDIAN
-S8 htonq (S8 num)
+S8 htonq (S8 num ALIGN)
 {
     U1 *num_ptr, *new_ptr;
-    S8 newv;
+    S8 newv ALIGN;
 
     num_ptr = (U1 *) &num;
     new_ptr = (U1 *) &newv;
@@ -48,10 +48,10 @@ S8 htonq (S8 num)
     return (newv);
 }
 
-S8 ntohq (S8 num)
+S8 ntohq (S8 num ALIGN)
 {
     U1 *num_ptr, *new_ptr;
-    S8 newv;
+    S8 newv ALIGN;
 
     num_ptr = (U1 *) &num;
     new_ptr = (U1 *) &newv;
@@ -69,23 +69,23 @@ S8 ntohq (S8 num)
 }
 
 #else
-S8 htonq (S8 num)
+S8 htonq (S8 num ALIGN)
 {
 	return (num);
 }
 
-S8 ntohq (S8 num)
+S8 ntohq (S8 num ALIGN)
 {
 	return (num);
 }
 #endif
 
-F8 htond (F8 hostd)
+F8 htond (F8 hostd ALIGN)
 {
     U1 *netdptr;
     U1 *hostdptr;
     S2 i;
-    F8 netd;
+    F8 netd ALIGN;
 
     netdptr = (U1 *) &netd;
 
@@ -104,12 +104,12 @@ F8 htond (F8 hostd)
     return (netd);
 }
 
-F8 ntohd (F8 netd)
+F8 ntohd (F8 netd ALIGN)
 {
     U1 *netdptr;
     U1 *hostdptr;
     S2 i;
-    F8 hostd;
+    F8 hostd ALIGN;
 
     hostdptr = (U1 *) &hostd;
 
@@ -238,8 +238,8 @@ U1 *n_to_hostdw (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *host_to_nqw (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	S8 host;
-	S8 net;
+	S8 host ALIGN;
+	S8 net ALIGN;
 
 	sp = stpopi ((U1 *) &host, sp, sp_top);
 	if (sp == NULL)
@@ -263,8 +263,8 @@ U1 *host_to_nqw (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *n_to_hostqw (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	S8 host;
-	S8 net;
+	S8 host ALIGN;
+	S8 net ALIGN;
 
 	sp = stpopi ((U1 *) &net, sp, sp_top);
 	if (sp == NULL)

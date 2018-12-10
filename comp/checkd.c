@@ -2,7 +2,7 @@
  * This file checkd.c is part of L1vm.
  *
  * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2017
- * 
+ *
  * L1vm is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -55,7 +55,7 @@ U1 checkdigit (U1 *str)
 				{
 					t_var.base = 16;
 				}
-				
+
                 if (j <= MAXLINELEN - 1 && str[i] != ' ')
                 {
                     t_var.digitstr[j] = str[i];
@@ -90,25 +90,25 @@ U1 checkdigit (U1 *str)
                         t_var.digitstr_type = BYTE;
                         check = TRUE;
                         break;
-						
+
 					case '&':
 						t_var.base = 16;
 						break;
-						
+
 					case '$':
 						t_var.base = 2;
 						break;
-                        
+
                     case 'I':
                         t_var.digitstr_type = QUADWORD;
                         check = TRUE;
                         break;
-                        
+
                     case 'F':
                         t_var.digitstr_type = QUADWORD;
                         check = TRUE;
                         break;
-						
+
                     default:
                         check = FALSE;
                         ok = TRUE;
@@ -166,8 +166,8 @@ U1 checkdigit (U1 *str)
     }
 
     t_var.digitstr[j] = '\0';
-    
-    
+
+
     if (t_var.base == 2)
 	{
 		/* if base = 2 = binary then cut away leading zeroes */
@@ -183,7 +183,7 @@ U1 checkdigit (U1 *str)
 					b++;
 				}
 			}
-			
+
 			if (t_var.digitstr[i] == '1')
 			{
 				j = 1;
@@ -192,11 +192,11 @@ U1 checkdigit (U1 *str)
 			}
 		}
 		binarystr[b] = '\0';
-	
+
 		strcpy ((char *) t_var.digitstr, (const char *) binarystr);
 	}
-		
-    
+
+
     return (check);
 }
 
@@ -204,21 +204,19 @@ S8 get_temp_int (void)
 {
     S8 num ALIGN;
     char *endptr;
-    
+
     num = (S8) strtoll ((const char *) t_var.digitstr, &endptr, t_var.base);
     if (*endptr != '\0') printf ("get_temp_int: error: make quadword!\n");
-    
+
     return (num);
 }
 
 F8 get_temp_double (void)
 {
-    F8 num;
-    
+    F8 num ALIGN;
+
     num = strtod ((const char *) t_var.digitstr, NULL);
     if (errno != 0) printf ("get_temp_double: error: make doublefloat!\n");
-    
+
     return (num);
 }
-    
-    

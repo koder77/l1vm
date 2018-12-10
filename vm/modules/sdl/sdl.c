@@ -37,7 +37,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// second: quadword height
 	// third: quadword width
 
-	S8 width = 0 ALIGN, height = 0 ALIGN;
+	S8 width ALIGN = 0, height ALIGN = 0;
 	U1 bit = 0;
 	U1 err = 0;
 
@@ -108,7 +108,7 @@ U1 *sdl_font_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	U1 name[512];
 	S8 size ALIGN;
-	S8 i = 0 ALIGN;
+	S8 i ALIGN = 0;
 	U1 err = 0;
 
 	sp = stpopi ((U1 *) &size, sp, sp_top);
@@ -163,7 +163,7 @@ U1 *sdl_text_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	U1 text[512];
 	S8 x ALIGN, y ALIGN;
 	U1 r, g, b;
-	S8 i = 0 ALIGN;
+	S8 i ALIGN = 0;
 	U1 err = 0;
 
 	SDL_Surface *textsurf;

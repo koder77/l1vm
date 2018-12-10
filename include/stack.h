@@ -56,7 +56,7 @@ U1 *stpushstring (U1 *data, S8 data_len, U1 *sp, U1 *sp_bottom)
 
 U1 *stpopstring (U1 *data, S8 data_len, U1 *sp, U1 *sp_top)
 {
-	S8 i = 0 ALIGN;
+	S8 i ALIGN = 0;
 
 	if (sp == sp_top)
 	{

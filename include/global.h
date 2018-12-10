@@ -56,7 +56,7 @@ typedef double                  F8;     /* DOUBLE */
 
 // #define DEBUG					1
 
-//#define M_ARM	1
+// #define M_ARM	1
 
 /* set alignment for Android ARM */
 #if M_ARM

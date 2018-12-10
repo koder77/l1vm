@@ -48,6 +48,8 @@
     (7 0 0 0 intr0)
     (handle :file_close call)
     (loadreg)
+    // close file module
+    (1 zero 0 0 intr0)
     (255 0 0 0 intr0)
 (funcend)
 // file library
@@ -131,28 +133,28 @@
     (3 mod@file put_int16@file 0 intr0)
 (funcend)
 (file_get_int16 func)
-    (3  mod@file get_int16@file 0 intr0)
+    (3 mod@file get_int16@file 0 intr0)
 (funcend)
 // int32
 (file_put_int32 func)
     (3 mod@file put_int32@file 0 intr0)
 (funcend)
 (file_get_int32 func)
-    (3  mod@file get_int32@file 0 intr0)
+    (3 mod@file get_int32@file 0 intr0)
 (funcend)
 // int64
 (file_put_int64 func)
     (3 mod@file put_int64@file 0 intr0)
 (funcend)
 (file_get_int64 func)
-    (3  mod@file get_int64@file 0 intr0)
+    (3 mod@file get_int64@file 0 intr0)
 (funcend)
 // double
 (file_put_double func)
     (3 mod@file put_double@file 0 intr0)
 (funcend)
 (file_get_double func)
-    (3  mod@file get_double@file 0 intr0)
+    (3 mod@file get_double@file 0 intr0)
 (funcend)
 // put/get strings
 (file_put_string func)
