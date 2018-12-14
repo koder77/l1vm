@@ -79,7 +79,7 @@ S8 JIT_label_ind ALIGN = -1;
 extern "C" S8 JIT_code_ind;
 
 
-extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *regd, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start, S8 end)
+extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi ALIGN, F8 *regd ALIGN, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start ALIGN, S8 end ALIGN)
 {
     S8 i ALIGN;
     S8 j ALIGN;
@@ -780,7 +780,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *reg
 	return (0);
 }
 
-extern "C" int run_jit (S8 code)
+extern "C" int run_jit (S8 code ALIGN)
 {
 	#if	 DEBUG
 		printf ("run_jit: code: %li\n", code);

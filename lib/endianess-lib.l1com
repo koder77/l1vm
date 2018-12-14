@@ -21,7 +21,7 @@
     (set int64 1 mod@end 0)
     // get arguments from stack
     (mod@end stpopi)
-    // load file module
+    // load endianess module
     (0 modulestr@endaddr mod@end 0 intr0)
     // set functions
     (2 mod@end host_to_nw@end host_to_nwstr@endaddr intr0)

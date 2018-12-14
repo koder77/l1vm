@@ -10,7 +10,11 @@ New: if blocks in the compiler. See prog/if.l1com for an example.
 New: S8/F8 alignement attributes added for variable declaration.
 File and endianess modules.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sat 1 Dec 2018 14:53 +0100
+Math library: functions for random number generation added.
+
+Garbage collector for module dealloc memory.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Fri 14 Dec 2018 20:10 +0100
 
 
 L1VM - (0.8.1-4)

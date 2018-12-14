@@ -35,6 +35,8 @@ struct JIT_code JIT_code[MAXJITCODE];
 
 // protos
 S2 load_object (U1 *name);
+void free_modules (void);
+
 
 #if JIT_COMPILER
 int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *regd, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start, S8 end);
@@ -102,7 +104,7 @@ S4 shell_args_ind = -1;
 
 struct threaddata threaddata[MAXCPUCORES];
 
-S2 load_module (U1 *name, S8 ind)
+S2 load_module (U1 *name, S8 ind ALIGN)
 {
 #if __linux__
     modules[ind].lptr = dlopen ((const char *) name, RTLD_LAZY);
@@ -136,6 +138,9 @@ void free_module (S8 ind ALIGN)
 #if _WIN32
     FreeLibrary (modules[ind].lptr);
 #endif
+
+// mark as free
+    strcpy ((char *) modules[ind].name, "");
 }
 
 S2 set_module_func (S8 ind ALIGN, S8 func_ind ALIGN, U1 *func_name)
@@ -173,9 +178,10 @@ U1 *call_module_func (S8 ind ALIGN, S8 func_ind ALIGN, U1 *sp, U1 *sp_top, U1 *s
 
 void cleanup (void)
 {
-	if (code) free (code);
-	if (data) free (data);
     free_jit_code ();
+    free_modules ();
+	if (data) free (data);
+    if (code) free (code);
 }
 
 S2 run (void *arg)
@@ -2199,6 +2205,30 @@ void break_handler (void)
 	}
 }
 
+void init_modules (void)
+{
+    S8 i ALIGN;
+
+    for (i = 0; i < MODULES; i++)
+    {
+        strcpy ((char *) modules[i].name, "");
+    }
+}
+
+void free_modules (void)
+{
+    S8 i ALIGN;
+
+    for (i = MODULES - 1; i >= 0; i--)
+    {
+        if (modules[i].name[0] != '\0')
+        {
+            printf ("free_modules: module %lli free.\n", i);
+            free_module (i);
+        }
+    }
+}
+
 int main (int ac, char *av[])
 {
 	S8 i ALIGN;
@@ -2275,6 +2305,7 @@ int main (int ac, char *av[])
 	}
     load_object ((U1 *) av[1]);
 
+    init_modules ();
 	signal (SIGINT, (void *) break_handler);
 
 	// set all higher threads as STOPPED = unused

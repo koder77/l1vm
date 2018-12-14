@@ -21,6 +21,12 @@
 #include <math.h>
 #include "../../../include/stack.h"
 
+// protos
+void init_genrand (unsigned long s);
+long genrand_int31 (void);
+double genrand_real1 (void);
+
+
 // math functions --------------------------------------
 
 U1 *int2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -137,7 +143,7 @@ U1 *log2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("log2double ERROR: stack corrupt!\n");
+		printf ("log2double: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
@@ -148,6 +154,56 @@ U1 *log2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	{
 		// error
 		printf ("log2double: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+// random number generator 
+
+U1 *rand_init (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 startnum ALIGN;
+
+	sp = stpopi ((U1 *) &startnum, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("rand_init: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	init_genrand (startnum);
+	return (sp);
+}
+
+U1 *rand_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 rand_int ALIGN;
+
+	rand_int = genrand_int31 ();
+
+	sp = stpushi (rand_int, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("rand_int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *rand_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 rand_double ALIGN;
+
+	rand_double = genrand_real1 ();
+
+	sp = stpushd (rand_double, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("rand_double: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 	return (sp);

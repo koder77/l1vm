@@ -71,6 +71,12 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	// printf ("open_screen: %lli x %lli, %i bit\n", width, height, bit);
 
+	if (SDL_Init (SDL_INIT_VIDEO|SDL_INIT_AUDIO) != 0)
+	{
+		printf ("sdl_open_screen: ERROR SDL_Init!!!");
+		return (NULL);
+	}
+
 	// open SDL screen
 	surf = SDL_SetVideoMode (width, height, bit, SDL_SWSURFACE | SDL_SRCALPHA | SDL_RESIZABLE | SDL_ANYFORMAT);
 	if (surf == NULL)
@@ -88,6 +94,9 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *sdl_quit (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
+	SDL_FreeSurface (surf);
+	SDL_QuitSubSystem (SDL_INIT_AUDIO);
+	SDL_QuitSubSystem (SDL_INIT_VIDEO);
 	SDL_Quit ();
 	return (sp);
 }
