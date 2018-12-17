@@ -741,11 +741,24 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 						// size
 						if (checkdigit (ast[level].expr[j][2]) != 1)
 						{
-							printf ("error: line %lli: data size not a number!\n", linenum);
-							return (1);
+							if (data_info[data_ind].type != STRING)
+							{
+								printf ("error: line %lli: data size not a number!\n", linenum);
+								return (1);
+							}
 						}
 
 						data_info[data_ind].size = get_temp_int ();
+
+						// Set real string size, if 0 length was set or "s" was set.
+						if ((data_info[data_ind].size == 0 || ast[level].expr[j][2][0] == 's') && data_info[data_ind].type == STRING)
+						{
+							// set string size automatically:
+							data_info[data_ind].size = strlen ((char *) ast[level].expr[j][4]) - 1;
+							// set size string:
+							sprintf ((char *) ast[level].expr[j][2], "%lli", data_info[data_ind].size);
+							printf ("SET: '%s' size to %lli\n", data_info[data_ind].name, data_info[data_ind].size);
+						}
 
 						// value
 						if (ast[level].expr_args[j] >= 4)
