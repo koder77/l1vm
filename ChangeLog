@@ -17,7 +17,10 @@ Garbage collector for module dealloc memory.
 New: compiler: if string length is set to 0 or "s" on an "set" variable declaration, then the real size of
 the string will be set automatically!
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sun 16 Dec 2018 18:35 +0100
+Compiler bugfixes for double variable types.
+Update for math library.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Sat 22 Dec 2018 18:52 +0100
 
 
 L1VM - (0.8.1-4)

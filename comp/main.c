@@ -2065,10 +2065,12 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 													strcat ((char *) code[code_line], "\n");
 
 													strcat ((char *) code_temp, (const char *) str);
+													/*
 													if (e <= last_arg - 1)
 													{
 														strcat ((char *) code_temp, ", ");
 													}
+													*/
 												}
 												else
 												{
@@ -2485,7 +2487,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
                                             }
 
                                             strcat ((char *) code_temp, (const char *) str);
-                                            if (v <= last_arg - 1)
+                                            if (v <= last_arg - 1 && last_arg_2 >= 2)
                                             {
                                                 strcat ((char *) code_temp, ", ");
                                             }

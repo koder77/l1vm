@@ -28,6 +28,7 @@
     (set string 10 randinitstr@math "rand_init")
     (set string 9 randintstr@math "rand_int")
     (set string 12 randdoublestr@math "rand_double")
+    (set string 13 randintmaxstr@math "rand_int_max")
     (set int64 1 int2double@math 0)
     (set int64 1 double2int@math 1)
     (set int64 1 sqrtdouble@math 2)
@@ -36,6 +37,7 @@
     (set int64 1 randinit@math 5)
     (set int64 1 randint@math 6)
     (set int64 1 randdouble@math 7)
+    (set int64 1 randintmax@math 8)
     (set int64 1 mod@math 0)
     // get argument from stack
     (mod@math stpopi)
@@ -50,6 +52,7 @@
     (2 mod@math randinit@math randinitstr@mathaddr intr0)
     (2 mod@math randint@math randintstr@mathaddr intr0)
     (2 mod@math randdouble@math randdoublestr@mathaddr intr0)
+    (2 mod@math randintmax@math randintmaxstr@mathaddr intr0)
 (funcend)
 // wrapper functions
 (math_int2double func)
@@ -75,4 +78,7 @@
 (funcend)
 (math_randdouble func)
     (3 mod@math randdouble@math 0 intr0)
+(funcend)
+(math_randintmax func)
+    (3 mod@math randintmax@math 0 intr0)
 (funcend)
