@@ -20,7 +20,14 @@ the string will be set automatically!
 Compiler bugfixes for double variable types.
 Update for math library.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sat 22 Dec 2018 18:52 +0100
+SDL library now initialized from vm/main.c.
+A "SDL_module" definition can be set in the "global.h" include file!
+New: Text output on SDL via TTF fonts.
+
+New: programs which are using the SDL library must be started with the SDL flag: "-SDL".
+Via "SDL_use" variable in vm/main.c.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Sat 29 Dec 2018 22:00 +0100
 
 
 L1VM - (0.8.1-4)

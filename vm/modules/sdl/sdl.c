@@ -26,8 +26,8 @@
 #include <SDL/SDL_ttf.h>
 #include <SDL/SDL_image.h>
 
-static SDL_Surface *surf = NULL;
-static TTF_Font *font = NULL;
+extern SDL_Surface *surf;
+extern TTF_Font *font;
 
 // sdl gfx functions --------------------------------------
 
@@ -71,12 +71,6 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	// printf ("open_screen: %lli x %lli, %i bit\n", width, height, bit);
 
-	if (SDL_Init (SDL_INIT_VIDEO|SDL_INIT_AUDIO) != 0)
-	{
-		printf ("sdl_open_screen: ERROR SDL_Init!!!");
-		return (NULL);
-	}
-
 	// open SDL screen
 	surf = SDL_SetVideoMode (width, height, bit, SDL_SWSURFACE | SDL_SRCALPHA | SDL_RESIZABLE | SDL_ANYFORMAT);
 	if (surf == NULL)
@@ -94,10 +88,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *sdl_quit (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	SDL_FreeSurface (surf);
-	SDL_QuitSubSystem (SDL_INIT_AUDIO);
-	SDL_QuitSubSystem (SDL_INIT_VIDEO);
-	SDL_Quit ();
+	// dummy function, closed by vm/main.c at exit
 	return (sp);
 }
 
@@ -113,11 +104,10 @@ U1 *sdl_update (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *sdl_font_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// top of stack: quadword size
-	// 2: byte array name, zero terminated
+	// 2: name address
 
-	U1 name[512];
+	S8 nameaddr;
 	S8 size ALIGN;
-	S8 i ALIGN = 0;
 	U1 err = 0;
 
 	sp = stpopi ((U1 *) &size, sp, sp_top);
@@ -127,22 +117,12 @@ U1 *sdl_font_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		err = 1;
 	}
 
-	while (*sp != 0)
+	sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
+	if (sp == NULL)
 	{
-		if (i < 512)
-		{
-			name[i] = *sp;
-			printf ("sdl_font_ttf: stack: filenname: '%c'\n", *sp);
-			i++;
-			sp++;
-			if (sp == sp_top)
-			{
-				printf ("FATAL ERROR: sdl_font_ttf: stack corrupt!\n");
-				err = 1;
-			}
-		}
+		// error
+		err = 1;
 	}
-	name[i] = '\0';        // end of string
 
 	if (err == 1)
 	{
@@ -150,7 +130,9 @@ U1 *sdl_font_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	font = TTF_OpenFont ((const char *) name, size);
+	// printf ("sdl_font_ttf: open: '%s'\n", &data[nameaddr]);
+
+	font = TTF_OpenFont ((const char *) &data[nameaddr], size);
 	if (font == NULL)
 	{
 		printf ("sdl_font_ttf: can't open font! %s\n", SDL_GetError ());
@@ -162,39 +144,28 @@ U1 *sdl_font_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *sdl_text_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	// top of stack: byte array, text
+	// top of stack: name address
 	// 2: byte blue
 	// 3: byte green
 	// 4: byte red
 	// 5: quadword y
 	// 6: quadword x
 
-	U1 text[512];
 	S8 x ALIGN, y ALIGN;
 	U1 r, g, b;
-	S8 i ALIGN = 0;
 	U1 err = 0;
+	S8 nameaddr;
 
 	SDL_Surface *textsurf;
 	SDL_Rect dstrect;
 	SDL_Color color;
 
-	while (*sp != 0)
+	sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
+	if (sp == NULL)
 	{
-		if (i < 512)
-		{
-			text[i] = *sp;
-			printf ("sdl_text_ttf: stack: text: '%c'\n", *sp);
-			i++;
-			sp++;
-			if (sp == sp_top)
-			{
-				printf ("FATAL ERROR: sdl_text_ttf: stack corrupt!\n");
-				err = 1;
-			}
-		}
+		// error
+		err = 1;
 	}
-	text[i] = '\0';        // end of string
 
 	sp = stpopb (&b, sp, sp_top);
 	if (sp == NULL)
@@ -241,7 +212,7 @@ U1 *sdl_text_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	color.g = g;
 	color.b = b;
 
-	textsurf = TTF_RenderText_Blended (font, (const char *) text, color);
+	textsurf = TTF_RenderText_Blended (font, (const char *) &data[nameaddr], color);
 	if (textsurf == NULL)
 	{
 		printf ("sdl_text_ttf: can't render text! %s\n", SDL_GetError ());

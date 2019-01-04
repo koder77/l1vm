@@ -22,9 +22,18 @@
 //  clang main.c load-object.c -o l1vm -O3 -fomit-frame-pointer -s -ldl -lpthread
 //
 
+
 #define JIT_COMPILER 1
 
 #include "../include/global.h"
+
+#if SDL_module
+#include <SDL/SDL.h>
+#include <SDL/SDL_byteorder.h>
+#include <SDL/SDL_gfxPrimitives.h>
+#include <SDL/SDL_ttf.h>
+#include <SDL/SDL_image.h>
+#endif
 
 #if JIT_COMPILER
 #define MAXJITCODE 64
@@ -42,6 +51,12 @@ void free_modules (void);
 int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *regd, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start, S8 end);
 int run_jit (S8 code);
 int free_jit_code ();
+#endif
+
+#if SDL_module
+SDL_Surface *surf;
+TTF_Font *font;
+U1 SDL_use = 0;
 #endif
 
 #define EXE_NEXT(); ep = ep + eoffs; goto *jumpt[code[ep]];
@@ -178,6 +193,21 @@ U1 *call_module_func (S8 ind ALIGN, S8 func_ind ALIGN, U1 *sp, U1 *sp_top, U1 *s
 
 void cleanup (void)
 {
+    #if SDL_module
+	if (SDL_use == 1)
+	{
+    	SDL_FreeSurface (surf);
+	    SDL_QuitSubSystem (SDL_INIT_AUDIO);
+    	SDL_QuitSubSystem (SDL_INIT_VIDEO);
+	    if (font)
+    	{
+        	TTF_CloseFont (font);
+    	}
+    	TTF_Quit ();
+    	SDL_Quit ();
+	}
+    #endif
+
     free_jit_code ();
     free_modules ();
 	if (data) free (data);
@@ -2287,13 +2317,21 @@ int main (int ac, char *av[])
                 }
                 else
 				{
-					shell_args_ind++;
-					if (shell_args_ind >= MAXSHELLARGS)
-					{
-						printf ("ERROR: too many shell arguments!\n");
-						exit (1);
-					}
-					strncpy ((char *) shell_args[shell_args_ind], av[i], MAXSHELLARGLEN);
+                    if (av[i][0] == '-' && av[i][1] == 'S' && av[i][2] == 'D' && av[i][3] == 'L')
+                    {
+                        // initialize SDL, set SDL flag!
+                        SDL_use = 1;
+                    }
+                    else
+                    {
+			            shell_args_ind++;
+					    if (shell_args_ind >= MAXSHELLARGS)
+					    {
+                            printf ("ERROR: too many shell arguments!\n");
+						    exit (1);
+					    }
+					    strncpy ((char *) shell_args[shell_args_ind], av[i], MAXSHELLARGLEN);
+                    }
 				}
             }
         }
@@ -2303,10 +2341,32 @@ int main (int ac, char *av[])
 		printf ("l1vm <program>\n");
 		exit (1);
 	}
-    load_object ((U1 *) av[1]);
+    if (load_object ((U1 *) av[1]))
+    {
+        exit (1);
+    }
 
     init_modules ();
 	signal (SIGINT, (void *) break_handler);
+
+#if SDL_module
+    if (SDL_use == 1)
+    {
+        if (SDL_Init (SDL_INIT_EVERYTHING) != 0)
+	    {
+			printf ("ERROR SDL_Init!!!");
+			exit (1);
+		}
+
+		if (TTF_Init () < 0)
+		{
+			printf ("ERROR TTF_Init!!!");
+			exit (1);
+		}
+
+		printf ("SDL initialized...\n");
+	}
+#endif
 
 	// set all higher threads as STOPPED = unused
 	for (i = 1; i < max_cpu; i++)

@@ -45,6 +45,9 @@
 // switch on on Linux
 #define CPU_SET_AFFINITY	1
 
+// SDL library support
+#define SDL_module 1
+
 typedef unsigned char           U1;		/* UBYTE   */
 typedef int16_t                 S2;     /* INT     */
 typedef uint16_t                U2;     /* UINT    */
