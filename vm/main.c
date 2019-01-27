@@ -2269,7 +2269,7 @@ int main (int ac, char *av[])
 
 	S8 new_cpu ALIGN;
 
-    printf ("l1vm - 0.9 - (C) 2017-2018 Stefan Pietzonke\n");
+    printf ("l1vm - 0.9.1 - (C) 2017-2019 Stefan Pietzonke\n");
 
 #if MAXCPUCORES == 0
     max_cpu = sysconf (_SC_NPROCESSORS_ONLN);
@@ -2357,6 +2357,11 @@ int main (int ac, char *av[])
 			printf ("ERROR SDL_Init!!!");
 			exit (1);
 		}
+
+		/* key input settings */
+
+	    SDL_EnableUNICODE (SDL_ENABLE);
+	    SDL_EnableKeyRepeat (500, 125);
 
 		if (TTF_Init () < 0)
 		{

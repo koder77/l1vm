@@ -1541,7 +1541,7 @@ S2 dump_object (U1 *name)
 int main (int ac, char *av[])
 {
     printf ("l1asm <asm-file>\n");
-	printf ("(C) 2017-2018 Stefan Pietzonke\n");
+	printf ("(C) 2017-2019 Stefan Pietzonke\n");
 
     if (ac < 2)
     {

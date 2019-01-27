@@ -2742,7 +2742,7 @@ int main (int ac, char *av[])
 {
     printf ("l1com <file>\n");
 	printf ("\nCompiler for bra(et, a programming language with brackets ;-)\n");
-	printf ("(C) 2017-2018 Stefan Pietzonke\n");
+	printf ("(C) 2017-2019 Stefan Pietzonke\n");
 
 	init_ast ();
 	init_if ();

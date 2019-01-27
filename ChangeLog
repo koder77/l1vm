@@ -1,3 +1,10 @@
+L1VM - (0.9.1)
+New: SDL GUI functions.
+See lib/sdl-lib.l1com.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Fri 11 Jan 2019 20:24 +0100
+
+
 L1VM - (0.9)
 New: start of JIT-compiler writing:
 addi, subi, muli, divi, bandi, bori, bxori...

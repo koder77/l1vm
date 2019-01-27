@@ -61,8 +61,6 @@ typedef void (*Func)(void);
 		#define ST1     x86::fp6
 	#endif
 
-
-
 extern "C" struct JIT_code JIT_code[];
 
 struct JIT_label

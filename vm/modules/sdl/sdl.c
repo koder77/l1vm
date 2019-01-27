@@ -28,6 +28,7 @@
 
 extern SDL_Surface *surf;
 extern TTF_Font *font;
+S8 video_bpp ALIGN;
 
 // sdl gfx functions --------------------------------------
 
@@ -47,6 +48,8 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		// error
 		err = 1;
 	}
+
+	video_bpp = bit;
 
 	sp = stpopi ((U1 *) &height, sp, sp_top);
 	if (sp == NULL)
@@ -131,6 +134,12 @@ U1 *sdl_font_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	// printf ("sdl_font_ttf: open: '%s'\n", &data[nameaddr]);
+
+	if (font)
+	{
+		// close old font
+		TTF_CloseFont (font);
+	}
 
 	font = TTF_OpenFont ((const char *) &data[nameaddr], size);
 	if (font == NULL)
