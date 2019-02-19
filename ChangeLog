@@ -2,7 +2,11 @@ L1VM - (0.9.1)
 New: SDL GUI functions.
 See lib/sdl-lib.l1com.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Fri 11 Jan 2019 20:24 +0100
+New: VM: show loaded modules name and number.
+
+New: assembler: CODE and DATA sizes set by MAXDATA preprocessor variable.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Tue 19 Feb 2019 16:15 +0100
 
 
 L1VM - (0.9)

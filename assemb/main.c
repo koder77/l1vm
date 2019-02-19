@@ -23,6 +23,8 @@
 #include "../include/global.h"
 #include "../include/opcodes.h"
 
+// 1MB = 1048576 bytes
+#define MAXDATA 33554432 // 32 MB
 
 S8 linenum ALIGN = 1;
 U1 args[MAXARGS][MAXLINELEN];
@@ -31,17 +33,14 @@ U1 args[MAXARGS][MAXLINELEN];
 S8 code_ind ALIGN = 0;
 S8 data_ind ALIGN = 0;
 S8 data_info_ind ALIGN = -1;
-S8 code_max ALIGN = 4000000;
-//S8 data_max ALIGN = 1048576;
-S8 data_max ALIGN = 4000000;
+S8 code_max ALIGN = MAXDATA; // 32 MB
+S8 data_max ALIGN = MAXDATA; // 32 MB
 
 // code
-U1 code[4000000];
+U1 code[MAXDATA];
 
 // data
-U1 data[4000000];
-
-
+U1 data[MAXDATA];
 
 U1 data_block = 0, code_block = 0;
 
@@ -67,6 +66,7 @@ U1 checkdigit (U1 *str);
 S8 get_temp_int (void);
 F8 get_temp_double (void);
 char *fgets_uni (char *str, int len, FILE *fptr);
+
 
 void convtabs (U1 *str)
 {
@@ -1449,7 +1449,7 @@ S2 dump_object (U1 *name)
 	write_data_quadword (0, data_size, 1);
 
 
-	writesize = fwrite ((U1 *) &code, sizeof (U1), code_ind, fptr);
+	writesize = fwrite (&code, sizeof (U1), code_ind, fptr);
 	if (writesize != code_ind)
 	{
 		printf ("ERROR: can't write code section!\n");
@@ -1525,7 +1525,7 @@ S2 dump_object (U1 *name)
 		return (1);
 	}
 
-	writesize = fwrite ((U1 *) &data, sizeof (U1), data_size, fptr);
+	writesize = fwrite (&data, sizeof (U1), data_size, fptr);
 	if (writesize != data_size)
 	{
 		printf ("ERROR: can't write data section!\n");

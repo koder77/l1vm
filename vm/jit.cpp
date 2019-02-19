@@ -93,7 +93,6 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
     U1 label_created;
     S8 label ALIGN;
     U1 run_jit = 0;
-
 	// for storing VM registers
 	S8 jit_regs[6];		// R8 (0) to R11 (3)
 
@@ -289,6 +288,71 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
                 r3 = code[i + 3];
 
 				// Try to reduce a.mov opcodes by register checking.
+
+				// check if VM register is already in CPU register
+				if (jit_regs[0] == r3 && jit_regs[1] == r2)
+				{
+					a.mov (R10, asmjit::x86::qword_ptr (RSI, OFFSET(r1))); /* r1v */
+
+					switch (code[i])
+					{
+						case ADDI:
+							a.add (R10, R9);
+							break;
+
+						case SUBI:
+							a.sub (R10, R9);
+							break;
+
+						case MULI:
+							a.imul (R10, R9);
+							break;
+
+						case DIVI:
+							a.mov (EAX, R10);
+							a.xor_ (EDX, EDX);		/* clear the upper 64 bit */
+							a.idiv (R9);
+							a.mov (R10, EAX);
+							break;
+					}
+
+					a.mov (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), R10);
+					jit_regs[0] = r3; jit_regs[1] = r2;
+					run_jit = 1;
+					break;
+				}
+				if (jit_regs[2] == r3 && jit_regs[3] == r2)
+				{
+					a.mov (R8, asmjit::x86::qword_ptr (RSI, OFFSET(r1))); /* r1v */
+
+					switch (code[i])
+					{
+						case ADDI:
+							a.add (R8, R11);
+							break;
+
+						case SUBI:
+							a.sub (R8, R11);
+							break;
+
+						case MULI:
+							a.imul (R8, R11);
+							break;
+
+						case DIVI:
+							a.mov (EAX, R8);
+							a.xor_ (EDX, EDX);		/* clear the upper 64 bit */
+							a.idiv (R11);
+							a.mov (R8, EAX);
+							break;
+					}
+
+					a.mov (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), R8);
+					jit_regs[2] = r3; jit_regs[3] = r2;
+					run_jit = 1;
+					break;
+				}
+
 				if (jit_regs[0] == 0 && jit_regs[1] == 0)
 				{
 					// reg 8 empty, reg 9 empty
@@ -361,104 +425,38 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 					}
 					else
 					{
-						// check if VM register is already in CPU register
-						if (jit_regs[0] == r3 && jit_regs[1] == r2)
-						{
-							a.mov (R10, asmjit::x86::qword_ptr (RSI, OFFSET(r1))); /* r1v */
-
-							switch (code[i])
-							{
-								case ADDI:
-									a.add (R10, R9);
-									break;
-
-	                    		case SUBI:
-									a.sub (R10, R9);
-									break;
-
-								case MULI:
-									a.imul (R10, R9);
-									break;
-
-								case DIVI:
-									a.mov (EAX, R10);
-									a.xor_ (EDX, EDX);		/* clear the upper 64 bit */
-									a.idiv (R9);
-									a.mov (R10, EAX);
-									break;
-							}
-
-							a.mov (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), R10);
-							jit_regs[0] = r3; jit_regs[1] = r2;
-	                		run_jit = 1;
-							break;
-						}
-						if (jit_regs[2] == r3 && jit_regs[3] == r2)
-						{
-							a.mov (R8, asmjit::x86::qword_ptr (RSI, OFFSET(r1))); /* r1v */
-
-							switch (code[i])
-							{
-								case ADDI:
-									a.add (R8, R11);
-									break;
-
-	                    		case SUBI:
-									a.sub (R8, R11);
-									break;
-
-								case MULI:
-									a.imul (R8, R11);
-									break;
-
-								case DIVI:
-									a.mov (EAX, R8);
-									a.xor_ (EDX, EDX);		/* clear the upper 64 bit */
-									a.idiv (R11);
-									a.mov (R8, EAX);
-									break;
-							}
-
-							a.mov (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), R8);
-							jit_regs[2] = r3; jit_regs[3] = r2;
-	                		run_jit = 1;
-							break;
-						}
-						else
-						{
 							// Use register 8 and 9. Reset registers 10 and 11.
 
-							a.mov (R8, asmjit::x86::qword_ptr (RSI, OFFSET(r1))); /* r1v */
-							a.mov (R9, asmjit::x86::qword_ptr (RSI, OFFSET(r2))); /* r2v */
+						a.mov (R8, asmjit::x86::qword_ptr (RSI, OFFSET(r1))); /* r1v */
+						a.mov (R9, asmjit::x86::qword_ptr (RSI, OFFSET(r2))); /* r2v */
 
-							switch (code[i])
-							{
-								case ADDI:
-									a.add (R8, R9);
-									break;
+						switch (code[i])
+						{
+							case ADDI:
+								a.add (R8, R9);
+								break;
 
-		                    	case SUBI:
-									a.sub (R8, R9);
-									break;
+		                    case SUBI:
+								a.sub (R8, R9);
+								break;
 
-								case MULI:
-									a.imul (R8, R9);
-									break;
+							case MULI:
+								a.imul (R8, R9);
+								break;
 
-								case DIVI:
-									a.mov (EAX, R8);
-									a.xor_ (EDX, EDX);		/* clear the upper 64 bit */
-									a.idiv (R9);
-									a.mov (R8, EAX);
-									break;
-							}
-
-							a.mov (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), R8);
-							jit_regs[0] = r3; jit_regs[1] = r2;
-							jit_regs[2] = 0; jit_regs[3] = 0;
-		                	run_jit = 1;
-							break;
+							case DIVI:
+								a.mov (EAX, R8);
+								a.xor_ (EDX, EDX);		/* clear the upper 64 bit */
+								a.idiv (R9);
+								a.mov (R8, EAX);
+								break;
 						}
+
+						a.mov (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), R8);
+						jit_regs[0] = r3; jit_regs[1] = r2;
+						jit_regs[2] = 0; jit_regs[3] = 0;
+		                run_jit = 1;
+						break;
 					}
 				}
                 break;

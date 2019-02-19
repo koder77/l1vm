@@ -141,6 +141,9 @@ S2 load_module (U1 *name, S8 ind ALIGN)
 
     modules[ind].func_ind = -1;
     strcpy ((char *) modules[ind].name, (const char *) name);
+
+	// print module name:
+	printf ("module: %lli %s loaded\n", ind, name);
     return (0);
 }
 
@@ -497,7 +500,7 @@ S2 run (void *arg)
 	}
 
 	printf ("ready...\n");
-	printf ("modules loaded: %lli\n", modules_ind + 1);
+	// printf ("modules loaded: %lli\n", modules_ind + 1);
 	printf ("CPU %lli ready\n", cpu_ind);
 	printf ("codesize: %lli\n", code_size);
 	printf ("datasize: %lli\n", data_mem_size);

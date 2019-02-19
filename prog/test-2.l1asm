@@ -1,27 +1,26 @@
 .data
 Q, 1, zero
-@, 0, 0
+@, 0Q, 0
 Q, 1, x
-@, 8, 23
+@, 8Q, 23
 Q, 1, y
-@, 16, 42
+@, 16Q, 42
 Q, 1, z
-@, 24, 0
+@, 24Q, 0
 Q, 1, ret
-@, 32, 0
+@, 32Q, 0
 Q, 1, xtest
-@, 40, 0
+@, 40Q, 0
 Q, 1, ytest
-@, 48, 0
+@, 48Q, 0
 Q, 1, rettest
-@, 56, 0
+@, 56Q, 0
 Q, 1, x@square
-@, 64, 0
+@, 64Q, 0
 Q, 1, ret@square
-@, 72, 0
+@, 72Q, 0
 .dend
 .code
-loada zero, 0, 0
 :main
 loada zero, 0, 0
 loada x, 0, 1
@@ -34,12 +33,14 @@ addi 3, 4, 7
 muli 5, 6, 8
 addi 7, 8, 9
 load z, 0, 10
-pushb 9, 0, 11
-load ret, 0, 12
-pushb 11, 0, 13
-intr0 4, 10, 0, 0
-intr0 7, 0, 0, 0
+pullqw 9, 10, 0
+load ret, 0, 11
+pullqw 9, 11, 0
+loada z, 0, 12
 intr0 4, 12, 0, 0
+intr0 7, 0, 0, 0
+loada ret, 0, 13
+intr0 4, 13, 0, 0
 intr0 7, 0, 0, 0
 stpushi I0
 stpushi I1
@@ -58,9 +59,11 @@ stpushi I13
 stpushi 1
 stpushi 2
 jsr :test
-stpopi 10
+stpopi 12
+load z, 0, 14
+pullqw 12, 14, 0
 load ret, 0, 14
-pullqw 10, 14, 0
+pullqw 13, 14, 0
 stpopi I13
 stpopi I12
 stpopi I11
@@ -75,57 +78,38 @@ stpopi I3
 stpopi I2
 stpopi I1
 stpopi I0
-loada ret, 0, 12
-intr0 4, 12, 0, 0
+loada ret, 0, 1
+intr0 4, 1, 0, 0
 intr0 7, 0, 0, 0
-stpushi I0
 stpushi I1
-stpushi I2
-stpushi I3
-stpushi I4
-stpushi I5
-stpushi I6
-stpushi I7
-stpushi I8
-stpushi I9
-stpushi I10
-stpushi I11
-stpushi I12
-stpushi I13
-stpushi 1
+loada x, 0, 2
+stpushi 2
 jsr :square
-stpopi 10
-load ret, 0, 14
-pullqw 10, 14, 0
-stpopi I13
-stpopi I12
-stpopi I11
-stpopi I10
-stpopi I9
-stpopi I8
-stpopi I7
-stpopi I6
-stpopi I5
-stpopi I4
-stpopi I3
-stpopi I2
+stpopi 3
+load z, 0, 4
+pullqw 3, 4, 0
+load ret, 0, 4
+pullqw 1, 4, 0
 stpopi I1
-stpopi I0
-loada ret, 0, 12
-intr0 4, 12, 0, 0
+loada ret, 0, 1
+intr0 4, 1, 0, 0
 intr0 7, 0, 0, 0
-intr0 255, 0, 0, 0
+loada zero, 0, 2
+intr0 255, 2, 0, 0
 rts
 :test
 loada zero, 0, 0
-loada xtest, 0, 1
 stpopi 1
-loada ytest, 0, 2
+load xtest, 0, 2
+pullqw 1, 2, 0
 stpopi 2
+load ytest, 0, 3
+pullqw 2, 3, 0
 muli 1, 2, 3
 load rettest, 0, 4
-pushb 3, -1, 5
-stpushi 4
+pullqw 3, 4, 0
+loada rettest, 0, 5
+stpushi 5
 rts
 :square
 loada zero, 0, 0
