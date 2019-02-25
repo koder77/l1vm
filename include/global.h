@@ -41,6 +41,7 @@
 #include <sched.h>
 
 #include <math.h>
+#include <time.h>
 
 // switch on on Linux
 #define CPU_SET_AFFINITY	1
@@ -138,6 +139,10 @@ typedef double                  F8;     /* DOUBLE */
 #define ERR_FILE_NUMBER     5
 #define ERR_FILE_EOF        6
 #define ERR_FILE_FPOS       7
+
+
+// for time functions
+struct tm *tm;
 
 
 struct threaddata

@@ -70,7 +70,7 @@
 	(loadreg)
 	(three x_string y_string stringstraddr valuestraddr visible_string status :set_gadget_string call)
 	(loadreg)
-	(x_cycle y_cycle text_cyclestr value_cycle status red_cyclestr green_cyclestr blue_cyclestr three four  :set_gadget_cycle call)
+	(x_cycle y_cycle text_cyclestr value_cycle status blue_cyclestr green_cyclestr red_cyclestr three four :set_gadget_cycle call)
 	(loadreg)
 	(five x_prog y_prog text_progstr value_prog status :set_gadget_progress call)
 	(loadreg)

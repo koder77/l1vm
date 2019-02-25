@@ -252,6 +252,9 @@ S2 run (void *arg)
 	// for data input
 	U1 input_str[MAXINPUT];
 
+	// for time functions
+	time_t secs;
+
 	// jumpoffsets
 	S8 *jumpoffs ALIGN;
 	S8 offset ALIGN;
@@ -1795,6 +1798,34 @@ S2 run (void *arg)
 #endif
             eoffs = 5;
             break;
+
+		case 17:
+			// return current time
+			arg2 = code[ep + 2];
+			arg3 = code[ep + 3];
+			arg4 = code[ep + 4];
+
+			time (&secs);
+			tm = localtime (&secs);
+			regi[arg2] = tm->tm_hour;
+			regi[arg3] = tm->tm_min;
+			regi[arg4] = tm->tm_sec;
+			eoffs = 5;
+			break;
+
+		case 18:
+			// return date 
+			arg2 = code[ep + 2];
+			arg3 = code[ep + 3];
+			arg4 = code[ep + 4];
+
+			time (&secs);
+			tm = localtime (&secs);
+			regi[arg2] = tm->tm_year;
+			regi[arg3] = tm->tm_mon;
+			regi[arg4] = tm->tm_mday;
+			eoffs = 5;
+			break;
 
 #if JIT_COMPILER
         case 253:

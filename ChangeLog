@@ -6,7 +6,10 @@ New: VM: show loaded modules name and number.
 
 New: assembler: CODE and DATA sizes set by MAXDATA preprocessor variable.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Tue 19 Feb 2019 16:15 +0100
+New: VM interrupt 0: 17: get current time.
+VM interrupt 0: 18: get current date. see vm/main.c for more info and also prog/time.l1com.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Mon 25 Feb 2019 16:55 +0100
 
 
 L1VM - (0.9)
