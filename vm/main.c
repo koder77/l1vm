@@ -1814,16 +1814,27 @@ S2 run (void *arg)
 			break;
 
 		case 18:
-			// return date 
+			// return date
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
 			arg4 = code[ep + 4];
 
 			time (&secs);
 			tm = localtime (&secs);
-			regi[arg2] = tm->tm_year;
-			regi[arg3] = tm->tm_mon;
+			regi[arg2] = tm->tm_year + 1900;
+			regi[arg3] = tm->tm_mon + 1;
 			regi[arg4] = tm->tm_mday;
+			eoffs = 5;
+			break;
+
+		case 19:
+			// return weekday since Sunday
+			// Sunday = 0
+			arg2 = code[ep + 2];
+
+			time (&secs);
+			tm = localtime (&secs);
+			regi[arg2] = tm->tm_wday;
 			eoffs = 5;
 			break;
 

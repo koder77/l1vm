@@ -213,3 +213,30 @@ U1 *string_double_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	return (sp);
 }
+
+U1 *string_bytenum_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 strdestaddr ALIGN;
+	U1 num;
+
+	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_bytenum_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopb ((U1 *) &num, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_bytenum_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	data[strdestaddr] = num;
+	data[strdestaddr + 1] = '\0';
+
+	return (sp);
+}

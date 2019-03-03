@@ -29,6 +29,7 @@
 #define FILEWRITE       2
 #define FILEREADWRITE   3
 #define FILEWRITEREAD   4
+#define FILEAPPEND		5
 
 struct file
 {
@@ -104,6 +105,10 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         case FILEWRITEREAD:
             strcpy ((char *) access_str, "w+");
             break;
+
+		case FILEAPPEND:
+			strcpy ((char *) access_str, "a");
+			break;
 
         default:
             printf ("ERROR: file_open: unknown file mode! %i\n", access);
@@ -961,7 +966,7 @@ U1 *file_put_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     if (fputs ((const char *) &data[string_address], files[handle].fptr) == EOF)
     {
-        // push ERROR code WRITE
+    	// push ERROR code WRITE
         sp = stpushb (ERR_FILE_WRITE, sp, sp_bottom);
     	if (sp == NULL)
     	{

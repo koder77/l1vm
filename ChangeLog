@@ -9,7 +9,10 @@ New: assembler: CODE and DATA sizes set by MAXDATA preprocessor variable.
 New: VM interrupt 0: 17: get current time.
 VM interrupt 0: 18: get current date. see vm/main.c for more info and also prog/time.l1com.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Mon 25 Feb 2019 16:55 +0100
+Bugfixes: compiler: (var stpopb) expression fixed.
+VM: date functions fixed. New: interrupt 19: get weekday since Sunday (Sunday = 0).
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Sun 3 Mar 2019 15:31 +0100
 
 
 L1VM - (0.9)
