@@ -121,7 +121,7 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (files[handle].fptr == NULL)
     {
         // push ERROR code ERROR
-        sp = stpushb (ERR_FILE_OPEN, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_OPEN, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -132,7 +132,7 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // push ERROR code OK
-        sp = stpushb (ERR_FILE_OK, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -225,7 +225,7 @@ U1 *file_seek (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (fseek (files[handle].fptr, offset, origin) == 0)
     {
         // push ERROR code OK
-        sp = stpushb (ERR_FILE_OK, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -236,7 +236,7 @@ U1 *file_seek (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // push ERROR code WRONG POS
-        sp = stpushb (ERR_FILE_FPOS, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_FPOS, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -286,7 +286,7 @@ U1 *file_put_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (fwrite (&num, sizeof (S2), 1, files[handle].fptr) != 1)
     {
         // push ERROR code WRITE
-        sp = stpushb (ERR_FILE_WRITE, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -297,7 +297,7 @@ U1 *file_put_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // push OK code WRITE
-        sp = stpushb (ERR_FILE_OK, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -340,7 +340,7 @@ U1 *file_get_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	}
 
         // push ERROR code READ
-        sp = stpushb (ERR_FILE_READ, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -357,7 +357,7 @@ U1 *file_get_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    sp = stpushb (ERR_FILE_OK, sp, sp_bottom);
+    sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     if (sp == NULL)
     {
         // error
@@ -407,7 +407,7 @@ U1 *file_put_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (fwrite (&num, sizeof (S4), 1, files[handle].fptr) != 1)
     {
         // push ERROR code WRITE
-        sp = stpushb (ERR_FILE_WRITE, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -418,7 +418,7 @@ U1 *file_put_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // push OK code WRITE
-        sp = stpushb (ERR_FILE_OK, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -461,7 +461,7 @@ U1 *file_get_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	}
 
         // push ERROR code READ
-        sp = stpushb (ERR_FILE_READ, sp, sp_bottom);
+        sp = stpushi(ERR_FILE_READ, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -478,7 +478,7 @@ U1 *file_get_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    sp = stpushb (ERR_FILE_OK, sp, sp_bottom);
+    sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     if (sp == NULL)
     {
         // error
@@ -528,7 +528,7 @@ U1 *file_put_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (fwrite (&num, sizeof (S8), 1, files[handle].fptr) != 1)
     {
         // push ERROR code WRITE
-        sp = stpushb (ERR_FILE_WRITE, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -539,7 +539,7 @@ U1 *file_put_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // push OK code WRITE
-        sp = stpushb (ERR_FILE_OK, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -582,7 +582,7 @@ U1 *file_get_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	}
 
         // push ERROR code READ
-        sp = stpushb (ERR_FILE_READ, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -599,7 +599,7 @@ U1 *file_get_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    sp = stpushb (ERR_FILE_OK, sp, sp_bottom);
+    sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     if (sp == NULL)
     {
         // error
@@ -649,7 +649,7 @@ U1 *file_put_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (fwrite (&num, sizeof (F8), 1, files[handle].fptr) != 1)
     {
         // push ERROR code WRITE
-        sp = stpushb (ERR_FILE_WRITE, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -660,7 +660,7 @@ U1 *file_put_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // push OK code WRITE
-        sp = stpushb (ERR_FILE_OK, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -703,7 +703,7 @@ U1 *file_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	}
 
         // push ERROR code READ
-        sp = stpushb (ERR_FILE_READ, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -720,7 +720,7 @@ U1 *file_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    sp = stpushb (ERR_FILE_OK, sp, sp_bottom);
+    sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     if (sp == NULL)
     {
         // error
@@ -764,7 +764,7 @@ U1 *file_putc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (fputc (ch, files[handle].fptr) != ch)
     {
         // push ERROR code WRITE
-        sp = stpushb (ERR_FILE_WRITE, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -775,7 +775,7 @@ U1 *file_putc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // push ERROR code OK
-        sp = stpushb (ERR_FILE_OK, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -813,7 +813,7 @@ U1 *file_getc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     if ((ch = getc (files[handle].fptr) != EOF))
     {
-        sp = stpushb (ch, sp, sp_bottom);
+        sp = stpushi (ch, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -822,7 +822,7 @@ U1 *file_getc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	}
 
         // push ERROR code OK
-        sp = stpushb (ERR_FILE_OK, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -832,7 +832,7 @@ U1 *file_getc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
     else
     {
-        sp = stpushb (0, sp, sp_bottom);
+        sp = stpushi (0, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -841,7 +841,7 @@ U1 *file_getc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	}
 
         // push ERROR code EOF
-        sp = stpushb (ERR_FILE_EOF, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_EOF, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -967,7 +967,7 @@ U1 *file_put_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (fputs ((const char *) &data[string_address], files[handle].fptr) == EOF)
     {
     	// push ERROR code WRITE
-        sp = stpushb (ERR_FILE_WRITE, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -978,7 +978,7 @@ U1 *file_put_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // push ERROR code OK
-        sp = stpushb (ERR_FILE_OK, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -1039,7 +1039,7 @@ U1 *file_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         // error!!!
 
         // push ERROR code WRITE
-        sp = stpushb (ERR_FILE_WRITE, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -1050,7 +1050,7 @@ U1 *file_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // push ERROR code OK
-        sp = stpushb (ERR_FILE_OK, sp, sp_bottom);
+        sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
         if (sp == NULL)
         {
             // error

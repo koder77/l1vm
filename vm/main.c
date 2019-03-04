@@ -1296,6 +1296,8 @@ S2 run (void *arg)
 	#if DEBUG
 	printf("%lli STPOPB\n", cpu_core);
 	#endif
+	arg1 = code[ep + 1];
+
 	if (sp == sp_top)
 	{
 		// nothing on stack!! can't pop!!
@@ -1304,6 +1306,9 @@ S2 run (void *arg)
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
+
+	// clear arg1
+	regi[arg1] = 0;
 
 	bptr = (U1 *) &regi[arg1];
 

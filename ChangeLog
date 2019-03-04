@@ -11,8 +11,9 @@ VM interrupt 0: 18: get current date. see vm/main.c for more info and also prog/
 
 Bugfixes: compiler: (var stpopb) expression fixed.
 VM: date functions fixed. New: interrupt 19: get weekday since Sunday (Sunday = 0).
+Bugfix: VM: stpopb argument not used right.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sun 3 Mar 2019 15:31 +0100
+-- Stefan Pietzonke <jay-t@gmx.net>  Mon 4 Mar 2019 14:00 +0100
 
 
 L1VM - (0.9)
