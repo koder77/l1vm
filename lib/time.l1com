@@ -1,0 +1,44 @@
+(main func)
+    (set int64 1 zero 0)
+	(set string 9 time "")
+	(set string 11 date "")
+	(set int64 1 time_len 9)
+	(set int64 1 date_len 11)
+	(zero :time_init call)
+	(loadreg)
+	(date date_len :time_datetostring call)
+	(loadreg)
+	(time time_len :time_timetostring call)
+	(loadreg)
+	(6 time 0 0 intr0)
+	(7 0 0 0 intr0)
+	(6 date 0 0 intr0)
+	(7 0 0 0 intr0)
+    (255 0 0 0 intr0)
+(funcend)
+// time library
+//
+//
+(time_init func)
+    (set string s modulestr@time "libl1vmtime.so")
+	(set string s datetostringstr@time "time_date_to_string")
+	(set string s timetostringstr@time "time_time_to_string")
+	(set int64 1 datetostring@time 0)
+	(set int64 1 timetostring@time 1)
+	(set int64 1 mod@time 0)
+    // get argument from stack
+    (mod@time stpopi)
+	// load string module
+	(0 modulestr@timeaddr mod@time 0 intr0)
+	// set functions
+	(2 mod@time datetostring@time datetostringstr@timeaddr intr0)
+	(2 mod@time timetostring@time timetostringstr@timeaddr intr0)
+(funcend)
+(time_datetostring func)
+	// arguments: dest string, dest string len
+	(3 mod@time datetostring@time 0 intr0)
+(funcend)
+(time_timetostring func)
+	// arguments: dest string, dest string len
+	(3 mod@time timetostring@time 0 intr0)
+(funcend)
