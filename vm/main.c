@@ -1675,6 +1675,16 @@ S2 run (void *arg)
 
 			sp = call_module_func (regi[arg2], regi[arg3], (U1 *) sp, sp_top, sp_bottom, (U1 *) data);
 			eoffs = 5;
+			if (sp == NULL)
+			{
+				// ERROR -> EXIT
+				retcode = 1;
+				free (jumpoffs);
+				pthread_mutex_lock (&data_mutex);
+				threaddata[cpu_core].status = STOP;
+				pthread_mutex_unlock (&data_mutex);
+				pthread_exit ((void *) retcode);
+			}
 			break;
 
 		case 4:
@@ -2303,7 +2313,7 @@ void free_modules (void)
     {
         if (modules[i].name[0] != '\0')
         {
-            printf ("free_modules: module %lli free.\n", i);
+            printf ("free_modules: module %lli %s free.\n", i, modules[i].name);
             free_module (i);
         }
     }
