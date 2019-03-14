@@ -472,12 +472,16 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
 				rj1 = 0; rj2 = 0; rj3 = 0;
 
+				#if DEBUG
+					printf ("JIT-compiler: double opcode: R1 = %lli, R2 = %lli, R3 = %lli\n", r1, r2, r3);
+				#endif
+
 				// search for r1 in CPU registers
 				for (j = 0; j < jit_regsd_max; j++)
 				{
-					if (jit_regsd[i] == r1)
+					if (jit_regsd[j] == r1)
 					{
-						rj1 = i;
+						rj1 = j;
 						break;
 					}
 				}
@@ -485,18 +489,24 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				// search for r2 in CPU registers
 				for (j = 0; j < jit_regsd_max; j++)
 				{
-					if (jit_regsd[i] == r2)
+					if (jit_regsd[j] == r2)
 					{
-						rj2 = i;
+						rj2 = j;
 						break;
 					}
 				}
+
+				printf ("JIT-compiler: double opcode: rj1 = %lli, rj2 = %lli\n", rj1, rj2);
 
 				if (rj1 == 0 && rj2 == 0)
 				{
 					switch (rjnext)
 					{
 						case 0:
+							#if DEBUG
+								printf ("JIT-compiler: rjnext = 0, rj1 = 0, rj2 = 0\n");
+							#endif
+
 							// move to XMM registers
 							a.movsd (asmjit::x86::xmm0, asmjit::x86::qword_ptr (RDI, OFFSET(r1)));
 							a.movsd (asmjit::x86::xmm1, asmjit::x86::qword_ptr (RDI, OFFSET(r2)));
@@ -528,6 +538,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 							break;
 
 						case 2:
+							#if DEBUG
+								printf ("JIT-compiler: rjnext = 2, rj1 = 0, rj2 = 0\n");
+							#endif
+
 							// move to XMM registers
 							a.movsd (asmjit::x86::xmm2, asmjit::x86::qword_ptr (RDI, OFFSET(r1)));
 							a.movsd (asmjit::x86::xmm3, asmjit::x86::qword_ptr (RDI, OFFSET(r2)));
@@ -559,6 +573,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 							break;
 
 						case 4:
+							#if DEBUG
+								printf ("JIT-compiler: rjnext = 0, rj1 = 0, rj2 = 0\n");
+							#endif
+
 							// move to XMM registers
 							a.movsd (asmjit::x86::xmm4, asmjit::x86::qword_ptr (RDI, OFFSET(r1)));
 							a.movsd (asmjit::x86::xmm5, asmjit::x86::qword_ptr (RDI, OFFSET(r2)));
@@ -595,6 +613,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 					{
 						if (rj1 == 0)
 						{
+							#if DEBUG
+								printf ("JIT-compiler 2: rj1 = 0\n");
+							#endif
+
 							// move to XMM registers
 							a.movsd (asmjit::x86::xmm0, asmjit::x86::qword_ptr (RDI, OFFSET(r1)));
 
@@ -624,6 +646,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 						}
 						if (rj1 == 2)
 						{
+							#if DEBUG
+								printf ("JIT-compiler: rj1 = 2\n");
+							#endif
+
 							// move to XMM registers
 							a.movsd (asmjit::x86::xmm2, asmjit::x86::qword_ptr (RDI, OFFSET(r1)));
 
@@ -653,6 +679,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 						}
 						if (rj1 == 4)
 						{
+							#if DEBUG
+								printf ("JIT-compiler: rj1 = 4\n");
+							#endif
+
 							// move to XMM registers
 							a.movsd (asmjit::x86::xmm4, asmjit::x86::qword_ptr (RDI, OFFSET(r1)));
 

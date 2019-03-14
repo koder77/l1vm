@@ -13,7 +13,9 @@ Bugfixes: compiler: (var stpopb) expression fixed.
 VM: date functions fixed. New: interrupt 19: get weekday since Sunday (Sunday = 0).
 Bugfix: VM: stpopb argument not used right.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Mon 4 Mar 2019 14:00 +0100
+Bugfix: JIT compiler: double floating opcodes register search fixed.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Thu 14 Mar 2019 18:51 +0100
 
 
 L1VM - (0.9)
