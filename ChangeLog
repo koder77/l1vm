@@ -15,7 +15,13 @@ Bugfix: VM: stpopb argument not used right.
 
 Bugfix: JIT compiler: double floating opcodes register search fixed.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Thu 14 Mar 2019 18:51 +0100
+New: compiler (loadreg) automatically set if function called like this:
+
+(foo bar :foobar * call)
+
+The star "*" sets loadreg automatically.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Fri 15 Mar 2019 20:00 +0100
 
 
 L1VM - (0.9)

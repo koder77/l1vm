@@ -632,7 +632,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 	S8 if_pos ALIGN;
 	U1 if_label[MAXLINELEN];
 	U1 endif_label[MAXLINELEN];
-
+	U1 set_loadreg = 0;
 
 	if (get_ast (line) != 0)
 	{
@@ -1979,6 +1979,15 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 									if (last_arg >= 2)
 									{
+										if (ast[level].expr[j][last_arg - 1][0] == '*')
+										{
+											// found star: * as loadreg code
+											// set loadreg opcodes on end
+											set_loadreg = 1;
+											// correct arguments
+											last_arg = last_arg - 1;
+										}
+
 										for (e = 0; e < last_arg - 1; e++)
 										{
 											if (getvartype (ast[level].expr[j][e]) == INTEGER)
@@ -2137,6 +2146,55 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 											strcpy ((char *) code[code_line], (const char *) code_temp);
 											strcat ((char *) code[code_line], "\n");
+
+											if (set_loadreg == 1)
+											{
+												// load double registers
+												for (e = MAXREG - 1; e >= 0; e--)
+												{
+													if (save_regd[e] == 1)
+													{
+														strcpy ((char *) code_temp, "stpopd F");
+														sprintf ((char *) str, "%i", e);
+														strcat ((char *) code_temp, (const char*) str);
+														strcat ((char *) code_temp, "\n");
+
+														code_line++;
+														if (code_line >= MAXLINES)
+														{
+															printf ("error: line %lli: code list full!\n", linenum);
+															return (1);
+														}
+
+														strcpy ((char *) code[code_line], (const char *) code_temp);
+													}
+												}
+
+												// load integer registers
+												for (e = MAXREG - 1; e >= 0; e--)
+												{
+													if (save_regi[e] == 1)
+													{
+														strcpy ((char *) code_temp, "stpopi I");
+														sprintf ((char *) str, "%i", e);
+														strcat ((char *) code_temp, (const char*) str);
+														strcat ((char *) code_temp, "\n");
+
+														code_line++;
+														if (code_line >= MAXLINES)
+														{
+															printf ("error: line %lli: code list full!\n", linenum);
+															return (1);
+														}
+
+														strcpy ((char *) code[code_line], (const char *) code_temp);
+													}
+												}
+
+												init_registers ();
+
+												set_loadreg = 0;
+											}
 										}
 									}
 

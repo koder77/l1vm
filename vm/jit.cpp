@@ -496,7 +496,9 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 					}
 				}
 
-				printf ("JIT-compiler: double opcode: rj1 = %lli, rj2 = %lli\n", rj1, rj2);
+				#if DEBUG
+					printf ("JIT-compiler: double opcode: rj1 = %lli, rj2 = %lli\n", rj1, rj2);
+				#endif
 
 				if (rj1 == 0 && rj2 == 0)
 				{
