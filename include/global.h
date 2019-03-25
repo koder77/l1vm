@@ -58,7 +58,7 @@ typedef long long               S8;     /* 64 bit long */
 typedef double                  F8;     /* DOUBLE */
 
 
-// #define DEBUG					1
+// #define DEBUG					0
 
 // #define M_ARM	1
 
