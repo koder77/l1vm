@@ -427,8 +427,9 @@ S2 get_ast (U1 *line)
 		ast[i].expr_max = 0;
 	}
 
-	printf ("> '%s'\n", line);
+	// printf ("> '%s'\n", line);
 
+	printf ("> %s", line);
     while (! ok)
     {
 		// printf ("top: %c\n", line[pos]);
@@ -724,7 +725,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 						if (strcmp ((const char *) ast[level].expr[j][1], "string") == 0)
 						{
-							printf ("DEBUG: string data type!\n");
+                            // printf ("DEBUG: string data type!\n");
 
 							data_info[data_ind].type = STRING;
 							data_info[data_ind].type_size = sizeof (U1);
@@ -897,7 +898,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							strcat ((char *) data[data_line], "Q, ");
 							strcat ((char *) data[data_line], (const char *) data_info[data_ind].value_str);
 
-							printf ("data_line: ast expr args: %i", ast[level].expr_args[j]);
+							// printf ("data_line: ast expr args: %i", ast[level].expr_args[j]);
 
 							if (ast[level].expr_args[j] > 4 && data_info[data_ind].type != STRING)
 							{
