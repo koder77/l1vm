@@ -233,7 +233,7 @@ S2 get_args (U1 *line)
 
     while (! ok)
     {
-		printf ("get_args: line-pos: %i, char: %c\n", pos, line[pos]);
+		// printf ("get_args: line-pos: %i, char: %c\n", pos, line[pos]);
         if (line[pos] == ' ')
         {
             pos++;
@@ -335,7 +335,7 @@ S2 get_args (U1 *line)
 				}
             }
             args[arg_ind][arg_pos] = '\0';
-            printf ("[ get_args: ARGUMENTS %s ]\n", args[arg_ind]);
+            // printf ("[ get_args: ARGUMENTS %s ]\n", args[arg_ind]);
 
 			// if (string == 1) arg_ind--;
             if (arg_ind >= MAXARGS)
@@ -701,7 +701,7 @@ S2 write_code_labels (void)
 
 	for (i = 16; i <= code_ind - 1; i = i + offset)
 	{
-		printf ("code: index %lli: opcode: %i\n", i, code[i]);
+		// printf ("code: index %lli: opcode: %i\n", i, code[i]);
 
 		if (code[i] == JMP|| code[i] == JMPI || code[i] == INCLSIJMPI || code[i] == DECGRIJMPI || code[i] == LOADL || code[i] == JSR)
 		{
@@ -731,7 +731,7 @@ S2 write_code_labels (void)
 			{
 				label_index = read_code_quadword (&code[i + 3]);
 
-				printf ("write_code_labels: label: inclsijmpi: %lli\n", label[label_index].pos);
+				// printf ("write_code_labels: label: inclsijmpi: %lli\n", label[label_index].pos);
 				if (label[label_index].pos == -1)
 				{
 					printf ("ERROR: write_code_labels: label: %s not defined!\n", label[label_index].name);
@@ -786,7 +786,7 @@ S2 write_code_labels (void)
 			}
 		}
 		offset++;
-		printf ("OFFSET: %lli\n", offset);
+		// printf ("OFFSET: %lli\n", offset);
 	}
 	return (err);
 }
@@ -850,7 +850,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
                 return (1);
             }
 
-			printf ("ARG IND: %i\n", arg_ind);
+			// printf ("ARG IND: %i\n", arg_ind);
 
 			if (arg_ind >= 3)
 			{
@@ -870,7 +870,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
                 	offset = get_temp_int ();
                 	offset += 8;	// data size = 8 bytes
 
-					printf ("ARGS 2: %s\n", args[2]);
+					// printf ("ARGS 2: %s\n", args[2]);
 
                 	if (checkdigit (args[2]) == 1)
                 	{
@@ -923,7 +923,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
                 	}
                 	else
                 	{
-                    	printf ("line: %lli DATA STRING: '%s'\n", linenum, args[2]);
+                    	// printf ("line: %lli DATA STRING: '%s'\n", linenum, args[2]);
                     	if (write_data_string (offset, args[2]) != 0)
 						{
 							printf ("error: line %lli: out of data memory!\n", linenum);
@@ -958,7 +958,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 						offset = data_save_offset;
 					}
 
-					printf ("data list arg ind: %i\n", arg_ind);
+					// printf ("data list arg ind: %i\n", arg_ind);
 
 					for (i = j; i <= arg_ind; i++)
 					{
@@ -983,7 +983,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 								{
 									printf ("error: line %lli: out of data memory!\n", linenum);
 								}
-								printf ("line %lli: doublefloat type\n", linenum);
+								// printf ("line %lli: doublefloat type\n", linenum);
 								data_offset = data_offset + sizeof (F8);
 	                    	}
 	                    	else
@@ -1117,7 +1117,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
             if (args[0][0] == ':')
             {
-				printf ("line %lli: label: %s\n", linenum, args[0]);
+				// printf ("line %lli: label: %s\n", linenum, args[0]);
 				label_pos = get_label_pos ((U1 *) args[0]);
 				if (label_pos == -1)
 				{
@@ -1147,7 +1147,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 				{
 					// set position to label set by jump opcode
 					label[label_pos].pos = code_ind;
-					printf ("label position set\n");
+					// printf ("label position set\n");
 				}
             }
             else
@@ -1203,7 +1203,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
                                             // found data entry
 
                                             write_code_quadword (code_ind, data_info[d].offset - 8);
-											printf ("DATA: %s, offset: %lli\n", data_info[d].name, data_info[d].offset - 8);
+											// printf ("DATA: %s, offset: %lli\n", data_info[d].name, data_info[d].offset - 8);
 											code_ind += sizeof (S8);
 											data_found = 1;
                                             break;
@@ -1333,7 +1333,7 @@ S2 parse (U1 *name)
             convtabs (rbuf);                    /* convert the funny tabs into spaces! */
             slen = strlen ((const char *) rbuf);
 
-			printf ("[ %s ]\n", rbuf);
+			printf ("> %s", rbuf);
 
             pos = searchstr (rbuf, (U1 *) REM_SB, 0, 0, TRUE);
             if (pos != -1)
