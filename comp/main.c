@@ -451,11 +451,11 @@ S2 get_ast (U1 *line)
 				{
 					ast_level = ast_ind;
 				}
-				
+
                 #if DEBUG
 				printf ("AST bracket level: %lli\n", ast_level);
                 #endif
-                
+
 				pos++;
 				if (pos >= slen)
 				{
@@ -2903,5 +2903,6 @@ int main (int ac, char *av[])
 		exit (1);
 	}
 
+	printf ("ok!\n");
 	exit (0);
 }

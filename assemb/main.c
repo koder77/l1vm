@@ -1575,5 +1575,7 @@ int main (int ac, char *av[])
 		printf ("ERRORS! can't write object file!\n");
 		exit (1);
 	}
+	
+	printf ("ok!\n");
 	exit (0);
 }

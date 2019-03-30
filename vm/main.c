@@ -33,35 +33,30 @@
 #include <SDL/SDL_gfxPrimitives.h>
 #include <SDL/SDL_ttf.h>
 #include <SDL/SDL_image.h>
-#endif
 
-#if JIT_COMPILER
-#define MAXJITCODE 64
-S8 JIT_code_ind ALIGN = -1;
-
-struct JIT_code JIT_code[MAXJITCODE];
-#endif
-
-// protos
-S2 load_object (U1 *name);
-void free_modules (void);
-
-
-#if JIT_COMPILER
-int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *regd, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start, S8 end);
-int run_jit (S8 code);
-int free_jit_code ();
-#endif
-
-#if SDL_module
 SDL_Surface *surf;
 TTF_Font *font;
 U1 SDL_use = 0;
 #endif
 
+#if JIT_COMPILER
+#define MAXJITCODE 64
+S8 JIT_code_ind ALIGN = -1;
+struct JIT_code JIT_code[MAXJITCODE];
+
+int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *regd, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start, S8 end);
+int run_jit (S8 code);
+int free_jit_code ();
+#endif
+
+
 #define EXE_NEXT(); ep = ep + eoffs; goto *jumpt[code[ep]];
 
 //#define EXE_NEXT(); ep = ep + eoffs; printf ("next opcode: %i\n", code[ep]); goto *jumpt[code[ep]];
+
+// protos
+S2 load_object (U1 *name);
+void free_modules (void);
 
 
 S8 data_size ALIGN;
@@ -502,7 +497,7 @@ S2 run (void *arg)
 		regd[i] = 0.0;
 	}
 
-	printf ("ready...\n");
+	// printf ("ready...\n");
 	// printf ("modules loaded: %lli\n", modules_ind + 1);
 	printf ("CPU %lli ready\n", cpu_ind);
 	printf ("codesize: %lli\n", code_size);
