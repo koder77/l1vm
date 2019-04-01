@@ -1000,6 +1000,8 @@ U1 *file_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 string_address ALIGN;
     S8 slen ALIGN;
 
+	S8 real_slen ALIGN;
+
     if (sp == sp_top)
     {
         // nothing on stack!! can't pop!!
@@ -1049,6 +1051,14 @@ U1 *file_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
     else
     {
+		// check for "\n" and remove it if found
+
+		real_slen = strlen ((const char *) &data[string_address]);
+		if (data[string_address + real_slen - 1] == '\n')
+		{
+			data[string_address + real_slen - 1] = '\0';
+		}
+
         // push ERROR code OK
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
         if (sp == NULL)

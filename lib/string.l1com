@@ -1,13 +1,37 @@
+// now with string array demo
 (main func)
     (set int64 1 zero 0)
+	(set int64 1 one 1)
     (set string 13 hellostr "Hello")
     (set string 8 worldstr " world!")
+	(set string 15 hellostr2 "")
+	(set string 15 worldstr2 "")
     (set int64 1 slen 0)
     (set string 30 bufstr "")
     (set int64 1 buflen 29)
     (set byte 1 bytenum 42)
+	//
+	// set array with 30 chars
+	// and 15 chars length for array strings
+	(set string 30 arraystr "")
+	(set int64 1 array_size 30)
+	(set int64 1 string_len 15)
     (zero :string_init call)
+	// copy hellostr to array
+	(hellostraddr arraystraddr zero string_len array_size :string_to_array call)
+	(loadreg)
+	// copy worldstr to array
+	(worldstraddr arraystraddr one string_len array_size :string_to_array call)
     (loadreg)
+	// get strings from array
+	(arraystraddr hellostr2addr zero string_len array_size :array_to_string call)
+	(loadreg)
+	(arraystraddr worldstr2addr one string_len array_size :array_to_string call)
+	(loadreg)
+	(6 hellostr2 0 0 intr0)
+	(6 worldstr2 0 0 intr0)
+	(7 0 0 0 intr0)
+	(7 0 0 0 intr0)
     (hellostraddr worldstraddr :string_cat call)
     (loadreg)
     (6 hellostr 0 0 intr0)
@@ -39,6 +63,8 @@
     (set string 25 bytetohexstringstr@string "string_byte_to_hexstring")
     (set string 24 doubletostringstr@string "string_double_to_string")
 	(set string 26 bytenumtostringstr@string "string_bytenum_to_string")
+	(set string 23 stringtoarraystr@string "string_string_to_array")
+	(set string 23 arraytostringstr@string "string_array_to_string")
     (set int64 1 len@string 0)
     (set int64 1 copy@string 1)
     (set int64 1 cat@string 2)
@@ -46,6 +72,8 @@
     (set int64 1 bytetohexstring@string 4)
     (set int64 1 doubletostring@string 5)
 	(set int64 1 bytenumtostring@string 6)
+	(set int64 1 stringtoarray@string 7)
+	(set int64 1 arraytostring@string 8)
     (set int64 1 mod@string 0)
     // get argument from stack
     (mod@string stpopi)
@@ -59,6 +87,8 @@
     (2 mod@string bytetohexstring@string bytetohexstringstr@stringaddr intr0)
     (2 mod@string doubletostring@string doubletostringstr@stringaddr intr0)
 	(2 mod@string bytenumtostring@string bytenumtostringstr@stringaddr intr0)
+	(2 mod@string stringtoarray@string stringtoarraystr@stringaddr intr0)
+	(2 mod@string arraytostring@string arraytostringstr@stringaddr intr0)
 (funcend)
 (string_len func)
 // argument: int64 string address
@@ -87,4 +117,12 @@
 (funcend)
 (string_bytenumtostring func)
 	(3 mod@string bytenumtostring@string 0 intr0)
+(funcend)
+(string_to_array func)
+// args: sourceaddr, destaddr, index, stringlen, arraysize
+	(3 mod@string stringtoarray@string 0 intr0)
+(funcend)
+(array_to_string func)
+// args: sourceaddr, destaddr, index, stringlen, arraysize
+	(3 mod@string arraytostring@string 0 intr0)
 (funcend)

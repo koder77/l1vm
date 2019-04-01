@@ -2324,7 +2324,7 @@ int main (int ac, char *av[])
 
 	S8 new_cpu ALIGN;
 
-    printf ("l1vm - 0.9.1 - (C) 2017-2019 Stefan Pietzonke\n");
+    printf ("l1vm - 0.9.2 - (C) 2017-2019 Stefan Pietzonke\n");
 
 #if MAXCPUCORES == 0
     max_cpu = sysconf (_SC_NPROCESSORS_ONLN);

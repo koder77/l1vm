@@ -240,3 +240,150 @@ U1 *string_bytenum_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	return (sp);
 }
+
+// string array functions
+U1 *string_string_to_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: sourceaddr, destaddr, index, stringlen, arraysize
+	S8 strdestaddr ALIGN;
+	S8 strsrcaddr ALIGN;
+	S8 index ALIGN;
+	S8 array_size ALIGN;
+	S8 string_len ALIGN;
+	S8 index_real ALIGN;
+	S8 string_len_src ALIGN;
+
+	sp = stpopi ((U1 *) &array_size, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_string_to_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &string_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_string_to_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &index, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_string_to_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_string_to_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strsrcaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_string_to_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	string_len_src = strlen ((const char *) &data[strsrcaddr]);
+	if (string_len_src > string_len)
+	{
+		// error
+		printf ("string_string_to_array: ERROR: source string overflow!\n");
+		return (NULL);
+	}
+
+	index_real = index * string_len;
+	if (index_real > array_size)
+	{
+		// error
+		printf ("string_string_to_array: ERROR: destination array overflow!\n");
+		return (NULL);
+	}
+
+	// printf ("DEBUG: string_string_to_array: '%s'\n", &data[strsrcaddr]);
+
+	strcpy ((char *) &data[strdestaddr + index_real], (const char *) &data[strsrcaddr]);
+
+	// printf ("DEBUG: string_string_to_array: array dest: '%s'\n", &data[strdestaddr + index_real]);
+	return (sp);
+}
+
+U1 *string_array_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: sourceaddr, destaddr, index, stringlen, arraysize
+	S8 strdestaddr ALIGN;
+	S8 strsrcaddr ALIGN;
+	S8 index ALIGN;
+	S8 array_size ALIGN;
+	S8 string_len ALIGN;
+	S8 index_real ALIGN;
+	S8 string_len_src ALIGN;
+
+	sp = stpopi ((U1 *) &array_size, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_array_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &string_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_array_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &index, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_array_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_array_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strsrcaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_array_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	index_real = index * string_len;
+	if (index_real > array_size)
+	{
+		// error
+		printf ("string_array_to_string: ERROR: source array overflow!\n");
+		return (NULL);
+	}
+
+	string_len_src = strlen ((const char *) &data[strsrcaddr + index_real]);
+	if (string_len_src > string_len)
+	{
+		// error
+		printf ("string_array_to_string: ERROR: source string overflow!\n");
+		return (NULL);
+	}
+
+	strcpy ((char *) &data[strdestaddr], (const char *) &data[strsrcaddr + index_real]);
+	return (sp);
+}

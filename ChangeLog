@@ -1,3 +1,9 @@
+L1VM - (0.9.2)
+New: string array handling in string library.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Mon 1 Apr 2019 18:00 +0200
+
+
 L1VM - (0.9.1)
 New: SDL GUI functions.
 See lib/sdl-lib.l1com.
