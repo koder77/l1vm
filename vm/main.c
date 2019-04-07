@@ -206,7 +206,10 @@ void cleanup (void)
 	}
     #endif
 
-    free_jit_code ();
+	#if JIT_COMPILER
+    	free_jit_code ();
+	#endif
+	
     free_modules ();
 	if (data) free (data);
     if (code) free (code);
