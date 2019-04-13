@@ -537,7 +537,7 @@ U1 *string_mid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
-U1 *string_tostring (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+U1 *string_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// get char at given position in source string
 	S8 strsourceaddr ALIGN;
@@ -549,7 +549,7 @@ U1 *string_tostring (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("string_tostring: ERROR: stack corrupt!\n");
+		printf ("string_to_string: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
@@ -557,7 +557,7 @@ U1 *string_tostring (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("string_tostring: ERROR: stack corrupt!\n");
+		printf ("string_to_string: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
@@ -565,7 +565,7 @@ U1 *string_tostring (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("string_tostring: ERROR: stack corrupt!\n");
+		printf ("string_to_string: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
@@ -573,7 +573,7 @@ U1 *string_tostring (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (pos < 1 || pos > strdest_len)
 	{
 		// error
-		printf ("string_tostring: ERROR: source array overflow!\n");
+		printf ("string_to_string: ERROR: source array overflow!\n");
 		return (NULL);
 	}
 
