@@ -539,7 +539,6 @@ U1 *string_mid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *string_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	// get char at given position in source string
 	S8 strsourceaddr ALIGN;
 	S8 strdestaddr ALIGN;
 	S8 pos ALIGN;
