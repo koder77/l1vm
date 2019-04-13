@@ -26,6 +26,7 @@
 // 1MB = 1048576 bytes
 #define MAXDATA 33554432 // 32 MB
 
+
 S8 linenum ALIGN = 1;
 U1 args[MAXARGS][MAXLINELEN];
 
@@ -1575,7 +1576,7 @@ int main (int ac, char *av[])
 		printf ("ERRORS! can't write object file!\n");
 		exit (1);
 	}
-	
+
 	printf ("ok!\n");
 	exit (0);
 }

@@ -28,7 +28,7 @@
 	(set int64 1 mod@time 0)
     // get argument from stack
     (mod@time stpopi)
-	// load string module
+	// load time module
 	(0 modulestr@timeaddr mod@time 0 intr0)
 	// set functions
 	(2 mod@time datetostring@time datetostringstr@timeaddr intr0)

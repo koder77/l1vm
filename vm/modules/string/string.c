@@ -387,3 +387,197 @@ U1 *string_array_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	strcpy ((char *) &data[strdestaddr], (const char *) &data[strsrcaddr + index_real]);
 	return (sp);
 }
+
+U1 *string_left (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// get left side n chars of string
+	S8 strsourceaddr ALIGN;
+	S8 strdestaddr ALIGN;
+	S8 str_len ALIGN;
+	S8 strsource_len ALIGN;
+	S8 i ALIGN;
+
+	sp = stpopi ((U1 *) &str_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_left: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_left: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_left: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	strsource_len = strlen ((const char *) &data[strsourceaddr]);
+	if (str_len < 1 || str_len > strsource_len)
+	{
+		// error
+		printf ("string_left: ERROR: source array overflow!\n");
+		return (NULL);
+	}
+
+	for (i = 0; i < str_len; i++)
+	{
+		data[strdestaddr + i] = data[strsourceaddr + i];
+	}
+	data[strdestaddr + i] = '\0';
+
+	return (sp);
+}
+
+U1 *string_right (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// get right side n chars of string
+	S8 strsourceaddr ALIGN;
+	S8 strdestaddr ALIGN;
+	S8 str_len ALIGN;
+	S8 strsource_len ALIGN;
+	S8 i ALIGN;
+	S8 j ALIGN;
+
+	sp = stpopi ((U1 *) &str_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_right: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_right: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_right: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	strsource_len = strlen ((const char *) &data[strsourceaddr]);
+	if (str_len < 1 || str_len > strsource_len)
+	{
+		// error
+		printf ("string_right: ERROR: source array overflow!\n");
+		return (NULL);
+	}
+
+	i = 0;
+	for (j = strsource_len - str_len; j < strsource_len; j++)
+	{
+		data[strdestaddr + i] = data[strsourceaddr + j];
+		i++;
+	}
+	data[strdestaddr + i] = '\0';
+
+	return (sp);
+}
+
+U1 *string_mid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// get char at given position in source string
+	S8 strsourceaddr ALIGN;
+	S8 strdestaddr ALIGN;
+	S8 pos ALIGN;
+	S8 strsource_len ALIGN;
+
+	sp = stpopi ((U1 *) &pos, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_mid: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_mid: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_mid: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	strsource_len = strlen ((const char *) &data[strsourceaddr]);
+	if (pos < 1 || pos > strsource_len)
+	{
+		// error
+		printf ("string_mid: ERROR: source array overflow!\n");
+		return (NULL);
+	}
+
+	data[strdestaddr] = data[strsourceaddr + pos];
+	data[strdestaddr + 1] = '\0';
+
+	return (sp);
+}
+
+U1 *string_tostring (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// get char at given position in source string
+	S8 strsourceaddr ALIGN;
+	S8 strdestaddr ALIGN;
+	S8 pos ALIGN;
+	S8 strdest_len ALIGN;
+
+	sp = stpopi ((U1 *) &pos, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_tostring: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_tostring: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_tostring: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	strdest_len = strlen ((const char *) &data[strdestaddr]);
+	if (pos < 1 || pos > strdest_len)
+	{
+		// error
+		printf ("string_tostring: ERROR: source array overflow!\n");
+		return (NULL);
+	}
+
+	data[strdestaddr + pos] = data[strsourceaddr];
+
+	return (sp);
+}
