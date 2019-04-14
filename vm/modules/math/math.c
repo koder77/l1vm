@@ -244,3 +244,101 @@ U1 *rand_int_max (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	return (sp);
 }
+
+U1 *double_rounded_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+  	S8 deststr_len ALIGN;
+	S8 number_of_digits ALIGN;
+	F8 number ALIGN;
+	S8 deststraddr ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &deststr_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("double_rounded_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &deststraddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("double_rounded_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &number_of_digits, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("double_rounded_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+  	sp = stpopd ((U1 *) &number, sp, sp_top);
+  	if (sp == NULL)
+  	{
+  		// error
+  		printf ("double_rounded_string: ERROR: stack corrupt!\n");
+  		return (NULL);
+  	}
+
+	if (number_of_digits < 0 || number_of_digits > 10)
+	{
+		printf ("double_rounded_string: ERROR: number of digits out of range!\n");
+  		return (NULL);
+	}
+
+	switch (number_of_digits)
+	{
+		case 1:
+			ret = snprintf ((char *) &data[deststraddr], deststr_len, "%.1lf", number);
+			break;
+
+		case 2:
+			ret = snprintf ((char *) &data[deststraddr], deststr_len, "%.2lf", number);
+			break;
+
+		case 3:
+			ret = snprintf ((char *) &data[deststraddr], deststr_len, "%.3lf", number);
+			break;
+
+		case 4:
+			ret = snprintf ((char *) &data[deststraddr], deststr_len, "%.4lf", number);
+			break;
+
+		case 5:
+			ret = snprintf ((char *) &data[deststraddr], deststr_len, "%.5lf", number);
+			break;
+
+		case 6:
+			ret = snprintf ((char *) &data[deststraddr], deststr_len, "%.6lf", number);
+			break;
+
+		case 7:
+			ret = snprintf ((char *) &data[deststraddr], deststr_len, "%.7lf", number);
+			break;
+
+		case 8:
+			ret = snprintf ((char *) &data[deststraddr], deststr_len, "%.8lf", number);
+			break;
+
+		case 9:
+			ret = snprintf ((char *) &data[deststraddr], deststr_len, "%.9lf", number);
+			break;
+
+		case 10:
+			ret = snprintf ((char *) &data[deststraddr], deststr_len, "%.10lf", number);
+			break;
+	}
+
+	if (! (ret >= 0 || ret < deststr_len))
+	{
+		printf ("double_rounded_string: ERROR: can't convert to string!\n");
+		return (NULL);
+	}
+
+	return (sp);
+}

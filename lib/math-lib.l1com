@@ -2,6 +2,9 @@
     (set int64 1 zero 0)
     (set int64 1 randstart 2003)
     (set int64 1 random 0)
+	(set int64 1 digits 3)
+	(set int64 1 numstr_len 30)
+	(set string 30 numstr "")
 	// set constants -----------------------------------------
 	(set double 1 m_e@math 2.7182818284590452354)
 	(set double 1 m_log2e@math 1.4426950408889634074)
@@ -28,6 +31,11 @@
     (7 0 0 0 intr0)
 	(5 m_pi@math 0 0 intr0)
 	(7 0 0 0 intr0)
+	// round pi to "digits" (3) digits and store number in string
+	(m_pi@math digits numstraddr numstr_len :double_rounded_string call)
+	(loadreg)
+	(6 numstr 0 0 intr0)
+	(7 0 0 0 intr0)
     // close module
     (1 zero 0 0 intr0)
     (255 zero 0 0 intr0)
@@ -46,6 +54,7 @@
     (set string 9 randintstr@math "rand_int")
     (set string 12 randdoublestr@math "rand_double")
     (set string 13 randintmaxstr@math "rand_int_max")
+	(set string 22 doubleroundedstringstr@math "double_rounded_string")
     (set int64 1 int2double@math 0)
     (set int64 1 double2int@math 1)
     (set int64 1 sqrtdouble@math 2)
@@ -55,6 +64,7 @@
     (set int64 1 randint@math 6)
     (set int64 1 randdouble@math 7)
     (set int64 1 randintmax@math 8)
+	(set int64 1 doubleroundedstring@math 9)
     (set int64 1 mod@math 0)
     // get argument from stack
     (mod@math stpopi)
@@ -70,6 +80,7 @@
     (2 mod@math randint@math randintstr@mathaddr intr0)
     (2 mod@math randdouble@math randdoublestr@mathaddr intr0)
     (2 mod@math randintmax@math randintmaxstr@mathaddr intr0)
+	(2 mod@math doubleroundedstring@math doubleroundedstringstr@mathaddr intr0)
 (funcend)
 // wrapper functions
 (math_int2double func)
@@ -98,4 +109,7 @@
 (funcend)
 (math_randintmax func)
     (3 mod@math randintmax@math 0 intr0)
+(funcend)
+(double_rounded_string func)
+	(3 mod@math doubleroundedstring@math 0 intr0)
 (funcend)
