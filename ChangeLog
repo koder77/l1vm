@@ -3,8 +3,9 @@ New: string array handling in string library.
 New: free_jit_code now inside of "#if JIT_COMPILER" definition.
 New: string library: string_left, string_right, string_mid, string_tostring.
 New: math library: double_rounded_string, round to given digits and store result in string.
+New: warnings and an error exit if no JIT_COMPILER defined on 253 and 254 interrupts.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sun 14 Apr 2019 14:48 +0200
+-- Stefan Pietzonke <jay-t@gmx.net>  Mon 15 Apr 2019 19:38 +0200
 
 
 L1VM - (0.9.1)

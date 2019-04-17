@@ -209,7 +209,7 @@ void cleanup (void)
 	#if JIT_COMPILER
     	free_jit_code ();
 	#endif
-	
+
     free_modules ();
 	if (data) free (data);
     if (code) free (code);
@@ -1874,6 +1874,18 @@ S2 run (void *arg)
 
             eoffs = 5;
             break;
+#else
+		case 253:
+			printf ("FATAL ERROR: no JIT compiler: can't compile!\n");
+			free (jumpoffs);
+			pthread_exit ((void *) 1);
+			break;
+
+		case 254:
+			printf ("FATAL ERROR: no JIT compiler: can't execute!\n");
+			free (jumpoffs);
+			pthread_exit ((void *) 1);
+			break;
 #endif
 
 
