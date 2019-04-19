@@ -243,6 +243,7 @@ S2 run (void *arg)
 
 	// threads
 	S8 new_cpu ALIGN;
+	S8 cpus_free ALIGN;
 
     // thread attach to CPU core
 	cpu_set_t cpuset;
@@ -2029,6 +2030,30 @@ S2 run (void *arg)
 			// return number of current CPU core
 			arg2 = code[ep + 2];
 			regi[arg2] = cpu_core;
+
+			eoffs = 5;
+			break;
+
+		case 5:
+			// return number of free CPU cores
+			// search for a free CPU core
+			// if none free found set cpus_free to 0, to indicate all CPU cores are used!!
+
+			// printf ("INTR1: 5, get number of free CPU cores\n");
+
+			cpus_free = 0;
+			pthread_mutex_lock (&data_mutex);
+			for (i = 0; i < max_cpu; i++)
+			{
+				if (threaddata[i].status == STOP)
+				{
+					cpus_free++;
+				}
+			}
+			pthread_mutex_unlock (&data_mutex);
+
+			arg2 = code[ep + 2];
+			regi[arg2] = cpus_free;
 
 			eoffs = 5;
 			break;

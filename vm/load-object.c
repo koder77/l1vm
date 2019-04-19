@@ -457,21 +457,21 @@ S2 load_object (U1 *name)
 				//printf ("DATA WORD\n");
 				for (k = 1; k <= (data_info[j].size / sizeof (S2)); k++)
 				{
-				readsize = fread (&word, sizeof (S2), 1, fptr);
-				if (readsize != 1)
-				{
-					printf ("error: can't load data: WORD!\n");
-					return (1);
-				}
+					readsize = fread (&word, sizeof (S2), 1, fptr);
+					if (readsize != 1)
+					{
+						printf ("error: can't load data: WORD!\n");
+						return (1);
+					}
 
-				word = conv_word (word);
+					word = conv_word (word);
 
-				bptr = (U1 *) &word;
+					bptr = (U1 *) &word;
 
-				data[i] = *bptr;
-				i++; bptr++;
-				data[i] = *bptr;
-				i++;
+					data[i] = *bptr;
+					i++; bptr++;
+					data[i] = *bptr;
+					i++;
 				}
 				break;
 
@@ -479,25 +479,25 @@ S2 load_object (U1 *name)
 				//printf ("DATA DOUBLEWORD\n");
 				for (k = 1; k <= (data_info[j].size / sizeof (S4)); k++)
 				{
-				readsize = fread (&doubleword, sizeof (S4), 1, fptr);
-				if (readsize != 1)
-				{
-					printf ("error: can't load data: DOUBLEWORD!\n");
-					return (1);
-				}
+					readsize = fread (&doubleword, sizeof (S4), 1, fptr);
+					if (readsize != 1)
+					{
+						printf ("error: can't load data: DOUBLEWORD!\n");
+						return (1);
+					}
 
-				doubleword = conv_doubleword (doubleword);
+					doubleword = conv_doubleword (doubleword);
 
-				bptr = (U1* ) &doubleword;
+					bptr = (U1* ) &doubleword;
 
-				data[i] = *bptr;
-				i++; bptr++;
-				data[i] = *bptr;
-				i++; bptr++;
-				data[i] = *bptr;
-				i++; bptr++;
-				data[i] = *bptr;
-				i++;
+					data[i] = *bptr;
+					i++; bptr++;
+					data[i] = *bptr;
+					i++; bptr++;
+					data[i] = *bptr;
+					i++; bptr++;
+					data[i] = *bptr;
+					i++;
 				}
 				break;
 
@@ -505,35 +505,35 @@ S2 load_object (U1 *name)
 			case DOUBLEFLOAT:
 				for (k = 1; k <= (data_info[j].size / sizeof (S8)); k++)
 				{
-				readsize = fread (&quadword, sizeof (S8), 1, fptr);
-				if (readsize != 1)
-				{
-					printf ("error: can't load data: QUADWORD | DOUBLEFLOAT! index: %lli\n", j);
-					return (1);
-				}
+					readsize = fread (&quadword, sizeof (S8), 1, fptr);
+					if (readsize != 1)
+					{
+						printf ("error: can't load data: QUADWORD | DOUBLEFLOAT! index: %lli\n", j);
+						return (1);
+					}
 
-				quadword = conv_quadword (quadword);
+					quadword = conv_quadword (quadword);
 
-				//printf ("load_object: QUADWORD: %lli\n", quadword);
+					//printf ("load_object: QUADWORD: %lli\n", quadword);
 
-				bptr = (U1* ) &quadword;
+					bptr = (U1* ) &quadword;
 
-				data[i] = *bptr;
-				i++; bptr++;
-				data[i] = *bptr;
-				i++; bptr++;
-				data[i] = *bptr;
-				i++; bptr++;
-				data[i] = *bptr;
-				i++; bptr++;
-				data[i] = *bptr;
-				i++; bptr++;
-				data[i] = *bptr;
-				i++; bptr++;
-				data[i] = *bptr;
-				i++; bptr++;
-				data[i] = *bptr;
-				i++;
+					data[i] = *bptr;
+					i++; bptr++;
+					data[i] = *bptr;
+					i++; bptr++;
+					data[i] = *bptr;
+					i++; bptr++;
+					data[i] = *bptr;
+					i++; bptr++;
+					data[i] = *bptr;
+					i++; bptr++;
+					data[i] = *bptr;
+					i++; bptr++;
+					data[i] = *bptr;
+					i++; bptr++;
+					data[i] = *bptr;
+					i++;
 				}
 				break;
 		}
