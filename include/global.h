@@ -76,7 +76,7 @@ typedef double                  F8;     /* DOUBLE */
 #define MEMCHECK				1
 
 // division by zero checking
-//#define DIVISIONCHECK 1
+#define DIVISIONCHECK 1
 
 // machine
 #define MAXREG				256			// registers (integer and double float)

@@ -27,34 +27,17 @@ static genann *ann;
 U1 *genann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
    FILE *input;
+   S8 nameaddr;
 
-   S8 i ALIGN = 0;
-   U1 name[512];
-   U1 err = 0;
+   sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
+   if (sp == NULL)
+   {
+	   // error
+	   printf ("ERROR: genann_read_ann: ERROR: stack corrupt!\n");
+	   return (NULL);
+   }
 
-   while (*sp != 0)
-	{
-		if (i < 512)
-		{
-			name[i] = *sp;
-			i++;
-			sp++;
-			if (sp == sp_top)
-			{
-				printf ("FATAL ERROR: genann_read_ann stack corrupt!\n");
-				err = 1;
-			}
-		}
-	}
-	name[i] = '\0';        // end of string
-
-	if (err == 1)
-	{
-		printf ("genann_read_ann ERROR: stack corrupt!\n");
-		return (NULL);
-	}
-
-	input = fopen ((const char *) name, "r");
+	input = fopen ((const char *) &data[nameaddr], "r");
     if (input)
     {
         ann = (genann *) genann_read (input);
@@ -73,34 +56,17 @@ U1 *genann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *genann_write_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     FILE *output;
+    S8 nameaddr;
 
-    S8 i ALIGN = 0;
-    U1 name[512];
-    U1 err = 0;
+	sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   // error
+ 	   printf ("ERROR: genann_write_ann: ERROR: stack corrupt!\n");
+ 	   return (NULL);
+    }
 
-    while (*sp != 0)
-	{
-		if (i < 512)
-		{
-			name[i] = *sp;
-			i++;
-			sp++;
-			if (sp == sp_top)
-			{
-				printf ("FATAL ERROR: genann_read_ann stack corrupt!\n");
-				err = 1;
-			}
-		}
-	}
-	name[i] = '\0';        // end of string
-
-	if (err == 1)
-	{
-		printf ("genann_write_ann ERROR: stack corrupt!\n");
-		return (NULL);
-	}
-
-	output = fopen ((const char *) name, "w");
+	output = fopen ((const char *) &data[nameaddr], "w");
     if (output)
     {
         genann_write (ann, output);

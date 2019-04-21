@@ -5,8 +5,9 @@ New: string library: string_left, string_right, string_mid, string_tostring.
 New: math library: double_rounded_string, round to given digits and store result in string.
 New: warnings and an error exit if no JIT_COMPILER defined on 253 and 254 interrupts.
 New: Interrupt 1/5: return number of free CPU cores.
+Changed: genann module now gets string address on read/write functions.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Fri 19 Apr 2019 18:40 +0200
+-- Stefan Pietzonke <jay-t@gmx.net>  Sat 20 Apr 2019 15:00 +0200
 
 
 L1VM - (0.9.1)
