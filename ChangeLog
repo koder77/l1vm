@@ -8,8 +8,9 @@ New: Interrupt 1/5: return number of free CPU cores.
 Changed: genann module now gets string address on read/write functions.
 Changed: process module now uses string address.
 Changed: RS232 mode, now set from string address.
+Compiler/assembler: Text line output only on ERRORS!
 
--- Stefan Pietzonke <jay-t@gmx.net>  Tue 23 Apr 2019 19:22 +0200
+-- Stefan Pietzonke <jay-t@gmx.net>  Wed 24 Apr 2019 18:40 +0200
 
 
 L1VM - (0.9.1)

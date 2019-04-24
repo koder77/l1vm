@@ -1334,7 +1334,7 @@ S2 parse (U1 *name)
             convtabs (rbuf);                    /* convert the funny tabs into spaces! */
             slen = strlen ((const char *) rbuf);
 
-			printf ("> %s", rbuf);
+			// printf ("> %s", rbuf);
 
             pos = searchstr (rbuf, (U1 *) REM_SB, 0, 0, TRUE);
             if (pos != -1)
@@ -1348,6 +1348,7 @@ S2 parse (U1 *name)
                 if (parse_line (rbuf, 0, slen - 1) != 0)
 				{
 					err = 1;
+					printf ("> %s", rbuf);
 				}
             }
             linenum++;

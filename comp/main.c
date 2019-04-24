@@ -429,7 +429,7 @@ S2 get_ast (U1 *line)
 
 	// printf ("> '%s'\n", line);
 
-	printf ("> %s", line);
+	// printf ("> %s", line);
     while (! ok)
     {
 		// printf ("top: %c\n", line[pos]);
@@ -2798,6 +2798,7 @@ S2 parse (U1 *name)
 				{
 					if (parse_line (rbuf, 0, slen - 1) != 0)
 					{
+						printf ("> %s", rbuf);
 						err = 1;
 					}
 				}
