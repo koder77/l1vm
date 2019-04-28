@@ -27,7 +27,7 @@ static genann *ann;
 U1 *genann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
    FILE *input;
-   S8 nameaddr;
+   S8 nameaddr ALIGN;
 
    sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
    if (sp == NULL)
@@ -56,7 +56,7 @@ U1 *genann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *genann_write_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     FILE *output;
-    S8 nameaddr;
+    S8 nameaddr ALIGN;
 
 	sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
     if (sp == NULL)

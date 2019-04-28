@@ -10,7 +10,10 @@ Changed: process module now uses string address.
 Changed: RS232 mode, now set from string address.
 Compiler/assembler: Text line output only on ERRORS!
 
--- Stefan Pietzonke <jay-t@gmx.net>  Wed 24 Apr 2019 18:40 +0200
+New: FANN neural networks library wrapper added.
+See fann/ directory for more.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Sun 28 Apr 2019 15:53 +0200
 
 
 L1VM - (0.9.1)

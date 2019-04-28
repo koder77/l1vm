@@ -1,0 +1,66 @@
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 num_outputs 1)
+	(set double 2 input1 -1.0 1.0)
+	(set double 2 output 0.0)
+	(set int64 1 input1_addr 16)
+	(set int64 1 output_addr 32)
+	(set int64 1 offset 8)
+	(set string s fann_net "fann/xor_float.net")
+	(set int64 1 num_inputs 3)
+	// init fann library
+	(zero :fann_init_lib call)
+	(loadreg)
+	(fann_netaddr :fann_read call)
+	(loadreg)
+	(input1_addr output_addr num_inputs num_outputs :fann_run call)
+	(loadreg)
+	(:show_outputs call)
+	(loadreg)
+	(:fann_free call)
+	(loadreg)
+	(255 0 0 0 intr0)
+(funcend)
+(show_outputs func)
+	(ASM)
+	loada zero, 0, 0
+	loada offset, 0, 3
+	loadd output, 0, 1
+	intr0 5, 1, 0, 0
+	intr0 7, 0, 0, 0
+	(ASM_END)
+(funcend)
+// fann library
+// neural networks using FANN library
+//
+(fann_init_lib func)
+	(set string s modulestr@fann "libl1vmfann.so")
+	(set string s readstr@fann "fann_read_ann")
+	(set string s runstr@fann "fann_run_ann")
+	(set string s freestr@fann "fann_free_ann")
+	(set int64 1 read@fann 0)
+	(set int64 1 run@fann 1)
+	(set int64 1 free@fann 2)
+	(set int64 1 mod@fann 0)
+	// get arguments from stack
+    (mod@fann stpopi)
+    // load genann module
+    (0 modulestr@fannaddr mod@fann 0 intr0)
+	// set functions
+	(2 mod@fann read@fann readstr@fannaddr intr0)
+	(2 mod@fann run@fann runstr@fannaddr intr0)
+	(2 mod@fann free@fann freestr@fannaddr intr0)
+(funcend)
+// wrapper functions
+(fann_read func)
+// args: string filename
+    (3 mod@fann read@fann 0 intr0)
+(funcend)
+(fann_run func)
+// args: double inputs address, double outputs address, number of inputs, number of outputs
+    (3 mod@fann run@fann 0 intr0)
+(funcend)
+(fann_free func)
+// args: none, frees ann
+    (3 mod@fann free@fann 0 intr0)
+(funcend)
