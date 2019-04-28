@@ -7,7 +7,7 @@
 	(set int64 1 output_addr 32)
 	(set int64 1 offset 8)
 	(set string s fann_net "fann/xor_float.net")
-	(set int64 1 num_inputs 3)
+	(set int64 1 num_inputs 2)
 	// init fann library
 	(zero :fann_init_lib call)
 	(loadreg)
