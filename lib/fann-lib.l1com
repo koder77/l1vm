@@ -2,7 +2,7 @@
 	(set int64 1 zero 0)
 	(set int64 1 num_outputs 1)
 	(set double 2 input1 -1.0 1.0)
-	(set double 2 output 0.0)
+	(set double 1 output 0.0)
 	(set int64 1 input1_addr 16)
 	(set int64 1 output_addr 32)
 	(set int64 1 offset 8)
