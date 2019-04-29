@@ -11,13 +11,13 @@
 	// init fann library
 	(zero :fann_init_lib call)
 	(loadreg)
-	(fann_netaddr :fann_read call)
+	(zero fann_netaddr :fann_read call)
 	(loadreg)
-	(input1_addr output_addr num_inputs num_outputs :fann_run call)
+	(zero input1_addr output_addr num_inputs num_outputs :fann_run call)
 	(loadreg)
 	(:show_outputs call)
 	(loadreg)
-	(:fann_free call)
+	(zero :fann_free call)
 	(loadreg)
 	(255 0 0 0 intr0)
 (funcend)
@@ -38,9 +38,11 @@
 	(set string s readstr@fann "fann_read_ann")
 	(set string s runstr@fann "fann_run_ann")
 	(set string s freestr@fann "fann_free_ann")
+	(set string s fanninitstr@fann "fann_init_state")
 	(set int64 1 read@fann 0)
 	(set int64 1 run@fann 1)
 	(set int64 1 free@fann 2)
+	(set int64 1 fanninit@fann 3)
 	(set int64 1 mod@fann 0)
 	// get arguments from stack
     (mod@fann stpopi)
@@ -50,6 +52,9 @@
 	(2 mod@fann read@fann readstr@fannaddr intr0)
 	(2 mod@fann run@fann runstr@fannaddr intr0)
 	(2 mod@fann free@fann freestr@fannaddr intr0)
+	(2 mod@fann fanninit@fann fanninitstr@fannaddr intr0)
+	// call init fann function
+	(3 mod@fann fanninit@fann 0 intr0)
 (funcend)
 // wrapper functions
 (fann_read func)

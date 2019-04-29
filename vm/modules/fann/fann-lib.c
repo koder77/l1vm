@@ -25,11 +25,36 @@
 
 #include <floatfann.h>
 
-static struct fann *ann;
+#define MAXANN 32             // max number of open anns
+
+#define ANNOPEN 1              // state flags
+#define ANNCLOSED 0
+
+struct fanns
+{
+    struct fann *ann;
+    // U1 name[256];
+    U1 state;
+};
+
+static struct fanns fanns[MAXANN];
+
+U1 *fann_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 i ALIGN;
+
+	for (i = 0; i < MAXANN; i++)
+	{
+		fanns[i].state = ANNCLOSED;
+	}
+
+	return (sp);
+}
 
 U1 *fann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 nameaddr ALIGN;
+	S8 handle ALIGN;
 
     sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
     if (sp == NULL)
@@ -39,7 +64,28 @@ U1 *fann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   return (NULL);
     }
 
-	ann = (struct fann *) fann_create_from_file ((const char *) &data[nameaddr]);
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   // error
+ 	   printf ("ERROR: fann_read_ann: ERROR: stack corrupt!\n");
+ 	   return (NULL);
+    }
+
+	if (handle < 0 || handle >= MAXANN)
+    {
+        printf ("ERROR: fann_read_ann: handle out of range!\n");
+        return (NULL);
+    }
+
+	if (fanns[handle].state == ANNOPEN)
+	{
+		printf ("ERROR: fann_read_ann: handle already used!\n");
+        return (NULL);
+	}
+
+	fanns[handle].ann = (struct fann *) fann_create_from_file ((const char *) &data[nameaddr]);
+	fanns[handle].state = ANNOPEN;
 
 	return (sp);
 }
@@ -50,6 +96,7 @@ U1 *fann_run_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 outputs ALIGN;
 	S8 inputs_num ALIGN;
 	S8 outputs_num ALIGN;
+	S8 handle ALIGN;
 
 	fann_type *output_d;
 
@@ -98,6 +145,26 @@ U1 *fann_run_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   return (NULL);
     }
 
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   // error
+ 	   printf ("ERROR: fann_run_ann: ERROR: stack corrupt!\n");
+ 	   return (NULL);
+    }
+
+	if (handle < 0 || handle >= MAXANN)
+    {
+        printf ("ERROR: fann_run_ann: handle out of range!\n");
+        return (NULL);
+    }
+
+	if (fanns[handle].state != ANNOPEN)
+	{
+		printf ("ERROR: fann_run_ann: handle not loaded!\n");
+        return (NULL);
+    }
+
 	input_f = calloc (inputs_num, sizeof (F8));
 	if (input_f == NULL)
 	{
@@ -120,7 +187,7 @@ U1 *fann_run_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		offset += sizeof (F8);
 	}
 
-	output_d = fann_run (ann, input_f);
+	output_d = fann_run (fanns[handle].ann, input_f);
 
     dst = (F8 *) &ret_data[outputs];
     for (j = 0; j < outputs_num; j++)
@@ -135,7 +202,29 @@ U1 *fann_run_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *fann_free_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	fann_destroy (ann);
+	S8 handle ALIGN;
 
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   // error
+ 	   printf ("ERROR: fann_free_ann: ERROR: stack corrupt!\n");
+ 	   return (NULL);
+    }
+
+	if (handle < 0 || handle >= MAXANN)
+    {
+        printf ("ERROR: fann_free_ann: handle out of range!\n");
+        return (NULL);
+    }
+
+	if (fanns[handle].state != ANNOPEN)
+	{
+		printf ("ERROR: fann_free_ann: handle not loaded!\n");
+        return (NULL);
+	}
+
+	fann_destroy (fanns[handle].ann);
+	fanns[handle].state = ANNCLOSED;
 	return (sp);
 }
