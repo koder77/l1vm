@@ -51,8 +51,6 @@ U1 *fann_run_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 inputs_num ALIGN;
 	S8 outputs_num ALIGN;
 
-	S8 max_inputs_num ALIGN = 256;
-
 	fann_type *output_d;
 
 	U1 *ret_data = data;
@@ -66,7 +64,7 @@ U1 *fann_run_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	U1 *dst_p;
 	F8 data_f;
 
-	fann_type input_f[256];
+	fann_type *input_f;
 
 	sp = stpopi ((U1 *) &outputs_num, sp, sp_top);
 	if (sp == NULL)
@@ -100,12 +98,12 @@ U1 *fann_run_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   return (NULL);
     }
 
-	if (inputs_num > max_inputs_num)
+	input_f = calloc (inputs_num, sizeof (F8));
+	if (input_f == NULL)
 	{
-		printf ("ERROR: fann_run_ann: inputs number overflow!\n");
+		printf ("ERROR: fann_run_ann: out of memory!\n");
 		return (NULL);
 	}
-
 
 	// It's so ugly, but works!!!
 
@@ -131,6 +129,7 @@ U1 *fann_run_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		dst++;
     }
 
+	free (input_f);
     return (sp);
 }
 

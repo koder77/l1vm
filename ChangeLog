@@ -12,8 +12,9 @@ Compiler/assembler: Text line output only on ERRORS!
 
 New: FANN neural networks library wrapper added.
 See fann/ directory for more.
+Changed: fann library now uses dynamic memory allocation for input_f array.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sun 28 Apr 2019 15:53 +0200
+-- Stefan Pietzonke <jay-t@gmx.net>  Mon 29 Apr 2019 6:20 +0200
 
 
 L1VM - (0.9.1)
