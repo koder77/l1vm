@@ -40,6 +40,18 @@ struct file
 
 struct file files[MAXFILES];
 
+U1 *file_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 i ALIGN;
+
+	for (i = 0; i < MAXFILES; i++)
+	{
+		files[i].state = FILECLOSED;
+	}
+
+	return (sp);
+}
+
 U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     // first argument: U1 filehandle number
@@ -47,7 +59,7 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // third argument: int64 name string address
     // return value: ERROR code
 
-    U1 handle;
+    S8 handle ALIGN;
     U1 access;
     U1 access_str[3];
     S8 nameaddr ALIGN;
@@ -71,8 +83,13 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     access = *sp;
     sp++;
 
-    handle = *sp;
-    sp++;
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_open: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
     if (handle < 0 || handle >= MAXFILES)
     {
@@ -82,7 +99,7 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     if (files[handle].state == FILEOPEN)
     {
-        printf ("ERROR: file_open: handle %i already open!\n", handle);
+        printf ("ERROR: file_open: handle %lli already open!\n", handle);
         return (NULL);
     }
 
@@ -149,7 +166,7 @@ U1 *file_close (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// first argument: U1 filehandle number -> on stack top
 
-	U1 handle;
+	S8 handle ALIGN;
 
 	if (sp == sp_top)
 	{
@@ -159,8 +176,13 @@ U1 *file_close (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	handle = *sp;
-	sp++;
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_close: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
 	if (handle < 0 || handle >= MAXFILES)
 	{
@@ -185,7 +207,7 @@ U1 *file_seek (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // SEEK_CURR: 2, current position
     // SEEK_END: 3, end of file
 
-    U1 handle;
+    S8 handle ALIGN;
     S8 offset ALIGN;
     S8 origin ALIGN;
 
@@ -213,8 +235,13 @@ U1 *file_seek (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	handle = *sp;
-	sp++;
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_seek: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
 	if (handle < 0 || handle >= MAXFILES)
 	{
@@ -255,7 +282,7 @@ U1 *file_put_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // second argument: S8 int to write
     // return value: ERROR CODE
 
-    U1 handle;
+    S8 handle ALIGN;
     S2 num;
 
     if (sp == sp_top)
@@ -274,8 +301,13 @@ U1 *file_put_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    handle = *sp;
-    sp++;
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_put_int16: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
     if (handle < 0 || handle >= MAXFILES)
     {
@@ -313,19 +345,30 @@ U1 *file_get_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // first argument: U1 filehandle number -> on stack top
     // return value: ERROR CODE, number
 
-    U1 handle;
+    S8 handle ALIGN;
     S2 num;
 
     if (sp == sp_top)
     {
         // nothing on stack!! can't pop!!
 
-        printf ("FATAL ERROR: file_put_int16: stack pointer can't pop empty stack!\n");
+        printf ("FATAL ERROR: file_get_int16: stack pointer can't pop empty stack!\n");
         return (NULL);
     }
 
-    handle = *sp;
-    sp++;
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_get_int16: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (handle < 0 || handle >= MAXFILES)
+    {
+        printf ("ERROR: file_get_int16: handle out of range!\n");
+        return (NULL);
+    }
 
     if (fread (&num, sizeof (S2), 1, files[handle].fptr) != 1)
     {
@@ -376,7 +419,7 @@ U1 *file_put_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // second argument: S8 int to write
     // return value: ERROR CODE
 
-    U1 handle;
+    S8 handle ALIGN;
     S4 num;
 
     if (sp == sp_top)
@@ -395,8 +438,13 @@ U1 *file_put_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    handle = *sp;
-    sp++;
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_put_int32: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
     if (handle < 0 || handle >= MAXFILES)
     {
@@ -434,19 +482,30 @@ U1 *file_get_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // first argument: U1 filehandle number -> on stack top
     // return value: ERROR CODE, number
 
-    U1 handle;
+    S8 handle ALIGN;
     S4 num;
 
     if (sp == sp_top)
     {
         // nothing on stack!! can't pop!!
 
-        printf ("FATAL ERROR: file_put_int32: stack pointer can't pop empty stack!\n");
+        printf ("FATAL ERROR: file_get_int32: stack pointer can't pop empty stack!\n");
         return (NULL);
     }
 
-    handle = *sp;
-    sp++;
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_get_int32: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (handle < 0 || handle >= MAXFILES)
+    {
+        printf ("ERROR: file_get_int32: handle out of range!\n");
+        return (NULL);
+    }
 
     if (fread (&num, sizeof (S4), 1, files[handle].fptr) != 1)
     {
@@ -497,7 +556,7 @@ U1 *file_put_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // second argument: S8 int to write
     // return value: ERROR CODE
 
-    U1 handle;
+    S8 handle ALIGN;
     S8 num ALIGN;
 
     if (sp == sp_top)
@@ -516,8 +575,13 @@ U1 *file_put_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    handle = *sp;
-    sp++;
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_put_int64: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
     if (handle < 0 || handle >= MAXFILES)
     {
@@ -555,19 +619,30 @@ U1 *file_get_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // first argument: U1 filehandle number -> on stack top
     // return value: ERROR CODE, number
 
-    U1 handle;
+    S8 handle ALIGN;
     S8 num ALIGN;
 
     if (sp == sp_top)
     {
         // nothing on stack!! can't pop!!
 
-        printf ("FATAL ERROR: file_put_int64: stack pointer can't pop empty stack!\n");
+        printf ("FATAL ERROR: file_get_int64: stack pointer can't pop empty stack!\n");
         return (NULL);
     }
 
-    handle = *sp;
-    sp++;
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_get_int64: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (handle < 0 || handle >= MAXFILES)
+    {
+        printf ("ERROR: file_get_int64: handle out of range!\n");
+        return (NULL);
+    }
 
     if (fread (&num, sizeof (S8), 1, files[handle].fptr) != 1)
     {
@@ -618,7 +693,7 @@ U1 *file_put_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // second argument: S8 int to write
     // return value: ERROR CODE
 
-    U1 handle;
+    S8 handle ALIGN;
     F8 num ALIGN;
 
     if (sp == sp_top)
@@ -637,8 +712,13 @@ U1 *file_put_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    handle = *sp;
-    sp++;
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_put_double: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
     if (handle < 0 || handle >= MAXFILES)
     {
@@ -676,19 +756,30 @@ U1 *file_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // first argument: U1 filehandle number -> on stack top
     // return value: ERROR CODE, number
 
-    U1 handle;
+    S8 handle ALIGN;
     F8 num ALIGN;
 
     if (sp == sp_top)
     {
         // nothing on stack!! can't pop!!
 
-        printf ("FATAL ERROR: file_put_int64: stack pointer can't pop empty stack!\n");
+        printf ("FATAL ERROR: file_get_double: stack pointer can't pop empty stack!\n");
         return (NULL);
     }
 
-    handle = *sp;
-    sp++;
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_get_double: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (handle < 0 || handle >= MAXFILES)
+    {
+        printf ("ERROR: file_get_double: handle out of range!\n");
+        return (NULL);
+    }
 
     if (fread (&num, sizeof (F8), 1, files[handle].fptr) != 1)
     {
@@ -739,7 +830,8 @@ U1 *file_putc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // second argument: U1 byte to write
     // return value: ERROR CODE
 
-    U1 ch, handle;
+	S8 handle ALIGN;
+    U1 ch;
 
     if (sp == sp_top)
     {
@@ -752,8 +844,13 @@ U1 *file_putc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     ch = *sp;
     sp++;
 
-    handle = *sp;
-    sp++;
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_putc: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
     if (handle < 0 || handle >= MAXFILES)
     {
@@ -792,7 +889,8 @@ U1 *file_getc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // return value: char of file
     // return value: ERROR CODE
 
-    U1 ch, handle;
+	S8 handle ALIGN;
+    U1 ch;
 
     if (sp == sp_top)
     {
@@ -802,8 +900,13 @@ U1 *file_getc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    handle = *sp;
-    sp++;
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_getc: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
     if (handle < 0 || handle >= MAXFILES)
     {
@@ -936,7 +1039,7 @@ U1 *file_put_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // second argument: string address to write
     // return value: ERROR CODE
 
-    U1 handle;
+    S8 handle ALIGN;
     S8 string_address ALIGN;
 
     if (sp == sp_top)
@@ -955,8 +1058,13 @@ U1 *file_put_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    handle = *sp;
-    sp++;
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_put_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
     if (handle < 0 || handle >= MAXFILES)
     {
@@ -996,7 +1104,7 @@ U1 *file_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // third argument: string max len
     // return value: ERROR CODE
 
-    U1 handle;
+    S8 handle ALIGN;
     S8 string_address ALIGN;
     S8 slen ALIGN;
 
@@ -1026,8 +1134,13 @@ U1 *file_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    handle = *sp;
-    sp++;
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_get_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
     if (handle < 0 || handle >= MAXFILES)
     {

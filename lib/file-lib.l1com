@@ -4,7 +4,7 @@
 //
 (main func)
     (set int64 1 zero 0Q)
-    (set byte 1 handle 0)
+    (set int64 1 handle 0)
     (set int64 1 num 12345678Q)
     (set int64 1 read 0)
     (set string 10 filename "test-file")
@@ -72,6 +72,7 @@
     (set string 16 get_doublestr@file "file_get_double")
     (set string 16 put_stringstr@file "file_put_string")
     (set string 16 get_stringstr@file "file_get_string")
+	(set string s fileinitstr@file "file_init_state")
     (set int64 1 open@file 0)
     (set int64 1 close@file 1)
     (set int64 1 seek@file 2)
@@ -87,6 +88,7 @@
     (set int64 1 get_double@file 12)
     (set int64 1 get_string@file 13)
     (set int64 1 put_string@file 14)
+	(set int64 1 fileinit@file 15)
     (set int64 1 mod@file 0)
     // get arguments from stack
     (mod@file stpopi)
@@ -108,6 +110,9 @@
     (2 mod@file get_double@file get_doublestr@fileaddr intr0)
     (2 mod@file put_string@file put_stringstr@fileaddr intr0)
     (2 mod@file get_string@file get_stringstr@fileaddr intr0)
+	(2 mod@file fileinit@file fileinitstr@fileaddr intr0)
+	// call init file function
+	(3 mod@file fileinit@file 0 intr0)
 (funcend)
 // wrapper functions
 (file_open func)
