@@ -307,7 +307,10 @@ S2 get_args (U1 *line)
 					args[arg_ind][arg_pos] = '\0';
 					arg = 1;
 					string = 1;
-					if (line[pos + 1] == '\n') ok = 1;
+					if (slen > pos + 1)
+					{
+						if (line[pos + 1] == '\n') ok = 1;
+					}
 					break;
 				}
 				else
@@ -808,6 +811,11 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 	S8 type_size ALIGN;
 
 	U1 opcode_found, data_found;
+
+	if (strlen ((const char *) line) == 0)
+	{
+		return (0);
+	}
 
     if (line[0] == '.')
     {

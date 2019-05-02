@@ -1,7 +1,9 @@
 L1VM - (0.9.3)
 New: file library uses S8 as handle type.
+New: translate.h now uses "d" to use double floating point opcodes:
+So instead of "*" now "*d" is needed. See translate.h for more.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Mon 29 Apr 2019 19:47 +0200
+-- Stefan Pietzonke <jay-t@gmx.net>  Thu 2 May 2019 18:30 +0200
 
 
 L1VM - (0.9.2)

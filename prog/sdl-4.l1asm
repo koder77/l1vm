@@ -146,8 +146,9 @@ stpushi 2
 loada bit, 0, 3
 stpushi 3
 jsr :sdl_open_screen
-loada ret, 0, 4
 stpopb 4
+load ret, 0, 5
+pullb 4, 5, 0
 stpopi I0
 load x, 0, 1
 loada zero, 0, 2
