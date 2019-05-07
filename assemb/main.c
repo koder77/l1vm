@@ -812,6 +812,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 	U1 opcode_found, data_found;
 
+	FILE *data_extern;
+	U1 ch;
+	S8 data_extern_index ALIGN = 0;
+
 	if (strlen ((const char *) line) == 0)
 	{
 		return (0);
@@ -880,6 +884,44 @@ S2 parse_line (U1 *line, S2 start, S2 end)
                 	offset += 8;	// data size = 8 bytes
 
 					// printf ("ARGS 2: %s\n", args[2]);
+
+					if (args[2][0] == '/')
+					{
+						// load extern byte data from given absolute filename
+						data_extern = fopen ((const char *) args[2], "r");
+						if (data_extern == NULL)
+						{
+							printf ("error: line %lli: can't open data file: '%s'!\n", linenum, args[2]);
+						}
+
+						printf ("> line %lli: loading file: '%s' as data...\n", linenum, args[2]);
+
+						data_extern_index = 0;
+						while (1)
+						{
+							ch = fgetc (data_extern);
+							if (feof (data_extern))
+							{
+								break;
+							}
+
+							if (write_data_byte (offset, (U1) ch, 1) != 0)
+							{
+								printf ("error: line %lli: out of data memory!\n", linenum);
+							}
+							offset = offset + 1;
+							data_extern_index = data_extern_index + 1;
+							if (data_extern_index > data_info[data_info_ind].size)
+							{
+								printf ("error: line %lli: data overflow, reading data file!\n", linenum);
+								break;
+							}
+						}
+						fclose (data_extern);
+
+						data_info[data_info_ind].offset = offset;
+                    	data_ind = data_info[data_info_ind].end;
+					}
 
                 	if (checkdigit (args[2]) == 1)
                 	{
@@ -971,6 +1013,8 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 					for (i = j; i <= arg_ind; i++)
 					{
+						// printf ("DEBUG: args[i] = '%s'\n", args[i]);
+
 						if (args[i][0] == ';')
 						{
 							// end of list mark, break, clear data list flag

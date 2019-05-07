@@ -779,8 +779,16 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									}
 									else
 									{
-										printf ("error: line %lli: value not a number and not a variable!\n", linenum);
-										return (1);
+										if (ast[level].expr[j][4][0] == '/')
+										{
+											// absolute path for data filename
+											strcpy ((char *) data_info[data_ind].value_str, (const char *) ast[level].expr[j][4]);
+										}
+										else
+										{
+											printf ("error: line %lli: value not a number and not a variable!\n", linenum);
+											return (1);
+										}
 									}
 								}
 								else
