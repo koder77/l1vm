@@ -795,6 +795,26 @@ S2 write_code_labels (void)
 	return (err);
 }
 
+void get_data_extern_filename (U1 *name)
+{
+	S8 i ALIGN;
+	S8 j ALIGN;
+	S8 str_len ALIGN;
+
+	// strip away leading '$' sign, moving
+	str_len = strlen ((const char *) name);
+	j = 1;
+
+	for (i = 0; i < str_len; i++)
+	{
+		name[i] = name[j];
+		j++;
+	}
+	name[i] = '\0';
+
+	// printf ("get_data_extern_filename: '%s'\n", name);
+}
+
 S2 parse_line (U1 *line, S2 start, S2 end)
 {
     S4 pos = start;
@@ -885,9 +905,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 					// printf ("ARGS 2: %s\n", args[2]);
 
-					if (args[2][0] == '/')
+					if (args[2][0] == '$')
 					{
 						// load extern byte data from given absolute filename
+						get_data_extern_filename (args[2]);
 						data_extern = fopen ((const char *) args[2], "r");
 						if (data_extern == NULL)
 						{

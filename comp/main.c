@@ -779,9 +779,9 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									}
 									else
 									{
-										if (ast[level].expr[j][4][0] == '/')
+										if (ast[level].expr[j][4][0] == '$')
 										{
-											// absolute path for data filename
+											// path for data filename
 											strcpy ((char *) data_info[data_ind].value_str, (const char *) ast[level].expr[j][4]);
 										}
 										else
