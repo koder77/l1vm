@@ -1,5 +1,3 @@
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-
 L1VM README  2019-05-17
 =======================
 L1VM is a very tiny virtual machine with RISC (or comparable style) CPU, about 61 opcodes and less than
