@@ -18,7 +18,9 @@
  */
 
 //  global.h
-#define _GNU_SOURCE
+#if ! _GNU_SOURCE
+#define _GNU_SOURCE 1
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -20,11 +20,7 @@
 	(4 z 0 0 intr0)
 	// print newline
 	(7 0 0 0 intr0)
-	(savereg)
-	(:test jsr)
-	(ret stpopi)
-	((ret zero +) z =)
-	(loadreg)
+	(:test call)
 	// print z
 	(4 z 0 0 intr0)
 	// print newline
@@ -33,5 +29,4 @@
 (funcend)
 (test func)
 	((x y *) z =)
-	(z stpushi)
 (funcend)

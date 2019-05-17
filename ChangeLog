@@ -2,8 +2,9 @@ L1VM - (0.9.4)
 New: data file can be loaded into byte variable array. See "prog/hello-2.3.l1com" for example code.
 Example data declaration:
 (set byte 40000 data_file $/home/stefan/l1vm-0.9.4/prog/hello.l1obj)
+C compiler warning in VM fixed: "#define _GNU_SOURCE 1" in global.h set if not defined.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Thu 9 May 2019 16:53 +0200
+-- Stefan Pietzonke <jay-t@gmx.net>  Fri  May 17 2019 16:00 +0200
 
 
 L1VM - (0.9.3)

@@ -46,7 +46,7 @@
 	(set int64 1 mod@fann 0)
 	// get arguments from stack
     (mod@fann stpopi)
-    // load genann module
+    // load fann module
     (0 modulestr@fannaddr mod@fann 0 intr0)
 	// set functions
 	(2 mod@fann read@fann readstr@fannaddr intr0)
@@ -58,14 +58,14 @@
 (funcend)
 // wrapper functions
 (fann_read func)
-// args: string filename
+// args: fann handle number, string filename
     (3 mod@fann read@fann 0 intr0)
 (funcend)
 (fann_run func)
-// args: double inputs address, double outputs address, number of inputs, number of outputs
+// args: fann handle number, double inputs address, double outputs address, number of inputs, number of outputs
     (3 mod@fann run@fann 0 intr0)
 (funcend)
 (fann_free func)
-// args: none, frees ann
+// args: fann handle number
     (3 mod@fann free@fann 0 intr0)
 (funcend)

@@ -357,14 +357,10 @@ S2 get_args (U1 *line)
 
 S2 write_data_byte (S8 offset ALIGN, S8 val ALIGN, S8 size ALIGN)
 {
-	S8 i ALIGN;
-
 	if (offset + size < data_max)
 	{
-		for (i = 0; i <= size; i++)
-		{
-        	data[offset] = (U1) val;
-		}
+		data[offset] = (U1) val;
+
         return (0);
     }
     else

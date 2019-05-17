@@ -65,38 +65,9 @@ stpushi I19
 stpushi I20
 stpushi I21
 jsr :test
-stpopi 21
-load ret, 0, 1
-pullqw 21, 1, 0
-addi 21, 0, 1
-load z, 0, 22
-pullqw 1, 22, 0
-stpopi I21
-stpopi I20
-stpopi I19
-stpopi I18
-stpopi I17
-stpopi I16
-stpopi I15
-stpopi I14
-stpopi I13
-stpopi I12
-stpopi I11
-stpopi I10
-stpopi I9
-stpopi I8
-stpopi I7
-stpopi I6
-stpopi I5
-stpopi I4
-stpopi I3
-stpopi I2
-stpopi I0
-loada z, 0, 1
-intr0 4, 1, 0, 0
+intr0 4, 20, 0, 0
 intr0 7, 0, 0, 0
-loada zero, 0, 2
-intr0 255, 2, 0, 0
+intr0 255, 0, 0, 0
 rts
 :test
 loada zero, 0, 0
@@ -105,7 +76,5 @@ loada y, 0, 2
 muli 1, 2, 3
 load z, 0, 4
 pullqw 3, 4, 0
-loada z, 0, 5
-stpushi 5
 rts
 .cend
