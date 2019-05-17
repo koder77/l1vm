@@ -1,4 +1,6 @@
-L1VM README  2018-10-04
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+L1VM README  2019-05-17
 =======================
 L1VM is a very tiny virtual machine with RISC (or comparable style) CPU, about 61 opcodes and less than
 32 KB binary size on X86_64 (without JIT-compiler)!
@@ -46,13 +48,18 @@ Modules
 =======
 The VM modules should be installed into "/usr/local/lib".
 
+endianess - convert to big endian, or little endian functions
+fann - FANN neural networks
 file - file module
-math - some math functions
+genann - neural networks module
 gpio - Raspberry Pi GPIO module
+math - some math functions
+net - TCP/IP sockets module
+process - start a new shell process
 rs232 - serial port module
 sdl - graphics primitves module, like pixels, lines...
-net - TCP/IP sockets module
-genann - neural networks module
+string - some string functions
+time - get time and date
 
 I will update the modules with more functions later...
 
