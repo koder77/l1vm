@@ -80,7 +80,7 @@ S2 alloc_code_data (void)
 	data = calloc (data_max, sizeof (U1));
 	if (data == NULL)
 	{
-		printf ("ERROR: can't allocate code memory!\n");
+		printf ("ERROR: can't allocate data memory!\n");
 		return (1);
 	}
 	return (0);
