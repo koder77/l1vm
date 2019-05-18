@@ -38,10 +38,10 @@ S8 code_max ALIGN = MAXDATA; // 32 MB
 S8 data_max ALIGN = MAXDATA; // 32 MB
 
 // code
-U1 code[MAXDATA];
+U1 *code;
 
 // data
-U1 data[MAXDATA];
+U1 *data;
 
 U1 data_block = 0, code_block = 0;
 
@@ -68,6 +68,29 @@ S8 get_temp_int (void);
 F8 get_temp_double (void);
 char *fgets_uni (char *str, int len, FILE *fptr);
 
+
+S2 alloc_code_data (void)
+{
+	code = calloc (code_max, sizeof (U1));
+	if (code == NULL)
+	{
+		printf ("ERROR: can't allocate code memory!\n");
+		return (1);
+	}
+	data = calloc (data_max, sizeof (U1));
+	if (data == NULL)
+	{
+		printf ("ERROR: can't allocate code memory!\n");
+		return (1);
+	}
+	return (0);
+}
+
+void free_code_data (void)
+{
+	free (code);
+	free (data);
+}
 
 void convtabs (U1 *str)
 {
@@ -1520,7 +1543,7 @@ S2 dump_object (U1 *name)
 	write_data_quadword (0, data_size, 1);
 
 
-	writesize = fwrite (&code, sizeof (U1), code_ind, fptr);
+	writesize = fwrite (code, sizeof (U1), code_ind, fptr);
 	if (writesize != code_ind)
 	{
 		printf ("ERROR: can't write code section!\n");
@@ -1596,7 +1619,9 @@ S2 dump_object (U1 *name)
 		return (1);
 	}
 
-	writesize = fwrite (&data, sizeof (U1), data_size, fptr);
+	// printf ("dump_object: data_size: %lli\n", data_size);
+
+	writesize = fwrite (data, sizeof (U1), data_size, fptr);
 	if (writesize != data_size)
 	{
 		printf ("ERROR: can't write data section!\n");
@@ -1611,13 +1636,29 @@ S2 dump_object (U1 *name)
 
 int main (int ac, char *av[])
 {
-    printf ("l1asm <asm-file>\n");
+    printf ("l1asm <asm-file> -sizes <code> <data>\n");
 	printf ("(C) 2017-2019 Stefan Pietzonke\n");
 
-    if (ac < 2)
+	if (ac < 2)
     {
         exit (1);
     }
+
+	if (ac == 5)
+	{
+		if (strcmp (av[2], "-sizes") == 0)
+		{
+			code_max = (atoi (av[3]));
+			data_max = (atoi (av[4]));
+
+			printf ("\n>>> max codesize: %lli, max datasize: %lli\n\n", code_max, data_max);
+		}
+	}
+
+	if (alloc_code_data () == 1)
+	{
+		exit (1);
+	}
 
     //  space for header
     write_code_quadword (0, 0);
@@ -1635,6 +1676,7 @@ int main (int ac, char *av[])
     if (parse ((U1 *) av[1]) == 1)
 	{
 		printf ("ERRORS! can't write object file!\n");
+		free_code_data ();
 		exit (1);
 	}
 	if (write_code_labels () == 0)
@@ -1644,8 +1686,11 @@ int main (int ac, char *av[])
 	else
 	{
 		printf ("ERRORS! can't write object file!\n");
+		free_code_data ();
 		exit (1);
 	}
+
+	free_code_data ();
 
 	printf ("ok!\n");
 	exit (0);
