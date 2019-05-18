@@ -1,0 +1,14 @@
+# zerobuild makefile
+
+[executable, name = l1vm]
+sources = main.c, jit.cpp, load-object.c
+
+includes = ../include, /usr/local/include
+
+ccompiler = clang
+c++compiler = clang++
+
+archiver = ar
+
+cflags = "-Os -fomit-frame-pointer"
+lflags = "-ldl -lpthread -lasmjit -lstdc++ -lSDL -lSDL_gfx -lSDL_image -lSDL_ttf -Wl,--export-dynamic"

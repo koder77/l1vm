@@ -1,0 +1,6 @@
+# zerobuild makefile
+
+[executable, name = l1com]
+sources = main.c, file.c, checkd.c, if.c
+
+ccompiler = clang
