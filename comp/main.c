@@ -410,7 +410,7 @@ void init_ast (void)
 S2 get_ast (U1 *line)
 {
     S4 slen;
-    S4 pos = 0, argstart, argend;
+    S4 pos = 0, argstart;
 
     U1 ok = 0;
     U1 arg = 0;
@@ -625,8 +625,6 @@ U1 *get_variable_value (S8 maxind, U1 *name)
 
 S2 parse_line (U1 *line, S2 start, S2 end)
 {
-	S8 datai ALIGN;
-	F8 datad ALIGN;
     S4 level, j, last_arg, last_arg_2, t, v, reg, reg2,  target, e, exp;
 	U1 ok;
 	S8 i ALIGN;
@@ -2265,7 +2263,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 								int found_exp = 0;
 								int found_level = 0;
 								int target_reg = 0;
-								int t;
+
 								for (exp = 0; exp <= ast[e].expr_max; exp = exp + 2)
 								{
 									// if (ast[e].expr_reg[ast[e].expr_max] != -1)
@@ -2853,11 +2851,10 @@ S2 write_asm (U1 *name)
 {
 	FILE *fptr;
 	U1 asmname[512];
-	S4 slen, pos;
+	S4 slen;
 	S8 i ALIGN;
 
 	slen = strlen ((const char *) name);
-	U1 ok, err = 0;
 
 	if (slen > 506)
 	{

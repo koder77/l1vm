@@ -246,7 +246,7 @@ S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens)
 S2 get_args (U1 *line)
 {
     S4 slen;
-    S4 pos = 0, argstart, argend;
+    S4 pos = 0, argstart;
 
     U1 ok = 0;
     U1 arg = 0;
@@ -717,7 +717,6 @@ S2 write_code_labels (void)
 	S8 i ALIGN;
 	S8 j ALIGN;
 	S8 label_index ALIGN;
-	S8 label_pos ALIGN;
 	S8 offset ALIGN;
 
 	U1 err = 0;
@@ -836,7 +835,6 @@ void get_data_extern_filename (U1 *name)
 
 S2 parse_line (U1 *line, S2 start, S2 end)
 {
-    S4 pos = start;
     S8 offset ALIGN;
     S8 datai ALIGN;
     F8 datad ALIGN;
@@ -846,8 +844,6 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 	S8 i ALIGN;
 	S8 j ALIGN;
 	S8 d ALIGN;
-
-	S8 type_size ALIGN;
 
 	U1 opcode_found, data_found;
 
@@ -1512,7 +1508,6 @@ S2 dump_object (U1 *name)
 	S8 d ALIGN;
 
 	slen = strlen ((const char *) name);
-	U1 ok;
 
 	if (slen > 506)
 	{

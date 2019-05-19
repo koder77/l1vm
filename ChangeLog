@@ -3,8 +3,9 @@ New: Assembler: max code and data sizes can be set via shell flag:
 $ assemb/l1asm prog/hello-2.3 -sizes 40000 60000000
 
 This sets the max code size to "40000" bytes and the max data size to "60000000" bytes.
+Removed unused variables.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sat  May 18 2019 12:30 +0200
+-- Stefan Pietzonke <jay-t@gmx.net>  Sun May 19 2019 13:00 +0200
 
 
 L1VM - (0.9.4)

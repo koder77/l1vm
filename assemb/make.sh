@@ -1,2 +1,2 @@
 #!/bin/sh
-clang main.c file.c checkd.c -o l1asm -g
+clang -Wall main.c file.c checkd.c -o l1asm -g

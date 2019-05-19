@@ -139,7 +139,7 @@ S2 load_object (U1 *name)
 	S4 doubleword;
 	S8 quadword ALIGN;
 
-	S8 offset ALIGN;
+	// S8 offset ALIGN;
 
 	U1 ok;
 	S8 i ALIGN;
