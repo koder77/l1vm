@@ -45,11 +45,33 @@
 #include <math.h>
 #include <time.h>
 
+
+// user settings ==========================================
+// machine
+#define MAXCPUCORES	    5				// threads that can be runned, ZERO for autodetect
+
+#define MACHINE_BIG_ENDIAN      0       // endianess of host machine
+
+// define if machine is ARM
+// #define M_ARM				1
+
+// data memory bounds checking
+#define MEMCHECK				1
+
+// division by zero checking
+#define DIVISIONCHECK 			1
+
 // switch on on Linux
-#define CPU_SET_AFFINITY	1
+#define CPU_SET_AFFINITY		1
 
 // SDL library support
-#define SDL_module 1
+#define SDL_module 				1
+
+// set to defined for DEBUGGING
+// #define DEBUG				1
+
+// user settings end ======================================
+
 
 typedef unsigned char           U1;		/* UBYTE   */
 typedef int16_t                 S2;     /* INT     */
@@ -59,10 +81,6 @@ typedef int32_t                 S4;     /* LONGINT */
 typedef long long               S8;     /* 64 bit long */
 typedef double                  F8;     /* DOUBLE */
 
-
-// #define DEBUG					1
-
-// #define M_ARM	1
 
 /* set alignment for Android ARM */
 #if M_ARM
@@ -74,16 +92,8 @@ typedef double                  F8;     /* DOUBLE */
 #define TRUE					1
 #define FALSE					0
 
-// data memory bounds checking
-#define MEMCHECK				1
-
-// division by zero checking
-#define DIVISIONCHECK 1
-
 // machine
-#define MAXREG				256			// registers (integer and double float)
-
-#define MACHINE_BIG_ENDIAN      0       // endianess of host machine
+#define MAXREG			256			// registers (integer and double float)
 
 #define MAXLINELEN      512
 #define MAXARGS         64
@@ -114,10 +124,6 @@ typedef double                  F8;     /* DOUBLE */
 
 #define MODULES                 32
 #define MODULES_MAXFUNC         256
-
-
-
-#define MAXCPUCORES	    5		// threads that can be runned
 
 #define RUNNING			1
 #define STOP			0

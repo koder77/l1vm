@@ -36,8 +36,8 @@
 
 SDL_Surface *surf;
 TTF_Font *font;
-U1 SDL_use = 0;
 #endif
+U1 SDL_use = 0;
 
 #if JIT_COMPILER
 #define MAXJITCODE 64
