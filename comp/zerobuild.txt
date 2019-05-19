@@ -4,3 +4,5 @@
 sources = main.c, file.c, checkd.c, if.c
 
 ccompiler = clang
+
+cflags = "-Wall"

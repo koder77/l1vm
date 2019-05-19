@@ -4,6 +4,7 @@ $ assemb/l1asm prog/hello-2.3 -sizes 40000 60000000
 
 This sets the max code size to "40000" bytes and the max data size to "60000000" bytes.
 Removed unused variables.
+Added "-Wall" to zerobuild makefiles.
 
 -- Stefan Pietzonke <jay-t@gmx.net>  Sun May 19 2019 13:00 +0200
 
