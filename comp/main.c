@@ -43,8 +43,10 @@ S8 ast_level ALIGN;
 S8 data_ind ALIGN = -1;
 
 // assembly text output
-U1 data[MAXLINES][MAXLINELEN];
-U1 code[MAXLINES][MAXLINELEN];
+U1 **data;
+U1 **code;
+
+S8 line_len ALIGN = MAXLINES;
 
 S8 data_line ALIGN = 0;
 S8 code_line ALIGN = 0;
@@ -68,6 +70,10 @@ U1 checkdigit (U1 *str);
 S8 get_temp_int (void);
 F8 get_temp_double (void);
 char *fgets_uni (char *str, int len, FILE *fptr);
+
+// mem.c
+void dealloc_array_U1 (U1** array, size_t n_rows);
+U1** alloc_array_U1 (size_t n_rows, size_t n_columns);
 
 // if
 void init_if (void);
@@ -811,7 +817,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 							strcpy ((char *) data[data_line], ".data\n");
 							data_line++;
-							if (data_line >= MAXLINES)
+							if (data_line >= line_len)
 							{
 								printf ("error: line %lli: data list full!\n", linenum);
 								return (1);
@@ -828,7 +834,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							strcat ((char *) data[data_line], "\n");
 
 							data_line++;
-							if (data_line >= MAXLINES)
+							if (data_line >= line_len)
 							{
 								printf ("error: line %lli: data list full!\n", linenum);
 								return (1);
@@ -878,7 +884,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							data_info[data_ind].end = data_info[data_ind].offset + (data_info[data_ind].size * data_info[data_ind].type_size);
 
 							data_line++;
-							if (data_line >= MAXLINES)
+							if (data_line >= line_len)
 							{
 								printf ("error: line %lli: data list full!\n", linenum);
 								return (1);
@@ -892,7 +898,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							strcat ((char *) data[data_line], "\n");
 
 							data_line++;
-							if (data_line >= MAXLINES)
+							if (data_line >= line_len)
 							{
 								printf ("error: line %lli: data list full!\n", linenum);
 								return (1);
@@ -940,7 +946,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							if (data_info[data_ind].type == STRING)
 							{
 								data_line++;
-								if (data_line >= MAXLINES)
+								if (data_line >= line_len)
 								{
 									printf ("error: line %lli: data list full!\n", linenum);
 									return (1);
@@ -951,7 +957,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 								strcat ((char *) data[data_line], "addr\n");
 
 								data_line++;
-								if (data_line >= MAXLINES)
+								if (data_line >= line_len)
 								{
 									printf ("error: line %lli: data list full!\n", linenum);
 									return (1);
@@ -978,7 +984,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 								strcpy ((char *) data_info[data_ind].value_str, (const char *) str);
 
 								data_line++;
-								if (data_line >= MAXLINES)
+								if (data_line >= line_len)
 								{
 									printf ("error: line %lli: data list full!\n", linenum);
 									return (1);
@@ -1052,7 +1058,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										// printf ("%s\n", code_temp);
 
 										code_line++;
-										if (code_line >= MAXLINES)
+										if (code_line >= line_len)
 										{
 											printf ("error: line %lli: code list full!\n", linenum);
 											return (1);
@@ -1077,7 +1083,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										// printf ("%s\n", code_temp);
 
 										code_line++;
-										if (code_line >= MAXLINES)
+										if (code_line >= line_len)
 										{
 											printf ("error: line %lli: code list full!\n", linenum);
 											return (1);
@@ -1122,7 +1128,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											strcat ((char *) code_temp, ", 0\n");
 
 											code_line++;
-											if (code_line >= MAXLINES)
+											if (code_line >= line_len)
 											{
 												printf ("error: line %lli: code list full!\n", linenum);
 												return (1);
@@ -1158,7 +1164,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 													// write code load
 
 													code_line++;
-													if (code_line >= MAXLINES)
+													if (code_line >= line_len)
 													{
 														printf ("error: line %lli: code list full!\n", linenum);
 														return (1);
@@ -1185,7 +1191,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 													// write code load
 
 													code_line++;
-													if (code_line >= MAXLINES)
+													if (code_line >= line_len)
 													{
 														printf ("error: line %lli: code list full!\n", linenum);
 														return (1);
@@ -1281,7 +1287,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 															// write code loada
 
 															code_line++;
-															if (code_line >= MAXLINES)
+															if (code_line >= line_len)
 															{
 																printf ("error: line %lli: code list full!\n", linenum);
 																return (1);
@@ -1309,7 +1315,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 															// write code loada
 
 															code_line++;
-															if (code_line >= MAXLINES)
+															if (code_line >= line_len)
 															{
 																printf ("error: line %lli: code list full!\n", linenum);
 																return (1);
@@ -1356,7 +1362,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											// printf ("%s\n", code_temp);
 
 											code_line++;
-											if (code_line >= MAXLINES)
+											if (code_line >= line_len)
 											{
 												printf ("error: line %lli: code list full!\n", linenum);
 												return (1);
@@ -1403,7 +1409,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												// write code loada
 
 												code_line++;
-												if (code_line >= MAXLINES)
+												if (code_line >= line_len)
 												{
 													printf ("error: line %lli: code list full!\n", linenum);
 													return (1);
@@ -1433,7 +1439,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										// printf ("%s\n", code_temp);
 
 										code_line++;
-										if (code_line >= MAXLINES)
+										if (code_line >= line_len)
 										{
 											printf ("error: line %lli: code list full!\n", linenum);
 											return (1);
@@ -1464,7 +1470,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									strcpy ((char *) code_temp, (const char *) ast[level].expr[j][last_arg]);
 
 									code_line++;
-									if (code_line >= MAXLINES)
+									if (code_line >= line_len)
 									{
 										printf ("error: line %lli: code list full!\n", linenum);
 										return (1);
@@ -1497,7 +1503,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									strcat ((char *) code_temp, (const char *) ast[level].expr[j][last_arg - 1]);
 
 									code_line++;
-									if (code_line >= MAXLINES)
+									if (code_line >= line_len)
 									{
 										printf ("error: line %lli: code list full!\n", linenum);
 										return (1);
@@ -1507,7 +1513,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									strcat ((char *) code[code_line], "\n");
 
 									code_line++;
-									if (code_line >= MAXLINES)
+									if (code_line >= line_len)
 									{
 										printf ("error: line %lli: code list full!\n", linenum);
 										return (1);
@@ -1524,7 +1530,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									// end of a function
 
 									code_line++;
-									if (code_line >= MAXLINES)
+									if (code_line >= line_len)
 									{
 										printf ("error: line %lli: code list full!\n", linenum);
 										return (1);
@@ -1560,7 +1566,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												// write code loada
 
 												code_line++;
-												if (code_line >= MAXLINES)
+												if (code_line >= line_len)
 												{
 													printf ("error: line %lli: code list full!\n", linenum);
 													return (1);
@@ -1605,7 +1611,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												// write code loadd
 
 												code_line++;
-												if (code_line >= MAXLINES)
+												if (code_line >= line_len)
 												{
 													printf ("error: line %lli: code list full!\n", linenum);
 													return (1);
@@ -1654,7 +1660,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												// write code loada
 
 												code_line++;
-												if (code_line >= MAXLINES)
+												if (code_line >= line_len)
 												{
 													printf ("error: line %lli: code list full!\n", linenum);
 													return (1);
@@ -1699,7 +1705,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									strcat ((char *) code_temp, "\n");
 
 									code_line++;
-									if (code_line >= MAXLINES)
+									if (code_line >= line_len)
 									{
 										printf ("error: line %lli: code list full!\n", linenum);
 										return (1);
@@ -1722,7 +1728,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											strcat ((char *) code_temp, "\n");
 
 											code_line++;
-											if (code_line >= MAXLINES)
+											if (code_line >= line_len)
 											{
 												printf ("error: line %lli: code list full!\n", linenum);
 												return (1);
@@ -1748,7 +1754,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											strcat ((char *) code_temp, "\n");
 
 											code_line++;
-											if (code_line >= MAXLINES)
+											if (code_line >= line_len)
 											{
 												printf ("error: line %lli: code list full!\n", linenum);
 												return (1);
@@ -1778,7 +1784,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											strcat ((char *) code_temp, "\n");
 
 											code_line++;
-											if (code_line >= MAXLINES)
+											if (code_line >= line_len)
 											{
 												printf ("error: line %lli: code list full!\n", linenum);
 												return (1);
@@ -1799,7 +1805,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											strcat ((char *) code_temp, "\n");
 
 											code_line++;
-											if (code_line >= MAXLINES)
+											if (code_line >= line_len)
 											{
 												printf ("error: line %lli: code list full!\n", linenum);
 												return (1);
@@ -1835,7 +1841,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												// write code loada
 
 												code_line++;
-												if (code_line >= MAXLINES)
+												if (code_line >= line_len)
 												{
 													printf ("error: line %lli: code list full!\n", linenum);
 													return (1);
@@ -1862,7 +1868,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											// write code jmpi to if code label
 
 											code_line++;
-											if (code_line >= MAXLINES)
+											if (code_line >= line_len)
 											{
 												printf ("error: line %lli: code list full!\n", linenum);
 												return (1);
@@ -1878,7 +1884,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											// write code jmpi to endif label
 
 											code_line++;
-											if (code_line >= MAXLINES)
+											if (code_line >= line_len)
 											{
 												printf ("error: line %lli: code list full!\n", linenum);
 												return (1);
@@ -1891,7 +1897,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											// write code label if
 
 											code_line++;
-											if (code_line >= MAXLINES)
+											if (code_line >= line_len)
 											{
 												printf ("error: line %lli: code list full!\n", linenum);
 												return (1);
@@ -1928,7 +1934,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									get_endif_label (if_pos, endif_label);
 
 									code_line++;
-									if (code_line >= MAXLINES)
+									if (code_line >= line_len)
 									{
 										printf ("error: line %lli: code list full!\n", linenum);
 										return (1);
@@ -1959,7 +1965,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											strcat ((char *) code_temp, "\n");
 
 											code_line++;
-											if (code_line >= MAXLINES)
+											if (code_line >= line_len)
 											{
 												printf ("error: line %lli: code list full!\n", linenum);
 												return (1);
@@ -1985,7 +1991,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											strcat ((char *) code_temp, "\n");
 
 											code_line++;
-											if (code_line >= MAXLINES)
+											if (code_line >= line_len)
 											{
 												printf ("error: line %lli: code list full!\n", linenum);
 												return (1);
@@ -2041,7 +2047,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 													// write code loada
 
 													code_line++;
-													if (code_line >= MAXLINES)
+													if (code_line >= line_len)
 													{
 														printf ("error: line %lli: code list full!\n", linenum);
 														return (1);
@@ -2086,7 +2092,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 													// write code loadd
 
 													code_line++;
-													if (code_line >= MAXLINES)
+													if (code_line >= line_len)
 													{
 														printf ("error: line %lli: code list full!\n", linenum);
 														return (1);
@@ -2135,7 +2141,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 													// write code loada
 
 													code_line++;
-													if (code_line >= MAXLINES)
+													if (code_line >= line_len)
 													{
 														printf ("error: line %lli: code list full!\n", linenum);
 														return (1);
@@ -2164,7 +2170,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											}
 
 											code_line++;
-											if (code_line >= MAXLINES)
+											if (code_line >= line_len)
 											{
 												printf ("error: line %lli: code list full!\n", linenum);
 												return (1);
@@ -2186,7 +2192,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 														strcat ((char *) code_temp, "\n");
 
 														code_line++;
-														if (code_line >= MAXLINES)
+														if (code_line >= line_len)
 														{
 															printf ("error: line %lli: code list full!\n", linenum);
 															return (1);
@@ -2207,7 +2213,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 														strcat ((char *) code_temp, "\n");
 
 														code_line++;
-														if (code_line >= MAXLINES)
+														if (code_line >= line_len)
 														{
 															printf ("error: line %lli: code list full!\n", linenum);
 															return (1);
@@ -2229,7 +2235,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									strcat ((char *) code_temp, "\n");
 
 									code_line++;
-									if (code_line >= MAXLINES)
+									if (code_line >= line_len)
 									{
 										printf ("error: line %lli: code list full!\n", linenum);
 										return (1);
@@ -2327,7 +2333,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									ast[e].expr_type[j] = ast[e - 1].expr_type[exp];
 
 									code_line++;
-									if (code_line >= MAXLINES)
+									if (code_line >= line_len)
 									{
 										printf ("error: line %lli: code list full!\n", linenum);
 										return (1);
@@ -2380,7 +2386,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									strcat ((char *) code_temp, "\n");
 
 									code_line++;
-									if (code_line >= MAXLINES)
+									if (code_line >= line_len)
 									{
 										printf ("error: line %lli: code list full!\n", linenum);
 										return (1);
@@ -2402,7 +2408,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									// printf ("%s\n", code_temp);
 
 									code_line++;
-									if (code_line >= MAXLINES)
+									if (code_line >= line_len)
 									{
 										printf ("error: line %lli: code list full!\n", linenum);
 										return (1);
@@ -2419,7 +2425,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									strcat ((char *) code_temp, ", 0\n");
 
 									code_line++;
-									if (code_line >= MAXLINES)
+									if (code_line >= line_len)
 									{
 										printf ("error: line %lli: code list full!\n", linenum);
 										return (1);
@@ -2457,7 +2463,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									strcat ((char *) code_temp, "\n");
 
 									code_line++;
-									if (code_line >= MAXLINES)
+									if (code_line >= line_len)
 									{
 										printf ("error: line %lli: code list full!\n", linenum);
 										return (1);
@@ -2479,7 +2485,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									// printf ("%s\n", code_temp);
 
 									code_line++;
-									if (code_line >= MAXLINES)
+									if (code_line >= line_len)
 									{
 										printf ("error: line %lli: code list full!\n", linenum);
 										return (1);
@@ -2496,7 +2502,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									strcat ((char *) code_temp, ", 0\n");
 
 									code_line++;
-									if (code_line >= MAXLINES)
+									if (code_line >= line_len)
 									{
 										printf ("error: line %lli: code list full!\n", linenum);
 										return (1);
@@ -2552,7 +2558,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
                                                 // write code loada
 
                                             code_line++;
-                                            if (code_line >= MAXLINES)
+                                            if (code_line >= line_len)
                                             {
                                                 printf ("error: line %lli: code list full!\n", linenum);
                                                 return (1);
@@ -2635,7 +2641,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
                                                 // write code loadd
 
                                                 code_line++;
-                                                if (code_line >= MAXLINES)
+                                                if (code_line >= line_len)
                                                 {
                                                     printf ("error: line %lli: code list full!\n", linenum);
                                                     return (1);
@@ -2712,7 +2718,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 								}
 							}
 							code_line++;
-							if (code_line >= MAXLINES)
+							if (code_line >= line_len)
 							{
 								printf ("error: line %lli: code list full!\n", linenum);
 								return (1);
@@ -2811,7 +2817,7 @@ S2 parse (U1 *name)
 				if (inline_asm == 1)
 				{
 					code_line++;
-					if (code_line >= MAXLINES)
+					if (code_line >= line_len)
 					{
 						printf ("error: line %lli: code list full!\n", linenum);
 						return (1);
@@ -2924,18 +2930,48 @@ int main (int ac, char *av[])
         exit (1);
     }
 
+	if (ac == 4)
+	{
+		if (strcmp (av[2], "-lines") == 0)
+		{
+			line_len = atoi (av[3]);
+			printf ("max line len set to: %lli lines\n", line_len);
+		}
+	}
+
+	data = alloc_array_U1 (line_len, MAXLINELEN);
+	if (data == NULL)
+	{
+		printf ("error: can't allocate %lli lines for data!\n", line_len);
+		exit (1);
+	}
+
+	code = alloc_array_U1 (line_len, MAXLINELEN);
+	if (code == NULL)
+	{
+		printf ("error: can't allocate %lli lines for code!\n", line_len);
+		dealloc_array_U1 (data, line_len);
+	}
+
     if (parse ((U1 *) av[1]) == 1)
 	{
 		printf ("ERRORS! can't read source file!\n");
+		dealloc_array_U1 (code, line_len);
+		dealloc_array_U1 (data, line_len);
+
 		exit (1);
 	}
 
 	if (write_asm ((U1 *) av[1]) == 1)
 	{
 		printf ("ERRORS! can't write assembly file!\n");
+		dealloc_array_U1 (code, line_len);
+		dealloc_array_U1 (data, line_len);
 		exit (1);
 	}
 
+	dealloc_array_U1 (code, line_len);
+	dealloc_array_U1 (data, line_len);
 	printf ("ok!\n");
 	exit (0);
 }

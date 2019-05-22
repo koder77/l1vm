@@ -19,6 +19,7 @@
 
 #include "../include/global.h"
 
+extern S8 linenum;
 extern struct t_var t_var;
 
 U1 checkdigit (U1 *str)
@@ -226,7 +227,7 @@ S8 get_temp_int (void)
     char *endptr;
 
     num = (S8) strtoll ((const char *) t_var.digitstr, &endptr, t_var.base);
-    if (*endptr != '\0') printf ("get_temp_int: error: make quadword!\n");
+    if (*endptr != '\0') printf ("get_temp_int: error: make quadword!: linenum: %lli, '%s'\n", linenum, t_var.digitstr);
 
     return (num);
 }
@@ -236,7 +237,7 @@ F8 get_temp_double (void)
     F8 num ALIGN;
 
     num = strtod ((const char *) t_var.digitstr, NULL);
-    if (errno != 0) printf ("get_temp_double: error: make doublefloat!\n");
+    if (errno != 0) printf ("get_temp_double: error: make doublefloat!: linenum: %lli, '%s'\n", linenum, t_var.digitstr);
 
     return (num);
 }

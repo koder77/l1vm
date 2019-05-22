@@ -7,7 +7,11 @@ Removed unused variables.
 Added "-Wall" to zerobuild makefiles.
 Cleaned up "global.h", user settings in one place at top!
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sun May 19 2019 20:15 +0200
+assemb/checkd.c: get_temp_int() and get_temp_double() now show linenum and string on ERROR.
+New: compiler can be called with "-lines" flag to set max number of source code lines:
+$ l1com foobar -lines 40000
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Wed May 22 2019 19:00 +0200
 
 
 L1VM - (0.9.4)
