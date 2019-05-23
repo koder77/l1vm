@@ -11,7 +11,9 @@ assemb/checkd.c: get_temp_int() and get_temp_double() now show linenum and strin
 New: compiler can be called with "-lines" flag to set max number of source code lines:
 $ l1com foobar -lines 40000
 
--- Stefan Pietzonke <jay-t@gmx.net>  Wed May 22 2019 19:00 +0200
+Compiler: added cleanup function.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Thu May 23 2019 06:30 +0200
 
 
 L1VM - (0.9.4)

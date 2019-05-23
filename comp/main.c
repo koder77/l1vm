@@ -43,8 +43,8 @@ S8 ast_level ALIGN;
 S8 data_ind ALIGN = -1;
 
 // assembly text output
-U1 **data;
-U1 **code;
+U1 **data = NULL;
+U1 **code = NULL;
 
 S8 line_len ALIGN = MAXLINES;
 
@@ -2916,6 +2916,19 @@ S2 write_asm (U1 *name)
 	return (0);
 }
 
+void cleanup (void)
+{
+	if (code)
+	{
+		dealloc_array_U1 (code, line_len);
+	}
+
+	if (data)
+	{
+		dealloc_array_U1 (data, line_len);
+	}
+}
+
 int main (int ac, char *av[])
 {
     printf ("l1com <file>\n");
@@ -2943,6 +2956,7 @@ int main (int ac, char *av[])
 	if (data == NULL)
 	{
 		printf ("error: can't allocate %lli lines for data!\n", line_len);
+		cleanup ();
 		exit (1);
 	}
 
@@ -2950,28 +2964,25 @@ int main (int ac, char *av[])
 	if (code == NULL)
 	{
 		printf ("error: can't allocate %lli lines for code!\n", line_len);
-		dealloc_array_U1 (data, line_len);
+		cleanup ();
+		exit (1);
 	}
 
     if (parse ((U1 *) av[1]) == 1)
 	{
 		printf ("ERRORS! can't read source file!\n");
-		dealloc_array_U1 (code, line_len);
-		dealloc_array_U1 (data, line_len);
-
+		cleanup ();
 		exit (1);
 	}
 
 	if (write_asm ((U1 *) av[1]) == 1)
 	{
 		printf ("ERRORS! can't write assembly file!\n");
-		dealloc_array_U1 (code, line_len);
-		dealloc_array_U1 (data, line_len);
+		cleanup ();
 		exit (1);
 	}
 
-	dealloc_array_U1 (code, line_len);
-	dealloc_array_U1 (data, line_len);
+	cleanup ();
 	printf ("ok!\n");
 	exit (0);
 }
