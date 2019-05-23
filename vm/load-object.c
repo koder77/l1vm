@@ -30,6 +30,8 @@ extern S8 code_size ALIGN;
 extern S8 data_mem_size ALIGN;
 extern S8 stack_size ALIGN;
 
+size_t strlen_safe (const char * str, int maxlen);
+
 S2 conv_word (S2 val)
 {
 	S2 ret;
@@ -148,7 +150,7 @@ S2 load_object (U1 *name)
 
 	U1 *bptr;
 
-	slen = strlen ((const char *) name);
+	slen = strlen_safe ((const char *) name, MAXLINELEN);
 	if (slen > 506)
 	{
 		printf ("ERROR: filename too long!\n");

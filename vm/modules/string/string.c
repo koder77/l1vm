@@ -20,6 +20,8 @@
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
+size_t strlen_safe (const char * str, int maxlen);
+
 // string functions ------------------------------------
 
 U1 *string_len (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -35,7 +37,7 @@ U1 *string_len (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	slen = strlen ((char *) &data[straddr]);
+	slen = strlen_safe ((char *) &data[straddr], MAXLINELEN);
 
 	sp = stpushi (slen, sp, sp_bottom);
 	if (sp == NULL)
@@ -293,7 +295,7 @@ U1 *string_string_to_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	string_len_src = strlen ((const char *) &data[strsrcaddr]);
+	string_len_src = strlen_safe ((const char *) &data[strsrcaddr], MAXLINELEN);
 	if (string_len_src > string_len)
 	{
 		// error
@@ -376,7 +378,7 @@ U1 *string_array_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	string_len_src = strlen ((const char *) &data[strsrcaddr + index_real]);
+	string_len_src = strlen_safe ((const char *) &data[strsrcaddr + index_real], MAXLINELEN);
 	if (string_len_src > string_len)
 	{
 		// error
@@ -421,7 +423,7 @@ U1 *string_left (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	strsource_len = strlen ((const char *) &data[strsourceaddr]);
+	strsource_len = strlen_safe ((const char *) &data[strsourceaddr], MAXLINELEN);
 	if (str_len < 1 || str_len > strsource_len)
 	{
 		// error
@@ -472,7 +474,7 @@ U1 *string_right (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	strsource_len = strlen ((const char *) &data[strsourceaddr]);
+	strsource_len = strlen_safe ((const char *) &data[strsourceaddr], MAXLINELEN);
 	if (str_len < 1 || str_len > strsource_len)
 	{
 		// error
@@ -523,7 +525,7 @@ U1 *string_mid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	strsource_len = strlen ((const char *) &data[strsourceaddr]);
+	strsource_len = strlen_safe ((const char *) &data[strsourceaddr], MAXLINELEN);
 	if (pos < 1 || pos > strsource_len)
 	{
 		// error
@@ -568,7 +570,7 @@ U1 *string_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	strdest_len = strlen ((const char *) &data[strdestaddr]);
+	strdest_len = strlen_safe ((const char *) &data[strdestaddr], MAXLINELEN);
 	if (pos < 1 || pos > strdest_len)
 	{
 		// error

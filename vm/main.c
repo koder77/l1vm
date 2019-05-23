@@ -1758,7 +1758,7 @@ S2 run (void *arg)
 			if (fgets ((char *) &data[regi[arg3]], regi[arg2], stdin) != NULL)
 			{
 				// set END OF STRING mark
-				i = strlen ((const char *) &data[regi[arg3]]);
+				i = strlen_safe ((const char *) &data[regi[arg3]], MAXLINELEN);
 				data[regi[arg3] + (i - 1)] = '\0';
 			}
 			else

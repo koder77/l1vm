@@ -96,7 +96,7 @@ void convtabs (U1 *str)
 {
 	S2 i, end;
 
-	end = strlen ((const char *) str) - 1;
+	end = strlen_safe ((const char *) str, MAXLINELEN) - 1;
 
 	for (i = 0; i <= end; i++)
 	{
@@ -116,8 +116,8 @@ S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens)
 	S2 new_end;
 	U1 new_str, new_srchstr;
 
-	str_len = strlen ((const char *) str);
-	srchstr_len = strlen ((const char *) srchstr);
+	str_len = strlen_safe ((const char *) str, MAXLINELEN);
+	srchstr_len = strlen_safe ((const char *) srchstr, MAXLINELEN);
 
 	if (start < 0 || start > str_len - 1)
 	{
@@ -399,7 +399,7 @@ S2 write_data_string (S8 offset ALIGN, U1 *str)
 	S8 j ALIGN;
 
 	j = offset;
-	slen = strlen ((const char *) str);
+	slen = strlen_safe ((const char *) str, MAXLINELEN);
 	if (offset + slen < data_max)
 	{
 		for (i = 0; i <= slen; i++)
@@ -1211,7 +1211,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 				if (label_pos == -1)
 				{
 					// label name
-					slen = strlen ((const char *) args[0]);
+					slen = strlen_safe ((const char *) args[0], MAXLINELEN);
 					if (slen < LABELLEN - 1)
 					{
 						if (label_ind < MAXLABELS)
@@ -1326,7 +1326,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									{
 										// label not set, set label in list
 
-										slen = strlen ((const char *) args[j]);
+										slen = strlen_safe ((const char *) args[j], MAXLINELEN);
 										if (slen < LABELLEN - 1)
 										{
 											if (label_ind < MAXLABELS)
@@ -1393,7 +1393,7 @@ S2 parse (U1 *name)
     U1 rbuf[MAXLINELEN + 1];                        /* read-buffer for one line */
     char *read;
 
-    slen = strlen ((const char *) name);
+    slen = strlen_safe ((const char *) name, MAXLINELEN);
     U1 ok, err = 0;
 
     if (slen > 506)
@@ -1507,7 +1507,7 @@ S2 dump_object (U1 *name)
 	S8 i ALIGN;
 	S8 d ALIGN;
 
-	slen = strlen ((const char *) name);
+	slen = strlen_safe ((const char *) name, MAXLINELEN);
 
 	if (slen > 506)
 	{

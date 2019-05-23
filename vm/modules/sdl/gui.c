@@ -1003,7 +1003,7 @@ U1 draw_gadget_string (S2 screennum, U2 gadget_index, U1 selected)
 
     /* draw value string (input) */
 
-    value_len = strlen ((const char *) string->value);
+    value_len = strlen_safe ((const char *) string->value, MAXLINELEN);
     if (value_len > 0)
     {
         if (value_len <= string->visible_len)

@@ -83,12 +83,15 @@ U1 get_if_label (S4 ind, U1 *label);
 U1 get_endif_label (S4 ind, U1 *label);
 void set_endif_finished (S4 ind);
 
+// string
+size_t strlen_safe (const char * str, int maxlen);
+
 
 void convtabs (U1 *str)
 {
 	S2 i, end;
 
-	end = strlen ((const char *) str) - 1;
+	end = strlen_safe ((const char *) str, MAXLINELEN) - 1;
 
 	for (i = 0; i <= end; i++)
 	{
@@ -108,8 +111,8 @@ S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens)
 	S2 new_end;
 	U1 new_str, new_srchstr;
 
-	str_len = strlen ((const char *) str);
-	srchstr_len = strlen ((const char *) srchstr);
+	str_len = strlen_safe ((const char *) str, MAXLINELEN);
+	srchstr_len = strlen_safe ((const char *) srchstr, MAXLINELEN);
 
 	if (start < 0 || start > str_len - 1)
 	{
@@ -420,7 +423,7 @@ S2 get_ast (U1 *line)
 
     U1 ok = 0;
     U1 arg = 0;
-    slen = strlen ((const char *) line);
+    slen = strlen_safe ((const char *) line, MAXLINELEN);
 
 	S4 arg_ind = -1, arg_pos;
 	S4 ast_ind = -1;
@@ -762,7 +765,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 						if ((data_info[data_ind].size == 0 || ast[level].expr[j][2][0] == 's') && data_info[data_ind].type == STRING)
 						{
 							// set string size automatically:
-							data_info[data_ind].size = strlen ((char *) ast[level].expr[j][4]) - 1;
+							data_info[data_ind].size = strlen_safe ((char *) ast[level].expr[j][4], MAXLINELEN) - 1;
 							// set size string:
 							sprintf ((char *) ast[level].expr[j][2], "%lli", data_info[data_ind].size);
 							printf ("SET: '%s' size to %lli\n", data_info[data_ind].name, data_info[data_ind].size);
@@ -2713,7 +2716,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 								}
 								if (translate[t].assemb_op == MOVI || translate[t].assemb_op == MOVD)
 								{
-									e = strlen ((const char *) code_temp);
+									e = strlen_safe ((const char *) code_temp, MAXLINELEN);
 									code_temp[e - 2] = '\0';
 								}
 							}
@@ -2773,7 +2776,7 @@ S2 parse (U1 *name)
         if (read != NULL)
         {
             convtabs (rbuf);                    /* convert the funny tabs into spaces! */
-            slen = strlen ((const char *) rbuf);
+            slen = strlen_safe ((const char *) rbuf, MAXLINELEN);
 
 			// printf ("[ %s ]\n", rbuf);
 
@@ -2860,7 +2863,7 @@ S2 write_asm (U1 *name)
 	S4 slen;
 	S8 i ALIGN;
 
-	slen = strlen ((const char *) name);
+	slen = strlen_safe ((const char *) name, MAXLINELEN);
 
 	if (slen > 506)
 	{

@@ -37,7 +37,6 @@
 #define SOCKCLIENT          1
 
 
-
 typedef int NINT;
 
 struct socket
@@ -911,7 +910,7 @@ U1 *get_hostname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (sp);
     }
 
-    hostname_len = strlen ((char *) hostname) + 1;
+    hostname_len = strlen_safe ((char *) hostname, MAXLINELEN) + 1;
     for (i = 0; i <= hostname_len; i++)
     {
         ret_data[ret_addr + i] = hostname[i];
@@ -974,11 +973,11 @@ U1 *get_hostbyname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (hp->h_addr_list[0] != NULL)
     {
         memcpy (&addr, hp->h_addr_list[0], sizeof (struct in_addr));
-        if (strlen (inet_ntoa (addr)) <= 256)
+        if (strlen_safe (inet_ntoa (addr), MAXLINELEN) <= 256)
         {
             strcpy ((char *) ret, inet_ntoa (addr));
 
-            ret_len = strlen ((char *) ret) + 1;
+            ret_len = strlen_safe ((char *) ret, MAXLINELEN) + 1;
             for (i = 0; i <= ret_len; i++)
             {
                 ret_data[ret_addr + i] = ret[i];

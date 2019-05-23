@@ -139,7 +139,7 @@ int RS232_OpenComport(int comport_number, int baudrate, const char *mode)
       ipar=IGNPAR,
       bstop=0;
 
-  if(strlen(mode) != 3)
+  if(strlen_safe (mode, 4) != 3)
   {
     printf("invalid mode \"%s\"\n", mode);
     return(1);

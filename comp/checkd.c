@@ -29,7 +29,7 @@ U1 checkdigit (U1 *str)
 	S2 i, j, b, str_len;
     U1 ok = FALSE, check;
 
-    str_len = strlen ((const char *) str);
+    str_len = strlen_safe ((const char *) str, MAXLINELEN);
     t_var.digitstr_type = UNKNOWN;
 	t_var.base = 10;
 
