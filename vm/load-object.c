@@ -250,6 +250,7 @@ S2 load_object (U1 *name)
 					if (readsize != 1)
 					{
 						printf ("error: can't load opcode arg!\n");
+						fclose (fptr);
 						return (1);
 					}
 					quadword = conv_quadword (quadword);
@@ -279,6 +280,7 @@ S2 load_object (U1 *name)
 					if (readsize != 1)
 					{
 						printf ("error: can't load opcode arg!\n");
+						fclose (fptr);
 						return (1);
 					}
 					code[i] = byte;

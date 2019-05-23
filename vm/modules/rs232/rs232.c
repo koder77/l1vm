@@ -33,6 +33,8 @@
 
 #include "rs232.h"
 
+size_t strlen_safe (const char * str, int maxlen);
+
 
 #if defined(__linux__) || defined(__FreeBSD__)   /* Linux & FreeBSD */
 
@@ -209,7 +211,7 @@ http://man7.org/linux/man-pages/man3/termios.3.html
     return(1);
   }
 
- 
+
   error = tcgetattr(Cport[comport_number], old_port_settings + comport_number);
   if(error==-1)
   {
@@ -239,7 +241,7 @@ http://man7.org/linux/man-pages/man3/termios.3.html
     perror("unable to adjust portsettings ");
     return(1);
   }
-  
+
 /* http://man7.org/linux/man-pages/man4/tty_ioctl.4.html */
 
   if(ioctl(Cport[comport_number], TIOCMGET, &status) == -1)
@@ -541,7 +543,7 @@ int RS232_OpenComport(int comport_number, int baudrate, const char *mode)
                    break;
   }
 
-  if(strlen(mode) != 3)
+  if(strlen_safe (mode, 4) != 3)
   {
     printf("invalid mode \"%s\"\n", mode);
     return(1);
@@ -808,14 +810,3 @@ int RS232_GetPortnr(const char *devname)
 
   return -1;  /* device not found */
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -53,6 +53,8 @@ struct socket
 
 struct socket sockets[MAXSOCKETS];
 
+size_t strlen_safe (const char * str, int maxlen);
+
 /* helper function (taken from bgnet_socket_programming) */
 char *get_ip_str (const struct sockaddr *sa, char *s, size_t maxlen)
 {
@@ -865,7 +867,7 @@ U1 *get_clientaddr (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (sp);
     }
 
-    client_len = strlen ((const char *) sockets[handle].client_ip) + 1;
+    client_len = strlen_safe ((const char *) sockets[handle].client_ip, MAXLINELEN) + 1;
     for (i = 0; i <= client_len; i++)
     {
         ret_data[ret_addr + i] = sockets[handle].client_ip[i];
@@ -1061,11 +1063,11 @@ U1 *get_hostbyaddr (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (sp);
     }
 
-    if (strlen (hp->h_name) <= 255)
+    if (strlen_safe (hp->h_name, MAXLINELEN) <= 255)
     {
         strcpy ((char *) hostname, hp->h_name);
 
-        hostname_len = strlen ((const char *) hostname) + 1;
+        hostname_len = strlen_safe ((const char *) hostname, MAXLINELEN) + 1;
         for (i = 0; i <= hostname_len; i++)
         {
             ret_data[ret_addr + i] = hostname[i];

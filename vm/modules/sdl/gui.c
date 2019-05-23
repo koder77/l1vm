@@ -31,6 +31,7 @@
 
 #include "gui.h"
 
+size_t strlen_safe (const char * str, int maxlen);
 
 extern SDL_Surface *surf;
 extern TTF_Font *font;
@@ -1102,7 +1103,7 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
             return FALSE;
         }
 
-        value_len = strlen ((const char *) string->value);
+        value_len = strlen_safe ((const char *) string->value, MAXLINELEN);
 
         switch (event.type)
         {
@@ -2595,13 +2596,13 @@ U1 *set_gadget_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   return (NULL);
     }
 
-    if (strlen ((const char *) &data[value_address]) > screen[screennum].gadget_string_string_len)
+    if (strlen_safe ((const char *) &data[value_address], MAXLINELEN) > screen[screennum].gadget_string_string_len)
     {
         printf ("set_gadget_string: error string value overflow!\n");
         return (NULL);
     }
 
-    text_len = strlen ((const char *) &data[text_address]);
+    text_len = strlen_safe ((const char *) &data[text_address], MAXLINELEN);
 
     if (! screen[screennum].gadget)
     {

@@ -21,6 +21,8 @@
 
 extern struct t_var t_var;
 
+size_t strlen_safe (const char * str, int maxlen);
+
 U1 checkdigit (U1 *str)
 {
     U1 binarystr[MAXLINELEN];
@@ -172,7 +174,7 @@ U1 checkdigit (U1 *str)
 	{
 		/* if base = 2 = binary then cut away leading zeroes */
 		j = 0; b = 0;
-		str_len = strlen ((const char *) t_var.digitstr);
+		str_len = strlen_safe ((const char *) t_var.digitstr, MAXLINELEN);
 		for (i = 0; i < str_len; i++)
 		{
 			if (t_var.digitstr[i] == '0')

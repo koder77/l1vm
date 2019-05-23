@@ -57,7 +57,7 @@ int free_jit_code ();
 // protos
 S2 load_object (U1 *name);
 void free_modules (void);
-
+size_t strlen_safe (const char * str, int maxlen);
 
 S8 data_size ALIGN;
 S8 code_size ALIGN;
@@ -2381,7 +2381,7 @@ int main (int ac, char *av[])
     {
         for (i = 2; i < ac; i++)
         {
-            arglen = strlen (av[i]);
+            arglen = strlen_safe (av[i], MAXLINELEN);
             if (arglen > 2)
             {
                 if (av[i][0] == '-' && av[i][1] == 'M')

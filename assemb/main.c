@@ -67,7 +67,7 @@ U1 checkdigit (U1 *str);
 S8 get_temp_int (void);
 F8 get_temp_double (void);
 char *fgets_uni (char *str, int len, FILE *fptr);
-
+size_t strlen_safe (const char * str, int maxlen);
 
 S2 alloc_code_data (void)
 {
@@ -250,7 +250,7 @@ S2 get_args (U1 *line)
 
     U1 ok = 0;
     U1 arg = 0;
-    slen = strlen ((const char *) line);
+    slen = strlen_safe ((const char *) line, MAXLINELEN);
 
     arg_ind = -1;
 	U1 string = 0;
@@ -820,7 +820,7 @@ void get_data_extern_filename (U1 *name)
 	S8 str_len ALIGN;
 
 	// strip away leading '$' sign, moving
-	str_len = strlen ((const char *) name);
+	str_len = strlen_safe ((const char *) name, MAXLINELEN);
 	j = 1;
 
 	for (i = 0; i < str_len; i++)
@@ -851,7 +851,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 	U1 ch;
 	S8 data_extern_index ALIGN = 0;
 
-	if (strlen ((const char *) line) == 0)
+	if (strlen_safe ((const char *) line, MAXLINELEN) == 0)
 	{
 		return (0);
 	}
@@ -1420,7 +1420,7 @@ S2 parse (U1 *name)
         if (read != NULL && (code_ind < code_max - 1))
         {
             convtabs (rbuf);                    /* convert the funny tabs into spaces! */
-            slen = strlen ((const char *) rbuf);
+            slen = strlen_safe ((const char *) rbuf, MAXLINELEN);
 
 			// printf ("> %s", rbuf);
 

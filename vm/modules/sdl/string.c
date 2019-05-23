@@ -19,17 +19,16 @@
  * Includes code from "flow" my Nano VM GUI server.
  */
 
+#include "../../../include/global.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
+size_t strlen_safe (const char * str, int maxlen);
 
 int strright (char *dst, char *src, int chars)
 {
     int i, src_pos, src_len;
 
-    src_len = strlen (src);
+    src_len = strlen_safe (src, MAXLINELEN);
     src_pos = src_len - chars;
 
     if (src_pos < 0)
@@ -51,7 +50,7 @@ int strleft (char *dst, char *src, int chars)
 {
     int i, src_len;
 
-    src_len = strlen (src);
+    src_len = strlen_safe (src, MAXLINELEN);
 
     if (chars > src_len)
     {
@@ -72,7 +71,7 @@ int strremoveleft (char *dst, char *src, int pos)
 {
     int i, j, src_len;
 
-    src_len = strlen (src);
+    src_len = strlen_safe (src, MAXLINELEN);
 
     if (pos < 1 || pos > src_len)
     {
@@ -112,7 +111,7 @@ int strremoveright (char *dst, char *src, int pos)
 {
     int i, j, src_len;
 
-    src_len = strlen (src);
+    src_len = strlen_safe (src, MAXLINELEN);
 
     if (pos < 0 || pos > src_len)
     {
@@ -152,7 +151,7 @@ int strinsertchar (char *dst, char *src, char chr, int pos)
 {
     int i, j, src_len;
 
-    src_len = strlen (src);
+    src_len = strlen_safe (src, MAXLINELEN);
 
     if (pos < 0 || pos > src_len)
     {
