@@ -170,6 +170,7 @@ S2 load_object (U1 *name)
 	if (readsize != 1)
 	{
 		printf ("error: can't load header!\n");
+		fclose (fptr);
 		return (1);
 	}
 
@@ -177,6 +178,7 @@ S2 load_object (U1 *name)
 	if (header != 0xBADBABEAABBCCDDE)
 	{
 		printf ("ERROR: wrong header!\n");
+		fclose (fptr);
 		return (1);
 	}
 
@@ -185,6 +187,7 @@ S2 load_object (U1 *name)
 	if (readsize != 1)
 	{
 		printf ("error: can't load codesize!\n");
+		fclose (fptr);
 		return (1);
 	}
 
@@ -196,6 +199,7 @@ S2 load_object (U1 *name)
 	if (code == NULL)
 	{
 		printf ("ERROR: can't allocate %lli bytes for code!\n", code_size);
+		fclose (fptr);
 		return (1);
 	}
 
@@ -207,6 +211,7 @@ S2 load_object (U1 *name)
 		if (readsize != 1)
 		{
 			printf ("error: can't load opcode!\n");
+			fclose (fptr);
 			return (1);
 		}
 
@@ -295,6 +300,7 @@ S2 load_object (U1 *name)
 	if (readsize != 1)
 	{
 		printf ("error: can't load info header!\n");
+		fclose (fptr);
 		return (1);
 	}
 
@@ -302,6 +308,7 @@ S2 load_object (U1 *name)
 	{
 		printf ("ERROR: wrong info header!\n");
 		printf ("%i\n", byte);
+		fclose (fptr);
 		return (1);
 	}
 
@@ -309,11 +316,13 @@ S2 load_object (U1 *name)
 	if (readsize != 1)
 	{
 		printf ("error: can't load info header!\n");
+		fclose (fptr);
 		return (1);
 	}
 	if (byte != 'n')
 	{
 		printf ("ERROR: wrong info header!\n");
+		fclose (fptr);
 		return (1);
 	}
 
@@ -321,11 +330,13 @@ S2 load_object (U1 *name)
 	if (readsize != 1)
 	{
 		printf ("error: can't load info header!\n");
+		fclose (fptr);
 		return (1);
 	}
 	if (byte != 'f')
 	{
 		printf ("ERROR: wrong info header!\n");
+		fclose (fptr);
 		return (1);
 	}
 
@@ -333,11 +344,13 @@ S2 load_object (U1 *name)
 	if (readsize != 1)
 	{
 		printf ("error: can't load info header!\n");
+		fclose (fptr);
 		return (1);
 	}
 	if (byte != 'o')
 	{
 		printf ("ERROR: wrong info header!\n");
+		fclose (fptr);
 		return (1);
 	}
 
@@ -349,6 +362,7 @@ S2 load_object (U1 *name)
 		if (readsize != 1)
 		{
 			printf ("error: can't load data info!\n");
+			fclose (fptr);
 			return (1);
 		}
 
@@ -361,6 +375,7 @@ S2 load_object (U1 *name)
 			if (readsize != 1)
 			{
 				printf ("error: can't load data info!\n");
+				fclose (fptr);
 				return (1);
 			}
 			quadword = conv_quadword (quadword);
@@ -380,11 +395,13 @@ S2 load_object (U1 *name)
 	if (readsize != 1)
 	{
 		printf ("error: can't load data header!\n");
+		fclose (fptr);
 		return (1);
 	}
 	if (byte != 'a')
 	{
 		printf ("ERROR: wrong data header!\n");
+		fclose (fptr);
 		return (1);
 	}
 
@@ -392,11 +409,13 @@ S2 load_object (U1 *name)
 	if (readsize != 1)
 	{
 		printf ("error: can't load data header!\n");
+		fclose (fptr);
 		return (1);
 	}
 	if (byte != 't')
 	{
 		printf ("ERROR: wrong data header!\n");
+		fclose (fptr);
 		return (1);
 	}
 
@@ -404,11 +423,13 @@ S2 load_object (U1 *name)
 	if (readsize != 1)
 	{
 		printf ("error: can't data info header!\n");
+		fclose (fptr);
 		return (1);
 	}
 	if (byte != 'a')
 	{
 		printf ("ERROR: wrong data header!\n");
+		fclose (fptr);
 		return (1);
 	}
 
@@ -417,6 +438,7 @@ S2 load_object (U1 *name)
 	if (readsize != 1)
 	{
 		printf ("error: can't load data: SIZE!\n");
+		fclose (fptr);
 		return (1);
 	}
 
@@ -429,6 +451,7 @@ S2 load_object (U1 *name)
 	if (data == NULL)
 	{
 		printf ("ERROR: can't allocate %lli bytes for data!\n", data_mem_size);
+		fclose (fptr);
 		return (1);
 	}
 
@@ -445,6 +468,7 @@ S2 load_object (U1 *name)
 					if (readsize != 1)
 					{
 						printf ("error: can't load data: BYTE!\n");
+						fclose (fptr);
 						return (1);
 					}
 
@@ -461,6 +485,7 @@ S2 load_object (U1 *name)
 					if (readsize != 1)
 					{
 						printf ("error: can't load data: WORD!\n");
+						fclose (fptr);
 						return (1);
 					}
 
@@ -483,6 +508,7 @@ S2 load_object (U1 *name)
 					if (readsize != 1)
 					{
 						printf ("error: can't load data: DOUBLEWORD!\n");
+						fclose (fptr);
 						return (1);
 					}
 
@@ -509,6 +535,7 @@ S2 load_object (U1 *name)
 					if (readsize != 1)
 					{
 						printf ("error: can't load data: QUADWORD | DOUBLEFLOAT! index: %lli\n", j);
+						fclose (fptr);
 						return (1);
 					}
 

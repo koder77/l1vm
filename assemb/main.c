@@ -1542,6 +1542,7 @@ S2 dump_object (U1 *name)
 	if (writesize != code_ind)
 	{
 		printf ("ERROR: can't write code section!\n");
+		fclose (fptr);
 		return (1);
 	}
 
@@ -1552,24 +1553,28 @@ S2 dump_object (U1 *name)
 	if (fputc ('i', fptr) == EOF)
 	{
 		printf ("ERROR: can't write data section header!\n");
+		fclose (fptr);
 		return (1);
 	}
 
 	if (fputc ('n', fptr) == EOF)
 	{
 		printf ("ERROR: can't write data section header!\n");
+		fclose (fptr);
 		return (1);
 	}
 
 	if (fputc ('f', fptr) == EOF)
 	{
 		printf ("ERROR: can't write data section header!\n");
+		fclose (fptr);
 		return (1);
 	}
 
 	if (fputc ('o', fptr) == EOF)
 	{
 		printf ("ERROR: can't write data section header!\n");
+		fclose (fptr);
 		return (1);
 	}
 
@@ -1579,6 +1584,7 @@ S2 dump_object (U1 *name)
 		if (writesize != 1)
 		{
 			printf ("ERROR: can't write data info section type!\n");
+			fclose (fptr);
 			return (1);
 		}
 		d = conv_quadword (data_info[i].size);
@@ -1586,6 +1592,7 @@ S2 dump_object (U1 *name)
 		if (writesize != 1)
 		{
 			printf ("ERROR: can't write data info section size!\n");
+			fclose (fptr);
 			return (1);
 		}
 	}
@@ -1593,24 +1600,28 @@ S2 dump_object (U1 *name)
 	if (fputc ('d', fptr) == EOF)
 	{
 		printf ("ERROR: can't write data section header!\n");
+		fclose (fptr);
 		return (1);
 	}
 
 	if (fputc ('a', fptr) == EOF)
 	{
 		printf ("ERROR: can't write data section header!\n");
+		fclose (fptr);
 		return (1);
 	}
 
 	if (fputc ('t', fptr) == EOF)
 	{
 		printf ("ERROR: can't write data section header!\n");
+		fclose (fptr);
 		return (1);
 	}
 
 	if (fputc ('a', fptr) == EOF)
 	{
 		printf ("ERROR: can't write data section header!\n");
+		fclose (fptr);
 		return (1);
 	}
 
@@ -1620,6 +1631,7 @@ S2 dump_object (U1 *name)
 	if (writesize != data_size)
 	{
 		printf ("ERROR: can't write data section!\n");
+		fclose (fptr);
 		return (1);
 	}
 
