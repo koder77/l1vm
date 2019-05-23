@@ -2749,7 +2749,7 @@ S2 parse (U1 *name)
     char *read;
 	S8 ret ALIGN;
 
-    slen = strlen ((const char *) name);
+    slen = strlen_safe ((const char *) name, MAXLINES);
     U1 ok, err = 0;
 
     if (slen > 506)

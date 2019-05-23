@@ -1982,7 +1982,7 @@ U1 *set_gadget_button (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	   return (NULL);
    }
 
-	text_len = strlen ((const char *) &data[text_address]);
+	text_len = strlen_safe ((const char *) &data[text_address], MAXLINELEN);
 
 	if (! screen[screennum].gadget)
 	{
@@ -2116,7 +2116,7 @@ U1 *set_gadget_progress_bar (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   return (NULL);
     }
 
-    text_len = strlen ((const char *) &data[text_address]);
+    text_len = strlen_safe ((const char *) &data[text_address], MAXLINELEN);
 
     if (! screen[screennum].gadget)
     {
@@ -2253,7 +2253,7 @@ U1 *set_gadget_checkbox (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   return (NULL);
     }
 
-    text_len = strlen ((const char*) &data[text_address]);
+    text_len = strlen_safe ((const char*) &data[text_address], MAXLINELEN);
 
     if (! screen[screennum].gadget)
     {
@@ -2412,7 +2412,7 @@ U1 *set_gadget_cycle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		   return (NULL);
 	   	}
 
-        text_len = strlen ((const char *) &data[text_address]);
+        text_len = strlen_safe ((const char *) &data[text_address], MAXLINELEN);
 
         cycle->text[i] = (U1 *) malloc ((text_len + 1) * sizeof (U1));
         if (cycle->text[i] == NULL)
@@ -3008,7 +3008,7 @@ U1 *change_gadget_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     string = (struct gadget_string *) screen[screennum].gadget[gadget_index].gptr;
 
-    if (strlen ((const char *) &data[text_address]) > string->string_len)
+    if (strlen_safe((const char *) &data[text_address], MAXLINELEN) > string->string_len)
     {
         printf ("change_gadget_string: error string value overflow!\n");
         return (NULL);
