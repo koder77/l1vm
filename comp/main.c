@@ -405,7 +405,7 @@ void init_ast (void)
 	S4 i, j;
 	for (i = 0; i < MAXBRACKETLEVEL; i++)
 	{
-		for (j = 0; j <= MAXEXPRESSION; j++)
+		for (j = 0; j < MAXEXPRESSION; j++)
 		{
 			ast[i].expr_reg[j] = -2;
 			ast[i].expr_type[j] = -2;

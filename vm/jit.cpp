@@ -811,13 +811,13 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 extern "C" int run_jit (S8 code ALIGN)
 {
 	#if	 DEBUG
-		printf ("run_jit: code: %li\n", code);
+		printf ("run_jit: code: %lli\n", code);
 	#endif
 
 	Func func = JIT_code[code].fn;
 
     #if DEBUG
-        printf ("run_jit: code address: %lli\n", func);
+        printf ("run_jit: code address: %lli\n", (S8) func);
     #endif
 
     if (func == NULL)

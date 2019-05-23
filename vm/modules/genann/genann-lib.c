@@ -49,7 +49,7 @@ U1 *genann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         sp = stpushb (1, sp, sp_bottom);		// error FAIL code
-        return (NULL);
+        return (sp);
     }
 }
 
