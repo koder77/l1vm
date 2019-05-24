@@ -2256,9 +2256,17 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 								}
 							}
 
-							// write opcode name to code_temp
-							strcpy ((char *) code_temp, (const char *) opcode[translate[t].assemb_op].op);
-							strcat ((char *) code_temp, " ");
+							if (t < MAXTRANSLATE)
+							{
+								// write opcode name to code_temp
+								strcpy ((char *) code_temp, (const char *) opcode[translate[t].assemb_op].op);
+								strcat ((char *) code_temp, " ");
+							}
+							else
+							{
+								printf ("error: line %lli: unknown opcode!\n", linenum);
+								return (1);
+							}
 
 							// printf ("DEBUG: code_temp opcode: '%s'\n", code_temp);
 
@@ -2351,6 +2359,12 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 								}
 
 								continue;
+							}
+
+							if (t >= MAXTRANSLATE)
+							{
+								printf ("error: line %lli: unknown opcode!\n", linenum);
+								return (1);
 							}
 
 							if (opcode[translate[t].assemb_op].args == 1)
