@@ -84,7 +84,7 @@ U1 *time_date_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	strcat ((char *) datestr, (const char *) buf);
 
-	strncpy ((char *) &data[strdestaddr], (const char *) datestr, str_len);
+	snprintf ((char *) &data[strdestaddr], str_len, "%s", (const char *) datestr);
 	return (sp);
 }
 
@@ -157,6 +157,7 @@ U1 *time_time_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	strcat ((char *) timestr, (const char *) buf);
 
-	strncpy ((char *) &data[strdestaddr], (const char *) timestr, str_len);
+	snprintf ((char *) &data[strdestaddr], str_len, "%s", (const char *) timestr);
+
 	return (sp);
 }
