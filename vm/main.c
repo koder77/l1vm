@@ -1785,7 +1785,8 @@ S2 run (void *arg)
 				free (jumpoffs);
 				pthread_exit ((void *) 1);
 			}
-			strncpy ((char *) &data[regi[arg3]], (const char *) shell_args[regi[arg2]], MAXSHELLARGLEN);
+
+			snprintf ((char *) &data[regi[arg3]], sizeof ((const char *) shell_args[regi[arg2]]), "%s", (const char *) shell_args[regi[arg2]]);
 			eoffs = 5;
 			break;
 
@@ -2425,7 +2426,8 @@ int main (int ac, char *av[])
                             printf ("ERROR: too many shell arguments!\n");
 						    exit (1);
 					    }
-					    strncpy ((char *) shell_args[shell_args_ind], av[i], MAXSHELLARGLEN);
+
+						snprintf ((char *) shell_args[shell_args_ind], MAXSHELLARGLEN, "%s", av[i]);
                     }
 				}
             }
