@@ -1,3 +1,9 @@
+L1VM - (0.9.6)
+New: threaddata now allocated by calloc() in main.c, main().
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Tue May 28 2019 17:00 +0200
+
+
 L1VM - (0.9.5)
 New: Assembler: max code and data sizes can be set via shell flag:
 $ assemb/l1asm prog/hello-2.3 -sizes 40000 60000000

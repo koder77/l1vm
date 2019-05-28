@@ -112,7 +112,7 @@ S8 retcode ALIGN = 0;
 U1 shell_args[MAXSHELLARGS][MAXSHELLARGLEN];
 S4 shell_args_ind = -1;
 
-struct threaddata threaddata[MAXCPUCORES];
+struct threaddata *threaddata;
 
 S2 load_module (U1 *name, S8 ind ALIGN)
 {
@@ -213,6 +213,7 @@ void cleanup (void)
     free_modules ();
 	if (data) free (data);
     if (code) free (code);
+	if (threaddata) free (threaddata);
 }
 
 S2 run (void *arg)
@@ -1994,7 +1995,7 @@ S2 run (void *arg)
 			{
 				running = 0;
 				pthread_mutex_lock (&data_mutex);
-				for (i = 1; i < MAXCPUCORES; i++)
+				for (i = 1; i < max_cpu; i++)
 				{
 					if (threaddata[i].status == RUNNING)
 					{
@@ -2365,18 +2366,25 @@ int main (int ac, char *av[])
 
 	S8 new_cpu ALIGN;
 
-    printf ("l1vm - 0.9.5 - (C) 2017-2019 Stefan Pietzonke\n");
+    printf ("l1vm - 0.9.6 - (C) 2017-2019 Stefan Pietzonke\n");
 
-#if MAXCPUCORES == 0
-    max_cpu = sysconf (_SC_NPROCESSORS_ONLN);
-    printf ("CPU cores: %lli (autoconfig)\n", max_cpu);
-#else
-    printf ("CPU cores: %lli (STATIC)\n", max_cpu);
-#endif
+	#if MAXCPUCORES == 0
+    	max_cpu = sysconf (_SC_NPROCESSORS_ONLN) + 1;	// main thread counts as one core
+    	printf ("CPU cores: %lli (autoconfig)\n", max_cpu);
+	#else
+    	printf ("CPU cores: %lli (STATIC)\n", max_cpu);
+	#endif
 
-#if JIT_COMPILER
-    printf ("JIT-compiler inside: lib asmjit\n");
-#endif
+	threaddata = (struct threaddata *) calloc (max_cpu, sizeof (struct threaddata));
+	if (threaddata == NULL)
+	{
+		printf ("ERROR: can't allocate threaddata!\n");
+		exit (1);
+	}
+
+	#if JIT_COMPILER
+    	printf ("JIT-compiler inside: lib asmjit\n");
+	#endif
 
     if (ac > 1)
     {

@@ -49,7 +49,7 @@
 
 // user settings ==========================================
 // machine
-#define MAXCPUCORES	    5				// threads that can be runned, ZERO for autodetect
+#define MAXCPUCORES	    		5		// threads that can be runned, ZERO for autodetect
 
 #define MACHINE_BIG_ENDIAN      0       // endianess of host machine
 
