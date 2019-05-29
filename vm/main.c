@@ -2367,13 +2367,7 @@ int main (int ac, char *av[])
 	S8 new_cpu ALIGN;
 
     printf ("l1vm - 0.9.6 - (C) 2017-2019 Stefan Pietzonke\n");
-
-	#if MAXCPUCORES == 0
-    	max_cpu = sysconf (_SC_NPROCESSORS_ONLN) + 1;	// main thread counts as one core
-    	printf ("CPU cores: %lli (autoconfig)\n", max_cpu);
-	#else
-    	printf ("CPU cores: %lli (STATIC)\n", max_cpu);
-	#endif
+    printf ("CPU cores: %lli (STATIC)\n", max_cpu);
 
 	threaddata = (struct threaddata *) calloc (max_cpu, sizeof (struct threaddata));
 	if (threaddata == NULL)
