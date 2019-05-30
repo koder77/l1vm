@@ -11,15 +11,15 @@ functions and little extra.
 
 ## Features
 
-- **ANSI C with no dependencies**.
-- Contained in a single source code and header file.
-- Simple.
-- Fast and thread-safe.
-- Easily extendible.
-- Implements backpropagation training.
-- *Compatible with alternative training methods* (classic optimization, genetic algorithms, etc)
-- Includes examples and test suite.
-- Released under the zlib license - free for nearly any use.
+	- **ANSI C with no dependencies**.
+	- Contained in a single source code and header file.
+	- Simple.
+	- Fast and thread-safe.
+	- Easily extendible.
+	- Implements backpropagation training.
+	- *Compatible with alternative training methods* (classic optimization, genetic algorithms, etc)
+	- Includes examples and test suite.
+	- Released under the zlib license - free for nearly any use.
 
 ## Building
 
@@ -29,10 +29,10 @@ Genann is self-contained in two files: `genann.c` and `genann.h`. To use Genann,
 
 Four example programs are included with the source code.
 
-- [`example1.c`](./example1.c) - Trains an ANN on the XOR function using backpropagation.
-- [`example2.c`](./example2.c) - Trains an ANN on the XOR function using random search.
-- [`example3.c`](./example3.c) - Loads and runs an ANN from a file.
-- [`example4.c`](./example4.c) - Trains an ANN on the [IRIS data-set](https://archive.ics.uci.edu/ml/datasets/Iris) using backpropagation.
+	- [`example1.c`](./example1.c) - Trains an ANN on the XOR function using backpropagation.
+	- [`example2.c`](./example2.c) - Trains an ANN on the XOR function using random search.
+	- [`example3.c`](./example3.c) - Loads and runs an ANN from a file.
+	- [`example4.c`](./example4.c) - Trains an ANN on the [IRIS data-set](https://archive.ics.uci.edu/ml/datasets/Iris) using backpropagation.
 
 ## Quick Example
 
@@ -73,7 +73,6 @@ techniques. In a real application you would likely want to learn on the test
 data in a random order. You would also want to monitor the learning to prevent
 over-fitting.
 
-
 ## Usage
 
 ### Creating and Freeing ANNs
@@ -90,7 +89,6 @@ each hidden layer, and the number of outputs. It returns a `genann` struct point
 Calling `genann_copy()` will create a deep-copy of an existing `genann` struct.
 
 Call `genann_free()` when you're finished with an ANN returned by `genann_init()`.
-
 
 ### Training ANNs
 ```C
@@ -121,7 +119,7 @@ an example of training using random hill climbing search.
 genann *genann_read(FILE *in);
 void genann_write(genann const *ann, FILE *out);
 ```
- 
+
 Genann provides the `genann_read()` and `genann_write()` functions for loading or saving an ANN in a text-based format.
 
 ### Evaluating
@@ -133,11 +131,10 @@ double const *genann_run(genann const *ann, double const *inputs);
 Call `genann_run()` on a trained ANN to run a feed-forward pass on a given set of inputs. `genann_run()`
 will provide a pointer to the array of predicted outputs (of `ann->outputs` length).
 
-
 ## Hints
 
-- All functions start with `genann_`.
-- The code is simple. Dig in and change things.
+	- All functions start with `genann_`.
+	- The code is simple. Dig in and change things.
 
 ## Extra Resources
 

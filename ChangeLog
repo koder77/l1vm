@@ -1,6 +1,7 @@
 L1VM - (0.9.6)
 New: threaddata now allocated by calloc() in main.c, main().
 VM: MAXCPUCORES now prints error message on compile if it is "0"!
+Updated README.md nd vm/modules/genann/README.md.
 
 -- Stefan Pietzonke <jay-t@gmx.net>  Wed May 29 2019 20:35 +0200
 

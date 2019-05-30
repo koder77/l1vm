@@ -12,12 +12,12 @@ The opcode set with 61 opcodes is my own opinion how things should work. It does
 other "real" CPUs.
 
 The design goals are:
-- be small
-- be fast
-- be simple
-- be modular
+	- be small
+	- be fast
+	- be simple
+	- be modular
 
-New:
+New
 ----
 I added a JIT-compiler using asmjit library. At the moment only few opcodes can be translated into code for direct execution.
 
@@ -64,19 +64,16 @@ time - get time and date
 
 I will update the modules with more functions later...
 
-
 NOTE
 ====
 The current version of L1VM only runs on a Linux or other POSIX compatible OS!
 If you want help to port it to a new OS, then contact me please...
 
-
 TODO
 ====
-- make the L1COM compiler a bit more comfortable
-- write more functions for the modules
-- more demo programs
-
+	- make the L1COM compiler a bit more comfortable
+	- write more functions for the modules
+	- more demo programs
 
 USAGE
 =====
