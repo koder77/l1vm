@@ -1,2 +1,2 @@
 #!/bin/sh
-clang -Wall main.c file.c checkd.c ../string/string.c -o l1asm -g
+clang -Wall main.c ../lib-func/file.c checkd.c ../lib-func/string.c -o l1asm -g
