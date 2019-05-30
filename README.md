@@ -12,11 +12,12 @@ The opcode set with 61 opcodes is my own opinion how things should work. It does
 other "real" CPUs.
 
 The design goals are:
+<pre>
 	- be small
 	- be fast
 	- be simple
 	- be modular
-
+</pre>
 New
 ----
 I added a JIT-compiler using asmjit library. At the moment only few opcodes can be translated into code for direct execution.
