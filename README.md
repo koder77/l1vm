@@ -47,7 +47,7 @@ A simple "Hello world!" in bra(et (bracket) my language for L1VM:
 </pre>
 
 Modules
-=======
+-------
 The VM modules should be installed into "/usr/local/lib".
 
 endianess - convert to big endian, or little endian functions
@@ -66,18 +66,18 @@ time - get time and date
 I will update the modules with more functions later...
 
 NOTE
-====
+----
 The current version of L1VM only runs on a Linux or other POSIX compatible OS!
 If you want help to port it to a new OS, then contact me please...
 
 TODO
-====
+----
 	- make the L1COM compiler a bit more comfortable
 	- write more functions for the modules
 	- more demo programs
 
 USAGE
-=====
+-----
 
 compile
 -------

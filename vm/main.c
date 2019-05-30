@@ -19,7 +19,6 @@
 
 //  l1vm RISC VM
 //
-//  clang main.c load-object.c -o l1vm -O3 -fomit-frame-pointer -s -ldl -lpthread
 //
 
 
@@ -2390,10 +2389,9 @@ int main (int ac, char *av[])
                 if (av[i][0] == '-' && av[i][1] == 'M')
                 {
                     // try load module (shared library)
-
+					modules_ind++;
                     if (modules_ind < MODULES)
                     {
-                        modules_ind++;
                         strind = 0; avind = 2;
                         for (avind = 2; avind < arglen; avind++)
                         {
@@ -2480,7 +2478,7 @@ int main (int ac, char *av[])
 	threaddata[0].status = RUNNING;		// main thread will run
 
 	new_cpu = 0;
-	// threaddata[new_cpu].sp = (U1 *) &data[data_mem_size - (max_cpu * stack_size) - 1];
+
 	threaddata[new_cpu].sp = (U1 *) &data + (data_mem_size - ((max_cpu - 1) * stack_size) - 1);
 	threaddata[new_cpu].sp_top = threaddata[new_cpu].sp;
 	threaddata[new_cpu].sp_bottom = threaddata[new_cpu].sp_top - stack_size + 1;
@@ -2492,7 +2490,7 @@ int main (int ac, char *av[])
 
     if (pthread_create (&id, NULL, (void *) run, (void *) new_cpu) != 0)
 	{
-		printf ("ERROR: can't start new thread!\n");
+		printf ("ERROR: can't start main thread!\n");
 		cleanup ();
 		exit (1);
 	}
