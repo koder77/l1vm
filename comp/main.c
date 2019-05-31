@@ -1029,7 +1029,9 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									// do variable assign
 
 									// check if variable to array variable assign
-									if (last_arg >= 5 && strcmp ((const char *) ast[level].expr[j][last_arg - 1], "]") == 0 && strcmp ((const char *) ast[level].expr[j][last_arg - 3], "[") == 0)
+									if (last_arg >= 5)
+									{
+									if (strcmp ((const char *) ast[level].expr[j][last_arg - 1], "]") == 0 && strcmp ((const char *) ast[level].expr[j][last_arg - 3], "[") == 0)
 									{
 										// assign to array variable
 
@@ -1229,8 +1231,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										}
 										continue;
 									}
-
+									} // lastarg if
 									// check if array variable to variable assign
+									if (last_arg >= 5)
+									{
 									if (strcmp ((const char *) ast[level].expr[j][last_arg - 2], "]") == 0 && strcmp ((const char *) ast[level].expr[j][last_arg - 4], "[") == 0)
 									{
 										// assign to array variable
@@ -1433,6 +1437,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										}
 										continue;
 									}
+									} // lastarg if
 
 									if (getvartype (ast[level].expr[j][last_arg - 1]) == DOUBLE)
 									{
