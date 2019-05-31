@@ -8,7 +8,9 @@ NEW
 Added array variable assign for int64 and double array variables:
 prog/array-int64.l1com and prog/array-double.l1com!
 
--- Stefan Pietzonke <jay-t@gmx.net>  Fri May 31 2019 20:20 +0200
+Added array support for the other variable types too!
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Fri May 31 2019 23:35 +0200
 
 
 L1VM - (0.9.5)
