@@ -1,0 +1,23 @@
+// array demo
+//
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 one 1)
+	(set int64 1 offset 8)
+	(set int64 1 x 23)
+	(set int64 1 y 42)
+	(set int64 1 a 0)
+	(set int64 1 b 0)
+	(set int64 2 z 0 0)
+	// assign to array
+	(x z [ zero ] =)
+	(y z [ offset ] =)
+	// get array variable
+	(z [ zero ] a =)
+	(z [ offset ] b =)
+	(4 a 0 0 intr0)
+	(7 0 0 0 intr0)
+	(4 b 0 0 intr0)
+	(7 0 0 0 intr0)
+	(255 zero 0 0 intr0)
+(funcend)
