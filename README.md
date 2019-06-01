@@ -49,7 +49,7 @@ A simple "Hello world!" in bra(et (bracket) my language for L1VM:
 Modules
 -------
 The VM modules should be installed into "/usr/local/lib".
-
+<pre>
 endianess - convert to big endian, or little endian functions
 fann - FANN neural networks
 file - file module
@@ -62,7 +62,7 @@ rs232 - serial port module
 sdl - graphics primitves module, like pixels, lines...
 string - some string functions
 time - get time and date
-
+</pre>
 I will update the modules with more functions later...
 
 NOTE
