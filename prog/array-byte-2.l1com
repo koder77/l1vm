@@ -11,8 +11,8 @@
 	// assign to array
 	//
 	(:loop_assign)
-	(i z [ i ] =)
 	(((i max <=) f =) f if)
+		(i z [ i ] =)
 		((i one +) i =)
 		(:loop_assign jmp)
 	(endif)
@@ -20,8 +20,8 @@
 	//
 	(zero i =)
 	(:loop_get)
-	(z [ i ] a =)
 	(((i max <=) f =) f if)
+		(z [ i ] a =)
 		// print a
 		//
 		(4 a 0 0 intr0)
