@@ -27,7 +27,7 @@
     (set byte 1 b 255)
     (set int64 1 f 0)
     (set int64 1 delay 20000)
-    (set string s fontname "/home/stefan/l1vm-0.9.5/fonts/Vera.ttf")
+    (set string s fontname "/home/stefan/l1vm-0.9.6/fonts/Vera.ttf")
     (set string s welcome "Rectangles, a demo by Stefan Pietzonke aka koder77.")
     (set int64 1 fontsize 20)
     (set int64 1 delay_welcome 8000)

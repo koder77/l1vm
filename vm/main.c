@@ -2366,6 +2366,7 @@ int main (int ac, char *av[])
 	S8 new_cpu ALIGN;
 
     printf ("l1vm - 0.9.6 - (C) 2017-2019 Stefan Pietzonke\n");
+	printf (">>> power unleashed, unique inside <<<\n");
     printf ("CPU cores: %lli (STATIC)\n", max_cpu);
 
 	threaddata = (struct threaddata *) calloc (max_cpu, sizeof (struct threaddata));
@@ -2376,7 +2377,7 @@ int main (int ac, char *av[])
 	}
 
 	#if JIT_COMPILER
-    	printf ("JIT-compiler inside: lib asmjit\n");
+    	printf ("JIT-compiler inside: lib asmjit.\n");
 	#endif
 
     if (ac > 1)

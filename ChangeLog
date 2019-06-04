@@ -10,7 +10,9 @@ prog/array-int64.l1com and prog/array-double.l1com!
 
 Added array support for the other variable types too!
 
--- Stefan Pietzonke <jay-t@gmx.net>  Fri May 31 2019 23:35 +0200
+Now assembler and compiler show version number 0.9.6 too!
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Tue Jun 4 2019 20:30 +0200
 
 
 L1VM - (0.9.5)
