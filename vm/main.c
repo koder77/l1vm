@@ -2373,6 +2373,7 @@ int main (int ac, char *av[])
 	if (threaddata == NULL)
 	{
 		printf ("ERROR: can't allocate threaddata!\n");
+		cleanup ();
 		exit (1);
 	}
 
