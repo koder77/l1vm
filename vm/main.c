@@ -2408,6 +2408,7 @@ int main (int ac, char *av[])
                         else
                         {
                             printf ("EXIT!\n");
+							cleanup ();
                             exit (1);
                         }
                     }
@@ -2425,6 +2426,7 @@ int main (int ac, char *av[])
 					    if (shell_args_ind >= MAXSHELLARGS)
 					    {
                             printf ("ERROR: too many shell arguments!\n");
+							cleanup ();
 						    exit (1);
 					    }
 
@@ -2437,10 +2439,12 @@ int main (int ac, char *av[])
     else
 	{
 		printf ("l1vm <program>\n");
+		cleanup ();
 		exit (1);
 	}
     if (load_object ((U1 *) av[1]))
     {
+		cleanup ();
         exit (1);
     }
 
@@ -2453,6 +2457,7 @@ int main (int ac, char *av[])
         if (SDL_Init (SDL_INIT_EVERYTHING) != 0)
 	    {
 			printf ("ERROR SDL_Init!!!");
+			cleanup ();
 			exit (1);
 		}
 
@@ -2464,6 +2469,7 @@ int main (int ac, char *av[])
 		if (TTF_Init () < 0)
 		{
 			printf ("ERROR TTF_Init!!!");
+			cleanup ();
 			exit (1);
 		}
 
