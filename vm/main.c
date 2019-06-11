@@ -113,6 +113,33 @@ S4 shell_args_ind = -1;
 
 struct threaddata *threaddata;
 
+
+// memory bounds checking function
+
+S2 memory_bounds (S8 start, S8 offset_access)
+{
+	S8 i ALIGN;
+
+	for (i = 0; i <= data_info_ind; i++)
+	{
+		if (data_info[i].offset == start)
+		{
+			if (start + offset_access <= data_info[i].end)
+			{
+				return (0);
+			}
+			else
+			{
+				printf ("memory_bounds: FATAL ERROR: overflow address: %lli, offset: %lli!\n", start, offset_access);
+				return (1);
+			}
+		}
+	}
+	printf ("memory_bounds: FATAL ERROR: can't find data on offset: %lli!\n", start);
+	return (2);
+}
+
+
 S2 load_module (U1 *name, S8 ind ALIGN)
 {
 #if __linux__
@@ -535,6 +562,14 @@ S2 run (void *arg)
     }
     #endif
 
+	#if BOUNDSCHECK
+	if (memory_bounds (arg1, arg2) != 0)
+	{
+		free (jumpoffs);
+        pthread_exit ((void *) 1);
+	}
+	#endif
+
 	regi[arg3] = data[arg1 + arg2];
 
 	eoffs = 4;
@@ -557,6 +592,14 @@ S2 run (void *arg)
         pthread_exit ((void *) 1);
     }
     #endif
+
+	#if BOUNDSCHECK
+	if (memory_bounds (arg1, arg2) != 0)
+	{
+		free (jumpoffs);
+        pthread_exit ((void *) 1);
+	}
+	#endif
 
 	bptr = (U1 *) &regi[arg3];
 
@@ -584,6 +627,14 @@ S2 run (void *arg)
         pthread_exit ((void *) 1);
     }
     #endif
+
+	#if BOUNDSCHECK
+	if (memory_bounds (arg1, arg2) != 0)
+	{
+		free (jumpoffs);
+        pthread_exit ((void *) 1);
+	}
+	#endif
 
 	bptr = (U1 *) &regi[arg3];
 
@@ -615,6 +666,14 @@ S2 run (void *arg)
         pthread_exit ((void *) 1);
     }
     #endif
+
+	#if BOUNDSCHECK
+	if (memory_bounds (arg1, arg2) != 0)
+	{
+		free (jumpoffs);
+        pthread_exit ((void *) 1);
+	}
+	#endif
 
 	//printf ("PUSHQW: ep: %li\n", ep);
 	//printf ("arg1: %li: asm: %li\n", arg1, code[ep + 1]);
@@ -659,6 +718,14 @@ S2 run (void *arg)
     }
     #endif
 
+	#if BOUNDSCHECK
+	if (memory_bounds (arg1, arg2) != 0)
+	{
+		free (jumpoffs);
+        pthread_exit ((void *) 1);
+	}
+	#endif
+
 	bptr = (U1 *) &regd[arg3];
 
 	*bptr = data[arg1 + arg2];
@@ -699,6 +766,14 @@ S2 run (void *arg)
     }
     #endif
 
+	#if BOUNDSCHECK
+	if (memory_bounds (arg2, arg3) != 0)
+	{
+		free (jumpoffs);
+        pthread_exit ((void *) 1);
+	}
+	#endif
+
 	data[arg2 + arg3] = regi[arg1];
 
 	eoffs = 4;
@@ -721,6 +796,14 @@ S2 run (void *arg)
         pthread_exit ((void *) 1);
     }
     #endif
+
+	#if BOUNDSCHECK
+	if (memory_bounds (arg2, arg3) != 0)
+	{
+		free (jumpoffs);
+        pthread_exit ((void *) 1);
+	}
+	#endif
 
 	bptr = (U1 *) &regi[arg1];
 
@@ -748,6 +831,14 @@ S2 run (void *arg)
         pthread_exit ((void *) 1);
     }
     #endif
+
+	#if BOUNDSCHECK
+	if (memory_bounds (arg2, arg3) != 0)
+	{
+		free (jumpoffs);
+        pthread_exit ((void *) 1);
+	}
+	#endif
 
 	bptr = (U1 *) &regi[arg1];
 
@@ -779,6 +870,14 @@ S2 run (void *arg)
         pthread_exit ((void *) 1);
     }
     #endif
+
+	#if BOUNDSCHECK
+	if (memory_bounds (arg2, arg3) != 0)
+	{
+		free (jumpoffs);
+        pthread_exit ((void *) 1);
+	}
+	#endif
 
 	//printf ("PULLQW\n");
 	//printf ("data: %li\n", arg2);
@@ -822,6 +921,14 @@ S2 run (void *arg)
         pthread_exit ((void *) 1);
     }
     #endif
+
+	#if BOUNDSCHECK
+	if (memory_bounds (arg2, arg3) != 0)
+	{
+		free (jumpoffs);
+        pthread_exit ((void *) 1);
+	}
+	#endif
 
 	bptr = (U1 *) &regd[arg1];
 

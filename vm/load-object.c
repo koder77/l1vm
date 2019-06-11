@@ -467,6 +467,7 @@ S2 load_object (U1 *name)
 		{
 			case BYTE:
 				//printf ("DATA BYTE\n");
+				data_info[j].offset = i;
 				for (k = 1; k <= data_info[j].size; k++)
 				{
 					readsize = fread (&byte, sizeof (U1), 1, fptr);
@@ -480,10 +481,12 @@ S2 load_object (U1 *name)
 					data[i] = byte;
 					i++;
 				}
+				data_info[j].end = i - 1;
 				break;
 
 			case WORD:
 				//printf ("DATA WORD\n");
+				data_info[j].offset = i;
 				for (k = 1; k <= (data_info[j].size / sizeof (S2)); k++)
 				{
 					readsize = fread (&word, sizeof (S2), 1, fptr);
@@ -503,10 +506,12 @@ S2 load_object (U1 *name)
 					data[i] = *bptr;
 					i++;
 				}
+				data_info[j].end = i - 1;
 				break;
 
 			case DOUBLEWORD:
 				//printf ("DATA DOUBLEWORD\n");
+				data_info[j].offset = i;
 				for (k = 1; k <= (data_info[j].size / sizeof (S4)); k++)
 				{
 					readsize = fread (&doubleword, sizeof (S4), 1, fptr);
@@ -530,10 +535,12 @@ S2 load_object (U1 *name)
 					data[i] = *bptr;
 					i++;
 				}
+				data_info[j].end = i - 1;
 				break;
 
 			case QUADWORD:
 			case DOUBLEFLOAT:
+				data_info[j].offset = i;
 				for (k = 1; k <= (data_info[j].size / sizeof (S8)); k++)
 				{
 					readsize = fread (&quadword, sizeof (S8), 1, fptr);
@@ -567,6 +574,7 @@ S2 load_object (U1 *name)
 					data[i] = *bptr;
 					i++;
 				}
+				data_info[j].end = i - 1;
 				break;
 		}
 	}

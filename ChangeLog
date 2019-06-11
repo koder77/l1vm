@@ -12,7 +12,10 @@ Added array support for the other variable types too!
 
 Now assembler and compiler show version number 0.9.6 too!
 
--- Stefan Pietzonke <jay-t@gmx.net>  Tue Jun 4 2019 20:30 +0200
+NEW: array variable bounds check. See global.h: BOUNDSCHECK definition.
+This checks every data access at runtime if SET to defined.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Tue Jun 11 2019 19:24 +0200
 
 
 L1VM - (0.9.5)

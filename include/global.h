@@ -61,6 +61,9 @@
 // division by zero checking
 #define DIVISIONCHECK 			1
 
+// data bounds check exactly
+#define BOUNDSCHECK				1
+
 // switch on on Linux
 #define CPU_SET_AFFINITY		1
 
@@ -183,10 +186,10 @@ struct t_var
 struct data_info
 {
     U1 name[MAXLINELEN];
-    S8 offset;
-    S8 size;
-    S8 end;
-	S8 type_size;
+    S8 offset ALIGN;
+    S8 size ALIGN;
+    S8 end ALIGN;
+	S8 type_size ALIGN;
 	U1 type;
 
 	// compiler
