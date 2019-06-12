@@ -135,7 +135,7 @@ S2 memory_bounds (S8 start, S8 offset_access)
 			}
 		}
 	}
-	printf ("memory_bounds: FATAL ERROR: can't find data on offset: %lli!\n", start);
+	printf ("memory_bounds: FATAL ERROR: can't find data on address: %lli!\n", start);
 	return (2);
 }
 
