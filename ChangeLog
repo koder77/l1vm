@@ -1,3 +1,9 @@
+L1VM - (0.9.7)
+New: check if variable is array on array access assign.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Thu Jun 13 2019 20:30 +0200
+
+
 L1VM - (0.9.6)
 New: threaddata now allocated by calloc() in main.c, main().
 VM: MAXCPUCORES now prints error message on compile if it is "0"!

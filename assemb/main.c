@@ -1644,7 +1644,7 @@ S2 dump_object (U1 *name)
 int main (int ac, char *av[])
 {
     printf ("l1asm <asm-file> -sizes <code> <data>\n");
-	printf ("0.9.6 (C) 2017-2019 Stefan Pietzonke\n");
+	printf ("0.9.7 (C) 2017-2019 Stefan Pietzonke\n");
 
 	if (ac < 2)
     {

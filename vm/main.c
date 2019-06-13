@@ -2472,7 +2472,7 @@ int main (int ac, char *av[])
 
 	S8 new_cpu ALIGN;
 
-    printf ("l1vm - 0.9.6 - (C) 2017-2019 Stefan Pietzonke\n");
+    printf ("l1vm - 0.9.7 - (C) 2017-2019 Stefan Pietzonke\n");
 	printf (">>> power unleashed, unique inside <<<\n");
     printf ("CPU cores: %lli (STATIC)\n", max_cpu);
 

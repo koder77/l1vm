@@ -403,6 +403,23 @@ S2 getvartype_real (U1 *name)
 	return (ret);
 }
 
+S2 get_variable_is_array (U1 *name)
+{
+	S4 i;
+
+	for (i = 0; i <= data_ind; i++)
+	{
+		if (strcmp ((const char *) name, (const char *) data_info[i].name) == 0)
+		{
+			// found array, return aray size
+			return (data_info[i].size);
+		}
+	}
+	// error!!!
+	return (0);
+}
+
+
 void init_ast (void)
 {
 	S4 i, j;
@@ -1035,6 +1052,12 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									{
 										// assign to array variable
 
+										if (get_variable_is_array (ast[level].expr[j][last_arg - 4]) <= 1)
+										{
+											printf ("error: line %lli: variable '%s' is not an array!\n", linenum, ast[level].expr[j][last_arg - 4]);
+											return (1);
+										}
+
 										if (getvartype (ast[level].expr[j][last_arg - 5]) == DOUBLE)
 										{
 											// printf ("DEBUG: assign to array variable.\n");
@@ -1250,6 +1273,12 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									if (strcmp ((const char *) ast[level].expr[j][last_arg - 2], "]") == 0 && strcmp ((const char *) ast[level].expr[j][last_arg - 4], "[") == 0)
 									{
 										// assign to array variable
+
+										if (get_variable_is_array (ast[level].expr[j][last_arg - 5]) <= 1)
+										{
+											printf ("error: line %lli: variable '%s' is not an array!\n", linenum, ast[level].expr[j][last_arg - 5]);
+											return (1);
+										}
 
 										if (getvartype (ast[level].expr[j][last_arg - 1]) == DOUBLE)
 										{
@@ -3368,7 +3397,7 @@ int main (int ac, char *av[])
 {
     printf ("l1com <file> [-lines] [max linenumber]\n");
 	printf ("\nCompiler for bra(et, a programming language with brackets ;-)\n");
-	printf ("0.9.6 (C) 2017-2019 Stefan Pietzonke\n");
+	printf ("0.9.7 (C) 2017-2019 Stefan Pietzonke\n");
 
 	init_ast ();
 	init_if ();
