@@ -2488,6 +2488,26 @@ int main (int ac, char *av[])
     	printf ("JIT-compiler inside: lib asmjit.\n");
 	#endif
 
+	#if MEMCHECK
+		printf (">> memcheck << ");
+	#endif
+
+	#if BOUNDSCHECK
+		printf (">> boundscheck << ");
+	#endif
+
+	#if DIVISIONCHECK
+		printf (">> divisioncheck << ");
+	#endif
+	printf ("\n");
+
+	printf ("machine: ");
+	#if MACHINE_BIG_ENDIAN
+		printf ("big endianess\n");
+	#else
+		printf ("little endianess\n");
+	#endif
+
     if (ac > 1)
     {
         for (i = 2; i < ac; i++)

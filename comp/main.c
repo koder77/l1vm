@@ -318,6 +318,35 @@ S4 get_free_regd (void)
 	return (-1);
 }
 
+S2 checkdef (U1 *name)
+{
+	S4 i;
+
+	if (name[0] == ':')
+	{
+		// label: set checked
+		return (0);
+	}
+
+	if (checkdigit (name) == TRUE)
+	{
+		// is number not variable name: set checked
+		return (0);
+	}
+
+	for (i = 0; i <= data_ind; i++)
+	{
+		if (strcmp ((const char *) name, (const char *) data_info[i].name) == 0)
+		{
+			// no error
+			return (0);
+		}
+	}
+	// error -> variable not defined!!
+	printf ("checkdef: error: line %lli: variable '%s' not defined!\n", linenum, name);
+	return (1);
+}
+
 S2 getvartype (U1 *name)
 {
 	S4 i;
@@ -1052,12 +1081,21 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									{
 										// assign to array variable
 
+										if (checkdef (ast[level].expr[j][last_arg - 4]) != 0)
+										{
+											return (1);
+										}
+
 										if (get_variable_is_array (ast[level].expr[j][last_arg - 4]) <= 1)
 										{
 											printf ("error: line %lli: variable '%s' is not an array!\n", linenum, ast[level].expr[j][last_arg - 4]);
 											return (1);
 										}
 
+										if (checkdef (ast[level].expr[j][last_arg - 5]) != 0)
+										{
+											return (1);
+										}
 										if (getvartype (ast[level].expr[j][last_arg - 5]) == DOUBLE)
 										{
 											// printf ("DEBUG: assign to array variable.\n");
@@ -1085,6 +1123,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												strcat ((char *) code[code_line], "\n");
 											}
 
+											if (checkdef (ast[level].expr[j][last_arg - 2]) != 0)
+											{
+												return (1);
+											}
 											// get array index
 											reg2 = get_regi (ast[level].expr[j][last_arg - 2]);
 											if (reg2 == -1)
@@ -1179,6 +1221,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												strcat ((char *) code[code_line], "\n");
 											}
 
+											if (checkdef (ast[level].expr[j][last_arg - 2]) != 0)
+											{
+												return (1);
+											}
 											// get array index
 											reg2 = get_regi (ast[level].expr[j][last_arg - 2]);
 											if (reg2 == -1)
@@ -1224,6 +1270,11 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											}
 
 											strcpy ((char *) code[code_line], (const char *) code_temp);
+
+											if (checkdef (ast[level].expr[j][last_arg - 4]) != 0)
+											{
+												return (1);
+											}
 
 											if (getvartype_real (ast[level].expr[j][last_arg - 4]) == BYTE)
 											{
@@ -1274,12 +1325,21 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									{
 										// assign to array variable
 
+										if (checkdef (ast[level].expr[j][last_arg - 5]) != 0)
+										{
+											return (1);
+										}
+
 										if (get_variable_is_array (ast[level].expr[j][last_arg - 5]) <= 1)
 										{
 											printf ("error: line %lli: variable '%s' is not an array!\n", linenum, ast[level].expr[j][last_arg - 5]);
 											return (1);
 										}
 
+										if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+										{
+											return (1);
+										}
 										if (getvartype (ast[level].expr[j][last_arg - 1]) == DOUBLE)
 										{
 											// printf ("DEBUG: assign array variable to variable.\n");
@@ -1307,6 +1367,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												strcat ((char *) code[code_line], "\n");
 											}
 
+											if (checkdef (ast[level].expr[j][last_arg - 3]) != 0)
+											{
+												return (1);
+											}
 											// get array index
 											reg2 = get_regi (ast[level].expr[j][last_arg - 3]);
 											if (reg2 == -1)
@@ -1403,6 +1467,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												strcat ((char *) code[code_line], "\n");
 											}
 
+											if (checkdef (ast[level].expr[j][last_arg - 3]) != 0)
+											{
+												return (1);
+											}
 											// get array index
 											reg2 = get_regi (ast[level].expr[j][last_arg - 3]);
 											if (reg2 == -1)
@@ -1449,6 +1517,11 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 											strcpy ((char *) code[code_line], (const char *) code_temp);
 
+											if (checkdef (ast[level].expr[j][last_arg - 5]) != 0)
+											{
+												return (1);
+											}
+
 											if (getvartype_real (ast[level].expr[j][last_arg - 5]) == BYTE)
 											{
 												strcpy ((char *) code_temp, "pushb ");
@@ -1492,6 +1565,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									}
 									} // lastarg if
 
+									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+									{
+										return (1);
+									}
 									if (getvartype (ast[level].expr[j][last_arg - 1]) == DOUBLE)
 									{
 										strcpy ((char *) code_temp, "load ");
@@ -1517,6 +1594,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										strcpy ((char *) code[code_line], (const char *) code_temp);
 									}
 
+									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+									{
+										return (1);
+									}
 									if (getvartype (ast[level].expr[j][last_arg - 1]) == INTEGER)
 									{
 										strcpy ((char *) code_temp, "load ");
@@ -1549,6 +1630,11 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											// use target of higher level
 
 											// printf ("assign value expression\n");
+
+											if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+											{
+												return (1);
+											}
 
 											if (getvartype_real (ast[level].expr[j][last_arg - 1]) == BYTE)
 											{
@@ -1597,6 +1683,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										}
 										else
 										{
+											if (checkdef (ast[level].expr[j][last_arg - 2]) != 0)
+											{
+												return (1);
+											}
 											if (getvartype (ast[level].expr[j][last_arg - 2]) == STRING)
 											{
 												//
@@ -1655,6 +1745,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 													strcat ((char *) code[code_line], "\n");
 												}
 
+												if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+												{
+													return (1);
+												}
 
 												if (getvartype_real (ast[level].expr[j][last_arg - 1]) == BYTE)
 												{
@@ -1694,6 +1788,11 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												// integer
 												if (last_arg == 1)
 												{
+													if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+													{
+														return (1);
+													}
+
 													if (getvartype_real (ast[level].expr[j][last_arg - 1]) == BYTE)
 													{
 														strcpy ((char *) code_temp, "pullb ");
@@ -1724,6 +1823,11 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												else
 												{
 													// printf ("variable assign direct...\n");
+
+													if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+													{
+														return (1);
+													}
 													if (getvartype_real (ast[level].expr[j][last_arg - 1]) != DOUBLE)
 													{
 														target = get_regi (ast[level].expr[j][last_arg - 1]);
@@ -1780,6 +1884,11 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 															target = reg2;
 														}
 													}
+
+													if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+													{
+														return (1);
+													}
 													if (getvartype_real (ast[level].expr[j][last_arg - 1]) == BYTE)
 													{
 														strcpy ((char *) code_temp, "pullb ");
@@ -1834,6 +1943,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										}
 									}
 
+									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+									{
+										return (1);
+									}
 									if (getvartype (ast[level].expr[j][last_arg - 1]) == DOUBLE)
 									{
 										if (last_arg == 1)
@@ -2000,6 +2113,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 									for (e = 0; e <= last_arg - 1; e++)
 									{
+										if (checkdef (ast[level].expr[j][e]) != 0)
+										{
+											return (1);
+										}
 										if (getvartype (ast[level].expr[j][e]) == INTEGER)
 										{
 											// printf ("get_regi: %s\n", ast[level].expr[j][e]);
@@ -2046,6 +2163,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											}
 										}
 
+										if (checkdef (ast[level].expr[j][e]) != 0)
+										{
+											return (1);
+										}
 										if (getvartype (ast[level].expr[j][e]) == DOUBLE)
 										{
 											// double float type
@@ -2091,6 +2212,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											}
 										}
 
+										if (checkdef (ast[level].expr[j][e]) != 0)
+										{
+											return (1);
+										}
 										if (getvartype (ast[level].expr[j][e]) == STRING)
 										{
 											// printf ("get string: %s\n", ast[level].expr[j][e]);
@@ -2275,6 +2400,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "if") == 0 && last_arg > 0)
 								{
+									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+									{
+										return (1);
+									}
 									if (getvartype (ast[level].expr[j][last_arg - 1]) == INTEGER)
 									{
 										if (getvartype_real (ast[level].expr[j][last_arg - 1]) == QUADWORD)
@@ -2472,6 +2601,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 										for (e = 0; e < last_arg - 1; e++)
 										{
+											if (checkdef (ast[level].expr[j][e]) != 0)
+											{
+												return (1);
+											}
 											if (getvartype (ast[level].expr[j][e]) == INTEGER)
 											{
 												if (getvartype_real (ast[level].expr[j][e]) == BYTE)
@@ -2525,6 +2658,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												}
 											}
 
+											if (checkdef (ast[level].expr[j][e]) != 0)
+											{
+												return (1);
+											}
 											if (getvartype (ast[level].expr[j][e]) == DOUBLE)
 											{
 												strcpy ((char *) code_temp, "stpushd ");
@@ -2570,6 +2707,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												}
 											}
 
+											if (checkdef (ast[level].expr[j][e]) != 0)
+											{
+												return (1);
+											}
 											if (getvartype (ast[level].expr[j][e]) == STRING)
 											{
 												strcpy ((char *) code_temp, "stpushi ");
@@ -2989,6 +3130,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 							for (v = 0; v < last_arg_2; v++)
 							{
+								if (checkdef (ast[level].expr[j][v]) != 0)
+								{
+									return (1);
+								}
 								if (getvartype (ast[level].expr[j][v]) == INTEGER)
 								{
 									// printf ("get_regi: %s\n", ast[level].expr[j][v]);
@@ -3073,6 +3218,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
                                    	}
 								}
 
+								if (checkdef (ast[level].expr[j][v]) != 0)
+								{
+									return (1);
+								}
 								if (getvartype (ast[level].expr[j][v]) == DOUBLE)
 								{
 									// double float type
