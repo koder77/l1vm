@@ -5,7 +5,9 @@ New: compiler now prints error message if used variables are not defined.
 Added VM quiet mode: "-q" bash flag, if set no startup messages are shown.
 See "silent_run" runtime flag.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Fri Jun 14 2019 22:30 +0200
+Bugfix: compiler array size check now uses int64 for sizes!
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Sat Jun 15 2019 17:39 +0200
 
 
 L1VM - (0.9.6)

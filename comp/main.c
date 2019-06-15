@@ -432,7 +432,7 @@ S2 getvartype_real (U1 *name)
 	return (ret);
 }
 
-S2 get_variable_is_array (U1 *name)
+S8 get_variable_is_array (U1 *name)
 {
 	S4 i;
 
@@ -441,6 +441,8 @@ S2 get_variable_is_array (U1 *name)
 		if (strcmp ((const char *) name, (const char *) data_info[i].name) == 0)
 		{
 			// found array, return aray size
+			// printf ("get_variable_is_array: '%s' size: %lli\n", name, data_info[i].size);
+
 			return (data_info[i].size);
 		}
 	}
@@ -806,6 +808,8 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 						}
 
 						data_info[data_ind].size = get_temp_int ();
+
+						// printf ("DEBUG: data size: %lli\n", data_info[data_ind].size);
 
 						// Set real string size, if 0 length was set or "s" was set.
 						if ((data_info[data_ind].size == 0 || ast[level].expr[j][2][0] == 's') && data_info[data_ind].type == STRING)

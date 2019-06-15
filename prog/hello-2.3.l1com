@@ -2,7 +2,7 @@
 //
 (main func)
 	(set int64 1 zero 0)
-	(set byte 40000 data_file $/home/stefan/l1vm-0.9.5/prog/hello.l1obj)
+	(set byte 40000 data_file $/home/stefan/l1vm-0.9.7/prog/hello.l1obj)
 	// set string length automatic, by setting "s"
 	(set string s hello "Hello world!")
 	// print string

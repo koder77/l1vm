@@ -29,6 +29,8 @@ U1 checkdigit (U1 *str)
 	S2 i, j, b, str_len;
     U1 ok = FALSE, check;
 
+	// printf ("checkdigit: '%s'\n", str);
+
     str_len = strlen_safe ((const char *) str, MAXLINELEN);
     t_var.digitstr_type = UNKNOWN;
 	t_var.base = 10;
@@ -198,6 +200,8 @@ U1 checkdigit (U1 *str)
 		strcpy ((char *) t_var.digitstr, (const char *) binarystr);
 	}
 
+	// printf ("t_var: '%s'\n", t_var.digitstr);
+	// printf ("check: %i\n\n", check);
 
     return (check);
 }
