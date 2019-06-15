@@ -1643,7 +1643,13 @@ S2 dump_object (U1 *name)
 
 int main (int ac, char *av[])
 {
-    printf ("l1asm <asm-file> -sizes <code> <data>\n");
+	// make bzip2 object code file flag
+	U1 pack = 0;
+	U1 shell_pack[512];
+
+    printf ("l1asm <asm-file> -sizes <code> <data> <-pack>\n");
+	printf ("l1asm <asm-file> <-pack>\n");
+	printf ("-pack: create .bz2 object code file\n");
 	printf ("0.9.7 (C) 2017-2019 Stefan Pietzonke\n");
 
 	if (ac < 2)
@@ -1651,7 +1657,15 @@ int main (int ac, char *av[])
         exit (1);
     }
 
-	if (ac == 5)
+	if (ac == 3)
+	{
+		if (strcmp (av[2], "-pack") == 0)
+		{
+			pack = 1;
+		}
+	}
+
+	if (ac >= 5)
 	{
 		if (strcmp (av[2], "-sizes") == 0)
 		{
@@ -1659,6 +1673,13 @@ int main (int ac, char *av[])
 			data_max = (atoi (av[4]));
 
 			printf ("\n>>> max codesize: %lli, max datasize: %lli\n\n", code_max, data_max);
+		}
+		if (ac == 6)
+		{
+			if (strcmp (av[5], "-pack") == 0)
+			{
+				pack = 1;
+			}
 		}
 	}
 
@@ -1698,6 +1719,15 @@ int main (int ac, char *av[])
 	}
 
 	free_code_data ();
+
+	if (pack)
+	{
+		// create .l1obj.bz2 packed object file
+		strcpy ((char *) shell_pack , "bzip2 -f ");
+		strcat ((char *) shell_pack, av[1]);
+		strcat ((char *) shell_pack, ".l1obj");
+		system ((char *) shell_pack);
+	}
 
 	printf ("ok!\n");
 	exit (0);

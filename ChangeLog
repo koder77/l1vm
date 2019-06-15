@@ -8,6 +8,11 @@ See "silent_run" runtime flag.
 Bugfix: compiler array size check now uses int64 for sizes!
 New: prog/primes.l1com - Sieve of Eratosthenes prime number search.
 
+New: assembler: "-pack" flag: creates bz2 compressed object:
+$ l1asm foobar -pack
+creates a "foobar.l1obj.bz2" packed object file.
+The VM detects a .bz2 object code and decompress it before execution.
+
 -- Stefan Pietzonke <jay-t@gmx.net>  Sat Jun 15 2019 19:14 +0200
 
 

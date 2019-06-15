@@ -54,4 +54,4 @@
 		(:print_primes jmp)
 	(endif)
 	(255 0 0 0 intr0)
-	(funcend)
+(funcend)
