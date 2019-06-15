@@ -6,8 +6,9 @@ Added VM quiet mode: "-q" bash flag, if set no startup messages are shown.
 See "silent_run" runtime flag.
 
 Bugfix: compiler array size check now uses int64 for sizes!
+New: prog/primes.l1com - Sieve of Eratosthenes prime number search.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sat Jun 15 2019 17:39 +0200
+-- Stefan Pietzonke <jay-t@gmx.net>  Sat Jun 15 2019 19:14 +0200
 
 
 L1VM - (0.9.6)
