@@ -2,7 +2,10 @@ L1VM - (0.9.7)
 New: check if variable is array on array access assign.
 New: compiler now prints error message if used variables are not defined.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Fri Jun 14 2019 22:00 +0200
+Added VM quiet mode: "-q" bash flag, if set no startup messages are shown.
+See "silent_run" runtime flag.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Fri Jun 14 2019 22:30 +0200
 
 
 L1VM - (0.9.6)

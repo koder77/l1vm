@@ -449,7 +449,7 @@ S2 load_object (U1 *name)
 
 	data_size = conv_quadword (quadword);
 
-	printf ("data size: (data only) %lli\n", data_size);
+	// printf ("data size: (data only) %lli\n", data_size);
 
 	data_mem_size = data_mem_size + (stack_size * MAXCPUCORES);
 	data = (U1 *) calloc (data_mem_size, sizeof (U1));

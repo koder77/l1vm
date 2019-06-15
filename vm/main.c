@@ -78,6 +78,8 @@ S8 cpu_ind ALIGN = 0;
 
 S8 max_cpu ALIGN = MAXCPUCORES;    // number of threads that can be runned
 
+U1 silent_run = 0;				// switch startup and status messages of: "-q" flag on shell
+
 typedef U1* (*dll_func)(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 
 struct module
@@ -164,7 +166,10 @@ S2 load_module (U1 *name, S8 ind ALIGN)
     strcpy ((char *) modules[ind].name, (const char *) name);
 
 	// print module name:
-	printf ("module: %lli %s loaded\n", ind, name);
+	if (silent_run == 0)
+	{
+		printf ("module: %lli %s loaded\n", ind, name);
+  	}
     return (0);
 }
 
@@ -295,12 +300,15 @@ S2 run (void *arg)
 	sp_bottom = threaddata[cpu_core].sp_bottom_thread;
 	sp = threaddata[cpu_core].sp_thread;
 
-	printf ("%lli sp top: %lli\n", cpu_core, (S8) sp_top);
-	printf ("%lli sp bottom: %lli\n", cpu_core, (S8) sp_bottom);
-	printf ("%lli sp: %lli\n", cpu_core, (S8) sp);
+	if (silent_run == 0)
+	{
+		printf ("%lli sp top: %lli\n", cpu_core, (S8) sp_top);
+		printf ("%lli sp bottom: %lli\n", cpu_core, (S8) sp_bottom);
+		printf ("%lli sp: %lli\n", cpu_core, (S8) sp);
 
-	printf ("%lli sp caller top: %lli\n", cpu_core, (S8) threaddata[cpu_core].sp_top);
-	printf ("%lli sp caller bottom: %lli\n", cpu_core, (S8) threaddata[cpu_core].sp_bottom);
+		printf ("%lli sp caller top: %lli\n", cpu_core, (S8) threaddata[cpu_core].sp_top);
+		printf ("%lli sp caller bottom: %lli\n", cpu_core, (S8) threaddata[cpu_core].sp_bottom);
+	}
 
 	startpos = threaddata[cpu_core].ep_startpos;
 	if (threaddata[cpu_core].sp != threaddata[cpu_core].sp_top)
@@ -530,11 +538,14 @@ S2 run (void *arg)
 
 	// printf ("ready...\n");
 	// printf ("modules loaded: %lli\n", modules_ind + 1);
-	printf ("CPU %lli ready\n", cpu_ind);
-	printf ("codesize: %lli\n", code_size);
-	printf ("datasize: %lli\n", data_mem_size);
-	printf ("ep: %lli\n\n", startpos);
 
+	if (silent_run == 0)
+	{
+		printf ("CPU %lli ready\n", cpu_ind);
+		printf ("codesize: %lli\n", code_size);
+		printf ("datasize: %lli\n", data_mem_size);
+		printf ("ep: %lli\n\n", startpos);
+	}
 #if DEBUG
 	printf ("stack pointer sp: %lli\n", (S8) sp);
 #endif
@@ -1821,7 +1832,10 @@ S2 run (void *arg)
 			break;
 
 		case 8:
-			printf ("DELAY\n");
+			if (silent_run == 0)
+			{
+				printf ("DELAY\n");
+			}
 			arg2 = code[ep + 2];
 			usleep (regi[arg2] * 1000);
 			#if DEBUG
@@ -1999,7 +2013,10 @@ S2 run (void *arg)
 
 
 		case 255:
-			printf ("EXIT\n");
+			if (silent_run == 0)
+			{
+				printf ("EXIT\n");
+			}
 			arg2 = code[ep + 2];
 			retcode = regi[arg2];
 			free (jumpoffs);
@@ -2456,7 +2473,10 @@ void free_modules (void)
     {
         if (modules[i].name[0] != '\0')
         {
-            printf ("free_modules: module %lli %s free.\n", i, modules[i].name);
+			if (silent_run == 0)
+			{
+            	printf ("free_modules: module %lli %s free.\n", i, modules[i].name);
+			}
             free_module (i);
         }
     }
@@ -2472,10 +2492,6 @@ int main (int ac, char *av[])
 
 	S8 new_cpu ALIGN;
 
-    printf ("l1vm - 0.9.7 - (C) 2017-2019 Stefan Pietzonke\n");
-	printf (">>> power unleashed, unique inside <<<\n");
-    printf ("CPU cores: %lli (STATIC)\n", max_cpu);
-
 	threaddata = (struct threaddata *) calloc (max_cpu, sizeof (struct threaddata));
 	if (threaddata == NULL)
 	{
@@ -2484,62 +2500,45 @@ int main (int ac, char *av[])
 		exit (1);
 	}
 
-	#if JIT_COMPILER
-    	printf ("JIT-compiler inside: lib asmjit.\n");
-	#endif
-
-	#if MEMCHECK
-		printf (">> memcheck << ");
-	#endif
-
-	#if BOUNDSCHECK
-		printf (">> boundscheck << ");
-	#endif
-
-	#if DIVISIONCHECK
-		printf (">> divisioncheck << ");
-	#endif
-	printf ("\n");
-
-	printf ("machine: ");
-	#if MACHINE_BIG_ENDIAN
-		printf ("big endianess\n");
-	#else
-		printf ("little endianess\n");
-	#endif
-
     if (ac > 1)
     {
         for (i = 2; i < ac; i++)
         {
             arglen = strlen_safe (av[i], MAXLINELEN);
+			if (arglen == 2)
+			{
+				if (av[i][0] == '-' && av[i][1] == 'q')
+				{
+					silent_run = 1;
+				}
+			}
             if (arglen > 2)
             {
                 if (av[i][0] == '-' && av[i][1] == 'M')
-                {
-                    // try load module (shared library)
+				{
+					// try load module (shared library)
 					modules_ind++;
                     if (modules_ind < MODULES)
                     {
-                        strind = 0; avind = 2;
-                        for (avind = 2; avind < arglen; avind++)
-                        {
-                            modules[modules_ind].name[strind] = av[i][avind];
-                            strind++;
-                        }
+                    	strind = 0; avind = 2;
+                    	for (avind = 2; avind < arglen; avind++)
+                    	{
+                        	modules[modules_ind].name[strind] = av[i][avind];
+                        	strind++;
+                    	}
                         modules[modules_ind].name[strind] = '\0';
 
-                        if (load_module (modules[modules_ind].name, modules_ind) == 0)
-                        {
-                            printf ("module: %s loaded\n", modules[modules_ind].name);
-                        }
-                        else
-                        {
-                            printf ("EXIT!\n");
+                    	if (load_module (modules[modules_ind].name, modules_ind) == 0)
+                    	{
+                        	printf ("module: %s loaded\n", modules[modules_ind].name);
+                    	}
+                    	else
+                    	{
+                        	printf ("EXIT!\n");
 							cleanup ();
-                            exit (1);
-                        }
-                    }
+                        	exit (1);
+                    	}
+                	}
                 }
                 else
 				{
@@ -2569,6 +2568,36 @@ int main (int ac, char *av[])
 		printf ("l1vm <program>\n");
 		cleanup ();
 		exit (1);
+	}
+	if (silent_run == 0)
+	{
+		printf ("l1vm - 0.9.7 - (C) 2017-2019 Stefan Pietzonke\n");
+		printf (">>> power unleashed, unique inside <<<\n");
+	    printf ("CPU cores: %lli (STATIC)\n", max_cpu);
+
+		#if JIT_COMPILER
+	    	printf ("JIT-compiler inside: lib asmjit.\n");
+		#endif
+
+		#if MEMCHECK
+			printf (">> memcheck << ");
+		#endif
+
+		#if BOUNDSCHECK
+			printf (">> boundscheck << ");
+		#endif
+
+		#if DIVISIONCHECK
+			printf (">> divisioncheck << ");
+		#endif
+		printf ("\n");
+
+		printf ("machine: ");
+		#if MACHINE_BIG_ENDIAN
+			printf ("big endianess\n");
+		#else
+			printf ("little endianess\n");
+		#endif
 	}
     if (load_object ((U1 *) av[1]))
     {
