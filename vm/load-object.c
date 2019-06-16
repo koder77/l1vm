@@ -189,7 +189,11 @@ S2 load_object (U1 *name)
 
 		// printf ("shell unpack: '%s'\n", run_shell
 
-		system ((char *) run_shell);
+		if (system ((char *) run_shell) != 0)
+		{
+			printf ("load_object: ERROR: can't run bzip2 to unpack object code: '%s'!\n", objname);
+			return (1);
+		}
 
 		strcpy ((char *) objname, (const char *) name);
 		strcat ((char *) objname, ".l1obj");
