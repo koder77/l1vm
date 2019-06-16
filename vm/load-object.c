@@ -188,10 +188,9 @@ S2 load_object (U1 *name)
 		strcat ((char *) run_shell, (const char *) objname);
 
 		// printf ("shell unpack: '%s'\n", run_shell
-		
+
 		system ((char *) run_shell);
 
-		strcpy ((char *) objname, "/tmp/");
 		strcpy ((char *) objname, (const char *) name);
 		strcat ((char *) objname, ".l1obj");
 
