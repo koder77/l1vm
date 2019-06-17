@@ -1726,7 +1726,12 @@ int main (int ac, char *av[])
 		strcpy ((char *) shell_pack , "bzip2 -f ");
 		strcat ((char *) shell_pack, av[1]);
 		strcat ((char *) shell_pack, ".l1obj");
-		system ((char *) shell_pack);
+		if (system ((char *) shell_pack) != 0)
+		{
+			printf ("ERROR: can't compress object: '%s' with bzip2!\n", av[1]);
+			exit (1);
+		}
+		printf (">>> object file compressed!\n");
 	}
 
 	printf ("ok!\n");
