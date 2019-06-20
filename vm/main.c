@@ -22,7 +22,7 @@
 //
 
 
-#define JIT_COMPILER 1
+#define JIT_COMPILER 0
 
 #include "../include/global.h"
 
