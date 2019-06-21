@@ -3386,7 +3386,6 @@ S2 parse (U1 *name)
     while (ok)
     {
         read = fgets_uni ((char *) rbuf, MAXLINELEN, fptr);
-
         if (read != NULL)
         {
             convtabs (rbuf);                    /* convert the funny tabs into spaces! */
@@ -3395,14 +3394,9 @@ S2 parse (U1 *name)
 			// printf ("[ %s ]\n", rbuf);
 
             pos = searchstr (rbuf, (U1 *) REM_SB, 0, 0, TRUE);
-            if (pos != -1)
+            if (pos == -1)
             {
-                // found comment
-
-               // parse_line (rbuf, 0, pos - 1);
-            }
-            else
-            {
+				// no comment, parse line
 				pos = searchstr (rbuf, (U1 *) ASM_SB, 0, 0, TRUE);
 				if (pos != -1)
 				{
