@@ -13,7 +13,10 @@ $ l1asm foobar -pack
 creates a "foobar.l1obj.bz2" packed object file.
 The VM detects a .bz2 object code and decompress it before execution.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sat Jun 15 2019 19:14 +0200
+New: prog/primes-3.3.l1asm, hand optimized assembly for primenum search.
+Runs a bit faster as primes-3.l1com program.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Sun Jun 23 2019 11:29 +0200
 
 
 L1VM - (0.9.6)

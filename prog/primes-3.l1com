@@ -1,6 +1,11 @@
 // primes-3.l1com - Sieve of Eratosthenes
 // primenum search
 //
+// perf stat on Lenovo Z50-70:
+// 2,665914040 seconds time elapsed
+// 2,662360000 seconds user
+// 0,003336000 seconds sys
+//
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 one 1)
@@ -12,8 +17,8 @@
 	(set int64 1 a 0)
 	(set int64 1 k 0)
 	(set int64 1 n 0)
-	(set byte 1000000 primes)
-	(set int64 1 limit 1000000)
+	(set byte 10000000 primes)
+	(set int64 1 limit 10000000)
 	// array primes is filled by zeroes
 	//
 	// search primes
