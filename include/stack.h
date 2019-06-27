@@ -52,56 +52,6 @@ U1 *stpopb (U1 *data, U1 *sp, U1 *sp_top)
 }
 
 
-// string, NULL terminated
-
-U1 *stpushstring (U1 *data, S8 data_len, U1 *sp, U1 *sp_bottom)
-{
-	S8 i ALIGN;
-
-	if (sp >= sp_bottom + data_len)
-	{
-		for (i = data_len; i >= 0; i--)
-		{
-			sp--;
-			*sp = data[i];
-		}
-		return (sp);
-	}
-	else
-	{
-		// fatal ERROR: stack pointer can't go below address ZERO!
-		return (NULL);			// FAIL
-	}
-}
-
-U1 *stpopstring (U1 *data, S8 data_len, U1 *sp, U1 *sp_top)
-{
-	S8 i ALIGN = 0;
-
-	if (sp == sp_top)
-	{
-		// nothing on stack!! can't pop!!
-		return (NULL);		// FAIL
-	}
-
-	while (*sp != 0)
-	{
-   		if (i < data_len)
-   		{
-	   		data[i] = *sp;
-	   		i++;
-	   		sp++;
-	   		if (sp == sp_top)
-	   		{
-		   		return (NULL);
-	   		}
-   		}
-	}
-	data[i] = '\0';        // end of string
-	return (sp);
-}
-
-
 // quadword
 
 U1 *stpushi (S8 data ALIGN, U1 *sp, U1 *sp_bottom)

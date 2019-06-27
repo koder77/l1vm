@@ -95,7 +95,6 @@ struct module
 #endif
 
     dll_func func[MODULES_MAXFUNC];
-    S8 func_ind ALIGN;
 };
 
 struct module modules[MODULES];
@@ -162,7 +161,6 @@ S2 load_module (U1 *name, S8 ind ALIGN)
     }
 #endif
 
-    modules[ind].func_ind = -1;
     strcpy ((char *) modules[ind].name, (const char *) name);
 
 	// print module name:
@@ -1485,7 +1483,7 @@ S2 run (void *arg)
 	#endif
 	arg1 = code[ep + 1];
 
-	if (sp == sp_top)
+	if (sp >= sp_top - 7)
 	{
 		// nothing on stack!! can't pop!!
 
@@ -1564,7 +1562,7 @@ S2 run (void *arg)
 	#endif
 	arg1 = code[ep + 1];
 
-	if (sp == sp_top)
+	if (sp >= sp_top - 7)
 	{
 		// nothing on stack!! can't pop!!
 
@@ -2572,7 +2570,7 @@ int main (int ac, char *av[])
 	if (silent_run == 0)
 	{
 		printf ("l1vm - 0.9.7 - (C) 2017-2019 Stefan Pietzonke\n");
-		printf (">>> power unleashed, unique inside <<<\n");
+		printf (">>> supermodified <<<\n");
 	    printf ("CPU cores: %lli (STATIC)\n", max_cpu);
 
 		#if JIT_COMPILER
