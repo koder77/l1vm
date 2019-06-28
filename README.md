@@ -2,7 +2,7 @@ L1VM README  2019-06-20
 =======================
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2f0638b0ab6b433aad4d35c18d2f85c4)](https://www.codacy.com/app/koder77/l1vm?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=koder77/l1vm&amp;utm_campaign=Badge_Grade)
 
-[Support me on Ko-fi](https://ko-fi.com/P5P2Y3KP)
+[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/P5P2Y3KP)
 
 L1VM is a very tiny virtual machine with RISC (or comparable style) CPU, about 61 opcodes and less than
 32 KB binary size on X86_64 (without JIT-compiler)!
