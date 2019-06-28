@@ -1647,9 +1647,11 @@ int main (int ac, char *av[])
 	U1 pack = 0;
 	U1 shell_pack[512];
 
-    printf ("l1asm <asm-file> -sizes <code> <data> <-pack>\n");
-	printf ("l1asm <asm-file> <-pack>\n");
-	printf ("-pack: create .bz2 object code file\n");
+    printf ("l1asm <asm-file> [-sizes] [code] [data] [-pack]\n");
+	printf ("l1asm <asm-file> [-pack]\n\n");
+	printf ("assemble file 'foo.l1asm' and set code and data size to 1000000 bytes:\n");
+	printf ("l1asm foo -sizes 1000000 1000000\n\n");
+	printf ("-pack: create .bz2 object code file\n\n");
 	printf ("0.9.7 (C) 2017-2019 Stefan Pietzonke\n");
 
 	if (ac < 2)
