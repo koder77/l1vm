@@ -19,8 +19,8 @@
 
 #include "../include/global.h"
 
- size_t strlen_safe (const char * str, int maxlen)
- {
+size_t strlen_safe (const char * str, int maxlen)
+{
 	 long long int i = 0;
 
 	 while (1)

@@ -18,7 +18,10 @@ Runs a bit faster as primes-3.l1com program.
 
 vm/main.c: stpop(i/d) better bound checks on stack pointer.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Wed Jun 26 2019 20:00 +0200
+vm/modules/string cleanup. Now compiles and runs right.
+This was tested by the string library and it works!
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Sat Jun 29 2019 21:39 +0200
 
 
 L1VM - (0.9.6)
