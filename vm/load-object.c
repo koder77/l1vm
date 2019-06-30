@@ -174,7 +174,12 @@ S2 load_object (U1 *name)
 		fptr = fopen ((const char *) objname, "r");
 		if (fptr == NULL)
 		{
-			printf ("ERROR: can't open object file '%s'!\n", objname);
+			printf ("ERROR: can't open packed object file '%s'!\n", objname);
+
+			strcpy ((char *) objname, (const char *) name);
+			strcat ((char *) objname, ".l1obj");
+
+			printf ("ERROR: and can't open object file '%s'!\n", objname);
 			return (1);
 		}
 		// close archive

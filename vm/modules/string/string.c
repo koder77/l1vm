@@ -42,7 +42,6 @@ size_t strlen_safe (const char * str, int maxlen)
 	}
 }
 
-
 // string functions ------------------------------------
 
 U1 *string_len (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)

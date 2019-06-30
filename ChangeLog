@@ -21,7 +21,9 @@ vm/main.c: stpop(i/d) better bound checks on stack pointer.
 vm/modules/string cleanup. Now compiles and runs right.
 This was tested by the string library and it works!
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sat Jun 29 2019 21:39 +0200
+String code cleanup: "strlen_safe" function added to other "string.c" files.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Sun Jun 30 2019 17:38 +0200
 
 
 L1VM - (0.9.6)
