@@ -98,6 +98,21 @@ U1 get_endif_label (S4 ind, U1 *label)
     return (TRUE);
 }
 
+U1 get_else_label (S4 ind, U1 *label)
+{
+    U1 labelnum[10];
+
+    strcpy ((char *) label, ":else_");
+    sprintf ((char *)labelnum, "%d", ind);
+    strcat ((char *) label, (const char *) labelnum);
+
+	#if DEBUG
+    	printf ("get_else_label: '%s'\n", label);
+	#endif
+
+    return (TRUE);
+}
+
 void set_endif_finished (S4 ind)
 {
     if_comp[ind].used = IF_FINISHED;

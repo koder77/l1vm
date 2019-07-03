@@ -1,3 +1,10 @@
+L1VM - (0.9.8)
+New: if+, else, endif in compiler l1com.
+So finally here is "else" in "if+". :)
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Wed Jun 3 2019 19:00 +0200
+
+
 L1VM - (0.9.7)
 New: check if variable is array on array access assign.
 New: compiler now prints error message if used variables are not defined.

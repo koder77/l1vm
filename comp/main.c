@@ -80,6 +80,7 @@ void init_if (void);
 S4 get_if_pos (void);
 S4 get_act_if (void);
 U1 get_if_label (S4 ind, U1 *label);
+U1 get_else_label (S4 ind, U1 *label);
 U1 get_endif_label (S4 ind, U1 *label);
 void set_endif_finished (S4 ind);
 
@@ -690,6 +691,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 	S8 if_pos ALIGN;
 	U1 if_label[MAXLINELEN];
+	U1 else_label[MAXLINELEN];
 	U1 endif_label[MAXLINELEN];
 	U1 set_loadreg = 0;
 
@@ -2502,6 +2504,151 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									continue;
 								}
 
+
+								// if+ -> if with else, endif
+								//
+								//
+
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "if+") == 0 && last_arg > 0)
+								{
+									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+									{
+										return (1);
+									}
+									if (getvartype (ast[level].expr[j][last_arg - 1]) == INTEGER)
+									{
+										if (getvartype_real (ast[level].expr[j][last_arg - 1]) == QUADWORD)
+										{
+											reg = get_regi (ast[level].expr[j][last_arg - 1]);
+											// printf ("reg: %i\n", reg);
+											if (reg == -1)
+											{
+												// variable is not in register, load it
+
+												reg = get_free_regi ();
+												set_regi (reg, ast[level].expr[j][last_arg - 1]);
+
+												// write code loada
+
+												code_line++;
+												if (code_line >= line_len)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+
+												strcpy ((char *) code[code_line], "loada ");
+												strcat ((char *) code[code_line], (const char *) ast[level].expr[j][last_arg - 1]);
+												strcat ((char *) code[code_line], ", 0, ");
+												sprintf ((char *) str, "%i", reg);
+												strcat ((char *) code[code_line], (const char *) str);
+												strcat ((char *) code[code_line], "\n");
+											}
+
+											if_pos = get_if_pos ();
+							                if (if_pos == -1)
+							                {
+							                    printf ("compile: error: if: out of memory if-list\n");
+							                    return (FALSE);
+							                }
+
+											get_if_label (if_pos, if_label);
+											get_endif_label (if_pos, endif_label);
+
+											// write code jmpi to if code label
+
+											code_line++;
+											if (code_line >= line_len)
+											{
+												printf ("error: line %lli: code list full!\n", linenum);
+												return (1);
+											}
+
+											strcpy ((char *) code[code_line], "jmpi ");
+											sprintf ((char *) str, "%i", reg);
+											strcat ((char *) code[code_line], (const char *) str);
+											strcat ((char *) code[code_line], ", ");
+											strcat ((char *) code[code_line], (const char *) if_label);
+											strcat ((char *) code[code_line], "\n");
+
+											// write code jmpi to endif label
+
+											code_line++;
+											if (code_line >= line_len)
+											{
+												printf ("error: line %lli: code list full!\n", linenum);
+												return (1);
+											}
+
+											get_else_label (if_pos, else_label);
+
+											strcpy ((char *) code[code_line], "jmp ");
+											strcat ((char *) code[code_line], (const char *) else_label);
+											strcat ((char *) code[code_line], "\n");
+
+											// write code label if
+
+											code_line++;
+											if (code_line >= line_len)
+											{
+												printf ("error: line %lli: code list full!\n", linenum);
+												return (1);
+											}
+											strcat ((char *) code[code_line], (const char *) if_label);
+											strcat ((char *) code[code_line], "\n");
+										}
+										else
+										{
+											printf ("error: line %lli: if variable must be int64 type!\n", linenum);
+											return (1);
+										}
+									}
+									else
+									{
+										printf ("error: line %lli: if variable must be int64 type!\n", linenum);
+										return (1);
+									}
+									continue;
+								}
+
+								if ( strcmp ((const char *) ast[level].expr[j][last_arg], "else") == 0)
+								{
+									if_pos = get_act_if ();
+									if (if_pos == -1)
+									{
+										printf ("error: line %lli: else: if not set!\n", linenum);
+										return (1);
+									}
+
+									get_endif_label (if_pos, endif_label);
+									get_else_label (if_pos, else_label);
+
+									// write code jmp to if code label
+
+									code_line++;
+									if (code_line >= line_len)
+									{
+										printf ("error: line %lli: code list full!\n", linenum);
+										return (1);
+									}
+
+									strcpy ((char *) code[code_line], "jmp ");
+									strcat ((char *) code[code_line], (const char *) endif_label);
+									strcat ((char *) code[code_line], "\n");
+
+									code_line++;
+									if (code_line >= line_len)
+									{
+										printf ("error: line %lli: code list full!\n", linenum);
+										return (1);
+									}
+
+									strcat ((char *) code[code_line], (const char *) else_label);
+									strcat ((char *) code[code_line], "\n");
+									continue;
+								}
+
+
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "if") == 0 && last_arg == 0)
 								{
 									// error: no variable for if defined!
@@ -3544,7 +3691,7 @@ int main (int ac, char *av[])
 {
     printf ("l1com <file> [-lines] [max linenumber]\n");
 	printf ("\nCompiler for bra(et, a programming language with brackets ;-)\n");
-	printf ("0.9.7 (C) 2017-2019 Stefan Pietzonke\n");
+	printf ("0.9.8 (C) 2017-2019 Stefan Pietzonke\n");
 
 	init_ast ();
 	init_if ();

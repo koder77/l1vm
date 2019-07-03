@@ -1652,7 +1652,7 @@ int main (int ac, char *av[])
 	printf ("assemble file 'foo.l1asm' and set code and data size to 1000000 bytes:\n");
 	printf ("l1asm foo -sizes 1000000 1000000\n\n");
 	printf ("-pack: create .bz2 object code file\n\n");
-	printf ("0.9.7 (C) 2017-2019 Stefan Pietzonke\n");
+	printf ("0.9.8 (C) 2017-2019 Stefan Pietzonke\n");
 
 	if (ac < 2)
     {
