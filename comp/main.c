@@ -3811,6 +3811,7 @@ int main (int ac, char *av[])
 
 	init_ast ();
 	init_if ();
+	init_while ();
 
     if (ac < 2)
     {
