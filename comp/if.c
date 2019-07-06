@@ -22,8 +22,10 @@
 
 struct jumplist jumplist[MAXJUMPLIST];
 struct if_comp if_comp[MAXIF];
+struct while_comp while_comp[MAXWHILE];
 
 S4 if_ind;
+S4 while_ind;
 S4 jumplist_ind;
 
 void init_if (void)
@@ -131,4 +133,76 @@ S4 get_endif_lab (S4 ind)
 S4 get_else_set (S4 ind)
 {
     return (jumplist[if_comp[ind].else_pos].pos);
+}
+
+
+// while ====================================================
+void init_while (void)
+{
+    S4 i;
+
+    for (i = 0; i < MAXWHILE; i++)
+    {
+        while_comp[i].used = FALSE;
+        while_comp[i].while_pos = EMPTY;
+        while_comp[i].while_set = FALSE;
+    }
+}
+
+S4 get_while_pos (void)
+{
+    S4 i;
+
+    for (i = 0; i < MAXWHILE; i++)
+    {
+        if (while_comp[i].used == FALSE)
+        {
+            while_comp[i].used = TRUE;
+            return (i);
+        }
+    }
+
+    /* no empty if found => error! */
+
+    return (-1);
+}
+
+S4 get_act_while (void)
+{
+    S4 i;
+
+    for (i = MAXWHILE - 1; i >= 0; i--)
+    {
+        if (while_comp[i].used == TRUE && while_comp[i].while_set == FALSE)
+        {
+            return (i);
+        }
+    }
+	return (-1);
+}
+
+U1 get_while_label (S4 ind, U1 *label)
+{
+    U1 labelnum[10];
+
+    strcpy ((char *) label, ":while_");
+    sprintf ((char *) labelnum, "%d", ind);
+    strcat ((char *) label, (const char *) labelnum);
+
+	#if DEBUG
+		printf ("DEBUG: set_while_label: '%s'\n", label);
+	#endif
+
+    while_comp[ind].while_pos = jumplist_ind;
+    return (TRUE);
+}
+
+S4 get_while_lab (S4 ind)
+{
+    return (while_comp[ind].while_pos);
+}
+
+void set_wend (S4 ind)
+{
+    while_comp[ind].while_set = TRUE;
 }

@@ -84,6 +84,13 @@ U1 get_else_label (S4 ind, U1 *label);
 U1 get_endif_label (S4 ind, U1 *label);
 void set_endif_finished (S4 ind);
 
+void init_while (void);
+S4 get_while_pos (void);
+S4 get_act_while (void);
+U1 get_while_label (S4 ind, U1 *label);
+S4 get_while_lab (S4 ind);
+void set_wend (S4 ind);
+
 // string
 size_t strlen_safe (const char * str, int maxlen);
 
@@ -693,6 +700,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 	U1 if_label[MAXLINELEN];
 	U1 else_label[MAXLINELEN];
 	U1 endif_label[MAXLINELEN];
+
+	S8 while_pos ALIGN;
+	U1 while_label[MAXLINELEN];
+
 	U1 set_loadreg = 0;
 
 	if (get_ast (line) != 0)
@@ -2678,6 +2689,111 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									continue;
 								}
 
+
+								// do/ while loop ===============================================================
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "do") == 0)
+								{
+									while_pos = get_while_pos ();
+									if (while_pos == -1)
+									{
+										printf ("compile: error: while: out of memory while-list\n");
+										return (FALSE);
+									}
+
+									get_while_label (while_pos, while_label);
+
+									code_line++;
+									if (code_line >= line_len)
+									{
+										printf ("error: line %lli: code list full!\n", linenum);
+										return (1);
+									}
+
+									strcpy ((char *) code[code_line], (const char *) while_label);
+									strcat ((char *) code[code_line], "\n");
+
+									continue;
+								}
+
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "while") == 0 && last_arg > 0)
+								{
+									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+									{
+										return (1);
+									}
+									if (getvartype (ast[level].expr[j][last_arg - 1]) == INTEGER)
+									{
+										if (getvartype_real (ast[level].expr[j][last_arg - 1]) == QUADWORD)
+										{
+											reg = get_regi (ast[level].expr[j][last_arg - 1]);
+											// printf ("reg: %i\n", reg);
+											if (reg == -1)
+											{
+												// variable is not in register, load it
+
+												reg = get_free_regi ();
+												set_regi (reg, ast[level].expr[j][last_arg - 1]);
+
+												// write code loada
+
+												code_line++;
+												if (code_line >= line_len)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+
+												strcpy ((char *) code[code_line], "loada ");
+												strcat ((char *) code[code_line], (const char *) ast[level].expr[j][last_arg - 1]);
+												strcat ((char *) code[code_line], ", 0, ");
+												sprintf ((char *) str, "%i", reg);
+												strcat ((char *) code[code_line], (const char *) str);
+												strcat ((char *) code[code_line], "\n");
+											}
+
+											while_pos = get_act_while ();
+											if (while_pos == -1)
+											{
+												printf ("error: line %lli: while: do not set!\n", linenum);
+												return (1);
+											}
+
+											get_while_label (while_pos, while_label);
+
+											// write code jmpi to while code label
+
+											code_line++;
+											if (code_line >= line_len)
+											{
+												printf ("error: line %lli: code list full!\n", linenum);
+												return (1);
+											}
+
+											strcpy ((char *) code[code_line], "jmpi ");
+											sprintf ((char *) str, "%i", reg);
+											strcat ((char *) code[code_line], (const char *) str);
+											strcat ((char *) code[code_line], ", ");
+											strcat ((char *) code[code_line], (const char *) while_label);
+											strcat ((char *) code[code_line], "\n");
+
+											set_wend (while_pos);
+
+											continue;
+										}
+										else
+										{
+											printf ("error: line %lli: while variable must be int64 type!\n", linenum);
+											return (1);
+										}
+									}
+									else
+									{
+										printf ("error: line %lli: while variable must be int64 type!\n", linenum);
+										return (1);
+									}
+								}
+
+								// call =========================================================================
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "call") == 0)
 								{
 									// function call with arguments

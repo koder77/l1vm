@@ -1,0 +1,21 @@
+// hello-while - bra(et - Hello world! do loop
+//
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 one 1)
+	(set int64 1 loop 0)
+	(set int64 1 maxloop 10)
+	(set int64 1 f 0)
+	// set string length automatic, by setting "s"
+	(set string s hello "Hello world!")
+	// print string
+	// while
+	(zero loop =)
+	(do)
+		(6 hello 0 0 intr0)
+		// print newline
+		(7 0 0 0 intr0)
+		((loop one +) loop =)
+	(((loop maxloop <) f =) f while)
+	(255 zero 0 0 intr0)
+(funcend)

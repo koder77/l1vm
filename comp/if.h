@@ -17,9 +17,12 @@
  * along with L1vm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// definitions for if and for loops
+
 #define MAXJUMPLIST 1024
 #define MAXJUMPNAME 64
 #define MAXIF 1024
+#define MAXWHILE 1024
 #define EMPTY -1
 #define NOTDEF -1
 #define IF_FINISHED 2
@@ -31,6 +34,14 @@ struct if_comp
     S4 endif_pos;
     U1 else_name[MAXJUMPNAME + 1];
     U1 endif_name[MAXJUMPNAME + 1];
+};
+
+struct while_comp
+{
+    U1 used;
+    S4 while_pos;
+    U1 while_set;
+    U1 while_name[MAXJUMPNAME + 1];
 };
 
 struct jumplist
