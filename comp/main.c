@@ -91,6 +91,15 @@ U1 get_while_label (S4 ind, U1 *label);
 S4 get_while_lab (S4 ind);
 void set_wend (S4 ind);
 
+void init_for (void);
+S4 get_for_pos (void);
+S4 get_act_for (void);
+U1 get_for_label (S4 ind, U1 *label);
+U1 get_for_label_2 (S4 ind, U1 *label);
+S4 get_for_lab (S4 ind);
+U1 get_for_label_end (S4 ind, U1 *label);
+void set_for_end (S4 ind);
+
 // string
 size_t strlen_safe (const char * str, int maxlen);
 
@@ -703,6 +712,9 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 	S8 while_pos ALIGN;
 	U1 while_label[MAXLINELEN];
+
+	S8 for_pos ALIGN;
+	U1 for_label[MAXLINELEN];
 
 	U1 set_loadreg = 0;
 
@@ -2793,6 +2805,170 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									}
 								}
 
+
+								// for/next loop ===============================================================
+
+								// set top for loop label
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "for-loop") == 0)
+								{
+									for_pos = get_for_pos ();
+									if (for_pos == -1)
+									{
+										printf ("compile: error: for: out of memory for-list\n");
+										return (FALSE);
+									}
+
+									get_for_label (for_pos, for_label);
+
+									code_line++;
+									if (code_line >= line_len)
+									{
+										printf ("error: line %lli: code list full!\n", linenum);
+										return (1);
+									}
+
+									strcpy ((char *) code[code_line], (const char *) for_label);
+									strcat ((char *) code[code_line], "\n");
+
+									continue;
+								}
+
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "for") == 0 && last_arg > 0)
+								{
+									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+									{
+										return (1);
+									}
+									if (getvartype (ast[level].expr[j][last_arg - 1]) == INTEGER)
+									{
+										if (getvartype_real (ast[level].expr[j][last_arg - 1]) == QUADWORD)
+										{
+											reg = get_regi (ast[level].expr[j][last_arg - 1]);
+											// printf ("reg: %i\n", reg);
+											if (reg == -1)
+											{
+												// variable is not in register, load it
+
+												reg = get_free_regi ();
+												set_regi (reg, ast[level].expr[j][last_arg - 1]);
+
+												// write code loada
+
+												code_line++;
+												if (code_line >= line_len)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+
+												strcpy ((char *) code[code_line], "loada ");
+												strcat ((char *) code[code_line], (const char *) ast[level].expr[j][last_arg - 1]);
+												strcat ((char *) code[code_line], ", 0, ");
+												sprintf ((char *) str, "%i", reg);
+												strcat ((char *) code[code_line], (const char *) str);
+												strcat ((char *) code[code_line], "\n");
+											}
+
+											get_for_label_2 (for_pos, for_label);
+
+											// write code jmpi to for label 2 code label, begin of for loop
+
+											code_line++;
+											if (code_line >= line_len)
+											{
+												printf ("error: line %lli: code list full!\n", linenum);
+												return (1);
+											}
+
+											strcpy ((char *) code[code_line], "jmpi ");
+											sprintf ((char *) str, "%i", reg);
+											strcat ((char *) code[code_line], (const char *) str);
+											strcat ((char *) code[code_line], ", ");
+											strcat ((char *) code[code_line], (const char *) for_label);
+											strcat ((char *) code[code_line], "\n");
+
+
+											get_for_label_end (for_pos, for_label);
+
+											// write code jmpi to for label 3 code label, end of loop
+
+											code_line++;
+											if (code_line >= line_len)
+											{
+												printf ("error: line %lli: code list full!\n", linenum);
+												return (1);
+											}
+
+											strcpy ((char *) code[code_line], "jmp ");
+											strcat ((char *) code[code_line], (const char *) for_label);
+											strcat ((char *) code[code_line], "\n");
+
+											get_for_label_2 (for_pos, for_label);
+
+											code_line++;
+											if (code_line >= line_len)
+											{
+												printf ("error: line %lli: code list full!\n", linenum);
+												return (1);
+											}
+
+											strcpy ((char *) code[code_line], (const char *) for_label);
+											strcat ((char *) code[code_line], "\n");
+
+											continue;
+										}
+										else
+										{
+											printf ("error: line %lli: for variable must be int64 type!\n", linenum);
+											return (1);
+										}
+									}
+									else
+									{
+										printf ("error: line %lli: for variable must be int64 type!\n", linenum);
+										return (1);
+									}
+								}
+
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "next") == 0)
+								{
+									for_pos = get_act_for ();
+									if (for_pos == -1)
+									{
+										printf ("compile: error: while: out of memory for-list\n");
+										return (FALSE);
+									}
+
+									get_for_label (for_pos, for_label);
+
+									code_line++;
+									if (code_line >= line_len)
+									{
+										printf ("error: line %lli: code list full!\n", linenum);
+										return (1);
+									}
+
+									strcpy ((char *) code[code_line], "jmp ");
+									strcat ((char *) code[code_line], (const char *) for_label);
+									strcat ((char *) code[code_line], "\n");
+
+									// set next label end as jump point if for loop not longer is running
+									get_for_label_end (for_pos, for_label);
+
+									code_line++;
+									if (code_line >= line_len)
+									{
+										printf ("error: line %lli: code list full!\n", linenum);
+										return (1);
+									}
+
+									strcpy ((char *) code[code_line], (const char *) for_label);
+									strcat ((char *) code[code_line], "\n");
+
+									set_for_end (for_pos);
+									continue;
+								}
+
 								// call =========================================================================
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "call") == 0)
 								{
@@ -3812,6 +3988,7 @@ int main (int ac, char *av[])
 	init_ast ();
 	init_if ();
 	init_while ();
+	init_for ();
 
     if (ac < 2)
     {

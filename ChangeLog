@@ -3,8 +3,9 @@ New: if+, else, endif in compiler l1com.
 So finally here is "else" in "if+". :)
 
 New: do/while loops! See prog/hello-while.l1com.
+New: for/next loops! See prog/hello-for.l1com.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sat Jun 6 2019 19:34 +0200
+-- Stefan Pietzonke <jay-t@gmx.net>  Sun Jul 14 2019 20:00 +0200
 
 
 L1VM - (0.9.7)

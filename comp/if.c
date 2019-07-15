@@ -23,9 +23,11 @@
 struct jumplist jumplist[MAXJUMPLIST];
 struct if_comp if_comp[MAXIF];
 struct while_comp while_comp[MAXWHILE];
+struct for_comp for_comp[MAXFOR];
 
 S4 if_ind;
 S4 while_ind;
+S4 for_ind;
 S4 jumplist_ind;
 
 void init_if (void)
@@ -205,4 +207,107 @@ S4 get_while_lab (S4 ind)
 void set_wend (S4 ind)
 {
     while_comp[ind].while_set = TRUE;
+}
+
+// for ====================================================
+void init_for (void)
+{
+    S4 i;
+
+    for (i = 0; i < MAXFOR; i++)
+    {
+        for_comp[i].used = FALSE;
+        for_comp[i].for_pos = EMPTY;
+        for_comp[i].for_set = FALSE;
+    }
+}
+
+S4 get_for_pos (void)
+{
+    S4 i;
+
+    for (i = 0; i < MAXFOR; i++)
+    {
+        if (for_comp[i].used == FALSE)
+        {
+            for_comp[i].used = TRUE;
+            return (i);
+        }
+    }
+
+    /* no empty if found => error! */
+
+    return (-1);
+}
+
+S4 get_act_for (void)
+{
+    S4 i;
+
+    for (i = MAXFOR - 1; i >= 0; i--)
+    {
+        if (for_comp[i].used == TRUE && for_comp[i].for_set == FALSE)
+        {
+            return (i);
+        }
+    }
+	return (-1);
+}
+
+U1 get_for_label (S4 ind, U1 *label)
+{
+    U1 labelnum[10];
+
+    strcpy ((char *) label, ":for_");
+    sprintf ((char *) labelnum, "%d", ind);
+    strcat ((char *) label, (const char *) labelnum);
+
+	#if DEBUG
+		printf ("DEBUG: set_for_label: '%s'\n", label);
+	#endif
+
+    for_comp[ind].for_pos = jumplist_ind;
+    return (TRUE);
+}
+
+U1 get_for_label_2 (S4 ind, U1 *label)
+{
+    U1 labelnum[10];
+
+    strcpy ((char *) label, ":for2_");
+    sprintf ((char *) labelnum, "%d", ind);
+    strcat ((char *) label, (const char *) labelnum);
+
+	#if DEBUG
+		printf ("DEBUG: set_for_label_2: '%s'\n", label);
+	#endif
+
+    // for_comp[ind].for_pos = jumplist_ind;
+    return (TRUE);
+}
+
+U1 get_for_label_end (S4 ind, U1 *label)
+{
+    U1 labelnum[10];
+
+    strcpy ((char *) label, ":forend_");
+    sprintf ((char *) labelnum, "%d", ind);
+    strcat ((char *) label, (const char *) labelnum);
+
+	#if DEBUG
+		printf ("DEBUG: set_for_label_end: '%s'\n", label);
+	#endif
+
+    // for_comp[ind].for_pos = jumplist_ind;
+    return (TRUE);
+}
+
+S4 get_for_lab (S4 ind)
+{
+    return (for_comp[ind].for_pos);
+}
+
+void set_for_end (S4 ind)
+{
+    for_comp[ind].for_set = TRUE;
 }

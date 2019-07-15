@@ -23,6 +23,7 @@
 #define MAXJUMPNAME 64
 #define MAXIF 1024
 #define MAXWHILE 1024
+#define MAXFOR 1024
 #define EMPTY -1
 #define NOTDEF -1
 #define IF_FINISHED 2
@@ -42,6 +43,14 @@ struct while_comp
     S4 while_pos;
     U1 while_set;
     U1 while_name[MAXJUMPNAME + 1];
+};
+
+struct for_comp
+{
+    U1 used;
+    S4 for_pos;
+    U1 for_set;
+    U1 for_name[MAXJUMPNAME + 1];
 };
 
 struct jumplist
