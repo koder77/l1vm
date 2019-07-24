@@ -55,9 +55,6 @@
 // define if machine is ARM
 // #define M_ARM				1
 
-// data memory bounds checking
-#define MEMCHECK				1
-
 // division by zero checking
 #define DIVISIONCHECK 			1
 

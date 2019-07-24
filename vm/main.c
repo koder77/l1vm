@@ -121,6 +121,12 @@ S2 memory_bounds (S8 start, S8 offset_access)
 {
 	S8 i ALIGN;
 
+	if (start + offset_access < 0)
+	{
+		// access ERROR!
+		return (1);
+	}
+
 	for (i = 0; i <= data_info_ind; i++)
 	{
 		if (data_info[i].offset == start)
@@ -561,16 +567,6 @@ S2 run (void *arg)
 	arg2 = regi[code[ep + 2]];
 	arg3 = code[ep + 3];
 
-    #if MEMCHECK
-    if (arg1 + arg2 < 0 || arg1 + arg2 >= data_size)
-    {
-        printf ("FATAL ERROR: data access out of range!\n");
-        printf ("address: %lli, offset: %lli\n", arg1, arg2);
-        free (jumpoffs);
-        pthread_exit ((void *) 1);
-    }
-    #endif
-
 	#if BOUNDSCHECK
 	if (memory_bounds (arg1, arg2) != 0)
 	{
@@ -591,16 +587,6 @@ S2 run (void *arg)
 	arg1 = regi[code[ep + 1]];
 	arg2 = regi[code[ep + 2]];
 	arg3 = code[ep + 3];
-
-    #if MEMCHECK
-    if (arg1 + arg2 < 0 || arg1 + arg2 >= data_size)
-    {
-        printf ("FATAL ERROR: data access out of range!\n");
-        printf ("address: %lli, offset: %lli\n", arg1, arg2);
-        free (jumpoffs);
-        pthread_exit ((void *) 1);
-    }
-    #endif
 
 	#if BOUNDSCHECK
 	if (memory_bounds (arg1, arg2) != 0)
@@ -626,16 +612,6 @@ S2 run (void *arg)
 	arg1 = regi[code[ep + 1]];
 	arg2 = regi[code[ep + 2]];
 	arg3 = code[ep + 3];
-
-    #if MEMCHECK
-    if (arg1 + arg2 < 0 || arg1 + arg2 >= data_size)
-    {
-        printf ("FATAL ERROR: data access out of range!\n");
-        printf ("address: %lli, offset: %lli\n", arg1, arg2);
-        free (jumpoffs);
-        pthread_exit ((void *) 1);
-    }
-    #endif
 
 	#if BOUNDSCHECK
 	if (memory_bounds (arg1, arg2) != 0)
@@ -665,16 +641,6 @@ S2 run (void *arg)
 	arg1 = regi[code[ep + 1]];
 	arg2 = regi[code[ep + 2]];
 	arg3 = code[ep + 3];
-
-    #if MEMCHECK
-    if (arg1 + arg2 < 0 || arg1 + arg2 >= data_size)
-    {
-        printf ("FATAL ERROR: data access out of range!\n");
-        printf ("address: %lli, offset: %lli\n", arg1, arg2);
-        free (jumpoffs);
-        pthread_exit ((void *) 1);
-    }
-    #endif
 
 	#if BOUNDSCHECK
 	if (memory_bounds (arg1, arg2) != 0)
@@ -717,16 +683,6 @@ S2 run (void *arg)
 	arg2 = regi[code[ep + 2]];
 	arg3 = code[ep + 3];
 
-    #if MEMCHECK
-    if (arg1 + arg2 < 0 || arg1 + arg2 >= data_size)
-    {
-        printf ("FATAL ERROR: data access out of range!\n");
-        printf ("address: %lli, offset: %lli\n", arg1, arg2);
-        free (jumpoffs);
-        pthread_exit ((void *) 1);
-    }
-    #endif
-
 	#if BOUNDSCHECK
 	if (memory_bounds (arg1, arg2) != 0)
 	{
@@ -765,16 +721,6 @@ S2 run (void *arg)
 	arg2 = regi[code[ep + 2]];
 	arg3 = regi[code[ep + 3]];
 
-    #if MEMCHECK
-    if (arg2 + arg3 < 0 || arg2 + arg3 >= data_size)
-    {
-        printf ("FATAL ERROR: data access out of range!\n");
-        printf ("address: %lli, offset: %lli\n", arg2, arg3);
-        free (jumpoffs);
-        pthread_exit ((void *) 1);
-    }
-    #endif
-
 	#if BOUNDSCHECK
 	if (memory_bounds (arg2, arg3) != 0)
 	{
@@ -795,16 +741,6 @@ S2 run (void *arg)
 	arg1 = code[ep + 1];
 	arg2 = regi[code[ep + 2]];
 	arg3 = regi[code[ep + 3]];
-
-    #if MEMCHECK
-    if (arg2 + arg3 < 0 || arg2 + arg3 >= data_size)
-    {
-        printf ("FATAL ERROR: data access out of range!\n");
-        printf ("address: %lli, offset: %lli\n", arg2, arg3);
-        free (jumpoffs);
-        pthread_exit ((void *) 1);
-    }
-    #endif
 
 	#if BOUNDSCHECK
 	if (memory_bounds (arg2, arg3) != 0)
@@ -830,16 +766,6 @@ S2 run (void *arg)
 	arg1 = code[ep + 1];
 	arg2 = regi[code[ep + 2]];
 	arg3 = regi[code[ep + 3]];
-
-    #if MEMCHECK
-    if (arg2 + arg3 < 0 || arg2 + arg3 >= data_size)
-    {
-        printf ("FATAL ERROR: data access out of range!\n");
-        printf ("address: %lli, offset: %lli\n", arg2, arg3);
-        free (jumpoffs);
-        pthread_exit ((void *) 1);
-    }
-    #endif
 
 	#if BOUNDSCHECK
 	if (memory_bounds (arg2, arg3) != 0)
@@ -869,16 +795,6 @@ S2 run (void *arg)
 	arg1 = code[ep + 1];
 	arg2 = regi[code[ep + 2]];
 	arg3 = regi[code[ep + 3]];
-
-    #if MEMCHECK
-    if (arg2 + arg3 < 0 || arg2 + arg3 >= data_size)
-    {
-        printf ("FATAL ERROR: data access out of range!\n");
-        printf ("address: %lli, offset: %lli\n", arg2, arg3);
-        free (jumpoffs);
-        pthread_exit ((void *) 1);
-    }
-    #endif
 
 	#if BOUNDSCHECK
 	if (memory_bounds (arg2, arg3) != 0)
@@ -920,16 +836,6 @@ S2 run (void *arg)
 	arg1 = code[ep + 1];
 	arg2 = regi[code[ep + 2]];
 	arg3 = regi[code[ep + 3]];
-
-    #if MEMCHECK
-    if (arg2 + arg3 < 0 || arg2 + arg3 >= data_size)
-    {
-        printf ("FATAL ERROR: data access out of range!\n");
-        printf ("address: %lli, offset: %lli\n", arg2, arg3);
-        free (jumpoffs);
-        pthread_exit ((void *) 1);
-    }
-    #endif
 
 	#if BOUNDSCHECK
 	if (memory_bounds (arg2, arg3) != 0)
@@ -2575,10 +2481,6 @@ int main (int ac, char *av[])
 
 		#if JIT_COMPILER
 	    	printf ("JIT-compiler inside: lib asmjit.\n");
-		#endif
-
-		#if MEMCHECK
-			printf (">> memcheck << ");
 		#endif
 
 		#if BOUNDSCHECK

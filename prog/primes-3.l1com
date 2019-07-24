@@ -8,6 +8,8 @@
 //
 (main func)
 	(set int64 1 zero 0)
+	(set byte 10000000 primes)
+	(set int64 1 limit 10000000)
 	(set int64 1 one 1)
 	(set int64 1 two 2)
 	(set int64 1 i 2)
@@ -17,8 +19,6 @@
 	(set int64 1 a 0)
 	(set int64 1 k 0)
 	(set int64 1 n 0)
-	(set byte 10000000 primes)
-	(set int64 1 limit 10000000)
 	// array primes is filled by zeroes
 	//
 	// search primes

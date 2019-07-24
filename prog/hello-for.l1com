@@ -9,7 +9,7 @@
 	// set string length automatic, by setting "s"
 	(set string s hello "Hello world!")
 	// print string
-	// while
+	// for
 	(zero loop =)
 	(for-loop)
 	(((loop maxloop <) f =) f for)

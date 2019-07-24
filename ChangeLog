@@ -5,7 +5,9 @@ So finally here is "else" in "if+". :)
 New: do/while loops! See prog/hello-while.l1com.
 New: for/next loops! See prog/hello-for.l1com.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sun Jul 14 2019 20:00 +0200
+New: vm/main.c removed MEMCHECK, now all memory access checks are done by memory_bounds() function.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Wed Jul 24 2019 17:40 +0200
 
 
 L1VM - (0.9.7)
