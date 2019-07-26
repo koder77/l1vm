@@ -124,6 +124,7 @@ S2 memory_bounds (S8 start, S8 offset_access)
 	if (start + offset_access < 0)
 	{
 		// access ERROR!
+		printf ("memory_bounds: FATAL ERROR: address: %lli, offset: %lli below zero!\n", start, offset_access);
 		return (1);
 	}
 
