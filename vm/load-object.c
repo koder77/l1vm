@@ -227,7 +227,8 @@ S2 load_object (U1 *name)
 	}
 
 	header = conv_quadword (quadword);
-	if (header != 0xBADBABEAABBCCDDE)
+	if (header != 0xC0DEBABE00002019)
+
 	{
 		printf ("ERROR: wrong header!\n");
 		fclose (fptr);

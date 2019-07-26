@@ -1526,7 +1526,7 @@ S2 dump_object (U1 *name)
 	}
 
 	// write object file header
-	header = 0xBADBABEAABBCCDDE;
+	header = 0xC0DEBABE00002019;
 	write_code_quadword (0, header);
 
 	// write code & data sizes to offset 0

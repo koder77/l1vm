@@ -7,7 +7,12 @@ New: for/next loops! See prog/hello-for.l1com.
 
 New: vm/main.c removed MEMCHECK, now all memory access checks are done by memory_bounds() function.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Wed Jul 24 2019 17:40 +0200
+The header vor object code files changed to the more friendly:
+C0DEBABE00002019
+
+So in order to run older programs you have to recompile them!
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Fri Jul 26 2019 17:08 +0200
 
 
 L1VM - (0.9.7)
