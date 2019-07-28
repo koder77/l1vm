@@ -1385,6 +1385,29 @@ S2 parse_line (U1 *line, S2 start, S2 end)
     return (0);
 }
 
+S2 check_file_ending (U1 *name)
+{
+	S4 slen, i, j;
+	slen = strlen_safe ((const char *) name, MAXLINES);
+
+	for (i = 0; i < slen; i++)
+	{
+		if (name[i] == '.')
+		{
+			j = i;
+			if (i + 5 < slen)
+			{
+				if (name[i + 1] == 'l' && name[i + 2] == '1' && name[i + 3] == 'a' && name[i + 4] == 's' && name[i + 5] == 'm')
+				{
+					name[j] = '\0'; // set name end
+					return (0);
+				}
+			}
+		}
+	}
+	return (0);
+}
+
 S2 parse (U1 *name)
 {
     FILE *fptr;
@@ -1402,8 +1425,10 @@ S2 parse (U1 *name)
         return (1);
     }
 
-    strcpy ((char *) asmname, (const char *) name);
-    strcat ((char *) asmname, ".l1asm");
+	// check if ".l1asm" ending is on file name or not
+	check_file_ending (name);
+	strcpy ((char *) asmname, (const char *) name);
+	strcat ((char *) asmname, ".l1asm");
 
     fptr = fopen ((const char *) asmname, "r");
     if (fptr == NULL)

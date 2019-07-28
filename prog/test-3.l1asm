@@ -1,23 +1,23 @@
 .data
 Q, 1, zero
-@, 0, 0
+@, 0Q, 0
 F, 1, x
-@, 8, 23.0
+@, 8Q, 23.0
 F, 1, y
-@, 16, 42.0
+@, 16Q, 42.0
 F, 1, z
-@, 24, 0.0
+@, 24Q, 0.0
 .dend
 .code
-loada zero, 0, 0
 :main
+loada zero, 0, 0
 loadd x, 0, 1
 loadd y, 0, 2
-muld 1, 2, 3
-load z, 0, 4
-pulld 3, 4, 0
-loadd z, 0, 4
-intr0 5, 4, 0, 0
+muli 1, 2, 1
+load z, 0, 3
+pulld 1, 3, 0
+loadd z, 0, 3
+intr0 5, 3, 0, 0
 intr0 7, 0, 0, 0
 intr0 255, 0, 0, 0
 rts

@@ -1,14 +1,14 @@
 .data
 Q, 1, zero
-@, 0, 0
+@, 0Q, 0
 Q, 1, x
-@, 8, 23
+@, 8Q, 23
 Q, 1, y
-@, 16, 42
+@, 16Q, 42
 Q, 1, z
-@, 24, 0
+@, 24Q, 0
 Q, 1, ret
-@, 32, 0
+@, 32Q, 0
 .dend
 .code
 :main
@@ -19,16 +19,16 @@ addi 1, 2, 3
 muli 1, 2, 4
 divi 1, 2, 5
 subi 1, 2, 6
-addi 
-muli 
-addi 
-load z, 0, 7
-pullqw 6, 7, 0
-loada z, 0, 8
-intr0 4, 8, 0, 0
+addi 3, 4, 7
+muli 5, 6, 8
+addi 7, 8, 9
+load z, 0, 10
+pullqw 9, 10, 0
+loada z, 0, 11
+intr0 4, 11, 0, 0
 intr0 7, 0, 0, 0
-movi 1, 8
-intr0 4, 8, 0, 0
+movi 1, 11
+intr0 4, 11, 0, 0
 intr0 7, 0, 0, 0
 stpushi I0
 stpushi I2
@@ -38,13 +38,19 @@ stpushi I5
 stpushi I6
 stpushi I7
 stpushi I8
+stpushi I9
+stpushi I10
+stpushi I11
 jsr :test
 stpopi 1
-load ret, 0, 9
-pullqw 1, 9, 0
-addi 1, 0, 9
-load z, 0, 10
-pullqw 9, 10, 0
+load ret, 0, 12
+pullqw 1, 12, 0
+addi 1, 0, 12
+load z, 0, 13
+pullqw 12, 13, 0
+stpopi I11
+stpopi I10
+stpopi I9
 stpopi I8
 stpopi I7
 stpopi I6

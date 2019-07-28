@@ -321,8 +321,9 @@ stpushi 5
 loada bit, 0, 11
 stpushi 11
 jsr :sdl_open_screen
-loada ret, 0, 14
 stpopb 14
+load ret, 0, 15
+pullb 14, 15, 0
 stpopi I13
 stpopi I12
 stpopi I10
@@ -384,12 +385,15 @@ stpushi I7
 loada i, 0, 8
 stpushi 8
 jsr :get_colorind
-loada color_r, 0, 9
 stpopb 9
-loada color_g, 0, 10
+load color_r, 0, 10
+pullb 9, 10, 0
 stpopb 10
-loada color_b, 0, 11
+load color_g, 0, 11
+pullb 10, 11, 0
 stpopb 11
+load color_b, 0, 12
+pullb 11, 12, 0
 stpopi I7
 stpopi I6
 stpopi I5
@@ -628,12 +632,15 @@ stpushi I4
 loada i, 0, 5
 stpushi 5
 jsr :get_colorind
-loada next_r, 0, 6
 stpopb 6
-loada next_g, 0, 7
+load next_r, 0, 7
+pullb 6, 7, 0
 stpopb 7
-loada next_b, 0, 8
+load next_g, 0, 8
+pullb 7, 8, 0
 stpopb 8
+load next_b, 0, 9
+pullb 8, 9, 0
 stpopi I4
 stpopi I3
 stpopi I2

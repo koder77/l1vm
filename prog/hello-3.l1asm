@@ -1,36 +1,36 @@
 .data
 Q, 1, zero
-@, 0, 0
+@, 0Q, 0
 B, 13, hello
-@, 8, "Hello world!"
+@, 8Q, "Hello world!"
 Q, 1, helloaddr
-@, 21, 8
+@, 21Q, 8Q
 B, 12, foo
-@, 29, "foo bar! :)"
+@, 29Q, "foo bar! :)"
 Q, 1, fooaddr
-@, 41, 29
+@, 41Q, 29Q
 Q, 1, str
-@, 49, 0
+@, 49Q, 0
 Q, 1, one
-@, 57, 1
+@, 57Q, 1
 Q, 1, f
-@, 65, 0
+@, 65Q, 0
 .dend
 .code
-loada zero, 0, 0
 :main
+loada zero, 0, 0
 loada str, 0, 1
 eqi 1, 0, 2
 load f, 0, 3
 pullqw 2, 3, 0
-loada f, 0, 3
-jmpi 3, :foo
-loada helloaddr, 0, 4
-intr0 6, 4, 0, 0
+loada f, 0, 4
+jmpi 4, :foo
+loada helloaddr, 0, 5
+intr0 6, 5, 0, 0
 jmp :newline
 :foo
-loada fooaddr, 0, 5
-intr0 6, 5, 0, 0
+loada fooaddr, 0, 6
+intr0 6, 6, 0, 0
 :newline
 intr0 7, 0, 0, 0
 intr0 255, 0, 0, 0

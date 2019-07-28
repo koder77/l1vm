@@ -12,7 +12,13 @@ C0DEBABE00002019
 
 So in order to run older programs you have to recompile them!
 
--- Stefan Pietzonke <jay-t@gmx.net>  Fri Jul 26 2019 17:08 +0200
+New: two scripts in prog/ directory:
+compile.sh to compile and assemble programs:
+$ ./compile.sh foobar
+
+And "build-all.sh" to compile and assemble all programs in prog/ directory.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Sun Jul 28 2019 19:19 +0200
 
 
 L1VM - (0.9.7)

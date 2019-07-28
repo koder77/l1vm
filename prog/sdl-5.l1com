@@ -36,9 +36,6 @@
     (:reset_color)
     (zero col =)
     (:next_y)
-
-
-
     (f :xloop jmpi)
     // call sdl update
     (:sdl_update call)
