@@ -17,8 +17,9 @@ compile.sh to compile and assemble programs:
 $ ./compile.sh foobar
 
 And "build-all.sh" to compile and assemble all programs in prog/ directory.
+Bugfix: memory_bounds memory access checker now should work!
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sun Jul 28 2019 19:19 +0200
+-- Stefan Pietzonke <jay-t@gmx.net>  Tue Aug 6 2019 11:35 +0200
 
 
 L1VM - (0.9.7)

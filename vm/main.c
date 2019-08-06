@@ -130,21 +130,27 @@ S2 memory_bounds (S8 start, S8 offset_access)
 
 	for (i = 0; i <= data_info_ind; i++)
 	{
-		if (data_info[i].offset == start)
+		if (start >= data_info[i].offset)
 		{
-			if (start + offset_access <= data_info[i].end)
+			// printf ("memory_bounds: data_info offset: %lli, data_info end: %lli; start: %lli offset: %lli\n", data_info[i].offset, data_info[i].end, start, offset_access);
+
+			if (offset_access == 0)
 			{
+				// all ok, return 0
 				return (0);
 			}
 			else
 			{
-				printf ("memory_bounds: FATAL ERROR: overflow address: %lli, offset: %lli!\n", start, offset_access);
-				return (1);
+				if (start + offset_access <= data_info[i].end)
+				{
+					// all ok, return 0
+					return (0);
+				}
 			}
 		}
 	}
-	printf ("memory_bounds: FATAL ERROR: can't find data on address: %lli!\n", start);
-	return (2);
+	printf ("memory_bounds: FATAL ERROR: variable not found overflow address: %lli, offset: %lli!\n", start, offset_access);
+	return (1);
 }
 
 
