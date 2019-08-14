@@ -266,7 +266,7 @@ S4 get_if_optimize_reg (U1 *code_line)
 	U1 reg_num[256];
 	S4 reg;
 
-	str_len = strlen ((const char *) code_line);
+	str_len = strlen_safe ((const char *) code_line, MAXLINELEN);
 	for (i = EQI; i <= LSEQD; i++)
 	{
 		pos = searchstr (code_line, opcode[i].op, 0, 0, TRUE);
