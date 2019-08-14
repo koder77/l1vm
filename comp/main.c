@@ -3164,6 +3164,13 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									continue;
 								}
 
+								// remove optimize if flag ======================================================
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "optimize-if-off") == 0)
+								{
+									optimize_if = 0;
+									continue;
+								}
+
 								// call =========================================================================
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "call") == 0)
 								{
