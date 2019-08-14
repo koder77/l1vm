@@ -64,6 +64,8 @@ struct label label[MAXLABELS];
 U1 inline_asm = 0;		// set to one, if inline assembly is used
 U1 comp_aot = 0;        // set to one, if AOT COMPILE code block
 
+U1 optimize_if = 0;		// set to one to optimize if call
+
 
 // protos
 U1 checkdigit (U1 *str);
@@ -254,6 +256,54 @@ S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens)
 	}
 	return (pos);
 }
+
+// if optimize helper function ==========================================================
+
+S4 get_if_optimize_reg (U1 *code_line)
+{
+	S4 pos, i, j, str_len;
+	U1 if_found = 0;
+	U1 reg_num[256];
+	S4 reg;
+
+	str_len = strlen ((const char *) code_line);
+	for (i = EQI; i <= LSEQD; i++)
+	{
+		pos = searchstr (code_line, opcode[i].op, 0, 0, TRUE);
+		if (pos != -1)
+		{
+			if_found = 1;
+			break;
+		}
+	}
+	if (if_found == 0)
+	{
+		// no if found, return -1
+		return (-1);
+	}
+
+	// get last argument, it's the needed register number
+	pos = searchstr (code_line, (unsigned char *) ",", 0, 0, TRUE);
+	if (pos != -1)
+	{
+		pos = searchstr (code_line, (unsigned char *) ",", pos + 1, 0, TRUE);
+		j = 0;
+		for (i = pos + 1; i < str_len; i++)
+		{
+			reg_num[j] = code_line[i];
+			j++;
+		}
+		reg_num[j] = '\0';
+		reg = atoi ((const char *) reg_num);
+
+		return (reg);
+	}
+	else
+	{
+		return (-1);
+	}
+}
+
 
 // register tracking functions
 void set_regi (S4 reg, U1 *name)
@@ -2437,16 +2487,45 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									{
 										if (getvartype_real (ast[level].expr[j][last_arg - 1]) == QUADWORD)
 										{
-											reg = get_regi (ast[level].expr[j][last_arg - 1]);
-											// printf ("reg: %i\n", reg);
-											if (reg == -1)
+											if (optimize_if == 0)
 											{
-												// variable is not in register, load it
+												reg = get_regi (ast[level].expr[j][last_arg - 1]);
+												// printf ("reg: %i\n", reg);
+												if (reg == -1)
+												{
+													// variable is not in register, load it
 
-												reg = get_free_regi ();
-												set_regi (reg, ast[level].expr[j][last_arg - 1]);
+													reg = get_free_regi ();
+													set_regi (reg, ast[level].expr[j][last_arg - 1]);
 
-												// write code loada
+													// write code loada
+
+													code_line++;
+													if (code_line >= line_len)
+													{
+														printf ("error: line %lli: code list full!\n", linenum);
+														return (1);
+													}
+
+													strcpy ((char *) code[code_line], "loada ");
+													strcat ((char *) code[code_line], (const char *) ast[level].expr[j][last_arg - 1]);
+													strcat ((char *) code[code_line], ", 0, ");
+													sprintf ((char *) str, "%i", reg);
+													strcat ((char *) code[code_line], (const char *) str);
+													strcat ((char *) code[code_line], "\n");
+												}
+
+												if_pos = get_if_pos ();
+							                	if (if_pos == -1)
+								                {
+							                    	printf ("compile: error: if: out of memory if-list\n");
+							                    	return (FALSE);
+							                	}
+
+												get_if_label (if_pos, if_label);
+												get_endif_label (if_pos, endif_label);
+
+												// write code jmpi to if code label
 
 												code_line++;
 												if (code_line >= line_len)
@@ -2455,63 +2534,97 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 													return (1);
 												}
 
-												strcpy ((char *) code[code_line], "loada ");
-												strcat ((char *) code[code_line], (const char *) ast[level].expr[j][last_arg - 1]);
-												strcat ((char *) code[code_line], ", 0, ");
+												strcpy ((char *) code[code_line], "jmpi ");
 												sprintf ((char *) str, "%i", reg);
 												strcat ((char *) code[code_line], (const char *) str);
+												strcat ((char *) code[code_line], ", ");
+												strcat ((char *) code[code_line], (const char *) if_label);
+												strcat ((char *) code[code_line], "\n");
+
+												// write code jmpi to endif label
+
+												code_line++;
+												if (code_line >= line_len)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+
+												strcpy ((char *) code[code_line], "jmp ");
+												strcat ((char *) code[code_line], (const char *) endif_label);
+												strcat ((char *) code[code_line], "\n");
+
+												// write code label if
+
+												code_line++;
+												if (code_line >= line_len)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+												strcat ((char *) code[code_line], (const char *) if_label);
 												strcat ((char *) code[code_line], "\n");
 											}
-
-											if_pos = get_if_pos ();
-							                if (if_pos == -1)
-							                {
-							                    printf ("compile: error: if: out of memory if-list\n");
-							                    return (FALSE);
-							                }
-
-											get_if_label (if_pos, if_label);
-											get_endif_label (if_pos, endif_label);
-
-											// write code jmpi to if code label
-
-											code_line++;
-											if (code_line >= line_len)
+											else
 											{
-												printf ("error: line %lli: code list full!\n", linenum);
-												return (1);
+												// comment out not needed opcodes set earlier
+												strcpy ((char *) code[code_line - 1], "");
+												strcpy ((char *) code[code_line], "");
+
+												reg = get_if_optimize_reg (code[code_line - 2]);
+
+												// printf ("IF OPTIMIZED found reg: %lli\n", reg);
+
+												if_pos = get_if_pos ();
+							                	if (if_pos == -1)
+								                {
+							                    	printf ("compile: error: if: out of memory if-list\n");
+							                    	return (FALSE);
+							                	}
+
+												get_if_label (if_pos, if_label);
+												get_endif_label (if_pos, endif_label);
+
+												// write code jmpi to if code label
+
+												code_line++;
+												if (code_line >= line_len)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+
+												strcpy ((char *) code[code_line], "jmpi ");
+												sprintf ((char *) str, "%i", reg);
+												strcat ((char *) code[code_line], (const char *) str);
+												strcat ((char *) code[code_line], ", ");
+												strcat ((char *) code[code_line], (const char *) if_label);
+												strcat ((char *) code[code_line], "\n");
+
+												// write code jmpi to endif label
+
+												code_line++;
+												if (code_line >= line_len)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+
+												strcpy ((char *) code[code_line], "jmp ");
+												strcat ((char *) code[code_line], (const char *) endif_label);
+												strcat ((char *) code[code_line], "\n");
+
+												// write code label if
+
+												code_line++;
+												if (code_line >= line_len)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+												strcat ((char *) code[code_line], (const char *) if_label);
+												strcat ((char *) code[code_line], "\n");
 											}
-
-											strcpy ((char *) code[code_line], "jmpi ");
-											sprintf ((char *) str, "%i", reg);
-											strcat ((char *) code[code_line], (const char *) str);
-											strcat ((char *) code[code_line], ", ");
-											strcat ((char *) code[code_line], (const char *) if_label);
-											strcat ((char *) code[code_line], "\n");
-
-											// write code jmpi to endif label
-
-											code_line++;
-											if (code_line >= line_len)
-											{
-												printf ("error: line %lli: code list full!\n", linenum);
-												return (1);
-											}
-
-											strcpy ((char *) code[code_line], "jmp ");
-											strcat ((char *) code[code_line], (const char *) endif_label);
-											strcat ((char *) code[code_line], "\n");
-
-											// write code label if
-
-											code_line++;
-											if (code_line >= line_len)
-											{
-												printf ("error: line %lli: code list full!\n", linenum);
-												return (1);
-											}
-											strcat ((char *) code[code_line], (const char *) if_label);
-											strcat ((char *) code[code_line], "\n");
 										}
 										else
 										{
@@ -2542,16 +2655,45 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									{
 										if (getvartype_real (ast[level].expr[j][last_arg - 1]) == QUADWORD)
 										{
-											reg = get_regi (ast[level].expr[j][last_arg - 1]);
-											// printf ("reg: %i\n", reg);
-											if (reg == -1)
+											if (optimize_if == 0)
 											{
-												// variable is not in register, load it
+												reg = get_regi (ast[level].expr[j][last_arg - 1]);
+												// printf ("reg: %i\n", reg);
+												if (reg == -1)
+												{
+													// variable is not in register, load it
 
-												reg = get_free_regi ();
-												set_regi (reg, ast[level].expr[j][last_arg - 1]);
+													reg = get_free_regi ();
+													set_regi (reg, ast[level].expr[j][last_arg - 1]);
 
-												// write code loada
+													// write code loada
+
+													code_line++;
+													if (code_line >= line_len)
+													{
+														printf ("error: line %lli: code list full!\n", linenum);
+														return (1);
+													}
+
+													strcpy ((char *) code[code_line], "loada ");
+													strcat ((char *) code[code_line], (const char *) ast[level].expr[j][last_arg - 1]);
+													strcat ((char *) code[code_line], ", 0, ");
+													sprintf ((char *) str, "%i", reg);
+													strcat ((char *) code[code_line], (const char *) str);
+													strcat ((char *) code[code_line], "\n");
+												}
+
+												if_pos = get_if_pos ();
+							                	if (if_pos == -1)
+							                	{
+							                    	printf ("compile: error: if: out of memory if-list\n");
+							                    	return (FALSE);
+							                	}
+
+												get_if_label (if_pos, if_label);
+												get_endif_label (if_pos, endif_label);
+
+												// write code jmpi to if code label
 
 												code_line++;
 												if (code_line >= line_len)
@@ -2560,65 +2702,101 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 													return (1);
 												}
 
-												strcpy ((char *) code[code_line], "loada ");
-												strcat ((char *) code[code_line], (const char *) ast[level].expr[j][last_arg - 1]);
-												strcat ((char *) code[code_line], ", 0, ");
+												strcpy ((char *) code[code_line], "jmpi ");
 												sprintf ((char *) str, "%i", reg);
 												strcat ((char *) code[code_line], (const char *) str);
+												strcat ((char *) code[code_line], ", ");
+												strcat ((char *) code[code_line], (const char *) if_label);
+												strcat ((char *) code[code_line], "\n");
+
+												// write code jmpi to endif label
+
+												code_line++;
+												if (code_line >= line_len)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+
+												get_else_label (if_pos, else_label);
+
+												strcpy ((char *) code[code_line], "jmp ");
+												strcat ((char *) code[code_line], (const char *) else_label);
+												strcat ((char *) code[code_line], "\n");
+
+												// write code label if
+
+												code_line++;
+												if (code_line >= line_len)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+												strcat ((char *) code[code_line], (const char *) if_label);
 												strcat ((char *) code[code_line], "\n");
 											}
-
-											if_pos = get_if_pos ();
-							                if (if_pos == -1)
-							                {
-							                    printf ("compile: error: if: out of memory if-list\n");
-							                    return (FALSE);
-							                }
-
-											get_if_label (if_pos, if_label);
-											get_endif_label (if_pos, endif_label);
-
-											// write code jmpi to if code label
-
-											code_line++;
-											if (code_line >= line_len)
+											else
 											{
-												printf ("error: line %lli: code list full!\n", linenum);
-												return (1);
+												// comment out not needed opcodes set earlier
+												strcpy ((char *) code[code_line - 1], "");
+												strcpy ((char *) code[code_line], "");
+
+												reg = get_if_optimize_reg (code[code_line - 2]);
+
+												// printf ("IF OPTIMIZED found reg: %lli\n", reg);
+
+												if_pos = get_if_pos ();
+							                	if (if_pos == -1)
+							                	{
+							                    	printf ("compile: error: if: out of memory if-list\n");
+							                    	return (FALSE);
+							                	}
+
+												get_if_label (if_pos, if_label);
+												get_endif_label (if_pos, endif_label);
+
+												// write code jmpi to if code label
+
+												code_line++;
+												if (code_line >= line_len)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+
+												strcpy ((char *) code[code_line], "jmpi ");
+												sprintf ((char *) str, "%i", reg);
+												strcat ((char *) code[code_line], (const char *) str);
+												strcat ((char *) code[code_line], ", ");
+												strcat ((char *) code[code_line], (const char *) if_label);
+												strcat ((char *) code[code_line], "\n");
+
+												// write code jmpi to endif label
+
+												code_line++;
+												if (code_line >= line_len)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+
+												get_else_label (if_pos, else_label);
+
+												strcpy ((char *) code[code_line], "jmp ");
+												strcat ((char *) code[code_line], (const char *) else_label);
+												strcat ((char *) code[code_line], "\n");
+
+												// write code label if
+
+												code_line++;
+												if (code_line >= line_len)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+												strcat ((char *) code[code_line], (const char *) if_label);
+												strcat ((char *) code[code_line], "\n");
 											}
-
-											strcpy ((char *) code[code_line], "jmpi ");
-											sprintf ((char *) str, "%i", reg);
-											strcat ((char *) code[code_line], (const char *) str);
-											strcat ((char *) code[code_line], ", ");
-											strcat ((char *) code[code_line], (const char *) if_label);
-											strcat ((char *) code[code_line], "\n");
-
-											// write code jmpi to endif label
-
-											code_line++;
-											if (code_line >= line_len)
-											{
-												printf ("error: line %lli: code list full!\n", linenum);
-												return (1);
-											}
-
-											get_else_label (if_pos, else_label);
-
-											strcpy ((char *) code[code_line], "jmp ");
-											strcat ((char *) code[code_line], (const char *) else_label);
-											strcat ((char *) code[code_line], "\n");
-
-											// write code label if
-
-											code_line++;
-											if (code_line >= line_len)
-											{
-												printf ("error: line %lli: code list full!\n", linenum);
-												return (1);
-											}
-											strcat ((char *) code[code_line], (const char *) if_label);
-											strcat ((char *) code[code_line], "\n");
 										}
 										else
 										{
@@ -2966,6 +3144,13 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									strcat ((char *) code[code_line], "\n");
 
 									set_for_end (for_pos);
+									continue;
+								}
+
+								// set optimize if flag =========================================================
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "optimize-if") == 0)
+								{
+									optimize_if = 1;
 									continue;
 								}
 
@@ -4008,7 +4193,7 @@ int main (int ac, char *av[])
 {
     printf ("l1com <file> [-lines] [max linenumber]\n");
 	printf ("\nCompiler for bra(et, a programming language with brackets ;-)\n");
-	printf ("0.9.8 (C) 2017-2019 Stefan Pietzonke\n");
+	printf ("0.9.9 (C) 2017-2019 Stefan Pietzonke\n");
 
 	init_ast ();
 	init_if ();

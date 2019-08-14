@@ -1,3 +1,14 @@
+L1VM - (0.9.9)
+New: if and if+ optimization in bracket compiler added:
+just add this line into your bracket program:
+
+(optimize-if)
+
+This leaves out some instructions in the assembly output, resulting in a speedup.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Wed Aug 14 2019 16:20 +0200
+
+
 L1VM - (0.9.8)
 New: if+, else, endif in compiler l1com.
 So finally here is "else" in "if+". :)
