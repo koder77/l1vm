@@ -2572,6 +2572,11 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												strcpy ((char *) code[code_line], "");
 
 												reg = get_if_optimize_reg (code[code_line - 2]);
+												if (reg < 0)
+												{
+													printf ("error: line %lli: optimize if internal error!\n", linenum);
+													return (1);
+												}
 
 												// printf ("IF OPTIMIZED found reg: %lli\n", reg);
 
@@ -2742,6 +2747,11 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												strcpy ((char *) code[code_line], "");
 
 												reg = get_if_optimize_reg (code[code_line - 2]);
+												if (reg < 0)
+												{
+													printf ("error: line %lli: optimize if internal error!\n", linenum);
+													return (1);
+												}
 
 												// printf ("IF OPTIMIZED found reg: %lli\n", reg);
 
