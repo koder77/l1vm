@@ -1,13 +1,12 @@
-L1VM README  2019-06-20
+L1VM README  2019-08-15
 =======================
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2f0638b0ab6b433aad4d35c18d2f85c4)](https://www.codacy.com/app/koder77/l1vm?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=koder77/l1vm&amp;utm_campaign=Badge_Grade)
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/P5P2Y3KP)
 
-L1VM is a very tiny virtual machine with RISC (or comparable style) CPU, about 61 opcodes and less than
-32 KB binary size on X86_64 (without JIT-compiler)!
+L1VM is a incredible tiny virtual machine with RISC (or comparable style) CPU, about 61 opcodes and about 36 KB binary size on X86_64 Linux (without JIT-compiler)!
 The VM has a 64 bit core (256 registers for integer and double float) and can run object code
-written in the l1asm assembly language.
+written in bracket (a high level programming language) or l1asm assembly language.
 
 Code and data are in separated memories for a secure execution. Like in Harvard type CPUs (found now in DSPs or microcontrollers).
 The opcode set with 61 opcodes is my own opinion how things should work. It does not "copy" other instruction sets known in
