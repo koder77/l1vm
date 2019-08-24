@@ -6,7 +6,15 @@ just add this line into your bracket program:
 
 This leaves out some instructions in the assembly output, resulting in a speedup.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Wed Aug 14 2019 16:20 +0200
+New: Added clang toolchain in: clang-8.0.1. Just use the bash script there.
+It downloads, compiles and installs clang to your /home directory in: l1vm-clang.
+There is no root right needed to install!
+The makefiles are copied at the script end.
+
+New: added run time sense check into the VM for S8 and F8 variable types to be 64 bit big.
+It will stop the VM if something was broken during compilation.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Sat Aug 24 2019 13:37 +0200
 
 
 L1VM - (0.9.8)

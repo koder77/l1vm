@@ -2403,6 +2403,25 @@ int main (int ac, char *av[])
 
 	S8 new_cpu ALIGN;
 
+	// do compilation time sense check on integer 64 bit and double 64 bit type!!
+	S8 size_int64 ALIGN;
+	S8 size_double64 ALIGN;
+	size_int64 = sizeof (S8);
+	if (size_int64 != 8)
+	{
+		printf ("FATAL compiler ERROR: size of S8 not 8 bytes (64 bit!): %lli bytes only!!\n", size_int64);
+		cleanup ();
+		exit (1);
+	}
+
+	size_double64 = sizeof (F8);
+	if (size_double64 != 8)
+	{
+		printf ("FATAL compiler ERROR: size of F8 not 8 bytes (64 bit!): %lli bytes only!!\n", size_double64);
+		cleanup ();
+		exit (1);
+	}
+
 	threaddata = (struct threaddata *) calloc (max_cpu, sizeof (struct threaddata));
 	if (threaddata == NULL)
 	{
@@ -2485,6 +2504,8 @@ int main (int ac, char *av[])
 		printf ("l1vm - 0.9.9 - (C) 2017-2019 Stefan Pietzonke\n");
 		printf (">>> supermodified <<<\n");
 	    printf ("CPU cores: %lli (STATIC)\n", max_cpu);
+
+		printf ("internal type check: S8 = %lli bytes, F8 = %lli bytes. All OK!\n", size_int64, size_double64);
 
 		#if JIT_COMPILER
 	    	printf ("JIT-compiler inside: lib asmjit.\n");
