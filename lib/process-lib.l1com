@@ -1,0 +1,34 @@
+(main func)
+		(set int64 1 zero 0)
+		(set int64 1 ret 0)
+		(set string s hello "xeyes")
+		// init library
+		(zero :process_init call)
+		(loadreg)
+		// call system process
+		(helloaddr :run_shell call)
+		(ret stpopi)
+		(loadreg)
+		// print return value of shell call
+		(4 ret 0 0 intr0)
+		(7 0 0 0 intr0)
+		(255 0 0 0 intr0)
+(funcend)
+// process library
+//
+//
+(process_init func)
+	(set string 18 modulestr@process "libl1vmprocess.so")
+	(set string 10 run_shellstr@process "run_shell")
+	(set int64 1 run_shell@process 0)
+	(set int64 1 mod@process 0)
+	// get argument from stack
+	(mod@process stpopi)
+	// load process module
+	(0 modulestr@process mod@process 0 intr0)
+	// set functions
+	(2 mod@process run_shell@process run_shellstr@processaddr intr0)
+(funcend)
+(run_shell func)
+	(3 mod@process run_shell@process 0 intr0)
+(funcend)
