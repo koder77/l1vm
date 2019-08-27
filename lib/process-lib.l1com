@@ -1,18 +1,18 @@
 (main func)
-		(set int64 1 zero 0)
-		(set int64 1 ret 0)
-		(set string s hello "xeyes")
-		// init library
-		(zero :process_init call)
-		(loadreg)
-		// call system process
-		(helloaddr :run_shell call)
-		(ret stpopi)
-		(loadreg)
-		// print return value of shell call
-		(4 ret 0 0 intr0)
-		(7 0 0 0 intr0)
-		(255 0 0 0 intr0)
+	(set int64 1 zero 0)
+	(set int64 1 ret 0)
+	(set string s hello "xeyes &")
+	// init library
+	(zero :process_init call)
+	(loadreg)
+	// call system process
+	(helloaddr :run_shell call)
+	(ret stpopi)
+	(loadreg)
+	// print return value of shell call
+	(4 ret 0 0 intr0)
+	(7 0 0 0 intr0)
+	(255 0 0 0 intr0)
 (funcend)
 // process library
 //

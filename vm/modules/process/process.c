@@ -43,10 +43,14 @@ U1 *run_shell (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
 	ret = system ((const char *) &data[commandaddr]);
-    if (ret != 0)
+    if (ret == -1)
     {
         perror ("run_shell:\n");
     }
+	else
+	{
+		ret = WEXITSTATUS (ret);
+	}
 
     sp = stpushi (ret, sp, sp_bottom);
     if (sp == NULL)
