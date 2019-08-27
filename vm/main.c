@@ -289,8 +289,10 @@ S2 run (void *arg)
 	S8 cpus_free ALIGN;
 
     // thread attach to CPU core
+	#if CPU_SET_AFFINITY
 	cpu_set_t cpuset;
-
+	#endif
+	
 	// for data input
 	U1 input_str[MAXINPUT];
 

@@ -14,7 +14,9 @@ The makefiles are copied at the script end.
 New: added run time sense check into the VM for S8 and F8 variable types to be 64 bit big.
 It will stop the VM if something was broken during compilation.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sat Aug 24 2019 13:37 +0200
+New: process-lib in libs directory: for running processes via system call.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Tue Aug 27 2019 20:00 +0200
 
 
 L1VM - (0.9.8)
