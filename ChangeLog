@@ -16,7 +16,9 @@ It will stop the VM if something was broken during compilation.
 
 New: process-lib in libs directory: for running processes via system call.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Tue Aug 27 2019 20:00 +0200
+New: assembler now shows the size of the created obj. file.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Fri Aug 30 2019 18:50 +0200
 
 
 L1VM - (0.9.8)

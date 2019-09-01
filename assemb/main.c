@@ -1532,6 +1532,8 @@ S2 dump_object (U1 *name)
 	S8 i ALIGN;
 	S8 d ALIGN;
 
+	S8 file_size ALIGN;
+
 	slen = strlen_safe ((const char *) name, MAXLINELEN);
 
 	if (slen > 506)
@@ -1571,7 +1573,7 @@ S2 dump_object (U1 *name)
 		return (1);
 	}
 
-	printf ("object: codesize: %lli\n", code_ind);
+	printf ("object: codesize: %lli bytes\n", code_ind);
 
 	// write data info block
 
@@ -1660,7 +1662,11 @@ S2 dump_object (U1 *name)
 		return (1);
 	}
 
-	printf ("object: datasize: %lli\n", data_size);
+	printf ("object: datasize: %lli bytes\n", data_size);
+
+	fseek (fptr, 0, SEEK_END);
+	file_size = ftell (fptr);
+	printf ("object: filesize: %lli bytes\n", file_size);
 
 	fclose (fptr);
 	return (0);
@@ -1736,7 +1742,12 @@ int main (int ac, char *av[])
 	}
 	if (write_code_labels () == 0)
 	{
-		dump_object ((U1 *) av[1]);
+		if (dump_object ((U1 *) av[1]) != 0)
+		{
+			printf ("ERRORS! can't write object file!\n");
+			free_code_data ();
+			exit (1);
+		}
 	}
 	else
 	{

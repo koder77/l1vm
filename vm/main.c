@@ -26,6 +26,14 @@
 
 #include "../include/global.h"
 
+// show host system type on compile time
+#if __linux__
+	#pragma message ("Linux host detected!")
+#endif
+#if _WIN32
+	#pragma message ("Windows host detected!")
+#endif
+
 #if SDL_module
 #include <SDL/SDL.h>
 #include <SDL/SDL_byteorder.h>
@@ -292,7 +300,7 @@ S2 run (void *arg)
 	#if CPU_SET_AFFINITY
 	cpu_set_t cpuset;
 	#endif
-	
+
 	// for data input
 	U1 input_str[MAXINPUT];
 
