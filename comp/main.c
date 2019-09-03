@@ -27,6 +27,7 @@
 S8 linenum ALIGN = 1;
 
 S8 label_ind ALIGN = -1;
+S8 call_label_ind ALIGN = -1;
 
 struct ast
 {
@@ -60,6 +61,7 @@ U1 save_regd[MAXREG];
 struct t_var t_var;
 struct data_info data_info[MAXDATAINFO];
 struct label label[MAXLABELS];
+struct call_label call_label[MAXLABELS];
 
 U1 inline_asm = 0;		// set to one, if inline assembly is used
 U1 comp_aot = 0;        // set to one, if AOT COMPILE code block
@@ -102,7 +104,97 @@ S4 get_for_lab (S4 ind);
 U1 get_for_label_end (S4 ind, U1 *label);
 void set_for_end (S4 ind);
 
-// string
+
+// initialize labels list =================================
+void init_labels (void)
+{
+	S8 i ALIGN;
+
+	for (i = 0; i < MAXLABELS; i++)
+	{
+		label[i].pos = -1;
+		strcpy ((char *) label[i].name, "");
+	}
+}
+
+void init_call_labels (void)
+{
+	S8 i ALIGN;
+
+	for (i = 0; i < MAXLABELS; i++)
+	{
+		call_label[i].pos = -1;
+		strcpy ((char *) call_label[i].name, "");
+	}
+}
+
+// set call labels ========================================
+
+S2 set_call_label (U1 *label)
+{
+	S8 i ALIGN;
+
+	// check if already set:
+	for (i = 0; i <= call_label_ind; i++)
+	{
+		if (strcmp ((const char *) call_label[i].name, (const char *) label) == 0)
+		{
+			// just return no error!
+			return (0);
+		}
+	}
+
+	// label not found in call label list, set it!!
+
+	// set call label
+	// add name to labels list
+	if (call_label_ind < MAXLABELS - 1)
+	{
+		call_label_ind++;
+	}
+	else
+	{
+		// error list full!!
+		return (1);
+	}
+
+	call_label[call_label_ind].pos = linenum;
+	strcpy ((char *) call_label[call_label_ind].name, (const char *) label);
+	return (0);
+}
+
+// check if all call labels are defined!!! ================
+
+S2 check_labels (void)
+{
+	S8 i ALIGN;
+	S8 j ALIGN;
+	U1 found = 0;
+	S2 ret = 0;
+
+	for (i = 0; i <= call_label_ind; i++)
+	{
+		found = 0;
+		for (j = 0; j <= label_ind; j++)
+		{
+			if (strcmp ((const char *) call_label[i].name, (const char *) label[j].name) == 0)
+			{
+				// set found, all ok!!
+				found = 1;
+				break;
+			}
+		}
+		if (found == 0)
+		{
+			// set ERROR value
+			ret = 1;
+			printf ("ERROR: line: %lli, label: '%s' not defined!\n", call_label[i].pos, call_label[i].name);
+		}
+	}
+	return (ret);
+}
+
+// string functions ===============================================================================
 size_t strlen_safe (const char * str, int maxlen);
 
 
@@ -2121,6 +2213,20 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									strcpy ((char *) code[code_line], (const char *) code_temp);
 									strcat ((char *) code[code_line], "\n");
 
+									// add name to labels list
+									if (label_ind < MAXLABELS - 1)
+									{
+										label_ind++;
+									}
+									else
+									{
+										printf ("error: line %lli: label list full!\n", linenum);
+										return (1);
+									}
+
+									label[label_ind].pos = 1;
+									strcpy ((char *) label[label_ind].name, (const char *) code_temp);
+
 									continue;
 								}
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "func") == 0)
@@ -2165,6 +2271,22 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 									set_regi (0, (U1 *) "zero");
 									strcpy ((char *) code_temp, "");
+
+									// add name to labels list
+									if (label_ind < MAXLABELS - 1)
+									{
+										label_ind++;
+									}
+									else
+									{
+										printf ("error: line %lli: label list full!\n", linenum);
+										return (1);
+									}
+
+									label[label_ind].pos = 1;
+									strcpy ((char *) label[label_ind].name, ":");
+									strcat ((char *) label[label_ind].name, (const char *) ast[level].expr[j][last_arg - 1]);
+
 									continue;
 								}
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "funcend") == 0)
@@ -3479,6 +3601,13 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 									strcpy ((char *) code[code_line], (const char *) code_temp);
 
+									// set call_label if not set already!
+									if (set_call_label (ast[level].expr[j][last_arg - 1]) != 0)
+									{
+										printf ("error: line %lli: call label list full!\n", linenum);
+										return (1);
+									}
+
 									continue;
 								}
 
@@ -3494,12 +3623,31 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 								// write opcode name to code_temp
 								strcpy ((char *) code_temp, (const char *) opcode[translate[t].assemb_op].op);
 								strcat ((char *) code_temp, " ");
+
+								// check if JMP, JMPI or JSR, to set call_label
+
+								switch (translate[t].assemb_op)
+								{
+									case JMP:
+									case JMPI:
+									case JSR:
+										// set call_label if not set already!
+										if (set_call_label (ast[level].expr[j][last_arg - 1]) != 0)
+										{
+											printf ("error: line %lli: call label list full!\n", linenum);
+											return (1);
+										}
+										break;
+								}
+
 							}
 							else
 							{
 								printf ("error: line %lli: unknown opcode!\n", linenum);
 								return (1);
 							}
+
+							// TRANSLATE LOOP END!! =======================================================================
 
 							// printf ("DEBUG: code_temp opcode: '%s'\n", code_temp);
 
@@ -4217,6 +4365,9 @@ int main (int ac, char *av[])
 	init_while ();
 	init_for ();
 
+	init_labels ();
+	init_call_labels ();
+
     if (ac < 2)
     {
         exit (1);
@@ -4250,6 +4401,13 @@ int main (int ac, char *av[])
     if (parse ((U1 *) av[1]) == 1)
 	{
 		printf ("ERRORS! can't read source file!\n");
+		cleanup ();
+		exit (1);
+	}
+
+	if (check_labels () != 0)
+	{
+		printf ("ERRORS! can't find some labels!!\n");
 		cleanup ();
 		exit (1);
 	}

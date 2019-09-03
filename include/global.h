@@ -224,6 +224,11 @@ struct label
 	S8 pos;
 };
 
+struct call_label
+{
+	U1 name[LABELLEN];
+	S8 pos;
+};
 
 // shell arguments
 #define MAXSHELLARGS			32
