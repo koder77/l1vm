@@ -1,6 +1,6 @@
 L1VM OSV capstan build
 ======================
-In this directory ist a build environment for OSV unikernel OS:
+In this directory is a build environment for OSV unikernel OS:
 [OSV](https://github.com/cloudius-systems/osv)
 
 You have to switch SDL support of in the include/global.h file.
