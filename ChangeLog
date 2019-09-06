@@ -20,7 +20,9 @@ New: assembler now shows the size of the created obj. file.
 
 New: compiler stops if undefined labels are found.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Mon Sep 2 2019 20:29 +0200
+New: OSV capstan build directory: build L1VM for OSV unikernel.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Fri Sep 6 2019 18:20 +0200
 
 
 L1VM - (0.9.8)

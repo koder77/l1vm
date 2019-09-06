@@ -645,7 +645,6 @@ S2 get_ast (U1 *line)
 
 	// printf ("> '%s'\n", line);
 
-	// printf ("> %s", line);
     while (! ok)
     {
 		// printf ("top: %c\n", line[pos]);
