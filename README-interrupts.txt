@@ -7,7 +7,7 @@ INTR0
 1: free module
 2: set module function
 3: call module function
-4: print intger
+4: print integer
 5: print double float
 6: print string
 7: print newline
