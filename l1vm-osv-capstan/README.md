@@ -1,4 +1,4 @@
-L1VM OSV capstan build
+L1VM OSv capstan build
 ======================
 In this directory is a build environment for OSv unikernel OS:
 [OSv](https://github.com/cloudius-systems/osv)
