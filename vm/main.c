@@ -1945,6 +1945,12 @@ S2 run (void *arg)
 			threaddata[cpu_core].status = STOP;
 			pthread_mutex_unlock (&data_mutex);
 			pthread_exit ((void *) retcode);
+			break;
+
+		default:
+			printf ("FATAL ERROR: INTR0: %lli does not exist!\n", arg1);
+			free (jumpoffs);
+			pthread_exit ((void *) 1);
 	}
 	EXE_NEXT();
 
@@ -2112,6 +2118,12 @@ S2 run (void *arg)
 			threaddata[cpu_core].status = STOP;
 			pthread_mutex_unlock (&data_mutex);
 			pthread_exit ((void *) retcode);
+			break;
+
+		default:
+			printf ("FATAL ERROR: INTR1: %lli does not exist!\n", arg1);
+			free (jumpoffs);
+			pthread_exit ((void *) 1);
 	}
 	EXE_NEXT();
 
