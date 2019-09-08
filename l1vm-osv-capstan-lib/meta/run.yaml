@@ -11,7 +11,7 @@ config_set:
       # Command to be executed in OSv.
       # Note that package root will correspond to filesystem root (/) in OSv image.
       # Example value: /usr/bin/simpleFoam.so -help
-      bootcmd: /l1vm-osv.so hello-2
+      bootcmd: /l1vm-osv.so math-lib   
 
    # Add as many named configurations as you need
 
