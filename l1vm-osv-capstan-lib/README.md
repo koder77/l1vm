@@ -20,6 +20,7 @@ And in this example the VM opens the math module which is also included in the O
 To run the build script you have to build some things first:
 Go into the l1vm directory and open a shell:
 
+<pre>
 l1vm $ comp/l1com lib/math-lib
 l1vm $ assemb/l1asm lib/math-lib
 l1vm $ cd vm/modules/math
@@ -27,6 +28,7 @@ l1vm/modules/math $ ./make-math-mod.sh
 cd ../../../
 l1vm $ cd l1vm-osv-capstan-lib
 l1vm/l1vm-osv-capstan-lib $ ./build.sh
+</pre>
 
 The image is run via Qemu at the end of the script!
 Now you should have a qemu .img file in your /home directory: ~/.capstan!
