@@ -6,10 +6,10 @@ cp zerobuild-osv.txt ../vm
 cd ../vm
 echo "building l1vm-osv.so"
 zerobuild zerobuild-osv.txt force
-cp l1vm-osv.so ../l1vm-osv-capstan-test
+cp l1vm-osv.so ../l1vm-osv-capstan-lib
 cd ../lib
-cp math-lib.l1obj ../l1vm-osv-capstan-test
-cd ../l1vm-osv-capstan-test
+cp math-lib.l1obj ../l1vm-osv-capstan-lib
+cd ../l1vm-osv-capstan-lib
 cp ../vm/modules/math/libl1vmmath.so .
 capstan package pull osv.bootstrap
 capstan package compose l1vm
