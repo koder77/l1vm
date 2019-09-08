@@ -18,14 +18,15 @@ In this demo build the "math-lib" program is executed.
 And in this example the VM opens the math module which is also included in the OSv image.
 
 To run the build script you have to build some things first:
-Go into the l1vm directory and open a shell:
+Go into the l1vm directory and open a shell.
+You have to type in the commands after the "$" sign:
 
 <pre>
 l1vm $ comp/l1com lib/math-lib
 l1vm $ assemb/l1asm lib/math-lib
 l1vm $ cd vm/modules/math
 l1vm/modules/math $ ./make-math-mod.sh
-cd ../../../
+l1vm/modules/math $ cd ../../../
 l1vm $ cd l1vm-osv-capstan-lib
 l1vm/l1vm-osv-capstan-lib $ ./build.sh
 </pre>
