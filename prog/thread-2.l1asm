@@ -17,20 +17,21 @@
 .code
 	loada, max, 0, I1
 	loada, one, 0, I0
+	loada, zero, 0, I2
 	loada, zero, 0, I11
-	intr0, 12, I10, 0, 0
+	intr0, 12, I1, 0, 0
 	// if no argument given, EXIT
-	neqi, I10, I0, I2
-	jmpi, I2, :end
+	eqi, I1, I11, I5
+	jmpi, I5, :end
 	// get argumnet string
 	loada, messageaddr, 0, I50
-	intr0, 13, I11, I50, 0
 	loada delay, 0, I30
 :loop
+	intr0, 13, I2, I50, 0
 	loadl, :print, I10
 	intr1, 0, I10, 0, 0
 	intr0 8, I30, 0, 0
-	inclsijmpi, I0, I1, :loop
+	inclsijmpi, I2, I1, :loop
 	// join threads
 	intr1, 1, 0, 0, 0
 	// exit

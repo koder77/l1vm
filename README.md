@@ -1,6 +1,6 @@
 L1VM README  2019-08-15
 =======================
-![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-medium.png "L1VM logo")
+![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2f0638b0ab6b433aad4d35c18d2f85c4)](https://www.codacy.com/app/koder77/l1vm?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=koder77/l1vm&amp;utm_campaign=Badge_Grade)
 
