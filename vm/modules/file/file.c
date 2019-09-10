@@ -50,7 +50,7 @@ U1 check_file_access (U1 *path)
 
 	S2 slen, i;
 
-	slen = strlen ((const char *) path);
+	slen = strlen_safe ((const char *) path, 255);
 
 	for (i = 0; i < slen - 1; i++)
 	{
@@ -134,7 +134,7 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-	file_name_len = strlen ((char *) &data[nameaddr]);
+	file_name_len = strlen_safe ((char *) &data[nameaddr], 255);
 	if (file_name_len > 255)
 	{
 		printf ("ERROR: file_open: file name: '%s' too long!\n", (char *) &data[nameaddr]);
@@ -144,7 +144,7 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	file_access_name_len = file_name_len;
 
 	#if SANDBOX
-		file_name_len = strlen (SANDBOX_ROOT);
+		file_name_len = strlen_safe (SANDBOX_ROOT, 255);
 		if (file_name_len > 255)
 		{
 			printf ("ERROR: file_open: file root: '%s' too long!\n", SANDBOX_ROOT);

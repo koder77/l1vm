@@ -71,7 +71,7 @@
 // #define DEBUG				1
 
 // SANDBOX FILE ACCESS
-#define SANDBOX                 0			// secure file acces: 1 = use secure access, 0 = OFF!!
+#define SANDBOX                 1			// secure file acces: 1 = use secure access, 0 = OFF!!
 #define SANDBOX_ROOT			"/home/stefan/l1vm/"	// change to your /home directory!
 // user settings end ======================================
 
