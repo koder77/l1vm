@@ -23,8 +23,9 @@ New: compiler stops if undefined labels are found.
 New: OSV capstan build directory: build L1VM for OSV unikernel.
 New: VM: INTR0 and INTR1 default switch is to print error message if interrupt number is not right.
 New: VM shows the used C compiler and version number.
+New: SANDBOX file root access in /home directory.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Tue Sep 10 2019 18:16 +0200
+-- Stefan Pietzonke <jay-t@gmx.net>  Tue Sep 10 2019 20:00 +0200
 
 
 L1VM - (0.9.8)

@@ -31,6 +31,7 @@
 #define FILEWRITEREAD   4
 #define FILEAPPEND		5
 
+
 size_t strlen_safe (const char * str, int maxlen);
 
 struct file
@@ -41,6 +42,30 @@ struct file
 };
 
 struct file files[MAXFILES];
+
+// for SANDBOX file access
+U1 check_file_access (U1 *path)
+{
+	/* check for forbidden ../ in pathname */
+
+	S2 slen, i;
+
+	slen = strlen ((const char *) path);
+
+	for (i = 0; i < slen - 1; i++)
+	{
+		if (path[i] == '.')
+		{
+			if (path[i + 1] == '.')
+			{
+				return (1);	// forbidden access
+			}
+		}
+	}
+
+	return (0);  /* path legal, all ok! */
+}
+
 
 U1 *file_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
@@ -65,6 +90,10 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     U1 access;
     U1 access_str[3];
     S8 nameaddr ALIGN;
+
+	U1 file_access_name[256];		// for sandbox feature
+	S8 file_name_len;
+	S8 file_access_name_len;
 
     if (sp == sp_top)
     {
@@ -105,7 +134,46 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    strcpy ((char *) files[handle].name, (char *) &data[nameaddr]);
+	file_name_len = strlen ((char *) &data[nameaddr]);
+	if (file_name_len > 255)
+	{
+		printf ("ERROR: file_open: file name: '%s' too long!\n", (char *) &data[nameaddr]);
+		return (NULL);
+	}
+
+	file_access_name_len = file_name_len;
+
+	#if SANDBOX
+		file_name_len = strlen (SANDBOX_ROOT);
+		if (file_name_len > 255)
+		{
+			printf ("ERROR: file_open: file root: '%s' too long!\n", SANDBOX_ROOT);
+			return (NULL);
+		}
+
+		file_access_name_len += file_name_len;
+		if (file_access_name_len > 255)
+		{
+			printf ("ERROR: file_open: file name: '%s' too long!\n", (char *) &data[nameaddr]);
+			return (NULL);
+		}
+
+		strcpy ((char *) file_access_name, SANDBOX_ROOT);
+		strcat ((char *) file_access_name, (char *) &data[nameaddr]);
+
+		if (check_file_access (file_access_name) != 0)
+		{
+			// illegal parts in filename path, ERROR!!!
+			printf ("ERROR: file_open: file name: '%s' illegal!\n", (char *) file_access_name);
+			return (NULL);
+		}
+
+		strcpy ((char *) files[handle].name, (char *) file_access_name);
+
+		// printf ("SANDBOX: opening file: '%s'\n", files[handle].name);
+	#else
+    	strcpy ((char *) files[handle].name, (char *) &data[nameaddr]);
+	#endif
 
     switch (access)
     {
