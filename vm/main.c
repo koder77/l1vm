@@ -2529,6 +2529,12 @@ int main (int ac, char *av[])
 
 		printf ("internal type check: S8 = %lli bytes, F8 = %lli bytes. All OK!\n", size_int64, size_double64);
 
+		#if defined(__clang__)
+			printf ("C compiler: clang version %s\n", __clang_version__);
+		#elif defined(__GNUC__) || defined(__GNUG__)
+			printf ("C compiler: gcc version %s\n", __VERSION__);
+		#endif
+
 		#if JIT_COMPILER
 	    	printf ("JIT-compiler inside: lib asmjit.\n");
 		#endif
