@@ -81,7 +81,7 @@ U1 *file_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-    // first argument: U1 filehandle number
+    // first argument: int64 filehandle number
     // second argument: U1 access
     // third argument: int64 name string address
     // return value: ERROR code

@@ -2535,6 +2535,8 @@ int main (int ac, char *av[])
 			printf ("C compiler: gcc version %s\n", __VERSION__);
 		#endif
 
+		printf ("build on: %s\n", __DATE__);
+
 		#if JIT_COMPILER
 	    	printf ("JIT-compiler inside: lib asmjit.\n");
 		#endif
