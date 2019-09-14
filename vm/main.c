@@ -281,6 +281,8 @@ S2 run (void *arg)
 	S8 ep ALIGN = 0; // execution pointer in code segment
 	S8 startpos ALIGN;
 
+	U1 overflow = 0;	// MATH_LIMITS calculation overflow flag
+
 	U1 *sp;   // stack pointer
 	U1 *sp_top;    // stack pointer start address
 	U1 *sp_bottom;  // stack bottom
@@ -892,7 +894,19 @@ S2 run (void *arg)
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regi[arg1] + regi[arg2];
+	#if MATH_LIMITS
+		if (__builtin_saddll_overflow (regi[arg1], regi[arg2], &regi[arg3]))
+		{
+			overflow = 1;
+ 			printf ("ERROR: overflow at addi!\n");
+		}
+		else
+		{
+			 overflow = 0;
+		}
+	#else
+		regi[arg3] = regi[arg1] + regi[arg2];
+	#endif
 
 	eoffs = 4;
 	EXE_NEXT();
@@ -905,7 +919,19 @@ S2 run (void *arg)
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regi[arg1] - regi[arg2];
+	#if MATH_LIMITS
+		if (__builtin_ssubll_overflow (regi[arg1], regi[arg2], &regi[arg3]))
+		{
+			overflow = 1;
+ 			printf ("ERROR: overflow at subi!\n");
+		}
+		else
+		{
+			 overflow = 0;
+		}
+	#else
+		regi[arg3] = regi[arg1] - regi[arg2];
+	#endif
 
 	eoffs = 4;
 	EXE_NEXT();
@@ -918,7 +944,19 @@ S2 run (void *arg)
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regi[arg1] * regi[arg2];
+	#if MATH_LIMITS
+		if (__builtin_smulll_overflow (regi[arg1], regi[arg2], &regi[arg3]))
+		{
+			overflow = 1;
+ 			printf ("ERROR: overflow at muli!\n");
+		}
+		else
+		{
+			 overflow = 0;
+		}
+	#else
+		regi[arg3] = regi[arg1] * regi[arg2];
+	#endif
 
 	eoffs = 4;
 	EXE_NEXT();
@@ -1895,6 +1933,13 @@ S2 run (void *arg)
 			eoffs = 5;
 			break;
 
+		case 252:
+			// get overflow flag
+			arg2 = code[ep + 2];
+			regi[arg2] = overflow;
+			eoffs = 5;
+			break;
+
 #if JIT_COMPILER
         case 253:
         // run JIT compiler
@@ -2523,7 +2568,7 @@ int main (int ac, char *av[])
 	}
 	if (silent_run == 0)
 	{
-		printf ("l1vm - 0.9.9 - (C) 2017-2019 Stefan Pietzonke\n");
+		printf ("l1vm - 0.9.10 - (C) 2017-2019 Stefan Pietzonke\n");
 		printf (">>> supermodified <<<\n");
 	    printf ("CPU cores: %lli (STATIC)\n", max_cpu);
 

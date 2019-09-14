@@ -1,3 +1,12 @@
+L1VM - (0.9.10)
+New: global.h include: MATH_LIMITS define, sets if integer math overflow is handled
+by an exception or not.
+
+See prog/math-overflow.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Sat Sep 14 2019 20:33 +0200
+
+
 L1VM - (0.9.9)
 New: if and if+ optimization in bracket compiler added:
 just add this line into your bracket program:

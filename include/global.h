@@ -45,7 +45,7 @@
 #include <math.h>
 #include <time.h>
 #include <assert.h>
-
+#include <limits.h>
 
 // user settings ==========================================
 // machine
@@ -57,6 +57,10 @@
 
 // division by zero checking
 #define DIVISIONCHECK 			1
+
+// integer math functions overflow detection
+// See vm/main.c interrupt0: 252 returns value of overflow flag
+#define MATH_LIMITS				0
 
 // data bounds check exactly
 #define BOUNDSCHECK				1
