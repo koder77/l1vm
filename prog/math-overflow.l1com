@@ -6,7 +6,7 @@
 	(set int64 1 addx 922337203685477Q)
 	(set int64 1 addy 9999999999999999999999Q)
 	(set int64 1 subx -9999999999999999999999Q)
-	(set int64 1 suby 92233720368547QQ)
+	(set int64 1 suby 92233720368547Q)
 	(set int64 1 flag 0)
 	(set int64 1 f 0)
 	(set int64 1 ret 0)
