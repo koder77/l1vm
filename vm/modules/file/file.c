@@ -92,8 +92,8 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 nameaddr ALIGN;
 
 	U1 file_access_name[256];		// for sandbox feature
-	S8 file_name_len;
-	S8 file_access_name_len;
+	S8 file_name_len ALIGN;
+	S8 file_access_name_len ALIGN;
 
     if (sp == sp_top)
     {

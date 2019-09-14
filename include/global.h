@@ -72,7 +72,7 @@
 
 // SANDBOX FILE ACCESS
 #define SANDBOX                 1			// secure file acces: 1 = use secure access, 0 = OFF!!
-#define SANDBOX_ROOT			"/home/stefan/l1vm/"	// change to your /home directory!
+#define SANDBOX_ROOT			"~/l1vm/"	// in /home directory!
 // user settings end ======================================
 
 #if MAXCPUCORES == 0
