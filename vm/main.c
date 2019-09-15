@@ -2070,6 +2070,19 @@ S2 run (void *arg)
 			eoffs = 5;
 			break;
 
+		case 251:
+			// set overflow on double reg
+			arg2 = code[ep + 2];
+			overflow = 0;
+			if (! isnormal (regd[arg2]))
+			{
+				if (regd[arg2] != 0.0)
+				{
+					overflow = 1;
+				}
+			}
+			break;
+
 		case 252:
 			// get overflow flag
 			arg2 = code[ep + 2];

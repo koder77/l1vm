@@ -4,6 +4,7 @@ by an exception or not.
 See prog/math-overflow.
 
 New: math overflow detection on double floating point numbers. See include/global.h!
+Interrupt intr0: 251 check double floating point number for overflow. And set the flag for it.
 
 -- Stefan Pietzonke <jay-t@gmx.net>  Sun Sep 15 2019 14:00 +0200
 
