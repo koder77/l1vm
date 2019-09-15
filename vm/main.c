@@ -2736,6 +2736,10 @@ int main (int ac, char *av[])
 	    	printf ("JIT-compiler inside: lib asmjit.\n");
 		#endif
 
+		#if MATH_LIMITS
+			printf (">> math overflow check << ");
+		#endif
+
 		#if BOUNDSCHECK
 			printf (">> boundscheck << ");
 		#endif
