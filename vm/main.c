@@ -991,7 +991,42 @@ S2 run (void *arg)
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
+	// debug
+	// regd[arg1] = INFINITY;
+
+	#if MATH_LIMITS
+		overflow = 0;
+		if (! isnormal (regd[arg1]))
+		{
+			if (regd[arg1] != 0.0)
+			{
+				overflow = 1;
+				printf ("ERROR: overflow at addd!\n");
+			}
+		}
+
+		if (! isnormal (regd[arg2]))
+		{
+			if (regd[arg2] != 0.0)
+			{
+				overflow = 1;
+				printf ("ERROR: overflow at addd!\n");
+			}
+		}
+	#endif
+
 	regd[arg3] = regd[arg1] + regd[arg2];
+
+	#if MATH_LIMITS
+		if (! isnormal (regd[arg3]))
+		{
+			if (regd[arg3] != 0.0)
+			{
+				overflow = 1;
+				printf ("ERROR: overflow at addd!\n");
+			}
+		}
+	#endif
 
 	eoffs = 4;
 	EXE_NEXT();
@@ -1004,7 +1039,41 @@ S2 run (void *arg)
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
+	// regd[arg1] = INFINITY;
+
+	#if MATH_LIMITS
+		overflow = 0;
+		if (! isnormal (regd[arg1]))
+		{
+			if (regd[arg1] != 0.0)
+			{
+				overflow = 1;
+				printf ("ERROR: overflow at subd!\n");
+			}
+		}
+
+		if (! isnormal (regd[arg2]))
+		{
+			if (regd[arg2] != 0.0)
+			{
+				overflow = 1;
+				printf ("ERROR: overflow at subd!\n");
+			}
+		}
+	#endif
+
 	regd[arg3] = regd[arg1] - regd[arg2];
+
+	#if MATH_LIMITS
+		if (! isnormal (regd[arg3]))
+		{
+			if (regd[arg3] != 0.0)
+			{
+				overflow = 1;
+				printf ("ERROR: overflow at subd!\n");
+			}
+		}
+	#endif
 
 	eoffs = 4;
 	EXE_NEXT();
@@ -1017,7 +1086,41 @@ S2 run (void *arg)
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
+	// regd[arg1] = INFINITY;
+
+	#if MATH_LIMITS
+		overflow = 0;
+		if (! isnormal (regd[arg1]))
+		{
+			if (regd[arg1] != 0.0)
+			{
+				overflow = 1;
+				printf ("ERROR: overflow at muld!\n");
+			}
+		}
+
+		if (! isnormal (regd[arg2]))
+		{
+			if (regd[arg2] != 0.0)
+			{
+				overflow = 1;
+				printf ("ERROR: overflow at muld!\n");
+			}
+		}
+	#endif
+
 	regd[arg3] = regd[arg1] * regd[arg2];
+
+	#if MATH_LIMITS
+		if (! isnormal (regd[arg3]))
+		{
+			if (regd[arg3] != 0.0)
+			{
+				overflow = 1;
+				printf ("ERROR: overflow at muld!\n");
+			}
+		}
+	#endif
 
 	eoffs = 4;
 	EXE_NEXT();
@@ -1030,6 +1133,8 @@ S2 run (void *arg)
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
+	// regd[arg1] = INFINITY;
+
     #if DIVISIONCHECK
     if (iszero (regd[arg2]))
     {
@@ -1039,7 +1144,39 @@ S2 run (void *arg)
     }
     #endif
 
+	#if MATH_LIMITS
+		overflow = 0;
+		if (! isnormal (regd[arg1]))
+		{
+			if (regd[arg1] != 0.0)
+			{
+				overflow = 1;
+				printf ("ERROR: overflow at divd!\n");
+			}
+		}
+
+		if (! isnormal (regd[arg2]))
+		{
+			if (regd[arg2] != 0.0)
+			{
+				overflow = 1;
+				printf ("ERROR: overflow at divd!\n");
+			}
+		}
+	#endif
+
 	regd[arg3] = regd[arg1] / regd[arg2];
+
+	#if MATH_LIMITS
+		if (! isnormal (regd[arg3]))
+		{
+			if (regd[arg3] != 0.0)
+			{
+				overflow = 1;
+				printf ("ERROR: overflow at divd!\n");
+			}
+		}
+	#endif
 
 	eoffs = 4;
 	EXE_NEXT();

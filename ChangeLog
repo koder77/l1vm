@@ -1,10 +1,11 @@
 L1VM - (0.9.10)
 New: global.h include: MATH_LIMITS define, sets if integer math overflow is handled
 by an exception or not.
-
 See prog/math-overflow.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sat Sep 14 2019 20:33 +0200
+New: math overflow detection on double floating point numbers. See include/global.h!
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Sun Sep 15 2019 14:00 +0200
 
 
 L1VM - (0.9.9)
