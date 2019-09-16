@@ -2051,12 +2051,9 @@ S2 run (void *arg)
 			// set overflow on double reg
 			arg2 = code[ep + 2];
 			overflow = 0;
-			if (! isnormal (regd[arg2]))
+			if (double_state (regd[arg2] == 1))
 			{
-				if (regd[arg2] != 0.0)
-				{
-					overflow = 1;
-				}
+				overflow = 1;
 			}
 			break;
 
