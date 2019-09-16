@@ -266,6 +266,19 @@ void cleanup (void)
 	if (threaddata) free (threaddata);
 }
 
+U1 double_state (F8 num)
+{
+	S2 state;
+	U1 flag = 0;
+	state = fpclassify (num);
+	if (state == FP_INFINITE || state == FP_NAN || state == FP_SUBNORMAL)
+	{
+		// ERROR!!
+		flag = 1;
+	}
+	return (flag);
+}
+
 S2 run (void *arg)
 {
 	S8 cpu_core ALIGN = (S8) arg;
@@ -996,35 +1009,26 @@ S2 run (void *arg)
 
 	#if MATH_LIMITS
 		overflow = 0;
-		if (! isnormal (regd[arg1]))
+		if (double_state (regd[arg1] == 1))
 		{
-			if (regd[arg1] != 0.0)
-			{
-				overflow = 1;
-				printf ("ERROR: overflow at addd!\n");
-			}
+			overflow = 1;
+			printf ("ERROR: overflow at addd!\n");
 		}
 
-		if (! isnormal (regd[arg2]))
+		if (double_state (regd[arg2] == 1))
 		{
-			if (regd[arg2] != 0.0)
-			{
-				overflow = 1;
-				printf ("ERROR: overflow at addd!\n");
-			}
+			overflow = 1;
+			printf ("ERROR: overflow at addd!\n");
 		}
 	#endif
 
 	regd[arg3] = regd[arg1] + regd[arg2];
 
 	#if MATH_LIMITS
-		if (! isnormal (regd[arg3]))
+		if (double_state (regd[arg3] == 1))
 		{
-			if (regd[arg3] != 0.0)
-			{
-				overflow = 1;
-				printf ("ERROR: overflow at addd!\n");
-			}
+			overflow = 1;
+			printf ("ERROR: overflow at addd!\n");
 		}
 	#endif
 
@@ -1043,35 +1047,26 @@ S2 run (void *arg)
 
 	#if MATH_LIMITS
 		overflow = 0;
-		if (! isnormal (regd[arg1]))
+		if (double_state (regd[arg1] == 1))
 		{
-			if (regd[arg1] != 0.0)
-			{
-				overflow = 1;
-				printf ("ERROR: overflow at subd!\n");
-			}
+			overflow = 1;
+			printf ("ERROR: overflow at subd!\n");
 		}
 
-		if (! isnormal (regd[arg2]))
+		if (double_state (regd[arg2] == 1))
 		{
-			if (regd[arg2] != 0.0)
-			{
-				overflow = 1;
-				printf ("ERROR: overflow at subd!\n");
-			}
+			overflow = 1;
+			printf ("ERROR: overflow at subd!\n");
 		}
 	#endif
 
 	regd[arg3] = regd[arg1] - regd[arg2];
 
 	#if MATH_LIMITS
-		if (! isnormal (regd[arg3]))
+		if (double_state (regd[arg3] == 1))
 		{
-			if (regd[arg3] != 0.0)
-			{
-				overflow = 1;
-				printf ("ERROR: overflow at subd!\n");
-			}
+			overflow = 1;
+			printf ("ERROR: overflow at subd!\n");
 		}
 	#endif
 
@@ -1090,35 +1085,26 @@ S2 run (void *arg)
 
 	#if MATH_LIMITS
 		overflow = 0;
-		if (! isnormal (regd[arg1]))
+		if (double_state (regd[arg1] == 1))
 		{
-			if (regd[arg1] != 0.0)
-			{
-				overflow = 1;
-				printf ("ERROR: overflow at muld!\n");
-			}
+			overflow = 1;
+			printf ("ERROR: overflow at muld!\n");
 		}
 
-		if (! isnormal (regd[arg2]))
+		if (double_state (regd[arg2] == 1))
 		{
-			if (regd[arg2] != 0.0)
-			{
-				overflow = 1;
-				printf ("ERROR: overflow at muld!\n");
-			}
+			overflow = 1;
+			printf ("ERROR: overflow at muld!\n");
 		}
 	#endif
 
 	regd[arg3] = regd[arg1] * regd[arg2];
 
 	#if MATH_LIMITS
-		if (! isnormal (regd[arg3]))
+		if (double_state (regd[arg3] == 1))
 		{
-			if (regd[arg3] != 0.0)
-			{
-				overflow = 1;
-				printf ("ERROR: overflow at muld!\n");
-			}
+			overflow = 1;
+			printf ("ERROR: overflow at muld!\n");
 		}
 	#endif
 
@@ -1146,35 +1132,26 @@ S2 run (void *arg)
 
 	#if MATH_LIMITS
 		overflow = 0;
-		if (! isnormal (regd[arg1]))
+		if (double_state (regd[arg1] == 1))
 		{
-			if (regd[arg1] != 0.0)
-			{
-				overflow = 1;
-				printf ("ERROR: overflow at divd!\n");
-			}
+			overflow = 1;
+			printf ("ERROR: overflow at divd!\n");
 		}
 
-		if (! isnormal (regd[arg2]))
+		if (double_state (regd[arg2] == 1))
 		{
-			if (regd[arg2] != 0.0)
-			{
-				overflow = 1;
-				printf ("ERROR: overflow at divd!\n");
-			}
+			overflow = 1;
+			printf ("ERROR: overflow at divd!\n");
 		}
 	#endif
 
 	regd[arg3] = regd[arg1] / regd[arg2];
 
 	#if MATH_LIMITS
-		if (! isnormal (regd[arg3]))
+		if (double_state (regd[arg3] == 1))
 		{
-			if (regd[arg3] != 0.0)
-			{
-				overflow = 1;
-				printf ("ERROR: overflow at divd!\n");
-			}
+			overflow = 1;
+			printf ("ERROR: overflow at divd!\n");
 		}
 	#endif
 
