@@ -1007,7 +1007,7 @@ S2 run (void *arg)
 	// debug
 	// regd[arg1] = INFINITY;
 
-	#if MATH_LIMITS
+	#if MATH_LIMITS_DOUBLE_FULL
 		overflow = 0;
 		if (double_state (regd[arg1] == 1))
 		{
@@ -1045,7 +1045,7 @@ S2 run (void *arg)
 
 	// regd[arg1] = INFINITY;
 
-	#if MATH_LIMITS
+	#if MATH_LIMITS_DOUBLE_FULL
 		overflow = 0;
 		if (double_state (regd[arg1] == 1))
 		{
@@ -1083,7 +1083,7 @@ S2 run (void *arg)
 
 	// regd[arg1] = INFINITY;
 
-	#if MATH_LIMITS
+	#if MATH_LIMITS_DOUBLE_FULL
 		overflow = 0;
 		if (double_state (regd[arg1] == 1))
 		{
@@ -1130,7 +1130,7 @@ S2 run (void *arg)
     }
     #endif
 
-	#if MATH_LIMITS
+	#if MATH_LIMITS_DOUBLE_FULL
 		overflow = 0;
 		if (double_state (regd[arg1] == 1))
 		{

@@ -58,9 +58,15 @@
 // division by zero checking
 #define DIVISIONCHECK 			1
 
-// integer math functions overflow detection
-// See vm/main.c interrupt0: 252 returns value of overflow flag
+// integer and double floating point math functions overflow detection
+// See vm/main.c interrupt0:
+// 251 sets overflow flag for double floating point number
+// 252 returns value of overflow flag
 #define MATH_LIMITS				0
+
+// set if only double numbers calculation results are checked (0), or
+// arguments and results get checked for full check (1)
+#define MATH_LIMITS_DOUBLE_FULL	0
 
 // data bounds check exactly
 #define BOUNDSCHECK				1
@@ -80,9 +86,14 @@
 // user settings end ======================================
 
 #if MAXCPUCORES == 0
-	#error "ERROR MAXCPUCORES is 0!"
+	#error "global.h: ERROR MAXCPUCORES is 0!"
 #endif
 
+#if MATH_LIMITS_DOUBLE_FULL == 1
+	#if MATH_LIMITS == 0
+		#error "global.h: ERROR YOU HAVE TO DEFINE MATH_LIMITS TO 1 IN ORDER TO USE MATH_LIMITS_DOUBLE_FULL!"
+	#endif
+#endif
 
 typedef unsigned char           U1;		/* UBYTE   */
 typedef int16_t                 S2;     /* INT     */
