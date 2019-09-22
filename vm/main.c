@@ -2055,6 +2055,15 @@ S2 run (void *arg)
 			eoffs = 5;
 			break;
 
+		case 20:
+			//printf ("PRINTD format\n");
+			arg2 = code[ep + 2];
+			arg3 = code[ep + 3];
+
+			printf ((char *) &data[regi[arg3]], regd[arg2]);
+			eoffs = 5;
+			break;
+
 		case 251:
 			// set overflow on double reg
 			arg2 = code[ep + 2];

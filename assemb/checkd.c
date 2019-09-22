@@ -36,6 +36,14 @@ U1 checkdigit (U1 *str)
     t_var.digitstr_type = UNKNOWN;
 	t_var.base = 10;
 
+	// printf ("DEBUG: checkdigit: '%s'\n", str);
+
+	if (str[0] == '"')
+	{
+		// begins with quote is string!
+		return (FALSE);
+	}
+
     for (i = 0; i <= str_len - 1; i++)
     {
         if ((str[i] >= '0' && str[i] <= '9') || (str[i] >= 'A' && str[i] <= 'F') || (str[i] == '-' || str[i] == '+' || str[i] == ' ' || str[i] == '.') || str[i] == 'I' || str[i] == 'F' || str[i] == 'W' || str[i] == 'D' || str[i] == 'Q' || str[i] == 'B' || str[i] == '&'|| str[i] == '$' )

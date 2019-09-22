@@ -277,6 +277,14 @@ S2 get_args (U1 *line)
             {
 				if (line[pos] == '"')
 				{
+					// start of string
+					args[arg_ind][arg_pos] = '"';
+					arg_pos++;
+					if (arg_pos >= MAXLINELEN)
+					{
+						printf ("error: line %lli: argument too long!\n", linenum);
+						return (1);
+					}
 					pos++;
 					while (line[pos] != '"')
 					{
@@ -402,7 +410,8 @@ S2 write_data_string (S8 offset ALIGN, U1 *str)
 	slen = strlen_safe ((const char *) str, MAXLINELEN);
 	if (offset + slen < data_max)
 	{
-		for (i = 0; i <= slen; i++)
+		// skipp " quote at beginning of string"
+		for (i = 1; i <= slen; i++)
 		{
 			data[j] = str[i];
 			j++;
