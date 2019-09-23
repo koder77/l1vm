@@ -22,8 +22,6 @@
 #include "../../../include/stack.h"
 
 
-// gmp_printf ("fixed point mpf %lf\n", f);
-
 #define MAX_FLOAT_NUM 256
 
 static mpf_t mpf_float[MAX_FLOAT_NUM];
@@ -366,5 +364,217 @@ U1 *gmp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	gmp_snprintf ((char *) &data[numstring_address_dest], numstring_len, (char *) &data[float_format_address], mpf_float[float_index]);
+	return (sp);
+}
+
+U1 *gmp_sqrt_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index_x ALIGN;
+	S8 float_index_res ALIGN;
+
+	sp = stpopi ((U1 *) &float_index_res, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_div_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &float_index_x, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_div_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	mpf_sqrt (mpf_float[float_index_res], mpf_float[float_index_x]);
+	return (sp);
+}
+
+U1 *gmp_pow_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index_x ALIGN;
+	S8  num_pow ALIGN;
+	S8 float_index_res ALIGN;
+
+	sp = stpopi ((U1 *) &float_index_res, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_div_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &num_pow, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_div_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &float_index_x, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_div_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	mpf_pow_ui (mpf_float[float_index_res], mpf_float[float_index_x], num_pow);
+	return (sp);
+}
+
+U1 *gmp_neg_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index_x ALIGN;
+	S8 float_index_res ALIGN;
+
+	sp = stpopi ((U1 *) &float_index_res, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_div_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &float_index_x, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_div_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	mpf_neg (mpf_float[float_index_res], mpf_float[float_index_x]);
+	return (sp);
+}
+
+U1 *gmp_abs_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index_x ALIGN;
+	S8 float_index_res ALIGN;
+
+	sp = stpopi ((U1 *) &float_index_res, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_div_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &float_index_x, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_div_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	mpf_abs (mpf_float[float_index_res], mpf_float[float_index_x]);
+	return (sp);
+}
+
+U1 *gmp_mul_2exp_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index_x ALIGN;
+	S8 num ALIGN;
+	S8 float_index_res ALIGN;
+
+	sp = stpopi ((U1 *) &float_index_res, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_div_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &num, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_div_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &float_index_x, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_div_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	mpf_mul_2exp (mpf_float[float_index_res], mpf_float[float_index_x], num);
+	return (sp);
+}
+
+U1 *gmp_div_2exp_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index_x ALIGN;
+	S8 num ALIGN;
+	S8 float_index_res ALIGN;
+
+	sp = stpopi ((U1 *) &float_index_res, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_div_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &num, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_div_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &float_index_x, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_div_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	mpf_div_2exp (mpf_float[float_index_res], mpf_float[float_index_x], num);
+	return (sp);
+}
+
+// compare ====================================================================
+
+U1 *gmp_cmp_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index_x ALIGN;
+	S8 float_index_y ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &float_index_y, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_div_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &float_index_x, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_div_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	ret = mpf_cmp (mpf_float[float_index_x], mpf_float[float_index_y]);
+	sp = stpushi (ret, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("gmp_cmp_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 	return (sp);
 }
