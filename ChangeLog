@@ -9,10 +9,12 @@ Interrupt intr0: 252 returns overflow flag.
 New: global.h include: MATH_LIMITS_DOUBLE_FULL sets double number calculation arguments check.
 If it is 0 then only the results of calculations are checked. This is a bit faster.
 
-New: gmp big number calculation library: float numbers: add, sub, mul, div, print and prints (formatted output).
-See vm/modules/gmp and lib/gmp-lib.l1com. More functions will come later...
+Removed the GMP library and replaced it with more modern MPFR via MPFR C++ wrapper!
+New: MPFR big number calculation library: float numbers: add, sub, mul, div, print and prints (formatted output).
+See vm/modules/mpfr-c++ and lib/mpfr-lib.l1com.
+I already wrote some wrapper for trigonometry functions. More functions will come later...
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sat Sep 22 2019 20:00 +0200
+-- Stefan Pietzonke <jay-t@gmx.net>  Thu Sep 26 2019 17:25 +0200
 
 
 L1VM - (0.9.9)
