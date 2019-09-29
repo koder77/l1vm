@@ -1,5 +1,5 @@
 /*
- * This file gmp.c is part of L1vm.
+ * This file mpfr-head.c is part of L1vm.
  *
  * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2017
  *
