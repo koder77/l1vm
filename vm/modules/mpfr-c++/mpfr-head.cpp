@@ -473,3 +473,287 @@ extern "C" U1 *mp_div_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	mpf_float[float_index_res] = mpf_float[float_index_x] + mpf_float[float_index_y];
 	return (sp);
 }
+
+// compare float ==============================================================
+
+extern "C" U1 *mp_less_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index_x ALIGN;
+	S8 float_index_y ALIGN;
+	S8 float_res ALIGN;
+
+	sp = stpopi ((U1 *) &float_index_y, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &float_index_x, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (float_index_x >= MAX_FLOAT_NUM)
+	{
+		printf ("mp_add_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		return (NULL);
+	}
+
+	if (float_index_y >= MAX_FLOAT_NUM)
+	{
+		printf ("mp_add_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		return (NULL);
+	}
+
+	float_res = mpf_float[float_index_x] < mpf_float[float_index_y];
+
+	// push result on stack
+	sp = stpushi (float_res, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("double2int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+extern "C" U1 *mp_less_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index_x ALIGN;
+	S8 float_index_y ALIGN;
+	S8 float_res ALIGN;
+
+	sp = stpopi ((U1 *) &float_index_y, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &float_index_x, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (float_index_x >= MAX_FLOAT_NUM)
+	{
+		printf ("mp_add_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		return (NULL);
+	}
+
+	if (float_index_y >= MAX_FLOAT_NUM)
+	{
+		printf ("mp_add_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		return (NULL);
+	}
+
+	float_res = mpf_float[float_index_x] <= mpf_float[float_index_y];
+
+	// push result on stack
+	sp = stpushi (float_res, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("double2int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+extern "C" U1 *mp_greater_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index_x ALIGN;
+	S8 float_index_y ALIGN;
+	S8 float_res ALIGN;
+
+	sp = stpopi ((U1 *) &float_index_y, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &float_index_x, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (float_index_x >= MAX_FLOAT_NUM)
+	{
+		printf ("mp_add_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		return (NULL);
+	}
+
+	if (float_index_y >= MAX_FLOAT_NUM)
+	{
+		printf ("mp_add_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		return (NULL);
+	}
+
+	float_res = mpf_float[float_index_x] > mpf_float[float_index_y];
+
+	// push result on stack
+	sp = stpushi (float_res, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("double2int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+extern "C" U1 *mp_greater_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index_x ALIGN;
+	S8 float_index_y ALIGN;
+	S8 float_res ALIGN;
+
+	sp = stpopi ((U1 *) &float_index_y, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &float_index_x, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (float_index_x >= MAX_FLOAT_NUM)
+	{
+		printf ("mp_add_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		return (NULL);
+	}
+
+	if (float_index_y >= MAX_FLOAT_NUM)
+	{
+		printf ("mp_add_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		return (NULL);
+	}
+
+	float_res = mpf_float[float_index_x] >= mpf_float[float_index_y];
+
+	// push result on stack
+	sp = stpushi (float_res, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("double2int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+extern "C" U1 *mp_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index_x ALIGN;
+	S8 float_index_y ALIGN;
+	S8 float_res ALIGN;
+
+	sp = stpopi ((U1 *) &float_index_y, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &float_index_x, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (float_index_x >= MAX_FLOAT_NUM)
+	{
+		printf ("mp_add_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		return (NULL);
+	}
+
+	if (float_index_y >= MAX_FLOAT_NUM)
+	{
+		printf ("mp_add_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		return (NULL);
+	}
+
+	float_res = mpf_float[float_index_x] == mpf_float[float_index_y];
+
+	// push result on stack
+	sp = stpushi (float_res, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("double2int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+extern "C" U1 *mp_not_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index_x ALIGN;
+	S8 float_index_y ALIGN;
+	S8 float_res ALIGN;
+
+	sp = stpopi ((U1 *) &float_index_y, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &float_index_x, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (float_index_x >= MAX_FLOAT_NUM)
+	{
+		printf ("mp_add_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		return (NULL);
+	}
+
+	if (float_index_y >= MAX_FLOAT_NUM)
+	{
+		printf ("mp_add_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		return (NULL);
+	}
+
+	float_res = mpf_float[float_index_x] != mpf_float[float_index_y];
+
+	// push result on stack
+	sp = stpushi (float_res, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("double2int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}

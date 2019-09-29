@@ -38,7 +38,7 @@
 	(1 zero 0 0 intr0)
 	(255 zero 0 0 intr0)
 (funcend)
-// gmp math library
+// mpfr math library
 //
 //
 (mp_math_init func)
@@ -51,6 +51,12 @@
 	(set string s divstr@gmp "mp_div_float")
 	(set string s printstr@gmp "mp_print_float")
 	(set string s printsstr@gmp "mp_prints_float")
+	(set string s lessstr@gmp "mp_less_float")
+	(set string s less_equalstr@gmp "mp_less_equal_float")
+	(set string s greaterstr@gmp "mp_greater_float")
+	(set string s greater_equalstr@gmp "mp_greater_equal_float")
+	(set string s equalstr@gmp "mp_equal_float")
+	(set string s not_equalstr@gmp "mp_not_equal_float")
 	(set int64 1 cleanup@gmp 0)
 	(set int64 1 set_float@gmp 1)
 	(set int64 1 add_float@gmp 2)
@@ -59,6 +65,12 @@
 	(set int64 1 div_float@gmp 5)
 	(set int64 1 print_float@gmp 6)
 	(set int64 1 prints_float@gmp 7)
+	(set int64 1 less@gmp 8)
+	(set int64 1 less_equal@gmp 9)
+	(set int64 1 greater@gmp 10)
+	(set int64 1 greater_equal@gmp 11)
+	(set int64 1 equal@gmp 12)
+	(set int64 1 not_equal@gmp 13)
 	(set int64 1 mod@gmp 0)
 	// get argument from stack
     (mod@gmp stpopi)
@@ -73,8 +85,14 @@
 	(2 mod@gmp div_float@gmp divstr@gmpaddr intr0)
 	(2 mod@gmp print_float@gmp printstr@gmpaddr intr0)
 	(2 mod@gmp prints_float@gmp printsstr@gmpaddr intr0)
+	(2 mod@gmp less@gmp lessstr@gmpaddr intr0)
+	(2 mod@gmp less_equal@gmp less_equalstr@gmpaddr intr0)
+	(2 mod@gmp greater@gmp greaterstr@gmpaddr intr0)
+	(2 mod@gmp greater_equal@gmp greater_equalstr@gmpaddr intr0)
+	(2 mod@gmp equal@gmp equalstr@gmpaddr intr0)
+	(2 mod@gmp not_equal@gmp not_equalstr@gmpaddr intr0)
 
-	// paste to generated code end:
+	// paste to generated code end: ==============================================
 	// wrapper functions
 	(mp_cleanup func)
 	 	(3 mod@gmp cleanup@gmp 0 intr0)
@@ -99,4 +117,22 @@
 	(funcend)
 	(mp_prints_float func)
 	 	(3 mod@gmp prints_float@gmp 0 intr0)
+	(funcend)
+	(mp_less func)
+		(3 mod@gmp less@gmp 0 intr0)
+	(funcend)
+	(mp_less_equal func)
+		(3 mod@gmp less_equal@gmp 0 intr0)
+	(funcend)
+	(mp_greater func)
+		(3 mod@gmp greater@gmp 0 intr0)
+	(funcend)
+	(mp_greater_equal func)
+		(3 mod@gmp greater_equal@gmp 0 intr0)
+	(funcend)
+	(mp_equal func)
+		(3 mod@gmp equal@gmp 0 intr0)
+	(funcend)
+	(mp_not_equal func)
+		(3 mod@gmp not_equal@gmp 0 intr0)
 	(funcend)

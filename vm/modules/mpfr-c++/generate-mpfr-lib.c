@@ -30,13 +30,16 @@
 #define NUM_TYPE_RND2		"rnd_mode"
 #define LINE_ARGS			256
 
+// functions already build in:
+#define FUNCTION_HEAD			13
+
 // input line splitted into arguments
 U1 line_args[LINE_ARGS][MAXLINELEN];
 U1 num_names[LINE_ARGS][MAXLINELEN];
 
 U1 func_names[MAXFUNC][MAXLINELEN];
 // functions 0 - 7 are defined in mpfr-lib-head.l1com
-S8 func_ind ALIGN = 7;
+S8 func_ind ALIGN = FUNCTION_HEAD;
 
 // protos
 // file input =================================================================
@@ -187,7 +190,7 @@ S2 generate_main_vm (FILE *vm_file)
 {
 	S8 i ALIGN;
 
-	for (i = 7; i < func_ind; i++)
+	for (i = FUNCTION_HEAD; i < func_ind; i++)
 	{
 		if (fprintf (vm_file, "(2 mod@gmp %s@gmp %sstr@gmpaddr intr0)\n", func_names[i], func_names[i]) < 0)
 		{
@@ -203,7 +206,7 @@ S2 generate_main_vm (FILE *vm_file)
 
 	// write wrapper functions
 
-	for (i = 7; i < func_ind; i++)
+	for (i = FUNCTION_HEAD; i < func_ind; i++)
 	{
 		if (fprintf (vm_file, "(mp_%s_float func)\n", func_names[i]) < 0)
 		{
