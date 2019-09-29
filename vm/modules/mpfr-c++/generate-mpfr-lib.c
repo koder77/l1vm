@@ -261,7 +261,7 @@ S2 generate_c (FILE *c_file, S8 max_vars)
 	}
 
 	// write stpopi blocks
-	for (i = 0; i < max_vars; i++)
+	for (i = max_vars - 1; i >= 0; i--)
 	{
 		if (fprintf (c_file, "\nS8 %s ALIGN;\n", num_names[i]) < 0)
 		{

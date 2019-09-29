@@ -1,6 +1,5 @@
 // mpfr math library
-// This will be updated in the future.
-// Some trigonometry functions are already here...
+//
 //
 (main func)
     (set int64 1 zero 0)
