@@ -11,6 +11,13 @@ printf ("gmp_sqr_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_sqr_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -20,9 +27,9 @@ printf ("gmp_sqr_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_sqr_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_sqr_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -42,6 +49,13 @@ printf ("gmp_sqrt_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_sqrt_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -51,9 +65,9 @@ printf ("gmp_sqrt_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_sqrt_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_sqrt_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -73,6 +87,13 @@ printf ("gmp_cbrt_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_cbrt_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -82,9 +103,9 @@ printf ("gmp_cbrt_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_cbrt_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_cbrt_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -104,6 +125,13 @@ printf ("gmp_pow_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_pow_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 b ALIGN;
 
 sp = stpopi ((U1 *) &b, sp, sp_top);
@@ -113,9 +141,9 @@ printf ("gmp_pow_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (b >= MAX_FLOAT_NUM)
+if (b >= MAX_FLOAT_NUM || b < 0)
 {
-printf ("gmp_pow_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_pow_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -129,9 +157,9 @@ printf ("gmp_pow_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (a >= MAX_FLOAT_NUM)
+if (a >= MAX_FLOAT_NUM || a < 0)
 {
-printf ("gmp_pow_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_pow_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -151,6 +179,13 @@ printf ("gmp_fabs_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_fabs_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -160,9 +195,9 @@ printf ("gmp_fabs_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_fabs_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_fabs_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -182,6 +217,13 @@ printf ("gmp_abs_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_abs_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -191,9 +233,9 @@ printf ("gmp_abs_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_abs_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_abs_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -213,6 +255,13 @@ printf ("gmp_dim_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_dim_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 b ALIGN;
 
 sp = stpopi ((U1 *) &b, sp, sp_top);
@@ -222,9 +271,9 @@ printf ("gmp_dim_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (b >= MAX_FLOAT_NUM)
+if (b >= MAX_FLOAT_NUM || b < 0)
 {
-printf ("gmp_dim_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_dim_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -238,9 +287,9 @@ printf ("gmp_dim_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (a >= MAX_FLOAT_NUM)
+if (a >= MAX_FLOAT_NUM || a < 0)
 {
-printf ("gmp_dim_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_dim_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -260,6 +309,13 @@ printf ("gmp_log_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_log_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -269,9 +325,9 @@ printf ("gmp_log_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_log_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_log_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -291,6 +347,13 @@ printf ("gmp_log2_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_log2_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -300,9 +363,9 @@ printf ("gmp_log2_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_log2_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_log2_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -322,6 +385,13 @@ printf ("gmp_logb_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_logb_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -331,9 +401,9 @@ printf ("gmp_logb_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_logb_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_logb_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -353,6 +423,13 @@ printf ("gmp_log10_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_log10_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -362,9 +439,9 @@ printf ("gmp_log10_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_log10_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_log10_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -384,6 +461,13 @@ printf ("gmp_exp2_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_exp2_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -393,9 +477,9 @@ printf ("gmp_exp2_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_exp2_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_exp2_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -415,6 +499,13 @@ printf ("gmp_exp10_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_exp10_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -424,9 +515,9 @@ printf ("gmp_exp10_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_exp10_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_exp10_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -446,6 +537,13 @@ printf ("gmp_log1p_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_log1p_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -455,9 +553,9 @@ printf ("gmp_log1p_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_log1p_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_log1p_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -477,6 +575,13 @@ printf ("gmp_expm1_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_expm1_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -486,9 +591,9 @@ printf ("gmp_expm1_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_expm1_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_expm1_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -508,6 +613,13 @@ printf ("gmp_cos_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_cos_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -517,9 +629,9 @@ printf ("gmp_cos_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_cos_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_cos_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -539,6 +651,13 @@ printf ("gmp_sin_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_sin_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -548,9 +667,9 @@ printf ("gmp_sin_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_sin_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_sin_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -570,6 +689,13 @@ printf ("gmp_tan_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_tan_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -579,9 +705,9 @@ printf ("gmp_tan_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_tan_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_tan_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -601,6 +727,13 @@ printf ("gmp_sec_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_sec_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -610,9 +743,9 @@ printf ("gmp_sec_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_sec_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_sec_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -632,6 +765,13 @@ printf ("gmp_csc_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_csc_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -641,9 +781,9 @@ printf ("gmp_csc_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_csc_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_csc_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -663,6 +803,13 @@ printf ("gmp_cot_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_cot_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -672,9 +819,9 @@ printf ("gmp_cot_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_cot_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_cot_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -694,6 +841,13 @@ printf ("gmp_acos_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_acos_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -703,9 +857,9 @@ printf ("gmp_acos_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_acos_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_acos_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -725,6 +879,13 @@ printf ("gmp_asin_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_asin_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -734,9 +895,9 @@ printf ("gmp_asin_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_asin_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_asin_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -756,6 +917,13 @@ printf ("gmp_atan_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_atan_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -765,9 +933,9 @@ printf ("gmp_atan_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_atan_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_atan_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -787,6 +955,13 @@ printf ("gmp_atan2_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_atan2_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 x ALIGN;
 
 sp = stpopi ((U1 *) &x, sp, sp_top);
@@ -796,9 +971,9 @@ printf ("gmp_atan2_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (x >= MAX_FLOAT_NUM)
+if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_atan2_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_atan2_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -812,9 +987,9 @@ printf ("gmp_atan2_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (y >= MAX_FLOAT_NUM)
+if (y >= MAX_FLOAT_NUM || y < 0)
 {
-printf ("gmp_atan2_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_atan2_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -834,6 +1009,13 @@ printf ("gmp_acot_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_acot_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -843,9 +1025,9 @@ printf ("gmp_acot_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_acot_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_acot_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -865,6 +1047,13 @@ printf ("gmp_asec_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_asec_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -874,9 +1063,9 @@ printf ("gmp_asec_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_asec_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_asec_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -896,6 +1085,13 @@ printf ("gmp_acsc_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_acsc_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -905,9 +1101,9 @@ printf ("gmp_acsc_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_acsc_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_acsc_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -927,6 +1123,13 @@ printf ("gmp_cosh_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_cosh_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -936,9 +1139,9 @@ printf ("gmp_cosh_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_cosh_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_cosh_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -958,6 +1161,13 @@ printf ("gmp_sinh_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_sinh_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -967,9 +1177,9 @@ printf ("gmp_sinh_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_sinh_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_sinh_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -989,6 +1199,13 @@ printf ("gmp_tanh_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_tanh_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -998,9 +1215,9 @@ printf ("gmp_tanh_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_tanh_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_tanh_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1020,6 +1237,13 @@ printf ("gmp_sech_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_sech_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1029,9 +1253,9 @@ printf ("gmp_sech_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_sech_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_sech_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1051,6 +1275,13 @@ printf ("gmp_csch_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_csch_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1060,9 +1291,9 @@ printf ("gmp_csch_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_csch_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_csch_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1082,6 +1313,13 @@ printf ("gmp_coth_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_coth_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1091,9 +1329,9 @@ printf ("gmp_coth_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_coth_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_coth_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1113,6 +1351,13 @@ printf ("gmp_acosh_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_acosh_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1122,9 +1367,9 @@ printf ("gmp_acosh_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_acosh_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_acosh_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1144,6 +1389,13 @@ printf ("gmp_asinh_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_asinh_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1153,9 +1405,9 @@ printf ("gmp_asinh_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_asinh_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_asinh_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1175,6 +1427,13 @@ printf ("gmp_atanh_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_atanh_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1184,9 +1443,9 @@ printf ("gmp_atanh_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_atanh_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_atanh_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1206,6 +1465,13 @@ printf ("gmp_acoth_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_acoth_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1215,9 +1481,9 @@ printf ("gmp_acoth_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_acoth_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_acoth_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1237,6 +1503,13 @@ printf ("gmp_asech_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_asech_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1246,9 +1519,9 @@ printf ("gmp_asech_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_asech_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_asech_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1268,6 +1541,13 @@ printf ("gmp_acsch_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_acsch_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1277,9 +1557,9 @@ printf ("gmp_acsch_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_acsch_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_acsch_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1299,6 +1579,13 @@ printf ("gmp_hypot_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_hypot_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 y ALIGN;
 
 sp = stpopi ((U1 *) &y, sp, sp_top);
@@ -1308,9 +1595,9 @@ printf ("gmp_hypot_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (y >= MAX_FLOAT_NUM)
+if (y >= MAX_FLOAT_NUM || y < 0)
 {
-printf ("gmp_hypot_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_hypot_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1324,9 +1611,9 @@ printf ("gmp_hypot_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (x >= MAX_FLOAT_NUM)
+if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_hypot_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_hypot_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1346,6 +1633,13 @@ printf ("gmp_eint_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_eint_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1355,9 +1649,9 @@ printf ("gmp_eint_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_eint_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_eint_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1377,6 +1671,13 @@ printf ("gmp_gamma_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_gamma_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1386,9 +1687,9 @@ printf ("gmp_gamma_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_gamma_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_gamma_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1408,6 +1709,13 @@ printf ("gmp_tgamma_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_tgamma_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1417,9 +1725,9 @@ printf ("gmp_tgamma_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_tgamma_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_tgamma_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1439,6 +1747,13 @@ printf ("gmp_lngamma_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_lngamma_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1448,9 +1763,9 @@ printf ("gmp_lngamma_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_lngamma_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_lngamma_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1470,6 +1785,13 @@ printf ("gmp_zeta_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_zeta_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1479,9 +1801,9 @@ printf ("gmp_zeta_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_zeta_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_zeta_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1501,6 +1823,13 @@ printf ("gmp_erf_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_erf_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1510,9 +1839,9 @@ printf ("gmp_erf_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_erf_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_erf_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1532,6 +1861,13 @@ printf ("gmp_erfc_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_erfc_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1541,9 +1877,9 @@ printf ("gmp_erfc_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_erfc_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_erfc_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1563,6 +1899,13 @@ printf ("gmp_bessely0_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_bessely0_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1572,9 +1915,9 @@ printf ("gmp_bessely0_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_bessely0_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_bessely0_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1594,6 +1937,13 @@ printf ("gmp_bessely1_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_bessely1_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1603,9 +1953,9 @@ printf ("gmp_bessely1_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_bessely1_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_bessely1_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1625,6 +1975,13 @@ printf ("gmp_fma_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_fma_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v3 ALIGN;
 
 sp = stpopi ((U1 *) &v3, sp, sp_top);
@@ -1634,9 +1991,9 @@ printf ("gmp_fma_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v3 >= MAX_FLOAT_NUM)
+if (v3 >= MAX_FLOAT_NUM || v3 < 0)
 {
-printf ("gmp_fma_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_fma_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1650,9 +2007,9 @@ printf ("gmp_fma_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v2 >= MAX_FLOAT_NUM)
+if (v2 >= MAX_FLOAT_NUM || v2 < 0)
 {
-printf ("gmp_fma_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_fma_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1666,9 +2023,9 @@ printf ("gmp_fma_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v1 >= MAX_FLOAT_NUM)
+if (v1 >= MAX_FLOAT_NUM || v1 < 0)
 {
-printf ("gmp_fma_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_fma_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1688,6 +2045,13 @@ printf ("gmp_fms_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_fms_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v3 ALIGN;
 
 sp = stpopi ((U1 *) &v3, sp, sp_top);
@@ -1697,9 +2061,9 @@ printf ("gmp_fms_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v3 >= MAX_FLOAT_NUM)
+if (v3 >= MAX_FLOAT_NUM || v3 < 0)
 {
-printf ("gmp_fms_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_fms_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1713,9 +2077,9 @@ printf ("gmp_fms_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v2 >= MAX_FLOAT_NUM)
+if (v2 >= MAX_FLOAT_NUM || v2 < 0)
 {
-printf ("gmp_fms_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_fms_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1729,9 +2093,9 @@ printf ("gmp_fms_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v1 >= MAX_FLOAT_NUM)
+if (v1 >= MAX_FLOAT_NUM || v1 < 0)
 {
-printf ("gmp_fms_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_fms_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1751,6 +2115,13 @@ printf ("gmp_agm_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_agm_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v2 ALIGN;
 
 sp = stpopi ((U1 *) &v2, sp, sp_top);
@@ -1760,9 +2131,9 @@ printf ("gmp_agm_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v2 >= MAX_FLOAT_NUM)
+if (v2 >= MAX_FLOAT_NUM || v2 < 0)
 {
-printf ("gmp_agm_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_agm_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1776,9 +2147,9 @@ printf ("gmp_agm_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v1 >= MAX_FLOAT_NUM)
+if (v1 >= MAX_FLOAT_NUM || v1 < 0)
 {
-printf ("gmp_agm_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_agm_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1798,6 +2169,13 @@ printf ("gmp_li2_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_li2_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1807,9 +2185,9 @@ printf ("gmp_li2_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_li2_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_li2_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1829,6 +2207,13 @@ printf ("gmp_fmod_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_fmod_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 y ALIGN;
 
 sp = stpopi ((U1 *) &y, sp, sp_top);
@@ -1838,9 +2223,9 @@ printf ("gmp_fmod_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (y >= MAX_FLOAT_NUM)
+if (y >= MAX_FLOAT_NUM || y < 0)
 {
-printf ("gmp_fmod_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_fmod_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1854,9 +2239,9 @@ printf ("gmp_fmod_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (x >= MAX_FLOAT_NUM)
+if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_fmod_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_fmod_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1876,6 +2261,13 @@ printf ("gmp_rec_sqrt_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_rec_sqrt_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1885,9 +2277,9 @@ printf ("gmp_rec_sqrt_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_rec_sqrt_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_rec_sqrt_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1907,6 +2299,13 @@ printf ("gmp_digamma_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_digamma_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1916,9 +2315,9 @@ printf ("gmp_digamma_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_digamma_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_digamma_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1938,6 +2337,13 @@ printf ("gmp_ai_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_ai_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1947,9 +2353,9 @@ printf ("gmp_ai_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_ai_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_ai_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1969,6 +2375,13 @@ printf ("gmp_rint_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_rint_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -1978,9 +2391,9 @@ printf ("gmp_rint_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_rint_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_rint_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2000,6 +2413,13 @@ printf ("gmp_ceil_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_ceil_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -2009,9 +2429,9 @@ printf ("gmp_ceil_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_ceil_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_ceil_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2031,6 +2451,13 @@ printf ("gmp_floor_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_floor_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -2040,9 +2467,9 @@ printf ("gmp_floor_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_floor_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_floor_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2062,6 +2489,13 @@ printf ("gmp_round_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_round_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -2071,9 +2505,9 @@ printf ("gmp_round_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_round_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_round_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2093,6 +2527,13 @@ printf ("gmp_trunc_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_trunc_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -2102,9 +2543,9 @@ printf ("gmp_trunc_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_trunc_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_trunc_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2124,6 +2565,13 @@ printf ("gmp_rint_ceil_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_rint_ceil_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -2133,9 +2581,9 @@ printf ("gmp_rint_ceil_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_rint_ceil_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_rint_ceil_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2155,6 +2603,13 @@ printf ("gmp_rint_floor_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_rint_floor_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -2164,9 +2619,9 @@ printf ("gmp_rint_floor_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_rint_floor_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_rint_floor_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2186,6 +2641,13 @@ printf ("gmp_rint_round_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_rint_round_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -2195,9 +2657,9 @@ printf ("gmp_rint_round_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_rint_round_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_rint_round_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2217,6 +2679,13 @@ printf ("gmp_rint_trunc_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_rint_trunc_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -2226,9 +2695,9 @@ printf ("gmp_rint_trunc_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_rint_trunc_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_rint_trunc_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2248,6 +2717,13 @@ printf ("gmp_frac_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_frac_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 v ALIGN;
 
 sp = stpopi ((U1 *) &v, sp, sp_top);
@@ -2257,9 +2733,9 @@ printf ("gmp_frac_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (v >= MAX_FLOAT_NUM)
+if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_frac_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_frac_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2279,6 +2755,13 @@ printf ("gmp_remainder_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_remainder_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 y ALIGN;
 
 sp = stpopi ((U1 *) &y, sp, sp_top);
@@ -2288,9 +2771,9 @@ printf ("gmp_remainder_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (y >= MAX_FLOAT_NUM)
+if (y >= MAX_FLOAT_NUM || y < 0)
 {
-printf ("gmp_remainder_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_remainder_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2304,9 +2787,9 @@ printf ("gmp_remainder_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (x >= MAX_FLOAT_NUM)
+if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_remainder_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_remainder_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2326,6 +2809,13 @@ printf ("gmp_nexttoward_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_nexttoward_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 y ALIGN;
 
 sp = stpopi ((U1 *) &y, sp, sp_top);
@@ -2335,9 +2825,9 @@ printf ("gmp_nexttoward_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (y >= MAX_FLOAT_NUM)
+if (y >= MAX_FLOAT_NUM || y < 0)
 {
-printf ("gmp_nexttoward_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_nexttoward_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2351,9 +2841,9 @@ printf ("gmp_nexttoward_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (x >= MAX_FLOAT_NUM)
+if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_nexttoward_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_nexttoward_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2373,6 +2863,13 @@ printf ("gmp_nextabove_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_nextabove_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 x ALIGN;
 
 sp = stpopi ((U1 *) &x, sp, sp_top);
@@ -2382,9 +2879,9 @@ printf ("gmp_nextabove_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (x >= MAX_FLOAT_NUM)
+if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_nextabove_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_nextabove_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2404,6 +2901,13 @@ printf ("gmp_nextbelow_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_nextbelow_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 x ALIGN;
 
 sp = stpopi ((U1 *) &x, sp, sp_top);
@@ -2413,9 +2917,9 @@ printf ("gmp_nextbelow_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (x >= MAX_FLOAT_NUM)
+if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_nextbelow_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_nextbelow_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2435,6 +2939,13 @@ printf ("gmp_fmax_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_fmax_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 y ALIGN;
 
 sp = stpopi ((U1 *) &y, sp, sp_top);
@@ -2444,9 +2955,9 @@ printf ("gmp_fmax_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (y >= MAX_FLOAT_NUM)
+if (y >= MAX_FLOAT_NUM || y < 0)
 {
-printf ("gmp_fmax_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_fmax_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2460,9 +2971,9 @@ printf ("gmp_fmax_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (x >= MAX_FLOAT_NUM)
+if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_fmax_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_fmax_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2482,6 +2993,13 @@ printf ("gmp_fmin_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_fmin_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
 S8 y ALIGN;
 
 sp = stpopi ((U1 *) &y, sp, sp_top);
@@ -2491,9 +3009,9 @@ printf ("gmp_fmin_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (y >= MAX_FLOAT_NUM)
+if (y >= MAX_FLOAT_NUM || y < 0)
 {
-printf ("gmp_fmin_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_fmin_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2507,9 +3025,9 @@ printf ("gmp_fmin_float: ERROR: stack corrupt!\n");
 return (NULL);
 }
 
-if (x >= MAX_FLOAT_NUM)
+if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_fmin_float: ERROR float index x out of range! Must be 0 - %i", MAX_FLOAT_NUM);
+printf ("gmp_fmin_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 

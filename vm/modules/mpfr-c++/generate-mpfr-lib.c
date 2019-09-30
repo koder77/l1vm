@@ -263,6 +263,12 @@ S2 generate_c (FILE *c_file, S8 max_vars)
 		return (1);
 	}
 
+	if (fprintf (c_file, "\nif (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0\)\n{\nprintf (\"gmp_%s_float: ERROR float index x out of range! Must be 0 < %%i\", MAX_FLOAT_NUM\);\nreturn (NULL);\n}\n\n", line_args[0]) < 0)
+	{
+		printf ("generate_c: error writing C function check float index overflow!\n");
+		return (1);
+	}
+
 	// write stpopi blocks
 	for (i = max_vars - 1; i >= 0; i--)
 	{
@@ -278,7 +284,7 @@ S2 generate_c (FILE *c_file, S8 max_vars)
 			return (1);
 		}
 
-		if (fprintf (c_file, "\nif (%s >= MAX_FLOAT_NUM\)\n{\nprintf (\"gmp_%s_float: ERROR float index x out of range! Must be 0 - %%i\", MAX_FLOAT_NUM\);\nreturn (NULL);\n}\n\n", num_names[i], line_args[0]) < 0)
+		if (fprintf (c_file, "\nif (%s >= MAX_FLOAT_NUM || %s < 0\)\n{\nprintf (\"gmp_%s_float: ERROR float index x out of range! Must be 0 < %%i\", MAX_FLOAT_NUM\);\nreturn (NULL);\n}\n\n", num_names[i], num_names[i], line_args[0]) < 0)
 		{
 			printf ("generate_c: error writing C function check float index overflow!\n");
 			return (1);
