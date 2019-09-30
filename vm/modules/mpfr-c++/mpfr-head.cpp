@@ -486,7 +486,7 @@ extern "C" U1 *mp_less_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		printf ("mp_less_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
@@ -494,19 +494,19 @@ extern "C" U1 *mp_less_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		printf ("mp_less_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
 	if (float_index_x >= MAX_FLOAT_NUM)
 	{
-		printf ("mp_add_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_less_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
 	if (float_index_y >= MAX_FLOAT_NUM)
 	{
-		printf ("mp_add_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_less_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -517,7 +517,7 @@ extern "C" U1 *mp_less_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("double2int: ERROR: stack corrupt!\n");
+		printf ("mp_less_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 	return (sp);
@@ -533,7 +533,7 @@ extern "C" U1 *mp_less_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		printf ("mp_less_equal_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
@@ -541,19 +541,19 @@ extern "C" U1 *mp_less_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		printf ("mp_less_equal_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
 	if (float_index_x >= MAX_FLOAT_NUM)
 	{
-		printf ("mp_add_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_less_equal_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
 	if (float_index_y >= MAX_FLOAT_NUM)
 	{
-		printf ("mp_add_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_less_equal_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -564,7 +564,7 @@ extern "C" U1 *mp_less_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("double2int: ERROR: stack corrupt!\n");
+		printf ("mp_less_equal_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 	return (sp);
@@ -580,7 +580,7 @@ extern "C" U1 *mp_greater_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		printf ("mp_greater_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
@@ -588,19 +588,19 @@ extern "C" U1 *mp_greater_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		printf ("mp_greater_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
 	if (float_index_x >= MAX_FLOAT_NUM)
 	{
-		printf ("mp_add_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_greater_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
 	if (float_index_y >= MAX_FLOAT_NUM)
 	{
-		printf ("mp_add_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_greater_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -611,7 +611,7 @@ extern "C" U1 *mp_greater_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("double2int: ERROR: stack corrupt!\n");
+		printf ("mp_greater_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 	return (sp);
@@ -627,7 +627,7 @@ extern "C" U1 *mp_greater_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *da
 	if (sp == NULL)
 	{
 		// error
-		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		printf ("mp_greater_equal_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
@@ -635,19 +635,19 @@ extern "C" U1 *mp_greater_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *da
 	if (sp == NULL)
 	{
 		// error
-		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		printf ("mp_greater_equal_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
 	if (float_index_x >= MAX_FLOAT_NUM)
 	{
-		printf ("mp_add_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_greater_equal_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
 	if (float_index_y >= MAX_FLOAT_NUM)
 	{
-		printf ("mp_add_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_greater_equal_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -658,7 +658,7 @@ extern "C" U1 *mp_greater_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *da
 	if (sp == NULL)
 	{
 		// error
-		printf ("double2int: ERROR: stack corrupt!\n");
+		printf ("mp_greater_equal_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 	return (sp);
@@ -674,7 +674,7 @@ extern "C" U1 *mp_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		printf ("mp_equal_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
@@ -682,19 +682,19 @@ extern "C" U1 *mp_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		printf ("mp_equal_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
 	if (float_index_x >= MAX_FLOAT_NUM)
 	{
-		printf ("mp_add_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_equal_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
 	if (float_index_y >= MAX_FLOAT_NUM)
 	{
-		printf ("mp_add_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_equal_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -705,7 +705,7 @@ extern "C" U1 *mp_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("double2int: ERROR: stack corrupt!\n");
+		printf ("mp_equal_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 	return (sp);
@@ -721,7 +721,7 @@ extern "C" U1 *mp_not_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		printf ("mp_not_equal_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
@@ -729,19 +729,19 @@ extern "C" U1 *mp_not_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("mp_add_float: ERROR: stack corrupt!\n");
+		printf ("mp_not_equal_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
 	if (float_index_x >= MAX_FLOAT_NUM)
 	{
-		printf ("mp_add_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_not_equal_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
 	if (float_index_y >= MAX_FLOAT_NUM)
 	{
-		printf ("mp_add_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_not_equal_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -752,7 +752,7 @@ extern "C" U1 *mp_not_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("double2int: ERROR: stack corrupt!\n");
+		printf ("mp_not_equal_float: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 	return (sp);

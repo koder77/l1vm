@@ -15,6 +15,7 @@
 	(set int64 1 one 1)
 	(set int64 1 base 10)
 	(set int64 1 precision 50)
+	(set int64 1 f 0)
 	(zero :mp_math_init call)
 	(loadreg)
 	// set variables
@@ -32,6 +33,12 @@
 	(resaddr outstraddr outstr_len formatstr precision :mp_prints_float call)
 	(loadreg)
 	(6 outstr 0 0 intr0)
+	(7 0 0 0 intr0)
+	// check mp_greater call 42.0 > 3.14
+	(yaddr xaddr :mp_greater call)
+	(f stpopi)
+	(loadreg)
+	(4 f 0 0 intr0)
 	(7 0 0 0 intr0)
 	(:mp_cleanup call)
 	(loadreg)
