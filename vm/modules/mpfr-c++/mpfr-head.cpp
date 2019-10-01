@@ -84,9 +84,9 @@ extern "C" U1 *mp_set_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (float_index >= MAX_FLOAT_NUM)
+	if (float_index >= MAX_FLOAT_NUM || float_index < 0)
 	{
-		printf ("mp_set_float: ERROR float index out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_set_float: ERROR float index out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -129,9 +129,9 @@ extern "C" U1 *mp_print_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (float_index_x >= MAX_FLOAT_NUM)
+	if (float_index_x >= MAX_FLOAT_NUM || float_index_x < 0)
 	{
-		printf ("mp_print_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_print_float: ERROR float index x out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -242,9 +242,9 @@ extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (float_index >= MAX_FLOAT_NUM)
+	if (float_index >= MAX_FLOAT_NUM || float_index < 0)
 	{
-		printf ("mp_prints_float: ERROR float index out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_prints_float: ERROR float index out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -296,21 +296,21 @@ extern "C" U1 *mp_add_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (float_index_x >= MAX_FLOAT_NUM)
+	if (float_index_x >= MAX_FLOAT_NUM || float_index_x < 0)
 	{
-		printf ("mp_add_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_add_float: ERROR float index x out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
-	if (float_index_y >= MAX_FLOAT_NUM)
+	if (float_index_y >= MAX_FLOAT_NUM || float_index_y < 0)
 	{
-		printf ("mp_add_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_add_float: ERROR float index y out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
-	if (float_index_res >= MAX_FLOAT_NUM)
+	if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
 	{
-		printf ("mp_add_float: ERROR float index res out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_add_float: ERROR float index res out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -348,21 +348,21 @@ extern "C" U1 *mp_sub_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (float_index_x >= MAX_FLOAT_NUM)
+	if (float_index_x >= MAX_FLOAT_NUM || float_index_x < 0)
 	{
-		printf ("mp_sub_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_sub_float: ERROR float index x out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
-	if (float_index_y >= MAX_FLOAT_NUM)
+	if (float_index_y >= MAX_FLOAT_NUM || float_index_y < 0)
 	{
-		printf ("mp_sub_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_sub_float: ERROR float index y out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
-	if (float_index_res >= MAX_FLOAT_NUM)
+	if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
 	{
-		printf ("mp_sub_float: ERROR float index res out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_sub_float: ERROR float index res out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -400,21 +400,21 @@ extern "C" U1 *mp_mul_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (float_index_x >= MAX_FLOAT_NUM)
+	if (float_index_x >= MAX_FLOAT_NUM || float_index_x < 0)
 	{
-		printf ("mp_mul_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_mul_float: ERROR float index x out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
-	if (float_index_y >= MAX_FLOAT_NUM)
+	if (float_index_y >= MAX_FLOAT_NUM || float_index_y < 0)
 	{
-		printf ("mp_mul_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_mul_float: ERROR float index y out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
-	if (float_index_res >= MAX_FLOAT_NUM)
+	if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
 	{
-		printf ("mp_mul_float: ERROR float index res out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_mul_float: ERROR float index res out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -452,21 +452,21 @@ extern "C" U1 *mp_div_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (float_index_x >= MAX_FLOAT_NUM)
+	if (float_index_x >= MAX_FLOAT_NUM || float_index_x < 0)
 	{
-		printf ("mp_div_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_div_float: ERROR float index x out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
-	if (float_index_y >= MAX_FLOAT_NUM)
+	if (float_index_y >= MAX_FLOAT_NUM || float_index_y < 0)
 	{
-		printf ("mp_div_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_div_float: ERROR float index y out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
-	if (float_index_res >= MAX_FLOAT_NUM)
+	if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
 	{
-		printf ("mp_div_float: ERROR float index res out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_div_float: ERROR float index res out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -498,15 +498,15 @@ extern "C" U1 *mp_less_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (float_index_x >= MAX_FLOAT_NUM)
+	if (float_index_x >= MAX_FLOAT_NUM || float_index_x < 0)
 	{
-		printf ("mp_less_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_less_float: ERROR float index x out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
-	if (float_index_y >= MAX_FLOAT_NUM)
+	if (float_index_y >= MAX_FLOAT_NUM || float_index_y < 0)
 	{
-		printf ("mp_less_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_less_float: ERROR float index y out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -545,15 +545,15 @@ extern "C" U1 *mp_less_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (float_index_x >= MAX_FLOAT_NUM)
+	if (float_index_x >= MAX_FLOAT_NUM || float_index_x < 0)
 	{
-		printf ("mp_less_equal_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_less_equal_float: ERROR float index x out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
-	if (float_index_y >= MAX_FLOAT_NUM)
+	if (float_index_y >= MAX_FLOAT_NUM || float_index_y < 0)
 	{
-		printf ("mp_less_equal_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_less_equal_float: ERROR float index y out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -592,15 +592,15 @@ extern "C" U1 *mp_greater_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (float_index_x >= MAX_FLOAT_NUM)
+	if (float_index_x >= MAX_FLOAT_NUM || float_index_x < 0)
 	{
-		printf ("mp_greater_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_greater_float: ERROR float index x out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
-	if (float_index_y >= MAX_FLOAT_NUM)
+	if (float_index_y >= MAX_FLOAT_NUM || float_index_y < 0)
 	{
-		printf ("mp_greater_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_greater_float: ERROR float index y out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -639,15 +639,15 @@ extern "C" U1 *mp_greater_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *da
 		return (NULL);
 	}
 
-	if (float_index_x >= MAX_FLOAT_NUM)
+	if (float_index_x >= MAX_FLOAT_NUM || float_index_x < 0)
 	{
-		printf ("mp_greater_equal_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_greater_equal_float: ERROR float index x out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
-	if (float_index_y >= MAX_FLOAT_NUM)
+	if (float_index_y >= MAX_FLOAT_NUM || float_index_y < 0)
 	{
-		printf ("mp_greater_equal_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_greater_equal_float: ERROR float index y out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -686,15 +686,15 @@ extern "C" U1 *mp_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (float_index_x >= MAX_FLOAT_NUM)
+	if (float_index_x >= MAX_FLOAT_NUM || float_index_x < 0)
 	{
-		printf ("mp_equal_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_equal_float: ERROR float index x out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
-	if (float_index_y >= MAX_FLOAT_NUM)
+	if (float_index_y >= MAX_FLOAT_NUM || float_index_y < 0)
 	{
-		printf ("mp_equal_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_equal_float: ERROR float index y out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
@@ -733,15 +733,15 @@ extern "C" U1 *mp_not_equal_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (float_index_x >= MAX_FLOAT_NUM)
+	if (float_index_x >= MAX_FLOAT_NUM || float_index_x < 0)
 	{
-		printf ("mp_not_equal_float: ERROR float index x out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_not_equal_float: ERROR float index x out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
-	if (float_index_y >= MAX_FLOAT_NUM)
+	if (float_index_y >= MAX_FLOAT_NUM || float_index_y < 0)
 	{
-		printf ("mp_not_equal_float: ERROR float index y out of range! Must be 0 - %i\n", MAX_FLOAT_NUM);
+		printf ("mp_not_equal_float: ERROR float index y out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
 		return (NULL);
 	}
 
