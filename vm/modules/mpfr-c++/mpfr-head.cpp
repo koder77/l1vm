@@ -19,7 +19,9 @@
 
 #include "../../../include/global.h"
 #include <iostream>
+#include <mpfr.h>
 #include <mpreal.h>
+
 
 #include "../../../include/stack.h"
 
@@ -264,6 +266,8 @@ extern "C" U1 *mp_cleanup (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+// float math =================================================================
+
 // calculate float ============================================================
 
 extern "C" U1 *mp_add_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -314,7 +318,8 @@ extern "C" U1 *mp_add_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	mpf_float[float_index_res] = mpf_float[float_index_x] + mpf_float[float_index_y];
+	//mpf_float[float_index_res] = mpf_float[float_index_x] + mpf_float[float_index_y];
+	mpfr_add (mpf_float[float_index_res].mpfr_ptr(), mpf_float[float_index_x].mpfr_srcptr(), mpf_float[float_index_y].mpfr_srcptr(), MPFR_RNDN);
 	return (sp);
 }
 
@@ -366,7 +371,8 @@ extern "C" U1 *mp_sub_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	mpf_float[float_index_res] = mpf_float[float_index_x] - mpf_float[float_index_y];
+	//mpf_float[float_index_res] = mpf_float[float_index_x] - mpf_float[float_index_y];
+	mpfr_sub (mpf_float[float_index_res].mpfr_ptr(), mpf_float[float_index_x].mpfr_srcptr(), mpf_float[float_index_y].mpfr_srcptr(), MPFR_RNDN);
 	return (sp);
 }
 
@@ -418,7 +424,8 @@ extern "C" U1 *mp_mul_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	mpf_float[float_index_res] = mpf_float[float_index_x] * mpf_float[float_index_y];
+	// mpf_float[float_index_res] = mpf_float[float_index_x] * mpf_float[float_index_y];
+	mpfr_mul (mpf_float[float_index_res].mpfr_ptr(), mpf_float[float_index_x].mpfr_srcptr(), mpf_float[float_index_y].mpfr_srcptr(), MPFR_RNDN);
 	return (sp);
 }
 
@@ -470,9 +477,11 @@ extern "C" U1 *mp_div_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	mpf_float[float_index_res] = mpf_float[float_index_x] + mpf_float[float_index_y];
+	// mpf_float[float_index_res] = mpf_float[float_index_x] / mpf_float[float_index_y];
+	mpfr_div (mpf_float[float_index_res].mpfr_ptr(), mpf_float[float_index_x].mpfr_srcptr(), mpf_float[float_index_y].mpfr_srcptr(), MPFR_RNDN);
 	return (sp);
 }
+
 
 // compare float ==============================================================
 
