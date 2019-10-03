@@ -251,19 +251,19 @@ S2 generate_c (FILE *c_file, S8 max_vars)
 		printf ("generate_c: error writing C function begin!\n");
 		return (1);
 	}
-	if (fprintf (c_file, "\n    S8 float_index_res ALIGN;\n") < 0)
+	if (fprintf (c_file, "\nS8 float_index_res ALIGN;\n") < 0)
 	{
 		printf ("generate_c: error writing C function begin!\n");
 		return (1);
 	}
 
-	if (fprintf (c_file, "\n    sp = stpopi ((U1 *) &float_index_res, sp, sp_top);\n    if (sp == NULL)\n{\n        printf (\"gmp_%s_float: ERROR: stack corrupt!\\n\");\n        return (NULL);\n    }\n", line_args[0]) < 0)
+	if (fprintf (c_file, "\nsp = stpopi ((U1 *) &float_index_res, sp, sp_top);\nif (sp == NULL)\n{\nprintf (\"gmp_%s_float: ERROR: stack corrupt!\\n\");\nreturn (NULL);\n}\n", line_args[0]) < 0)
 	{
 		printf ("generate_c: error writing C function stpopi float result index!\n");
 		return (1);
 	}
 
-	if (fprintf (c_file, "\n    if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0\)\n{\n        printf (\"gmp_%s_float: ERROR float index result out of range! Must be 0 < %%i\", MAX_FLOAT_NUM\);\n        return (NULL);\n    }\n\n", line_args[0]) < 0)
+	if (fprintf (c_file, "\nif (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0\)\n{\nprintf (\"gmp_%s_float: ERROR float index result out of range! Must be 0 < %%i\", MAX_FLOAT_NUM\);\nreturn (NULL);\n}\n\n", line_args[0]) < 0)
 	{
 		printf ("generate_c: error writing C function check float index overflow!\n");
 		return (1);
@@ -272,32 +272,32 @@ S2 generate_c (FILE *c_file, S8 max_vars)
 	// write stpopi blocks
 	for (i = max_vars - 1; i >= 0; i--)
 	{
-		if (fprintf (c_file, "\n    S8 %s ALIGN;\n", num_names[i]) < 0)
+		if (fprintf (c_file, "\nS8 %s ALIGN;\n", num_names[i]) < 0)
 		{
 			printf ("generate_c: error writing C function var stpopi!\n");
 			return (1);
 		}
 
-		if (fprintf (c_file, "\n    sp = stpopi ((U1 *) &%s, sp, sp_top);\n    if (sp == NULL)\n", line_args[0]) < 0)
+		if (fprintf (c_file, "\nsp = stpopi ((U1 *) &%s, sp, sp_top);\nif (sp == NULL)\n", num_names[i]) < 0)
 		{
 			printf ("generate_c: error writing C function stpopi float result index!\n");
 			return (1);
 		}
 
-		if (fprintf (c_file, "        {\n        printf (\"gmp_%s_float: ERROR: stack corrupt!\\n\");\n        return (NULL);\n    }\n", line_args[0]) < 0)
+		if (fprintf (c_file, "{\nprintf (\"gmp_%s_float: ERROR: stack corrupt!\\n\");\nreturn (NULL);\n}\n", line_args[0]) < 0)
 		{
 			printf ("generate_c: error writing C function stpopi float result index!\n");
 			return (1);
 		}
 
-		if (fprintf (c_file, "\n    if (%s >= MAX_FLOAT_NUM || %s < 0\)\n        {\n        printf (\"gmp_%s_float: ERROR float index %s out of range! Must be 0 < %%i\", MAX_FLOAT_NUM\);\n        return (NULL);\n    }\n\n", num_names[i], num_names[i], line_args[0], num_names[i]) < 0)
+		if (fprintf (c_file, "\nif (%s >= MAX_FLOAT_NUM || %s < 0\)\n{\nprintf (\"gmp_%s_float: ERROR float index %s out of range! Must be 0 < %%i\", MAX_FLOAT_NUM\);\nreturn (NULL);\n}\n\n", num_names[i], num_names[i], line_args[0], num_names[i]) < 0)
 		{
 			printf ("generate_c: error writing C function check float index overflow!\n");
 			return (1);
 		}
 	}
 
-	if (fprintf (c_file, "\n    mpf_float[float_index_res] = %s (", line_args[0]) < 0)
+	if (fprintf (c_file, "\nmpf_float[float_index_res] = %s (", line_args[0]) < 0)
 	{
 		printf ("generate_c: error writing C function calculation!\n");
 		return (1);
@@ -319,7 +319,7 @@ S2 generate_c (FILE *c_file, S8 max_vars)
 			}
 		}
 	}
-	if (fprintf (c_file, ");\n    return (sp);\n}\n\n") < 0)
+	if (fprintf (c_file, ");\nreturn (sp);\n}\n\n") < 0)
 	{
 		printf ("generate_c: error writing C function end!\n");
 		return (1);

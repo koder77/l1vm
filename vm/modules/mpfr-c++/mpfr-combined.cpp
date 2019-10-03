@@ -29,7 +29,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index sqr out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_sqr_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -67,7 +67,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index sqrt out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_sqrt_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -105,7 +105,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index cbrt out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_cbrt_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -143,7 +143,7 @@ return (NULL);
 
 if (b >= MAX_FLOAT_NUM || b < 0)
 {
-printf ("gmp_b_float: ERROR float index pow out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_pow_float: ERROR float index b out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -159,7 +159,7 @@ return (NULL);
 
 if (a >= MAX_FLOAT_NUM || a < 0)
 {
-printf ("gmp_a_float: ERROR float index pow out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_pow_float: ERROR float index a out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -197,7 +197,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index fabs out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_fabs_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -235,7 +235,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index abs out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_abs_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -273,7 +273,7 @@ return (NULL);
 
 if (b >= MAX_FLOAT_NUM || b < 0)
 {
-printf ("gmp_b_float: ERROR float index dim out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_dim_float: ERROR float index b out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -289,7 +289,7 @@ return (NULL);
 
 if (a >= MAX_FLOAT_NUM || a < 0)
 {
-printf ("gmp_a_float: ERROR float index dim out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_dim_float: ERROR float index a out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -327,7 +327,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index log out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_log_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -365,7 +365,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index log2 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_log2_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -403,7 +403,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index logb out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_logb_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -441,7 +441,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index log10 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_log10_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -479,7 +479,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index exp2 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_exp2_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -517,7 +517,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index exp10 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_exp10_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -555,7 +555,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index log1p out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_log1p_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -593,7 +593,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index expm1 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_expm1_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -631,7 +631,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index cos out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_cos_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -669,7 +669,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index sin out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_sin_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -707,7 +707,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index tan out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_tan_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -745,7 +745,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index sec out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_sec_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -783,7 +783,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index csc out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_csc_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -821,7 +821,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index cot out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_cot_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -859,7 +859,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index acos out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_acos_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -897,7 +897,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index asin out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_asin_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -935,7 +935,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index atan out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_atan_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -973,7 +973,7 @@ return (NULL);
 
 if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_x_float: ERROR float index atan2 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_atan2_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -989,7 +989,7 @@ return (NULL);
 
 if (y >= MAX_FLOAT_NUM || y < 0)
 {
-printf ("gmp_y_float: ERROR float index atan2 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_atan2_float: ERROR float index y out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1027,7 +1027,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index acot out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_acot_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1065,7 +1065,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index asec out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_asec_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1103,7 +1103,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index acsc out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_acsc_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1141,7 +1141,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index cosh out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_cosh_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1179,7 +1179,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index sinh out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_sinh_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1217,7 +1217,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index tanh out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_tanh_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1255,7 +1255,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index sech out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_sech_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1293,7 +1293,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index csch out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_csch_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1331,7 +1331,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index coth out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_coth_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1369,7 +1369,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index acosh out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_acosh_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1407,7 +1407,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index asinh out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_asinh_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1445,7 +1445,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index atanh out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_atanh_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1483,7 +1483,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index acoth out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_acoth_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1521,7 +1521,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index asech out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_asech_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1559,7 +1559,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index acsch out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_acsch_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1597,7 +1597,7 @@ return (NULL);
 
 if (y >= MAX_FLOAT_NUM || y < 0)
 {
-printf ("gmp_y_float: ERROR float index hypot out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_hypot_float: ERROR float index y out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1613,7 +1613,7 @@ return (NULL);
 
 if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_x_float: ERROR float index hypot out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_hypot_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1651,7 +1651,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index eint out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_eint_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1689,7 +1689,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index gamma out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_gamma_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1727,7 +1727,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index tgamma out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_tgamma_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1765,7 +1765,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index lngamma out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_lngamma_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1803,7 +1803,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index zeta out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_zeta_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1841,7 +1841,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index erf out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_erf_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1879,7 +1879,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index erfc out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_erfc_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1917,7 +1917,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index bessely0 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_bessely0_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1955,7 +1955,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index bessely1 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_bessely1_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -1993,7 +1993,7 @@ return (NULL);
 
 if (v3 >= MAX_FLOAT_NUM || v3 < 0)
 {
-printf ("gmp_v3_float: ERROR float index fma out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_fma_float: ERROR float index v3 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2009,7 +2009,7 @@ return (NULL);
 
 if (v2 >= MAX_FLOAT_NUM || v2 < 0)
 {
-printf ("gmp_v2_float: ERROR float index fma out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_fma_float: ERROR float index v2 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2025,7 +2025,7 @@ return (NULL);
 
 if (v1 >= MAX_FLOAT_NUM || v1 < 0)
 {
-printf ("gmp_v1_float: ERROR float index fma out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_fma_float: ERROR float index v1 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2063,7 +2063,7 @@ return (NULL);
 
 if (v3 >= MAX_FLOAT_NUM || v3 < 0)
 {
-printf ("gmp_v3_float: ERROR float index fms out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_fms_float: ERROR float index v3 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2079,7 +2079,7 @@ return (NULL);
 
 if (v2 >= MAX_FLOAT_NUM || v2 < 0)
 {
-printf ("gmp_v2_float: ERROR float index fms out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_fms_float: ERROR float index v2 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2095,7 +2095,7 @@ return (NULL);
 
 if (v1 >= MAX_FLOAT_NUM || v1 < 0)
 {
-printf ("gmp_v1_float: ERROR float index fms out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_fms_float: ERROR float index v1 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2133,7 +2133,7 @@ return (NULL);
 
 if (v2 >= MAX_FLOAT_NUM || v2 < 0)
 {
-printf ("gmp_v2_float: ERROR float index agm out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_agm_float: ERROR float index v2 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2149,7 +2149,7 @@ return (NULL);
 
 if (v1 >= MAX_FLOAT_NUM || v1 < 0)
 {
-printf ("gmp_v1_float: ERROR float index agm out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_agm_float: ERROR float index v1 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2187,7 +2187,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index li2 out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_li2_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2225,7 +2225,7 @@ return (NULL);
 
 if (y >= MAX_FLOAT_NUM || y < 0)
 {
-printf ("gmp_y_float: ERROR float index fmod out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_fmod_float: ERROR float index y out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2241,7 +2241,7 @@ return (NULL);
 
 if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_x_float: ERROR float index fmod out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_fmod_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2279,7 +2279,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index rec_sqrt out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_rec_sqrt_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2317,7 +2317,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index digamma out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_digamma_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2355,7 +2355,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index ai out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_ai_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2393,7 +2393,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index rint out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_rint_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2431,7 +2431,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index ceil out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_ceil_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2469,7 +2469,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index floor out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_floor_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2507,7 +2507,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index round out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_round_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2545,7 +2545,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index trunc out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_trunc_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2583,7 +2583,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index rint_ceil out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_rint_ceil_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2621,7 +2621,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index rint_floor out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_rint_floor_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2659,7 +2659,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index rint_round out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_rint_round_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2697,7 +2697,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index rint_trunc out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_rint_trunc_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2735,7 +2735,7 @@ return (NULL);
 
 if (v >= MAX_FLOAT_NUM || v < 0)
 {
-printf ("gmp_v_float: ERROR float index frac out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_frac_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2773,7 +2773,7 @@ return (NULL);
 
 if (y >= MAX_FLOAT_NUM || y < 0)
 {
-printf ("gmp_y_float: ERROR float index remainder out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_remainder_float: ERROR float index y out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2789,7 +2789,7 @@ return (NULL);
 
 if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_x_float: ERROR float index remainder out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_remainder_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2827,7 +2827,7 @@ return (NULL);
 
 if (y >= MAX_FLOAT_NUM || y < 0)
 {
-printf ("gmp_y_float: ERROR float index nexttoward out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_nexttoward_float: ERROR float index y out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2843,7 +2843,7 @@ return (NULL);
 
 if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_x_float: ERROR float index nexttoward out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_nexttoward_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2881,7 +2881,7 @@ return (NULL);
 
 if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_x_float: ERROR float index nextabove out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_nextabove_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2919,7 +2919,7 @@ return (NULL);
 
 if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_x_float: ERROR float index nextbelow out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_nextbelow_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2957,7 +2957,7 @@ return (NULL);
 
 if (y >= MAX_FLOAT_NUM || y < 0)
 {
-printf ("gmp_y_float: ERROR float index fmax out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_fmax_float: ERROR float index y out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -2973,7 +2973,7 @@ return (NULL);
 
 if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_x_float: ERROR float index fmax out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_fmax_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -3011,7 +3011,7 @@ return (NULL);
 
 if (y >= MAX_FLOAT_NUM || y < 0)
 {
-printf ("gmp_y_float: ERROR float index fmin out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_fmin_float: ERROR float index y out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
@@ -3027,7 +3027,7 @@ return (NULL);
 
 if (x >= MAX_FLOAT_NUM || x < 0)
 {
-printf ("gmp_x_float: ERROR float index fmin out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+printf ("gmp_fmin_float: ERROR float index x out of range! Must be 0 < %i", MAX_FLOAT_NUM);
 return (NULL);
 }
 
