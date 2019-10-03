@@ -69,6 +69,9 @@ F8 get_temp_double (void);
 char *fgets_uni (char *str, int len, FILE *fptr);
 size_t strlen_safe (const char * str, int maxlen);
 
+void convtabs (U1 *str);
+S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
+
 S2 alloc_code_data (void)
 {
 	code = calloc (code_max, sizeof (U1));
@@ -90,157 +93,6 @@ void free_code_data (void)
 {
 	free (code);
 	free (data);
-}
-
-void convtabs (U1 *str)
-{
-	S2 i, end;
-
-	end = strlen_safe ((const char *) str, MAXLINELEN) - 1;
-
-	for (i = 0; i <= end; i++)
-	{
-		if (str[i] == '\t')
-		{
-			str[i] = ' ';
-		}
-	}
-}
-
-S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens)
-{
-	/* checked: ok! */
-
-	S2 i, j = 0, pos = -1, str_len, srchstr_len;
-	U1 ok = FALSE, check = TRUE;
-	S2 new_end;
-	U1 new_str, new_srchstr;
-
-	str_len = strlen_safe ((const char *) str, MAXLINELEN);
-	srchstr_len = strlen_safe ((const char *) srchstr, MAXLINELEN);
-
-	if (start < 0 || start > str_len - 1)
-	{
-		i = 0;
-	}
-	else
-	{
-		i = start;
-	}
-
-	if (end == 0)
-	{
-		new_end = str_len - 1;
-	}
-	else
-	{
-		new_end = end;
-	}
-
-	while (! ok)
-	{
-		if (case_sens)
-		{
-			if (str[i] == srchstr[j])
-			{
-				pos = i;
-
-				/* found start of searchstring, checking now */
-
-				if (srchstr_len > 1)
-				{
-					for (j = j + 1; j <= srchstr_len - 1; j++)
-					{
-						if (i < new_end)
-						{
-							i++;
-						}
-
-						if (str[i] != srchstr[j]) check = FALSE;
-					}
-				}
-				if (check)
-				{
-					ok = TRUE;
-				}
-				else
-				{
-					pos = -1;
-				}
-			}
-			if (i < new_end)
-			{
-				i++;
-			}
-			else
-			{
-				ok = TRUE;
-			}
-		}
-		else
-		{
-			new_str = str[i];
-			new_srchstr = srchstr[j];
-
-			if (str[i] >= 97 && str[i] <= 122)
-			{
-				new_str = str[i] - 32;
-			}
-			if (srchstr[j] >= 97 && srchstr[j] <= 122)
-			{
-				new_srchstr = srchstr[j] - 32;
-			}
-
-			if (new_str == new_srchstr)
-			{
-				pos = i;
-
-				/* found start of searchstring, checking now */
-
-				if (srchstr_len > 1)
-				{
-					for (j = j + 1; j <= srchstr_len - 1; j++)
-					{
-						if (i < new_end)
-						{
-							i++;
-						}
-
-						new_str = str[i];
-						new_srchstr = srchstr[j];
-
-						if (str[i] >= 97 && str[i] <= 122)
-						{
-							new_str = str[i] - 32;
-						}
-						if (srchstr[j] >= 97 && srchstr[j] <= 122)
-						{
-							new_srchstr = srchstr[j] - 32;
-						}
-
-						if (new_str != new_srchstr) check = FALSE;
-					}
-				}
-				if (check)
-				{
-					ok = TRUE;
-				}
-				else
-				{
-					pos = -1;
-				}
-			}
-			if (i < new_end)
-			{
-				i++;
-			}
-			else
-			{
-				ok = TRUE;
-			}
-		}
-	}
-	return (pos);
 }
 
 S2 get_args (U1 *line)
