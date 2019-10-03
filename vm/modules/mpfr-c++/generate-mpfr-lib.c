@@ -173,13 +173,13 @@ S2 parse_line (U1 *line, S8 startpos)
 
 S2 generate_init_vm (FILE *vm_file, S8 max_vars)
 {
-	if (fprintf (vm_file, "(set string s %sstr@gmp \"mp_%s_float\"\)\n", line_args[0], line_args[0]) < 0)
+	if (fprintf (vm_file, "(set string s %sstr@gmp \"mp_%s_float\")\n", line_args[0], line_args[0]) < 0)
 	{
 		printf ("generate_vm: error writing function begin!\n");
 		return (1);
 	}
 
-	if (fprintf (vm_file, "(set int64 1 %s@gmp %lli\)\n", line_args[0], func_ind) < 0)
+	if (fprintf (vm_file, "(set int64 1 %s@gmp %lli)\n", line_args[0], func_ind) < 0)
 	{
 		printf ("generate_vm: error writing function begin!\n");
 		return (1);
@@ -263,7 +263,7 @@ S2 generate_c (FILE *c_file, S8 max_vars)
 		return (1);
 	}
 
-	if (fprintf (c_file, "\nif (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0\)\n{\nprintf (\"gmp_%s_float: ERROR float index result out of range! Must be 0 < %%i\", MAX_FLOAT_NUM\);\nreturn (NULL);\n}\n\n", line_args[0]) < 0)
+	if (fprintf (c_file, "\nif (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)\n{\nprintf (\"gmp_%s_float: ERROR float index result out of range! Must be 0 < %%i\", MAX_FLOAT_NUM);\nreturn (NULL);\n}\n\n", line_args[0]) < 0)
 	{
 		printf ("generate_c: error writing C function check float index overflow!\n");
 		return (1);
@@ -290,7 +290,7 @@ S2 generate_c (FILE *c_file, S8 max_vars)
 			return (1);
 		}
 
-		if (fprintf (c_file, "\nif (%s >= MAX_FLOAT_NUM || %s < 0\)\n{\nprintf (\"gmp_%s_float: ERROR float index %s out of range! Must be 0 < %%i\", MAX_FLOAT_NUM\);\nreturn (NULL);\n}\n\n", num_names[i], num_names[i], line_args[0], num_names[i]) < 0)
+		if (fprintf (c_file, "\nif (%s >= MAX_FLOAT_NUM || %s < 0)\n{\nprintf (\"gmp_%s_float: ERROR float index %s out of range! Must be 0 < %%i\", MAX_FLOAT_NUM);\nreturn (NULL);\n}\n\n", num_names[i], num_names[i], line_args[0], num_names[i]) < 0)
 		{
 			printf ("generate_c: error writing C function check float index overflow!\n");
 			return (1);
