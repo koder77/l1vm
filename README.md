@@ -1,4 +1,4 @@
-L1VM README  2019-08-15
+L1VM README  2019-10-05
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -6,7 +6,7 @@ L1VM README  2019-08-15
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/P5P2Y3KP)
 
-L1VM is an incredible tiny virtual machine with RISC (or comparable style) CPU, about 61 opcodes and about 36 KB binary size on X86_64 Linux (without JIT-compiler)!
+L1VM is an incredible tiny virtual machine with RISC (or comparable style) CPU, about 61 opcodes and about 40 KB binary size on X86_64 Linux (without JIT-compiler)!
 The VM has a 64 bit core (256 registers for integer and double float) and can run object code
 written in bracket (a high level programming language) or l1asm assembly language.
 
@@ -61,6 +61,7 @@ file - file module
 genann - neural networks module
 gpio - Raspberry Pi GPIO module
 math - some math functions
+mpfr-c++ - MPFR floating point big num library
 net - TCP/IP sockets module
 process - start a new shell process
 rs232 - serial port module
@@ -68,7 +69,13 @@ sdl - graphics primitves module, like pixels, lines...
 string - some string functions
 time - get time and date
 </pre>
-I will update the modules with more functions later...
+
+NEW
+---
+MPFR floating point big numbers library added!
+Now with the MPFR library calculations with high precision can be done.
+See the example in the lib/ directory: "mpfr-lib-auto.l1com".
+There are about 87 math functions in the MPFR library.
 
 NOTE
 ----
