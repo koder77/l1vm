@@ -52,19 +52,19 @@ void convtabs (U1 *str);
 
 S2 parse_line (U1 *line, S8 startpos)
 {
-	S8 pos, arg, arg_pos, line_len, len, arg_len, num_arg;
+	S8 pos, arg, arg_pos, len, arg_len, num_arg;
 	U1 ok = 0, numtype_mpreal;
 	S8 i ALIGN;
 
-	len = strlen_safe (line, MAXLINELEN);
+	len = strlen_safe ((const char *) line, MAXLINELEN);
 	pos = 24;
 
 	// get function name
 	arg_pos = 0;
 
 	printf ("\n\n'%s'\n", line);
-	printf ("startpos: %li\n", startpos);
-	printf ("pos: %li\n", pos);
+	printf ("startpos: %lli\n", startpos);
+	printf ("pos: %lli\n", pos);
 
 	while (! ok)
 	{
@@ -123,29 +123,29 @@ S2 parse_line (U1 *line, S8 startpos)
 	numtype_mpreal = 0, num_arg = 0;
 	for (i = 2; i <= arg - 1; i++)
 	{
-		arg_len = strlen_safe (line_args[i], MAXLINELEN);
+		arg_len = strlen_safe ((const char *) line_args[i], MAXLINELEN);
 		if (arg_len != 0)
 		{
 			numtype_mpreal = 0;
-			if (strcmp (line_args[i], NUM_TYPE_CONST) == 0)
+			if (strcmp ((const char *) line_args[i], NUM_TYPE_CONST) == 0)
 			{
 				numtype_mpreal = 1;
 			}
 
-			if (strcmp (line_args[i], NUM_TYPE_RND) == 0)
+			if (strcmp ((const char *) line_args[i], NUM_TYPE_RND) == 0)
 			{
 				numtype_mpreal = 1;
 			}
 
-			if (strcmp (line_args[i], NUM_TYPE_RND2) == 0)
+			if (strcmp ((const char *) line_args[i], NUM_TYPE_RND2) == 0)
 			{
 				numtype_mpreal = 1;
 			}
 
-			if (strcmp (line_args[i], NUM_TYPE_MPREAL) == 0)
+			if (strcmp ((const char *) line_args[i], NUM_TYPE_MPREAL) == 0)
 			{
 				// get next argument as variable name
-				strcpy (num_names[num_arg], line_args[i + 1]);
+				strcpy ((char *) num_names[num_arg], (const char *) line_args[i + 1]);
 
 				printf ("parse_line: number name: '%s'\n", num_names[num_arg]);
 				num_arg++;
@@ -184,6 +184,7 @@ S2 generate_init_vm (FILE *vm_file, S8 max_vars)
 		printf ("generate_vm: error writing function begin!\n");
 		return (1);
 	}
+	return (0);
 }
 
 S2 generate_main_vm (FILE *vm_file)
@@ -198,7 +199,7 @@ S2 generate_main_vm (FILE *vm_file)
 			return (1);
 		}
 	}
-	if (fprintf (vm_file, "(funcend)\n", func_names[i], func_names[i]) < 0)
+	if (fprintf (vm_file, "(funcend)\n") < 0)
 	{
 		printf ("generate_vm: error writing function table!\n");
 		return (1);
@@ -228,19 +229,19 @@ S2 generate_c (FILE *c_file, S8 max_vars)
 	S8 i ALIGN;
 
 	// already defined in handwritten part...
-	if (strcmp (line_args[0], "add") == 0)
+	if (strcmp ((const char *) line_args[0], "add") == 0)
 	{
 		return (2);
 	}
-	if (strcmp (line_args[0], "sub") == 0)
+	if (strcmp ((const char *) line_args[0], "sub") == 0)
 	{
 		return (2);
 	}
-	if (strcmp (line_args[0], "mul") == 0)
+	if (strcmp ((const char *) line_args[0], "mul") == 0)
 	{
 		return (2);
 	}
-	if (strcmp (line_args[0], "div") == 0)
+	if (strcmp ((const char *) line_args[0], "div") == 0)
 	{
 		return (2);
 	}
@@ -421,7 +422,7 @@ int main (int ac, char *av[])
 				// save function name
 				if (func_ind < MAXFUNC)
 				{
-					strcpy (func_names[func_ind], line_args[0]);
+					strcpy ((char *) func_names[func_ind], (const char *) line_args[0]);
 					func_ind++;
 				}
 				else

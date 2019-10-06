@@ -23,6 +23,9 @@ INTR0
 17: return current time: hh mm ss
 18: return current date: year month day
 19: return weekday since sunday: 0 - 6
+20: print double number with format string setup
+251: check double number overflow
+252: get overflow flag
 253: run JIT-compiler
 254: run JIT-code
 255: EXIT program
