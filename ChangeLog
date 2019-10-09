@@ -17,7 +17,7 @@ I already wrote some wrapper for trigonometry functions. More functions will com
 New: MPFR library: constant functions added for pi, log2, euler and catalan.
 See lib/mpfr-lib-auto.l1com.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Wed Oct 09 20:00 17:25 +0200
+-- Stefan Pietzonke <jay-t@gmx.net>  Wed Oct 2019 20:00 +0200
 
 
 L1VM - (0.9.9)
