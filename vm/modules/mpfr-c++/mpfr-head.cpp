@@ -98,6 +98,112 @@ extern "C" U1 *mp_set_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+// get const ==================================================================
+
+extern "C" U1 *mp_get_pi_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index_res ALIGN;
+	S8 float_prec ALIGN;
+
+	sp = stpopi ((U1 *) &float_index_res, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_get_pi_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	// floating point precision
+	sp = stpopi ((U1 *) &float_prec, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_get_pi_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	mpf_float[float_index_res] = mpfr::const_pi (float_prec, MPFR_RNDN);
+	return (sp);
+}
+
+extern "C" U1 *mp_get_log2_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index_res ALIGN;
+	S8 float_prec ALIGN;
+
+	sp = stpopi ((U1 *) &float_index_res, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_get_log2_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	// floating point precision
+	sp = stpopi ((U1 *) &float_prec, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_get_log2_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	mpf_float[float_index_res] = mpfr::const_log2 (float_prec, MPFR_RNDN);
+	return (sp);
+}
+
+extern "C" U1 *mp_get_euler_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index_res ALIGN;
+	S8 float_prec ALIGN;
+
+	sp = stpopi ((U1 *) &float_index_res, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_get_euler_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	// floating point precision
+	sp = stpopi ((U1 *) &float_prec, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_get_euler_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	mpf_float[float_index_res] = mpfr::const_euler (float_prec, MPFR_RNDN);
+	return (sp);
+}
+
+extern "C" U1 *mp_get_catalan_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index_res ALIGN;
+	S8 float_prec ALIGN;
+
+	sp = stpopi ((U1 *) &float_index_res, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_get_catalan_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	// floating point precision
+	sp = stpopi ((U1 *) &float_prec, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_get_catalan_float: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	mpf_float[float_index_res] = mpfr::const_catalan (float_prec, MPFR_RNDN);
+	return (sp);
+}
+
 
 // print float number =========================================================
 

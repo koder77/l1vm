@@ -31,7 +31,7 @@
 #define LINE_ARGS			256
 
 // functions already build in:
-#define FUNCTION_HEAD			13
+#define FUNCTION_HEAD			18
 
 // input line splitted into arguments
 U1 line_args[LINE_ARGS][MAXLINELEN];

@@ -14,7 +14,10 @@ New: MPFR big number calculation library: float numbers: add, sub, mul, div, pri
 See vm/modules/mpfr-c++ and lib/mpfr-lib.l1com.
 I already wrote some wrapper for trigonometry functions. More functions will come later...
 
--- Stefan Pietzonke <jay-t@gmx.net>  Thu Sep 26 2019 17:25 +0200
+New: MPFR library: constant functions added for pi, log2, euler and catalan.
+See lib/mpfr-lib-auto.l1com.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Wed Oct 09 20:00 17:25 +0200
 
 
 L1VM - (0.9.9)
