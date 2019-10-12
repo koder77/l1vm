@@ -396,7 +396,7 @@ extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     cout.rdbuf(stream_buffer_file);
 	cout.precision (precision);
 
-    cout << mpf_float[float_index] << endl;
+    cout << mpf_float[float_index];
 
     // Redirect cout back to screen
     cout.rdbuf(stream_buffer_cout);

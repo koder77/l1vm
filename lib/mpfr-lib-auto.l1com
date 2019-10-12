@@ -6,6 +6,7 @@
 	(set int64 1 xaddr 0)
 	(set int64 1 yaddr 1)
 	(set int64 1 resaddr 2)
+	(set int64 1 outaddr 3)
 	(set string s xstr "0.0")
 	(set string s ystr "42.0")
 	(set string s resstr "0.0")
@@ -33,9 +34,16 @@
 	(resaddr formatstraddr precision :mp_print_float call)
 	(loadreg)
 	(7 0 0 0 intr0)
+	// save number to string
 	(resaddr outstraddr outstr_len formatstr precision :mp_prints_float call)
 	(loadreg)
 	(6 outstr 0 0 intr0)
+	(7 0 0 0 intr0)
+	// read from string and print as nuber
+	(outstraddr base outaddr :mp_set_float call)
+	(loadreg)
+	(outaddr formatstraddr precision :mp_print_float call)
+	(loadreg)
 	(7 0 0 0 intr0)
 	// check mp_greater call 42.0 > 3.14
 	(yaddr xaddr :mp_greater call)
