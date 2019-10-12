@@ -38,7 +38,6 @@ U1 line_args[LINE_ARGS][MAXLINELEN];
 U1 num_names[LINE_ARGS][MAXLINELEN];
 
 U1 func_names[MAXFUNC][MAXLINELEN];
-// functions 0 - 7 are defined in mpfr-lib-head.l1com
 S8 func_ind ALIGN = FUNCTION_HEAD;
 
 // protos

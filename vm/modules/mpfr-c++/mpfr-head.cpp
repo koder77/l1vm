@@ -19,6 +19,9 @@
 
 #include "../../../include/global.h"
 #include <iostream>
+#include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
 #include <mpfr.h>
 #include <mpreal.h>
 
@@ -33,6 +36,81 @@ using std::endl;
 #define MAX_FLOAT_NUM 256
 
 static mpreal mpf_float[MAX_FLOAT_NUM];
+
+char *fgets_uni (char *str, int len, FILE *fptr)
+{
+    int ch, nextch;
+    int i = 0, eol = FALSE;
+    char *ret;
+
+    ch = fgetc (fptr);
+    if (feof (fptr))
+    {
+        return (NULL);
+    }
+    while (! feof (fptr) || i == len - 2)
+    {
+        switch (ch)
+        {
+            case '\r':
+                /* check for '\r\n\' */
+
+                nextch = fgetc (fptr);
+                if (! feof (fptr))
+                {
+                    if (nextch != '\n')
+                    {
+                        ungetc (nextch, fptr);
+                    }
+                }
+                str[i] = '\n';
+                i++; eol = TRUE;
+                break;
+
+            case '\n':
+                /* check for '\n\r\' */
+
+                nextch = fgetc (fptr);
+                if (! feof (fptr))
+                {
+                    if (nextch != '\r')
+                    {
+                        ungetc (nextch, fptr);
+                    }
+                }
+                str[i] = '\n';
+                i++; eol = TRUE;
+                break;
+
+            default:
+				str[i] = ch;
+				i++;
+
+                break;
+        }
+
+        if (eol)
+        {
+            break;
+        }
+
+        ch = fgetc (fptr);
+    }
+
+    if (feof (fptr))
+    {
+//        str[i] = '\n';
+//        i++;
+        str[i] = '\0';
+    }
+    else
+    {
+        str[i] = '\0';
+    }
+
+    ret = str;
+    return (ret);
+}
 
 
 size_t strlen_safe (const char * str, int maxlen)
@@ -249,59 +327,6 @@ extern "C" U1 *mp_print_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
-S8 get_float_string (U1 *numstr, U1 numlen, S8 float_index, S8 precision)
-{
-	S8 i ALIGN;
-	S8 j ALIGN;
-	mp_exp_t exponent;
-	U1 new_numstr[100000];
-	S8 strlen_num ALIGN;
-
-	mpfr_get_str ((char *) &new_numstr, &exponent, 10, precision, mpf_float[float_index].mpfr_srcptr(), GMP_RNDN);
-	strlen_num = strlen_safe ((const char*) new_numstr, 99999);
-	if (strlen_num + 2 > numlen)
-	{
-		// error to little space in output numstr string!
-		return (1);
-	}
-
-	exponent++;
-	j = 0;
-	for (i = 0; i < strlen_num; i++)
-	{
-		if (new_numstr[i] == '-')
-		{
-			exponent++;
-		}
-
-		if (i == exponent - 1)
-		{
-			numstr[j] = '.';
-			j++;
-		}
-		numstr[j] = new_numstr[i];
-		j++;
-	}
-
-	// check if there are zeroes at end of string
-	// and cut off them
-	// read string from end to beginning
-	for (i = strlen_num; i >= 0; i--)
-	{
-		// printf ("numstr: %c\n", numstr[i]);
-
-		if (numstr[i] == '0')
-		{
-			numstr[i] = '\0';
-		}
-		else
-		{
-			break;
-		}
-	}
-	return (0);
-}
-
 extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 float_index ALIGN;
@@ -309,6 +334,10 @@ extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 numstring_len ALIGN;
 	S8 float_format_address ALIGN;
 	S8 precision ALIGN;
+
+	std::fstream tempfile;
+    tempfile.open("temp.txt", std::ios::out);
+    std::string line;
 
 	sp = stpopi ((U1 *) &precision, sp, sp_top);
 	if (sp == NULL)
@@ -356,12 +385,41 @@ extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (get_float_string (&data[numstring_address_dest], numstring_len, float_index, precision) != 0)
+    // Backup streambuffers of  cout
+    std::streambuf* stream_buffer_cout = std::cout.rdbuf();
+    std::streambuf* stream_buffer_cin = std::cin.rdbuf();
+
+    // Get the streambuffer of the file
+    std::streambuf* stream_buffer_file = tempfile.rdbuf();
+
+    // Redirect cout to file
+    cout.rdbuf(stream_buffer_file);
+	cout.precision (precision);
+
+    cout << mpf_float[float_index] << endl;
+
+    // Redirect cout back to screen
+    cout.rdbuf(stream_buffer_cout);
+    tempfile.close();
+
+	// read string from file
+	// ifstream tempfile ("temp.txt");
+	FILE *tempfilec;
+	tempfilec = fopen ("temp.txt", "r");
+	if (tempfilec != NULL)
+  	{
+		if (fgets_uni ((char *) &data[numstring_address_dest], numstring_len, tempfilec) == NULL)
+		{
+			printf ("mp_prints_float: ERROR output string overflow!\n");
+			return (NULL);
+		}
+		fclose (tempfilec);
+	}
+	else
 	{
-		printf ("mp_prints_float: ERROR output string overflow!\n");
+		printf ("mp_prints_float: can't open temp file!\n");
 		return (NULL);
 	}
-
 	return (sp);
 }
 
