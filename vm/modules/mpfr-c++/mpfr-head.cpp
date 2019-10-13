@@ -403,7 +403,6 @@ extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     tempfile.close();
 
 	// read string from file
-	// ifstream tempfile ("temp.txt");
 	FILE *tempfilec;
 	tempfilec = fopen ("temp.txt", "r");
 	if (tempfilec != NULL)
