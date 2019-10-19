@@ -70,7 +70,7 @@ U1 *time_date_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("time_date_to_string: ERROR: conversion failed!\n");
 		return (NULL);
 	}
-	if (tm->tm_mon < 10)
+	if (tm->tm_mon + 1 < 10)
 	{
 		strcat ((char *) datestr, "0");
 	}

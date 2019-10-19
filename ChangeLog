@@ -19,7 +19,9 @@ See lib/mpfr-lib-auto.l1com.
 
 MPFR library: mp_prints_float: write output to file like in mp_print_float, and read in string.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Sat Oct 12 2019 18:50 +0200
+Time module: datetostring: month fixed leading zero on month < 10.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Sat Oct 19 2019 12:00 +0200
 
 
 L1VM - (0.9.9)
