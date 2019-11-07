@@ -41,7 +41,7 @@ U1 *rs232_OpenComport (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (sp == NULL)
     {
  	   // error
- 	   printf ("ERROR: genann_read_ann: ERROR: stack corrupt!\n");
+ 	   printf ("ERROR: rs232_OpenComport: ERROR: stack corrupt!\n");
  	   return (NULL);
     }
 
@@ -84,12 +84,21 @@ U1 *rs232_PollComport (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     S8 portnumber ALIGN;
     S8 size ALIGN;
+	S8 dataptr ALIGN;
     S8 i ALIGN;
 	S8 ret ALIGN;
 
 	U1 buf[4096];
 
     sp = stpopi ((U1 *) &size, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("rs232_PollComport: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &dataptr, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
@@ -106,17 +115,18 @@ U1 *rs232_PollComport (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
     ret = RS232_PollComport (portnumber, buf, size);
+	if (ret > size)
+	{
+		// error
+		printf ("rs232_PollComport: ERROR: data buffer overflow!\n");
+		printf ("reading %lli bytes into buffer of: %lli failed!\n", ret, size);
+		return (NULL);
+	}
 
     for (i = 0; i < ret; i++)
 	{
-        sp = stpushb (buf[i], sp, sp_bottom);
-    	if (sp == NULL)
-    	{
-    		// error
-    		printf ("rs232_PollComport: ERROR: stack corrupt!\n");
-    		return (NULL);
-    	}
-    }
+		data[dataptr + i] = buf[i];
+	}
 
     // push number of received bytes on stack
     sp = stpushi (ret, sp, sp_bottom);
@@ -171,11 +181,9 @@ U1 *rs232_SendBuf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     S8 portnumber ALIGN;
     S8 size ALIGN;
-    S8 i ALIGN;
+	S8 dataptr ALIGN;
 	S8 ret ALIGN;
-	U1 byte;
 
-	U1 buf[4096];
 
     sp = stpopi ((U1 *) &size, sp, sp_top);
 	if (sp == NULL)
@@ -185,19 +193,13 @@ U1 *rs232_SendBuf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    // get send buffer from stack
-    for (i = 0; i < size; i++)
-    {
-        sp = stpopb (&byte, sp, sp_top);
-    	if (sp == NULL)
-    	{
-    		// error
-    		printf ("rs232_SendBuf: ERROR: stack corrupt!\n");
-    		return (NULL);
-    	}
-
-        buf[i] = byte;
-    }
+	sp = stpopi ((U1 *) &dataptr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("rs232_PollComport: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
     sp = stpopi ((U1 *) &portnumber, sp, sp_top);
 	if (sp == NULL)
@@ -207,7 +209,7 @@ U1 *rs232_SendBuf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    ret = RS232_SendBuf (portnumber, buf, size);
+    ret = RS232_SendBuf (portnumber, &data[dataptr], size);
 
     sp = stpushi (ret, sp, sp_bottom);
     if (sp == NULL)
