@@ -23,7 +23,9 @@ Time module: datetostring: month fixed leading zero on month < 10.
 
 New: vm/modules/rs232: poll comport now reads data into given data pointer.
 
--- Stefan Pietzonke <jay-t@gmx.net>  Thu Nov 7 2019 17:35 +0100
+New: string library: string_compare to compare two strings.
+
+-- Stefan Pietzonke <jay-t@gmx.net>  Sat Nov 16 2019 22:00 +0100
 
 
 L1VM - (0.9.9)

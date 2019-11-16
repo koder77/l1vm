@@ -602,3 +602,38 @@ U1 *string_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	return (sp);
 }
+
+U1 *string_compare (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 strsourceaddr ALIGN;
+	S8 str2addr ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &str2addr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_compare: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_compare: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	ret = strcmp ((const char *) &data[strsourceaddr], (const char *) &data[str2addr]);
+
+	// ret = 0 strings are identical
+	sp = stpushi (ret, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_compare: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
