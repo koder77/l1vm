@@ -2710,7 +2710,7 @@ int main (int ac, char *av[])
 	}
 	if (silent_run == 0)
 	{
-		printf ("l1vm - 0.9.10 - (C) 2017-2019 Stefan Pietzonke\n");
+		printf ("l1vm - 0.9.11 - (C) 2017-2019 Stefan Pietzonke\n");
 		printf (">>> supermodified <<<\n");
 	    printf ("CPU cores: %lli (STATIC)\n", max_cpu);
 

@@ -203,6 +203,8 @@ http://man7.org/linux/man-pages/man3/termios.3.html
     return(1);
   }
 
+	printf ("RS232_OpenComport: port %s opened.\n", comports[comport_number]);
+
   /* lock access so that another process can't also use the port */
   if(flock(Cport[comport_number], LOCK_EX | LOCK_NB) != 0)
   {

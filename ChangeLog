@@ -1,3 +1,10 @@
+L1VM - (0.9.11)
+New: serial port library "rs232-libserial" using libserialport.
+I included a new library: "lib/rs232-lib-libserialport.l1com" for using libserialport for RS232 port.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue Nov 19 2019 16:13 +0100
+
+
 L1VM - (0.9.10)
 New: global.h include: MATH_LIMITS define, sets if integer math overflow is handled
 by an exception or not.
