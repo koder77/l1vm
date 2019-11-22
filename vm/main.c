@@ -2057,6 +2057,15 @@ S2 run (void *arg)
 			break;
 
 		case 20:
+			//printf ("PRINTI format\n");
+			arg2 = code[ep + 2];
+			arg3 = code[ep + 3];
+
+			printf ((char *) &data[regi[arg3]], regi[arg2]);
+			eoffs = 5;
+			break;
+
+		case 21:
 			//printf ("PRINTD format\n");
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];

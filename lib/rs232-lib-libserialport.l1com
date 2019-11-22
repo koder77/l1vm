@@ -31,7 +31,7 @@
 	(2 mod@rs232 poll_comport_wait@rs232 poll_comport_waitstr@rs232addr intr0)
 	(2 mod@rs232 rs232_init@rs232 rs232_initstr@rs232addr intr0)
 	// call rs232 init function:
-	(3  mod@rs232 rs232_init@rs232 0 intr0)
+	(3 mod@rs232 rs232_init@rs232 0 intr0)
 (funcend)
 (rs232_open_comport func)
 	(3 mod@rs232 open_comport@rs232 0 intr0)
