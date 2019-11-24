@@ -279,6 +279,92 @@ U1 double_state (F8 num)
 	return (flag);
 }
 
+void show_code_data_size (S8 codesize, S8 datasize)
+{
+	S8 factor_KB ALIGN = 1024;
+	S8 factor_MB ALIGN = 1024 * 1024;
+	S8 factor_GB ALIGN = 1024 * 1024 * 1024;
+	S8 factor_TB ALIGN = (S8) 1024 * 1024 * 1024 * 1024;
+
+	U1 codesize_found = 0;
+	U1 datasize_found = 0;
+
+	F8 codesize_float ALIGN;
+	F8 datasize_float ALIGN;
+
+	// codesize
+	printf ("codesize: %lli ", codesize);
+
+	if (codesize > factor_TB && codesize_found == 0)
+	{
+		codesize_float = (F8) codesize / factor_TB;
+		printf (", %.3lf TB\n", codesize_float);
+		codesize_found = 1;
+	}
+
+	if (codesize > factor_GB && codesize_found == 0)
+	{
+		codesize_float = (F8) codesize / factor_GB;
+		printf (", %.3lf GB\n", codesize_float);
+		codesize_found = 1;
+	}
+
+	if (codesize > factor_MB && codesize_found == 0)
+	{
+		codesize_float = (F8) codesize / factor_MB;
+		printf (", %.3lf MB\n", codesize_float);
+		codesize_found = 1;
+	}
+
+	if (codesize > factor_KB && codesize_found == 0)
+	{
+		codesize_float = (F8) codesize / factor_KB;
+		printf (", %.3lf KB\n", codesize_float);
+		codesize_found = 1;
+	}
+
+	if (codesize_found == 0)
+	{
+		printf ("bytes\n");
+	}
+
+	// datasize
+	printf ("datasize: %lli ", datasize);
+
+	if (datasize > factor_TB && datasize_found == 0)
+	{
+		datasize_float = (F8) datasize / factor_TB;
+		printf (", %.3lf TB\n", datasize_float);
+		datasize_found = 1;
+	}
+
+	if (datasize > factor_GB && datasize_found == 0)
+	{
+		datasize_float = (F8) datasize / factor_GB;
+		printf (", %.3lf GB\n", datasize_float);
+		datasize_found = 1;
+	}
+
+	if (datasize > factor_MB && datasize_found == 0)
+	{
+		datasize_float = (F8) datasize / factor_MB;
+		printf (", %.3lf MB\n", datasize_float);
+		datasize_found = 1;
+	}
+
+	if (datasize > factor_KB && datasize_found == 0)
+	{
+		datasize_float = (F8) datasize / factor_KB;
+		printf (", %.3lf KB\n", datasize_float);
+		datasize_found = 1;
+	}
+
+	if (datasize_found == 0)
+	{
+		printf ("bytes\n");
+	}
+}
+
 S2 run (void *arg)
 {
 	S8 cpu_core ALIGN = (S8) arg;
@@ -579,8 +665,7 @@ S2 run (void *arg)
 	if (silent_run == 0)
 	{
 		printf ("CPU %lli ready\n", cpu_ind);
-		printf ("codesize: %lli\n", code_size);
-		printf ("datasize: %lli\n", data_mem_size);
+		show_code_data_size (code_size, data_mem_size);
 		printf ("ep: %lli\n\n", startpos);
 	}
 #if DEBUG
