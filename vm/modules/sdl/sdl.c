@@ -225,6 +225,7 @@ U1 *sdl_text_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (textsurf == NULL)
 	{
 		printf ("sdl_text_ttf: can't render text! %s\n", SDL_GetError ());
+		return (NULL);
 	}
 
 	dstrect.x = x;

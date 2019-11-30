@@ -363,6 +363,8 @@ int main (int ac, char *av[])
 	if (fprintf (mpreal_c, "#include \"mpfr-head.cpp\"\n\n") < 0)
 	{
 		printf ("generate_c: error writing C #include\n");
+		fclose (mpreal_h);
+		fclose (mpreal_c);
 		return (1);
 	}
 

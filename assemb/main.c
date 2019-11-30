@@ -221,15 +221,14 @@ S2 get_args (U1 *line)
 					break;
 				}
             }
-            args[arg_ind][arg_pos] = '\0';
-            // printf ("[ get_args: ARGUMENTS %s ]\n", args[arg_ind]);
 
-			// if (string == 1) arg_ind--;
-            if (arg_ind >= MAXARGS)
+			if (arg_ind >= MAXARGS)
             {
                 printf ("error: line %lli too much arguments!\n", linenum);
                 return (1);
             }
+
+            args[arg_ind][arg_pos] = '\0';
         }
     }
     return (0);
@@ -788,7 +787,9 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 						data_extern = fopen ((const char *) args[2], "r");
 						if (data_extern == NULL)
 						{
+							// return ERROR
 							printf ("error: line %lli: can't open data file: '%s'!\n", linenum, args[2]);
+							return (1);
 						}
 
 						printf ("> line %lli: loading file: '%s' as data...\n", linenum, args[2]);
