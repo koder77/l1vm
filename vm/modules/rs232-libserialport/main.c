@@ -222,7 +222,7 @@ U1 *rs232_PollComport_Wait (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 bufaddr ALIGN;
 	S8 bufsize ALIGN;
 
-	S8  bytes_waiting ALIGN = 0;
+	S8  bytes_waiting ALIGN;
 	U1 wait = 1;
 	enum sp_return error;
 
