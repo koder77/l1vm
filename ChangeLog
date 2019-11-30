@@ -3,8 +3,13 @@ New: serial port library "rs232-libserial" using libserialport.
 I included a new library: "lib/rs232-lib-libserialport.l1com" for using libserialport for RS232 port.
 
 VM: Code size and data size are now shown as for example "KB".
+VM: max number of CPU cores can now be set via command line flag:
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun Nov 24 2019 14:30 +0100
+$ l1vm prog/hello-2 -C 1
+
+Sets the max CPU cores to 1 core.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fr Nov 24 2019 09:00 +0100
 
 
 L1VM - (0.9.10)

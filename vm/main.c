@@ -2702,6 +2702,8 @@ int main (int ac, char *av[])
 	S8 arglen ALIGN;
 	S8 strind ALIGN;
 	S8 avind ALIGN;
+
+	U1 av_found = 0;
 	pthread_t id;
 
 	S8 new_cpu ALIGN;
@@ -2737,12 +2739,30 @@ int main (int ac, char *av[])
     {
         for (i = 2; i < ac; i++)
         {
+			av_found = 0;
             arglen = strlen_safe (av[i], MAXLINELEN);
 			if (arglen == 2)
 			{
 				if (av[i][0] == '-' && av[i][1] == 'q')
 				{
 					silent_run = 1;
+				}
+
+				if (av[i][0] == '-' && av[i][1] == 'C')
+				{
+					// set max cpu cores flag...
+					if (ac > i)
+					{
+						max_cpu = atoi (av[i + 1]);
+						if (max_cpu == 0)
+						{
+							printf ("ERROR: max_cpu less than 1 core!\n");
+							cleanup ();
+							exit (1);
+						}
+						printf ("max_cpu: cores set to: %lli\n", max_cpu);
+					}
+					av_found = 1;
 				}
 			}
             if (arglen > 2)
@@ -2772,6 +2792,7 @@ int main (int ac, char *av[])
                         	exit (1);
                     	}
                 	}
+					av_found = 1;
                 }
                 else
 				{
@@ -2779,9 +2800,11 @@ int main (int ac, char *av[])
                     {
                         // initialize SDL, set SDL flag!
                         SDL_use = 1;
+						av_found = 1;
+						printf ("SDL library support on\n");
                     }
-                    else
-                    {
+					if (av_found == 0)
+					{
 			            shell_args_ind++;
 					    if (shell_args_ind >= MAXSHELLARGS)
 					    {
