@@ -149,11 +149,59 @@ S2 memory_bounds (S8 start, S8 offset_access)
 			}
 			else
 			{
-				if (start + offset_access <= data_info[i].end)
+				switch (data_info[i].type)
 				{
-					// all ok, return 0
-					return (0);
+					case BYTE:
+						if (start + offset_access <= data_info[i].end)
+						{
+							// all ok, return 0
+							return (0);
+						}
+						break;
+
+					case WORD:
+						if (offset_access % sizeof (S2) != 0)
+						{
+							printf ("memory_bounds: FATAL ERROR: variable access not on word bound, address: %lli, offset: %lli!\n", start, offset_access);
+							return (1);
+						}
+						if (start + offset_access <= data_info[i].end)
+						{
+							// all ok, return 0
+							return (0);
+						}
+						break;
+
+					case DOUBLEWORD:
+						if (offset_access % sizeof (S4) != 0)
+						{
+							printf ("memory_bounds: FATAL ERROR: variable access not on  double word bound, address: %lli, offset: %lli!\n", start, offset_access);
+							return (1);
+						}
+						if (start + offset_access <= data_info[i].end)
+						{
+							// all ok, return 0
+							return (0);
+						}
+						break;
+
+					case QUADWORD:
+					case DOUBLEFLOAT:
+						// printf ("memory_bounds: quad word/double float: modulo: %lli, offset: %lli\n", offset_access % sizeof (S8), offset_access);
+
+						if (offset_access % sizeof (S8) != 0)
+						{
+							printf ("memory_bounds: FATAL ERROR: variable access not on  quad word/double float bound, address: %lli, offset: %lli!\n", start, offset_access);
+							return (1);
+						}
+						if (start + offset_access <= data_info[i].end)
+						{
+							// all ok, return 0
+							return (0);
+						}
+						break;
 				}
+
 			}
 		}
 	}

@@ -9,7 +9,10 @@ $ l1vm prog/hello-2 -C 1
 
 Sets the max CPU cores to 1 core.
 
--- Stefan Pietzonke <jay-t@gmx.net> Fr Nov 24 2019 09:00 +0100
+New: VM: memory_bounds () now gives an exception if the offset_access is not on variable memory bounds.
+So now every illegal access gives an exception if memory bounds check is active.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Dec 7 2019 21:16 +0100
 
 
 L1VM - (0.9.10)
