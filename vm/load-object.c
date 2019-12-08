@@ -30,6 +30,11 @@ extern S8 code_size ALIGN;
 extern S8 data_mem_size ALIGN;
 extern S8 stack_size ALIGN;
 
+// see global.h user settings on top
+extern S8 max_code_size ALIGN;
+extern S8 max_data_size ALIGN;
+
+
 size_t strlen_safe (const char * str, int maxlen);
 
 S2 conv_word (S2 val)
@@ -254,6 +259,17 @@ S2 load_object (U1 *name)
 	code_size = conv_quadword (quadword);
 
 	// printf ("codesize: %lli\n", code_size);
+	// check if codesize in legal range
+	if (code_size > max_code_size)
+	{
+		printf ("ERROR: code_size to big: %lli, must be less than: %lli!\n", code_size, max_code_size);
+		fclose (fptr);
+		if (bzip2)
+		{
+			remove ((const char *) objname);
+		}
+		return (1);
+	}
 
 	code = (U1 *) calloc (code_size, sizeof (U1));
 	if (code == NULL)
@@ -598,6 +614,19 @@ S2 load_object (U1 *name)
 	// printf ("data size: (data only) %lli\n", data_size);
 
 	data_mem_size = data_mem_size + (stack_size * MAXCPUCORES);
+
+	// check if datasize in legal range
+	if (data_mem_size > max_data_size)
+	{
+		printf ("ERROR: data_mem_size to big: %lli, must be less than: %lli!\n", data_mem_size, max_data_size);
+		fclose (fptr);
+		if (bzip2)
+		{
+			remove ((const char *) objname);
+		}
+		return (1);
+	}
+
 	data = (U1 *) calloc (data_mem_size, sizeof (U1));
 	if (data == NULL)
 	{

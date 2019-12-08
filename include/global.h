@@ -84,6 +84,13 @@
 // SANDBOX FILE ACCESS
 #define SANDBOX                 1			// secure file acces: 1 = use secure access, 0 = OFF!!
 #define SANDBOX_ROOT			"~/l1vm/"	// in /home directory!
+
+// VM: max sizes of code
+#define MAX_CODE_SIZE 			4294967296L		// 4GB
+
+// VM: max size of data
+#define MAX_DATA_SIZE			4294967296L		// 4GB
+
 // user settings end ======================================
 
 #if MAXCPUCORES == 0

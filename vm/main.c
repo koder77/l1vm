@@ -68,6 +68,11 @@ size_t strlen_safe (const char * str, int maxlen);
 
 S8 data_size ALIGN;
 S8 code_size ALIGN;
+
+// see global.h user settings on top
+S8 max_code_size ALIGN = MAX_CODE_SIZE;
+S8 max_data_size ALIGN = MAX_DATA_SIZE;
+
 S8 data_mem_size ALIGN;
 S8 stack_size ALIGN = STACKSIZE;		// stack size added to data size when dumped to object file
 
