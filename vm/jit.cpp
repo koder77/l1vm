@@ -99,18 +99,19 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 	S8 jit_regsd[6]; 	// xmm0 (0) to xmm5 (5)
 	S8 jit_regsd_max ALIGN = 5;
 
-    CodeHolder jcode;                        // Create a CodeHolder.
-    jcode.init(rt.getCodeInfo());            // Initialize it to be compatible with `rt`.
+	// JitRuntime jit;                         // Create a runtime specialized for JIT.
+  	CodeHolder jcode;                        // Create a CodeHolder.
 
-    X86Assembler a(&jcode);                  // Create and attach X86Assembler to `code`.
+  	jcode.init(rt.codeInfo());              // Initialize it to be compatible with `jit`.
+  	x86::Assembler a(&jcode);
 
-    X86Gp RSIback;
+    // X86Gp RSIback;
 
     a.mov (RSI, imm ((intptr_t)(void *) regi)); /* long registers base: rsi */
 
 	a.mov (RDI, imm ((intptr_t)(void *) regd)); /* double registers base: rdi */
 
-    RSIback = RSI;
+    // RSIback = RSI;
 
     /* initialize label pos */
 

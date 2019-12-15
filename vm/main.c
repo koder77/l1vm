@@ -206,7 +206,6 @@ S2 memory_bounds (S8 start, S8 offset_access)
 						}
 						break;
 				}
-
 			}
 		}
 	}
