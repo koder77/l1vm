@@ -8,7 +8,7 @@ L1VM README  2019-10-05
 
 L1VM is an incredible tiny virtual machine with RISC (or comparable style) CPU, about 61 opcodes and about 40 KB binary size on X86_64 Linux (without JIT-compiler)!
 The VM has a 64 bit core (256 registers for integer and double float) and can run object code
-written in bracket (a high level programming language) or l1asm assembly language.
+written in brackets (a high level programming language) or l1asm assembly language.
 
 Code and data are in separated memories for a secure execution. Like in Harvard type CPUs (found now in DSPs or microcontrollers).
 The opcode set with 61 opcodes is my own opinion how things should work. It does not "copy" other instruction sets known in
@@ -21,6 +21,10 @@ The design goals are:
 	- be simple
 	- be modular
 </pre>
+
+In pure console text I/O programs not linked with SDL library, the memory footprint is very low.
+About 2 MB RAM only as shown in the taskmanager by running a minimal test program!
+
 New
 ----
 Now there is a bash script to build L1VM without JIT-compiler: "make-nojit.sh" in vm directory. You have to set "JIT_COMPILER" to "0" in the source file vm/main.c to do that. In some cases programs execute faster if they don't need the JIT-compiler to run!
@@ -36,7 +40,7 @@ I included a few demo programs.
 
 The source code is released under the GPL.
 
-A simple "Hello world!" in bra(et (bracket) my language for L1VM:
+A simple "Hello world!" in bra(et (brackets) my language for L1VM:
 
 <pre>
 // hello.l1com
