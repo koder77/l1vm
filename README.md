@@ -1,4 +1,4 @@
-L1VM README  2019-10-05
+L1VM README  2019-12-18
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -40,7 +40,7 @@ I included a few demo programs.
 
 The source code is released under the GPL.
 
-A simple "Hello world!" in bra(et (brackets) my language for L1VM:
+A simple "Hello world!" in bra(ets (brackets) my language for L1VM:
 
 <pre>
 // hello.l1com
