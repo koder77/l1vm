@@ -23,7 +23,7 @@
 	//
 	// search primes
 	//
-	(optimize-if)
+	// (optimize-if)
 	(two i =)
 	(:search_primes)
 	((i i *) n =)
