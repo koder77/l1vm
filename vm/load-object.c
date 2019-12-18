@@ -630,7 +630,7 @@ S2 load_object (U1 *name)
 	data = (U1 *) calloc (data_mem_size, sizeof (U1));
 	if (data == NULL)
 	{
-		// printf ("ERROR: can't allocate %lli bytes for data!\n", data_mem_size);
+		printf ("ERROR: can't allocate %lli bytes for data!\n", data_mem_size);
 		fclose (fptr);
 		if (bzip2)
 		{
@@ -650,7 +650,7 @@ S2 load_object (U1 *name)
 				//printf ("DATA BYTE\n");
 				data_info[j].offset = i;
 
-				printf ("load_object: BYTE: size: %lli\n", data_info[j].size);
+				// printf ("load_object: BYTE: size: %lli\n", data_info[j].size);
 
 				for (k = 1; k <= data_info[j].size; k++)
 				{
