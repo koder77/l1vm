@@ -670,7 +670,6 @@ S2 load_object (U1 *name)
 					i++;
 				}
 				data_info[j].end = i - 1;
-				// data_info[j].type = BYTE;
 				data_info[j].type_size = sizeof (U1);
 				break;
 
@@ -701,7 +700,6 @@ S2 load_object (U1 *name)
 					i++;
 				}
 				data_info[j].end = i - 1;
-				// data_info[j].type = WORD;
 				data_info[j].type_size = sizeof (S2);
 				break;
 
@@ -736,7 +734,6 @@ S2 load_object (U1 *name)
 					i++;
 				}
 				data_info[j].end = i - 1;
-				// data_info[j].type = DOUBLEWORD;
 				data_info[j].type_size = sizeof (S4);
 				break;
 
@@ -781,7 +778,6 @@ S2 load_object (U1 *name)
 					i++;
 				}
 				data_info[j].end = i - 1;
-				// data_info[j].type = data_info[j].type;
 				data_info[j].type_size = sizeof (S8);
 				break;
 		}

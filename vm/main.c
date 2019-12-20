@@ -161,11 +161,9 @@ S2 memory_bounds (S8 start, S8 offset_access)
 					case BYTE:
 						// printf ("memory_bounds: byte: %i, start: %lli, offset: %lli\n", BYTE, start, offset_access);
 
-						if (start + offset_access <= data_info[i].end)
-						{
-							// all ok, return 0
-							return (0);
-						}
+						// range already checked on top if
+						// all ok, return 0
+						return (0);
 						break;
 
 					case WORD:
@@ -2771,14 +2769,6 @@ int main (int ac, char *av[])
 		exit (1);
 	}
 
-	threaddata = (struct threaddata *) calloc (max_cpu, sizeof (struct threaddata));
-	if (threaddata == NULL)
-	{
-		printf ("ERROR: can't allocate threaddata!\n");
-		cleanup ();
-		exit (1);
-	}
-
     if (ac > 1)
     {
         for (i = 2; i < ac; i++)
@@ -2869,6 +2859,15 @@ int main (int ac, char *av[])
 		cleanup ();
 		exit (1);
 	}
+	
+	threaddata = (struct threaddata *) calloc (max_cpu, sizeof (struct threaddata));
+	if (threaddata == NULL)
+	{
+		printf ("ERROR: can't allocate threaddata!\n");
+		cleanup ();
+		exit (1);
+	}
+	
 	if (silent_run == 0)
 	{
 		printf ("l1vm - 0.9.11 - (C) 2017-2019 Stefan Pietzonke\n");
