@@ -1,3 +1,11 @@
+L1VM - (0.9.12)
+VM: bugfix: now the -C flag for setting the number of max threads now works right.
+In the load-object.c always the definition from compile time was used.
+Now it uses the user set value right.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Dec 21 2019 19:38 +0100
+
+
 L1VM - (0.9.11)
 New: serial port library "rs232-libserial" using libserialport.
 I included a new library: "lib/rs232-lib-libserialport.l1com" for using libserialport for RS232 port.

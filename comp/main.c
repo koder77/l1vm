@@ -4207,7 +4207,7 @@ int main (int ac, char *av[])
 {
     printf ("l1com <file> [-lines] [max linenumber]\n");
 	printf ("\nCompiler for bra(et, a programming language with brackets ;-)\n");
-	printf ("0.9.11 (C) 2017-2019 Stefan Pietzonke\n");
+	printf ("0.9.12 (C) 2017-2019 Stefan Pietzonke\n");
 
 	init_ast ();
 	init_if ();

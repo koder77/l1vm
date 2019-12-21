@@ -178,7 +178,7 @@ S2 memory_bounds (S8 start, S8 offset_access)
 					case DOUBLEWORD:
 						if (offset_access % sizeof (S4) != 0)
 						{
-							printf ("memory_bounds: FATAL ERROR: variable access not on  double word bound, address: %lli, offset: %lli!\n", start, offset_access);
+							printf ("memory_bounds: FATAL ERROR: variable access not on double word bound, address: %lli, offset: %lli!\n", start, offset_access);
 							return (1);
 						}
 						return (0);
@@ -187,10 +187,10 @@ S2 memory_bounds (S8 start, S8 offset_access)
 					case QUADWORD:
 					case DOUBLEFLOAT:
 						// printf ("memory_bounds: quad, start: %lli, offset: %lli\n", start, offset_access);
-						
+
 						if (offset_access % sizeof (S8) != 0)
 						{
-							printf ("memory_bounds: FATAL ERROR: variable access not on  quad word/double float bound, address: %lli, offset: %lli!\n", start, offset_access);
+							printf ("memory_bounds: FATAL ERROR: variable access not on quad word/double float bound, address: %lli, offset: %lli!\n", start, offset_access);
 							return (1);
 						}
 						return (0);
@@ -2859,7 +2859,7 @@ int main (int ac, char *av[])
 		cleanup ();
 		exit (1);
 	}
-	
+
 	threaddata = (struct threaddata *) calloc (max_cpu, sizeof (struct threaddata));
 	if (threaddata == NULL)
 	{
@@ -2867,10 +2867,10 @@ int main (int ac, char *av[])
 		cleanup ();
 		exit (1);
 	}
-	
+
 	if (silent_run == 0)
 	{
-		printf ("l1vm - 0.9.11 - (C) 2017-2019 Stefan Pietzonke\n");
+		printf ("l1vm - 0.9.12 - (C) 2017-2019 Stefan Pietzonke\n");
 		printf (">>> supermodified <<<\n");
 	    printf ("CPU cores: %lli (STATIC)\n", max_cpu);
 

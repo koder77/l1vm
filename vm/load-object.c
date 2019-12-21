@@ -34,6 +34,9 @@ extern S8 stack_size ALIGN;
 extern S8 max_code_size ALIGN;
 extern S8 max_data_size ALIGN;
 
+// defined in main.c
+// sets max number of CPU cores
+extern S8 max_cpu;
 
 size_t strlen_safe (const char * str, int maxlen);
 
@@ -613,7 +616,7 @@ S2 load_object (U1 *name)
 
 	// printf ("data size: (data only) %lli\n", data_size);
 
-	data_mem_size = data_mem_size + (stack_size * MAXCPUCORES);
+	data_mem_size = data_mem_size + (stack_size * max_cpu);
 
 	// check if datasize in legal range
 	if (data_mem_size > max_data_size)
