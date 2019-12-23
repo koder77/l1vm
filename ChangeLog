@@ -9,7 +9,10 @@ $ l1vm fractalix-2.3 -S 1000
 
 New: OSV capstan build directories updated for latest capstan build tool!
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon Dec 23 2019 19:43 +0100
+New: modules directory with the "build.sh" script to build all modules.
+And the "install.sh" script to install the modules into "/usr/local/lib".
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon Dec 23 2019 23:10 +0100
 
 
 L1VM - (0.9.11)
