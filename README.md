@@ -25,6 +25,12 @@ The design goals are:
 In pure console text I/O programs not linked with SDL library, the memory footprint is very low.
 About 2 MB RAM only as shown in the taskmanager by running a minimal test program!
 
+Installation 
+-----------
+Just run the "install.sh" script in the main directory of L1VM!
+The  binaries are build and installed into "/usr/local/bin".
+And the modules are installed into "/usr/local/lib".
+
 New
 ----
 Now there is a bash script to build L1VM without JIT-compiler: "make-nojit.sh" in vm directory. You have to set "JIT_COMPILER" to "0" in the source file vm/main.c to do that. In some cases programs execute faster if they don't need the JIT-compiler to run!
