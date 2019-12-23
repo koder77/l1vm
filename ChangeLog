@@ -1,9 +1,15 @@
 L1VM - (0.9.12)
-VM: bugfix: now the -C flag for setting the number of max threads now works right.
+VM: bugfix: now the -C flag for setting the number of max threads works right.
 In the load-object.c always the definition from compile time was used.
 Now it uses the user set value right.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Dec 21 2019 19:38 +0100
+New: VM: -S flag for setting the stack size:
+
+$ l1vm fractalix-2.3 -S 1000
+
+New: OSV capstan build directories updated for latest capstan build tool!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon Dec 23 2019 19:43 +0100
 
 
 L1VM - (0.9.11)

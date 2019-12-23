@@ -2798,6 +2798,24 @@ int main (int ac, char *av[])
 					}
 					av_found = 1;
 				}
+
+				if (av[i][0] == '-' && av[i][1] == 'S')
+				{
+					// set max stack size flag...
+					if (ac > i)
+					{
+						stack_size = atoi (av[i + 1]);
+						if (stack_size == 0)
+						{
+							printf ("ERROR: stack size is 0!\n");
+							cleanup ();
+							exit (1);
+						}
+						printf ("stack_size: stack size set to %lli\n", stack_size);
+					}
+					av_found = 1;
+				}
+
 			}
             if (arglen > 2)
             {
@@ -2855,7 +2873,11 @@ int main (int ac, char *av[])
     }
     else
 	{
-		printf ("l1vm <program>\n");
+		printf ("l1vm <program> [-SDL] [-C cpu_cores] [-S stacksize] [-q]\n");
+		printf ("-SDL : run with SDL library support\n");
+		printf ("-C cores : set maximum of threads that can be run\n");
+		printf ("-S stacksize : set the stack size\n");
+		printf ("-q : quiet run, don't show welcome messages\n\n");
 		cleanup ();
 		exit (1);
 	}

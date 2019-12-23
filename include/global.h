@@ -76,7 +76,7 @@
 #define CPU_SET_AFFINITY		1
 
 // SDL library support
-#define SDL_module 				1
+#define SDL_module 				0
 
 // set to defined for DEBUGGING
 // #define DEBUG				1
