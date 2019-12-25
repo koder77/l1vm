@@ -3,7 +3,7 @@ cd assemb
 ./make.sh
 cd ../comp
 ./make.sh
-cd ../vm 
+cd ../vm
 ./make-nojit.sh
 cp l1vm-nojit l1vm
 cd ..
@@ -15,5 +15,8 @@ cd modules
 echo "installing modules..."
 ./build.sh
 ./install.sh
-echo "all modules installed. installation finished"
+echo "all modules installed. building programs..."
+cd ../prog
+./build-all.sh
 cd ..
+echo "installation finished!"
