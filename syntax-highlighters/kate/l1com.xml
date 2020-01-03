@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language SYSTEM "language.dtd">
+<language version="6" kateversion="5.0" name="l1com" section="Sources" extensions="*.l1com;*.l1asm" mimetype="" author="Stefan Pietzonke (jay-t@gmx.net)" license="MIT">
+  <highlighting>
+    <list name="symbols">
+
+    </list>
+    <list name="definitions">
+      <item>func</item> 
+      <item>funcend</item> 
+      <item>ASM</item> 
+      <item>ASM_END</item> 
+    </list>
+    <list name="keywords">
+    <item>funcend</item>
+    <item>func</item>
+    <item>set</item>
+    <item>if+</item>
+    <item>if</item>
+    <item>else</item>
+    <item>endif</item>
+    <item>stpushb</item>
+    <item>stpopb</item>
+    <item>stpushi</item>
+    <item>stpopi</item>
+    <item>stpushd</item>
+    <item>stpopd</item>
+    <item>jmpi</item>
+    <item>jmp</item>
+    <item>jsr</item>
+    <item>call</item>
+    <item>rts</item>
+    <item>intr0</item>
+    <item>intr1</item>
+    <item>for-loop</item>
+    <item>for</item>
+    <item>next</item>
+    <item>do</item>
+    <item>while</item>
+    </list>
+
+    <list name="modifiers">
+     
+    </list>
+	<list name="variables">
+        <item> byte </item>
+        <item> string </item>
+        <item> int16 </item>
+        <item> int32 </item>
+        <item> int64 </item>
+        <item> double </item>
+    </list>
+
+    <contexts>
+      <context name="Normal" attribute="Normal" lineEndContext="#stay">
+        <RegExpr attribute="Region Marker" context="#stay" String=";+\s*BEGIN.*$" beginRegion="region"/>
+        <RegExpr attribute="Region Marker" context="#stay" String=";+\s*END.*$" endRegion="region"/>
+        <RegExpr attribute="Comment" context="#stay" String=";.*$"/>
+        <Detect2Chars attribute="Comment" context="MultiLineComment" char="#" char1="|" beginRegion="region"/>
+        <DetectChar attribute="Brackets" context="#stay" char="("/>
+        <DetectChar attribute="Brackets" context="#stay" char=")"/>
+        <keyword attribute="Keyword" context="#stay" String="keywords"/>
+        <keyword attribute="Operator" context="#stay" String="symbols"/>
+        <keyword attribute="Modifier" context="#stay" String="modifiers"/>
+        <keyword attribute="Variable" context="#stay" String="variables"/>
+        <keyword attribute="Definition" context="function_decl" String="definitions"/>
+        <RegExpr attribute="Char" context="#stay" String="#\\."/>
+        <DetectChar attribute="String" context="String" char="&quot;"/>
+        <RegExpr attribute="Char" context="SpecialNumber" String="#[bodxei]"/>
+        <RegExpr attribute="Decimal" context="#stay" String="#[tf]"/>
+        <Float attribute="Float" context="#stay"/>
+        <Int attribute="Decimal" context="#stay"/>
+      </context>
+      <context name="MultiLineComment" attribute="Comment" lineEndContext="#stay">
+        <Detect2Chars attribute="Comment" context="#pop" char="|" char1="#" endRegion="region"/>
+      </context>
+      <context name="function_decl" attribute="Function" lineEndContext="#stay">
+        <RegExpr attribute="Function" context="#pop" String="\s*[A-Za-z0-9-+\&lt;\&gt;//\*]*\s*" />
+      </context>
+      <context name="SpecialNumber" attribute="Normal" lineEndContext="#pop">
+        <Float attribute="Float" context="#pop"/>
+        <Int attribute="Decimal" context="#pop"/>
+        <HlCOct attribute="BaseN" context="#pop"/>
+        <HlCHex attribute="Float" context="#pop"/>
+      </context>
+      <context name="String" attribute="String" lineEndContext="#stay">
+        <RegExpr attribute="Char" context="#stay" String="#\\."/>
+        <HlCStringChar attribute="String Char" context="#stay"/>
+        <DetectChar attribute="String" context="#pop" char="&quot;"/>
+      </context>
+    </contexts>
+    <itemDatas>
+      <itemData name="Normal"      defStyleNum="dsNormal"/>
+      <itemData name="Keyword"     defStyleNum="dsKeyword"/>
+      <itemData name="Operator"    defStyleNum="dsOperator"/>
+      <itemData name="Modifier"    defStyleNum="dsBuiltIn"/>
+      <itemData name="Variable"    defStyleNum="dsVariable"/>
+      <itemData name="Definition"  defStyleNum="dsKeyword"/>
+      <itemData name="Decimal"     defStyleNum="dsDecVal"/>
+      <itemData name="BaseN"       defStyleNum="dsBaseN"/>
+      <itemData name="Float"       defStyleNum="dsFloat"/>
+      <itemData name="Function"    defStyleNum="dsFunction"/>
+      <itemData name="Char"        defStyleNum="dsChar"/>
+      <itemData name="String"      defStyleNum="dsString"/>
+      <itemData name="String Char" defStyleNum="dsSpecialChar"/>
+      <itemData name="Comment"     defStyleNum="dsComment"/>
+      <itemData name="Region Marker" defStyleNum="dsRegionMarker"/>
+      <itemData name="Brackets"    defStyleNum="dsNormal" color="#0000ff" selColor="#00ff00" bold="1" italic="0"/>
+    </itemDatas>
+  </highlighting>
+  <general>
+    <keywords casesensitive="1" weakDeliminator="-+*?!&lt;&gt;=/:#\"/>
+    <comments>
+      <comment name="singleLine" start="//" />
+      <comment name="multiLine" start="#|" end="|#" />
+    </comments>
+  </general>
+</language>

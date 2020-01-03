@@ -1,5 +1,6 @@
 // new N dialect demo
 //
+//
 (main func)
 	(set int64 1 zero 0)
 	(set string 13 hello "Hello world!")

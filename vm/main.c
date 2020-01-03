@@ -2878,6 +2878,7 @@ int main (int ac, char *av[])
 		printf ("-C cores : set maximum of threads that can be run\n");
 		printf ("-S stacksize : set the stack size\n");
 		printf ("-q : quiet run, don't show welcome messages\n\n");
+		printf ("0.9.12 (C) 2017-2019 Stefan Pietzonke\n");
 		cleanup ();
 		exit (1);
 	}
