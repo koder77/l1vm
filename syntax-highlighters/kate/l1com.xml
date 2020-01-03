@@ -37,6 +37,65 @@
     <item>next</item>
     <item>do</item>
     <item>while</item>
+
+    <item>pushb</item>
+    <item>pushw</item>
+    <item>pushdw</item>
+    <item>pushqw</item>
+    <item>pushd</item>
+    <item>pullb</item>
+    <item>pullw</item>
+    <item>pulldw</item>
+    <item>pullqw</item>
+    <item>pulld</item>
+
+    <item>addi</item>
+    <item>subi</item>
+    <item>muli</item>
+    <item>divi</item>
+
+    <item>addd</item>
+    <item>subd</item>
+    <item>muld</item>
+    <item>divd</item>
+
+    <item>smuli</item>
+    <item>sdivi</item>
+
+    <item>andi</item>
+    <item>ori</item>
+    <item>bandi</item>
+    <item>bori</item>
+    <item>bxori</item>
+    <item>modi</item>
+
+    <item>eqi</item>
+    <item>neqi</item>
+    <item>gri</item>
+    <item>lsi</item>
+    <item>greqi</item>
+    <item>lseqi</item>
+ 
+    <item>eqd</item>
+    <item>neqd</item>
+    <item>grd</item>
+    <item>lsd</item>
+    <item>greqd</item>
+    <item>lseqd</item>
+
+    <item>loada</item>
+    <item>loadd</item>
+    <item>inclsijmpi</item>
+    <item>decgrijmpi</item>
+    <item>movi</item>
+    <item>movd</item>
+    <item>loadl</item>
+    <item>jmpa</item>
+    <item>jsr</item>
+    <item>jsra</item>
+    <item>load</item>
+    <item>noti</item>
+
     </list>
 
     <list name="modifiers">
