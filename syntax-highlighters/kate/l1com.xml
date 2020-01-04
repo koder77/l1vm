@@ -95,7 +95,8 @@
     <item>jsra</item>
     <item>load</item>
     <item>noti</item>
-
+	<item>loadreg</item>
+	
     </list>
 
     <list name="modifiers">
