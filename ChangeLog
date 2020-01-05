@@ -14,7 +14,9 @@ And the "install.sh" script to install the modules into "/usr/local/lib".
 
 New: syntax highlighter directory: with the highlighter for Kate text editor!
 
--- Stefan Pietzonke <jay-t@gmx.net> Fr Jan 3 2019 13:36 +0100
+BUGFIX: now stpopd in brackets code works as it should do!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Jan 5 2020 21:00 +0100
 
 
 L1VM - (0.9.11)

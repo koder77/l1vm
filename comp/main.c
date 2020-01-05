@@ -3768,6 +3768,83 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 									continue;
 								}
+								
+								if (translate[t].assemb_op == STPOPD)
+								{
+									target = get_regd (ast[level].expr[j][last_arg - 1]);
+									if (target == -1)
+									{
+										// variable is not in register, load it
+										
+										reg2 = get_free_regd ();
+										set_regd (reg2, ast[level].expr[j][last_arg - 1]);
+										target = reg2;
+									}
+									
+									strcpy ((char *) code_temp, "stpopd ");
+									sprintf ((char *) str, "%i", target);
+									strcat ((char *) code_temp, (const char *) str);
+									strcat ((char *) code_temp, "\n");
+									
+									code_line++;
+									if (code_line >= line_len)
+									{
+										printf ("error: line %lli: code list full!\n", linenum);
+										return (1);
+									}
+									
+									strcpy ((char *) code[code_line], (const char *) code_temp);
+									
+									
+									strcpy ((char *) code_temp, "load ");
+									strcat ((char *) code_temp, (const char *) ast[level].expr[j][last_arg - 1]);
+									strcat ((char *) code_temp, ", 0, ");
+									
+									reg = get_free_regd ();
+									
+									sprintf ((char *) str, "%i", reg);
+									strcat ((char *) code_temp, (const char *) str);
+									strcat ((char *) code_temp, "\n");
+									
+									// printf ("%s\n", code_temp);
+									
+									code_line++;
+									if (code_line >= line_len)
+									{
+										printf ("error: line %lli: code list full!\n", linenum);
+										return (1);
+									}
+									
+									strcpy ((char *) code[code_line], (const char *) code_temp);
+									
+									strcpy ((char *) code_temp, "pulld ");
+									sprintf ((char *) str, "%i", target);
+									strcat ((char *) code_temp, (const char *) str);
+									strcat ((char *) code_temp, ", ");
+									sprintf ((char *) str, "%i", reg);
+									strcat ((char *) code_temp, (const char *) str);
+									strcat ((char *) code_temp, ", 0\n");
+									
+									code_line++;
+									if (code_line >= line_len)
+									{
+										printf ("error: line %lli: code list full!\n", linenum);
+										return (1);
+									}
+									
+									strcpy ((char *) code[code_line], (const char *) code_temp);
+									
+									reg = get_regd (ast[level].expr[j][last_arg - 1]);
+									if (reg != -1)
+									{
+										// set old value of reg as empty
+										set_regd (reg, (U1 *) "");
+									}
+									
+									set_regd (target, ast[level].expr[j][last_arg - 1]);
+									
+									continue;
+								}
 							}
 
 							for (v = 0; v < last_arg_2; v++)
