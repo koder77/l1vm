@@ -143,6 +143,8 @@ S2 memory_bounds (S8 start, S8 offset_access)
 
 	for (i = 0; i <= data_info_ind; i++)
 	{
+		// printf ("DEBUG: memory_bounds: variable %lli, type: %i\n", i, data_info[i].type);
+		
 		if ((start >= data_info[i].offset) && (start + offset_access <= data_info[i].end))
 		{
 			// printf ("memory_bounds: data_info offset: %lli, data_info end: %lli; start: %lli offset: %lli\n", data_info[i].offset, data_info[i].end, start, offset_access);
@@ -156,6 +158,8 @@ S2 memory_bounds (S8 start, S8 offset_access)
 			{
 				//printf ("memory_bounds: type: %i, address: %lli, offset: %lli\n", data_info[i].type, start, offset_access);
 
+				// printf ("DEBUG: memory_bounds: variable %lli, type: %i\n", i, data_info[i].type);
+				
 				switch (data_info[i].type)
 				{
 					case BYTE:

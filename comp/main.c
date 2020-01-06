@@ -3663,7 +3663,26 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 									strcpy ((char *) code[code_line], (const char *) code_temp);
 
-									strcpy ((char *) code_temp, "pullqw ");
+									// create new scope for setting the needed pull opcode:
+									{
+										S8 vartype ALIGN;
+										vartype = getvartype_real (ast[level].expr[j][last_arg - 1]);
+										switch (vartype)
+										{
+											case WORD:
+												strcpy ((char *) code_temp, "pullw ");
+												break;
+												
+											case DOUBLEWORD:
+												strcpy ((char *) code_temp, "pulldw ");
+												break;
+												
+											case QUADWORD:
+												strcpy ((char *) code_temp, "pullqw ");
+												break;
+										}
+									}
+									
 									sprintf ((char *) str, "%i", target);
 									strcat ((char *) code_temp, (const char *) str);
 									strcat ((char *) code_temp, ", ");
