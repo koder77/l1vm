@@ -25,6 +25,8 @@ INTR0
 19: return weekday since sunday: 0 - 6
 20: print integer number with format string
 21: print double number with format string setup
+22: print int16 integer number
+23: print int32 integer number
 251: check double number overflow
 252: get overflow flag
 253: run JIT-compiler

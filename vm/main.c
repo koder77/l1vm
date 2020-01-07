@@ -739,6 +739,7 @@ S2 run (void *arg)
 	}
 	#endif
 
+	regi[arg3] = 0;		// set to zero, before loading data
 	regi[arg3] = data[arg1 + arg2];
 
 	eoffs = 4;
@@ -760,6 +761,7 @@ S2 run (void *arg)
 	}
 	#endif
 
+	regi[arg3] = 0;		// set to zero, before loading data
 	bptr = (U1 *) &regi[arg3];
 
 	*bptr = data[arg1 + arg2];
@@ -785,6 +787,7 @@ S2 run (void *arg)
 	}
 	#endif
 
+	regi[arg3] = 0;		// set to zero, before loading data
 	bptr = (U1 *) &regi[arg3];
 
 	*bptr = data[arg1 + arg2];
@@ -916,6 +919,9 @@ S2 run (void *arg)
 
 	bptr = (U1 *) &regi[arg1];
 
+	// DEBUG
+	// printf ("PULLW: data reg: %lli, offset reg: %lli, source reg: %lli\n", arg2, arg3, arg1);
+	
 	data[arg2 + arg3] = *bptr;
 	bptr++;
 	data[arg2 + arg3 + 1] = *bptr;
@@ -1077,7 +1083,7 @@ S2 run (void *arg)
 	#else
 		regi[arg3] = regi[arg1] - regi[arg2];
 	#endif
-
+		
 	eoffs = 4;
 	EXE_NEXT();
 
@@ -2204,7 +2210,23 @@ S2 run (void *arg)
 			printf ((char *) &data[regi[arg3]], regd[arg2]);
 			eoffs = 5;
 			break;
-
+			
+		case 22:
+			//printf ("PRINTI as int16")
+			arg2 = code[ep + 2];
+			
+			printf ("%d", (S2) regi[arg2]);
+			eoffs = 5;
+			break;
+		
+		case 23:
+			//printf ("PRINTI as int32")
+			arg2 = code[ep + 2];
+			
+			printf ("%i", (S4) regi[arg2]);
+			eoffs = 5;
+			break;
+			
 		case 251:
 			// set overflow on double reg
 			arg2 = code[ep + 2];
@@ -2629,6 +2651,7 @@ S2 run (void *arg)
 	#if DEBUG
 	printf ("%lli LOAD\n", cpu_core);
 	#endif
+	
 	// data
 	bptr = (U1 *) &arg1;
 
@@ -2677,7 +2700,9 @@ S2 run (void *arg)
 	regi[arg3] = arg1 + arg2;
 
 	//printf ("LOAD: %li\n", regi[arg3]);
-
+	// DEBUG
+	// printf ("LOAD: arg1: (data) %lli, arg2: (offset) %lli, to reg: %lli\n", arg1, arg2, arg3);
+	
 	eoffs = 18;
 	EXE_NEXT();
 
