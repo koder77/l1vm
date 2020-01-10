@@ -15,8 +15,9 @@ And the "install.sh" script to install the modules into "/usr/local/lib".
 New: syntax highlighter directory: with the highlighter for Kate text editor!
 
 BUGFIX: now stpopd in brackets code works as it should do!
+New: support for int16 and int32 variable types in the brackets compiler.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun Jan 5 2020 21:00 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Fri Jan 10 2020 18:00 +0100
 
 
 L1VM - (0.9.11)

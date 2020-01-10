@@ -2223,7 +2223,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 														
 															// get free register
 															reg_p = get_free_regi ();
-															set_regi (reg, ast[level].expr[j][e]);
+															set_regi (reg_p, ast[level].expr[j][e]);
 														
 															sprintf ((char *) str, "%i", reg_p);
 															strcat ((char *) code[code_line], (const char *) str);
@@ -2260,7 +2260,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 														
 															// get free register
 															reg_p = get_free_regi ();
-															set_regi (reg, ast[level].expr[j][e]);
+															set_regi (reg_p, ast[level].expr[j][e]);
 														
 															sprintf ((char *) str, "%i", reg_p);
 															strcat ((char *) code[code_line], (const char *) str);
@@ -2297,8 +2297,8 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 														
 															// get free register
 															reg_p = get_free_regi ();
-															set_regi (reg, ast[level].expr[j][e]);
-														
+															set_regi (reg_p, ast[level].expr[j][e]);
+															
 															sprintf ((char *) str, "%i", reg_p);
 															strcat ((char *) code[code_line], (const char *) str);
 															strcat ((char *) code[code_line], "\n");
