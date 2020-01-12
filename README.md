@@ -27,7 +27,7 @@ About 2 MB RAM only as shown in the taskmanager by running a minimal test progra
 
 Installation 
 -----------
-Just run the "install.sh" script in the main directory of L1VM!
+Just run the "clean.sh" script and then the "install.sh" script in the main directory of L1VM!
 The  binaries are build and installed into "/usr/local/bin".
 And the modules are installed into "/usr/local/lib".
 

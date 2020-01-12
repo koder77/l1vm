@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 cd ../vm/modules/endianess
 ./make-endianess-mod.sh
 cd ../fann

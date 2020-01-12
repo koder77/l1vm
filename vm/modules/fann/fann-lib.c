@@ -55,7 +55,7 @@ U1 *fann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 nameaddr ALIGN;
 	S8 handle ALIGN;
-
+	
     sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
     if (sp == NULL)
     {

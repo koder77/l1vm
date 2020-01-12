@@ -1,3 +1,7 @@
 #!/bin/sh
 
-clang -Wall main.c ../lib-func/file.c checkd.c if.c mem.c ../lib-func/string.c -o l1com -g
+if clang -Wall main.c ../lib-func/file.c checkd.c if.c mem.c ../lib-func/string.c -o l1com -g; then
+	exit 0
+	else
+		exit 1
+fi

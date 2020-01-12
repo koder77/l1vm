@@ -2778,7 +2778,7 @@ int main (int ac, char *av[])
 	pthread_t id;
 
 	S8 new_cpu ALIGN;
-
+	
 	// do compilation time sense check on integer 64 bit and double 64 bit type!!
 	S8 size_int64 ALIGN;
 	S8 size_double64 ALIGN;
@@ -2907,7 +2907,8 @@ int main (int ac, char *av[])
 		printf ("-C cores : set maximum of threads that can be run\n");
 		printf ("-S stacksize : set the stack size\n");
 		printf ("-q : quiet run, don't show welcome messages\n\n");
-		printf ("0.9.12 (C) 2017-2019 Stefan Pietzonke\n");
+		printf ("%s", VM_VERSION_STR);
+		printf (" (C) 2017-2019 Stefan Pietzonke\n");
 		cleanup ();
 		exit (1);
 	}
@@ -2922,7 +2923,7 @@ int main (int ac, char *av[])
 
 	if (silent_run == 0)
 	{
-		printf ("l1vm - 0.9.12 - (C) 2017-2019 Stefan Pietzonke\n");
+		printf ("l1vm - 0.9.13 - (C) 2017-2019 Stefan Pietzonke\n");
 		printf (">>> supermodified <<<\n");
 	    printf ("CPU cores: %lli (STATIC)\n", max_cpu);
 
