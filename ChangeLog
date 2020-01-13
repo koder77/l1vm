@@ -1,3 +1,9 @@
+L1VM - (0.9.13)
+NEW: the install.sh script now installs to "~/bin" in the "/home" directory of the user!
+So no root access is needed to install. You need the "bin" directory in your /home directory!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon Jan 13 2020 22:00 +0100
+
 L1VM - (0.9.12)
 VM: bugfix: now the -C flag for setting the number of max threads works right.
 In the load-object.c always the definition from compile time was used.
