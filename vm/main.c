@@ -2908,7 +2908,7 @@ int main (int ac, char *av[])
 		printf ("-S stacksize : set the stack size\n");
 		printf ("-q : quiet run, don't show welcome messages\n\n");
 		printf ("%s", VM_VERSION_STR);
-		printf (" (C) 2017-2019 Stefan Pietzonke\n");
+		printf (" (C) 2017-2020 Stefan Pietzonke\n");
 		cleanup ();
 		exit (1);
 	}
@@ -2923,7 +2923,7 @@ int main (int ac, char *av[])
 
 	if (silent_run == 0)
 	{
-		printf ("l1vm - 0.9.13 - (C) 2017-2019 Stefan Pietzonke\n");
+		printf ("l1vm - 0.9.13 - (C) 2017-2020 Stefan Pietzonke\n");
 		printf (">>> supermodified <<<\n");
 	    printf ("CPU cores: %lli (STATIC)\n", max_cpu);
 

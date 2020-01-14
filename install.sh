@@ -15,6 +15,7 @@ else
 	echo "l1com build error!"
 	exit 1
 fi
+
 cd ../vm
 if ./make-nojit.sh; then
 	echo "l1vm build ok!"
@@ -28,6 +29,7 @@ cp assemb/l1asm ~/bin
 cp comp/l1com ~/bin
 cp vm/l1vm ~/bin
 echo "VM binaries installed into ~/bin"
+
 cd modules
 echo "installing modules..."
 ./build.sh
