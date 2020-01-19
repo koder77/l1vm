@@ -1,5 +1,58 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin!
+
+echo "checking for needed libraries..."
+
+if ! dpkg -s libsdl1.2-dev &> /dev/null; then
+	echo "try to install libsdl1.2-dev..."
+	if ! sudo apt-get install libsdl1.2-dev; then
+		echo "installation failed!"
+		exit 1
+	fi
+fi
+
+if ! dpkg -s libsdl-gfx1.2-dev &> /dev/null; then
+	echo "try to install libsdl-gfx1.2-dev..."
+	if ! sudo apt-get install libsdl-gfx1.2-dev; then
+		echo "installation failed!"
+		exit 1
+	fi
+fi
+
+if ! dpkg -s libsdl-image1.2-dev &> /dev/null; then
+	echo "try to install libsdl-image1.2-dev..."
+	if ! sudo apt-get install libsdl-image1.2-dev; then
+		echo "installation failed!"
+		exit 1
+	fi
+fi
+
+if ! dpkg -s libsdl-ttf2.0-dev &> /dev/null; then
+	echo "try to install libsdl-ttf2.0-dev..."
+	if ! sudo apt-get install libsdl-ttf2.0-dev; then
+		echo "installation failed!"
+		exit 1
+	fi
+fi
+
+if ! dpkg -s libfann-dev &> /dev/null; then
+	echo "try to install libfann-dev..."
+	if ! sudo apt-get install libfann-dev; then
+		echo "installation failed!"
+		exit 1
+	fi
+fi
+
+if ! dpkg -s libmpfrc++-dev &> /dev/null; then
+	echo "try to install libmpfrc++-dev..."
+	if ! sudo apt-get install libmpfrc++-dev; then
+		echo "installation failed!"
+		exit 1
+	fi
+fi
+
+echo "libraries installed! building compiler, assembler and VM..."
+
 cd assemb
 if ./make.sh; then
 	echo "l1asm build ok!"

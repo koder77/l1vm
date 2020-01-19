@@ -6,9 +6,10 @@ New: assemb/ comp/ vm/ egypt callgraph script added!
 The scripts generate a .ps file with the graphicall call graph.
 
 New: vm/modules/mpfr-c++/mpfr-head.cpp compiler warning on unused variable fix.
+New: the "install.sh" script now checks if the needed libraries are installed, if not
+it will install them automatically!
 
-
--- Stefan Pietzonke <jay-t@gmx.net> Sun Jan 19 2020 11:26 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Jan 19 2020 16:20 +0100
 
 
 L1VM - (0.9.12)
