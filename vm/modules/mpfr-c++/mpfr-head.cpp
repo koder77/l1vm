@@ -387,7 +387,7 @@ extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     // Backup streambuffers of  cout
     std::streambuf* stream_buffer_cout = std::cout.rdbuf();
-    std::streambuf* stream_buffer_cin = std::cin.rdbuf();
+    // std::streambuf* stream_buffer_cin = std::cin.rdbuf();
 
     // Get the streambuffer of the file
     std::streambuf* stream_buffer_file = tempfile.rdbuf();
