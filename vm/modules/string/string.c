@@ -20,6 +20,10 @@
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
+// protos
+
+S2 memory_bounds (S8 start, S8 offset_access);
+
 
 size_t strlen_safe (const char * str, int maxlen)
 {
@@ -73,7 +77,8 @@ U1 *string_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 strsourceaddr ALIGN;
 	S8 strdestaddr ALIGN;
-
+	S8 offset ALIGN;
+	
 	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -90,6 +95,13 @@ U1 *string_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	offset = strlen_safe ((char *) &data[strsourceaddr], MAXLINELEN);
+	if (memory_bounds (strdestaddr, offset) != 0)
+	{
+		printf ("string_copy: error dest string overflow!\n");
+		return (NULL);
+	}
+	
 	strcpy ((char *) &data[strdestaddr], (const char *) &data[strsourceaddr]);
 	return (sp);
 }
@@ -98,7 +110,8 @@ U1 *string_cat (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 strsourceaddr ALIGN;
 	S8 strdestaddr ALIGN;
-
+	S8 offset ALIGN;
+	
 	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -115,6 +128,13 @@ U1 *string_cat (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	offset = strlen_safe ((char *) &data[strsourceaddr], MAXLINELEN);
+	if (memory_bounds (strdestaddr, offset) != 0)
+	{
+		printf ("string_cat: error dest string overflow!\n");
+		return (NULL);
+	}
+	
 	strcat ((char *) &data[strdestaddr], (const char *) &data[strsourceaddr]);
 	return (sp);
 }
@@ -451,6 +471,12 @@ U1 *string_left (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	if (memory_bounds (strdestaddr, str_len) != 0)
+	{
+		printf ("string_left: error dest string overflow!\n");
+		return (NULL);
+	}
+	
 	for (i = 0; i < str_len; i++)
 	{
 		data[strdestaddr + i] = data[strsourceaddr + i];
@@ -502,6 +528,12 @@ U1 *string_right (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	if (memory_bounds (strdestaddr, str_len) != 0)
+	{
+		printf ("string_right: error dest string overflow!\n");
+		return (NULL);
+	}
+	
 	i = 0;
 	for (j = strsource_len - str_len; j < strsource_len; j++)
 	{
@@ -598,6 +630,12 @@ U1 *string_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	if (memory_bounds (strdestaddr, pos) != 0)
+	{
+		printf ("string_to_string: error dest string overflow!\n");
+		return (NULL);
+	}
+	
 	data[strdestaddr + pos] = data[strsourceaddr];
 
 	return (sp);
