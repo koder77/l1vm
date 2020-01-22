@@ -10,6 +10,7 @@ New: the "install.sh" script now checks if the needed libraries are installed, i
 it will install them automatically!
 
 New: vm/modules/string memory overflow checks added.
+Added more overflow checks. And fixed wrong error messages.
 
 -- Stefan Pietzonke <jay-t@gmx.net> Mon Jan 20 2020 17:58 +0100
 

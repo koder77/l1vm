@@ -169,6 +169,12 @@ U1 *string_int64_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	if (memory_bounds (strdestaddr, str_len) != 0)
+	{
+		printf ("string_int64_to_string: ERROR: dest string overflow!\n");
+		return (NULL);
+	}
+	
 	if (snprintf ((char *) &data[strdestaddr], str_len, "%lli", num) <= 0)
 	{
 		printf ("string_int64_to_string: ERROR: conversion failed!\n");
@@ -188,7 +194,7 @@ U1 *string_byte_to_hexstring (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// ERROR:
-		printf ("string_int64_to_string: ERROR: stack corrupt!\n");
+		printf ("string_byte_to_hexstring: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
@@ -196,7 +202,7 @@ U1 *string_byte_to_hexstring (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// ERROR:
-		printf ("string_int64_to_string: ERROR: stack corrupt!\n");
+		printf ("string_byte_to_hexstring: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
@@ -204,13 +210,19 @@ U1 *string_byte_to_hexstring (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// ERROR:
-		printf ("string_int64_to_string: ERROR: stack corrupt!\n");
+		printf ("string_byte_to_hexstring: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
+	if (memory_bounds (strdestaddr, str_len) != 0)
+	{
+		printf ("string_byte_to_hexstring: ERROR: dest string overflow!\n");
+		return (NULL);
+	}
+	
 	if (snprintf ((char *) &data[strdestaddr], str_len, "%02x", num) <= 0)
 	{
-		printf ("string_int64_to_string: ERROR: conversion failed!\n");
+		printf ("string_byte_to_hexstring: ERROR: conversion failed!\n");
 		return (NULL);
 	}
 
@@ -247,6 +259,12 @@ U1 *string_double_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	if (memory_bounds (strdestaddr, str_len) != 0)
+	{
+		printf ("string_double_to_string: ERROR: dest string overflow!\n");
+		return (NULL);
+	}
+	
 	if (snprintf ((char *) &data[strdestaddr], str_len, "%.10lf", num) <= 0)
 	{
 		printf ("string_double_to_string: ERROR: conversion failed!\n");
@@ -277,6 +295,12 @@ U1 *string_bytenum_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	if (memory_bounds (strdestaddr, 1) != 0)
+	{
+		printf ("string_bytenum_to_string: ERROR: dest string overflow!\n");
+		return (NULL);
+	}
+	
 	data[strdestaddr] = num;
 	data[strdestaddr + 1] = '\0';
 
