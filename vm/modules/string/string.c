@@ -110,7 +110,8 @@ U1 *string_cat (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 strsourceaddr ALIGN;
 	S8 strdestaddr ALIGN;
-	S8 offset ALIGN;
+	S8 offset_src ALIGN;
+	S8 offset_dst ALIGN;
 	
 	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
 	if (sp == NULL)
@@ -128,8 +129,10 @@ U1 *string_cat (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	offset = strlen_safe ((char *) &data[strsourceaddr], MAXLINELEN);
-	if (memory_bounds (strdestaddr, offset) != 0)
+	offset_src = strlen_safe ((char *) &data[strsourceaddr], MAXLINELEN);
+	offset_dst = strlen_safe ((char *) &data[strdestaddr], MAXLINELEN);
+	
+	if (memory_bounds (strdestaddr, offset_src + offset_dst) != 0)
 	{
 		printf ("string_cat: ERROR: dest string overflow!\n");
 		return (NULL);

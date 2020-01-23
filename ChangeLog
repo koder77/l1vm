@@ -11,8 +11,9 @@ it will install them automatically!
 
 New: vm/modules/string memory overflow checks added.
 Added more overflow checks. And fixed wrong error messages.
+Bugfix: overflow check on string cat now is right.
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon Jan 20 2020 17:58 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Thu Jan 23 2020 17:10 +0100
 
 
 L1VM - (0.9.12)
