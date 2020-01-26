@@ -1,4 +1,4 @@
-L1VM README  2019-12-18
+L1VM README  2020-01-26
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -28,8 +28,10 @@ About 2 MB RAM only as shown in the taskmanager by running a minimal test progra
 Installation 
 -----------
 Just run the "clean.sh" script and then the "install.sh" script in the main directory of L1VM!
-The  binaries are build and installed into "/usr/local/bin".
-And the modules are installed into "/usr/local/lib".
+The binaries are installed into the "bin" directory in your "/home" user directory!
+There are no root rights needed!
+The  binaries are build and installed into "~/bin".
+And the modules are installed into "~/bin".
 
 New
 ----
@@ -63,7 +65,6 @@ A simple "Hello world!" in bra(ets (brackets) my language for L1VM:
 
 Modules
 -------
-The VM modules should be installed into "/usr/local/lib".
 <pre>
 endianess - convert to big endian, or little endian functions
 fann - FANN neural networks
