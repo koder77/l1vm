@@ -30,8 +30,10 @@ Installation
 Just run the "clean.sh" script and then the "install.sh" script in the main directory of L1VM!
 The binaries are installed into the "bin" directory in your "/home" user directory!
 There are no root rights needed!
+<pre>
 The  binaries are build and installed into "~/bin".
 And the modules are installed into "~/bin".
+</pre>
 
 New
 ----
