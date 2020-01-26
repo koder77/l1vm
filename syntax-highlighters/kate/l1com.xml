@@ -10,6 +10,8 @@
       <item>funcend</item> 
       <item>ASM</item> 
       <item>ASM_END</item> 
+	  <item>optimize-if-off</item>
+	  <item>optimize-if</item>
     </list>
     <list name="keywords">
     <item>funcend</item>
