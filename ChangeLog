@@ -14,8 +14,9 @@ Added more overflow checks. And fixed wrong error messages.
 Bugfix: overflow check on string cat now is right.
 
 New: "optimize-if" and "optimize-if-off" in syntax highlighter for Kate Editor.
+New: VM: loada and loadd memory bounds check!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun Jan 26 2020 17:27 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Mon Jan 27 2020 18:38 +0100
 
 
 L1VM - (0.9.12)

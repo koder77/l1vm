@@ -1862,6 +1862,14 @@ S2 run (void *arg)
 
 	//printf ("arg2: %li\n", arg2);
 
+	#if BOUNDSCHECK
+	if (memory_bounds (arg1, arg2) != 0)
+	{
+		free (jumpoffs);
+		pthread_exit ((void *) 1);
+	}
+	#endif
+	
 	arg3 = code[ep + 17];
 
 	bptr = (U1 *) &regi[arg3];
@@ -1934,6 +1942,14 @@ S2 run (void *arg)
 
 	//printf ("arg2: %li\n", arg2);
 
+	#if BOUNDSCHECK
+	if (memory_bounds (arg1, arg2) != 0)
+	{
+		free (jumpoffs);
+		pthread_exit ((void *) 1);
+	}
+	#endif
+	
 	arg3 = code[ep + 17];
 
 	bptr = (U1 *) &regd[arg3];
