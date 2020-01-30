@@ -17,15 +17,7 @@
  * along with L1vm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// l1vm - opcodes
-
-#define EMPTY       0
-#define I_REG       1
-#define D_REG       2
-#define DATA        3
-#define DATA_OFFS   4
-#define LABEL       5
-#define ALL         6
+#include "opcodes-types.h"
 
 struct opcode opcode[] =
 {

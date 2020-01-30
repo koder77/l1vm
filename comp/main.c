@@ -87,6 +87,7 @@ U1 get_if_label (S4 ind, U1 *label);
 U1 get_else_label (S4 ind, U1 *label);
 U1 get_endif_label (S4 ind, U1 *label);
 void set_endif_finished (S4 ind);
+S4 get_if_optimize_reg (U1 *code_line);
 
 void init_while (void);
 S4 get_while_pos (void);
@@ -104,360 +105,31 @@ S4 get_for_lab (S4 ind);
 U1 get_for_label_end (S4 ind, U1 *label);
 void set_for_end (S4 ind);
 
-
-// initialize labels list =================================
-void init_labels (void)
-{
-	S8 i ALIGN;
-
-	for (i = 0; i < MAXLABELS; i++)
-	{
-		label[i].pos = -1;
-		strcpy ((char *) label[i].name, "");
-	}
-}
-
-void init_call_labels (void)
-{
-	S8 i ALIGN;
-
-	for (i = 0; i < MAXLABELS; i++)
-	{
-		call_label[i].pos = -1;
-		strcpy ((char *) call_label[i].name, "");
-	}
-}
-
-// set call labels ========================================
-
-S2 set_call_label (U1 *label)
-{
-	S8 i ALIGN;
-
-	// check if already set:
-	for (i = 0; i <= call_label_ind; i++)
-	{
-		if (strcmp ((const char *) call_label[i].name, (const char *) label) == 0)
-		{
-			// just return no error!
-			return (0);
-		}
-	}
-
-	// label not found in call label list, set it!!
-
-	// set call label
-	// add name to labels list
-	if (call_label_ind < MAXLABELS - 1)
-	{
-		call_label_ind++;
-	}
-	else
-	{
-		// error list full!!
-		return (1);
-	}
-
-	call_label[call_label_ind].pos = linenum;
-	strcpy ((char *) call_label[call_label_ind].name, (const char *) label);
-	return (0);
-}
-
-// check if all call labels are defined!!! ================
-
-S2 check_labels (void)
-{
-	S8 i ALIGN;
-	S8 j ALIGN;
-	U1 found = 0;
-	S2 ret = 0;
-
-	for (i = 0; i <= call_label_ind; i++)
-	{
-		found = 0;
-		for (j = 0; j <= label_ind; j++)
-		{
-			if (strcmp ((const char *) call_label[i].name, (const char *) label[j].name) == 0)
-			{
-				// set found, all ok!!
-				found = 1;
-				break;
-			}
-		}
-		if (found == 0)
-		{
-			// set ERROR value
-			ret = 1;
-			printf ("ERROR: line: %lli, label: '%s' not defined!\n", call_label[i].pos, call_label[i].name);
-		}
-	}
-	return (ret);
-}
+// labels
+void init_labels (void);
+void init_call_labels (void);
+S2 set_call_label (U1 *label);
+S2 check_labels (void);
 
 // string functions ===============================================================================
 size_t strlen_safe (const char * str, int maxlen);
 S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
 void convtabs (U1 *str);
 
-// if optimize helper function ==========================================================
-
-S4 get_if_optimize_reg (U1 *code_line)
-{
-	S4 pos, i, j, str_len;
-	U1 if_found = 0;
-	U1 reg_num[256];
-	S4 reg;
-
-	str_len = strlen_safe ((const char *) code_line, MAXLINELEN);
-	for (i = EQI; i <= LSEQD; i++)
-	{
-		pos = searchstr (code_line, opcode[i].op, 0, 0, TRUE);
-		if (pos != -1)
-		{
-			if_found = 1;
-			break;
-		}
-	}
-	if (if_found == 0)
-	{
-		// no if found, return -1
-		return (-1);
-	}
-
-	// get last argument, it's the needed register number
-	pos = searchstr (code_line, (unsigned char *) ",", 0, 0, TRUE);
-	if (pos != -1)
-	{
-		pos = searchstr (code_line, (unsigned char *) ",", pos + 1, 0, TRUE);
-		j = 0;
-		for (i = pos + 1; i < str_len; i++)
-		{
-			reg_num[j] = code_line[i];
-			j++;
-		}
-		reg_num[j] = '\0';
-		reg = atoi ((const char *) reg_num);
-
-		return (reg);
-	}
-	else
-	{
-		return (-1);
-	}
-}
-
-
 // register tracking functions
-void set_regi (S4 reg, U1 *name)
-{
-	strcpy ((char *) regi[reg], (const char *) name);
-}
+void set_regi (S4 reg, U1 *name);
+void set_regd (S4 reg, U1 *name);
+S4 get_regi (U1 *name);
+S4 get_regd (U1 *name);
+void init_registers (void);
+S4 get_free_regi (void);
+S4 get_free_regd (void);
 
-void set_regd (S4 reg, U1 *name)
-{
-	strcpy ((char *) regd[reg], (const char *) name);
-}
-
-S4 get_regi (U1 *name)
-{
-	S4 i;
-
-	for (i = 0; i < MAXREG; i++)
-	{
-		if (strcmp ((const char *) regi[i], (const char *) name) == 0)
-		{
-			return (i);
-		}
-	}
-	return (-1);
-}
-
-S4 get_regd (U1 *name)
-{
-	S4 i;
-
-	for (i = 0; i < MAXREG; i++)
-	{
-		if (strcmp ((const char *) regd[i], (const char *) name) == 0)
-		{
-			return (i);
-		}
-	}
-	return (-1);
-}
-
-void init_registers (void)
-{
-	S4 i;
-
-	for (i = 0; i < MAXREG; i++)
-	{
-		set_regi (i, (U1 *) "");
-		set_regd (i, (U1 *) "");
-	}
-}
-
-S4 get_free_regi (void)
-{
-	S4 i;
-
-	for (i = 1; i < MAXREG; i++)
-	{
-		if (strcmp ((const char *) regi[i], "") == 0)
-		{
-			return (i);
-		}
-	}
-
-	return (-1);
-}
-
-S4 get_free_regd (void)
-{
-	S4 i;
-
-	for (i = 1; i < MAXREG; i++)
-	{
-		if (strcmp ((const char *) regd[i], "") == 0)
-		{
-			return (i);
-		}
-	}
-
-	return (-1);
-}
-
-S2 checkdef (U1 *name)
-{
-	S4 i;
-
-	if (name[0] == ':')
-	{
-		// label: set checked
-		return (0);
-	}
-
-	if (checkdigit (name) == TRUE)
-	{
-		// is number not variable name: set checked
-		return (0);
-	}
-
-	for (i = 0; i <= data_ind; i++)
-	{
-		if (strcmp ((const char *) name, (const char *) data_info[i].name) == 0)
-		{
-			// no error
-			return (0);
-		}
-	}
-	// error -> variable not defined!!
-	printf ("checkdef: error: line %lli: variable '%s' not defined!\n", linenum, name);
-	return (1);
-}
-
-S2 getvartype (U1 *name)
-{
-	S4 i;
-	S4 ret = -1;
-
-	if (name[0] == ':')
-	{
-		// it is a label, beginning with a colon char
-		return (LABEL);
-	}
-
-	for (i = 0; i <= data_ind; i++)
-	{
-		if (strcmp ((const char *) name, (const char *) data_info[i].name) == 0)
-		{
-			switch (data_info[i].type)
-			{
-				case BYTE:
-				case WORD:
-				case DOUBLEWORD:
-				case QUADWORD:
-					ret = INTEGER;
-					break;
-
-				case DOUBLEFLOAT:
-					ret = DOUBLE;
-					break;
-
-				case STRING:
-					ret = STRING;
-			}
-			break;
-		}
-	}
-
-	return (ret);
-}
-
-S2 getvartype_real (U1 *name)
-{
-	S4 i;
-	S4 ret = -1;
-
-	if (name[0] == ':')
-	{
-		// it is a label, beginning with a colon char
-		return (LABEL);
-	}
-
-	for (i = 0; i <= data_ind; i++)
-	{
-		if (strcmp ((const char *) name, (const char *) data_info[i].name) == 0)
-		{
-			switch (data_info[i].type)
-			{
-				case BYTE:
-					ret = BYTE;
-					break;
-
-				case WORD:
-					ret = WORD;
-					break;
-
-				case DOUBLEWORD:
-					ret = DOUBLEWORD;
-					break;
-
-				case QUADWORD:
-					ret = QUADWORD;
-					break;
-
-				case DOUBLEFLOAT:
-					ret = DOUBLE;
-					break;
-
-				case STRING:
-					ret = STRING;
-			}
-			break;
-		}
-	}
-
-	return (ret);
-}
-
-S8 get_variable_is_array (U1 *name)
-{
-	S4 i;
-
-	for (i = 0; i <= data_ind; i++)
-	{
-		if (strcmp ((const char *) name, (const char *) data_info[i].name) == 0)
-		{
-			// found array, return aray size
-			// printf ("get_variable_is_array: '%s' size: %lli\n", name, data_info[i].size);
-
-			return (data_info[i].size);
-		}
-	}
-	// error!!!
-	return (0);
-}
+// var.c
+S2 checkdef (U1 *name);
+S2 getvartype (U1 *name);
+S2 getvartype_real (U1 *name);
+S8 get_variable_is_array (U1 *name);
 
 
 void init_ast (void)
@@ -475,40 +147,40 @@ void init_ast (void)
 
 S2 get_ast (U1 *line)
 {
-    S4 slen;
-    S4 pos = 0, argstart;
-
-    U1 ok = 0;
-    U1 arg = 0;
-    slen = strlen_safe ((const char *) line, MAXLINELEN);
-
+	S4 slen;
+	S4 pos = 0, argstart;
+	
+	U1 ok = 0;
+	U1 arg = 0;
+	slen = strlen_safe ((const char *) line, MAXLINELEN);
+	
 	S4 arg_ind = -1, arg_pos;
 	S4 ast_ind = -1;
 	ast_level = -1;
 	S4 exp_ind = 0;
-
+	
 	S4 i;
 	for (i = 0; i < MAXBRACKETLEVEL; i++)
 	{
 		ast[i].expr_max = 0;
 	}
-
+	
 	// printf ("> '%s'\n", line);
-
-    while (! ok)
-    {
+	
+	while (! ok)
+	{
 		// printf ("top: %c\n", line[pos]);
-        if (line[pos] == ' ')
-        {
-            pos++;
-
-            if (pos >= slen)
-            {
-                ok = 1;
-            }
-        }
-        else
-        {
+		if (line[pos] == ' ')
+		{
+			pos++;
+			
+			if (pos >= slen)
+			{
+				ok = 1;
+			}
+		}
+		else
+		{
 			if (line[pos] == '(')
 			{
 				ast_ind++;
@@ -516,11 +188,11 @@ S2 get_ast (U1 *line)
 				{
 					ast_level = ast_ind;
 				}
-
-                #if DEBUG
+				
+				#if DEBUG
 				printf ("AST bracket level: %lli\n", ast_level);
-                #endif
-
+				#endif
+				
 				pos++;
 				if (pos >= slen)
 				{
@@ -535,7 +207,7 @@ S2 get_ast (U1 *line)
 				arg_ind++;
 				arg = 0;
 				exp_ind = ast[ast_ind].expr_max;
-
+				
 				while (! arg)
 				{
 					if (line[pos] == '"')
@@ -558,14 +230,14 @@ S2 get_ast (U1 *line)
 								return (1);
 							}
 							pos++;
-
+							
 							if (pos >= slen)
 							{
 								ok = 1;
 								break;
 							}
 						}
-
+						
 						ast[ast_ind].expr[exp_ind][arg_ind][arg_pos] = '"';
 						arg_pos++;
 						if (arg_pos >= MAXLINELEN)
@@ -573,14 +245,14 @@ S2 get_ast (U1 *line)
 							printf ("error: line %lli: argument too long!\n", linenum);
 							return (1);
 						}
-
+						
 						pos++;
 						ast[ast_ind].expr[exp_ind][arg_ind][arg_pos] = '\0';
 						ast[ast_ind].expr_max = exp_ind;
 						arg = 1;
-
+						
 						// printf ("get_ast: string: '%s'\n", ast[ast_ind].expr[exp_ind][arg_ind]);
-
+						
 						break;
 					}
 					else
@@ -605,26 +277,26 @@ S2 get_ast (U1 *line)
 							// printf ("ast_ind: %i, exp_ind: %i, arg_ind: %i, arg_pos: %i\n", ast_ind, exp_ind, arg_ind, arg_pos);
 							ast[ast_ind].expr[exp_ind][arg_ind][arg_pos] = '\0';
 							// printf ("[ %s ]\n", ast[ast_ind].expr[exp_ind][arg_ind]);
-
+							
 							if (line[pos] == ')')
 							{
-									// next char is open bracket, new expression next
-									ast[ast_ind].expr_args[exp_ind] = arg_ind;
-									ast[ast_ind].expr_max = exp_ind;
-									exp_ind++; arg_ind = -1;
-									if (exp_ind >= MAXEXPRESSION)
-									{
-										printf ("error: line %lli: too much expressions!\n", linenum);
-										return (1);
-									}
-
-									ast[ast_ind].expr_max = exp_ind;
-									ast[ast_ind].expr_args[exp_ind] = arg_ind;
-
+								// next char is open bracket, new expression next
+								ast[ast_ind].expr_args[exp_ind] = arg_ind;
+								ast[ast_ind].expr_max = exp_ind;
+								exp_ind++; arg_ind = -1;
+								if (exp_ind >= MAXEXPRESSION)
+								{
+									printf ("error: line %lli: too much expressions!\n", linenum);
+									return (1);
+								}
+								
+								ast[ast_ind].expr_max = exp_ind;
+								ast[ast_ind].expr_args[exp_ind] = arg_ind;
+								
 								ast_ind--; arg_ind = -1;
 							}
 							arg = 1;
-
+							
 							if (pos == slen - 2)
 							{
 								// end of line
@@ -634,28 +306,28 @@ S2 get_ast (U1 *line)
 						}
 					}
 					pos++;
-
+					
 					if (pos == slen)
 					{
 						ok = 1;
 						break;
 					}
 				}
-
+				
 				if (arg_ind >= MAXARGS)
 				{
 					printf ("error: line %lli: too much arguments!\n", linenum);
 					return (1);
 				}
-            }
-        }
-    }
-    if (ast_ind != -1)
+			}
+		}
+	}
+	if (ast_ind != -1)
 	{
 		printf ("error: line %lli: brackets don't match!\n", linenum);
 		return (2);
 	}
-    return (0);
+	return (0);
 }
 
 S2 get_label_pos (U1 *labelname)

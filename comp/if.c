@@ -1,7 +1,7 @@
 /*
  * This file if.c is part of L1vm.
  *
- * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2018
+ * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2020
  *
  * L1vm is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,11 @@ S4 if_ind;
 S4 while_ind;
 S4 for_ind;
 S4 jumplist_ind;
+
+// string functions ===============================================================================
+size_t strlen_safe (const char * str, int maxlen);
+S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
+void convtabs (U1 *str);
 
 void init_if (void)
 {
@@ -137,6 +142,52 @@ S4 get_else_set (S4 ind)
     return (jumplist[if_comp[ind].else_pos].pos);
 }
 
+// if optimize helper function ==========================================================
+
+S4 get_if_optimize_reg (U1 *code_line)
+{
+	S4 pos, i, j, str_len;
+	U1 if_found = 0;
+	U1 reg_num[256];
+	S4 reg;
+	
+	str_len = strlen_safe ((const char *) code_line, MAXLINELEN);
+	for (i = EQI; i <= LSEQD; i++)
+	{
+		pos = searchstr (code_line, opcode[i].op, 0, 0, TRUE);
+		if (pos != -1)
+		{
+			if_found = 1;
+			break;
+		}
+	}
+	if (if_found == 0)
+	{
+		// no if found, return -1
+		return (-1);
+	}
+	
+	// get last argument, it's the needed register number
+	pos = searchstr (code_line, (unsigned char *) ",", 0, 0, TRUE);
+	if (pos != -1)
+	{
+		pos = searchstr (code_line, (unsigned char *) ",", pos + 1, 0, TRUE);
+		j = 0;
+		for (i = pos + 1; i < str_len; i++)
+		{
+			reg_num[j] = code_line[i];
+			j++;
+		}
+		reg_num[j] = '\0';
+		reg = atoi ((const char *) reg_num);
+		
+		return (reg);
+	}
+	else
+	{
+		return (-1);
+	}
+}
 
 // while ====================================================
 void init_while (void)
