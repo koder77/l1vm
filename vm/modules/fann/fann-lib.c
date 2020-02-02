@@ -109,7 +109,7 @@ U1 *fann_run_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	U1 *src_p;
 	U1 *dst_p;
-	F8 data_f;
+	F8 data_f ALIGN;
 
 	fann_type *input_f;
 
