@@ -17,7 +17,11 @@ New: "optimize-if" and "optimize-if-off" in syntax highlighter for Kate Editor.
 New: VM: loada and loadd memory bounds check!
 New: splitted compiler sources a bit up.
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu Jan 30 2020 18:00 +0100
+New: Cells wrapper library for L1VM, checked some functions in library demo.
+You need to copy the Cells xor net file to: /home/yourname/l1vm/fann/xor_float.net
+And need to set this path in the library demo to make it run.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue Feb 11 2020 19:40 +0100
 
 
 L1VM - (0.9.12)

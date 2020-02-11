@@ -2228,7 +2228,7 @@ S2 run (void *arg)
 			break;
 			
 		case 22:
-			//printf ("PRINTI as int16")
+			//printf ("PRINTI as int16\n");
 			arg2 = code[ep + 2];
 			
 			printf ("%d", (S2) regi[arg2]);
@@ -2236,7 +2236,7 @@ S2 run (void *arg)
 			break;
 		
 		case 23:
-			//printf ("PRINTI as int32")
+			//printf ("PRINTI as int32\n");
 			arg2 = code[ep + 2];
 			
 			printf ("%i", (S4) regi[arg2]);
