@@ -26,7 +26,7 @@
 #include <cells.h>
 
 // global struct 
-static struct cell *cells = 0;
+static struct cell *cells = NULL;
 static S8 ALIGN cells_number = 0;
 
 U1 *cells_alloc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -52,6 +52,8 @@ U1 *cells_alloc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *cells_dealloc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	if (cells) free (cells);
+	// set cells to NULL, to mark it as not allocated
+	cells = NULL;
 	return (sp);
 }
 
@@ -793,7 +795,7 @@ U1 *cells_fann_save_cells (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("cells_fann_run_ann_go_links: ERROR: stack corrupt!\n");
+		printf ("cells_fann_save_cells: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 	
@@ -829,7 +831,7 @@ U1 *cells_fann_load_cells (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("cells_fann_run_ann_go_links: ERROR: stack corrupt!\n");
+		printf ("cells_fann_load_cells: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 	

@@ -21,7 +21,10 @@ New: Cells wrapper library for L1VM, checked some functions in library demo.
 You need to copy the Cells xor net file to: /home/yourname/l1vm/fann/xor_float.net
 And need to set this path in the library demo to make it run.
 
--- Stefan Pietzonke <jay-t@gmx.net> Tue Feb 11 2020 19:40 +0100
+Fixes on the new Cells library: Set cells to NULL if not allocated and corrections
+to error messages.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed Feb 12 2020 16:51 +0100
 
 
 L1VM - (0.9.12)
