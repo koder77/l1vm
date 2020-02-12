@@ -160,16 +160,16 @@ U1 *cells_fann_do_update_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 cell ALIGN;
 	S8 node ALIGN;
-	S8 inputs_node_addr;
+	S8 inputs_node_addr ALIGN;
 	S2 ret;
 	U1 *src_p;
 	U1 *dst_p;
-	F8 *inputf;
+	F8 *inputf ALIGN;
 	S8 i ALIGN;
 	S8 j ALIGN;
 	S8 offset ALIGN;
 	F8 dataf ALIGN;
-	S8 inputs;
+	S8 inputs ALIGN;
 	
 	sp = stpopi ((U1 *) &inputs_node_addr, sp, sp_top);
 	if (sp == NULL)
@@ -257,8 +257,8 @@ U1 *cells_fann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S2 ret;
 	U1 *src_p;
 	U1 *dst_p;
-	F8 *inputf;
-	F8 *outputf;
+	F8 *inputf ALIGN;
+	F8 *outputf ALIGN;
 	S8 i ALIGN;
 	S8 j ALIGN;
 	S8 offset ALIGN;
@@ -626,7 +626,7 @@ U1 *cells_fann_get_max_layer (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 start_cell ALIGN;
 	S8 end_cell ALIGN;
-	S8 max_layer_addr;
+	S8 max_layer_addr ALIGN;
 	S2 ret;
 	
 	sp = stpopi ((U1 *) &max_layer_addr, sp, sp_top);
