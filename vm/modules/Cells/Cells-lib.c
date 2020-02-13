@@ -58,7 +58,7 @@ U1 *cells_alloc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("cells_alloc_neurons: ERROR: stack corrupt!\n");
+		printf ("cells_alloc: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 		
