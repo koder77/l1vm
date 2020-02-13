@@ -31,6 +31,8 @@ static S8 ALIGN cells_number = 0;
 
 U1 *cells_alloc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
+	S2 ret;
+	
 	sp = stpopi ((U1 *) &cells_number, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -43,9 +45,23 @@ U1 *cells_alloc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (cells == NULL)
 	{
 		printf ("cells_alloc: ERROR: can't allocate %lli cells!\n", cells_number);
-		return (NULL);
+		
+		ret = 1;
+	}
+	else
+	{
+		ret = 0;
 	}
 	
+	// push return value to stack
+	sp = stpushi (ret, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("cells_alloc_neurons: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+		
 	return (sp);
 }
 

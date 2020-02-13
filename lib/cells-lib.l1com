@@ -113,7 +113,10 @@
 	(set int64 1 cells_fann_save_cells@cells 14)
 	(set int64 1 cells_fann_load_cells@cells 15)
 	(set int64 1 mod@cells 0)
+	(set int64 1 ret@cells 0)
 	(set int64 1 cells_num@cells)
+	(set int64 1 f@cells 0)
+	(set string s alloc_err_str "Cells: ERROR allocating memory for Cells!")
 	// get arguments from stack
 	(cells_num@cells stpopi)
     (mod@cells stpopi)
@@ -139,6 +142,12 @@
 	// call init cells alloc function
 	(cells_num@cells stpushi)
 	(3 mod@cells cells_alloc@cells 0 intr0)
+	(ret@cells stpopi)
+	(loadreg)
+	(((ret@cells zero !=) f@cells =) f@cells if)
+		(6 alloc_err_str 0 0 intr0)
+		(7 0 0 0 intr0)
+	(endif)
 (funcend)
 // wrapper functions
 (cells_alloc_neurons_equal func)

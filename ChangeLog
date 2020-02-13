@@ -24,7 +24,9 @@ And need to set this path in the library demo to make it run.
 Fixes on the new Cells library: Set cells to NULL if not allocated and corrections
 to error messages.
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed Feb 12 2020 16:51 +0100
+New: Cells library now gives a return value on "cells_alloc"!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu Feb 13 2020 22:47 +0100
 
 
 L1VM - (0.9.12)
