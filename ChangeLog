@@ -1,3 +1,10 @@
+L1VM - (0.9.14)
+Return value checks for Cells: fann_read_ann () fixed!
+VM: version number fixed.  
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri Feb 14 2020 19:55 +0100
+
+
 L1VM - (0.9.13)
 NEW: the install.sh script now installs to "~/bin" in the "/home" directory of the user!
 So no root access is needed to install. You need the "bin" directory in your /home directory!
