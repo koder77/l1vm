@@ -1,5 +1,6 @@
 // Cells FANN wrapper library for L1VM
 //
+// New: added return value checks on alloc Cells calls
 //
 (main func)
 	(set int64 1 zero 0)
@@ -25,21 +26,39 @@
 	(set double 1 zerof 0.0)
 	(set double 1 onef 1.0)
 	(set int64 1 offset 8)
+	(set int64 1 f 0)
 	(set int64 1 max_layer_readout 0)
 	// following data address taken from assembly output!
 	(set int64 1 max_layer_readout_addr 184)
 	// set path to "xor_float.net" file of Cells C library:
 	(set string s node_xor_filestr "/home/stefan/l1vm/fann/xor_float.net")
 	(zero max_cells :cells_init_lib call)
+	(ret stpopi)
 	(loadreg)
+	(((ret zero !=) f =) f if)
+		(255 0 0 0 intr0)
+	(endif)
 	// allocate memory for cell neurons
 	(max_cells cell_neurons :cells_alloc_neurons_equal call)
 	(ret stpopi)
 	(loadreg)
+	(((ret zero !=) f =) f if)
+		(:cells_dealloc call)
+		(loadreg)
+		(255 0 0 0 intr0)
+	(endif)
 	// read FANN from file
 	(cell node_xor node_xor_filestraddr inputs outputs node_xor_inputsfaddr node_xor_outputsfaddr layer_zero one :cells_fann_read_ann call)
 	(ret stpopi)
 	(loadreg)
+	(((ret zero !=) f =) f if)
+		// dealloc neurons
+		(max_cells :cells_dealloc_neurons call)
+		(ret stpopi)
+		(:cells_dealloc call)
+		(loadreg)
+		(255 0 0 0 intr0)
+	(endif)
 	(cell node_xor :cells_fann_run_ann call)
 	(ret stpopi)
 	(loadreg)
@@ -148,6 +167,7 @@
 		(6 alloc_err_str 0 0 intr0)
 		(7 0 0 0 intr0)
 	(endif)
+	(ret stpushi)
 (funcend)
 // wrapper functions
 (cells_alloc_neurons_equal func)
