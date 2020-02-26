@@ -1,7 +1,7 @@
 # zerobuild makefile
 
 [executable, name = l1com]
-sources = main.c, ../lib-func/file.c, checkd.c, if.c, mem.c, ../lib-func/string.c
+sources = main.c, labels.c, register.c, var.c, ../lib-func/file.c, checkd.c, if.c, mem.c, ../lib-func/string.c
 
 ccompiler = clang
 

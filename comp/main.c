@@ -506,7 +506,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							data_info[data_ind].size = strlen_safe ((char *) ast[level].expr[j][4], MAXLINELEN) - 1;
 							// set size string:
 							sprintf ((char *) ast[level].expr[j][2], "%lli", data_info[data_ind].size);
-							printf ("SET: '%s' size to %lli\n", data_info[data_ind].name, data_info[data_ind].size);
+							// printf ("SET: '%s' size to %lli\n", data_info[data_ind].name, data_info[data_ind].size);
 						}
 
 						// value
@@ -4195,11 +4195,6 @@ void cleanup (void)
 
 int main (int ac, char *av[])
 {
-    printf ("l1com <file> [-lines] [max linenumber]\n");
-	printf ("\nCompiler for bra(et, a programming language with brackets ;-)\n");
-	printf ("%s", VM_VERSION_STR);
-	printf (" (C) 2017-2020 Stefan Pietzonke\n");
-
 	init_ast ();
 	init_if ();
 	init_while ();
@@ -4210,9 +4205,27 @@ int main (int ac, char *av[])
 
     if (ac < 2)
     {
+		printf ("l1com <file> [-lines] [max linenumber]\n");
+		printf ("\nCompiler for bra(et, a programming language with brackets ;-)\n");
+		printf ("%s", VM_VERSION_STR);
+		printf (" (C) 2017-2020 Stefan Pietzonke\n");
+		
         exit (1);
     }
 
+    if (ac == 2)
+	{
+		if (strcmp (av[1], "--help") == 0 || strcmp (av[1], "-?") == 0)
+		{
+			printf ("l1com <file> [-lines] [max linenumber]\n");
+			printf ("\nCompiler for bra(et, a programming language with brackets ;-)\n");
+			printf ("%s", VM_VERSION_STR);
+			printf (" (C) 2017-2020 Stefan Pietzonke\n");
+			
+			exit (1);
+		}
+	}
+    
 	if (ac == 4)
 	{
 		if (strcmp (av[2], "-lines") == 0)
@@ -4260,6 +4273,6 @@ int main (int ac, char *av[])
 	}
 
 	cleanup ();
-	printf ("ok!\n");
+	// printf ("ok!\n");
 	exit (0);
 }

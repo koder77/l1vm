@@ -2,7 +2,16 @@ L1VM - (0.9.14)
 Return value checks for Cells: fann_read_ann () fixed!
 VM: version number fixed.  
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri Feb 14 2020 19:55 +0100
+Compiler l1com now shows not copyright message on start.
+To get infos run it with:
+
+$ l1com --help
+$ l1com -?
+
+The same changes made to the assembler l1asm too!
+I did update the zerobuild makefile for l1com.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue Feb 26 2020 17:33 +0100
 
 
 L1VM - (0.9.13)

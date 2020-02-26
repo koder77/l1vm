@@ -1,6 +1,6 @@
 #!/bin/sh
 # set vm/main.c JIT_COMPILER to 0 and compile using this script
-if clang -Wall main.c load-object.c ../lib-func/string.c -o l1vm-nojit -lm -ldl -lpthread -lstdc++ -lSDL -lSDL_gfx -lSDL_image -lSDL_ttf -O2 -g -fomit-frame-pointer -Wl,--export-dynamic; then
+if clang -Wall main.c load-object.c ../lib-func/string.c -o l1vm-nojit -lm -ldl -lpthread -lSDL -lSDL_gfx -lSDL_image -lSDL_ttf -O2 -g -fomit-frame-pointer -Wl,--export-dynamic; then
 	exit 0
 else
 	exit 1
