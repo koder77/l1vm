@@ -1149,13 +1149,13 @@ S2 run (void *arg)
 		overflow = 0;
 	#endif
 	#if MATH_LIMITS_DOUBLE_FULL
-		if (double_state (regd[arg1] == 1))
+		if (double_state (regd[arg1]) == 1)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at addd!\n");
 		}
 
-		if (double_state (regd[arg2] == 1))
+		if (double_state (regd[arg2]) == 1)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at addd!\n");
@@ -1165,7 +1165,7 @@ S2 run (void *arg)
 	regd[arg3] = regd[arg1] + regd[arg2];
 
 	#if MATH_LIMITS
-		if (double_state (regd[arg3] == 1))
+		if (double_state (regd[arg3]) == 1)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at addd!\n");
@@ -1189,13 +1189,13 @@ S2 run (void *arg)
 		overflow = 0;
 	#endif
 	#if MATH_LIMITS_DOUBLE_FULL
-		if (double_state (regd[arg1] == 1))
+		if (double_state (regd[arg1]) == 1)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at subd!\n");
 		}
 
-		if (double_state (regd[arg2] == 1))
+		if (double_state (regd[arg2]) == 1)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at subd!\n");
@@ -1205,7 +1205,7 @@ S2 run (void *arg)
 	regd[arg3] = regd[arg1] - regd[arg2];
 
 	#if MATH_LIMITS
-		if (double_state (regd[arg3] == 1))
+		if (double_state (regd[arg3]) == 1)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at subd!\n");
@@ -1229,13 +1229,13 @@ S2 run (void *arg)
 		overflow = 0;
 	#endif
 	#if MATH_LIMITS_DOUBLE_FULL
-		if (double_state (regd[arg1] == 1))
+		if (double_state (regd[arg1]) == 1)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at muld!\n");
 		}
 
-		if (double_state (regd[arg2] == 1))
+		if (double_state (regd[arg2]) == 1)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at muld!\n");
@@ -1245,7 +1245,7 @@ S2 run (void *arg)
 	regd[arg3] = regd[arg1] * regd[arg2];
 
 	#if MATH_LIMITS
-		if (double_state (regd[arg3] == 1))
+		if (double_state (regd[arg3]) == 1)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at muld!\n");
@@ -1278,13 +1278,13 @@ S2 run (void *arg)
 		overflow = 0;
 	#endif
 	#if MATH_LIMITS_DOUBLE_FULL
-		if (double_state (regd[arg1] == 1))
+		if (double_state (regd[arg1]) == 1)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at divd!\n");
 		}
 
-		if (double_state (regd[arg2] == 1))
+		if (double_state (regd[arg2]) == 1)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at divd!\n");
@@ -1294,7 +1294,7 @@ S2 run (void *arg)
 	regd[arg3] = regd[arg1] / regd[arg2];
 
 	#if MATH_LIMITS
-		if (double_state (regd[arg3] == 1))
+	if (double_state (regd[arg3]) == 1)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at divd!\n");
@@ -2247,7 +2247,7 @@ S2 run (void *arg)
 			// set overflow on double reg
 			arg2 = code[ep + 2];
 			overflow = 0;
-			if (double_state (regd[arg2] == 1))
+			if (double_state (regd[arg2]) == 1)
 			{
 				overflow = 1;
 			}

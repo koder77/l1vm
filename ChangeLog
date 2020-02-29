@@ -11,7 +11,9 @@ $ l1com -?
 The same changes made to the assembler l1asm too!
 I did update the zerobuild makefile for l1com.
 
--- Stefan Pietzonke <jay-t@gmx.net> Tue Feb 26 2020 17:33 +0100
+BUGFIX: VM: double_state() call return values fixed: addd, subd, muld, divd.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Feb 29 2020 19:30 +0100
 
 
 L1VM - (0.9.13)
