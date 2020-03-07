@@ -1,7 +1,7 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 
-if uname -A | grep -q "DragonFly"; then
+if uname -a | grep -q "DragonFly"; then
 	echo "DragonFly BSD detected..."
 	echo "checking for needed libraries..."
 	
@@ -10,7 +10,7 @@ if uname -A | grep -q "DragonFly"; then
 		exit 1
 	fi
 	
-	if ! sudo pkg install sdl_gfx-2.0.25; then
+	if ! sudo pkg install sdl_gfx-2.0.26; then
 		echo "installation of sdl gfx library failed!"
 		exit 1
 	fi
@@ -43,7 +43,7 @@ fi
 
 echo "libraries installed! building compiler, assembler and VM..."
 
-export LIBRARY_PATH=$LIBRARY_PATH:-L/usr/local/lib:-L/usr/lib
+export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib:/usr/lib
 
 cd assemb
 if ./make.sh; then
@@ -77,8 +77,8 @@ echo "VM binaries installed into ~/bin"
 
 cd modules
 echo "installing modules..."
-./build.sh
-if ./install.sh; then
+sh ./build-df.sh
+if sh ./install-df.sh; then
 	echo "modules build ok!"
 else
 	echo "modules build FAILED!"
