@@ -87,7 +87,7 @@ fi
 		
 echo "all modules installed. building programs..."
 cd ../prog
-if ./build-all.sh; then
+if sh ./build-all.sh; then
 	echo "building programs successfully!"
 else
 	echo "building programs FAILED!"

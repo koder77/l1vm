@@ -26,7 +26,7 @@ In pure console text I/O programs not linked with SDL library, the memory footpr
 About 2 MB RAM only as shown in the taskmanager by running a minimal test program!
 
 Installation 
------------
+------------
 Just run the "clean.sh" script and then the "install.sh" script in the main directory of L1VM!
 The binaries are installed into the "bin" directory in your "/home" user directory!
 There are no root rights needed!
@@ -34,6 +34,35 @@ There are no root rights needed!
 The  binaries are build and installed into "~/bin".
 And the modules are installed into "~/bin".
 </pre>
+
+DragonFly BSD
+-------------
+You have to add a bin/ dirctory in your /home/user directory:
+
+<pre>
+$ mkdir bin 
+</pre>
+
+Then you need to paste the following lines to your ".shrc" bash config
+in your /home directory:
+
+<pre>
+# check if local bin folder exist
+# $HOME/bin
+# prepend it to $PATH if so
+if [ -d $HOME/bin ]; then
+    export PATH=$HOME/bin:$PATH
+fi
+</pre>
+
+
+And finally run the installation script:
+<pre>
+$ sh ./install-DragonFly.sh
+</pre>
+
+That's it! Note the rs232 library is not build yet!
+
 
 New
 ----
