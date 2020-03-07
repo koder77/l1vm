@@ -1,6 +1,8 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 
+if uname -a | grep -q "Debian"; then
+echo "Debian detected..."
 echo "checking for needed libraries..."
 
 if ! dpkg -s libsdl1.2-dev &> /dev/null; then
@@ -49,6 +51,12 @@ if ! dpkg -s libmpfrc++-dev &> /dev/null; then
 		echo "installation failed!"
 		exit 1
 	fi
+fi
+
+else
+	echo "ERROR: detected OS not Debian GNU Linux!"
+	echo "EXITING WITH ERROR!"
+	exit 1
 fi
 
 echo "libraries installed! building compiler, assembler and VM..."
@@ -101,6 +109,8 @@ else
 	echo "building programs FAILED!"
 	exit 1
 fi
-	cd ..
+cd ..
 echo "installation finished!"
 exit 0
+
+
