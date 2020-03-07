@@ -37,14 +37,14 @@ And the modules are installed into "~/bin".
 
 DragonFly BSD
 -------------
-You have to add a bin/ dirctory in your /home/user directory:
+You have to add a "bin/" directory in your "/home/user" directory:
 
 <pre>
 $ mkdir bin 
 </pre>
 
 Then you need to paste the following lines to your ".shrc" bash config
-in your /home directory:
+in your "/home" directory:
 
 <pre>
 # check if local bin folder exist
