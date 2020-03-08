@@ -31,15 +31,18 @@
 /* For more info and how to use this library, visit: http://www.teuniz.net/RS-232/ */
 
 
+/* DragonFly BSD added by Stefan Pietzonke 2020 */
+
+
 #include "rs232.h"
 
 size_t strlen_safe (const char * str, int maxlen);
 
 
-#if defined(__linux__) || defined(__FreeBSD__)   /* Linux & FreeBSD */
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__)   /* Linux & FreeBSD & DragonFly BSD*/
 
-#define RS232_PORTNR  38
-
+// #define RS232_PORTNR  38
+#define RS232_PORTNR 49
 
 static int Cport[RS232_PORTNR],
     error;
@@ -54,7 +57,12 @@ static char *comports[RS232_PORTNR]={"/dev/ttyS0","/dev/ttyS1","/dev/ttyS2","/de
                        "/dev/ttyAMA0","/dev/ttyAMA1","/dev/ttyACM0","/dev/ttyACM1",
                        "/dev/rfcomm0","/dev/rfcomm1","/dev/ircomm0","/dev/ircomm1",
                        "/dev/cuau0","/dev/cuau1","/dev/cuau2","/dev/cuau3",
-                       "/dev/cuaU0","/dev/cuaU1","/dev/cuaU2","/dev/cuaU3"};
+                       "/dev/cuaU0","/dev/cuaU1","/dev/cuaU2","/dev/cuaU3",
+					   "/dev/tty",												/* DragonFly BSD */
+					   "/dev/ttyv0", "/dev/ttyv1", "/dev/ttyv2", "/dev/ttyv3",
+					   "/dev/ttyv4", "/dev/ttyv5", "/dev/ttyv6", "/dev/ttyv7",
+					   "/dev/ttyv8", "/dev/ttyv9"
+};
 
 int RS232_OpenComport(int comport_number, int baudrate, const char *mode)
 {
