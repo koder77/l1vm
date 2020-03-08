@@ -16,6 +16,8 @@ cd ../net
 ./make-net-mod.sh
 cd ../process
 ./make-process-mod.sh
+cd ../rs232
+./make-rs232-mod.sh
 cd ../sdl
 ./make-sdl-mod.sh
 cd ../string
@@ -32,6 +34,7 @@ cp ../vm/modules/math/libl1vm* .
 cp ../vm/modules/mpfr-c++/libl1vm* .
 cp ../vm/modules/net/libl1vm* .
 cp ../vm/modules/process/libl1vm* .
+cp ../vm/modules/rs232/libl1vm* .
 cp ../vm/modules/sdl/libl1vm* .
 cp ../vm/modules/string/libl1vm* .
 cp ../vm/modules/time/libl1vm* .
