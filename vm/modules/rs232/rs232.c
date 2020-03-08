@@ -115,6 +115,7 @@ int RS232_OpenComport(int comport_number, int baudrate, const char *mode)
                    break;
     case  460800 : baudr = B460800;
                    break;
+#if ! defined(__DragonFly__)
     case  500000 : baudr = B500000;
                    break;
     case  576000 : baudr = B576000;
@@ -137,6 +138,7 @@ int RS232_OpenComport(int comport_number, int baudrate, const char *mode)
                    break;
     case 4000000 : baudr = B4000000;
                    break;
+#endif
     default      : printf("invalid baudrate\n");
                    return(1);
                    break;
