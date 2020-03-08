@@ -13,7 +13,10 @@ I did update the zerobuild makefile for l1com.
 
 BUGFIX: VM: double_state() call return values fixed: addd, subd, muld, divd.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Feb 29 2020 19:30 +0100
+NEW: Ported L1VM to run on DragonFly BSD. I had to change something in vm/modules/rs232.
+I added the DragonFly BSD /dev/tty* device names for RS232.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Mar 08 2020 17:14 +0100
 
 
 L1VM - (0.9.13)
