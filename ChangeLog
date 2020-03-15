@@ -16,7 +16,10 @@ BUGFIX: VM: double_state() call return values fixed: addd, subd, muld, divd.
 NEW: Ported L1VM to run on DragonFly BSD. I had to change something in vm/modules/rs232.
 I added the DragonFly BSD /dev/tty* device names for RS232.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun Mar 08 2020 17:14 +0100
+BUGFIX: compiler l1com: "call" function variable push bugfix.
+Programm "sdl-4" is working now again as black/grey pattern!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Mar 15 2020 16:50 +0100
 
 
 L1VM - (0.9.13)
