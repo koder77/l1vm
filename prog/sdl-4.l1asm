@@ -162,12 +162,10 @@ loada x, 0, 1
 stpushi 1
 loada y, 0, 2
 stpushi 2
-loada col, 0, 3
+stpushb 2
 stpushb 3
 stpushb 3
 stpushb 3
-loada maxcol, 0, 4
-stpushb 4
 jsr :sdl_pixel
 loada col, 0, 1
 loada one, 0, 2

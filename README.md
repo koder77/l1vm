@@ -35,6 +35,12 @@ The  binaries are build and installed into "~/bin".
 And the modules are installed into "~/bin".
 </pre>
 
+cli only
+--------
+To compile for cli (bashs) text in/output only with no SDL gfx support:
+Set "#define SDL_module 0" in "include/global.h".
+Then run in "vm/" the bash script: "make-cli.sh".
+
 DragonFly BSD
 -------------
 You have to add a "bin/" directory in your "/home/user" directory:
