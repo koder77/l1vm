@@ -380,6 +380,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 	U1 for_label[MAXLINELEN];
 
 	U1 set_loadreg = 0;
+	U1 found_let = 0;
 
 	if (get_ast (line) != 0)
 	{
@@ -765,7 +766,14 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "=") == 0)
 								{
 									// do variable assign
-
+									found_let++;
+									
+									if (found_let == 2)
+									{
+										printf ("error: line %lli: more than one variable assign found: '%s' !\n", linenum, ast[level].expr[j][last_arg - 1]);
+										return (1);
+									}
+									
 									// check if variable to array variable assign
 									if (last_arg >= 5)
 									{
