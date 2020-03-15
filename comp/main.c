@@ -3322,55 +3322,6 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 											strcpy ((char *) code[code_line], (const char *) code_temp);
 											strcat ((char *) code[code_line], "\n");
-
-											if (set_loadreg == 1)
-											{
-												// load double registers
-												for (e = MAXREG - 1; e >= 0; e--)
-												{
-													if (save_regd[e] == 1)
-													{
-														strcpy ((char *) code_temp, "stpopd F");
-														sprintf ((char *) str, "%i", e);
-														strcat ((char *) code_temp, (const char*) str);
-														strcat ((char *) code_temp, "\n");
-
-														code_line++;
-														if (code_line >= line_len)
-														{
-															printf ("error: line %lli: code list full!\n", linenum);
-															return (1);
-														}
-
-														strcpy ((char *) code[code_line], (const char *) code_temp);
-													}
-												}
-
-												// load integer registers
-												for (e = MAXREG - 1; e >= 0; e--)
-												{
-													if (save_regi[e] == 1)
-													{
-														strcpy ((char *) code_temp, "stpopi I");
-														sprintf ((char *) str, "%i", e);
-														strcat ((char *) code_temp, (const char*) str);
-														strcat ((char *) code_temp, "\n");
-
-														code_line++;
-														if (code_line >= line_len)
-														{
-															printf ("error: line %lli: code list full!\n", linenum);
-															return (1);
-														}
-
-														strcpy ((char *) code[code_line], (const char *) code_temp);
-													}
-												}
-
-												init_registers ();
-
-												set_loadreg = 0;
-											}
 										}
 									}
 
@@ -3394,6 +3345,54 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										return (1);
 									}
 
+									if (set_loadreg == 1)
+									{
+										// printf ("l1com: set loadreg, loading registers...\n");
+										
+										// load double registers
+										for (e = MAXREG - 1; e >= 0; e--)
+										{
+											if (save_regd[e] == 1)
+											{
+												strcpy ((char *) code_temp, "stpopd F");
+												sprintf ((char *) str, "%i", e);
+												strcat ((char *) code_temp, (const char*) str);
+												strcat ((char *) code_temp, "\n");
+												
+												code_line++;
+												if (code_line >= line_len)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+												
+												strcpy ((char *) code[code_line], (const char *) code_temp);
+											}
+										}
+										
+										// load integer registers
+										for (e = MAXREG - 1; e >= 0; e--)
+										{
+											if (save_regi[e] == 1)
+											{
+												strcpy ((char *) code_temp, "stpopi I");
+												sprintf ((char *) str, "%i", e);
+												strcat ((char *) code_temp, (const char*) str);
+												strcat ((char *) code_temp, "\n");
+												
+												code_line++;
+												if (code_line >= line_len)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (1);
+												}
+												
+												strcpy ((char *) code[code_line], (const char *) code_temp);
+											}
+										}
+
+										set_loadreg = 0;
+									}
 									continue;
 								}
 

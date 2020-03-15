@@ -1,0 +1,21 @@
+// bra(et - math expression demo ;)
+//
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 x 10)
+	(set int64 1 y 20)
+	(set int64 1 z 30)
+	(set int64 1 ret 0)
+	(set int64 1 a 0)
+	(set string s format "%i")
+	((((x y +)(y z +) +)((z z +)(x x +) +) +) ret =)
+	((x y +) a =) (:print_ret * call) (4 a 0 0 intr0) (7 0 0 0 intr0)
+	(20 a formataddr 0 intr0) (7 0 0 0 intr0)
+	(255 zero 0 0 intr0)
+(funcend)
+(print_ret func)
+	// print ret
+	(4 ret 0 0 intr0)
+	// print newline
+	(7 0 0 0 intr0)
+(funcend)

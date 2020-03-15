@@ -17,9 +17,16 @@ NEW: Ported L1VM to run on DragonFly BSD. I had to change something in vm/module
 I added the DragonFly BSD /dev/tty* device names for RS232.
 
 BUGFIX: compiler l1com: "call" function variable push bugfix.
-Programm "sdl-4" is working now again as black/grey pattern!
+Program "sdl-4" is working now again as black/grey pattern!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun Mar 15 2020 16:50 +0100
+New: prog/test-10.l1com program, showing more then one function call in one line!
+BUGFIX: 
+(:print_ret * call)
+
+The "*" operator now works right and is used instead of "(loadreg)" function call to load
+the callers registers context.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Mar 15 2020 21:38 +0100
 
 
 L1VM - (0.9.13)
