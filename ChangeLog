@@ -1,3 +1,9 @@
+L1VM - (0.9.15)
+NEW: only one function to show call arguments for assembler and compiler.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon Mar 16 2020 17:40 +0100
+
+
 L1VM - (0.9.14)
 Return value checks for Cells: fann_read_ann () fixed!
 VM: version number fixed.  

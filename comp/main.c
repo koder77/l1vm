@@ -4243,6 +4243,14 @@ void cleanup (void)
 	}
 }
 
+void show_info (void)
+{
+	printf ("l1com <file> [-lines] [max linenumber]\n");
+	printf ("\nCompiler for bra(ets, a programming language with brackets ;-)\n");
+	printf ("%s", VM_VERSION_STR);
+	printf (" (C) 2017-2020 Stefan Pietzonke\n");
+}
+
 int main (int ac, char *av[])
 {
 	init_ast ();
@@ -4255,11 +4263,7 @@ int main (int ac, char *av[])
 
     if (ac < 2)
     {
-		printf ("l1com <file> [-lines] [max linenumber]\n");
-		printf ("\nCompiler for bra(et, a programming language with brackets ;-)\n");
-		printf ("%s", VM_VERSION_STR);
-		printf (" (C) 2017-2020 Stefan Pietzonke\n");
-		
+		show_info ();
         exit (1);
     }
 
@@ -4267,11 +4271,7 @@ int main (int ac, char *av[])
 	{
 		if (strcmp (av[1], "--help") == 0 || strcmp (av[1], "-?") == 0)
 		{
-			printf ("l1com <file> [-lines] [max linenumber]\n");
-			printf ("\nCompiler for bra(et, a programming language with brackets ;-)\n");
-			printf ("%s", VM_VERSION_STR);
-			printf (" (C) 2017-2020 Stefan Pietzonke\n");
-			
+			show_info ();
 			exit (1);
 		}
 	}

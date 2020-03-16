@@ -1534,6 +1534,17 @@ S2 dump_object (U1 *name)
 	return (0);
 }
 
+void show_info (void)
+{
+	printf ("l1asm <asm-file> [-sizes] [code] [data] [-pack]\n");
+	printf ("l1asm <asm-file> [-pack]\n\n");
+	printf ("assemble file 'foo.l1asm' and set code and data size to 1000000 bytes:\n");
+	printf ("l1asm foo -sizes 1000000 1000000\n\n");
+	printf ("-pack: create .bz2 object code file\n\n");
+	printf ("%s", VM_VERSION_STR);
+	printf (" (C) 2017-2020 Stefan Pietzonke\n");
+}
+
 int main (int ac, char *av[])
 {
 	// make bzip2 object code file flag
@@ -1542,14 +1553,7 @@ int main (int ac, char *av[])
 	
 	if (ac < 2)
     {
-		printf ("l1asm <asm-file> [-sizes] [code] [data] [-pack]\n");
-		printf ("l1asm <asm-file> [-pack]\n\n");
-		printf ("assemble file 'foo.l1asm' and set code and data size to 1000000 bytes:\n");
-		printf ("l1asm foo -sizes 1000000 1000000\n\n");
-		printf ("-pack: create .bz2 object code file\n\n");
-		printf ("%s", VM_VERSION_STR);
-		printf (" (C) 2017-2020 Stefan Pietzonke\n");
-		
+		show_info ();
         exit (1);
     }
 
@@ -1557,14 +1561,7 @@ int main (int ac, char *av[])
 	{
 		if (strcmp (av[1], "--help") == 0 || strcmp (av[1], "-?") == 0)
 		{
-			printf ("l1asm <asm-file> [-sizes] [code] [data] [-pack]\n");
-			printf ("l1asm <asm-file> [-pack]\n\n");
-			printf ("assemble file 'foo.l1asm' and set code and data size to 1000000 bytes:\n");
-			printf ("l1asm foo -sizes 1000000 1000000\n\n");
-			printf ("-pack: create .bz2 object code file\n\n");
-			printf ("%s", VM_VERSION_STR);
-			printf (" (C) 2017-2020 Stefan Pietzonke\n");
-			
+			show_info ();
 			exit (1);
 		}
 	}
