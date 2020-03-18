@@ -1610,6 +1610,8 @@ int main (int ac, char *av[])
     data_ind += sizeof (S8);
 
 
+	printf ("assembling file: '%s'\n", av[1]);
+	
     if (parse ((U1 *) av[1]) == 1)
 	{
 		printf ("ERRORS! can't write object file!\n");
@@ -1648,6 +1650,6 @@ int main (int ac, char *av[])
 		printf (">>> object file compressed!\n");
 	}
 
-	printf ("ok!\n");
+	printf ("ok!\n\n");
 	exit (0);
 }
