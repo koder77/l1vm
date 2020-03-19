@@ -380,7 +380,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 	U1 for_label[MAXLINELEN];
 
 	U1 set_loadreg = 0;
-	U1 found_let = 0;
+	
+	// "=" equal expression track vars:
+	S8 found_let ALIGN = 0;
+	S8 found_let_cont ALIGN = 0;
 
 	if (get_ast (line) != 0)
 	{
@@ -400,12 +403,27 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 	// walking the AST
 	for (level = ast_level; level >= 0; level--)
 	{
-		// printf ("level: %i, expr max: %i\n", level, ast[level].expr_max);
+		#if DEBUG
+			printf ("level: %i, expr max: %i\n", level, ast[level].expr_max);
+		#endif
+			
 		if (ast[level].expr_max > -1)
 		{
 			for (j = 0; j <= ast[level].expr_max; j++)
 			{
-				// printf ("ast level %i:  j: %i, expression args: %i\n", level, j, ast[level].expr_args[j]);
+				#if DEBUG
+   				{
+					printf ("ast level %i:  j: %i, expression args: %i\n", level, j, ast[level].expr_args[j]);
+				
+					S8 exp_ind ALIGN;
+					for (exp_ind = 0; exp_ind <= ast[level].expr_args[j]; exp_ind++)
+					{
+						printf ("exp: ind: %lli, string: '%s'\n", exp_ind, ast[level].expr[j][exp_ind]);
+					}
+					printf ("\n");
+				}
+				#endif
+				
 				if (ast[level].expr_args[j] > -1 )
 				{
 					if (strcmp ((const char *) ast[level].expr[j][0], "set") == 0)
@@ -766,11 +784,37 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "=") == 0)
 								{
 									// do variable assign
-									found_let++;
 									
-									if (found_let == 2)
+									found_let++;
+									if (found_let == 1)
 									{
-										printf ("error: line %lli: more than one variable assign found: '%s' !\n", linenum, ast[level].expr[j][last_arg - 1]);
+										found_let_cont++;
+									}
+									
+									if (found_let > 1)
+									{
+										// already one assign was found
+										// check if this is some kind of:
+										// (((x y +) a =) b =)
+										// expression
+										
+										#if DEBUG
+											printf ("DEBUG: j: %i, last_arg: %i\n", j, ast[level].expr_args[j - 1]);
+											printf ("last arg: '%s'\n", ast[level + 1].expr[j][last_arg]);
+										#endif
+											
+										if (strcmp ((const char *) ast[level + 1].expr[j][last_arg], "=") == 0)
+										{
+												found_let_cont++;
+												#if DEBUG
+													printf ("DEBUG: found let continue assign!\n");
+												#endif
+										}
+									}
+									
+									if (found_let != found_let_cont)
+									{
+										printf ("error: line %lli: more than one variable assign expression found: '%s' !\n", linenum, ast[level].expr[j][last_arg - 1]);
 										return (1);
 									}
 									
@@ -1725,7 +1769,17 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 									ok = 1;
 								}
-
+								else
+								{
+									// set not equal sign operator: "=" continous:
+									
+									if (ast[level].expr_args[j] >= 0)
+									{
+										// not < 0
+										found_let_cont = 0;
+									}
+								}
+								
 								if (ast[level].expr[j][last_arg][0] == ':')
 								{
 									// operator is label name
