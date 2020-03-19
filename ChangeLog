@@ -1,7 +1,12 @@
 L1VM - (0.9.15)
 NEW: only one function to show call arguments for assembler and compiler.
+NEW: Multi variable assign fixed:
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon Mar 16 2020 17:40 +0100
+(((x y +) a =) b =)
+
+Is now allowed again!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu Mar 19 2020 23:00 +0100
 
 
 L1VM - (0.9.14)
