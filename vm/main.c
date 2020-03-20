@@ -2783,6 +2783,17 @@ void free_modules (void)
     }
 }
 
+void show_info (void)
+{
+	printf ("l1vm <program> [-SDL] [-C cpu_cores] [-S stacksize] [-q]\n");
+	printf ("-SDL : run with SDL library support\n");
+	printf ("-C cores : set maximum of threads that can be run\n");
+	printf ("-S stacksize : set the stack size\n");
+	printf ("-q : quiet run, don't show welcome messages\n\n");
+	printf ("%s", VM_VERSION_STR);
+	printf (" (C) 2017-2020 Stefan Pietzonke\n");
+}
+
 int main (int ac, char *av[])
 {
 	S8 i ALIGN;
@@ -2814,12 +2825,17 @@ int main (int ac, char *av[])
 		exit (1);
 	}
 
+	// printf ("DEBUG: ac: %i\n", ac);
+	
     if (ac > 1)
     {
-        for (i = 2; i < ac; i++)
+        for (i = 1; i < ac; i++)
         {
 			av_found = 0;
             arglen = strlen_safe (av[i], MAXLINELEN);
+			
+			// printf ("DEBUG: arg: '%s'\n", av[i]);
+			
 			if (arglen == 2)
 			{
 				if (av[i][0] == '-' && av[i][1] == 'q')
@@ -2860,7 +2876,14 @@ int main (int ac, char *av[])
 					}
 					av_found = 1;
 				}
-
+				
+				if (av[i][0] == '-' && av[i][1] == '?')
+				{
+					// user needs help, show arguments info and exit
+					show_info ();
+					cleanup ();
+					exit (1);
+				}
 			}
             if (arglen > 2)
             {
@@ -2893,38 +2916,46 @@ int main (int ac, char *av[])
                 }
                 else
 				{
-                    if (av[i][0] == '-' && av[i][1] == 'S' && av[i][2] == 'D' && av[i][3] == 'L')
-                    {
-                        // initialize SDL, set SDL flag!
-                        SDL_use = 1;
-						av_found = 1;
-						printf ("SDL library support on\n");
-                    }
-					if (av_found == 0)
+					if (arglen >= 4)
 					{
-			            shell_args_ind++;
-					    if (shell_args_ind >= MAXSHELLARGS)
-					    {
-                            printf ("ERROR: too many shell arguments!\n");
-							cleanup ();
-						    exit (1);
-					    }
+						if (av[i][0] == '-' && av[i][1] == 'S' && av[i][2] == 'D' && av[i][3] == 'L')
+						{
+                        	// initialize SDL, set SDL flag!
+                        	SDL_use = 1;
+							av_found = 1;
+							printf ("SDL library support on\n");
+						}
+						if (av_found == 0)
+						{
+							shell_args_ind++;
+							if (shell_args_ind >= MAXSHELLARGS)
+					    	{
+								printf ("ERROR: too many shell arguments!\n");
+								cleanup ();
+						    	exit (1);
+					    	}
 
-						snprintf ((char *) shell_args[shell_args_ind], MAXSHELLARGLEN, "%s", av[i]);
-                    }
+							snprintf ((char *) shell_args[shell_args_ind], MAXSHELLARGLEN, "%s", av[i]);
+                    	}
+
+                    	if (arglen == 6)
+						{
+							if (strcmp (av[i], "--help") == 0)
+							{
+								// user needs help, show arguments info and exit
+								show_info ();
+								cleanup ();
+								exit (1);
+							}
+						}
+					}
 				}
             }
         }
     }
     else
 	{
-		printf ("l1vm <program> [-SDL] [-C cpu_cores] [-S stacksize] [-q]\n");
-		printf ("-SDL : run with SDL library support\n");
-		printf ("-C cores : set maximum of threads that can be run\n");
-		printf ("-S stacksize : set the stack size\n");
-		printf ("-q : quiet run, don't show welcome messages\n\n");
-		printf ("%s", VM_VERSION_STR);
-		printf (" (C) 2017-2020 Stefan Pietzonke\n");
+		show_info ();
 		cleanup ();
 		exit (1);
 	}

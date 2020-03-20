@@ -6,7 +6,12 @@ NEW: Multi variable assign fixed:
 
 Is now allowed again!
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu Mar 19 2020 23:00 +0100
+VM: l1vm: now shows arguments info if called with:
+
+$ l1vm -?
+$ l1vm --help
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri Mar 20 2020 20:23 +0100
 
 
 L1VM - (0.9.14)
