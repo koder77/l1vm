@@ -6,12 +6,14 @@ NEW: Multi variable assign fixed:
 
 Is now allowed again!
 
-VM: l1vm: now shows arguments info if called with:
+NEW: In this release I included an experimental version of the SDL library for SDL 2.0.
+At the moment only the gfx primitives work: pixels lines etc...
+Not working is the GUI part of the library. I am still have to investigate what is wrong there.
+The GUI buttons can't display the texts.
 
-$ l1vm -?
-$ l1vm --help
+You can run the: "install-vm-sdl2.sh" script to try to install the VM and the SDL 2.0 modules.
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri Mar 20 2020 20:23 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Mon Mar 23 2020 15:50 +0100
 
 
 L1VM - (0.9.14)
