@@ -1160,6 +1160,13 @@ U1 draw_gadget_string (S2 screennum, U2 gadget_index, U1 selected)
 
 U1 event_gadget_string (S2 screennum, U2 gadget_index)
 {
+	/*
+	 * String gadget event handling.
+	 * I use a German nodead keys keyboard
+	 * 
+	 */
+	
+	
     SDL_Event event;
    // SDLKey key;
 
@@ -1168,7 +1175,8 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 
 	int x, y;
 	int shift = 0;
-
+	int rctrl = 0;
+	
     struct gadget_string *string;
 
     string = (struct gadget_string *) screen[screennum].gadget[gadget_index].gptr;
@@ -1187,13 +1195,6 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
         free (string_buf);
         return (FALSE);
     }
-
-    #if __ANDROID__
-		/* show on screen keyboard */
-
-		SDL_ANDROID_ToggleScreenKeyboardTextInput (string->value);
-
-	#endif
 
     /* wait for event */
 
@@ -1300,13 +1301,97 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 						shift = 1;
 						break;
 						
-					default:
-						// keysym = (int) SDL_GetKeyName (event.key.keysym.sym);
-						// printf ("event_gadget_string: char: %c\n", keysym);
+					case SDLK_RALT:
+						// alt gr, right control
+						rctrl = 1;
+						break;
 						
+					case SDLK_CARET:
+						strinsertchar ((char *) string_buf, (char *) string->value, 94, string->insert_pos);
+						strcpy ((char *) string->value, (const char *) string_buf);
+						
+						if (string->cursor_pos < string->visible_len)
+						{
+							string->cursor_pos++;
+						}
+						
+						string->insert_pos++;
+						
+						if (! draw_gadget_string (screennum, gadget_index, GADGET_SELECTED))
+						{
+							free (string_buf);
+							return (FALSE);
+						}
+						break;
+						
+					default:
 						// if (value_len < string->string_len && SDL_GetKeyName (event.key.keysym.sym) != 0)
 						if (value_len < string->string_len)
 						{
+							if (rctrl == 1)
+							{
+								if (event.key.keysym.sym == 113)
+								{
+									// @ char
+									
+									strinsertchar ((char *) string_buf, (char *) string->value, 64, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								if (event.key.keysym.sym == 43)
+								{
+									// ~ char
+									
+									strinsertchar ((char *) string_buf, (char *) string->value, 126, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								
+								if (event.key.keysym.sym == 55)
+								{
+									// { char
+									
+									strinsertchar ((char *) string_buf, (char *) string->value, 123, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								if (event.key.keysym.sym == 48)
+								{
+									// } char
+									
+									strinsertchar ((char *) string_buf, (char *) string->value, 125, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								
+								if (event.key.keysym.sym == 56)
+								{
+									// [ char
+									
+									strinsertchar ((char *) string_buf, (char *) string->value, 91, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								if (event.key.keysym.sym == 57)
+								{
+									// ] char
+									
+									strinsertchar ((char *) string_buf, (char *) string->value, 93, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								
+								if (event.key.keysym.sym == 223)
+								{
+									// \ char
+									
+									strinsertchar ((char *) string_buf, (char *) string->value, 92, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								
+								if (event.key.keysym.sym == 60)
+								{
+									// | char
+									
+									strinsertchar ((char *) string_buf, (char *) string->value, 124, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+							}
+							
 							if (shift == 1)
 							{
 								if (event.key.keysym.sym >= 97 && event.key.keysym.sym <= 122)
@@ -1315,8 +1400,72 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 									strinsertchar ((char *) string_buf, (char *) string->value, (char) event.key.keysym.sym - 32, string->insert_pos);
 									strcpy ((char *) string->value, (const char *) string_buf);
 								}
+								
+								if (event.key.keysym.sym >= 49 && event.key.keysym.sym <= 57)
+								{
+									// map 1 to !, 2 to ", etc.
+									strinsertchar ((char *) string_buf, (char *) string->value, (char) event.key.keysym.sym - 16, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								
+								if (event.key.keysym.sym == 48)
+								{
+									// 0 -> =
+									strinsertchar ((char *) string_buf, (char *) string->value, 61, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								
+								if (event.key.keysym.sym == 223)
+								{
+									// ß -> ?
+									strinsertchar ((char *) string_buf, (char *) string->value, 63, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								
+								if (event.key.keysym.sym == 43)
+								{
+									// + -> *
+									strinsertchar ((char *) string_buf, (char *) string->value, 42, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								
+								if (event.key.keysym.sym == 35)
+								{
+									// # -> '
+									strinsertchar ((char *) string_buf, (char *) string->value, 39, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								
+								if (event.key.keysym.sym == 60)
+								{
+									// < -> >
+									strinsertchar ((char *) string_buf, (char *) string->value, 62 , string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								
+								if (event.key.keysym.sym == 44)
+								{
+									// , -> ;
+									strinsertchar ((char *) string_buf, (char *) string->value, 59, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								
+								if (event.key.keysym.sym == 46)
+								{
+									// . -> :
+									strinsertchar ((char *) string_buf, (char *) string->value, 58, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								
+								if (event.key.keysym.sym == 45)
+								{
+									// - -> _
+									strinsertchar ((char *) string_buf, (char *) string->value, 95, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
 							}
-							else
+							
+							if (shift == 0 && rctrl == 0)
 							{
 								strinsertchar ((char *) string_buf, (char *) string->value, (char) event.key.keysym.sym, string->insert_pos);
 								strcpy ((char *) string->value, (const char *) string_buf);
@@ -1364,6 +1513,11 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 						
 					case SDLK_RSHIFT:
 						shift = 0;
+						break;
+						
+					case SDLK_RALT:
+						// alt gr, right control
+						rctrl = 0;
 						break;
 				}
 			break;
