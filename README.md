@@ -25,6 +25,15 @@ The design goals are:
 In pure console text I/O programs not linked with SDL library, the memory footprint is very low.
 About 2 MB RAM only as shown in the taskmanager by running a minimal test program!
 
+New SDL 2.0!
+------------
+Finally I ported the SDL gfx/GUI library to SDL 2.0!
+The source code is in: vm/modules/sdl-2.0/
+
+You need to build vm-sdl2/ VM sources to use the new SDL 2.0 gfx/GUI library.
+This source of the L1VM is linked with the SDL2 libraries.
+
+
 Installation 
 ------------
 Just run the "clean.sh" script and then the "install.sh" script in the main directory of L1VM!
@@ -68,15 +77,6 @@ $ sh ./install-DragonFly.sh
 </pre>
 
 That's it! Note the rs232 library is not build yet!
-
-
-New
-----
-Finally I ported the SDL gfx/GUI library to SDL 2.0!
-The source code is in: vm/modules/sdl-2.0/
-
-You need to build vm-sdl2/ sources to use the new SDL 2.0 gfx/GUI library.
-
 
 Now there is a bash script to build L1VM without JIT-compiler: "make-nojit.sh" in vm directory. You have to set "JIT_COMPILER" to "0" in the source file vm/main.c to do that. In some cases programs execute faster if they don't need the JIT-compiler to run!
 

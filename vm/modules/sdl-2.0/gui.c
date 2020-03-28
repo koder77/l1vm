@@ -1172,9 +1172,9 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
     U1 *string_buf, wait;
     S2 value_len;
 
-	int x, y;
-	int shift = 0;
-	int rctrl = 0;
+	S2 x, y;
+	S2 shift = 0;
+	S2 rctrl = 0;
 	
     struct gadget_string *string;
 
