@@ -1168,7 +1168,6 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 	
 	
     SDL_Event event;
-   // SDLKey key;
 
     U1 *string_buf, wait;
     S2 value_len;
@@ -1202,7 +1201,6 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 
     while (wait)
     {
-		// SDL_StartTextInput ();
         if (! SDL_WaitEvent (&event))
         {
             printf ("event_gadget_string: error can't wait for event!\n");
@@ -1325,7 +1323,6 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 						break;
 						
 					default:
-						// if (value_len < string->string_len && SDL_GetKeyName (event.key.keysym.sym) != 0)
 						if (value_len < string->string_len)
 						{
 							if (rctrl == 1)
@@ -1431,7 +1428,7 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 								
 								if (event.key.keysym.sym == 57)
 								{
-									// 0 -> )
+									// 9 -> )
 									strinsertchar ((char *) string_buf, (char *) string->value, 41, string->insert_pos);
 									strcpy ((char *) string->value, (const char *) string_buf);
 								}
@@ -1552,8 +1549,6 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
         }
         
     }
-    // SDL_StopTextInput ();
-    
     free (string_buf);
     return (TRUE);
 }
