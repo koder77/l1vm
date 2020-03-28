@@ -153,9 +153,9 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	*/
 	
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-	SDL_RenderClear(renderer);
-	SDL_RenderPresent(renderer);
+	SDL_SetRenderDrawColor (renderer, 0, 0, 0, 255);
+	SDL_RenderClear (renderer);
+	SDL_RenderPresent (renderer);
 	
 	sp = stpushb (0, sp, sp_bottom);		// error ok code
 	return (sp);
@@ -166,6 +166,7 @@ U1 *sdl_quit (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	SDL_DestroyRenderer (renderer);
 	// destroy window
 	SDL_DestroyWindow (window);
+	TTF_Quit ();
 	SDL_Quit ();
 	
 	return (sp);

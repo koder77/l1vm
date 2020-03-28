@@ -41,7 +41,7 @@ extern SDL_Renderer *renderer;
 extern TTF_Font *font;
 extern S8 video_bpp;
 
-SDL_Surface *bmap_copy;
+// SDL_Surface *bmap_copy;
 SDL_Surface *blitscreen;
 struct gadget *gadget = NULL;
 struct gadget_color gadget_color;
@@ -50,7 +50,6 @@ S8 ALIGN screennum = 0;
 
 void free_gadgets (void);
 
-SDL_Surface *bmap_copy;
 static struct screen screen[MAXSCREEN];
 
 // memory functions
@@ -312,16 +311,17 @@ U1 set_ttf_style (S2 screennum)
 	return (TRUE);
 }
 
-U1 draw_text_ttf (SDL_Surface *surface, S2 screennum, U1 *textstr, Sint16 x, Sint16 y, Uint8 r, Uint8 g, Uint8 b)
+U1 draw_text_ttf_alt (SDL_Surface *surface, S2 screennum, U1 *textstr, Sint16 x, Sint16 y, Uint8 r, Uint8 g, Uint8 b)
 {
 	SDL_Surface *text;
 	SDL_Rect dstrect;
 	SDL_Color color;
 	
-	color.r = r;
-	color.g = g;
-	color.b = b;
-	
+
+	 color.r = r;
+	 color.g = g;
+	 color.b = b;
+
 	if (screen[screennum].font_ttf.font == NULL)
 	{
 		printf ("draw_text_ttf: can't draw text. No font opened!\n");
@@ -333,7 +333,8 @@ U1 draw_text_ttf (SDL_Surface *surface, S2 screennum, U1 *textstr, Sint16 x, Sin
 		return (FALSE);
 	}
 	
-	text = TTF_RenderText_Blended (screen[screennum].font_ttf.font, (const char *) textstr, color);
+	// text = TTF_RenderText_Blended (screen[screennum].font_ttf.font, (const char *) textstr, color);
+	text = TTF_RenderText_Blended (font, (const char *) textstr, color);
 	if (text == NULL)
 	{
 		printf ("draw_text_ttf: can't render text! %s\n", SDL_GetError ());
@@ -351,16 +352,19 @@ U1 draw_text_ttf (SDL_Surface *surface, S2 screennum, U1 *textstr, Sint16 x, Sin
 	return (TRUE);
 }
 
-
-U1 draw_text_ttf_2 (S2 screennum, U1 *textstr, Sint16 x, Sint16 y, Uint8 r, Uint8 g, Uint8 b)
+U1 draw_text_ttf (SDL_Surface *surface, S2 screennum, U1 *textstr, Sint16 x, Sint16 y, Uint8 r, Uint8 g, Uint8 b)
 {
 	SDL_Surface *text;
 	SDL_Rect dstrect;
 	SDL_Color color;
+	SDL_Texture *texture;
 	
 	color.r = r;
 	color.g = g;
 	color.b = b;
+	
+	int texture_width = 0;
+	int texture_height = 0;
 	
 	if (screen[screennum].font_ttf.font == NULL)
 	{
@@ -373,24 +377,29 @@ U1 draw_text_ttf_2 (S2 screennum, U1 *textstr, Sint16 x, Sint16 y, Uint8 r, Uint
 		return (FALSE);
 	}
 	
-	text = TTF_RenderText_Blended (screen[screennum].font_ttf.font, (const char *) textstr, color);
+	
+	// text = TTF_RenderText_Blended (screen[screennum].font_ttf.font, (const char *) textstr, color);
+	text = TTF_RenderText_Solid (font, (const char *) textstr, color);
 	if (text == NULL)
 	{
 		printf ("draw_text_ttf: can't render text! %s\n", SDL_GetError ());
 		return (FALSE);
 	}
 	
+	texture = SDL_CreateTextureFromSurface (renderer, text);
+	
+	SDL_QueryTexture (texture, NULL, NULL, &texture_width, &texture_height);
+	
 	dstrect.x = x;
 	dstrect.y = y;
-	dstrect.w = text->w;
-	dstrect.h = text->h;
+	dstrect.w = texture_width;
+	dstrect.h = texture_height;
 	
-	SDL_BlitSurface (text, NULL, surf, &dstrect);
-	SDL_FreeSurface (text);
+	SDL_RenderCopy (renderer, texture, NULL, &dstrect);
+	SDL_RenderPresent (renderer);
 	
 	return (TRUE);
 }
-
 
 /* border colors */
 
@@ -527,7 +536,7 @@ U1 draw_gadget_button (S2 screennum, U2 gadget_index, U1 selected)
     {
         draw_gadget_light (renderer, button->x, button->y, button->x2, button->y2);
 
-        if (! draw_text_ttf_2 (screennum, button->text, button->text_x, button->text_y, screen[screennum].gadget_color.text_light.r, screen[screennum].gadget_color.text_light.g, screen[screennum].gadget_color.text_light.b))
+        if (! draw_text_ttf (surf, screennum, button->text, button->text_x, button->text_y, screen[screennum].gadget_color.text_light.r, screen[screennum].gadget_color.text_light.g, screen[screennum].gadget_color.text_light.b))
         {
             return (FALSE);
         }
@@ -536,7 +545,7 @@ U1 draw_gadget_button (S2 screennum, U2 gadget_index, U1 selected)
     {
         draw_gadget_shadow (renderer, button->x, button->y, button->x2, button->y2);
 
-		if (! draw_text_ttf_2 (screennum, button->text, button->text_x, button->text_y, screen[screennum].gadget_color.text_shadow.r, screen[screennum].gadget_color.text_shadow.g, screen[screennum].gadget_color.text_shadow.b))
+		if (! draw_text_ttf (surf, screennum, button->text, button->text_x, button->text_y, screen[screennum].gadget_color.text_shadow.r, screen[screennum].gadget_color.text_shadow.g, screen[screennum].gadget_color.text_shadow.b))
         {
             return (FALSE);
         }
@@ -923,7 +932,7 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 
             /* draw menu */
 
-            draw_gadget_light (renderer, 0, 0, cycle->menu_x2 - cycle->menu_x, cycle->menu_y2 - cycle->menu_y);
+            draw_gadget_light (temp_renderer, 0, 0, cycle->menu_x2 - cycle->menu_x, cycle->menu_y2 - cycle->menu_y);
 
             text_x = cycle->text_x - cycle->menu_x;
             text_y = cycle->text_y - cycle->y;
@@ -932,7 +941,7 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
             {
                 if (i == value)
                 {
-                    boxRGBA (renderer, 1, text_y, cycle->menu_x2 - cycle->menu_x - 1, text_y + cycle->text_height, screen[screennum].gadget_color.backgr_shadow.r, screen[screennum].gadget_color.backgr_shadow.g, screen[screennum].gadget_color.backgr_shadow.b, 255);
+                    boxRGBA (temp_renderer, 1, text_y, cycle->menu_x2 - cycle->menu_x - 1, text_y + cycle->text_height, screen[screennum].gadget_color.backgr_shadow.r, screen[screennum].gadget_color.backgr_shadow.g, screen[screennum].gadget_color.backgr_shadow.b, 255);
 
                     if (! draw_text_ttf (temp_surface, screennum, cycle->text[i], text_x, text_y, screen[screennum].gadget_color.text_shadow.r, screen[screennum].gadget_color.text_shadow.g, screen[screennum].gadget_color.text_shadow.b))
                     {
