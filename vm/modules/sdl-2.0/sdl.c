@@ -86,10 +86,10 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	
 	/* key input settings */
-	/*
-	 SDL_EnableUNICODE (SDL_ENABLE*);
-	 SDL_EnableKeyRepeat (500, 125);
-	 */
+	/* 
+	SDL_EnableUNICODE (SDL_ENABLE);
+	SDL_EnableKeyRepeat (500, 125);
+	*/
 	if (TTF_Init () < 0)
 	{
 		printf ("ERROR TTF_Init!!!");

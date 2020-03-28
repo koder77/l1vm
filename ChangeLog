@@ -6,17 +6,18 @@ NEW: Multi variable assign fixed:
 
 Is now allowed again!
 
+
+SDL 2.0
+-------
 NEW: In this release I included an experimental version of the SDL library for SDL 2.0.
 At the moment only the gfx primitives work: pixels lines etc...
 
-NEW: the GUI buttons work now. But the cycle buttons show the menu on a wrong position!
-They are not working! And I can't render the texts with TTF Blended. 
-So the texts are looking not anti aliased and are a bit ugly!
-I have to find yout a way to make it better
+NEW: GUI: the buttons do work. The string input gadgets can handle lower and uppercase chars
+and numbers. But not special chars at the moment. This is still WIP!
 
 You can run the: "install-vm-sdl2.sh" script to try to install the VM and the SDL 2.0 modules.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Mar 28 2020 13:00 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Mar 28 2020 16:09 +0100
 
 
 L1VM - (0.9.14)

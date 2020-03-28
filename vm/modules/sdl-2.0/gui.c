@@ -48,6 +48,13 @@ struct gadget_color gadget_color;
 S8 ALIGN gadgets;
 S8 ALIGN screennum = 0;
 
+
+// cycle gadget
+SDL_Surface *copy_surface = NULL;			/* backup surface for example menues pixel overdraw */
+SDL_Renderer *copy_renderer = NULL;
+SDL_Surface *temp_surface = NULL;			/* new surface for menu */
+SDL_Renderer *temp_renderer = NULL;
+
 void free_gadgets (void);
 
 static struct screen screen[MAXSCREEN];
@@ -379,7 +386,8 @@ U1 draw_text_ttf (SDL_Surface *surface, S2 screennum, U1 *textstr, Sint16 x, Sin
 	
 	
 	// text = TTF_RenderText_Blended (screen[screennum].font_ttf.font, (const char *) textstr, color);
-	text = TTF_RenderText_Solid (font, (const char *) textstr, color);
+	// text = TTF_RenderText_Solid (font, (const char *) textstr, color);
+	text = TTF_RenderText_Blended (font, (const char*) textstr, color);
 	if (text == NULL)
 	{
 		printf ("draw_text_ttf: can't render text! %s\n", SDL_GetError ());
@@ -819,11 +827,6 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
     S4 i;
     Sint16 text_x, text_y;
 
-	SDL_Surface *copy_surface = NULL;			/* backup surface for example menues pixel overdraw */
-	SDL_Renderer *copy_renderer = NULL;
-	SDL_Surface *temp_surface = NULL;			/* new surface for menu */
-	SDL_Renderer *temp_renderer = NULL;
-	
     /* SDL interprets each pixel as a 32-bit number, so our masks must depend */
     /* on the endianness (byte order) of the machine */
 
@@ -878,13 +881,11 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 				}
 
                 /* Use alpha blending */
-				/*
-				if (SDL_SetSurfaceBlendMode (bmap_copy, SDL_BLENDMODE_BLEND) < 0)
+				if (SDL_SetSurfaceBlendMode (copy_surface, SDL_BLENDMODE_BLEND) < 0)
 				{
 					printf ("draw_gadget_cycle: error can't set copy alpha channel %i surface!\n", gadget_index);
 					return (FALSE);
 				}
-                */
 				
 				copy_renderer = SDL_CreateSoftwareRenderer (copy_surface);
 			   
@@ -898,6 +899,9 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
                 copy_rect.x = 0;
                 copy_rect.y = 0;
 
+				
+				// DEBUG
+				printf ("draw_gadget_cycle: menu_rect.x: %i, menu_rect.y: %i\n", menu_rect.x, menu_rect.y);
 				
 				// int copy_surface (SDL_Renderer *dest_renderer, SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect)
 				
@@ -937,20 +941,25 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
             text_x = cycle->text_x - cycle->menu_x;
             text_y = cycle->text_y - cycle->y;
 
+			// Neu
+			
+			// DEBUG
+			printf ("draw_gadget_cycle: text_x: %i, text_y: %i\n", text_x, text_y);
+			
             for (i = 0; i < cycle->menu_entries; i++)
             {
                 if (i == value)
                 {
                     boxRGBA (temp_renderer, 1, text_y, cycle->menu_x2 - cycle->menu_x - 1, text_y + cycle->text_height, screen[screennum].gadget_color.backgr_shadow.r, screen[screennum].gadget_color.backgr_shadow.g, screen[screennum].gadget_color.backgr_shadow.b, 255);
 
-                    if (! draw_text_ttf (temp_surface, screennum, cycle->text[i], text_x, text_y, screen[screennum].gadget_color.text_shadow.r, screen[screennum].gadget_color.text_shadow.g, screen[screennum].gadget_color.text_shadow.b))
+					if (! draw_text_ttf (temp_surface, screennum, cycle->text[i], cycle->menu_x + text_x, cycle->menu_y + text_y, screen[screennum].gadget_color.text_shadow.r, screen[screennum].gadget_color.text_shadow.g, screen[screennum].gadget_color.text_shadow.b))
                     {
                         return (FALSE);
                     }
                 }
                 else
                 {
-                    if (! draw_text_ttf (temp_surface, screennum, cycle->text[i], text_x, text_y, screen[screennum].gadget_color.text_light.r, screen[screennum].gadget_color.text_light.g, screen[screennum].gadget_color.text_light.b))
+					if (! draw_text_ttf (temp_surface, screennum, cycle->text[i], cycle->menu_x + text_x, cycle->menu_y + text_y, screen[screennum].gadget_color.text_light.r, screen[screennum].gadget_color.text_light.g, screen[screennum].gadget_color.text_light.b))
                     {
                         return (FALSE);
                     }
@@ -969,9 +978,16 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 			}
 			
 			update_rect (cycle->menu_x, cycle->menu_y, cycle->menu_x2 - cycle->menu_x + 1, cycle->menu_y2 - cycle->menu_y + 1);
-			break;
+			
+			
+			// DEBUG
+			/*
+			while (1)
+			{
+				usleep (10000);
+			} */
             break;
-
+			
         case GADGET_MENU_UP:
             /* close menu: copy backup surface */
 
@@ -1151,6 +1167,7 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
     S2 value_len;
 
 	int x, y;
+	int shift = 0;
 
     struct gadget_string *string;
 
@@ -1184,6 +1201,7 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 
     while (wait)
     {
+		// SDL_StartTextInput ();
         if (! SDL_WaitEvent (&event))
         {
             printf ("event_gadget_string: error can't wait for event!\n");
@@ -1197,8 +1215,11 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
         {
             case SDL_KEYDOWN:
                 // key = event.key.keysym.sym;
+				
+				printf ("event_gadget_string: key sym code: %i\n", event.key.keysym.sym);
+				
 				switch (event.key.keysym.sym)
-                {
+				{
                     case SDLK_BACKSPACE:
                         printf ("event_gadget_string: BACKSPACE\n");
 
@@ -1270,14 +1291,36 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
                         printf ("event_gadget_string: RETURN\n");
                         wait = FALSE;
                         break;
-
-                    default:
-						printf ("event_gadget_string: char: %s\n", SDL_GetKeyName (event.key.keysym.sym));
 						
-						if (value_len < string->string_len && SDL_GetKeyName (event.key.keysym.sym) != 0)
+					case SDLK_LSHIFT:
+						shift = 1;
+						break;
+						
+					case SDLK_RSHIFT:
+						shift = 1;
+						break;
+						
+					default:
+						// keysym = (int) SDL_GetKeyName (event.key.keysym.sym);
+						// printf ("event_gadget_string: char: %c\n", keysym);
+						
+						// if (value_len < string->string_len && SDL_GetKeyName (event.key.keysym.sym) != 0)
+						if (value_len < string->string_len)
 						{
-							strinsertchar ((char *) string_buf, (char *) string->value, (char) SDL_GetKeyName (event.key.keysym.sym), string->insert_pos);
-							strcpy ((char *) string->value, (const char *) string_buf);
+							if (shift == 1)
+							{
+								if (event.key.keysym.sym >= 97 && event.key.keysym.sym <= 122)
+								{
+									// capital letters subtract 32 to get them
+									strinsertchar ((char *) string_buf, (char *) string->value, (char) event.key.keysym.sym - 32, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+							}
+							else
+							{
+								strinsertchar ((char *) string_buf, (char *) string->value, (char) event.key.keysym.sym, string->insert_pos);
+								strcpy ((char *) string->value, (const char *) string_buf);
+							}
 							
 							if (string->cursor_pos < string->visible_len)
 							{
@@ -1311,9 +1354,24 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 					}
 				}
 				break;
+				
+			case SDL_KEYUP:
+				switch (event.key.keysym.sym)
+				{
+					case SDLK_LSHIFT:
+						shift = 0;
+						break;
+						
+					case SDLK_RSHIFT:
+						shift = 0;
+						break;
+				}
+			break;
         }
+        
     }
-
+    // SDL_StopTextInput ();
+    
     free (string_buf);
     return (TRUE);
 }

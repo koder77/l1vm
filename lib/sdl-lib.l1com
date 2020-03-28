@@ -36,7 +36,7 @@
 	(set string s checkstr "test checkbox")
 	(set string s stringstr "test")
 	(set string s valuestr "Hello world!")
-	(set string s fontname "/home/stefan/l1vm-0.9.10/fonts/FreeMono.ttf")
+	(set string s fontname "/home/stefan/l1vm/fonts/FreeMono.ttf")
 	(set string s red_cyclestr "red")
 	(set string s green_cyclestr "green")
 	(set string s blue_cyclestr "blue")
