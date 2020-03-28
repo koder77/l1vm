@@ -72,6 +72,12 @@ That's it! Note the rs232 library is not build yet!
 
 New
 ----
+Finally I ported the SDL gfx/GUI library to SDL 2.0!
+The source code is in: vm/modules/sdl-2.0/
+
+You need to build vm-sdl2/ sources to use the new SDL 2.0 gfx/GUI library.
+
+
 Now there is a bash script to build L1VM without JIT-compiler: "make-nojit.sh" in vm directory. You have to set "JIT_COMPILER" to "0" in the source file vm/main.c to do that. In some cases programs execute faster if they don't need the JIT-compiler to run!
 
 I added a JIT-compiler using asmjit library. At the moment only few opcodes can be translated into code for direct execution.

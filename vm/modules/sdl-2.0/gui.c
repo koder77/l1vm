@@ -1401,7 +1401,7 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 									strcpy ((char *) string->value, (const char *) string_buf);
 								}
 								
-								if (event.key.keysym.sym >= 49 && event.key.keysym.sym <= 57)
+								if (event.key.keysym.sym >= 49 && event.key.keysym.sym <= 54)
 								{
 									// map 1 to !, 2 to ", etc.
 									strinsertchar ((char *) string_buf, (char *) string->value, (char) event.key.keysym.sym - 16, string->insert_pos);
@@ -1409,6 +1409,34 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 								}
 								
 								if (event.key.keysym.sym == 48)
+								{
+									// 0 -> =
+									strinsertchar ((char *) string_buf, (char *) string->value, 61, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								
+								if (event.key.keysym.sym == 55)
+								{
+									// 7 -> /
+									strinsertchar ((char *) string_buf, (char *) string->value, 47, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								
+								if (event.key.keysym.sym == 56)
+								{
+									// 8 -> (
+									strinsertchar ((char *) string_buf, (char *) string->value, 40, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								
+								if (event.key.keysym.sym == 57)
+								{
+									// 0 -> )
+									strinsertchar ((char *) string_buf, (char *) string->value, 41, string->insert_pos);
+									strcpy ((char *) string->value, (const char *) string_buf);
+								}
+								
+								if (event.key.keysym.sym == 58)
 								{
 									// 0 -> =
 									strinsertchar ((char *) string_buf, (char *) string->value, 61, string->insert_pos);
