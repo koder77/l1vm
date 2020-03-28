@@ -42,7 +42,7 @@ extern TTF_Font *font;
 extern S8 video_bpp;
 
 // SDL_Surface *bmap_copy;
-SDL_Surface *blitscreen;
+// SDL_Surface *blitscreen;
 struct gadget *gadget = NULL;
 struct gadget_color gadget_color;
 S8 ALIGN gadgets;

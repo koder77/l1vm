@@ -163,9 +163,14 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *sdl_quit (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
+	// free renderer
 	SDL_DestroyRenderer (renderer);
+	
+	if (surf) SDL_FreeSurface (surf);
+	
 	// destroy window
 	SDL_DestroyWindow (window);
+	TTF_CloseFont (font);
 	TTF_Quit ();
 	SDL_Quit ();
 	
