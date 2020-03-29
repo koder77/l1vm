@@ -12,12 +12,12 @@ SDL 2.0
 NEW: In this release I included an experimental version of the SDL library for SDL 2.0.
 At the moment only the gfx primitives work: pixels lines etc...
 
-NEW: GUI: the buttons do work. The string input gadgets can handle lower and uppercase chars
-and numbers. But not special chars at the moment. This is still WIP!
+NEW: GUI: all buttons and the string text input are working.
+I replaced the string gadget event function by some older code of "flow 2"!
 
 You can run the: "install-vm-sdl2.sh" script to try to install the VM and the SDL 2.0 modules.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Mar 28 2020 16:09 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Mar 29 2020 21:09 +0100
 
 
 L1VM - (0.9.14)

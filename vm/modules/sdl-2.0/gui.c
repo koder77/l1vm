@@ -1157,24 +1157,20 @@ U1 draw_gadget_string (S2 screennum, U2 gadget_index, U1 selected)
 }
 
 
-
 U1 event_gadget_string (S2 screennum, U2 gadget_index)
 {
 	/*
-	 * String gadget event handling.
-	 * I use a German nodead keys keyboard
-	 * 
+	 * String gadget event handling using SDL TextInput ()
 	 */
 	
 	
     SDL_Event event;
-
+	SDL_Keycode key;
+	
     U1 *string_buf, wait;
     S2 value_len;
 
-	S2 x, y;
-	S2 shift = 0;
-	S2 rctrl = 0;
+	S2 i, insert_pos;
 	
     struct gadget_string *string;
 
@@ -1196,124 +1192,52 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
     }
 
     /* wait for event */
-
-    wait = TRUE;
-
-    while (wait)
-    {
-        if (! SDL_WaitEvent (&event))
-        {
-            printf ("event_gadget_string: error can't wait for event!\n");
-            free (string_buf);
-            return FALSE;
-        }
-
-        value_len = strlen_safe ((const char *) string->value, MAXLINELEN);
-
-        switch (event.type)
-        {
-            case SDL_KEYDOWN:
-                // key = event.key.keysym.sym;
-				
-				printf ("event_gadget_string: key sym code: %i\n", event.key.keysym.sym);
-				
-				switch (event.key.keysym.sym)
+	
+	SDL_StartTextInput ();
+	
+	wait = TRUE;
+	
+	while (wait)
+	{
+		if (! SDL_WaitEvent (&event))
+		{
+			printf ("event_gadget_string: error can't wait for event!\n");
+			free (string_buf);
+			return FALSE;
+		}
+		
+		value_len = strlen ((const char *) string->value);
+		
+		switch (event.type)
+		{
+			case SDL_KEYDOWN:
+				key = event.key.keysym.sym;
+				switch (key)
 				{
-                    case SDLK_BACKSPACE:
-                        printf ("event_gadget_string: BACKSPACE\n");
-
-                        if (string->insert_pos > 0)
-                        {
-                            strremoveleft ((char *) string_buf, (char *) string->value, string->insert_pos);
-                            strcpy ((char *) string->value, (char *) string_buf);
-
-                            string->cursor_pos--;
-                            string->insert_pos--;
-
-                            if (! draw_gadget_string (screennum, gadget_index, GADGET_SELECTED))
-                            {
-                                free (string_buf);
-                                return (FALSE);
-                            }
-                        }
-                        break;
-
-                    case SDLK_DELETE:
-                        printf ("event_gadget_string: DELETE\n");
-
-                        strremoveright ((char *) string_buf, (char *) string->value, string->insert_pos);
-                        strcpy ((char *) string->value, (char *) string_buf);
-
-                        if (! draw_gadget_string (screennum, gadget_index, GADGET_SELECTED))
-                        {
-                            free (string_buf);
-                            return (FALSE);
-                        }
-                        break;
-
-                        break;
-
-                    case SDLK_LEFT:
-                        printf ("event_gadget_string: CURSOR LEFT\n");
-
-                        if (string->cursor_pos > 0)
-                        {
-                            string->cursor_pos--;
-                            string->insert_pos--;
-
-                            if (! draw_gadget_string (screennum, gadget_index, GADGET_SELECTED))
-                            {
-                                free (string_buf);
-                                return (FALSE);
-                            }
-                        }
-
-                        break;
-
-                    case SDLK_RIGHT:
-                        printf ("event_gadget_string: CURSOR RIGHT\n");
-
-                        if (string->cursor_pos < value_len)
-                        {
-                            string->cursor_pos++;
-                            string->insert_pos++;
-
-                            if (! draw_gadget_string (screennum, gadget_index, GADGET_SELECTED))
-                            {
-                                free (string_buf);
-                                return (FALSE);
-                            }
-                        }
-                        break;
-
-                    case SDLK_RETURN:
-                        printf ("event_gadget_string: RETURN\n");
-                        wait = FALSE;
-                        break;
+					case SDLK_BACKSPACE:
+						printf ("event_gadget_string: BACKSPACE\n");
 						
-					case SDLK_LSHIFT:
-						shift = 1;
-						break;
-						
-					case SDLK_RSHIFT:
-						shift = 1;
-						break;
-						
-					case SDLK_RALT:
-						// alt gr, right control
-						rctrl = 1;
-						break;
-						
-					case SDLK_CARET:
-						strinsertchar ((char *) string_buf, (char *) string->value, 94, string->insert_pos);
-						strcpy ((char *) string->value, (const char *) string_buf);
-						
-						if (string->cursor_pos < string->visible_len)
+						if (string->insert_pos > 0)
 						{
-							string->cursor_pos++;
+							strremoveleft ((char *) string_buf, (char *) string->value, string->insert_pos);
+							strcpy ((char *) string->value, (const char *) string_buf);
+							
+							string->cursor_pos--;
+							string->insert_pos--;
+							
+							if (! draw_gadget_string (screennum, gadget_index, GADGET_SELECTED))
+							{
+								free (string_buf);
+								return (FALSE);
+							}
 						}
+						break;
 						
-						string->insert_pos++;
+					case SDLK_DELETE:
+						printf ("event_gadget_string: DELETE\n");
+						
+						strremoveright ((char *) string_buf, (char *) string->value, string->insert_pos);
+						strcpy ((char *) string->value, (const char *) string_buf);
 						
 						if (! draw_gadget_string (screennum, gadget_index, GADGET_SELECTED))
 						{
@@ -1322,185 +1246,31 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 						}
 						break;
 						
-					default:
-						if (value_len < string->string_len)
+						break;
+						
+					case SDLK_LEFT:
+						printf ("event_gadget_string: CURSOR LEFT\n");
+						
+						if (string->cursor_pos > 0)
 						{
-							if (rctrl == 1)
-							{
-								if (event.key.keysym.sym == 113)
-								{
-									// @ char
-									
-									strinsertchar ((char *) string_buf, (char *) string->value, 64, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								if (event.key.keysym.sym == 43)
-								{
-									// ~ char
-									
-									strinsertchar ((char *) string_buf, (char *) string->value, 126, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								
-								if (event.key.keysym.sym == 55)
-								{
-									// { char
-									
-									strinsertchar ((char *) string_buf, (char *) string->value, 123, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								if (event.key.keysym.sym == 48)
-								{
-									// } char
-									
-									strinsertchar ((char *) string_buf, (char *) string->value, 125, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								
-								if (event.key.keysym.sym == 56)
-								{
-									// [ char
-									
-									strinsertchar ((char *) string_buf, (char *) string->value, 91, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								if (event.key.keysym.sym == 57)
-								{
-									// ] char
-									
-									strinsertchar ((char *) string_buf, (char *) string->value, 93, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								
-								if (event.key.keysym.sym == 223)
-								{
-									// \ char
-									
-									strinsertchar ((char *) string_buf, (char *) string->value, 92, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								
-								if (event.key.keysym.sym == 60)
-								{
-									// | char
-									
-									strinsertchar ((char *) string_buf, (char *) string->value, 124, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-							}
+							string->cursor_pos--;
+							string->insert_pos--;
 							
-							if (shift == 1)
+							if (! draw_gadget_string (screennum, gadget_index, GADGET_SELECTED))
 							{
-								if (event.key.keysym.sym >= 97 && event.key.keysym.sym <= 122)
-								{
-									// capital letters subtract 32 to get them
-									strinsertchar ((char *) string_buf, (char *) string->value, (char) event.key.keysym.sym - 32, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								
-								if (event.key.keysym.sym >= 49 && event.key.keysym.sym <= 54)
-								{
-									// map 1 to !, 2 to ", etc.
-									strinsertchar ((char *) string_buf, (char *) string->value, (char) event.key.keysym.sym - 16, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								
-								if (event.key.keysym.sym == 48)
-								{
-									// 0 -> =
-									strinsertchar ((char *) string_buf, (char *) string->value, 61, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								
-								if (event.key.keysym.sym == 55)
-								{
-									// 7 -> /
-									strinsertchar ((char *) string_buf, (char *) string->value, 47, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								
-								if (event.key.keysym.sym == 56)
-								{
-									// 8 -> (
-									strinsertchar ((char *) string_buf, (char *) string->value, 40, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								
-								if (event.key.keysym.sym == 57)
-								{
-									// 9 -> )
-									strinsertchar ((char *) string_buf, (char *) string->value, 41, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								
-								if (event.key.keysym.sym == 58)
-								{
-									// 0 -> =
-									strinsertchar ((char *) string_buf, (char *) string->value, 61, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								
-								if (event.key.keysym.sym == 223)
-								{
-									// ß -> ?
-									strinsertchar ((char *) string_buf, (char *) string->value, 63, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								
-								if (event.key.keysym.sym == 43)
-								{
-									// + -> *
-									strinsertchar ((char *) string_buf, (char *) string->value, 42, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								
-								if (event.key.keysym.sym == 35)
-								{
-									// # -> '
-									strinsertchar ((char *) string_buf, (char *) string->value, 39, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								
-								if (event.key.keysym.sym == 60)
-								{
-									// < -> >
-									strinsertchar ((char *) string_buf, (char *) string->value, 62 , string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								
-								if (event.key.keysym.sym == 44)
-								{
-									// , -> ;
-									strinsertchar ((char *) string_buf, (char *) string->value, 59, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								
-								if (event.key.keysym.sym == 46)
-								{
-									// . -> :
-									strinsertchar ((char *) string_buf, (char *) string->value, 58, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
-								
-								if (event.key.keysym.sym == 45)
-								{
-									// - -> _
-									strinsertchar ((char *) string_buf, (char *) string->value, 95, string->insert_pos);
-									strcpy ((char *) string->value, (const char *) string_buf);
-								}
+								free (string_buf);
+								return (FALSE);
 							}
-							
-							if (shift == 0 && rctrl == 0)
-							{
-								strinsertchar ((char *) string_buf, (char *) string->value, (char) event.key.keysym.sym, string->insert_pos);
-								strcpy ((char *) string->value, (const char *) string_buf);
-							}
-							
-							if (string->cursor_pos < string->visible_len)
-							{
-								string->cursor_pos++;
-							}
-							
+						}
+						
+						break;
+						
+					case SDLK_RIGHT:
+						printf ("event_gadget_string: CURSOR RIGHT\n");
+						
+						if (string->cursor_pos < value_len)
+						{
+							string->cursor_pos++;
 							string->insert_pos++;
 							
 							if (! draw_gadget_string (screennum, gadget_index, GADGET_SELECTED))
@@ -1510,50 +1280,57 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 							}
 						}
 						break;
-                }
-                break;
-
-			case SDL_MOUSEBUTTONDOWN:
-				if (event.button.button == 1)
-                {
-                    x = event.button.x;
-                    y = event.button.y;
-
-					if ( !((x > string->x && x < string->x2) && (y > string->y && y < string->y2)))
-                    {
-						/* mouseclick outside of gadget */
-
-						printf ("lost focus: MOUSE clicked!\n");
+						
+					case SDLK_RETURN:
+						printf ("event_gadget_string: RETURN\n");
 						wait = FALSE;
-					}
+						break;
 				}
 				break;
 				
-			case SDL_KEYUP:
-				switch (event.key.keysym.sym)
-				{
-					case SDLK_LSHIFT:
-						shift = 0;
-						break;
+				case SDL_TEXTINPUT:
+					/* update the composition text */
 						
-					case SDLK_RSHIFT:
-						shift = 0;
-						break;
+					printf ("DEBUG: SDL_TEXTINPUT\n");
 						
-					case SDLK_RALT:
-						// alt gr, right control
-						rctrl = 0;
-						break;
-				}
-			break;
-        }
-        
-    }
-    free (string_buf);
-    return (TRUE);
+					i = 0; insert_pos = string->insert_pos;
+						
+					while (event.text.text[i] != '\0')
+					{
+						if (value_len < string->visible_len)
+						{
+							strinsertchar ((char *) string_buf, (char *) string->value, event.text.text[i], insert_pos);
+							strcpy ((char *) string->value, (const char *) string_buf);
+								
+							i = i + 1;
+							insert_pos = insert_pos + 1;
+							value_len = value_len + 1;
+								
+							string->cursor_pos++;
+							string->insert_pos++;
+						}
+						else
+						{
+							printf ("event_gadget_string: textinput = full\n");
+							wait = FALSE;
+							break;
+						}
+					}
+						
+					if (! draw_gadget_string (screennum, gadget_index, GADGET_SELECTED))
+					{
+						free (string_buf);
+						return (FALSE);
+					}
+					break;
+		}
+	}
+	
+	SDL_StopTextInput();
+	
+	free (string_buf);
+	return (TRUE);
 }
-
-
 
 
 U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
