@@ -318,47 +318,6 @@ U1 set_ttf_style (S2 screennum)
 	return (TRUE);
 }
 
-U1 draw_text_ttf_alt (SDL_Surface *surface, S2 screennum, U1 *textstr, Sint16 x, Sint16 y, Uint8 r, Uint8 g, Uint8 b)
-{
-	SDL_Surface *text;
-	SDL_Rect dstrect;
-	SDL_Color color;
-	
-
-	 color.r = r;
-	 color.g = g;
-	 color.b = b;
-
-	if (screen[screennum].font_ttf.font == NULL)
-	{
-		printf ("draw_text_ttf: can't draw text. No font opened!\n");
-		return (FALSE);
-	}
-	
-	if (! set_ttf_style (screennum))
-	{
-		return (FALSE);
-	}
-	
-	// text = TTF_RenderText_Blended (screen[screennum].font_ttf.font, (const char *) textstr, color);
-	text = TTF_RenderText_Blended (font, (const char *) textstr, color);
-	if (text == NULL)
-	{
-		printf ("draw_text_ttf: can't render text! %s\n", SDL_GetError ());
-		return (FALSE);
-	}
-	
-	dstrect.x = x;
-	dstrect.y = y;
-	dstrect.w = text->w;
-	dstrect.h = text->h;
-	
-	SDL_BlitSurface (text, NULL, surface, &dstrect);
-	SDL_FreeSurface (text);
-	
-	return (TRUE);
-}
-
 U1 draw_text_ttf (SDL_Surface *surface, S2 screennum, U1 *textstr, Sint16 x, Sint16 y, Uint8 r, Uint8 g, Uint8 b)
 {
 	SDL_Surface *text;
