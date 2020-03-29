@@ -34,6 +34,12 @@ SDL_Renderer *renderer = NULL;
 TTF_Font *font = NULL;
 S8 video_bpp ALIGN;
 
+// gui
+extern SDL_Surface *copy_surface;			/* backup surface for example menues pixel overdraw */
+extern SDL_Renderer *copy_renderer;
+extern SDL_Surface *temp_surface;			/* new surface for menu */
+extern SDL_Renderer *temp_renderer;
+
 // sdl gfx functions --------------------------------------
 
 U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -166,6 +172,14 @@ U1 *sdl_quit (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// free renderer
 	SDL_DestroyRenderer (renderer);
 	
+	// gui
+	if (copy_renderer) SDL_DestroyRenderer (copy_renderer);
+	if (temp_renderer) SDL_DestroyRenderer (temp_renderer);
+	
+	if (copy_surface) SDL_FreeSurface (copy_surface);
+	if (temp_surface) SDL_FreeSurface (temp_surface);
+	
+	// main surface
 	if (surf) SDL_FreeSurface (surf);
 	
 	// destroy window
