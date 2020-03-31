@@ -1120,6 +1120,10 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 {
 	/*
 	 * String gadget event handling using SDL TextInput ()
+	 * 
+	 * Keymap for a German keyboard layout
+	 * with German umlauts like ae, oe and ue
+	 * 
 	 */
 	
 	
@@ -1130,6 +1134,9 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
     S2 value_len;
 
 	S2 i, insert_pos;
+	S2 char_code;
+	
+	S2 shift = 0; // set to 1 if shift is pressed down
 	
     struct gadget_string *string;
 
@@ -1178,8 +1185,8 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 						
 						if (string->insert_pos > 0)
 						{
-							strremoveleft ((char *) string_buf, (char *) string->value, string->insert_pos);
-							strcpy ((char *) string->value, (const char *) string_buf);
+							strremoveleft (string_buf, string->value, string->insert_pos);
+							my_strcpy (string->value, string_buf);
 							
 							string->cursor_pos--;
 							string->insert_pos--;
@@ -1195,8 +1202,8 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 					case SDLK_DELETE:
 						printf ("event_gadget_string: DELETE\n");
 						
-						strremoveright ((char *) string_buf, (char *) string->value, string->insert_pos);
-						strcpy ((char *) string->value, (const char *) string_buf);
+						strremoveright (string_buf, string->value, string->insert_pos);
+						my_strcpy (string->value, string_buf);
 						
 						if (! draw_gadget_string (screennum, gadget_index, GADGET_SELECTED))
 						{
@@ -1244,6 +1251,14 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 						printf ("event_gadget_string: RETURN\n");
 						wait = FALSE;
 						break;
+						
+					case SDLK_LSHIFT:
+						shift = 1;
+						break;
+						
+					case SDLK_RSHIFT:
+						shift = 1;
+						break;
 				}
 				break;
 				
@@ -1256,23 +1271,144 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 						
 					while (event.text.text[i] != '\0')
 					{
-						if (value_len < string->visible_len)
+						char_code = event.text.text[i];
+						printf ("event_gadget_string: text[%i]: %i\n", i, char_code);
+						
+						if (i > 0)
 						{
-							strinsertchar ((char *) string_buf, (char *) string->value, event.text.text[i], insert_pos);
-							strcpy ((char *) string->value, (const char *) string_buf);
+							if (value_len < string->visible_len)
+							{
+								// ä Ä
+								if (event.text.text[i] == -92 && event.text.text[i - 1] == -61)
+								{
+									// ä
+									strinsertchar (string_buf, string->value, 228, insert_pos);
 								
-							i = i + 1;
-							insert_pos = insert_pos + 1;
-							value_len = value_len + 1;
+									my_strcpy (string->value, string_buf);
 								
-							string->cursor_pos++;
-							string->insert_pos++;
+									i = i + 1;
+									insert_pos = insert_pos + 1;
+									value_len = value_len + 1;
+								
+									string->cursor_pos++;
+									string->insert_pos++;
+									continue;
+								}
+								
+								if (event.text.text[i] == -124 && event.text.text[i - 1] == -61)
+								{
+									// Ä
+									printf ("key: Ä\n");
+									
+									strinsertchar (string_buf, string->value, 196, insert_pos);
+									
+									my_strcpy (string->value, string_buf);
+									
+									i = i + 1;
+									insert_pos = insert_pos + 1;
+									value_len = value_len + 1;
+									
+									string->cursor_pos++;
+									string->insert_pos++;
+									continue;
+								}
+								
+								// ö Ö
+								if (event.text.text[i] == -74 && event.text.text[i - 1] == -61)
+								{
+									// ö
+									strinsertchar (string_buf, string->value, 246, insert_pos);
+
+									my_strcpy (string->value, string_buf);
+									
+									i = i + 1;
+									insert_pos = insert_pos + 1;
+									value_len = value_len + 1;
+									
+									string->cursor_pos++;
+									string->insert_pos++;
+									continue;
+								}
+								
+								if (event.text.text[i] == -106 && event.text.text[i - 1] == -61)
+								{
+									// Ö
+									printf ("key: Ö\n");
+									
+									strinsertchar (string_buf, string->value, 214, insert_pos);
+									
+									my_strcpy (string->value, string_buf);
+									
+									i = i + 1;
+									insert_pos = insert_pos + 1;
+									value_len = value_len + 1;
+									
+									string->cursor_pos++;
+									string->insert_pos++;
+									continue;
+								}
+								
+								// ü Ü
+								if (event.text.text[i] == -68 && event.text.text[i - 1] == -61)
+								{
+									// ü
+									strinsertchar (string_buf, string->value, 252, insert_pos);
+									
+									my_strcpy (string->value, string_buf);
+									
+									i = i + 1;
+									insert_pos = insert_pos + 1;
+									value_len = value_len + 1;
+									
+									string->cursor_pos++;
+									string->insert_pos++;
+									continue;
+								}
+								
+								if (event.text.text[i] == -100 && event.text.text[i - 1] == -61)
+								{
+									// Ü
+									printf ("Ü\n");
+									
+									strinsertchar (string_buf, string->value, 220, insert_pos);
+									
+									my_strcpy (string->value, string_buf);
+									
+									i = i + 1;
+									insert_pos = insert_pos + 1;
+									value_len = value_len + 1;
+									
+									string->cursor_pos++;
+									string->insert_pos++;
+									continue;
+								}
+							}
 						}
-						else
+						
+						if (event.text.text[i] >= 0)
 						{
-							printf ("event_gadget_string: textinput = full\n");
-							wait = FALSE;
-							break;
+							if (value_len < string->visible_len)
+							{
+								strinsertchar (string_buf, string->value, event.text.text[i], insert_pos);
+								my_strcpy (string->value, string_buf);
+								
+								i = i + 1;
+								insert_pos = insert_pos + 1;
+								value_len = value_len + 1;
+								
+								string->cursor_pos++;
+								string->insert_pos++;
+							}
+							else
+							{
+								printf ("event_gadget_string: textinput = full\n");
+								wait = FALSE;
+								break;
+							}
+						}
+						if (i == 0)
+						{
+							i++;
 						}
 					}
 						
@@ -1282,7 +1418,22 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 						return (FALSE);
 					}
 					break;
+					
+			case SDL_KEYUP:
+				key = event.key.keysym.sym;
+				switch (key)
+				{
+					case SDLK_LSHIFT:
+						shift = 0;
+						break;
+						
+					case SDLK_RSHIFT:
+						shift = 0;
+						break;
+				}
+				break;
 		}
+		
 	}
 	
 	SDL_StopTextInput();

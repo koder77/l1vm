@@ -22,7 +22,7 @@
 #include "../../../include/global.h"
 
 
-size_t strlen_safe (const char * str, int maxlen)
+size_t strlen_safe (const U1 * str, int maxlen)
 {
 	 long long int i = 0;
 
@@ -43,7 +43,7 @@ size_t strlen_safe (const char * str, int maxlen)
 	}
 }
 
-int strright (char *dst, char *src, int chars)
+int strright (U1 *dst, U1 *src, int chars)
 {
     int i, src_pos, src_len;
 
@@ -65,7 +65,7 @@ int strright (char *dst, char *src, int chars)
     return (1);
 }
 
-int strleft (char *dst, char *src, int chars)
+int strleft (U1 *dst, U1 *src, int chars)
 {
     int i, src_len;
 
@@ -86,7 +86,7 @@ int strleft (char *dst, char *src, int chars)
     return (1);
 }
 
-int strremoveleft (char *dst, char *src, int pos)
+int strremoveleft (U1 *dst, U1 *src, int pos)
 {
     int i, j, src_len;
 
@@ -126,7 +126,7 @@ int strremoveleft (char *dst, char *src, int pos)
     return (1);
 }
 
-int strremoveright (char *dst, char *src, int pos)
+int strremoveright (U1 *dst, U1 *src, int pos)
 {
     int i, j, src_len;
 
@@ -166,7 +166,7 @@ int strremoveright (char *dst, char *src, int pos)
     return (1);
 }
 
-int strinsertchar (char *dst, char *src, char chr, int pos)
+int strinsertchar (U1 *dst, U1 *src, U1 chr, int pos)
 {
     int i, j, src_len;
 
@@ -208,4 +208,18 @@ int strinsertchar (char *dst, char *src, char chr, int pos)
     }
 
     return (1);
+}
+
+U1 *my_strcpy (U1 *destination, const U1 *source )
+{
+	int i = 0;
+	
+	while (source[i] != '\0')
+	{
+		destination[i] = source[i];
+		i++;
+	}
+	
+	destination[i] = '\0';
+	return (destination);
 }

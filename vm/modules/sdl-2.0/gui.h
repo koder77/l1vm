@@ -97,12 +97,12 @@ U1 **alloc_array_U1 (S4 x, S4 y);
 void dealloc_array_U1 (U1 **array, S4 x);
 
 /* string.c */
-int strright(char *dst, char *src, int chars);
-int strleft(char *dst, char *src, int chars);
-int strremoveleft(char *dst, char *src, int pos);
-int strremoveright(char *dst, char *src, int pos);
-int strinsertchar(char *dst, char *src, char chr, int pos);
-
+int strright(U1 *dst, U1 *src, int chars);
+int strleft(U1 *dst, U1 *src, int chars);
+int strremoveleft(U1 *dst, U1 *src, int pos);
+int strremoveright(U1 *dst, U1 *src, int pos);
+int strinsertchar(U1 *dst, U1 *src, U1 chr, int pos);
+U1 *my_strcpy (U1 *destination, const U1 *source);
 
  /* fonts -------------------------------------------------- */
 
