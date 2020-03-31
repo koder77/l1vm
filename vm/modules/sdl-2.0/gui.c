@@ -1382,6 +1382,44 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 									string->insert_pos++;
 									continue;
 								}
+								
+								if (event.text.text[i] == -97 && event.text.text[i - 1] == -61)
+								{
+									// ß
+									printf ("key: ß\n");
+									
+									strinsertchar (string_buf, string->value, 223, insert_pos);
+									
+									my_strcpy (string->value, string_buf);
+									
+									i = i + 1;
+									insert_pos = insert_pos + 1;
+									value_len = value_len + 1;
+									
+									string->cursor_pos++;
+									string->insert_pos++;
+									continue;
+								}
+								
+								if (event.text.text[i] == -89 && event.text.text[i - 1] == -62)
+								{
+									// ß
+									printf ("key: §\n");
+									
+									strinsertchar (string_buf, string->value, 167, insert_pos);
+									
+									my_strcpy (string->value, string_buf);
+									
+									i = i + 1;
+									insert_pos = insert_pos + 1;
+									value_len = value_len + 1;
+									
+									string->cursor_pos++;
+									string->insert_pos++;
+									continue;
+								}
+								
+								
 							}
 						}
 						
@@ -1405,6 +1443,10 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 								wait = FALSE;
 								break;
 							}
+						}
+						if (i == 1)
+						{
+							break;
 						}
 						if (i == 0)
 						{
