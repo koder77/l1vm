@@ -1403,7 +1403,7 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 								
 								if (event.text.text[i] == -89 && event.text.text[i - 1] == -62)
 								{
-									// ß
+									// §
 									printf ("key: §\n");
 									
 									strinsertchar (string_buf, string->value, 167, insert_pos);
