@@ -1282,6 +1282,8 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 								if (event.text.text[i] == -92 && event.text.text[i - 1] == -61)
 								{
 									// ä
+									printf ("key: ä\n");
+									
 									strinsertchar (string_buf, string->value, 228, insert_pos);
 								
 									my_strcpy (string->value, string_buf);
@@ -1317,6 +1319,8 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 								if (event.text.text[i] == -74 && event.text.text[i - 1] == -61)
 								{
 									// ö
+									printf ("key: ö\n");
+									
 									strinsertchar (string_buf, string->value, 246, insert_pos);
 
 									my_strcpy (string->value, string_buf);
@@ -1351,6 +1355,7 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 								// ü Ü
 								if (event.text.text[i] == -68 && event.text.text[i - 1] == -61)
 								{
+									printf ("key: ü\n");
 									// ü
 									strinsertchar (string_buf, string->value, 252, insert_pos);
 									
@@ -1419,7 +1424,24 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 									continue;
 								}
 								
-								
+
+								if (event.text.text[i] == -126 && event.text.text[i - 1] == -30)
+								{
+									// € Euro char
+									printf ("key: €\n");
+									
+									strinsertchar (string_buf, string->value, 128, insert_pos);
+									
+									my_strcpy (string->value, string_buf);
+									
+									i = i + 1;
+									insert_pos = insert_pos + 1;
+									value_len = value_len + 1;
+									
+									string->cursor_pos++;
+									string->insert_pos++;
+									continue;
+								}
 							}
 						}
 						
@@ -1444,7 +1466,7 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 								break;
 							}
 						}
-						if (i == 1)
+						if (i >= 1)
 						{
 							break;
 						}
