@@ -28,6 +28,8 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 
+#include "gui.h"
+
 SDL_Surface *surf = NULL;
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
@@ -77,7 +79,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	if (err == 1)
 	{
-		stpushb (1, sp, sp_bottom);		// error fail code
+		stpushi (1, sp, sp_bottom);		// error fail code
 		printf ("sdl_open_screen: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
@@ -87,7 +89,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (SDL_Init (SDL_INIT_VIDEO) != 0)
 	{
 		printf ("ERROR SDL_Init!!!");
-		sp = stpushb (1, sp, sp_bottom);		// error fail code
+		sp = stpushi (1, sp, sp_bottom);		// error fail code
 		return (sp);
 	}
 	
@@ -99,7 +101,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (TTF_Init () < 0)
 	{
 		printf ("ERROR TTF_Init!!!");
-		sp = stpushb (1, sp, sp_bottom);		// error fail code
+		sp = stpushi (1, sp, sp_bottom);		// error fail code
 		return (sp);
 	}
 	
@@ -110,7 +112,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if(window == NULL)
 	{
 		printf( "sdl_open_screen: ERROR window can't be opened: %s\n", SDL_GetError ());
-		sp = stpushb (1, sp, sp_bottom);		// error fail code
+		sp = stpushi (1, sp, sp_bottom);		// error fail code
 		return (sp);
 	}
 	
@@ -119,51 +121,20 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (surf == NULL)
 	{
 		fprintf (stderr, "Couldn't set %lli x %lli x %i video mode: %s\n", width, height, bit, SDL_GetError ());
-		sp = stpushb (1, sp, sp_bottom);		// error fail code
+		sp = stpushi (1, sp, sp_bottom);		// error fail code
 		return (sp);
 	}
-	/*
-	else
-	{
-		sp = stpushb (0, sp, sp_bottom);		// error ok code
-		return (sp);
-	}
-	*/
 	
 	// set renderer
 	// renderer = SDL_CreateRenderer (window, -1, SDL_RENDERER_ACCELERATED);
 	renderer = SDL_CreateRenderer (window, -1, SDL_RENDERER_SOFTWARE);
 	SDL_RenderClear (renderer);
 	
-	
-	/*
-	bool keep_running = true;
-	SDL_Event ev;
-	
-	printf ("sdl_open_screen: starting loop...\n");
-	
-	while (keep_running)
-	{
-		while (SDL_PollEvent(&ev)) 
-		{
-			if(ev.type == SDL_QUIT)
-			{
-				keep_running = false;
-			}
-		}
-		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-		SDL_RenderClear(renderer);
-		SDL_RenderPresent(renderer);
-		
-		printf ("sdl_open_screen: loop...\n");
-	}
-	*/
-	
 	SDL_SetRenderDrawColor (renderer, 0, 0, 0, 255);
 	SDL_RenderClear (renderer);
 	SDL_RenderPresent (renderer);
 	
-	sp = stpushb (0, sp, sp_bottom);		// error ok code
+	sp = stpushi (0, sp, sp_bottom);		// error ok code
 	return (sp);
 }
 
@@ -1430,3 +1401,105 @@ U1 *sdl_get_pixelcolor (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 }
 
 
+
+U1 *sdl_load_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// load picture
+	// arguments: picture name, x, y
+	// return: int error code
+	
+	SDL_Surface *picture;
+	SDL_Rect dstrect;
+		
+	S8 nameaddr ALIGN;
+	S8 x ALIGN;
+	S8 y ALIGN;
+	
+	sp = stpopi ((U1 *) &y, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("sdl_load_picture: ERROR stack corrupt!\n");
+		return (NULL);
+	}
+	
+	sp = stpopi ((U1 *) &x, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("sdl_load_picture: ERROR stack corrupt!\n");
+		return (NULL);
+	}
+	
+	sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("sdl_load_picture: ERROR stack corrupt!\n");
+		return (NULL);
+	}
+	
+	dstrect.x = x;
+	dstrect.y = y;
+	dstrect.w = 0;
+	dstrect.h = 0;
+	
+	picture = IMG_Load ((const char *) &data[nameaddr]);
+	if (picture == NULL)
+	{
+		printf ("sdl_load_picture: can't load picture %s !\n", &data[nameaddr]);
+		
+		sp = stpushi (1, sp, sp_bottom);		// error fail code
+		return (sp);
+	}
+	
+	SDL_BlitSurface (picture, NULL, surf, &dstrect);
+	SDL_FreeSurface (picture);
+		
+	sp = stpushi (0, sp, sp_bottom);		// error ok code
+	return (sp);
+}
+
+U1 *sdl_save_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// save picture as BMP picture
+	//
+	// arguments: picture name
+	// return: int error code
+	
+	Uint32 rmask, gmask, bmask, amask;
+	
+	S8 nameaddr ALIGN;
+	
+	#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+	rmask = 0xff000000; gmask = 0x00ff0000; bmask = 0x0000ff00; amask = 0x000000ff;
+	#else
+	rmask = 0x000000ff; gmask = 0x0000ff00; bmask = 0x00ff0000; amask = 0xff000000;
+	#endif
+	
+	sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		// error
+		printf ("sdl_save_picture: ERROR stack corrupt!\n");
+		return (NULL);
+	}
+	
+	SDL_RenderPresent (renderer);
+	
+	if (SDL_SaveBMP (surf, (const char *) &data[nameaddr]) < 0)
+	{
+		// SDL_FreeSurface (output_surf);
+		
+		sp = stpushi (1, sp, sp_bottom);		// error fail code
+		return (sp);
+	}
+	else
+	{
+		// 	SDL_FreeSurface (output_surf);
+		
+		sp = stpushi (0, sp, sp_bottom);		// error ok code
+		return (sp);
+	}
+}

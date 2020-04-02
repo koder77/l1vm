@@ -21,7 +21,9 @@ German Umlauts now supported: ae, oe, ue.
 
 Text input gadget now leaves the cursor inside the text entry box if maximum of visible chars is there.
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu Apr 2 2020 18:15 +0200
+Picture load and save functions: see sdl-lib-2.l1com library!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu Apr 2 2020 20:05 +0200
 
 
 L1VM - (0.9.14)
