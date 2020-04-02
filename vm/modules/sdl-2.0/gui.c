@@ -1459,12 +1459,6 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 								string->cursor_pos++;
 								string->insert_pos++;
 							}
-							else
-							{
-								printf ("event_gadget_string: textinput = full\n");
-								wait = FALSE;
-								break;
-							}
 						}
 						if (i >= 1)
 						{

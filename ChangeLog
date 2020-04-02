@@ -19,7 +19,9 @@ You can run the: "install-vm-sdl2.sh" script to try to install the VM and the SD
 
 German Umlauts now supported: ae, oe, ue.
 
--- Stefan Pietzonke <jay-t@gmx.net> Tue Mar 31 2020 11:15 +0200
+Text input gadget now leaves the cursor inside the text entry box if maximum of visible chars is there.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu Apr 2 2020 18:15 +0200
 
 
 L1VM - (0.9.14)
