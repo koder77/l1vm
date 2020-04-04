@@ -23,7 +23,9 @@ Text input gadget now leaves the cursor inside the text entry box if maximum of 
 
 Picture load and save functions: see sdl-lib-2.l1com library!
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu Apr 2 2020 20:05 +0200
+Compiler l1com: pullb opcode on "stpopi" on byte variable.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Apr 4 2020 22:00 +0200
 
 
 L1VM - (0.9.14)

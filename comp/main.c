@@ -3667,6 +3667,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										vartype = getvartype_real (ast[level].expr[j][last_arg - 1]);
 										switch (vartype)
 										{
+											case BYTE:
+												strcpy ((char *) code_temp, "pullb ");
+												break;
+											
 											case WORD:
 												strcpy ((char *) code_temp, "pullw ");
 												break;
