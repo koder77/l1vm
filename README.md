@@ -30,6 +30,9 @@ New SDL 2.0!
 Finally I ported the SDL gfx/GUI library to SDL 2.0!
 The source code is in: vm/modules/sdl-2.0/
 
+I did remove the SDL 1.2 code from this repo. So for now the SDL 2.0 libraries are needed
+to build my L1VM SDL library.
+
 You need to build vm-sdl2/ VM sources to use the new SDL 2.0 gfx/GUI library.
 This source of the L1VM is linked with the SDL2 libraries.
 

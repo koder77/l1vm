@@ -5,7 +5,7 @@ if uname -a | grep -q "Debian"; then
 echo "Debian detected..."
 echo "checking for needed libraries..."
 
-if ! dpkg -s libsdl1.2-dev &> /dev/null; then
+if ! dpkg -s libsdl2-dev &> /dev/null; then
 	echo "try to install libsdl1.2-dev..."
 	if ! sudo apt-get install libsdl1.2-dev; then
 		echo "installation failed!"
@@ -13,7 +13,7 @@ if ! dpkg -s libsdl1.2-dev &> /dev/null; then
 	fi
 fi
 
-if ! dpkg -s libsdl-gfx1.2-dev &> /dev/null; then
+if ! dpkg -s libsdl2-gfx-dev &> /dev/null; then
 	echo "try to install libsdl-gfx1.2-dev..."
 	if ! sudo apt-get install libsdl-gfx1.2-dev; then
 		echo "installation failed!"
@@ -21,7 +21,7 @@ if ! dpkg -s libsdl-gfx1.2-dev &> /dev/null; then
 	fi
 fi
 
-if ! dpkg -s libsdl-image1.2-dev &> /dev/null; then
+if ! dpkg -s libsdl2-image-2.0-0 &> /dev/null; then
 	echo "try to install libsdl-image1.2-dev..."
 	if ! sudo apt-get install libsdl-image1.2-dev; then
 		echo "installation failed!"
@@ -29,7 +29,7 @@ if ! dpkg -s libsdl-image1.2-dev &> /dev/null; then
 	fi
 fi
 
-if ! dpkg -s libsdl-ttf2.0-dev &> /dev/null; then
+if ! dpkg -s libsdl2-ttf-dev &> /dev/null; then
 	echo "try to install libsdl-ttf2.0-dev..."
 	if ! sudo apt-get install libsdl-ttf2.0-dev; then
 		echo "installation failed!"
@@ -53,13 +53,13 @@ if ! dpkg -s libmpfrc++-dev &> /dev/null; then
 	fi
 fi
 
+echo "libraries installed! building compiler, assembler and VM..."
+
 else
 	echo "ERROR: detected OS not Debian GNU Linux!"
-	echo "EXITING WITH ERROR!"
-	exit 1
+	echo "You have to install the dependency libraries by hand..."
+	echo "See this installation script for more info..."
 fi
-
-echo "libraries installed! building compiler, assembler and VM..."
 
 cd assemb
 if ./make.sh; then

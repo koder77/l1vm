@@ -34,16 +34,6 @@
 	#pragma message ("Windows host detected!")
 #endif
 
-#if SDL_module
-#include <SDL/SDL.h>
-#include <SDL/SDL_byteorder.h>
-#include <SDL/SDL_gfxPrimitives.h>
-#include <SDL/SDL_ttf.h>
-#include <SDL/SDL_image.h>
-
-SDL_Surface *surf;
-TTF_Font *font;
-#endif
 U1 SDL_use = 0;
 
 #if JIT_COMPILER
@@ -287,21 +277,6 @@ U1 *call_module_func (S8 ind ALIGN, S8 func_ind ALIGN, U1 *sp, U1 *sp_top, U1 *s
 
 void cleanup (void)
 {
-    #if SDL_module
-	if (SDL_use == 1)
-	{
-    	SDL_FreeSurface (surf);
-	    SDL_QuitSubSystem (SDL_INIT_AUDIO);
-    	SDL_QuitSubSystem (SDL_INIT_VIDEO);
-	    if (font)
-    	{
-        	TTF_CloseFont (font);
-    	}
-    	TTF_Quit ();
-    	SDL_Quit ();
-	}
-    #endif
-
 	#if JIT_COMPILER
     	free_jit_code ();
 	#endif
@@ -3016,32 +2991,6 @@ int main (int ac, char *av[])
 
     init_modules ();
 	signal (SIGINT, (void *) break_handler);
-
-#if SDL_module
-    if (SDL_use == 1)
-    {
-        if (SDL_Init (SDL_INIT_EVERYTHING) != 0)
-	    {
-			printf ("ERROR SDL_Init!!!");
-			cleanup ();
-			exit (1);
-		}
-
-		/* key input settings */
-
-	    SDL_EnableUNICODE (SDL_ENABLE);
-	    SDL_EnableKeyRepeat (500, 125);
-
-		if (TTF_Init () < 0)
-		{
-			printf ("ERROR TTF_Init!!!");
-			cleanup ();
-			exit (1);
-		}
-
-		printf ("SDL initialized...\n");
-	}
-#endif
 
 	// set all higher threads as STOPPED = unused
 	for (i = 1; i < max_cpu; i++)

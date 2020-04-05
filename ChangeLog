@@ -25,7 +25,10 @@ Picture load and save functions: see sdl-lib-2.l1com library!
 
 Compiler l1com: pullb opcode on "stpopi" on byte variable.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Apr 4 2020 22:00 +0200
+SDL 1.2 library code removed. From now on the SDL 2.0 libraries are needed to build
+my L1VM SDL library!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Apr 5 2020 14:14 +0200
 
 
 L1VM - (0.9.14)

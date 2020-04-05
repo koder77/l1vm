@@ -11,4 +11,4 @@ c++compiler = clang++
 archiver = ar
 
 cflags = "-O2 -fomit-frame-pointer -Wall"
-lflags = "-lm -ldl -lpthread -lasmjit -lstdc++ -lSDL -lSDL_gfx -lSDL_image -lSDL_ttf -Wl,--export-dynamic"
+lflags = "-lm -ldl -lpthread -lasmjit -lstdc++ -lSDL2 -lSDL2_gfx -lSDL2_image -lSDL2_ttf -Wl,--export-dynamic"
