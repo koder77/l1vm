@@ -24,11 +24,15 @@
 
 static genann *ann;
 
+U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
+
 U1 *genann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
    FILE *input;
    S8 nameaddr ALIGN;
 
+   U1 sandbox_filename[256];
+   
    sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
    if (sp == NULL)
    {
@@ -37,7 +41,17 @@ U1 *genann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	   return (NULL);
    }
 
+#if SANDBOX 
+   if (get_sandbox_filename (&data[nameaddr], sandbox_filename, 255) != 0)
+   {
+	   printf ("ERROR: genann_read_ann: ERROR filename illegal: %s", &data[nameaddr]);
+	   return (NULL);
+   }
+	input = fopen ((const char *) sandbox_filename, "r");
+#else
 	input = fopen ((const char *) &data[nameaddr], "r");
+#endif
+	
     if (input)
     {
         ann = (genann *) genann_read (input);
@@ -58,6 +72,8 @@ U1 *genann_write_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     FILE *output;
     S8 nameaddr ALIGN;
 
+	U1 sandbox_filename[256];
+	
 	sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
     if (sp == NULL)
     {
@@ -66,7 +82,17 @@ U1 *genann_write_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   return (NULL);
     }
 
+#if SANDBOX 
+    if (get_sandbox_filename (&data[nameaddr], sandbox_filename, 255) != 0)
+	{
+		printf ("ERROR: genann_write_ann: ERROR filename illegal: %s", &data[nameaddr]);
+		return (NULL);
+	}
+	output = fopen ((const char *) sandbox_filename, "w");
+#else
 	output = fopen ((const char *) &data[nameaddr], "w");
+#endif
+	
     if (output)
     {
         genann_write (ann, output);

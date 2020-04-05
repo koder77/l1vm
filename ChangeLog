@@ -1,3 +1,10 @@
+L1VM - (0.9.16)
+File access SANDBOX on all file I/O in libraries.
+See file/file-sandbox.c.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Apr 5 2020 22:00 +0200
+
+
 L1VM - (0.9.15)
 NEW: only one function to show call arguments for assembler and compiler.
 NEW: Multi variable assign fixed:

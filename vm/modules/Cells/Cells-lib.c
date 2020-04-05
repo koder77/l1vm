@@ -25,6 +25,8 @@
 
 #include <cells.h>
 
+U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
+
 // global struct 
 static struct cell *cells = NULL;
 static S8 ALIGN cells_number = 0;
@@ -280,6 +282,9 @@ U1 *cells_fann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 offset ALIGN;
 	F8 dataf ALIGN;
 	
+	// sandbox filename 
+	U1 sandbox_filename[256];
+	
 	sp = stpopi ((U1 *) &init, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -397,9 +402,18 @@ U1 *cells_fann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		outputf[i] = dataf;
 		offset += sizeof (F8);
 	}
-		
+
+#if SANDBOX
+	if (get_sandbox_filename (&data[filename_addr], sandbox_filename, 255) != 0)
+	{
+		printf ("cells_fann_read_ann: ERROR filename illegal: %s", &data[filename_addr]);
+		return (NULL);
+	}
+	ret = Cells_fann_read_ann (cells, cell, node, sandbox_filename, inputs, outputs, inputf, outputf, layer, init);
+#else
 	ret = Cells_fann_read_ann (cells, cell, node, &data[filename_addr], inputs, outputs, inputf, outputf, layer, init);
-	
+#endif
+		
 	// free allocated buffers
 	free (outputf);
 	free (inputf);
@@ -780,6 +794,8 @@ U1 *cells_fann_save_cells (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 filename_addr ALIGN;
 	S2 ret;
 	
+	U1 sandbox_filename[256];
+	
 	sp = stpopi ((U1 *) &filename_addr, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -804,7 +820,16 @@ U1 *cells_fann_save_cells (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	
+#if SANDBOX
+	if (get_sandbox_filename (&data[filename_addr], sandbox_filename, 255) != 0)
+	{
+		printf ("cells_fann_save_cells: ERROR filename illegal: %s", &data[filename_addr]);
+		return (NULL);
+	}
+	ret = Cells_fann_save_cells (cells, sandbox_filename, start_cell, end_cell);
+#else
 	ret = Cells_fann_save_cells (cells, &data[filename_addr], start_cell, end_cell);
+#endif
 	
 	// push return value to stack
 	sp = stpushi (ret, sp, sp_bottom);
@@ -823,6 +848,8 @@ U1 *cells_fann_load_cells (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 filename_addr ALIGN;
 	S2 ret;
 	
+	U1 sandbox_filename[256];
+	
 	sp = stpopi ((U1 *) &filename_addr, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -831,7 +858,18 @@ U1 *cells_fann_load_cells (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	
+#if SANDBOX
+	if (get_sandbox_filename (&data[filename_addr], sandbox_filename, 255) != 0)
+	{
+		printf ("cells_fann_load_cells: ERROR filename illegal: %s", &data[filename_addr]);
+		return (NULL);
+	}
+	
+	cells = Cells_fann_load_cells (sandbox_filename);
+#else
 	cells = Cells_fann_load_cells (&data[filename_addr]);
+#endif
+	
 	if (cells == NULL)
 	{
 		// error
@@ -841,7 +879,7 @@ U1 *cells_fann_load_cells (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	{
 		ret = 0;
 	}
-	
+
 	// push return value to stack
 	sp = stpushi (ret, sp, sp_bottom);
 	if (sp == NULL)

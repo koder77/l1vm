@@ -32,6 +32,8 @@
 #define FILEAPPEND		5
 
 
+U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
+
 size_t strlen_safe (const char * str, int maxlen);
 
 struct file
@@ -42,29 +44,6 @@ struct file
 };
 
 struct file files[MAXFILES];
-
-// for SANDBOX file access
-U1 check_file_access (U1 *path)
-{
-	/* check for forbidden ../ in pathname */
-
-	S2 slen, i;
-
-	slen = strlen_safe ((const char *) path, 255);
-
-	for (i = 0; i < slen - 1; i++)
-	{
-		if (path[i] == '.')
-		{
-			if (path[i + 1] == '.')
-			{
-				return (1);	// forbidden access
-			}
-		}
-	}
-
-	return (0);  /* path legal, all ok! */
-}
 
 
 U1 *file_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -91,7 +70,6 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     U1 access_str[3];
     S8 nameaddr ALIGN;
 
-	U1 file_access_name[256];		// for sandbox feature
 	S8 file_name_len ALIGN;
 	S8 file_access_name_len ALIGN;
 
@@ -144,35 +122,21 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	file_access_name_len = file_name_len;
 
 	#if SANDBOX
-		file_name_len = strlen_safe (SANDBOX_ROOT, 255);
-		if (file_name_len > 255)
-		{
-			printf ("ERROR: file_open: file root: '%s' too long!\n", SANDBOX_ROOT);
-			return (NULL);
-		}
-
-		file_access_name_len += file_name_len;
-		if (file_access_name_len > 255)
-		{
-			printf ("ERROR: file_open: file name: '%s' too long!\n", (char *) &data[nameaddr]);
-			return (NULL);
-		}
-
-		strcpy ((char *) file_access_name, SANDBOX_ROOT);
-		strcat ((char *) file_access_name, (char *) &data[nameaddr]);
-
-		if (check_file_access (file_access_name) != 0)
-		{
-			// illegal parts in filename path, ERROR!!!
-			printf ("ERROR: file_open: file name: '%s' illegal!\n", (char *) file_access_name);
-			return (NULL);
-		}
-
-		strcpy ((char *) files[handle].name, (char *) file_access_name);
-
-		// printf ("SANDBOX: opening file: '%s'\n", files[handle].name);
+	if (get_sandbox_filename (&data[nameaddr], files[handle].name, 255) != 0)
+	{
+		printf ("ERROR: file_open: illegal filename: %s\n", &data[nameaddr]);
+		return (NULL);
+	}
 	#else
+	if (strlen (&data[nameaddr]) < 255)
+	{
     	strcpy ((char *) files[handle].name, (char *) &data[nameaddr]);
+	}
+	else
+	{
+		printf ("ERROR: file_open: filename too long!\n", &data[nameaddr]);
+		return (NULL);
+	}
 	#endif
 
     switch (access)

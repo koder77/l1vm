@@ -42,6 +42,9 @@ extern SDL_Renderer *copy_renderer;
 extern SDL_Surface *temp_surface;			/* new surface for menu */
 extern SDL_Renderer *temp_renderer;
 
+// sandbox file access
+U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
+
 // sdl gfx functions --------------------------------------
 
 U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -181,6 +184,8 @@ U1 *sdl_font_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 size ALIGN;
 	U1 err = 0;
 
+	U1 sandbox_filename[256];
+	
 	sp = stpopi ((U1 *) &size, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -209,7 +214,17 @@ U1 *sdl_font_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		TTF_CloseFont (font);
 	}
 
+#if SANDBOX 
+	if (get_sandbox_filename (&data[nameaddr], sandbox_filename, 255) != 0)
+	{
+		printf ("sdl_font_ttf: ERROR filename illegal: %s", &data[nameaddr]);
+		return (NULL);
+	}
+	font = TTF_OpenFont ((const char *) sandbox_filename, size);
+#else
 	font = TTF_OpenFont ((const char *) &data[nameaddr], size);
+#endif
+	
 	if (font == NULL)
 	{
 		printf ("sdl_font_ttf: can't open font! %s\n", SDL_GetError ());
@@ -1415,6 +1430,8 @@ U1 *sdl_load_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 x ALIGN;
 	S8 y ALIGN;
 	
+	U1 sandbox_filename[256];
+	
 	sp = stpopi ((U1 *) &y, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -1444,7 +1461,17 @@ U1 *sdl_load_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	dstrect.w = 0;
 	dstrect.h = 0;
 	
+#if SANDBOX 
+	if (get_sandbox_filename (&data[nameaddr], sandbox_filename, 255) != 0)
+	{
+		printf ("sdl_load_picture: ERROR filename illegal: %s", &data[nameaddr]);
+		return (NULL);
+	}
+	picture = IMG_Load ((const char *) sandbox_filename);
+#else
 	picture = IMG_Load ((const char *) &data[nameaddr]);
+#endif
+	
 	if (picture == NULL)
 	{
 		printf ("sdl_load_picture: can't load picture %s !\n", &data[nameaddr]);
@@ -1471,6 +1498,9 @@ U1 *sdl_save_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	
 	S8 nameaddr ALIGN;
 	
+	U1 sandbox_filename[256];
+	S2 ret;
+	
 	#if SDL_BYTEORDER == SDL_BIG_ENDIAN
 	rmask = 0xff000000; gmask = 0x00ff0000; bmask = 0x0000ff00; amask = 0x000000ff;
 	#else
@@ -1481,14 +1511,24 @@ U1 *sdl_save_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		// error
 		printf ("sdl_save_picture: ERROR stack corrupt!\n");
 		return (NULL);
 	}
 	
 	SDL_RenderPresent (renderer);
 	
-	if (SDL_SaveBMP (surf, (const char *) &data[nameaddr]) < 0)
+#if SANDBOX 
+	if (get_sandbox_filename (&data[nameaddr], sandbox_filename, 255) != 0)
+	{
+		printf ("sdl_save_picture: ERROR filename illegal: %s", &data[nameaddr]);
+		return (NULL);
+	}
+	ret = SDL_SaveBMP (surf, (const char *) sandbox_filename);
+#else
+	ret = SDL_SaveBMP (surf, (const char *) &data[nameaddr]
+#endif
+
+	if (ret < 0)
 	{
 		// SDL_FreeSurface (output_surf);
 		

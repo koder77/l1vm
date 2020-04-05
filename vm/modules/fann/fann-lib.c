@@ -30,6 +30,8 @@
 #define ANNOPEN 1              // state flags
 #define ANNCLOSED 0
 
+U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
+
 struct fanns
 {
     struct fann *ann;
@@ -55,6 +57,8 @@ U1 *fann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 nameaddr ALIGN;
 	S8 handle ALIGN;
+	
+	U1 sandbox_filename[256];
 	
     sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
     if (sp == NULL)
@@ -84,7 +88,16 @@ U1 *fann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
 	}
 
+#if SANDBOX 
+	if (get_sandbox_filename (&data[nameaddr], sandbox_filename, 255) != 0)
+	{
+		printf ("ERROR: fann_read_ann: ERROR filename illegal: %s", &data[nameaddr]);
+		return (NULL);
+	}
+	fanns[handle].ann = (struct fann *) fann_create_from_file ((const char *) sandbox_filename);
+#else
 	fanns[handle].ann = (struct fann *) fann_create_from_file ((const char *) &data[nameaddr]);
+#endif
 	fanns[handle].state = ANNOPEN;
 
 	return (sp);
