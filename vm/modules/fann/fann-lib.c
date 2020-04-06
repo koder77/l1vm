@@ -91,7 +91,7 @@ U1 *fann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 #if SANDBOX 
 	if (get_sandbox_filename (&data[nameaddr], sandbox_filename, 255) != 0)
 	{
-		printf ("ERROR: fann_read_ann: ERROR filename illegal: %s", &data[nameaddr]);
+		printf ("ERROR: fann_read_ann: ERROR filename illegal: %s\n", &data[nameaddr]);
 		return (NULL);
 	}
 	fanns[handle].ann = (struct fann *) fann_create_from_file ((const char *) sandbox_filename);
