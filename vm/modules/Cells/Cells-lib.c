@@ -406,7 +406,7 @@ U1 *cells_fann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 #if SANDBOX
 	if (get_sandbox_filename (&data[filename_addr], sandbox_filename, 255) != 0)
 	{
-		printf ("cells_fann_read_ann: ERROR filename illegal: %s", &data[filename_addr]);
+		printf ("cells_fann_read_ann: ERROR filename illegal: %s\n", &data[filename_addr]);
 		return (NULL);
 	}
 	ret = Cells_fann_read_ann (cells, cell, node, sandbox_filename, inputs, outputs, inputf, outputf, layer, init);
@@ -823,7 +823,7 @@ U1 *cells_fann_save_cells (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 #if SANDBOX
 	if (get_sandbox_filename (&data[filename_addr], sandbox_filename, 255) != 0)
 	{
-		printf ("cells_fann_save_cells: ERROR filename illegal: %s", &data[filename_addr]);
+		printf ("cells_fann_save_cells: ERROR filename illegal: %s\n", &data[filename_addr]);
 		return (NULL);
 	}
 	ret = Cells_fann_save_cells (cells, sandbox_filename, start_cell, end_cell);
@@ -861,7 +861,7 @@ U1 *cells_fann_load_cells (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 #if SANDBOX
 	if (get_sandbox_filename (&data[filename_addr], sandbox_filename, 255) != 0)
 	{
-		printf ("cells_fann_load_cells: ERROR filename illegal: %s", &data[filename_addr]);
+		printf ("cells_fann_load_cells: ERROR filename illegal: %s\n", &data[filename_addr]);
 		return (NULL);
 	}
 	

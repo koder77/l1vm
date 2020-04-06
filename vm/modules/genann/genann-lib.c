@@ -44,7 +44,7 @@ U1 *genann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 #if SANDBOX 
    if (get_sandbox_filename (&data[nameaddr], sandbox_filename, 255) != 0)
    {
-	   printf ("ERROR: genann_read_ann: ERROR filename illegal: %s", &data[nameaddr]);
+	   printf ("ERROR: genann_read_ann: ERROR filename illegal: %s\n", &data[nameaddr]);
 	   return (NULL);
    }
 	input = fopen ((const char *) sandbox_filename, "r");
@@ -85,7 +85,7 @@ U1 *genann_write_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 #if SANDBOX 
     if (get_sandbox_filename (&data[nameaddr], sandbox_filename, 255) != 0)
 	{
-		printf ("ERROR: genann_write_ann: ERROR filename illegal: %s", &data[nameaddr]);
+		printf ("ERROR: genann_write_ann: ERROR filename illegal: %s\n", &data[nameaddr]);
 		return (NULL);
 	}
 	output = fopen ((const char *) sandbox_filename, "w");
