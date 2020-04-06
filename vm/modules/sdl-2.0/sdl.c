@@ -1464,7 +1464,7 @@ U1 *sdl_load_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 #if SANDBOX 
 	if (get_sandbox_filename (&data[nameaddr], sandbox_filename, 255) != 0)
 	{
-		printf ("sdl_load_picture: ERROR filename illegal: %s", &data[nameaddr]);
+		printf ("sdl_load_picture: ERROR filename illegal: %s\n", &data[nameaddr]);
 		return (NULL);
 	}
 	picture = IMG_Load ((const char *) sandbox_filename);
@@ -1520,7 +1520,7 @@ U1 *sdl_save_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 #if SANDBOX 
 	if (get_sandbox_filename (&data[nameaddr], sandbox_filename, 255) != 0)
 	{
-		printf ("sdl_save_picture: ERROR filename illegal: %s", &data[nameaddr]);
+		printf ("sdl_save_picture: ERROR filename illegal: %s\n", &data[nameaddr]);
 		return (NULL);
 	}
 	ret = SDL_SaveBMP (surf, (const char *) sandbox_filename);
