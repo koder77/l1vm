@@ -1120,6 +1120,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
                         if (arg_ind != opcode[i].args)
                         {
 							printf ("error: line %lli: arguments mismatch!\n", linenum);
+							printf ("got %i args, need: %i arguments!\n", arg_ind, opcode[i].args);
 							return (1);
                         }
 

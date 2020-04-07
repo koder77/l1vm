@@ -80,6 +80,65 @@ U1 *double2int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+// string to number convertions ===============================================
+
+U1 *string_to_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 value ALIGN;
+	S8 string_addr ALIGN;
+	char *endp;
+	
+	sp = stpopi ((U1 *) &string_addr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_to_int ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	// convert
+	value = strtoll ((const char *) &data[string_addr], &endp, 10);
+	
+	// return value
+	sp = stpushi (value, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_to_int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *string_to_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 value ALIGN;
+	S8 string_addr ALIGN;
+	char *endp;
+	
+	sp = stpopi ((U1 *) &string_addr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_to_int ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	value = strtod ((const char *) &data[string_addr], &endp);
+	
+	// return value
+	sp = stpushd (value, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_to_int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+// ============================================================================
+
 U1 *sqrtdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	F8 value ALIGN;
