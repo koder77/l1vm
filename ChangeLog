@@ -1,8 +1,12 @@
-L1VM - (0.9.16)
+L1VM - (1.0.0)
+Finally I think it is time for 1.0 version number step!
+
 File access SANDBOX on all file I/O in libraries.
 See file/file-sandbox.c.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun Apr 5 2020 22:00 +0200
+Math library text output fixes!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed Apr 8 2020 12:04 +0200
 
 
 L1VM - (0.9.15)

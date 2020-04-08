@@ -120,7 +120,7 @@ U1 *string_to_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("string_to_int ERROR: stack corrupt!\n");
+		printf ("string_to_double ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 	
@@ -131,7 +131,7 @@ U1 *string_to_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("string_to_int: ERROR: stack corrupt!\n");
+		printf ("string_to_double: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 	return (sp);
