@@ -77,7 +77,7 @@ U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len)
 	if (check_file_access (sandbox_filename) != 0)
 	{
 		// illegal parts in filename path, ERROR!!!
-		printf ("ERROR: file_open: file name: '%s' illegal!\n", (char *) sandbox_filename);
+		printf ("ERROR: get_sandbox_filename: file name: '%s' illegal!\n", (char *) sandbox_filename);
 		return (1);
 	}
 	
