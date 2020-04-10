@@ -22,7 +22,7 @@
 
 extern U1 *code;
 extern U1 *data;
-struct data_info data_info[MAXDATAINFO];
+extern struct data_info data_info[MAXDATAINFO];
 extern S8 data_info_ind ALIGN;
 
 extern S8 data_size ALIGN;

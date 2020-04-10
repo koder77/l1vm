@@ -48,6 +48,7 @@
 #include <assert.h>
 #include <limits.h>
 
+
 // user settings ==========================================
 // machine
 #define MAXCPUCORES	    		5		// threads that can be runned
@@ -189,7 +190,7 @@ typedef double                  F8;     /* DOUBLE */
 
 
 // for time functions
-struct tm *tm;
+// struct tm *tm;
 
 
 struct threaddata
@@ -270,7 +271,7 @@ struct call_label
 #define MAXSHELLARGLEN			256
 
 #if ! JIT_COMPILER
-struct opcode opcode[MAXOPCODES];
+// struct opcode opcode[MAXOPCODES];
 #endif
 
 // This is type of function we will generate

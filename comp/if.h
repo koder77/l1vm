@@ -28,6 +28,10 @@
 #define NOTDEF -1
 #define IF_FINISHED 2
 
+
+extern struct opcode opcode[MAXOPCODES];
+
+
 struct if_comp
 {
     U1 used;

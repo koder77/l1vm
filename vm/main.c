@@ -36,6 +36,9 @@
 
 U1 SDL_use = 0;
 
+// time functions
+struct tm *tm;
+
 #if JIT_COMPILER
 #define MAXJITCODE 64
 S8 JIT_code_ind ALIGN = -1;
