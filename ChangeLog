@@ -5,8 +5,9 @@ File access SANDBOX on all file I/O in libraries.
 See file/file-sandbox.c.
 
 Math library text output fixes!
+Removed AOT code parts from compiler.
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed Apr 8 2020 12:04 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Apr 11 2020 21:50 +0200
 
 
 L1VM - (0.9.15)

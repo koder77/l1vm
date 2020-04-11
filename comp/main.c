@@ -17,7 +17,7 @@
  * along with L1vm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//  l1comp RISC compiler
+//  l1com RISC compiler
 //
 
 #include "../include/global.h"
@@ -64,7 +64,6 @@ struct label label[MAXLABELS];
 struct call_label call_label[MAXLABELS];
 
 U1 inline_asm = 0;		// set to one, if inline assembly is used
-U1 comp_aot = 0;        // set to one, if AOT COMPILE code block
 
 U1 optimize_if = 0;		// set to one to optimize if call
 
@@ -4169,20 +4168,6 @@ S2 parse (U1 *name)
 				if (pos != -1)
 				{
 					inline_asm = 0;
-					continue;
-				}
-
-				pos = searchstr (rbuf, (U1 *) COMP_AOT_SB, 0, 0, TRUE);
-				if (pos != -1)
-				{
-					comp_aot = 1;
-					continue;
-				}
-
-				pos = searchstr (rbuf, (U1 *) COMP_AOT_END_SB, 0, 0, TRUE);
-				if (pos != -1)
-				{
-					comp_aot = 0;
 					continue;
 				}
 
