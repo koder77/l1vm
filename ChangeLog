@@ -6,8 +6,9 @@ See file/file-sandbox.c.
 
 Math library text output fixes!
 Removed AOT code parts from compiler.
+Compiler: removed DEBUG printf lines, code cleanup.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Apr 11 2020 21:50 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Apr 11 2020 22:15 +0200
 
 
 L1VM - (0.9.15)
