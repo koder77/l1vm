@@ -1,3 +1,9 @@
+L1VM - (1.0.1)
+SDL module: sdl_open_screen stack error checks added.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Apr 12 2020 20:50 +0200
+
+
 L1VM - (1.0.0)
 Finally I think it is time for 1.0 version number step!
 

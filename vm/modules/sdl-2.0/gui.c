@@ -2127,7 +2127,6 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 									return (NULL);
 								}
 
-
                                 return (sp);
                             }
                         }

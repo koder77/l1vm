@@ -82,9 +82,13 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	if (err == 1)
 	{
-		stpushi (1, sp, sp_bottom);		// error fail code
-		printf ("sdl_open_screen: ERROR: stack corrupt!\n");
-		return (NULL);
+		// error fail code
+		sp = stpushi (1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			printf ("sdl_open_screen: ERROR: stack corrupt!\n");
+		}
+		return (sp);
 	}
 
 	// printf ("open_screen: %lli x %lli, %i bit\n", width, height, bit);
@@ -92,7 +96,13 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (SDL_Init (SDL_INIT_VIDEO) != 0)
 	{
 		printf ("ERROR SDL_Init!!!");
-		sp = stpushi (1, sp, sp_bottom);		// error fail code
+		
+		// error fail code
+		sp = stpushi (1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			printf ("sdl_open_screen: ERROR: stack corrupt!\n");
+		}
 		return (sp);
 	}
 	
@@ -104,7 +114,13 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (TTF_Init () < 0)
 	{
 		printf ("ERROR TTF_Init!!!");
-		sp = stpushi (1, sp, sp_bottom);		// error fail code
+		
+		// error fail code
+		sp = stpushi (1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			printf ("sdl_open_screen: ERROR: stack corrupt!\n");
+		}
 		return (sp);
 	}
 	
@@ -115,7 +131,13 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if(window == NULL)
 	{
 		printf( "sdl_open_screen: ERROR window can't be opened: %s\n", SDL_GetError ());
-		sp = stpushi (1, sp, sp_bottom);		// error fail code
+		
+		// error fail code
+		sp = stpushi (1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			printf ("sdl_open_screen: ERROR: stack corrupt!\n");
+		}
 		return (sp);
 	}
 	
@@ -124,7 +146,13 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (surf == NULL)
 	{
 		fprintf (stderr, "Couldn't set %lli x %lli x %i video mode: %s\n", width, height, bit, SDL_GetError ());
-		sp = stpushi (1, sp, sp_bottom);		// error fail code
+		
+		// error fail code
+		sp = stpushi (1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			printf ("sdl_open_screen: ERROR: stack corrupt!\n");
+		}
 		return (sp);
 	}
 	
@@ -137,7 +165,12 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	SDL_RenderClear (renderer);
 	SDL_RenderPresent (renderer);
 	
-	sp = stpushi (0, sp, sp_bottom);		// error ok code
+	// error OK code
+	sp = stpushi (0, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		printf ("sdl_open_screen: ERROR: stack corrupt!\n");
+	}
 	return (sp);
 }
 
