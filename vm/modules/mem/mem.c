@@ -410,7 +410,7 @@ U1 *dealloc_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("dealloc_int64: ERROR: stack corrupt!\n");
+		printf ("dealloc_mem: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 	
