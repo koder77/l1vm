@@ -1,7 +1,9 @@
 L1VM - (1.0.1)
 SDL module: sdl_open_screen stack error checks added.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun Apr 12 2020 20:50 +0200
+NEW: Memory library lib/mem-lib.l1com for allocating and accessing dynamic memory.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon Apr 13 2020 14:40 +0200
 
 
 L1VM - (1.0.0)

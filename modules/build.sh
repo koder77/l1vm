@@ -24,6 +24,8 @@ cd ../string
 ./make-string-mod.sh
 cd ../time
 ./make-time-mod.sh
+cd ../mem
+./make-mem-mod.sh
 
 cd ../../../modules
 cp ../vm/modules/endianess/libl1vm* .
@@ -38,5 +40,5 @@ cp ../vm/modules/rs232/libl1vm* .
 cp ../vm/modules/sdl-2.0/libl1vm* .
 cp ../vm/modules/string/libl1vm* .
 cp ../vm/modules/time/libl1vm* .
-
+cp ../vm/modules/mem/libl1vm* .
 # sudo cp libl1vm* /usr/local/lib
