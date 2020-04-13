@@ -583,7 +583,7 @@ U1 *array_to_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *double_to_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	// assign int to int64 array
+	// assign double to double array
 	
 	S8 memind ALIGN = 0;
 	S8 arrayind ALIGN = 0;
@@ -634,7 +634,7 @@ U1 *double_to_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *array_to_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	// assign int64 array to int 
+	// assign double array to double
 	
 	S8 memind ALIGN = 0;
 	S8 arrayind ALIGN = 0;
