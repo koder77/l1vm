@@ -3217,7 +3217,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												strcpy ((char *) code_temp, "stpushd ");
 
 												// double float type
-
+												reg = get_regd (ast[level].expr[j][e]);
 												if (reg == -1 || reg > -1)
 												{
 													if (reg > -1)
