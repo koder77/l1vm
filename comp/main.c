@@ -3061,11 +3061,14 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 													{
 														// clear old value of register
 														set_regi (reg, (U1 *) "");
+														reg = get_free_regi ();
+														set_regi (reg, ast[level].expr[j][e]);
 													}
-													
-													// variable is not in register, load it
-
-													reg = get_free_regi ();
+													else
+													{
+														reg = get_free_regi ();
+														set_regi (reg, ast[level].expr[j][e]);
+													}
 													
 													// write code loada
 
@@ -3215,18 +3218,20 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 												// double float type
 
-												reg = get_regd (ast[level].expr[j][e]);
 												if (reg == -1 || reg > -1)
 												{
 													if (reg > -1)
 													{
 														// clear old value of register
 														set_regd (reg, (U1 *) "");
+														reg = get_free_regi ();
+														set_regd (reg, ast[level].expr[j][e]);
 													}
-													// variable is not in register, load it
-
-													reg = get_free_regd ();
-													set_regd (reg, ast[level].expr[j][e]);
+													else
+													{
+														reg = get_free_regd ();
+														set_regi (reg, ast[level].expr[j][e]);
+													}
 
 													// write code loadd
 
@@ -3270,17 +3275,21 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												strcpy ((char *) str, (const char *) ast[level].expr[j][e]);
 												strcat ((char *) str, "addr");
 
+												reg = get_regi (ast[level].expr[j][e]);
 												if (reg == -1 || reg > -1)
 												{
 													if (reg > -1)
 													{
+														// clear old value of register
 														set_regi (reg, (U1 *) "");
+														reg = get_free_regi ();
+														set_regi (reg, ast[level].expr[j][e]);
 													}
-												
-													// variable is not in register, load it
-
-													reg = get_free_regi ();
-													set_regi (reg, ast[level].expr[j][e]);
+													else
+													{
+														reg = get_free_regi ();
+														set_regi (reg, ast[level].expr[j][e]);
+													}
 
 													// write code loada
 
