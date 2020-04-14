@@ -416,26 +416,74 @@ U1 *dealloc_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	
+	// do sane check
+	if (memind < 0 || memind >= memmax)
+	{
+		printf ("dealloc_mem: ERROR: memory index out of range!\n");
+		return (NULL);
+	}
+	
+	// free memory if allocated and set to used == 1
 	switch (mem[memind].type)
 	{
 		case MEMBYTE:
-			free (mem[memind].memptr.byteptr);
+			if (mem[memind].memptr.byteptr && mem[memind].used == 1)
+			{
+				free (mem[memind].memptr.byteptr);
+			}
+			else
+			{
+				printf ("dealloc_mem: ERROR byte mem not allocated!\n");
+				return (NULL);
+			}
 			break;
 			
 		case MEMINT16:
-			free (mem[memind].memptr.int16ptr);
+			if (mem[memind].memptr.int16ptr && mem[memind].used == 1)
+			{
+				free (mem[memind].memptr.int16ptr);
+			}
+			else
+			{
+				printf ("dealloc_mem: ERROR int16 mem not allocated!\n");
+				return (NULL);
+			}
 			break;
 			
 		case MEMINT32:
-			free (mem[memind].memptr.int32ptr);
+			if (mem[memind].memptr.int32ptr && mem[memind].used == 1)
+			{
+				free (mem[memind].memptr.int32ptr);
+			}
+			else
+			{
+				printf ("dealloc_mem: ERROR int32 mem not allocated!\n");
+				return (NULL);
+			}
 			break;
 			
 		case MEMINT64:
-			free (mem[memind].memptr.int64ptr);
+			if (mem[memind].memptr.int64ptr && mem[memind].used == 1)
+			{
+				free (mem[memind].memptr.int64ptr);
+			}
+			else
+			{
+				printf ("dealloc_mem: ERROR int64 mem not allocated!\n");
+				return (NULL);
+			}
 			break;
 			
 		case MEMDOUBLE:
-			free (mem[memind].memptr.doubleptr);
+			if (mem[memind].memptr.doubleptr && mem[memind].used == 1)
+			{
+				free (mem[memind].memptr.doubleptr);
+			}
+			else
+			{
+				printf ("dealloc_mem: ERROR double mem not allocated!\n");
+				return (NULL);
+			}
 			break;
 	}
 	mem[memind].used = 0;
