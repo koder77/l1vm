@@ -34,6 +34,7 @@
 
 // structures
 
+// allocated memory pointers union
 union memptr 
 {
 	U1 *byteptr;
@@ -43,12 +44,13 @@ union memptr
 	F8 *doubleptr;
 };
 
+// the memory info structure
 struct mem
 {
 	U1 used;
 	U1 type;
 	S8 memsize ALIGN;
-	union memptr memptr;
+	union memptr memptr;	// the memory pointers to save the allocations
 };
 
 static struct mem *mem = NULL;
@@ -95,7 +97,7 @@ U1 *init_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		mem[i].memsize = 0;
 	}
 	
-	printf ("init_mem: allocated %lli memory spaces\n", maxind);
+	// printf ("init_mem: allocated %lli memory spaces\n", maxind);
 	
 	// error code ok
 	sp = stpushi (0, sp, sp_bottom);
@@ -445,7 +447,7 @@ U1 *dealloc_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *int_to_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	// assign int to int64 array
+	// assign int to array
 	
 	S8 memind ALIGN = 0;
 	S8 arrayind ALIGN = 0;
@@ -513,7 +515,7 @@ U1 *int_to_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *array_to_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	// assign int64 array to int 
+	// assign int array to int 
 	
 	S8 memind ALIGN = 0;
 	S8 arrayind ALIGN = 0;
