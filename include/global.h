@@ -180,13 +180,13 @@ typedef double                  F8;     /* DOUBLE */
 
 // ERROR codes returned by VM
 #define ERR_FILE_OK         0
-#define ERR_FILE_OPEN       1
-#define ERR_FILE_CLOSE      2
-#define ERR_FILE_READ       3
-#define ERR_FILE_WRITE      4
-#define ERR_FILE_NUMBER     5
-#define ERR_FILE_EOF        6
-#define ERR_FILE_FPOS       7
+#define ERR_FILE_OPEN      -1
+#define ERR_FILE_CLOSE     -2
+#define ERR_FILE_READ      -3
+#define ERR_FILE_WRITE     -4
+#define ERR_FILE_NUMBER    -5
+#define ERR_FILE_EOF       -6
+#define ERR_FILE_FPOS      -7
 
 
 // for time functions

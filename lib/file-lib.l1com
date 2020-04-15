@@ -3,7 +3,8 @@
 //
 //
 (main func)
-    (set int64 1 zero 0Q)
+    (set int64 1 zero 0)
+	(set int64 1 one 1)
     (set int64 1 handle 0)
     (set int64 1 num 12345678Q)
     (set int64 1 read 0)
@@ -15,11 +16,36 @@
     (set byte 1 mode_write 2)
     (set byte 1 mode_read 1)
     (set int64 1 error 0)
-    (zero :file_init call)
-    (loadreg)
+	(set int64 1 ret 0)
+	(set int64 1 f 0)
+	(set string s error_init_files "error: can't allocate file handles!")
+	(set string s error_open_file "error: can't open file test-file!")
+	//
+	// set numbers of file handles to one: 1
+	// 
+    (zero one :file_init call)
+	(ret stpopi)
+	(loadreg)
+	(((ret zero !=) f =) f if)
+		(6 error_init_files 0 0 intr0)
+		(7 0 0 0 intr0)
+		(255 one 0 0 intr0)
+	(endif)
+	(4 ret 0 0 intr0)
+	(7 0 0 0 intr0)
     // write data -----------------------------------------
-    (handle mode_write filenameaddr :file_open call)
-    (error stpopi)
+    (mode_write filenameaddr :file_open call)
+	//
+	// get file handle from file_open call
+	//
+    (handle stpopi)
+	(4 handle 0 0 intr0)
+	(7 0 0 0 intr0)
+	(((ret zero !=) f =) f if)
+		(6 error_open_file 0 0 intr0)
+		(7 0 0 0 intr0)
+	(255 one 0 0 intr0)
+	(endif)
     (loadreg)
     (handle num :file_put_int64 call)
     (error stpopi)
@@ -49,6 +75,8 @@
     (handle :file_close call)
     (loadreg)
     // close file module
+	(:file_free_mem call)
+	(loadreg)
     (1 zero 0 0 intr0)
     (255 0 0 0 intr0)
 (funcend)
@@ -73,6 +101,7 @@
     (set string 16 put_stringstr@file "file_put_string")
     (set string 16 get_stringstr@file "file_get_string")
 	(set string s fileinitstr@file "file_init_state")
+	(set string s freememstr@file "free_mem")
     (set int64 1 open@file 0)
     (set int64 1 close@file 1)
     (set int64 1 seek@file 2)
@@ -89,8 +118,11 @@
     (set int64 1 get_string@file 13)
     (set int64 1 put_string@file 14)
 	(set int64 1 fileinit@file 15)
+	(set int64 1 freemem@file 16)
     (set int64 1 mod@file 0)
+	(set int64 1 maxind@file 0)
     // get arguments from stack
+	(maxind@file stpopi)
     (mod@file stpopi)
     // load file module
     (0 modulestr@fileaddr mod@file 0 intr0)
@@ -111,7 +143,9 @@
     (2 mod@file put_string@file put_stringstr@fileaddr intr0)
     (2 mod@file get_string@file get_stringstr@fileaddr intr0)
 	(2 mod@file fileinit@file fileinitstr@fileaddr intr0)
+	(2 mod@file freemem@file freememstr@fileaddr intr0)
 	// call init file function
+	(maxind@file stpushi)
 	(3 mod@file fileinit@file 0 intr0)
 (funcend)
 // wrapper functions
@@ -168,4 +202,7 @@
 // read newline separated strings
 (file_get_string func)
     (3 mod@file get_string@file 0 intr0)
+(funcend)
+(file_free_mem func)
+	(3 mod@file freemem@file 0 intr0)
 (funcend)

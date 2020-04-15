@@ -1,7 +1,7 @@
 /*
  * This file net.c is part of L1vm.
  *
- * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2018
+ * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2020
  *
  * L1vm is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-
-#define MAXSOCKETS 32             // max number of open sockets
 
 #define SOCKADDRESSLEN      16      /* max dotted ip len */
 #define SOCKBUFSIZE         10240    /* socket data buffer len */
@@ -50,7 +48,8 @@ struct socket
     U1 buf[SOCKBUFSIZE];                    /* socket data buffer */
 };
 
-struct socket sockets[MAXSOCKETS];
+static struct socket *sockets = NULL;
+static S8 socketmax ALIGN = 0;
 
 size_t strlen_safe (const char * str, int maxlen);
 
@@ -77,17 +76,74 @@ char *get_ip_str (const struct sockaddr *sa, char *s, size_t maxlen)
 
 U1 *init_sockets (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-    // set all socket handles as CLOSED
     S8 i ALIGN;
-
-    for (i = 0; i < MAXSOCKETS; i++)
+	S8 maxind ALIGN;
+	
+	sp = stpopi ((U1 *) &maxind, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("init_sockets: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	// allocate gobal mem structure
+	sockets = (struct socket*) calloc (maxind, sizeof (struct socket));
+	if (sockets == NULL)
+	{
+		printf ("init_sockets: ERROR can't allocate %lli memory indexes!\n", maxind);
+		
+		sp = stpushi (1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("init_sockets: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		return (sp);
+	}
+	
+	socketmax = maxind;	// save to global var
+	
+	// set all socket handles as CLOSED
+    for (i = 0; i < socketmax; i++)
     {
         sockets[i].state = SOCKETCLOSED;
     }
 
-    return (sp);
+    // error code ok
+    sp = stpushi (0, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("init_sockets: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
 }
 
+U1 *free_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	if (sockets) free (sockets);
+	return (sp);
+}
+
+
+S8 get_free_socket_handle (void)
+{
+	S8 i ALIGN;
+	
+	for (i = 0; i < socketmax; i++)
+	{
+		if (sockets[i].state == SOCKETCLOSED)
+		{
+			return (i);
+		}
+	}
+	
+	// no free file handle found
+	return (-1);
+}
 
 U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
@@ -95,8 +151,6 @@ U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     U1 *hostname;
     S8 hostname_addr ALIGN;
     S8 port ALIGN;
-
-    S8 i ALIGN = 0;
 
     NINT yes = 1;
     S2 server, error;
@@ -111,15 +165,7 @@ U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
 
-    for (i = 0; i < MAXSOCKETS; i++)
-    {
-        if (sockets[i].state == SOCKETCLOSED)
-        {
-            handle = i;
-            break;
-        }
-    }
-
+    handle = get_free_socket_handle ();
     if (handle == -1)
     {
         /* error socket list full */
@@ -159,8 +205,16 @@ U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	hostname = &data[hostname_addr];
 
-    if (handle < 0 || handle >= MAXSOCKETS)
+    if (handle < 0 || handle >= socketmax)
     {
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		
         printf ("ERROR: open_server_socket: handle out of range!\n");
         sp = stpushi (ERR_FILE_OPEN, sp, sp_bottom);
     	if (sp == NULL)
@@ -174,6 +228,14 @@ U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     if (sockets[handle].state == SOCKETOPEN)
     {
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		
         printf ("ERROR: open_server_socket: handle %i already open!\n", handle);
         sp = stpushi (ERR_FILE_OPEN, sp, sp_bottom);
     	if (sp == NULL)
@@ -192,6 +254,14 @@ U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     if ((status = getaddrinfo ((const char *) hostname, (const char *) port_string, &hints, &servinfo)) != 0)
     {
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		
         sp = stpushi (status, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -205,6 +275,14 @@ U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     server = socket (servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
     if (server == -1)
     {
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		
         sp = stpushi (errno, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -220,6 +298,14 @@ U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     error = (setsockopt (server, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof (NINT)));
     if (error == -1)
     {
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		
         sp = stpushi (errno, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -233,6 +319,14 @@ U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     error = bind (server, servinfo->ai_addr, servinfo->ai_addrlen);
     if (error == -1)
     {
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		
         sp = stpushi (errno, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -246,6 +340,14 @@ U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     error = listen (server, SOMAXCONN);
     if (error == -1)
     {
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		
         sp = stpushi (errno, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -260,7 +362,7 @@ U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (sp == NULL)
     {
         // error
-        printf ("open_accept_server: ERROR: stack corrupt!\n");
+        printf ("open_server_socket: ERROR: stack corrupt!\n");
         return (NULL);
     }
 
@@ -286,7 +388,6 @@ U1 *open_accept_server (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S2 connection;
     struct sockaddr_storage client;
     socklen_t addr_size;
-    S2 i;
     S8 new_handle ALIGN = -1;
 
     if (sp == sp_top)
@@ -304,10 +405,18 @@ U1 *open_accept_server (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("open_server_socket: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-
-    if (handle < 0 || handle >= MAXSOCKETS)
+	
+    if (handle < 0 || handle >= socketmax)
     {
-        printf ("ERROR: open_accept_server: handle out of range!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		
+		printf ("ERROR: open_accept_server: handle out of range!\n");
         sp = stpushi (ERR_FILE_OPEN, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -320,6 +429,14 @@ U1 *open_accept_server (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     if (sockets[handle].state != SOCKETOPEN || sockets[handle].type != SOCKSERVER)
     {
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		
         sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -334,6 +451,14 @@ U1 *open_accept_server (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     connection = accept (sockets[handle].socket, (struct sockaddr *) &client, &addr_size);
     if (connection == -1)
     {
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		
         sp = stpushi (errno, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -344,17 +469,17 @@ U1 *open_accept_server (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (sp);
     }
 
-    for (i = 0; i < MAXSOCKETS; i++)
-    {
-        if (sockets[i].state == SOCKETCLOSED)
-        {
-            new_handle = i;
-            break;
-        }
-    }
-
+    new_handle = get_free_socket_handle ();
     if (new_handle == -1)
     {
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		
         /* error socket list full */
         sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
     	if (sp == NULL)
@@ -368,6 +493,14 @@ U1 *open_accept_server (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     if (get_ip_str ((struct sockaddr *) &client, (char *) sockets[new_handle].client_ip, SOCKADDRESSLEN) == NULL)
     {
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		
         sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -408,7 +541,6 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     U1 port_string[256];
     U1 *hostname;
     S8 hostname_addr ALIGN;
-    S4 i;
     S2 handle = -1, port;
 
     struct addrinfo hints;
@@ -420,15 +552,7 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
 
-    for (i = 0; i < MAXSOCKETS; i++)
-    {
-        if (sockets[i].state == SOCKETCLOSED)
-        {
-            handle = i;
-            break;
-        }
-    }
-
+    handle = get_free_socket_handle ();
     if (handle == -1)
     {
         /* error socket list full */
@@ -468,8 +592,16 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     hostname = &data[hostname_addr];
 
-    if (handle < 0 || handle >= MAXSOCKETS)
+    if (handle < 0 || handle >= socketmax)
     {
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		
         printf ("ERROR: open_client_socket: handle out of range!\n");
         sp = stpushi (ERR_FILE_OPEN, sp, sp_bottom);
     	if (sp == NULL)
@@ -483,6 +615,14 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     if (sockets[handle].state == SOCKETOPEN)
     {
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		
         printf ("ERROR: open_client_socket: handle %i already open!\n", handle);
         sp = stpushi (ERR_FILE_OPEN, sp, sp_bottom);
     	if (sp == NULL)
@@ -499,6 +639,14 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     if ((status = getaddrinfo ((const char *) hostname, (const char *) port_string, &hints, &servinfo)) != 0)
     {
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		
         sp = stpushi (status, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -512,6 +660,14 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     client = socket (servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
     if (client == -1)
     {
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		
         sp = stpushi (errno, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -525,6 +681,14 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     error = connect (client, servinfo->ai_addr, servinfo->ai_addrlen);
     if (error == -1)
     {
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		
         sp = stpushi (errno, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -578,7 +742,7 @@ U1 *close_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    if (handle < 0 || handle > MAXSOCKETS - 1)
+    if (handle < 0 || handle > socketmax - 1)
     {
         sp = stpushi (ERR_FILE_NUMBER, sp, sp_bottom);
     	if (sp == NULL)
@@ -664,7 +828,7 @@ U1 *close_accept_server (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    if (handle < 0 || handle > MAXSOCKETS - 1)
+    if (handle < 0 || handle > socketmax - 1)
     {
         sp = stpushi (ERR_FILE_NUMBER, sp, sp_bottom);
     	if (sp == NULL)
@@ -748,7 +912,7 @@ U1 *close_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    if (handle < 0 || handle > MAXSOCKETS - 1)
+    if (handle < 0 || handle > socketmax - 1)
     {
         sp = stpushi (ERR_FILE_NUMBER, sp, sp_bottom);
     	if (sp == NULL)
@@ -842,7 +1006,7 @@ U1 *get_clientaddr (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    if (handle < 0 || handle > MAXSOCKETS - 1)
+    if (handle < 0 || handle > socketmax - 1)
     {
         sp = stpushi (ERR_FILE_NUMBER, sp, sp_bottom);
     	if (sp == NULL)
@@ -1206,7 +1370,7 @@ U1 exe_sread (S4 slist_ind, S4 len)
     S2 sockh = 0, ret;
     S4 todo, buf_ind = 0;
 
-    if (slist_ind < 0 || slist_ind > MAXSOCKETS - 1)
+    if (slist_ind < 0 || slist_ind > socketmax - 1)
     {
         return (ERR_FILE_NUMBER);
     }
@@ -1256,7 +1420,7 @@ U1 exe_swrite (S4 slist_ind, S4 len)
     S2 sockh = 0, ret;
     S4 todo, buf_ind = 0;
 
-    if (slist_ind < 0 || slist_ind > MAXSOCKETS - 1)
+    if (slist_ind < 0 || slist_ind > socketmax - 1)
     {
         return (ERR_FILE_NUMBER);
     }

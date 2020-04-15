@@ -1,7 +1,7 @@
 /*
  * This file file.c is part of L1vm.
  *
- * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2018
+ * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2020
  *
  * L1vm is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@
 
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
-
-#define MAXFILES 32             // max number of open files
 
 #define FILEOPEN 1              // state flags
 #define FILECLOSED 0
@@ -43,19 +41,77 @@ struct file
     U1 state;
 };
 
-struct file files[MAXFILES];
+static struct file *files = NULL;
+static S8 filemax ALIGN = 0;
 
 
 U1 *file_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 i ALIGN;
-
-	for (i = 0; i < MAXFILES; i++)
+	S8 maxind ALIGN;
+	
+	sp = stpopi ((U1 *) &maxind, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("file_init_state: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	// allocate gobal mem structure
+	files = (struct file*) calloc (maxind, sizeof (struct file));
+	if (files == NULL)
+	{
+		printf ("file_init_state: ERROR can't allocate %lli memory indexes!\n", maxind);
+		
+		sp = stpushi (1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("file_init_state: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		return (sp);
+	}
+	
+	filemax = maxind;	// save to global var
+	
+	for (i = 0; i < filemax; i++)
 	{
 		files[i].state = FILECLOSED;
 	}
 
+	// error code ok
+	sp = stpushi (0, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("file_init_state: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 	return (sp);
+}
+
+U1 *free_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	if (files) free (files);
+	return (sp);
+}
+
+S8 get_free_file_handle (void)
+{
+	S8 i ALIGN;
+	
+	for (i = 0; i < filemax; i++)
+	{
+		if (files[i].state == FILECLOSED)
+		{
+			return (i);
+		}
+	}
+	
+	// no free file handle found
+	return (-1);
 }
 
 U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -73,14 +129,6 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 file_name_len ALIGN;
 	S8 file_access_name_len ALIGN;
 
-    if (sp == sp_top)
-    {
-        // nothing on stack!! can't pop!!
-
-        printf ("FATAL ERROR: file_open: stack pointer can't pop empty stack!\n");
-        return (NULL);
-    }
-
     sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -92,19 +140,19 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     access = *sp;
     sp++;
 
-	sp = stpopi ((U1 *) &handle, sp, sp_top);
-	if (sp == NULL)
+	handle = get_free_file_handle ();
+	if (handle == -1)
 	{
-		// error
-		printf ("ERROR: file_open: ERROR: stack corrupt!\n");
-		return (NULL);
+		// no free file handle available, EXIT
+		sp = stpushi (ERR_FILE_OPEN, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("file_fopen: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		return (sp);
 	}
-
-    if (handle < 0 || handle >= MAXFILES)
-    {
-        printf ("ERROR: file_open: handle out of range!\n");
-        return (NULL);
-    }
 
     if (files[handle].state == FILEOPEN)
     {
@@ -182,8 +230,8 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
     else
     {
-        // push ERROR code OK
-        sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
+        // push file handle
+        sp = stpushi (handle, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
@@ -218,7 +266,7 @@ U1 *file_close (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (handle < 0 || handle >= MAXFILES)
+	if (handle < 0 || handle >= filemax)
 	{
 		printf ("ERROR: file_close: handle out of range!\n");
 		return (NULL);
@@ -277,7 +325,7 @@ U1 *file_seek (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (handle < 0 || handle >= MAXFILES)
+	if (handle < 0 || handle >= filemax)
 	{
 		printf ("ERROR: file_seek: handle out of range!\n");
 		return (NULL);
@@ -343,7 +391,7 @@ U1 *file_put_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    if (handle < 0 || handle >= MAXFILES)
+    if (handle < 0 || handle >= filemax)
     {
         printf ("ERROR: file_put_int16: handle out of range!\n");
         return (NULL);
@@ -398,7 +446,7 @@ U1 *file_get_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (handle < 0 || handle >= MAXFILES)
+	if (handle < 0 || handle >= filemax)
     {
         printf ("ERROR: file_get_int16: handle out of range!\n");
         return (NULL);
@@ -480,7 +528,7 @@ U1 *file_put_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    if (handle < 0 || handle >= MAXFILES)
+    if (handle < 0 || handle >= filemax)
     {
         printf ("ERROR: file_put_int32: handle out of range!\n");
         return (NULL);
@@ -535,7 +583,7 @@ U1 *file_get_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (handle < 0 || handle >= MAXFILES)
+	if (handle < 0 || handle >= filemax)
     {
         printf ("ERROR: file_get_int32: handle out of range!\n");
         return (NULL);
@@ -617,7 +665,7 @@ U1 *file_put_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    if (handle < 0 || handle >= MAXFILES)
+    if (handle < 0 || handle >= filemax)
     {
         printf ("ERROR: file_put_int64: handle out of range!\n");
         return (NULL);
@@ -672,7 +720,7 @@ U1 *file_get_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (handle < 0 || handle >= MAXFILES)
+	if (handle < 0 || handle >= filemax)
     {
         printf ("ERROR: file_get_int64: handle out of range!\n");
         return (NULL);
@@ -754,7 +802,7 @@ U1 *file_put_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    if (handle < 0 || handle >= MAXFILES)
+    if (handle < 0 || handle >= filemax)
     {
         printf ("ERROR: file_put_double: handle out of range!\n");
         return (NULL);
@@ -809,7 +857,7 @@ U1 *file_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (handle < 0 || handle >= MAXFILES)
+	if (handle < 0 || handle >= filemax)
     {
         printf ("ERROR: file_get_double: handle out of range!\n");
         return (NULL);
@@ -886,7 +934,7 @@ U1 *file_putc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    if (handle < 0 || handle >= MAXFILES)
+    if (handle < 0 || handle >= filemax)
     {
         printf ("ERROR: file_putc: handle out of range!\n");
         return (NULL);
@@ -942,7 +990,7 @@ U1 *file_getc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    if (handle < 0 || handle >= MAXFILES)
+    if (handle < 0 || handle >= filemax)
     {
         printf ("ERROR: file_getc: handle out of range!\n");
         return (NULL);
@@ -1100,7 +1148,7 @@ U1 *file_put_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    if (handle < 0 || handle >= MAXFILES)
+    if (handle < 0 || handle >= filemax)
     {
         printf ("ERROR: file_put_string: handle out of range!\n");
         return (NULL);
@@ -1176,7 +1224,7 @@ U1 *file_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    if (handle < 0 || handle >= MAXFILES)
+    if (handle < 0 || handle >= filemax)
     {
         printf ("ERROR: file_get_string: handle out of range!\n");
         return (NULL);

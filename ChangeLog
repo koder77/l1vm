@@ -3,7 +3,10 @@ SDL module: sdl_open_screen stack error checks added.
 
 NEW: Memory library lib/mem-lib.l1com for allocating and accessing dynamic memory.
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon Apr 13 2020 14:40 +0200
+File lib and net lib: now maximum handles are set by opening/init call.
+See lib/file-lib and lib/net-lib.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed Apr 15 2020 14:56 +0200
 
 
 L1VM - (1.0.0)
