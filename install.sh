@@ -101,16 +101,7 @@ else
 	exit 1
 fi
 
-echo "all modules build. building program libraries..."
-cd ../lib
-if ./build-all.sh; then
-	echo "building libraries successfully!"
-else
-	echo "building libraries FAILED!"
-	exit 1
-fi
-
-echo "all libraries installed. building programs..."
+echo "all modules installed. building programs..."
 cd ../prog
 if ./build-all.sh; then
 	echo "building programs successfully!"
@@ -119,8 +110,6 @@ else
 	exit 1
 fi
 cd ..
-
-
 
 echo "installation finished!"
 exit 0
