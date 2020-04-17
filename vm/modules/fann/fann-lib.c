@@ -25,7 +25,6 @@
 
 #include <floatfann.h>
 
-#define MAXANN 32             // max number of open anns
 
 #define ANNOPEN 1              // state flags
 #define ANNCLOSED 0
@@ -34,23 +33,82 @@ U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
 
 struct fanns
 {
+	S8 maxind ALIGN;
     struct fann *ann;
     // U1 name[256];
     U1 state;
 };
 
-static struct fanns fanns[MAXANN];
+static struct fanns *fanns = NULL;
+static S8 fannmax ALIGN = 0;
 
 U1 *fann_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 i ALIGN;
-
-	for (i = 0; i < MAXANN; i++)
+	S8 maxind ALIGN;
+	
+	sp = stpopi ((U1 *) &maxind, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("fann_init_state: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	// allocate gobal mem structure
+	fanns = (struct fanns *) calloc (maxind, sizeof (struct fanns));
+	if (fanns == NULL)
+	{
+		printf ("fann_init_state: ERROR can't allocate %lli memory indexes!\n", maxind);
+		
+		sp = stpushi (1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("fann_init_state: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		return (sp);
+	}
+	
+	fannmax = maxind;	// save to global var
+	
+	for (i = 0; i < fannmax; i++)
 	{
 		fanns[i].state = ANNCLOSED;
 	}
 
+	// error code ok
+	sp = stpushi (0, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("fann_init_state: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 	return (sp);
+}
+
+U1 *free_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	if (fanns) free (fanns);
+	return (sp);
+}
+
+S8 get_free_fann (void)
+{
+	S8 i ALIGN;
+	
+	for (i = 0; i < fannmax; i++)
+	{
+		if (fanns[i].state == ANNCLOSED)
+		{
+			return (i);
+		}
+	}
+	
+	// no free memory found
+	return (-1);
 }
 
 U1 *fann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -68,15 +126,16 @@ U1 *fann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   return (NULL);
     }
 
-	sp = stpopi ((U1 *) &handle, sp, sp_top);
-    if (sp == NULL)
-    {
- 	   // error
- 	   printf ("ERROR: fann_read_ann: ERROR: stack corrupt!\n");
- 	   return (NULL);
-    }
+	handle = get_free_fann ();
+	if (handle == -1)
+	{
+		// ERROR no more free handle!
+		
+		printf ("fann_read_ann: no more fann slot free!\n");
+		return (NULL);
+	}
 
-	if (handle < 0 || handle >= MAXANN)
+	if (handle < 0 || handle >= fannmax)
     {
         printf ("ERROR: fann_read_ann: handle out of range!\n");
         return (NULL);
@@ -100,6 +159,14 @@ U1 *fann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 #endif
 	fanns[handle].state = ANNOPEN;
 
+	// return handle
+	sp = stpushi (handle, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("fann_read_ann: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 	return (sp);
 }
 
@@ -166,7 +233,7 @@ U1 *fann_run_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   return (NULL);
     }
 
-	if (handle < 0 || handle >= MAXANN)
+	if (handle < 0 || handle >= fannmax)
     {
         printf ("ERROR: fann_run_ann: handle out of range!\n");
         return (NULL);
@@ -225,7 +292,7 @@ U1 *fann_free_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   return (NULL);
     }
 
-	if (handle < 0 || handle >= MAXANN)
+	if (handle < 0 || handle >= fannmax)
     {
         printf ("ERROR: fann_free_ann: handle out of range!\n");
         return (NULL);

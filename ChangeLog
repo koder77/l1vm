@@ -6,7 +6,9 @@ NEW: Memory library lib/mem-lib.l1com for allocating and accessing dynamic memor
 File lib and net lib: now maximum handles are set by opening/init call.
 See lib/file-lib and lib/net-lib.
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed Apr 15 2020 14:56 +0200
+Library fann: max number of fanns now can be set by program. Was set as 32.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri Apr 17 2020 13:00 +0200
 
 
 L1VM - (1.0.0)
