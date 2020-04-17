@@ -31,7 +31,7 @@
 	// following data address taken from assembly output!
 	(set int64 1 max_layer_readout_addr 184)
 	// set path to "xor_float.net" file of Cells C library:
-	(set string s node_xor_filestr "/home/stefan/l1vm/fann/xor_float.net")
+	(set string s node_xor_filestr "fann/xor_float.net")
 	(zero max_cells :cells_init_lib call)
 	(ret stpopi)
 	(loadreg)
