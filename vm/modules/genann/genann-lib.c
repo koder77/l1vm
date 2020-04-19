@@ -31,7 +31,6 @@ struct genanns
 	U1 state;
 };
 
-
 static struct genanns *genanns = NULL;
 static S8 genannmax ALIGN = 0;
 

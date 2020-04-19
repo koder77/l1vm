@@ -25,11 +25,8 @@
 
 #include <floatfann.h>
 
-
 #define ANNOPEN 1              // state flags
 #define ANNCLOSED 0
-
-U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
 
 struct fanns
 {
@@ -39,6 +36,9 @@ struct fanns
 
 static struct fanns *fanns = NULL;
 static S8 fannmax ALIGN = 0;
+
+
+U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
 
 U1 *fann_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
