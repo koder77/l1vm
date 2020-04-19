@@ -6,8 +6,6 @@ cd ../fann
 ./make-fann-mod.sh
 cd ../file
 ./make-file-mod.sh
-cd ../genann
-./make-genann-mod.sh
 cd ../math
 ./make-math-mod.sh
 cd ../mpfr-c++
@@ -31,7 +29,6 @@ cd ../../../modules
 cp ../vm/modules/endianess/libl1vm* .
 cp ../vm/modules/fann/libl1vm* .
 cp ../vm/modules/file/libl1vm* .
-cp ../vm/modules/genann/libl1vm* .
 cp ../vm/modules/math/libl1vm* .
 cp ../vm/modules/mpfr-c++/libl1vm* .
 cp ../vm/modules/net/libl1vm* .

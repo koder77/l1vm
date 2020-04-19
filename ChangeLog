@@ -7,8 +7,9 @@ File lib and net lib: now maximum handles are set by opening/init call.
 See lib/file-lib and lib/net-lib.
 
 Library fann: max number of fanns now can be set by program. Was set as 32.
+Genann ANN library removed. There is still FANN and even Cells for the same.
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri Apr 17 2020 13:00 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Apr 19 2020 14:18 +0200
 
 
 L1VM - (1.0.0)
