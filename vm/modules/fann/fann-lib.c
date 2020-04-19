@@ -33,9 +33,7 @@ U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
 
 struct fanns
 {
-	S8 maxind ALIGN;
     struct fann *ann;
-    // U1 name[256];
     U1 state;
 };
 

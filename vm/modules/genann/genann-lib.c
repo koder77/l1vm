@@ -27,13 +27,12 @@
 
 struct genanns
 {
-	S8 maxind ALIGN;
 	struct genann *ann;
 	U1 state;
 };
 
 
-static struct genanns *genanns= NULL;
+static struct genanns *genanns = NULL;
 static S8 genannmax ALIGN = 0;
 
 
