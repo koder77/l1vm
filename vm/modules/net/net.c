@@ -1987,12 +1987,212 @@ U1 *socket_write_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     ret = exe_swrite (handle, i + 1);
-    sp = stpushi (ret, sp, sp_bottom);
-    if (sp == NULL)
-    {
-        // error
-        printf ("socket_write_string: ERROR: stack corrupt!\n");
-        return (NULL);
-    }
+	sp = stpushi (ret, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("socket_write_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
     return (sp);
 }
+
+// get mimetype from file suffix: .* ==========================================
+
+U1 *get_mimetype_from_filename (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	U1 endingstr[256];
+	U1 dotch = '.';
+	S8 slen, mime_len, i, j, dotpos;
+	S8 filename_addr;
+	S8 mimetype_addr;
+	S8 mimetype_len;
+	
+	S8 mimetypes = 31; // from 0 - x
+	U1 found_mimetype = 0;
+	
+	U1 mimetype_octet_stream[] = "application/octet-stream";
+	
+	struct mimetype
+	{
+		U1 ending[256];
+		U1 mimetype[256];
+	};
+	
+	struct mimetype mimetype[] =
+	{
+ 		{ "HTML", "text/html" },
+		{ "HTM", "text/html" },
+		{ "TXT", "text/plain" },
+		{ "DOC", "text/plain" },
+		{ "GUIDE", "text/aguide" },
+		{ "GIF", "image/gif" },
+		{ "BMP", "image/bmp" },
+		{ "PNG", "image/png" },
+		{ "JPEG", "image/jpeg" },
+		{ "JPG", "image/jpeg" },
+		{ "WAV", "audio/* "},
+		{ "AU", "audio/*" },
+		{ "8SVX", "audio/*" },
+		{ "MP3", "audio/*" },
+		{ "MIDI", "audio/*" },
+		{ "MID", "audio/*" },
+		{ "ZIP", "application/octet-stream" },
+		{ "BZ2", "application/octet-stream" },
+		{ "GZ", "application/octet-stream" },
+		{ "LHA", "application/octet-stream" },
+		{ "LZH", "application/octet-stream" },
+		{ "LZX", "application/octet-stream" },
+		{ "TAR", "application/octet-stream" },
+		{ "EXE", "application/octet-stream" },
+		{ "APK", "application/octet-stream" },
+		{ "PS", "application/postscript" },
+		{ "PDF", "application/pdf" },
+		{ "MOV", "application/quicktime" },
+		{ "MOOV", "application/quicktime" },
+		{ "MP4", "video/mp4" },
+		{ "AVI", "video/avi" },
+		{ "ISO", "application/octet-stream" }
+	};
+	
+	sp = stpopi ((U1 *) &mimetype_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_mimetype_from_filename: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	sp = stpopi ((U1 *) &mimetype_addr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_mimetype_from_filename: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	sp = stpopi ((U1 *) &filename_addr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_mimetype_from_filename: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	
+	// get .* part of filename
+	
+	dotpos = -1;
+	slen = strlen ((const char *) &data[filename_addr]);
+	for (i = slen - 1; i >= 0; i--)
+	{
+		if (data[filename_addr + i] == dotch)
+		{
+			dotpos = i;
+			break;
+		}
+	}
+	
+	if (dotpos == -1)
+	{
+		// no file ending: .* found
+		strcpy ((char *) &data[mimetype_addr], "application/octet-stream");
+		sp = stpushi (0, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("get_mimetype_from_filename: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		return (sp);
+	}
+	
+	j = 0;
+	for (i = dotpos + 1; i < slen; i++)
+	{
+		endingstr[j] = toupper (data[filename_addr + i]);
+		j++;
+	}
+	endingstr[j] = '\0';	// set end of string
+	
+	// printf ("get_mimetype_from_filename: ending: '%s'\n", endingstr);
+	
+	// get mimetype from file ending: -----------------------------------------
+	
+	for (i = 0; i <= mimetypes; i++)
+	{
+		if (strcmp ((const char *) endingstr, (const char *) mimetype[i].ending) == 0)
+		{
+			// found mimetype
+			mime_len = strlen ((const char *) mimetype[i].mimetype);
+			if (mime_len > mimetype_len - 1)
+			{
+				printf ("get_mimetype_from_filename: ERROR mimetype string overflow!\n");
+			
+				strcpy ((char *) &data[mimetype_addr], "");
+			
+				sp = stpushi (1, sp, sp_bottom);
+				if (sp == NULL)
+				{
+					// error
+					printf ("get_mimetype_from_filename: ERROR: stack corrupt!\n");
+					return (NULL);
+				}
+				return (sp);		// exit
+			}
+			else
+			{
+				strcpy ((char *) &data[mimetype_addr], (const char *) mimetype[i].mimetype);
+				found_mimetype = 1;
+				break;
+			}	
+		}
+	}
+	
+	if (found_mimetype == 0)
+	{
+		// no mimetype found, use octet/stream 
+		
+		if (strlen ((const char *) mimetype_octet_stream) > mimetype_len - 1)
+		{
+			printf ("get_mimetype_from_filename: ERROR mimetype string overflow!\n");
+			
+			strcpy ((char *) &data[mimetype_addr], "");
+			
+			sp = stpushi (1, sp, sp_bottom);
+			if (sp == NULL)
+			{
+				// error
+				printf ("get_mimetype_from_filename: ERROR: stack corrupt!\n");
+				return (NULL);
+			}
+		}
+		else
+		{
+			strcpy ((char *) &data[mimetype_addr], (const char *) mimetype_octet_stream);
+			
+			sp = stpushi (0, sp, sp_bottom);
+			if (sp == NULL)
+			{
+				// error
+				printf ("get_mimetype_from_filename: ERROR: stack corrupt!\n");
+				return (NULL);
+			}
+		}
+	}
+	else
+	{
+		sp = stpushi (0, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("get_mimetype_from_filename: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+	}
+
+	// printf ("get_mimetype_from_filename: mimetype: '%s'\n", &data[mimetype_addr]);
+	
+	return (sp);
+}
+

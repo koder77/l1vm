@@ -109,6 +109,7 @@
     (set string 21 socket_write_doublestr@net "socket_write_double")
     (set string 20 socket_write_stringstr@net "socket_write_string")
 	(set string s free@netstr "free_mem")
+	(set string s get_mimetype_from_filenamestr@net "get_mimetype_from_filename")
     (set int64 1 init@net 0)
     (set int64 1 open_server_socket@net 1)
     (set int64 1 open_accept_server@net 2)
@@ -129,6 +130,7 @@
     (set int64 1 socket_write_double@net 17)
     (set int64 1 socket_write_string@net 18)
 	(set int64 1 free@net 19)
+	(set int64 1 get_mimetype_from_filename@net 20)
 	(set int64 1 mod@net 0)
 	(set int64 1 maxind@net 0)
 	// get arguments from stack
@@ -157,6 +159,7 @@
     (2 mod@net socket_write_double@net socket_write_doublestr@netaddr intr0)
     (2 mod@net socket_write_string@net socket_write_stringstr@netaddr intr0)
 	(2 mod@net free@net free@netstraddr intr0)
+	(2 mod@net get_mimetype_from_filename@net get_mimetype_from_filenamestr@netaddr intr0)
 	// init library
 	(maxind@net stpushi)
 	(3 mod@net init@net 0 intr0)
@@ -219,4 +222,7 @@
 (funcend)
 (socket_free_mem func)
 	(3 mod@net free@net 0 intr0)
+(funcend)
+(get_mimetype_from_filename func)
+	(3 mod@net get_mimetype_from_filename@net 0 intr0)
 (funcend)
