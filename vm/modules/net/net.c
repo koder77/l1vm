@@ -53,6 +53,8 @@ static S8 socketmax ALIGN = 0;
 
 size_t strlen_safe (const char * str, int maxlen);
 
+U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
+
 /* helper function (taken from bgnet_socket_programming) */
 char *get_ip_str (const struct sockaddr *sa, char *s, size_t maxlen)
 {
@@ -2003,12 +2005,16 @@ U1 *get_mimetype_from_filename (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	U1 endingstr[256];
 	U1 dotch = '.';
-	S8 slen, mime_len, i, j, dotpos;
-	S8 filename_addr;
-	S8 mimetype_addr;
-	S8 mimetype_len;
+	S8 slen ALIGN;
+	S8 mime_len ALIGN;
+	S8 i ALIGN;
+	S8 j ALIGN;
+	S8 dotpos ALIGN;
+	S8 filename_addr ALIGN;
+	S8 mimetype_addr ALIGN;
+	S8 mimetype_len ALIGN;
 	
-	S8 mimetypes = 31; // from 0 - x
+	S8 mimetypes ALIGN = 31; // from 0 - x
 	U1 found_mimetype = 0;
 	
 	U1 mimetype_octet_stream[] = "application/octet-stream";
@@ -2196,3 +2202,316 @@ U1 *get_mimetype_from_filename (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// send file requested by "GET" HTTP command
+	// for building a simple webserver in brackets
+	
+	S8 i ALIGN;
+	S8 nameaddr ALIGN;;
+	S8 mimetype_addr ALIGN;
+	S2 handle;
+	
+	FILE *file;
+	U1 file_name[256];
+	U1 file_size_str[256];
+	S8 file_name_len ALIGN;
+	S8 file_size ALIGN;
+	U1 ch;
+	
+	S8 header_len ALIGN;
+	S8 ret ALIGN;
+	
+	sp = stpopi ((U1 *) &mimetype_addr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("socket_send_file: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("socket_send_file: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("socket_send_file: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	file_name_len = strlen_safe ((char *) &data[nameaddr], 255);
+	if (file_name_len > 255)
+	{
+		printf ("ERROR: socket_send_file: file name: '%s' too long!\n", (char *) &data[nameaddr]);
+		return (NULL);
+	}
+	
+	#if SANDBOX
+	if (get_sandbox_filename (&data[nameaddr], file_name, 255) != 0)
+	{
+		printf ("ERROR: socket_send_file: illegal filename: %s\n", &data[nameaddr]);
+		return (NULL);
+	}
+	#else
+	if (strlen (&data[nameaddr]) < 255)
+	{
+		strcpy ((char *) file_name, (char *) &data[nameaddr]);
+	}
+	else
+	{
+		printf ("ERROR: socket_send_file: filename too long!\n", &data[nameaddr]);
+		return (NULL);
+	}
+	#endif
+	
+	file = fopen ((char *) file_name, "r");
+	if (file  == NULL)
+	{
+		// send 404 not found
+		
+		strcpy ((char *) sockets[handle].buf, "HTTP/1.1 404 Not Found");
+		strcat ((char *) sockets[handle].buf, "\n");
+		
+		header_len = strlen ((const char *) sockets[handle].buf);
+		ret = exe_swrite (handle, header_len);
+		if (ret != ERR_FILE_OK)
+		{
+			printf ("socket_send_file: ERROR: sending data!\n");
+			
+			// push ERROR code ERROR
+			sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
+			if (sp == NULL)
+			{
+				// error
+				printf ("socket_send_file: ERROR: stack corrupt!\n");
+				return (NULL);
+			}
+			return (sp);
+		}
+		
+		// set 404.html as filename
+		
+		#if SANDBOX
+		if (get_sandbox_filename ((U1 *) "404.html", file_name, 255) != 0)
+		{
+			printf ("ERROR: socket_send_file: illegal filename: %s\n", &data[nameaddr]);
+			return (NULL);
+		}
+		#else
+		if (strlen (&data[nameaddr]) < 255)
+		{
+			strcpy ((char *) file_name, (char *) "404.html");
+		}
+		else
+		{
+			printf ("ERROR: socket_send_file: filename too long!\n", &data[nameaddr]);
+			return (NULL);
+		}
+		#endif
+		
+		file = fopen ((char *) file_name, "r");
+		if (file == NULL)
+		{
+			// push ERROR code ERROR
+			printf ("socket_send_file: ERROR: can't open file: 404.html !\n");
+			
+			sp = stpushi (ERR_FILE_OPEN, sp, sp_bottom);
+			if (sp == NULL)
+			{
+				// error
+				printf ("socket_send_file: ERROR: stack corrupt!\n");
+				return (NULL);
+			}
+			return (sp);
+		}
+	}
+	else
+	{
+		// file found
+		
+		// send 200 OK, file found
+		
+		strcpy ((char *) sockets[handle].buf, "HTTP/1.1 200 OK");
+		strcat ((char *) sockets[handle].buf, "\n");
+		
+		header_len = strlen ((const char *) sockets[handle].buf);
+		ret = exe_swrite (handle, header_len);
+		if (ret != ERR_FILE_OK)
+		{
+			printf ("socket_send_file: ERROR: sending data!\n");
+			
+			// push ERROR code ERROR
+			sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
+			if (sp == NULL)
+			{
+				// error
+				printf ("socket_send_file: ERROR: stack corrupt!\n");
+				return (NULL);
+			}
+			fclose (file);
+			return (sp);
+		}
+	}
+	
+	// get file size
+	fseek (file, 0, SEEK_END);
+	file_size = ftell (file);
+	// rewind
+	fseek (file, 0, SEEK_SET);
+	
+	
+	// send server name
+	strcpy ((char *) sockets[handle].buf, "Server: L1VM webserver/1.0");
+	strcat ((char *) sockets[handle].buf, "\n");
+	
+	header_len = strlen ((const char *) sockets[handle].buf);
+	ret = exe_swrite (handle, header_len);
+	if (ret != ERR_FILE_OK)
+	{
+		printf ("socket_send_file: ERROR: sending data!\n");
+		
+		// push ERROR code ERROR
+		sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("socket_send_file: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		fclose (file);
+		return (sp);
+	}
+
+	sprintf ((char *) file_size_str, "%lli", file_size);
+	
+	// send content length
+	strcpy ((char *) sockets[handle].buf, "Content-Length: ");
+	
+	header_len = strlen ((const char *) sockets[handle].buf);
+	ret = exe_swrite (handle, header_len);
+	if (ret != ERR_FILE_OK)
+	{
+		printf ("socket_send_file: ERROR: sending data!\n");
+		
+		// push ERROR code ERROR
+		sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("socket_send_file: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		fclose (file);
+		return (sp);
+	}
+	
+	strcpy ((char *) sockets[handle].buf, (const char *) file_size_str);
+	strcat ((char *) sockets[handle].buf, "\n");
+	
+	header_len = strlen ((const char *) sockets[handle].buf);
+	ret = exe_swrite (handle, header_len);
+	if (ret != ERR_FILE_OK)
+	{
+		printf ("socket_send_file: ERROR: sending data!\n");
+		
+		// push ERROR code ERROR
+		sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("socket_send_file: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		fclose (file);
+		return (sp);
+	}
+	
+	// send connection close
+	strcpy ((char *) sockets[handle].buf, "Connection: close");
+	strcat ((char *) sockets[handle].buf, "\n");
+	
+	header_len = strlen ((const char *) sockets[handle].buf);
+	ret = exe_swrite (handle, header_len);
+	if (ret != ERR_FILE_OK)
+	{
+		printf ("socket_send_file: ERROR: sending data!\n");
+		
+		// push ERROR code ERROR
+		sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("socket_send_file: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		fclose (file);
+		return (sp);
+	}
+	
+	// send content type and mimetype
+	strcpy ((char *) sockets[handle].buf, "Content-Type: ");
+	strcat ((char *) sockets[handle].buf, (const char *) &data[mimetype_addr]);
+	strcat ((char *) sockets[handle].buf, "\n\n");
+	
+	header_len = strlen ((const char *) sockets[handle].buf);
+	ret = exe_swrite (handle, header_len);
+	if (ret != ERR_FILE_OK)
+	{
+		printf ("socket_send_file: ERROR: sending data!\n");
+		
+		// push ERROR code ERROR
+		sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("socket_send_file: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		fclose (file);
+		return (sp);
+	}
+	
+	// send file
+	for (i = 0; i < file_size; i++)
+	{
+		ch = fgetc (file);
+		if (feof (file)) break;
+		
+		sockets[handle].buf[0] = (U1) ch;
+		
+		ret = exe_swrite (handle, sizeof (U1));
+		if (ret != ERR_FILE_OK)
+		{
+			printf ("socket_send_file: ERROR: sending data!\n");
+		
+			// push ERROR code ERROR
+			sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
+			if (sp == NULL)
+			{
+				// error
+				printf ("socket_send_file: ERROR: stack corrupt!\n");
+				return (NULL);
+			}
+			fclose (file);
+			return (sp);
+		}
+	}
+	fclose (file);
+	
+	// push ERROR code OK
+	sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("socket_send_file: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
