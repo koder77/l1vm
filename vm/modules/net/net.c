@@ -2515,3 +2515,93 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	return (sp);
 }
+
+U1 *socket_handle_get (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 get_stringaddr ALIGN;
+	S8 filenameaddr ALIGN;
+	S8 filenamelen ALIGN;
+	U1 ch;
+	S8 i ALIGN;
+	S8 j ALIGN;
+	S8 slen ALIGN;
+	
+	sp = stpopi ((U1 *) &filenamelen, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("socket_handle_get: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	sp = stpopi ((U1 *) &filenameaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("socket_handle_get: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	sp = stpopi ((U1 *) &get_stringaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("socket_handle_get: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	// printf ("socket_handle_get: GET: '%s'\n", &data[get_stringaddr]);
+	
+	slen = strlen_safe ((const char *) &data[get_stringaddr], 255);
+	if (slen == 0)
+	{
+		// error empty string
+		
+		sp = stpushi (1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("socket_handle_get: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		return (sp);
+	}
+	
+	// printf ("socket_handle_get: slen: %lli\n", slen);
+	
+	if (slen > 3)
+	{
+		if (data[get_stringaddr] == 'G' && data[get_stringaddr + 1] == 'E' && data[get_stringaddr + 2] == 'T')
+  		{
+			// printf ("socket_handle_get: get filename from input...\n");
+			
+			j = 0;
+	  		for (i = 5; i < slen; i++)
+			{
+				ch = data[get_stringaddr + i];
+				
+				if (ch != ' ')
+				{
+					data[filenameaddr + j] = ch;
+					j++;
+				}
+				else
+				{
+					data[filenameaddr + j] = '\0';	// end of string
+					break;
+				}
+			}
+		}
+	}
+	
+	// printf ("socket_handle_get: filename: '%s'\n", &data[filenameaddr]);
+	
+	sp = stpushi (0, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("socket_handle_get: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}

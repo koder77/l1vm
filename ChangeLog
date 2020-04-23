@@ -3,7 +3,10 @@ New: net module: get_mimetype_from_filename function.
 Returns the mimetype of a filename with *.* form.
 See net module C source code for more info!
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed Apr 22 2020 22:38 +0200
+New: prog/webserver.l1com a simple webserver demo using net module
+special functions. See website/ folder for more info!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu Apr 23 2020 17:47 +0200
 
 
 L1VM - (1.0.1)
