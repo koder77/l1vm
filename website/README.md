@@ -6,7 +6,9 @@ in include/global.h is set!
 
 To run the webserver as Root:
 
-# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ussrname/bin && l1vm prog/webserver
+<pre>
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/username/bin && l1vm prog/webserver
+</pre>
 
 Note you should use some kind of chroot to run it as a server for port 80.
 Or you change the port number to something higher.
