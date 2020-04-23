@@ -600,7 +600,7 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		if (sp == NULL)
 		{
 			// error
-			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			printf ("open_client_socket: ERROR: stack corrupt!\n");
 			return (NULL);
 		}
 		
@@ -621,7 +621,7 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		if (sp == NULL)
 		{
 			// error
-			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			printf ("open_client_socket: ERROR: stack corrupt!\n");
 			return (NULL);
 		}
 		
@@ -645,7 +645,7 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		if (sp == NULL)
 		{
 			// error
-			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			printf ("open_client_socket: ERROR: stack corrupt!\n");
 			return (NULL);
 		}
 		
@@ -666,7 +666,7 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		if (sp == NULL)
 		{
 			// error
-			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			printf ("open_client_socket: ERROR: stack corrupt!\n");
 			return (NULL);
 		}
 		
@@ -687,7 +687,7 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		if (sp == NULL)
 		{
 			// error
-			printf ("open_server_socket: ERROR: stack corrupt!\n");
+			printf ("open_client_socket#: ERROR: stack corrupt!\n");
 			return (NULL);
 		}
 		
@@ -705,7 +705,7 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (sp == NULL)
     {
         // error
-        printf ("open_accept_server: ERROR: stack corrupt!\n");
+        printf ("open_client_socket: ERROR: stack corrupt!\n");
         return (NULL);
     }
 
@@ -713,7 +713,7 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (sp == NULL)
     {
         // error
-        printf ("open_server_socket: ERROR: stack corrupt!\n");
+        printf ("open_client_socket: ERROR: stack corrupt!\n");
         return (NULL);
     }
 
