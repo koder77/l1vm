@@ -84,7 +84,7 @@
 
 // SANDBOX FILE ACCESS
 #define SANDBOX                 1			// secure file acces: 1 = use secure access, 0 = OFF!!
-#define SANDBOX_ROOT			"/home/stefan/l1vm/"	// in /home directory!
+#define SANDBOX_ROOT			"/home/stefan/l1vm/"		// in /home directory!
 
 // VM: max sizes of code
 #define MAX_CODE_SIZE 			4294967296L		// 4GB
