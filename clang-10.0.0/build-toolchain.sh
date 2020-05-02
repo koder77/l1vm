@@ -19,7 +19,7 @@ echo "The key was successfully added to your keyring!"
 gpg --verify clang-10.0.0.src.tar.xz.sig clang-10.0.0.src.tar.xz
 if [ $? -gt 0 ]
 then
-	echo "ERROR: verifying cfe archive! Stopping!"
+	echo "ERROR: verifying clang archive! Stopping!"
 	exit 1
 fi
 
@@ -36,6 +36,7 @@ tar -xJf llvm-10.0.0.src.tar.xz
 tar -xJf clang-10.0.0.src.tar.xz -C llvm-10.0.0.src/tools/
 mv llvm-10.0.0.src/tools/clang-10.0.0.src llvm-10.0.0.src/tools/clang
 
+echo "creating build directory..."
 cd llvm-10.0.0.src
 mkdir build
 cd build
