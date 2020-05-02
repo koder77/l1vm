@@ -128,6 +128,7 @@
 	(set string s error_send_file "webserver: ERROR can't send file!")
 	(set string s error_get_filename "webserver: ERROR can't get filename!")
 	(set string s file_send "try to send file: ")
+	(set string s error_close_accept "ERROR: close accept socket call!")
 	// get values from stack
 	(accept stpopi)
 	(server stpopi)
@@ -186,6 +187,14 @@
 	(loadreg)
 	(((ret zero !=) f =) f if)
 		(6 error_send_file 0 0 intr0)
+		(7 0 0 0 intr0)
+	(endif)
+	// close accept server
+	(accept :close_accept_server call)
+	(ret stpopi)
+	(loadreg)
+	(((ret zero !=) f =) f if)
+		(6 error_close_accept 0 0 intr0)
 		(7 0 0 0 intr0)
 	(endif)
 (funcend)
