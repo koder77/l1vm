@@ -165,7 +165,7 @@
 	(((ret zero !=) f =) f if)
 		(6 error_get_filename 0 0 intr0)
 		(7 0 0 0 intr0)
-		(:parse_end jmp)
+		(:close_accept jmp)
 	(endif)
 	(:parse_end)
 	//
@@ -189,6 +189,7 @@
 		(6 error_send_file 0 0 intr0)
 		(7 0 0 0 intr0)
 	(endif)
+	(:close_accept)
 	// close accept server
 	(accept :close_accept_server call)
 	(ret stpopi)
