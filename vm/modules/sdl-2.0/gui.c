@@ -3421,7 +3421,7 @@ U1 *get_gadget_x2y2 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     /* return the right bottom corner of a gadget */
     /* for layouting gadgets */
 
-    U2 gadget_index = screen[screennum].gadget_index;
+    S8 gadget_index ALIGN;
     Sint16 x2, y2;
 
     struct gadget_button *button;
@@ -3431,6 +3431,13 @@ U1 *get_gadget_x2y2 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     struct gadget_box *box;
 	struct gadget_progress_bar *progress;
 
+	sp = stpopi ((U1 *) &gadget_index, sp, sp_top);
+	if (sp == NULL)
+	{
+		printf ("get_gadget_x2y2: ERROR, stack corrupt!\n");
+		return (NULL);
+	}
+	
     if (! screen[screennum].gadget)
     {
         printf ("get_gadget_x2y2: error gadget list not allocated!\n");
