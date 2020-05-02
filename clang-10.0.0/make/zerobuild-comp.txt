@@ -1,0 +1,8 @@
+# zerobuild makefile
+
+[executable, name = l1com]
+sources = main.c, ../lib-func/file.c, checkd.c, if.c, mem.c, ../lib-func/string.c
+
+ccompiler = ~/l1vm-clang-10.0.0/bin/clang
+
+cflags = "-Wall"

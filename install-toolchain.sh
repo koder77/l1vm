@@ -61,8 +61,8 @@ else
 	echo "See this installation script for more info..."
 fi
 
-export CC=clang
-export CCPP=clang++
+export CC=~/l1vm-clang-10.0.0/bin/clang
+export CCPP=~/l1vm-clang-10.0.0/bin/clang++
 
 cd assemb
 if ./make.sh; then
