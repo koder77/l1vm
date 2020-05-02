@@ -2222,6 +2222,8 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 header_len ALIGN;
 	S8 ret ALIGN;
 	
+	U1 not_found = 0;	// 1 if 404 HTTP error
+	
 	sp = stpopi ((U1 *) &mimetype_addr, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -2272,9 +2274,12 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	#endif
 	
 	file = fopen ((char *) file_name, "r");
-	if (file  == NULL)
+	if (file == NULL)
 	{
 		// send 404 not found
+		not_found = 1;
+		
+		printf ("socket_send_file: 404 not found: '%s'\n", file_name);
 		
 		strcpy ((char *) sockets[handle].buf, "HTTP/1.1 404 Not Found");
 		strcat ((char *) sockets[handle].buf, "\n");
@@ -2297,7 +2302,7 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		}
 		
 		// set 404.html as filename
-		
+		/*
 		#if SANDBOX
 		if (get_sandbox_filename ((U1 *) "404.html", file_name, 255) != 0)
 		{
@@ -2331,6 +2336,10 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			}
 			return (sp);
 		}
+		
+		printf ("socket_send_file: sending 404.html file\n");
+		
+		*/
 	}
 	else
 	{
@@ -2360,12 +2369,14 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		}
 	}
 	
-	// get file size
-	fseek (file, 0, SEEK_END);
-	file_size = ftell (file);
-	// rewind
-	fseek (file, 0, SEEK_SET);
-	
+	if (not_found == 0)
+	{
+		// get file size
+		fseek (file, 0, SEEK_END);
+		file_size = ftell (file);
+		// rewind
+		fseek (file, 0, SEEK_SET);
+	}
 	
 	// send server name
 	strcpy ((char *) sockets[handle].buf, "Server: L1VM webserver/1.0");
@@ -2389,7 +2400,14 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (sp);
 	}
 
-	sprintf ((char *) file_size_str, "%lli", file_size);
+	if (not_found == 1)
+	{
+		sprintf ((char *) file_size_str, "%i", 0);
+	}
+	else
+	{
+		sprintf ((char *) file_size_str, "%lli", file_size);
+	}
 	
 	// send content length
 	strcpy ((char *) sockets[handle].buf, "Content-Length: ");
@@ -2478,32 +2496,35 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (sp);
 	}
 	
-	// send file
-	for (i = 0; i < file_size; i++)
+	if (not_found == 0)
 	{
-		ch = fgetc (file);
-		if (feof (file)) break;
-		
-		sockets[handle].buf[0] = (U1) ch;
-		
-		ret = exe_swrite (handle, sizeof (U1));
-		if (ret != ERR_FILE_OK)
+		// send file
+		for (i = 0; i < file_size; i++)
 		{
-			printf ("socket_send_file: ERROR: sending data!\n");
+			ch = fgetc (file);
+			if (feof (file)) break;
 		
-			// push ERROR code ERROR
-			sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
-			if (sp == NULL)
+			sockets[handle].buf[0] = (U1) ch;
+		
+			ret = exe_swrite (handle, sizeof (U1));
+			if (ret != ERR_FILE_OK)
 			{
-				// error
-				printf ("socket_send_file: ERROR: stack corrupt!\n");
-				return (NULL);
+				printf ("socket_send_file: ERROR: sending data!\n");
+		
+				// push ERROR code ERROR
+				sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
+				if (sp == NULL)
+				{
+					// error
+					printf ("socket_send_file: ERROR: stack corrupt!\n");
+					return (NULL);
+				}
+				fclose (file);
+				return (sp);
 			}
-			fclose (file);
-			return (sp);
 		}
+		fclose (file);
 	}
-	fclose (file);
 	
 	// push ERROR code OK
 	sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
@@ -2523,7 +2544,7 @@ U1 *socket_handle_get (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 filenamelen ALIGN;
 	U1 ch;
 	S8 i ALIGN;
-	S8 j ALIGN;
+	S8 j ALIGN = 0;
 	S8 slen ALIGN;
 	
 	sp = stpopi ((U1 *) &filenamelen, sp, sp_top);
@@ -2556,6 +2577,7 @@ U1 *socket_handle_get (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (slen == 0)
 	{
 		// error empty string
+		printf ("socket_handle_get: got empty input string!\n");
 		
 		sp = stpushi (1, sp, sp_bottom);
 		if (sp == NULL)
@@ -2594,6 +2616,30 @@ U1 *socket_handle_get (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		}
 	}
 	
+	if (j == 0)
+	{
+		// input was: GET / HTTP/1.1
+		// set index.html as filename
+		
+		// printf ("filename len: %lli\n", filenamelen);
+		
+		if (filenamelen < 10)
+		{
+			// error filename string to small!
+			printf ("socket_handle_get: filename string to short!\n");
+			
+			sp = stpushi (1, sp, sp_bottom);
+			if (sp == NULL)
+			{
+				// error
+				printf ("socket_handle_get: ERROR: stack corrupt!\n");
+				return (NULL);
+			}
+			return (sp);
+		}
+		
+		strcpy ((char *) &data[filenameaddr], "index.html");
+	}
 	// printf ("socket_handle_get: filename: '%s'\n", &data[filenameaddr]);
 	
 	sp = stpushi (0, sp, sp_bottom);
