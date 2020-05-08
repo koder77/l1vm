@@ -45,6 +45,7 @@
 
 
 #include <SDL2/SDL.h>
+#include <SDL2/video.h>
 #include <SDL2/SDL_render.h>
 // #include <SDL2/SDL_byteorder.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
