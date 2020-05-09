@@ -39,6 +39,16 @@ This source of the L1VM is linked with the SDL2 libraries.
 
 Installation 
 ------------
+Configure the file access for SANDBOX mode or not:
+include/global.h:
+
+// SANDBOX FILE ACCESS
+#define SANDBOX                 1			// secure file acces: 1 = use secure access, 0 = OFF!!
+#define SANDBOX_ROOT			"/home/stefan/l1vm/"		// in /home directory!
+
+And you can choose if the array variable bounds check and math checks should be run.
+
+
 Just run the "clean.sh" script and then the "install.sh" script in the main directory of L1VM!
 The binaries are installed into the "bin" directory in your "/home" user directory!
 There are no root rights needed!
