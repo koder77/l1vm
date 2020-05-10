@@ -1616,7 +1616,7 @@ int main (int ac, char *av[])
     if (parse ((U1 *) av[1]) == 1)
 	{
 		printf ("ERRORS! can't write object file!\n");
-		printf ("[!] %s\n\n", av[1]);
+		printf ("\033[31m[!] %s\033[0m\n\n", av[1]);
 		free_code_data ();
 		exit (1);
 	}
@@ -1625,7 +1625,7 @@ int main (int ac, char *av[])
 		if (dump_object ((U1 *) av[1]) != 0)
 		{
 			printf ("ERRORS! can't write object file!\n");
-			printf ("[!] %s\n\n", av[1]);
+			printf ("\033[31m[!] %s\033[0m\n\n", av[1]);
 			free_code_data ();
 			exit (1);
 		}
@@ -1633,7 +1633,7 @@ int main (int ac, char *av[])
 	else
 	{
 		printf ("ERRORS! can't write object file!\n");
-		printf ("[!] %s\n\n", av[1]);
+		printf ("\033[31m[!] %s\033[0m\n\n", av[1]);
 		free_code_data ();
 		exit (1);
 	}
@@ -1649,6 +1649,7 @@ int main (int ac, char *av[])
 		if (system ((char *) shell_pack) != 0)
 		{
 			printf ("ERROR: can't compress object: '%s' with bzip2!\n", av[1]);
+			printf ("\033[31m[!] %s\033[0m\n\n", av[1]);
 			exit (1);
 		}
 		printf (">>> object file compressed!\n");
