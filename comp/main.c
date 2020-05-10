@@ -4247,6 +4247,7 @@ int main (int ac, char *av[])
 	if (data == NULL)
 	{
 		printf ("error: can't allocate %lli lines for data!\n", line_len);
+		printf ("[!] %s\n\n", av[1]);
 		cleanup ();
 		exit (1);
 	}
@@ -4255,6 +4256,7 @@ int main (int ac, char *av[])
 	if (code == NULL)
 	{
 		printf ("error: can't allocate %lli lines for code!\n", line_len);
+		printf ("[!] %s\n\n", av[1]);
 		cleanup ();
 		exit (1);
 	}
@@ -4262,6 +4264,7 @@ int main (int ac, char *av[])
     if (parse ((U1 *) av[1]) == 1)
 	{
 		printf ("ERRORS! can't read source file!\n");
+		printf ("[!] %s\n\n", av[1]);
 		cleanup ();
 		exit (1);
 	}
@@ -4269,6 +4272,7 @@ int main (int ac, char *av[])
 	if (check_labels () != 0)
 	{
 		printf ("ERRORS! can't find some labels!!\n");
+		printf ("[!] %s\n\n", av[1]);
 		cleanup ();
 		exit (1);
 	}
@@ -4276,11 +4280,12 @@ int main (int ac, char *av[])
 	if (write_asm ((U1 *) av[1]) == 1)
 	{
 		printf ("ERRORS! can't write assembly file!\n");
+		printf ("[!] %s\n\n", av[1]);
 		cleanup ();
 		exit (1);
 	}
 
 	cleanup ();
-	// printf ("ok!\n");
+	printf ("[\u2714] %s compiled\n", av[1]);
 	exit (0);
 }

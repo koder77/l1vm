@@ -1616,6 +1616,7 @@ int main (int ac, char *av[])
     if (parse ((U1 *) av[1]) == 1)
 	{
 		printf ("ERRORS! can't write object file!\n");
+		printf ("[!] %s\n\n", av[1]);
 		free_code_data ();
 		exit (1);
 	}
@@ -1624,6 +1625,7 @@ int main (int ac, char *av[])
 		if (dump_object ((U1 *) av[1]) != 0)
 		{
 			printf ("ERRORS! can't write object file!\n");
+			printf ("[!] %s\n\n", av[1]);
 			free_code_data ();
 			exit (1);
 		}
@@ -1631,6 +1633,7 @@ int main (int ac, char *av[])
 	else
 	{
 		printf ("ERRORS! can't write object file!\n");
+		printf ("[!] %s\n\n", av[1]);
 		free_code_data ();
 		exit (1);
 	}
@@ -1651,6 +1654,6 @@ int main (int ac, char *av[])
 		printf (">>> object file compressed!\n");
 	}
 
-	printf ("ok!\n\n");
+	printf ("[\u2714] %s assembled\n", av[1]);
 	exit (0);
 }

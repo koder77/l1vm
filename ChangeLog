@@ -8,7 +8,9 @@ special functions. See website/ folder for more info!
 
 Bugfix: gui.c/get_gadget_x2y2() gadget_index not taken from stack.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Apr 23 2020 22:00 +0200
+New checkmarks print on OK compiling and assembling.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun May 10 2020 11:40 +0200
 
 
 L1VM - (1.0.1)
