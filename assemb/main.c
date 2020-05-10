@@ -1654,6 +1654,6 @@ int main (int ac, char *av[])
 		printf (">>> object file compressed!\n");
 	}
 
-	printf ("[\u2714] %s assembled\n", av[1]);
+	printf ("[\u2714] %s assembled\n\n", av[1]);
 	exit (0);
 }
