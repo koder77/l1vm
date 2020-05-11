@@ -820,11 +820,8 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 						}
 						fclose (data_extern);
 						
-						// bugfix ??
-						offset = offset + 1;
-						
 						data_info[data_info_ind].offset = byte_data_offset;
-                    	data_ind = data_info[data_info_ind].end;
+						data_ind = data_info[data_info_ind].end;
 					}
 
                 	if (checkdigit (args[2]) == 1)
