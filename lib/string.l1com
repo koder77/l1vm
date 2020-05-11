@@ -22,6 +22,7 @@
 	(set int64 1 array_size 30)
 	(set int64 1 string_len 15)
     (zero :string_init call)
+	(loadreg)
 	// copy hellostr to array
 	(hellostraddr arraystraddr zero string_len array_size :string_to_array call)
 	(loadreg)

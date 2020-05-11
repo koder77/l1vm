@@ -696,6 +696,7 @@ void get_data_extern_filename (U1 *name)
 S2 parse_line (U1 *line, S2 start, S2 end)
 {
     S8 offset ALIGN;
+	S8 byte_data_offset ALIGN;
     S8 datai ALIGN;
     F8 datad ALIGN;
 
@@ -783,6 +784,8 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 					if (args[2][0] == '$')
 					{
 						// load extern byte data from given absolute filename
+						byte_data_offset = offset;
+						
 						get_data_extern_filename (args[2]);
 						data_extern = fopen ((const char *) args[2], "r");
 						if (data_extern == NULL)
@@ -792,7 +795,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							return (1);
 						}
 
-						printf ("> line %lli: loading file: '%s' as data...\n", linenum, args[2]);
+						printf ("\033[0m> line %lli: loading file: '%s' as data...\n", linenum, args[2]);
 
 						data_extern_index = 0;
 						while (1)
@@ -816,8 +819,11 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							}
 						}
 						fclose (data_extern);
-
-						data_info[data_info_ind].offset = offset;
+						
+						// bugfix ??
+						offset = offset + 1;
+						
+						data_info[data_info_ind].offset = byte_data_offset;
                     	data_ind = data_info[data_info_ind].end;
 					}
 

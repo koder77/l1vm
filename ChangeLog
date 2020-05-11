@@ -10,7 +10,9 @@ Bugfix: gui.c/get_gadget_x2y2() gadget_index not taken from stack.
 
 New checkmarks print on OK compiling and assembling.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun May 10 2020 11:40 +0200
+Bugfix: assembler load byte file.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon May 11 2020 21:00 +0200
 
 
 L1VM - (1.0.1)
