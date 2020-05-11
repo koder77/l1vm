@@ -4246,8 +4246,8 @@ int main (int ac, char *av[])
 	data = alloc_array_U1 (line_len, MAXLINELEN);
 	if (data == NULL)
 	{
-		printf ("error: can't allocate %lli lines for data!\n", line_len);
-		printf ("\033[31m[!] %s\033[0m\n\n", av[1]);
+		printf ("\033[31merror: can't allocate %lli lines for data!\n", line_len);
+		printf ("[!] %s\033[0m\n\n", av[1]);
 		cleanup ();
 		exit (1);
 	}
@@ -4255,37 +4255,40 @@ int main (int ac, char *av[])
 	code = alloc_array_U1 (line_len, MAXLINELEN);
 	if (code == NULL)
 	{
-		printf ("error: can't allocate %lli lines for code!\n", line_len);
-		printf ("\033[31m[!] %s\033[0m\n\n", av[1]);
+		printf ("\033[31merror: can't allocate %lli lines for code!\n", line_len);
+		printf ("[!] %s\033[0m\n\n", av[1]);
 		cleanup ();
 		exit (1);
 	}
 
+	// switch to red text
+	printf ("\033[31m");
+	
     if (parse ((U1 *) av[1]) == 1)
 	{
-		printf ("ERRORS! can't read source file!\n");
-		printf ("\033[31m[!] %s\033[0m\n\n", av[1]);
+		printf ("\033[31mERRORS! can't read source file!\n");
+		printf ("[!] %s\033[0m\n\n", av[1]);
 		cleanup ();
 		exit (1);
 	}
 
 	if (check_labels () != 0)
 	{
-		printf ("ERRORS! can't find some labels!!\n");
-		printf ("\033[31m[!] %s\033[0m\n\n", av[1]);
+		printf ("\033[31mERRORS! can't find some labels!!\n");
+		printf ("[!] %s\033[0m\n\n", av[1]);
 		cleanup ();
 		exit (1);
 	}
 
 	if (write_asm ((U1 *) av[1]) == 1)
 	{
-		printf ("ERRORS! can't write assembly file!\n");
-		printf ("\033[31m[!] %s\033[0m\n\n", av[1]);
+		printf ("\033[31mERRORS! can't write assembly file!\n");
+		printf ("[!] %s\033[0m\n\n", av[1]);
 		cleanup ();
 		exit (1);
 	}
 
 	cleanup ();
-	printf ("[\u2714] %s compiled\n", av[1]);
+	printf ("\033[0m[\u2714] %s compiled\n", av[1]);
 	exit (0);
 }

@@ -722,7 +722,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
         {
             // data block begins
             data_block = 1;
-			printf ("line: %lli: data block.\n", linenum);
+			// printf ("line: %lli: data block.\n", linenum);
             return (0);
         }
 
@@ -730,7 +730,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
         {
             // code block begins
             code_block = 1;
-			printf ("line: %lli: code block.\n", linenum);
+			// printf ("line: %lli: code block.\n", linenum);
             return (0);
         }
 
@@ -1436,7 +1436,7 @@ S2 dump_object (U1 *name)
 		return (1);
 	}
 
-	printf ("object: codesize: %lli bytes\n", code_ind);
+	printf ("\033[0mobject: codesize: %lli bytes\n", code_ind);
 
 	// write data info block
 
@@ -1525,11 +1525,11 @@ S2 dump_object (U1 *name)
 		return (1);
 	}
 
-	printf ("object: datasize: %lli bytes\n", data_size);
+	printf ("\033[0mobject: datasize: %lli bytes\n", data_size);
 
 	fseek (fptr, 0, SEEK_END);
 	file_size = ftell (fptr);
-	printf ("object: filesize: %lli bytes\n", file_size);
+	printf ("\033[0mobject: filesize: %lli bytes\n", file_size);
 
 	fclose (fptr);
 	return (0);
@@ -1613,10 +1613,13 @@ int main (int ac, char *av[])
 
 	printf ("assembling file: '%s'\n", av[1]);
 	
+	// switch to red text
+	printf ("\033[31m");
+	
     if (parse ((U1 *) av[1]) == 1)
 	{
-		printf ("ERRORS! can't write object file!\n");
-		printf ("\033[31m[!] %s\033[0m\n\n", av[1]);
+		printf ("\033[31mERRORS! can't write object file!\n");
+		printf ("[!] %s\033[0m\n\n", av[1]);
 		free_code_data ();
 		exit (1);
 	}
@@ -1624,16 +1627,16 @@ int main (int ac, char *av[])
 	{
 		if (dump_object ((U1 *) av[1]) != 0)
 		{
-			printf ("ERRORS! can't write object file!\n");
-			printf ("\033[31m[!] %s\033[0m\n\n", av[1]);
+			printf ("\033[31mERRORS! can't write object file!\n");
+			printf ("[!] %s\033[0m\n\n", av[1]);
 			free_code_data ();
 			exit (1);
 		}
 	}
 	else
 	{
-		printf ("ERRORS! can't write object file!\n");
-		printf ("\033[31m[!] %s\033[0m\n\n", av[1]);
+		printf ("\033[31mERRORS! can't write object file!\n");
+		printf ("[!] %s\033[0m\n\n", av[1]);
 		free_code_data ();
 		exit (1);
 	}
@@ -1648,13 +1651,13 @@ int main (int ac, char *av[])
 		strcat ((char *) shell_pack, ".l1obj");
 		if (system ((char *) shell_pack) != 0)
 		{
-			printf ("ERROR: can't compress object: '%s' with bzip2!\n", av[1]);
-			printf ("\033[31m[!] %s\033[0m\n\n", av[1]);
+			printf ("\033[31mERROR: can't compress object: '%s' with bzip2!\n", av[1]);
+			printf ("[!] %s\033[0m\n\n", av[1]);
 			exit (1);
 		}
 		printf (">>> object file compressed!\n");
 	}
 
-	printf ("[\u2714] %s assembled\n\n", av[1]);
+	printf ("\033[0m[\u2714] %s assembled\n\n", av[1]);
 	exit (0);
 }
