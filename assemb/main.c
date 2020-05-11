@@ -823,66 +823,68 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 						data_info[data_info_ind].offset = byte_data_offset;
 						data_ind = data_info[data_info_ind].end;
 					}
+					else
+					{
+                		if (checkdigit (args[2]) == 1)
+                		{
+                    		if (t_var.digitstr_type == DOUBLEFLOAT)
+                    		{
+                        		datad = get_temp_double ();
+                        		if (write_data_doublefloat (offset, datad, data_info[data_info_ind].size) != 0)
+								{
+									printf ("error: line %lli: out of data memory!\n", linenum);
+								}
+								// printf ("line %lli: doublefloat type\n", linenum);
+                    		}
+                    		else
+                    		{
+                        		datai = get_temp_int ();
 
-                	if (checkdigit (args[2]) == 1)
-                	{
-                    	if (t_var.digitstr_type == DOUBLEFLOAT)
-                    	{
-                        	datad = get_temp_double ();
-                        	if (write_data_doublefloat (offset, datad, data_info[data_info_ind].size) != 0)
+								switch (data_info[data_info_ind].type)
+                        		{
+                            		case BYTE:
+                                		if (write_data_byte (offset, (U1) datai, data_info[data_info_ind].size) != 0)
+										{
+											printf ("error: line %lli: out of data memory!\n", linenum);
+										}
+                                	break;
+
+                            		case WORD:
+                                		if (write_data_word (offset, (S2) datai, data_info[data_info_ind].size) != 0)
+										{
+											printf ("error: line %lli: out of data memory!\n", linenum);
+										}
+                                		break;
+
+                            		case DOUBLEWORD:
+                                		if (write_data_doubleword (offset, (S4) datai, data_info[data_info_ind].size) != 0)
+										{
+											printf ("error: line %lli: out of data memory!\n", linenum);
+										}
+                                		break;
+
+                            		case QUADWORD:
+                                		if (write_data_quadword (offset, datai, data_info[data_info_ind].size) != 0)
+										{
+										printf ("error: line %lli: out of data memory!\n", 	linenum);
+										}
+                                		break;
+                        		}
+                    		}
+                    		data_info[data_info_ind].offset = offset;
+                    		data_ind = data_info[data_info_ind].end;
+                		}
+                		else
+                		{
+                    		// printf ("line: %lli DATA STRING: '%s'\n", linenum, args[2]);
+                    		if (write_data_string (offset, args[2]) != 0)
 							{
 								printf ("error: line %lli: out of data memory!\n", linenum);
 							}
-							// printf ("line %lli: doublefloat type\n", linenum);
-                    	}
-                    	else
-                    	{
-                        	datai = get_temp_int ();
-
-							switch (data_info[data_info_ind].type)
-                        	{
-                            	case BYTE:
-                                	if (write_data_byte (offset, (U1) datai, data_info[data_info_ind].size) != 0)
-									{
-										printf ("error: line %lli: out of data memory!\n", linenum);
-									}
-                                	break;
-
-                            	case WORD:
-                                	if (write_data_word (offset, (S2) datai, data_info[data_info_ind].size) != 0)
-									{
-										printf ("error: line %lli: out of data memory!\n", linenum);
-									}
-                                	break;
-
-                            	case DOUBLEWORD:
-                                	if (write_data_doubleword (offset, (S4) datai, data_info[data_info_ind].size) != 0)
-									{
-										printf ("error: line %lli: out of data memory!\n", linenum);
-									}
-                                	break;
-
-                            	case QUADWORD:
-                                	if (write_data_quadword (offset, datai, data_info[data_info_ind].size) != 0)
-									{
-										printf ("error: line %lli: out of data memory!\n", linenum);
-									}
-                                	break;
-                        	}
-                    	}
-                    	data_info[data_info_ind].offset = offset;
-                    	data_ind = data_info[data_info_ind].end;
-                	}
-                	else
-                	{
-                    	// printf ("line: %lli DATA STRING: '%s'\n", linenum, args[2]);
-                    	if (write_data_string (offset, args[2]) != 0)
-						{
-							printf ("error: line %lli: out of data memory!\n", linenum);
-						}
-						data_info[data_info_ind].offset = offset;
-						data_ind = data_info[data_info_ind].end;
-                	}
+							data_info[data_info_ind].offset = offset;
+							data_ind = data_info[data_info_ind].end;
+                		}
+					}
 				}
 				else
 				{
