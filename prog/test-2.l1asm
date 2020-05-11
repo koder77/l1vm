@@ -35,12 +35,13 @@ addi 7, 8, 9
 load z, 0, 10
 pullqw 9, 10, 0
 load ret, 0, 11
-pullqw 9, 11, 0
 loada z, 0, 12
-intr0 4, 12, 0, 0
+pullqw 12, 11, 0
+loada z, 0, 11
+intr0 4, 11, 0, 0
 intr0 7, 0, 0, 0
-loada ret, 0, 13
-intr0 4, 13, 0, 0
+loada ret, 0, 12
+intr0 4, 12, 0, 0
 intr0 7, 0, 0, 0
 stpushi I0
 stpushi I1
@@ -55,16 +56,16 @@ stpushi I9
 stpushi I10
 stpushi I11
 stpushi I12
-stpushi I13
+loada x, 0, 1
 stpushi 1
+loada y, 0, 2
 stpushi 2
 jsr :test
-stpopi 12
-load z, 0, 14
-pullqw 12, 14, 0
-load ret, 0, 14
-pullqw 13, 14, 0
-stpopi I13
+stpopi 11
+load z, 0, 13
+pullqw 11, 13, 0
+load ret, 0, 13
+pullqw 12, 13, 0
 stpopi I12
 stpopi I11
 stpopi I10

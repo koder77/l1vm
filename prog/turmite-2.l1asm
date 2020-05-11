@@ -315,15 +315,18 @@ stpushi I9
 stpushi I10
 stpushi I12
 stpushi I13
-stpushi 0
-stpushi 1
-stpushi 5
-loada bit, 0, 11
+loada zero, 0, 11
 stpushi 11
+loada width, 0, 1
+stpushi 1
+loada height, 0, 5
+stpushi 5
+loada bit, 0, 14
+stpushi 14
 jsr :sdl_open_screen
-stpopb 14
-load ret, 0, 15
-pullb 14, 15, 0
+stpopb 15
+load ret, 0, 16
+pullb 15, 16, 0
 stpopi I13
 stpopi I12
 stpopi I10
@@ -402,76 +405,79 @@ stpopi I3
 stpopi I2
 stpopi I1
 intr0 7, 0, 0, 0
-loada color_r, 0, 1
-intr0 4, 1, 0, 0
-intr0 7, 0, 0, 0
-loada color_g, 0, 2
+load color_r, 0, 1
+pushb 1, 0, 2
 intr0 4, 2, 0, 0
 intr0 7, 0, 0, 0
-loada color_b, 0, 3
-intr0 4, 3, 0, 0
+load color_g, 0, 3
+pushb 3, 0, 4
+intr0 4, 4, 0, 0
 intr0 7, 0, 0, 0
-load c, 0, 4
-loada zero, 0, 5
-pullqw 5, 4, 0
-loada r, 0, 4
-neqi 1, 4, 5
-load f, 0, 6
-pullqw 5, 6, 0
-loada f, 0, 7
-jmpi 7, :get_color_ind_continue
-loada c, 0, 8
-loada one, 0, 9
-addi 8, 9, 10
-load c, 0, 11
-pullqw 10, 11, 0
-loada g, 0, 8
-neqi 2, 8, 12
-load f, 0, 13
-pullqw 12, 13, 0
-loada f, 0, 7
-jmpi 7, :next_b
-loada c, 0, 14
-addi 14, 9, 15
-load c, 0, 16
+load color_b, 0, 5
+pushb 5, 0, 6
+intr0 4, 6, 0, 0
+intr0 7, 0, 0, 0
+load c, 0, 7
+loada zero, 0, 8
+pullqw 8, 7, 0
+loada r, 0, 7
+neqi 1, 7, 8
+load f, 0, 9
+pullqw 8, 9, 0
+loada f, 0, 10
+jmpi 10, :get_color_ind_continue
+loada c, 0, 11
+loada one, 0, 12
+addi 11, 12, 13
+load c, 0, 14
+pullqw 13, 14, 0
+loada g, 0, 11
+neqi 3, 11, 15
+load f, 0, 16
 pullqw 15, 16, 0
+loada f, 0, 10
+jmpi 10, :next_b
+loada c, 0, 17
+addi 17, 12, 18
+load c, 0, 19
+pullqw 18, 19, 0
 :next_b
-loada b, 0, 14
-neqi 3, 14, 17
-load f, 0, 18
-pullqw 17, 18, 0
-loada f, 0, 7
-jmpi 7, :next_g
-loada c, 0, 19
-addi 19, 9, 20
-load c, 0, 21
+loada b, 0, 17
+neqi 5, 17, 20
+load f, 0, 21
 pullqw 20, 21, 0
+loada f, 0, 10
+jmpi 10, :next_g
+loada c, 0, 22
+addi 22, 12, 23
+load c, 0, 24
+pullqw 23, 24, 0
 :next_g
 :get_color_ind_continue
-loada c, 0, 19
-loada three, 0, 22
-eqi 19, 22, 23
-load f, 0, 24
-pullqw 23, 24, 0
-loada f, 0, 7
-jmpi 7, :color_match
-loada color_ind, 0, 25
-addi 25, 9, 26
-load color_ind, 0, 27
+loada c, 0, 22
+loada three, 0, 25
+eqi 22, 25, 26
+load f, 0, 27
 pullqw 26, 27, 0
+loada f, 0, 10
+jmpi 10, :color_match
+loada color_ind, 0, 28
+addi 28, 12, 29
+load color_ind, 0, 30
+pullqw 29, 30, 0
 jmp :get_color_ind
 :color_match
-load phase_ind, 0, 25
-loada zero, 0, 28
-pullqw 28, 25, 0
+load phase_ind, 0, 28
+loada zero, 0, 31
+pullqw 31, 28, 0
 :phase_loop
-loada zero, 0, 25
-loada phase, 0, 28
-eqi 25, 28, 29
-load f, 0, 30
-pullqw 29, 30, 0
-loada f, 0, 7
-jmpi 7, :phase_match
+loada zero, 0, 28
+loada phase, 0, 31
+eqi 28, 31, 32
+load f, 0, 33
+pullqw 32, 33, 0
+loada f, 0, 10
+jmpi 10, :phase_match
 stpushi I1
 stpushi I2
 stpushi I3
@@ -502,12 +508,18 @@ stpushi I27
 stpushi I28
 stpushi I29
 stpushi I30
-loada phase_ind, 0, 31
-stpushi 31
+stpushi I31
+stpushi I32
+stpushi I33
+loada phase_ind, 0, 34
+stpushi 34
 jsr :get_phase1
-stpopi 32
-load phase_color, 0, 33
-pullqw 32, 33, 0
+stpopi 35
+load phase_color, 0, 36
+pullqw 35, 36, 0
+stpopi I33
+stpopi I32
+stpopi I31
 stpopi I30
 stpopi I29
 stpopi I28
@@ -649,14 +661,18 @@ loada x, 0, 1
 stpushi 1
 loada y, 0, 2
 stpushi 2
-loada next_r, 0, 3
-stpushb 3
-loada next_g, 0, 4
+load next_r, 0, 3
+pushb 3, 0, 4
 stpushb 4
-loada next_b, 0, 5
-stpushb 5
-loada alpha, 0, 6
+load next_g, 0, 5
+pushb 5, 0, 6
 stpushb 6
+load next_b, 0, 7
+pushb 7, 0, 8
+stpushb 8
+load alpha, 0, 9
+pushb 9, 0, 10
+stpushb 10
 jsr :sdl_pixel
 jsr :sdl_update
 loada phase_ind, 0, 1
@@ -936,18 +952,28 @@ stpushi I3
 stpushi I4
 stpushi I5
 stpushi I6
-loada zero@clear_screen, 0, 2
-stpushb 2
-stpushb 2
-loada width@clear_screen, 0, 7
-stpushi 7
-loada height@clear_screen, 0, 8
-stpushi 8
-stpushb 2
-stpushb 2
-loada b@clear_screen, 0, 9
-stpushb 9
-stpushb 9
+load zero@clear_screen, 0, 2
+pushb 2, 0, 7
+stpushb 7
+load zero@clear_screen, 0, 2
+pushb 2, 0, 8
+stpushb 8
+loada width@clear_screen, 0, 9
+stpushi 9
+loada height@clear_screen, 0, 10
+stpushi 10
+load zero@clear_screen, 0, 2
+pushb 2, 0, 11
+stpushb 11
+load zero@clear_screen, 0, 2
+pushb 2, 0, 12
+stpushb 12
+load b@clear_screen, 0, 13
+pushb 13, 0, 14
+stpushb 14
+load b@clear_screen, 0, 13
+pushb 13, 0, 15
+stpushb 15
 jsr :sdl_rectangle_fill
 stpopi I6
 stpopi I5

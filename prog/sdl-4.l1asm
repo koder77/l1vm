@@ -138,17 +138,18 @@ Q, 1, mod@sdl
 :main
 loada zero, 0, 0
 stpushi I0
-stpushi 0
-loada width, 0, 1
+loada zero, 0, 1
 stpushi 1
-loada height, 0, 2
+loada width, 0, 2
 stpushi 2
-loada bit, 0, 3
+loada height, 0, 3
 stpushi 3
+loada bit, 0, 4
+stpushi 4
 jsr :sdl_open_screen
-stpopb 4
-load ret, 0, 5
-pullb 4, 5, 0
+stpopb 5
+load ret, 0, 6
+pullb 5, 6, 0
 stpopi I0
 load x, 0, 1
 loada zero, 0, 2
@@ -163,13 +164,17 @@ stpushi 1
 loada y, 0, 2
 stpushi 2
 load col, 0, 3
-pushb 3, 0, 3
-stpushb 3
-stpushb 3
-stpushb 3
-load maxcol, 0, 4
-pushb 4, 0, 4
+pushb 3, 0, 4
 stpushb 4
+load col, 0, 3
+pushb 3, 0, 5
+stpushb 5
+load col, 0, 3
+pushb 3, 0, 6
+stpushb 6
+load maxcol, 0, 7
+pushb 7, 0, 8
+stpushb 8
 jsr :sdl_pixel
 loada col, 0, 1
 loada one, 0, 2

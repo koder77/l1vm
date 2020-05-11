@@ -7,7 +7,7 @@ do
 done
 for j in *.l1asm
 do
-	l1asm $j
+	l1asm $j -sizes 1000000 1000000000
 	RETVAL=$?
 	[ $RETVAL -ne 0 ] && echo "build failed: " && echo $j && exit 1
 done
