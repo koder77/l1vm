@@ -4203,7 +4203,8 @@ void cleanup (void)
 
 void show_info (void)
 {
-	printf ("l1com <file> [-lines] [max linenumber]\n");
+	printf ("l1com <file> [-a] [-lines] [max linenumber]\n");
+	printf ("-a : run assembler\n");
 	printf ("\nCompiler for bra(ets, a programming language with brackets ;-)\n");
 	printf ("%s", VM_VERSION_STR);
 	printf (" (C) 2017-2020 Stefan Pietzonke\n");
@@ -4219,6 +4220,8 @@ int main (int ac, char *av[])
 	init_labels ();
 	init_call_labels ();
 
+	U1 syscallstr[256] = "l1asm ";
+	
     if (ac < 2)
     {
 		show_info ();
@@ -4290,5 +4293,10 @@ int main (int ac, char *av[])
 
 	cleanup ();
 	printf ("\033[0m[\u2714] %s compiled\n", av[1]);
+	
+	// run assembler
+	strcat ((char *) syscallstr, av[1]);
+	system ((const char *) syscallstr);
+	
 	exit (0);
 }

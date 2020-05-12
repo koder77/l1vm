@@ -209,7 +209,8 @@ U1 *string_byte_to_hexstring (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	sp = stpopb ((U1 *) &num, sp, sp_top);
+	//sp = stpopb ((U1 *) &num, sp, sp_top);
+	sp = stpopi ((U1 *) &num, sp, sp_top);
 	if (sp == NULL)
 	{
 		// ERROR:
@@ -290,7 +291,8 @@ U1 *string_bytenum_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	sp = stpopb ((U1 *) &num, sp, sp_top);
+	// sp = stpopb ((U1 *) &num, sp, sp_top);
+	sp = stpopi ((U1 *) &num, sp, sp_top);
 	if (sp == NULL)
 	{
 		// ERROR:
@@ -718,5 +720,121 @@ U1 *string_compare (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("string_compare: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
+	return (sp);
+}
+
+U1 *stringmem_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 strsourceaddr ALIGN;
+	S8 strdestaddr ALIGN;
+	S8 pos ALIGN;
+	S8 destindex ALIGN;;
+	S8 destsize ALIGN;
+	S8 stringmemsize ALIGN;
+	S8 separator ALIGN; 	// char which marks end of current big memory string
+	S8 i ALIGN;
+	
+	sp = stpopi ((U1 *) &separator, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("stringmem_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	sp = stpopi ((U1 *) &destsize, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("stringmem_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	sp = stpopi ((U1 *) &stringmemsize, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("stringmem_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	sp = stpopi ((U1 *) &pos, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("stringmem_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("stringmem_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("stringmem_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	// set dest string to zero
+	for (i = 0; i < destsize; i++)
+	{
+		data[strdestaddr + i] = '\0';
+	}
+	
+	// try to get string
+	destindex = 0;
+	while (1)
+	{
+		if (pos < stringmemsize)
+		{
+			if (destindex < destsize - 1)
+			{
+				if (memory_bounds (strsourceaddr, pos) != 0)
+				{
+					printf ("stringmem_to_string: ERROR: dest string overflow!\n");
+					pos = -1;
+					break;
+				}
+				
+				if (data[strsourceaddr + pos] == separator)
+				{
+					data[strdestaddr + destindex] = '\0';
+					break;
+				}
+				data[strdestaddr + destindex] = data[strsourceaddr + pos];
+				pos++;
+				destindex++;
+			}
+			else
+			{
+				// end of dest string
+				data[strdestaddr + destindex] = '\0';
+				break;
+			}
+		}
+		else
+		{
+			// end of mem string
+			data[strdestaddr + destindex] = '\0';
+			break;
+		}
+	}
+	// return (pos)
+	
+	sp = stpushi (pos, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("stringmem_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
 	return (sp);
 }

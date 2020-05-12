@@ -12,7 +12,9 @@ New checkmarks print on OK compiling and assembling.
 
 Bugfix: assembler load byte file.
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon May 11 2020 21:00 +0200
+New: compiler runs the assembler to mke a full build of .l1com files.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue May 12 2020 12:30 +0200
 
 
 L1VM - (1.0.1)
