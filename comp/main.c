@@ -4219,7 +4219,8 @@ int main (int ac, char *av[])
 	init_labels ();
 	init_call_labels ();
 
-	U1 syscallstr[256] = "l1asm ";
+	U1 syscallstr[256] = "l1asm ";		// system syscall for assembler
+	S8 ret ALIGN = 0;					// return value of assembler
 	
     if (ac < 2)
     {
@@ -4295,7 +4296,7 @@ int main (int ac, char *av[])
 	
 	// run assembler
 	strcat ((char *) syscallstr, av[1]);
-	system ((const char *) syscallstr);
+	ret = system ((const char *) syscallstr);
 	
-	exit (0);
+	exit (ret);
 }
