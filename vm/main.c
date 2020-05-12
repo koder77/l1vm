@@ -2089,16 +2089,58 @@ S2 run (void *arg)
 			//printf ("INPUTS\n");
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
+			
+			{
+				U1 ch;
+				S8 i = 0;
+				
+				while (1)
+				{
+					if (i < regi[arg2])
+					{
+						ch = getchar ();
+						// printf ("char: %i\n", ch);
+						
+						// printf ("getchar: '%c'", ch);
+						
+						data[regi[arg3] + i] = ch;
+						if (ch == 10)
+						{
+							if (i == 0)
+							{
+								data[regi[arg3]] = '\0';
+								// printf ("data interrupt0 1: '%s'", &data[regi[arg3]]);
+								break;
+							}
+							else
+							{
+								// i++;
+								data[regi[arg3] + i] = '\0';
+								// printf ("data interrupt0 2: '%s'", &data[regi[arg3]]);
+								break;
+							}
+						}
+						i++;
+					}
+					else
+					{
+						break;
+					}
+				}
+			}
+			/*
 			if (fgets ((char *) &data[regi[arg3]], regi[arg2], stdin) != NULL)
 			{
 				// set END OF STRING mark
 				i = strlen_safe ((const char *) &data[regi[arg3]], MAXLINELEN);
 				data[regi[arg3] + (i - 1)] = '\0';
+				printf ("intr0: 11: '%s'\n", &data[regi[arg3]]);
 			}
 			else
 			{
 				printf ("input string: can't read!\n");
 			}
+			*/
 			eoffs = 5;
 			break;
 
