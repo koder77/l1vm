@@ -4207,6 +4207,9 @@ void show_info (void)
 	printf ("\nCompiler for bra(ets, a programming language with brackets ;-)\n");
 	printf ("%s", VM_VERSION_STR);
 	printf (" (C) 2017-2020 Stefan Pietzonke\n");
+	printf ("You can set assembly flags like:\n");
+	printf ("l1com prog/hello-2 -sizes 10000 20000\n")
+	printf ("To set the assembly code and data sizes.\n";)
 }
 
 int main (int ac, char *av[])
