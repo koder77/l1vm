@@ -4219,17 +4219,19 @@ int main (int ac, char *av[])
 	init_labels ();
 	init_call_labels ();
 
-	// for assembler call:
+	
+	// variables used for assembler call, set by compiler flags:
+	// assembler called after compilation in this main.c
 	U1 syscallstr[256] = "l1asm ";		// system syscall for assembler
 	S8 ret ALIGN = 0;					// return value of assembler
 	
-	S8 assemb_code_size ALIGN = 0;
-	S8 assemb_data_size ALIGN = 0;;
-	U1 assemb_pack = 0;
+	S8 assemb_code_size ALIGN = 0;		// assembler code size
+	S8 assemb_data_size ALIGN = 0;;		// assembler data size
+	U1 assemb_pack = 0;					// assembler byte code packing flag
 	S8 arglen ALIGN;
 	U1 assemb_code_size_str[MAXLINELEN];
 	U1 assemb_data_size_str[MAXLINELEN];
-	// S8 strlen ALIGN;
+	
 	S8 i ALIGN;
 	
     if (ac < 2)
@@ -4281,7 +4283,7 @@ int main (int ac, char *av[])
 						
 						if (strlen_safe (av[i + 2], MAXLINELEN) < MAXLINELEN)
 						{
-							strcpy ((char *) assemb_data_size_str, av[i + 1]);
+							strcpy ((char *) assemb_data_size_str, av[i + 2]);
 						}
 						else
 						{
@@ -4304,18 +4306,6 @@ int main (int ac, char *av[])
 			}
 		}
 	}
-			
-    
-    /*
-	if (ac == 4)
-	{
-		if (strcmp (av[2], "-lines") == 0)
-		{
-			line_len = atoi (av[3]);
-			printf ("max line len set to: %lli lines\n", line_len);
-		}
-	}
-	*/
 	
 	data = alloc_array_U1 (line_len, MAXLINELEN);
 	if (data == NULL)
@@ -4365,11 +4355,12 @@ int main (int ac, char *av[])
 	cleanup ();
 	printf ("\033[0m[\u2714] %s compiled\n", av[1]);
 	
-	// run assembler
+	// set run assembler flags
 	strcat ((char *) syscallstr, av[1]);
 	
 	if (assemb_code_size > 0)
 	{
+		// set code and data sizes
 		strcat ((char *) syscallstr, " ");
 		strcat ((char *) syscallstr, "-sizes ");
 		strcat ((char *) syscallstr, (const char *) assemb_code_size_str);
@@ -4378,10 +4369,12 @@ int main (int ac, char *av[])
 	}
 	if (assemb_pack == 1)
 	{
+		// set bytecode packing to ON!
 		strcat ((char *) syscallstr, " -pack");
 	}
 	
+	// run assembler:
 	ret = system ((const char *) syscallstr);
 	
-	exit (ret);
+	exit (ret);		// exit with assemnler exit code
 }
