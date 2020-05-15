@@ -4203,7 +4203,7 @@ void cleanup (void)
 
 void show_info (void)
 {
-	printf ("l1com <file> [-a] [-lines] [max linenumber]\n");
+	printf ("l1com <file> [-lines] [max linenumber]\n");
 	printf ("\nCompiler for bra(ets, a programming language with brackets ;-)\n");
 	printf ("%s", VM_VERSION_STR);
 	printf (" (C) 2017-2020 Stefan Pietzonke\n");
@@ -4219,8 +4219,18 @@ int main (int ac, char *av[])
 	init_labels ();
 	init_call_labels ();
 
+	// for assembler call:
 	U1 syscallstr[256] = "l1asm ";		// system syscall for assembler
 	S8 ret ALIGN = 0;					// return value of assembler
+	
+	S8 assemb_code_size ALIGN = 0;
+	S8 assemb_data_size ALIGN = 0;;
+	U1 assemb_pack = 0;
+	S8 arglen ALIGN;
+	U1 assemb_code_size_str[MAXLINELEN];
+	U1 assemb_data_size_str[MAXLINELEN];
+	// S8 strlen ALIGN;
+	S8 i ALIGN;
 	
     if (ac < 2)
     {
@@ -4237,6 +4247,66 @@ int main (int ac, char *av[])
 		}
 	}
     
+    if (ac > 1)
+	{
+		for (i = 1; i < ac; i++)
+		{
+    		arglen = strlen_safe (av[i], MAXLINELEN);
+			if (arglen == 6)
+			{
+				if (strcmp (av[i], "-lines") == 0)
+				{
+					if (ac > i)
+					{
+						line_len = atoi (av[i + 1]);
+						printf ("max line len set to: %lli lines\n", line_len);
+					}
+				}
+				if (strcmp (av[i], "-sizes") == 0)
+				{
+					if (ac >= i + 2)
+					{
+						assemb_code_size = atoi (av[i + 1]);
+						assemb_data_size = atoi (av[i + 2]);
+						
+						if (strlen_safe (av[i + 1], MAXLINELEN) < MAXLINELEN)
+						{
+							strcpy ((char *) assemb_code_size_str, av[i + 1]);
+						}
+						else
+						{
+							printf ("ERROR: assembler code size to long!\n");
+							exit (1);
+						}
+						
+						if (strlen_safe (av[i + 2], MAXLINELEN) < MAXLINELEN)
+						{
+							strcpy ((char *) assemb_data_size_str, av[i + 1]);
+						}
+						else
+						{
+							printf ("ERROR: assembler data size to long!\n");
+							exit (1);
+						}
+						
+						printf ("assembler code size set to: %lli\n", assemb_code_size);
+						printf ("assembler data size set to: %lli\n", assemb_data_size);
+					}
+				}
+			}
+			if (arglen == 5)
+			{
+				if (strcmp (av[i], "-pack") == 0)
+				{
+					assemb_pack = 1;
+					printf ("assembler byte code pack ON\n");
+				}
+			}
+		}
+	}
+			
+    
+    /*
 	if (ac == 4)
 	{
 		if (strcmp (av[2], "-lines") == 0)
@@ -4245,7 +4315,8 @@ int main (int ac, char *av[])
 			printf ("max line len set to: %lli lines\n", line_len);
 		}
 	}
-
+	*/
+	
 	data = alloc_array_U1 (line_len, MAXLINELEN);
 	if (data == NULL)
 	{
@@ -4296,6 +4367,20 @@ int main (int ac, char *av[])
 	
 	// run assembler
 	strcat ((char *) syscallstr, av[1]);
+	
+	if (assemb_code_size > 0)
+	{
+		strcat ((char *) syscallstr, " ");
+		strcat ((char *) syscallstr, "-sizes ");
+		strcat ((char *) syscallstr, (const char *) assemb_code_size_str);
+		strcat ((char *) syscallstr, " ");
+		strcat ((char *) syscallstr, (const char *) assemb_data_size_str);
+	}
+	if (assemb_pack == 1)
+	{
+		strcat ((char *) syscallstr, " -pack");
+	}
+	
 	ret = system ((const char *) syscallstr);
 	
 	exit (ret);

@@ -725,6 +725,11 @@ U1 *string_compare (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *stringmem_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
+	// get string from big mem string pos into a simple string
+	// using separator char
+	//
+	// this is usefull for a txt file loaded into a byte array variable
+	
 	S8 strsourceaddr ALIGN;
 	S8 strdestaddr ALIGN;
 	S8 pos ALIGN;
@@ -833,6 +838,118 @@ U1 *stringmem_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	{
 		// ERROR:
 		printf ("stringmem_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	return (sp);
+}
+
+U1 *stringmem_search_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// get string from big mem string pos into a simple string
+	// using separator char
+	//
+	// this is usefull for a txt file loaded into a byte array variable
+	
+	S8 strsourceaddr ALIGN;
+	S8 strsearchaddr ALIGN;
+	S8 pos ALIGN;
+	S8 destsize ALIGN;
+	S8 stringmemsize ALIGN;
+	S8 startpos ALIGN;		// startpos to search string start in memory string
+	S8 searchlen ALIGN;
+	S8 i ALIGN;
+	U1 found_string;
+	S8 found_pos ALIGN;
+	
+	sp = stpopi ((U1 *) &destsize, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("stringmem_search_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	sp = stpopi ((U1 *) &stringmemsize, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("stringmem_search_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	sp = stpopi ((U1 *) &startpos, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("stringmem_search_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	sp = stpopi ((U1 *) &strsearchaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("stringmem_search_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("stringmem_search_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+	searchlen = strlen_safe ((const char *) &data[strsearchaddr], 256);
+	
+	i = 0;
+	while (1)
+	{
+		if (data[strsourceaddr + i] == data[strsearchaddr])
+		{
+			found_string = 1; found_pos = i;
+			for (pos = 1; pos < searchlen; pos++)
+			{
+				i++;
+				if (data[strsourceaddr + i] != data[strsearchaddr + pos])
+				{
+					found_string = 0;
+				}
+			}
+			if (found_string == 1)
+			{
+				// all chars are equal, return string position 
+				
+				// return found_pos
+				
+				printf ("stringmem_search_string: found string at pos: %lli\n", found_pos);
+				
+				sp = stpushi (found_pos, sp, sp_bottom);
+				if (sp == NULL)
+				{
+					// ERROR:
+					printf ("stringmem_search_string: ERROR: stack corrupt!\n");
+					return (NULL);
+				}
+				
+				return (sp);
+			}
+		}
+		i++;
+		if (i >= stringmemsize)
+		{
+			break;
+		}
+	}
+	
+	// return -1 -> string not found
+	sp = stpushi (-1, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("stringmem_search_string: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 	

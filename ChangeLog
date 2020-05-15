@@ -14,7 +14,9 @@ Bugfix: assembler load byte file.
 
 New: compiler runs the assembler to mke a full build of .l1com files.
 
--- Stefan Pietzonke <jay-t@gmx.net> Tue May 12 2020 12:30 +0200
+New: compiler arguments for assembler are passed to the assembler!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri May 15 2020 6:30 +0200
 
 
 L1VM - (1.0.1)
