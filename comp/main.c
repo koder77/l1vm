@@ -4264,7 +4264,7 @@ int main (int ac, char *av[])
 				}
 				if (strcmp (av[i], "-sizes") == 0)
 				{
-					if (ac >= i + 2)
+					if (ac > i + 2)
 					{
 						assemb_code_size = atoi (av[i + 1]);
 						assemb_data_size = atoi (av[i + 2]);
