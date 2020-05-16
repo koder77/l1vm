@@ -108,7 +108,7 @@ S4 load_variable_int (S4 level, S4 arg, S4 j)
 	}
 	else
 	{
-		// assign array variable to variable
+		// assign variable to variable
 		
 		strcpy ((char *) code_temp, "load ");
 		strcat ((char *) code_temp, (const char *) ast[level].expr[j][arg]);
@@ -613,4 +613,3 @@ S2 parse_continous (void)
 	}
 	return (0);
 }
-
