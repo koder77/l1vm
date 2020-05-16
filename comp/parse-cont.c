@@ -81,6 +81,8 @@ S4 load_variable_int (S4 level, S4 arg, S4 j)
 	}
 	if (getvartype_real (ast[level].expr[j][arg]) == QUADWORD)
 	{
+		// load quadword
+		
 		target = get_regi (ast[level].expr[j][arg]);
 		if (target == -1)
 		{
@@ -108,7 +110,7 @@ S4 load_variable_int (S4 level, S4 arg, S4 j)
 	}
 	else
 	{
-		// assign variable to variable
+		// load other variables
 		
 		strcpy ((char *) code_temp, "load ");
 		strcat ((char *) code_temp, (const char *) ast[level].expr[j][arg]);

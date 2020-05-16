@@ -9,7 +9,7 @@
    	(set int16 1 c 23)
    	(set int16 1 d 42)
    	(set int16 1 e 13)
-  	 (set int16 1 f 0)
+	(set int16 1 f 0)
 	(set string 13 hello "Hello world!")
 	// print string
 	(6 hello 0 0 intr0)
