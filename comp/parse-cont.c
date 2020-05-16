@@ -218,7 +218,7 @@ S4 load_variable_double (S4 level, S4 arg, S4 j)
 	}
 	else
 	{
-		printf ("load_variable_double: error: not integer type: '%s' line: %lli\n", ast[level].expr[j][arg], linenum);
+		printf ("load_variable_double: error: not double type: '%s' line: %lli\n", ast[level].expr[j][arg], linenum);
 		return (-1);
 	}
 	return (target);
