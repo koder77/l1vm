@@ -130,6 +130,8 @@ S2 getvartype (U1 *name);
 S2 getvartype_real (U1 *name);
 S8 get_variable_is_array (U1 *name);
 
+// parse-cont.c
+S2 parse_continous (void);
 
 void init_ast (void)
 {
@@ -144,7 +146,7 @@ void init_ast (void)
 	}
 }
 
-S2 get_ast (U1 *line)
+S2 get_ast (U1 *line, U1 *parse_cont)
 {
 	S4 slen;
 	S4 pos = 0, argstart;
@@ -157,6 +159,10 @@ S2 get_ast (U1 *line)
 	S4 ast_ind = -1;
 	ast_level = -1;
 	S4 exp_ind = 0;
+	
+	// set to true if continous variable number sequence found:
+	// {x + y * z a =}
+	*parse_cont = 0;
 	
 	S4 i;
 	for (i = 0; i < MAXBRACKETLEVEL; i++)
@@ -180,8 +186,14 @@ S2 get_ast (U1 *line)
 		}
 		else
 		{
-			if (line[pos] == '(')
+			if (line[pos] == '(' || line[pos] == '{' )
 			{
+				// check if continous variable assign:
+				if (line[pos] == '{')
+				{
+					*parse_cont = 1;
+				}
+				
 				ast_ind++;
 				if (ast_level < ast_ind)
 				{
@@ -256,7 +268,7 @@ S2 get_ast (U1 *line)
 					}
 					else
 					{
-						if (line[pos] != ' ' && line[pos] != ',' && line[pos] != '\n' && line[pos] != ')')
+						if (line[pos] != ' ' && line[pos] != ',' && line[pos] != '\n' && line[pos] != ')' && line[pos] != '}')
 						{
 							ast[ast_ind].expr[exp_ind][arg_ind][arg_pos] = line[pos];
 							arg_pos++;
@@ -277,7 +289,7 @@ S2 get_ast (U1 *line)
 							ast[ast_ind].expr[exp_ind][arg_ind][arg_pos] = '\0';
 							// printf ("[ %s ]\n", ast[ast_ind].expr[exp_ind][arg_ind]);
 							
-							if (line[pos] == ')')
+							if (line[pos] == ')' || line[pos] == '}')
 							{
 								// next char is open bracket, new expression next
 								ast[ast_ind].expr_args[exp_ind] = arg_ind;
@@ -384,10 +396,24 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 	S8 found_let ALIGN = 0;
 	S8 found_let_cont ALIGN = 0;
 
-	if (get_ast (line) != 0)
+	// returned by get_ast ()
+	// to parse: { x + y * z a = } like code stuff!
+	U1 parse_cont = 0;
+	
+	if (get_ast (line, &parse_cont) != 0)
 	{
 		// parsing error
 		return (1);
+	}
+	
+	if (parse_cont)
+	{
+		if (parse_continous () != 0)
+		{
+			printf ("error: line: %lli can't parse part in { }\n", linenum);
+			return (1);
+		}
+		return (0);
 	}
 
 	// walking the AST
@@ -1283,6 +1309,8 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									}
 									} // lastarg if
 
+									// assign to normal variable ==============
+									
 									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
 									{
 										return (1);
@@ -4203,13 +4231,10 @@ void cleanup (void)
 
 void show_info (void)
 {
-	printf ("l1com <file> [-lines] [max linenumber]\n");
+	printf ("l1com <file> [-a] [-lines] [max linenumber]\n");
 	printf ("\nCompiler for bra(ets, a programming language with brackets ;-)\n");
 	printf ("%s", VM_VERSION_STR);
 	printf (" (C) 2017-2020 Stefan Pietzonke\n");
-	printf ("You can set assembly flags like:\n");
-	printf ("l1com prog/hello-2 -sizes 10000 20000\n");
-	printf ("To set the assembly code and data sizes.\n");
 }
 
 int main (int ac, char *av[])
@@ -4222,20 +4247,8 @@ int main (int ac, char *av[])
 	init_labels ();
 	init_call_labels ();
 
-	
-	// variables used for assembler call, set by compiler flags:
-	// assembler called after compilation in this main.c
 	U1 syscallstr[256] = "l1asm ";		// system syscall for assembler
 	S8 ret ALIGN = 0;					// return value of assembler
-	
-	S8 assemb_code_size ALIGN = 0;		// assembler code size
-	S8 assemb_data_size ALIGN = 0;;		// assembler data size
-	U1 assemb_pack = 0;					// assembler byte code packing flag
-	S8 arglen ALIGN;
-	U1 assemb_code_size_str[MAXLINELEN];
-	U1 assemb_data_size_str[MAXLINELEN];
-	
-	S8 i ALIGN;
 	
     if (ac < 2)
     {
@@ -4252,64 +4265,15 @@ int main (int ac, char *av[])
 		}
 	}
     
-    if (ac > 1)
+	if (ac == 4)
 	{
-		for (i = 1; i < ac; i++)
+		if (strcmp (av[2], "-lines") == 0)
 		{
-    		arglen = strlen_safe (av[i], MAXLINELEN);
-			if (arglen == 6)
-			{
-				if (strcmp (av[i], "-lines") == 0)
-				{
-					if (ac > i)
-					{
-						line_len = atoi (av[i + 1]);
-						printf ("max line len set to: %lli lines\n", line_len);
-					}
-				}
-				if (strcmp (av[i], "-sizes") == 0)
-				{
-					if (ac > i + 2)
-					{
-						assemb_code_size = atoi (av[i + 1]);
-						assemb_data_size = atoi (av[i + 2]);
-						
-						if (strlen_safe (av[i + 1], MAXLINELEN) < MAXLINELEN)
-						{
-							strcpy ((char *) assemb_code_size_str, av[i + 1]);
-						}
-						else
-						{
-							printf ("ERROR: assembler code size to long!\n");
-							exit (1);
-						}
-						
-						if (strlen_safe (av[i + 2], MAXLINELEN) < MAXLINELEN)
-						{
-							strcpy ((char *) assemb_data_size_str, av[i + 2]);
-						}
-						else
-						{
-							printf ("ERROR: assembler data size to long!\n");
-							exit (1);
-						}
-						
-						printf ("assembler code size set to: %lli\n", assemb_code_size);
-						printf ("assembler data size set to: %lli\n", assemb_data_size);
-					}
-				}
-			}
-			if (arglen == 5)
-			{
-				if (strcmp (av[i], "-pack") == 0)
-				{
-					assemb_pack = 1;
-					printf ("assembler byte code pack ON\n");
-				}
-			}
+			line_len = atoi (av[3]);
+			printf ("max line len set to: %lli lines\n", line_len);
 		}
 	}
-	
+
 	data = alloc_array_U1 (line_len, MAXLINELEN);
 	if (data == NULL)
 	{
@@ -4358,26 +4322,9 @@ int main (int ac, char *av[])
 	cleanup ();
 	printf ("\033[0m[\u2714] %s compiled\n", av[1]);
 	
-	// set run assembler flags
+	// run assembler
 	strcat ((char *) syscallstr, av[1]);
-	
-	if (assemb_code_size > 0)
-	{
-		// set code and data sizes
-		strcat ((char *) syscallstr, " ");
-		strcat ((char *) syscallstr, "-sizes ");
-		strcat ((char *) syscallstr, (const char *) assemb_code_size_str);
-		strcat ((char *) syscallstr, " ");
-		strcat ((char *) syscallstr, (const char *) assemb_data_size_str);
-	}
-	if (assemb_pack == 1)
-	{
-		// set bytecode packing to ON!
-		strcat ((char *) syscallstr, " -pack");
-	}
-	
-	// run assembler:
 	ret = system ((const char *) syscallstr);
 	
-	exit (ret);		// exit with assemnler exit code
+	exit (ret);
 }

@@ -17,7 +17,10 @@ New: compiler runs the assembler to mke a full build of .l1com files.
 New: compiler arguments for assembler are passed to the assembler!
 Compiler: show_info () update.
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri May 15 2020 13:17 +0200
+NEW: syntax for opcode continous math:
+{x + y * z * x a =} calculates the math expression and stores the result in "a".
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sa May 16 2020 23:52 +0200
 
 
 L1VM - (1.0.1)
