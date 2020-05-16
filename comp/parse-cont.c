@@ -71,14 +71,15 @@ extern S8 ast_level ALIGN;
 S4 load_variable_int (S4 level, S4 arg, S4 j)
 {
 	S4 target;
-	S4 reg2;
+	S4 reg2, reg3;
 	U1 str[MAXLINELEN];
+	U1 code_temp[MAXLINELEN];
 	
 	if (checkdef (ast[level].expr[j][arg]) != 0)
 	{
 		return (-1);
 	}
-	if (getvartype_real (ast[level].expr[j][arg]) != DOUBLE)
+	if (getvartype_real (ast[level].expr[j][arg]) == QUADWORD)
 	{
 		target = get_regi (ast[level].expr[j][arg]);
 		if (target == -1)
@@ -107,8 +108,75 @@ S4 load_variable_int (S4 level, S4 arg, S4 j)
 	}
 	else
 	{
-		 printf ("load_variable_int: error: not integer type: '%s' line: %lli\n", ast[level].expr[j][arg], linenum);
-		 return (-1);
+		// assign array variable to variable
+		
+		strcpy ((char *) code_temp, "load ");
+		strcat ((char *) code_temp, (const char *) ast[level].expr[j][arg]);
+		strcat ((char *) code_temp, ", 0, ");
+		
+		reg2 = get_free_regi ();
+		// set_regd (reg, (U1 *) ast[level].expr[j][last_arg - 1]);
+		
+		sprintf ((char *) str, "%i", reg2);
+		strcat ((char *) code_temp, (const char *) str);
+		strcat ((char *) code_temp, "\n");
+		
+		// printf ("%s\n", code_temp);
+		
+		code_line++;
+		if (code_line >= line_len)
+		{
+			printf ("error: line %lli: code list full!\n", linenum);
+			return (1);
+		}
+		
+		strcpy ((char *) code[code_line], (const char *) code_temp);
+		
+		if (checkdef (ast[level].expr[j][arg]) != 0)
+		{
+			return (1);
+		}
+		
+		if (getvartype_real (ast[level].expr[j][arg]) == BYTE)
+		{
+			strcpy ((char *) code_temp, "pushb ");
+		}
+		
+		if (getvartype_real (ast[level].expr[j][arg]) == WORD)
+		{
+			strcpy ((char *) code_temp, "pushw ");
+		}
+		
+		if (getvartype_real (ast[level].expr[j][arg]) == DOUBLEWORD)
+		{
+			strcpy ((char *) code_temp, "pushdw ");
+		}
+		
+		if (getvartype_real (ast[level].expr[j][arg]) == QUADWORD)
+		{
+			strcpy ((char *) code_temp, "pushqw ");
+		}
+		
+		reg3 = get_free_regi ();
+		set_regi (reg3, ast[level].expr[j][arg]);
+
+		sprintf ((char *) str, "%i", reg2);
+		strcat ((char *) code_temp, (const char *) str);
+		strcat ((char *) code_temp, ", 0");
+		strcat ((char *) code_temp, ", ");
+		sprintf ((char *) str, "%i", reg3);
+		strcat ((char *) code_temp, (const char *) str);
+		strcat ((char *) code_temp, "\n");
+		
+		code_line++;
+		if (code_line >= line_len)
+		{
+			printf ("error: line %lli: code list full!\n", linenum);
+			return (1);
+		}
+		
+		strcpy ((char *) code[code_line], (const char *) code_temp);
+		target = reg3;
 	}
 	return (target);
 }
