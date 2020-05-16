@@ -514,6 +514,40 @@ S2 parse_continous (void)
 										}
 										
 										strcpy ((char *) code[code_line], (const char *) code_temp);
+										
+										strcpy ((char *) code_temp, "pulld ");
+										sprintf ((char *) str, "%i", target_reg);
+										strcat ((char *) code_temp, (const char *) str);
+										strcat ((char *) code_temp, ", ");
+										sprintf ((char *) str, "%i", target);
+										strcat ((char *) code_temp, (const char *) str);
+										strcat ((char *) code_temp, ", 0\n");
+										
+										code_line++;
+										if (code_line >= line_len)
+										{
+											printf ("error: line %lli: code list full!\n", linenum);
+											return (1);
+										}
+										
+										strcpy ((char *) code[code_line], (const char *) code_temp);
+										
+										{
+											S4 reset_reg = 1;
+											while (reset_reg)
+											{
+												reg2 = get_regd (ast[level].expr[j][last_arg - 1]);
+												if (reg2 != -1)
+												{
+													// set old value of reg2 as empty
+													set_regd (reg2, (U1 *) "");
+												}
+												else
+												{
+													reset_reg = 0;
+												}
+											}
+										}
 									}
 									
 									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
@@ -576,11 +610,6 @@ S2 parse_continous (void)
 											strcpy ((char *) code_temp, "pullqw ");
 										}
 											
-										if (getvartype_real (ast[level].expr[j][last_arg - 1]) == DOUBLE)
-										{
-											strcpy ((char *) code_temp, "pulld ");
-										}
-											
 										sprintf ((char *) str, "%i", target_reg);
 										strcat ((char *) code_temp, (const char *) str);
 										strcat ((char *) code_temp, ", ");
@@ -596,12 +625,22 @@ S2 parse_continous (void)
 										}
 											
 										strcpy ((char *) code[code_line], (const char *) code_temp);
-											
-										reg2 = get_regi (ast[level].expr[j][last_arg - 1]);
-										if (reg2 != -1)
+										
 										{
-											// set old value of reg2 as empty
-											set_regi (reg2, (U1 *) "");
+											S4 reset_reg = 1;
+											while (reset_reg)
+											{
+												reg2 = get_regi (ast[level].expr[j][last_arg - 1]);
+												if (reg2 != -1)
+												{
+													// set old value of reg2 as empty
+													set_regi (reg2, (U1 *) "");
+												}
+												else
+												{
+													reset_reg = 0;
+												}
+											}
 										}
 									}
 									finished = 1;

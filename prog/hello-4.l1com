@@ -23,8 +23,5 @@
 	{c + d * e * c f =}
 	(4 f 0 0 intr0)
 	(7 0 0 0 intr0)
-	(((c d +)(e c *) *) f =)
-	(4 f 0 0 intr0)
-	(7 0 0 0 intr0)
 	(255 zero 0 0 intr0)
 (funcend)
