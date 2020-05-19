@@ -1,5 +1,4 @@
-// bra(et - Hello world!
-//
+// hello-4.l1com - brackets - Hello world!
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 x 23)
