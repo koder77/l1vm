@@ -68,7 +68,7 @@ $ chmod +x ./install-wsl-debian.sh
 And run it:
 <pre>
 $ ./install-wsl-debian.sh
-<pre>
+</pre>
 
 
 cli only
