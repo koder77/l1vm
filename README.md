@@ -57,6 +57,20 @@ The  binaries are build and installed into "~/bin".
 And the modules are installed into "~/bin".
 </pre>
 
+Windows 10 WSL
+--------------
+Make the bash install script executable by:
+
+<pre>
+$ chmod +x ./install-wsl-debian.sh
+</pre>
+
+And run it:
+<pre>
+$ ./install-wsl-debian.sh
+<pre>
+
+
 cli only
 --------
 To compile for cli (bashs) text in/output only with no SDL gfx support:
