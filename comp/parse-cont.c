@@ -307,17 +307,6 @@ S2 parse_continous (void)
 										reg_int = 0;
 									}
 								
-								/*
-									// write code
-									code_line++;
-									if (code_line >= line_len)
-									{
-										printf ("error: line %lli: code list full!\n", linenum);
-										return (1);
-									}
-									strcpy ((char *) code[code_line], (const char *) code_temp);
-									*/
-								
 									ok = 0;
 									for (t = 0; t < MAXTRANSLATE; t++)
 									{
