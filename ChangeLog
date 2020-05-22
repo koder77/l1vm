@@ -20,7 +20,12 @@ Compiler: show_info () update.
 NEW: syntax for opcode continous math:
 {x + y * z * x a =} calculates the math expression and stores the result in "a".
 
--- Stefan Pietzonke <jay-t@gmx.net> Sa May 16 2020 23:52 +0200
+NEW: compiler/main.c and parse-cont.c both using:
+S4 load_variable_int (S4 level, S4 arg, S4 j);
+S4 load_variable_double (S4 level, S4 arg, S4 j);
+to load variables
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri May 22 2020 18:28 +0200
 
 
 L1VM - (1.0.1)

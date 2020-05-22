@@ -132,6 +132,8 @@ S8 get_variable_is_array (U1 *name);
 
 // parse-cont.c
 S2 parse_continous (void);
+S4 load_variable_int (S4 level, S4 arg, S4 j);
+S4 load_variable_double (S4 level, S4 arg, S4 j);
 
 void init_ast (void)
 {
@@ -1571,56 +1573,18 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 													}
 													if (getvartype_real (ast[level].expr[j][last_arg - 1]) != DOUBLE)
 													{
-														target = get_regi (ast[level].expr[j][last_arg - 1]);
+														target = load_variable_int (level, last_arg -1, j);
 														if (target == -1)
 														{
-															// variable is not in register, load it
-
-															reg2 = get_free_regi ();
-															set_regi (reg2, ast[level].expr[j][last_arg - 1]);
-															// write code loada
-
-															code_line++;
-															if (code_line >= line_len)
-															{
-																printf ("error: line %lli: code list full!\n", linenum);
-																return (1);
-															}
-
-															strcpy ((char *) code[code_line], "loada ");
-															strcat ((char *) code[code_line], (const char *) ast[level].expr[j][last_arg - 2]);
-															strcat ((char *) code[code_line], ", 0, ");
-															sprintf ((char *) str, "%i", reg2);
-															strcat ((char *) code[code_line], (const char *) str);
-															strcat ((char *) code[code_line], "\n");
-															target = reg2;
+															return (1);
 														}
 													}
 													else
 													{
-														target = get_regd (ast[level].expr[j][last_arg - 1]);
+														target = load_variable_double (level, last_arg -1, j);
 														if (target == -1)
 														{
-															// variable is not in register, load it
-
-															reg2 = get_free_regd ();
-															set_regd (reg2, ast[level].expr[j][last_arg - 1]);
-															// write code loada
-
-															code_line++;
-															if (code_line >= line_len)
-															{
-																printf ("error: line %lli: code list full!\n", linenum);
-																return (1);
-															}
-
-															strcpy ((char *) code[code_line], "loadd ");
-															strcat ((char *) code[code_line], (const char *) ast[level].expr[j][last_arg - 2]);
-															strcat ((char *) code[code_line], ", 0, ");
-															sprintf ((char *) str, "%i", reg2);
-															strcat ((char *) code[code_line], (const char *) str);
-															strcat ((char *) code[code_line], "\n");
-															target = reg2;
+															return (1);
 														}
 													}
 
@@ -3127,7 +3091,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 																return (1);
 															}
 														
-															// set pushw opcode
+															// set pushb opcode
 															strcpy ((char *) code[code_line], "pushb ");
 															sprintf ((char *) str, "%i", reg);
 															strcat ((char *) code[code_line], (const char *) str);

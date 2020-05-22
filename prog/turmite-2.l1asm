@@ -300,7 +300,7 @@ subi 11, 6, 12
 load starty, 0, 13
 pullqw 12, 13, 0
 load direction, 0, 11
-loada down, 0, 14
+loada direction, 0, 14
 pullqw 14, 11, 0
 stpushi I0
 stpushi I1
@@ -370,7 +370,7 @@ loada b, 0, 3
 intr0 4, 3, 0, 0
 intr0 7, 0, 0, 0
 load color_ind, 0, 4
-loada zero, 0, 5
+loada color_ind, 0, 5
 pullqw 5, 4, 0
 :get_color_ind
 loada color_ind, 0, 4
@@ -418,7 +418,7 @@ pushb 5, 0, 6
 intr0 4, 6, 0, 0
 intr0 7, 0, 0, 0
 load c, 0, 7
-loada zero, 0, 8
+loada c, 0, 8
 pullqw 8, 7, 0
 loada r, 0, 7
 neqi 1, 7, 8
@@ -468,7 +468,7 @@ pullqw 29, 30, 0
 jmp :get_color_ind
 :color_match
 load phase_ind, 0, 28
-loada zero, 0, 31
+loada phase_ind, 0, 31
 pullqw 31, 28, 0
 :phase_loop
 loada zero, 0, 28

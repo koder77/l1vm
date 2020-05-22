@@ -1,6 +1,8 @@
 // webserver.l1com
 //
 // simple http webserver
+// demo opens on port 2000:
+// http://127.0.0.1:2000
 //
 (main func)
 	(set int64 1 zero 0)
@@ -9,7 +11,7 @@
 	(set int64 1 maxsockets 10)
 	(set int64 1 f 0)
 	(set int64 1 server 0)
-	(set int64 1 portnum 80)
+	(set int64 1 portnum 2000)
 	(set int64 1 server_open 0)
 	(set int64 1 server_accept 0)
 	(set string s ip "127.0.0.1")
