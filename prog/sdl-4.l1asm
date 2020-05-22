@@ -152,11 +152,11 @@ load ret, 0, 6
 pullb 5, 6, 0
 stpopi I0
 load x, 0, 1
-loada x, 0, 2
+loada zero, 0, 2
 pullqw 2, 1, 0
 :xloop
 load y, 0, 1
-loada y, 0, 2
+loada zero, 0, 2
 pullqw 2, 1, 0
 :yloop
 loada x, 0, 1
@@ -191,30 +191,28 @@ jmpi 8, :reset_color
 jmp :next_y
 :reset_color
 load col, 0, 9
-load col, 0, 10
-pushb 10, 0, 10
-pullb 10, 9, 0
+pullb 1, 9, 0
 :next_y
 loada y, 0, 1
 addi 1, 2, 9
-load y, 0, 11
-pullqw 9, 11, 0
+load y, 0, 10
+pullqw 9, 10, 0
 loada y, 0, 1
-loada height, 0, 12
-lsi 1, 12, 13
-load f, 0, 14
-pullqw 13, 14, 0
+loada height, 0, 11
+lsi 1, 11, 12
+load f, 0, 13
+pullqw 12, 13, 0
 loada f, 0, 8
 jmpi 8, :yloop
-loada x, 0, 15
-addi 15, 2, 16
-load x, 0, 17
-pullqw 16, 17, 0
-loada x, 0, 15
-loada width, 0, 18
-lsi 15, 18, 19
-load f, 0, 20
-pullqw 19, 20, 0
+loada x, 0, 14
+addi 14, 2, 15
+load x, 0, 16
+pullqw 15, 16, 0
+loada x, 0, 14
+loada width, 0, 17
+lsi 14, 17, 18
+load f, 0, 19
+pullqw 18, 19, 0
 loada f, 0, 8
 jmpi 8, :xloop
 stpushi I1
@@ -236,9 +234,7 @@ stpushi I16
 stpushi I17
 stpushi I18
 stpushi I19
-stpushi I20
 jsr :sdl_update
-stpopi I20
 stpopi I19
 stpopi I18
 stpopi I17

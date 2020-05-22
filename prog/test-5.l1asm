@@ -33,7 +33,7 @@ addi 15, 16, 17
 load z, 0, 18
 pullqw 17, 18, 0
 load ret, 0, 19
-loada ret, 0, 20
+loada z, 0, 20
 pullqw 20, 19, 0
 loada z, 0, 19
 intr0 4, 19, 0, 0
