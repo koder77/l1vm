@@ -9,7 +9,6 @@
 	(set double 1 diam 0.0)
 	(set double 1 circ 0.0)
 	(set double 1 zerod 0.0)
-	(set int64 1 math_choice 0)
 	(set string s menu_diamstr "1: calculate diameter of circle")
 	(set string s menu_circstr "2: calculate circumference of circle")
 	(set string s menu_quitstr "3: quit")
