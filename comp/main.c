@@ -769,7 +769,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 						if (last_arg >= 0)
 						{
 							// reset registers ============================
-							if (strcmp ((const char *) ast[level].expr[j][last_arg], "reset_reg") == 0)
+							if (strcmp ((const char *) ast[level].expr[j][last_arg], "reset-reg") == 0)
 							{
 								// reset registers in current code position
 								
