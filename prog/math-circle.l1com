@@ -2,11 +2,11 @@
 // calculate diameter or circumference of circle
 //
 (main func)
-    (set int64 1 zero 0)
+	(set int64 1 zero 0)
 	(set int64 1 one 1)
 	(set int64 1 two 2)
 	(set int64 1 three 3)
-    (set double 1 diam 0.0)
+	(set double 1 diam 0.0)
 	(set double 1 circ 0.0)
 	(set double 1 zerod 0.0)
 	(set int64 1 math_choice 0)
@@ -33,8 +33,8 @@
 	(set double 1 m_sqrt2@math 1.41421356237309504880)
 	(set double 1 m_sqrt1_2@math 0.70710678118654752440)
 	// -------------------------------------------------------
-    (zero :math_init call)
-    (loadreg)
+	(zero :math_init call)
+	(loadreg)
 	(:loop)
 	(6 menu_diamstr 0 0 intr0)
 	(7 0 0 0 intr0)
