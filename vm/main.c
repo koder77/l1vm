@@ -2060,8 +2060,10 @@ S2 run (void *arg)
 		case 9:
 			//printf ("INPUTI\n");
 			arg2 = code[ep + 2];
+			input_str[0] = '\0';
 			if (fgets ((char *) input_str, MAXINPUT - 1, stdin) != NULL)
 			{
+				regi[arg2] = 0;
 				sscanf ((const char *) input_str, "%lli", &regi[arg2]);
 			}
 			else
@@ -2072,10 +2074,13 @@ S2 run (void *arg)
 			break;
 
 		case 10:
+			{
 			//printf ("INPUTD\n");
 			arg2 = code[ep + 2];
+			input_str[0] = '\0';
 			if (fgets ((char *) input_str, MAXINPUT - 1, stdin) != NULL)
 			{
+				regd[arg2] = 0.0;
 				sscanf ((const char *) input_str, "%lf", &regd[arg2]);
 			}
 			else
@@ -2083,6 +2088,7 @@ S2 run (void *arg)
 				printf ("input double: can't read!\n");
 			}
 			eoffs = 5;
+			}
 			break;
 
 		case 11:

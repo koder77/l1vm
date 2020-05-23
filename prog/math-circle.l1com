@@ -49,31 +49,40 @@
 		// quit
 		(255 0 0 0 intr0)
 	(endif)
-	(((input one ==) f =) f if)
-		// calculate diameter
-		(zerod circ =)
-		(6 circstr 0 0 intr0)
-		// input double circ
-		(10 circ 0 0 intr0)
-		((circ m_pi@math /d) diam =)
-		(6 diamstr 0 0 intr0)
-		(5 diam 0 0 intr0)
-		(7 0 0 0 intr0)
-		(7 0 0 0 intr0)
-	(endif)
-	(((input two ==) f =) f if)
-		// calculate circumference
-		(zerod diam =)
-		(6 diamstr 0 0 intr0)
-		// input double diam
-		(10 diam 0 0 intr0)
-		((diam m_pi@math *d) circ =)
-		(6 circstr 0 0 intr0)
-		(5 circ 0 0 intr0)
-		(7 0 0 0 intr0)
-		(7 0 0 0 intr0)
+	(((input one ==) f =) f if+)
+		(:calc_diam call)
+		(loadreg)
+	(else)
+		(:calc_circ call)
+		(loadreg)
 	(endif)
 	(:loop jmp)
+(funcend)
+(calc_diam func)
+	// calculate diameter
+	(zerod circ =)
+	(zerod diam =)
+	(6 circstr 0 0 intr0)
+	// input double circ
+	(10 circ 0 0 intr0)
+	((circ m_pi@math /d) diam =)
+	(6 diamstr 0 0 intr0)
+	(5 diam 0 0 intr0)
+	(7 0 0 0 intr0)
+	(7 0 0 0 intr0)
+(funcend)
+(calc_circ func)
+	// calculate circumference
+	(zerod diam =)
+	(zerod circ =)
+	(6 diamstr 0 0 intr0)
+	// input double diam
+	(10 diam 0 0 intr0)
+	((diam m_pi@math *d) circ =)
+	(6 circstr 0 0 intr0)
+	(5 circ 0 0 intr0)
+	(7 0 0 0 intr0)
+	(7 0 0 0 intr0)
 (funcend)
 // math library
 //
