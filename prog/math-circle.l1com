@@ -11,7 +11,7 @@
 	(set string s menu_circstr "2: calculate circumference of circle")
 	(set string s menu_quitstr "3: quit")
 	(set string s menu_chstr "? ")
-	(set string s diamstr "diameter: ")
+	(set string s diamstr "diameter:      ")
 	(set string s circstr "circumference: ")
 	(set int64 1 input 0)
 	(set int64 1 f 0)
