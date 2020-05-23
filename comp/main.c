@@ -768,6 +768,16 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 						last_arg = ast[level].expr_args[j];
 						if (last_arg >= 0)
 						{
+							// reset registers ============================
+							if (strcmp ((const char *) ast[level].expr[j][last_arg], "reset_reg") == 0)
+							{
+								// reset registers in current code position
+								
+								init_registers ();
+								continue;
+							}
+							// ============================================
+							
 							ok = 0;
 							for (t = 0; t < MAXTRANSLATE; t++)
 							{
@@ -1811,7 +1821,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									if (strcmp ((const char *) ast[level].expr[j][last_arg - 1], "main") != 0)
 									{
 										// not main function, initialize the registers
-
+										
 										init_registers ();
 									}
 

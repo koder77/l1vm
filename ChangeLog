@@ -25,7 +25,10 @@ S4 load_variable_int (S4 level, S4 arg, S4 j);
 S4 load_variable_double (S4 level, S4 arg, S4 j);
 to load variables
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri May 22 2020 18:28 +0200
+Compiler: NEW: (reset_reg) to force variables are loaded into registers by
+resetting the variable to register mapping.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat May 23 2020 14:45 +0200
 
 
 L1VM - (1.0.1)
