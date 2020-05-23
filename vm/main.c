@@ -2074,7 +2074,6 @@ S2 run (void *arg)
 			break;
 
 		case 10:
-			{
 			//printf ("INPUTD\n");
 			arg2 = code[ep + 2];
 			input_str[0] = '\0';
@@ -2088,7 +2087,6 @@ S2 run (void *arg)
 				printf ("input double: can't read!\n");
 			}
 			eoffs = 5;
-			}
 			break;
 
 		case 11:
