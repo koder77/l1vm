@@ -1,8 +1,8 @@
-name: "brackets"
+name: "Brackets"
 scopeName: "source.brackets"
 comment: '''
 
-Syntax highlighting for L1COM compiler (brackets) for L1VM
+Syntax highlighting for L1COM compiler (Brackets) for L1VM
 Used common.lisp highlighter as template: source.common.lisp.
 
 by Stefan Pietzonke (jay-t@gmx.net)
