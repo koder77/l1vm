@@ -1,0 +1,15 @@
+{
+  "name": "language-brackets",
+  "version": "0.9.5",
+  "description": "brackets Highlighting & Support in Atom",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/koder77/brackets-atom-highlighter/"
+  },
+  "license": "MIT",
+  "engines": {
+    "atom": ">0.5.0"
+  },
+  "readmeFilename": "README.md",
+  "dependencies": {}
+}

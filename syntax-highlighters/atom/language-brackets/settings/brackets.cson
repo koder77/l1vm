@@ -1,0 +1,23 @@
+".source.brackets":
+  editor:
+    commentStart: ";"
+    increaseIndentPattern: '^.*\\(.*[^)"]$'
+
+
+# increasing indent and such...
+#
+# 'increaseIndentPattern': '\\b(else|elseif|(local\\s+)?function|then|do|repeat)\\b((?!end).)*$|\\{\\s*$'
+# 'decreaseIndentPattern': '^\\s*(elseif|else|end|until,?|\\}\\)?).*$'
+#
+# 'increaseIndentPattern': '(?x)
+#    ^ .* \\{ [^}"\']* $
+#   |^ .* \\( [^\\)"\']* $
+#   |^ \\s* \\{ \\} $
+#   '
+# 'decreaseIndentPattern': '(?x)
+#    ^ \\s* (\\s* /[*] .* [*]/ \\s*)* \\}
+#   |^ \\s* (\\s* /[*] .* [*]/ \\s*)* \\)
+#   '
+# 'tabLength': 4
+# 'softTabs': true
+# 'preferredLineLength': 99
