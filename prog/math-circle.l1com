@@ -35,10 +35,14 @@
 		(255 0 0 0 intr0)
 	(endif)
 	(((input one ==) f =) f if+)
+		// reset used variables and set used registers to zero
+		// no context register saving here
 		(reset-reg)
 		(:calc_diam call)
 		(loadreg)
 	(else)
+		// reset used variables and set used registers to zero
+		// no context register saving here
 		(reset-reg)
 		(:calc_circ call)
 		(loadreg)
