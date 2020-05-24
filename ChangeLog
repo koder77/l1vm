@@ -28,7 +28,9 @@ to load variables
 Compiler: NEW: (reset-reg) to force variables are loaded into registers by
 resetting the variable to register mapping.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat May 23 2020 14:45 +0200
+Added Atom text editor syntax highlighting files.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun May 24 2020 22:00 +0200
 
 
 L1VM - (1.0.1)

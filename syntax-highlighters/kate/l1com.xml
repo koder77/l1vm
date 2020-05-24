@@ -12,6 +12,7 @@
       <item>ASM_END</item> 
 	  <item>optimize-if-off</item>
 	  <item>optimize-if</item>
+	  <item>reset-reg</item>
     </list>
     <list name="keywords">
     <item>funcend</item>
