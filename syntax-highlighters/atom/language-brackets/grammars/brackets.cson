@@ -113,9 +113,9 @@ repository:
         name: 'constant.numeric.integer.brackets'
       }
     ]
-  illegal:
-    match: '[()\\[\\]{}]'
-    name: 'invalid.illegal.parenthesis.brackets'
+  # illegal:
+  # match: '[()\\[\\]{}]'
+  # name: 'invalid.illegal.parenthesis.brackets'
   # set this up...
   "language-functions":
     patterns: [
