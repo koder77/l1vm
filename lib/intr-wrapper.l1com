@@ -47,6 +47,7 @@
     (hour stpopi)
     (min stpopi)
     (sec stpopi)
+    (loadreg)
     (((hour ten <) f =) f if)
         (zero :printi call)
         (loadreg)
