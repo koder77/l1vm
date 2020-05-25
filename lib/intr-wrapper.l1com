@@ -73,7 +73,7 @@
     (:printn call)
     (loadreg)
     // exit
-    (255 0 0 0 intr0)
+    (zero :exit call)
 (funcend)
 //
 // interrupt 0 wrapper functions
@@ -191,4 +191,9 @@
     (set int64 1 i@printi_int32)
     (i@printi_int32 stpopi)
     (23 i@printi_int32 0 0 intr0)
+(funcend)
+(exit func)
+    (set int64 1 ret@exit)
+    (ret@exit stpopi)
+    (255 ret@exit 0 0 intr0)
 (funcend)
