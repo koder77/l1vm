@@ -73,6 +73,10 @@
     (loadreg)
     // exit
     (255 0 0 0 intr0)
+(funcend)
+//
+// interrupt 0 wrapper functions
+//
 (printi func)
     (set int64 1 i@printi)
     (i@printi stpopi)
