@@ -1,9 +1,12 @@
+# L1VM - Brackets syntax highlighting
+
 I used this Common Lisp Highlighter as a template for my Brackets language of L1VM!
 Stefan Pietzonke (jay-t@gmx.net)
 
 Just copy this folder to:
 ~/.atom/packages
-
+This should be all to do!
+I leaved the original README file there:
 
 # Common Lisp Highlighting & Support in Atom
 

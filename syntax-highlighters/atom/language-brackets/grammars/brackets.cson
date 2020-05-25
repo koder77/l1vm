@@ -154,7 +154,7 @@ repository:
           (?xi)
              # (?<=(\\s|\\()) # preceded by space or (
               ( byte|string|int16|int32|int64|double|
-                funcend|func|ASM|ASM_END|optimize-if|optimize-if-off|reset-reg|
+                funcend|func|ASM_END|ASM|optimize-if-off|optimize-if|reset-reg|
                 set|stpushb|stpopb|stpushi|stpopi|stpushd|stpopd|
                 intr0|intr1|
                 pushb|pushw|pushdw|pushqw|pushd|pullb|pullw|pulldw|pullqw|pulld|
@@ -163,7 +163,7 @@ repository:
                 andi|ori|bandi|bori|bxori|modi|
                 eqi|neqi|gri|lsi|greqi|lseqi|
                 eqd|neqd|grd|lsd|greqd|lseqd|
-                loadreg|loada|loadd|inclsijmpi|decgrijmpi|movi|movd|loadl|jmpa|jsr|jsra|load|noti|
+                loadreg|loada|loadd|inclsijmpi|decgrijmpi|movi|movd|loadl|jmpa|jsra|jsr|load|noti|
                 if+|if|else|endif|jmpi|jmp|jsr|call|rts|
                 for-loop|for|next|do|while
               )
