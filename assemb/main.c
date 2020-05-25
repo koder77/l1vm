@@ -70,6 +70,7 @@ char *fgets_uni (char *str, int len, FILE *fptr);
 size_t strlen_safe (const char * str, int maxlen);
 
 void convtabs (U1 *str);
+S2 strip_end_commas (U1 *str);
 S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
 
 S2 alloc_code_data (void)
@@ -785,7 +786,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 					{
 						// load extern byte data from given absolute filename
 						byte_data_offset = offset;
-						
+
 						get_data_extern_filename (args[2]);
 						data_extern = fopen ((const char *) args[2], "r");
 						if (data_extern == NULL)
@@ -819,7 +820,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							}
 						}
 						fclose (data_extern);
-						
+
 						data_info[data_info_ind].offset = byte_data_offset;
 						data_ind = data_info[data_info_ind].end;
 					}
@@ -1313,6 +1314,7 @@ S2 parse (U1 *name)
         if (read != NULL && (code_ind < code_max - 1))
         {
             convtabs (rbuf);                    /* convert the funny tabs into spaces! */
+			strip_end_commas (rbuf);			/* remove commas at the end of line */
             slen = strlen_safe ((const char *) rbuf, MAXLINELEN);
 
 			// printf ("> %s", rbuf);
@@ -1556,7 +1558,7 @@ int main (int ac, char *av[])
 	// make bzip2 object code file flag
 	U1 pack = 0;
 	U1 shell_pack[512];
-	
+
 	if (ac < 2)
     {
 		show_info ();
@@ -1571,7 +1573,7 @@ int main (int ac, char *av[])
 			exit (1);
 		}
 	}
-	
+
 	if (ac == 3)
 	{
 		if (strcmp (av[2], "-pack") == 0)
@@ -1617,10 +1619,10 @@ int main (int ac, char *av[])
 
 
 	printf ("assembling file: '%s'\n", av[1]);
-	
+
 	// switch to red text
 	printf ("\033[31m");
-	
+
     if (parse ((U1 *) av[1]) == 1)
 	{
 		printf ("\033[31mERRORS! can't write object file!\n");

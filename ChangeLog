@@ -1,3 +1,10 @@
+L1VM - (1.0.3)
+    NEW: lib/int-wrapper.l1com: showing how to use the interrupt wrapper functions
+    in a print date/time demo. Now it is a bit easier to use them with the readable
+    function names.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon May 25 2020 10:21 +0200
+
 L1VM - (1.0.2)
 New: net module: get_mimetype_from_filename function.
 Returns the mimetype of a filename with *.* form.
@@ -95,7 +102,7 @@ my L1VM SDL library!
 
 L1VM - (0.9.14)
 Return value checks for Cells: fann_read_ann () fixed!
-VM: version number fixed.  
+VM: version number fixed.
 
 Compiler l1com now shows not copyright message on start.
 To get infos run it with:
@@ -115,7 +122,7 @@ BUGFIX: compiler l1com: "call" function variable push bugfix.
 Program "sdl-4" is working now again as black/grey pattern!
 
 New: prog/test-10.l1com program, showing more then one function call in one line!
-BUGFIX: 
+BUGFIX:
 (:print_ret * call)
 
 The "*" operator now works right and is used instead of "(loadreg)" function call to load

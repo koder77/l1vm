@@ -94,7 +94,7 @@
 
 // user settings end ======================================
 
-#define  VM_VERSION_STR		"1.0.2"
+#define  VM_VERSION_STR		"1.0.3"
 
 #if MAXCPUCORES == 0
 	#error "global.h: ERROR MAXCPUCORES is 0!"

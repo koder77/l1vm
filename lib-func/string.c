@@ -190,3 +190,22 @@ void convtabs (U1 *str)
 		}
 	}
 }
+
+S2 strip_end_commas (U1 *str)
+{
+	S2 end;
+
+	end = strlen_safe ((const char *) str, MAXLINELEN) - 1;
+	// printf ("strip: '%s'", str);
+	if (str[0] == '@')
+	{
+		// inside data block, dont strip string
+		return (0);
+	}
+	if (str[end - 2] ==',' && str[end - 1] == ' ')
+	{
+		// printf ("strip_end_commas found comma at line end!\n");
+		str[end - 2] = '\0';
+	}
+	return (1);
+}
