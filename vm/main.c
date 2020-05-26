@@ -39,6 +39,13 @@ U1 SDL_use = 0;
 // time functions
 struct tm *tm;
 
+// timer interrupt stuff
+#if TIMER_USE
+	struct timeval  timer_start, timer_end;
+	F8 timer_double ALIGN;
+	S8 timer_int ALIGN;
+#endif
+
 #if JIT_COMPILER
 #define MAXJITCODE 64
 S8 JIT_code_ind ALIGN = -1;
@@ -137,7 +144,7 @@ S2 memory_bounds (S8 start, S8 offset_access)
 	for (i = 0; i <= data_info_ind; i++)
 	{
 		// printf ("DEBUG: memory_bounds: variable %lli, type: %i\n", i, data_info[i].type);
-		
+
 		if ((start >= data_info[i].offset) && (start + offset_access <= data_info[i].end))
 		{
 			// printf ("memory_bounds: data_info offset: %lli, data_info end: %lli; start: %lli offset: %lli\n", data_info[i].offset, data_info[i].end, start, offset_access);
@@ -152,7 +159,7 @@ S2 memory_bounds (S8 start, S8 offset_access)
 				//printf ("memory_bounds: type: %i, address: %lli, offset: %lli\n", data_info[i].type, start, offset_access);
 
 				// printf ("DEBUG: memory_bounds: variable %lli, type: %i\n", i, data_info[i].type);
-				
+
 				switch (data_info[i].type)
 				{
 					case BYTE:
@@ -899,7 +906,7 @@ S2 run (void *arg)
 
 	// DEBUG
 	// printf ("PULLW: data reg: %lli, offset reg: %lli, source reg: %lli\n", arg2, arg3, arg1);
-	
+
 	data[arg2 + arg3] = *bptr;
 	bptr++;
 	data[arg2 + arg3 + 1] = *bptr;
@@ -1061,7 +1068,7 @@ S2 run (void *arg)
 	#else
 		regi[arg3] = regi[arg1] - regi[arg2];
 	#endif
-		
+
 	eoffs = 4;
 	EXE_NEXT();
 
@@ -1847,7 +1854,7 @@ S2 run (void *arg)
 		pthread_exit ((void *) 1);
 	}
 	#endif
-	
+
 	arg3 = code[ep + 17];
 
 	bptr = (U1 *) &regi[arg3];
@@ -1927,7 +1934,7 @@ S2 run (void *arg)
 		pthread_exit ((void *) 1);
 	}
 	#endif
-	
+
 	arg3 = code[ep + 17];
 
 	bptr = (U1 *) &regd[arg3];
@@ -2093,20 +2100,20 @@ S2 run (void *arg)
 			//printf ("INPUTS\n");
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
-			
+
 			{
 				U1 ch;
 				S8 i = 0;
-				
+
 				while (1)
 				{
 					if (i < regi[arg2])
 					{
 						ch = getchar ();
 						// printf ("char: %i\n", ch);
-						
+
 						// printf ("getchar: '%c'", ch);
-						
+
 						data[regi[arg3] + i] = ch;
 						if (ch == 10)
 						{
@@ -2250,23 +2257,54 @@ S2 run (void *arg)
 			printf ((char *) &data[regi[arg3]], regd[arg2]);
 			eoffs = 5;
 			break;
-			
+
 		case 22:
 			//printf ("PRINTI as int16\n");
 			arg2 = code[ep + 2];
-			
+
 			printf ("%d", (S2) regi[arg2]);
 			eoffs = 5;
 			break;
-		
+
 		case 23:
 			//printf ("PRINTI as int32\n");
 			arg2 = code[ep + 2];
-			
+
 			printf ("%i", (S4) regi[arg2]);
 			eoffs = 5;
 			break;
-			
+
+#if TIMER_USE
+		case 24:
+			gettimeofday (&timer_start, NULL);
+			eoffs = 5;
+			break;
+
+		case 25:
+			arg2 = code[ep + 2];
+			gettimeofday (&timer_end, NULL);
+
+			timer_double = (double) (timer_end.tv_usec - timer_start.tv_usec) / 1000000 + (double) (timer_end.tv_sec - timer_start.tv_sec);
+			timer_double = timer_double * 1000.0; 	// get ms
+			printf ("TIMER ms: %.10lf\n", timer_double);
+			timer_int = timer_double;
+			regi[arg2] = timer_int;
+			eoffs = 5;
+			break;
+#else
+		case 24:
+			printf ("FATAL ERROR: no start timer!\n");
+			free (jumpoffs);
+			pthread_exit ((void *) 1);
+			break;
+
+		case 25:
+			printf ("FATAL ERROR: no end timer!\n");
+			free (jumpoffs);
+			pthread_exit ((void *) 1);
+			break;
+#endif
+
 		case 251:
 			// set overflow on double reg
 			arg2 = code[ep + 2];
@@ -2691,7 +2729,7 @@ S2 run (void *arg)
 	#if DEBUG
 	printf ("%lli LOAD\n", cpu_core);
 	#endif
-	
+
 	// data
 	bptr = (U1 *) &arg1;
 
@@ -2742,7 +2780,7 @@ S2 run (void *arg)
 	//printf ("LOAD: %li\n", regi[arg3]);
 	// DEBUG
 	// printf ("LOAD: arg1: (data) %lli, arg2: (offset) %lli, to reg: %lli\n", arg1, arg2, arg3);
-	
+
 	eoffs = 18;
 	EXE_NEXT();
 
@@ -2829,7 +2867,7 @@ int main (int ac, char *av[])
 	pthread_t id;
 
 	S8 new_cpu ALIGN;
-	
+
 	// do compilation time sense check on integer 64 bit and double 64 bit type!!
 	S8 size_int64 ALIGN;
 	S8 size_double64 ALIGN;
@@ -2850,16 +2888,16 @@ int main (int ac, char *av[])
 	}
 
 	// printf ("DEBUG: ac: %i\n", ac);
-	
+
     if (ac > 1)
     {
         for (i = 1; i < ac; i++)
         {
 			av_found = 0;
             arglen = strlen_safe (av[i], MAXLINELEN);
-			
+
 			// printf ("DEBUG: arg: '%s'\n", av[i]);
-			
+
 			if (arglen == 2)
 			{
 				if (av[i][0] == '-' && av[i][1] == 'q')
@@ -2900,7 +2938,7 @@ int main (int ac, char *av[])
 					}
 					av_found = 1;
 				}
-				
+
 				if (av[i][0] == '-' && av[i][1] == '?')
 				{
 					// user needs help, show arguments info and exit

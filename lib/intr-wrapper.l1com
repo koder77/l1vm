@@ -197,3 +197,12 @@
     (ret@exit stpopi)
     (255 ret@exit 0 0 intr0)
 (funcend)
+// timer start/end interrupts
+(timer_start func)
+    (24 0 0 0 intr0)
+(funcend)
+(timer_end func)
+    (set int64 1 time@timer_end 0)
+    (25 time@timer_end 0 0 intr0)
+    (time@timer_end stpushi)
+(funcend)

@@ -1,7 +1,7 @@
 #!/bin/bash
 for i in *.l1com
 do
-	l1com $i
+	l1com $i -sizes 1000000 1000000000
 	RETVAL=$?
 	[ $RETVAL -ne 0 ] && echo "build failed: " && echo $i && exit 1
 done

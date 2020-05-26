@@ -92,6 +92,9 @@
 // VM: max size of data
 #define MAX_DATA_SIZE			4294967296L		// 4GB
 
+// VM: set timer interrupt
+#define TIMER_USE				1 				// 1 = set timer measurement interrupt
+
 // user settings end ======================================
 
 #define  VM_VERSION_STR		"1.0.3"
