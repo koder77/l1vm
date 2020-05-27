@@ -4288,7 +4288,7 @@ int main (int ac, char *av[])
 					str_len_assembler_args = strlen ((const char *) assembler_args);
 					if (str_len_assembler_args < MAXLINELEN - 7)
 					{
-						strcat ((char *) assembler_args, " -pack");
+						strcat ((char *) assembler_args, " -pack ");
 					}
 				}
 			}
@@ -4326,31 +4326,13 @@ int main (int ac, char *av[])
 								if (str_len_arg + str_len_assembler_args < MAXLINELEN - 1)
 								{
 									strcat ((char *) assembler_args, av[i + 2]);
+									strcat ((char *) assembler_args, " ");
 								}
 							}
 						}
 					}
 				}
 			}
-		}
-	}
-
-
-    if (ac == 2)
-	{
-		if (strcmp (av[1], "--help") == 0 || strcmp (av[1], "-?") == 0)
-		{
-			show_info ();
-			exit (1);
-		}
-	}
-
-	if (ac == 4)
-	{
-		if (strcmp (av[2], "-lines") == 0)
-		{
-			line_len = atoi (av[3]);
-			printf ("max line len set to: %lli lines\n", line_len);
 		}
 	}
 
