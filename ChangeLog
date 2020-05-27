@@ -5,8 +5,13 @@ L1VM - (1.0.3)
 
     NEW: global.h: TIMER_USE to set timer interrupt for time measurement
     see vm/main.c: interrupt0
-    
--- Stefan Pietzonke <jay-t@gmx.net> Tue May 26 2020 20:28 +0200
+
+    NEW: now assembler command line args can be set by compiler call, for
+    example:
+
+    comp/l1com prog/primes-4-long -sizes 100000 1000000000
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed May 27 2020 12:34 +0200
 
 L1VM - (1.0.2)
 New: net module: get_mimetype_from_filename function.

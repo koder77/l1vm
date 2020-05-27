@@ -4259,12 +4259,82 @@ int main (int ac, char *av[])
 
 	U1 syscallstr[256] = "l1asm ";		// system syscall for assembler
 	S8 ret ALIGN = 0;					// return value of assembler
+	S8 arglen ALIGN;
+	S8 i ALIGN;
+	S8 str_len_arg ALIGN;
+	S8 str_len_assembler_args ALIGN;
+
+	U1 assembler_args[MAXLINELEN];
 
     if (ac < 2)
     {
 		show_info ();
         exit (1);
     }
+
+	// set assembler_args
+	strcpy ((char *) assembler_args, " ");
+
+	if (ac > 1)
+	{
+		for (i = 1; i < ac; i++)
+		{
+			arglen = strlen_safe (av[i], MAXLINELEN);
+
+			if (arglen == 5)
+			{
+				if (strcmp (av[i], "-pack") == 0)
+				{
+					str_len_assembler_args = strlen ((const char *) assembler_args);
+					if (str_len_assembler_args < MAXLINELEN - 7)
+					{
+						strcat ((char *) assembler_args, " -pack");
+					}
+				}
+			}
+			if (arglen == 6)
+			{
+				if (strcmp (av[i], "--help") == 0 || strcmp (av[1], "-?") == 0)
+				{
+					show_info ();
+					exit (1);
+				}
+
+				if (strcmp (av[i], "-lines") == 0)
+				{
+					if (ac > i)
+					{
+						line_len = atoi (av[i + 1]);
+						printf ("max line len set to: %lli lines\n", line_len);
+					}
+				}
+
+				if (strcmp (av[i], "-sizes") == 0)
+				{
+					if (ac > i + 1)
+					{
+						strcat ((char *) assembler_args, "-sizes ");
+						str_len_arg = strlen (av[i + 1]);
+						if (str_len_arg < MAXLINELEN - 7)
+						{
+							strcat ((char *) assembler_args, av[i + 1]);
+							strcat ((char *) assembler_args, " ");
+							str_len_assembler_args = strlen ((const char *) assembler_args);
+							if (str_len_assembler_args < MAXLINELEN - 1)
+							{
+								str_len_arg = strlen (av[i + 2]);
+								if (str_len_arg + str_len_assembler_args < MAXLINELEN - 1)
+								{
+									strcat ((char *) assembler_args, av[i + 2]);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 
     if (ac == 2)
 	{
@@ -4334,6 +4404,8 @@ int main (int ac, char *av[])
 
 	// run assembler
 	strcat ((char *) syscallstr, av[1]);
+	printf ("assembler args: '%s'\n", assembler_args);
+	strcat ((char *) syscallstr, (const char *) assembler_args);
 	ret = system ((const char *) syscallstr);
 
 	exit (ret);
