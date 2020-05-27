@@ -2853,7 +2853,7 @@ void show_info (void)
 	printf ("-S stacksize : set the stack size\n");
 	printf ("-q : quiet run, don't show welcome messages\n\n");
 	printf ("%s", VM_VERSION_STR);
-	printf (" (C) 2017-2020 Stefan Pietzonke\n");
+	printf ("%s\n", COPYRIGHT_STR);
 }
 
 int main (int ac, char *av[])

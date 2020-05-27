@@ -1550,7 +1550,7 @@ void show_info (void)
 	printf ("l1asm foo -sizes 1000000 1000000\n\n");
 	printf ("-pack: create .bz2 object code file\n\n");
 	printf ("%s", VM_VERSION_STR);
-	printf (" (C) 2017-2020 Stefan Pietzonke\n");
+	printf ("%s\n", COPYRIGHT_STR);
 }
 
 int main (int ac, char *av[])
