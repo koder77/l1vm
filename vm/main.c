@@ -2287,7 +2287,7 @@ S2 run (void *arg)
 			timer_double = (double) (timer_end.tv_usec - timer_start.tv_usec) / 1000000 + (double) (timer_end.tv_sec - timer_start.tv_sec);
 			timer_double = timer_double * 1000.0; 	// get ms
 			printf ("TIMER ms: %.10lf\n", timer_double);
-			timer_int = floor (timer_double);
+			timer_int = ceil (timer_double);
 			regi[arg2] = timer_int;
 			eoffs = 5;
 			break;
