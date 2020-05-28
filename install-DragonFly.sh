@@ -45,6 +45,9 @@ echo "libraries installed! building compiler, assembler and VM..."
 
 export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib:/usr/lib
 
+export CC=clang
+export CCPP=clang++
+
 cd assemb
 if ./make.sh; then
 	echo "l1asm build ok!"
