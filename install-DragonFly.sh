@@ -4,32 +4,32 @@
 if uname -a | grep -q "DragonFly"; then
 	echo "DragonFly BSD detected..."
 	echo "checking for needed libraries..."
-	
-	if ! sudo pkg install sdl-1.2.15_14,2; then
+
+	if ! sudo pkg install sdl2-2.0.10_1; then
 		echo "installation of sdl library failed!"
 		exit 1
 	fi
-	
-	if ! sudo pkg install sdl_gfx-2.0.26; then
+
+	if ! sudo pkg install sdl2_gfx-1.0.4; then
 		echo "installation of sdl gfx library failed!"
 		exit 1
 	fi
-		
-	if ! sudo pkg install sdl_image-1.2.12_12; then
+
+	if ! sudo pkg install sdl2_image-2.0.5; then
 		echo "installation of sdl image library failed!"
 		exit 1
 	fi
 
-	if ! sudo pkg install sdl_ttf-2.0.11_7; then
+	if ! sudo pkg install sdl2_ttf-2.0.15; then
 		echo "installation of sdl ttf library failed!"
 		exit 1
 	fi
-	
+
 	if ! sudo pkg install fann-2.2.0; then
 		echo "installation of fann library failed!"
 		exit 1
 	fi
-	
+
 	if ! sudo pkg install mpfrc++-3.6.2; then
 		echo "installation of mpfrc++ library failed!"
 		exit 1
@@ -84,7 +84,7 @@ else
 	echo "modules build FAILED!"
 	exit 1
 fi
-		
+
 echo "all modules installed. building programs..."
 cd ../prog
 if sh ./build-all.sh; then
