@@ -7,32 +7,32 @@ echo "Windows 10 WSL Debian detected?"
 echo "checking for needed libraries..."
 
 if ! dpkg -s libsdl2-dev &> /dev/null; then
-	echo "try to install libsdl1.2-dev..."
-	if ! sudo apt-get install libsdl1.2-dev; then
+	echo "try to install libsdl2-dev..."
+	if ! sudo apt-get install libsdl2-dev; then
 		echo "installation failed!"
 		exit 1
 	fi
 fi
 
 if ! dpkg -s libsdl2-gfx-dev &> /dev/null; then
-	echo "try to install libsdl-gfx1.2-dev..."
-	if ! sudo apt-get install libsdl-gfx1.2-dev; then
+	echo "try to install libsdl2-gfx-dev..."
+	if ! sudo apt-get install libsdl2-gfx-dev; then
 		echo "installation failed!"
 		exit 1
 	fi
 fi
 
-if ! dpkg -s libsdl2-image-2.0-0 &> /dev/null; then
-	echo "try to install libsdl-image1.2-dev..."
-	if ! sudo apt-get install libsdl-image1.2-dev; then
+if ! dpkg -s libsdl2-image-dev &> /dev/null; then
+	echo "try to install libsdl2-image-dev..."
+	if ! sudo apt-get install libsdl2-image-dev; then
 		echo "installation failed!"
 		exit 1
 	fi
 fi
 
 if ! dpkg -s libsdl2-ttf-dev &> /dev/null; then
-	echo "try to install libsdl-ttf2.0-dev..."
-	if ! sudo apt-get install libsdl-ttf2.0-dev; then
+	echo "try to install libsdl2-ttf-dev..."
+	if ! sudo apt-get install libsdl2-ttf-dev; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -122,5 +122,3 @@ cd ..
 
 echo "installation finished!"
 exit 0
-
-

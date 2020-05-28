@@ -13,7 +13,10 @@ L1VM - (1.0.3)
 
     NEW: assembler now shows code-, data- and filesize in KB, MB, etc. also.
     
--- Stefan Pietzonke <jay-t@gmx.net> Thu May 28 2020 08:46 +0200
+    BUGFIX install.sh and install-wsl-debian.sh installer scripts!
+    Now library installation installs SDL2 libraries.
+    
+-- Stefan Pietzonke <jay-t@gmx.net> Thu May 28 2020 12:08 +0200
 
 
 L1VM - (1.0.2)
