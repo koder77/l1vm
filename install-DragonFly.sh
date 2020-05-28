@@ -45,8 +45,8 @@ echo "libraries installed! building compiler, assembler and VM..."
 
 export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib:/usr/lib
 
-export CC=clang
-export CCPP=clang++
+export CC=/usr/local/llvm10/bin/clang
+export CCPP=/usr/local/llvm10/bin/clang++
 
 cd assemb
 if ./make.sh; then
