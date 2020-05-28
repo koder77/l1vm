@@ -73,6 +73,10 @@ void convtabs (U1 *str);
 S2 strip_end_commas (U1 *str);
 S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
 
+// code_datasize.c
+void show_code_data_size (S8 codesize, S8 datasize);
+void show_filesize (S8 filesize);
+
 S2 alloc_code_data (void)
 {
 	code = calloc (code_max, sizeof (U1));
@@ -1395,6 +1399,7 @@ S2 dump_object (U1 *name)
 	FILE *fptr;
 	U1 objname[512];
 	S8 data_size ALIGN;
+	S8 code_size ALIGN;
 	S8 writesize ALIGN;
 	S4 slen;
 
@@ -1443,7 +1448,7 @@ S2 dump_object (U1 *name)
 		return (1);
 	}
 
-	printf ("\033[0mobject: codesize: %lli bytes\n", code_ind);
+	code_size = code_ind;
 
 	// write data info block
 
@@ -1522,7 +1527,6 @@ S2 dump_object (U1 *name)
 		return (1);
 	}
 
-	// printf ("dump_object: data_size: %lli\n", data_size);
 
 	writesize = fwrite (data, sizeof (U1), data_size, fptr);
 	if (writesize != data_size)
@@ -1532,11 +1536,12 @@ S2 dump_object (U1 *name)
 		return (1);
 	}
 
-	printf ("\033[0mobject: datasize: %lli bytes\n", data_size);
+	printf ("\033[0m"); // color normal
+	show_code_data_size (code_size, data_size);
 
 	fseek (fptr, 0, SEEK_END);
 	file_size = ftell (fptr);
-	printf ("\033[0mobject: filesize: %lli bytes\n", file_size);
+	show_filesize (file_size);
 
 	fclose (fptr);
 	return (0);

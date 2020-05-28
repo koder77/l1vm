@@ -6,7 +6,7 @@
 	(set int64 1 zero 0)
 	(set byte 100000000 primes)
 	(set int64 1 limit 100000000)
-	//(set int64 1 limit 100)
+	//(set int64 1 limit 10000)
 	(set int64 1 one 1)
 	(set int64 1 two 2)
 	(set int64 1 i 2)

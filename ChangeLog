@@ -11,7 +11,10 @@ L1VM - (1.0.3)
 
     comp/l1com prog/primes-4-long -sizes 100000 1000000000
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed May 27 2020 12:34 +0200
+    NEW: assembler now shows code-, data- and filesize in KB, MB, etc. also.
+    
+-- Stefan Pietzonke <jay-t@gmx.net> Thu May 28 2020 08:46 +0200
+
 
 L1VM - (1.0.2)
 New: net module: get_mimetype_from_filename function.
