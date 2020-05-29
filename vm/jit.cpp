@@ -82,10 +82,6 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
     S8 i ALIGN;
     S8 j ALIGN;
     S8 l ALIGN;
-	S8 rj1 ALIGN;
-	S8 rj2 ALIGN;
-	S8 rj3 ALIGN;
-	S8 rjnext ALIGN = 0;
     S8 r1 ALIGN;
     S8 r2 ALIGN;
     S8 r3 ALIGN;
@@ -97,7 +93,6 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 	S8 jit_regs[6];		// R8 (0) to R11 (3)
 
 	S8 jit_regsd[6]; 	// xmm0 (0) to xmm5 (5)
-	S8 jit_regsd_max ALIGN = 5;
 
 	// JitRuntime jit;                         // Create a runtime specialized for JIT.
   	CodeHolder jcode;                        // Create a CodeHolder.
@@ -471,250 +466,36 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				r2 = code[i + 2];
 				r3 = code[i + 3];
 
-				rj1 = 0; rj2 = 0; rj3 = 0;
-
 				#if DEBUG
 					printf ("JIT-compiler: double opcode: R1 = %lli, R2 = %lli, R3 = %lli\n", r1, r2, r3);
 				#endif
 
-				// search for r1 in CPU registers
-				for (j = 0; j < jit_regsd_max; j++)
+				// move to XMM registers
+				a.movsd (asmjit::x86::xmm0, asmjit::x86::qword_ptr (RDI, OFFSET(r1)));
+				a.movsd (asmjit::x86::xmm1, asmjit::x86::qword_ptr (RDI, OFFSET(r2)));
+
+				switch (code[i])
 				{
-					if (jit_regsd[j] == r1)
-					{
-						rj1 = j;
+					case ADDD:
+						a.addsd (asmjit::x86::xmm0, asmjit::x86::xmm1);
 						break;
-					}
-				}
 
-				// search for r2 in CPU registers
-				for (j = 0; j < jit_regsd_max; j++)
-				{
-					if (jit_regsd[j] == r2)
-					{
-						rj2 = j;
+					case SUBD:
+						a.subsd (asmjit::x86::xmm0, asmjit::x86::xmm1);
 						break;
-					}
+
+					case MULD:
+						a.mulsd (asmjit::x86::xmm0, asmjit::x86::xmm1);
+						break;
+
+					case DIVD:
+						a.divsd (asmjit::x86::xmm0, asmjit::x86::xmm1);
+						break;
 				}
 
-				#if DEBUG
-					printf ("JIT-compiler: double opcode: rj1 = %lli, rj2 = %lli\n", rj1, rj2);
-				#endif
-
-				if (rj1 == 0 && rj2 == 0)
-				{
-					switch (rjnext)
-					{
-						case 0:
-							#if DEBUG
-								printf ("JIT-compiler: rjnext = 0, rj1 = 0, rj2 = 0\n");
-							#endif
-
-							// move to XMM registers
-							a.movsd (asmjit::x86::xmm0, asmjit::x86::qword_ptr (RDI, OFFSET(r1)));
-							a.movsd (asmjit::x86::xmm1, asmjit::x86::qword_ptr (RDI, OFFSET(r2)));
-
-							switch (code[i])
-							{
-								case ADDD:
-									a.addsd (asmjit::x86::xmm0, asmjit::x86::xmm1);
-									break;
-
-								case SUBD:
-									a.subsd (asmjit::x86::xmm0, asmjit::x86::xmm1);
-									break;
-
-								case MULD:
-									a.mulsd (asmjit::x86::xmm0, asmjit::x86::xmm1);
-									break;
-
-								case DIVD:
-									a.divsd (asmjit::x86::xmm0, asmjit::x86::xmm1);
-									break;
-							}
-
-							// move to destination register
-							a.movsd (asmjit::x86::qword_ptr (RDI, OFFSET(r3)), asmjit::x86::xmm0);
-							jit_regsd[0] = r3; jit_regsd[1] = r2;
-							rjnext = 2;
-							run_jit = 1;
-							break;
-
-						case 2:
-							#if DEBUG
-								printf ("JIT-compiler: rjnext = 2, rj1 = 0, rj2 = 0\n");
-							#endif
-
-							// move to XMM registers
-							a.movsd (asmjit::x86::xmm2, asmjit::x86::qword_ptr (RDI, OFFSET(r1)));
-							a.movsd (asmjit::x86::xmm3, asmjit::x86::qword_ptr (RDI, OFFSET(r2)));
-
-							switch (code[i])
-							{
-								case ADDD:
-									a.addsd (asmjit::x86::xmm2, asmjit::x86::xmm3);
-									break;
-
-								case SUBD:
-									a.subsd (asmjit::x86::xmm2, asmjit::x86::xmm3);
-									break;
-
-								case MULD:
-									a.mulsd (asmjit::x86::xmm2, asmjit::x86::xmm3);
-									break;
-
-								case DIVD:
-									a.divsd (asmjit::x86::xmm2, asmjit::x86::xmm3);
-									break;
-							}
-
-							// move to destination register
-							a.movsd (asmjit::x86::qword_ptr (RDI, OFFSET(r3)), asmjit::x86::xmm2);
-							jit_regsd[2] = r3; jit_regsd[3] = r2;
-							rjnext = 4;
-							run_jit = 1;
-							break;
-
-						case 4:
-							#if DEBUG
-								printf ("JIT-compiler: rjnext = 0, rj1 = 0, rj2 = 0\n");
-							#endif
-
-							// move to XMM registers
-							a.movsd (asmjit::x86::xmm4, asmjit::x86::qword_ptr (RDI, OFFSET(r1)));
-							a.movsd (asmjit::x86::xmm5, asmjit::x86::qword_ptr (RDI, OFFSET(r2)));
-
-							switch (code[i])
-							{
-								case ADDD:
-									a.addsd (asmjit::x86::xmm4, asmjit::x86::xmm5);
-									break;
-
-								case SUBD:
-									a.subsd (asmjit::x86::xmm4, asmjit::x86::xmm5);
-									break;
-
-								case MULD:
-									a.mulsd (asmjit::x86::xmm4, asmjit::x86::xmm5);
-									break;
-
-								case DIVD:
-									a.divsd (asmjit::x86::xmm4, asmjit::x86::xmm5);
-									break;
-							}
-
-							// move to destination register
-							a.movsd (asmjit::x86::qword_ptr (RDI, OFFSET(r3)), asmjit::x86::xmm4);
-							jit_regsd[4] = r3; jit_regsd[5] = r2;
-							run_jit = 1; rjnext = 0;
-							break;
-					}
-				}
-				else
-				{
-					if (jit_regsd[rj1] == r3 && jit_regsd[rj2] == r2)
-					{
-						if (rj1 == 0)
-						{
-							#if DEBUG
-								printf ("JIT-compiler 2: rj1 = 0\n");
-							#endif
-
-							// move to XMM registers
-							a.movsd (asmjit::x86::xmm0, asmjit::x86::qword_ptr (RDI, OFFSET(r1)));
-
-							switch (code[i])
-							{
-								case ADDD:
-									a.addsd (asmjit::x86::xmm0, asmjit::x86::xmm1);
-									break;
-
-								case SUBD:
-									a.subsd (asmjit::x86::xmm0, asmjit::x86::xmm1);
-									break;
-
-								case MULD:
-									a.mulsd (asmjit::x86::xmm0, asmjit::x86::xmm1);
-									break;
-
-								case DIVD:
-									a.divsd (asmjit::x86::xmm0, asmjit::x86::xmm1);
-									break;
-							}
-
-							// move to destination register
-							a.movsd (asmjit::x86::qword_ptr (RDI, OFFSET(r3)), asmjit::x86::xmm0);
-							jit_regsd[0] = r3; jit_regsd[1] = r2;
-							run_jit = 1;
-						}
-						if (rj1 == 2)
-						{
-							#if DEBUG
-								printf ("JIT-compiler: rj1 = 2\n");
-							#endif
-
-							// move to XMM registers
-							a.movsd (asmjit::x86::xmm2, asmjit::x86::qword_ptr (RDI, OFFSET(r1)));
-
-							switch (code[i])
-							{
-								case ADDD:
-									a.addsd (asmjit::x86::xmm2, asmjit::x86::xmm3);
-									break;
-
-								case SUBD:
-									a.subsd (asmjit::x86::xmm2, asmjit::x86::xmm3);
-									break;
-
-								case MULD:
-									a.mulsd (asmjit::x86::xmm2, asmjit::x86::xmm3);
-									break;
-
-								case DIVD:
-									a.divsd (asmjit::x86::xmm2, asmjit::x86::xmm3);
-									break;
-							}
-
-							// move to destination register
-							a.movsd (asmjit::x86::qword_ptr (RDI, OFFSET(r3)), asmjit::x86::xmm2);
-							jit_regsd[2] = r3; jit_regsd[3] = r2;
-							run_jit = 1;
-						}
-						if (rj1 == 4)
-						{
-							#if DEBUG
-								printf ("JIT-compiler: rj1 = 4\n");
-							#endif
-
-							// move to XMM registers
-							a.movsd (asmjit::x86::xmm4, asmjit::x86::qword_ptr (RDI, OFFSET(r1)));
-
-							switch (code[i])
-							{
-								case ADDD:
-									a.addsd (asmjit::x86::xmm4, asmjit::x86::xmm5);
-									break;
-
-								case SUBD:
-									a.subsd (asmjit::x86::xmm4, asmjit::x86::xmm5);
-									break;
-
-								case MULD:
-									a.mulsd (asmjit::x86::xmm4, asmjit::x86::xmm5);
-									break;
-
-								case DIVD:
-									a.divsd (asmjit::x86::xmm4, asmjit::x86::xmm5);
-									break;
-							}
-
-							// move to destination register
-							a.movsd (asmjit::x86::qword_ptr (RDI, OFFSET(r3)), asmjit::x86::xmm4);
-							jit_regsd[4] = r3; jit_regsd[5] = r2;
-							run_jit = 1;
-						}
-					}
-				}
+				// move to destination register
+				a.movsd (asmjit::x86::qword_ptr (RDI, OFFSET(r3)), asmjit::x86::xmm0);
+				run_jit = 1;
 				break;
 
 

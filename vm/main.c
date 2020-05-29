@@ -21,8 +21,8 @@
 //
 //
 
-
-#define JIT_COMPILER 0
+// set to 1 to build with JIT compiler
+#define JIT_COMPILER 1
 
 #include "../include/global.h"
 
