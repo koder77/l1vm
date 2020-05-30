@@ -36,6 +36,7 @@ JitRuntime rt;                          // Create a runtime specialized for JIT.
 #include "../include/global.h"
 #include "../include/stack.h"
 
+
 // This is type of function we will generate
 typedef void (*Func)(void);
 
@@ -79,8 +80,8 @@ S8 JIT_label_ind ALIGN = -1;
 extern "C" S8 JIT_code_ind;
 
 // for storing VM registers
-S8 jit_regs[6];		// R8 (0) to R11 (3)
-S8 jit_regsd[6]; 	// xmm0 (0) to xmm5 (5)
+S8 jit_regs[MAXREGJIT_INT];		// R8 (0) to R11 (3)
+S8 jit_regsd[MAXREGJIT_DOUBLE]; 	// xmm0 (0) to xmm5 (5)
 
 // int register stuff =========================================================
 
@@ -181,8 +182,8 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
 	// double regs
 	S8 r1_d ALIGN;
-	S8 r2_d ALIGN;
-	S8 r3_d ALIGN;
+	// S8 r2_d ALIGN;
+	// S8 r3_d ALIGN;
 
 	// int regs
 	// S8 r1_i ALIGN;
@@ -616,9 +617,13 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				r1_d = get_double_reg (r2);
 				if (r1_d == -1)
 				{
+					#if DEBUG
+						printf ("JIT-compiler: double register set: %lli to CPU register 1\n", r2);
+					#endif
+					
 					a.movsd (asmjit::x86::xmm1, asmjit::x86::qword_ptr (RDI, OFFSET(r2)));
 					// set register r3 to CPU reg 0
-					set_double_reg (0, r2);
+					set_double_reg (1, r2);
 				}
 				
 				switch (code[i])
@@ -647,6 +652,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
 
 			case BANDI:
+				#if DEBUG
+					printf ("JIT-compiler: double opcode: BANDI R1 = %lli, R2 = %lli, R3 = %lli\n", r1, r2, r3);
+				#endif
+				
 				r1 = code[i + 1];
 				r2 = code[i + 2];
 				r3 = code[i + 3];
@@ -662,6 +671,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				break;
 
 			case BORI:
+				#if DEBUG
+					printf ("JIT-compiler: double opcode: BORI R1 = %lli, R2 = %lli, R3 = %lli\n", r1, r2, r3);
+				#endif
+				
 				r1 = code[i + 1];
 				r2 = code[i + 2];
 				r3 = code[i + 3];
@@ -677,6 +690,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				break;
 
 			case BXORI:
+				#if DEBUG
+					printf ("JIT-compiler: double opcode: BXORI R1 = %lli, R2 = %lli, R3 = %lli\n", r1, r2, r3);
+				#endif
+				
 				r1 = code[i + 1];
 				r2 = code[i + 2];
 				r3 = code[i + 3];

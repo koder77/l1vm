@@ -2244,7 +2244,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									{
 										if (strcmp ((const char *) regd[e], "") != 0)
 										{
-											strcpy ((char *) code_temp, "stpushd F");
+											strcpy ((char *) code_temp, "stpushd ");
 											sprintf ((char *) str, "%i", e);
 											strcat ((char *) code_temp, (const char*) str);
 											strcat ((char *) code_temp, "\n");
@@ -2274,7 +2274,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									{
 										if (save_regd[e] == 1)
 										{
-											strcpy ((char *) code_temp, "stpopd F");
+											strcpy ((char *) code_temp, "stpopd ");
 											sprintf ((char *) str, "%i", e);
 											strcat ((char *) code_temp, (const char*) str);
 											strcat ((char *) code_temp, "\n");
@@ -3040,7 +3040,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									{
 										if (strcmp ((const char *) regd[e], "") != 0)
 										{
-											strcpy ((char *) code_temp, "stpushd F");
+											strcpy ((char *) code_temp, "stpushd ");
 											sprintf ((char *) str, "%i", e);
 											strcat ((char *) code_temp, (const char*) str);
 											strcat ((char *) code_temp, "\n");
@@ -3399,7 +3399,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										{
 											if (save_regd[e] == 1)
 											{
-												strcpy ((char *) code_temp, "stpopd F");
+												strcpy ((char *) code_temp, "stpopd ");
 												sprintf ((char *) str, "%i", e);
 												strcat ((char *) code_temp, (const char*) str);
 												strcat ((char *) code_temp, "\n");
