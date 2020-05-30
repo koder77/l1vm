@@ -21,9 +21,7 @@
 //
 //
 
-// set to 1 to build with JIT compiler
-#define JIT_COMPILER 1
-
+#include "jit.h"
 #include "../include/global.h"
 
 // show host system type on compile time
