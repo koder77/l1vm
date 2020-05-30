@@ -2,8 +2,8 @@
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 # Install script for Windows 10 WSL Debian
 
-if uname -a | grep -q "Microsoft"; then
-echo "Windows 10 WSL Debian detected?"
+if uname -a | grep -q "Debian"; then
+echo "Debian detected..."
 echo "checking for needed libraries..."
 
 if ! dpkg -s libsdl2-dev &> /dev/null; then
@@ -85,17 +85,17 @@ fi
 
 cd ../vm
 chmod +x *.sh
-if ./make-nojit.sh; then
-	echo "l1vm build ok!"
+if ./make.sh; then
+	echo "l1vm JIT build ok!"
 else
-	echo "l1vm build error!"
+	echo "l1vm JIT build error!"
 	exit 1
 fi
-cp l1vm-nojit l1vm
+cp l1vm l1vm-jit
 cd ..
 cp assemb/l1asm ~/bin
 cp comp/l1com ~/bin
-cp vm/l1vm-nojit ~/bin
+cp vm/l1vm-jit ~/bin
 echo "VM binaries installed into ~/bin"
 
 cd modules

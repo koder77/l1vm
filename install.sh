@@ -91,11 +91,10 @@ else
 	echo "l1vm build error!"
 	exit 1
 fi
-cp l1vm-nojit l1vm
 cd ..
 cp assemb/l1asm ~/bin
 cp comp/l1com ~/bin
-cp vm/l1vm ~/bin
+cp vm/l1vm-nojit ~/bin
 echo "VM binaries installed into ~/bin"
 
 cd modules

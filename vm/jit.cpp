@@ -30,9 +30,8 @@ using namespace asmjit;
 
 JitRuntime rt;                          // Create a runtime specialized for JIT.
 
-// #define DEBUG 1
 
-#define JIT_COMPILER 1
+#include "jit.h"
 
 #include "../include/global.h"
 #include "../include/stack.h"
@@ -283,6 +282,29 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
                 r2 = code[i + 2];
                 r3 = code[i + 3];
 
+				#if DEBUG
+					printf ("JIT-compiler: int opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+
+					switch (code[i])
+					{
+						case ADDI:
+							printf ("ADDI\n\n");
+							break;
+
+						case SUBI:
+							printf ("SUBI\n\n");
+							break;
+
+						case MULI:
+							printf ("MULI\n\n");
+							break;
+
+						case DIVI:
+							printf ("DIVI\n\n");
+							break;
+					}
+				#endif
+
 				// Try to reduce a.mov opcodes by register checking.
 
 				// check if VM register is already in CPU register
@@ -467,7 +489,26 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				r3 = code[i + 3];
 
 				#if DEBUG
-					printf ("JIT-compiler: double opcode: R1 = %lli, R2 = %lli, R3 = %lli\n", r1, r2, r3);
+					printf ("JIT-compiler: double opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+
+					switch (code[i])
+					{
+						case ADDD:
+							printf ("ADDD\n\n");
+							break;
+
+						case SUBD:
+							printf ("SUBD\n\n");
+							break;
+
+						case MULD:
+							printf ("MULD\n\n");
+							break;
+
+						case DIVD:
+							printf ("DIVD\n\n");
+							break;
+					}
 				#endif
 
 				// move to XMM registers
