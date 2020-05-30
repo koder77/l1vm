@@ -42,6 +42,8 @@ typedef void (*Func)(void);
 #define MAXJITCODE 64
 #define MAXJUMPLEN 64
 
+#define MAXREGJIT 6
+
 #define OFFSET(x) x * 8
 #define JIT_X86_64 1
 
@@ -75,6 +77,49 @@ struct JIT_label JIT_label[MAXJUMPLEN];
 S8 JIT_label_ind ALIGN = -1;
 extern "C" S8 JIT_code_ind;
 
+// for storing VM registers
+S8 jit_regs[6];		// R8 (0) to R11 (3)
+S8 jit_regsd[6]; 	// xmm0 (0) to xmm5 (5)
+
+S8 get_double_reg (S8 reg)
+{
+	S8 i ALIGN;
+
+	for (i = 0; i < MAXREGJIT; i++)
+	{
+		if (jit_regsd[i] == reg)
+		{
+			return (i);
+		}
+	}
+	return (-1);	// jit register not found
+}
+
+S8 get_free_double_reg (S8 reg)
+{
+	S8 i ALIGN;
+
+	for (i = 0; i < MAXREGJIT; i++)
+	{
+		if (jit_regsd[i] == 0)
+		{
+			return (i);
+		}
+	}
+	return (-1);	// no free jit register found
+}
+
+void free_double_reg (S8 cpu_reg)
+{
+	// free CPU register
+	jit_regsd[cpu_reg] = 0;
+}
+
+S8 set_double_reg (S8 cpu_reg, S8 reg)
+{
+	jit_regsd[cpu_reg] = reg;
+	return (1);
+}
 
 extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi ALIGN, F8 *regd ALIGN, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start ALIGN, S8 end ALIGN)
 {
@@ -88,10 +133,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
     U1 label_created;
     S8 label ALIGN;
     U1 run_jit = 0;
-	// for storing VM registers
-	S8 jit_regs[6];		// R8 (0) to R11 (3)
 
-	S8 jit_regsd[6]; 	// xmm0 (0) to xmm5 (5)
+	S8 r1_d ALIGN;
+	S8 r2_d ALIGN;
+	S8 r3_d ALIGN;
 
 	// JitRuntime jit;                         // Create a runtime specialized for JIT.
   	CodeHolder jcode;                        // Create a CodeHolder.
@@ -512,8 +557,61 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				#endif
 
 				// move to XMM registers
-				a.movsd (asmjit::x86::xmm0, asmjit::x86::qword_ptr (RDI, OFFSET(r1)));
-				a.movsd (asmjit::x86::xmm1, asmjit::x86::qword_ptr (RDI, OFFSET(r2)));
+				r1_d = get_double_reg (r1);
+				if (r1_d == -1)
+				{
+					a.movsd (asmjit::x86::xmm0, asmjit::x86::qword_ptr (RDI, OFFSET(r1)));
+					// set register r3 to CPU reg 0
+					set_double_reg (0, r3);
+				}
+
+				r2_d = get_double_reg (r2);
+				if (r2_d == -1)
+				{
+					a.movsd (asmjit::x86::xmm1, asmjit::x86::qword_ptr (RDI, OFFSET(r2)));
+					// set register r2 to CPU reg 1
+					set_double_reg (1, r2);
+
+					r3_d = get_free_double_reg (r2);
+					if (r3_d != -1)
+					{
+						switch (r3_d)
+						{
+							case 0:
+								a.movsd (asmjit::x86::xmm0, asmjit::x86::xmm1);
+								break;
+
+							case 1:
+								a.movsd (asmjit::x86::xmm1, asmjit::x86::xmm1);
+								break;
+
+							case 2:
+								a.movsd (asmjit::x86::xmm2, asmjit::x86::xmm1);
+								break;
+
+							case 3:
+								a.movsd (asmjit::x86::xmm3, asmjit::x86::xmm1);
+								break;
+
+							case 4:
+								a.movsd (asmjit::x86::xmm4, asmjit::x86::xmm1);
+								break;
+
+							case 5:
+								a.movsd (asmjit::x86::xmm5, asmjit::x86::xmm1);
+								break;
+						}
+
+						set_double_reg (r3_d, r2);
+					}
+					else
+					{
+						// store r2 into CPU reg 5
+						free_double_reg (5);
+						a.movsd (asmjit::x86::xmm5, asmjit::x86::xmm1);
+						set_double_reg (5, r2);
+					}
+				}
 
 				switch (code[i])
 				{
