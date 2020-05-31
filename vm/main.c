@@ -47,13 +47,12 @@ struct tm *tm;
 #if JIT_COMPILER
 #define MAXJITCODE 64
 S8 JIT_code_ind ALIGN = -1;
-struct JIT_code JIT_code[MAXJITCODE];
+struct JIT_code *JIT_code;
 
-int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *regd, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start, S8 end);
-int run_jit (S8 code);
-int free_jit_code ();
+int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *regd, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start, S8 end, struct JIT_code *JIT_code, S8 JIT_code_ind);
+int run_jit (S8 code, struct JIT_code *JIT_code, S8 JIT_code_ind);
+int free_jit_code (struct JIT_code *JIT_code, S8 JIT_code_ind);
 #endif
-
 
 #define EXE_NEXT(); ep = ep + eoffs; goto *jumpt[code[ep]];
 
@@ -208,6 +207,18 @@ S2 memory_bounds (S8 start, S8 offset_access)
 	return (1);
 }
 
+#if JIT_COMPILER
+S2 alloc_jit_code ()
+{
+	JIT_code = (struct JIT_code*) calloc (MAXJITCODE, sizeof (struct JIT_code));
+	if (JIT_code == NULL)
+	{
+		printf ("FATAL ERROR: can't allocate JIT_code structure!\n");
+		return (1);
+	}
+	return (0);
+}
+#endif
 
 S2 load_module (U1 *name, S8 ind ALIGN)
 {
@@ -289,13 +300,17 @@ U1 *call_module_func (S8 ind ALIGN, S8 func_ind ALIGN, U1 *sp, U1 *sp_top, U1 *s
 void cleanup (void)
 {
 	#if JIT_COMPILER
-    	free_jit_code ();
+		free_jit_code (JIT_code, JIT_code_ind);
 	#endif
 
     free_modules ();
 	if (data) free (data);
     if (code) free (code);
 	if (threaddata) free (threaddata);
+	
+	#if JIT_COMPILER
+		if (JIT_code) free (JIT_code);
+	#endif
 }
 
 U1 double_state (F8 num)
@@ -2243,7 +2258,7 @@ S2 run (void *arg)
             arg2 = code[ep + 2];
             arg3 = code[ep + 3];
 
-            if (jit_compiler ((U1 *) code, (U1 *) data, (S8 *) jumpoffs, (S8 *) &regi, (F8 *) &regd, (U1 *) sp, sp_top, sp_bottom, regi[arg2], regi[arg3]) != 0)
+			if (jit_compiler ((U1 *) code, (U1 *) data, (S8 *) jumpoffs, (S8 *) &regi, (F8 *) &regd, (U1 *) sp, sp_top, sp_bottom, regi[arg2], regi[arg3], JIT_code, JIT_code_ind) != 0)
             {
                 printf ("FATAL ERROR: JIT compiler: can't compile!\n");
                 free (jumpoffs);
@@ -2256,7 +2271,7 @@ S2 run (void *arg)
         case 254:
             arg2 = code[ep + 2];
             // printf ("intr0: 254: RUN JIT CODE: %i\n", arg2);
-            run_jit (regi[arg2]);
+			run_jit (regi[arg2], JIT_code, JIT_code_ind);
 
             eoffs = 5;
             break;
@@ -2944,6 +2959,14 @@ int main (int ac, char *av[])
 		cleanup ();
 		exit (1);
 	}
+
+#if JIT_COMPILER
+	if (alloc_jit_code () != 0)
+	{
+		cleanup ();
+		exit (1);
+	}
+#endif
 
 	if (silent_run == 0)
 	{

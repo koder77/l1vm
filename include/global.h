@@ -96,7 +96,7 @@
 
 #define COPYRIGHT_STR " (C) 2017-2020 Stefan Pietzonke"
 
-#define  VM_VERSION_STR		"1.0.3"
+#define  VM_VERSION_STR		"1.0.4"
 
 #if MAXCPUCORES == 0
 	#error "global.h: ERROR MAXCPUCORES is 0!"

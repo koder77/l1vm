@@ -64,8 +64,6 @@ typedef void (*Func)(void);
 		#define ST1     x86::fp6
 	#endif
 
-extern "C" struct JIT_code JIT_code[];
-
 struct JIT_label
 {
 	asmjit::Label lab;
@@ -77,7 +75,6 @@ struct JIT_label
 struct JIT_label JIT_label[MAXJUMPLEN];
 
 S8 JIT_label_ind ALIGN = -1;
-extern "C" S8 JIT_code_ind;
 
 // for storing VM registers
 S8 jit_regs[MAXREGJIT_INT];			// R8 (0) to R11 (3)
@@ -167,7 +164,7 @@ S8 set_double_reg (S8 cpu_reg, S8 reg)
 }
 
 
-extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi ALIGN, F8 *regd ALIGN, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start ALIGN, S8 end ALIGN)
+extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi ALIGN, F8 *regd ALIGN, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start ALIGN, S8 end ALIGN, struct JIT_code *JIT_code, S8 JIT_code_ind)
 {
     S8 i ALIGN;
     S8 j ALIGN;
@@ -780,7 +777,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 	return (0);
 }
 
-extern "C" int run_jit (S8 code ALIGN)
+extern "C" int run_jit (S8 code ALIGN, struct JIT_code *JIT_code)
 {
 	#if	 DEBUG
 		printf ("run_jit: code: %lli\n", code);
@@ -804,7 +801,7 @@ extern "C" int run_jit (S8 code ALIGN)
 	return (0);
 }
 
-extern "C" int free_jit_code ()
+extern "C" int free_jit_code (struct JIT_code *JIT_code, S8 JIT_code_ind)
 {
 	/* free all JIT code functions from memory */
 
