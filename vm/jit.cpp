@@ -43,7 +43,7 @@ typedef void (*Func)(void);
 #define MAXJUMPLEN 64
 
 #define MAXREGJIT_INT 4
-#define MAXREGJIT_DOUBLE 6
+#define MAXREGJIT_DOUBLE 16
 
 
 #define OFFSET(x) x * 8
@@ -550,6 +550,46 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 							case 5:
 								a.movsd (asmjit::x86::xmm5, asmjit::x86::xmm1);
 								break;
+								
+							case 6:
+								a.movsd (asmjit::x86::xmm6, asmjit::x86::xmm1);
+								break;
+								
+							case 7:
+								a.movsd (asmjit::x86::xmm7, asmjit::x86::xmm1);
+								break;
+								
+							case 8:
+								a.movsd (asmjit::x86::xmm8, asmjit::x86::xmm1);
+								break;
+								
+							case 9:
+								a.movsd (asmjit::x86::xmm9, asmjit::x86::xmm1);
+								break;
+								
+							case 10:
+								a.movsd (asmjit::x86::xmm10, asmjit::x86::xmm1);
+								break;
+								
+							case 11:
+								a.movsd (asmjit::x86::xmm11, asmjit::x86::xmm1);
+								break;
+								
+							case 12:
+								a.movsd (asmjit::x86::xmm12, asmjit::x86::xmm1);
+								break;
+								
+							case 13:
+								a.movsd (asmjit::x86::xmm13, asmjit::x86::xmm1);
+								break;
+								
+							case 14:
+								a.movsd (asmjit::x86::xmm14, asmjit::x86::xmm1);
+								break;
+								
+							case 15:
+								a.movsd (asmjit::x86::xmm15, asmjit::x86::xmm1);
+								break;
 						}
 
 						set_double_reg (r3_d, r2);
@@ -557,9 +597,9 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 					else
 					{
 						// store r2 into CPU reg 5
-						free_double_reg (5);
+						free_double_reg (15);
 						a.movsd (asmjit::x86::xmm5, asmjit::x86::xmm1);
-						set_double_reg (5, r2);
+						set_double_reg (15, r2);
 					}
 				}
 				else
@@ -580,6 +620,46 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 							
 						case 5:
 							a.movsd (asmjit::x86::xmm1, asmjit::x86::xmm5);
+							break;
+							
+						case 6:
+							a.movsd (asmjit::x86::xmm1, asmjit::x86::xmm6);
+							break;
+							
+						case 7:
+							a.movsd (asmjit::x86::xmm1, asmjit::x86::xmm7);
+							break;
+							
+						case 8:
+							a.movsd (asmjit::x86::xmm1, asmjit::x86::xmm8);
+							break;
+							
+						case 9:
+							a.movsd (asmjit::x86::xmm1, asmjit::x86::xmm9);
+							break;
+							
+						case 10:
+							a.movsd (asmjit::x86::xmm1, asmjit::x86::xmm10);
+							break;
+							
+						case 11:
+							a.movsd (asmjit::x86::xmm1, asmjit::x86::xmm11);
+							break;
+							
+						case 12:
+							a.movsd (asmjit::x86::xmm1, asmjit::x86::xmm12);
+							break;
+							
+						case 13:
+							a.movsd (asmjit::x86::xmm1, asmjit::x86::xmm13);
+							break;
+							
+						case 14:
+							a.movsd (asmjit::x86::xmm1, asmjit::x86::xmm14);
+							break;
+							
+						case 15:
+							a.movsd (asmjit::x86::xmm1, asmjit::x86::xmm15);
 							break;
 					}
 				}
