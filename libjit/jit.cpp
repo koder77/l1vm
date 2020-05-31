@@ -77,50 +77,9 @@ struct JIT_label JIT_label[MAXJUMPLEN];
 S8 JIT_label_ind ALIGN = -1;
 
 // for storing VM registers
-S8 jit_regs[MAXREGJIT_INT];			// R8 (0) to R11 (3)
+// S8 jit_regs[MAXREGJIT_INT];			// R8 (0) to R11 (3)
 S8 jit_regsd[MAXREGJIT_DOUBLE]; 	// xmm0 (0) to xmm5 (5)
 
-
-// integer registers code =====================================================
-S8 get_int_reg (S8 reg)
-{
-	S8 i ALIGN;
-	
-	for (i = 0; i < MAXREGJIT_INT; i++)
-	{
-		if (jit_regs[i] == reg)
-		{
-			return (i);
-		}
-	}
-	return (-1);	// jit register not found
-}
-
-S8 get_free_int_reg (S8 reg)
-{
-	S8 i ALIGN;
-	
-	for (i = 2; i < MAXREGJIT_INT; i++)
-	{
-		if (jit_regs[i] == 0)
-		{
-			return (i);
-		}
-	}
-	return (-1);	// no free jit register found
-}
-
-void free_int_reg (S8 cpu_reg)
-{
-	// free CPU register
-	jit_regs[cpu_reg] = 0;
-}
-
-S8 set_int_reg (S8 cpu_reg, S8 reg)
-{
-	jit_regs[cpu_reg] = reg;
-	return (1);
-}
 
 // double registers code ======================================================
 S8 get_double_reg (S8 reg)
@@ -177,10 +136,6 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
     S8 label ALIGN;
     U1 run_jit = 0;
 
-	S8 r1_i ALIGN;
-	S8 r2_i ALIGN;
-	S8 r3_i ALIGN;
-	
 	S8 r1_d ALIGN;
 	S8 r2_d ALIGN;
 	S8 r3_d ALIGN;
@@ -210,7 +165,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 	// CPU register
 	for (i = 0; i <= 5; i++)
 	{
-		jit_regs[i] = 0;  // 0 = is empty register
+		// jit_regs[i] = 0;  // 0 = is empty register
 		jit_regsd[i] = 0;
 	}
 
@@ -397,60 +352,8 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 					}
 				#endif
 
-				// move to integer registers
-				r1_i = get_int_reg (r1);
-				if (r1_i == -1)
-				{
-					a.mov (R8, asmjit::x86::qword_ptr (RSI, OFFSET(r1))); /* r1v */
-					// set register r1 to CPU reg 0
-					set_double_reg (0, r1);
-				}
-				
-				r2_i = get_int_reg (r2);
-				if (r2_i == -1)
-				{
-					a.mov (R9, asmjit::x86::qword_ptr (RSI, OFFSET(r2)));
-					
-					a.movsd (asmjit::x86::xmm1, asmjit::x86::qword_ptr (RDI, OFFSET(r2)));
-					// set register r2 to CPU reg 1
-					// set_double_reg (1, r2);
-					
-					r3_i = get_free_int_reg (r2);
-					if (r3_i != -1)
-					{
-						switch (r3_i)
-						{
-							case 2:
-								a.mov (R10, R9);
-								break;
-								
-							case 3:
-								a.mov (R11, R9);
-								break;
-						}
-						
-						set_int_reg (r3_i, r2);
-					}
-					else
-					{
-						// store r2 into CPU reg 5
-						free_int_reg (3);
-						set_int_reg (3, r2);
-					}
-				}
-				else
-				{
-					switch (r2_i)
-					{
-						case 2:
-							a.mov (R9, R10);
-							break;
-							
-						case 3:
-							a.mov (R9, R11);
-							break;
-					}
-				}
+				a.mov (R8, asmjit::x86::qword_ptr (RSI, OFFSET(r1))); /* r1v */
+				a.mov (R9, asmjit::x86::qword_ptr (RSI, OFFSET(r2)));
 				
 				switch (code[i])
 				{
@@ -474,11 +377,11 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 						break;
 				}
 				
-				a.mov (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), R10);
+				a.mov (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), R8);
 				run_jit = 1;
 				break;
 				
-				
+
 			case ADDD:
 			case SUBD:
 			case MULD:
@@ -687,6 +590,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
 
 			case BANDI:
+				#if DEBUG
+					printf ("JIT-compiler: double opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+					printf ("BANDI\n\n");
+				#endif
 				r1 = code[i + 1];
 				r2 = code[i + 2];
 				r3 = code[i + 3];
@@ -702,6 +609,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				break;
 
 			case BORI:
+				#if DEBUG
+				printf ("JIT-compiler: double opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+					printf ("BORI\n\n");
+				#endif
 				r1 = code[i + 1];
 				r2 = code[i + 2];
 				r3 = code[i + 3];
@@ -717,6 +628,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				break;
 
 			case BXORI:
+				#if DEBUG
+					printf ("JIT-compiler: double opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+					printf ("BXORI\n\n");
+				#endif
 				r1 = code[i + 1];
 				r2 = code[i + 2];
 				r3 = code[i + 3];
