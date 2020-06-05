@@ -21,7 +21,12 @@
 // Generates code for x86 64 bit. The double floating point number opcodes use SSE opcodes.
 // The integer opcodes are "optimized" by reducing a.mov if possible.
 
-// TODO: Add more opcodes.
+// This is the free open source JIT-compiler.
+
+// opcodes:
+// ADDI, SUBI, MULI, DIVI
+// ADDD, SUBD, MULD, DIVD
+// BANDI, BORI, BXORI
 
 
 #include <asmjit/asmjit.h>
@@ -39,8 +44,8 @@ JitRuntime rt;                          // Create a runtime specialized for JIT.
 // This is type of function we will generate
 typedef void (*Func)(void);
 
-#define MAXJITCODE 64
-#define MAXJUMPLEN 64
+#define MAXJITCODE 40960
+#define MAXJUMPLEN 40960
 
 #define MAXREGJIT_INT 4
 #define MAXREGJIT_DOUBLE 16
@@ -67,9 +72,9 @@ typedef void (*Func)(void);
 struct JIT_label
 {
 	asmjit::Label lab;
-	S4 pos;
-	S4 if_;
-	S4 endif;
+	S8 pos;	ALIGN;// was S4
+	S8 if_ ALIGN;
+	S8 endif ALIGN;
 };
 
 struct JIT_label JIT_label[MAXJUMPLEN];
@@ -122,8 +127,7 @@ S8 set_double_reg (S8 cpu_reg, S8 reg)
 	return (1);
 }
 
-
-extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi ALIGN, F8 *regd ALIGN, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start ALIGN, S8 end ALIGN, struct JIT_code *JIT_code, S8 JIT_code_ind)
+extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi ALIGN, F8 *regd ALIGN, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start ALIGN, S8 end ALIGN, struct JIT_code *JIT_code, S8 JIT_code_ind ALIGN, S8 code_size ALIGN)
 {
     S8 i ALIGN;
     S8 j ALIGN;
@@ -139,9 +143,9 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 	S8 r1_d ALIGN;
 	S8 r2_d ALIGN;
 	S8 r3_d ALIGN;
-
-	// JitRuntime jit;                         // Create a runtime specialized for JIT.
-  	CodeHolder jcode;                        // Create a CodeHolder.
+	
+	// JitRuntime jit;                      // Create a runtime specialized for JIT.
+  	CodeHolder jcode;                       // Create a CodeHolder.
 
   	jcode.init(rt.codeInfo());              // Initialize it to be compatible with `jit`.
   	x86::Assembler a(&jcode);
@@ -155,7 +159,6 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
     // RSIback = RSI;
 
     /* initialize label pos */
-
 	for (i = 0; i < MAXJUMPLEN; i++)
 	{
 		JIT_label[i].pos = -1;
@@ -182,8 +185,13 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
         /* check if current opcode is on label */
 		label_created = 0;
 
-		for (j = 0; j < MAXJUMPLEN; j++)
+		// printf ("DEBUG: jit_compiler: code_size: %lli\n", code_size);
+		
+		
+		for (j = start; j <= end; j++)
 		{
+			// printf ("DEBUG: jit_compiler: j: %lli\n", j);
+			
 			if (i == jumpoffs[j])
 			{
 				/* create label */
@@ -588,64 +596,63 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				run_jit = 1;
 				break;
 
-
 			case BANDI:
 				#if DEBUG
-					printf ("JIT-compiler: double opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
-					printf ("BANDI\n\n");
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("BANDI\n\n");
 				#endif
 				r1 = code[i + 1];
 				r2 = code[i + 2];
 				r3 = code[i + 3];
-
+						
 				a.movq (asmjit::x86::mm0, asmjit::x86::qword_ptr (RSI, OFFSET(r1))); /* r1v */
 				a.movq (asmjit::x86::mm1, asmjit::x86::qword_ptr (RSI, OFFSET(r2))); /* r2v */
-
+						
 				a.pand (asmjit::x86::mm0, asmjit::x86::mm1);
-
+						
 				a.movq (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), asmjit::x86::mm0);
-
+						
 				run_jit = 1;
 				break;
-
+						
 			case BORI:
 				#if DEBUG
-				printf ("JIT-compiler: double opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
-					printf ("BORI\n\n");
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("BORI\n\n");
 				#endif
 				r1 = code[i + 1];
 				r2 = code[i + 2];
 				r3 = code[i + 3];
-
+						
 				a.movq (asmjit::x86::mm0, asmjit::x86::qword_ptr (RSI, OFFSET(r1))); /* r1v */
 				a.movq (asmjit::x86::mm1, asmjit::x86::qword_ptr (RSI, OFFSET(r2))); /* r2v */
-
+						
 				a.por (asmjit::x86::mm0, asmjit::x86::mm1);
-
+						
 				a.movq (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), asmjit::x86::mm0);
-
+						
 				run_jit = 1;
 				break;
-
+						
 			case BXORI:
 				#if DEBUG
-					printf ("JIT-compiler: double opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
-					printf ("BXORI\n\n");
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("BXORI\n\n");
 				#endif
 				r1 = code[i + 1];
 				r2 = code[i + 2];
 				r3 = code[i + 3];
-
+						
 				a.movq (asmjit::x86::mm0, asmjit::x86::qword_ptr (RSI, OFFSET(r1))); /* r1v */
 				a.movq (asmjit::x86::mm1, asmjit::x86::qword_ptr (RSI, OFFSET(r2))); /* r2v */
-
+						
 				a.pxor (asmjit::x86::mm0, asmjit::x86::mm1);
-
+						
 				a.movq (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), asmjit::x86::mm0);
-
+						
 				run_jit = 1;
 				break;
-
+				
 			default:
                 printf ("JIT compiler: UNKNOWN opcode: %i - exiting!\n", code[i]);
                 return (1);
@@ -731,4 +738,9 @@ extern "C" int free_jit_code (struct JIT_code *JIT_code, S8 JIT_code_ind)
 	}
 
 	return (0);
+}
+
+extern "C" void get_jit_compiler_type (void)
+{
+	printf ("JIT-compiler: PRO version\n");
 }

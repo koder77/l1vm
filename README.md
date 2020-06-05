@@ -25,6 +25,13 @@ The design goals are:
 In pure console text I/O programs not linked with SDL library, the memory footprint is very low.
 About 2 MB RAM only as shown in the taskmanager by running a minimal test program!
 
+New
+---
+L1VM JIT-Compiler PRO version, see libjit-pro folder for more info.
+The PRO version has more opcodes as the open source version.
+You can upgrade to PRO, if you write me an email.
+See "libjit-pro" folder here!
+
 New SDL 2.0!
 ------------
 Finally I ported the SDL gfx/GUI library to SDL 2.0!

@@ -92,11 +92,16 @@
 // VM: set timer interrupt
 #define TIMER_USE				1 				// 1 = set timer measurement interrupt
 
+#define JIT_COMPILER_PRO 1						// set if JIT compiler pro lib should be used
+
 // user settings end ======================================
 
 #define COPYRIGHT_STR " (C) 2017-2020 Stefan Pietzonke"
 
 #define  VM_VERSION_STR		"1.0.4"
+
+#define JIT_COMPILER_PRO_KEY "/l1vm/l1vm-license-jit-compiler.txt"
+
 
 #if MAXCPUCORES == 0
 	#error "global.h: ERROR MAXCPUCORES is 0!"
@@ -299,64 +304,64 @@ struct JIT_code
 #define PULLQW  8
 #define PULLD   9
 
-#define ADDI    10
-#define SUBI    11
-#define MULI    12
-#define DIVI    13
+#define ADDI    10	// in JIT-Compiler
+#define SUBI    11	//
+#define MULI    12	//
+#define DIVI    13	//
 
-#define ADDD    14
-#define SUBD    15
-#define MULD    16
-#define DIVD    17
+#define ADDD    14	// in JIT-compiler
+#define SUBD    15	//
+#define MULD    16	//
+#define DIVD    17	//
 
 #define SMULI   18
 #define SDIVI   19
 
-#define ANDI    20
+#define ANDI    20 
 #define ORI     21
-#define BANDI   22
-#define BORI    23
-#define BXORI   24
+#define BANDI   22	// in JIT-compiler
+#define BORI    23	// in JIT-compiler
+#define BXORI   24	// in JIT-compiler
 #define MODI    25
 
-#define EQI     26
-#define NEQI    27
-#define GRI     28
-#define LSI     29
-#define GREQI   30
-#define LSEQI   31
+#define EQI     26	// in JIT-compiler
+#define NEQI    27	//
+#define GRI     28	//
+#define LSI     29	//
+#define GREQI   30	//
+#define LSEQI   31	//
 
-#define EQD     32
-#define NEQD    33
-#define GRD     34
-#define LSD     35
-#define GREQD   36
-#define LSEQD   37
+#define EQD     32	// in JIT-Compiler
+#define NEQD    33	//
+#define GRD     34	//
+#define LSD     35	//
+#define GREQD   36	//
+#define LSEQD   37	//
 
-#define JMP     38
-#define JMPI    39
+#define JMP     38	// in JIT-compiler
+#define JMPI    39	//
 
-#define STPUSHB     40
-#define STPOPB      41
+#define STPUSHB 40
+#define STPOPB  41
 
-#define STPUSHI   42
+#define STPUSHI  42
 #define STPOPI   43
 
-#define STPUSHD   44
-#define STPOPD    45
+#define STPUSHD  44
+#define STPOPD   45
 
-#define LOADA     46
-#define LOADD     47
+#define LOADA    46
+#define LOADD    47
 
-#define INTR0      48
-#define INTR1      49
+#define INTR0    48
+#define INTR1    49
 
 // superopcodes for counter loops
 #define INCLSIJMPI 50
 #define DECGRIJMPI 51
 
-#define MOVI	52
-#define MOVD	53
+#define MOVI	52	// in JIT_compiler
+#define MOVD	53	//
 
 #define LOADL   54
 #define JMPA	55

@@ -24,6 +24,10 @@
 #include "jit.h"
 #include "../include/global.h"
 
+#if JIT_COMPILER
+#include <openssl/ssl.h>
+#endif
+
 // show host system type on compile time
 #if __linux__
 	#pragma message ("Linux host detected!")
@@ -33,6 +37,8 @@
 #endif
 
 U1 SDL_use = 0;
+
+// S8 jit_compiler_pro_key ALIGN = 0;
 
 // time functions
 struct tm *tm;
@@ -45,13 +51,55 @@ struct tm *tm;
 #endif
 
 #if JIT_COMPILER
-#define MAXJITCODE 64
 S8 JIT_code_ind ALIGN = -1;
 struct JIT_code *JIT_code;
 
-int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *regd, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start, S8 end, struct JIT_code *JIT_code, S8 JIT_code_ind);
+int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *regd, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start, S8 end, struct JIT_code *JIT_code, S8 JIT_code_ind, S8 code_size);
 int run_jit (S8 code, struct JIT_code *JIT_code, S8 JIT_code_ind);
 int free_jit_code (struct JIT_code *JIT_code, S8 JIT_code_ind);
+void get_jit_compiler_type (void);
+char *fgets_uni (char *str, int len, FILE *fptr);
+size_t strlen_safe (const char * str, int maxlen);
+void get_license (U1 *user_key);
+
+#if JIT_COMPILER_PRO
+S8 load_jit_compiler_key (void)
+{
+	FILE *key;
+	U1 key_filename[512];
+	unsigned char digest[SHA_DIGEST_LENGTH];
+	unsigned char key_string[512];
+	char *read;
+	
+	memset (digest, 0x0, SHA_DIGEST_LENGTH);
+	
+	strcpy ((char *) key_filename, getenv ("HOME"));
+	strcat ((char *) key_filename, JIT_COMPILER_PRO_KEY);
+	
+	// printf ("try to load: '%s' file...\n", key_filename);
+	
+	key = fopen ((const char *) key_filename, "r");
+	if (key == NULL)
+	{
+		printf ("ERROR: can't found JIT-keyfile!\n");
+		return (1);
+	}
+	else
+	{
+		// printf ("found keyfile...\n");
+		// read string from key file
+		read = fgets_uni ((char *) key_string, 511, key);
+		if (read != NULL)
+		{
+			SHA1 (key_string, strlen_safe ((const char *) key_string, 511), digest);
+			get_license (digest);
+		}
+		fclose (key);
+	}
+	return (0);
+}
+#endif
+
 #endif
 
 #define EXE_NEXT(); ep = ep + eoffs; goto *jumpt[code[ep]];
@@ -2258,7 +2306,7 @@ S2 run (void *arg)
             arg2 = code[ep + 2];
             arg3 = code[ep + 3];
 
-			if (jit_compiler ((U1 *) code, (U1 *) data, (S8 *) jumpoffs, (S8 *) &regi, (F8 *) &regd, (U1 *) sp, sp_top, sp_bottom, regi[arg2], regi[arg3], JIT_code, JIT_code_ind) != 0)
+			if (jit_compiler ((U1 *) code, (U1 *) data, (S8 *) jumpoffs, (S8 *) &regi, (F8 *) &regd, (U1 *) sp, sp_top, sp_bottom, regi[arg2], regi[arg3], JIT_code, JIT_code_ind, code_size) != 0)
             {
                 printf ("FATAL ERROR: JIT compiler: can't compile!\n");
                 free (jumpoffs);
@@ -2817,6 +2865,11 @@ int main (int ac, char *av[])
 		exit (1);
 	}
 
+	#if JIT_COMPILER_PRO
+		// try to load L1VM JIt-compiler-pro
+		load_jit_compiler_key ();
+	#endif
+	
 	// printf ("DEBUG: ac: %i\n", ac);
 
     if (ac > 1)
@@ -2986,6 +3039,7 @@ int main (int ac, char *av[])
 
 		#if JIT_COMPILER
 	    	printf ("JIT-compiler inside: lib asmjit.\n");
+			get_jit_compiler_type ();
 		#endif
 
 		#if MATH_LIMITS
