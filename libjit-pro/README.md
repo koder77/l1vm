@@ -25,4 +25,4 @@ Set THE JIT-compiler type TO PRO in the "include/global.h" file:
 And compile the VM with the "install-jit.sh" script.
 
 Write me an e-mail with the subject "L1VM PRO license" and I will send you a license keyfile for FREE! <br>
-spietzonke _at_ gmail _dot_ net
+spietzonke _at_ gmail _dot_ com
