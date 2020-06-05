@@ -9,15 +9,15 @@ another library search path.
 
 In the L1VM JIT-compiler PRO version are the following opodes included:
 
-addi, subi, muli, divi
-addd, subd, muld, divd
-bandi, bori, bxori
-eqi, neqi, gri, lsi, greqi, lseqi
-eqd, neqd, grd, greqd, lseqd
+addi, subi, muli, divi <br>
+addd, subd, muld, divd <br>
+bandi, bori, bxori <br>
+eqi, neqi, gri, lsi, greqi, lseqi <br>
+eqd, neqd, grd, greqd, lseqd <br><br>
 
-jmp, jmpi
+jmp, jmpi <br><br>
 
-movi, movd
+movi, movd <br><br>
 
 Set THE JIT-compiler type TO PRO in the "include/global.h" file:
 #define JIT_COMPILER_PRO 1
