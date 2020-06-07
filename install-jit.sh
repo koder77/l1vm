@@ -2,65 +2,8 @@
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 # Install script for Windows 10 WSL Debian
 
-if uname -a | grep -q "Debian"; then
-echo "Debian detected..."
-echo "checking for needed libraries..."
 
-if ! dpkg -s libsdl2-dev &> /dev/null; then
-	echo "try to install libsdl2-dev..."
-	if ! sudo apt-get install libsdl2-dev; then
-		echo "installation failed!"
-		exit 1
-	fi
-fi
-
-if ! dpkg -s libsdl2-gfx-dev &> /dev/null; then
-	echo "try to install libsdl2-gfx-dev..."
-	if ! sudo apt-get install libsdl2-gfx-dev; then
-		echo "installation failed!"
-		exit 1
-	fi
-fi
-
-if ! dpkg -s libsdl2-image-dev &> /dev/null; then
-	echo "try to install libsdl2-image-dev..."
-	if ! sudo apt-get install libsdl2-image-dev; then
-		echo "installation failed!"
-		exit 1
-	fi
-fi
-
-if ! dpkg -s libsdl2-ttf-dev &> /dev/null; then
-	echo "try to install libsdl2-ttf-dev..."
-	if ! sudo apt-get install libsdl2-ttf-dev; then
-		echo "installation failed!"
-		exit 1
-	fi
-fi
-
-if ! dpkg -s libfann-dev &> /dev/null; then
-	echo "try to install libfann-dev..."
-	if ! sudo apt-get install libfann-dev; then
-		echo "installation failed!"
-		exit 1
-	fi
-fi
-
-if ! dpkg -s libmpfrc++-dev &> /dev/null; then
-	echo "try to install libmpfrc++-dev..."
-	if ! sudo apt-get install libmpfrc++-dev; then
-		echo "installation failed!"
-		exit 1
-	fi
-fi
-
-echo "libraries installed! building compiler, assembler and VM..."
-
-else
-	echo "ERROR: detected OS not Debian GNU Linux!"
-	echo "You have to install the dependency libraries by hand..."
-	echo "See this installation script for more info..."
-fi
+echo "building compiler, assembler and VM..."
 
 export CC=clang
 export CCPP=clang++
