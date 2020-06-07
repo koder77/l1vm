@@ -1,6 +1,5 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin!
-# Install script for Windows 10 WSL Debian
 
 if uname -a | grep -q "Debian"; then
 echo "Debian detected..."

@@ -1,6 +1,8 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 
+echo "building compiler, assembler and VM..."
+
 export CC=clang
 export CCPP=clang++
 

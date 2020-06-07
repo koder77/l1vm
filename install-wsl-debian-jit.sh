@@ -85,7 +85,7 @@ fi
 
 cd ../vm
 chmod +x *.sh
-if ./make-nojit.sh; then
+if ./make.sh; then
 	echo "l1vm build ok!"
 else
 	echo "l1vm build error!"
