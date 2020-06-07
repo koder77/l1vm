@@ -33,35 +33,35 @@ intr0 7, 0, 0, 0
 movi 1, 11
 intr0 4, 11, 0, 0
 intr0 7, 0, 0, 0
-stpushi I0
-stpushi I2
-stpushi I3
-stpushi I4
-stpushi I5
-stpushi I6
-stpushi I7
-stpushi I8
-stpushi I9
-stpushi I10
-stpushi I11
-stpushi I12
+stpushi 0
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+stpushi 6
+stpushi 7
+stpushi 8
+stpushi 9
+stpushi 10
+stpushi 11
+stpushi 12
 jsr :test
 stpopi 12
 load ret, 0, 1
 pullqw 12, 1, 0
 movi 12, 11
-stpopi I12
-stpopi I11
-stpopi I10
-stpopi I9
-stpopi I8
-stpopi I7
-stpopi I6
-stpopi I5
-stpopi I4
-stpopi I3
-stpopi I2
-stpopi I0
+stpopi 12
+stpopi 11
+stpopi 10
+stpopi 9
+stpopi 8
+stpopi 7
+stpopi 6
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 0
 loada z, 0, 1
 intr0 4, 1, 0, 0
 intr0 7, 0, 0, 0

@@ -302,19 +302,19 @@ pullqw 12, 13, 0
 load direction, 0, 11
 loada down, 0, 14
 pullqw 14, 11, 0
-stpushi I0
-stpushi I1
-stpushi I2
-stpushi I3
-stpushi I4
-stpushi I5
-stpushi I6
-stpushi I7
-stpushi I8
-stpushi I9
-stpushi I10
-stpushi I12
-stpushi I13
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+stpushi 6
+stpushi 7
+stpushi 8
+stpushi 9
+stpushi 10
+stpushi 12
+stpushi 13
 loada zero, 0, 11
 stpushi 11
 loada width, 0, 1
@@ -327,19 +327,19 @@ jsr :sdl_open_screen
 stpopb 15
 load ret, 0, 16
 pullb 15, 16, 0
-stpopi I13
-stpopi I12
-stpopi I10
-stpopi I9
-stpopi I8
-stpopi I7
-stpopi I6
-stpopi I5
-stpopi I4
-stpopi I3
-stpopi I2
-stpopi I1
-stpopi I0
+stpopi 13
+stpopi 12
+stpopi 10
+stpopi 9
+stpopi 8
+stpopi 7
+stpopi 6
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
 loada width, 0, 1
 stpushi 1
 loada height, 0, 2
@@ -378,13 +378,13 @@ loada three, 0, 5
 muli 4, 5, 6
 load i, 0, 7
 pullqw 6, 7, 0
-stpushi I1
-stpushi I2
-stpushi I3
-stpushi I4
-stpushi I5
-stpushi I6
-stpushi I7
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+stpushi 6
+stpushi 7
 loada i, 0, 8
 stpushi 8
 jsr :get_colorind
@@ -397,13 +397,13 @@ pullb 10, 11, 0
 stpopb 11
 load color_b, 0, 12
 pullb 11, 12, 0
-stpopi I7
-stpopi I6
-stpopi I5
-stpopi I4
-stpopi I3
-stpopi I2
-stpopi I1
+stpopi 7
+stpopi 6
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
 intr0 7, 0, 0, 0
 load color_r, 0, 1
 pushb 1, 0, 2
@@ -478,78 +478,78 @@ load f, 0, 33
 pullqw 32, 33, 0
 loada f, 0, 10
 jmpi 10, :phase_match
-stpushi I1
-stpushi I2
-stpushi I3
-stpushi I4
-stpushi I5
-stpushi I6
-stpushi I7
-stpushi I8
-stpushi I9
-stpushi I10
-stpushi I11
-stpushi I12
-stpushi I13
-stpushi I14
-stpushi I15
-stpushi I16
-stpushi I17
-stpushi I18
-stpushi I19
-stpushi I20
-stpushi I21
-stpushi I22
-stpushi I23
-stpushi I24
-stpushi I25
-stpushi I26
-stpushi I27
-stpushi I28
-stpushi I29
-stpushi I30
-stpushi I31
-stpushi I32
-stpushi I33
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+stpushi 6
+stpushi 7
+stpushi 8
+stpushi 9
+stpushi 10
+stpushi 11
+stpushi 12
+stpushi 13
+stpushi 14
+stpushi 15
+stpushi 16
+stpushi 17
+stpushi 18
+stpushi 19
+stpushi 20
+stpushi 21
+stpushi 22
+stpushi 23
+stpushi 24
+stpushi 25
+stpushi 26
+stpushi 27
+stpushi 28
+stpushi 29
+stpushi 30
+stpushi 31
+stpushi 32
+stpushi 33
 loada phase_ind, 0, 34
 stpushi 34
 jsr :get_phase1
 stpopi 35
 load phase_color, 0, 36
 pullqw 35, 36, 0
-stpopi I33
-stpopi I32
-stpopi I31
-stpopi I30
-stpopi I29
-stpopi I28
-stpopi I27
-stpopi I26
-stpopi I25
-stpopi I24
-stpopi I23
-stpopi I22
-stpopi I21
-stpopi I20
-stpopi I19
-stpopi I18
-stpopi I17
-stpopi I16
-stpopi I15
-stpopi I14
-stpopi I13
-stpopi I12
-stpopi I11
-stpopi I10
-stpopi I9
-stpopi I8
-stpopi I7
-stpopi I6
-stpopi I5
-stpopi I4
-stpopi I3
-stpopi I2
-stpopi I1
+stpopi 33
+stpopi 32
+stpopi 31
+stpopi 30
+stpopi 29
+stpopi 28
+stpopi 27
+stpopi 26
+stpopi 25
+stpopi 24
+stpopi 23
+stpopi 22
+stpopi 21
+stpopi 20
+stpopi 19
+stpopi 18
+stpopi 17
+stpopi 16
+stpopi 15
+stpopi 14
+stpopi 13
+stpopi 12
+stpopi 11
+stpopi 10
+stpopi 9
+stpopi 8
+stpopi 7
+stpopi 6
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
 jmp :phase_match_end
 :phase_match
 loada phase_ind, 0, 1
@@ -585,44 +585,44 @@ load f, 0, 16
 pullqw 15, 16, 0
 loada f, 0, 5
 jmpi 5, :write_col_phase0
-stpushi I1
-stpushi I2
-stpushi I3
-stpushi I4
-stpushi I5
-stpushi I6
-stpushi I7
-stpushi I8
-stpushi I9
-stpushi I10
-stpushi I11
-stpushi I12
-stpushi I13
-stpushi I14
-stpushi I15
-stpushi I16
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+stpushi 6
+stpushi 7
+stpushi 8
+stpushi 9
+stpushi 10
+stpushi 11
+stpushi 12
+stpushi 13
+stpushi 14
+stpushi 15
+stpushi 16
 loada j, 0, 17
 stpushi 17
 jsr :get_phase1
 stpopi 18
 load write_color, 0, 19
 pullqw 18, 19, 0
-stpopi I16
-stpopi I15
-stpopi I14
-stpopi I13
-stpopi I12
-stpopi I11
-stpopi I10
-stpopi I9
-stpopi I8
-stpopi I7
-stpopi I6
-stpopi I5
-stpopi I4
-stpopi I3
-stpopi I2
-stpopi I1
+stpopi 16
+stpopi 15
+stpopi 14
+stpopi 13
+stpopi 12
+stpopi 11
+stpopi 10
+stpopi 9
+stpopi 8
+stpopi 7
+stpopi 6
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
 jmp :phase_color_match_end
 :write_col_phase0
 loada j, 0, 1
@@ -637,10 +637,10 @@ loada three, 0, 2
 muli 1, 2, 3
 load i, 0, 4
 pullqw 3, 4, 0
-stpushi I1
-stpushi I2
-stpushi I3
-stpushi I4
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
 loada i, 0, 5
 stpushi 5
 jsr :get_colorind
@@ -653,10 +653,10 @@ pullb 7, 8, 0
 stpopb 8
 load next_b, 0, 9
 pullb 8, 9, 0
-stpopi I4
-stpopi I3
-stpopi I2
-stpopi I1
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
 loada x, 0, 1
 stpushi 1
 loada y, 0, 2
@@ -687,30 +687,30 @@ load f, 0, 8
 pullqw 7, 8, 0
 loada f, 0, 9
 jmpi 9, :next_direction_phase0
-stpushi I1
-stpushi I2
-stpushi I3
-stpushi I4
-stpushi I5
-stpushi I6
-stpushi I7
-stpushi I8
-stpushi I9
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+stpushi 6
+stpushi 7
+stpushi 8
+stpushi 9
 loada j, 0, 10
 stpushi 10
 jsr :get_phase1
 stpopi 11
 load next_direction, 0, 12
 pullqw 11, 12, 0
-stpopi I9
-stpopi I8
-stpopi I7
-stpopi I6
-stpopi I5
-stpopi I4
-stpopi I3
-stpopi I2
-stpopi I1
+stpopi 9
+stpopi 8
+stpopi 7
+stpopi 6
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
 jmp :next_direction_end
 :next_direction_phase0
 loada j, 0, 1
@@ -732,30 +732,30 @@ load f, 0, 8
 pullqw 7, 8, 0
 loada f, 0, 9
 jmpi 9, :next_phase0
-stpushi I1
-stpushi I2
-stpushi I3
-stpushi I4
-stpushi I5
-stpushi I6
-stpushi I7
-stpushi I8
-stpushi I9
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+stpushi 6
+stpushi 7
+stpushi 8
+stpushi 9
 loada j, 0, 10
 stpushi 10
 jsr :get_phase1
 stpopi 11
 load next_phase, 0, 12
 pullqw 11, 12, 0
-stpopi I9
-stpopi I8
-stpopi I7
-stpopi I6
-stpopi I5
-stpopi I4
-stpopi I3
-stpopi I2
-stpopi I1
+stpopi 9
+stpopi 8
+stpopi 7
+stpopi 6
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
 jmp :next_phase_end
 :next_phase0
 loada j, 0, 1
@@ -946,12 +946,12 @@ pullqw 4, 5, 0
 subi 2, 3, 1
 load width@clear_screen, 0, 6
 pullqw 1, 6, 0
-stpushi I0
-stpushi I1
-stpushi I3
-stpushi I4
-stpushi I5
-stpushi I6
+stpushi 0
+stpushi 1
+stpushi 3
+stpushi 4
+stpushi 5
+stpushi 6
 load zero@clear_screen, 0, 2
 pushb 2, 0, 7
 stpushb 7
@@ -975,12 +975,12 @@ load b@clear_screen, 0, 13
 pushb 13, 0, 15
 stpushb 15
 jsr :sdl_rectangle_fill
-stpopi I6
-stpopi I5
-stpopi I4
-stpopi I3
-stpopi I1
-stpopi I0
+stpopi 6
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 1
+stpopi 0
 jsr :sdl_update
 rts
 :sdl_open_screen

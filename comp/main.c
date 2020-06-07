@@ -2218,7 +2218,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									{
 										if (strcmp ((const char *) regi[e], "") != 0)
 										{
-											strcpy ((char *) code_temp, "stpushi I");
+											strcpy ((char *) code_temp, "stpushi ");
 											sprintf ((char *) str, "%i", e);
 											strcat ((char *) code_temp, (const char*) str);
 											strcat ((char *) code_temp, "\n");
@@ -2295,7 +2295,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									{
 										if (save_regi[e] == 1)
 										{
-											strcpy ((char *) code_temp, "stpopi I");
+											strcpy ((char *) code_temp, "stpopi ");
 											sprintf ((char *) str, "%i", e);
 											strcat ((char *) code_temp, (const char*) str);
 											strcat ((char *) code_temp, "\n");
@@ -3014,7 +3014,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									{
 										if (strcmp ((const char *) regi[e], "") != 0)
 										{
-											strcpy ((char *) code_temp, "stpushi I");
+											strcpy ((char *) code_temp, "stpushi ");
 											sprintf ((char *) str, "%i", e);
 											strcat ((char *) code_temp, (const char*) str);
 											strcat ((char *) code_temp, "\n");
@@ -3420,7 +3420,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										{
 											if (save_regi[e] == 1)
 											{
-												strcpy ((char *) code_temp, "stpopi I");
+												strcpy ((char *) code_temp, "stpopi ");
 												sprintf ((char *) str, "%i", e);
 												strcat ((char *) code_temp, (const char*) str);
 												strcat ((char *) code_temp, "\n");

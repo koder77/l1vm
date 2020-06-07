@@ -17,8 +17,9 @@ L1VM - (1.0.3)
     Now library installation installs SDL2 libraries.
 
     JIT-compiler cleanup: double floating point opcodes BUGFIXES!
-
--- Stefan Pietzonke <jay-t@gmx.net> Sat May 30 2020 23:08 +0200
+    Compiler: removed "I" from stpushi/stpopi code output
+    
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Jun 7 2020 23:04 +0200
 
 
 L1VM - (1.0.2)
