@@ -1,4 +1,4 @@
-L1VM README  2020-01-26
+L1VM README  2020-06-07
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -143,6 +143,7 @@ A simple "Hello world!" in bra(ets (brackets) my language for L1VM:
 Modules
 -------
 <pre>
+Cells - linked neural networks with FANN library
 endianess - convert to big endian, or little endian functions
 fann - FANN neural networks
 file - file module
@@ -152,8 +153,9 @@ math - some math functions
 mpfr-c++ - MPFR floating point big num library
 net - TCP/IP sockets module
 process - start a new shell process
-rs232 - serial port module
-sdl - graphics primitves module, like pixels, lines...
+rs232-libserialport - RS232 serial port using libserialport
+rs232 - RS232 serial port module
+sdl 2.0 - graphics primitves module, like pixels, lines..., and GUI with buttons, lists, etc.
 string - some string functions
 time - get time and date
 </pre>
