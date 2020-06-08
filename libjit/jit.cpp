@@ -742,5 +742,5 @@ extern "C" int free_jit_code (struct JIT_code *JIT_code, S8 JIT_code_ind)
 
 extern "C" void get_jit_compiler_type (void)
 {
-	printf ("JIT-compiler: PRO version\n");
+	printf ("JIT-compiler: open source version: 1.0 for L1VM 1.0.4\n");
 }
