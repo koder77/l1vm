@@ -317,8 +317,8 @@ struct JIT_code
 #define SMULI   18
 #define SDIVI   19
 
-#define ANDI    20 
-#define ORI     21
+#define ANDI    20  // in JIT-compiler
+#define ORI     21	// in JIT-compiler
 #define BANDI   22	// in JIT-compiler
 #define BORI    23	// in JIT-compiler
 #define BXORI   24	// in JIT-compiler

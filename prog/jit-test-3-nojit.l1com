@@ -50,6 +50,8 @@
     bandi I1, I2, I52
     bori I1, I2, I53
     bxori I1, I2, I54
+    andi I6, I6, I55
+    ori I6, I0, I56
 	eqi I1, I1, I70
 	neqi I1, I2, I71
 	gri I1, I2, I72
@@ -77,6 +79,10 @@
     intr0 4, I53, 0, 0
     intr0 7, 0, 0, 0
     intr0 4, I54, 0, 0
+    intr0 7, 0, 0, 0
+    intr0 4, I55, 0, 0
+    intr0 7, 0, 0, 0
+    intr0 4, I56, 0, 0
     intr0 7, 0, 0, 0
     intr0 4, I70, 0, 0
     intr0 7, 0, 0, 0
