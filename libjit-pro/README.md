@@ -11,7 +11,7 @@ In the L1VM JIT-compiler PRO version are the following opodes included:
 
 addi, subi, muli, divi <br>
 addd, subd, muld, divd <br>
-bandi, bori, bxori <br>
+bandi, bori, bxori, andi, ori <br>
 eqi, neqi, gri, lsi, greqi, lseqi <br>
 eqd, neqd, grd, greqd, lseqd <br><br>
 
