@@ -31,12 +31,12 @@
     loadl :jit_end, I41
     // run jit compiler
     intr0 253, I40, I41, 0
-:loop
     // call jit code
     intr0 254, I0, 0, 0
     // jump to following non-jit code
     jmp :next
 :jit
+:loop
     muli I4, I3, I20
     muli I4, I1, I21
     addi I4, I2, I22
@@ -75,11 +75,11 @@
 	// intr0 7, 0, 0, 0
     // load sum, 0, I30
     // pullqw I10, I30, 0
-:jit_end
     addi I4, I6, I4
-:next
     lseqi I4, I5, I30
+:jit_end
     jmpi I30, :loop
+:next
     intr0 4, I10, 0, 0
     intr0 7, 0, 0, 0
     intr0 4, I52, 0, 0
