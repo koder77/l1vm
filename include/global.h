@@ -92,8 +92,9 @@
 // VM: set timer interrupt
 #define TIMER_USE				1 				// 1 = set timer measurement interrupt
 
-#define JIT_COMPILER_PRO 1						// set if JIT compiler pro lib should be used
+#define JIT_COMPILER_PRO 0						// set if JIT compiler pro lib should be used
 
+#define JIT_COMPILER_MASTER 0					// set to one if MASTER key code
 // user settings end ======================================
 
 #define COPYRIGHT_STR " (C) 2017-2020 Stefan Pietzonke"
@@ -101,7 +102,7 @@
 #define  VM_VERSION_STR		"1.0.4"
 
 #define JIT_COMPILER_PRO_KEY "/l1vm/l1vm-license-jit-compiler.txt"
-
+#define JIT_COMPILER_MASTER_KEY "/l1vm/l1vm-license-master-key.txt"
 
 #if MAXCPUCORES == 0
 	#error "global.h: ERROR MAXCPUCORES is 0!"

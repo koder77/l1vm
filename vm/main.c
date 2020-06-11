@@ -61,6 +61,7 @@ void get_jit_compiler_type (void);
 char *fgets_uni (char *str, int len, FILE *fptr);
 size_t strlen_safe (const char * str, int maxlen);
 void get_license (U1 *user_key);
+void get_master_license (U1 *user_key);
 
 #if JIT_COMPILER_PRO
 S8 load_jit_compiler_key (void)
@@ -93,6 +94,44 @@ S8 load_jit_compiler_key (void)
 		{
 			SHA1 (key_string, strlen_safe ((const char *) key_string, 511), digest);
 			get_license (digest);
+		}
+		fclose (key);
+	}
+	return (0);
+}
+#endif
+
+#if JIT_COMPILER_MASTER
+S8 load_master_key (void)
+{
+	FILE *key;
+	U1 key_filename[512];
+	unsigned char digest[SHA_DIGEST_LENGTH];
+	unsigned char key_string[512];
+	char *read;
+	
+	memset (digest, 0x0, SHA_DIGEST_LENGTH);
+	
+	strcpy ((char *) key_filename, getenv ("HOME"));
+	strcat ((char *) key_filename, JIT_COMPILER_MASTER_KEY);
+	
+	// printf ("try to load: '%s' file...\n", key_filename);
+	
+	key = fopen ((const char *) key_filename, "r");
+	if (key == NULL)
+	{
+		printf ("ERROR: can't found JIT-keyfile!\n");
+		return (1);
+	}
+	else
+	{
+		// printf ("found keyfile...\n");
+		// read string from key file
+		read = fgets_uni ((char *) key_string, 511, key);
+		if (read != NULL)
+		{
+			SHA1 (key_string, strlen_safe ((const char *) key_string, 511), digest);
+			get_master_license (digest);
 		}
 		fclose (key);
 	}
@@ -2868,6 +2907,9 @@ int main (int ac, char *av[])
 	#if JIT_COMPILER_PRO
 		// try to load L1VM JIt-compiler-pro
 		load_jit_compiler_key ();
+	#if JIT_COMPILER_MASTER
+		load_master_key ();
+	#endif
 	#endif
 	
 	// printf ("DEBUG: ac: %i\n", ac);
