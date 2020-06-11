@@ -118,6 +118,7 @@ void update_rect (Sint16 x, Sint16 y, Sint16 w, Sint16 h)
 	rect.w = w; rect.h = h;
 	
 	SDL_UpdateWindowSurfaceRects (window, &rect, 1);
+	SDL_UpdateWindowSurface (window);
 }
 
 void set_default_colors (void)
@@ -526,6 +527,7 @@ U1 draw_gadget_button (S2 screennum, U2 gadget_index, U1 selected)
     // SDL_UpdateRect (renderer, button->x, button->y, button->x2 - button->x + 1, button->y2 - button->y + 1);
     
     SDL_RenderPresent (renderer);
+	SDL_UpdateWindowSurface (window);
     return (TRUE);
 }
 void draw_checkmark_light (SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 x2, Sint16 y2)
@@ -617,6 +619,7 @@ U1 draw_gadget_checkbox (S2 screennum, U2 gadget_index, U1 selected, U1 value)
     // SDL_UpdateRect (renderer, checkbox->text_x, checkbox->text_y, checkbox->text_x2 - checkbox->text_x + 1, checkbox->text_y2 - checkbox->text_y + 1);
     
     SDL_RenderPresent (renderer);
+	SDL_UpdateWindowSurface (window);
     return (TRUE);
 }
 
@@ -888,7 +891,7 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 				
 				/* set renderer */
 				temp_renderer = SDL_CreateSoftwareRenderer (temp_surface);
-				
+				SDL_UpdateWindowSurface (window);
 				cycle->menu = TRUE;
 			}
 
@@ -896,7 +899,7 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
             /* draw menu */
 
             draw_gadget_light (temp_renderer, 0, 0, cycle->menu_x2 - cycle->menu_x, cycle->menu_y2 - cycle->menu_y);
-
+			
             text_x = cycle->text_x - cycle->menu_x;
             text_y = cycle->text_y - cycle->y;
 
@@ -915,6 +918,7 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
                     {
                         return (FALSE);
                     }
+                    // SDL_UpdateWindowSurface (window);
                 }
                 else
                 {
@@ -922,11 +926,15 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
                     {
                         return (FALSE);
                     }
+                    //SDL_UpdateWindowSurface (window);
                 }
 
                 text_y += cycle->text_height + (cycle->text_height / 2);
             }
 
+            sdl_do_delay (200);
+            // SDL_UpdateWindowSurface (window);
+            
             menu_rect.x = cycle->menu_x;
             menu_rect.y = cycle->menu_y;
 
@@ -937,7 +945,7 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 			}
 			
 			update_rect (cycle->menu_x, cycle->menu_y, cycle->menu_x2 - cycle->menu_x + 1, cycle->menu_y2 - cycle->menu_y + 1);
-			
+			SDL_UpdateWindowSurface (window);
 			
 			// DEBUG
 			/*
@@ -961,6 +969,7 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 			}
 			
 			update_rect (cycle->menu_x, cycle->menu_y, cycle->menu_x2 - cycle->menu_x + 1, cycle->menu_y2 - cycle->menu_y + 1);
+			SDL_UpdateWindowSurface (window);
 			
 			/* redraw cycle gadget */
 			
@@ -987,6 +996,8 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 			}
 			
 			cycle->menu = FALSE;
+			
+			SDL_UpdateWindowSurface (window);
 			break;
 			
     }
@@ -997,6 +1008,7 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
     }
 
     update_rect (cycle->x, cycle->y, cycle->x2 - cycle->x + 1, cycle->y2 - cycle->y + 1);
+	SDL_UpdateWindowSurface (window);
     return (TRUE);
 }
 
@@ -1041,6 +1053,7 @@ U1 draw_gadget_progress_bar (S2 screennum, U2 gadget_index, U1 selected)
     // SDL_UpdateRect (renderer, progress->x, progress->y, progress->x2 - progress->x + 1, progress->y2 - progress->y + 1);
     
     SDL_RenderPresent (renderer);
+	SDL_UpdateWindowSurface (window);
     return (TRUE);
 }
 
@@ -1112,6 +1125,7 @@ U1 draw_gadget_string (S2 screennum, U2 gadget_index, U1 selected)
     // SDL_UpdateRect (renderer, string->text_x, string->text_y, string->text_x2 - string->text_x + 1, string->text_y2 - string->text_y + 1);
     
     SDL_RenderPresent (renderer);
+    SDL_UpdateWindowSurface (window);
     return (TRUE);
 }
 
@@ -1543,7 +1557,8 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			// draw_cursor (cursor, mouse_x, mouse_y);
 			// update_screen (0);
 
-
+			SDL_UpdateWindowSurface (window);
+			
 			/* wait for event */
             if (! SDL_WaitEvent (&event))
             {

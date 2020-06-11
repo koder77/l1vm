@@ -177,9 +177,21 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
-U1 *sdl_delay (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+void sdl_do_delay (S8 delay)
 {
 	const Uint32 startMs = SDL_GetTicks();
+	
+	while (SDL_GetTicks () - startMs < delay)
+    {
+		SDL_PumpEvents ();
+
+		SDL_RenderPresent (renderer);
+		SDL_UpdateWindowSurface (window);
+    }
+}
+
+U1 *sdl_delay (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
 	S8 delay;
 	
 	sp = stpopi ((U1 *) &delay, sp, sp_top);
@@ -189,13 +201,7 @@ U1 *sdl_delay (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	
-    while ( SDL_GetTicks() - startMs < delay)
-    {
-		SDL_PumpEvents();
-
-		SDL_RenderPresent (renderer);
-		SDL_UpdateWindowSurface (window);
-    }
+    sdl_do_delay (delay);
     return (sp);
 }
     

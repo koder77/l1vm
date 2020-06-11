@@ -95,6 +95,7 @@ U1 *get_gadget_x2y2(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 Uint32 getpixel (SDL_Surface *surface, Sint16 x, Sint16 y);
 U1 **alloc_array_U1 (S4 x, S4 y);
 void dealloc_array_U1 (U1 **array, S4 x);
+void sdl_do_delay (S8 delay);
 
 /* string.c */
 int strright(U1 *dst, U1 *src, int chars);
