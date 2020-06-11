@@ -149,6 +149,7 @@
 	(set string 13 gadget_eventstr@sdl "gadget_event")
 	(set string s load_picturestr@sdl "sdl_load_picture")
 	(set string s save_picturestr@sdl "sdl_save_picture")
+	(set string s delaystr@sdl "sdl_delay")
     (set int64 1 open@sdl 0)
     (set int64 1 quit@sdl 1)
     (set int64 1 update@sdl 2)
@@ -183,6 +184,7 @@
 	(set int64 1 gadget_event@sdl 31)
 	(set int64 1 load_picture@sdl 32)
 	(set int64 1 save_picture@sdl 33)
+	(set int64 1 delay@sdl 34)
     (set int64 1 get@sdl 0)
     // call arguments
     (set int64 1 width@sdl 0)
@@ -231,6 +233,7 @@
 	(2 mod@sdl gadget_event@sdl gadget_eventstr@sdladdr intr0)
 	(2 mod@sdl load_picture@sdl load_picturestr@sdladdr intr0)
 	(2 mod@sdl save_picture@sdl save_picturestr@sdladdr intr0)
+	(2 mod@sdl delay@sdl delaystr@sdladdr intr0)
     // open screen
     (width@sdl stpushi)
     (height@sdl stpushi)
@@ -357,4 +360,7 @@
 (funcend)
 (sdl_save_picture func)
 	(3 mod@sdl save_picture@sdl 0 intr0)
+(funcend)
+(sdl_delay func)
+	(3 mod@sdl delay@sdl 0 intr0)
 (funcend)

@@ -158,7 +158,10 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	
 	// set renderer
 	// renderer = SDL_CreateRenderer (window, -1, SDL_RENDERER_ACCELERATED);
-	renderer = SDL_CreateRenderer (window, -1, SDL_RENDERER_SOFTWARE);
+	// renderer = SDL_CreateRenderer (window, -1, SDL_RENDERER_SOFTWARE);
+	
+	renderer = SDL_CreateSoftwareRenderer (surf);
+	
 	SDL_RenderClear (renderer);
 	
 	SDL_SetRenderDrawColor (renderer, 0, 0, 0, 255);
@@ -174,6 +177,28 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+U1 *sdl_delay (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	const Uint32 startMs = SDL_GetTicks();
+	S8 delay;
+	
+	sp = stpopi ((U1 *) &delay, sp, sp_top);
+	if (sp == NULL)
+	{
+		printf ("sdl_delay: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	
+    while ( SDL_GetTicks() - startMs < delay)
+    {
+		SDL_PumpEvents();
+
+		SDL_RenderPresent (renderer);
+		SDL_UpdateWindowSurface (window);
+    }
+    return (sp);
+}
+    
 U1 *sdl_quit (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// free renderer
@@ -202,7 +227,10 @@ U1 *sdl_update (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// printf ("sdl_update...\n");
 	// SDL_Flip (surf);
+	SDL_PumpEvents();
+	
 	SDL_RenderPresent (renderer);
+	SDL_UpdateWindowSurface (window);
 	return (sp);
 }
 

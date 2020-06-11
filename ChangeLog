@@ -21,7 +21,9 @@ L1VM - (1.0.3)
     
     New: JIT-compiler PRO: andi, ori added.
     
--- Stefan Pietzonke <jay-t@gmx.net> Wed Jun 10 2020 17:51 +0200
+    New: SDL_UpdateWindowSurface (window); in SDL module to update window surface!
+    
+-- Stefan Pietzonke <jay-t@gmx.net> Thu Jun 11 2020 16:16 +0200
 
 
 L1VM - (1.0.2)
