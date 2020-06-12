@@ -61,7 +61,7 @@ void get_jit_compiler_type (void);
 char *fgets_uni (char *str, int len, FILE *fptr);
 size_t strlen_safe (const char * str, int maxlen);
 void get_license (U1 *user_key);
-void get_master_license (U1 *user_key);
+void get_special_license (U1 *user_key);
 
 #if JIT_COMPILER_PRO
 S8 load_jit_compiler_key (void)
@@ -101,8 +101,8 @@ S8 load_jit_compiler_key (void)
 }
 #endif
 
-#if JIT_COMPILER_MASTER
-S8 load_master_key (void)
+#if JIT_COMPILER_SPECIAL
+S8 load_special_key (void)
 {
 	FILE *key;
 	U1 key_filename[512];
@@ -113,7 +113,7 @@ S8 load_master_key (void)
 	memset (digest, 0x0, SHA_DIGEST_LENGTH);
 	
 	strcpy ((char *) key_filename, getenv ("HOME"));
-	strcat ((char *) key_filename, JIT_COMPILER_MASTER_KEY);
+	strcat ((char *) key_filename, JIT_COMPILER_SPECIAL_KEY);
 	
 	// printf ("try to load: '%s' file...\n", key_filename);
 	
@@ -131,7 +131,7 @@ S8 load_master_key (void)
 		if (read != NULL)
 		{
 			SHA1 (key_string, strlen_safe ((const char *) key_string, 511), digest);
-			get_master_license (digest);
+			get_special_license (digest);
 		}
 		fclose (key);
 	}
@@ -2907,8 +2907,8 @@ int main (int ac, char *av[])
 	#if JIT_COMPILER_PRO
 		// try to load L1VM JIt-compiler-pro
 		load_jit_compiler_key ();
-	#if JIT_COMPILER_MASTER
-		load_master_key ();
+	#if JIT_COMPILER_SPECIAL
+		load_special_key ();
 	#endif
 	#endif
 	
