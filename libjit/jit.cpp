@@ -1683,7 +1683,6 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
 
 			case JMP:
-				// DEBUG: do check!!
 				#if DEBUG
 					printf ("JMP\n\n");
 				#endif
