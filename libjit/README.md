@@ -10,7 +10,7 @@ In the L1VM JIT-compiler version are the following opodes included:
 
 addi, subi, muli, divi <br>
 addd, subd, muld, divd <br>
-bandi, bori, bxori <br>
+andi, ori, bandi, bori, bxori <br>
 eqi, neqi, gri, lsi, greqi, lseqi <br>
 eqd, neqd, grd, lsd, greqd, lseqd <br><br>
 
