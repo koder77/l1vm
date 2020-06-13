@@ -1830,6 +1830,8 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
 				a.mov (R8, asmjit::x86::qword_ptr (RSI, OFFSET(r1))); /* r2v */
 				a.mov (asmjit::x86::qword_ptr (RSI, OFFSET(r2)), R8);
+
+				run_jit = 1;
 				break;
 
 			case MOVD:
@@ -1844,6 +1846,8 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
 				a.movsd (asmjit::x86::xmm0, asmjit::x86::qword_ptr (RDI, OFFSET(r1)));
 				a.movsd (asmjit::x86::qword_ptr (RDI, OFFSET(r2)), asmjit::x86::xmm0);
+
+				run_jit = 1;
 				break;
 
 			default:
