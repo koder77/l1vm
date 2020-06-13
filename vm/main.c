@@ -24,10 +24,6 @@
 #include "jit.h"
 #include "../include/global.h"
 
-#if JIT_COMPILER
-#include <openssl/ssl.h>
-#endif
-
 // show host system type on compile time
 #if __linux__
 	#pragma message ("Linux host detected!")
