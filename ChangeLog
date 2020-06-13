@@ -1,4 +1,4 @@
-L1VM - (1.0.3)
+L1VM - (1.0.4)
     NEW: lib/int-wrapper.l1com: showing how to use the interrupt wrapper functions
     in a print date/time demo. Now it is a bit easier to use them with the readable
     function names.
@@ -18,12 +18,14 @@ L1VM - (1.0.3)
 
     JIT-compiler cleanup: double floating point opcodes BUGFIXES!
     Compiler: removed "I" from stpushi/stpopi code output
-    
+
     New: JIT-compiler PRO: andi, ori added.
-    
+
     New: SDL_UpdateWindowSurface (window); in SDL module to update window surface!
-    
--- Stefan Pietzonke <jay-t@gmx.net> Thu Jun 11 2020 16:16 +0200
+
+    Updated makefiles *.sh and for zerobuild, did cleanup them.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Jun 13 2020 20:38 +0200
 
 
 L1VM - (1.0.2)
