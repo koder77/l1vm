@@ -92,9 +92,6 @@
 // VM: set timer interrupt
 #define TIMER_USE				1 				// 1 = set timer measurement interrupt
 
-#define JIT_COMPILER_PRO 0					// set if JIT compiler pro lib should be used
-
-#define JIT_COMPILER_SPECIAL 0					// set to one if special key code
 // user settings end ======================================
 
 #define COPYRIGHT_STR " (C) 2017-2020 Stefan Pietzonke"

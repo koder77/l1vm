@@ -38,8 +38,6 @@
 
 U1 SDL_use = 0;
 
-// S8 jit_compiler_pro_key ALIGN = 0;
-
 // time functions
 struct tm *tm;
 
@@ -60,85 +58,6 @@ int free_jit_code (struct JIT_code *JIT_code, S8 JIT_code_ind);
 void get_jit_compiler_type (void);
 char *fgets_uni (char *str, int len, FILE *fptr);
 size_t strlen_safe (const char * str, int maxlen);
-void get_license (U1 *user_key);
-void get_special_license (U1 *user_key);
-
-#if JIT_COMPILER_PRO
-S8 load_jit_compiler_key (void)
-{
-	FILE *key;
-	U1 key_filename[512];
-	unsigned char digest[SHA_DIGEST_LENGTH];
-	unsigned char key_string[512];
-	char *read;
-	
-	memset (digest, 0x0, SHA_DIGEST_LENGTH);
-	
-	strcpy ((char *) key_filename, getenv ("HOME"));
-	strcat ((char *) key_filename, JIT_COMPILER_PRO_KEY);
-	
-	// printf ("try to load: '%s' file...\n", key_filename);
-	
-	key = fopen ((const char *) key_filename, "r");
-	if (key == NULL)
-	{
-		printf ("ERROR: can't found JIT-keyfile!\n");
-		return (1);
-	}
-	else
-	{
-		// printf ("found keyfile...\n");
-		// read string from key file
-		read = fgets_uni ((char *) key_string, 511, key);
-		if (read != NULL)
-		{
-			SHA1 (key_string, strlen_safe ((const char *) key_string, 511), digest);
-			get_license (digest);
-		}
-		fclose (key);
-	}
-	return (0);
-}
-#endif
-
-#if JIT_COMPILER_SPECIAL
-S8 load_special_key (void)
-{
-	FILE *key;
-	U1 key_filename[512];
-	unsigned char digest[SHA_DIGEST_LENGTH];
-	unsigned char key_string[512];
-	char *read;
-	
-	memset (digest, 0x0, SHA_DIGEST_LENGTH);
-	
-	strcpy ((char *) key_filename, getenv ("HOME"));
-	strcat ((char *) key_filename, JIT_COMPILER_SPECIAL_KEY);
-	
-	// printf ("try to load: '%s' file...\n", key_filename);
-	
-	key = fopen ((const char *) key_filename, "r");
-	if (key == NULL)
-	{
-		printf ("ERROR: can't found JIT-keyfile!\n");
-		return (1);
-	}
-	else
-	{
-		// printf ("found keyfile...\n");
-		// read string from key file
-		read = fgets_uni ((char *) key_string, 511, key);
-		if (read != NULL)
-		{
-			SHA1 (key_string, strlen_safe ((const char *) key_string, 511), digest);
-			get_special_license (digest);
-		}
-		fclose (key);
-	}
-	return (0);
-}
-#endif
-
 #endif
 
 #define EXE_NEXT(); ep = ep + eoffs; goto *jumpt[code[ep]];
@@ -394,7 +313,7 @@ void cleanup (void)
 	if (data) free (data);
     if (code) free (code);
 	if (threaddata) free (threaddata);
-	
+
 	#if JIT_COMPILER
 		if (JIT_code) free (JIT_code);
 	#endif
@@ -2904,14 +2823,6 @@ int main (int ac, char *av[])
 		exit (1);
 	}
 
-	#if JIT_COMPILER_PRO
-		// try to load L1VM JIt-compiler-pro
-		load_jit_compiler_key ();
-	#if JIT_COMPILER_SPECIAL
-		load_special_key ();
-	#endif
-	#endif
-	
 	// printf ("DEBUG: ac: %i\n", ac);
 
     if (ac > 1)
@@ -3081,7 +2992,6 @@ int main (int ac, char *av[])
 
 		#if JIT_COMPILER
 	    	printf ("JIT-compiler inside: lib asmjit.\n");
-			get_jit_compiler_type ();
 		#endif
 
 		#if MATH_LIMITS
