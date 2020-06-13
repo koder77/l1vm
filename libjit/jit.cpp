@@ -19,10 +19,8 @@
 
 // JIT-compiler uses asmjit library.
 // Generates code for x86 64 bit. The double floating point number opcodes use SSE opcodes.
-// The integer opcodes are "optimized" by reducing a.mov if possible.
 
 #include <asmjit/asmjit.h>
-#include <openssl/ssl.h>
 
 using namespace asmjit;
 
