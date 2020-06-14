@@ -10,7 +10,6 @@ sudo dnf install SDL2-devel.x86_64
 sudo dnf install SDL2_gfx-devel.x86_64
 sudo dnf install SDL2_image-devel.x86_64
 sudo dnf install SDL2_ttf-devel.x86_64
-sudo dnf install SDL2_ttf-devel.x86_64
 sudo dnf install fann-devel.x86_64
 sudo dnf install mpfr-devel.x86_64
 
