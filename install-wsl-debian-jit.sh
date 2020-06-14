@@ -66,8 +66,7 @@ export CC=clang
 export CCPP=clang++
 
 cd assemb
-chmod +x *.sh
-if ./make.sh; then
+if zerobuild force; then
 	echo "l1asm build ok!"
 else
 	echo "l1asm build error!"
@@ -75,8 +74,7 @@ else
 fi
 
 cd ../comp
-chmod +x *.sh
-if ./make.sh; then
+if zerobuild force; then
 	echo "l1com build ok!"
 else
 	echo "l1com build error!"
@@ -84,11 +82,10 @@ else
 fi
 
 cd ../vm
-chmod +x *.sh
-if ./make.sh; then
-	echo "l1vm build ok!"
+if zerobuild force; then
+	echo "l1vm JIT build ok!"
 else
-	echo "l1vm build error!"
+	echo "l1vm JIT build error!"
 	exit 1
 fi
 cp l1vm l1vm-jit

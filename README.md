@@ -76,13 +76,22 @@ And you can choose if the array variable bounds check and math checks should be 
 #define MATH_LIMITS_DOUBLE_FULL	0
 </pre>
 
-Just run the "clean.sh" script and then the "install.sh" script in the main directory of L1VM!
-The binaries are installed into the "bin" directory in your "/home" user directory!
-There are no root rights needed!
+Build with JIT-compiler
+-----------------------
+Edit the "vm/jit.h" file, set:
+
 <pre>
-The  binaries are build and installed into "~/bin".
-And the modules are installed into "~/bin".
+#define JIT_COMPILER 1
 </pre>
+
+And run the "install-jit-zerobuild.sh" script.
+
+Build without JIT-compiler
+--------------------------
+Set "JIT_COMPILER" to "0"
+
+And run the "install-zerobuild.sh" script.
+
 
 Windows 10 WSL
 --------------
