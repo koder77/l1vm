@@ -1,3 +1,9 @@
+L1VM - (1.0.5)
+    New: now the programs are build by "zerobuild" build tool.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Jun 14 2020 09:20 +0200
+
+
 L1VM - (1.0.4)
     NEW: lib/int-wrapper.l1com: showing how to use the interrupt wrapper functions
     in a print date/time demo. Now it is a bit easier to use them with the readable

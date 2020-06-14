@@ -3,6 +3,6 @@
 [executable, name = l1com]
 sources = main.c, labels.c, register.c, var.c, parse-cont.c, ../lib-func/file.c, checkd.c, if.c, mem.c, ../lib-func/string.c
 
-ccompiler = clang
+ccompiler = $CC
 
 cflags = "-Wall"

@@ -44,8 +44,10 @@ You need to build vm-sdl2/ VM sources to use the new SDL 2.0 gfx/GUI library.
 This source of the L1VM is linked with the SDL2 libraries.
 
 
-Installation 
+Installation
 ------------
+You need the "zerobuild" tool to build the VM: https://www.github.com/koder77/zerobuild
+
 Configure the file access for SANDBOX mode or not:
 include/global.h:
 
@@ -89,7 +91,7 @@ DragonFly BSD
 You have to add a "bin/" directory in your "/home/user" directory:
 
 <pre>
-$ mkdir bin 
+$ mkdir bin
 </pre>
 
 Then you need to paste the following lines to your ".shrc" bash config

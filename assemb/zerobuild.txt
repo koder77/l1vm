@@ -3,6 +3,6 @@
 [executable, name = l1asm]
 sources = main.c, ../lib-func/file.c, checkd.c, ../lib-func/string.c, ../lib-func/code_datasize.c
 
-ccompiler = clang
+ccompiler = $CC
 
 cflags = "-Wall"
