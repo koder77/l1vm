@@ -48,15 +48,33 @@ Installation
 ------------
 You need the "zerobuild" tool to build the VM: https://www.github.com/koder77/zerobuild
 
-Configure the file access for SANDBOX mode or not:
+Configure the file access for SANDBOX mode or not, and set your /home directory name:
 include/global.h:
 
+<pre>
 // SANDBOX FILE ACCESS
 #define SANDBOX                 1			// secure file acces: 1 = use secure access, 0 = OFF!!
 #define SANDBOX_ROOT			"/home/stefan/l1vm/"		// in /home directory!
+</pre>
 
-And you can choose if the array variable bounds check and math checks should be run.
+And you can choose if the array variable bounds check and math checks should be run:
 
+<pre>
+// data bounds check exactly
+#define BOUNDSCHECK				1
+</pre>
+
+<pre>
+// integer and double floating point math functions overflow detection
+// See vm/main.c interrupt0:
+// 251 sets overflow flag for double floating point number
+// 252 returns value of overflow flag
+#define MATH_LIMITS				0
+
+// set if only double numbers calculation results are checked (0), or
+// arguments and results get checked for full check (1)
+#define MATH_LIMITS_DOUBLE_FULL	0
+</pre>
 
 Just run the "clean.sh" script and then the "install.sh" script in the main directory of L1VM!
 The binaries are installed into the "bin" directory in your "/home" user directory!
