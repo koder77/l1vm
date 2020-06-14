@@ -6,6 +6,14 @@ echo "building compiler, assembler and VM..."
 export CC=clang
 export CCPP=clang++
 
+sudo dnf install SDL2-devel.x86_64
+sudo dnf install SDL2_gfx-devel.x86_64
+sudo dnf install SDL2_image-devel.x86_64
+sudo dnf install SDL2_ttf-devel.x86_64
+sudo dnf install SDL2_ttf-devel.x86_64
+sudo dnf install fann-devel.x86_64
+sudo dnf install mpfr-devel.x86_64
+
 cd assemb
 if zerobuild force; then
 	echo "l1asm build ok!"
@@ -23,13 +31,13 @@ else
 fi
 
 cd ../vm
-if zerobuild zerobuild-nojit.txt force; then
+if zerobuild force; then
 	echo "l1vm JIT build ok!"
 else
 	echo "l1vm JIT build error!"
 	exit 1
 fi
-cp l1vm l1vm-nojit
+cp l1vm l1vm-jit
 cd ..
 cp assemb/l1asm ~/bin
 cp comp/l1com ~/bin
