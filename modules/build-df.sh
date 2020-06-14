@@ -1,44 +1,31 @@
 #!/bin/bash
 set -e
 cd ../vm/modules/endianess
-chmod +x *.sh
-./make-endianess-mod.sh
+zerobuild force
 cd ../fann
-chmod +x *.sh
-./make-fann-mod.sh
+zerobuild force
 cd ../file
-chmod +x *.sh
-./make-file-mod.sh
+zerobuild force
 cd ../genann
-chmod +x *.sh
-./make-genann-mod.sh
+zerobuild force
 cd ../math
-chmod +x *.sh
-./make-math-mod.sh
+zerobuild force
 cd ../mpfr-c++
-chmod +x *.sh
-./make-mpfr.sh
+zerobuild force
 cd ../net
-chmod +x *.sh
-./make-net-mod.sh
+zerobuild force
 cd ../process
-chmod +x *.sh
-./make-process-mod.sh
+zerobuild force
 cd ../rs232
-chmod +x *.sh
-./make-rs232-mod.sh
+zerobuild force
 cd ../sdl-2.0
-chmod +x *.sh
-./make-sdl-mod.sh
+zerobuild force
 cd ../string
-chmod +x *.sh
-./make-string-mod.sh
+zerobuild force
 cd ../time
-chmod +x *.sh
-./make-time-mod.sh
+zerobuild force
 cd ../mem
-chmod +x *.sh
-./make-mem-mod.sh
+zerobuild force
 
 cd ../../../modules
 cp ../vm/modules/endianess/libl1vm* .

@@ -49,15 +49,15 @@ export CC=/usr/local/llvm10/bin/clang
 export CCPP=/usr/local/llvm10/bin/clang++
 
 cd assemb
-if ./make.sh; then
+if zerobuild force; then
 	echo "l1asm build ok!"
-	else
+else
 	echo "l1asm build error!"
 	exit 1
 fi
 
 cd ../comp
-if ./make.sh; then
+if zerobuild force; then
 	echo "l1com build ok!"
 else
 	echo "l1com build error!"
@@ -65,23 +65,24 @@ else
 fi
 
 cd ../vm
-if ./make-nojit.sh; then
-	echo "l1vm build ok!"
+if zerobuild zerobuild-nojit.txt force; then
+	echo "l1vm JIT build ok!"
 else
-	echo "l1vm build error!"
+	echo "l1vm JIT build error!"
 	exit 1
 fi
-cp l1vm-nojit l1vm
+cp l1vm l1vm-nojit
 cd ..
 cp assemb/l1asm ~/bin
 cp comp/l1com ~/bin
-cp vm/l1vm ~/bin
+cp vm/l1vm-jit ~/bin
 echo "VM binaries installed into ~/bin"
 
 cd modules
 echo "installing modules..."
-sh ./build-df.sh
-if sh ./install-df.sh; then
+chmod +x *.sh
+./build-df.sh
+if ./install-df.sh; then
 	echo "modules build ok!"
 else
 	echo "modules build FAILED!"
@@ -90,12 +91,14 @@ fi
 
 echo "all modules installed. building programs..."
 cd ../prog
-if sh ./build-all.sh; then
+chmod +x *.sh
+if ./build-all.sh; then
 	echo "building programs successfully!"
 else
 	echo "building programs FAILED!"
 	exit 1
 fi
 cd ..
+
 echo "installation finished!"
 exit 0
