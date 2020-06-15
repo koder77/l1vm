@@ -148,7 +148,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
     a.mov (RSI, imm ((intptr_t)(void *) regi)); /* long registers base: rsi */
 
-		a.mov (RDI, imm ((intptr_t)(void *) regd)); /* double registers base: rdi */
+	a.mov (RDI, imm ((intptr_t)(void *) regd)); /* double registers base: rdi */
 
     /* initialize label pos */
 	for (i = 0; i < MAXJUMPLEN; i++)

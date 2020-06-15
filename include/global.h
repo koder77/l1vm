@@ -96,10 +96,8 @@
 
 #define COPYRIGHT_STR " (C) 2017-2020 Stefan Pietzonke"
 
-#define  VM_VERSION_STR		"1.0.5"
+#define  VM_VERSION_STR		"1.0.5"		// version number
 
-#define JIT_COMPILER_PRO_KEY "/l1vm/l1vm-license-jit-compiler.txt"
-#define JIT_COMPILER_SPECIAL_KEY "/l1vm/l1vm-license-special-key.txt"
 
 #if MAXCPUCORES == 0
 	#error "global.h: ERROR MAXCPUCORES is 0!"
