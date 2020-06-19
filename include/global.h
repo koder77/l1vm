@@ -165,8 +165,8 @@ typedef double                  F8;     /* DOUBLE */
 #define INTEGER			14
 #define DOUBLE			15
 
-#define MODULES                 32
-#define MODULES_MAXFUNC         256
+#define MODULES                 1024	// was 32
+#define MODULES_MAXFUNC         4096	// was 256
 
 #define RUNNING			1
 #define STOP			0
