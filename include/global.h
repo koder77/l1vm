@@ -178,7 +178,7 @@ typedef double                  F8;     /* DOUBLE */
 #define STACKSIZE	64000
 
 // jump call stack, for jsr, jsra
-#define MAXSUBJUMPS		256
+#define MAXSUBJUMPS		40960    // was 256
 
 
 // ERROR codes returned by VM
@@ -254,7 +254,7 @@ struct translate
 	U1 assemb_op;
 };
 
-#define MAXLABELS				1024
+#define MAXLABELS				40960
 #define LABELLEN				64
 
 struct label
