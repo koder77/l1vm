@@ -165,6 +165,8 @@ typedef double                  F8;     /* DOUBLE */
 #define INTEGER			14
 #define DOUBLE			15
 
+// If you want save RAM you can set these values to 32 and 256!
+// I just increased it to be able to load more complex modules!
 #define MODULES                 1024	// was 32
 #define MODULES_MAXFUNC         4096	// was 256
 
@@ -177,7 +179,8 @@ typedef double                  F8;     /* DOUBLE */
 // stacksize in bytes
 #define STACKSIZE	64000
 
-// jump call stack, for jsr, jsra
+// Jump call stack, for jsr, jsra: how many jsr and jsra MAXSUBJUMPS can be done without a rts (return) call.
+// If you want to save RAM you can set this value to 256!
 #define MAXSUBJUMPS		40960    // was 256
 
 
