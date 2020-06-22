@@ -387,7 +387,7 @@ S2 run (void *arg)
 
 	if (silent_run == 0)
 	{
-		printf ("%lli stack size: %lli\n", cpu_core, (S8) STACKSIZE);
+		printf ("%lli stack size: %lli\n", cpu_core, stack_size);
 		printf ("%lli sp top: %lli\n", cpu_core, (S8) sp_top);
 		printf ("%lli sp bottom: %lli\n", cpu_core, (S8) sp_bottom);
 		printf ("%lli sp: %lli\n", cpu_core, (S8) sp);
