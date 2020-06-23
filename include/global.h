@@ -49,7 +49,7 @@
 #include <limits.h>
 
 
-// user settings ==========================================
+// user settings ==============================================================
 // machine
 #define MAXCPUCORES	    		5		// threads that can be runned
 #define MACHINE_BIG_ENDIAN      0       // endianess of host machine
@@ -92,12 +92,37 @@
 // VM: set timer interrupt
 #define TIMER_USE				1 				// 1 = set timer measurement interrupt
 
-// user settings end ======================================
+// user settings end ==========================================================
 
+// internal settings ==========================================================
+// handle with care!
+
+// If you want save RAM you can set these values to 32 and 256!
+// I just increased it to be able to load more complex modules!
+#define MODULES					1024	// was 32
+#define MODULES_MAXFUNC			4096	// was 256
+
+// max input string len
+#define MAXINPUT 				512
+
+// stacksize in bytes
+#define STACKSIZE				64000
+
+// Jump call stack, for jsr, jsra: how many jsr and jsra MAXSUBJUMPS can be done without a rts (return) call.
+// If you want to save RAM you can set this value to 256!
+#define MAXSUBJUMPS				40960    // was 256
+
+// max number of code labels, and their name length:
+#define MAXLABELS				40960
+#define LABELLEN				64
+// internal settings end ======================================================
+
+// info strings:
 #define COPYRIGHT_STR " (C) 2017-2020 Stefan Pietzonke"
 
 #define  VM_VERSION_STR		"1.0.5"		// version number
 
+// no user defined definitions below this section! ============================
 
 #if MAXCPUCORES == 0
 	#error "global.h: ERROR MAXCPUCORES is 0!"
@@ -165,23 +190,8 @@ typedef double                  F8;     /* DOUBLE */
 #define INTEGER			14
 #define DOUBLE			15
 
-// If you want save RAM you can set these values to 32 and 256!
-// I just increased it to be able to load more complex modules!
-#define MODULES                 1024	// was 32
-#define MODULES_MAXFUNC         4096	// was 256
-
 #define RUNNING			1
 #define STOP			0
-
-// max input string len
-#define MAXINPUT 512
-
-// stacksize in bytes
-#define STACKSIZE	64000
-
-// Jump call stack, for jsr, jsra: how many jsr and jsra MAXSUBJUMPS can be done without a rts (return) call.
-// If you want to save RAM you can set this value to 256!
-#define MAXSUBJUMPS		40960    // was 256
 
 
 // ERROR codes returned by VM
@@ -256,9 +266,6 @@ struct translate
 	U1 type[4];
 	U1 assemb_op;
 };
-
-#define MAXLABELS				40960
-#define LABELLEN				64
 
 struct label
 {

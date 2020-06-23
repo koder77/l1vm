@@ -10,10 +10,8 @@
 	(set double 1 yd 42.0)
 	(set double 1 zd 7.0)
     (set int64 1 i 1)
-    // (set int64 1 max 80000000Q)
     (set int64 1 max 800000000Q)
     (set int64 1 sum 0)
-    (set int64 1 logic)
     (set int64 1 one 1)
     (ASM)
     loada zero, 0, I0
