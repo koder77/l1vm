@@ -1150,16 +1150,37 @@ U1 draw_gadget_slider_vert (S2 screennum, U2 gadget_index, U1 selected)
     pixel_ratio = range_pixel / range;      // pixels per each value
     slider_y1 = slider->y + ((range_pixel * value_percent) / 100);
 
-    printf ("draw_gagdet_slider: slider->x: %i\n", slider->x);
-    printf ("draw_gagdet_slider: slider_x1: %i\n", slider_y1);
-    printf ("draw_gagdet_slider: range_pixel: %i\n", range_pixel);
-    printf ("draw_gagdet_slider: slider->value: %lli\n", slider->value);
-    printf ("draw_gagdet_slider: slider->min: %lli\n", slider->min);
-    printf ("draw_gagdet_slider: slider->max: %lli\n", slider->max);
+    printf ("draw_gagdet_slider_vert: slider->x: %i\n", slider->x);
+    printf ("draw_gagdet_slide_vert: slider_y1: %i\n", slider_y1);
+    printf ("draw_gagdet_slider_vert: range_pixel: %i\n", range_pixel);
+    printf ("draw_gagdet_slider_vert: slider->value: %lli\n", slider->value);
+    printf ("draw_gagdet_slider_vert: slider->min: %lli\n", slider->min);
+    printf ("draw_gagdet_slider_vert: slider->max: %lli\n", slider->max);
 
     // calculate slider width
     slider_y2 = slider_y1 + pixel_ratio;
-    return  (0);
+
+    if (selected == GADGET_NOT_SELECTED)
+    {
+        draw_gadget_light (renderer, slider->x, slider->y, slider->x2, slider->y2);
+
+        boxRGBA (renderer, slider->x + 1, slider_y1, slider->x2 - 1, slider_y2 - 1, 18, 98, 245, 255);
+    }
+    else
+    {
+        draw_gadget_shadow (renderer, slider->x, slider->y, slider->x2, slider->y2);
+
+        boxRGBA (renderer, slider->x + 1, slider_y1, slider->x2 - 1, slider_y2 - 1, 18, 98, 245, 255);
+    }
+
+    if (slider->status == GADGET_NOT_ACTIVE)
+    {
+        draw_ghost_gadget (renderer, slider->x, slider->y, slider->x2, slider->y2);
+    }
+
+    SDL_RenderPresent (renderer);
+    SDL_UpdateWindowSurface (window);
+    return (TRUE);
 }
 
 U1 draw_gadget_string (S2 screennum, U2 gadget_index, U1 selected)
@@ -1843,14 +1864,232 @@ U1 *event_gadget_slider (S2 screennum, U2 gadget_index)
     return ((U1 *) 1);
 }
 
+U1 *event_gadget_slider_vert (S2 screennum, U2 gadget_index)
+{
+	/*
+	 * slider vertical gadget event handling
+	 */
 
+     Uint8 buttonmask, mouse_button, mouse_button_slide;
 
+     S8 range ALIGN;
+     S8 value_gadget ALIGN;
+     S8 pixel_ratio ALIGN;
+     Sint16 range_pixel;
+     S8 value_percent ALIGN;
+     Sint16 slider_y1;
+     Sint16 slider_y2;
+     Sint16 slider_x1;
+     Sint16 slider_x2;
+     int x, y;
+     U1 wait;
 
+     struct gadget_slider *slider;
+     slider = (struct gadget_slider *) screen[screennum].gadget[gadget_index].gptr;
 
+     // calculate position and size of slider
 
+     range = slider->max - slider->min;
+     range_pixel = slider->y2 - slider->y;
+     value_gadget = slider->value - slider->min;
 
+     value_percent = 100 * value_gadget / range;
 
+     pixel_ratio = range_pixel / range;      // pixels per each value
+     slider_y1 = slider->y + ((range_pixel * value_percent) / 100);
 
+     // calculate slider width
+     slider_y2 = slider_y1 + pixel_ratio;
+
+     slider_x1 = slider->x + 1;
+
+     SDL_Event event;
+	 // SDL_Keycode key;
+
+     /* allocate string buffer */
+
+     if (! draw_gadget_slider_vert (screennum, gadget_index, GADGET_SELECTED))
+     {
+         return (FALSE);
+     }
+
+     /* wait for event */
+     while (1 == 1)
+     {
+         wait = TRUE;
+
+         while (wait)
+         {
+ 			/* draw mouse cursor */
+
+ 			// SDL_GetMouseState (&mouse_x, &mouse_y);
+ 			// draw_cursor (cursor, mouse_x, mouse_y);
+ 			// update_screen (0);
+
+ 			SDL_UpdateWindowSurface (window);
+
+ 			/* wait for slider event */
+             if (! SDL_WaitEvent (&event))
+             {
+                 printf ("gadget_event: error can't wait for event!\n");
+                 return (NULL);
+             }
+
+             switch (event.type)
+             {
+                 case SDL_MOUSEBUTTONDOWN:
+                     if (event.button.button == 1)
+                     {
+                         x = event.button.x;
+                         y = event.button.y;
+                         wait = FALSE;
+                     }
+                     break;
+
+ #if __ANDROID__
+ 				case SDL_ACTIVEEVENT:
+ 					resized = 0;
+
+ 					while (resized == 0)
+ 					{
+ 						while (SDL_PollEvent (&event))
+ 						{
+ 							if (event.type == SDL_VIDEORESIZE)
+ 							{
+ 								//If the window was iconified or restored
+
+ 								reopen_screen (screennum, event.resize.w, event.resize.h);
+ 								restore_screen ();
+
+ 								resized = 1;
+ 							}
+ 						}
+ 					}
+ 					break;
+ #endif
+             }
+
+             if ((x > slider->x && x < slider->x2) && (y > slider->y && y < slider->y2) && slider->status == GADGET_ACTIVE)
+             {
+                 mouse_button = 1;
+                 while (mouse_button == 1)
+                 {
+                     SDL_Delay (100);
+
+                     SDL_PumpEvents ();
+                     buttonmask = SDL_GetMouseState (&x, &y);
+
+                     if (! (buttonmask & SDL_BUTTON (1)))
+                     {
+                         mouse_button = 0;
+                     }
+
+                     if ((x > slider->x && x < slider->x2) && (y > slider->y && y < slider->y2))
+                     {
+                         printf ("gadget_slider: drawing slider %i selected.\n", gadget_index);
+
+                         if (! draw_gadget_slider_vert (screennum, gadget_index, GADGET_SELECTED))
+                         {
+                             printf ("gadget_slider: error can't draw gadget!\n");
+                             return (NULL);
+                         }
+                    }
+                    else
+                    {
+                        printf ("gadget_slider: drawing button %i normal.\n", gadget_index);
+
+                        if (! draw_gadget_slider_vert (screennum, gadget_index, GADGET_NOT_SELECTED))
+                        {
+                            printf ("gadget_slider: error can't draw gadget!\n");
+                            return (NULL);
+                        }
+                    }
+                }
+
+                if (! draw_gadget_slider_vert (screennum, gadget_index, GADGET_NOT_SELECTED))
+                {
+                    printf ("gadget_slider: error can't draw gadget!\n");
+                    return (NULL);
+                }
+
+                if ((x > slider->x && x < slider->x2) && (y > slider->y && y < slider->y2))
+                {
+                    /* gadget was selected */
+
+                    printf ("gadget_slider: drawing slider %i selected.\n", gadget_index);
+
+                    mouse_button_slide = 1;
+                    while (mouse_button_slide == 1)
+                    {
+                        SDL_Delay (100);
+
+                        SDL_PumpEvents ();
+                        buttonmask = SDL_GetMouseState (&x, &y);
+
+                        if (! (buttonmask & SDL_BUTTON (1)))
+                        {
+                            mouse_button_slide = 0;
+                        }
+
+                        // calculate position and size of slider
+
+                        range = slider->max - slider->min;
+                        range_pixel = slider->y2 - slider->y;
+                        value_gadget = slider->value - slider->min;
+
+                        value_percent = 100 * value_gadget / range;
+
+                        pixel_ratio = range_pixel / range;      // pixels per each value
+                        slider_y1 = slider->y + ((range_pixel * value_percent) / 100);
+
+                        // calculate slider width
+                        slider_x2 = slider_x1 + pixel_ratio;
+
+                        if (y <= slider_y1 - pixel_ratio)
+                        {
+                            if (slider->value > slider->min)
+                            {
+                                slider->value--;
+                            }
+                        }
+                        if (y >= slider_y2 + pixel_ratio)
+                        {
+                            if (slider->value < slider->max)
+                            {
+                                slider->value++;
+                            }
+                        }
+
+                        if (! draw_gadget_slider_vert (screennum, gadget_index, GADGET_SELECTED))
+                        {
+                            printf ("gadget_slider: error can't draw gadget!\n");
+                            return (NULL);
+                        }
+                    }
+                    wait = 0;
+
+                    if (! draw_gadget_slider_vert (screennum, gadget_index, GADGET_NOT_SELECTED))
+                    {
+                        printf ("gadget_slider: error can't draw gadget!\n");
+                        return (NULL);
+                    }
+                }
+                else
+                {
+                    if (! draw_gadget_slider_vert (screennum, gadget_index, GADGET_NOT_SELECTED))
+                    {
+                        printf ("gadget_slider: error can't draw gadget!\n");
+                        return (NULL);
+                    }
+                    mouse_button = 0;
+                    wait = 0;
+                }
+            }
+        }
+        break;
+    }
+    return ((U1 *) 1);
+}
 
 U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
@@ -2614,7 +2853,7 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                             }
                             else
                             {
-                                printf ("gadget_event: drawing string %i normal.\n", i);
+                                printf ("gadget_event: drawing slider gadget %i normal.\n", i);
 
                                 if (! draw_gadget_slider (screennum, i, GADGET_NOT_SELECTED))
                                 {
@@ -2635,6 +2874,128 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                             /* gadget was selected */
 
                             printf ("gadget_event: slider gadget %i selected.\n", i);
+
+                            sp = stpushi (i, sp, sp_bottom);
+                            if (sp == NULL)
+                            {
+                                // error
+                                printf ("gadget_event: ERROR: stack corrupt!\n");
+                                return (NULL);
+                            }
+
+                            // value
+                            sp = stpushi (slider->value, sp, sp_bottom);
+                            if (sp == NULL)
+                            {
+                                // error
+                                printf ("gadget_event: ERROR: stack corrupt!\n");
+                                return (NULL);
+                            }
+
+                            // push 1 = all OK!
+                            sp = stpushi (1, sp, sp_bottom);
+                            if (sp == NULL)
+                            {
+                                // error
+                                printf ("gadget_event: ERROR: stack corrupt!\n");
+                                return (NULL);
+                            }
+                            return (sp);
+                        }
+                        break;
+
+                    case GADGET_SLIDER_VERT:
+                        slider = (struct gadget_slider *) screen[screennum].gadget[i].gptr;
+
+                        if ((x > slider->x && x < slider->x2) && (y > slider->y && y < slider->y2) && slider->status == GADGET_ACTIVE)
+                        {
+                            mouse_button = 1;
+                            while (mouse_button == 1)
+                            {
+                                SDL_Delay (100);
+
+                                SDL_PumpEvents ();
+                                buttonmask = SDL_GetMouseState (&x, &y);
+
+                                if (! (buttonmask & SDL_BUTTON (1)))
+                                {
+                                    mouse_button = 0;
+                                }
+                            }
+
+                            if ((x > slider->x && x < slider->x2) && (y > slider->y && y < slider->y2))
+                            {
+                                printf ("gadget_event: drawing slider vert %i selected.\n", i);
+
+                                if (! event_gadget_slider_vert (screennum, i))
+                                {
+                                    printf ("gadget_event: error can't draw gadget!\n");
+                                    return (NULL);
+                                }
+                                else
+                                {
+                                    /* gadget was selected */
+
+                                    printf ("gadget_event: drawing slider vert %i normal.\n", i);
+
+                                    if (! draw_gadget_slider_vert (screennum, i, GADGET_NOT_SELECTED))
+                                    {
+                                        printf ("gadget_event: error can't draw gadget!\n");
+                                        return (NULL);
+                                    }
+
+                                    sp = stpushi (i, sp, sp_bottom);
+                                    if (sp == NULL)
+                                    {
+                                        // error
+                                        printf ("gadget_event: ERROR: stack corrupt!\n");
+                                        return (NULL);
+                                    }
+
+                                    // value
+                                    sp = stpushi (slider->value, sp, sp_bottom);
+                                    if (sp == NULL)
+                                    {
+                                        // error
+                                        printf ("gadget_event: ERROR: stack corrupt!\n");
+                                        return (NULL);
+                                    }
+
+                                    // push 1 = all OK!
+                                    sp = stpushi (1, sp, sp_bottom);
+                                    if (sp == NULL)
+                                    {
+                                        // error
+                                        printf ("gadget_event: ERROR: stack corrupt!\n");
+                                        return (NULL);
+                                    }
+
+                                    return (sp);
+                                }
+                            }
+                            else
+                            {
+                                printf ("gadget_event: drawing slider gadget vert %i normal.\n", i);
+
+                                if (! draw_gadget_slider_vert (screennum, i, GADGET_NOT_SELECTED))
+                                {
+                                    printf ("gadget_event: error can't draw gadget!\n");
+                                    return (NULL);
+                                }
+                            }
+                        }
+
+                        if (! draw_gadget_slider_vert (screennum, i, GADGET_NOT_SELECTED))
+                        {
+                            printf ("gadget_event: error can't draw gadget!\n");
+                            return (NULL);
+                        }
+
+                        if ((x > slider->x && x < slider->x2) && (y > slider->y && y < slider->y2))
+                        {
+                            /* gadget was selected */
+
+                            printf ("gadget_event: slider gadget vert %i selected.\n", i);
 
                             sp = stpushi (i, sp, sp_bottom);
                             if (sp == NULL)
@@ -3675,6 +4036,13 @@ U1 *set_gadget_slider (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
+    // sense check
+    if (value < min || value > max)
+    {
+        printf ("set_gagdet_slider: error value not in limits!\n");
+        return (NULL);
+    }
+
     /* layout slider */
 
     x2 = x + text_width + text_height * 2;
@@ -3709,6 +4077,149 @@ U1 *set_gadget_slider (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 }
 
+U1 *set_gadget_slider_vert (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    Sint16 x2, y2, text_x, text_y;
+	U1 err = 0;
+    S8 gadget_index ALIGN;
+	S8 x ALIGN;
+	S8 y ALIGN;
+	S8 status ALIGN;
+	S8 value ALIGN;
+    S8 min ALIGN;
+    S8 max ALIGN;
+    S8 width ALIGN;
+    S8 height ALIGN;
+    struct gadget_slider *slider;
+
+	// gadget number, x, y, width, height, value, min, max, status
+
+	sp = stpopi ((U1 *) &status, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+    sp = stpopi ((U1 *) &max, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+    sp = stpopi ((U1 *) &min, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &value, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+    sp = stpopi ((U1 *) &height, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+    sp = stpopi ((U1 *) &width, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &y, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &x, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &gadget_index, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	if (err == 1)
+    {
+ 	   printf ("set_gadget_slider_vert: ERROR, stack corrupt!\n");
+ 	   return (NULL);
+    }
+
+    if (! screen[screennum].gadget)
+    {
+        printf ("set_gadget_slider_vert: error gadget list not allocated!\n");
+        return (NULL);
+    }
+
+    if (gadget_index >= screen[screennum].gadgets)
+    {
+        printf ("set_gadget_slider_vert: error gadget index out of range!\n");
+        return (NULL);
+    }
+
+    if (! screen[screennum].font_ttf.font)
+    {
+        printf ("set_gadget_slider_vert: error no ttf font loaded!\n");
+        return (NULL);
+    }
+
+    free_gadget (screennum, gadget_index);
+
+    screen[screennum].gadget[gadget_index].gptr = (struct gadget_slider *) malloc (sizeof (struct gadget_slider));
+    if (screen[screennum].gadget[gadget_index].gptr == NULL)
+    {
+        printf ("set_gadget_slider_vert: error can't allocate structure!\n");
+        return (NULL);
+    }
+
+    slider = (struct gadget_slider *) screen[screennum].gadget[gadget_index].gptr;
+
+    // sense check
+    if (value < min || value > max)
+    {
+        printf ("set_gagdet_slider_vert: error value not in limits!\n");
+        return (NULL);
+    }
+
+    /* layout slider */
+
+    x2 = x + width;
+    y2 = y + height;
+
+    text_x = 0;
+    text_y = 0;
+
+    screen[screennum].gadget[gadget_index].type = GADGET_SLIDER_VERT;
+    slider->status = status;
+    slider->x = x;
+    slider->y = y;
+    slider->x2 = x2;
+    slider->y2 = y2;
+    slider->text_x = text_x;
+    slider->text_y = text_y;
+    slider->value = value;
+    slider->min = min;
+    slider->max = max;
+
+    if (! draw_gadget_slider_vert (screennum, gadget_index, GADGET_NOT_SELECTED))
+    {
+        printf ("set_gadget_slider_vert: error can't draw gadget!\n");
+        return (NULL);
+    }
+    else
+    {
+        return (sp);
+    }
+}
 
 U1 *change_gadget_checkbox (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
@@ -4092,7 +4603,7 @@ U1 *change_gadget_slider (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    if (screen[screennum].gadget[gadget_index].type != GADGET_SLIDER)
+    if (screen[screennum].gadget[gadget_index].type != GADGET_SLIDER || screen[screennum].gadget[gadget_index].type != GADGET_SLIDER_VERT)
     {
         printf ("change_gadget_slider: error %lli not a slider bar gadget!\n", gadget_index);
         return (NULL);
@@ -4103,14 +4614,29 @@ U1 *change_gadget_slider (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     slider->status = status;
 	slider->value = value;
 
-	if (! draw_gadget_slider (screennum, gadget_index, GADGET_NOT_SELECTED))
+    if (screen[screennum].gadget[gadget_index].type == GADGET_SLIDER)
     {
-        printf ("set_gadget_slider: error can't draw gadget!\n");
-        return (NULL);
+        if (! draw_gadget_slider (screennum, gadget_index, GADGET_NOT_SELECTED))
+        {
+            printf ("set_gadget_slider: error can't draw gadget!\n");
+            return (NULL);
+        }
+        else
+        {
+            return (sp);
+        }
     }
     else
     {
-        return (sp);
+        if (! draw_gadget_slider_vert (screennum, gadget_index, GADGET_NOT_SELECTED))
+        {
+            printf ("set_gadget_slider: error can't draw gadget!\n");
+            return (NULL);
+        }
+        else
+        {
+            return (sp);
+        }
     }
 }
 

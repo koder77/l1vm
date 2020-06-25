@@ -45,7 +45,8 @@
 #define GADGET_STRING       4
 #define GADGET_BOX          5
 #define GADGET_PROGRESS_BAR 6
-#define GADGET_SLIDER       7
+#define GADGET_SLIDER       7   // horizontal
+#define GADGET_SLIDER_VERT  8   // vertical
 
 
 // protos
