@@ -1,7 +1,8 @@
 L1VM - (1.0.5)
     New: now the programs are build by "zerobuild" build tool.
+    New: sdl module: lib/sdl-lib.l1com: horizontal slider added.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun Jun 14 2020 09:20 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Thu Jun 25 2020 14:08 +0200
 
 
 L1VM - (1.0.4)
