@@ -39,12 +39,13 @@
 
 // gadget numbers
 
-#define GADGET_BUTTON 1
-#define GADGET_CHECKBOX 2
-#define GADGET_CYCLE 3
-#define GADGET_STRING 4
-#define GADGET_BOX 5
+#define GADGET_BUTTON       1
+#define GADGET_CHECKBOX     2
+#define GADGET_CYCLE        3
+#define GADGET_STRING       4
+#define GADGET_BOX          5
 #define GADGET_PROGRESS_BAR 6
+#define GADGET_SLIDER       7
 
 
 // protos
@@ -76,8 +77,9 @@ void draw_cycle_arrow_shadow(S2 screennum, Sint16 x, Sint16 y, Sint16 x2, Sint16
 int do_copy_surface (SDL_Renderer *dest_renderer, SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect);
 U1 draw_gadget_cycle(S2 screennum, U2 gadget_index, U1 selected, S4 value);
 U1 draw_gadget_progress_bar(S2 screennum, U2 gadget_index, U1 selected);
-U1 draw_gadget_string(S2 screennum, U2 gadget_index, U1 selected);
-U1 event_gadget_string(S2 screennum, U2 gadget_index);
+U1 draw_gadget_slider_bar (S2 screennum, U2 gadget_index, U1 selected);
+U1 draw_gadget_string (S2 screennum, U2 gadget_index, U1 selected);
+U1 event_gadget_string (S2 screennum, U2 gadget_index);
 U1 *gadget_event(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *set_gadget_button(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *set_gadget_progress_bar(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
@@ -86,12 +88,13 @@ U1 *set_gadget_cycle(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *set_gadget_string(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *set_gadget_box(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *change_gadget_checkbox(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
-U1 *change_gadget_cycle(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
-U1 *change_gadget_string(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
-U1 *change_gadget_box(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+U1 *change_gadget_cycle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+U1 *change_gadget_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+U1 *change_gadget_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+U1 *set_gadget_slider (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *change_gadget_progress_bar(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
-U1 *get_gadget_x2y2(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
-
+U1 *get_gadget_x2y2 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+U1 *change_gadget_slider (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 Uint32 getpixel (SDL_Surface *surface, Sint16 x, Sint16 y);
 U1 **alloc_array_U1 (S4 x, S4 y);
 void dealloc_array_U1 (U1 **array, S4 x);
@@ -150,7 +153,7 @@ U1 *my_strcpy (U1 *destination, const U1 *source);
      Sint16 y2;
      Sint16 text_x;
      Sint16 text_y;
- 	U2 value;
+     S8 value;
  };
 
  struct gadget_checkbox
@@ -224,6 +227,22 @@ U1 *my_strcpy (U1 *destination, const U1 *source);
      Sint16 y;
      Sint16 x2;
      Sint16 y2;
+ };
+
+ struct gadget_slider
+ {
+     U1 *text;
+     struct font_ttf font;
+     U1 status;
+     Sint16 x;
+     Sint16 y;
+     Sint16 x2;
+     Sint16 y2;
+     Sint16 text_x;
+     Sint16 text_y;
+     S8 value ALIGN;      // current value
+     S8 min ALIGN;        // minimal value
+     S8 max ALIGN;        // maximum value
  };
 
  struct gadget
