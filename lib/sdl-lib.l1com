@@ -144,7 +144,7 @@
 	(((gadget_sel zero ==) f =) f if)
 		// save screenshot
 		(picture_namestr :sdl_save_picture call)
-		// (ret stpopi)
+		(ret stpopi)
 		(loadreg)
 		(((ret zero !=) f =) f if)
 			(6 picture_errstr 0 0 intr0)
