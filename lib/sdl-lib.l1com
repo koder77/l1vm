@@ -118,11 +118,13 @@
 	(loadreg)
 	// draw slider values
 	(slider_value slider_valueaddr slider_value_max :string_int64tostring call)
+	(loadreg)
 	(x_slider_box y_slider_box x2_slider_box y2_slider_box back_r back_g back_b alpha :sdl_rectangle_fill call)
 	(loadreg)
 	(x_slider_value y_slider_value black black black slider_valueaddr :sdl_text_ttf call)
 	(loadreg)
 	(slider_value slider_valueaddr slider_value_max :string_int64tostring call)
+	(loadreg)
 	(x_slider_vert_box y_slider_vert_box x2_slider_vert_box y2_slider_vert_box back_r back_g back_b alpha :sdl_rectangle_fill call)
 	(loadreg)
 	(x_slider_vert_value y_slider_vert_value black black black slider_valueaddr :sdl_text_ttf call)
