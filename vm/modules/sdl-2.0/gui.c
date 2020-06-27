@@ -1072,6 +1072,11 @@ U1 draw_gadget_slider (S2 screennum, U2 gadget_index, U1 selected)
     slider = (struct gadget_slider *) screen[screennum].gadget[gadget_index].gptr;
 
     // calculate position and size of slider
+    // avoid drawing over right gadget border
+    if (slider->value >= slider->max)
+    {
+        slider->value = slider->max - 1;
+    }
 
     range = slider->max - slider->min;
     range_pixel = slider->x2 - slider->x;
@@ -1140,6 +1145,11 @@ U1 draw_gadget_slider_vert (S2 screennum, U2 gadget_index, U1 selected)
     slider = (struct gadget_slider *) screen[screennum].gadget[gadget_index].gptr;
 
     // calculate position and size of slider
+    // avoid drawing over right gadget border
+    if (slider->value >= slider->max)
+    {
+        slider->value = slider->max - 1;
+    }
 
     range = slider->max - slider->min;
     range_pixel = slider->y2 - slider->y;
