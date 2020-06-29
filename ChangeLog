@@ -4,7 +4,7 @@ L1VM - (1.0.5)
     Removed "-SDL" flag from VM.
 
     New: Brackets compiler now supports constant variables:
-    const-byte, const-string, const-int16, const-int32, const-int64, const-double
+    const-byte, const-int16, const-int32, const-int64, const-double
 
     See lib/math-lib.l1com for more!
 
