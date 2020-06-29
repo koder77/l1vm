@@ -235,15 +235,16 @@ struct t_var
 struct data_info
 {
     U1 name[MAXLINELEN];
-    S8 offset ALIGN;
-    S8 size ALIGN;
-    S8 end ALIGN;
+	S8 offset ALIGN;
+	S8 size ALIGN;
+	S8 end ALIGN;
 	S8 type_size ALIGN;
 	U1 type;
 
 	// compiler
 	U1 value_str[MAXLINELEN];
 	U1 type_str[2];
+	U1 constant;				// set to one if variable is constant
 };
 
 #define MAXOPCODES              61

@@ -6,10 +6,10 @@
 
     </list>
     <list name="definitions">
-      <item>func</item> 
-      <item>funcend</item> 
-      <item>ASM</item> 
-      <item>ASM_END</item> 
+      <item>func</item>
+      <item>funcend</item>
+      <item>ASM</item>
+      <item>ASM_END</item>
 	  <item>optimize-if-off</item>
 	  <item>optimize-if</item>
 	  <item>reset-reg</item>
@@ -78,7 +78,7 @@
     <item>lsi</item>
     <item>greqi</item>
     <item>lseqi</item>
- 
+
     <item>eqd</item>
     <item>neqd</item>
     <item>grd</item>
@@ -99,13 +99,19 @@
     <item>load</item>
     <item>noti</item>
 	<item>loadreg</item>
-	
+
     </list>
 
     <list name="modifiers">
-     
+
     </list>
 	<list name="variables">
+        <item>const-byte</item>
+        <item>const-string</item>
+        <item>const-int16</item>
+        <item>const-int32</item>
+        <item>const-int64</item>
+        <item>const-double</item>
         <item>byte</item>
         <item>string</item>
         <item>int16</item>

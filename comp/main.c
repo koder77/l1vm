@@ -129,6 +129,7 @@ S2 checkdef (U1 *name);
 S2 getvartype (U1 *name);
 S2 getvartype_real (U1 *name);
 S8 get_variable_is_array (U1 *name);
+S2 get_var_is_const (U1 *name);
 
 // parse-cont.c
 S2 parse_continous (void);
@@ -461,11 +462,13 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							return (1);
 						}
 
+						// normal variable definition ===========================================
 						if (strcmp ((const char *) ast[level].expr[j][1], "byte") == 0)
 						{
 							data_info[data_ind].type = BYTE;
 							data_info[data_ind].type_size = sizeof (U1);
 							strcpy ((char *) data_info[data_ind].type_str, "B");
+							data_info[data_ind].constant = 0;
 							ok = 1;
 						}
 
@@ -474,6 +477,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							data_info[data_ind].type = WORD;
 							data_info[data_ind].type_size = sizeof (S2);
 							strcpy ((char *) data_info[data_ind].type_str, "W");
+							data_info[data_ind].constant = 0;
 							ok = 1;
 						}
 
@@ -482,6 +486,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							data_info[data_ind].type = DOUBLEWORD;
 							data_info[data_ind].type_size = sizeof (S4);
 							strcpy ((char *) data_info[data_ind].type_str, "D");
+							data_info[data_ind].constant = 0;
 							ok = 1;
 						}
 
@@ -490,6 +495,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							data_info[data_ind].type = QUADWORD;
 							data_info[data_ind].type_size = sizeof (S8);
 							strcpy ((char *) data_info[data_ind].type_str, "Q");
+							data_info[data_ind].constant = 0;
 							ok = 1;
 						}
 
@@ -498,6 +504,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							data_info[data_ind].type = DOUBLEFLOAT;
 							data_info[data_ind].type_size = sizeof (F8);
 							strcpy ((char *) data_info[data_ind].type_str, "F");
+							data_info[data_ind].constant = 0;
 							ok = 1;
 						}
 
@@ -506,6 +513,62 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 							data_info[data_ind].type = STRING;
 							data_info[data_ind].type_size = sizeof (U1);
 							strcpy ((char *) data_info[data_ind].type_str, "B");
+							data_info[data_ind].constant = 0;
+							ok = 1;
+						}
+
+						// const, constant variable definition ==================================
+						if (strcmp ((const char *) ast[level].expr[j][1], "const-byte") == 0)
+						{
+							data_info[data_ind].type = BYTE;
+							data_info[data_ind].type_size = sizeof (U1);
+							strcpy ((char *) data_info[data_ind].type_str, "B");
+							data_info[data_ind].constant = 1;
+							ok = 1;
+						}
+
+						if (strcmp ((const char *) ast[level].expr[j][1], "const-int16") == 0)
+						{
+							data_info[data_ind].type = WORD;
+							data_info[data_ind].type_size = sizeof (S2);
+							strcpy ((char *) data_info[data_ind].type_str, "W");
+							data_info[data_ind].constant = 1;
+							ok = 1;
+						}
+
+						if (strcmp ((const char *) ast[level].expr[j][1], "const-int32") == 0)
+						{
+							data_info[data_ind].type = DOUBLEWORD;
+							data_info[data_ind].type_size = sizeof (S4);
+							strcpy ((char *) data_info[data_ind].type_str, "D");
+							data_info[data_ind].constant = 1;
+							ok = 1;
+						}
+
+						if (strcmp ((const char *) ast[level].expr[j][1], "const-int64") == 0)
+						{
+							data_info[data_ind].type = QUADWORD;
+							data_info[data_ind].type_size = sizeof (S8);
+							strcpy ((char *) data_info[data_ind].type_str, "Q");
+							data_info[data_ind].constant = 1;
+							ok = 1;
+						}
+
+						if (strcmp ((const char *) ast[level].expr[j][1], "const-double") == 0)
+						{
+							data_info[data_ind].type = DOUBLEFLOAT;
+							data_info[data_ind].type_size = sizeof (F8);
+							strcpy ((char *) data_info[data_ind].type_str, "F");
+							data_info[data_ind].constant = 1;
+							ok = 1;
+						}
+
+						if (strcmp ((const char *) ast[level].expr[j][1], "const-string") == 0)
+						{
+							data_info[data_ind].type = STRING;
+							data_info[data_ind].type_size = sizeof (U1);
+							strcpy ((char *) data_info[data_ind].type_str, "B");
+							data_info[data_ind].constant = 1;
 							ok = 1;
 						}
 
@@ -1096,6 +1159,14 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										{
 											return (1);
 										}
+
+										// check if variable is constant
+										if (get_var_is_const (ast[level].expr[j][last_arg - 1]) == 1)
+										{
+											printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][last_arg - 1]);
+											return (1);
+										}
+
 										if (getvartype (ast[level].expr[j][last_arg - 1]) == DOUBLE)
 										{
 											// printf ("DEBUG: assign array variable to variable.\n");
@@ -1325,6 +1396,14 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									{
 										return (1);
 									}
+
+									// check if variable is constant
+									if (get_var_is_const (ast[level].expr[j][last_arg - 1]) == 1)
+									{
+										printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][last_arg - 1]);
+										return (1);
+									}
+
 									if (getvartype (ast[level].expr[j][last_arg - 1]) == DOUBLE)
 									{
 										strcpy ((char *) code_temp, "load ");
@@ -1692,6 +1771,14 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									{
 										return (1);
 									}
+
+									// check if variable is constant
+									if (get_var_is_const (ast[level].expr[j][last_arg - 1]) == 1)
+									{
+										printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][last_arg - 1]);
+										return (1);
+									}
+
 									if (getvartype (ast[level].expr[j][last_arg - 1]) == DOUBLE)
 									{
 										if (last_arg == 1)

@@ -22,6 +22,9 @@
 
 #include "../include/global.h"
 
+// protos var.c
+S2 get_var_is_const (U1 *name);
+
 // translate.h
 #define MAXTRANSLATE 39
 
@@ -478,6 +481,14 @@ S2 parse_continous (void)
 									{
 										return (1);
 									}
+
+									// check if variable is constant
+									if (get_var_is_const (ast[level].expr[j][last_arg - 1]) == 1)
+									{
+										printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][last_arg - 1]);
+										return (1);
+									}
+
 									if (getvartype (ast[level].expr[j][last_arg - 1]) == DOUBLE)
 									{
 										strcpy ((char *) code_temp, "load ");

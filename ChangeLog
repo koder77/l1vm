@@ -3,7 +3,12 @@ L1VM - (1.0.5)
     New: sdl module: lib/sdl-lib.l1com: horizontal and vertical slider added.
     Removed "-SDL" flag from VM.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun Jun 28 2020 15:00 +0200
+    New: Brackets compiler now supports constant variables:
+    const-byte, const-string, const-int16, const-int32, const-int64, const-double
+
+    See lib/math-lib.l1com for more!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon Jun 29 2020 20:40 +0200
 
 
 L1VM - (1.0.4)
