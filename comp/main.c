@@ -916,6 +916,14 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										{
 											return (1);
 										}
+
+										// check if variable is constant
+										if (get_var_is_const (ast[level].expr[j][last_arg - 4]) == 1)
+										{
+											printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][last_arg - 4]);
+											return (1);
+										}
+
 										if (getvartype (ast[level].expr[j][last_arg - 5]) == DOUBLE)
 										{
 											// printf ("DEBUG: assign to array variable.\n");
