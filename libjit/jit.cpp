@@ -165,9 +165,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 	}
 
     i = start;
-    do_jit:
-
-    if (i <= end)
+    while (i <= end)
     {
 		offset = 0;
 		#if DEBUG
@@ -1851,7 +1849,6 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
                 return (1);
         }
         i = i + offset;
-        goto do_jit;
     }
 
     if (run_jit)
