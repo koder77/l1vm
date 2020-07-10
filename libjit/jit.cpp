@@ -138,13 +138,11 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 	S8 jump_label ALIGN = 0;
 	S8 jump_target ALIGN = 0;
 
-	// JitRuntime jit;                      // Create a runtime specialized for JIT.
   	CodeHolder jcode;                       // Create a CodeHolder.
-	jcode.init(rt.environment ());			// use environment for latest asmjit 
+	jcode.init(rt.environment ());			// use environment for latest asmjit
   	x86::Assembler a(&jcode);
 
     // X86Gp RSIback;
-
     a.mov (RSI, imm ((intptr_t)(void *) regi)); /* long registers base: rsi */
 
 	a.mov (RDI, imm ((intptr_t)(void *) regd)); /* double registers base: rdi */
