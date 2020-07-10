@@ -8,7 +8,16 @@ L1VM - (1.0.5)
 
     See lib/math-lib.l1com for more!
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon Jun 29 2020 20:40 +0200
+    VM JIT-compiler:
+
+    // JitRuntime jit;                      // Create a runtime specialized for JIT.
+  	CodeHolder jcode;                       // Create a CodeHolder.
+	jcode.init(rt.environment ());			// use environment for latest asmjit
+  	x86::Assembler a(&jcode);
+
+    used for latest lib asmjit.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri Jul 10 2020 18:08 +0200
 
 
 L1VM - (1.0.4)

@@ -140,8 +140,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
 	// JitRuntime jit;                      // Create a runtime specialized for JIT.
   	CodeHolder jcode;                       // Create a CodeHolder.
-
-  	jcode.init(rt.codeInfo());              // Initialize it to be compatible with `jit`.
+	jcode.init(rt.environment ());			// use environment for latest asmjit 
   	x86::Assembler a(&jcode);
 
     // X86Gp RSIback;
