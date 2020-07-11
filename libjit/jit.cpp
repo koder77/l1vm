@@ -133,7 +133,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
 	// JMP opcode:
 	U1 jump_ok = 0;
-	// S8 jump_j ALIGN = 0;
+
 	S8 jump_l ALIGN = 0;
 	S8 jump_label ALIGN = 0;
 	S8 jump_target ALIGN = 0;
@@ -144,7 +144,6 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
     // X86Gp RSIback;
     a.mov (RSI, imm ((intptr_t)(void *) regi)); /* long registers base: rsi */
-
 	a.mov (RDI, imm ((intptr_t)(void *) regd)); /* double registers base: rdi */
 
     /* initialize label pos */
@@ -153,11 +152,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 		JIT_label[i].pos = -1;
 	}
 
-	// init jit_regs for integer math
+	// init jit_regs
 	// CPU register
 	for (i = 0; i <= 5; i++)
 	{
-		// jit_regs[i] = 0;  // 0 = is empty register
 		jit_regsd[i] = 0;
 	}
 
@@ -309,13 +307,16 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
 		if (offset == 0)
 		{
-			// no offset found!!!
+			// INTERNAL ERROR: no offset found!!!
 			printf ("FATAL error: JIT compiler: setting jump offset failed! opcode: %i\n", code[i]);
             return (1);
 		}
 
+		// check if current opcode is in JIT-compiler:
+
 		switch (code[i])
         {
+			// ADDI, SUBI, MULI, DIVI ==================================================
             case ADDI:
 			case SUBI:
 			case MULI:
@@ -376,7 +377,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				run_jit = 1;
 				break;
 
-
+			// ADDD, SUBD, MULD, DIVD ==================================================
 			case ADDD:
 			case SUBD:
 			case MULD:
@@ -583,6 +584,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				run_jit = 1;
 				break;
 
+			// LOGICAL OPCODES =========================================================
 			case ANDI:
 				#if DEBUG
 				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
@@ -790,6 +792,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				run_jit = 1;
 				break;
 
+			// COMPARE OPCODES INT =====================================================
 			case EQI:
 				#if DEBUG
 				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
@@ -1230,6 +1233,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				run_jit = 1;
 				break;
 
+			// COMPARE OPCODES DOUBLE ==================================================
 			case EQD:
 				#if DEBUG
 				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
@@ -1674,7 +1678,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				run_jit = 1;
 				break;
 
-
+			// JUMP OPCODES ============================================================
 			case JMP:
 				#if DEBUG
 					printf ("JMP\n\n");
@@ -1811,6 +1815,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				run_jit = 1;
 				break;
 
+			// MOVI, MOVD ==============================================================
 			case MOVI:
 				#if DEBUG
 				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
@@ -1841,6 +1846,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				run_jit = 1;
 				break;
 
+			// DEFAULT: output ERROR message if oopcode not found! =====================
 			default:
                 printf ("JIT compiler: UNKNOWN opcode: %i - exiting!\n", code[i]);
                 return (1);
@@ -1850,18 +1856,19 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
     if (run_jit)
     {
-        a.ret ();		/* return to main program code */
+        a.ret ();		// return to main program code
 
 		// printf ("JIT_code_ind: %lli\n", JIT_code_ind);
 
         if (JIT_code_ind < MAXJITCODE)
         {
-            /* create JIT code function */
+            // create JIT code function
 
             JIT_code_ind++;
 
             Func funcptr;
 
+			// store JIT code:
             Error err = rt.add (&funcptr, &jcode);
             if (err == 1)
             {
@@ -1904,8 +1911,7 @@ extern "C" int run_jit (S8 code ALIGN, struct JIT_code *JIT_code)
 		return (1);
 	}
 
-	/* call JIT code function, stored in JIT_code[] */
-	//func ();
+	// call JIT code function, stored in JIT_code[]
 	JIT_code[code].fn();
 	return (0);
 }
