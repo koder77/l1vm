@@ -172,7 +172,6 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
 		// printf ("DEBUG: jit_compiler: code_size: %lli\n", code_size);
 
-
 		for (j = start; j <= end; j++)
 		{
 			// printf ("DEBUG: jit_compiler: j: %lli\n", j);
