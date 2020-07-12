@@ -4169,6 +4169,8 @@ S2 parse (U1 *name)
     char *read;
 	S8 ret ALIGN;
 
+	S8 code_lines ALIGN = 0;
+
     slen = strlen_safe ((const char *) name, MAXLINES);
     U1 ok, err = 0;
 
@@ -4204,6 +4206,8 @@ S2 parse (U1 *name)
             pos = searchstr (rbuf, (U1 *) REM_SB, 0, 0, TRUE);
             if (pos == -1)
             {
+				code_lines++;
+				
 				// no comment, parse line
 				pos = searchstr (rbuf, (U1 *) ASM_SB, 0, 0, TRUE);
 				if (pos != -1)
@@ -4255,6 +4259,7 @@ S2 parse (U1 *name)
 		}
     }
     fclose (fptr);
+	printf ("\033[0mcode lines compiled: %lli\n", code_lines);
     return (err);
 }
 
