@@ -2949,7 +2949,7 @@ int main (int ac, char *av[])
 
 	if (silent_run == 0)
 	{
-		printf ("l1vm - %s - (C) 2017-2020 Stefan Pietzonke\n", VM_VERSION_STR);
+		printf ("l1vm - %s -%s\n", VM_VERSION_STR, COPYRIGHT_STR);
 		printf (">>> supermodified <<<\n");
 	    printf ("CPU cores: %lli (STATIC)\n", max_cpu);
 
