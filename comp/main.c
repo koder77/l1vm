@@ -4207,7 +4207,7 @@ S2 parse (U1 *name)
             if (pos == -1)
             {
 				code_lines++;
-				
+
 				// no comment, parse line
 				pos = searchstr (rbuf, (U1 *) ASM_SB, 0, 0, TRUE);
 				if (pos != -1)

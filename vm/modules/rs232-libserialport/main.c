@@ -96,7 +96,9 @@ U1 *rs232_OpenComport (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	}
 	}
 
+	#if DEBUG
 	printf ("rs232_OpenComport: port: %s, baud: %lli\n", &data[portnameaddr], baudrate);
+	#endif
 
 	error = sp_get_port_by_name ((const char *) &data[portnameaddr] ,&rs232[handle].port);
     if (error == SP_OK)

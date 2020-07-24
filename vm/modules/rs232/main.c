@@ -22,6 +22,7 @@
 
 #include "rs232.h"
 
+
 U1 *rs232_OpenComport (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     S8 portnumber ALIGN;
@@ -61,13 +62,17 @@ U1 *rs232_OpenComport (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	#if DEBUG
 	printf ("rs232_open_comport: port: %lli, baud: %lli, mode: '%s'\n", portnumber, baudrate, &data[modeaddr]);
+	#endif
 
     ret = RS232_OpenComport (portnumber, baudrate, (const char *) &data[modeaddr]);
 
 	// ret = RS232_OpenComport (0, 38400, (const char *) mode);
 
+	#if DEBUG
 	printf ("rs232_open_comport: return value: %lli\n", ret);
+	#endif
 
     sp = stpushi (ret, sp, sp_bottom);
     if (sp == NULL)
@@ -164,7 +169,9 @@ U1 *rs232_SendByte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     ret = RS232_SendByte (portnumber, byte);
 
+	#if DEBUG
 	printf ("rs232_SendByte: %02X, port: %lli\n", byte, portnumber);
+	#endif
 
     sp = stpushi (ret, sp, sp_bottom);
     if (sp == NULL)
