@@ -158,7 +158,7 @@ U1 *alloc_byte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	memaddr = calloc (memsize, sizeof (U1));
 	if (memaddr == NULL)
 	{
-		printf ("alloc_byte: out of memory: %lli of size int64!\n", memsize);
+		printf ("alloc_byte: out of memory: %lli of size  byte\n", memsize);
 
 		sp = stpushi (-1, sp, sp_bottom);
 		if (sp == NULL)
@@ -212,7 +212,7 @@ U1 *alloc_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	memaddr = calloc (memsize, sizeof (S2));
 	if (memaddr == NULL)
 	{
-		printf ("alloc_int16: out of memory: %lli of size int64!\n", memsize);
+		printf ("alloc_int16: out of memory: %lli of size int16!\n", memsize);
 
 		sp = stpushi (-1, sp, sp_bottom);
 		if (sp == NULL)
@@ -266,7 +266,7 @@ U1 *alloc_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	memaddr = calloc (memsize, sizeof (S4));
 	if (memaddr == NULL)
 	{
-		printf ("alloc_int32: out of memory: %lli of size int64!\n", memsize);
+		printf ("alloc_int32: out of memory: %lli of size int32!\n", memsize);
 
 		sp = stpushi (-1, sp, sp_bottom);
 		if (sp == NULL)
@@ -374,7 +374,7 @@ U1 *alloc_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	memaddr = calloc (memsize, sizeof (F8));
 	if (memaddr == NULL)
 	{
-		printf ("alloc_double: out of memory: %lli of size int64!\n", memsize);
+		printf ("alloc_double: out of memory: %lli of size double!\n", memsize);
 
 		sp = stpushi (-1, sp, sp_bottom);
 		if (sp == NULL)
