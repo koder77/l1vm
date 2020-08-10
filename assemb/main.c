@@ -34,6 +34,7 @@ U1 args[MAXARGS][MAXLINELEN];
 S8 code_ind ALIGN = 0;
 S8 data_ind ALIGN = 0;
 S8 data_info_ind ALIGN = -1;
+
 S8 code_max ALIGN = MAXDATA; // 32 MB
 S8 data_max ALIGN = MAXDATA; // 32 MB
 

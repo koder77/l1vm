@@ -27,6 +27,10 @@ INTR0
 21: print double number with format string setup
 22: print int16 integer number
 23: print int32 integer number
+24: start timer
+25: stop timer
+26: get number of stack objects
+27: get type of current stack object
 251: check double number overflow
 252: get overflow flag
 253: run JIT-compiler

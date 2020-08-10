@@ -1,7 +1,12 @@
 L1VM - (1.0.6)
 	Memory library size of calloc() variable types fixed!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Aug 08 2020 1922 +0200
+	New: global.h: STACKMANAGEMENT flag to switch a clever stack on.
+	This new stack checks if the stpop opcode get the right type from stack.
+	Some of the more complex programs like prog/sdl-4 won't run, maybe I made some
+	stack errors in code. I have to find out!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mo Aug 10 2020 18:13 +0200
 
 
 L1VM - (1.0.5)
