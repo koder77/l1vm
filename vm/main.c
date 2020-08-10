@@ -125,9 +125,8 @@ S8 retcode ALIGN = 0;
 U1 shell_args[MAXSHELLARGS][MAXSHELLARGLEN];
 S4 shell_args_ind = -1;
 
-struct threaddata *threaddata = NULL;
+struct threaddata *threaddata;
 
-struct stack_info *stack_info = NULL;	// for stackmanagement, see global.h settings
 
 // memory bounds checking function
 
@@ -312,10 +311,6 @@ void cleanup (void)
 	#if JIT_COMPILER
 		if (JIT_code) free (JIT_code);
 	#endif
-
-	#if STACKMANAGEMENT
-		if (stack_info) free (stack_info);
-	#endif
 }
 
 U1 double_state (F8 num)
@@ -374,12 +369,6 @@ S2 run (void *arg)
 	// for time functions
 	time_t secs;
 
-	#if STACKMANAGEMENT
-		// stack management
-		S8 mother_id ALIGN;
-		stack_info[cpu_core].objects = -1;
-	#endif
-
 	// jumpoffsets
 	S8 *jumpoffs ALIGN;
 	S8 offset ALIGN;
@@ -405,8 +394,6 @@ S2 run (void *arg)
 		printf ("%lli sp caller bottom: %lli\n", cpu_core, (S8) threaddata[cpu_core].sp_bottom);
 	}
 
-
-
 	startpos = threaddata[cpu_core].ep_startpos;
 	if (threaddata[cpu_core].sp != threaddata[cpu_core].sp_top)
 	{
@@ -420,16 +407,6 @@ S2 run (void *arg)
 			// printf ("dstptr stack: %lli\n", (S8) dstptr);
 			*dstptr-- = *srcptr--;
 		}
-
-		#if STACKMANAGEMENT
-			mother_id = threaddata[cpu_core].mother_thread_id;
-
-			for (i = 0; i < stack_info[mother_id].objects; i++)
-			{
-				stack_info[cpu_core].type[i] = stack_info[mother_id].type[i];
-			}
-			stack_info[cpu_core].objects = stack_info[mother_id].objects;
-		#endif
 	}
 
 	cpu_ind = cpu_core;
@@ -1553,20 +1530,6 @@ S2 run (void *arg)
 		bptr = (U1 *) &regi[arg1];
 
 		*sp = *bptr;
-
-		#if STACKMANAGEMENT
-			if (stack_info[cpu_core].objects < STACKOBJECTS - 1)
-			{
-				stack_info[cpu_core].objects++;
-				stack_info[cpu_core].type[stack_info[cpu_core].objects] = BYTE;
-			}
-			else
-			{
-				printf ("FATAL ERROR: stack objects OVERFLOW byte: %lli\n", stack_info[cpu_core].objects);
-				free (jumpoffs);
-				pthread_exit ((void *) 1);
-			}
-		#endif
 	}
 	else
 	{
@@ -1594,26 +1557,6 @@ S2 run (void *arg)
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
-
-	#if STACKMANAGEMENT
-		if (stack_info[cpu_core].type[stack_info[cpu_core].objects] != BYTE)
-		{
-			printf ("FATAL ERROR: stack object not a byte!\n");
-			free (jumpoffs);
-			pthread_exit ((void *) 1);
-		}
-
-		if (stack_info[cpu_core].objects >= 0)
-		{
-			stack_info[cpu_core].objects--;
-		}
-		else
-		{
-			printf ("FATAL ERROR: stack objects byte, no object on stack!\n");
-			free (jumpoffs);
-			pthread_exit ((void *) 1);
-		}
-	#endif
 
 	// clear arg1
 	regi[arg1] = 0;
@@ -1656,21 +1599,6 @@ S2 run (void *arg)
 		*sp-- = *bptr;
 		bptr++;
 		*sp = *bptr;
-
-		#if STACKMANAGEMENT
-			if (stack_info[cpu_core].objects < STACKOBJECTS - 1)
-			{
-				stack_info[cpu_core].objects++;
-				stack_info[cpu_core].type[stack_info[cpu_core].objects] = QUADWORD;
-			}
-			else
-			{
-				printf ("FATAL ERROR: stack objects OVERFLOW int64: %lli\n", stack_info[cpu_core].objects);
-				free (jumpoffs);
-				free (jumpoffs);
-				pthread_exit ((void *) 1);
-			}
-		#endif
 	}
 	else
 	{
@@ -1699,26 +1627,6 @@ S2 run (void *arg)
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
-
-	#if STACKMANAGEMENT
-		if (stack_info[cpu_core].type[stack_info[cpu_core].objects] != QUADWORD)
-		{
-			printf ("FATAL ERROR: stack object not a int64!\n");
-			free (jumpoffs);
-			pthread_exit ((void *) 1);
-		}
-
-		if (stack_info[cpu_core].objects >= 0)
-		{
-			stack_info[cpu_core].objects--;
-		}
-		else
-		{
-			printf ("FATAL ERROR: stack objects int64, no object on stack!\n");
-			free (jumpoffs);
-			pthread_exit ((void *) 1);
-		}
-	#endif
 
 	bptr = (U1 *) &regi[arg1];
 	bptr += 7;
@@ -1771,21 +1679,6 @@ S2 run (void *arg)
 		*sp-- = *bptr;
 		bptr++;
 		*sp = *bptr;
-
-		#if STACKMANAGEMENT
-			if (stack_info[cpu_core].objects < STACKOBJECTS - 1)
-			{
-				stack_info[cpu_core].objects++;
-				stack_info[cpu_core].type[stack_info[cpu_core].objects] = DOUBLEFLOAT;
-			}
-			else
-			{
-				printf ("FATAL ERROR: stack objects OVERFLOW double: %lli\n", stack_info[cpu_core].objects);
-				free (jumpoffs);
-				free (jumpoffs);
-				pthread_exit ((void *) 1);
-			}
-		#endif
 	}
 	else
 	{
@@ -1813,26 +1706,6 @@ S2 run (void *arg)
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
-
-	#if STACKMANAGEMENT
-		if (stack_info[cpu_core].type[stack_info[cpu_core].objects] != DOUBLEFLOAT)
-		{
-			printf ("FATAL ERROR: stack object not a double!\n");
-			free (jumpoffs);
-			pthread_exit ((void *) 1);
-		}
-
-		if (stack_info[cpu_core].objects >= 0)
-		{
-			stack_info[cpu_core].objects--;
-		}
-		else
-		{
-			printf ("FATAL ERROR: stack objects double, no object on stack!\n");
-			free (jumpoffs);
-			pthread_exit ((void *) 1);
-		}
-	#endif
 
 	bptr = (U1 *) &regd[arg1];
 	bptr += 7;
@@ -2362,32 +2235,6 @@ S2 run (void *arg)
 			break;
 #endif
 
-#if STACKMANAGEMENT
-		case 26:
-			arg2 = code[ep + 2];
-			regi[arg2] = stack_info[cpu_core].objects + 1;
-			eoffs = 5;
-			break;
-
-		case 27:
-			arg2 = code[ep + 2];
-			regi[arg2] = stack_info[cpu_core].type[stack_info[cpu_core].objects];
-			eoffs = 5;
-			break;
-#else
-		case 26:
-			printf ("FATAL ERROR: no stack objects!\n");
-			free (jumpoffs);
-			pthread_exit ((void *) 1);
-			break;
-
-		case 27:
-			printf ("FATAL ERROR: no stack type!\n");
-			free (jumpoffs);
-			pthread_exit ((void *) 1);
-			break;
-#endif
-
 		case 251:
 			// set overflow on double reg
 			arg2 = code[ep + 2];
@@ -2396,7 +2243,6 @@ S2 run (void *arg)
 			{
 				overflow = 1;
 			}
-			eoffs = 5;
 			break;
 
 		case 252:
@@ -3101,19 +2947,6 @@ int main (int ac, char *av[])
 	}
 #endif
 
-#if STACKMANAGEMENT
-	stack_info = (struct stack_info *) calloc (max_cpu, sizeof (struct stack_info));
-	if (stack_info == NULL)
-	{
-		printf ("ERROR: can't allocate stack_info!\n");
-		cleanup ();
-		exit (1);
-	}
-
-	stack_info[0].objects = -1;
-#endif
-
-
 	if (silent_run == 0)
 	{
 		printf ("l1vm - %s -%s\n", VM_VERSION_STR, COPYRIGHT_STR);
@@ -3180,7 +3013,6 @@ int main (int ac, char *av[])
 	threaddata[new_cpu].sp_top_thread = threaddata[new_cpu].sp_top + (new_cpu * stack_size);
 	threaddata[new_cpu].sp_bottom_thread = threaddata[new_cpu].sp_bottom + (new_cpu * stack_size);
 	threaddata[new_cpu].ep_startpos = 16;
-	threaddata[new_cpu].mother_thread_id = 0;
 
     if (pthread_create (&id, NULL, (void *) run, (void *) new_cpu) != 0)
 	{

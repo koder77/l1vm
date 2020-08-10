@@ -92,9 +92,6 @@
 // VM: set timer interrupt
 #define TIMER_USE				1 				// 1 = set timer measurement interrupt
 
-// stack management
-#define STACKMANAGEMENT			0
-
 // user settings end ==========================================================
 
 // internal settings ==========================================================
@@ -110,9 +107,6 @@
 
 // stacksize in bytes
 #define STACKSIZE				64000
-
-// for stack types management, number of total stack objects
-#define STACKOBJECTS			4096
 
 // Jump call stack, for jsr, jsra: how many jsr and jsra MAXSUBJUMPS can be done without a rts (return) call.
 // If you want to save RAM you can set this value to 256!
@@ -226,14 +220,6 @@ struct threaddata
 	S8 ep_startpos ALIGN;	// code startpos for new thread
 	pthread_t id;			// thread ID
 	U1 status;				// thread status
-	S8 mother_thread_id ALIGN; // CPU ID of mother thread
-};
-
-// for stackmanagement
-struct stack_info
-{
-	U1 type[STACKOBJECTS];
-	S8 objects ALIGN;
 };
 
 struct t_var
