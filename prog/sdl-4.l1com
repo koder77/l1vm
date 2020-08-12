@@ -5,7 +5,7 @@
     (set int64 1 three 3)
     (set int64 1 width 1280Q)
     (set int64 1 height 900Q)
-    (set int64 1 bit 32)
+    (set byte 1 bit 32)
     (set int64 1 ret 0)
     (set int64 1 x 0)
     (set int64 1 y 0)
@@ -15,7 +15,7 @@
     (set int64 1 delay 20000)
     // open screen
     (zero width height bit :sdl_open_screen call)
-    (ret stpopb)
+    (ret stpopi)
     (loadreg)
     // draw gfx
     (zero x =)
@@ -91,7 +91,7 @@
     (set int64 1 bit@sdl 0)
     (set int64 1 mod@sdl 0)
     // get arguments from stack
-    (bit@sdl stpopi)
+    (bit@sdl stpopb)
     (height@sdl stpopi)
     (width@sdl stpopi)
     (mod@sdl stpopi)
