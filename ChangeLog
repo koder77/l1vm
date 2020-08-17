@@ -1,7 +1,9 @@
 L1VM - (1.0.6)
 	Memory library size of calloc() variable types fixed!
+	New: lib/mem-lib-vect.l1com: C++ vector library.
+	Automatically expand, insert and erase vector elements!
 
--- Stefan Pietzonke <jay-t@gmx.net> Mo Aug 10 2020 18:13 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Mo Aug 17 2020 16:00 +0200
 
 
 L1VM - (1.0.5)
