@@ -132,6 +132,7 @@ extern "C" U1 *init_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 extern "C" U1 *free_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
+	// free global mem
 	if (mem) free (mem);
 	return (sp);
 }
@@ -144,6 +145,7 @@ extern "C" S8 get_free_mem (void)
 	{
 		if (mem[i].used == 0)
 		{
+			// return index of free mem
 			return (i);
 		}
 	}
@@ -157,7 +159,6 @@ extern "C" U1 *alloc_byte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 memsize ALIGN = 0;
 	U1 *memaddr = NULL;
 
-	// memory struct index
 	S8 memind ALIGN;
 
 	sp = stpopi ((U1 *) &memsize, sp, sp_top);
@@ -211,7 +212,6 @@ extern "C" U1 *alloc_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 memsize ALIGN = 0;
 	S2 *memaddr = NULL;
 
-	// memory struct index
 	S8 memind ALIGN;
 
 	sp = stpopi ((U1 *) &memsize, sp, sp_top);
@@ -265,7 +265,6 @@ extern "C" U1 *alloc_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 memsize ALIGN = 0;
 	S4 *memaddr = NULL;
 
-	// memory struct index
 	S8 memind ALIGN;
 
 	sp = stpopi ((U1 *) &memsize, sp, sp_top);
@@ -319,7 +318,6 @@ extern "C" U1 *alloc_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 memsize ALIGN = 0;
 	S8 *memaddr ALIGN = NULL;
 
-	// memory struct index
 	S8 memind ALIGN;
 
 	sp = stpopi ((U1 *) &memsize, sp, sp_top);
@@ -373,7 +371,6 @@ extern "C" U1 *alloc_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 memsize ALIGN = 0;
 	F8 *memaddr ALIGN = NULL;
 
-	// memory struct index
 	S8 memind ALIGN;
 
 	sp = stpopi ((U1 *) &memsize, sp, sp_top);
@@ -759,7 +756,6 @@ extern "C" U1 *alloc_byte_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 memsize ALIGN = 0;
 
-	// memory struct index
 	S8 memind ALIGN;
 
 	sp = stpopi ((U1 *) &memsize, sp, sp_top);
@@ -796,7 +792,6 @@ extern "C" U1 *alloc_int16_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 memsize ALIGN = 0;
 
-	// memory struct index
 	S8 memind ALIGN;
 
 	sp = stpopi ((U1 *) &memsize, sp, sp_top);
@@ -833,7 +828,6 @@ extern "C" U1 *alloc_int32_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 memsize ALIGN = 0;
 
-	// memory struct index
 	S8 memind ALIGN;
 
 	sp = stpopi ((U1 *) &memsize, sp, sp_top);
@@ -870,7 +864,6 @@ extern "C" U1 *alloc_int64_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 memsize ALIGN = 0;
 
-	// memory struct index
 	S8 memind ALIGN;
 
 	sp = stpopi ((U1 *) &memsize, sp, sp_top);
@@ -907,7 +900,6 @@ extern "C" U1 *alloc_double_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 memsize ALIGN = 0;
 
-	// memory struct index
 	S8 memind ALIGN;
 
 	sp = stpopi ((U1 *) &memsize, sp, sp_top);
@@ -1249,8 +1241,6 @@ extern "C" U1 *vect_to_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 // vector erase index =========================================================
 extern "C" U1 *vect_erase (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	// assign int array to int
-
 	S8 memind ALIGN = 0;
 	S8 arrayind ALIGN = 0;
 
@@ -1319,8 +1309,6 @@ extern "C" U1 *vect_erase (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 // vector insert ==============================================================
 extern "C" U1 *insert_int_to_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	// assign int to array
-
 	S8 memind ALIGN = 0;
 	S8 arrayind ALIGN = 0;
 	S8 value ALIGN;
@@ -1387,8 +1375,6 @@ extern "C" U1 *insert_int_to_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 extern "C" U1 *insert_double_to_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	// assign int to array
-
 	S8 memind ALIGN = 0;
 	S8 arrayind ALIGN = 0;
 	F8 value ALIGN;
