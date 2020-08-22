@@ -13,6 +13,31 @@ sudo dnf install SDL2_ttf-devel.x86_64
 sudo dnf install fann-devel.x86_64
 sudo dnf install mpfr-devel.x86_64
 
+# check if ~/bin exists
+DIR="~/bin"
+if [ -d "$DIR" ]; then
+  ### Take action if $DIR exists ###
+  echo "${DIR} already exists!"
+else
+  ###  Control will jump here if $DIR does NOT exists ###
+  echo "${DIR} will be created now..."
+  mkdir ~/bin
+fi
+
+# check if zerobuild installed into ~/bin
+FILE=~/bin/zerobuild
+if test -f "$FILE"; then
+    echo "$FILE exists!"
+else
+	echo "zerobuild not installed into $FILE!"
+	echo "cloning and building it now..."
+	git clone https://github.com/koder77/zerobuild.git
+	cd zerobuild
+	./make.sh
+	cp zerobuild ~/bin/
+	cd ..
+fi
+
 cd assemb
 if zerobuild force; then
 	echo "l1asm build ok!"

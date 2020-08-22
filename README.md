@@ -172,6 +172,7 @@ file - file module
 genann - neural networks module
 gpio - Raspberry Pi GPIO module
 math - some math functions
+mem - memory allocating for arrays and vectors
 mpfr-c++ - MPFR floating point big num library
 net - TCP/IP sockets module
 process - start a new shell process
