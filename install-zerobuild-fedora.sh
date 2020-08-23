@@ -13,6 +13,14 @@ sudo dnf install SDL2_ttf-devel.x86_64
 sudo dnf install fann-devel.x86_64
 sudo dnf install mpfr-devel.x86_64
 
+# check if clang C compiler is installed
+FILE=/usr/bin/clang
+if test -f "$FILE"; then
+    echo "$FILE exists!"
+else
+	sudo dnf install clang
+fi
+
 # check if ~/bin exists
 DIR="~/bin"
 if [ -d "$DIR" ]; then

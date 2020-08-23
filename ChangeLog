@@ -6,7 +6,10 @@ L1VM - (1.0.6)
 	Now the install script clones and installs zerobuild at start
 	if not already in ~/bin!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sa Aug 22 2020 20:40 +0200
+	Build scripts now install clang compiler during build run, if not
+	already installed.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Aug 23 2020 09:42 +0200
 
 
 L1VM - (1.0.5)
