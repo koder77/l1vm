@@ -39,6 +39,21 @@ This source of the L1VM is linked with the SDL2 libraries.
 
 Installation
 ------------
+Debian Linux
+------------
+Use: install-debian.sh or install-jit-debian.sh
+
+Fedora Linux
+------------
+Use: install-zerobuild-fedora.sh or install-jit-zerobuild-fedora.sh
+
+Windows 10 WSL
+--------------
+Use: install-wsl-debian.sh or install-wsl-debian-jit.sh
+
+Note: the install scripts automatically install clang C compiler and my zerobuild build tool!
+
+
 You need the "zerobuild" tool to build the VM: https://www.github.com/koder77/zerobuild
 
 Configure the file access for SANDBOX mode or not, and set your /home directory name:
