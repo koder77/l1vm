@@ -38,7 +38,8 @@ This source of the L1VM is linked with the SDL2 libraries.
 
 
 1. Configuration
-----------------
+================
+
 Configure the file access for SANDBOX mode or not, and set your /home directory name:
 include/global.h:
 
@@ -77,7 +78,8 @@ Edit the "vm/jit.h" file, set:
 
 
 2. Installation
----------------
+===============
+
 Debian Linux
 ------------
 Use: install-debian.sh or install-jit-debian.sh
