@@ -1,4 +1,4 @@
-L1VM README  2020-06-07
+L1VM README  2020-09-06
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -37,25 +37,8 @@ You need to build vm-sdl2/ VM sources to use the new SDL 2.0 gfx/GUI library.
 This source of the L1VM is linked with the SDL2 libraries.
 
 
-Installation
-------------
-Debian Linux
-------------
-Use: install-debian.sh or install-jit-debian.sh
-
-Fedora Linux
-------------
-Use: install-zerobuild-fedora.sh or install-jit-zerobuild-fedora.sh
-
-Windows 10 WSL
---------------
-Use: install-wsl-debian.sh or install-wsl-debian-jit.sh
-
-Note: the install scripts automatically install clang C compiler and my zerobuild build tool!
-
-
-You need the "zerobuild" tool to build the VM: https://www.github.com/koder77/zerobuild
-
+1. Configuration
+----------------
 Configure the file access for SANDBOX mode or not, and set your /home directory name:
 include/global.h:
 
@@ -91,6 +74,27 @@ Edit the "vm/jit.h" file, set:
 <pre>
 #define JIT_COMPILER 1
 </pre>
+
+
+2. Installation
+---------------
+Debian Linux
+------------
+Use: install-debian.sh or install-jit-debian.sh
+
+Fedora Linux
+------------
+Use: install-zerobuild-fedora.sh or install-jit-zerobuild-fedora.sh
+
+Windows 10 WSL
+--------------
+Use: install-wsl-debian.sh or install-wsl-debian-jit.sh
+
+Note: the install scripts automatically install clang C compiler and my zerobuild build tool!
+
+
+You need the "zerobuild" tool to build the VM: https://www.github.com/koder77/zerobuild
+
 
 And run the "install-jit-zerobuild.sh" script.
 
