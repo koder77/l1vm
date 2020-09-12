@@ -51,8 +51,9 @@
 
 // user settings ==============================================================
 // machine
-#define MAXCPUCORES	    		5		// threads that can be runned
-#define MACHINE_BIG_ENDIAN      0       // endianess of host machine
+#define MAXCPUCORES	    		9		// threads that can be runned, set this to your logical CPU cores + 1
+										// for example to 5 on a 4 CPU core CPU!
+#define MACHINE_BIG_ENDIAN      0       // endianess of host machine, = 0 little endianess, 1 = big endianness
 
 // define if machine is ARM
 // #define M_ARM				1
@@ -96,11 +97,13 @@
 
 // internal settings ==========================================================
 // handle with care!
+// The values you can try on an machine with low RAM, are shown in the comments below!
+// This should it make possible to run the L1VM in just a few MB of RAM!
 
 // If you want save RAM you can set these values to 32 and 256!
 // I just increased it to be able to load more complex modules!
-#define MODULES					1024	// was 32
-#define MODULES_MAXFUNC			4096	// was 256
+#define MODULES					1024	// 32 on low RAM
+#define MODULES_MAXFUNC			4096	// 256 on low RAM
 
 // max input string len
 #define MAXINPUT 				512
@@ -110,10 +113,10 @@
 
 // Jump call stack, for jsr, jsra: how many jsr and jsra MAXSUBJUMPS can be done without a rts (return) call.
 // If you want to save RAM you can set this value to 256!
-#define MAXSUBJUMPS				40960    // was 256
+#define MAXSUBJUMPS				40960    // 256 on low RAM
 
 // max number of code labels, and their name length:
-#define MAXLABELS				40960
+#define MAXLABELS				40960	// 1024 on low RAM
 #define LABELLEN				64
 // internal settings end ======================================================
 
