@@ -78,7 +78,6 @@ Edit the "vm/jit.h" file, set:
 Use: install-debian.sh or install-jit-debian.sh
 
 <h3>Fedora Linux</h3>
-------------
 Use: install-zerobuild-fedora.sh or install-jit-zerobuild-fedora.sh
 
 <h3>Windows 10 WSL</h3>
@@ -169,8 +168,7 @@ A simple "Hello world!" in bra(ets (brackets) my language for L1VM:
 (funcend)
 </pre>
 
-Modules
--------
+<h2>Modules</h2>
 <pre>
 Cells - linked neural networks with FANN library
 endianess - convert to big endian, or little endian functions
