@@ -9,7 +9,9 @@ L1VM - (1.0.6)
 	Build scripts now install clang compiler during build run, if not
 	already installed.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun Aug 23 2020 09:42 +0200
+	include/global.h: low RAM settings in comments
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue Sep 15 2020 17:53 +0200
 
 
 L1VM - (1.0.5)
