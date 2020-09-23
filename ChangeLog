@@ -11,7 +11,9 @@ L1VM - (1.0.6)
 
 	include/global.h: low RAM settings in comments
 
--- Stefan Pietzonke <jay-t@gmx.net> Tue Sep 15 2020 17:53 +0200
+	NEW: prog/switch.l1com switch statement added into compiler!!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed Sep 23 2020 21:35 +0200
 
 
 L1VM - (1.0.5)

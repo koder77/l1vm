@@ -24,11 +24,13 @@ struct jumplist jumplist[MAXJUMPLIST];
 struct if_comp if_comp[MAXIF];
 struct while_comp while_comp[MAXWHILE];
 struct for_comp for_comp[MAXFOR];
+struct switch_comp switch_comp[MAXSWITCH];
 
-S4 if_ind;
-S4 while_ind;
-S4 for_ind;
-S4 jumplist_ind;
+S8 if_ind ALIGN;
+S8 while_ind ALIGN;
+S8 for_ind ALIGN;
+S8 switch_ind ALIGN;
+S8 jumplist_ind ALIGN;
 
 // string functions ===============================================================================
 size_t strlen_safe (const char * str, int maxlen);
@@ -48,6 +50,18 @@ void init_if (void)
 
 	if_ind = -1;
 	jumplist_ind = -1;
+}
+
+void init_switch (void)
+{
+	S4 i;
+
+    for (i = 0; i < MAXSWITCH; i++)
+    {
+        switch_comp[i].used = FALSE;
+		switch_comp[i].switch_set = FALSE;
+	}
+	switch_ind = -1;
 }
 
 S4 get_if_pos (void)
@@ -82,22 +96,22 @@ S4 get_act_if (void)
     return (-1);
 }
 
-U1 get_if_label (S4 ind, U1 *label)
+U1 get_if_label (S8 ind, U1 *label)
 {
     U1 labelnum[10];
 
     strcpy ((char *) label, ":if_");
-    sprintf ((char *) labelnum, "%d", ind);
+    sprintf ((char *) labelnum, "%lld", ind);
     strcat ((char *) label, (const char *) labelnum);
     return (TRUE);
 }
 
-U1 get_endif_label (S4 ind, U1 *label)
+U1 get_endif_label (S8 ind, U1 *label)
 {
     U1 labelnum[10];
 
     strcpy ((char *) label, ":endif_");
-    sprintf ((char *) labelnum, "%d", ind);
+    sprintf ((char *) labelnum, "%lld", ind);
     strcat ((char *) label, (const char *) labelnum);
 
 	#if DEBUG
@@ -107,12 +121,12 @@ U1 get_endif_label (S4 ind, U1 *label)
     return (TRUE);
 }
 
-U1 get_else_label (S4 ind, U1 *label)
+U1 get_else_label (S8 ind, U1 *label)
 {
     U1 labelnum[10];
 
     strcpy ((char *) label, ":else_");
-    sprintf ((char *)labelnum, "%d", ind);
+    sprintf ((char *)labelnum, "%lld", ind);
     strcat ((char *) label, (const char *) labelnum);
 
 	#if DEBUG
@@ -122,22 +136,22 @@ U1 get_else_label (S4 ind, U1 *label)
     return (TRUE);
 }
 
-void set_endif_finished (S4 ind)
+void set_endif_finished (S8 ind)
 {
     if_comp[ind].used = IF_FINISHED;
 }
 
-S4 get_else_lab (S4 ind)
+S4 get_else_lab (S8 ind)
 {
     return (if_comp[ind].else_pos);
 }
 
-S4 get_endif_lab (S4 ind)
+S4 get_endif_lab (S8 ind)
 {
     return (if_comp[ind].endif_pos);
 }
 
-S4 get_else_set (S4 ind)
+S4 get_else_set (S8 ind)
 {
     return (jumplist[if_comp[ind].else_pos].pos);
 }
@@ -150,7 +164,7 @@ S4 get_if_optimize_reg (U1 *code_line)
 	U1 if_found = 0;
 	U1 reg_num[256];
 	S4 reg;
-	
+
 	str_len = strlen_safe ((const char *) code_line, MAXLINELEN);
 	for (i = EQI; i <= LSEQD; i++)
 	{
@@ -166,7 +180,7 @@ S4 get_if_optimize_reg (U1 *code_line)
 		// no if found, return -1
 		return (-1);
 	}
-	
+
 	// get last argument, it's the needed register number
 	pos = searchstr (code_line, (unsigned char *) ",", 0, 0, TRUE);
 	if (pos != -1)
@@ -180,7 +194,7 @@ S4 get_if_optimize_reg (U1 *code_line)
 		}
 		reg_num[j] = '\0';
 		reg = atoi ((const char *) reg_num);
-		
+
 		return (reg);
 	}
 	else
@@ -234,12 +248,12 @@ S4 get_act_while (void)
 	return (-1);
 }
 
-U1 get_while_label (S4 ind, U1 *label)
+U1 get_while_label (S8 ind, U1 *label)
 {
     U1 labelnum[10];
 
     strcpy ((char *) label, ":while_");
-    sprintf ((char *) labelnum, "%d", ind);
+    sprintf ((char *) labelnum, "%lld", ind);
     strcat ((char *) label, (const char *) labelnum);
 
 	#if DEBUG
@@ -250,12 +264,12 @@ U1 get_while_label (S4 ind, U1 *label)
     return (TRUE);
 }
 
-S4 get_while_lab (S4 ind)
+S4 get_while_lab (S8 ind)
 {
     return (while_comp[ind].while_pos);
 }
 
-void set_wend (S4 ind)
+void set_wend (S8 ind)
 {
     while_comp[ind].while_set = TRUE;
 }
@@ -305,12 +319,12 @@ S4 get_act_for (void)
 	return (-1);
 }
 
-U1 get_for_label (S4 ind, U1 *label)
+U1 get_for_label (S8 ind, U1 *label)
 {
     U1 labelnum[10];
 
     strcpy ((char *) label, ":for_");
-    sprintf ((char *) labelnum, "%d", ind);
+    sprintf ((char *) labelnum, "%lld", ind);
     strcat ((char *) label, (const char *) labelnum);
 
 	#if DEBUG
@@ -321,12 +335,12 @@ U1 get_for_label (S4 ind, U1 *label)
     return (TRUE);
 }
 
-U1 get_for_label_2 (S4 ind, U1 *label)
+U1 get_for_label_2 (S8 ind, U1 *label)
 {
     U1 labelnum[10];
 
     strcpy ((char *) label, ":for2_");
-    sprintf ((char *) labelnum, "%d", ind);
+    sprintf ((char *) labelnum, "%lld", ind);
     strcat ((char *) label, (const char *) labelnum);
 
 	#if DEBUG
@@ -337,12 +351,12 @@ U1 get_for_label_2 (S4 ind, U1 *label)
     return (TRUE);
 }
 
-U1 get_for_label_end (S4 ind, U1 *label)
+U1 get_for_label_end (S8 ind, U1 *label)
 {
     U1 labelnum[10];
 
     strcpy ((char *) label, ":forend_");
-    sprintf ((char *) labelnum, "%d", ind);
+    sprintf ((char *) labelnum, "%lld", ind);
     strcat ((char *) label, (const char *) labelnum);
 
 	#if DEBUG
@@ -353,12 +367,51 @@ U1 get_for_label_end (S4 ind, U1 *label)
     return (TRUE);
 }
 
-S4 get_for_lab (S4 ind)
+S4 get_for_lab (S8 ind)
 {
     return (for_comp[ind].for_pos);
 }
 
-void set_for_end (S4 ind)
+void set_for_end (S8 ind)
 {
     for_comp[ind].for_set = TRUE;
+}
+
+
+// switch =====================================================================
+S4 get_switch_pos (void)
+{
+    S4 i;
+
+    for (i = 0; i < MAXIF; i++)
+    {
+        if (switch_comp[i].used == FALSE)
+        {
+            switch_comp[i].used = TRUE;
+            return (i);
+        }
+    }
+
+    /* no empty if found => error! */
+
+    return (-1);
+}
+
+S4 get_act_switch (void)
+{
+    S4 i;
+
+    for (i = MAXSWITCH - 1; i >= 0; i--)
+    {
+        if (switch_comp[i].used == TRUE)
+        {
+            return (i);
+        }
+    }
+    return (-1);
+}
+
+void set_switch_finished (S8 ind)
+{
+    switch_comp[ind].used = SWITCH_FINISHED;
 }

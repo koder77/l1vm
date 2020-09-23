@@ -24,9 +24,11 @@
 #define MAXIF 1024
 #define MAXWHILE 1024
 #define MAXFOR 1024
+#define MAXSWITCH 1024
 #define EMPTY -1
 #define NOTDEF -1
 #define IF_FINISHED 2
+#define SWITCH_FINISHED 3
 
 
 extern struct opcode opcode[MAXOPCODES];
@@ -35,8 +37,8 @@ extern struct opcode opcode[MAXOPCODES];
 struct if_comp
 {
     U1 used;
-    S4 else_pos;
-    S4 endif_pos;
+    S8 else_pos ALIGN;
+    S8 endif_pos ALIGN;
     U1 else_name[MAXJUMPNAME + 1];
     U1 endif_name[MAXJUMPNAME + 1];
 };
@@ -44,7 +46,7 @@ struct if_comp
 struct while_comp
 {
     U1 used;
-    S4 while_pos;
+    S8 while_pos ALIGN;
     U1 while_set;
     U1 while_name[MAXJUMPNAME + 1];
 };
@@ -52,15 +54,21 @@ struct while_comp
 struct for_comp
 {
     U1 used;
-    S4 for_pos;
+    S8 for_pos ALIGN;
     U1 for_set;
     U1 for_name[MAXJUMPNAME + 1];
+};
+
+struct switch_comp
+{
+    U1 used;
+	U1 switch_set;
 };
 
 struct jumplist
 {
     U1 islabel;
     U1 lab[MAXJUMPNAME + 1];
-    S4 pos;                                 /* position in exelist */
-    S4 source_pos;                          /* position in sourcecode */
+    S8 pos ALIGN;                                 /* position in exelist */
+    S8 source_pos ALIGN;                          /* position in sourcecode */
 };
