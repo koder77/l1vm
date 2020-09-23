@@ -2837,7 +2837,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									continue;
 								}
 
-								if (strcmp ((const char *) ast[level].expr[j][last_arg], "switch_end") == 0 && last_arg == 0)
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "switch-end") == 0 && last_arg == 0)
 								{
 									switch_pos = get_act_switch ();
 
