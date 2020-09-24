@@ -100,6 +100,11 @@
     <item>noti</item>
 	<item>loadreg</item>
 
+    <item>switch-end</item>
+    <item>switch</item>
+    <item>break</item>
+    <item>?</item>
+
     </list>
 
     <list name="modifiers">

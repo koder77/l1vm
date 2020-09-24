@@ -166,7 +166,8 @@ repository:
                 eqd|neqd|grd|lsd|greqd|lseqd|
                 loadreg|loada|loadd|inclsijmpi|decgrijmpi|movi|movd|loadl|jmpa|jsra|jsr|load|noti|
                 if+|if|else|endif|jmpi|jmp|jsr|call|rts|
-                for-loop|for|next|do|while
+                for-loop|for|next|do|while|
+                switch-end|switch|break
               )
              # (?=(\\s|\\()) # followed by space or (
         '''
