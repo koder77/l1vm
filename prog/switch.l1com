@@ -1,4 +1,4 @@
-// bra(et - Hello world!
+// Backets - Hello world! switch
 //
 (main func)
 	(set int64 1 zero 0)
