@@ -3063,7 +3063,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												strcat ((char *) code[code_line], ", 0, ");
 
 												reg2 = get_free_regi ();
-												set_regi (reg, ast[level].expr[j][last_arg - 2]);
+												set_regi (reg2, ast[level].expr[j][last_arg - 2]);
 
 												sprintf ((char *) str, "%i", reg2);
 												strcat ((char *) code[code_line], (const char *) str);
