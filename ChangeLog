@@ -1,3 +1,9 @@
+L1VM - (1.0.7)
+	VM: process module: code for Windows added.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Oct 3 2020 13:49 +0200
+
+
 L1VM - (1.0.6)
 	Memory library size of calloc() variable types fixed!
 	New: lib/mem-lib-vect.l1com: C++ vector library.

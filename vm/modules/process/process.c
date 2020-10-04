@@ -38,19 +38,27 @@ U1 *run_shell (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (sp == NULL)
     {
  	   // error
- 	   printf ("ERROR: genann_read_ann: ERROR: stack corrupt!\n");
+ 	   printf ("ERROR: run_shell: ERROR: stack corrupt!\n");
  	   return (NULL);
     }
 
-	ret = system ((const char *) &data[commandaddr]);
+    #if _WIN32
+    ret = system ((const char *) &data[commandaddr]);
     if (ret == -1)
     {
         perror ("run_shell:\n");
     }
-	else
-	{
-		ret = WEXITSTATUS (ret);
-	}
+    #else
+    ret = system ((const char *) &data[commandaddr]);
+    if (ret == -1)
+    {
+        perror ("run_shell:\n");
+    }
+    else
+    {
+        ret = WEXITSTATUS (ret);
+    }
+    #endif
 
     sp = stpushi (ret, sp, sp_bottom);
     if (sp == NULL)
