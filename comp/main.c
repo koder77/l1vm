@@ -3570,9 +3570,9 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 								}
 
 								// call =========================================================================
-								if (strcmp ((const char *) ast[level].expr[j][last_arg], "call") == 0)
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "call") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], "!") == 0)
 								{
-									// function call with arguments
+									// function call with arguments: "call" or "!" !!!
 
 									// first of all use save register code
 

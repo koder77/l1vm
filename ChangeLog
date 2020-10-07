@@ -1,7 +1,9 @@
 L1VM - (1.0.7)
 	VM: process module: code for Windows added.
+	New: lib/ranges-l1b.l1com added: functions to check if a variable is inside a set range.
+	Compiler: new operator: "!" as a short form for "call" to call functions!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Oct 3 2020 13:49 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Wed Oct 7 2020 16:19 +0200
 
 
 L1VM - (1.0.6)
