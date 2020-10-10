@@ -26,7 +26,7 @@
 		(x 42_const ?)
 			(6 42x_str 0 0 intr0)
 			(7 0 0 0 intr0)
-		(break)
+			(break)
 		(y 23_const ?)
 			(6 23y_str 0 0 intr0)
 			(7 0 0 0 intr0)

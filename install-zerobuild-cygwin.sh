@@ -32,7 +32,8 @@ else
 fi
 
 cd assemb
-if zerobuild force; then
+chmod +x make-win.sh
+if ./make-win.sh; then
 	echo "l1asm build ok!"
 else
 	echo "l1asm build error!"
@@ -40,7 +41,8 @@ else
 fi
 
 cd ../comp
-if zerobuild force; then
+chmod +x make-win.sh
+if ./make-win.sh; then
 	echo "l1com build ok!"
 else
 	echo "l1com build error!"
@@ -48,24 +50,25 @@ else
 fi
 
 cd ../vm
-if zerobuild force; then
+chmod +x make-win.sh
+if ./make-win.sh; then
 	echo "l1vm JIT build ok!"
 else
 	echo "l1vm JIT build error!"
 	exit 1
 fi
-cp l1vm l1vm-jit
+cp l1vm l1vm-nojit
 cd ..
 cp assemb/l1asm ~/bin
 cp comp/l1com ~/bin
-cp vm/l1vm-jit ~/bin
+cp vm/l1vm ~/bin
 echo "VM binaries installed into ~/bin"
 
 cd modules
 echo "installing modules..."
 chmod +x *.sh
-./build.sh
-if ./install.sh; then
+./build-win.sh
+if ./install-win.sh; then
 	echo "modules build ok!"
 else
 	echo "modules build FAILED!"

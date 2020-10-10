@@ -96,9 +96,15 @@ $ ./install-wsl-debian.sh
 
 Note: the install scripts automatically install clang C compiler and my zerobuild build tool!
 
+<h3>Windows Cygwin</h3>
+You have to install the clang compiler, SDL2 libraries and a window manager like Xfce for graphics output.
+This can be done with the installer on: https://www.cygwin.com/
+
+The build script is: "install-zerobuild-cygwin.sh".
+Note: at the moment only this modules can be  build: endianess, file, genann, math, mem, process, sdl, time.
+
 
 You need the "zerobuild" tool to build the VM: https://www.github.com/koder77/zerobuild
-
 
 And run the "install-jit-zerobuild.sh" script.
 

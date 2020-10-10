@@ -1,7 +1,7 @@
 #!/bin/bash
 # install modules to /usr/local/lib
 numberOfFiles=$(find . -type f | wc -l)
-if [ $numberOfFiles != 20 ]
+if [ $numberOfFiles != 15 ]
 then
 	echo "ERROR building modules! Some modules failed to build!"
 	exit 1

@@ -1,0 +1,15 @@
+# zerobuild makefile
+
+[executable, shared, name = libl1vmnet.so]
+sources = net.c, ../../../lib-func/string.c, ../file/file-sandbox.c
+
+includes = ../include, /usr/local/include
+
+ccompiler = $CC
+c++compiler = $CCPP
+
+linker = ld
+aflags = "cru"
+
+cflags = "-O3 -fomit-frame-pointer -Wall"
+lflags = "-shared -lws2_32"
