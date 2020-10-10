@@ -101,7 +101,9 @@ You have to install the clang compiler, SDL2 libraries and a window manager like
 This can be done with the installer on: https://www.cygwin.com/
 
 Edit the file: vm/jit.h: and set:
+<pre>
 #define JIT_COMPILER 0
+</pre>
 
 The build script is: "install-zerobuild-cygwin.sh".
 Note: at the moment only this modules can be  build: endianess, file, genann, math, mem, process, sdl, time.
