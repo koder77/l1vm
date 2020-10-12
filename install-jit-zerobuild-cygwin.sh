@@ -32,7 +32,7 @@ else
 fi
 
 # check if libasmjit is installed
-FILE=/usr/local/lib/libasmjit.dll
+FILE=/usr/local/bin/libasmjit.dll
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
@@ -45,13 +45,13 @@ else
 	cmake ../
 	make
 	make install
-	cp cygasmjit.dll /usr/local/lib/libasmjit.dll
+	cp cygasmjit.dll /usr/local/bin/libasmjit.dll
 	cd ..
 	cd ..
 fi
 
 # check if libl1vm-jit.so is installed
-FILE=/usr/local/lib/libl1vm-jit.so
+FILE=/usr/local/bin/libl1vm-jit.so
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
@@ -65,8 +65,8 @@ else
 		echo "libl1vm-jit build error!"
 		exit 1
 	fi
-	cp libl1vm-jit.so /usr/local/lib/libl1vm-jit.so
-        cp libl1vm-jit.so /usr/local/lib/libl1vm-jit.dll
+	cp libl1vm-jit.so /usr/local/bin/libl1vm-jit.so
+        cp libl1vm-jit.so /usr/local/bin/libl1vm-jit.dll
 	cd ..
 fi
 
