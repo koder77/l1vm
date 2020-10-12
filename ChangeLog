@@ -4,8 +4,9 @@ L1VM - (1.0.7)
 	Compiler: new operator: "!" as a short form for "call" to call functions!
 
 	New: build script for Windows Cygwin added! See README!
+	New: build scripts for JIT-compiler build now build the "libl1vm-jit.so" library too!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Oct 10 2020 22:40 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Mon Oct 12 2020 18:32 +0200
 
 
 L1VM - (1.0.6)
