@@ -51,7 +51,7 @@ else
 fi
 
 # check if libl1vm-jit.so is installed
-FILE=/usr/local/liblibl1vm-jit.dll
+FILE=/usr/local/lib/libl1vm-jit.so
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
@@ -65,7 +65,8 @@ else
 		echo "libl1vm-jit build error!"
 		exit 1
 	fi
-	cp libl1vm-jit.so /usr/local/lib/libl1vm-jit.dll
+	cp libl1vm-jit.so /usr/local/lib/libl1vm-jit.so
+        cp libl1vm-jit.so /usr/local/lib/libl1vm-jit.dll
 	cd ..
 fi
 
