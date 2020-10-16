@@ -112,6 +112,7 @@ else
 	cmake ../
 	make
 	sudo make install
+	sudo cp libasmjit.so /usr/local/lib
 	cd ..
 	cd ..
 fi
@@ -125,7 +126,7 @@ else
 	echo "building it now..."
 	cd libjit
 	zerobuild force
-	cp libl1vm-jit.so /usr/local/lib
+	sudo cp libl1vm-jit.so /usr/local/lib
 	cd ..
 fi
 
