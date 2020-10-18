@@ -6,7 +6,13 @@ L1VM - (1.0.7)
 	New: build script for Windows Cygwin added! See README!
 	New: build scripts for JIT-compiler build now build the "libl1vm-jit.so" library too!
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon Oct 12 2020 18:32 +0200
+	New: now programs are searched by the VM in: "SANDBOX_ROOT/prog/" folder too!
+	For example in my SANDBOX_ROOT: "/home/stefan/l1vm/prog".
+	So you can launch programs from any directory with for example:
+
+	l1vm hello-2
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Oct 18 2020 13:34 +0200
 
 
 L1VM - (1.0.6)

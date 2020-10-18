@@ -38,6 +38,8 @@ extern S8 max_data_size ALIGN;
 // sets max number of CPU cores
 extern S8 max_cpu;
 
+extern U1 silent_run;
+
 size_t strlen_safe (const char * str, int maxlen);
 
 S2 conv_word (S2 val)
@@ -136,9 +138,13 @@ S2 load_object (U1 *name)
 {
 	FILE *fptr;
 	U1 objname[512];
+	U1 full_path[512];
 	U1 run_shell[512];
 
 	S4 slen;
+	S4 sandbox_root_len;
+	U1 object_packed = 0;
+	U1 object_root = 0;
 
 	S8 header ALIGN;
 
@@ -169,6 +175,8 @@ S2 load_object (U1 *name)
 		return (1);
 	}
 
+	sandbox_root_len = strlen_safe ((const char *) name, MAXLINELEN);
+
 	strcpy ((char *) objname, (const char *) name);
 	strcat ((char *) objname, ".l1obj");
 
@@ -182,43 +190,99 @@ S2 load_object (U1 *name)
 		fptr = fopen ((const char *) objname, "r");
 		if (fptr == NULL)
 		{
-			printf ("ERROR: can't open packed object file '%s'!\n", objname);
+			// check if program is in SANDBOX_ROOT directory
+			if (sandbox_root_len + slen + 4 + 10 > 511)
+			{
+				printf ("ERROR: filename or sandbox root too long!\n");
+				return (1);
+			}
 
-			strcpy ((char *) objname, (const char *) name);
-			strcat ((char *) objname, ".l1obj");
+			strcpy ((char *) full_path, SANDBOX_ROOT);
+			strcat ((char *) full_path, (const char *) "prog/");
+			strcat ((char *) full_path, (const char *) name);
+			strcat ((char *) full_path, ".l1obj");
 
-			printf ("ERROR: and can't open object file '%s'!\n", objname);
-			return (1);
+			fptr = fopen ((const char *) full_path, "r");
+			if (fptr == NULL)
+			{
+				// check if .bz2 compressed object archive?
+				strcat ((char *) full_path, ".bz2");
+
+				fptr = fopen ((const char *) full_path, "r");
+				if (fptr == NULL)
+				{
+					strcpy ((char *) objname, (const char *) name);
+					strcat ((char *) objname, ".l1obj");
+
+					printf ("ERROR: can't open object file '%s'!\n", objname);
+					printf ("Can't open an packed object file or object file in: ''%s' !\n", full_path);
+					return (1);
+				}
+				else
+				{
+					object_packed = 1;
+					object_root = 1;
+				}
+			}
 		}
-		// close archive
-		fclose (fptr);
-		// unpack archive by running bzip2 unpack
-
-		// bzip2 -d -k -f primes.l1obj.bz2  -c >/tmp/primes.l1obj
-
-
-		strcpy ((char *) run_shell, "bzip2 -d -k -f ");
-		strcat ((char *) run_shell, (const char *) objname);
-
-		// printf ("shell unpack: '%s'\n", run_shell
-
-		if (system ((char *) run_shell) != 0)
+		else
 		{
-			printf ("load_object: ERROR: can't run bzip2 to unpack object code: '%s'!\n", objname);
-			return (1);
+			object_packed = 1;
 		}
 
-		strcpy ((char *) objname, (const char *) name);
-		strcat ((char *) objname, ".l1obj");
-
-		fptr = fopen ((const char *) objname, "r");
-		if (fptr == NULL)
+		if (object_packed == 1)
 		{
-			printf ("ERROR: can't open object file '%s'!\n", objname);
-			return (1);
-		}
+			if (silent_run == 0)
+			{
+				printf ("loading packed object file...\n");
+			}
+			// close archive
+			fclose (fptr);
+			// unpack archive by running bzip2 unpack
 
-		bzip2 = 1;
+			// bzip2 -d -k -f primes.l1obj.bz2  -c >/tmp/primes.l1obj
+
+			strcpy ((char *) run_shell, "bzip2 -d -k -f ");
+			if (object_root == 0)
+			{
+				strcat ((char *) run_shell, (const char *) objname);
+			}
+			else
+			{
+				// object file in sandbox_root/prog
+				strcat ((char *) run_shell, (const char *) full_path);
+			}
+
+			// printf ("shell unpack: '%s'\n", run_shell
+
+			if (system ((char *) run_shell) != 0)
+			{
+				printf ("load_object: ERROR: can't run bzip2 to unpack object code: '%s'!\n", objname);
+				return (1);
+			}
+
+			if (object_root == 0)
+			{
+				strcpy ((char *) objname, (const char *) name);
+				strcat ((char *) objname, ".l1obj");
+			}
+			else
+			{
+				strcpy ((char *) objname, SANDBOX_ROOT);
+				strcat ((char *) objname, (const char *) "prog/");
+				strcat ((char *) objname, (const char *) name);
+				strcat ((char *) objname, ".l1obj");
+			}
+
+			fptr = fopen ((const char *) objname, "r");
+			if (fptr == NULL)
+			{
+				printf ("ERROR: can't open object file '%s'!\n", objname);
+				return (1);
+			}
+
+			bzip2 = 1;
+		}
 	}
 
 	// check header
