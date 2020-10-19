@@ -215,7 +215,7 @@ S2 load_object (U1 *name)
 					strcat ((char *) objname, ".l1obj");
 
 					printf ("ERROR: can't open object file '%s'!\n", objname);
-					printf ("Can't open an packed object file or object file in: ''%s' !\n", full_path);
+					printf ("Can't open an packed object file or object file in: '%s' !\n", full_path);
 					return (1);
 				}
 				else

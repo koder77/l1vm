@@ -2,6 +2,7 @@ L1VM - (1.0.7)
 	VM: process module: code for Windows added.
 	New: lib/ranges-l1b.l1com added: functions to check if a variable is inside a set range.
 	Compiler: new operator: "!" as a short form for "call" to call functions!
+	See: prog/hello-5.l1com
 
 	New: build script for Windows Cygwin added! See README!
 	New: build scripts for JIT-compiler build now build the "libl1vm-jit.so" library too!
@@ -12,7 +13,16 @@ L1VM - (1.0.7)
 
 	l1vm hello-2
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun Oct 18 2020 13:34 +0200
+	lib/math-lib.l1com: added "math_not" function to return the "not" result number:
+	For example:
+
+	(zero not_num =)
+	(not_num :math_not call)
+	(not_ret stpopi)
+
+	The "not_ret" value would be: "1".
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon Oct 19 2020 18:15 +0200
 
 
 L1VM - (1.0.6)
