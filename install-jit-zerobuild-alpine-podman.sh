@@ -33,8 +33,8 @@ else
 	cd build
 	cmake ../
 	make
-	sudo make install
-	sudo cp libasmjit.so /usr/local/lib
+	make install
+	cp libasmjit.so /usr/local/lib
 	cd ..
 	cd ..
 fi
@@ -48,7 +48,7 @@ else
 	echo "building it now..."
 	cd libjit
 	zerobuild force
-	sudo cp libl1vm-jit.so /usr/local/lib
+	cp libl1vm-jit.so /usr/local/lib
 	cd ..
 fi
 
@@ -69,13 +69,13 @@ else
 fi
 
 cd ../vm
-if zerobuild force; then
+if ./make-cli-jit.sh; then
 	echo "l1vm JIT build ok!"
 else
 	echo "l1vm JIT build error!"
 	exit 1
 fi
-cp l1vm l1vm-jit
+cp l1vm-cli l1vm-jit
 cd ..
 cp assemb/l1asm /usr/local/bin/
 cp comp/l1com /usr/local/bin/
