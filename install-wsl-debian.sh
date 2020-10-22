@@ -99,6 +99,32 @@ else
 	cd ..
 fi
 
+# check if mpreal.h is installed
+FILE=/usr/local/include/mpreal.h
+if test -f "$FILE"; then
+    echo "$FILE exists!"
+else
+	echo "mpreal.h not installed into $FILE!"
+	echo "cloning and building it now..."
+	git clone https://github.com/advanpix/mpreal.git
+	cd mpreal
+	cp mpreal.h /usr/local/include
+	cd ..
+fi
+
+# check if libl1vm-jit.so is installed
+FILE=/usr/local/lib/libl1vm-jit.so
+if test -f "$FILE"; then
+    echo "$FILE exists!"
+else
+	echo "libl1vm-jit not installed into $FILE!"
+	echo "building it now..."
+	cd libjit
+	zerobuild force
+	cp libl1vm-jit.so /usr/local/lib
+	cd ..
+fi
+
 cd assemb
 if zerobuild force; then
 	echo "l1asm build ok!"
