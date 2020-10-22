@@ -98,8 +98,8 @@ echo "VM binaries installed into /usr/local/bin/"
 cd modules
 echo "installing modules..."
 chmod +x *.sh
-sh ./build.sh
-sh ./install.sh
+sh ./build-alpine.sh
+sh ./install-alpine.sh
 
 echo "all modules installed. building programs..."
 cd ../prog
