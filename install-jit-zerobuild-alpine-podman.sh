@@ -42,7 +42,7 @@ else
 fi
 
 # check if mpreal.h is installed
-FILE=/usr/local/include/mpreal.h
+FILE=/usr/include/mpreal.h
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
@@ -50,39 +50,7 @@ else
 	echo "cloning and building it now..."
 	git clone https://github.com/advanpix/mpreal.git
 	cd mpreal
-	cp mpreal.h /usr/local/include
-	cd ..
-fi
-
-# check if libasmjit is installed
-FILE=/usr/local/lib/libasmjit.so
-if test -f "$FILE"; then
-    echo "$FILE exists!"
-else
-	echo "libasmjit not installed into $FILE!"
-	echo "cloning and building it now..."
-	git clone https://github.com/asmjit/asmjit
-	cd asmjit
-	mkdir build
-	cd build
-	cmake ../
-	make
-	make install
-	cp libasmjit.so /usr/local/lib
-	cd ..
-	cd ..
-fi
-
-# check if libl1vm-jit.so is installed
-FILE=/usr/local/lib/libl1vm-jit.so
-if test -f "$FILE"; then
-    echo "$FILE exists!"
-else
-	echo "libl1vm-jit not installed into $FILE!"
-	echo "building it now..."
-	cd libjit
-	zerobuild force
-	cp libl1vm-jit.so /usr/local/lib
+	cp mpreal.h /usr/include
 	cd ..
 fi
 
@@ -103,7 +71,7 @@ else
 fi
 
 cd ../vm
-if ./make-cli-jit.sh; then
+if ./make-cli.sh; then
 	echo "l1vm JIT build ok!"
 else
 	echo "l1vm JIT build error!"
