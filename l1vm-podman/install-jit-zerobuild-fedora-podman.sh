@@ -38,7 +38,7 @@ else
   mkdir ~/bin
 fi
 
-# check if zerobuild installed into ~/bin
+# check if zerobuild installed into /usr/bin
 FILE=/usr/bin/zerobuild
 if test -f "$FILE"; then
     echo "$FILE exists!"
