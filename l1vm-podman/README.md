@@ -7,16 +7,16 @@ $ podman run -ti --name fedora --hostname fedora-host --memory 512mb --network h
 
 In Fedora podman container:
 --------------------------
-$ cd /home
-$ mkdir user
-$ cd user
-$ git clone https://github.com/koder77/l1vm.git
-$ cd l1vm
-$ sh l1vm-podman/install-jit-zerobuild-fedora-podman.sh
-$ ldconfig
+$ cd /home <br>
+$ mkdir user <br>
+$ cd user <br>
+$ git clone https://github.com/koder77/l1vm.git <br>
+$ cd l1vm <br>
+$ sh l1vm-podman/install-jit-zerobuild-fedora-podman.sh <br>
+$ ldconfig <br><br>
 
 Now you should be ready!!
-
+<br>
 
 Alpine Linux install in podman experimental
 ===========================================
