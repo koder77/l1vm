@@ -13,6 +13,11 @@ sudo dnf install SDL2_ttf-devel.x86_64
 sudo dnf install fann-devel.x86_64
 sudo dnf install mpfr-devel.x86_64
 sudo dnf install clang.x86_64
+sudo dnf install git
+sudo dnf install clang
+sudo dnf install make cmake
+sudo dnf install nano
+sudo dnf install findutils
 
 # check if clang C compiler is installed
 FILE=/usr/bin/clang
@@ -117,10 +122,10 @@ else
 fi
 cp l1vm l1vm-jit
 cd ..
-cp assemb/l1asm ~/bin
-cp comp/l1com ~/bin
-cp vm/l1vm-jit ~/bin
-echo "VM binaries installed into ~/bin"
+cp assemb/l1asm /usr/bin
+cp comp/l1com /usr/bin
+cp vm/l1vm-jit /usr/bin
+echo "VM binaries installed into /usr/bin"
 
 cd modules
 echo "installing modules..."
