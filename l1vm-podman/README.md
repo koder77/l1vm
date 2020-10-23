@@ -7,10 +7,16 @@ $ podman run -ti --name fedora --hostname fedora-host --memory 512mb --network h
 
 In Fedora podman container:
 --------------------------
-$ cd /home <br>
-$ mkdir user <br>
-$ cd user <br>
-$ sudo dnf install git <br>
+$ dnf install git <br>
+$ dnf install passwd <br>
+$ dnf install cracklib <br>
+$ dnf install cracklib-dicts <br>
+$ adduser user <br>
+$ passwd <br>
+$ passwd user <br>
+$ usermod -aG wheel user
+$ sudo su user <br>
+$ cd /home/user <br>
 $ git clone https://github.com/koder77/l1vm.git <br>
 $ cd l1vm <br>
 $ sh l1vm-podman/install-jit-zerobuild-fedora-podman.sh <br>

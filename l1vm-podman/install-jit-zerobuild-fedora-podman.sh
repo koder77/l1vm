@@ -48,7 +48,7 @@ else
 	git clone https://github.com/koder77/zerobuild.git
 	cd zerobuild
 	./make.sh
-	cp zerobuild /usr/bin
+	sudo cp zerobuild /usr/bin
 	cd ..
 fi
 
@@ -122,9 +122,9 @@ else
 fi
 cp l1vm l1vm-jit
 cd ..
-cp assemb/l1asm /usr/bin
-cp comp/l1com /usr/bin
-cp vm/l1vm-jit /usr/bin
+sudo cp assemb/l1asm /usr/bin
+sudo cp comp/l1com /usr/bin
+sudo cp vm/l1vm-jit /usr/bin
 echo "VM binaries installed into /usr/bin"
 
 cd modules
