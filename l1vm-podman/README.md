@@ -2,13 +2,13 @@ Alpine Linux install in podman
 ==============================
 $ podman pull alpine:latest
 $ podman
-$ podman run -ti --name alpine --hostname alpine-host --network host alpine:latest /bin/sh
+$ podman run -ti --name alpine --hostname alpine-host --memory 256mb --network host alpine:latest /bin/sh
 
 In Alpine podman container:
 ---------------------------
 $ apk add git
 $ apk add nano
-$ git clone https://github.com/koder77/l1vm
+$ git clone https://github.com/koder77/l1vm.git
 $ cd l1vm
 $ nano vm/jit.h
 ----------------------------------
