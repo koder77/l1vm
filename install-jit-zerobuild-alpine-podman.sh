@@ -1,6 +1,27 @@
 #!/bin/bash
 #
 
+echo "installing needed packages..."
+apk update
+apk add clang
+apk add cmake
+apk add --upgrade fann
+apk add --upgrade fann-dev
+apk add --upgrade fann-float
+apk add --upgrade fann-double
+apk add --upgrade mpfr
+apk add --upgrade mpfr-dev
+apk add --upgrade libc-dev
+apk add --upgrade git
+apk add --upgrade make automake
+apk add --upgrade binutils
+apk add --upgrade gcc
+apk add --upgrade gcompat
+apk add --upgrade libstdc++
+apk add --upgrade g++
+apk add --upgrade gmp
+apk add --upgrade gmp-dev
+
 echo "building compiler, assembler and VM..."
 
 export CC=clang
@@ -104,7 +125,7 @@ sh ./install-alpine.sh
 echo "all modules installed. building programs..."
 cd ../prog
 chmod +x *.sh
-if ./build-all.sh; then
+if sh ./build-all.sh; then
 	echo "building programs successfully!"
 else
 	echo "building programs FAILED!"

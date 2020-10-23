@@ -7,6 +7,6 @@ then
 	exit 1
 else
 	echo "Building modules was successfull! Installing..."
-	cp libl1vm* ~/bin
+	cp libl1vm* /usr/local/lib
 	exit 0
 fi
