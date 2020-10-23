@@ -14,7 +14,7 @@ $ dnf install cracklib-dicts <br>
 $ adduser user <br>
 $ passwd <br>
 $ passwd user <br>
-$ usermod -aG wheel user
+$ usermod -aG wheel user <br>
 $ sudo su user <br>
 $ cd /home/user <br>
 $ git clone https://github.com/koder77/l1vm.git <br>
