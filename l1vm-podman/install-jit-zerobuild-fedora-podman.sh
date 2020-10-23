@@ -39,7 +39,7 @@ else
 fi
 
 # check if zerobuild installed into ~/bin
-FILE=~/bin/zerobuild
+FILE=/usr/bin/zerobuild
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
@@ -48,7 +48,7 @@ else
 	git clone https://github.com/koder77/zerobuild.git
 	cd zerobuild
 	./make.sh
-	cp zerobuild ~/bin/
+	cp zerobuild /usr/bin
 	cd ..
 fi
 
@@ -66,7 +66,7 @@ else
 fi
 
 # check if libasmjit is installed
-FILE=/usr/local/lib/libasmjit.so
+FILE=/usr/lib/libasmjit.so
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
@@ -79,13 +79,13 @@ else
 	cmake ../
 	make
 	sudo make install
-	sudo cp libasmjit.so /usr/local/lib
+	sudo cp libasmjit.so /usr/lib
 	cd ..
 	cd ..
 fi
 
 # check if libl1vm-jit.so is installed
-FILE=/usr/local/lib/libl1vm-jit.so
+FILE=/usr/lib/libl1vm-jit.so
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
@@ -93,7 +93,7 @@ else
 	echo "building it now..."
 	cd libjit
 	zerobuild force
-	sudo cp libl1vm-jit.so /usr/local/lib
+	sudo cp libl1vm-jit.so /usr/lib
 	cd ..
 fi
 
