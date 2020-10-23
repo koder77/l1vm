@@ -10,6 +10,7 @@ In Fedora podman container:
 $ cd /home <br>
 $ mkdir user <br>
 $ cd user <br>
+$ sudo dnf install git <br>
 $ git clone https://github.com/koder77/l1vm.git <br>
 $ cd l1vm <br>
 $ sh l1vm-podman/install-jit-zerobuild-fedora-podman.sh <br>
