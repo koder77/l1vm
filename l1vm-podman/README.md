@@ -21,7 +21,7 @@ $ sh l1vm-podman/install-jit-zerobuild-fedora-podman.sh <br>
 $ sudo ldconfig <br>
 
 Now you should be ready to run L1VM! <br>
-After "exit" the Conatiner you can commit it and create an new image with my L1VM in it! <br><br>
+After "exit" the conatiner you can commit it and create an new image with my L1VM in it! <br><br>
 
 Run the following command with your container-ID: <br>
 podman commit [container-ID] l1vm-fedora-image <br><br>
