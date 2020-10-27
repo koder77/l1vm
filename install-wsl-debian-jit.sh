@@ -80,13 +80,13 @@ else
 	echo "See this installation script for more info..."
 fi
 
-export CC=clang
-export CCPP=clang++
+export CC=clang-7
+export CCPP=clang++-7
 
 # check if clang C compiler is installed
 if ! dpkg -s clang &> /dev/null; then
 	echo "try to install clang..."
-	if ! sudo apt-get install clang; then
+	if ! sudo apt-get install clang-7; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -126,7 +126,7 @@ else
 	echo "cloning and building it now..."
 	git clone https://github.com/advanpix/mpreal.git
 	cd mpreal
-	cp mpreal.h /usr/local/include
+	sudo cp mpreal.h /usr/local/include
 	cd ..
 fi
 
