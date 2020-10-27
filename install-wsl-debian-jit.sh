@@ -6,6 +6,8 @@ if uname -a | grep -q "Microsoft"; then
 echo "Windows 10 WSL Debian detected?"
 echo "checking for needed libraries..."
 
+sudo apt-get update
+
 if ! dpkg -s libsdl2-dev &> /dev/null; then
 	echo "try to install libsdl2-dev..."
 	if ! sudo apt-get install libsdl2-dev; then
@@ -49,6 +51,22 @@ fi
 if ! dpkg -s libmpfrc++-dev &> /dev/null; then
 	echo "try to install libmpfrc++-dev..."
 	if ! sudo apt-get install libmpfrc++-dev; then
+		echo "installation failed!"
+		exit 1
+	fi
+fi
+
+if ! dpkg -s cmake &> /dev/null; then
+	echo "try to install libmpfrc++-dev..."
+	if ! sudo apt-get install cmake; then
+		echo "installation failed!"
+		exit 1
+	fi
+fi
+
+if ! dpkg -s make &> /dev/null; then
+	echo "try to install libmpfrc++-dev..."
+	if ! sudo apt-get install make; then
 		echo "installation failed!"
 		exit 1
 	fi
