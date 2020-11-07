@@ -2782,7 +2782,7 @@ void show_info (void)
 	printf ("-S stacksize : set the stack size\n");
 	printf ("-q : quiet run, don't show welcome messages\n\n");
 	printf ("program arguments for the program must be set by '-args':\n");
-	printf ("l1vm -args foo bar\n");
+	printf ("l1vm programname -args foo bar\n");
 	printf ("%s", VM_VERSION_STR);
 	printf ("%s\n", COPYRIGHT_STR);
 }
