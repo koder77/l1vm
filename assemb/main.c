@@ -1632,6 +1632,7 @@ int main (int ac, char *av[])
 	{
 		printf ("\033[31mERRORS! can't write object file!\n");
 		printf ("[!] %s\033[0m\n\n", av[1]);
+		printf ("\033[0m[\u2714]\n");	// switch to normal text color
 		free_code_data ();
 		exit (1);
 	}
@@ -1641,6 +1642,7 @@ int main (int ac, char *av[])
 		{
 			printf ("\033[31mERRORS! can't write object file!\n");
 			printf ("[!] %s\033[0m\n\n", av[1]);
+			printf ("\033[0m[\u2714]\n");	// switch to normal text color
 			free_code_data ();
 			exit (1);
 		}
@@ -1649,6 +1651,7 @@ int main (int ac, char *av[])
 	{
 		printf ("\033[31mERRORS! can't write object file!\n");
 		printf ("[!] %s\033[0m\n\n", av[1]);
+		printf ("\033[0m[\u2714]\n");	// switch to normal text color
 		free_code_data ();
 		exit (1);
 	}
@@ -1665,6 +1668,7 @@ int main (int ac, char *av[])
 		{
 			printf ("\033[31mERROR: can't compress object: '%s' with bzip2!\n", av[1]);
 			printf ("[!] %s\033[0m\n\n", av[1]);
+			printf ("\033[0m[\u2714]\n");	// switch to normal text color
 			exit (1);
 		}
 		printf (">>> object file compressed!\n");

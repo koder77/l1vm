@@ -22,7 +22,10 @@ L1VM - (1.0.7)
 
 	The "not_ret" value would be: "1".
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon Oct 19 2020 18:15 +0200
+	Program arguments for the program must be set by '-args'
+	$ l1vm programname -args foo bar
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Nov 07 2020 23:24 +0200
 
 
 L1VM - (1.0.6)
