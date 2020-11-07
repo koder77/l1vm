@@ -2777,10 +2777,12 @@ void free_modules (void)
 
 void show_info (void)
 {
-	printf ("l1vm <program> [-C cpu_cores] [-S stacksize] [-q]\n");
+	printf ("l1vm <program> [-C cpu_cores] [-S stacksize] [-q] <-args> <cmd args>\n");
 	printf ("-C cores : set maximum of threads that can be run\n");
 	printf ("-S stacksize : set the stack size\n");
 	printf ("-q : quiet run, don't show welcome messages\n\n");
+	printf ("program arguments for the program must be set by '-args':\n");
+	printf ("l1vm -args foo bar\n");
 	printf ("%s", VM_VERSION_STR);
 	printf ("%s\n", COPYRIGHT_STR);
 }
@@ -2791,6 +2793,7 @@ int main (int ac, char *av[])
 	S8 arglen ALIGN;
 	S8 strind ALIGN;
 	S8 avind ALIGN;
+	U1 cmd_args = 0;		// switched to one, if arguments follow
 
 	U1 av_found = 0;
 	pthread_t id;
@@ -2827,9 +2830,34 @@ int main (int ac, char *av[])
 
 			// printf ("DEBUG: arg: '%s'\n", av[i]);
 
+			if (cmd_args == 1)
+			{
+				// printf ("got shellarg: '%s'\n", av[i]);
+
+					if (shell_args_ind < MAXSHELLARGS - 1)
+					{
+						shell_args_ind++;
+						if (strlen_safe (av[i], MAXSHELLARGLEN - 1) < MAXSHELLARGLEN -1)
+						{
+							strcpy ((char *) shell_args[shell_args_ind], av[i]);
+						}
+						else
+						{
+							printf ("ERROR: shell argument: '%s' too long!\n", av[i]);
+							cleanup ();
+							exit (1);
+						}
+
+						// printf ("arg: %i: '%s'\n", shell_args_ind, av[i]);
+					}
+			}
+			else
+			{
 			if (arglen >= 2)
 			{
+				// get VM specific args
 				if (av[i][0] == '-' || (av[i][0] == '-' && av[i][1] == '-'))
+				{
 
 				if (arglen == 2)
 				{
@@ -2927,24 +2955,15 @@ int main (int ac, char *av[])
 					}
 	            }
 			}
+			}
+			}
 			// get normal shell arg
 			if (arglen > 0)
 			{
-				// printf ("got shellarg: '%s'\n", av[i]);
-
-				if (shell_args_ind < MAXSHELLARGS - 1)
+				if (strcmp (av[i], "-args") == 0)
 				{
-					shell_args_ind++;
-					if (strlen_safe (av[i], MAXSHELLARGLEN - 1) < MAXSHELLARGLEN -1)
-					{
-						strcpy ((char *) shell_args[shell_args_ind], av[i]);
-					}
-					else
-					{
-						printf ("ERROR: shell argument: '%s' too long!\n", av[i]);
-						cleanup ();
-						exit (1);
-					}
+					// printf ("args follow: %lli: '%s\n", av[i]);
+					cmd_args = 1;
 				}
 			}
         }
