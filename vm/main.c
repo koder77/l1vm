@@ -2820,108 +2820,133 @@ int main (int ac, char *av[])
 
     if (ac > 1)
     {
-        for (i = 1; i < ac; i++)
+        for (i = 2; i < ac; i++)
         {
 			av_found = 0;
             arglen = strlen_safe (av[i], MAXLINELEN);
 
 			// printf ("DEBUG: arg: '%s'\n", av[i]);
 
-			if (arglen == 2)
+			if (arglen >= 2)
 			{
-				if (av[i][0] == '-' && av[i][1] == 'q')
-				{
-					silent_run = 1;
-				}
+				if (av[i][0] == '-' || (av[i][0] == '-' && av[i][1] == '-'))
 
-				if (av[i][0] == '-' && av[i][1] == 'C')
+				if (arglen == 2)
 				{
-					// set max cpu cores flag...
-					if (ac > i)
+					if (av[i][0] == '-' && av[i][1] == 'q')
 					{
-						max_cpu = atoi (av[i + 1]);
-						if (max_cpu == 0)
-						{
-							printf ("ERROR: max_cpu less than 1 core!\n");
-							cleanup ();
-							exit (1);
-						}
-						printf ("max_cpu: cores set to: %lli\n", max_cpu);
+						silent_run = 1;
 					}
-					av_found = 1;
-				}
 
-				if (av[i][0] == '-' && av[i][1] == 'S')
-				{
-					// set max stack size flag...
-					if (ac > i)
+					if (av[i][0] == '-' && av[i][1] == 'C')
 					{
-						stack_size = atoi (av[i + 1]);
-						if (stack_size == 0)
+						// set max cpu cores flag...
+						if (ac > i)
 						{
-							printf ("ERROR: stack size is 0!\n");
-							cleanup ();
-							exit (1);
-						}
-						printf ("stack_size: stack size set to %lli\n", stack_size);
-					}
-					av_found = 1;
-				}
-
-				if (av[i][0] == '-' && av[i][1] == '?')
-				{
-					// user needs help, show arguments info and exit
-					show_info ();
-					cleanup ();
-					exit (1);
-				}
-			}
-            if (arglen > 2)
-            {
-                if (av[i][0] == '-' && av[i][1] == 'M')
-				{
-					// try load module (shared library)
-					modules_ind++;
-                    if (modules_ind < MODULES)
-                    {
-                    	strind = 0; avind = 2;
-                    	for (avind = 2; avind < arglen; avind++)
-                    	{
-                        	modules[modules_ind].name[strind] = av[i][avind];
-                        	strind++;
-                    	}
-                        modules[modules_ind].name[strind] = '\0';
-
-                    	if (load_module (modules[modules_ind].name, modules_ind) == 0)
-                    	{
-                        	printf ("module: %s loaded\n", modules[modules_ind].name);
-                    	}
-                    	else
-                    	{
-                        	printf ("EXIT!\n");
-							cleanup ();
-                        	exit (1);
-                    	}
-                	}
-					av_found = 1;
-                }
-                else
-				{
-					if (arglen >= 4)
-					{
-                    	if (arglen == 6)
-						{
-							if (strcmp (av[i], "--help") == 0)
+							max_cpu = atoi (av[i + 1]);
+							if (max_cpu == 0)
 							{
-								// user needs help, show arguments info and exit
-								show_info ();
+								printf ("ERROR: max_cpu less than 1 core!\n");
 								cleanup ();
 								exit (1);
 							}
+							printf ("max_cpu: cores set to: %lli\n", max_cpu);
 						}
+						av_found = 1;
+					}
+
+					if (av[i][0] == '-' && av[i][1] == 'S')
+					{
+						// set max stack size flag...
+						if (ac > i)
+						{
+							stack_size = atoi (av[i + 1]);
+							if (stack_size == 0)
+							{
+								printf ("ERROR: stack size is 0!\n");
+								cleanup ();
+								exit (1);
+							}
+							printf ("stack_size: stack size set to %lli\n", stack_size);
+						}
+						av_found = 1;
+					}
+
+					if (av[i][0] == '-' && av[i][1] == '?')
+					{
+						// user needs help, show arguments info and exit
+						show_info ();
+						cleanup ();
+						exit (1);
 					}
 				}
-            }
+            	if (arglen > 2)
+            	{
+                	if (av[i][0] == '-' && av[i][1] == 'M')
+					{
+						// try load module (shared library)
+						modules_ind++;
+                    	if (modules_ind < MODULES)
+                    	{
+                    		strind = 0; avind = 2;
+                    		for (avind = 2; avind < arglen; avind++)
+                    		{
+                        		modules[modules_ind].name[strind] = av[i][avind];
+                        		strind++;
+                    		}
+                        	modules[modules_ind].name[strind] = '\0';
+
+                    		if (load_module (modules[modules_ind].name, modules_ind) == 0)
+                    		{
+                        		printf ("module: %s loaded\n", modules[modules_ind].name);
+                    		}
+                    		else
+                    		{
+                        		printf ("EXIT!\n");
+								cleanup ();
+                        		exit (1);
+                    		}
+                		}
+						av_found = 1;
+                	}
+                	else
+					{
+						if (arglen >= 4)
+						{
+                    		if (arglen == 6)
+							{
+								if (strcmp (av[i], "--help") == 0)
+								{
+									// user needs help, show arguments info and exit
+									show_info ();
+									cleanup ();
+									exit (1);
+								}
+							}
+						}
+					}
+	            }
+			}
+			// get normal shell arg
+			if (arglen > 0)
+			{
+				// printf ("got shellarg: '%s'\n", av[i]);
+
+				if (shell_args_ind < MAXSHELLARGS - 1)
+				{
+					shell_args_ind++;
+					if (strlen_safe (av[i], MAXSHELLARGLEN - 1) < MAXSHELLARGLEN -1)
+					{
+						strcpy ((char *) shell_args[shell_args_ind], av[i]);
+					}
+					else
+					{
+						printf ("ERROR: shell argument: '%s' too long!\n", av[i]);
+						cleanup ();
+						exit (1);
+					}
+				}
+			}
         }
     }
     else
