@@ -5,4 +5,4 @@ sources = main.c, labels.c, register.c, var.c, parse-cont.c, ../lib-func/file.c,
 
 ccompiler = $CC
 
-cflags = "-Wall"
+cflags = "-Wall -g"

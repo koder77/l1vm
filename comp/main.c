@@ -151,6 +151,61 @@ void init_ast (void)
 	}
 }
 
+S2 check_brackets_match (U1 *line)
+{
+	S4 slen;
+	S4 i;
+	S4 open_brackets = 0, close_brackets = 0;
+	U1 is_space = 0;
+
+	slen = strlen_safe ((const char *) line, MAXLINELEN);
+
+	for (i = 0; i < slen; i++)
+	{
+		if (line[i] == '(')
+		{
+			open_brackets++;
+		}
+		if (line[i] == ')')
+		{
+			close_brackets++;
+			// check if empty bracket
+			if (i > 0)
+			{
+				if (line[i - 1] == '(')
+				{
+					// empty bracket found: FATAL ERROR!!!
+					return (1);
+				}
+			}
+			if (is_space == 1)
+			{
+				// empty bracket found: FATAL ERROR!!!
+				return (1);
+			}
+		}
+		if (line[i] == ' ')
+		{
+			is_space = 1;
+		}
+		else
+		{
+			if (line[i] != '(' && line[i] != ')')
+			{
+				is_space = 0;
+			}
+		}
+	}
+	if (open_brackets != close_brackets)
+	{
+		return (1);		// ERROR
+	}
+	else
+	{
+		return (0); 	// all ok
+	}
+}
+
 S2 get_ast (U1 *line, U1 *parse_cont)
 {
 	S4 slen;
@@ -173,6 +228,12 @@ S2 get_ast (U1 *line, U1 *parse_cont)
 	for (i = 0; i < MAXBRACKETLEVEL; i++)
 	{
 		ast[i].expr_max = 0;
+	}
+
+	if (check_brackets_match (line) == 1)
+	{
+		printf ("error: line %lli: brackets don't match!\n", linenum);
+		return (2);
 	}
 
 	// printf ("> '%s'\n", line);
@@ -406,11 +467,18 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 	// returned by get_ast ()
 	// to parse: { x + y * z a = } like code stuff!
 	U1 parse_cont = 0;
+	S2 ret;
 
-	if (get_ast (line, &parse_cont) != 0)
+	ret = get_ast (line, &parse_cont);
+	if (ret == 1)
 	{
 		// parsing error
 		return (1);
+	}
+	if (ret == 2)
+	{
+		// fatal ERROR!!! such as brackets don't match in line!!!
+		return (2);
 	}
 
 	if (parse_cont)

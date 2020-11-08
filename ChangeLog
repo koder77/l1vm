@@ -25,7 +25,9 @@ L1VM - (1.0.7)
 	Program arguments for the program must be set by '-args'
 	$ l1vm programname -args foo bar
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Nov 07 2020 23:24 +0200
+	Compiler: fixed crash on brackets don't match in parser bug!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Nov 08 2020 13:04 +0100
 
 
 L1VM - (1.0.6)
