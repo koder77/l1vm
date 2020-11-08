@@ -2823,7 +2823,7 @@ int main (int ac, char *av[])
 
     if (ac > 1)
     {
-        for (i = 2; i < ac; i++)
+        for (i = 1; i < ac; i++)
         {
 			av_found = 0;
             arglen = strlen_safe (av[i], MAXLINELEN);
