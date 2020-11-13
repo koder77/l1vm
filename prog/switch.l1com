@@ -25,6 +25,6 @@
 			(6 42_str 0 0 intr0)
 			(7 0 0 0 intr0)
 			(break)
-	(switch-end)
+	(switchend)
 	(255 zero 0 0 intr0)
 (funcend)

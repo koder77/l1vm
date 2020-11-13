@@ -5,34 +5,8 @@ B, 13, hello
 @, 8Q, "Hello world!"
 Q, 1, helloaddr
 @, 21Q, 8Q
-B, 12, foo
-@, 29Q, "foo bar! :)"
-Q, 1, fooaddr
-@, 41Q, 29Q
-Q, 1, str
-@, 49Q, 0
-Q, 1, one
-@, 57Q, 1
-Q, 1, f
-@, 65Q, 0
 .dend
 .code
 :main
 loada zero, 0, 0
-loada str, 0, 1
-eqi 1, 0, 2
-load f, 0, 3
-pullqw 2, 3, 0
-loada f, 0, 4
-jmpi 4, :foo
-loada helloaddr, 0, 5
-intr0 6, 5, 0, 0
-jmp :newline
-:foo
-loada fooaddr, 0, 6
-intr0 6, 6, 0, 0
-:newline
-intr0 7, 0, 0, 0
-intr0 255, 0, 0, 0
-rts
 .cend

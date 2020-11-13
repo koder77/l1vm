@@ -27,7 +27,11 @@ L1VM - (1.0.7)
 
 	Compiler: fixed crash on brackets don't match in parser bug!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun Nov 08 2020 13:04 +0100
+	Compilerr: now "switch-end" and "switchend" used for switch end statement!
+
+	NEW: vm/net, lib/net-lib: functions for accessing "l1vm-data" server!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fr Nov 13 2020 18:27 +0100
 
 
 L1VM - (1.0.6)

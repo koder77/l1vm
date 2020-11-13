@@ -1,9 +1,11 @@
 //  net-lib.l1com
 //
-//  network library for TCP/IP sockets 
+//  network library for TCP/IP sockets
 //
-// demo waits for a telnet connection on port 3000 
+// demo waits for a telnet connection on port 3000
 // and prints ASCII code of sent char
+//
+//  NEW: added functions for connecting with libl1vm-data database
 //
 (main func)
     (set int64 1 zero 0)
@@ -108,6 +110,16 @@
     (set string 20 socket_write_int64str@net "socket_write_int64")
     (set string 21 socket_write_doublestr@net "socket_write_double")
     (set string 20 socket_write_stringstr@net "socket_write_string")
+	// data library l1vm-data commands:
+	(set string s data_store_int64str@net "socket_store_int64")
+    (set string s data_store_doublestr@net "socket_store_double")
+    (set string s data_store_stringstr@net "socket_store_string")
+    (set string s data_get_int64str@net "socket_get_int64")
+    (set string s data_get_doublestr@net "socket_get_double")
+    (set string s data_get_stringstr@net "socket_get_string")
+    (set string s data_remove_int64str@net "socket_remove_int64")
+    (set string s data_remove_doublestr@net "socket_remove_double")
+    (set string s data_remove_stringstr@net "socket_remove_string")
 	(set string s free@netstr "free_mem")
 	(set string s get_mimetype_from_filenamestr@net "get_mimetype_from_filename")
 	(set string s socket_send_filestr@net "socket_send_file")
@@ -135,6 +147,15 @@
 	(set int64 1 get_mimetype_from_filename@net 20)
 	(set int64 1 socket_send_file@net 21)
 	(set int64 1 socket_handle_get@net 22)
+	(set int64 1 data_store_int64@net 23)
+    (set int64 1 data_store_double@net 24)
+    (set int64 1 data_store_string@net 25)
+    (set int64 1 data_get_int64@net 26)
+    (set int64 1 data_get_double@net 27)
+    (set int64 1 data_get_string@net 28)
+    (set int64 1 data_remove_int64@net 29)
+    (set int64 1 data_remove_double@net 30)
+	(set int64 1 data_remove_string@net 31)
 	(set int64 1 mod@net 0)
 	(set int64 1 maxind@net 0)
 	// get arguments from stack
@@ -166,6 +187,15 @@
 	(2 mod@net get_mimetype_from_filename@net get_mimetype_from_filenamestr@netaddr intr0)
 	(2 mod@net socket_send_file@net socket_send_filestr@netaddr intr0)
 	(2 mod@net socket_handle_get@net socket_handle_getstr@netaddr intr0)
+	(2 mod@net data_store_int64@net data_store_int64str@netaddr intr0)
+    (2 mod@net data_store_double@net data_store_doublestr@netaddr intr0)
+    (2 mod@net data_store_string@net data_store_stringstr@netaddr intr0)
+    (2 mod@net data_get_int64@net data_get_int64str@netaddr intr0)
+    (2 mod@net data_get_double@net data_get_doublestr@netaddr intr0)
+    (2 mod@net data_get_string@net data_get_stringstr@netaddr intr0)
+    (2 mod@net data_remove_int64@net data_remove_int64str@netaddr intr0)
+    (2 mod@net data_remove_double@net data_remove_doublestr@netaddr intr0)
+    (2 mod@net data_remove_string@net data_remove_stringstr@netaddr intr0)
 	// init library
 	(maxind@net stpushi)
 	(3 mod@net init@net 0 intr0)
@@ -237,4 +267,31 @@
 (funcend)
 (socket_handle_get func)
 	(3 mod@net socket_handle_get@net 0 intr0)
+(funcend)
+(data_store_int64 func)
+	(3 mod@net data_store_int64@net 0 intr0)
+(funcend)
+(data_store_double func)
+	(3 mod@net data_store_double@net 0 intr0)
+(funcend)
+(data_store_string func)
+	(3 mod@net data_store_string@net 0 intr0)
+(funcend)
+(data_get_int64 func)
+	(3 mod@net data_get_int64@net 0 intr0)
+(funcend)
+(data_get_double func)
+	(3 mod@net data_get_double@net 0 intr0)
+(funcend)
+(data_get_string func)
+	(3 mod@net data_get_string@net 0 intr0)
+(funcend)
+(data_remove_int64 func)
+	(3 mod@net data_remove_int64@net 0 intr0)
+(funcend)
+(data_remove_double func)
+	(3 mod@net data_remove_double@net 0 intr0)
+(funcend)
+(data_remove_string func)
+	(3 mod@net data_remove_string@net 0 intr0)
 (funcend)
