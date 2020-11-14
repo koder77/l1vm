@@ -2690,7 +2690,7 @@ S2 socket_data_read_string (S2 handle, U1 *string, S8 string_len)
 
 		// printf ("socket_data_read_string: ch: %i\n", ch);
 
-        if (ch != '\n' && ch != '\0')
+        if (ch != '\n')
         {
             if (i <= string_len)
             {
@@ -2704,21 +2704,7 @@ S2 socket_data_read_string (S2 handle, U1 *string, S8 string_len)
         }
         else
         {
-            /* line end */
-            /* check if last char was a CR orn LF */
-
-            if (string[i - 1] == '\r')
-            {
-                i--;
-            }
-
-			if (string[i -1] == '\n')
-			{
-				i--;
-			}
-
             string[i] = '\0';
-
             end = TRUE;
         }
 		if (buf_ind < ret - 1)
@@ -2745,21 +2731,20 @@ S2 socket_data_write_string (S2 handle, U1 *string)
 
     S8 ret ALIGN;
     U1 end = FALSE;
-    S8 i ALIGN = 0;
+    S8 i ALIGN = -1;
 
     while (! end)
     {
+		i++;
         sockets[handle].buf[i] = string[i];
         if (sockets[handle].buf[i] == '\0')
         {
-            i++;
             sockets[handle].buf[i] = '\n';
             end = TRUE;
         }
-        i++;
     }
 
-	ret = exe_swrite (handle, i);
+	ret = exe_swrite (handle, i + 1);
 	return (ret);
 }
 
