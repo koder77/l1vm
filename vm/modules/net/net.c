@@ -2705,12 +2705,17 @@ S2 socket_data_read_string (S2 handle, U1 *string, S8 string_len)
         else
         {
             /* line end */
-            /* check if last char was a CR */
+            /* check if last char was a CR orn LF */
 
             if (string[i - 1] == '\r')
             {
                 i--;
             }
+
+			if (string[i -1] == '\n')
+			{
+				i--;
+			}
 
             string[i] = '\0';
 
@@ -3479,7 +3484,7 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         // nothing on stack!! can't pop!!
 
-        printf ("FATAL ERROR: socket_remove_string: stack pointer can't pop empty stack!\n");
+        printf ("FATAL ERROR: socket_get_string: stack pointer can't pop empty stack!\n");
         return (NULL);
     }
 
@@ -3487,7 +3492,7 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (sp == NULL)
     {
         // error
-        printf ("socket_remove_string: ERROR: stack corrupt!\n");
+        printf ("socket_get_string: ERROR: stack corrupt!\n");
         return (NULL);
     }
 
@@ -3495,7 +3500,7 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (sp == NULL)
     {
         // error
-        printf ("socket_remove_string: ERROR: stack corrupt!\n");
+        printf ("socket_get_string: ERROR: stack corrupt!\n");
         return (NULL);
     }
 
@@ -3503,7 +3508,7 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (sp == NULL)
     {
         // error
-        printf ("socket_remove_string: ERROR: stack corrupt!\n");
+        printf ("socket_get_string: ERROR: stack corrupt!\n");
         return (NULL);
     }
 
@@ -3516,7 +3521,7 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         if (sp == NULL)
         {
             // error
-            printf ("socket_remove_string: ERROR: stack corrupt!\n");
+            printf ("socket_get_string: ERROR: stack corrupt!\n");
             return (NULL);
         }
 
@@ -3524,7 +3529,7 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	if (sp == NULL)
     	{
     		// error
-    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		printf ("socket_get_string: ERROR: stack corrupt!\n");
     		return (NULL);
     	}
         return (sp);
@@ -3539,7 +3544,7 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         if (sp == NULL)
         {
             // error
-            printf ("socket_remove_string: ERROR: stack corrupt!\n");
+            printf ("socket_get_string: ERROR: stack corrupt!\n");
             return (NULL);
         }
 
@@ -3547,7 +3552,7 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	if (sp == NULL)
     	{
     		// error
-    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		printf ("socket_get_string: ERROR: stack corrupt!\n");
     		return (NULL);
     	}
         return (sp);
@@ -3562,7 +3567,7 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         if (sp == NULL)
         {
             // error
-            printf ("socket_remove_string: ERROR: stack corrupt!\n");
+            printf ("socket_get_string: ERROR: stack corrupt!\n");
             return (NULL);
         }
 
@@ -3570,7 +3575,7 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	if (sp == NULL)
     	{
     		// error
-    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		printf ("socket_get_string: ERROR: stack corrupt!\n");
     		return (NULL);
     	}
         return (sp);
@@ -3583,7 +3588,7 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         if (sp == NULL)
         {
             // error
-            printf ("socket_remove_string: ERROR: stack corrupt!\n");
+            printf ("socket_get_string: ERROR: stack corrupt!\n");
             return (NULL);
         }
 
@@ -3591,7 +3596,7 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	if (sp == NULL)
     	{
     		// error
-    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		printf ("socket_get_string: ERROR: stack corrupt!\n");
     		return (NULL);
     	}
         return (sp);
@@ -3604,7 +3609,7 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (sp == NULL)
     {
         // error
-        printf ("socket_remove_string: ERROR: stack corrupt!\n");
+        printf ("socket_get_string: ERROR: stack corrupt!\n");
         return (NULL);
     }
     return (sp);
@@ -4049,6 +4054,212 @@ U1 *socket_remove_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     // copy buffer to return string
     strcpy ((char *) &data[return_str_addr], (const char *) buf);
+
+    sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
+    if (sp == NULL)
+    {
+        // error
+        printf ("socket_remove_string: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+    return (sp);
+}
+
+// get data info ==============================================================
+U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S8 ret ALIGN;
+    S2 handle;
+	S8 name_addr ALIGN;
+    S8 return_var_addr ALIGN;
+	S8 return_type_addr ALIGN;
+
+	U1 comm[] = "GET INFO";
+	U1 buf[512];
+	S8 buf_len ALIGN = 511;
+
+    if (sp == sp_top)
+    {
+        // nothing on stack!! can't pop!!
+
+        printf ("FATAL ERROR: socket_remove_string: stack pointer can't pop empty stack!\n");
+        return (NULL);
+    }
+
+	sp = stpopi ((U1 *) &return_type_addr, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+        printf ("socket_remove_string: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+
+    sp = stpopi ((U1 *) &return_var_addr, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+        printf ("socket_remove_string: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+
+	sp = stpopi ((U1 *) &name_addr, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+        printf ("socket_remove_string: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+        printf ("socket_remove_string: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+
+	// send command
+	ret = socket_data_write_string (handle, comm);
+    if (ret != ERR_FILE_OK)
+    {
+        // push ZERO to stack, as empty read
+        sp = stpushi (0, sp, sp_bottom);
+        if (sp == NULL)
+        {
+            // error
+            printf ("socket_remove_string: ERROR: stack corrupt!\n");
+            return (NULL);
+        }
+
+        sp = stpushi (ret, sp, sp_bottom);
+    	if (sp == NULL)
+    	{
+    		// error
+    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		return (NULL);
+    	}
+        return (sp);
+    }
+
+	// send data element name
+	ret = socket_data_write_string (handle, &data[name_addr]);
+    if (ret != ERR_FILE_OK)
+    {
+        // push ZERO to stack, as empty read
+        sp = stpushi (0, sp, sp_bottom);
+        if (sp == NULL)
+        {
+            // error
+            printf ("socket_remove_string: ERROR: stack corrupt!\n");
+            return (NULL);
+        }
+
+        sp = stpushi (ret, sp, sp_bottom);
+    	if (sp == NULL)
+    	{
+    		// error
+    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		return (NULL);
+    	}
+        return (sp);
+    }
+
+	// get answer var name string
+	ret = socket_data_read_string (handle, buf, buf_len);
+	if (ret != ERR_FILE_OK)
+    {
+        // push ZERO to stack, as empty read
+        sp = stpushi (0, sp, sp_bottom);
+        if (sp == NULL)
+        {
+            // error
+            printf ("socket_remove_string: ERROR: stack corrupt!\n");
+            return (NULL);
+        }
+
+        sp = stpushi (ret, sp, sp_bottom);
+    	if (sp == NULL)
+    	{
+    		// error
+    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		return (NULL);
+    	}
+        return (sp);
+    }
+
+	if (strcmp ((const char *) buf, "ERROR") == 0)
+	{
+		// push ZERO to stack, as empty read
+        sp = stpushi (0, sp, sp_bottom);
+        if (sp == NULL)
+        {
+            // error
+            printf ("socket_remove_string: ERROR: stack corrupt!\n");
+            return (NULL);
+        }
+
+        sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
+    	if (sp == NULL)
+    	{
+    		// error
+    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		return (NULL);
+    	}
+        return (sp);
+	}
+
+    // copy buffer to return string
+    strcpy ((char *) &data[return_var_addr], (const char *) buf);
+
+	// get type
+
+
+	// copy buffer to return string
+    strcpy ((char *) &data[return_type_addr], (const char *) buf);
+
+	// get OK
+	ret = socket_data_read_string (handle, buf, buf_len);
+	if (ret != ERR_FILE_OK)
+    {
+        // push ZERO to stack, as empty read
+        sp = stpushi (0, sp, sp_bottom);
+        if (sp == NULL)
+        {
+            // error
+            printf ("socket_remove_string: ERROR: stack corrupt!\n");
+            return (NULL);
+        }
+
+        sp = stpushi (ret, sp, sp_bottom);
+    	if (sp == NULL)
+    	{
+    		// error
+    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		return (NULL);
+    	}
+        return (sp);
+    }
+
+	if (strcmp ((const char *) buf, "OK") != 0)
+	{
+		// push ZERO to stack, as empty read
+        sp = stpushi (0, sp, sp_bottom);
+        if (sp == NULL)
+        {
+            // error
+            printf ("socket_remove_string: ERROR: stack corrupt!\n");
+            return (NULL);
+        }
+
+        sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
+    	if (sp == NULL)
+    	{
+    		// error
+    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		return (NULL);
+    	}
+        return (sp);
+	}
 
     sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     if (sp == NULL)

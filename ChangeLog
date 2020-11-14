@@ -30,8 +30,24 @@ L1VM - (1.0.7)
 	Compilerr: now "switch-end" and "switchend" used for switch end statement!
 
 	NEW: vm/net, lib/net-lib: functions for accessing "l1vm-data" server!
+	NEW: data_get_info in lib/net-lib:
 
--- Stefan Pietzonke <jay-t@gmx.net> Fr Nov 13 2020 18:27 +0100
+	GET INFO
+	3n1-.*
+	3n1-0
+	INT64
+	OK
+
+	This returns the full data element name matched by pattern search.
+	OR:
+
+	GET INFO
+	3n1-100
+	3n1-100
+	INT64
+	OK
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Nov 14 2020 09:40 +0100
 
 
 L1VM - (1.0.6)
