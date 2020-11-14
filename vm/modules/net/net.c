@@ -4082,7 +4082,7 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         // nothing on stack!! can't pop!!
 
-        printf ("FATAL ERROR: socket_remove_string: stack pointer can't pop empty stack!\n");
+        printf ("FATAL ERROR: socket_get_info: stack pointer can't pop empty stack!\n");
         return (NULL);
     }
 
@@ -4090,7 +4090,7 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (sp == NULL)
     {
         // error
-        printf ("socket_remove_string: ERROR: stack corrupt!\n");
+        printf ("socket_get_info: ERROR: stack corrupt!\n");
         return (NULL);
     }
 
@@ -4098,7 +4098,7 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (sp == NULL)
     {
         // error
-        printf ("socket_remove_string: ERROR: stack corrupt!\n");
+        printf ("socket_get_info: ERROR: stack corrupt!\n");
         return (NULL);
     }
 
@@ -4106,7 +4106,7 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (sp == NULL)
     {
         // error
-        printf ("socket_remove_string: ERROR: stack corrupt!\n");
+        printf ("socket_get_info: ERROR: stack corrupt!\n");
         return (NULL);
     }
 
@@ -4114,7 +4114,7 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (sp == NULL)
     {
         // error
-        printf ("socket_remove_string: ERROR: stack corrupt!\n");
+        printf ("socket_get_info: ERROR: stack corrupt!\n");
         return (NULL);
     }
 
@@ -4126,7 +4126,7 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	if (sp == NULL)
     	{
     		// error
-    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		printf ("socket_get_info: ERROR: stack corrupt!\n");
     		return (NULL);
     	}
         return (sp);
@@ -4140,7 +4140,7 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	if (sp == NULL)
     	{
     		// error
-    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		printf ("socket_get_info: ERROR: stack corrupt!\n");
     		return (NULL);
     	}
         return (sp);
@@ -4154,7 +4154,7 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	if (sp == NULL)
     	{
     		// error
-    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		printf ("socket_get_info: ERROR: stack corrupt!\n");
     		return (NULL);
     	}
         return (sp);
@@ -4166,7 +4166,7 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	if (sp == NULL)
     	{
     		// error
-    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		printf ("socket_get_info: ERROR: stack corrupt!\n");
     		return (NULL);
     	}
         return (sp);
@@ -4183,7 +4183,7 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	if (sp == NULL)
     	{
     		// error
-    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		printf ("socket_get_info: ERROR: stack corrupt!\n");
     		return (NULL);
     	}
         return (sp);
@@ -4200,7 +4200,7 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	if (sp == NULL)
     	{
     		// error
-    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		printf ("socket_get_info: ERROR: stack corrupt!\n");
     		return (NULL);
     	}
         return (sp);
@@ -4212,7 +4212,7 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	if (sp == NULL)
     	{
     		// error
-    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		printf ("socket_get_info: ERROR: stack corrupt!\n");
     		return (NULL);
     	}
         return (sp);
@@ -4222,7 +4222,7 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (sp == NULL)
     {
         // error
-        printf ("socket_remove_string: ERROR: stack corrupt!\n");
+        printf ("socket_get_info: ERROR: stack corrupt!\n");
         return (NULL);
     }
     return (sp);
