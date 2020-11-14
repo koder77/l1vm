@@ -4122,15 +4122,6 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	ret = socket_data_write_string (handle, comm);
     if (ret != ERR_FILE_OK)
     {
-        // push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
-        if (sp == NULL)
-        {
-            // error
-            printf ("socket_remove_string: ERROR: stack corrupt!\n");
-            return (NULL);
-        }
-
         sp = stpushi (ret, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -4145,15 +4136,6 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	ret = socket_data_write_string (handle, &data[name_addr]);
     if (ret != ERR_FILE_OK)
     {
-        // push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
-        if (sp == NULL)
-        {
-            // error
-            printf ("socket_remove_string: ERROR: stack corrupt!\n");
-            return (NULL);
-        }
-
         sp = stpushi (ret, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -4168,15 +4150,6 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	ret = socket_data_read_string (handle, buf, buf_len);
 	if (ret != ERR_FILE_OK)
     {
-        // push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
-        if (sp == NULL)
-        {
-            // error
-            printf ("socket_remove_string: ERROR: stack corrupt!\n");
-            return (NULL);
-        }
-
         sp = stpushi (ret, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -4189,15 +4162,6 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	if (strcmp ((const char *) buf, "ERROR") == 0)
 	{
-		// push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
-        if (sp == NULL)
-        {
-            // error
-            printf ("socket_remove_string: ERROR: stack corrupt!\n");
-            return (NULL);
-        }
-
         sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -4212,7 +4176,18 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     strcpy ((char *) &data[return_var_addr], (const char *) buf);
 
 	// get type
-
+	ret = socket_data_read_string (handle, buf, buf_len);
+	if (ret != ERR_FILE_OK)
+    {
+        sp = stpushi (ret, sp, sp_bottom);
+    	if (sp == NULL)
+    	{
+    		// error
+    		printf ("socket_remove_string: ERROR: stack corrupt!\n");
+    		return (NULL);
+    	}
+        return (sp);
+    }
 
 	// copy buffer to return string
     strcpy ((char *) &data[return_type_addr], (const char *) buf);
@@ -4221,15 +4196,6 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	ret = socket_data_read_string (handle, buf, buf_len);
 	if (ret != ERR_FILE_OK)
     {
-        // push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
-        if (sp == NULL)
-        {
-            // error
-            printf ("socket_remove_string: ERROR: stack corrupt!\n");
-            return (NULL);
-        }
-
         sp = stpushi (ret, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -4242,15 +4208,6 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	if (strcmp ((const char *) buf, "OK") != 0)
 	{
-		// push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
-        if (sp == NULL)
-        {
-            // error
-            printf ("socket_remove_string: ERROR: stack corrupt!\n");
-            return (NULL);
-        }
-
         sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
     	if (sp == NULL)
     	{
