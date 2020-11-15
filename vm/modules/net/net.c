@@ -1732,11 +1732,7 @@ U1 *socket_read_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             error = TRUE;
             end = TRUE;
 
-            if (i == 0)
-            {
-                /* error at first read, break while */
-                break;
-            }
+			break;
         }
 
         ch = sockets[handle].buf[0];
@@ -1756,15 +1752,7 @@ U1 *socket_read_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         else
         {
             /* line end */
-            /* check if last char was a CR */
-
-            if (data[ret_addr + i - 1] == '\r')
-            {
-                i--;
-            }
-
             data[ret_addr + i] = '\0';
-
             end = TRUE;
         }
     }
@@ -1951,7 +1939,7 @@ U1 *socket_write_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 send_addr ALIGN;
     S2 handle;
     U1 end = FALSE;
-    S8 i ALIGN = 0;
+    S8 i ALIGN = -1;
 
     if (sp == sp_top)
     {
@@ -1979,18 +1967,16 @@ U1 *socket_write_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     while (! end)
     {
+		i++;
         sockets[handle].buf[i] = data[send_addr + i];
         if (sockets[handle].buf[i] == '\0')
         {
-            i++;
             sockets[handle].buf[i] = '\n';
             end = TRUE;
         }
-        i++;
     }
 
-    // ret = exe_swrite (handle, i + 1);
-	ret = exe_swrite (handle, i);
+	ret = exe_swrite (handle, i + 1);
 	sp = stpushi (ret, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -2673,7 +2659,6 @@ S2 socket_data_read_string (S2 handle, U1 *string, S8 string_len)
     U1 end = FALSE;
     U1 error = FALSE;
     S8 i ALIGN = 0;
-	S8 buf_ind ALIGN = 0;
 
 	S2 sockh = sockets[handle].socket;
 
@@ -2707,10 +2692,6 @@ S2 socket_data_read_string (S2 handle, U1 *string, S8 string_len)
             string[i] = '\0';
             end = TRUE;
         }
-		if (buf_ind < ret - 1)
-		{
-			buf_ind++;
-		}
     }
 
 	// printf ("socket_data_read_string: s: '%s'\n", string);

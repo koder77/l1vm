@@ -47,7 +47,9 @@ L1VM - (1.0.7)
 	INT64
 	OK
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Nov 14 2020 09:40 +0100
+	VM: net library, read/write string bugfixes.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Nov 15 2020 10:51 +0100
 
 
 L1VM - (1.0.6)
