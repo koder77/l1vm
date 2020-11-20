@@ -159,7 +159,7 @@ repository:
                 set|stpushb|stpopb|stpushi|stpopi|stpushd|stpopd|
                 intr0|intr1|
                 pushb|pushw|pushdw|pushqw|pushd|pullb|pullw|pulldw|pullqw|pulld|
-                addi|subi|muli|divi|addd<|subd|muld|divd|
+                addi|subi|muli|divi|addd|subd|muld|divd|
                 smuli|sdivi|
                 andi|ori|bandi|bori|bxori|modi|
                 eqi|neqi|gri|lsi|greqi|lseqi|
