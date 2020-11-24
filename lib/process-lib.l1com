@@ -18,8 +18,8 @@
 //
 //
 (process_init func)
-	(set string 18 modulestr@process "libl1vmprocess.so")
-	(set string 10 run_shellstr@process "run_shell")
+	(set string s modulestr@process "libl1vmprocess.so")
+	(set string s run_shellstr@process "run_shell")
 	(set int64 1 run_shell@process 0)
 	(set int64 1 mod@process 0)
 	// get argument from stack

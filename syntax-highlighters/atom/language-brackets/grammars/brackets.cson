@@ -167,7 +167,7 @@ repository:
                 loadreg|loada|loadd|inclsijmpi|decgrijmpi|movi|movd|loadl|jmpa|jsra|jsr|load|noti|
                 if+|if|else|endif|jmpi|jmp|jsr|call|rts|
                 for-loop|for|next|do|while|
-                switch-end|switch|break
+                switch-end|switchend|switch|break
               )
              # (?=(\\s|\\()) # followed by space or (
         '''

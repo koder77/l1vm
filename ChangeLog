@@ -1,3 +1,26 @@
+L1VM - (1.0.8)
+	Library cleanup: now string constants are defined by the "s" string len statement.
+	This fixes some serious bugs for example in the SDL library!
+
+	The syntax highlighters are updated: now witch "switchend" and "switch-end" statements.
+
+	The install scripts now create a ~/l1vm directory in the users home directory.
+	There are the following directories created:
+
+	~/l1vm
+		fonts/
+		lib/
+		prog/
+
+	After a successfull installation you can try the new "start.l1com" SDL demo launcher:
+	$ l1vm start
+
+	The start menu should be shown in a small window.
+	Have some fun!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue Nov 15 2020 16:48 +0100
+
+
 L1VM - (1.0.7)
 	VM: process module: code for Windows added.
 	New: lib/ranges-l1b.l1com added: functions to check if a variable is inside a set range.

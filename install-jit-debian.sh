@@ -209,7 +209,31 @@ else
 	echo "building programs FAILED!"
 	exit 1
 fi
+
+echo "checking for ~/l1vm directory..."
+
+# check if ~/l1vm exists
+DIR="~/l1vm"
+if [ -d "$DIR" ]; then
+  ### Take action if $DIR exists ###
+  echo "${DIR} already exists!"
+else
+  ###  Control will jump here if $DIR does NOT exists ###
+  echo "${DIR} will be created now..."
+  mkdir ~/l1vm
+fi
+
 cd ..
+
+echo "installing programs to ~/l1vm"
+cp prog/ ~/l1vm -r
+cp lib/sdl-lib* ~/l1vm/prog
+
+echo "installing lib to ~/lib"
+cp lib/ ~/l1vm -r
+
+echo "installing fonts to ~/l1vm"
+cp fonts/ ~/l1vm -r
 
 echo "installation finished!"
 exit 0

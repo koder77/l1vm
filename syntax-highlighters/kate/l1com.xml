@@ -101,6 +101,7 @@
 	<item>loadreg</item>
 
     <item>switch-end</item>
+    <item>switchend</item>
     <item>switch</item>
     <item>break</item>
     <item>?</item>
