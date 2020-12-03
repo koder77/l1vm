@@ -96,7 +96,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (SDL_Init (SDL_INIT_VIDEO) != 0)
 	{
 		printf ("ERROR SDL_Init!!!");
-		
+
 		// error fail code
 		sp = stpushi (1, sp, sp_bottom);
 		if (sp == NULL)
@@ -105,16 +105,16 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		}
 		return (sp);
 	}
-	
+
 	/* key input settings */
-	/* 
+	/*
 	SDL_EnableUNICODE (SDL_ENABLE);
 	SDL_EnableKeyRepeat (500, 125);
 	*/
 	if (TTF_Init () < 0)
 	{
 		printf ("ERROR TTF_Init!!!");
-		
+
 		// error fail code
 		sp = stpushi (1, sp, sp_bottom);
 		if (sp == NULL)
@@ -123,15 +123,15 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		}
 		return (sp);
 	}
-	
+
 	printf ("SDL initialized...\n");
-	
+
 	// open SDL window
 	window = SDL_CreateWindow ("L1VM", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
-	if(window == NULL)
+	if (window == NULL)
 	{
 		printf( "sdl_open_screen: ERROR window can't be opened: %s\n", SDL_GetError ());
-		
+
 		// error fail code
 		sp = stpushi (1, sp, sp_bottom);
 		if (sp == NULL)
@@ -140,13 +140,13 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		}
 		return (sp);
 	}
-	
+
 	// get window surface
 	surf = SDL_GetWindowSurface (window);
 	if (surf == NULL)
 	{
 		fprintf (stderr, "Couldn't set %lli x %lli x %i video mode: %s\n", width, height, bit, SDL_GetError ());
-		
+
 		// error fail code
 		sp = stpushi (1, sp, sp_bottom);
 		if (sp == NULL)
@@ -155,19 +155,19 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		}
 		return (sp);
 	}
-	
+
 	// set renderer
 	// renderer = SDL_CreateRenderer (window, -1, SDL_RENDERER_ACCELERATED);
 	// renderer = SDL_CreateRenderer (window, -1, SDL_RENDERER_SOFTWARE);
-	
+
 	renderer = SDL_CreateSoftwareRenderer (surf);
-	
+
 	SDL_RenderClear (renderer);
-	
+
 	SDL_SetRenderDrawColor (renderer, 0, 0, 0, 255);
 	SDL_RenderClear (renderer);
 	SDL_RenderPresent (renderer);
-	
+
 	// error OK code
 	sp = stpushi (0, sp, sp_bottom);
 	if (sp == NULL)
@@ -180,7 +180,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 void sdl_do_delay (S8 delay)
 {
 	const Uint32 startMs = SDL_GetTicks();
-	
+
 	while (SDL_GetTicks () - startMs < delay)
     {
 		SDL_PumpEvents ();
@@ -193,39 +193,39 @@ void sdl_do_delay (S8 delay)
 U1 *sdl_delay (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 delay;
-	
+
 	sp = stpopi ((U1 *) &delay, sp, sp_top);
 	if (sp == NULL)
 	{
 		printf ("sdl_delay: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	
+
     sdl_do_delay (delay);
     return (sp);
 }
-    
+
 U1 *sdl_quit (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// free renderer
 	SDL_DestroyRenderer (renderer);
-	
+
 	// gui
 	if (copy_renderer) SDL_DestroyRenderer (copy_renderer);
 	if (temp_renderer) SDL_DestroyRenderer (temp_renderer);
-	
+
 	if (copy_surface) SDL_FreeSurface (copy_surface);
 	if (temp_surface) SDL_FreeSurface (temp_surface);
-	
+
 	// main surface
 	if (surf) SDL_FreeSurface (surf);
-	
+
 	// destroy window
 	SDL_DestroyWindow (window);
 	TTF_CloseFont (font);
 	TTF_Quit ();
 	SDL_Quit ();
-	
+
 	return (sp);
 }
 
@@ -234,7 +234,7 @@ U1 *sdl_update (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// printf ("sdl_update...\n");
 	// SDL_Flip (surf);
 	SDL_PumpEvents();
-	
+
 	SDL_RenderPresent (renderer);
 	SDL_UpdateWindowSurface (window);
 	return (sp);
@@ -252,7 +252,7 @@ U1 *sdl_font_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	U1 err = 0;
 
 	U1 sandbox_filename[256];
-	
+
 	sp = stpopi ((U1 *) &size, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -281,7 +281,7 @@ U1 *sdl_font_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		TTF_CloseFont (font);
 	}
 
-#if SANDBOX 
+#if SANDBOX
 	if (get_sandbox_filename (&data[nameaddr], sandbox_filename, 255) != 0)
 	{
 		printf ("sdl_font_ttf: ERROR filename illegal: %s", &data[nameaddr]);
@@ -291,7 +291,7 @@ U1 *sdl_font_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 #else
 	font = TTF_OpenFont ((const char *) &data[nameaddr], size);
 #endif
-	
+
 	if (font == NULL)
 	{
 		printf ("sdl_font_ttf: can't open font! %s\n", SDL_GetError ());
@@ -400,62 +400,62 @@ U1 *sdl_pixel_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// 4: byte red
 	// 5: quadword y
 	// 6: quadword x
-	
+
 	S8 x ALIGN, y ALIGN;
 	U1 r, g, b;
 	U1 alpha;
 	U1 err = 0;
-	
+
 	sp = stpopb (&alpha, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&b, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&g, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&r, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	if (err == 1)
 	{
 		printf ("sdl_pixel_alpha: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	// printf ("sdl_pixel_alpha: x: %lli, y: %lli r: %i, g: %i, b: %i, alpha: %i\n", x, y, r, g, b, alpha);
-	
+
 	pixelRGBA (renderer, x, y, r, g, b, alpha);
 	return (sp);
 }
@@ -470,74 +470,74 @@ U1 *sdl_line_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// 6: quadword x2
 	// 7: quadword y1
 	// 8: quadword x1
-	
+
 	S8 x1 ALIGN, y1 ALIGN, x2 ALIGN, y2 ALIGN;
 	U1 r, g, b;
 	U1 alpha;
 	U1 err = 0;
-	
+
 	sp = stpopb (&alpha, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&b, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&g, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&r, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y2, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x2, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y1, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x1, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	if (err == 1)
 	{
 		printf ("sdl_line_alpha: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	lineRGBA (renderer, x1, y1, x2, y2, r, g, b, alpha);
 	return (sp);
 }
@@ -552,74 +552,74 @@ U1 *sdl_rectangle_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// 6: quadword x2
 	// 7: quadword y1
 	// 8: quadword x1
-	
+
 	S8 x1 ALIGN, y1 ALIGN, x2 ALIGN, y2 ALIGN;
 	U1 r, g, b;
 	U1 alpha;
 	U1 err = 0;
-	
+
 	sp = stpopb (&alpha, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&b, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&g, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&r, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y2, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x2, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y1, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x1, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	if (err == 1)
 	{
 		printf ("sdl_rectangle_alpha: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	rectangleRGBA (renderer, x1, y1, x2, y2, r, g, b, alpha);
 	return (sp);
 }
@@ -634,74 +634,74 @@ U1 *sdl_rectangle_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// 6: quadword x2
 	// 7: quadword y1
 	// 8: quadword x1
-	
+
 	S8 x1 ALIGN, y1 ALIGN, x2 ALIGN, y2 ALIGN;
 	U1 r, g, b;
 	U1 alpha;
 	U1 err = 0;
-	
+
 	sp = stpopb (&alpha, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&b, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&g, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&r, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y2, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x2, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y1, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x1, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	if (err == 1)
 	{
 		printf ("sdl_rectangle_fill_alpha: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	boxRGBA (renderer, x1, y1, x2, y2, r, g, b, alpha);
 	return (sp);
 }
@@ -715,67 +715,67 @@ U1 *sdl_circle_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// 5: quadword radius
 	// 6: quadword y
 	// 7: quadword x
-	
+
 	S8 x ALIGN, y ALIGN, radius ALIGN;
 	U1 r, g, b;
 	U1 alpha;
 	U1 err = 0;
-	
+
 	sp = stpopb (&alpha, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&b, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&g, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&r, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &radius, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	if (err == 1)
 	{
 		printf ("sdl_circle_alpha: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	circleRGBA (renderer, x, y, radius, r, g, b, alpha);
 	return (sp);
 }
@@ -789,67 +789,67 @@ U1 *sdl_circle_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// 5: quadword radius
 	// 6: quadword y
 	// 7: quadword x
-	
+
 	S8 x ALIGN, y ALIGN, radius ALIGN;
 	U1 r, g, b;
 	U1 alpha;
 	U1 err = 0;
-	
+
 	sp = stpopb (&alpha, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&b, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&g, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&r, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &radius, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	if (err == 1)
 	{
 		printf ("sdl_circle_fill_alpha: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	filledCircleRGBA (renderer, x, y, radius, r, g, b, alpha);
 	return (sp);
 }
@@ -864,74 +864,74 @@ U1 *sdl_ellipse_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// 6: quadword xradius
 	// 7: quadword y
 	// 8: quadword x
-	
+
 	S8 x ALIGN, y ALIGN, xradius ALIGN, yradius ALIGN;
 	U1 r, g, b;
 	U1 alpha;
 	U1 err = 0;
-	
+
 	sp = stpopb (&alpha, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&b, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&g, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&r, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &yradius, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &xradius, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	if (err == 1)
 	{
 		printf ("sdl_ellipse_alpha: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	ellipseRGBA (renderer, x, y, xradius, yradius, r, g, b, alpha);
 	return (sp);
 }
@@ -946,74 +946,74 @@ U1 *sdl_ellipse_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// 6: quadword xradius
 	// 7: quadword y
 	// 8: quadword x
-	
+
 	S8 x ALIGN, y ALIGN, xradius ALIGN, yradius ALIGN;
 	U1 r, g, b;
 	U1 alpha;
 	U1 err = 0;
-	
+
 	sp = stpopb (&alpha, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&b, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&g, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&r, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &yradius, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &xradius, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	if (err == 1)
 	{
 		printf ("sdl_ellipse_fill_alpha: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	filledEllipseRGBA (renderer, x, y, xradius, yradius, r, g, b, alpha);
 	return (sp);
 }
@@ -1029,81 +1029,81 @@ U1 *sdl_pie_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// 7: quadword radius
 	// 8: quadword y
 	// 9: quadword x
-	
+
 	S8 x ALIGN, y ALIGN, radius ALIGN, startangle ALIGN, endangle ALIGN;
 	U1 r, g, b;
 	U1 alpha;
 	U1 err = 0;
-	
+
 	sp = stpopb (&alpha, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&b, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&g, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&r, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &endangle, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &startangle, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &radius, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	if (err == 1)
 	{
 		printf ("sdl_pie_alpha: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	pieRGBA (renderer, x, y, radius, startangle, endangle, r, g, b, alpha);
 	return (sp);
 }
@@ -1119,81 +1119,81 @@ U1 *sdl_pie_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// 7: quadword radius
 	// 8: quadword y
 	// 9: quadword x
-	
+
 	S8 x ALIGN, y ALIGN, radius ALIGN, startangle ALIGN, endangle ALIGN;
 	U1 r, g, b;
 	U1 alpha;
 	U1 err = 0;
-	
+
 	sp = stpopb (&alpha, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&b, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&g, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&r, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &endangle, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &startangle, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &radius, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	if (err == 1)
 	{
 		printf ("sdl_pie_fill_alpha: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	filledPieRGBA (renderer, x, y, radius, startangle, endangle, r, g, b, alpha);
 	return (sp);
 }
@@ -1210,88 +1210,88 @@ U1 *sdl_trigon_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// 8: quadword x2
 	// 9: quadword y1
 	// 10: quadword x1
-	
+
 	S8 x1 ALIGN, y1 ALIGN, x2 ALIGN, y2 ALIGN, x3 ALIGN, y3 ALIGN;
 	U1 r, g, b;
 	U1 alpha;
 	U1 err = 0;
-	
+
 	sp = stpopb (&alpha, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&b, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&g, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&r, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y3, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x3, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y2, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x2, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y1, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x1, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	if (err == 1)
 	{
 		printf ("sdl_trigon_alpha: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	trigonRGBA (renderer, x1, y1, x2, y2, x3, y3, r, g, b, alpha);
 	return (sp);
 }
@@ -1308,88 +1308,88 @@ U1 *sdl_trigon_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// 8: quadword x2
 	// 9: quadword y1
 	// 10: quadword x1
-	
+
 	S8 x1 ALIGN, y1 ALIGN, x2 ALIGN, y2 ALIGN, x3 ALIGN, y3 ALIGN;
 	U1 r, g, b;
 	U1 alpha;
 	U1 err = 0;
-	
+
 	sp = stpopb (&alpha, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&b, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&g, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopb (&r, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y3, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x3, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y2, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x2, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &y1, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x1, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	if (err == 1)
 	{
 		printf ("sdl_trigon_fill_alpha: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	filledTrigonRGBA (renderer, x1, y1, x2, y2, x3, y3, r, g, b, alpha);
 	return (sp);
 }
@@ -1404,15 +1404,15 @@ Uint32 getpixel (SDL_Surface *surface, Sint16 x, Sint16 y)
 	Uint8 bpp = surface->format->BytesPerPixel;
 	/* Here p is the address to the pixel we want to retrieve */
 	Uint8 *p = (Uint8 *) surface->pixels + y * surface->pitch + x * bpp;
-	
+
 	switch (bpp)
 	{
 		case 1:
 			return *p;
-			
+
 		case 2:
 			return *(Uint16 *)p;
-			
+
 		case 3:
 			if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
 			{
@@ -1422,10 +1422,10 @@ Uint32 getpixel (SDL_Surface *surface, Sint16 x, Sint16 y)
 			{
 				return p[0] | p[1] << 8 | p[2] << 16;
 			}
-			
+
 		case 4:
 			return *(Uint32 *)p;
-			
+
 		default:
 			return 0;       /* shouldn't happen, but avoids warnings */
 	}
@@ -1439,43 +1439,43 @@ U1 *sdl_get_pixelcolor (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	Uint32 pixel;
 	Uint8 r, g, b;
 	U1 err = 0;
-	
+
 	sp = stpopi ((U1 *) &y, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	sp = stpopi ((U1 *) &x, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
 		err = 1;
 	}
-	
+
 	if (err == 1)
 	{
 		printf ("sdl_get_pixelcolor: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	if (SDL_LockSurface (surf) < 0)
 	{
 		printf ("sdl_get_pixelcolor: can't lock surface!\n");
-		
+
 		//	-1 = ERROR code!
 		sp = stpushi (-1, sp, sp_bottom);
 		sp = stpushi (-1, sp, sp_bottom);
 		sp = stpushi (-1, sp, sp_bottom);
-		
+
 		return (sp);
 	}
-	
+
 	pixel = getpixel (surf, x, y);
 	SDL_UnlockSurface (surf);
 	SDL_GetRGB (pixel, surf->format, &r, &g, &b);
-	
+
 	sp = stpushi (b, sp, sp_bottom);
 	sp = stpushi (g, sp, sp_bottom);
 	sp = stpushi (r, sp, sp_bottom);
@@ -1489,16 +1489,16 @@ U1 *sdl_load_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// load picture
 	// arguments: picture name, x, y
 	// return: int error code
-	
+
 	SDL_Surface *picture;
 	SDL_Rect dstrect;
-		
+
 	S8 nameaddr ALIGN;
 	S8 x ALIGN;
 	S8 y ALIGN;
-	
+
 	U1 sandbox_filename[256];
-	
+
 	sp = stpopi ((U1 *) &y, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -1506,7 +1506,7 @@ U1 *sdl_load_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("sdl_load_picture: ERROR stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	sp = stpopi ((U1 *) &x, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -1514,7 +1514,7 @@ U1 *sdl_load_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("sdl_load_picture: ERROR stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -1522,13 +1522,13 @@ U1 *sdl_load_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("sdl_load_picture: ERROR stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	dstrect.x = x;
 	dstrect.y = y;
 	dstrect.w = 0;
 	dstrect.h = 0;
-	
-#if SANDBOX 
+
+#if SANDBOX
 	if (get_sandbox_filename (&data[nameaddr], sandbox_filename, 255) != 0)
 	{
 		printf ("sdl_load_picture: ERROR filename illegal: %s\n", &data[nameaddr]);
@@ -1538,18 +1538,18 @@ U1 *sdl_load_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 #else
 	picture = IMG_Load ((const char *) &data[nameaddr]);
 #endif
-	
+
 	if (picture == NULL)
 	{
 		printf ("sdl_load_picture: can't load picture %s !\n", &data[nameaddr]);
-		
+
 		sp = stpushi (1, sp, sp_bottom);		// error fail code
 		return (sp);
 	}
-	
+
 	SDL_BlitSurface (picture, NULL, surf, &dstrect);
 	SDL_FreeSurface (picture);
-		
+
 	sp = stpushi (0, sp, sp_bottom);		// error ok code
 	return (sp);
 }
@@ -1560,20 +1560,20 @@ U1 *sdl_save_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	//
 	// arguments: picture name
 	// return: int error code
-	
+
 	Uint32 rmask, gmask, bmask, amask;
-	
+
 	S8 nameaddr ALIGN;
-	
+
 	U1 sandbox_filename[256];
 	S2 ret;
-	
+
 	#if SDL_BYTEORDER == SDL_BIG_ENDIAN
 	rmask = 0xff000000; gmask = 0x00ff0000; bmask = 0x0000ff00; amask = 0x000000ff;
 	#else
 	rmask = 0x000000ff; gmask = 0x0000ff00; bmask = 0x00ff0000; amask = 0xff000000;
 	#endif
-	
+
 	sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -1581,10 +1581,10 @@ U1 *sdl_save_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("sdl_save_picture: ERROR stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	SDL_RenderPresent (renderer);
-	
-#if SANDBOX 
+
+#if SANDBOX
 	if (get_sandbox_filename (&data[nameaddr], sandbox_filename, 255) != 0)
 	{
 		printf ("sdl_save_picture: ERROR filename illegal: %s\n", &data[nameaddr]);
@@ -1598,14 +1598,14 @@ U1 *sdl_save_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (ret < 0)
 	{
 		// SDL_FreeSurface (output_surf);
-		
+
 		sp = stpushi (1, sp, sp_bottom);		// error fail code
 		return (sp);
 	}
 	else
 	{
 		// 	SDL_FreeSurface (output_surf);
-		
+
 		sp = stpushi (0, sp, sp_bottom);		// error ok code
 		return (sp);
 	}

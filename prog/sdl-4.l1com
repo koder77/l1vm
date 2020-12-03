@@ -88,7 +88,7 @@
     // call arguments
     (set int64 1 width@sdl 0)
     (set int64 1 height@sdl 0)
-    (set int64 1 bit@sdl 0)
+    (set byte 1 bit@sdl 0)
     (set int64 1 mod@sdl 0)
     // get arguments from stack
     (bit@sdl stpopb)

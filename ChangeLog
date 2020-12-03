@@ -18,7 +18,13 @@ L1VM - (1.0.8)
 	The start menu should be shown in a small window.
 	Have some fun!
 
--- Stefan Pietzonke <jay-t@gmx.net> Tue Nov 15 2020 16:48 +0100
+	NEW: VM now prints execution pos on errors. The assembler generates now a *.l1dbg text file
+	with the epos and assembly line number for easy error finding.
+
+	Now a stack check flag in "global.h" can be set for stack variable type checking on runtime.
+	Note: some programs may fail with an error!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu Dec 03 2020 21:15 +0100
 
 
 L1VM - (1.0.7)

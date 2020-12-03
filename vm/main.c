@@ -55,6 +55,7 @@ size_t strlen_safe (const char * str, int maxlen);
 #endif
 
 #define EXE_NEXT(); ep = ep + eoffs; goto *jumpt[code[ep]];
+#define PRINT_EPOS(); printf ("epos: %lli\n\n", ep);
 
 //#define EXE_NEXT(); ep = ep + eoffs; printf ("next opcode: %i\n", code[ep]); goto *jumpt[code[ep]];
 
@@ -331,7 +332,7 @@ S2 run (void *arg)
 	S8 cpu_core ALIGN = (S8) arg;
 	S8 i ALIGN;
 	U1 eoffs;                  // offset to next opcode
-	S8 regi[MAXREG];   // integer registers
+	S8 regi[MAXREG];   		  // integer registers
 	F8 regd[MAXREG];          // double registers
 	S8 arg1 ALIGN;
 	S8 arg2 ALIGN;
@@ -361,6 +362,11 @@ S2 run (void *arg)
     // thread attach to CPU core
 	#if CPU_SET_AFFINITY
 	cpu_set_t cpuset;
+	#endif
+
+	#if STACK_CHECK
+		U1 stack_type[STACK_ELEMENTS];
+		S8 stack_type_ind ALIGN = -1;
 	#endif
 
 	// for data input
@@ -649,6 +655,7 @@ S2 run (void *arg)
 	#if BOUNDSCHECK
 	if (memory_bounds (arg1, arg2) != 0)
 	{
+		PRINT_EPOS();
 		free (jumpoffs);
         pthread_exit ((void *) 1);
 	}
@@ -671,6 +678,7 @@ S2 run (void *arg)
 	#if BOUNDSCHECK
 	if (memory_bounds (arg1, arg2) != 0)
 	{
+		PRINT_EPOS();
 		free (jumpoffs);
         pthread_exit ((void *) 1);
 	}
@@ -697,6 +705,7 @@ S2 run (void *arg)
 	#if BOUNDSCHECK
 	if (memory_bounds (arg1, arg2) != 0)
 	{
+		PRINT_EPOS();
 		free (jumpoffs);
         pthread_exit ((void *) 1);
 	}
@@ -727,6 +736,7 @@ S2 run (void *arg)
 	#if BOUNDSCHECK
 	if (memory_bounds (arg1, arg2) != 0)
 	{
+		PRINT_EPOS();
 		free (jumpoffs);
         pthread_exit ((void *) 1);
 	}
@@ -768,6 +778,7 @@ S2 run (void *arg)
 	#if BOUNDSCHECK
 	if (memory_bounds (arg1, arg2) != 0)
 	{
+		PRINT_EPOS();
 		free (jumpoffs);
         pthread_exit ((void *) 1);
 	}
@@ -806,6 +817,7 @@ S2 run (void *arg)
 	#if BOUNDSCHECK
 	if (memory_bounds (arg2, arg3) != 0)
 	{
+		PRINT_EPOS();
 		free (jumpoffs);
         pthread_exit ((void *) 1);
 	}
@@ -827,6 +839,7 @@ S2 run (void *arg)
 	#if BOUNDSCHECK
 	if (memory_bounds (arg2, arg3) != 0)
 	{
+		PRINT_EPOS();
 		free (jumpoffs);
         pthread_exit ((void *) 1);
 	}
@@ -855,6 +868,7 @@ S2 run (void *arg)
 	#if BOUNDSCHECK
 	if (memory_bounds (arg2, arg3) != 0)
 	{
+		PRINT_EPOS();
 		free (jumpoffs);
         pthread_exit ((void *) 1);
 	}
@@ -884,6 +898,7 @@ S2 run (void *arg)
 	#if BOUNDSCHECK
 	if (memory_bounds (arg2, arg3) != 0)
 	{
+		PRINT_EPOS();
 		free (jumpoffs);
         pthread_exit ((void *) 1);
 	}
@@ -925,6 +940,7 @@ S2 run (void *arg)
 	#if BOUNDSCHECK
 	if (memory_bounds (arg2, arg3) != 0)
 	{
+		PRINT_EPOS();
 		free (jumpoffs);
         pthread_exit ((void *) 1);
 	}
@@ -965,6 +981,7 @@ S2 run (void *arg)
 		{
 			overflow = 1;
  			printf ("ERROR: overflow at addi!\n");
+			PRINT_EPOS();
 		}
 		else
 		{
@@ -990,6 +1007,7 @@ S2 run (void *arg)
 		{
 			overflow = 1;
  			printf ("ERROR: overflow at subi!\n");
+			PRINT_EPOS();
 		}
 		else
 		{
@@ -1015,6 +1033,7 @@ S2 run (void *arg)
 		{
 			overflow = 1;
  			printf ("ERROR: overflow at muli!\n");
+			PRINT_EPOS();
 		}
 		else
 		{
@@ -1039,6 +1058,7 @@ S2 run (void *arg)
     if (iszero (regi[arg2]))
     {
         printf ("FATAL ERROR: division by zero!\n");
+		PRINT_EPOS();
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
     }
@@ -1068,12 +1088,14 @@ S2 run (void *arg)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at addd!\n");
+			PRINT_EPOS();
 		}
 
 		if (double_state (regd[arg2]) == 1)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at addd!\n");
+			PRINT_EPOS();
 		}
 	#endif
 
@@ -1084,6 +1106,7 @@ S2 run (void *arg)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at addd!\n");
+			PRINT_EPOS();
 		}
 	#endif
 
@@ -1108,12 +1131,14 @@ S2 run (void *arg)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at subd!\n");
+			PRINT_EPOS();
 		}
 
 		if (double_state (regd[arg2]) == 1)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at subd!\n");
+			PRINT_EPOS();
 		}
 	#endif
 
@@ -1124,6 +1149,7 @@ S2 run (void *arg)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at subd!\n");
+			PRINT_EPOS();
 		}
 	#endif
 
@@ -1148,12 +1174,14 @@ S2 run (void *arg)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at muld!\n");
+			PRINT_EPOS();
 		}
 
 		if (double_state (regd[arg2]) == 1)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at muld!\n");
+			PRINT_EPOS();
 		}
 	#endif
 
@@ -1164,6 +1192,7 @@ S2 run (void *arg)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at muld!\n");
+			PRINT_EPOS();
 		}
 	#endif
 
@@ -1184,6 +1213,7 @@ S2 run (void *arg)
     if (iszero (regd[arg2]))
     {
         printf ("FATAL ERROR: division by zero!\n");
+		PRINT_EPOS();
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
     }
@@ -1197,12 +1227,14 @@ S2 run (void *arg)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at divd!\n");
+			PRINT_EPOS();
 		}
 
 		if (double_state (regd[arg2]) == 1)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at divd!\n");
+			PRINT_EPOS();
 		}
 	#endif
 
@@ -1213,6 +1245,7 @@ S2 run (void *arg)
 		{
 			overflow = 1;
 			printf ("ERROR: overflow at divd!\n");
+			PRINT_EPOS();
 		}
 	#endif
 
@@ -1525,6 +1558,22 @@ S2 run (void *arg)
 
 	if (sp >= sp_bottom)
 	{
+		#if STACK_CHECK
+			if (stack_type_ind < STACK_ELEMENTS - 1)
+			{
+				stack_type_ind++;
+				stack_type[stack_type_ind] = BYTE;
+			}
+			else
+			{
+				// ERROR stack_type array full!
+				printf ("FATAL ERROR: stack type overflow!\n");
+				PRINT_EPOS();
+				free (jumpoffs);
+				pthread_exit ((void *) 1);
+			}
+		#endif
+
 		sp--;
 
 		bptr = (U1 *) &regi[arg1];
@@ -1536,6 +1585,7 @@ S2 run (void *arg)
 		// fatal ERROR: stack pointer can't go below address ZERO!
 
 		printf ("FATAL ERROR: stack pointer can't go below address 0!\n");
+		PRINT_EPOS();
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
@@ -1554,9 +1604,22 @@ S2 run (void *arg)
 		// nothing on stack!! can't pop!!
 
 		printf ("FATAL ERROR: stack pointer can't pop empty stack!\n");
+		PRINT_EPOS();
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
+
+	#if STACK_CHECK
+		if (stack_type[stack_type_ind] != BYTE)
+		{
+			// ERROR stack_type array full!
+			printf ("FATAL ERROR: stack element type not byte!\n");
+			PRINT_EPOS();
+			free (jumpoffs);
+			pthread_exit ((void *) 1);
+		}
+		stack_type_ind--;
+	#endif
 
 	// clear arg1
 	regi[arg1] = 0;
@@ -1579,6 +1642,22 @@ S2 run (void *arg)
 
 	if (sp >= sp_bottom + 8)
 	{
+		#if STACK_CHECK
+			if (stack_type_ind < STACK_ELEMENTS - 1)
+			{
+				stack_type_ind++;
+				stack_type[stack_type_ind] = QUADWORD;
+			}
+			else
+			{
+				// ERROR stack_type array full!
+				printf ("FATAL ERROR: stack type overflow!\n");
+				PRINT_EPOS();
+				free (jumpoffs);
+				pthread_exit ((void *) 1);
+			}
+		#endif
+
 		// set stack pointer to lower address
 
 		bptr = (U1 *) &regi[arg1];
@@ -1605,6 +1684,7 @@ S2 run (void *arg)
 		// fatal ERROR: stack pointer can't go below address ZERO!
 
 		printf ("FATAL ERROR: stack pointer can't go below address 0!\n");
+		PRINT_EPOS();
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
@@ -1624,9 +1704,22 @@ S2 run (void *arg)
 		// nothing on stack!! can't pop!!
 
 		printf ("FATAL ERROR: stack pointer can't pop empty stack!\n");
+		PRINT_EPOS();
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
+
+	#if STACK_CHECK
+		if (stack_type[stack_type_ind] != QUADWORD)
+		{
+			// ERROR stack_type array full!
+			printf ("FATAL ERROR: stack element type not int64!\n");
+			PRINT_EPOS();
+			free (jumpoffs);
+			pthread_exit ((void *) 1);
+		}
+		stack_type_ind--;
+	#endif
 
 	bptr = (U1 *) &regi[arg1];
 	bptr += 7;
@@ -1659,6 +1752,22 @@ S2 run (void *arg)
 
 	if (sp >= sp_bottom + 8)
 	{
+		#if STACK_CHECK
+			if (stack_type_ind < STACK_ELEMENTS - 1)
+			{
+				stack_type_ind++;
+				stack_type[stack_type_ind] = DOUBLEFLOAT;
+			}
+			else
+			{
+				// ERROR stack_type array full!
+				printf ("FATAL ERROR: stack type overflow!\n");
+				PRINT_EPOS();
+				free (jumpoffs);
+				pthread_exit ((void *) 1);
+			}
+		#endif
+
 		// set stack pointer to lower address
 
 		bptr = (U1 *) &regd[arg1];
@@ -1685,6 +1794,7 @@ S2 run (void *arg)
 		// fatal ERROR: stack pointer can't go below address ZERO!
 
 		printf ("FATAL ERROR: stack pointer can't go below address 0!\n");
+		PRINT_EPOS();
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
@@ -1703,9 +1813,22 @@ S2 run (void *arg)
 		// nothing on stack!! can't pop!!
 
 		printf ("FATAL ERROR: stack pointer can't pop empty stack!\n");
+		PRINT_EPOS();
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
+
+	#if STACK_CHECK
+		if (stack_type[stack_type_ind] != DOUBLEFLOAT)
+		{
+			// ERROR stack_type array full!
+			printf ("FATAL ERROR: stack element type not double!\n");
+			PRINT_EPOS();
+			free (jumpoffs);
+			pthread_exit ((void *) 1);
+		}
+		stack_type_ind--;
+	#endif
 
 	bptr = (U1 *) &regd[arg1];
 	bptr += 7;
@@ -1780,6 +1903,7 @@ S2 run (void *arg)
 	#if BOUNDSCHECK
 	if (memory_bounds (arg1, arg2) != 0)
 	{
+		PRINT_EPOS();
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
@@ -1860,6 +1984,7 @@ S2 run (void *arg)
 	#if BOUNDSCHECK
 	if (memory_bounds (arg1, arg2) != 0)
 	{
+		PRINT_EPOS();
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
@@ -2006,6 +2131,7 @@ S2 run (void *arg)
 			else
 			{
 				printf ("input integer: can't read!\n");
+				PRINT_EPOS();
 			}
 			eoffs = 5;
 			break;
@@ -2022,6 +2148,7 @@ S2 run (void *arg)
 			else
 			{
 				printf ("input double: can't read!\n");
+				PRINT_EPOS();
 			}
 			eoffs = 5;
 			break;
@@ -2099,6 +2226,7 @@ S2 run (void *arg)
 			if (regi[arg2] > shell_args_ind)
 			{
 				printf ("ERROR: shell argument index out of range!\n");
+				PRINT_EPOS();
 				free (jumpoffs);
 				pthread_exit ((void *) 1);
 			}
@@ -2224,12 +2352,14 @@ S2 run (void *arg)
 #else
 		case 24:
 			printf ("FATAL ERROR: no start timer!\n");
+			PRINT_EPOS();
 			free (jumpoffs);
 			pthread_exit ((void *) 1);
 			break;
 
 		case 25:
 			printf ("FATAL ERROR: no end timer!\n");
+			PRINT_EPOS();
 			free (jumpoffs);
 			pthread_exit ((void *) 1);
 			break;
@@ -2261,6 +2391,7 @@ S2 run (void *arg)
 			if (jit_compiler ((U1 *) code, (U1 *) data, (S8 *) jumpoffs, (S8 *) &regi, (F8 *) &regd, (U1 *) sp, sp_top, sp_bottom, regi[arg2], regi[arg3], JIT_code, JIT_code_ind, code_size) != 0)
             {
                 printf ("FATAL ERROR: JIT compiler: can't compile!\n");
+				PRINT_EPOS();
                 free (jumpoffs);
             	pthread_exit ((void *) 1);
             }
@@ -2278,12 +2409,14 @@ S2 run (void *arg)
 #else
 		case 253:
 			printf ("FATAL ERROR: no JIT compiler: can't compile!\n");
+			PRINT_EPOS();
 			free (jumpoffs);
 			pthread_exit ((void *) 1);
 			break;
 
 		case 254:
 			printf ("FATAL ERROR: no JIT compiler: can't execute!\n");
+			PRINT_EPOS();
 			free (jumpoffs);
 			pthread_exit ((void *) 1);
 			break;
@@ -2306,6 +2439,7 @@ S2 run (void *arg)
 
 		default:
 			printf ("FATAL ERROR: INTR0: %lli does not exist!\n", arg1);
+			PRINT_EPOS();
 			free (jumpoffs);
 			pthread_exit ((void *) 1);
 	}
@@ -2343,6 +2477,7 @@ S2 run (void *arg)
 				// maximum of CPU cores used, no new core possible
 
 				printf ("ERROR: can't start new CPU core!\n");
+				PRINT_EPOS();
 				free (jumpoffs);
 				pthread_exit ((void *) 1);
 			}
@@ -2371,6 +2506,7 @@ S2 run (void *arg)
 			if (pthread_create (&threaddata[new_cpu].id, NULL, (void *) run, (void*) new_cpu) != 0)
 			{
 				printf ("ERROR: can't start new thread!\n");
+				PRINT_EPOS();
 				free (jumpoffs);
 				pthread_exit ((void *) 1);
 			}
@@ -2385,6 +2521,7 @@ S2 run (void *arg)
             if (pthread_setaffinity_np (threaddata[new_cpu].id, sizeof(cpu_set_t), &cpuset) != 0)
             {
                     printf ("ERROR: setting pthread affinity of thread: %lli\n", new_cpu);
+					PRINT_EPOS();
             }
             #endif
 
@@ -2479,6 +2616,7 @@ S2 run (void *arg)
 
 		default:
 			printf ("FATAL ERROR: INTR1: %lli does not exist!\n", arg1);
+			PRINT_EPOS();
 			free (jumpoffs);
 			pthread_exit ((void *) 1);
 	}
@@ -2604,6 +2742,7 @@ S2 run (void *arg)
 	if (jumpstack_ind == MAXSUBJUMPS - 1)
 	{
 		printf ("ERROR: jumpstack full, no more jsr!\n");
+		PRINT_EPOS();
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
@@ -2630,6 +2769,7 @@ S2 run (void *arg)
 	if (jumpstack_ind == MAXSUBJUMPS - 1)
 	{
 		printf ("ERROR: jumpstack full, no more jsr!\n");
+		PRINT_EPOS();
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
@@ -3021,6 +3161,11 @@ int main (int ac, char *av[])
 		#if DIVISIONCHECK
 			printf (">> divisioncheck << ");
 		#endif
+
+		#if STACK_CHECK
+			printf (">> stack check <<");
+		#endif
+
 		printf ("\n");
 
 		printf ("machine: ");

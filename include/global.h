@@ -98,6 +98,11 @@
 // VM: set timer interrupt
 #define TIMER_USE				1 				// 1 = set timer measurement interrupt
 
+#define DO_ALIGNMENT			1 				// set 64 bit var alignment
+
+// STACK CHECK
+#define STACK_CHECK				0				// do stack check on var type match
+
 // user settings end ==========================================================
 
 // internal settings ==========================================================
@@ -115,6 +120,7 @@
 
 // stacksize in bytes
 #define STACKSIZE				64000
+#define STACK_ELEMENTS			8000		// max elements for stack check: see: 'STACK_CHECK'
 
 // Jump call stack, for jsr, jsra: how many jsr and jsra MAXSUBJUMPS can be done without a rts (return) call.
 // If you want to save RAM you can set this value to 256!
@@ -159,8 +165,9 @@ typedef double                  F8;     /* DOUBLE */
 
 
 /* set alignment for Android ARM */
-#if M_ARM
+#if DO_ALIGNMENT
 #define ALIGN		__attribute__ ((aligned(8)))
+#pragma message ("ALIGNMENT FOR 64 bit ON")
 #else
 #define ALIGN
 #endif

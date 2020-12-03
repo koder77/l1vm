@@ -62,6 +62,10 @@ struct t_var t_var;
 struct data_info data_info[MAXDATAINFO];
 struct label label[MAXLABELS];
 
+// DEBUG epos, assembly linenum
+FILE *debug = NULL;
+
+
 // protos
 U1 checkdigit (U1 *str);
 S8 get_temp_int (void);
@@ -1135,6 +1139,14 @@ S2 parse_line (U1 *line, S2 start, S2 end)
                         }
 
                         write_code_byte (code_ind, i);
+
+						// write to *.l1vmdbg debug file
+						if (fprintf (debug, "epos: %lli, %lli line num\n", code_ind, linenum) < 0)
+						{
+							printf ("error: can't write to debug file!\n");
+							return (1);
+						}
+
                         code_ind++;
 
                         for (j = 1; j <= arg_ind; j++)
@@ -1563,6 +1575,8 @@ int main (int ac, char *av[])
 	// make bzip2 object code file flag
 	U1 pack = 0;
 	U1 shell_pack[512];
+	U1 debug_file_name[512];
+
 
 	if (ac < 2)
     {
@@ -1603,6 +1617,26 @@ int main (int ac, char *av[])
 				pack = 1;
 			}
 		}
+	}
+
+	// open debug output file
+	strcpy (debug_file_name, av[1]);
+	if (strlen (debug_file_name) > 503)
+	{
+		// ERROR filename to long
+		printf ("\033[31mERROR: can't open debug file, filename too long!\n");
+		printf ("\033[0m\n");	// switch to normal text color
+		free_code_data ();
+		exit (1);
+	}
+	strcat (debug_file_name, ".l1dbg");
+	debug = fopen (debug_file_name, "w");
+	if (debug == NULL)
+	{
+		printf ("\033[31mERROR: can't open debug file!\n");
+		printf ("\033[0m\n");	// switch to normal text color
+		free_code_data ();
+		exit (1);
 	}
 
 	if (alloc_code_data () == 1)
@@ -1675,5 +1709,6 @@ int main (int ac, char *av[])
 	}
 
 	printf ("\033[0m[\u2714] %s assembled\n\n", av[1]);
+	if (debug) fclose (debug);
 	exit (0);
 }
