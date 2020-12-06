@@ -199,6 +199,10 @@ typedef double                  F8;     /* DOUBLE */
 #define QUADWORD        11
 #define DOUBLEFLOAT     12
 
+#define STACK_BYTE			0
+#define STACK_QUADWORD		1
+#define STACK_DOUBLEFLOAT	2
+
 #define STRING			13
 
 // translate.h:

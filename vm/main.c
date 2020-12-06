@@ -1562,7 +1562,7 @@ S2 run (void *arg)
 			if (stack_type_ind < STACK_ELEMENTS - 1)
 			{
 				stack_type_ind++;
-				stack_type[stack_type_ind] = BYTE;
+				stack_type[stack_type_ind] = STACK_BYTE;
 			}
 			else
 			{
@@ -1610,10 +1610,24 @@ S2 run (void *arg)
 	}
 
 	#if STACK_CHECK
-		if (stack_type[stack_type_ind] != BYTE)
+		if (stack_type[stack_type_ind] != STACK_BYTE)
 		{
-			// ERROR stack_type array full!
-			printf ("FATAL ERROR: stack element type not byte!\n");
+			printf ("FATAL ERROR: stack element type is: ");
+			switch (stack_type[stack_type_ind])
+			{
+				case STACK_BYTE:
+					printf ("byte ");
+					break;
+
+				case STACK_QUADWORD:
+					printf ("int64 ");
+					break;
+
+				case STACK_DOUBLEFLOAT:
+					printf ("double ");
+					break;
+			}
+			printf ("not byte!\n");
 			PRINT_EPOS();
 			free (jumpoffs);
 			pthread_exit ((void *) 1);
@@ -1646,7 +1660,7 @@ S2 run (void *arg)
 			if (stack_type_ind < STACK_ELEMENTS - 1)
 			{
 				stack_type_ind++;
-				stack_type[stack_type_ind] = QUADWORD;
+				stack_type[stack_type_ind] = STACK_QUADWORD;
 			}
 			else
 			{
@@ -1710,10 +1724,24 @@ S2 run (void *arg)
 	}
 
 	#if STACK_CHECK
-		if (stack_type[stack_type_ind] != QUADWORD)
+		if (stack_type[stack_type_ind] != STACK_QUADWORD)
 		{
-			// ERROR stack_type array full!
-			printf ("FATAL ERROR: stack element type not int64!\n");
+			printf ("FATAL ERROR: stack element type is: ");
+			switch (stack_type[stack_type_ind])
+			{
+				case STACK_BYTE:
+					printf ("byte ");
+					break;
+
+				case STACK_QUADWORD:
+					printf ("int64 ");
+					break;
+
+				case STACK_DOUBLEFLOAT:
+					printf ("double ");
+					break;
+			}
+			printf ("not int64!\n");
 			PRINT_EPOS();
 			free (jumpoffs);
 			pthread_exit ((void *) 1);
@@ -1756,7 +1784,7 @@ S2 run (void *arg)
 			if (stack_type_ind < STACK_ELEMENTS - 1)
 			{
 				stack_type_ind++;
-				stack_type[stack_type_ind] = DOUBLEFLOAT;
+				stack_type[stack_type_ind] = STACK_DOUBLEFLOAT;
 			}
 			else
 			{
@@ -1819,10 +1847,24 @@ S2 run (void *arg)
 	}
 
 	#if STACK_CHECK
-		if (stack_type[stack_type_ind] != DOUBLEFLOAT)
+		if (stack_type[stack_type_ind] != STACK_DOUBLEFLOAT)
 		{
-			// ERROR stack_type array full!
-			printf ("FATAL ERROR: stack element type not double!\n");
+			printf ("FATAL ERROR: stack element type is: ");
+			switch (stack_type[stack_type_ind])
+			{
+				case STACK_BYTE:
+					printf ("byte ");
+					break;
+
+				case STACK_QUADWORD:
+					printf ("int64 ");
+					break;
+
+				case STACK_DOUBLEFLOAT:
+					printf ("double ");
+					break;
+			}
+			printf ("not double!\n");
 			PRINT_EPOS();
 			free (jumpoffs);
 			pthread_exit ((void *) 1);
