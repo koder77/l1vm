@@ -5,8 +5,8 @@ sources = main.c, load-object.c, ../lib-func/string.c, ../lib-func/code_datasize
 
 includes = ../include, /usr/local/include
 
-ccompiler = clang
-c++compiler = clang++
+ccompiler = $CC
+c++compiler = $CCPP
 
 archiver = ar
 

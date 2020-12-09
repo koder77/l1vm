@@ -95,7 +95,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	if (SDL_Init (SDL_INIT_VIDEO) != 0)
 	{
-		printf ("ERROR SDL_Init!!!");
+		printf ("ERROR SDL_Init!!!\n");
 
 		// error fail code
 		sp = stpushi (1, sp, sp_bottom);
@@ -113,7 +113,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	*/
 	if (TTF_Init () < 0)
 	{
-		printf ("ERROR TTF_Init!!!");
+		printf ("ERROR TTF_Init!!!\n");
 
 		// error fail code
 		sp = stpushi (1, sp, sp_bottom);
