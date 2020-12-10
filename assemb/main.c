@@ -1639,6 +1639,14 @@ int main (int ac, char *av[])
 		exit (1);
 	}
 
+	// write debug file header
+	if (fprintf (debug, "%s\nVM execution epos, assembly line number\n", debug_file_name) < 0)
+	{
+		printf ("error: can't write to debug file!\n");
+		free_code_data ();
+		exit (1);
+	}
+
 	if (alloc_code_data () == 1)
 	{
 		exit (1);
