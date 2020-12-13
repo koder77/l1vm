@@ -182,7 +182,6 @@ else
 	echo "l1vm JIT build error!"
 	exit 1
 fi
-cp l1vm l1vm-jit
 cd ..
 cp assemb/l1asm ~/bin
 cp comp/l1com ~/bin
