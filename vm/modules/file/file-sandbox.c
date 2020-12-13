@@ -18,7 +18,7 @@
  */
 
 #include "../../../include/global.h"
-
+#include "../../../include/home.h"
 
 size_t strlen_safe (const char * str, int maxlen);
 
@@ -26,11 +26,11 @@ size_t strlen_safe (const char * str, int maxlen);
 U1 check_file_access (U1 *path)
 {
 	/* check for forbidden ../ in pathname */
-	
+
 	S2 slen, i;
-	
+
 	slen = strlen_safe ((const char *) path, 255);
-	
+
 	for (i = 0; i < slen - 1; i++)
 	{
 		if (path[i] == '.')
@@ -41,7 +41,7 @@ U1 check_file_access (U1 *path)
 			}
 		}
 	}
-	
+
 	return (0);  /* path legal, all ok! */
 }
 
@@ -49,38 +49,44 @@ U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len)
 {
 	S2 filename_len;
 	S2 filename_sandbox_len;
-	
+	S2 filename_home_len;
+	char *home;
+
+	home = get_home ();
+	filename_home_len = strlen_safe (home, max_name_len);
 	filename_sandbox_len = strlen_safe (SANDBOX_ROOT, max_name_len);
-	if (filename_sandbox_len > max_name_len)
+	if (filename_home_len + filename_sandbox_len > max_name_len)
 	{
 		printf ("ERROR: get_sandbox_filename: file root: '%s' too long!\n", SANDBOX_ROOT);
 		return (1);
 	}
-	
+
 	filename_len = strlen_safe ((const char *) filename, max_name_len);
 	if (filename_len > max_name_len)
 	{
 		printf ("ERROR: get_sandbox_filename: file name: '%s' too long!\n", SANDBOX_ROOT);
 		return (1);
 	}
-	
+
+	filename_sandbox_len += filename_home_len;
 	filename_sandbox_len += filename_len;
 	if (filename_sandbox_len > max_name_len)
 	{
 		printf ("ERROR: get_sandbox_filename: file name: '%s' too long!\n", (char *) filename);
 		return (1);
 	}
-	
-	strcpy ((char *) sandbox_filename, SANDBOX_ROOT);
+
+	strcpy ((char *) sandbox_filename, home);
+	strcat ((char *) sandbox_filename, SANDBOX_ROOT);
 	strcat ((char *) sandbox_filename, (char *) filename);
-	
+
 	if (check_file_access (sandbox_filename) != 0)
 	{
 		// illegal parts in filename path, ERROR!!!
 		printf ("ERROR: get_sandbox_filename: file name: '%s' illegal!\n", (char *) sandbox_filename);
 		return (1);
 	}
-	
+
 	// all OK, return 0
 	return (0);
 }
