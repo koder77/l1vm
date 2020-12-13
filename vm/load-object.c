@@ -19,6 +19,7 @@
 
 #include "../include/global.h"
 #include "../include/opcodes.h"
+#include "../include/home.h"
 
 extern U1 *code;
 extern U1 *data;
@@ -140,6 +141,7 @@ S2 load_object (U1 *name)
 	U1 objname[512];
 	U1 full_path[512];
 	U1 run_shell[512];
+	char *home;
 
 	S4 slen;
 	S4 sandbox_root_len;
@@ -197,7 +199,9 @@ S2 load_object (U1 *name)
 				return (1);
 			}
 
-			strcpy ((char *) full_path, SANDBOX_ROOT);
+			home = get_home ();
+			strcpy ((char *) full_path, (const char *) home);
+			strcat ((char *) full_path, SANDBOX_ROOT);
 			strcat ((char *) full_path, (const char *) "prog/");
 			strcat ((char *) full_path, (const char *) name);
 			strcat ((char *) full_path, ".l1obj");

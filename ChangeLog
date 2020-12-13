@@ -24,7 +24,12 @@ L1VM - (1.0.8)
 	Now a stack check flag in "global.h" can be set for stack variable type checking on runtime.
 	Note: some programs may fail with an error!
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu Dec 03 2020 21:15 +0100
+	NEW: home directory name now is get by HOME env variable (getenv).
+	So the L1VM root definition looks like:
+
+	#define SANDBOX_ROOT			"/l1vm/"
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Dec 13 2020 17:58 +0100
 
 
 L1VM - (1.0.7)
