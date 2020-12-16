@@ -101,7 +101,7 @@
 #define DO_ALIGNMENT			1 				// set 64 bit var alignment
 
 // STACK CHECK
-#define STACK_CHECK				0				// do stack check on var type match
+#define STACK_CHECK				0			// do stack check on var type match
 
 // user settings end ==========================================================
 
@@ -202,6 +202,7 @@ typedef double                  F8;     /* DOUBLE */
 #define STACK_BYTE			0
 #define STACK_QUADWORD		1
 #define STACK_DOUBLEFLOAT	2
+#define STACK_UNSET			3
 
 #define STRING			13
 

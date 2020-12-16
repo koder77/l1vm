@@ -1563,6 +1563,15 @@ S2 run (void *arg)
 			{
 				stack_type_ind++;
 				stack_type[stack_type_ind] = STACK_BYTE;
+
+				// set stack top elements as unset
+				{
+					S8 i;
+					for (i = stack_type_ind + 1; i < STACK_ELEMENTS - 1; i++)
+					{
+						stack_type[i] = STACK_UNSET;
+					}
+				}
 			}
 			else
 			{
@@ -1612,25 +1621,28 @@ S2 run (void *arg)
 	#if STACK_CHECK
 		if (stack_type[stack_type_ind] != STACK_BYTE)
 		{
-			printf ("FATAL ERROR: stack element type is: ");
-			switch (stack_type[stack_type_ind])
+			if (stack_type[stack_type_ind] != STACK_UNSET)
 			{
-				case STACK_BYTE:
-					printf ("byte ");
-					break;
+				printf ("FATAL ERROR: stack element type is: ");
+				switch (stack_type[stack_type_ind])
+				{
+					case STACK_BYTE:
+						printf ("byte ");
+						break;
 
-				case STACK_QUADWORD:
-					printf ("int64 ");
-					break;
+						case STACK_QUADWORD:
+						printf ("int64 ");
+						break;
 
-				case STACK_DOUBLEFLOAT:
-					printf ("double ");
-					break;
+						case STACK_DOUBLEFLOAT:
+						printf ("double ");
+						break;
+				}
+				printf ("not byte!\n");
+				PRINT_EPOS();
+				free (jumpoffs);
+				pthread_exit ((void *) 1);
 			}
-			printf ("not byte!\n");
-			PRINT_EPOS();
-			free (jumpoffs);
-			pthread_exit ((void *) 1);
 		}
 		stack_type_ind--;
 	#endif
@@ -1661,6 +1673,15 @@ S2 run (void *arg)
 			{
 				stack_type_ind++;
 				stack_type[stack_type_ind] = STACK_QUADWORD;
+
+				// set stack top elements as unset
+				{
+					S8 i;
+					for (i = stack_type_ind + 1; i < STACK_ELEMENTS - 1; i++)
+					{
+						stack_type[i] = STACK_UNSET;
+					}
+				}
 			}
 			else
 			{
@@ -1726,25 +1747,28 @@ S2 run (void *arg)
 	#if STACK_CHECK
 		if (stack_type[stack_type_ind] != STACK_QUADWORD)
 		{
-			printf ("FATAL ERROR: stack element type is: ");
-			switch (stack_type[stack_type_ind])
+			if (stack_type[stack_type_ind] != STACK_UNSET)
 			{
-				case STACK_BYTE:
-					printf ("byte ");
-					break;
+				printf ("FATAL ERROR: stack element type is: ");
+				switch (stack_type[stack_type_ind])
+				{
+					case STACK_BYTE:
+						printf ("byte ");
+						break;
 
-				case STACK_QUADWORD:
-					printf ("int64 ");
-					break;
+						case STACK_QUADWORD:
+						printf ("int64 ");
+						break;
 
-				case STACK_DOUBLEFLOAT:
-					printf ("double ");
-					break;
+						case STACK_DOUBLEFLOAT:
+						printf ("double ");
+						break;
+				}
+				printf ("not int64!\n");
+				PRINT_EPOS();
+				free (jumpoffs);
+				pthread_exit ((void *) 1);
 			}
-			printf ("not int64!\n");
-			PRINT_EPOS();
-			free (jumpoffs);
-			pthread_exit ((void *) 1);
 		}
 		stack_type_ind--;
 	#endif
@@ -1785,6 +1809,15 @@ S2 run (void *arg)
 			{
 				stack_type_ind++;
 				stack_type[stack_type_ind] = STACK_DOUBLEFLOAT;
+
+				// set stack top elements as unset
+				{
+					S8 i;
+					for (i = stack_type_ind + 1; i < STACK_ELEMENTS - 1; i++)
+					{
+						stack_type[i] = STACK_UNSET;
+					}
+				}
 			}
 			else
 			{
@@ -1849,25 +1882,28 @@ S2 run (void *arg)
 	#if STACK_CHECK
 		if (stack_type[stack_type_ind] != STACK_DOUBLEFLOAT)
 		{
-			printf ("FATAL ERROR: stack element type is: ");
-			switch (stack_type[stack_type_ind])
+			if (stack_type[stack_type_ind] != STACK_UNSET)
 			{
-				case STACK_BYTE:
-					printf ("byte ");
-					break;
+				printf ("FATAL ERROR: stack element type is: ");
+				switch (stack_type[stack_type_ind])
+				{
+					case STACK_BYTE:
+						printf ("byte ");
+						break;
 
-				case STACK_QUADWORD:
-					printf ("int64 ");
-					break;
+						case STACK_QUADWORD:
+						printf ("int64 ");
+						break;
 
-				case STACK_DOUBLEFLOAT:
-					printf ("double ");
-					break;
+						case STACK_DOUBLEFLOAT:
+						printf ("double ");
+						break;
+				}
+				printf ("not double!\n");
+				PRINT_EPOS();
+				free (jumpoffs);
+				pthread_exit ((void *) 1);
 			}
-			printf ("not double!\n");
-			PRINT_EPOS();
-			free (jumpoffs);
-			pthread_exit ((void *) 1);
 		}
 		stack_type_ind--;
 	#endif
