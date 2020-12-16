@@ -74,7 +74,7 @@
 	loada bit, 0, I22
 	stpushi I100
 	stpushi I21
-	stpushb I22
+	stpushi I22
 	intr0 3, I0, I0, 0
 	stpopb I50
 	intr0 15, I60, 0, 0

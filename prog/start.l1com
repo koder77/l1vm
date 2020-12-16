@@ -14,7 +14,7 @@
 	(set int64 1 height 240)
 	(set int64 1 width_b 799)
 	(set int64 1 height_b 599)
-	(set byte 1 bit 32)
+	(set int64 1 bit 32)
 	(set int64 1 x_quit 20)
 	(set int64 1 y_quit 20)
 	(set int64 1 x_fract 20)
@@ -210,7 +210,7 @@
     (set int64 1 bit@sdl 0)
     (set int64 1 mod@sdl 0)
     // get arguments from stack
-    (bit@sdl stpopb)
+    (bit@sdl stpopi)
     (height@sdl stpopi)
     (width@sdl stpopi)
     (mod@sdl stpopi)
@@ -258,7 +258,7 @@
     // open screen
     (width@sdl stpushi)
     (height@sdl stpushi)
-    (bit@sdl stpushb)
+    (bit@sdl stpushi)
     (3 mod@sdl open@sdl 0 intr0)
 (funcend)
 (sdl_font_ttf func)

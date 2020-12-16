@@ -54,10 +54,10 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// third: quadword width
 
 	S8 width ALIGN = 0, height ALIGN = 0;
-	U1 bit = 0;
+	S8 bit ALIGN = 0;
 	U1 err = 0;
 
-	sp = stpopb (&bit, sp, sp_top);
+	sp = stpopi (&bit, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
