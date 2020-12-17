@@ -1,3 +1,10 @@
+L1VM - (1.0.9)
+	NEW removed the experimental stack type check code. It didn't work right
+	because the modules stack actions couldn't be tracked right. I had to change the
+	module call API on all modules! :( So I just removed the stack check code!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu Dec 17 2020 21:11 +0100
+
 L1VM - (1.0.8)
 	Library cleanup: now string constants are defined by the "s" string len statement.
 	This fixes some serious bugs for example in the SDL library!

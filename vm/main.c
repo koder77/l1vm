@@ -364,11 +364,6 @@ S2 run (void *arg)
 	cpu_set_t cpuset;
 	#endif
 
-	#if STACK_CHECK
-		U1 stack_type[STACK_ELEMENTS];
-		S8 stack_type_ind ALIGN = -1;
-	#endif
-
 	// for data input
 	U1 input_str[MAXINPUT];
 
@@ -1558,31 +1553,6 @@ S2 run (void *arg)
 
 	if (sp >= sp_bottom)
 	{
-		#if STACK_CHECK
-			if (stack_type_ind < STACK_ELEMENTS - 1)
-			{
-				stack_type_ind++;
-				stack_type[stack_type_ind] = STACK_BYTE;
-
-				// set stack top elements as unset
-				{
-					S8 i;
-					for (i = stack_type_ind + 1; i < STACK_ELEMENTS - 1; i++)
-					{
-						stack_type[i] = STACK_UNSET;
-					}
-				}
-			}
-			else
-			{
-				// ERROR stack_type array full!
-				printf ("FATAL ERROR: stack type overflow!\n");
-				PRINT_EPOS();
-				free (jumpoffs);
-				pthread_exit ((void *) 1);
-			}
-		#endif
-
 		sp--;
 
 		bptr = (U1 *) &regi[arg1];
@@ -1618,35 +1588,6 @@ S2 run (void *arg)
 		pthread_exit ((void *) 1);
 	}
 
-	#if STACK_CHECK
-		if (stack_type[stack_type_ind] != STACK_BYTE)
-		{
-			if (stack_type[stack_type_ind] != STACK_UNSET)
-			{
-				printf ("FATAL ERROR: stack element type is: ");
-				switch (stack_type[stack_type_ind])
-				{
-					case STACK_BYTE:
-						printf ("byte ");
-						break;
-
-						case STACK_QUADWORD:
-						printf ("int64 ");
-						break;
-
-						case STACK_DOUBLEFLOAT:
-						printf ("double ");
-						break;
-				}
-				printf ("not byte!\n");
-				PRINT_EPOS();
-				free (jumpoffs);
-				pthread_exit ((void *) 1);
-			}
-		}
-		stack_type_ind--;
-	#endif
-
 	// clear arg1
 	regi[arg1] = 0;
 
@@ -1668,31 +1609,6 @@ S2 run (void *arg)
 
 	if (sp >= sp_bottom + 8)
 	{
-		#if STACK_CHECK
-			if (stack_type_ind < STACK_ELEMENTS - 1)
-			{
-				stack_type_ind++;
-				stack_type[stack_type_ind] = STACK_QUADWORD;
-
-				// set stack top elements as unset
-				{
-					S8 i;
-					for (i = stack_type_ind + 1; i < STACK_ELEMENTS - 1; i++)
-					{
-						stack_type[i] = STACK_UNSET;
-					}
-				}
-			}
-			else
-			{
-				// ERROR stack_type array full!
-				printf ("FATAL ERROR: stack type overflow!\n");
-				PRINT_EPOS();
-				free (jumpoffs);
-				pthread_exit ((void *) 1);
-			}
-		#endif
-
 		// set stack pointer to lower address
 
 		bptr = (U1 *) &regi[arg1];
@@ -1744,35 +1660,6 @@ S2 run (void *arg)
 		pthread_exit ((void *) 1);
 	}
 
-	#if STACK_CHECK
-		if (stack_type[stack_type_ind] != STACK_QUADWORD)
-		{
-			if (stack_type[stack_type_ind] != STACK_UNSET)
-			{
-				printf ("FATAL ERROR: stack element type is: ");
-				switch (stack_type[stack_type_ind])
-				{
-					case STACK_BYTE:
-						printf ("byte ");
-						break;
-
-						case STACK_QUADWORD:
-						printf ("int64 ");
-						break;
-
-						case STACK_DOUBLEFLOAT:
-						printf ("double ");
-						break;
-				}
-				printf ("not int64!\n");
-				PRINT_EPOS();
-				free (jumpoffs);
-				pthread_exit ((void *) 1);
-			}
-		}
-		stack_type_ind--;
-	#endif
-
 	bptr = (U1 *) &regi[arg1];
 	bptr += 7;
 
@@ -1804,31 +1691,6 @@ S2 run (void *arg)
 
 	if (sp >= sp_bottom + 8)
 	{
-		#if STACK_CHECK
-			if (stack_type_ind < STACK_ELEMENTS - 1)
-			{
-				stack_type_ind++;
-				stack_type[stack_type_ind] = STACK_DOUBLEFLOAT;
-
-				// set stack top elements as unset
-				{
-					S8 i;
-					for (i = stack_type_ind + 1; i < STACK_ELEMENTS - 1; i++)
-					{
-						stack_type[i] = STACK_UNSET;
-					}
-				}
-			}
-			else
-			{
-				// ERROR stack_type array full!
-				printf ("FATAL ERROR: stack type overflow!\n");
-				PRINT_EPOS();
-				free (jumpoffs);
-				pthread_exit ((void *) 1);
-			}
-		#endif
-
 		// set stack pointer to lower address
 
 		bptr = (U1 *) &regd[arg1];
@@ -1878,35 +1740,6 @@ S2 run (void *arg)
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
-
-	#if STACK_CHECK
-		if (stack_type[stack_type_ind] != STACK_DOUBLEFLOAT)
-		{
-			if (stack_type[stack_type_ind] != STACK_UNSET)
-			{
-				printf ("FATAL ERROR: stack element type is: ");
-				switch (stack_type[stack_type_ind])
-				{
-					case STACK_BYTE:
-						printf ("byte ");
-						break;
-
-						case STACK_QUADWORD:
-						printf ("int64 ");
-						break;
-
-						case STACK_DOUBLEFLOAT:
-						printf ("double ");
-						break;
-				}
-				printf ("not double!\n");
-				PRINT_EPOS();
-				free (jumpoffs);
-				pthread_exit ((void *) 1);
-			}
-		}
-		stack_type_ind--;
-	#endif
 
 	bptr = (U1 *) &regd[arg1];
 	bptr += 7;
@@ -3240,12 +3073,7 @@ int main (int ac, char *av[])
 			printf (">> divisioncheck << ");
 		#endif
 
-		#if STACK_CHECK
-			printf (">> stack check <<");
-		#endif
-
 		printf ("\n");
-
 		printf ("machine: ");
 		#if MACHINE_BIG_ENDIAN
 			printf ("big endianess\n");

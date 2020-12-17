@@ -100,9 +100,6 @@
 
 #define DO_ALIGNMENT			1 				// set 64 bit var alignment
 
-// STACK CHECK
-#define STACK_CHECK				0			// do stack check on var type match
-
 // user settings end ==========================================================
 
 // internal settings ==========================================================
@@ -134,7 +131,7 @@
 // info strings:
 #define COPYRIGHT_STR " (C) 2017-2020 Stefan Pietzonke"
 
-#define  VM_VERSION_STR		"1.0.8"		// version number
+#define  VM_VERSION_STR		"1.0.9"		// version number
 
 // no user defined definitions below this section! ============================
 
