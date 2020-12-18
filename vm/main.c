@@ -2107,19 +2107,6 @@ S2 run (void *arg)
 					}
 				}
 			}
-			/*
-			if (fgets ((char *) &data[regi[arg3]], regi[arg2], stdin) != NULL)
-			{
-				// set END OF STRING mark
-				i = strlen_safe ((const char *) &data[regi[arg3]], MAXLINELEN);
-				data[regi[arg3] + (i - 1)] = '\0';
-				printf ("intr0: 11: '%s'\n", &data[regi[arg3]]);
-			}
-			else
-			{
-				printf ("input string: can't read!\n");
-			}
-			*/
 			eoffs = 5;
 			break;
 
@@ -2149,6 +2136,14 @@ S2 run (void *arg)
 		case 14:
 			//printf("SHOWSTACKPOINTER\n");
 			printf ("stack pointer sp: %lli\n", (S8) sp);
+			if (sp == sp_top)
+			{
+				printf ("stack is empty!\n\n");
+			}
+			else
+			{
+				printf ("stack has data!\n\n");
+			}
 			eoffs = 5;
 			break;
 

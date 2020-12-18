@@ -120,7 +120,7 @@ fi
 cd ..
 cp assemb/l1asm ~/bin
 cp comp/l1com ~/bin
-cp vm/l1vm-jit ~/bin
+cp vm/l1vm ~/bin
 echo "VM binaries installed into ~/bin"
 
 cd modules
