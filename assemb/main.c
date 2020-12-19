@@ -1620,8 +1620,8 @@ int main (int ac, char *av[])
 	}
 
 	// open debug output file
-	strcpy (debug_file_name, av[1]);
-	if (strlen (debug_file_name) > 503)
+	strcpy ((char *) debug_file_name, av[1]);
+	if (strlen ((const char *) debug_file_name) > 503)
 	{
 		// ERROR filename to long
 		printf ("\033[31mERROR: can't open debug file, filename too long!\n");
@@ -1629,8 +1629,8 @@ int main (int ac, char *av[])
 		free_code_data ();
 		exit (1);
 	}
-	strcat (debug_file_name, ".l1dbg");
-	debug = fopen (debug_file_name, "w");
+	strcat ((char *) debug_file_name, ".l1dbg");
+	debug = fopen ((const char *) debug_file_name, "w");
 	if (debug == NULL)
 	{
 		printf ("\033[31mERROR: can't open debug file!\n");
