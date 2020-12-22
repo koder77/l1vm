@@ -29,6 +29,7 @@ INTR0
 23: print int32 integer number
 24: start timer
 25: stop timer
+26: stack check: exit program if there is something on the stack, while it should not be there!!
 251: check double number overflow
 252: get overflow flag
 253: run JIT-compiler
