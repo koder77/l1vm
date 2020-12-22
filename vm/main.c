@@ -2271,6 +2271,17 @@ S2 run (void *arg)
 			break;
 #endif
 
+		case 26:
+			// check if stack is empty, if not then give an error message and exit!!!
+			if (sp != sp_top)
+			{
+				printf ("ERROR: stack has data! Stack should be empty!\n");
+				PRINT_EPOS();
+				free (jumpoffs);
+				pthread_exit ((void *) 1);
+			}
+			break;
+
 		case 251:
 			// set overflow on double reg
 			arg2 = code[ep + 2];

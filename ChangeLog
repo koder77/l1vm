@@ -3,7 +3,9 @@ L1VM - (1.0.9)
 	because the modules stack actions couldn't be tracked right. I had to change the
 	module call API on all modules! :( So I just removed the stack check code!
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu Dec 17 2020 21:11 +0100
+	NEW VM: interrupt 0: 26 for an error message if something is on the stack while it should be empty!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue Dec 17 2020 22:17 +0100
 
 L1VM - (1.0.8)
 	Library cleanup: now string constants are defined by the "s" string len statement.

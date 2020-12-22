@@ -180,7 +180,7 @@
     (set int64 1 str@printd_format)
     (str@printd_format stpopi)
     (i@printd_format stpopi)
-    (20 i@printd_format str@printd_format 0 intr0)
+    (21 i@printd_format str@printd_format 0 intr0)
 (funcend)
 (print_int16 func)
     (set int64 1 i@printi_int16)
@@ -205,4 +205,8 @@
     (set int64 1 time@timer_end 0)
     (25 time@timer_end 0 0 intr0)
     (time@timer_end stpushi)
+(funcend)
+(check_stackp func)
+	// exit on ERROR if stack has elements on it. For debugging code!!!
+    (26 0 0 0 intr0)
 (funcend)
