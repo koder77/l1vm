@@ -3523,6 +3523,12 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 												strcat ((char *) code[code_line], "\n");
 											}
 
+											for_pos = get_act_for ();
+											if (for_pos == -1)
+											{
+												printf ("compile: error: for: out of memory for-list\n");
+												return (FALSE);
+											}
 											get_for_label_2 (for_pos, for_label);
 
 											// write code jmpi to for label 2 code label, begin of for loop
