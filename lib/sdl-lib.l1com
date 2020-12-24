@@ -180,3 +180,4 @@
 	(loadreg)
 (funcend)
 #include <sdl-lib.l1h>
+#include <string.l1h>
