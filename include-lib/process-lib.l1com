@@ -1,0 +1,18 @@
+// process library
+//
+//
+(process_init func)
+	(set string s modulestr@process "libl1vmprocess.so")
+	(set string s run_shellstr@process "run_shell")
+	(set int64 1 run_shell@process 0)
+	(set int64 1 mod@process 0)
+	// get argument from stack
+	(mod@process stpopi)
+	// load process module
+	(0 modulestr@process mod@process 0 intr0)
+	// set functions
+	(2 mod@process run_shell@process run_shellstr@processaddr intr0)
+(funcend)
+(run_shell func)
+	(3 mod@process run_shell@process 0 intr0)
+(funcend)

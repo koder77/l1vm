@@ -47,6 +47,14 @@ else
 	exit 1
 fi
 
+cd ../prepro
+if zerobuild force; then
+	echo "l1pre build ok!"
+else
+	echo "l1pre build error!"
+	exit 1
+fi
+
 cd ../vm
 if zerobuild force; then
 	echo "l1vm JIT build ok!"
@@ -57,6 +65,7 @@ fi
 cd ..
 cp assemb/l1asm ~/bin
 cp comp/l1com ~/bin
+cp prepro/l1pre ~/bin
 cp vm/l1vm-jit ~/bin
 echo "VM binaries installed into ~/bin"
 
@@ -80,7 +89,33 @@ else
 	echo "building programs FAILED!"
 	exit 1
 fi
+
+echo "checking for ~/l1vm directory..."
+
+# check if ~/l1vm exists
+DIR="~/l1vm"
+if [ -d "$DIR" ]; then
+  ### Take action if $DIR exists ###
+  echo "${DIR} already exists!"
+else
+  ###  Control will jump here if $DIR does NOT exists ###
+  echo "${DIR} will be created now..."
+  mkdir ~/l1vm
+fi
+
 cd ..
+
+echo "installing programs to ~/l1vm"
+cp prog/ ~/l1vm -r
+cp lib/sdl-lib* ~/l1vm/prog
+
+echo "installing lib to ~/lib"
+cp lib/ ~/l1vm -r
+
+echo "installing fonts to ~/l1vm"
+cp fonts/ ~/l1vm -r
+
+cp include-lib/ ~/l1vm/include -r
 
 echo "installation finished!"
 exit 0

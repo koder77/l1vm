@@ -143,6 +143,14 @@ else
 	exit 1
 fi
 
+cd ../prepro
+if zerobuild force; then
+	echo "l1pre build ok!"
+else
+	echo "l1pre build error!"
+	exit 1
+fi
+
 cd ../vm
 if zerobuild zerobuild-nojit.txt force; then
 	echo "l1vm JIT build ok!"
@@ -154,6 +162,7 @@ cp l1vm l1vm-nojit
 cd ..
 cp assemb/l1asm ~/bin
 cp comp/l1com ~/bin
+cp prepro/l1pre ~/bin
 cp vm/l1vm-jit ~/bin
 echo "VM binaries installed into ~/bin"
 
@@ -202,6 +211,8 @@ cp lib/ ~/l1vm -r
 
 echo "installing fonts to ~/l1vm"
 cp fonts/ ~/l1vm -r
+
+cp include-lib/ ~/l1vm/include -r
 
 echo "installation finished!"
 exit 0

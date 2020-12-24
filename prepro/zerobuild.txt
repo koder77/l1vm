@@ -1,0 +1,8 @@
+# zerobuild makefile
+
+[executable, name = l1pre]
+sources = main.c, ../lib-func/file.c, ../lib-func/string.c
+
+ccompiler = $CC
+
+cflags = "-Wall -g"

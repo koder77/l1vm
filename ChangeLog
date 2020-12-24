@@ -7,7 +7,9 @@ L1VM - (1.0.9)
 
 	BUGFIX: compiler: fixed bug on for: for_pos not set on for fumction!
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed Dec 23 2020 04:06 +0100
+	NEW: prepro/l1pre L1VM preprocessor for include header files.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu Dec 24 2020 16:23 +0100
 
 L1VM - (1.0.8)
 	Library cleanup: now string constants are defined by the "s" string len statement.
