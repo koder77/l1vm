@@ -5,7 +5,9 @@ do
 	l1com out
 	RETVAL=$?
 	[ $RETVAL -ne 0 ] && echo "build failed: " && echo $i && exit 1
-	outname="${i}.l1obj"
+	# remove .l1com from file name and replace it by .l1obj
+	outname=${i%.l1com}
+	outname="${outname}.l1obj"
 	cp out.l1obj $outname
 done
 for j in *.l1asm
