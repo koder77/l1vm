@@ -334,6 +334,7 @@ void show_info (void)
 int main (int ac, char *av[])
 {
 	U1 rbuf[MAXLINELEN + 1];                        /* read-buffer for one line */
+	U1 buf[MAXLINELEN + 1];
 
 	char *read;
 	U1 ok;
@@ -379,20 +380,21 @@ int main (int ac, char *av[])
 		read = fgets_uni ((char *) rbuf, MAXLINELEN, finptr);
         if (read != NULL)
         {
-			convtabs (rbuf);
-			slen = strlen_safe ((const char *) rbuf, MAXLINELEN);
+			strcpy (buf, rbuf);
+			convtabs (buf);
+			slen = strlen_safe ((const char *) buf, MAXLINELEN);
 
-			// printf ("[ %s ]\n", rbuf);
+			// printf ("'%s'\n", buf);
 
 			// check if define is set
-			replace_define (rbuf);
+			replace_define (buf);
 
-			pos = searchstr (rbuf, (U1 *) DEFINE_SB, 0, 0, TRUE);
+			pos = searchstr (buf, (U1 *) DEFINE_SB, 0, 0, TRUE);
             if (pos >= 0)
 			{
 				// printf ("DEBUG: got #define!\n");
 
-				if (set_define (rbuf) != 0)
+				if (set_define (buf) != 0)
 				{
 					fclose (finptr);
 					fclose (foutptr);
@@ -401,10 +403,10 @@ int main (int ac, char *av[])
 				continue;	// don't safe define line!
 			}
 
-            pos = searchstr (rbuf, (U1 *) INCLUDE_SB, 0, 0, TRUE);
+            pos = searchstr (buf, (U1 *) INCLUDE_SB, 0, 0, TRUE);
             if (pos >= 0)
 			{
-				if (include_file (rbuf) != 0)
+				if (include_file (buf) != 0)
 				{
 					fclose (finptr);
 					fclose (foutptr);
@@ -414,7 +416,7 @@ int main (int ac, char *av[])
 			else
 			{
 				// save line
-				if (fprintf (foutptr, "%s", rbuf) < 0)
+				if (fprintf (foutptr, "%s", buf) < 0)
 				{
 					printf ("ERROR: can't write to output file!\n");
 					fclose (finptr);
