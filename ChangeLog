@@ -9,7 +9,9 @@ L1VM - (1.0.9)
 
 	NEW: prepro/l1pre L1VM preprocessor for include header files.
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu Dec 24 2020 16:23 +0100
+	BUIGFIX: lib-func/string.c: searchstr function now uses strstr() for searching of substr!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Dec 26 2020 20:50 +0100
 
 L1VM - (1.0.8)
 	Library cleanup: now string constants are defined by the "s" string len statement.

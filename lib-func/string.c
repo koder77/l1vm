@@ -42,15 +42,16 @@ size_t strlen_safe (const char * str, int maxlen)
 
 S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens)
 {
-	/* checked: ok! */
+	/* replaces the old buggy code */
 
-	S2 i, j = 0, pos = -1, str_len, srchstr_len;
-	U1 ok = FALSE, check = TRUE;
+	S2 i, pos = -1, str_len, srchstr_len;
 	S2 new_end;
-	U1 new_str, new_srchstr;
 
 	str_len = strlen_safe ((const char *) str, MAXLINELEN);
 	srchstr_len = strlen_safe ((const char *) srchstr, MAXLINELEN);
+
+	U1 *sptr;
+	U1 *startptr;
 
 	if (start < 0 || start > str_len - 1)
 	{
@@ -70,109 +71,19 @@ S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens)
 		new_end = end;
 	}
 
-	while (! ok)
+	startptr = str;
+	if (start > 0)
 	{
-		if (case_sens)
-		{
-			if (str[i] == srchstr[j])
-			{
-				pos = i;
-
-				/* found start of searchstring, checking now */
-
-				if (srchstr_len > 1)
-				{
-					for (j = j + 1; j <= srchstr_len - 1; j++)
-					{
-						if (i < new_end)
-						{
-							i++;
-						}
-
-						if (str[i] != srchstr[j]) check = FALSE;
-					}
-				}
-				if (check)
-				{
-					ok = TRUE;
-				}
-				else
-				{
-					pos = -1;
-				}
-			}
-			if (i < new_end)
-			{
-				i++;
-			}
-			else
-			{
-				ok = TRUE;
-			}
-		}
-		else
-		{
-			new_str = str[i];
-			new_srchstr = srchstr[j];
-
-			if (str[i] >= 97 && str[i] <= 122)
-			{
-				new_str = str[i] - 32;
-			}
-			if (srchstr[j] >= 97 && srchstr[j] <= 122)
-			{
-				new_srchstr = srchstr[j] - 32;
-			}
-
-			if (new_str == new_srchstr)
-			{
-				pos = i;
-
-				/* found start of searchstring, checking now */
-
-				if (srchstr_len > 1)
-				{
-					for (j = j + 1; j <= srchstr_len - 1; j++)
-					{
-						if (i < new_end)
-						{
-							i++;
-						}
-
-						new_str = str[i];
-						new_srchstr = srchstr[j];
-
-						if (str[i] >= 97 && str[i] <= 122)
-						{
-							new_str = str[i] - 32;
-						}
-						if (srchstr[j] >= 97 && srchstr[j] <= 122)
-						{
-							new_srchstr = srchstr[j] - 32;
-						}
-
-						if (new_str != new_srchstr) check = FALSE;
-					}
-				}
-				if (check)
-				{
-					ok = TRUE;
-				}
-				else
-				{
-					pos = -1;
-				}
-			}
-			if (i < new_end)
-			{
-				i++;
-			}
-			else
-			{
-				ok = TRUE;
-			}
-		}
+		startptr = startptr + start;
 	}
+
+	sptr = (U1 *) strstr ((const char *) startptr, (const char *) srchstr);
+	if (sptr)
+	{
+		// get position of substring
+		pos = sptr - startptr;
+	}
+
 	return (pos);
 }
 

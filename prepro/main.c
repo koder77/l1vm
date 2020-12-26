@@ -23,9 +23,22 @@
 
 #include "../include/global.h"
 
+#define DEFINE_MAX		1000		// max defines can be done
+
+
 #define INCLUDE_SB		"#include"
+#define DEFINE_SB		"#define"
 
 U1 include_path[MAXLINELEN + 1];
+
+struct define
+{
+	U1 def[MAXLINELEN + 1];
+	U1 out[MAXLINELEN + 1];
+};
+
+struct define defines[DEFINE_MAX];
+S8 defines_ind ALIGN = -1;
 
 // protos
 char *fgets_uni (char *str, int len, FILE *fptr);
@@ -37,6 +50,143 @@ FILE *finptr;
 FILE *foutptr;
 
 S8 linenum ALIGN = 1;
+
+S2 set_define (U1 *line_str)
+{
+	U1 ok = 1;
+	S4 i, pos, slen, j, k;
+
+	if (defines_ind < DEFINE_MAX - 1)
+	{
+		defines_ind++;
+	}
+	else
+	{
+		// error: max defines reached
+		printf ("ERROR: max defines reached: %i !\n", DEFINE_MAX);
+		return (1);
+	}
+
+	slen = strlen_safe ((const char*) line_str, MAXLINELEN);
+	pos = searchstr (line_str, (U1 *) DEFINE_SB, 0, 0, TRUE);
+
+	i = pos + 8; // next char after "#include"
+
+	// get define name:
+	j = 0;
+	while (ok == 1)
+	{
+		if (line_str[i] != ' ')
+		{
+			defines[defines_ind].def[j] = line_str[i];
+			j++;
+		}
+		else
+		{
+			ok = 0;
+		}
+		i++;
+	}
+
+	j = 0;
+	for (k = i; k < slen; k++)
+	{
+		if (line_str[k] != '\n')
+		{
+			defines[defines_ind].out[j] = line_str[k];
+		}
+		j++;
+	}
+	defines[defines_ind].out[j] = '\0';
+
+	// printf ("set_defines: def: '%s', out: '%s'\n", defines[defines_ind].def, defines[defines_ind].out);
+	return (0);
+}
+
+S2 replace_define (U1 *line_str)
+{
+	U1 ok = 1;
+	S4 i, pos, slen, define_len, define_out_len, j, end, n, real_end;
+	S4 ind;
+
+	U1 new_line[MAXLINELEN + 1];
+
+	slen = strlen_safe ((const char*) line_str, MAXLINELEN);
+
+	// check for every definition, if it is in current line!
+
+	if (defines_ind < 0)
+	{
+		// nothing to replace, exit
+		return (0);
+	}
+
+	ok = 1;
+	while (ok == 1)
+	{
+		// printf ("line_str: '%s'\n", line_str);
+
+		for (ind = 0; ind <= defines_ind; ind++)
+		{
+			slen = strlen_safe ((const char*) line_str, MAXLINELEN);
+			// printf ("searching define: '%s'\n", defines[ind].def);
+			// printf ("'%s'\n\n", line_str);
+			pos = searchstr (line_str, defines[ind].def, 0, 0, TRUE);
+			if (pos >= 0)
+			{
+				// printf ("found define at pos: %i, '%s'\n", pos, defines[ind].def);
+
+				define_len = strlen_safe ((const char *) defines[ind].def, MAXLINELEN);
+
+				// found define at position
+				// copy part before define to new_line
+				j = 0;
+				for (i = 0; i < pos; i++)
+				{
+					new_line[j] = line_str[i];
+					j++;
+				}
+
+				// copy define out to new_line
+				define_out_len = strlen_safe ((const char *) defines[ind].out, MAXLINELEN);
+				for (i = 0; i <  define_out_len; i++)
+				{
+					new_line[j] = defines[ind].out[i];
+					j++;
+				}
+
+				// copy part after define to new_line
+				for (i = pos + define_len; i < slen; i++)
+				{
+					new_line[j] = line_str[i];
+					j++;
+				}
+				new_line[j] = '\0';
+				end = strlen_safe ((const char *) new_line, MAXLINELEN);
+				for (n = end; n >= 0; n--)
+				{
+					// check for real line ending
+					if (new_line[n] != '\n')
+					{
+						real_end = n + 1;
+						break;
+					}
+				}
+				new_line[real_end] = '\n';
+				real_end++;
+				new_line[real_end] = '\0';
+				strcpy ((char *) line_str, (const char *) new_line);
+
+				// printf ("replace_define: new line: '%s'\n", line_str);
+			}
+			else
+			{
+				ok = 0;
+			}
+		}
+	}
+	return (0);
+}
 
 S2 include_file (U1 *line_str)
 {
@@ -125,6 +275,23 @@ S2 include_file (U1 *line_str)
 		{
 			convtabs (rbuf);
 			slen = strlen_safe ((const char *) rbuf, MAXLINELEN);
+
+			// check if define is set
+			replace_define (rbuf);
+
+			pos = searchstr (rbuf, (U1 *) DEFINE_SB, 0, 0, TRUE);
+            if (pos >= 0)
+			{
+				// printf ("DEBUG: got #define!\n");
+
+				if (set_define (rbuf) != 0)
+				{
+					fclose (finptr);
+					fclose (foutptr);
+					exit (1);
+				}
+				continue;	// don't safe define line!
+			}
 
 			pos = searchstr (rbuf, (U1 *) INCLUDE_SB, 0, 0, TRUE);
             if (pos >= 0)
@@ -216,6 +383,23 @@ int main (int ac, char *av[])
 			slen = strlen_safe ((const char *) rbuf, MAXLINELEN);
 
 			// printf ("[ %s ]\n", rbuf);
+
+			// check if define is set
+			replace_define (rbuf);
+
+			pos = searchstr (rbuf, (U1 *) DEFINE_SB, 0, 0, TRUE);
+            if (pos >= 0)
+			{
+				// printf ("DEBUG: got #define!\n");
+
+				if (set_define (rbuf) != 0)
+				{
+					fclose (finptr);
+					fclose (foutptr);
+					exit (1);
+				}
+				continue;	// don't safe define line!
+			}
 
             pos = searchstr (rbuf, (U1 *) INCLUDE_SB, 0, 0, TRUE);
             if (pos >= 0)
