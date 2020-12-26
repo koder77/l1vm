@@ -191,6 +191,7 @@ S2 replace_define (U1 *line_str)
 S2 include_file (U1 *line_str)
 {
 	U1 rbuf[MAXLINELEN + 1];
+	U1 buf[MAXLINELEN + 1];
 	U1 ok;
 	char *read;
 	U1 get_include_start;
@@ -273,18 +274,19 @@ S2 include_file (U1 *line_str)
 		read = fgets_uni ((char *) rbuf, MAXLINELEN, fincludeptr);
 		if (read != NULL)
 		{
-			convtabs (rbuf);
-			slen = strlen_safe ((const char *) rbuf, MAXLINELEN);
+			strcpy (buf, rbuf);
+			convtabs (buf);
+			slen = strlen_safe ((const char *) buf, MAXLINELEN);
 
 			// check if define is set
-			replace_define (rbuf);
+			replace_define (buf);
 
-			pos = searchstr (rbuf, (U1 *) DEFINE_SB, 0, 0, TRUE);
+			pos = searchstr (buf, (U1 *) DEFINE_SB, 0, 0, TRUE);
             if (pos >= 0)
 			{
 				// printf ("DEBUG: got #define!\n");
 
-				if (set_define (rbuf) != 0)
+				if (set_define (buf) != 0)
 				{
 					fclose (finptr);
 					fclose (foutptr);
@@ -293,10 +295,10 @@ S2 include_file (U1 *line_str)
 				continue;	// don't safe define line!
 			}
 
-			pos = searchstr (rbuf, (U1 *) INCLUDE_SB, 0, 0, TRUE);
+			pos = searchstr (buf, (U1 *) INCLUDE_SB, 0, 0, TRUE);
             if (pos >= 0)
 			{
-				if (include_file (rbuf) != 0)
+				if (include_file (buf) != 0)
 				{
 					fclose (finptr);
 					fclose (foutptr);
@@ -306,7 +308,7 @@ S2 include_file (U1 *line_str)
 			else
 			{
 				// save line
-				if (fprintf (foutptr, "%s", rbuf) < 0)
+				if (fprintf (foutptr, "%s", buf) < 0)
 				{
 					printf ("ERROR: can't write to output file!\n");
 					fclose (fincludeptr);
