@@ -9,3 +9,7 @@ The includes are done like this:
 #include <sdl-lib.l1h>
 
 The headers are in the include-lib/ directory and are copied to the ~/l1vm/include at install.
+
+NEW: now "#define" can be set to define strings:
+
+#define PRINT_NEWLINE	(7 0 0 0 intr0)
