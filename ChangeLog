@@ -11,7 +11,9 @@ L1VM - (1.0.9)
 
 	BUIGFIX: lib-func/string.c: searchstr function now uses strstr() for searching of substr!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Dec 26 2020 20:50 +0100
+	NEW: l1pre, now macros can be defined!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Dec 27 2020 15:37 +0100
 
 L1VM - (1.0.8)
 	Library cleanup: now string constants are defined by the "s" string len statement.

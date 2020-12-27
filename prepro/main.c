@@ -24,17 +24,21 @@
 #include "../include/global.h"
 
 #define DEFINE_MAX		1000		// max defines can be done
-
+#define ARGS_MAX		30			// max macro args
 
 #define INCLUDE_SB		"#include"
 #define DEFINE_SB		"#define"
+#define FUNC_SB			"#func"
 
 U1 include_path[MAXLINELEN + 1];
 
 struct define
 {
+	U1 type; 					// 0 = normal define, 1 = macro
 	U1 def[MAXLINELEN + 1];
 	U1 out[MAXLINELEN + 1];
+	U1 args[ARGS_MAX][MAXLINELEN + 1];
+	S2 args_num;				// number of arguments
 };
 
 struct define defines[DEFINE_MAX];
@@ -70,6 +74,8 @@ S2 set_define (U1 *line_str)
 	slen = strlen_safe ((const char*) line_str, MAXLINELEN);
 	pos = searchstr (line_str, (U1 *) DEFINE_SB, 0, 0, TRUE);
 
+	defines[defines_ind].type = 0;	// normal define
+
 	i = pos + 8; // next char after "#include"
 
 	// get define name:
@@ -103,13 +109,225 @@ S2 set_define (U1 *line_str)
 	return (0);
 }
 
+S2 replace_str (U1 *line_str, U1 *search_str, U1 *replace_str)
+{
+	S4 i, pos, slen, define_len, define_out_len, j, end, n, real_end;
+	U1 ok;
+	U1 new_line[MAXLINELEN + 1];
+
+	slen = strlen_safe ((const char*) line_str, MAXLINELEN);
+
+	ok = 1;
+	while (ok == 1)
+	{
+		pos = searchstr (line_str, search_str, 0, 0, TRUE);
+		if (pos >= 0)
+		{
+			define_len = strlen_safe ((const char *) search_str, MAXLINELEN);
+
+			// found define at position
+			// copy part before define to new_line
+			j = 0;
+			for (i = 0; i < pos; i++)
+			{
+				new_line[j] = line_str[i];
+				j++;
+			}
+
+			// copy define out to new_line
+			define_out_len = strlen_safe ((const char *) replace_str, MAXLINELEN);
+			for (i = 0; i < define_out_len; i++)
+			{
+				new_line[j] = replace_str[i];
+				j++;
+			}
+
+			// copy part after define to new_line
+			for (i = pos + define_len; i < slen; i++)
+			{
+				new_line[j] = line_str[i];
+				j++;
+			}
+			new_line[j] = '\0';
+			end = strlen_safe ((const char *) new_line, MAXLINELEN);
+			for (n = end; n >= 0; n--)
+			{
+				// check for real line ending
+				if (new_line[n] != '\n')
+				{
+					real_end = n + 1;
+					break;
+				}
+			}
+			new_line[real_end] = '\n';
+			real_end++;
+			new_line[real_end] = '\0';
+			strcpy ((char *) line_str, (const char *) new_line);
+			slen = strlen_safe ((const char*) line_str, MAXLINELEN);
+		}
+		else
+		{
+			ok = 0;
+		}
+	}
+	return (0);
+}
+
 S2 replace_define (U1 *line_str)
 {
-	U1 ok = 1;
-	S4 i, pos, slen, define_len, define_out_len, j, end, n, real_end;
 	S4 ind;
 
 	U1 new_line[MAXLINELEN + 1];
+
+	if (defines_ind < 0)
+	{
+		// nothing to replace, exit
+		return (0);
+	}
+
+	if (defines[defines_ind].type != 0)
+	{
+		return (0);
+	}
+
+	strcpy ((char *) new_line, (const char *) line_str);
+
+	for (ind = 0; ind <= defines_ind; ind++)
+	{
+		if (defines[ind].type == 0)
+		{
+			replace_str (new_line, defines[ind].def, defines[ind].out);
+		}
+	}
+	strcpy ((char *) line_str, (const char *) new_line);
+	return (0);
+}
+
+S2 set_macro (U1 *line_str)
+{
+	U1 ok = 1, arg_loop;
+	S4 i, pos, slen, j, k;
+
+	if (defines_ind < DEFINE_MAX - 1)
+	{
+		defines_ind++;
+	}
+	else
+	{
+		// error: max defines reached
+		printf ("ERROR: max defines reached: %i !\n", DEFINE_MAX);
+		return (1);
+	}
+
+	slen = strlen_safe ((const char*) line_str, MAXLINELEN);
+	pos = searchstr (line_str, (U1 *) FUNC_SB, 0, 0, TRUE);
+
+	defines[defines_ind].type = 1;	// macro
+
+	i = pos + 6; // next char after "#func"
+
+	// get define name:
+	j = 0;
+	while (ok == 1)
+	{
+		if (line_str[i] != ' ' && line_str[i] != '(')
+		{
+			defines[defines_ind].def[j] = line_str[i];
+			j++;
+		}
+		else
+		{
+			defines[defines_ind].def[j] = '\0';
+			ok = 0;
+		}
+		i++;
+	}
+
+	// printf ("DEBUG: macro name: '%s'\n", defines[defines_ind].def);
+
+	// get define args
+	defines[defines_ind].args_num = -1;
+
+	ok = 0; k = 0;
+	while (ok == 0)
+	{
+		if (defines[defines_ind].args_num < ARGS_MAX)
+		{
+			defines[defines_ind].args_num++;
+		}
+		else
+		{
+			printf ("ERROR: set_macro: no argument space free!\n");
+			return (1);
+		}
+
+		arg_loop = 1;
+		while (arg_loop == 1)
+		{
+			// printf ("DEBUG: args_num: %i\n", defines[defines_ind].args_num);
+			// printf ("DEBUG: line_str[i]: '%c'\n", line_str[i]);
+
+			if (line_str[i] != ' ' && line_str[i] != ',' && line_str[i] != '(' && line_str[i] != ')')
+			{
+				defines[defines_ind].args[defines[defines_ind].args_num][k] = line_str[i];
+				k++;
+			}
+			else
+			{
+				if (line_str[i] == ',' || line_str[i] == ')')
+				{
+					// set argument end
+					defines[defines_ind].args[defines[defines_ind].args_num][k] = '\0';
+					// printf ("DEBUG: arg: '%s'\n", defines[defines_ind].args[defines[defines_ind].args_num]);
+					k = 0;
+					arg_loop = 0;
+				}
+				if (line_str[i] == ')')
+				{
+					// found end of macro args
+					ok = 1;
+					k = 0;
+					arg_loop = 0;
+				}
+			}
+			i++;
+		}
+	}
+
+	// search for ":" and get the macro
+	pos = searchstr (line_str, (U1 *) ":", 0, 0, TRUE);
+	if (pos < 0)
+	{
+		printf ("ERROR: set_macro: no macro start: ':' found!\n");
+		return (1);
+	}
+
+	pos++;
+
+	j = 0;
+	for (k = pos; k < slen; k++)
+	{
+		if (line_str[k] != '\n')
+		{
+			defines[defines_ind].out[j] = line_str[k];
+		}
+		j++;
+	}
+	defines[defines_ind].out[j] = '\0';
+
+	return (0);
+}
+
+S2 replace_macro (U1 *line_str)
+{
+	U1 ok = 1;
+	S4 i, pos, slen, k;
+	S4 ind;
+	S4 defines_len;
+
+	U1 new_line[MAXLINELEN + 1];
+	U1 arg[MAXLINELEN + 1];
+	S4 arg_ind = -1;
 
 	slen = strlen_safe ((const char*) line_str, MAXLINELEN);
 
@@ -121,63 +339,100 @@ S2 replace_define (U1 *line_str)
 		return (0);
 	}
 
-	ok = 1;
+	ok = 1; arg_ind = -1;
 	while (ok == 1)
 	{
 		// printf ("line_str: '%s'\n", line_str);
 
 		for (ind = 0; ind <= defines_ind; ind++)
 		{
-			slen = strlen_safe ((const char*) line_str, MAXLINELEN);
-			// printf ("searching define: '%s'\n", defines[ind].def);
-			// printf ("'%s'\n\n", line_str);
-			pos = searchstr (line_str, defines[ind].def, 0, 0, TRUE);
-			if (pos >= 0)
+			if (defines[ind].type == 1)
 			{
-				// printf ("found define at pos: %i, '%s'\n", pos, defines[ind].def);
+				// is macro
+				// copy macro to new_line
+				strcpy ((char *) new_line, (const char *) defines[ind].out);
 
-				define_len = strlen_safe ((const char *) defines[ind].def, MAXLINELEN);
+				// printf ("DEBUG: replace_macro: line_str: '%s'\n", line_str);
+				// printf ("DEBUG: replace_macro: macro: '%s'\n", new_line);
 
-				// found define at position
-				// copy part before define to new_line
-				j = 0;
-				for (i = 0; i < pos; i++)
-				{
-					new_line[j] = line_str[i];
-					j++;
-				}
+				slen = strlen_safe ((const char *) line_str, MAXLINELEN);
+				// printf ("searching define: '%s'\n", defines[ind].def);
+				// printf ("'%s'\n\n", line_str);
 
-				// copy define out to new_line
-				define_out_len = strlen_safe ((const char *) defines[ind].out, MAXLINELEN);
-				for (i = 0; i <  define_out_len; i++)
+				defines_len = strlen_safe ((char *) defines[ind].def, MAXLINELEN);
+				pos = searchstr (line_str, defines[ind].def, 0, 0, TRUE);
+				if (pos >= 0)
 				{
-					new_line[j] = defines[ind].out[i];
-					j++;
-				}
+					// printf ("DEBUG: replace_macro: name: '%s'\n", defines[ind].def);
+					// get arguments
 
-				// copy part after define to new_line
-				for (i = pos + define_len; i < slen; i++)
-				{
-					new_line[j] = line_str[i];
-					j++;
-				}
-				new_line[j] = '\0';
-				end = strlen_safe ((const char *) new_line, MAXLINELEN);
-				for (n = end; n >= 0; n--)
-				{
-					// check for real line ending
-					if (new_line[n] != '\n')
+					ok = 1; k = 0;
+					i = pos + defines_len;
+					while (ok == 1)
 					{
-						real_end = n + 1;
-						break;
+						// printf ("DEBUG: line_str ch: '%c'\n", line_str[i]);
+
+						if (line_str[i] != ' ' && line_str[i] != ',' && line_str[i] != '(' && line_str[i] != ')')
+						{
+							arg[k] = line_str[i];
+
+							// printf ("DEBUG: arg[k]: '%c'\n", arg[k]);
+
+							k++;
+							i++;
+						}
+						else
+						{
+							if (line_str[i] == ',' || line_str[i] == ')')
+							{
+								if (arg_ind <= defines[ind].args_num)
+								{
+									arg_ind++;
+								}
+								else
+								{
+									printf ("ERROR: replace_macro: no argument space free!\n");
+									return (1);
+								}
+
+								// set argument end
+								arg[k] = '\0';
+								k = 0;
+								// i++;
+
+								// printf ("DEBUG: replace_macro arg: '%s'\n", arg);
+
+								// replace arg in output line "new_line"
+
+								slen = strlen_safe ((const char*) new_line, MAXLINELEN);
+								// printf ("searching define: '%s'\n", defines[ind].def);
+								// printf ("'%s'\n\n", line_str);
+
+								replace_str (new_line, defines[ind].args[arg_ind], arg);
+								// printf ("DEBUG: new_line: '%s'\n", new_line);
+							}
+							if (line_str[i] == ')')
+							{
+								// found end of macro args
+								strcpy ((char *) line_str, (const char *) new_line);
+								slen = strlen_safe ((const char *) line_str, MAXLINELEN);
+
+								line_str[slen] = '\n';
+								line_str[slen + 1] = '\0';
+								ok = 0;
+							}
+							if (i == defines_len - 1)
+							{
+								ok = 0;
+							}
+							i++;
+						}
 					}
 				}
-				new_line[real_end] = '\n';
-				real_end++;
-				new_line[real_end] = '\0';
-				strcpy ((char *) line_str, (const char *) new_line);
-
-				// printf ("replace_define: new line: '%s'\n", line_str);
+				else
+				{
+					ok = 0;
+				}
 			}
 			else
 			{
@@ -274,12 +529,15 @@ S2 include_file (U1 *line_str)
 		read = fgets_uni ((char *) rbuf, MAXLINELEN, fincludeptr);
 		if (read != NULL)
 		{
-			strcpy (buf, rbuf);
+			strcpy ((char *) buf, (const char *) rbuf);
 			convtabs (buf);
 			slen = strlen_safe ((const char *) buf, MAXLINELEN);
 
 			// check if define is set
 			replace_define (buf);
+
+			// check if macro is set
+			replace_macro (buf);
 
 			pos = searchstr (buf, (U1 *) DEFINE_SB, 0, 0, TRUE);
             if (pos >= 0)
@@ -287,6 +545,20 @@ S2 include_file (U1 *line_str)
 				// printf ("DEBUG: got #define!\n");
 
 				if (set_define (buf) != 0)
+				{
+					fclose (finptr);
+					fclose (foutptr);
+					exit (1);
+				}
+				continue;	// don't safe define line!
+			}
+
+			pos = searchstr (buf, (U1 *) FUNC_SB, 0, 0, TRUE);
+            if (pos >= 0)
+			{
+				// printf ("DEBUG: got #define!\n");
+
+				if (set_macro (buf) != 0)
 				{
 					fclose (finptr);
 					fclose (foutptr);
@@ -382,7 +654,7 @@ int main (int ac, char *av[])
 		read = fgets_uni ((char *) rbuf, MAXLINELEN, finptr);
         if (read != NULL)
         {
-			strcpy (buf, rbuf);
+			strcpy ((char *) buf, (const char *) rbuf);
 			convtabs (buf);
 			slen = strlen_safe ((const char *) buf, MAXLINELEN);
 
@@ -391,12 +663,29 @@ int main (int ac, char *av[])
 			// check if define is set
 			replace_define (buf);
 
+			// check if macro is set
+			replace_macro (buf);
+
 			pos = searchstr (buf, (U1 *) DEFINE_SB, 0, 0, TRUE);
             if (pos >= 0)
 			{
 				// printf ("DEBUG: got #define!\n");
 
 				if (set_define (buf) != 0)
+				{
+					fclose (finptr);
+					fclose (foutptr);
+					exit (1);
+				}
+				continue;	// don't safe define line!
+			}
+
+			pos = searchstr (buf, (U1 *) FUNC_SB, 0, 0, TRUE);
+            if (pos >= 0)
+			{
+				// printf ("DEBUG: got #define!\n");
+
+				if (set_macro (buf) != 0)
 				{
 					fclose (finptr);
 					fclose (foutptr);
