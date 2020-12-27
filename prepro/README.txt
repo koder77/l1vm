@@ -22,12 +22,3 @@ delay(foo)
 This will get this output:
 
 (8 foo 0 0 intr0)
-
-NEW: l1pre, now macros can be defined!
-
-#func delay(x) :(8 x 0 0 intr0)
-delay(foo)
-
-This will create the following output:
-
-(8 foo 0 0 intr0)
