@@ -13,3 +13,21 @@ The headers are in the include-lib/ directory and are copied to the ~/l1vm/inclu
 NEW: now "#define" can be set to define strings:
 
 #define PRINT_NEWLINE	(7 0 0 0 intr0)
+
+And now even macros can be set:
+
+#func delay(x) :(8 x 0 0 intr0)
+delay(foo)
+
+This will get this output:
+
+(8 foo 0 0 intr0)
+
+NEW: l1pre, now macros can be defined!
+
+#func delay(x) :(8 x 0 0 intr0)
+delay(foo)
+
+This will create the following output:
+
+(8 foo 0 0 intr0)
