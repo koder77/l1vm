@@ -2,7 +2,7 @@
 >> interrupt macros
 >> intr0
 >>
-#func load_mod (name,num) :(0 name num 0 intr0)
+#func load_mod (name, num) :(0 name num 0 intr0)
 #func free_mod (num) :(1 num 0 0 intr0)
 #func set_mod (num, funcnum, funcname) :(2 num funcnum funcname intr0)
 #func call_mod (num, funcnum) :(3 num funcnum 0 intr0)
