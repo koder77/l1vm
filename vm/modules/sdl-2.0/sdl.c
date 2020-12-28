@@ -57,7 +57,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 bit ALIGN = 0;
 	U1 err = 0;
 
-	sp = stpopi (&bit, sp, sp_top);
+	sp = stpopi ((U1 *) &bit, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error

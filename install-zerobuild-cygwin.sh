@@ -132,7 +132,8 @@ cp lib/ ~/l1vm -r
 echo "installing fonts to ~/l1vm"
 cp fonts/ ~/l1vm -r
 
-cp include-lib/ ~/l1vm/include -r
+mkdir ~/l1vm/include
+cp include-lib/* ~/l1vm/include/
 
 echo "installation finished!"
 exit 0

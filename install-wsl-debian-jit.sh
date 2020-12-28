@@ -178,6 +178,14 @@ else
 	exit 1
 fi
 
+cd ../prepro
+if zerobuild force; then
+	echo "l1pre build ok!"
+else
+	echo "l1pre build error!"
+	exit 1
+fi
+
 cd ../vm
 if zerobuild force; then
 	echo "l1vm JIT build ok!"
@@ -237,6 +245,9 @@ cp lib/ ~/l1vm -r
 
 echo "installing fonts to ~/l1vm"
 cp fonts/ ~/l1vm -r
+
+mkdir ~/l1vm/include
+cp include-lib/* ~/l1vm/include/
 
 echo "installation finished!"
 exit 0
