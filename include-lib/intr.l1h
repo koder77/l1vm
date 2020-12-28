@@ -19,7 +19,7 @@
 #func get_shell_arg (x) :(13 x 0 0 intr0)
 #define show_st_p (14 0 0 0 intr0)
 #func cpu_core (x) :(15 x 0 0 intr0)
-#func endianess (x) :(16 x  0 0 intr0)
+#func endianess (x) :(16 x 0 0 intr0)
 #func get_time (thour, tmin, tsec) :(17 thour tmin tsec intr0)
 #func get_date (dyear, dmonth, dday) :(18 dyear dmonth dday intr0)
 #func weekday (x) :(19 x 0 0 intr0)
