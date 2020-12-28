@@ -30,6 +30,8 @@
 #define DEFINE_SB		"#define"
 #define FUNC_SB			"#func"
 
+#define COMMENT_SB		">>"
+
 U1 include_path[MAXLINELEN + 1];
 
 struct define
@@ -533,6 +535,13 @@ S2 include_file (U1 *line_str)
 			convtabs (buf);
 			slen = strlen_safe ((const char *) buf, MAXLINELEN);
 
+			pos = searchstr (buf, (U1 *) COMMENT_SB, 0, 0, TRUE);
+			if (pos >= 0)
+			{
+				// line is comment, skip it!
+				continue;
+			}
+
 			// check if define is set
 			replace_define (buf);
 
@@ -657,6 +666,13 @@ int main (int ac, char *av[])
 			strcpy ((char *) buf, (const char *) rbuf);
 			convtabs (buf);
 			slen = strlen_safe ((const char *) buf, MAXLINELEN);
+
+			pos = searchstr (buf, (U1 *) COMMENT_SB, 0, 0, TRUE);
+			if (pos >= 0)
+			{
+				// line is comment, skip it!
+				continue;
+			}
 
 			// printf ("'%s'\n", buf);
 

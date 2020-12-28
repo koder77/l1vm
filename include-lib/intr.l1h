@@ -1,12 +1,12 @@
-// intr.l1h
-// interrupt macros
-// intr0
-//
+>> intr.l1h
+>> interrupt macros
+>> intr0
+>>
 #func load_mod (name,num) :(0 name num 0 intr0)
 #func free_mod (num) :(1 num 0 0 intr0)
 #func set_mod (num, funcnum, funcname) :(2 num funcnum funcname intr0)
 #func call_mod (num, funcnum) :(3 num funcnum 0 intr0)
-// print
+>> print
 #func print_i (x) :(4 x 0 0 intr0)
 #func print_d (x) :(5 x 0 0 intr0)
 #func print_s (x) :(6 x 0 0 intr0)
@@ -23,24 +23,24 @@
 #func get_time (thour, tmin, tsec) :(17 thour tmin tsec intr0)
 #func get_date (dyear, dmonth, dday) :(18 dyear dmonth dday intr0)
 #func weekday (x) :(19 x 0 0 intr0)
-// print
+>> print
 #func printf_i (form, num) :(20 form num 0 intr0)
 #func printf_d (form, num) :(21 form num 0 intr0)
 #func print_16 (num) :(22 num 0 0 intr0)
 #func print_32 (num) :(23 num 0 0 intr0)
-// timer
+>> timer
 #define start_timer (24 0 0 0 intr0)
 #func stop_timer (time) :(25 time 0 0 intr0)
 #define stack_check (26 0 0 0 inr0)
 #func overflow_d (num) :(251 num 0 0 intr0)
 #func get_overflow (flag) :(252 flag 0 0 intr0)
-// JIT-compiler
+>> JIT-compiler
 #func run_jit_comp (slab, elab) :(253 slab elab 0 intr0)
 #func run_jit_code (code) :(254 code 0 0 intr0)
 #func exit (retcode) :(255 retcode 0 0 intr0)
-//
-//	intr1
-//
+>>
+>>	intr1
+>>
 #func new_cpu (lab) :(0 lab 0 0 intr1)
 #define join (1 0 0 0 intr1)
 #define thlock (2 0 0 0 intr1)
