@@ -122,9 +122,13 @@ S2 replace_str (U1 *line_str, U1 *search_str, U1 *replace_str)
 	ok = 1;
 	while (ok == 1)
 	{
+		// printf ("DEBUG: replace_str: line_str: '%s'\n", line_str);
+		// printf ("DEBUG: replace_str: search_str: '%s'\n", search_str);
+
 		pos = searchstr (line_str, search_str, 0, 0, TRUE);
 		if (pos >= 0)
 		{
+			// printf ("DEBUG: replace_str: found search string...\n");
 			define_len = strlen_safe ((const char *) search_str, MAXLINELEN);
 
 			// found define at position
@@ -144,11 +148,14 @@ S2 replace_str (U1 *line_str, U1 *search_str, U1 *replace_str)
 				j++;
 			}
 
-			// copy part after define to new_line
-			for (i = pos + define_len; i < slen; i++)
+			if (pos + define_len < slen)
 			{
-				new_line[j] = line_str[i];
-				j++;
+				// copy part after define to new_line
+				for (i = pos + define_len; i < slen; i++)
+				{
+					new_line[j] = line_str[i];
+					j++;
+				}
 			}
 			new_line[j] = '\0';
 			end = strlen_safe ((const char *) new_line, MAXLINELEN);
@@ -181,27 +188,21 @@ S2 replace_define (U1 *line_str)
 
 	U1 new_line[MAXLINELEN + 1];
 
-	if (defines_ind < 0)
-	{
-		// nothing to replace, exit
-		return (0);
-	}
-
-	if (defines[defines_ind].type != 0)
-	{
-		return (0);
-	}
+	// printf ("DEBUG: replace_define: start...\n");
 
 	strcpy ((char *) new_line, (const char *) line_str);
+	// printf ("DEBUG: replace_define: old linestr: '%s'\n", new_line);
 
 	for (ind = 0; ind <= defines_ind; ind++)
 	{
 		if (defines[ind].type == 0)
 		{
+			// printf ("DEBUG: replace_define: replace: '%s'\n", defines[ind].def);
 			replace_str (new_line, defines[ind].def, defines[ind].out);
 		}
 	}
 	strcpy ((char *) line_str, (const char *) new_line);
+	// printf ("DEBUG: replace_define: new linestr: '%s'\n\n", line_str);
 	return (0);
 }
 
@@ -412,17 +413,20 @@ S2 replace_macro (U1 *line_str)
 
 								replace_str (new_line, defines[ind].args[arg_ind], arg);
 								// printf ("DEBUG: new_line: '%s'\n", new_line);
-							}
-							if (line_str[i] == ')')
-							{
-								// found end of macro args
-								strcpy ((char *) line_str, (const char *) new_line);
-								slen = strlen_safe ((const char *) line_str, MAXLINELEN);
 
-								line_str[slen] = '\n';
-								line_str[slen + 1] = '\0';
-								ok = 0;
+								// printf ("DEBUG: line_str[i]: '%c'\n", line_str[i]);
+								if (line_str[i] == ')')
+								{
+									// found end of macro args
+									strcpy ((char *) line_str, (const char *) new_line);
+									slen = strlen_safe ((const char *) line_str, MAXLINELEN);
+
+									line_str[slen] = '\n';
+									line_str[slen + 1] = '\0';
+									ok = 0;
+								}
 							}
+
 							if (i == defines_len - 1)
 							{
 								ok = 0;
@@ -542,11 +546,16 @@ S2 include_file (U1 *line_str)
 				continue;
 			}
 
-			// check if define is set
-			replace_define (buf);
+			pos = searchstr (buf, (U1 *) "#", 0, 0, TRUE);
+			if (pos < 0)
+			{
+				// no definition start found, check replace
+				// check if define is set
+				replace_define (buf);
 
-			// check if macro is set
-			replace_macro (buf);
+				// check if macro is set
+				replace_macro (buf);
+			}
 
 			pos = searchstr (buf, (U1 *) DEFINE_SB, 0, 0, TRUE);
             if (pos >= 0)
@@ -676,11 +685,16 @@ int main (int ac, char *av[])
 
 			// printf ("'%s'\n", buf);
 
-			// check if define is set
-			replace_define (buf);
+			pos = searchstr (buf, (U1 *) "#", 0, 0, TRUE);
+			if (pos < 0)
+			{
+				// no definition start found, check replace
+				// check if define is set
+				replace_define (buf);
 
-			// check if macro is set
-			replace_macro (buf);
+				// check if macro is set
+				replace_macro (buf);
+			}
 
 			pos = searchstr (buf, (U1 *) DEFINE_SB, 0, 0, TRUE);
             if (pos >= 0)

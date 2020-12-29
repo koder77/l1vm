@@ -1,6 +1,8 @@
 #!/bin/bash
 
 l1pre $1 out.l1com ~/l1vm/include/
+RETVAL=$?
+[ $RETVAL -ne 0 ] && echo "preprocessor build failed: " && echo $i && exit 1
 l1com out
 RETVAL=$?
 [ $RETVAL -ne 0 ] && echo "build failed: " && echo $i && exit 1

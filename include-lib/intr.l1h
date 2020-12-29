@@ -10,7 +10,7 @@
 #func print_i (x) :(4 x 0 0 intr0)
 #func print_d (x) :(5 x 0 0 intr0)
 #func print_s (x) :(6 x 0 0 intr0)
-#define print_n	(7 0 0 0 intr0)
+#define print_newline (7 0 0 0 intr0)
 #func delay (dtime) :(8 dtime 0 0 intr0)
 #func input_i (x) :(9 x 0 0 intr0)
 #func input_d (x) :(10 x 0 0 intr0)
