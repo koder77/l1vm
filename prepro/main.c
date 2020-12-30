@@ -388,15 +388,18 @@ S2 replace_macro (U1 *line_str)
 						{
 							if (line_str[i] == ',' || line_str[i] == ')')
 							{
-								if (arg_ind <= defines[ind].args_num)
+								if (arg_ind < defines[ind].args_num)
 								{
 									arg_ind++;
 								}
 								else
 								{
-									printf ("ERROR: replace_macro: no argument space free!\n");
+									printf ("ERROR: replace_macro: too much arguments!\n");
+									printf ("> '%s'\n", line_str);
 									return (1);
 								}
+
+								// printf ("DEBUG: replace_macro: arg_ind: %i\n", arg_ind);
 
 								// set argument end
 								arg[k] = '\0';
@@ -417,6 +420,13 @@ S2 replace_macro (U1 *line_str)
 								// printf ("DEBUG: line_str[i]: '%c'\n", line_str[i]);
 								if (line_str[i] == ')')
 								{
+									if (arg_ind != defines[ind].args_num)
+									{
+										printf ("ERROR: arguments mismatch!\n");
+										printf ("> '%s'\n", line_str);
+										return (1);
+									}
+
 									// found end of macro args
 									strcpy ((char *) line_str, (const char *) new_line);
 									slen = strlen_safe ((const char *) line_str, MAXLINELEN);
