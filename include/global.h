@@ -129,7 +129,7 @@
 // internal settings end ======================================================
 
 // info strings:
-#define COPYRIGHT_STR " (C) 2017-2020 Stefan Pietzonke"
+#define COPYRIGHT_STR " (C) 2017-2021 Stefan Pietzonke"
 
 #define  VM_VERSION_STR		"1.0.9"		// version number
 
