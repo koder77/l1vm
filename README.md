@@ -26,7 +26,7 @@ In pure console text I/O programs not linked with SDL library, the memory footpr
 About 2 MB RAM only as shown in the taskmanager by running a minimal test program!
 
 <h2>New: l1pre - the preprocessor</h2>
-The new "l1pre" preprocessir can be used to define macros and include files.
+The new "l1pre" preprocessor can be used to define macros and include files.
 See the new "include-lib" directory with all header files. The "prog/hello-6.l1com" example shows how to use this!
 
 <h2>New SDL 2.0!</h2>
