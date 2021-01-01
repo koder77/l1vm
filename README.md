@@ -1,4 +1,4 @@
-L1VM README  2020-09-13
+L1VM README  2021-01-01
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -25,6 +25,10 @@ The design goals are:
 In pure console text I/O programs not linked with SDL library, the memory footprint is very low.
 About 2 MB RAM only as shown in the taskmanager by running a minimal test program!
 
+<h2>New: l1pre - the preprocessor</h2>
+The new "l1pre" preprocessir can be used to define macros and include files.
+See the new "include-lib" directory with all header files. The "prog/hello-6.l1com" example shows how to use this!
+
 <h2>New SDL 2.0!</h2>
 Finally I ported the SDL gfx/GUI library to SDL 2.0!
 The source code is in: vm/modules/sdl-2.0/
@@ -43,7 +47,7 @@ include/global.h:
 <pre>
 // SANDBOX FILE ACCESS
 #define SANDBOX                 1			// secure file acces: 1 = use secure access, 0 = OFF!!
-#define SANDBOX_ROOT			"/home/stefan/l1vm/"		// in /home directory!
+#define SANDBOX_ROOT			"/l1vm/"	// in /home directory!
 </pre>
 
 And you can choose if the array variable bounds check and math checks should be run:
@@ -208,6 +212,7 @@ There are about 87 math functions in the MPFR library.
 
 <h2>NOTE</h2>
 The current version of L1VM only runs on a Linux or other POSIX compatible OS!
+It works on Cygwin and on Windows 10 WSL too!
 If you want help to port it to a new OS, then contact me please...
 
 <h2>TODO</h2>
