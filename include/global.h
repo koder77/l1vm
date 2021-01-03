@@ -87,7 +87,7 @@
 
 // SANDBOX FILE ACCESS
 #define SANDBOX                 1			// secure file acces: 1 = use secure access, 0 = OFF!!
-#define SANDBOX_ROOT			"/l1vm/"		// in /home directory!, get by $HOME env variable
+#define SANDBOX_ROOT			"/l1vm/"	// in /home directory!, get by $HOME env variable
 
 // VM: max sizes of code
 #define MAX_CODE_SIZE 			4294967296L		// 4GB
@@ -100,6 +100,7 @@
 
 #define DO_ALIGNMENT			1 				// set 64 bit var alignment
 
+#define LOW_RAM					0				// set to 1 on a machine with LOW RAM, like I do on the Psion 5MX Linux build! :)
 // user settings end ==========================================================
 
 // internal settings ==========================================================
@@ -107,31 +108,42 @@
 // The values you can try on an machine with low RAM, are shown in the comments below!
 // This should it make possible to run the L1VM in just a few MB of RAM!
 
-// If you want save RAM you can set these values to 32 and 256!
-// I just increased it to be able to load more complex modules!
-#define MODULES					1024	// 32 on low RAM
-#define MODULES_MAXFUNC			4096	// 256 on low RAM
-
 // max input string len
 #define MAXINPUT 				512
 
 // stacksize in bytes
-#define STACKSIZE				64000
-#define STACK_ELEMENTS			8000		// max elements for stack check: see: 'STACK_CHECK'
 
-// Jump call stack, for jsr, jsra: how many jsr and jsra MAXSUBJUMPS can be done without a rts (return) call.
-// If you want to save RAM you can set this value to 256!
-#define MAXSUBJUMPS				40960    // 256 on low RAM
-
-// max number of code labels, and their name length:
-#define MAXLABELS				40960	// 1024 on low RAM
+// code labels name len
 #define LABELLEN				64
+
+#if LOW_RAM
+	#define MODULES				32
+	#define MODULES_MAXFUNC		256
+
+	// Jump call stack, for jsr, jsra: how many jsr and jsra MAXSUBJUMPS can be done without a rts (return) call.
+	// If you want to save RAM you can set this value to 256!
+	#define MAXSUBJUMPS			256   // 256 on low RAM
+
+	// max number of code labels, and their name length:
+	#define MAXLABELS			1024	// 1024 on low RAM
+#else
+	#define MODULES				1024
+	#define MODULES_MAXFUNC		4096
+
+	// Jump call stack, for jsr, jsra: how many jsr and jsra MAXSUBJUMPS can be done without a rts (return) call.
+	// If you want to save RAM you can set this value to 256!
+	#define MAXSUBJUMPS			40960
+
+	// max number of code labels:
+	#define MAXLABELS			40960
+#endif
+
 // internal settings end ======================================================
 
 // info strings:
 #define COPYRIGHT_STR " (C) 2017-2021 Stefan Pietzonke"
 
-#define  VM_VERSION_STR		"1.0.9"		// version number
+#define  VM_VERSION_STR		"1.0.10"		// version number
 
 // no user defined definitions below this section! ============================
 
