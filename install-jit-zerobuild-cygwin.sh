@@ -63,26 +63,6 @@ else
 	cd ..
 fi
 
-# check if libl1vm-jit.so is installed
-FILE=/usr/local/bin/libl1vm-jit.so
-if test -f "$FILE"; then
-    echo "$FILE exists!"
-else
-	echo "libl1vm-jit not installed into $FILE!"
-	echo "building it now..."
-	cd libjit
-	chmod +x make-win.sh
-	if ./make-win.sh; then
-		echo "libl1vm-jit build ok!"
-	else
-		echo "libl1vm-jit build error!"
-		exit 1
-	fi
-	cp libl1vm-jit.so /usr/local/bin/libl1vm-jit.so
-        cp libl1vm-jit.so /usr/local/bin/libl1vm-jit.dll
-	cd ..
-fi
-
 cd assemb
 chmod +x make-win.sh
 if ./make-win.sh; then

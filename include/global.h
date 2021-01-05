@@ -112,6 +112,7 @@
 #define MAXINPUT 				512
 
 // stacksize in bytes
+#define STACKSIZE				64000
 
 // code labels name len
 #define LABELLEN				64

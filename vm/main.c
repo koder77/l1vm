@@ -46,7 +46,7 @@ struct tm *tm;
 S8 JIT_code_ind ALIGN = -1;
 struct JIT_code *JIT_code;
 
-int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *regd, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start, S8 end, struct JIT_code *JIT_code, S8 JIT_code_ind, S8 code_size);
+int jit_compiler (S8 init_code, U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *regd, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start, S8 end, struct JIT_code *JIT_code, S8 JIT_code_ind, S8 code_size);
 int run_jit (S8 code, struct JIT_code *JIT_code, S8 JIT_code_ind);
 int free_jit_code (struct JIT_code *JIT_code, S8 JIT_code_ind);
 void get_jit_compiler_type (void);
@@ -2305,7 +2305,7 @@ S2 run (void *arg)
             arg2 = code[ep + 2];
             arg3 = code[ep + 3];
 
-			if (jit_compiler ((U1 *) code, (U1 *) data, (S8 *) jumpoffs, (S8 *) &regi, (F8 *) &regd, (U1 *) sp, sp_top, sp_bottom, regi[arg2], regi[arg3], JIT_code, JIT_code_ind, code_size) != 0)
+			if (jit_compiler (20210105, (U1 *) code, (U1 *) data, (S8 *) jumpoffs, (S8 *) &regi, (F8 *) &regd, (U1 *) sp, sp_top, sp_bottom, regi[arg2], regi[arg3], JIT_code, JIT_code_ind, code_size) != 0)
             {
                 printf ("FATAL ERROR: JIT compiler: can't compile!\n");
 				PRINT_EPOS();
