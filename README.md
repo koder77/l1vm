@@ -25,6 +25,9 @@ The design goals are:
 	- be modular
 </pre>
 
+In pure console text I/O programs not linked with SDL library, the memory footprint is very low.
+About 2 MB RAM only as shown in the taskmanager by running a minimal test program!
+
 <h2>Credits</h2>
 Thanks goes to: <br>
 The team behind SDL and A. Schiffler (ferzkopp) for their great work! <br>
@@ -36,9 +39,6 @@ The authors of mt19937-64.c random number generator :Takuji Nishimura and Makoto
 
 Without them this L1VM project would not be possible! Thank you! <br>
 ----------------------- <br>
-
-In pure console text I/O programs not linked with SDL library, the memory footprint is very low.
-About 2 MB RAM only as shown in the taskmanager by running a minimal test program!
 
 <h2>New: l1pre - the preprocessor</h2>
 The new "l1pre" preprocessor can be used to define macros and include files.
