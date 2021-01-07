@@ -32,6 +32,7 @@ About 2 MB RAM only as shown in the taskmanager by running a minimal test progra
 Thanks goes to: <br>
 The team behind SDL and A. Schiffler (ferzkopp) for their great work! <br>
 The author of genann networks library: Lewis Van Winkle (codeplea). <br>
+The authors of the libfann library. <br>
 The author of MPFR C++: Pavel Holoborodko. <br>
 The author of the RS232 library I use: Teunis van Beelen. <br>
 The authors of libserialport: the sigrok team. <br>
