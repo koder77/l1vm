@@ -11,6 +11,7 @@ by Stefan Pietzonke (jay-t@gmx.net)
 fileTypes: [
   'l1com'
   'l1asm'
+  'l1h'
 ]
 
 foldingStartMarker: '\\(\\s*$'

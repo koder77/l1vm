@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language SYSTEM "language.dtd">
-<language version="6" kateversion="5.0" name="l1com" section="Sources" extensions="*.l1com;*.l1asm" mimetype="" author="Stefan Pietzonke (jay-t@gmx.net)" license="MIT">
+<language version="6" kateversion="5.0" name="l1com" section="Sources" extensions="*.l1com;*.l1asm;*.l1h" mimetype="" author="Stefan Pietzonke (jay-t@gmx.net)" license="MIT">
   <highlighting>
     <list name="symbols">
 

@@ -3,7 +3,10 @@ L1VM - (1.0.10)
 	Now "LOW_RAM" define can be set for machines with little RAM.
 	Like I do on my Psion 5MX Linux L1VM port!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Jan 02 2021 19:34 +0100
+	Updated the syntax highlighters to support the new ".l1h" header files too!
+	Updated the prog/math-circle example to use the latest "intr.l1h" interrupt call include!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu Jan 07 2021 20:19 +0100
 
 L1VM - (1.0.9)
 	NEW removed the experimental stack type check code. It didn't work right
