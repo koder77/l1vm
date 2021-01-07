@@ -36,7 +36,8 @@ The authors of the libfann library. <br>
 The author of MPFR C++: Pavel Holoborodko. <br>
 The author of the RS232 library I use: Teunis van Beelen. <br>
 The authors of libserialport: the sigrok team. <br>
-The authors of mt19937-64.c random number generator :Takuji Nishimura and Makoto Matsumoto. <br><br>
+The authors of mt19937-64.c random number generator :Takuji Nishimura and Makoto Matsumoto. <br>
+The author of Wiring Pi, the Raspberry Pi GPIO library: drogon. <br><br>
 
 Without them this L1VM project would not be possible! Thank you! <br>
 ----------------------- <br>
