@@ -25,6 +25,18 @@ The design goals are:
 	- be modular
 </pre>
 
+<h2>Credits</h2>
+Thanks goes to: <br>
+The team behind SDL and A. Schiffler (ferzkopp) for their great work! <br>
+The author of genann networks library: Lewis Van Winkle (codeplea). <br>
+The author of MPFR C++: Pavel Holoborodko. <br>
+The author of the RS232 library I use: Teunis van Beelen. <br>
+The authors of libserialport: the sigrok team. <br>
+The authors of mt19937-64.c random number generator :Takuji Nishimura and Makoto Matsumoto. <br><br>
+
+Without them this L1VM project would not be possible! Thank you! <br>
+----------------------- <br>
+
 In pure console text I/O programs not linked with SDL library, the memory footprint is very low.
 About 2 MB RAM only as shown in the taskmanager by running a minimal test program!
 
