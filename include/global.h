@@ -410,3 +410,8 @@ struct JIT_code
 #define LOAD    59
 
 #define NOTI	60
+
+// compiler: (((x y +) (z ~i) *) a =)
+// operator for asymetric math
+#define ASYM_MATHI	61
+#define ASYM_MATHD	62

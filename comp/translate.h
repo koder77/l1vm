@@ -24,7 +24,7 @@
 #define EMPTY 0
 #define LABEL 5
 
-#define MAXTRANSLATE 39
+#define MAXTRANSLATE 41
 
 struct translate translate[] =
 {
@@ -66,5 +66,8 @@ struct translate translate[] =
 	{ "stpushd", 1, { DOUBLE, EMPTY, EMPTY, EMPTY }, STPUSHD},
 	{ "stpopd", 1, { DOUBLE, EMPTY, EMPTY, EMPTY }, STPOPD},
 	{ "movi", 2, { INTEGER, INTEGER, EMPTY, EMPTY }, MOVI},
-	{ "movd", 2, { DOUBLE, DOUBLE, EMPTY, EMPTY }, MOVD}
+	{ "movd", 2, { DOUBLE, DOUBLE, EMPTY, EMPTY }, MOVD},
+	// compiler @ operator for asymetric math statement
+	{ "~i", 1, { INTEGER, EMPTY, EMPTY, EMPTY }, ASYM_MATHI},
+	{ "~d", 1, { DOUBLE, EMPTY, EMPTY, EMPTY }, ASYM_MATHD}
 };

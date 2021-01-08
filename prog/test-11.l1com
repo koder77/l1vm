@@ -1,0 +1,22 @@
+// bra(et - math expression demo ;)
+//
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 x 10)
+	(set int64 1 y 20)
+	(set int64 1 z 30)
+	(set int64 1 ret 0)
+	(set int64 1 a 0)
+	// asy metrical math expression: the "~i" is the asym math operator
+	// for double expression use "~d"
+	(((x y +) (z ~i) *) a =)
+	// print ret
+	(4 ret 0 0 intr0)
+	// print newline
+	(7 0 0 0 intr0)
+	// print a
+	(4 a 0 0 intr0)
+	// print newline
+	(7 0 0 0 intr0)
+	(255 zero 0 0 intr0)
+(funcend)
