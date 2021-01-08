@@ -7,7 +7,7 @@
 	(set int64 1 z 30)
 	(set int64 1 ret 0)
 	(set int64 1 a 0)
-	// asy metrical math expression: the "~i" is the asym math operator
+	// asymetrical math expression: the "~i" is the asym math operator
 	// for double expression use "~d"
 	(((x y +) (z ~i) *) a =)
 	// print ret
