@@ -23,14 +23,20 @@
 
 #include "../include/global.h"
 
-#define DEFINE_MAX		1000		// max defines can be done
-#define ARGS_MAX		30			// max macro args
+#define DEFINE_MAX			1000		// max defines can be done
+#define ARGS_MAX			30			// max macro args
 
-#define INCLUDE_SB		"#include"
-#define DEFINE_SB		"#define"
-#define FUNC_SB			"#func"
+#define DEFINE_EMPTY		10
 
-#define COMMENT_SB		">>"
+#define INCLUDE_SB			"#include"
+#define DEFINE_SB			"#define"
+#define FUNC_SB				"#func"
+
+// for @name tackon on functions
+#define FUNC_VAR_NAMES_SB	"#var"
+#define FUNC_END_SB			"funcend"
+
+#define COMMENT_SB			">>"
 
 U1 include_path[MAXLINELEN + 1];
 
@@ -45,6 +51,10 @@ struct define
 
 struct define defines[DEFINE_MAX];
 S8 defines_ind ALIGN = -1;
+
+// for @func name tackon
+U1 var_tackon_set = 0;
+S8 replace_varname_index = 0;
 
 // protos
 char *fgets_uni (char *str, int len, FILE *fptr);
@@ -110,6 +120,61 @@ S2 set_define (U1 *line_str)
 	// printf ("set_defines: def: '%s', out: '%s'\n", defines[defines_ind].def, defines[defines_ind].out);
 	return (0);
 }
+
+S2 set_varname (U1 *line_str)
+{
+	U1 ok = 1;
+	S4 i, pos, slen, j, k;
+
+	if (defines_ind < DEFINE_MAX - 1)
+	{
+		defines_ind++;
+	}
+	else
+	{
+		// error: max defines reached
+		printf ("ERROR: max defines reached: %i !\n", DEFINE_MAX);
+		return (1);
+	}
+
+	slen = strlen_safe ((const char*) line_str, MAXLINELEN);
+	pos = searchstr (line_str, (U1 *) FUNC_VAR_NAMES_SB, 0, 0, TRUE);
+
+	defines[defines_ind].type = 0;	// normal define
+
+	i = pos + 5; // next char after "#var"
+
+	// get define name:
+	j = 0;
+	while (ok == 1)
+	{
+		if (line_str[i] != ' ')
+		{
+			defines[defines_ind].def[j] = line_str[i];
+			j++;
+		}
+		else
+		{
+			ok = 0;
+		}
+		i++;
+	}
+
+	j = 0;
+	for (k = i; k < slen; k++)
+	{
+		if (line_str[k] != '\n')
+		{
+			defines[defines_ind].out[j] = line_str[k];
+		}
+		j++;
+	}
+	defines[defines_ind].out[j] = '\0';
+
+	// printf ("set_varname: def: '%s', out: '%s'\n", defines[defines_ind].def, defines[defines_ind].out);
+	return (0);
+}
+
 
 S2 replace_str (U1 *line_str, U1 *search_str, U1 *replace_str)
 {
@@ -202,6 +267,34 @@ S2 replace_define (U1 *line_str)
 		}
 	}
 	strcpy ((char *) line_str, (const char *) new_line);
+	// printf ("DEBUG: replace_define: new linestr: '%s'\n\n", line_str);
+	return (0);
+}
+
+S2 replace_varname (U1 *line_str)
+{
+	S4 ind;
+
+	U1 new_line[MAXLINELEN + 1];
+
+	// printf ("DEBUG: replace_define: start...\n");
+
+	if (var_tackon_set == 1)
+	{
+		strcpy ((char *) new_line, (const char *) line_str);
+		// printf ("DEBUG: replace_define: old linestr: '%s'\n", new_line);
+
+		for (ind = 0; ind <= defines_ind; ind++)
+		{
+			if (defines[ind].type == 0)
+			{
+				// printf ("DEBUG: replace_define: replace: '%s'\n", defines[ind].def);
+				replace_str (new_line, defines[ind].def, defines[ind].out);
+				replace_varname_index = ind;
+			}
+		}
+		strcpy ((char *) line_str, (const char *) new_line);
+	}
 	// printf ("DEBUG: replace_define: new linestr: '%s'\n\n", line_str);
 	return (0);
 }
@@ -563,6 +656,9 @@ S2 include_file (U1 *line_str)
 				// check if define is set
 				replace_define (buf);
 
+				// check function name to variable name tackon
+				replace_varname (buf);
+
 				// check if macro is set
 				replace_macro (buf);
 			}
@@ -593,6 +689,35 @@ S2 include_file (U1 *line_str)
 					exit (1);
 				}
 				continue;	// don't safe define line!
+			}
+
+			pos = searchstr (buf, (U1 *) FUNC_VAR_NAMES_SB, 0, 0, TRUE);
+            if (pos >= 0)
+			{
+				// printf ("DEBUG: got #var!\n");
+
+				if (set_varname (buf) != 0)
+				{
+					fclose (finptr);
+					fclose (foutptr);
+					exit (1);
+				}
+				// replace all @ with the variable end as defined in func var macro
+				var_tackon_set = 1;
+				continue;	// don't safe define line!
+			}
+
+			// check for function end
+			pos = searchstr (buf, (U1 *) FUNC_END_SB, 0, 0, TRUE);
+            if (pos >= 0)
+			{
+				if (var_tackon_set == 1)
+				{
+					// switch function name to variable end tackon off!!!
+					var_tackon_set = 0;
+					// unset macro
+					defines[replace_varname_index].type = DEFINE_EMPTY;
+				}
 			}
 
 			pos = searchstr (buf, (U1 *) INCLUDE_SB, 0, 0, TRUE);
@@ -702,6 +827,9 @@ int main (int ac, char *av[])
 				// check if define is set
 				replace_define (buf);
 
+				// check function name to variable name tackon
+				replace_varname (buf);
+
 				// check if macro is set
 				replace_macro (buf);
 			}
@@ -732,6 +860,35 @@ int main (int ac, char *av[])
 					exit (1);
 				}
 				continue;	// don't safe define line!
+			}
+
+			pos = searchstr (buf, (U1 *) FUNC_VAR_NAMES_SB, 0, 0, TRUE);
+            if (pos >= 0)
+			{
+				// printf ("DEBUG: got #var!\n");
+
+				if (set_varname (buf) != 0)
+				{
+					fclose (finptr);
+					fclose (foutptr);
+					exit (1);
+				}
+				// replace all @ with the variable end as defined in func var macro
+				var_tackon_set = 1;
+				continue;	// don't safe define line!
+			}
+
+			// check for function end
+			pos = searchstr (buf, (U1 *) FUNC_END_SB, 0, 0, TRUE);
+            if (pos >= 0)
+			{
+				if (var_tackon_set == 1)
+				{
+					// switch function name to variable end tackon off!!!
+					var_tackon_set = 0;
+					// unset macro
+					defines[replace_varname_index].type = DEFINE_EMPTY;
+				}
 			}
 
             pos = searchstr (buf, (U1 *) INCLUDE_SB, 0, 0, TRUE);

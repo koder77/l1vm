@@ -6,7 +6,19 @@ L1VM - (1.0.10)
 	Updated the syntax highlighters to support the new ".l1h" header files too!
 	Updated the prog/math-circle example to use the latest "intr.l1h" interrupt call include!
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu Jan 07 2021 20:19 +0100
+	NEW: prog/test-11.l1com for asymetric math expressions with three variables.
+
+	NEW now a function variable can be written as "varname~" :"
+
+	(func foo)
+	#var ~ @foo
+	(set int64 1 x_start~ 10)
+	(set int64 1 y_start~ 10)
+
+	The automatic variable end tackon is done by the preprocessor.
+	The variables are named like "x_start@foo" in the output file.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Jan 10 2021 22:06 +0100
 
 L1VM - (1.0.9)
 	NEW removed the experimental stack type check code. It didn't work right
