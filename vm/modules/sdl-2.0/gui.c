@@ -2758,6 +2758,15 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                             {
                                 /* gadget was selected */
 
+								if (box->selected == 0)
+								{
+									box->selected = 1;
+								}
+								else
+								{
+									box->selected = 0;
+								}
+
                                 printf ("gadget_event: box gadget %i selected.\n", i);
 
                                 /* send data */
@@ -3919,6 +3928,7 @@ U1 *set_gadget_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     screen[screennum].gadget[gadget_index].type = GADGET_BOX;
     box->status = status;
+	box->selected = 0;
     box->x = x;
     box->y = y;
     box->x2 = x2;
@@ -3948,6 +3958,7 @@ U1 *set_gadget_box_grid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 y_tiles_ind ALIGN;
 	U1 r, g, b, alpha; 			// colors
 	S8 status ALIGN;
+	S8 selected ALIGN;
 	U1 err = 0;
 
 	sp = stpopi ((U1 *) &status, sp, sp_top);
@@ -4016,6 +4027,12 @@ U1 *set_gadget_box_grid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   err = 1;
     }
 
+	sp = stpopi ((U1 *) &selected, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
 	sp = stpopi ((U1 *) &gadget_index, sp, sp_top);
     if (sp == NULL)
     {
@@ -4067,6 +4084,7 @@ U1 *set_gadget_box_grid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 			screen[screennum].gadget[gadget_index].type = GADGET_BOX;
 			box->status = status;
+			box->selected = selected;
 			box->x = x;
 			box->y = y;
 			box->x2 = x2;
@@ -4655,6 +4673,7 @@ U1 *change_gadget_box_grid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     S8 gadget_index ALIGN;
 	S8 status ALIGN;
+	S8 selected ALIGN;
 	U1 r, g, b, alpha;
 	U1 err = 0;
     struct gadget_box *box;
@@ -4684,6 +4703,12 @@ U1 *change_gadget_box_grid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
 	sp = stpopi ((U1 *) &status, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1*) &selected, sp, sp_top);
     if (sp == NULL)
     {
  	   err = 1;
@@ -4722,11 +4747,39 @@ U1 *change_gadget_box_grid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     box = (struct gadget_box *) screen[screennum].gadget[gadget_index].gptr;
 
     box->status = status;
+	box->selected = selected;
 	boxRGBA (renderer, box->x + 1, box->y + 1, box->x2 - 2, box->y2 - 2, r, g, b, alpha);
 
     return (sp);
 }
 
+U1 *get_gadget_box_grid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 gadget_index ALIGN;
+	S8 selected ALIGN;
+
+	struct gadget_box *box;
+
+	sp = stpopi ((U1 *) &gadget_index, sp, sp_top);
+    if (sp == NULL)
+    {
+		printf ("get_gadget_box_grid: ERROR, stack corrupt!\n");
+	  	return (NULL);
+    }
+
+	box = (struct gadget_box *) screen[screennum].gadget[gadget_index].gptr;
+	selected = box->selected;
+
+	sp = stpushi (selected, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_gadget_x2y2: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	return (sp);
+}
 
 U1 *change_gadget_progress_bar (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {

@@ -228,6 +228,7 @@ U1 *my_strcpy (U1 *destination, const U1 *source);
  struct gadget_box
  {
      U1 status;
+	 U1 selected;						// for grid box status selected or not
      Sint16 x;
      Sint16 y;
      Sint16 x2;
