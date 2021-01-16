@@ -4707,8 +4707,6 @@ U1 *change_gadget_box_grid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-	printf ("DEBUG: change_gadget_box_grid: gadget_index: %lli\n", gadget_index);
-
     if (screen[screennum].gadget[gadget_index].gptr == NULL)
     {
         printf ("change_gadget_box-grid: error gadget %lli not allocated!\n", gadget_index);
