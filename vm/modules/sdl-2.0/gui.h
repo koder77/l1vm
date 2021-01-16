@@ -101,6 +101,10 @@ U1 **alloc_array_U1 (S4 x, S4 y);
 void dealloc_array_U1 (U1 **array, S4 x);
 void sdl_do_delay (S8 delay);
 
+// gadget box grid
+U1 *set_gadget_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+U1 *change_gadget_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+
 /* string.c */
 int strright(U1 *dst, U1 *src, int chars);
 int strleft(U1 *dst, U1 *src, int chars);

@@ -31,7 +31,8 @@
 
 #include "gui.h"
 
-
+// protos
+U1 *stpopb (U1 *data, U1 *sp, U1 *sp_top);
 
 size_t strlen_safe (const char * str, int maxlen);
 
@@ -3926,6 +3927,158 @@ U1 *set_gadget_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     return (sp);
 }
 
+// box grid gadgets ===========================================================
+U1 *set_gadget_box_grid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// draw a x * y user defined grid by given color
+
+    struct gadget_box *box;
+    S8 gadget_index ALIGN;
+	S8 x ALIGN;
+	S8 y ALIGN;
+	S8 x_start ALIGN;
+	S8 y_start ALIGN;
+	S8 x2 ALIGN;
+	S8 y2 ALIGN;
+	S8 x_tile_width ALIGN;	// tile width and height in pixels
+	S8 y_tile_height ALIGN;
+	S8 x_tiles ALIGN;		// number of drawed tiles
+	S8 y_tiles ALIGN;
+	S8 x_tiles_ind ALIGN;
+	S8 y_tiles_ind ALIGN;
+	U1 r, g, b, alpha; 			// colors
+	S8 status ALIGN;
+	U1 err = 0;
+
+	sp = stpopi ((U1 *) &status, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopb (&alpha, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopb (&b, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopb (&g, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopb (&r, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &y_tile_height, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &x_tile_width, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &y_tiles, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &x_tiles, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &y_start, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &x_start, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &gadget_index, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	if (err == 1)
+    {
+ 	   printf ("set_gadget_box_grid: ERROR, stack corrupt!\n");
+ 	   return (NULL);
+   	}
+
+    if (! screen[screennum].gadget)
+    {
+        printf ("set_gadget_box_grid: error gadget list not allocated!\n");
+        return (NULL);
+    }
+
+	// printf ("set_gadget_box_grid: gadget_index: %lli\n", gadget_index);
+
+	y = y_start;
+	for (y_tiles_ind = 0; y_tiles_ind < y_tiles; y_tiles_ind++)
+	{
+		x = x_start;
+		for (x_tiles_ind = 0; x_tiles_ind < x_tiles; x_tiles_ind++)
+		{
+			x2 = x + x_tile_width;
+			y2 = y + y_tile_height;
+			rectangleRGBA (renderer, x, y, x2, y2, r, g, b, alpha);
+
+			// save gadget box data using gadget_index as upper left corner, and set it horizontal to 1, 2, 3...
+
+			if (gadget_index >= screen[screennum].gadgets)
+			{
+				printf ("set_gadget_box_grid: error gadget index out of range: %lli\n", gadget_index);
+				return (NULL);
+			}
+
+			free_gadget (screennum, gadget_index);
+
+			screen[screennum].gadget[gadget_index].gptr = (struct gadget_box *) malloc (sizeof (struct gadget_box));
+			if (screen[screennum].gadget[gadget_index].gptr == NULL)
+			{
+				printf ("set_gadget_box_grid: error can't allocate structure!\n");
+				return (NULL);
+			}
+
+			box = (struct gadget_box *) screen[screennum].gadget[gadget_index].gptr;
+
+			screen[screennum].gadget[gadget_index].type = GADGET_BOX;
+			box->status = status;
+			box->x = x;
+			box->y = y;
+			box->x2 = x2;
+			box->y2 = y2;
+
+			gadget_index++;
+			x = x + x_tile_width;
+		}
+		y = y + y_tile_height;
+	}
+	return (sp);
+}
 
 U1 *set_gadget_slider (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
@@ -4447,6 +4600,7 @@ U1 *change_gadget_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *change_gadget_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     /* change value and status (active / inactive) */
+	/* change filled color */
 
     S8 gadget_index ALIGN;
 	S8 status ALIGN;
@@ -4490,8 +4644,87 @@ U1 *change_gadget_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     box = (struct gadget_box *) screen[screennum].gadget[gadget_index].gptr;
+    box->status = status;
+
+    return (sp);
+}
+
+U1 *change_gadget_box_grid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    /* change value and status (active / inactive) */
+
+    S8 gadget_index ALIGN;
+	S8 status ALIGN;
+	U1 r, g, b, alpha;
+	U1 err = 0;
+    struct gadget_box *box;
+
+	sp = stpopb (&alpha, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopb (&b, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopb (&g, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopb (&r, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &status, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &gadget_index, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	if (err == 1)
+	{
+	   printf ("change_gadget_box_grid: ERROR, stack corrupt!\n");
+	   return (NULL);
+	}
+
+    if (! screen[screennum].gadget)
+    {
+        printf ("change_gadget_box_grid: error gadget list not allocated!\n");
+        return (NULL);
+    }
+
+	printf ("DEBUG: change_gadget_box_grid: gadget_index: %lli\n", gadget_index);
+
+    if (screen[screennum].gadget[gadget_index].gptr == NULL)
+    {
+        printf ("change_gadget_box-grid: error gadget %lli not allocated!\n", gadget_index);
+        return (NULL);
+    }
+
+    if (screen[screennum].gadget[gadget_index].type != GADGET_BOX)
+    {
+        printf ("change_gadget_box_grid: error %lli not a box gadget!\n", gadget_index);
+        return (NULL);
+    }
+
+    box = (struct gadget_box *) screen[screennum].gadget[gadget_index].gptr;
 
     box->status = status;
+	boxRGBA (renderer, box->x + 1, box->y + 1, box->x2 - 2, box->y2 - 2, r, g, b, alpha);
 
     return (sp);
 }

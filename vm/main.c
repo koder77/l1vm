@@ -135,6 +135,8 @@ S2 memory_bounds (S8 start, S8 offset_access)
 {
 	S8 i ALIGN;
 
+	// printf ("memory_bounds: start: %lli, offset: %lli\n", start, offset_access);
+
 	if (start + offset_access < 0)
 	{
 		// access ERROR!

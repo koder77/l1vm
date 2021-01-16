@@ -127,7 +127,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	printf ("SDL initialized...\n");
 
 	// open SDL window
-	window = SDL_CreateWindow ("L1VM", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
+	window = SDL_CreateWindow ("L1VM", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL);
 	if (window == NULL)
 	{
 		printf( "sdl_open_screen: ERROR window can't be opened: %s\n", SDL_GetError ());
@@ -145,7 +145,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	surf = SDL_GetWindowSurface (window);
 	if (surf == NULL)
 	{
-		fprintf (stderr, "Couldn't set %lli x %lli x %i video mode: %s\n", width, height, bit, SDL_GetError ());
+		fprintf (stderr, "Couldn't set %lli x %lli x %lli video mode: %s\n", width, height, bit, SDL_GetError ());
 
 		// error fail code
 		sp = stpushi (1, sp, sp_bottom);
