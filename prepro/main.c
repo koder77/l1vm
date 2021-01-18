@@ -37,6 +37,7 @@
 #define FUNC_END_SB			"funcend"
 
 #define COMMENT_SB			">>"
+#define COMMENT_COMP_SB		"//"
 
 U1 include_path[MAXLINELEN + 1];
 
@@ -649,6 +650,20 @@ S2 include_file (U1 *line_str)
 				continue;
 			}
 
+			pos = searchstr (buf, (U1 *) COMMENT_COMP_SB, 0, 0, TRUE);
+			if (pos >= 0)
+			{
+				// normal compiler comment:
+				// save line and continue!
+				if (fprintf (foutptr, "%s", buf) < 0)
+				{
+					printf ("ERROR: can't write to output file!\n");
+					fclose (fincludeptr);
+					return (1);
+				}
+				continue;
+			}
+
 			pos = searchstr (buf, (U1 *) "#", 0, 0, TRUE);
 			if (pos < 0)
 			{
@@ -815,6 +830,21 @@ int main (int ac, char *av[])
 			if (pos >= 0)
 			{
 				// line is comment, skip it!
+				continue;
+			}
+
+			pos = searchstr (buf, (U1 *) COMMENT_COMP_SB, 0, 0, TRUE);
+			if (pos >= 0)
+			{
+				// normal compiler comment:
+				// save line and continue!
+				if (fprintf (foutptr, "%s", buf) < 0)
+				{
+					printf ("ERROR: can't write to output file!\n");
+					fclose (finptr);
+					fclose (foutptr);
+					exit (1);
+				}
 				continue;
 			}
 

@@ -20,7 +20,9 @@ L1VM - (1.0.10)
 
 	NEW: SDL GUI: set_gadget_box_grid() to draw a grid of gadgets which can be read out via GUI event function.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Jan 16 2021 11:25 +0100
+	NEW: Now the preprocessor can parse the normal comment: "//" too!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon Jan 18 2021 17:22 +0100
 
 L1VM - (1.0.9)
 	NEW removed the experimental stack type check code. It didn't work right
