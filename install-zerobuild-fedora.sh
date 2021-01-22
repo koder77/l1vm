@@ -58,7 +58,7 @@ else
 	echo "cloning and building it now..."
 	git clone https://github.com/advanpix/mpreal.git
 	cd mpreal
-	cp mpreal.h /usr/local/include
+	sudo cp mpreal.h /usr/local/include/
 	cd ..
 fi
 
