@@ -184,7 +184,6 @@ if ./build-all.sh; then
 	echo "building programs successfully!"
 else
 	echo "building programs FAILED!"
-	exit 1
 fi
 
 echo "checking for ~/l1vm directory..."
