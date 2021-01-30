@@ -24,7 +24,7 @@ This will get this output:
 (8 foo 0 0 intr0)
 
 
-NEW now a function variable can be written as "varname~" :"
+NEW now a function variable can be written as "varname~" :
 
 (func foo)
 #var ~ @foo
