@@ -8,7 +8,7 @@ L1VM - (1.0.10)
 
 	NEW: prog/test-11.l1com for asymetric math expressions with three variables.
 
-	NEW now a function variable can be written as "varname~" :"
+	NEW now a function variable can be written as "varname~" :
 
 	(func foo)
 	#var ~ @foo
