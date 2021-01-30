@@ -34,6 +34,4 @@ NEW now a function variable can be written as "varname~" :
 The automatic variable end tack on is done by the preprocessor.
 The variables are named like "x_start@foo" in the output file.
 
-NEW: SDL GUI: set_gadget_box_grid() to draw a grid of gadgets which can be read out via GUI event function.
-
 NEW: Now the preprocessor can parse the normal comment: "//" too!
