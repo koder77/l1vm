@@ -22,3 +22,18 @@ delay(foo)
 This will get this output:
 
 (8 foo 0 0 intr0)
+
+
+NEW now a function variable can be written as "varname~" :"
+
+(func foo)
+#var ~ @foo
+(set int64 1 x_start~ 10)
+(set int64 1 y_start~ 10)
+
+The automatic variable end tack on is done by the preprocessor.
+The variables are named like "x_start@foo" in the output file.
+
+NEW: SDL GUI: set_gadget_box_grid() to draw a grid of gadgets which can be read out via GUI event function.
+
+NEW: Now the preprocessor can parse the normal comment: "//" too!
