@@ -2,7 +2,7 @@ L1VM - (1.0.11)
 	Updated "clean.sh" script to clean assemb/, comp/ and vm/ directories too!
 	Did a includes cleanup. Updated the version number to 1.0.11.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Feb 2021 19:44 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Feb 06 2021 19:44 +0100
 
 L1VM - (1.0.10)
 	Include/global.h cleanup.
