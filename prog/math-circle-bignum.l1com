@@ -1,0 +1,105 @@
+// math-circle-bignum.l1com
+// calculate diameter or circumference of circle
+//
+// MPFR floating point math demo
+//
+#include <intr.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 one 1)
+	(set int64 1 two 2)
+	(set int64 1 three 3)
+	(set int64 1 diam_mp 0)
+	(set int64 1 circ_mp 1)
+	(set int64 1 pi_mp 2)
+	(set string 256 diam "")
+	(set string 256 circ "")
+	(set string s zerod "0.0")
+	(set int64 1 base 10)
+	(set string s prog_name "math-circle-bignum")
+	(set string s menu_diamstr "1: calculate diameter of circle")
+	(set string s menu_circstr "2: calculate circumference of circle")
+	(set string s menu_quitstr "3: quit")
+	(set string s menu_chstr "? ")
+	(set string s diamstr "diameter:      ")
+	(set string s circstr "circumference: ")
+	(set string 256 input "")
+	(set int64 1 input_menu 0)
+	(set int64 1 f 0)
+	(set string s formatstr "%.200Ff")
+	(set int64 1 precision 200)
+	(set int64 1 input_len 255)
+	// set constant -----------------------------------------
+	(set const-string s m_pi@mp_math "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679")
+	// -------------------------------------------------------
+	(zero :mp_math_init call)
+	(loadreg)
+	// set pi
+	(m_pi@mp_mathaddr base pi_mp :mp_set_float call)
+	(loadreg)
+	(:loop)
+	print_s (prog_name)
+	print_n
+	print_s (menu_diamstr)
+	print_n
+	print_s (menu_circstr)
+	print_n
+	print_s (menu_quitstr)
+	print_n
+	print_s (menu_chstr)
+	// read input
+	input_i (input_menu)
+	(((input_menu three ==) f =) f if)
+		// quit
+		exit (zero)
+	(endif)
+	(((input_menu one ==) f =) f if+)
+		// reset used variables and set used registers to zero
+		// no context register saving here
+		(reset-reg)
+		(:calc_diam !)
+		(loadreg)
+	(else)
+		// reset used variables and set used registers to zero
+		// no context register saving here
+		(reset-reg)
+		(:calc_circ !)
+		(loadreg)
+	(endif)
+	print_n
+	print_n
+	(:loop jmp)
+(funcend)
+(calc_diam func)
+	// calculate diameter
+	print_s (circstr)
+	// input string circ
+	input_s (input_len, circ)
+	(circaddr base circ_mp :mp_set_float call)
+	(loadreg)
+	(zerodaddr base diam_mp :mp_set_float call)
+	(loadreg)
+	(circ_mp pi_mp diam_mp :mp_div_float call)
+	(loadreg)
+	// ((circ m_pi@mp_math /d) diam =)
+	print_s (diamstr)
+	(diam_mp formatstr precision :mp_print_float call)
+	(loadreg)
+(funcend)
+(calc_circ func)
+	// calculate circumference
+	print_s (diamstr)
+	// input string diam
+	input_s (input_len, diam)
+	(zerodaddr base circ_mp :mp_set_float call)
+	(loadreg)
+	(diamaddr base diam_mp :mp_set_float call)
+	(loadreg)
+	// ((diam m_pi@math *d) circ =)
+	(diam_mp pi_mp circ_mp :mp_mul_float call)
+	(loadreg)
+	print_s (circstr)
+	(circ_mp formatstr precision :mp_print_float call)
+	(loadreg)
+(funcend)
+#include <mpfr-lib-auto.l1h>
