@@ -27,7 +27,7 @@
 	(set int64 1 input_menu 0)
 	(set int64 1 f 0)
 	(set string s formatstr "%.200Ff")
-	(set int64 1 precision 200)
+	(set int64 1 precision 46)
 	(set int64 1 input_len 255)
 	// set constant -----------------------------------------
 	(set const-string s m_pi@mp_math "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679")

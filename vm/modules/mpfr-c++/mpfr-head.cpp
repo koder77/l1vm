@@ -322,6 +322,7 @@ extern "C" U1 *mp_print_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	cout.precision (precision_out);
+	cout << std::fixed;
 	cout << mpf_float[float_index_x];
 
 	return (sp);
