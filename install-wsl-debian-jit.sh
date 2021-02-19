@@ -73,7 +73,7 @@ if ! dpkg -s make &> /dev/null; then
 fi
 
 if ! dpkg -s git &> /dev/null; then
-	echo "try to install libmpfrc++-dev..."
+	echo "try to install git..."
 	if ! sudo apt-get install git; then
 		echo "installation failed!"
 		exit 1
