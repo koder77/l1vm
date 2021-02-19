@@ -14,7 +14,7 @@ sudo dnf install fann-devel.x86_64
 sudo dnf install mpfr-devel.x86_64
 sudo dnf install cmake.x86_64
 sudo dnf install make.x86_64
-
+sudo dnf install git.x86_64
 
 # check if clang C compiler is installed
 FILE=/usr/bin/clang
