@@ -54,7 +54,7 @@ if ! dpkg -s libmpfrc++-dev &> /dev/null; then
 fi
 
 if ! dpkg -s cmake &> /dev/null; then
-	echo "try to install libmpfrc++-dev..."
+	echo "try to install cmake..."
 	if ! sudo apt-get install cmake; then
 		echo "installation failed!"
 		exit 1
@@ -62,7 +62,7 @@ if ! dpkg -s cmake &> /dev/null; then
 fi
 
 if ! dpkg -s make &> /dev/null; then
-	echo "try to install libmpfrc++-de..."
+	echo "try to install make..."
 	if ! sudo apt-get install make; then
 		echo "installation failed!"
 		exit 1
