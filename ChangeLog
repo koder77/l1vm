@@ -4,7 +4,9 @@ L1VM - (1.0.11)
 
 	Update: now the Fedora, Debian and Windows 10 WSL Debian install scripts install the needed git client too!
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri Feb 19 2021 19:45 +0100
+	VM: removed not needed debugging comments and code.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Feb 20 2021 22:22 +0100
 
 L1VM - (1.0.10)
 	Include/global.h cleanup.

@@ -135,8 +135,6 @@ S2 memory_bounds (S8 start, S8 offset_access)
 {
 	S8 i ALIGN;
 
-	// printf ("memory_bounds: start: %lli, offset: %lli\n", start, offset_access);
-
 	if (start + offset_access < 0)
 	{
 		// access ERROR!
@@ -146,12 +144,8 @@ S2 memory_bounds (S8 start, S8 offset_access)
 
 	for (i = 0; i <= data_info_ind; i++)
 	{
-		// printf ("DEBUG: memory_bounds: variable %lli, type: %i\n", i, data_info[i].type);
-
 		if ((start >= data_info[i].offset) && (start + offset_access <= data_info[i].end))
 		{
-			// printf ("memory_bounds: data_info offset: %lli, data_info end: %lli; start: %lli offset: %lli\n", data_info[i].offset, data_info[i].end, start, offset_access);
-
 			if (offset_access == 0)
 			{
 				// all ok, return 0
@@ -159,15 +153,9 @@ S2 memory_bounds (S8 start, S8 offset_access)
 			}
 			else
 			{
-				//printf ("memory_bounds: type: %i, address: %lli, offset: %lli\n", data_info[i].type, start, offset_access);
-
-				// printf ("DEBUG: memory_bounds: variable %lli, type: %i\n", i, data_info[i].type);
-
 				switch (data_info[i].type)
 				{
 					case BYTE:
-						// printf ("memory_bounds: byte: %i, start: %lli, offset: %lli\n", BYTE, start, offset_access);
-
 						// range already checked on top if
 						// all ok, return 0
 						return (0);
@@ -193,8 +181,6 @@ S2 memory_bounds (S8 start, S8 offset_access)
 
 					case QUADWORD:
 					case DOUBLEFLOAT:
-						// printf ("memory_bounds: quad, start: %lli, offset: %lli\n", start, offset_access);
-
 						if (offset_access % sizeof (S8) != 0)
 						{
 							printf ("memory_bounds: FATAL ERROR: variable access not on quad word/double float bound, address: %lli, offset: %lli!\n", start, offset_access);
@@ -333,22 +319,22 @@ S2 run (void *arg)
 {
 	S8 cpu_core ALIGN = (S8) arg;
 	S8 i ALIGN;
-	U1 eoffs;                  // offset to next opcode
-	S8 regi[MAXREG];   		  // integer registers
-	F8 regd[MAXREG];          // double registers
+	U1 eoffs;                  	// offset to next opcode
+	S8 regi[MAXREG];   		  	// integer registers
+	F8 regd[MAXREG];			// double registers
 	S8 arg1 ALIGN;
 	S8 arg2 ALIGN;
 	S8 arg3 ALIGN;
-	S8 arg4 ALIGN;	   // opcode arguments
+	S8 arg4 ALIGN;				// opcode arguments
 
-	S8 ep ALIGN = 0; // execution pointer in code segment
+	S8 ep ALIGN = 0; 			// execution pointer in code segment
 	S8 startpos ALIGN;
 
-	U1 overflow = 0;	// MATH_LIMITS calculation overflow flag
+	U1 overflow = 0;			// MATH_LIMITS calculation overflow flag
 
-	U1 *sp;   // stack pointer
-	U1 *sp_top;    // stack pointer start address
-	U1 *sp_bottom;  // stack bottom
+	U1 *sp;  					// stack pointer
+	U1 *sp_top;    				// stack pointer start address
+	U1 *sp_bottom;				// stack bottom
 	U1 *srcptr, *dstptr;
 
 	U1 *bptr;
@@ -623,9 +609,6 @@ S2 run (void *arg)
 		regd[i] = 0.0;
 	}
 
-	// printf ("ready...\n");
-	// printf ("modules loaded: %lli\n", modules_ind + 1);
-
 	if (silent_run == 0)
 	{
 		printf ("CPU %lli ready\n", cpu_ind);
@@ -739,10 +722,6 @@ S2 run (void *arg)
 	}
 	#endif
 
-	//printf ("PUSHQW: ep: %li\n", ep);
-	//printf ("arg1: %li: asm: %li\n", arg1, code[ep + 1]);
-	//printf ("arg2: %li\n", arg2);
-
 	bptr = (U1 *) &regi[arg3];
 
 	*bptr = data[arg1 + arg2];
@@ -844,9 +823,6 @@ S2 run (void *arg)
 
 	bptr = (U1 *) &regi[arg1];
 
-	// DEBUG
-	// printf ("PULLW: data reg: %lli, offset reg: %lli, source reg: %lli\n", arg2, arg3, arg1);
-
 	data[arg2 + arg3] = *bptr;
 	bptr++;
 	data[arg2 + arg3 + 1] = *bptr;
@@ -900,10 +876,6 @@ S2 run (void *arg)
         pthread_exit ((void *) 1);
 	}
 	#endif
-
-	//printf ("PULLQW\n");
-	//printf ("data: %li\n", arg2);
-	//printf ("offset: %li\n", arg3);
 
 	bptr = (U1 *) &regi[arg1];
 
@@ -1074,9 +1046,6 @@ S2 run (void *arg)
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	// debug
-	// regd[arg1] = INFINITY;
-
 	#if MATH_LIMITS
 		overflow = 0;
 	#endif
@@ -1117,8 +1086,6 @@ S2 run (void *arg)
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-
-	// regd[arg1] = INFINITY;
 
 	#if MATH_LIMITS
 		overflow = 0;
@@ -1161,8 +1128,6 @@ S2 run (void *arg)
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	// regd[arg1] = INFINITY;
-
 	#if MATH_LIMITS
 		overflow = 0;
 	#endif
@@ -1203,8 +1168,6 @@ S2 run (void *arg)
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
-
-	// regd[arg1] = INFINITY;
 
     #if DIVISIONCHECK
     if (iszero (regd[arg2]))
@@ -1563,8 +1526,6 @@ S2 run (void *arg)
 	}
 	else
 	{
-		// fatal ERROR: stack pointer can't go below address ZERO!
-
 		printf ("FATAL ERROR: stack pointer can't go below address 0!\n");
 		PRINT_EPOS();
 		free (jumpoffs);
@@ -1634,8 +1595,6 @@ S2 run (void *arg)
 	}
 	else
 	{
-		// fatal ERROR: stack pointer can't go below address ZERO!
-
 		printf ("FATAL ERROR: stack pointer can't go below address 0!\n");
 		PRINT_EPOS();
 		free (jumpoffs);
@@ -1716,8 +1675,6 @@ S2 run (void *arg)
 	}
 	else
 	{
-		// fatal ERROR: stack pointer can't go below address ZERO!
-
 		printf ("FATAL ERROR: stack pointer can't go below address 0!\n");
 		PRINT_EPOS();
 		free (jumpoffs);
@@ -1842,8 +1799,6 @@ S2 run (void *arg)
 	bptr++;
 	*bptr = data[arg1 + arg2 + 7];
 
-	//printf ("LOADA: %li\n", regi[arg3]);
-
 	eoffs = 18;
 	EXE_NEXT();
 
@@ -1871,9 +1826,6 @@ S2 run (void *arg)
 	*bptr = code[ep + 8];
 
 	// offset
-
-	//printf ("arg1: %li\n", arg1);
-
 	bptr = (U1 *) &arg2;
 
 	*bptr = code[ep + 9];
@@ -1891,8 +1843,6 @@ S2 run (void *arg)
 	*bptr = code[ep + 15];
 	bptr++;
 	*bptr = code[ep + 16];
-
-	//printf ("arg2: %li\n", arg2);
 
 	#if BOUNDSCHECK
 	if (memory_bounds (arg1, arg2) != 0)
@@ -1922,8 +1872,6 @@ S2 run (void *arg)
 	*bptr = data[arg1 + arg2 + 6];
 	bptr++;
 	*bptr = data[arg1 + arg2 + 7];
-
-	//printf ("LOADD: %li\n", regd[arg3]);
 
 	eoffs = 18;
 	EXE_NEXT();
@@ -2080,24 +2028,17 @@ S2 run (void *arg)
 					if (i < regi[arg2])
 					{
 						ch = getchar ();
-						// printf ("char: %i\n", ch);
-
-						// printf ("getchar: '%c'", ch);
-
 						data[regi[arg3] + i] = ch;
 						if (ch == 10)
 						{
 							if (i == 0)
 							{
 								data[regi[arg3]] = '\0';
-								// printf ("data interrupt0 1: '%s'", &data[regi[arg3]]);
 								break;
 							}
 							else
 							{
-								// i++;
 								data[regi[arg3] + i] = '\0';
-								// printf ("data interrupt0 2: '%s'", &data[regi[arg3]]);
 								break;
 							}
 						}
@@ -2401,10 +2342,6 @@ S2 run (void *arg)
 				pthread_exit ((void *) 1);
 			}
 
-			// sp_top = threaddata[cpu_core].sp_top_thread;
-			// sp_bottom = threaddata[cpu_core].sp_bottom_thread;
-			// sp = threaddata[cpu_core].sp_thread;
-
             // run new CPU core
             // set threaddata
 
@@ -2503,8 +2440,6 @@ S2 run (void *arg)
 			// return number of free CPU cores
 			// search for a free CPU core
 			// if none free found set cpus_free to 0, to indicate all CPU cores are used!!
-
-			// printf ("INTR1: 5, get number of free CPU cores\n");
 
 			cpus_free = 0;
 			pthread_mutex_lock (&data_mutex);
@@ -2710,8 +2645,6 @@ S2 run (void *arg)
 	eoffs = 0;
 	jumpstack_ind--;
 
-	// printf ("RTS: return to: %lli\n\n", ep);
-
 	EXE_NEXT();
 
 	load:
@@ -2740,8 +2673,6 @@ S2 run (void *arg)
 
 	// offset
 
-	//printf ("arg1: %li\n", arg1);
-
 	bptr = (U1 *) &arg2;
 
 	*bptr = code[ep + 9];
@@ -2765,10 +2696,6 @@ S2 run (void *arg)
 	arg3 = code[ep + 17];
 
 	regi[arg3] = arg1 + arg2;
-
-	//printf ("LOAD: %li\n", regi[arg3]);
-	// DEBUG
-	// printf ("LOAD: arg1: (data) %lli, arg2: (offset) %lli, to reg: %lli\n", arg1, arg2, arg3);
 
 	eoffs = 18;
 	EXE_NEXT();
