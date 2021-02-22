@@ -27,6 +27,7 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 
 #include "gui.h"
 
@@ -93,7 +94,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	// printf ("open_screen: %lli x %lli, %i bit\n", width, height, bit);
 
-	if (SDL_Init (SDL_INIT_VIDEO) != 0)
+	if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
 	{
 		printf ("ERROR SDL_Init!!!\n");
 
@@ -105,6 +106,17 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		}
 		return (sp);
 	}
+
+	// init audio
+	int audio_rate = 44100; Uint16 audio_format = AUDIO_S16SYS;
+	int audio_channels = 2; int audio_buffers = 4096;
+
+	if (Mix_OpenAudio (audio_rate, audio_format, audio_channels, audio_buffers) != 0)
+	{
+		printf ("sdl_open_screen: ERROR: unable to initialize audio: %s\n", Mix_GetError());
+		return (sp);
+	}
+
 
 	/* key input settings */
 	/*
@@ -1483,7 +1495,6 @@ U1 *sdl_get_pixelcolor (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 }
 
 
-
 U1 *sdl_load_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// load picture
@@ -1609,4 +1620,57 @@ U1 *sdl_save_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		sp = stpushi (0, sp, sp_bottom);		// error ok code
 		return (sp);
 	}
+}
+
+U1 *sdl_play_sound (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 ALIGN nameaddr;
+	U1 sandbox_filename[256];
+
+	Mix_Chunk *sound = NULL;
+	int channel;
+
+	sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("sdl_play_sound: ERROR stack corrupt!\n");
+		return (NULL);
+	}
+
+	#if SANDBOX
+		if (get_sandbox_filename (&data[nameaddr], sandbox_filename, 255) != 0)
+		{
+			printf ("sdl_play_sound: ERROR filename illegal: %s", &data[nameaddr]);
+			return (NULL);
+		}
+
+		sound = Mix_LoadWAV ((const char *) sandbox_filename);
+		if (sound == NULL)
+		{
+			 printf ("sdl_play_sound: ERROR: Unable to load WAV file: %s\n", Mix_GetError());
+			 return (NULL);
+		}
+	#else
+		sound = Mix_LoadWAV (&data[nameaddr]);
+		if (sound == NULL)
+		{
+		 	printf ("sdl_play_sound: ERROR: Unable to load WAV file: %s\n", Mix_GetError());
+		 	return (NULL);
+		}
+	#endif
+
+	channel = Mix_PlayChannel (-1, sound, 0);
+	if (channel == -1)
+	{
+		printf("sdl_play_sound: ERROR: Unable to play WAV file: %s\n", Mix_GetError());
+		return (NULL);
+	}
+
+	// wait till sound play stops
+	while (Mix_Playing (channel) != 0);
+	Mix_FreeChunk (sound);
+	Mix_CloseAudio ();
+
+	return (sp);
 }

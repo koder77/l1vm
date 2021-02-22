@@ -37,6 +37,14 @@ if ! dpkg -s libsdl2-ttf-dev &> /dev/null; then
 	fi
 fi
 
+if ! dpkg -s libsdl2-mixer-dev &> /dev/null; then
+	echo "try to install libsdl2-mixer-dev..."
+	if ! sudo apt-get install libsdl2-mixer-dev; then
+		echo "installation failed!"
+		exit 1
+	fi
+fi
+
 if ! dpkg -s libfann-dev &> /dev/null; then
 	echo "try to install libfann-dev..."
 	if ! sudo apt-get install libfann-dev; then

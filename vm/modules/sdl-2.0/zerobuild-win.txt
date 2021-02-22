@@ -12,4 +12,4 @@ linker = ld
 aflags = "cru"
 
 cflags = "-O3 -fomit-frame-pointer -Wall"
-lflags = "-shared -lSDL2 -lSDL2_gfx -lSDL2_image -lSDL2_ttf"
+lflags = "-shared -lSDL2 -lSDL2_gfx -lSDL2_image -lSDL2_ttf -lSDL2_mixer"

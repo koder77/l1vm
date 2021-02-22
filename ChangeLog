@@ -6,7 +6,10 @@ L1VM - (1.0.11)
 
 	VM: removed not needed debugging comments and code.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Feb 20 2021 22:22 +0100
+	NEW: SDL2 library now with play wave sound function at bottom of sdl.c library file.
+	Now with "sdl_play_sound" function WAV files can be played.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon Feb 22 2021 22:03 +0100
 
 L1VM - (1.0.10)
 	Include/global.h cleanup.
