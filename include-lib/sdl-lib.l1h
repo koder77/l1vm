@@ -294,7 +294,6 @@
 (sdl_delay func)
 	(3 mod@sdl delay@sdl 0 intr0)
 (funcend)
-// play sound
 (sdl_play_sound func)
 	(3 mod@sdl play_sound@sdl 0 intr0)
 (funcend)
