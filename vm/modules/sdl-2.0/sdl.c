@@ -1670,7 +1670,7 @@ U1 *sdl_play_sound (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// wait till sound play stops
 	while (Mix_Playing (channel) != 0);
 	Mix_FreeChunk (sound);
-	Mix_CloseAudio ();
+	// Mix_CloseAudio ();
 
 	return (sp);
 }
