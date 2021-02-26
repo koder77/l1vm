@@ -9,7 +9,9 @@ L1VM - (1.0.11)
 	NEW: SDL2 library now with play wave sound function at bottom of sdl.c library file.
 	Now with "sdl_play_sound" function WAV files can be played.
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon Feb 22 2021 22:03 +0100
+	NEW: SDL2 library get mouse state function added, see lib/sdl-lib-mouse.l1com example!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri Feb 26 2021 17:45 +0100
 
 L1VM - (1.0.10)
 	Include/global.h cleanup.

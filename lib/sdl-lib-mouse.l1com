@@ -1,0 +1,53 @@
+// get mouse state, SDL module
+//
+//
+#include <intr.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 one 1)
+	(set int64 1 width 300)
+	(set int64 1 height 200)
+	(set int64 1 bit 32)
+	(set int64 1 ret 0)
+	(set int64 1 x 0)
+	(set int64 1 y 0)
+	(set int64 1 mouse_button_left 0)
+	(set int64 1 mouse_button_middle 0)
+	(set int64 1 mouse_button_right 0)
+	(set string s xstr "x: ")
+	(set string s ystr "y: ")
+	(set string s button_leftstr "button left: ")
+	(set string s button_middlestr "button middle: ")
+	(set string s button_rightstr "button right: ")
+	// open screen
+    (zero width height bit :sdl_open_screen call)
+	(ret stpopi)
+	(loadreg)
+	(:loop)
+	(:sdl_get_mouse_state !)
+	(x stpopi)
+	(y stpopi)
+	(mouse_button_left stpopi)
+	(mouse_button_middle stpopi)
+	(mouse_button_right stpopi)
+	(loadreg)
+	// print mouse data
+	print_s (xstr)
+	print_i (x)
+	print_n
+	print_s (ystr)
+	print_i (y)
+	print_n
+	print_s (button_leftstr)
+	print_i (mouse_button_left)
+	print_n
+	print_s (button_middlestr)
+	print_i (mouse_button_middle)
+	print_n
+	print_s (button_rightstr)
+	print_i (mouse_button_right)
+	print_n
+	print_n
+	(:loop jmp)
+(funcend)
+#include <sdl-lib.l1h>

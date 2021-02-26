@@ -24,6 +24,7 @@
     (set string s get_pixelcolorstr@sdl "sdl_get_pixelcolor")
     (set string s updatestr@sdl "sdl_update")
     (set string s play_soundstr@sdl "sdl_play_sound")
+	(set string s get_mouse_statestr@sdl "get_mouse_state")
 	// GUI definitions
 	(set string s init_gadgetsstr@sdl "init_gadgets")
 	(set string s set_gadget_buttonstr@sdl "set_gadget_button")
@@ -90,6 +91,7 @@
 	(set int64 1 change_gadget_box_grid@sdl 39)
     (set int64 1 get_gadget_box_grid@sdl 40)
     (set int64 1 play_sound@sdl 41)
+	(set int64 1 get_mouse_state@sdl 42)
     (set int64 1 get@sdl 0)
     // call arguments
     (set int64 1 width@sdl 0)
@@ -146,6 +148,7 @@
 	(2 mod@sdl set_gadget_slider_vert@sdl set_gadget_slider_vertstr@sdladdr intr0)
 	(2 mod@sdl change_gadget_slider@sdl change_gadget_sliderstr@sdladdr intr0)
     (2 mod@sdl play_sound@sdl play_soundstr@sdladdr intr0)
+	(2 mod@sdl get_mouse_state@sdl get_mouse_statestr@sdladdr intr0)
     // open screen
     (width@sdl stpushi)
     (height@sdl stpushi)
@@ -291,9 +294,13 @@
 (sdl_save_picture func)
 	(3 mod@sdl save_picture@sdl 0 intr0)
 (funcend)
+// --------------------------------------------------------
 (sdl_delay func)
 	(3 mod@sdl delay@sdl 0 intr0)
 (funcend)
 (sdl_play_sound func)
 	(3 mod@sdl play_sound@sdl 0 intr0)
+(funcend)
+(sdl_get_mouse_state func)
+	(3 mod@sdl get_mouse_state@sdl 0 intr0)
 (funcend)

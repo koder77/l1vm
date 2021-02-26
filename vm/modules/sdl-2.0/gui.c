@@ -5024,3 +5024,81 @@ U1 *get_gadget_x2y2 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	return (sp);
 }
+
+U1 *get_mouse_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// get mouse position and button status
+
+	S8 x ALIGN;
+	S8 y ALIGN;
+	S8 mouse_button_left ALIGN = 0;
+	S8 mouse_button_middle ALIGN = 0;
+	S8 mouse_button_right ALIGN = 0;
+
+ 	Uint8 buttonmask;
+
+	SDL_PumpEvents ();
+
+	// get mouse data
+	buttonmask = SDL_GetMouseState (&x, &y);
+
+	// set the buttons as pressed
+	if (! (buttonmask & SDL_BUTTON (SDL_BUTTON_LEFT)))
+	{
+		mouse_button_left = 1;
+	}
+
+	if (! (buttonmask & SDL_BUTTON (SDL_BUTTON_MIDDLE)))
+	{
+		mouse_button_middle = 1;
+	}
+
+	if (! (buttonmask & SDL_BUTTON (SDL_BUTTON_RIGHT)))
+	{
+		mouse_button_right= 1;
+	}
+
+	sp = stpushi (mouse_button_right, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_mouse_state ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpushi (mouse_button_middle, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_mouse_state ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpushi (mouse_button_left, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_mouse_state ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpushi (y, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_mouse_state ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpushi (x, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_mouse_state ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	// on stack: x, y, mouse_button_left, mouse_button_middle, mouse_button_right
+
+	return (sp);
+}
