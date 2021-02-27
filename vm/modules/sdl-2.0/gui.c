@@ -5152,6 +5152,57 @@ U1 *get_joystick_y_axis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+// axis 2/3:
+U1 *get_joystick_x2_axis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// get x axis
+	// get value in the range of: -32768 to 32767
+	S8 x ALIGN;
+
+	if (SDL_JoystickNumAxes (joystick) <= 2)
+	{
+		printf ("get_joystick_x2_axis: ERROR: only 2 axis!\n");
+		return (NULL);
+	}
+
+	SDL_PumpEvents ();
+	x = SDL_JoystickGetAxis (joystick, 2);
+
+	sp = stpushi (x, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_joystick_x2_axis: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *get_joystick_y2_axis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// get y axis
+	// get value in the range of: -32768 to 32767
+	S8 y ALIGN;
+
+	if (SDL_JoystickNumAxes (joystick) <= 2)
+	{
+		printf ("get_joystick_y2_axis: ERROR: only 2 axis!\n");
+		return (NULL);
+	}
+
+	SDL_PumpEvents ();
+	y = SDL_JoystickGetAxis (joystick, 3);
+
+	sp = stpushi (y, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_joystick_y2_axis: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
 U1 *get_joystick_buttons (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// get number of joystick buttons
@@ -5188,6 +5239,12 @@ U1 *get_joystick_button (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	if (button > SDL_JoystickNumButtons (joystick) - 1)
+	{
+		printf ("get_joystick_button: ERROR no button: %lli !\n", button);
+		return (NULL);
+	}
+
 	// 1 = pressed, 0 = not pressed
 	SDL_PumpEvents ();
 	button_state = SDL_JoystickGetButton (joystick, button);
@@ -5197,6 +5254,63 @@ U1 *get_joystick_button (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	{
 		// error
 		printf ("get_joystick_button: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *get_joystick_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// get joystick infos
+
+	S8 name_len ALIGN;
+	S8 name_address ALIGN;
+	S8 name_real_len ALIGN;
+
+	S8 joystick_axis_max ALIGN;
+	S8 joystick_buttons_max ALIGN;
+
+	sp = stpopi ((U1 *) &name_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		printf ("get_joystick_info: ERROR stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &name_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		printf ("get_joystick_info: ERROR stack corrupt!\n");
+		return (NULL);
+	}
+
+	name_real_len = strlen_safe (SDL_JoystickNameForIndex (0), name_len);
+	if (name_real_len > name_len)
+	{
+		printf ("get_joystick_info: ERROR name string overflow!\n");
+		return (NULL);
+	}
+
+	// save joystick name in string variable
+	strcpy (&data[name_address], SDL_JoystickNameForIndex (0));
+
+	joystick_axis_max = SDL_JoystickNumAxes (joystick);
+	joystick_buttons_max = SDL_JoystickNumButtons (joystick);
+
+	// return values
+	sp = stpushi (joystick_buttons_max, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_joystick_info: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpushi (joystick_axis_max, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_joystick_info: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 	return (sp);
