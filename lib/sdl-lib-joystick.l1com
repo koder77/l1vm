@@ -1,0 +1,47 @@
+// get mouse state, SDL module
+//
+//
+#include <intr.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 one 1)
+	(set int64 1 width 300)
+	(set int64 1 height 200)
+	(set int64 1 bit 32)
+	(set int64 1 ret 0)
+	(set int64 1 x 0)
+	(set int64 1 y 0)
+	(set int64 1 joy_x_axis 0)
+	(set int64 1 joy_y_axis 0)
+	(set int64 1 joy_button 0)
+	(set int64 1 joy_button_state)
+	(set string s joy_x_axisstr "joystick x axis: ")
+	(set string s joy_y_axisstr "joystick y axis: ")
+	(set string s button_str "button: ")
+	// open screen
+    (zero width height bit :sdl_open_screen call)
+	(ret stpopi)
+	(loadreg)
+	(:loop)
+	(:sdl_get_joystick_x_axis !)
+	(joy_x_axis stpopi)
+	(loadreg)
+	(:sdl_get_joystick_y_axis !)
+	(joy_y_axis stpopi)
+	(loadreg)
+	(joy_button :sdl_get_joystick_button !)
+	(joy_button_state stpopi)
+	(loadreg)
+	print_s (joy_x_axisstr)
+	print_i (joy_x_axis)
+	print_n
+	print_s (joy_y_axisstr)
+	print_i (joy_y_axis)
+	print_n
+	print_s (button_str)
+	print_i (joy_button_state)
+	print_n
+	print_n
+	(:loop jmp)
+(funcend)
+#include <sdl-lib.l1h>

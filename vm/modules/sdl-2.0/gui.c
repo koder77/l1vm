@@ -42,6 +42,9 @@ extern SDL_Renderer *renderer;
 extern TTF_Font *font;
 extern S8 video_bpp;
 
+// SDL joystick input
+extern SDL_Joystick *joystick;
+
 // SDL_Surface *bmap_copy;
 // SDL_Surface *blitscreen;
 struct gadget *gadget = NULL;
@@ -5040,7 +5043,7 @@ U1 *get_mouse_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	SDL_PumpEvents ();
 
 	// get mouse data
-	buttonmask = SDL_GetMouseState (&x, &y);
+	buttonmask = SDL_GetMouseState ((int *) &x, (int *) &y);
 
 	// set the buttons as pressed
 	if (! (buttonmask & SDL_BUTTON (SDL_BUTTON_LEFT)))
@@ -5100,5 +5103,101 @@ U1 *get_mouse_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	// on stack: x, y, mouse_button_left, mouse_button_middle, mouse_button_right
 
+	return (sp);
+}
+
+
+// joystick input handling ----------------------------------------------------
+U1 *close_joystick (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	SDL_JoystickClose (joystick);
+	return (sp);
+}
+
+U1 *get_joystick_x_axis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// get x axis
+	// get value in the range of: -32768 to 32767
+	S8 x ALIGN;
+
+	SDL_PumpEvents ();
+	x = SDL_JoystickGetAxis (joystick, 0);
+
+	sp = stpushi (x, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_joystick_x_axis: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *get_joystick_y_axis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// get y axis
+	// get value in the range of: -32768 to 32767
+	S8 y ALIGN;
+
+	SDL_PumpEvents ();
+	y = SDL_JoystickGetAxis (joystick, 1);
+
+	sp = stpushi (y, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_joystick_y_axis: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *get_joystick_buttons (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// get number of joystick buttons
+	S8 buttons ALIGN;
+
+	buttons = SDL_JoystickNumButtons (joystick);
+	if (buttons < 0)
+	{
+		// error
+		printf ("get_joystick_buttons: ERROR: can't get number of joystick buttons!\n");
+		return (NULL);
+	}
+
+	sp = stpushi (buttons, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_joystick_buttons: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *get_joystick_button (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// check if button is pressed or not
+	S8 button ALIGN;
+	S8 button_state ALIGN = 0;
+
+	sp = stpopi ((U1 *) &button, sp, sp_top);
+	if (sp == NULL)
+	{
+		printf ("get_joystick_button: ERROR stack corrupt!\n");
+		return (NULL);
+	}
+
+	// 1 = pressed, 0 = not pressed
+	SDL_PumpEvents ();
+	button_state = SDL_JoystickGetButton (joystick, button);
+
+	sp = stpushi (button_state, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_joystick_button: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 	return (sp);
 }

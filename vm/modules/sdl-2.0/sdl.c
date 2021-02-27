@@ -37,6 +37,10 @@ SDL_Renderer *renderer = NULL;
 TTF_Font *font = NULL;
 S8 video_bpp ALIGN;
 
+// SDL joystick input
+SDL_Joystick *joystick;
+
+
 // gui
 extern SDL_Surface *copy_surface;			/* backup surface for example menues pixel overdraw */
 extern SDL_Renderer *copy_renderer;
@@ -47,7 +51,6 @@ extern SDL_Renderer *temp_renderer;
 U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
 
 // sdl gfx functions --------------------------------------
-
 U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// top of stack: byte bit
@@ -94,7 +97,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	// printf ("open_screen: %lli x %lli, %i bit\n", width, height, bit);
 
-	if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
+	if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) != 0)
 	{
 		printf ("ERROR SDL_Init!!!\n");
 
@@ -105,6 +108,28 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			printf ("sdl_open_screen: ERROR: stack corrupt!\n");
 		}
 		return (sp);
+	}
+
+	// Check for joystick
+	if (SDL_NumJoysticks() > 0) {
+    	// Open joystick
+
+		SDL_JoystickEventState (SDL_ENABLE);
+
+    	joystick = SDL_JoystickOpen (0);
+
+    	if (joystick)
+		{
+	        printf ("Opened joystick 0\n");
+	        printf ("Name: %s\n", SDL_JoystickNameForIndex (0));
+        	printf ("Number of axes: %d\n", SDL_JoystickNumAxes (joystick));
+        	printf ("Number of buttons: %d\n", SDL_JoystickNumButtons (joystick));
+        	printf ("Number of balls: %d\n", SDL_JoystickNumBalls (joystick));
+    	}
+		else
+		{
+        	printf ("Couldn't open joystick 0\n");
+    	}
 	}
 
 	// init audio
