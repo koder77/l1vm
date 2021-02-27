@@ -10,8 +10,10 @@ L1VM - (1.0.11)
 	Now with "sdl_play_sound" function WAV files can be played.
 
 	NEW: SDL2 library get mouse state function added, see lib/sdl-lib-mouse.l1com example!
+	NEW: SDL2 library: joystick handling code added: get x and y axis and button presses can be read out from joystick!
+	See lib/sdl-lib-joystick.l1com example.
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri Feb 26 2021 17:45 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Feb 27 2021 14:06 +0100
 
 L1VM - (1.0.10)
 	Include/global.h cleanup.

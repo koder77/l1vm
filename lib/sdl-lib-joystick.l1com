@@ -1,4 +1,4 @@
-// get mouse state, SDL module
+// get joystick state, SDL module
 //
 //
 #include <intr.l1h>
