@@ -336,12 +336,17 @@ S2 get_ast (U1 *line, U1 *parse_cont)
 					{
 						if (line[pos] != ' ' && line[pos] != ',' && line[pos] != '\n' && line[pos] != ')' && line[pos] != '}')
 						{
-							ast[ast_ind].expr[exp_ind][arg_ind][arg_pos] = line[pos];
-							arg_pos++;
-							if (arg_pos >= MAXLINELEN)
+							// BUGFIX -> avoid write byte error in valgrind.
+							// do check of all index varaibles!!!
+							if (ast_ind >= 0 && exp_ind >= 0 && arg_ind >= 0 && arg_pos >= 0)
 							{
-								printf ("error: line %lli: argument too long!\n", linenum);
-								return (1);
+								ast[ast_ind].expr[exp_ind][arg_ind][arg_pos] = line[pos];
+								arg_pos++;
+								if (arg_pos >= MAXLINELEN)
+								{
+									printf ("error: line %lli: argument too long!\n", linenum);
+									return (1);
+								}
 							}
 						}
 						else
@@ -352,25 +357,36 @@ S2 get_ast (U1 *line, U1 *parse_cont)
 								return (2);
 							}
 							// printf ("ast_ind: %i, exp_ind: %i, arg_ind: %i, arg_pos: %i\n", ast_ind, exp_ind, arg_ind, arg_pos);
-							ast[ast_ind].expr[exp_ind][arg_ind][arg_pos] = '\0';
-							// printf ("[ %s ]\n", ast[ast_ind].expr[exp_ind][arg_ind]);
+
+							// BUGFIX -> avoid write byte error in valgrind.
+							// do check of all index varaibles!!!
+							if (ast_ind >= 0 && exp_ind >= 0 && arg_ind >= 0 && arg_pos >= 0)
+							{
+								ast[ast_ind].expr[exp_ind][arg_ind][arg_pos] = '\0';
+								// printf ("[ %s ]\n", ast[ast_ind].expr[exp_ind][arg_ind]);
+							}
 
 							if (line[pos] == ')' || line[pos] == '}')
 							{
 								// next char is open bracket, new expression next
-								ast[ast_ind].expr_args[exp_ind] = arg_ind;
-								ast[ast_ind].expr_max = exp_ind;
-								exp_ind++; arg_ind = -1;
-								if (exp_ind >= MAXEXPRESSION)
+								// BUGFIX -> avoid write byte error in valgrind.
+								// do check of all index varaibles!!!
+								if (ast_ind >= 0 && exp_ind >= 0)
 								{
-									printf ("error: line %lli: too much expressions!\n", linenum);
-									return (1);
+									ast[ast_ind].expr_args[exp_ind] = arg_ind;
+									ast[ast_ind].expr_max = exp_ind;
+									exp_ind++; arg_ind = -1;
+									if (exp_ind >= MAXEXPRESSION)
+									{
+										printf ("error: line %lli: too much expressions!\n", linenum);
+										return (1);
+									}
+
+									ast[ast_ind].expr_max = exp_ind;
+									ast[ast_ind].expr_args[exp_ind] = arg_ind;
+
+									ast_ind--; arg_ind = -1;
 								}
-
-								ast[ast_ind].expr_max = exp_ind;
-								ast[ast_ind].expr_args[exp_ind] = arg_ind;
-
-								ast_ind--; arg_ind = -1;
 							}
 							arg = 1;
 

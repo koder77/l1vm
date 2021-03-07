@@ -21,9 +21,7 @@ addi 1, 2, 3
 loada z, 0, 4
 addi 2, 4, 5
 addi 4, 4, 6
-addi 1, 1, 7
-addi 3, 5, 8
-addi 6, 7, 9
+addi addi 3, 5, , addi 1, 1, 7, 6, 7, 9
 addi 8, 9, 10
 load ret, 0, 11
 pullqw 10, 11, 0

@@ -14,27 +14,14 @@ Q, 1, ret
 :main
 loada zero, 0, 0
 loada x, 0, 1
-loada y, 0, 2
-addi 1, 2, 3
-muli 1, 2, 4
-divi 1, 2, 5
-subi 1, 2, 6
-addi 1, 2, 7
-muli 1, 2, 8
-divi 1, 2, 9
-subi 1, 2, 10
-addi 3, 4, 11
-muli 5, 6, 12
-addi 7, 8, 13
-muli 9, 10, 14
-addi 11, 12, 15
-addi 13, 14, 16
+addi addi 11, 12, 1, muli addi muli addi 3, 4, 1, subi 1, 2, 10, 5, 6, 1, divi 1, 2, 9, muli 1, 2, , addi 1, 2, 7, 7, 8, 1, subi 1, 2, 6, divi 1, 2, , muli 1, 2, 4, addi 1, 2, , loada y, 0, 2, 9, 10, 14, 13, 14, 16
 addi 15, 16, 17
 load z, 0, 18
 pullqw 17, 18, 0
 load ret, 0, 19
 loada z, 0, 20
 pullqw 20, 19, 0
+divi 1, 2, 9
 loada z, 0, 19
 intr0 4, 19, 0, 0
 intr0 7, 0, 0, 0

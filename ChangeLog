@@ -13,7 +13,23 @@ L1VM - (1.0.11)
 	NEW: SDL2 library: joystick handling code added: get x and y axis and button presses can be read out from joystick!
 	See lib/sdl-lib-joystick.l1com example.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Feb 27 2021 14:06 +0100
+	NEW: BUGFIXES!!!
+	I found some serious BUG in the compiler, valgrind did show errors on running some example code.
+	Now I fixed the BUG.
+
+	Complex math expressions like:
+	((((x y +)(y z +) +)((z z +)(x x +) +) +) ret =)
+	don't work at the moment! The compiler puts the output in one single line!??
+
+	Only this is working right now:
+	(((x y +)(x y *) +) z =)
+
+	or:
+	((x y +) z =)
+
+	I have to find out what happened in the l1com compiler!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Mar 07 2021 16:14 +0100
 
 L1VM - (1.0.10)
 	Include/global.h cleanup.
