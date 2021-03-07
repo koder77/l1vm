@@ -17,19 +17,26 @@ loada x, 0, 1
 loada y, 0, 2
 addi 1, 2, 3
 muli 1, 2, 4
-divi 1, 2, 5
-muli addi 3, 4, , subi 1, 2, 6, 5, 6, 8
-addi 7, 8, 9
-load z, 0, 10
-pullqw 9, 10, 0
-loada z, 0, 11
-intr0 4, 11, 0, 0
+addi 3, 4, 5
+load z, 0, 6
+pullqw 5, 6, 0
+loada z, 0, 7
+intr0 4, 7, 0, 0
 intr0 7, 0, 0, 0
-loada ret, 0, 12
-intr0 4, 12, 0, 0
+addi 1, 2, 8
+addi 1, 8, 8
+muli 2, 8, 8
+muli 1, 8, 8
+load z, 0, 9
+pullqw 8, 9, 0
+loada z, 0, 7
+intr0 4, 7, 0, 0
 intr0 7, 0, 0, 0
-movi 1, 11
-intr0 4, 11, 0, 0
+loada ret, 0, 10
+intr0 4, 10, 0, 0
+intr0 7, 0, 0, 0
+movi 1, 7
+intr0 4, 7, 0, 0
 intr0 7, 0, 0, 0
 stpushi 0
 stpushi 2
@@ -41,15 +48,11 @@ stpushi 7
 stpushi 8
 stpushi 9
 stpushi 10
-stpushi 11
-stpushi 12
 jsr :test
-stpopi 12
+stpopi 10
 load ret, 0, 1
-pullqw 12, 1, 0
-movi 12, 11
-stpopi 12
-stpopi 11
+pullqw 10, 1, 0
+movi 10, 7
 stpopi 10
 stpopi 9
 stpopi 8

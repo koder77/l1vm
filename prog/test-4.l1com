@@ -11,6 +11,11 @@
 	(4 z 0 0 intr0)
 	// print newline
 	(7 0 0 0 intr0)
+	{x + y + x * y * x z =}
+	// print z
+	(4 z 0 0 intr0)
+	// print newline
+	(7 0 0 0 intr0)
 	// print ret
 	(4 ret 0 0 intr0)
 	// print newline
