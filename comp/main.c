@@ -4155,28 +4155,6 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										found_exp++;
 										found_level = e;
 									}
-									else
-									{
-										// some kind of: (((x y +) (z ~i) *) a =) expression
-										// get register name in last code line
-										{
-											S2 code_temp_len;
-											strcat ((char *) code_temp, code[code_line]);
-
-											code_temp_len = strlen_safe (code_temp, MAXLINELEN);
-
-											// remove line feed
-											code_temp[code_temp_len - 2] ='\0';
-											// printf ("translate loop end: code_temp: '%s'\n", code_temp);
-
-											strcat ((char *) code_temp, ", ");
-											code_line--;	// delete last line with register number in it!!!
-										}
-									}
-
-									#if DEBUG
-										printf ("translate loop end: code_temp 1: '%s'\n", code_temp);
-									#endif
 
 									if (ast[e].expr_reg[exp + 1] >= 0)
 									{
@@ -4184,34 +4162,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										strcat ((char *) code_temp, (const char *) str);
 										strcat ((char *) code_temp, ", ");
 										ast[e].expr_reg[exp + 1] = -1;
-									}
-									else
-									{
-										// some kind of: (((x y +) (z ~i) *) a =) expression
-										// get register name in last code line
-										{
-											S2 code_temp_len;
-											strcat ((char *) code_temp, code[code_line]);
-
-											code_temp_len = strlen_safe (code_temp, MAXLINELEN);
-
-											// remove line feed
-											code_temp[code_temp_len - 1] ='\0';
-											// printf ("translate loop end: code_temp: '%s'\n", code_temp);
-
-											strcat ((char *) code_temp, ", ");
-											code_line--;	// delete last line with register number in it!!!
-										}
-									}
-
-									#if DEBUG
-										printf ("translate loop end: opcode: %lli\n", translate[t].assemb_op);
-									#endif
-
-									#if DEBUG
-										printf ("translate loop end: code_temp 2: '%s'\n", code_temp);
-									#endif
-
+									}	
 									if (found_exp > 0) break;
 								}
 

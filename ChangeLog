@@ -28,8 +28,10 @@ L1VM - (1.0.11)
 	((x y +) z =)
 
 	I have to find out what happened in the l1com compiler!
+	UPDATE: I found the BUG! I had to remove the asymetrical math handling code!!
+	So everything should work now again!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun Mar 07 2021 16:14 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Mar 07 2021 18:49 +0100
 
 L1VM - (1.0.10)
 	Include/global.h cleanup.
