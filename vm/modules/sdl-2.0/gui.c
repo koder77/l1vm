@@ -5231,6 +5231,7 @@ U1 *get_joystick_button (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// check if button is pressed or not
 	S8 button ALIGN;
 	S8 button_state ALIGN = 0;
+	SDL_Event event;
 
 	sp = stpopi ((U1 *) &button, sp, sp_top);
 	if (sp == NULL)
@@ -5245,9 +5246,37 @@ U1 *get_joystick_button (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	SDL_PumpEvents ();
+	if (SDL_PollEvent (&event) == 1)
+	{
+		// there is some event, check if button is pressed
+		switch (event.type)
+		{
+			case SDL_JOYBUTTONDOWN:  /* Handle Joystick Button Presses */
+				if (event.jbutton.button == button)
+				{
+					// the checked button is pressed
+					button_state = 1;
+				}
+				break;
+
+			case SDL_JOYBUTTONUP:
+				if (event.jbutton.button == button)
+				{
+					// the checked button is released
+					button_state = 0;
+				}
+				break;
+		}
+	}
+
+
+	/* old code, only working on button 0 !!!
 	// 1 = pressed, 0 = not pressed
 	SDL_PumpEvents ();
 	button_state = SDL_JoystickGetButton (joystick, button);
+	*/
+
 
 	sp = stpushi (button_state, sp, sp_bottom);
 	if (sp == NULL)
@@ -5292,7 +5321,7 @@ U1 *get_joystick_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	// save joystick name in string variable
-	strcpy (&data[name_address], SDL_JoystickNameForIndex (0));
+	strcpy ((char *) &data[name_address], SDL_JoystickNameForIndex (0));
 
 	joystick_axis_max = SDL_JoystickNumAxes (joystick);
 	joystick_buttons_max = SDL_JoystickNumButtons (joystick);
