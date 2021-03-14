@@ -1,3 +1,8 @@
+L1VM - (1.0.12)
+	Added include-lib/math-const.l1h: with math constants like Pi, etc.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Mar 14 2021 16:51 +0100
+
 L1VM - (1.0.11)
 	Updated "clean.sh" script to clean assemb/, comp/ and vm/ directories too!
 	Did a includes cleanup. Updated the version number to 1.0.11.
