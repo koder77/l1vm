@@ -2010,7 +2010,6 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										init_registers ();
 									}
 
-
 									strcpy ((char *) code_temp, ":");
 									strcat ((char *) code_temp, (const char *) ast[level].expr[j][last_arg - 1]);
 
@@ -3563,7 +3562,6 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 											strcat ((char *) code[code_line], (const char *) for_label);
 											strcat ((char *) code[code_line], "\n");
 
-
 											get_for_label_end (for_pos, for_label);
 
 											// write code jmpi to for label 3 code label, end of loop
@@ -4127,7 +4125,6 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										}
 										break;
 								}
-
 							}
 							else
 							{
@@ -4162,7 +4159,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 										strcat ((char *) code_temp, (const char *) str);
 										strcat ((char *) code_temp, ", ");
 										ast[e].expr_reg[exp + 1] = -1;
-									}	
+									}
 									if (found_exp > 0) break;
 								}
 
@@ -4270,7 +4267,6 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									}
 
 									strcpy ((char *) code[code_line], (const char *) code_temp);
-
 
 									strcpy ((char *) code_temp, "load ");
 									strcat ((char *) code_temp, (const char *) ast[level].expr[j][last_arg - 1]);
@@ -4443,7 +4439,6 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									}
 
 									strcpy ((char *) code[code_line], (const char *) code_temp);
-
 
 									strcpy ((char *) code_temp, "load ");
 									strcat ((char *) code_temp, (const char *) ast[level].expr[j][last_arg - 1]);
