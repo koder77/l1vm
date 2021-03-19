@@ -1,4 +1,4 @@
-L1VM README  2021-01-07
+L1VM README  2021-03-19
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -250,3 +250,10 @@ compiles program "test.l1com"
 $ l1vm test
 </pre>
 finally executes program "test.l1obj"
+
+<h3>compile using preprocessor</h3>
+Compile "lib/sdl-lib.l1com" example:
+<pre>
+$ /build.sh lib/sdl-lib.l1com
+</pre>
+Always the full name must be used by the preprocessor l1pre!
