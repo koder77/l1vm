@@ -254,6 +254,6 @@ finally executes program "test.l1obj"
 <h3>compile using preprocessor</h3>
 Compile "lib/sdl-lib.l1com" example:
 <pre>
-$ /build.sh lib/sdl-lib.l1com
+$ ./build.sh lib/sdl-lib.l1com
 </pre>
 Always the full name must be used by the preprocessor l1pre!
