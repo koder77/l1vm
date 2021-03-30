@@ -2780,8 +2780,9 @@ U1 *socket_get_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// send GET request to server
 	strcpy ((char *) sockets[handle].buf, "GET ");
 	strcat ((char *) sockets[handle].buf, (const char *) &data[requestaddr]);
+	strcat ((char *) sockets[handle].buf, "\n");
 
-	printf ("DEBUG: socket_get_file: '%s'\n", sockets[handle].buf);
+	// printf ("DEBUG: socket_get_file: '%s'\n", sockets[handle].buf);
 
 	header_len = strlen_safe ((const char *) sockets[handle].buf, MAXLINELEN);
 	ret = exe_swrite (handle, header_len);
@@ -2801,11 +2802,11 @@ U1 *socket_get_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	// get response, wait for "Content_Length:"
-	while (loop)
+	while (loop == 1)
 	{
 		if (socket_data_read_string (handle, read_buf, 255) != 0)
 		{
-			printf ("socket_get_file: ERROR reading data!");
+			printf ("socket_get_file: ERROR reading data!\n");
 
 			// push ERROR code ERROR
 			sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
@@ -2818,7 +2819,7 @@ U1 *socket_get_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			return (sp);
 		}
 
-		printf ("DEBUG: socket_get_file: answ: '%s'", read_buf);
+		// printf ("DEBUG: socket_get_file: answ: '%s'\n", read_buf);
 
 		if (strlen_safe ((const char *) read_buf, MAXLINELEN) > strlen_safe ((const char *) content_length, MAXLINELEN))
 		{
@@ -2840,6 +2841,7 @@ U1 *socket_get_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 					file_size_str[n] = read_buf[j];
 					n++;
 				}
+				// printf ("DEBUG: socket_get_file: filesize: %s\n", file_size_str);
 			}
 		}
 		if (strlen_safe ((const char *) read_buf, MAXLINELEN) == 0)
@@ -2853,16 +2855,17 @@ U1 *socket_get_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	file_size = atoi ((const char *) file_size_str);
 
 	// get file name of request
-	for (i = strlen_safe ((const char *) &data[requestaddr], MAXLINELEN); i > 0; i--)
+	for (i = strlen_safe ((const char *) &data[requestaddr], MAXLINELEN) - 1; i > 0; i--)
 	{
 		if (data[requestaddr + i] == '/')
 		{
 			n = 0;
 			for (j = i + 1; j < strlen_safe ((const char *) &data[requestaddr], MAXLINELEN); j++)
 			{
-				file_name[n] = data[requestaddr + i];
+				file_name[n] = data[requestaddr + j];
 				n++;
 			}
+			file_name[n] = '\0';
 		}
 	}
 
@@ -2877,7 +2880,7 @@ U1 *socket_get_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	strcpy (path_name, file_name);
 	#endif
 
-	printf ("DEBUG: socket_get_file: filename: '%s'\n", path_name);
+	// printf ("DEBUG: socket_get_file: filename: '%s'\n", path_name);
 
 	file = fopen ((char *) path_name, "w");
 	if (file == NULL)
