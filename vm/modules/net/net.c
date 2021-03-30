@@ -2905,6 +2905,8 @@ U1 *socket_get_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		{
 			printf ("socket_get_file: ERROR reading file data!");
 
+			fclose (file);
+
 			// push ERROR code ERROR
 			sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
 			if (sp == NULL)
@@ -2919,6 +2921,8 @@ U1 *socket_get_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		{
 			if (fputc (sockets[handle].buf[0], file) == EOF)
 			{
+				fclose (file);
+
 				// push ERROR code ERROR
 				sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
 				if (sp == NULL)
