@@ -37,6 +37,7 @@
 	(set string s get_mimetype_from_filenamestr@net "get_mimetype_from_filename")
 	(set string s socket_send_filestr@net "socket_send_file")
 	(set string s socket_handle_getstr@net "socket_handle_get")
+	(set string s socket_get_filestr@net "socket_get_file")
     (set int64 1 init@net 0)
     (set int64 1 open_server_socket@net 1)
     (set int64 1 open_accept_server@net 2)
@@ -70,6 +71,7 @@
     (set int64 1 data_remove_double@net 30)
 	(set int64 1 data_remove_string@net 31)
 	(set int64 1 data_get_info@net 32)
+	(set int64 1 socket_get_file@net 33)
 	(set int64 1 mod@net 0)
 	(set int64 1 maxind@net 0)
 	// get arguments from stack
@@ -111,6 +113,7 @@
     (2 mod@net data_remove_double@net data_remove_doublestr@netaddr intr0)
     (2 mod@net data_remove_string@net data_remove_stringstr@netaddr intr0)
 	(2 mod@net data_get_info@net data_get_infostr@netaddr intr0)
+	(2 mod@net socket_get_file@net socket_get_filestr@netaddr intr0)
 	// init library
 	(maxind@net stpushi)
 	(3 mod@net init@net 0 intr0)
@@ -179,6 +182,9 @@
 (funcend)
 (socket_send_file func)
 	(3 mod@net socket_send_file@net 0 intr0)
+(funcend)
+(socket_get_file func)
+	(3 mod@net socket_get_file@net 0 intr0)
 (funcend)
 (socket_handle_get func)
 	(3 mod@net socket_handle_get@net 0 intr0)

@@ -1,6 +1,10 @@
 L1VM - (1.0.13)
-	
--- Stefan Pietzonke <jay-t@gmx.net> Sun Mar 14 2021 16:51 +0100
+	NEW: added network library "socket_get_file" function, to download a file via TCP/IP. (WIP)
+	net-lib-get-file.l1com
+
+	BUGFIX: network library: "socket_send_file", filename get first char fix!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue Mar 30 2021 19:21 +0100
 
 L1VM - (1.0.12)
 	Added include-lib/math-const.l1h: with math constants like Pi, etc.
