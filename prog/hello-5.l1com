@@ -17,14 +17,8 @@
 	((x y *) a =)
 	(4 a 0 0 intr0)
 	(7 0 0 0 intr0)
-	{x + y * z * x a =}
-	(4 a 0 0 intr0)
-	(7 0 0 0 intr0)
 	(((x y *)(z x *) *) a =)
 	(4 a 0 0 intr0)
-	(7 0 0 0 intr0)
-	{c + d * e f =}
-	(4 f 0 0 intr0)
 	(7 0 0 0 intr0)
 	(255 zero 0 0 intr0)
 (funcend)

@@ -25,6 +25,9 @@
 // protos var.c
 S2 get_var_is_const (U1 *name);
 
+// proto parse_rpolish
+S2 parse_rpolish (U1 *postfix);
+
 // translate.h
 #define MAXTRANSLATE 39
 

@@ -39,6 +39,7 @@ The authors of libserialport: the sigrok team. <br>
 The authors of mt19937-64.c random number generator :Takuji Nishimura and Makoto Matsumoto. <br>
 The author of Wiring Pi, the Raspberry Pi GPIO library: drogon. <br>
 The author of libasmjit, JIT-compiler: Petr Kobalicek. <br><br>
+The authors of www.tutorialspoint.com, for their polish math notation parser example!
 
 Without them this L1VM project would not be possible! Thank you! <br>
 ----------------------- <br>
@@ -46,6 +47,16 @@ Without them this L1VM project would not be possible! Thank you! <br>
 <h2>New: l1pre - the preprocessor</h2>
 The new "l1pre" preprocessor can be used to define macros and include files.
 See the new "include-lib" directory with all header files. The "prog/hello-6.l1com" example shows how to use this!
+
+<h2>New: reversed polish math notation</h2>
+Math expressions in: { }, are parsed as reversed polish notation:
+
+{a = x y + z x * *}
+
+is the same as: "a = x + y * z * x"
+This needs no brackets for complex math expressions!
+See "prog/hello-4.l1com" example!
+
 
 <h2>New SDL 2.0!</h2>
 Finally I ported the SDL gfx/GUI library to SDL 2.0!

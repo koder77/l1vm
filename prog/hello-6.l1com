@@ -22,14 +22,8 @@
 	((x y *) a =)
 	print_i (a)
 	print_n
-	{x + y * z * x a =}
-	print_i (a)
-	print_n
 	(((x y *)(z x *) *) a =)
 	print_i (a)
-	print_n
-	{c + d * e f =}
-	print_i (f)
 	print_n
 	exit (zero)
 (funcend)

@@ -74,6 +74,9 @@ S8 get_temp_int (void);
 F8 get_temp_double (void);
 char *fgets_uni (char *str, int len, FILE *fptr);
 
+// proto parse_rpolish.c
+S2 parse_rpolish (U1 *postfix);
+
 // mem.c
 void dealloc_array_U1 (U1** array, size_t n_rows);
 U1** alloc_array_U1 (size_t n_rows, size_t n_columns);
@@ -499,7 +502,8 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 	if (parse_cont)
 	{
-		if (parse_continous () != 0)
+		// if (parse_continous () != 0)
+		if (parse_rpolish (line) != 0)
 		{
 			printf ("error: line: %lli can't parse part in { }\n", linenum);
 			return (1);
