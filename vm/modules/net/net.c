@@ -2748,7 +2748,7 @@ U1 *socket_get_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 file_size ALIGN;
 	U1 read_buf[256];
 	U1 content_length[] = "Content-Length: ";
-	U1 http[] = " HTTP/1.1"
+	U1 http[] = " HTTP/1.1";
 
 	S8 header_len ALIGN;
 	S8 ret ALIGN;
