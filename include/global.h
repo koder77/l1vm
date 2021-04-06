@@ -158,12 +158,14 @@
 	#endif
 #endif
 
+/*
 #if MATH_LIMITS
 	#pragma message ("MATH LIMITS ON")
 #endif
 #if MATH_LIMITS_DOUBLE_FULL
 	#pragma message ("MATH LIMITS DOUBLE FULL ON")
 #endif
+*/
 
 typedef unsigned char           U1;		/* UBYTE   */
 typedef int16_t                 S2;     /* INT     */
@@ -177,7 +179,7 @@ typedef double                  F8;     /* DOUBLE */
 /* set alignment for Android ARM */
 #if DO_ALIGNMENT
 #define ALIGN		__attribute__ ((aligned(8)))
-#pragma message ("ALIGNMENT FOR 64 bit ON")
+// #pragma message ("ALIGNMENT FOR 64 bit ON")
 #else
 #define ALIGN
 #endif
