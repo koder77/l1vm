@@ -76,6 +76,8 @@ char *fgets_uni (char *str, int len, FILE *fptr);
 
 // proto parse_rpolish.c
 S2 parse_rpolish (U1 *postfix);
+//converts infix expression to postfix
+S2 convert (U1 infix[], U1 postfix[]);
 
 // mem.c
 void dealloc_array_U1 (U1** array, size_t n_rows);
@@ -165,6 +167,11 @@ S2 check_brackets_match (U1 *line)
 
 	for (i = 0; i < slen; i++)
 	{
+		if (line[i] == '{')
+		{
+			// RPN expression start: return OK
+			return (0);
+		}
 		if (line[i] == '(')
 		{
 			open_brackets++;
@@ -456,11 +463,33 @@ U1 *get_variable_value (S8 maxind, U1 *name)
 	return (NULL);		// variable name not found, return empty string
 }
 
+S2 check_for_brackets (U1 *line)
+{
+	S2 i, len;
+
+	len = strlen_safe ((const char *) line, MAXLINELEN);
+	if (len > 0)
+	{
+		for (i = 0; i < len; i++)
+		{
+			if (line[i] == '(' || line[i] == ')')
+			{
+				return (1);	// brackets found
+			}
+		}
+	}
+	return (0);	// no brackets in line
+}
+
 S2 parse_line (U1 *line, S2 start, S2 end)
 {
     S4 level, j, last_arg, last_arg_2, t, v, reg, reg2, reg3, reg4, target, e, exp;
 	U1 ok;
 	S8 i ALIGN;
+
+	// for convert brackets expression to RPN
+	U1 conv[MAXLINELEN];
+
 	U1 str[MAXLINELEN];
 	U1 code_temp[MAXLINELEN];
 
@@ -502,13 +531,34 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 	if (parse_cont)
 	{
-		// if (parse_continous () != 0)
-		if (parse_rpolish (line) != 0)
+		if (check_for_brackets (line) == 1)
 		{
-			printf ("error: line: %lli can't parse part in { }\n", linenum);
-			return (1);
+			// found brackets in math expression, convert to RPN
+			if (convert (line, conv) == 1)
+			{
+				printf ("error: line: %lli can't convert infix to RPN!\n", linenum);
+				return (1);
+			}
+
+			// printf ("DEBUG: parse line: exp: '%s'\n", line);
+			// printf ("DEBUG: parse line: RPN: '%s'\n", conv);
+
+			if (parse_rpolish (conv) != 0)
+			{
+				printf ("error: line: %lli can't parse part in { }\n", linenum);
+				return (1);
+			}
+			return (0);
 		}
-		return (0);
+		else
+		{
+			if (parse_rpolish (line) != 0)
+			{
+				printf ("error: line: %lli can't parse part in { }\n", linenum);
+				return (1);
+			}
+			return (0);
+		}
 	}
 
 	// walking the AST

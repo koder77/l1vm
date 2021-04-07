@@ -38,11 +38,15 @@ S2 get_var_is_const (U1 *name);
 #define MAX_STACK 256
 // #define MAXLINELEN 256
 
-U1 *stack_ob[MAX_STACK][MAXLINELEN];
+U1 stack_ob[MAX_STACK][MAXLINELEN];
 S2 stack_ob_int = -1;
 
 S2 stack_reg[MAX_STACK];
 int stack_reg_int = -1;
+
+//int stack
+int stack[MAXLINELEN];
+int top_int = -1;
 
 // register tracking functions
 void set_regi (S4 reg, U1 *name);
@@ -246,7 +250,7 @@ S2 push_stack (U1 *item)
 	}
 }
 
-U1 **pop_stack ()
+U1 *pop_stack ()
 {
 	// printf ("pop_stack: stack_ob_int: %i\n", stack_ob_int);
 	if (stack_ob_int > -1)
@@ -289,6 +293,7 @@ S2 pop_reg_stack ()
 	}
 }
 
+
 //check whether the symbol is operator?
 S2 isOperator (char symbol)
 {
@@ -301,11 +306,186 @@ S2 isOperator (char symbol)
       case '^':
       case '(':
       case ')':
+	  case '{':
+	  case '}':
          return 1;
       break;
          default:
          return 0;
    }
+}
+
+//returns precedence of operators
+S2 precedence (char symbol)
+{
+   switch (symbol) {
+      case '+':
+      case '-':
+         return 2;
+         break;
+      case '*':
+      case '/':
+         return 3;
+         break;
+      case '^':
+         return 4;
+         break;
+      case '(':
+      case ')':
+      case '#':
+         return 1;
+         break;
+   }
+   return (0);
+}
+
+//converts infix expression to postfix
+S2 convert (U1 infix[], U1 postfix[])
+{
+	S2 i, symbol, j = 0, startexp = 0;
+	S2 pos = 0;
+	U1 *buf;
+	U1 buf_push[3];
+
+	stack_ob[++stack_ob_int][0] = '#';
+
+	for (i = 0; i < strlen_safe ((const char *) infix, MAXLINELEN); i++)
+	{
+		postfix[j] = infix[i];
+		if (infix[i] == '=')
+		{
+			startexp = i + 1;
+		}
+		if (infix[i] == '}')
+		{
+			// found end of expression, remove it
+			infix[i] = '\0';
+			break;
+		}
+		j++;
+	}
+	if (startexp == 0)
+	{
+		// error no assign = symbol found!!
+		return (1);
+	}
+	j = startexp;
+
+	if (infix[startexp] == ' ')
+	{
+		startexp++;
+	}
+	// printf ("convert: start: %lli\n", startexp);
+	// printf ("convert: char: '%c'\n", infix[startexp]);
+
+	for (i = startexp; i < strlen_safe ((const char *) infix, MAXLINELEN); i++)
+	{
+		symbol = infix[i];
+		// printf ("DEBUG: symbol: %c\n", symbol);
+		if (isOperator (symbol) == 0)
+		{
+			 postfix[j] = symbol;
+			 j++;
+		 }
+		 else
+		 {
+         	if (symbol == '(')
+		 	{
+				buf_push[0] = symbol;
+				buf_push[1] = '\0';
+        		if (push_stack (buf_push) == 1)
+				{
+					// error
+					return (1);
+				}
+         	}
+		 	else
+		 	{
+            	if (symbol == ')')
+				{
+               		while (stack_ob[stack_ob_int][0] != '(')
+			   		{
+						buf = (U1 *) pop_stack ();
+						if (buf == NULL)
+						{
+							// error
+							return (1);
+						}
+
+						// printf ("DEBUG: buf: '%s'\n", buf);
+
+						postfix[j] = ' ';
+						j++;
+						for (pos = 0; pos < strlen_safe ((const char *) buf, MAXLINELEN); pos++)
+						{
+							postfix[j] = buf[pos];
+							j++;
+						}
+						postfix[j] = ' ';
+						j++;
+	               	}
+	               if (pop_stack () == NULL)	// pop out (
+				   {
+					   // error
+					   return (1);
+				   }
+            	}
+				else
+				{
+					// printf ("DEBUG: stack_ob_int: %i\n", stack_ob_int);
+               		if (precedence (symbol) > precedence (stack_ob[stack_ob_int][0]))
+				   	{
+						buf_push[0] = symbol;
+						buf_push[1] = '\0';
+						if (push_stack (buf_push) == 1)
+						{
+							// error
+							return (1);
+						}
+               		}
+				   	else
+			   		{
+						while (precedence (symbol) <= precedence (stack_ob[stack_ob_int][0]))
+						{
+							buf = (U1 *) pop_stack ();
+							if (buf == NULL)
+							{
+								// error
+								return (1);
+							}
+							for (pos = 0; pos < strlen_safe ((const char *) buf, MAXLINELEN); pos++)
+							{
+								postfix[j] = buf[pos];
+								j++;
+							}
+                  		}
+						buf_push[0] = symbol;
+						buf_push[1] = '\0';
+						push_stack (buf_push);
+					}
+            	}
+         	}
+      	}
+	}
+   while (stack_ob[stack_ob_int][0] != '#')
+   {
+	  buf = (U1 *) pop_stack ();
+ 	  if (buf == NULL)
+ 	  {
+ 		  // error
+ 		  return (1);
+ 	  }
+	  postfix[j] = ' ';
+	  j++;
+	  for (pos = 0; pos < strlen_safe ((const char *) buf, MAXLINELEN); pos++)
+	  {
+		  postfix[j] = buf[pos];
+		  j++;
+	  }
+   }
+
+   postfix[j] = '\0'; //null terminate string.
+   return (0);
 }
 
 S2 get_target_var (U1 *line, U1 *varname, S2 len)
