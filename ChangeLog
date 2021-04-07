@@ -11,10 +11,14 @@ L1VM - (1.0.13)
 	This needs no brackets for complex math expressions!
 	See "prog/hello-4.l1com" example!
 
-	NEW: global.h switched pragma messages of alignment and math limits off.
-	This makes it easier to read real compiler warnings/errors!
+	NEW: function to convert infix to RPN if brackets are found in expression:
+	{ret = (y + z) * ((z + y) * foo)}
+	converts to RPN:
+	{ret = y z + z y + foo * *}
 
--- Stefan Pietzonke <jay-t@gmx.net> Tue Apr 06 2021 20:41 +0200
+	global.h: pragma messages removed for ALIGNMENT and buildtype.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed Apr 07 2021 17:44 +0200
 
 L1VM - (1.0.12)
 	Added include-lib/math-const.l1h: with math constants like Pi, etc.
