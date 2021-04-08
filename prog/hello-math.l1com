@@ -1,0 +1,34 @@
+// hello-math.l1com - Brackets - Hello world
+//
+// RPN math and infix math expressions
+//
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 x 23)
+	(set int64 1 y 42)
+ 	(set int64 1 z 13)
+	(set int64 1 foo 23)
+	(set int64 1 ret 0)
+	(set string 13 hello "Hello world!")
+	// print string
+	(6 hello 0 0 intr0)
+	(7 0 0 0 intr0)
+	// reversed polish notation (RPN):
+	{ret = x y + z x * *}
+	(4 ret 0 0 intr0)
+	(7 0 0 0 intr0)
+	// RPN:
+	{ret = x y z + *}
+	(4 ret 0 0 intr0)
+	(7 0 0 0 intr0)
+	// infix math notation:
+	// parsed as infix math, has "()" brackets:
+	{ret = (y + z) * ((z + y) * foo)}
+	(4 ret 0 0 intr0)
+	(7 0 0 0 intr0)
+	// infix:
+	{ret = (y * foo * z)}
+	(4 ret 0 0 intr0)
+	(7 0 0 0 intr0)
+	(255 zero 0 0 intr0)
+(funcend)
