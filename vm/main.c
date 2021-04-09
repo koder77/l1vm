@@ -24,13 +24,27 @@
 #include "jit.h"
 #include "../include/global.h"
 
-// show host system type on compile time
+// show host system type on compile time ======================================
 #if __linux__
 	#pragma message ("Linux host detected!")
 #endif
 #if _WIN32
 	#pragma message ("Windows host detected!")
 #endif
+
+// show math limits settings on compile time
+#if MATH_LIMITS
+	#pragma message ("MATH LIMITS ON")
+#endif
+#if MATH_LIMITS_DOUBLE_FULL
+	#pragma message ("MATH LIMITS DOUBLE FULL ON")
+#endif
+
+// show alignment on compile time
+#if DO_ALIGNMENT
+	#pragma message ("ALIGNMENT FOR 64 bit ON")
+#endif
+// ============================================================================
 
 // time functions
 struct tm *tm;

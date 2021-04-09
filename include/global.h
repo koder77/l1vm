@@ -158,14 +158,6 @@
 	#endif
 #endif
 
-/*
-#if MATH_LIMITS
-	#pragma message ("MATH LIMITS ON")
-#endif
-#if MATH_LIMITS_DOUBLE_FULL
-	#pragma message ("MATH LIMITS DOUBLE FULL ON")
-#endif
-*/
 
 typedef unsigned char           U1;		/* UBYTE   */
 typedef int16_t                 S2;     /* INT     */
