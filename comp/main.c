@@ -466,19 +466,31 @@ U1 *get_variable_value (S8 maxind, U1 *name)
 S2 check_for_brackets (U1 *line)
 {
 	S2 i, len;
+	S2 brackets = 0, brackets_found = 0;
 
 	len = strlen_safe ((const char *) line, MAXLINELEN);
 	if (len > 0)
 	{
 		for (i = 0; i < len; i++)
 		{
-			if (line[i] == '(' || line[i] == ')')
+			if (line[i] == '(')
 			{
-				return (1);	// brackets found
+				brackets++;
+				brackets_found = 1;
+			}
+			if (line[i] == ')')
+			{
+				brackets--;
 			}
 		}
 	}
-	return (0);	// no brackets in line
+	// check if brackets counter is 0, all opening brackets are closed or not
+	if (brackets != 0)
+	{
+		printf ("error: line %lli: brackets don't match!\n", linenum);
+		return (0);
+	}
+	return (brackets_found);	// no brackets in line
 }
 
 S2 parse_line (U1 *line, S2 start, S2 end)
