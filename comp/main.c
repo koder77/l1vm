@@ -546,7 +546,7 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 	if (parse_cont)
 	{
-		printf ("DEBUG parse_cont: '%s'\n", line);
+		// printf ("DEBUG parse_cont: '%s'\n", line);
 
 		if (check_for_brackets (line) == 1)
 		{
