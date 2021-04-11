@@ -1,7 +1,12 @@
 L1VM - (1.0.14)
 	Infix math expression to RPN converter now prints error message if brackets "()" don't match.
+	NEW: compiler - array variable assign in multi lines:
+	See prog/array-test.l1com
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Apr 10 2021 11:20 +0200
+	(set int64 5 arr_0 10 5 /)
+	@, 1234567890, 4, 3, ;
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun Apr 11 2021 20:19 +0200
 
 L1VM - (1.0.13)
 	NEW: added network library "socket_get_file" function, to download a file via TCP/IP. (WIP)

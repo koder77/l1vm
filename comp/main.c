@@ -529,6 +529,9 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 	U1 parse_cont = 0;
 	S2 ret;
 
+	// multi line array assign
+	U1 array_multi = 0;
+
 	ret = get_ast (line, &parse_cont);
 	if (ret == 1)
 	{
@@ -543,6 +546,8 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 
 	if (parse_cont)
 	{
+		printf ("DEBUG parse_cont: '%s'\n", line);
+
 		if (check_for_brackets (line) == 1)
 		{
 			// found brackets in math expression, convert to RPN
@@ -836,6 +841,12 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 								{
 									if ((data_info[data_ind].type >= BYTE && data_info[data_ind].type <= QUADWORD) || data_info[data_ind].type == DOUBLEFLOAT)
 									{
+										if (ast[level].expr[j][i][0] == '/')
+										{
+											// found end of line mark of multi line array data
+											array_multi = 1;
+											continue;
+										}
 										if (checkdigit (ast[level].expr[j][i]) != 1)
 										{
 											if (get_variable_value (data_ind, ast[level].expr[j][i]) != 0)
@@ -856,7 +867,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									strcat ((char *) data[data_line], ", ");
 									strcat ((char *) data[data_line], (const char *) data_info[data_ind].value_str);
 								}
-								strcat ((char *) data[data_line], ", ;");
+								if (array_multi == 0)
+								{
+									strcat ((char *) data[data_line], ", ;");
+								}
 							}
 
 							strcat ((char *) data[data_line], "\n");
@@ -900,6 +914,12 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 								{
 									if ((data_info[data_ind].type >= BYTE && data_info[data_ind].type <= QUADWORD) || data_info[data_ind].type == DOUBLEFLOAT)
 									{
+										if (ast[level].expr[j][i][0] == '/')
+										{
+											// found end of line mark of multi line array data
+											array_multi = 1;
+											continue;
+										}
 										if (checkdigit (ast[level].expr[j][i]) != 1)
 										{
 											if (get_variable_value (data_ind, ast[level].expr[j][i]) != 0)
@@ -920,7 +940,10 @@ S2 parse_line (U1 *line, S2 start, S2 end)
 									strcat ((char *) data[data_line], ", ");
 									strcat ((char *) data[data_line], (const char *) data_info[data_ind].value_str);
 								}
-								strcat ((char *) data[data_line], ", ;");
+								if (array_multi == 0)
+								{
+									strcat ((char *) data[data_line], ", ;");
+								}
 							}
 
 							strcat ((char *) data[data_line], "\n");
@@ -4849,6 +4872,24 @@ S2 parse (U1 *name)
 					inline_asm = 0;
 					continue;
 				}
+
+				// search for "@," array variable assign in more than one line:
+				// @, 32Q, 10, 5,
+				// @, 1234567890, 4, 3, ;
+				pos = searchstr (rbuf, (U1 *) "@,", 0, 0, TRUE);
+				if (pos != -1)
+				{
+					data_line++;
+					if (data_line >= line_len)
+					{
+						printf ("error: line %lli: data list full!\n", linenum);
+						return (1);
+					}
+
+					strcpy ((char *) data[data_line], (const char *) rbuf);
+					continue;
+				}
+
 
 				if (inline_asm == 1)
 				{
