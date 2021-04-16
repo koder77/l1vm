@@ -9,7 +9,9 @@ L1VM - (1.0.14)
 	NEW: prog/start.l1com, prog/sdl-4.l1com, prog/sdl-5.l1com
 	and prog/webserver.l1com now use includes for the libraries!
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu Apr 15 2021 18:36 +0200
+	NEW: prog/hello-for-2.l1com and prog/hello-while-2.l1com examples added.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri Apr 16 2021 11:31 +0200
 
 L1VM - (1.0.13)
 	NEW: added network library "socket_get_file" function, to download a file via TCP/IP. (WIP)
