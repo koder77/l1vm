@@ -308,9 +308,6 @@ struct call_label
 #define MAXSHELLARGS			32
 #define MAXSHELLARGLEN			256
 
-#if ! JIT_COMPILER
-// struct opcode opcode[MAXOPCODES];
-#endif
 
 // This is type of function we will generate
 // for JIT-compiler
@@ -404,8 +401,3 @@ struct JIT_code
 #define LOAD    59
 
 #define NOTI	60
-
-// compiler: (((x y +) (z ~i) *) a =)
-// operator for asymetric math
-#define ASYM_MATHI	61
-#define ASYM_MATHD	62

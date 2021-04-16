@@ -2782,7 +2782,7 @@ U1 *socket_get_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	strcpy ((char *) sockets[handle].buf, "GET ");
 	strcat ((char *) sockets[handle].buf, (const char *) &data[requestaddr]);
 	// add http version
-	strcat ((char *) sockets[handle].buf, http);
+	strcat ((char *) sockets[handle].buf, (const char *) http);
 	strcat ((char *) sockets[handle].buf, "\n");
 
 	// printf ("DEBUG: socket_get_file: '%s'\n", sockets[handle].buf);
