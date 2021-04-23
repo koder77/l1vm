@@ -23,6 +23,7 @@
 #include "../include/global.h"
 #include "../include/opcodes.h"
 #include "translate.h"
+#include "if.h"
 
 S8 linenum ALIGN = 1;
 
@@ -83,36 +84,6 @@ S2 convert (U1 infix[], U1 postfix[]);
 void dealloc_array_U1 (U1** array, size_t n_rows);
 U1** alloc_array_U1 (size_t n_rows, size_t n_columns);
 
-// if
-void init_if (void);
-S4 get_if_pos (void);
-S4 get_act_if (void);
-U1 get_if_label (S8 ind, U1 *label);
-U1 get_else_label (S8 ind, U1 *label);
-U1 get_endif_label (S8 ind, U1 *label);
-void set_endif_finished (S8 ind);
-S4 get_if_optimize_reg (U1 *code_line);
-
-void init_while (void);
-S4 get_while_pos (void);
-S4 get_act_while (void);
-U1 get_while_label (S8 ind, U1 *label);
-S4 get_while_lab (S8 ind);
-void set_wend (S8 ind);
-
-void init_for (void);
-S4 get_for_pos (void);
-S4 get_act_for (void);
-U1 get_for_label (S8 ind, U1 *label);
-U1 get_for_label_2 (S8 ind, U1 *label);
-S4 get_for_lab (S8 ind);
-U1 get_for_label_end (S8 ind, U1 *label);
-void set_for_end (S8 ind);
-
-S4 get_switch_pos (void);
-S4 get_act_switch (void);
-void set_switch_finished (S8 ind);
-void init_switch (void);
 // labels
 void init_labels (void);
 void init_call_labels (void);

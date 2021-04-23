@@ -16,7 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with L1vm.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#ifndef _IF_H_
+#define _IF_H_
 // definitions for if and for loops
 
 #define MAXJUMPLIST 1024
@@ -30,9 +31,7 @@
 #define IF_FINISHED 2
 #define SWITCH_FINISHED 3
 
-
 extern struct opcode opcode[MAXOPCODES];
-
 
 struct if_comp
 {
@@ -72,3 +71,36 @@ struct jumplist
     S8 pos ALIGN;                                 /* position in exelist */
     S8 source_pos ALIGN;                          /* position in sourcecode */
 };
+
+//forward declarations
+void init_if (void);
+S4 get_if_pos (void);
+S4 get_act_if (void);
+U1 get_if_label (S8 ind, U1 *label);
+U1 get_else_label (S8 ind, U1 *label);
+U1 get_endif_label (S8 ind, U1 *label);
+void set_endif_finished (S8 ind);
+S4 get_if_optimize_reg (U1 *code_line);
+
+void init_while (void);
+S4 get_while_pos (void);
+S4 get_act_while (void);
+U1 get_while_label (S8 ind, U1 *label);
+S4 get_while_lab (S8 ind);
+void set_wend (S8 ind);
+
+void init_for (void);
+S4 get_for_pos (void);
+S4 get_act_for (void);
+U1 get_for_label (S8 ind, U1 *label);
+U1 get_for_label_2 (S8 ind, U1 *label);
+S4 get_for_lab (S8 ind);
+U1 get_for_label_end (S8 ind, U1 *label);
+void set_for_end (S8 ind);
+
+S4 get_switch_pos (void);
+S4 get_act_switch (void);
+void set_switch_finished (S8 ind);
+void init_switch (void);
+
+#endif
