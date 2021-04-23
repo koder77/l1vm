@@ -342,8 +342,8 @@ S2 precedence (char symbol)
 //converts infix expression to postfix
 S2 convert (U1 infix[], U1 postfix[])
 {
-	S2 i, symbol, j = 0, startexp = 0;
-	S2 pos = 0;
+	S2 symbol, j = 0, startexp = 0;
+	size_t i, pos = 0;
 	U1 *buf;
 	U1 buf_push[3];
 
@@ -490,7 +490,8 @@ S2 convert (U1 infix[], U1 postfix[])
 
 S2 get_target_var (U1 *line, U1 *varname, S2 len)
 {
-	S2 i = 0, j;
+	S2 j;
+	size_t i = 0;
 	S2 calc_begin;	// start of math expression
 	S2 ok = 0;
 	U1 ch;

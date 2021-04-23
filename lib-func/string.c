@@ -44,8 +44,7 @@ S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens)
 {
 	/* replaces the old buggy code */
 
-	S2 i, pos = -1, str_len, srchstr_len;
-	S2 new_end;
+	S2 pos = -1, str_len, srchstr_len, i = 0, new_end = 0;
 
 	str_len = strlen_safe ((const char *) str, MAXLINELEN);
 	srchstr_len = strlen_safe ((const char *) srchstr, MAXLINELEN);

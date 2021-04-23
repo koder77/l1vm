@@ -464,7 +464,7 @@ S2 check_for_brackets (U1 *line)
 	return (brackets_found);	// no brackets in line
 }
 
-S2 parse_line (U1 *line, S2 start, S2 end)
+S2 parse_line (U1 *line)
 {
     S4 level, j, last_arg, last_arg_2, t, v, reg, reg2, reg3, reg4, target, e, exp;
 	U1 ok;
@@ -4875,7 +4875,7 @@ S2 parse (U1 *name)
 				}
 				else
 				{
-					ret = parse_line (rbuf, 0, slen - 1);
+					ret = parse_line (rbuf);
 					if (ret != 0)
 					{
 						printf ("> %s", rbuf);
