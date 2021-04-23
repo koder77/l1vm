@@ -2350,6 +2350,7 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			{
 				// error
 				printf ("socket_send_file: ERROR: stack corrupt!\n");
+				fclose (file);
 				return (NULL);
 			}
 			fclose (file);
@@ -2379,6 +2380,7 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		{
 			// error
 			printf ("socket_send_file: ERROR: stack corrupt!\n");
+			fclose (file);
 			return (NULL);
 		}
 		fclose (file);
@@ -2402,6 +2404,7 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		{
 			// error
 			printf ("socket_send_file: ERROR: stack corrupt!\n");
+			fclose (file);
 			return (NULL);
 		}
 		fclose (file);
@@ -2423,6 +2426,7 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		{
 			// error
 			printf ("socket_send_file: ERROR: stack corrupt!\n");
+			fclose (file);
 			return (NULL);
 		}
 		fclose (file);
@@ -2445,6 +2449,7 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		{
 			// error
 			printf ("socket_send_file: ERROR: stack corrupt!\n");
+			fclose (file);
 			return (NULL);
 		}
 		fclose (file);
@@ -2468,6 +2473,7 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		{
 			// error
 			printf ("socket_send_file: ERROR: stack corrupt!\n");
+			fclose (file);
 			return (NULL);
 		}
 		fclose (file);

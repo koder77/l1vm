@@ -5042,11 +5042,9 @@ int main (int ac, char *av[])
 
 				if (strcmp (av[i], "-lines") == 0)
 				{
-					if (ac > i)
-					{
-						line_len = atoi (av[i + 1]);
-						printf ("max line len set to: %lli lines\n", line_len);
-					}
+
+					line_len = atoi (av[i + 1]);
+					printf ("max line len set to: %lli lines\n", line_len);
 				}
 
 				if (strcmp (av[i], "-sizes") == 0)

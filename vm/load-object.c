@@ -182,6 +182,8 @@ S2 load_object (U1 *name)
 	strcpy ((char *) objname, (const char *) name);
 	strcat ((char *) objname, ".l1obj");
 
+	strcpy ((char *) full_path, "");	// init full_path
+
 	fptr = fopen ((const char *) objname, "r");
 	if (fptr == NULL)
 	{

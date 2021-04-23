@@ -2868,34 +2868,28 @@ int main (int ac, char *av[])
 							if (av[i][0] == '-' && av[i][1] == 'C')
 							{
 								// set max cpu cores flag...
-								if (ac > i)
+								max_cpu = atoi (av[i + 1]);
+								if (max_cpu == 0)
 								{
-									max_cpu = atoi (av[i + 1]);
-									if (max_cpu == 0)
-									{
-										printf ("ERROR: max_cpu less than 1 core!\n");
-										cleanup ();
-										exit (1);
-									}
-									printf ("max_cpu: cores set to: %lli\n", max_cpu);
+									printf ("ERROR: max_cpu less than 1 core!\n");
+									cleanup ();
+									exit (1);
 								}
+								printf ("max_cpu: cores set to: %lli\n", max_cpu);
 								av_found = 1;
 							}
 
 							if (av[i][0] == '-' && av[i][1] == 'S')
 							{
 								// set max stack size flag...
-								if (ac > i)
+								stack_size = atoi (av[i + 1]);
+								if (stack_size == 0)
 								{
-									stack_size = atoi (av[i + 1]);
-									if (stack_size == 0)
-									{
-										printf ("ERROR: stack size is 0!\n");
-										cleanup ();
-										exit (1);
-									}
-									printf ("stack_size: stack size set to %lli\n", stack_size);
+									printf ("ERROR: stack size is 0!\n");
+									cleanup ();
+									exit (1);
 								}
+								printf ("stack_size: stack size set to %lli\n", stack_size);
 								av_found = 1;
 							}
 
