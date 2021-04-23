@@ -44,8 +44,8 @@ void init_if (void)
     for (i = 0; i < MAXIF; i++)
     {
         if_comp[i].used = FALSE;
-        if_comp[i].else_pos = EMPTY;
-        if_comp[i].endif_pos = EMPTY;
+        if_comp[i].else_pos = EMPTY_IF;
+        if_comp[i].endif_pos = EMPTY_IF;
     }
 
 	if_ind = -1;
@@ -77,7 +77,7 @@ S4 get_if_pos (void)
         }
     }
 
-    /* no empty if found => error! */
+    /* no EMPTY_IF if found => error! */
 
     return (-1);
 }
@@ -211,7 +211,7 @@ void init_while (void)
     for (i = 0; i < MAXWHILE; i++)
     {
         while_comp[i].used = FALSE;
-        while_comp[i].while_pos = EMPTY;
+        while_comp[i].while_pos = EMPTY_IF;
         while_comp[i].while_set = FALSE;
     }
 }
@@ -229,7 +229,7 @@ S4 get_while_pos (void)
         }
     }
 
-    /* no empty if found => error! */
+    /* no EMPTY_IF if found => error! */
 
     return (-1);
 }
@@ -282,7 +282,7 @@ void init_for (void)
     for (i = 0; i < MAXFOR; i++)
     {
         for_comp[i].used = FALSE;
-        for_comp[i].for_pos = EMPTY;
+        for_comp[i].for_pos = EMPTY_IF;
         for_comp[i].for_set = FALSE;
     }
 }
@@ -300,7 +300,7 @@ S4 get_for_pos (void)
         }
     }
 
-    /* no empty if found => error! */
+    /* no EMPTY_IF if found => error! */
 
     return (-1);
 }
@@ -392,7 +392,7 @@ S4 get_switch_pos (void)
         }
     }
 
-    /* no empty if found => error! */
+    /* no EMPTY_IF if found => error! */
 
     return (-1);
 }

@@ -26,7 +26,7 @@
 #define MAXWHILE 1024
 #define MAXFOR 1024
 #define MAXSWITCH 1024
-#define EMPTY -1
+#define EMPTY_IF -1
 #define NOTDEF -1
 #define IF_FINISHED 2
 #define SWITCH_FINISHED 3
