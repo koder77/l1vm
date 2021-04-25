@@ -305,7 +305,7 @@ S2 load_object (U1 *name)
 	}
 
 	header = conv_quadword (quadword);
-	if (header != 0xC0DEBABE00002019)
+	if (header != (S8) 0xC0DEBABE00002019)
 	{
 		printf ("ERROR: wrong header!\n");
 		fclose (fptr);
@@ -749,7 +749,7 @@ S2 load_object (U1 *name)
 			case WORD:
 				//printf ("DATA WORD\n");
 				data_info[j].offset = i;
-				for (k = 1; k <= (data_info[j].size / sizeof (S2)); k++)
+				for (k = 1; k <= (S8) (data_info[j].size / sizeof (S2)); k++)
 				{
 					readsize = fread (&word, sizeof (S2), 1, fptr);
 					if (readsize != 1)
@@ -779,7 +779,7 @@ S2 load_object (U1 *name)
 			case DOUBLEWORD:
 				//printf ("DATA DOUBLEWORD\n");
 				data_info[j].offset = i;
-				for (k = 1; k <= (data_info[j].size / sizeof (S4)); k++)
+				for (k = 1; k <= (S8) (data_info[j].size / sizeof (S4)); k++)
 				{
 					readsize = fread (&doubleword, sizeof (S4), 1, fptr);
 					if (readsize != 1)
@@ -813,7 +813,7 @@ S2 load_object (U1 *name)
 			case QUADWORD:
 			case DOUBLEFLOAT:
 				data_info[j].offset = i;
-				for (k = 1; k <= (data_info[j].size / sizeof (S8)); k++)
+				for (k = 1; k <= (S8) (data_info[j].size / sizeof (S8)); k++)
 				{
 					readsize = fread (&quadword, sizeof (S8), 1, fptr);
 					if (readsize != 1)

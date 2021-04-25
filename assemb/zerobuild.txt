@@ -5,4 +5,4 @@ sources = main.c, ../lib-func/file.c, checkd.c, ../lib-func/string.c, ../lib-fun
 
 ccompiler = $CC
 
-cflags = "-Wall"
+cflags = "-Wall -Wextra"

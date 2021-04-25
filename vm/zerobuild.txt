@@ -10,5 +10,5 @@ c++compiler = $CCPP
 
 archiver = ar
 
-cflags = "-O2 -fomit-frame-pointer -Wall"
+cflags = "-O2 -fomit-frame-pointer -Wall -Wextra"
 lflags = "-lm -ldl -lpthread -lasmjit -ll1vm-jit -lstdc++ -lSDL2 -lSDL2_gfx -lSDL2_image -lSDL2_ttf -Wl,--export-dynamic"

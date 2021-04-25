@@ -289,7 +289,7 @@ S2 write_data_word (S8 offset ALIGN, S2 val, S8 size ALIGN)
 	S8 i ALIGN;
     U1 *bptr = (U1 *) &val;
 
-    if (offset + (sizeof (S2) * size) < data_max)
+    if ((S8) (offset + (sizeof (S2) * size)) < data_max)
     {
 		for (i = 1; i <= size; i++)
 		{
@@ -317,7 +317,7 @@ S2 write_data_doubleword (S8 offset ALIGN, S4 val, S8 size ALIGN)
 	S8 i ALIGN;
     U1 *bptr = (U1 *) &val;
 
-    if (offset + (sizeof (S4) * size) < data_max)
+    if ((S8) (offset + (sizeof (S4) * size)) < data_max)
     {
 		for (i = 1; i <= size; i++)
 		{
@@ -355,7 +355,7 @@ S2 write_data_quadword (S8 offset ALIGN, S8 val ALIGN, S8 size ALIGN)
     U1 *bptr = (U1 *) &val;
     S8 i ALIGN;
 
-    if (offset + (sizeof (S8) * size) < data_max)
+    if ((S8) (offset + (sizeof (S8) * size)) < data_max)
     {
 		for (i = 1; i <= size; i++)
 		{
@@ -409,9 +409,8 @@ S2 write_data_doublefloat (S8 offset ALIGN, F8 val ALIGN, S8 size ALIGN)
 	S8 i ALIGN;
     U1 *bptr = (U1 *) &val;
 
-    if (offset + (sizeof (F8) * size) < data_max)
+    if ((S8) (offset + (sizeof (F8) * size)) < data_max)
     {
-
 		for (i = 1; i <= size; i++)
 		{
 #if MACHINE_BIG_ENDIAN
@@ -477,7 +476,7 @@ S2 write_code_quadword (S8 code_ind ALIGN, S8 val ALIGN)
 {
     U1 *bptr = (U1 *) &val;
 
-    if (code_ind + sizeof (S8) < code_max)
+    if ((S8) (code_ind + sizeof (S8)) < code_max)
     {
 #if MACHINE_BIG_ENDIAN
         code[code_ind] = *bptr;
