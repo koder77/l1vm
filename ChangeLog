@@ -1,3 +1,13 @@
+L1VM - (1.0.15)
+	NEW: sdl sdl_toggle_mouse_pointer:
+	// hide mouse pointer
+	(zero :sdl_toggle_mouse_pointer call)
+
+	// show mouse pointer
+	(one :sdl_toggle_mouse_pointer call)
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat May 01 2021 23:38 +0200
+
 L1VM - (1.0.14)
 	Infix math expression to RPN converter now prints error message if brackets "()" don't match.
 	NEW: compiler - array variable assign in multi lines:
@@ -22,7 +32,7 @@ L1VM - (1.0.14)
 	(zero width height bit fullscreen :sdl_open_screen call)
 	If fullscreen is set to "1" then full screen mode is set!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat May 01 2021 22:20 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Sat May 01 2021 23:38 +0200
 
 L1VM - (1.0.13)
 	NEW: added network library "socket_get_file" function, to download a file via TCP/IP. (WIP)

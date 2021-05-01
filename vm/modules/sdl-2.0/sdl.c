@@ -378,39 +378,27 @@ U1 *sdl_open_screen_full (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
-
-U1 *sdl_set_fullscreen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+U1 *sdl_toggle_mouse_pointer (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	// set SDL full screen mode
-	// returns 0 if all OK!
+	S2 enable;
 
-	S2 ret;
-
-	ret = SDL_SetWindowFullscreen (window, SDL_WINDOW_FULLSCREEN);
-	if (ret != 0)
+	sp = stpopi ((U1 *) &enable, sp, sp_top);
+	if (sp == NULL)
 	{
-		// ERROR code
-		sp = stpushi (1, sp, sp_bottom);
-		if (sp == NULL)
-		{
-			printf ("sdl_set_fullscreen: ERROR: stack corrupt!\n");
-		}
-		printf ("sdl_set_fullscreen: ERROR can't set full screen mode!\n");
-		return (sp);
+		printf ("sdl_toggle_mouse_pointer: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (enable == 0)
+	{
+		SDL_ShowCursor (SDL_DISABLE);
 	}
 	else
 	{
-		// error OK code
-		sp = stpushi (0, sp, sp_bottom);
-		if (sp == NULL)
-		{
-			printf ("sdl_set_fullscreen: ERROR: stack corrupt!\n");
-		}
-		return (sp);
+		SDL_ShowCursor (SDL_ENABLE);
 	}
+	return (sp);
 }
-
-
 
 void sdl_do_delay (S8 delay)
 {
