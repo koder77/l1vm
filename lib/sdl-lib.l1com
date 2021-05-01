@@ -88,7 +88,7 @@
 	(set int64 1 value 0)
 	(set int64 1 f 0)
 	// open screen
-    (zero width height bit :sdl_open_screen call)
+    (zero width height bit zero :sdl_open_screen call)
 	(ret stpopi)
 	(loadreg)
 	(one :string_init call)

@@ -30,7 +30,7 @@
 	(set string s button_str "button: ")
 	(set string s joy_name_infostr "joystick name: ")
 	// open screen
-    (zero width height bit :sdl_open_screen !)
+    (zero width height bit zero :sdl_open_screen !)
 	(ret stpopi)
 	(loadreg)
 	// get joystick info

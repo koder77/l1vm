@@ -11,7 +11,7 @@
 	(set int64 1 ret 0)
 	(set string s wave_filestr "sounds/test.wav")
 	// open screen
-    (zero width height bit :sdl_open_screen call)
+    (zero width height bit zero :sdl_open_screen call)
 	(ret stpopi)
 	(loadreg)
 	// play sound

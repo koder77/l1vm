@@ -20,7 +20,7 @@
 	(set string s button_middlestr "button middle: ")
 	(set string s button_rightstr "button right: ")
 	// open screen
-    (zero width height bit :sdl_open_screen call)
+    (zero width height bit zero :sdl_open_screen call)
 	(ret stpopi)
 	(loadreg)
 	(:loop)
