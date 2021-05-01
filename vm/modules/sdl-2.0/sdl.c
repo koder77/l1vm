@@ -214,6 +214,171 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+U1 *sdl_open_screen_full (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// set SDL FULL SCREEN
+	// top of stack: byte bit
+	// second: quadword height
+	// third: quadword width
+
+	S8 width ALIGN = 0, height ALIGN = 0;
+	S8 bit ALIGN = 0;
+	U1 err = 0;
+
+	sp = stpopi ((U1 *) &bit, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		err = 1;
+	}
+
+	video_bpp = bit;
+
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		err = 1;
+	}
+
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		err = 1;
+	}
+
+	if (err == 1)
+	{
+		// error fail code
+		sp = stpushi (1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			printf ("sdl_open_screen: ERROR: stack corrupt!\n");
+		}
+		return (sp);
+	}
+
+	// printf ("open_screen: %lli x %lli, %i bit\n", width, height, bit);
+
+	if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) != 0)
+	{
+		printf ("ERROR SDL_Init!!!\n");
+
+		// error fail code
+		sp = stpushi (1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			printf ("sdl_open_screen: ERROR: stack corrupt!\n");
+		}
+		return (sp);
+	}
+
+	// Check for joystick
+	if (SDL_NumJoysticks() > 0) {
+    	// Open joystick
+
+		SDL_JoystickEventState (SDL_ENABLE);
+
+    	joystick = SDL_JoystickOpen (0);
+
+    	if (joystick)
+		{
+	        printf ("Opened joystick 0\n");
+	        printf ("Name: %s\n", SDL_JoystickNameForIndex (0));
+        	printf ("Number of axes: %d\n", SDL_JoystickNumAxes (joystick));
+        	printf ("Number of buttons: %d\n", SDL_JoystickNumButtons (joystick));
+        	printf ("Number of balls: %d\n", SDL_JoystickNumBalls (joystick));
+    	}
+		else
+		{
+        	printf ("Couldn't open joystick 0\n");
+    	}
+	}
+
+	// init audio
+	int audio_rate = 44100; Uint16 audio_format = AUDIO_S16SYS;
+	int audio_channels = 2; int audio_buffers = 4096;
+
+	if (Mix_OpenAudio (audio_rate, audio_format, audio_channels, audio_buffers) != 0)
+	{
+		printf ("sdl_open_screen: ERROR: unable to initialize audio: %s\n", Mix_GetError());
+		return (sp);
+	}
+
+
+	/* key input settings */
+	/*
+	SDL_EnableUNICODE (SDL_ENABLE);
+	SDL_EnableKeyRepeat (500, 125);
+	*/
+	if (TTF_Init () < 0)
+	{
+		printf ("ERROR TTF_Init!!!\n");
+
+		// error fail code
+		sp = stpushi (1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			printf ("sdl_open_screen: ERROR: stack corrupt!\n");
+		}
+		return (sp);
+	}
+
+	printf ("SDL initialized...\n");
+
+	// open SDL window
+	window = SDL_CreateWindow ("L1VM", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN);
+	if (window == NULL)
+	{
+		printf( "sdl_open_screen: ERROR window can't be opened: %s\n", SDL_GetError ());
+
+		// error fail code
+		sp = stpushi (1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			printf ("sdl_open_screen: ERROR: stack corrupt!\n");
+		}
+		return (sp);
+	}
+
+	// get window surface
+	surf = SDL_GetWindowSurface (window);
+	if (surf == NULL)
+	{
+		fprintf (stderr, "Couldn't set %lli x %lli x %lli video mode: %s\n", width, height, bit, SDL_GetError ());
+
+		// error fail code
+		sp = stpushi (1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			printf ("sdl_open_screen: ERROR: stack corrupt!\n");
+		}
+		return (sp);
+	}
+
+	// set renderer
+	// renderer = SDL_CreateRenderer (window, -1, SDL_RENDERER_ACCELERATED);
+	// renderer = SDL_CreateRenderer (window, -1, SDL_RENDERER_SOFTWARE);
+
+	renderer = SDL_CreateSoftwareRenderer (surf);
+
+	SDL_RenderClear (renderer);
+
+	SDL_SetRenderDrawColor (renderer, 0, 0, 0, 255);
+	SDL_RenderClear (renderer);
+	SDL_RenderPresent (renderer);
+
+	// error OK code
+	sp = stpushi (0, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		printf ("sdl_open_screen: ERROR: stack corrupt!\n");
+	}
+	return (sp);
+}
+
+
 U1 *sdl_set_fullscreen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// set SDL full screen mode
@@ -244,6 +409,8 @@ U1 *sdl_set_fullscreen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (sp);
 	}
 }
+
+
 
 void sdl_do_delay (S8 delay)
 {

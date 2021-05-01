@@ -18,7 +18,11 @@ L1VM - (1.0.14)
     NEW: zerobuild and make scripts now use "-Wall -Wextra" compile flags!
 	And I added "vm/zerobuild-debug.txt" make script to use libasan fsanitize debug library.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun Apr 25 2021 20:13 +0200
+	NEW: sdl open screen:
+	(zero width height bit fullscreen :sdl_open_screen call)
+	If fullscreen is set to "1" then full screen mode is set!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat May 01 2021 22:20 +0200
 
 L1VM - (1.0.13)
 	NEW: added network library "socket_get_file" function, to download a file via TCP/IP. (WIP)
