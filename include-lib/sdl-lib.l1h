@@ -33,6 +33,7 @@
 	(set string s get_joystick_buttonsstr@sdl "get_joystick_buttons")
 	(set string s get_joystick_buttonstr@sdl "get_joystick_button")
 	(set string s get_joystick_infostr@sdl "get_joystick_info")
+    (set string s set_fullscreenstr@sdl "sdl_set_fullscreen")
 	// GUI definitions
 	(set string s init_gadgetsstr@sdl "init_gadgets")
 	(set string s set_gadget_buttonstr@sdl "set_gadget_button")
@@ -108,6 +109,7 @@
 	(set int64 1 get_joystick_buttons@sdl 48)
 	(set int64 1 get_joystick_button@sdl 49)
 	(set int64 1 get_joystick_info@sdl 50)
+	(set int64 1 set_fullscreen@sdl 51)
     (set int64 1 get@sdl 0)
     // call arguments
     (set int64 1 width@sdl 0)
@@ -173,6 +175,7 @@
 	(2 mod@sdl get_joystick_buttons@sdl get_joystick_buttonsstr@sdladdr intr0)
 	(2 mod@sdl get_joystick_button@sdl get_joystick_buttonstr@sdladdr intr0)
 	(2 mod@sdl get_joystick_info@sdl get_joystick_infostr@sdladdr intr0)
+	(2 mod@sdl set_fullscreen@sdl set_fullscreenstr@sdladdr intr0)
     // open screen
     (width@sdl stpushi)
     (height@sdl stpushi)
@@ -246,6 +249,9 @@
 (funcend)
 (sdl_quit func)
     (3 mod@sdl quit@sdl 0 intr0)
+(funcend)
+(sdl_set_fullscreen func)
+	(3 mod@sdl set_fullscreen@sdl 0 intr0)
 (funcend)
 // GUI
 (init_gui func)

@@ -214,6 +214,37 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+U1 *sdl_set_fullscreen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// set SDL full screen mode
+	// returns 0 if all OK!
+
+	S2 ret;
+
+	ret = SDL_SetWindowFullscreen (window, SDL_WINDOW_FULLSCREEN);
+	if (ret != 0)
+	{
+		// ERROR code
+		sp = stpushi (1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			printf ("sdl_set_fullscreen: ERROR: stack corrupt!\n");
+		}
+		printf ("sdl_set_fullscreen: ERROR can't set full screen mode!\n");
+		return (sp);
+	}
+	else
+	{
+		// error OK code
+		sp = stpushi (0, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			printf ("sdl_set_fullscreen: ERROR: stack corrupt!\n");
+		}
+		return (sp);
+	}
+}
+
 void sdl_do_delay (S8 delay)
 {
 	const Uint32 startMs = SDL_GetTicks();
