@@ -23,63 +23,8 @@
 
 #include "jit.h"
 #include "../include/global.h"
+#include "main.h"
 
-// show host system type on compile time ======================================
-#if __linux__
-	#pragma message ("Linux host detected!")
-#endif
-#if _WIN32
-	#pragma message ("Windows host detected!")
-#endif
-
-// show math limits settings on compile time
-#if MATH_LIMITS
-	#pragma message ("MATH LIMITS ON")
-#endif
-#if MATH_LIMITS_DOUBLE_FULL
-	#pragma message ("MATH LIMITS DOUBLE FULL ON")
-#endif
-
-// show alignment on compile time
-#if DO_ALIGNMENT
-	#pragma message ("ALIGNMENT FOR 64 bit ON")
-#endif
-// ============================================================================
-
-// time functions
-struct tm *tm;
-
-// timer interrupt stuff
-#if TIMER_USE
-	struct timeval  timer_start, timer_end;
-	F8 timer_double ALIGN;
-	S8 timer_int ALIGN;
-#endif
-
-#if JIT_COMPILER
-S8 JIT_code_ind ALIGN = -1;
-struct JIT_code *JIT_code;
-
-int jit_compiler (S8 init_code, U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *regd, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start, S8 end, struct JIT_code *JIT_code, S8 JIT_code_ind, S8 code_size);
-int run_jit (S8 code, struct JIT_code *JIT_code, S8 JIT_code_ind);
-int free_jit_code (struct JIT_code *JIT_code, S8 JIT_code_ind);
-void get_jit_compiler_type (void);
-char *fgets_uni (char *str, int len, FILE *fptr);
-size_t strlen_safe (const char * str, int maxlen);
-#endif
-
-#define EXE_NEXT(); ep = ep + eoffs; goto *jumpt[code[ep]];
-#define PRINT_EPOS(); printf ("epos: %lli\n\n", ep);
-
-//#define EXE_NEXT(); ep = ep + eoffs; printf ("next opcode: %i\n", code[ep]); goto *jumpt[code[ep]];
-
-// protos
-S2 load_object (U1 *name);
-void free_modules (void);
-size_t strlen_safe (const char * str, int maxlen);
-
-// code_datasize.c
-void show_code_data_size (S8 codesize, S8 datasize);
 
 S8 data_size ALIGN;
 S8 code_size ALIGN;

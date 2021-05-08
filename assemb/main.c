@@ -22,6 +22,7 @@
 
 #include "../include/global.h"
 #include "../include/opcodes.h"
+#include "main.h"
 
 // 1MB = 1048576 bytes
 #define MAXDATA 33554432 // 32 MB
@@ -65,21 +66,6 @@ struct label label[MAXLABELS];
 // DEBUG epos, assembly linenum
 FILE *debug = NULL;
 
-
-// protos
-U1 checkdigit (U1 *str);
-S8 get_temp_int (void);
-F8 get_temp_double (void);
-char *fgets_uni (char *str, int len, FILE *fptr);
-size_t strlen_safe (const char * str, int maxlen);
-
-void convtabs (U1 *str);
-S2 strip_end_commas (U1 *str);
-S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
-
-// code_datasize.c
-void show_code_data_size (S8 codesize, S8 datasize);
-void show_filesize (S8 filesize);
 
 S2 alloc_code_data (void)
 {
@@ -701,7 +687,7 @@ void get_data_extern_filename (U1 *name)
 	// printf ("get_data_extern_filename: '%s'\n", name);
 }
 
-S2 parse_line (U1 *line, S2 start, S2 end)
+S2 parse_line (U1 *line)
 {
     S8 offset ALIGN;
 	S8 byte_data_offset ALIGN;
@@ -1335,15 +1321,9 @@ S2 parse (U1 *name)
 			// printf ("> %s", rbuf);
 
             pos = searchstr (rbuf, (U1 *) REM_SB, 0, 0, TRUE);
-            if (pos != -1)
+            if (pos == -1)
             {
-                // found comment
-
-               // parse_line (rbuf, 0, pos - 1);
-            }
-            else
-            {
-                if (parse_line (rbuf, 0, slen - 1) != 0)
+                if (parse_line (rbuf) != 0)
 				{
 					err = 1;
 					printf ("> %s", rbuf);
