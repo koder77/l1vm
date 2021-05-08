@@ -23,21 +23,13 @@
 #include "../include/global.h"
 #include "../include/opcodes.h"
 #include "translate.h"
+#include "main.h"
 #include "if.h"
 
 S8 linenum ALIGN = 1;
 
 S8 label_ind ALIGN = -1;
 S8 call_label_ind ALIGN = -1;
-
-struct ast
-{
-	U1 expr[MAXEXPRESSION][MAXARGS][MAXLINELEN];
-	S4 expr_max;
-	S4 expr_args[MAXEXPRESSION]; 						// number of arguments in expression
-	S4 expr_reg[MAXEXPRESSION];							// registers of expression calculations = target registers
-	U1 expr_type[MAXEXPRESSION];						// type of register (INTEGER or DOUBLE)
-};
 
 struct ast ast[MAXBRACKETLEVEL];
 S8 ast_level ALIGN;
@@ -67,52 +59,6 @@ struct call_label call_label[MAXLABELS];
 U1 inline_asm = 0;		// set to one, if inline assembly is used
 
 U1 optimize_if = 0;		// set to one to optimize if call
-
-
-// protos
-U1 checkdigit (U1 *str);
-S8 get_temp_int (void);
-F8 get_temp_double (void);
-char *fgets_uni (char *str, int len, FILE *fptr);
-
-// proto parse_rpolish.c
-S2 parse_rpolish (U1 *postfix);
-//converts infix expression to postfix
-S2 convert (U1 infix[], U1 postfix[]);
-
-// mem.c
-void dealloc_array_U1 (U1** array, size_t n_rows);
-U1** alloc_array_U1 (size_t n_rows, size_t n_columns);
-
-// labels
-void init_labels (void);
-void init_call_labels (void);
-S2 set_call_label (U1 *label);
-S2 check_labels (void);
-
-// string functions ===============================================================================
-size_t strlen_safe (const char * str, int maxlen);
-S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
-void convtabs (U1 *str);
-
-// register tracking functions
-void set_regi (S4 reg, U1 *name);
-void set_regd (S4 reg, U1 *name);
-S4 get_regi (U1 *name);
-S4 get_regd (U1 *name);
-void init_registers (void);
-S4 get_free_regi (void);
-S4 get_free_regd (void);
-
-// var.c
-S2 checkdef (U1 *name);
-S2 getvartype (U1 *name);
-S2 getvartype_real (U1 *name);
-S8 get_variable_is_array (U1 *name);
-S2 get_var_is_const (U1 *name);
-
-// parse-cont.c
-S2 parse_continous (void);
 
 void init_ast (void)
 {

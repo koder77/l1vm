@@ -6,7 +6,10 @@ L1VM - (1.0.15)
 	// show mouse pointer
 	(one :sdl_toggle_mouse_pointer call)
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat May 01 2021 23:38 +0200
+	Compiler: removed not needed protos
+	Added main.h header file.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat May 08 2021 21:56 +0200
 
 L1VM - (1.0.14)
 	Infix math expression to RPN converter now prints error message if brackets "()" don't match.
