@@ -12,7 +12,7 @@ outname="${outname}.l1obj"
 cp out.l1obj $outname
 
 # get .l1asm file
-outname=${1%.l1asm}
+outname=$(basename "$i" .l1asm)
 outname="${outname}.l1asm"
 cp out.l1asm $outname
 
