@@ -1,7 +1,7 @@
 /*
  * This file main.h is part of L1vm.
  *
- * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2018
+ * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2021
  *
  * L1vm is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
