@@ -20,13 +20,6 @@
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
-#if _WIN32
-#incluxde <conio.h>
-#else
-#include <unistd.h>
-#endif
-
-
 // protos
 
 S2 memory_bounds (S8 start, S8 offset_access);
