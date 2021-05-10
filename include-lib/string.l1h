@@ -56,7 +56,7 @@
 	(2 mod@string stringtostring@string stringtostringstr@stringaddr intr0)
 	(2 mod@string stringcompare@string stringcomparestr@stringaddr intr0)
 	(2 mod@string stringmemtostring@string stringmemtostringstr@stringaddr intr0)
-	(2 mod@string stringmemsearch@string stringmemsearchstr@string intr0)
+	(2 mod@string stringmemsearch@string stringmemsearchstr@stringaddr intr0)
 (funcend)
 (string_len func)
 // argument: int64 string address
