@@ -10,7 +10,10 @@ L1VM - (1.0.15)
 	Assembler: cleanup and added main.h header file.
 	VM: cleanup and added main.h header file.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat May 08 2021 22:30 +0200
+	SDL module: "set_gadget_string_passwd" function to hide input by showing just stars!
+	See "lib/sdl-lib.l1com" example for more!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue May 11 2021 17:55 +0200
 
 L1VM - (1.0.14)
 	Infix math expression to RPN converter now prints error message if brackets "()" don't match.

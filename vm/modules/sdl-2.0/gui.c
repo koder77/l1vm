@@ -1201,6 +1201,8 @@ U1 draw_gadget_string (S2 screennum, U2 gadget_index, U1 selected)
 {
     S2 value_len;
     Sint16 cursor_x;
+	U1 stars[GADGET_STRING_PASSWD_STARS];
+	S2 i;
 
     struct gadget_string *string;
 
@@ -1224,10 +1226,27 @@ U1 draw_gadget_string (S2 screennum, U2 gadget_index, U1 selected)
         {
             /* value string fits in gadget */
 
-            if (! draw_text_ttf (surf, screennum, string->value, string->input_x, string->input_y, screen[screennum].gadget_color.text_light.r, screen[screennum].gadget_color.text_light.g, screen[screennum].gadget_color.text_light.b))
-            {
-                return (FALSE);
-            }
+			if (string->passwd == 0)
+			{
+	            if (! draw_text_ttf (surf, screennum, string->value, string->input_x, string->input_y, screen[screennum].gadget_color.text_light.r, screen[screennum].gadget_color.text_light.g, screen[screennum].gadget_color.text_light.b))
+            	{
+                	return (FALSE);
+            	}
+			}
+			else
+			{
+				// show value_len chars as password input in stars as chars
+				for (i = 0; i < value_len; i++)
+				{
+					stars[i] = '*';
+				}
+				stars[i] = '\0';
+
+				if (! draw_text_ttf (surf, screennum, stars, string->input_x, string->input_y, screen[screennum].gadget_color.text_light.r, screen[screennum].gadget_color.text_light.g, screen[screennum].gadget_color.text_light.b))
+            	{
+                	return (FALSE);
+            	}
+			}
         }
     }
 
@@ -1426,7 +1445,8 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 					while (event.text.text[i] != '\0')
 					{
 						char_code = event.text.text[i];
-						printf ("event_gadget_string: text[%i]: %i\n", i, char_code);
+						// DEBUG ONLY:
+						// printf ("event_gadget_string: text[%i]: %i\n", i, char_code);
 
 						if (i > 0)
 						{
@@ -3838,6 +3858,8 @@ U1 *set_gadget_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     string->cursor_pos = -1;
     string->insert_pos = -1;
 
+	string->passwd = 0;		// show input chars, can be set with "set_gadget_string_passwd" function
+
     printf ("set_gadget_string: status = %i\n", string->status);
 
     if (! draw_gadget_string (screennum, gadget_index, GADGET_NOT_SELECTED))
@@ -4550,7 +4572,7 @@ U1 *change_gadget_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 gadget_index ALIGN;
 	S8 text_address ALIGN;
 	S8 status ALIGN;
-	U1 err = 1;
+	U1 err = 0;
 
 	sp = stpopi ((U1 *) &status, sp, sp_top);
     if (sp == NULL)
@@ -4617,6 +4639,60 @@ U1 *change_gadget_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (sp);
     }
 }
+
+U1 *set_gadget_string_passwd (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    // change status of string gadget and set if chars should be shown or be hiddden
+
+    S8 gadget_index ALIGN;
+	S8 status ALIGN;
+	U1 err = 0;
+
+	sp = stpopi ((U1 *) &status, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &gadget_index, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	if (err == 1)
+	{
+	   printf ("set_gadget_string_passwd: ERROR, stack corrupt!\n");
+	   return (NULL);
+	}
+
+	struct gadget_string *string;
+
+    if (! screen[screennum].gadget)
+    {
+        printf ("change_gadget_string: error gadget list not allocated!\n");
+        return (NULL);
+    }
+
+    if (screen[screennum].gadget[gadget_index].gptr == NULL)
+    {
+        printf ("change_gadget_string: error gadget %lli not allocated!\n", gadget_index);
+        return (NULL);
+    }
+
+    if (screen[screennum].gadget[gadget_index].type != GADGET_STRING)
+    {
+        printf ("change_gadget_string: error %lli not a string gadget!\n", gadget_index);
+        return (NULL);
+    }
+
+    string = (struct gadget_string *) screen[screennum].gadget[gadget_index].gptr;
+
+	string->passwd = status;
+
+	return (sp);
+}
+
 
 U1 *change_gadget_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {

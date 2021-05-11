@@ -60,6 +60,7 @@
 	(set string s load_picturestr@sdl "sdl_load_picture")
 	(set string s save_picturestr@sdl "sdl_save_picture")
 	(set string s delaystr@sdl "sdl_delay")
+    (set string s set_gadget_string_passwdstr@sdl "set_gadget_string_passwd")
     (set int64 1 open@sdl 0)
     (set int64 1 quit@sdl 1)
     (set int64 1 update@sdl 2)
@@ -113,6 +114,7 @@
 	(set int64 1 get_joystick_info@sdl 50)
     (set int64 1 openfull@sdl 52)
 	(set int64 1 toggle_mouse_pointer@sdl 53)
+	(set int64 1 set_gadget_string_passwd@sdl 54)
     // call arguments
     (set int64 1 width@sdl 0)
     (set int64 1 height@sdl 0)
@@ -181,6 +183,7 @@
 	(2 mod@sdl get_joystick_info@sdl get_joystick_infostr@sdladdr intr0)
     (2 mod@sdl openfull@sdl openfullstr@sdladdr intr0)
 	(2 mod@sdl toggle_mouse_pointer@sdl toggle_mouse_pointerstr@sdladdr intr0)
+	(2 mod@sdl set_gadget_string_passwd@sdl set_gadget_string_passwdstr@sdladdr intr0)
     // open screen
     (width@sdl stpushi)
     (height@sdl stpushi)
@@ -325,6 +328,9 @@
 (funcend)
 (gadget_event func)
 	(3 mod@sdl gadget_event@sdl 0 intr0)
+(funcend)
+(set_gadget_string_passwd func)
+	(3 mod@sdl set_gadget_string_passwd@sdl 0 intr0)
 (funcend)
 // picture functions --------------------------------------
 (sdl_load_picture func)

@@ -49,6 +49,9 @@
 #define GADGET_SLIDER_VERT  8   // vertical
 
 
+// string gadget passwd stars output max
+#define GADGET_STRING_PASSWD_STARS	512
+
 // protos
 
 U1 *stpushi (S8 data ALIGN, U1 *sp, U1 *sp_bottom);
@@ -100,6 +103,7 @@ Uint32 getpixel (SDL_Surface *surface, Sint16 x, Sint16 y);
 U1 **alloc_array_U1 (S4 x, S4 y);
 void dealloc_array_U1 (U1 **array, S4 x);
 void sdl_do_delay (S8 delay);
+U1 *set_gadget_string_passwd (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 
 // gadget box grid
 U1 *set_gadget_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
@@ -209,6 +213,7 @@ U1 *my_strcpy (U1 *destination, const U1 *source);
      U1 status;
      U2 string_len;                      /* max input string length */
      U2 visible_len;                     /* visible chars of input string */
+	 U1 passwd;						    /* is 1: don't show char input! */
      Sint16 x;
      Sint16 y;
      Sint16 x2;
