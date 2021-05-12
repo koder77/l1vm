@@ -4670,19 +4670,19 @@ U1 *set_gadget_string_passwd (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     if (! screen[screennum].gadget)
     {
-        printf ("change_gadget_string: error gadget list not allocated!\n");
+        printf ("set_gadget_string_passwd: error gadget list not allocated!\n");
         return (NULL);
     }
 
     if (screen[screennum].gadget[gadget_index].gptr == NULL)
     {
-        printf ("change_gadget_string: error gadget %lli not allocated!\n", gadget_index);
+        printf ("set_gadget_string_passwd: error gadget %lli not allocated!\n", gadget_index);
         return (NULL);
     }
 
     if (screen[screennum].gadget[gadget_index].type != GADGET_STRING)
     {
-        printf ("change_gadget_string: error %lli not a string gadget!\n", gadget_index);
+        printf ("set_gadget_string_passwd: error %lli not a string gadget!\n", gadget_index);
         return (NULL);
     }
 
@@ -4813,7 +4813,7 @@ U1 *change_gadget_box_grid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     if (screen[screennum].gadget[gadget_index].gptr == NULL)
     {
-        printf ("change_gadget_box-grid: error gadget %lli not allocated!\n", gadget_index);
+        printf ("change_gadget_box_grid: error gadget %lli not allocated!\n", gadget_index);
         return (NULL);
     }
 
@@ -4853,7 +4853,7 @@ U1 *get_gadget_box_grid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("get_gadget_x2y2: ERROR: stack corrupt!\n");
+		printf ("get_gadget_box_grid: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
@@ -4891,7 +4891,7 @@ U1 *change_gadget_progress_bar (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	if (err == 1)
 	{
-	   printf ("change_gadget_box: ERROR, stack corrupt!\n");
+	   printf ("change_gadget_progress_bar: ERROR, stack corrupt!\n");
 	   return (NULL);
 	}
 
