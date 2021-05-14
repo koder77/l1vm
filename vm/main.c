@@ -2184,18 +2184,6 @@ S2 run (void *arg)
 			}
 			break;
 
-		case 27:
-		// DEBUG TEST
-			{
-				S8 *dataptr;
-				arg2 = code[ep + 2];
-				dataptr = data[regi[arg2]];
-				printf ("debug data: %lli\n", dataptr);
-			}
-			eoffs = 5;
-			break;
-
-
 		case 251:
 			// set overflow on double reg
 			arg2 = code[ep + 2];
