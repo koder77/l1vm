@@ -177,7 +177,7 @@ U1 *mvect_mul_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	sp = stpopi ((U1 *) &number, sp, sp_top);
+	sp = stpopd ((U1 *) &number, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
@@ -240,7 +240,7 @@ U1 *mvect_div_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	sp = stpopi ((U1 *) &number, sp, sp_top);
+	sp = stpopd ((U1 *) &number, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
