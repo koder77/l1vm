@@ -13,7 +13,12 @@ L1VM - (1.0.15)
 	SDL module: "set_gadget_string_passwd" function to hide input by showing just stars!
 	See "lib/sdl-lib.l1com" example for more!
 
--- Stefan Pietzonke <jay-t@gmx.net> Tue May 11 2021 17:55 +0200
+	NEW: experimental VM module math-lib-vect for array vector math.
+	This makes it possible for example add a number to all array indexes.
+	Or add two arrays and store the results in a third array.
+	See the "lib/math-lib-vect.l1com" example!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri May 14 2021 21:08 +0200
 
 L1VM - (1.0.14)
 	Infix math expression to RPN converter now prints error message if brackets "()" don't match.
