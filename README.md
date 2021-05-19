@@ -30,7 +30,7 @@ About 2 MB RAM only as shown in the taskmanager by running a minimal test progra
 
 <h2>Credits</h2>
 Thanks goes to: <br>
-Andreas Weber (Andy1978) for fixing some serious bugs.
+Andreas Weber (Andy1978) for fixing some serious bugs. <br>
 The team behind SDL and A. Schiffler (ferzkopp) for their great work! <br>
 The author of genann networks library: Lewis Van Winkle (codeplea). <br>
 The authors of the libfann library. <br>
