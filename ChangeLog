@@ -18,7 +18,9 @@ L1VM - (1.0.15)
 	Or add two arrays and store the results in a third array.
 	See the "lib/math-lib-vect.l1com" example!
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri May 14 2021 21:08 +0200
+	NEW: compiler now sets "loadreg" automatically if not set after stpop opcodes!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat May 22 2021 00:29 +0200
 
 L1VM - (1.0.14)
 	Infix math expression to RPN converter now prints error message if brackets "()" don't match.

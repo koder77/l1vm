@@ -60,6 +60,10 @@ U1 inline_asm = 0;		// set to one, if inline assembly is used
 
 U1 optimize_if = 0;		// set to one to optimize if call
 
+// automatic set loadreg if no more stpopi or stpopd opcode is used
+U1 call_set = 0;
+U1 call_loadreg = 0;
+
 void init_ast (void)
 {
 	S4 i, j;
@@ -410,6 +414,58 @@ S2 check_for_brackets (U1 *line)
 	return (brackets_found);	// no brackets in line
 }
 
+S8 loadreg (void)
+{
+	S8 e;
+	U1 str[MAXLINELEN];
+	U1 code_temp[MAXLINELEN];
+
+	// load double registers
+    for (e = MAXREG - 1; e >= 0; e--)
+    {
+        if (save_regd[e] == 1)
+        {
+            strcpy ((char *) code_temp, "stpopd ");
+            sprintf ((char *) str, "%lli", e);
+            strcat ((char *) code_temp, (const char*) str);
+            strcat ((char *) code_temp, "\n");
+
+            code_line++;
+            if (code_line >= line_len)
+            {
+                printf ("error: line %lli: code list full!\n", linenum);
+                return (1);
+            }
+
+            strcpy ((char *) code[code_line], (const char *) code_temp);
+        }
+    }
+
+    // load integer registers
+    for (e = MAXREG - 1; e >= 0; e--)
+    {
+        if (save_regi[e] == 1)
+        {
+            strcpy ((char *) code_temp, "stpopi ");
+            sprintf ((char *) str, "%lli", e);
+            strcat ((char *) code_temp, (const char*) str);
+            strcat ((char *) code_temp, "\n");
+
+            code_line++;
+            if (code_line >= line_len)
+            {
+                printf ("error: line %lli: code list full!\n", linenum);
+                return (1);
+            }
+
+            strcpy ((char *) code[code_line], (const char *) code_temp);
+        }
+    }
+
+    init_registers ();
+	return (0);
+}
+
 S2 parse_line (U1 *line)
 {
     S4 level, j, last_arg, last_arg_2, t, v, reg, reg2, reg3, reg4, target, e, exp;
@@ -494,6 +550,8 @@ S2 parse_line (U1 *line)
 			return (0);
 		}
 	}
+
+
 
 	// walking the AST
 	for (level = ast_level; level >= 0; level--)
@@ -927,6 +985,34 @@ S2 parse_line (U1 *line)
 						last_arg = ast[level].expr_args[j];
 						if (last_arg >= 0)
 						{
+							// check if STPOP opcode, to set loadreg automatically
+							ok = 0;
+							if (call_set == 1)
+							{
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "stpopb") == 0)
+							    {
+									ok = 1;
+								}
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "stpopi") == 0)
+							    {
+									ok = 1;
+								}
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "stpopd") == 0)
+							    {
+									ok = 1;
+								}
+							}
+							if (call_set == 1 && ok == 0)
+							{
+								if (loadreg () == 1)
+								{
+									// error loadreg
+									return (1);
+								}
+								call_set = 0;
+								call_loadreg = 1;
+							}
+
 							// reset registers ============================
 							if (strcmp ((const char *) ast[level].expr[j][last_arg], "reset-reg") == 0)
 							{
@@ -2459,50 +2545,14 @@ S2 parse_line (U1 *line)
 
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "loadreg") == 0)
 								{
-									// load double registers
-									for (e = MAXREG - 1; e >= 0; e--)
+									if (call_set == 1 && call_loadreg == 0)
 									{
-										if (save_regd[e] == 1)
+										if (loadreg () == 1)
 										{
-											strcpy ((char *) code_temp, "stpopd ");
-											sprintf ((char *) str, "%i", e);
-											strcat ((char *) code_temp, (const char*) str);
-											strcat ((char *) code_temp, "\n");
-
-											code_line++;
-											if (code_line >= line_len)
-											{
-												printf ("error: line %lli: code list full!\n", linenum);
-												return (1);
-											}
-
-											strcpy ((char *) code[code_line], (const char *) code_temp);
+											return (1);
 										}
+										call_set = 0;
 									}
-
-									// load integer registers
-									for (e = MAXREG - 1; e >= 0; e--)
-									{
-										if (save_regi[e] == 1)
-										{
-											strcpy ((char *) code_temp, "stpopi ");
-											sprintf ((char *) str, "%i", e);
-											strcat ((char *) code_temp, (const char*) str);
-											strcat ((char *) code_temp, "\n");
-
-											code_line++;
-											if (code_line >= line_len)
-											{
-												printf ("error: line %lli: code list full!\n", linenum);
-												return (1);
-											}
-
-											strcpy ((char *) code[code_line], (const char *) code_temp);
-										}
-									}
-
-									init_registers ();
-
 									continue;
 								}
 
@@ -3732,6 +3782,7 @@ S2 parse_line (U1 *line)
 											// found star: * as loadreg code
 											// set loadreg opcodes on end
 											set_loadreg = 1;
+											call_set = 0;
 											// correct arguments
 											last_arg = last_arg - 1;
 										}
@@ -4098,6 +4149,11 @@ S2 parse_line (U1 *line)
 										}
 
 										set_loadreg = 0;
+									}
+									else
+									{
+										call_set = 1;
+										call_loadreg = 0;
 									}
 									continue;
 								}
