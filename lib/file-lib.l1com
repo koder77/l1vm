@@ -39,14 +39,14 @@
 	// get file handle from file_open call
 	//
     (handle stpopi)
+	(loadreg)
 	(4 handle 0 0 intr0)
 	(7 0 0 0 intr0)
-	(((ret zero !=) f =) f if)
+	(((handle zero <) f =) f if)
 		(6 error_open_file 0 0 intr0)
 		(7 0 0 0 intr0)
-	(255 one 0 0 intr0)
+		(255 one 0 0 intr0)
 	(endif)
-    (loadreg)
     (handle num :file_put_int64 call)
     (error stpopi)
     (loadreg)
