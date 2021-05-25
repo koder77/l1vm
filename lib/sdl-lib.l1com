@@ -93,7 +93,6 @@
 	(loadreg)
 	(one :string_init call)
 	(loadreg)
-	(loadreg)
 	// load font
     (fontnameaddr fontsize :sdl_font_ttf call)
     (loadreg)
