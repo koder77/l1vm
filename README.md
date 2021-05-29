@@ -1,4 +1,4 @@
-L1VM README  2021-04-03
+L1VM README  2021-05-29
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -6,12 +6,12 @@ L1VM README  2021-04-03
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/P5P2Y3KP)
 
-NEW: Now you can purchase the L1VM data base full version and the JIT-compiler at my new ko-fi shop: <br>
+NEW: Now you can purchase the JIT-compiler at my new ko-fi shop: <br>
 [ko-fi-shop-koder77](https://ko-fi.com/koder77/shop)
 
 L1VM is an incredible tiny virtual machine with RISC (or comparable style) CPU, about 61 opcodes and about 40 KB binary size on X86_64 Linux (without JIT-compiler)!
 The VM has a 64 bit core (256 registers for integer and double float) and can run object code
-written in brackets (a high level programming language) or l1asm assembly language.
+written in Brackets (a high level programming language) or l1asm assembly language.
 
 Code and data are in separated memories for a secure execution. Like in Harvard type CPUs (found now in DSPs or microcontrollers).
 The opcode set with 61 opcodes is my own opinion how things should work. It does not "copy" other instruction sets known in
@@ -58,6 +58,9 @@ is the same as: "a = x + y * z * x"
 This needs no brackets for complex math expressions!
 See "prog/hello-4.l1com" example!
 
+<h2>New: "(loadreg)" setting</h2>
+it is set automatically after a function call, or the "stpop" opcodes.
+Or you can do it in the code.
 
 <h2>New SDL 2.0!</h2>
 Finally I ported the SDL gfx/GUI library to SDL 2.0!
