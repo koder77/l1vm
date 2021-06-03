@@ -225,7 +225,7 @@ file - file module
 genann - neural networks module
 gpio - Raspberry Pi GPIO module
 math - some math functions
-math-vect math on arrays functions
+math-vect - math on arrays functions
 mem - memory allocating for arrays and vectors
 mem-vect - C++ vector memory library
 mpfr-c++ - MPFR floating point big num library
