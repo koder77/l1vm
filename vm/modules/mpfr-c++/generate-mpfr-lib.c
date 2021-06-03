@@ -325,6 +325,13 @@ S2 generate_c (FILE *c_file, S8 max_vars)
 		return (1);
 	}
 
+	// end of function mark:
+	if (fprintf (c_file, "// ===============================================================================\n\n") < 0)
+	{
+		printf ("generate_c: error writing C function end mark!\n");
+		return (1);
+	}
+
 	return (0);
 }
 

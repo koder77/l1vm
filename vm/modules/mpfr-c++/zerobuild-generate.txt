@@ -1,0 +1,13 @@
+# zerobuild makefile
+
+[executable, name = generate-mpfr-lib]
+sources = generate-mpfr-lib.c, ../../../lib-func/string.c, ../../../lib-func/file.c
+
+includes = ../include, /usr/local/include
+
+ccompiler = $CC
+c++compiler = $CCPP
+
+archiver = ar
+
+cflags = "-O3 -fomit-frame-pointer -Wall"
