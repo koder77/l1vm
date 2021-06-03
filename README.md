@@ -1,4 +1,4 @@
-L1VM README  2021-05-29
+L1VM README  2021-06-03
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -225,6 +225,7 @@ file - file module
 genann - neural networks module
 gpio - Raspberry Pi GPIO module
 math - some math functions
+math-vect math on arrays functions
 mem - memory allocating for arrays and vectors
 mem-vect - C++ vector memory library
 mpfr-c++ - MPFR floating point big num library
