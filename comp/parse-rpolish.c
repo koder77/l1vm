@@ -391,6 +391,13 @@ S2 precedence (char symbol)
    return (0);
 }
 
+S2 convert (U1 infix[], U1 postfix[])
+{
+	printf ("convert infix to postfix: ERROR! use RPN or old math style!\n");
+	return (1);
+}
+
+/*
 //converts infix expression to postfix
 S2 convert (U1 infix[], U1 postfix[])
 {
@@ -539,6 +546,7 @@ S2 convert (U1 infix[], U1 postfix[])
    postfix[j] = '\0'; //null terminate string.
    return (0);
 }
+*/
 
 // evaluates reverse polish postfix expression
 S2 parse_rpolish (U1 *postfix)

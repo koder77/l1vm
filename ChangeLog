@@ -20,7 +20,10 @@ L1VM - (1.0.15)
 
 	NEW: compiler now sets "loadreg" automatically if not set after stpop opcodes!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat May 22 2021 00:29 +0200
+	NEW: compiler RPN math code bugfixes.
+	Infix math to RPN conversion code is not working right and is disabled!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri Jun 22 2021 22:51 +0200
 
 L1VM - (1.0.14)
 	Infix math expression to RPN converter now prints error message if brackets "()" don't match.
