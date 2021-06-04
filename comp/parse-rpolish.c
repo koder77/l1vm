@@ -235,6 +235,7 @@ S4 load_variable_double (U1 *var)
 	return (target);
 }
 
+
 // variable stack handling
 S2 push_stack (U1 *item)
 {
@@ -293,6 +294,56 @@ S2 pop_reg_stack ()
 	}
 }
 
+S2 get_target_var (U1 *line, U1 *varname, S2 len)
+{
+	S2 j;
+	size_t i = 0;
+	S2 calc_begin;	// start of math expression
+	S2 ok = 0;
+	U1 ch;
+
+	j = 0;
+	while (ok == 0)
+	{
+		ch = line[i];
+		// printf ("get_target_var: ch: '%c'\n", ch);
+		if (ch != ' ' && ch != '=' && ch != '{')
+		{
+			varname[j] = ch;
+			// printf ("get_target_var: varname ch: '%c'\n", ch);
+			if (j < len - 1)
+			{
+				j++;
+			}
+			else
+			{
+				// return variable overflow!!!
+				return (-1);
+			}
+		}
+		else
+		{
+			varname[j] = '\0';
+		}
+		if (ch == '=')
+		{
+			// got begin of calculation
+			// printf ("got: =\n");
+			calc_begin = i + 1;
+			ok = 1;
+		}
+		if (i < strlen_safe ((const char *) line, MAXLINELEN) - 1)
+		{
+			i++;
+		}
+		else
+		{
+			// error line end
+			return (-1);
+		}
+	}
+	return (calc_begin);
+}
 
 //check whether the symbol is operator?
 S2 isOperator (char symbol)
@@ -314,6 +365,7 @@ S2 isOperator (char symbol)
          return 0;
    }
 }
+
 
 //returns precedence of operators
 S2 precedence (char symbol)
@@ -488,57 +540,6 @@ S2 convert (U1 infix[], U1 postfix[])
    return (0);
 }
 
-S2 get_target_var (U1 *line, U1 *varname, S2 len)
-{
-	S2 j;
-	size_t i = 0;
-	S2 calc_begin;	// start of math expression
-	S2 ok = 0;
-	U1 ch;
-
-	j = 0;
-	while (ok == 0)
-	{
-		ch = line[i];
-		// printf ("get_target_var: ch: '%c'\n", ch);
-		if (ch != ' ' && ch != '=' && ch != '{')
-		{
-			varname[j] = ch;
-			// printf ("get_target_var: varname ch: '%c'\n", ch);
-			if (j < len - 1)
-			{
-				j++;
-			}
-			else
-			{
-				// return variable overflow!!!
-				return (-1);
-			}
-		}
-		else
-		{
-			varname[j] = '\0';
-		}
-		if (ch == '=')
-		{
-			// got begin of calculation
-			// printf ("got: =\n");
-			calc_begin = i + 1;
-			ok = 1;
-		}
-		if (i < strlen_safe ((const char *) line, MAXLINELEN) - 1)
-		{
-			i++;
-		}
-		else
-		{
-			// error line end
-			return (-1);
-		}
-	}
-	return (calc_begin);
-}
-
 // evaluates reverse polish postfix expression
 S2 parse_rpolish (U1 *postfix)
 {
@@ -668,8 +669,8 @@ S2 parse_rpolish (U1 *postfix)
 			   strcpy ((char *) operand1, (const char *) strptr);
 			   */
 
-			   reg1 = pop_reg_stack ();
-			   if (reg1 == -1)
+			   reg2 = pop_reg_stack ();
+			   if (reg2 == -1)
 			   {
 				   return (1);
 			   }
@@ -683,8 +684,8 @@ S2 parse_rpolish (U1 *postfix)
 			   strcpy ((char *) operand2, (const char *) strptr);
 			   */
 
-			   reg2 = pop_reg_stack ();
-			   if (reg2 == -1)
+			   reg1 = pop_reg_stack ();
+			   if (reg1 == -1)
 			   {
 				   return (1);
 			   }

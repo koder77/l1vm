@@ -21,13 +21,13 @@
 	{ret = x y z + *}
 	(4 ret 0 0 intr0)
 	(7 0 0 0 intr0)
-	// infix math notation:
-	// parsed as infix math, has "()" brackets:
-	{ret = (y + z) * ((z + y) * foo)}
+	// RPN math notation:
+	{ret = x y + x y * z * x y z * + - -}
 	(4 ret 0 0 intr0)
 	(7 0 0 0 intr0)
-	// infix:
-	{ret = (y * foo * z)}
+	// infix math notation:
+	// parsed as infix math, has "()" brackets:
+	{ret = (x + y) - ((x * y * z) - (x + (y * z)))}
 	(4 ret 0 0 intr0)
 	(7 0 0 0 intr0)
 	(255 zero 0 0 intr0)
