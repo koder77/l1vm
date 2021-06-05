@@ -87,7 +87,7 @@ U1 *string_to_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 value ALIGN;
 	S8 string_addr ALIGN;
 	char *endp;
-	
+
 	sp = stpopi ((U1 *) &string_addr, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -95,10 +95,10 @@ U1 *string_to_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("string_to_int ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	// convert
 	value = strtoll ((const char *) &data[string_addr], &endp, 10);
-	
+
 	// return value
 	sp = stpushi (value, sp, sp_bottom);
 	if (sp == NULL)
@@ -115,7 +115,7 @@ U1 *string_to_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	F8 value ALIGN;
 	S8 string_addr ALIGN;
 	char *endp;
-	
+
 	sp = stpopi ((U1 *) &string_addr, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -123,9 +123,9 @@ U1 *string_to_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("string_to_double ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	value = strtod ((const char *) &data[string_addr], &endp);
-	
+
 	// return value
 	sp = stpushd (value, sp, sp_bottom);
 	if (sp == NULL)
@@ -138,6 +138,535 @@ U1 *string_to_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 }
 
 // ============================================================================
+
+U1 *acosdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 value ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("acosdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = acos (value);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("acosdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *asindouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 value ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("asindouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = asin (value);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("asindouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *atandouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 value ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("atandouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = atan (value);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("atandouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *atan2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 xvalue ALIGN;
+	F8 yvalue ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &yvalue, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("atan2double: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopd ((U1 *) &xvalue, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("atan2double: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = atan2 (yvalue, xvalue);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("atan2double: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *cosdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 value ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("cosdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = cos (value);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("cosdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *coshdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 value ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("coshdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = cosh (value);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("coshdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *sindouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 value ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("sindouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = sin (value);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("sindouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *sinhdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 value ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("sinhdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = sinh (value);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("sinhdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *tanhdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 value ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("tandouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = tanh (value);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("tandouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *expdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 value ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("expdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = exp (value);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("expdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *frexpdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 xvalue ALIGN;
+	S8 exponent ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &xvalue, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("frexpdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = frexp (xvalue, (int *) &exponent);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("frexpdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpushi (exponent, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("frexpdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *ldexpdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 xvalue ALIGN;
+	S8 exponent ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopi ((U1 *) &exponent, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ldexpdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopd ((U1 *) &xvalue, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ldexpdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = ldexp (xvalue, exponent);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ldexpdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *log10double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 value ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("log10double ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = log10 (value);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("log10double: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *modfdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 xvalue ALIGN;
+	F8 intpart ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &xvalue, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("modfdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = modf (xvalue, &intpart);
+
+	sp = stpushd (intpart, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("modfdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("modfdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *powdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 xvalue ALIGN;
+	F8 yvalue ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &yvalue, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("powdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopd ((U1 *) &xvalue, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("powdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = pow (xvalue, yvalue);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("powdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *ceildouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 value ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ceildouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = ceil (value);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ceildouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *fabsdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 value ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("fabsdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = fabs (value);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("fabsdouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *floordouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 value ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("floordouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = floor (value);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("floordouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *fmoddouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	F8 xvalue ALIGN;
+	F8 yvalue ALIGN;
+	F8 returnval ALIGN;
+
+	sp = stpopd ((U1 *) &yvalue, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("fmoddouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopd ((U1 *) &xvalue, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("fmoddouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = fmod (xvalue, yvalue);
+
+	sp = stpushd (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("fmoddouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
 
 U1 *sqrtdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
