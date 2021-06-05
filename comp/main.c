@@ -164,7 +164,7 @@ S2 get_ast (U1 *line, U1 *parse_cont)
 	if (check_brackets_match (line) == 1)
 	{
 		printf ("error: line %lli: brackets don't match!\n", linenum);
-		printf ("DEBUG get_ast\n");
+		// printf ("DEBUG get_ast\n");
 		return (2);
 	}
 
