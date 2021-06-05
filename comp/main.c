@@ -164,6 +164,7 @@ S2 get_ast (U1 *line, U1 *parse_cont)
 	if (check_brackets_match (line) == 1)
 	{
 		printf ("error: line %lli: brackets don't match!\n", linenum);
+		printf ("DEBUG get_ast\n");
 		return (2);
 	}
 
@@ -189,6 +190,8 @@ S2 get_ast (U1 *line, U1 *parse_cont)
 				if (line[pos] == '{')
 				{
 					*parse_cont = 1;
+					// printf ("DEBUG get_ast: parse_cont return\n");
+					return (0);
 				}
 
 				ast_ind++;
@@ -387,7 +390,8 @@ U1 *get_variable_value (S8 maxind, U1 *name)
 S2 check_for_brackets (U1 *line)
 {
 	S2 i, len;
-	S2 brackets = 0, brackets_found = 0;
+	S2 brackets_open = 0, brackets_close = 0;
+	S2 brackets_found = 0;
 
 	len = strlen_safe ((const char *) line, MAXLINELEN);
 	if (len > 0)
@@ -396,19 +400,20 @@ S2 check_for_brackets (U1 *line)
 		{
 			if (line[i] == '(')
 			{
-				brackets++;
+				brackets_open++;
 				brackets_found = 1;
 			}
 			if (line[i] == ')')
 			{
-				brackets--;
+				brackets_close++;
 			}
 		}
 	}
 	// check if brackets counter is 0, all opening brackets are closed or not
-	if (brackets != 0)
+	if (brackets_open != brackets_close)
 	{
 		printf ("error: line %lli: brackets don't match!\n", linenum);
+		// printf ("DEBUG check_for_brackets\n");
 		return (0);
 	}
 	return (brackets_found);	// no brackets in line
@@ -514,6 +519,7 @@ S2 parse_line (U1 *line)
 	if (ret == 2)
 	{
 		// fatal ERROR!!! such as brackets don't match in line!!!
+		// printf ("DEBUG parse_line: brackets don't match!\n");
 		return (2);
 	}
 
