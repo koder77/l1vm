@@ -28,7 +28,7 @@
 	{ret = x + (y * z) + (x - (y * z) - ((y - z) + (x * y)))}
 	(4 ret 0 0 intr0)
 	(7 0 0 0 intr0)
-	{ret = (((x - y * z) + (z -x + y) - y * z) + z - x + y) + x * y * z}
+	{ret = (((x - y * z) + (z - x + y) - y * z) + z - x + y) + x * y * z}
 	(4 ret 0 0 intr0)
 	(7 0 0 0 intr0)
 	(255 zero 0 0 intr0)
