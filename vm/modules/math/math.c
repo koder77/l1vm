@@ -357,7 +357,7 @@ U1 *tanhdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("tandouble: ERROR: stack corrupt!\n");
+		printf ("tanhdouble: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
@@ -367,7 +367,7 @@ U1 *tanhdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("tandouble: ERROR: stack corrupt!\n");
+		printf ("tanhdouble: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 	return (sp);
