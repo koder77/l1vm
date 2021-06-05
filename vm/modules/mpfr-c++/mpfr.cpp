@@ -472,6 +472,46 @@ return (sp);
 
 // ===============================================================================
 
+extern "C" U1 *mp_exp_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+S8 float_index_res ALIGN;
+
+sp = stpopi ((U1 *) &float_index_res, sp, sp_top);
+if (sp == NULL)
+{
+printf ("gmp_exp_float: ERROR: stack corrupt!\n");
+return (NULL);
+}
+
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_exp_float: ERROR float index result out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
+S8 v ALIGN;
+
+sp = stpopi ((U1 *) &v, sp, sp_top);
+if (sp == NULL)
+{
+printf ("gmp_exp_float: ERROR: stack corrupt!\n");
+return (NULL);
+}
+
+if (v >= MAX_FLOAT_NUM || v < 0)
+{
+printf ("gmp_exp_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
+mpf_float[float_index_res] = exp (mpf_float[v]);
+return (sp);
+}
+
+// ===============================================================================
+
 extern "C" U1 *mp_exp2_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 S8 float_index_res ALIGN;
@@ -627,6 +667,46 @@ return (NULL);
 
 
 mpf_float[float_index_res] = expm1 (mpf_float[v]);
+return (sp);
+}
+
+// ===============================================================================
+
+extern "C" U1 *mp_nextpow2_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+S8 float_index_res ALIGN;
+
+sp = stpopi ((U1 *) &float_index_res, sp, sp_top);
+if (sp == NULL)
+{
+printf ("gmp_nextpow2_float: ERROR: stack corrupt!\n");
+return (NULL);
+}
+
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_nextpow2_float: ERROR float index result out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
+S8 v ALIGN;
+
+sp = stpopi ((U1 *) &v, sp, sp_top);
+if (sp == NULL)
+{
+printf ("gmp_nextpow2_float: ERROR: stack corrupt!\n");
+return (NULL);
+}
+
+if (v >= MAX_FLOAT_NUM || v < 0)
+{
+printf ("gmp_nextpow2_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
+mpf_float[float_index_res] = nextpow2 (mpf_float[v]);
 return (sp);
 }
 
@@ -1984,6 +2064,86 @@ return (sp);
 
 // ===============================================================================
 
+extern "C" U1 *mp_besselj0_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+S8 float_index_res ALIGN;
+
+sp = stpopi ((U1 *) &float_index_res, sp, sp_top);
+if (sp == NULL)
+{
+printf ("gmp_besselj0_float: ERROR: stack corrupt!\n");
+return (NULL);
+}
+
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_besselj0_float: ERROR float index result out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
+S8 v ALIGN;
+
+sp = stpopi ((U1 *) &v, sp, sp_top);
+if (sp == NULL)
+{
+printf ("gmp_besselj0_float: ERROR: stack corrupt!\n");
+return (NULL);
+}
+
+if (v >= MAX_FLOAT_NUM || v < 0)
+{
+printf ("gmp_besselj0_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
+mpf_float[float_index_res] = besselj0 (mpf_float[v]);
+return (sp);
+}
+
+// ===============================================================================
+
+extern "C" U1 *mp_besselj1_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+S8 float_index_res ALIGN;
+
+sp = stpopi ((U1 *) &float_index_res, sp, sp_top);
+if (sp == NULL)
+{
+printf ("gmp_besselj1_float: ERROR: stack corrupt!\n");
+return (NULL);
+}
+
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_besselj1_float: ERROR float index result out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
+S8 v ALIGN;
+
+sp = stpopi ((U1 *) &v, sp, sp_top);
+if (sp == NULL)
+{
+printf ("gmp_besselj1_float: ERROR: stack corrupt!\n");
+return (NULL);
+}
+
+if (v >= MAX_FLOAT_NUM || v < 0)
+{
+printf ("gmp_besselj1_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
+mpf_float[float_index_res] = besselj1 (mpf_float[v]);
+return (sp);
+}
+
+// ===============================================================================
+
 extern "C" U1 *mp_bessely0_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 S8 float_index_res ALIGN;
@@ -2475,6 +2635,62 @@ return (NULL);
 
 
 mpf_float[float_index_res] = ai (mpf_float[v]);
+return (sp);
+}
+
+// ===============================================================================
+
+extern "C" U1 *mp_modf_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+S8 float_index_res ALIGN;
+
+sp = stpopi ((U1 *) &float_index_res, sp, sp_top);
+if (sp == NULL)
+{
+printf ("gmp_modf_float: ERROR: stack corrupt!\n");
+return (NULL);
+}
+
+if (float_index_res >= MAX_FLOAT_NUM || float_index_res < 0)
+{
+printf ("gmp_modf_float: ERROR float index result out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
+S8 n ALIGN;
+
+sp = stpopi ((U1 *) &n, sp, sp_top);
+if (sp == NULL)
+{
+printf ("gmp_modf_float: ERROR: stack corrupt!\n");
+return (NULL);
+}
+
+if (n >= MAX_FLOAT_NUM || n < 0)
+{
+printf ("gmp_modf_float: ERROR float index n out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
+S8 v ALIGN;
+
+sp = stpopi ((U1 *) &v, sp, sp_top);
+if (sp == NULL)
+{
+printf ("gmp_modf_float: ERROR: stack corrupt!\n");
+return (NULL);
+}
+
+if (v >= MAX_FLOAT_NUM || v < 0)
+{
+printf ("gmp_modf_float: ERROR float index v out of range! Must be 0 < %i", MAX_FLOAT_NUM);
+return (NULL);
+}
+
+
+mpf_float[float_index_res] = modf (mpf_float[v],mpf_float[n]);
 return (sp);
 }
 
@@ -3183,4 +3399,3 @@ return (sp);
 }
 
 // ===============================================================================
-

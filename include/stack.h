@@ -54,7 +54,7 @@ U1 *stpopb (U1 *data, U1 *sp, U1 *sp_top)
 
 // quadword
 
-U1 *stpushi (S8 data ALIGN, U1 *sp, U1 *sp_bottom)
+U1 *stpushi (S8 data, U1 *sp, U1 *sp_bottom)
 {
 	U1 *bptr;
 

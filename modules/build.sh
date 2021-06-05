@@ -10,8 +10,8 @@ cd ../genann
 zerobuild force
 cd ../math
 zerobuild force
-cd ../mpfr-c++
-zerobuild force
+#cd ../mpfr-c++
+#zerobuild force
 cd ../net
 zerobuild force
 cd ../process
