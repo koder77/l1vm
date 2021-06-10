@@ -321,7 +321,7 @@ public:
     // Get raw pointers so that mpreal can be directly used in raw mpfr_* functions
     ::mpfr_ptr    mpfr_ptr();
     ::mpfr_srcptr mpfr_ptr()    const;
-    ::mpfr_srcptr mpfr_srcptr() const;
+    ::mpfr_srcptr mpfr_xsrcptr() const;
 
     // Convert mpreal to string with n significant digits in base b
     // n = -1 -> convert with the maximum available digits
@@ -587,8 +587,8 @@ inline mpreal::mpreal()
 
 inline mpreal::mpreal(const mpreal& u)
 {
-    mpfr_init2(mpfr_ptr(),mpfr_get_prec(u.mpfr_srcptr()));
-    mpfr_set  (mpfr_ptr(),u.mpfr_srcptr(),mpreal::get_default_rnd());
+    mpfr_init2(mpfr_ptr(),mpfr_get_prec(u.mpfr_xsrcptr()));
+    mpfr_set  (mpfr_ptr(),u.mpfr_xsrcptr(),mpreal::get_default_rnd());
 
     MPREAL_MSVC_DEBUGVIEW_CODE;
 }
@@ -926,15 +926,15 @@ inline mpreal& mpreal::operator=(const mpreal& v)
 {
     if (this != &v)
     {
-        mp_prec_t tp = mpfr_get_prec(  mpfr_srcptr());
-        mp_prec_t vp = mpfr_get_prec(v.mpfr_srcptr());
+        mp_prec_t tp = mpfr_get_prec(  mpfr_xsrcptr());
+        mp_prec_t vp = mpfr_get_prec(v.mpfr_xsrcptr());
 
         if(tp != vp){
             clear(mpfr_ptr());
             mpfr_init2(mpfr_ptr(), vp);
         }
 
-        mpfr_set(mpfr_ptr(), v.mpfr_srcptr(), mpreal::get_default_rnd());
+        mpfr_set(mpfr_ptr(), v.mpfr_xsrcptr(), mpreal::get_default_rnd());
 
         MPREAL_MSVC_DEBUGVIEW_CODE;
     }
@@ -1048,7 +1048,7 @@ inline mpreal& mpreal::operator=(const char* s)
 
     mpfr_t t;
 
-    mpfr_init2(t, mpfr_get_prec(mpfr_srcptr()));
+    mpfr_init2(t, mpfr_get_prec(mpfr_xsrcptr()));
 
     if(0 == mpfr_set_str(t, s, 10, mpreal::get_default_rnd()))
     {
@@ -1071,7 +1071,7 @@ inline mpreal& mpreal::operator=(const std::string& s)
 
     mpfr_t t;
 
-    mpfr_init2(t, mpfr_get_prec(mpfr_srcptr()));
+    mpfr_init2(t, mpfr_get_prec(mpfr_xsrcptr()));
 
     if(0 == mpfr_set_str(t, s.c_str(), 10, mpreal::get_default_rnd()))
     {
@@ -1093,7 +1093,7 @@ inline mpreal& mpreal::operator= (const std::complex<real_t>& z)
 // + Addition
 inline mpreal& mpreal::operator+=(const mpreal& v)
 {
-    mpfr_add(mpfr_ptr(), mpfr_srcptr(), v.mpfr_srcptr(), mpreal::get_default_rnd());
+    mpfr_add(mpfr_ptr(), mpfr_xsrcptr(), v.mpfr_xsrcptr(), mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
@@ -1107,14 +1107,14 @@ inline mpreal& mpreal::operator+=(const mpf_t u)
 
 inline mpreal& mpreal::operator+=(const mpz_t u)
 {
-    mpfr_add_z(mpfr_ptr(),mpfr_srcptr(),u,mpreal::get_default_rnd());
+    mpfr_add_z(mpfr_ptr(),mpfr_xsrcptr(),u,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator+=(const mpq_t u)
 {
-    mpfr_add_q(mpfr_ptr(),mpfr_srcptr(),u,mpreal::get_default_rnd());
+    mpfr_add_q(mpfr_ptr(),mpfr_xsrcptr(),u,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
@@ -1129,7 +1129,7 @@ inline mpreal& mpreal::operator+= (const long double u)
 inline mpreal& mpreal::operator+= (const double u)
 {
 #if (MPFR_VERSION >= MPFR_VERSION_NUM(2,4,0))
-    mpfr_add_d(mpfr_ptr(),mpfr_srcptr(),u,mpreal::get_default_rnd());
+    mpfr_add_d(mpfr_ptr(),mpfr_xsrcptr(),u,mpreal::get_default_rnd());
 #else
     *this += mpreal(u);
 #endif
@@ -1140,28 +1140,28 @@ inline mpreal& mpreal::operator+= (const double u)
 
 inline mpreal& mpreal::operator+=(const unsigned long int u)
 {
-    mpfr_add_ui(mpfr_ptr(),mpfr_srcptr(),u,mpreal::get_default_rnd());
+    mpfr_add_ui(mpfr_ptr(),mpfr_xsrcptr(),u,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator+=(const unsigned int u)
 {
-    mpfr_add_ui(mpfr_ptr(),mpfr_srcptr(),u,mpreal::get_default_rnd());
+    mpfr_add_ui(mpfr_ptr(),mpfr_xsrcptr(),u,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator+=(const long int u)
 {
-    mpfr_add_si(mpfr_ptr(),mpfr_srcptr(),u,mpreal::get_default_rnd());
+    mpfr_add_si(mpfr_ptr(),mpfr_xsrcptr(),u,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator+=(const int u)
 {
-    mpfr_add_si(mpfr_ptr(),mpfr_srcptr(),u,mpreal::get_default_rnd());
+    mpfr_add_si(mpfr_ptr(),mpfr_xsrcptr(),u,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
@@ -1180,7 +1180,7 @@ inline const mpreal mpreal::operator+()const    {    return mpreal(*this); }
 inline const mpreal operator+(const mpreal& a, const mpreal& b)
 {
     mpreal c(0, (std::max)(mpfr_get_prec(a.mpfr_ptr()), mpfr_get_prec(b.mpfr_ptr())));
-    mpfr_add(c.mpfr_ptr(), a.mpfr_srcptr(), b.mpfr_srcptr(), mpreal::get_default_rnd());
+    mpfr_add(c.mpfr_ptr(), a.mpfr_xsrcptr(), b.mpfr_xsrcptr(), mpreal::get_default_rnd());
     return c;
 }
 
@@ -1212,21 +1212,21 @@ inline const mpreal mpreal::operator-- (int)
 // - Subtraction
 inline mpreal& mpreal::operator-=(const mpreal& v)
 {
-    mpfr_sub(mpfr_ptr(),mpfr_srcptr(),v.mpfr_srcptr(),mpreal::get_default_rnd());
+    mpfr_sub(mpfr_ptr(),mpfr_xsrcptr(),v.mpfr_xsrcptr(),mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator-=(const mpz_t v)
 {
-    mpfr_sub_z(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_sub_z(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator-=(const mpq_t v)
 {
-    mpfr_sub_q(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_sub_q(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
@@ -1241,7 +1241,7 @@ inline mpreal& mpreal::operator-=(const long double v)
 inline mpreal& mpreal::operator-=(const double v)
 {
 #if (MPFR_VERSION >= MPFR_VERSION_NUM(2,4,0))
-    mpfr_sub_d(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_sub_d(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
 #else
     *this -= mpreal(v);
 #endif
@@ -1252,28 +1252,28 @@ inline mpreal& mpreal::operator-=(const double v)
 
 inline mpreal& mpreal::operator-=(const unsigned long int v)
 {
-    mpfr_sub_ui(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_sub_ui(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator-=(const unsigned int v)
 {
-    mpfr_sub_ui(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_sub_ui(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator-=(const long int v)
 {
-    mpfr_sub_si(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_sub_si(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator-=(const int v)
 {
-    mpfr_sub_si(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_sub_si(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
@@ -1281,14 +1281,14 @@ inline mpreal& mpreal::operator-=(const int v)
 inline const mpreal mpreal::operator-()const
 {
     mpreal u(*this);
-    mpfr_neg(u.mpfr_ptr(),u.mpfr_srcptr(),mpreal::get_default_rnd());
+    mpfr_neg(u.mpfr_ptr(),u.mpfr_xsrcptr(),mpreal::get_default_rnd());
     return u;
 }
 
 inline const mpreal operator-(const mpreal& a, const mpreal& b)
 {
     mpreal c(0, (std::max)(mpfr_get_prec(a.mpfr_ptr()), mpfr_get_prec(b.mpfr_ptr())));
-    mpfr_sub(c.mpfr_ptr(), a.mpfr_srcptr(), b.mpfr_srcptr(), mpreal::get_default_rnd());
+    mpfr_sub(c.mpfr_ptr(), a.mpfr_xsrcptr(), b.mpfr_xsrcptr(), mpreal::get_default_rnd());
     return c;
 }
 
@@ -1296,7 +1296,7 @@ inline const mpreal operator-(const double  b, const mpreal& a)
 {
 #if (MPFR_VERSION >= MPFR_VERSION_NUM(2,4,0))
     mpreal x(0, mpfr_get_prec(a.mpfr_ptr()));
-    mpfr_d_sub(x.mpfr_ptr(), b, a.mpfr_srcptr(), mpreal::get_default_rnd());
+    mpfr_d_sub(x.mpfr_ptr(), b, a.mpfr_xsrcptr(), mpreal::get_default_rnd());
     return x;
 #else
     mpreal x(b, mpfr_get_prec(a.mpfr_ptr()));
@@ -1308,28 +1308,28 @@ inline const mpreal operator-(const double  b, const mpreal& a)
 inline const mpreal operator-(const unsigned long int b, const mpreal& a)
 {
     mpreal x(0, mpfr_get_prec(a.mpfr_ptr()));
-    mpfr_ui_sub(x.mpfr_ptr(), b, a.mpfr_srcptr(), mpreal::get_default_rnd());
+    mpfr_ui_sub(x.mpfr_ptr(), b, a.mpfr_xsrcptr(), mpreal::get_default_rnd());
     return x;
 }
 
 inline const mpreal operator-(const unsigned int b, const mpreal& a)
 {
     mpreal x(0, mpfr_get_prec(a.mpfr_ptr()));
-    mpfr_ui_sub(x.mpfr_ptr(), b, a.mpfr_srcptr(), mpreal::get_default_rnd());
+    mpfr_ui_sub(x.mpfr_ptr(), b, a.mpfr_xsrcptr(), mpreal::get_default_rnd());
     return x;
 }
 
 inline const mpreal operator-(const long int b, const mpreal& a)
 {
     mpreal x(0, mpfr_get_prec(a.mpfr_ptr()));
-    mpfr_si_sub(x.mpfr_ptr(), b, a.mpfr_srcptr(), mpreal::get_default_rnd());
+    mpfr_si_sub(x.mpfr_ptr(), b, a.mpfr_xsrcptr(), mpreal::get_default_rnd());
     return x;
 }
 
 inline const mpreal operator-(const int b, const mpreal& a)
 {
     mpreal x(0, mpfr_get_prec(a.mpfr_ptr()));
-    mpfr_si_sub(x.mpfr_ptr(), b, a.mpfr_srcptr(), mpreal::get_default_rnd());
+    mpfr_si_sub(x.mpfr_ptr(), b, a.mpfr_xsrcptr(), mpreal::get_default_rnd());
     return x;
 }
 
@@ -1337,21 +1337,21 @@ inline const mpreal operator-(const int b, const mpreal& a)
 // * Multiplication
 inline mpreal& mpreal::operator*= (const mpreal& v)
 {
-    mpfr_mul(mpfr_ptr(),mpfr_srcptr(),v.mpfr_srcptr(),mpreal::get_default_rnd());
+    mpfr_mul(mpfr_ptr(),mpfr_xsrcptr(),v.mpfr_xsrcptr(),mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator*=(const mpz_t v)
 {
-    mpfr_mul_z(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_mul_z(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator*=(const mpq_t v)
 {
-    mpfr_mul_q(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_mul_q(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
@@ -1366,7 +1366,7 @@ inline mpreal& mpreal::operator*=(const long double v)
 inline mpreal& mpreal::operator*=(const double v)
 {
 #if (MPFR_VERSION >= MPFR_VERSION_NUM(2,4,0))
-    mpfr_mul_d(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_mul_d(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
 #else
     *this *= mpreal(v);
 #endif
@@ -1376,28 +1376,28 @@ inline mpreal& mpreal::operator*=(const double v)
 
 inline mpreal& mpreal::operator*=(const unsigned long int v)
 {
-    mpfr_mul_ui(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_mul_ui(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator*=(const unsigned int v)
 {
-    mpfr_mul_ui(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_mul_ui(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator*=(const long int v)
 {
-    mpfr_mul_si(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_mul_si(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator*=(const int v)
 {
-    mpfr_mul_si(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_mul_si(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
@@ -1405,7 +1405,7 @@ inline mpreal& mpreal::operator*=(const int v)
 inline const mpreal operator*(const mpreal& a, const mpreal& b)
 {
     mpreal c(0, (std::max)(mpfr_get_prec(a.mpfr_ptr()), mpfr_get_prec(b.mpfr_ptr())));
-    mpfr_mul(c.mpfr_ptr(), a.mpfr_srcptr(), b.mpfr_srcptr(), mpreal::get_default_rnd());
+    mpfr_mul(c.mpfr_ptr(), a.mpfr_xsrcptr(), b.mpfr_xsrcptr(), mpreal::get_default_rnd());
     return c;
 }
 
@@ -1413,21 +1413,21 @@ inline const mpreal operator*(const mpreal& a, const mpreal& b)
 // / Division
 inline mpreal& mpreal::operator/=(const mpreal& v)
 {
-    mpfr_div(mpfr_ptr(),mpfr_srcptr(),v.mpfr_srcptr(),mpreal::get_default_rnd());
+    mpfr_div(mpfr_ptr(),mpfr_xsrcptr(),v.mpfr_xsrcptr(),mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator/=(const mpz_t v)
 {
-    mpfr_div_z(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_div_z(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator/=(const mpq_t v)
 {
-    mpfr_div_q(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_div_q(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
@@ -1442,7 +1442,7 @@ inline mpreal& mpreal::operator/=(const long double v)
 inline mpreal& mpreal::operator/=(const double v)
 {
 #if (MPFR_VERSION >= MPFR_VERSION_NUM(2,4,0))
-    mpfr_div_d(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_div_d(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
 #else
     *this /= mpreal(v);
 #endif
@@ -1452,72 +1452,72 @@ inline mpreal& mpreal::operator/=(const double v)
 
 inline mpreal& mpreal::operator/=(const unsigned long int v)
 {
-    mpfr_div_ui(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_div_ui(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator/=(const unsigned int v)
 {
-    mpfr_div_ui(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_div_ui(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator/=(const long int v)
 {
-    mpfr_div_si(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_div_si(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator/=(const int v)
 {
-    mpfr_div_si(mpfr_ptr(),mpfr_srcptr(),v,mpreal::get_default_rnd());
+    mpfr_div_si(mpfr_ptr(),mpfr_xsrcptr(),v,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline const mpreal operator/(const mpreal& a, const mpreal& b)
 {
-    mpreal c(0, (std::max)(mpfr_get_prec(a.mpfr_srcptr()), mpfr_get_prec(b.mpfr_srcptr())));
-    mpfr_div(c.mpfr_ptr(), a.mpfr_srcptr(), b.mpfr_srcptr(), mpreal::get_default_rnd());
+    mpreal c(0, (std::max)(mpfr_get_prec(a.mpfr_xsrcptr()), mpfr_get_prec(b.mpfr_xsrcptr())));
+    mpfr_div(c.mpfr_ptr(), a.mpfr_xsrcptr(), b.mpfr_xsrcptr(), mpreal::get_default_rnd());
     return c;
 }
 
 inline const mpreal operator/(const unsigned long int b, const mpreal& a)
 {
-    mpreal x(0, mpfr_get_prec(a.mpfr_srcptr()));
-    mpfr_ui_div(x.mpfr_ptr(), b, a.mpfr_srcptr(), mpreal::get_default_rnd());
+    mpreal x(0, mpfr_get_prec(a.mpfr_xsrcptr()));
+    mpfr_ui_div(x.mpfr_ptr(), b, a.mpfr_xsrcptr(), mpreal::get_default_rnd());
     return x;
 }
 
 inline const mpreal operator/(const unsigned int b, const mpreal& a)
 {
-    mpreal x(0, mpfr_get_prec(a.mpfr_srcptr()));
-    mpfr_ui_div(x.mpfr_ptr(), b, a.mpfr_srcptr(), mpreal::get_default_rnd());
+    mpreal x(0, mpfr_get_prec(a.mpfr_xsrcptr()));
+    mpfr_ui_div(x.mpfr_ptr(), b, a.mpfr_xsrcptr(), mpreal::get_default_rnd());
     return x;
 }
 
 inline const mpreal operator/(const long int b, const mpreal& a)
 {
-    mpreal x(0, mpfr_get_prec(a.mpfr_srcptr()));
-    mpfr_si_div(x.mpfr_ptr(), b, a.mpfr_srcptr(), mpreal::get_default_rnd());
+    mpreal x(0, mpfr_get_prec(a.mpfr_xsrcptr()));
+    mpfr_si_div(x.mpfr_ptr(), b, a.mpfr_xsrcptr(), mpreal::get_default_rnd());
     return x;
 }
 
 inline const mpreal operator/(const int b, const mpreal& a)
 {
-    mpreal x(0, mpfr_get_prec(a.mpfr_srcptr()));
-    mpfr_si_div(x.mpfr_ptr(), b, a.mpfr_srcptr(), mpreal::get_default_rnd());
+    mpreal x(0, mpfr_get_prec(a.mpfr_xsrcptr()));
+    mpfr_si_div(x.mpfr_ptr(), b, a.mpfr_xsrcptr(), mpreal::get_default_rnd());
     return x;
 }
 
 inline const mpreal operator/(const double  b, const mpreal& a)
 {
 #if (MPFR_VERSION >= MPFR_VERSION_NUM(2,4,0))
-    mpreal x(0, mpfr_get_prec(a.mpfr_srcptr()));
-    mpfr_d_div(x.mpfr_ptr(), b, a.mpfr_srcptr(), mpreal::get_default_rnd());
+    mpreal x(0, mpfr_get_prec(a.mpfr_xsrcptr()));
+    mpfr_d_div(x.mpfr_ptr(), b, a.mpfr_xsrcptr(), mpreal::get_default_rnd());
     return x;
 #else
     mpreal x(b, mpfr_get_prec(a.mpfr_ptr()));
@@ -1530,56 +1530,56 @@ inline const mpreal operator/(const double  b, const mpreal& a)
 // Shifts operators - Multiplication/Division by power of 2
 inline mpreal& mpreal::operator<<=(const unsigned long int u)
 {
-    mpfr_mul_2ui(mpfr_ptr(),mpfr_srcptr(),u,mpreal::get_default_rnd());
+    mpfr_mul_2ui(mpfr_ptr(),mpfr_xsrcptr(),u,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator<<=(const unsigned int u)
 {
-    mpfr_mul_2ui(mpfr_ptr(),mpfr_srcptr(),static_cast<unsigned long int>(u),mpreal::get_default_rnd());
+    mpfr_mul_2ui(mpfr_ptr(),mpfr_xsrcptr(),static_cast<unsigned long int>(u),mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator<<=(const long int u)
 {
-    mpfr_mul_2si(mpfr_ptr(),mpfr_srcptr(),u,mpreal::get_default_rnd());
+    mpfr_mul_2si(mpfr_ptr(),mpfr_xsrcptr(),u,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator<<=(const int u)
 {
-    mpfr_mul_2si(mpfr_ptr(),mpfr_srcptr(),static_cast<long int>(u),mpreal::get_default_rnd());
+    mpfr_mul_2si(mpfr_ptr(),mpfr_xsrcptr(),static_cast<long int>(u),mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator>>=(const unsigned long int u)
 {
-    mpfr_div_2ui(mpfr_ptr(),mpfr_srcptr(),u,mpreal::get_default_rnd());
+    mpfr_div_2ui(mpfr_ptr(),mpfr_xsrcptr(),u,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator>>=(const unsigned int u)
 {
-    mpfr_div_2ui(mpfr_ptr(),mpfr_srcptr(),static_cast<unsigned long int>(u),mpreal::get_default_rnd());
+    mpfr_div_2ui(mpfr_ptr(),mpfr_xsrcptr(),static_cast<unsigned long int>(u),mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator>>=(const long int u)
 {
-    mpfr_div_2si(mpfr_ptr(),mpfr_srcptr(),u,mpreal::get_default_rnd());
+    mpfr_div_2si(mpfr_ptr(),mpfr_xsrcptr(),u,mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline mpreal& mpreal::operator>>=(const int u)
 {
-    mpfr_div_2si(mpfr_ptr(),mpfr_srcptr(),static_cast<long int>(u),mpreal::get_default_rnd());
+    mpfr_div_2si(mpfr_ptr(),mpfr_xsrcptr(),static_cast<long int>(u),mpreal::get_default_rnd());
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
@@ -1628,7 +1628,7 @@ inline const mpreal operator>>(const mpreal& v, const int k)
 inline const mpreal mul_2ui(const mpreal& v, unsigned long int k, mp_rnd_t rnd_mode)
 {
     mpreal x(v);
-    mpfr_mul_2ui(x.mpfr_ptr(),v.mpfr_srcptr(),k,rnd_mode);
+    mpfr_mul_2ui(x.mpfr_ptr(),v.mpfr_xsrcptr(),k,rnd_mode);
     return x;
 }
 
@@ -1636,21 +1636,21 @@ inline const mpreal mul_2ui(const mpreal& v, unsigned long int k, mp_rnd_t rnd_m
 inline const mpreal mul_2si(const mpreal& v, long int k, mp_rnd_t rnd_mode)
 {
     mpreal x(v);
-    mpfr_mul_2si(x.mpfr_ptr(),v.mpfr_srcptr(),k,rnd_mode);
+    mpfr_mul_2si(x.mpfr_ptr(),v.mpfr_xsrcptr(),k,rnd_mode);
     return x;
 }
 
 inline const mpreal div_2ui(const mpreal& v, unsigned long int k, mp_rnd_t rnd_mode)
 {
     mpreal x(v);
-    mpfr_div_2ui(x.mpfr_ptr(),v.mpfr_srcptr(),k,rnd_mode);
+    mpfr_div_2ui(x.mpfr_ptr(),v.mpfr_xsrcptr(),k,rnd_mode);
     return x;
 }
 
 inline const mpreal div_2si(const mpreal& v, long int k, mp_rnd_t rnd_mode)
 {
     mpreal x(v);
-    mpfr_div_2si(x.mpfr_ptr(),v.mpfr_srcptr(),k,rnd_mode);
+    mpfr_div_2si(x.mpfr_ptr(),v.mpfr_xsrcptr(),k,rnd_mode);
     return x;
 }
 
@@ -1667,45 +1667,45 @@ inline const mpreal div_2si(const mpreal& v, long int k, mp_rnd_t rnd_mode)
 // Be cautions if you use compiler options which break strict IEEE compliance (e.g. -ffast-math in GCC).
 // Use std::isnan instead (C++11).
 
-inline bool operator >  (const mpreal& a, const mpreal& b           ){  return (mpfr_greater_p(a.mpfr_srcptr(),b.mpfr_srcptr()) != 0 );            }
-inline bool operator >  (const mpreal& a, const unsigned long int b ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_srcptr(),b) > 0 );                 }
-inline bool operator >  (const mpreal& a, const unsigned int b      ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_srcptr(),b) > 0 );                 }
-inline bool operator >  (const mpreal& a, const long int b          ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_srcptr(),b) > 0 );                 }
-inline bool operator >  (const mpreal& a, const int b               ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_srcptr(),b) > 0 );                 }
-inline bool operator >  (const mpreal& a, const long double b       ){  return !isnan(a) && (b == b) && (mpfr_cmp_ld(a.mpfr_srcptr(),b) > 0 );    }
-inline bool operator >  (const mpreal& a, const double b            ){  return !isnan(a) && (b == b) && (mpfr_cmp_d (a.mpfr_srcptr(),b) > 0 );    }
+inline bool operator >  (const mpreal& a, const mpreal& b           ){  return (mpfr_greater_p(a.mpfr_xsrcptr(),b.mpfr_xsrcptr()) != 0 );            }
+inline bool operator >  (const mpreal& a, const unsigned long int b ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_xsrcptr(),b) > 0 );                 }
+inline bool operator >  (const mpreal& a, const unsigned int b      ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_xsrcptr(),b) > 0 );                 }
+inline bool operator >  (const mpreal& a, const long int b          ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_xsrcptr(),b) > 0 );                 }
+inline bool operator >  (const mpreal& a, const int b               ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_xsrcptr(),b) > 0 );                 }
+inline bool operator >  (const mpreal& a, const long double b       ){  return !isnan(a) && (b == b) && (mpfr_cmp_ld(a.mpfr_xsrcptr(),b) > 0 );    }
+inline bool operator >  (const mpreal& a, const double b            ){  return !isnan(a) && (b == b) && (mpfr_cmp_d (a.mpfr_xsrcptr(),b) > 0 );    }
 
-inline bool operator >= (const mpreal& a, const mpreal& b           ){  return (mpfr_greaterequal_p(a.mpfr_srcptr(),b.mpfr_srcptr()) != 0 );       }
-inline bool operator >= (const mpreal& a, const unsigned long int b ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_srcptr(),b) >= 0 );                }
-inline bool operator >= (const mpreal& a, const unsigned int b      ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_srcptr(),b) >= 0 );                }
-inline bool operator >= (const mpreal& a, const long int b          ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_srcptr(),b) >= 0 );                }
-inline bool operator >= (const mpreal& a, const int b               ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_srcptr(),b) >= 0 );                }
-inline bool operator >= (const mpreal& a, const long double b       ){  return !isnan(a) && (b == b) && (mpfr_cmp_ld(a.mpfr_srcptr(),b) >= 0 );   }
-inline bool operator >= (const mpreal& a, const double b            ){  return !isnan(a) && (b == b) && (mpfr_cmp_d (a.mpfr_srcptr(),b) >= 0 );   }
+inline bool operator >= (const mpreal& a, const mpreal& b           ){  return (mpfr_greaterequal_p(a.mpfr_xsrcptr(),b.mpfr_xsrcptr()) != 0 );       }
+inline bool operator >= (const mpreal& a, const unsigned long int b ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_xsrcptr(),b) >= 0 );                }
+inline bool operator >= (const mpreal& a, const unsigned int b      ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_xsrcptr(),b) >= 0 );                }
+inline bool operator >= (const mpreal& a, const long int b          ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_xsrcptr(),b) >= 0 );                }
+inline bool operator >= (const mpreal& a, const int b               ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_xsrcptr(),b) >= 0 );                }
+inline bool operator >= (const mpreal& a, const long double b       ){  return !isnan(a) && (b == b) && (mpfr_cmp_ld(a.mpfr_xsrcptr(),b) >= 0 );   }
+inline bool operator >= (const mpreal& a, const double b            ){  return !isnan(a) && (b == b) && (mpfr_cmp_d (a.mpfr_xsrcptr(),b) >= 0 );   }
 
-inline bool operator <  (const mpreal& a, const mpreal& b           ){  return (mpfr_less_p(a.mpfr_srcptr(),b.mpfr_srcptr()) != 0 );               }
-inline bool operator <  (const mpreal& a, const unsigned long int b ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_srcptr(),b) < 0 );                 }
-inline bool operator <  (const mpreal& a, const unsigned int b      ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_srcptr(),b) < 0 );                 }
-inline bool operator <  (const mpreal& a, const long int b          ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_srcptr(),b) < 0 );                 }
-inline bool operator <  (const mpreal& a, const int b               ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_srcptr(),b) < 0 );                 }
-inline bool operator <  (const mpreal& a, const long double b       ){  return !isnan(a) && (b == b) && (mpfr_cmp_ld(a.mpfr_srcptr(),b) < 0 );    }
-inline bool operator <  (const mpreal& a, const double b            ){  return !isnan(a) && (b == b) && (mpfr_cmp_d (a.mpfr_srcptr(),b) < 0 );    }
+inline bool operator <  (const mpreal& a, const mpreal& b           ){  return (mpfr_less_p(a.mpfr_xsrcptr(),b.mpfr_xsrcptr()) != 0 );               }
+inline bool operator <  (const mpreal& a, const unsigned long int b ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_xsrcptr(),b) < 0 );                 }
+inline bool operator <  (const mpreal& a, const unsigned int b      ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_xsrcptr(),b) < 0 );                 }
+inline bool operator <  (const mpreal& a, const long int b          ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_xsrcptr(),b) < 0 );                 }
+inline bool operator <  (const mpreal& a, const int b               ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_xsrcptr(),b) < 0 );                 }
+inline bool operator <  (const mpreal& a, const long double b       ){  return !isnan(a) && (b == b) && (mpfr_cmp_ld(a.mpfr_xsrcptr(),b) < 0 );    }
+inline bool operator <  (const mpreal& a, const double b            ){  return !isnan(a) && (b == b) && (mpfr_cmp_d (a.mpfr_xsrcptr(),b) < 0 );    }
 
-inline bool operator <= (const mpreal& a, const mpreal& b           ){  return (mpfr_lessequal_p(a.mpfr_srcptr(),b.mpfr_srcptr()) != 0 );          }
-inline bool operator <= (const mpreal& a, const unsigned long int b ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_srcptr(),b) <= 0 );                }
-inline bool operator <= (const mpreal& a, const unsigned int b      ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_srcptr(),b) <= 0 );                }
-inline bool operator <= (const mpreal& a, const long int b          ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_srcptr(),b) <= 0 );                }
-inline bool operator <= (const mpreal& a, const int b               ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_srcptr(),b) <= 0 );                }
-inline bool operator <= (const mpreal& a, const long double b       ){  return !isnan(a) && (b == b) && (mpfr_cmp_ld(a.mpfr_srcptr(),b) <= 0 );   }
-inline bool operator <= (const mpreal& a, const double b            ){  return !isnan(a) && (b == b) && (mpfr_cmp_d (a.mpfr_srcptr(),b) <= 0 );   }
+inline bool operator <= (const mpreal& a, const mpreal& b           ){  return (mpfr_lessequal_p(a.mpfr_xsrcptr(),b.mpfr_xsrcptr()) != 0 );          }
+inline bool operator <= (const mpreal& a, const unsigned long int b ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_xsrcptr(),b) <= 0 );                }
+inline bool operator <= (const mpreal& a, const unsigned int b      ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_xsrcptr(),b) <= 0 );                }
+inline bool operator <= (const mpreal& a, const long int b          ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_xsrcptr(),b) <= 0 );                }
+inline bool operator <= (const mpreal& a, const int b               ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_xsrcptr(),b) <= 0 );                }
+inline bool operator <= (const mpreal& a, const long double b       ){  return !isnan(a) && (b == b) && (mpfr_cmp_ld(a.mpfr_xsrcptr(),b) <= 0 );   }
+inline bool operator <= (const mpreal& a, const double b            ){  return !isnan(a) && (b == b) && (mpfr_cmp_d (a.mpfr_xsrcptr(),b) <= 0 );   }
 
-inline bool operator == (const mpreal& a, const mpreal& b           ){  return (mpfr_equal_p(a.mpfr_srcptr(),b.mpfr_srcptr()) != 0 );              }
-inline bool operator == (const mpreal& a, const unsigned long int b ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_srcptr(),b) == 0 );                }
-inline bool operator == (const mpreal& a, const unsigned int b      ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_srcptr(),b) == 0 );                }
-inline bool operator == (const mpreal& a, const long int b          ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_srcptr(),b) == 0 );                }
-inline bool operator == (const mpreal& a, const int b               ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_srcptr(),b) == 0 );                }
-inline bool operator == (const mpreal& a, const long double b       ){  return !isnan(a) && (b == b) && (mpfr_cmp_ld(a.mpfr_srcptr(),b) == 0 );   }
-inline bool operator == (const mpreal& a, const double b            ){  return !isnan(a) && (b == b) && (mpfr_cmp_d (a.mpfr_srcptr(),b) == 0 );   }
+inline bool operator == (const mpreal& a, const mpreal& b           ){  return (mpfr_equal_p(a.mpfr_xsrcptr(),b.mpfr_xsrcptr()) != 0 );              }
+inline bool operator == (const mpreal& a, const unsigned long int b ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_xsrcptr(),b) == 0 );                }
+inline bool operator == (const mpreal& a, const unsigned int b      ){  return !isnan(a) && (mpfr_cmp_ui(a.mpfr_xsrcptr(),b) == 0 );                }
+inline bool operator == (const mpreal& a, const long int b          ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_xsrcptr(),b) == 0 );                }
+inline bool operator == (const mpreal& a, const int b               ){  return !isnan(a) && (mpfr_cmp_si(a.mpfr_xsrcptr(),b) == 0 );                }
+inline bool operator == (const mpreal& a, const long double b       ){  return !isnan(a) && (b == b) && (mpfr_cmp_ld(a.mpfr_xsrcptr(),b) == 0 );   }
+inline bool operator == (const mpreal& a, const double b            ){  return !isnan(a) && (b == b) && (mpfr_cmp_d (a.mpfr_xsrcptr(),b) == 0 );   }
 
 inline bool operator != (const mpreal& a, const mpreal& b           ){  return !(a == b);  }
 inline bool operator != (const mpreal& a, const unsigned long int b ){  return !(a == b);  }
@@ -1715,30 +1715,30 @@ inline bool operator != (const mpreal& a, const int b               ){  return !
 inline bool operator != (const mpreal& a, const long double b       ){  return !(a == b);  }
 inline bool operator != (const mpreal& a, const double b            ){  return !(a == b);  }
 
-inline bool isnan    (const mpreal& op){    return (mpfr_nan_p    (op.mpfr_srcptr()) != 0 );    }
-inline bool isinf    (const mpreal& op){    return (mpfr_inf_p    (op.mpfr_srcptr()) != 0 );    }
-inline bool isfinite (const mpreal& op){    return (mpfr_number_p (op.mpfr_srcptr()) != 0 );    }
-inline bool iszero   (const mpreal& op){    return (mpfr_zero_p   (op.mpfr_srcptr()) != 0 );    }
-inline bool isint    (const mpreal& op){    return (mpfr_integer_p(op.mpfr_srcptr()) != 0 );    }
+inline bool isnan    (const mpreal& op){    return (mpfr_nan_p    (op.mpfr_xsrcptr()) != 0 );    }
+inline bool isinf    (const mpreal& op){    return (mpfr_inf_p    (op.mpfr_xsrcptr()) != 0 );    }
+inline bool isfinite (const mpreal& op){    return (mpfr_number_p (op.mpfr_xsrcptr()) != 0 );    }
+inline bool iszero   (const mpreal& op){    return (mpfr_zero_p   (op.mpfr_xsrcptr()) != 0 );    }
+inline bool isint    (const mpreal& op){    return (mpfr_integer_p(op.mpfr_xsrcptr()) != 0 );    }
 
 #if (MPFR_VERSION >= MPFR_VERSION_NUM(3,0,0))
-inline bool isregular(const mpreal& op){    return (mpfr_regular_p(op.mpfr_srcptr()));}
+inline bool isregular(const mpreal& op){    return (mpfr_regular_p(op.mpfr_xsrcptr()));}
 #endif
 
 //////////////////////////////////////////////////////////////////////////
 // Type Converters
-inline bool               mpreal::toBool   (             )  const    {    return  mpfr_zero_p (mpfr_srcptr()) == 0;     }
-inline long               mpreal::toLong   (mp_rnd_t mode)  const    {    return  mpfr_get_si (mpfr_srcptr(), mode);    }
-inline unsigned long      mpreal::toULong  (mp_rnd_t mode)  const    {    return  mpfr_get_ui (mpfr_srcptr(), mode);    }
-inline float              mpreal::toFloat  (mp_rnd_t mode)  const    {    return  mpfr_get_flt(mpfr_srcptr(), mode);    }
-inline double             mpreal::toDouble (mp_rnd_t mode)  const    {    return  mpfr_get_d  (mpfr_srcptr(), mode);    }
-inline long double        mpreal::toLDouble(mp_rnd_t mode)  const    {    return  mpfr_get_ld (mpfr_srcptr(), mode);    }
-inline long long          mpreal::toLLong  (mp_rnd_t mode)  const    {    return  mpfr_get_sj (mpfr_srcptr(), mode);    }
-inline unsigned long long mpreal::toULLong (mp_rnd_t mode)  const    {    return  mpfr_get_uj (mpfr_srcptr(), mode);    }
+inline bool               mpreal::toBool   (             )  const    {    return  mpfr_zero_p (mpfr_xsrcptr()) == 0;     }
+inline long               mpreal::toLong   (mp_rnd_t mode)  const    {    return  mpfr_get_si (mpfr_xsrcptr(), mode);    }
+inline unsigned long      mpreal::toULong  (mp_rnd_t mode)  const    {    return  mpfr_get_ui (mpfr_xsrcptr(), mode);    }
+inline float              mpreal::toFloat  (mp_rnd_t mode)  const    {    return  mpfr_get_flt(mpfr_xsrcptr(), mode);    }
+inline double             mpreal::toDouble (mp_rnd_t mode)  const    {    return  mpfr_get_d  (mpfr_xsrcptr(), mode);    }
+inline long double        mpreal::toLDouble(mp_rnd_t mode)  const    {    return  mpfr_get_ld (mpfr_xsrcptr(), mode);    }
+inline long long          mpreal::toLLong  (mp_rnd_t mode)  const    {    return  mpfr_get_sj (mpfr_xsrcptr(), mode);    }
+inline unsigned long long mpreal::toULLong (mp_rnd_t mode)  const    {    return  mpfr_get_uj (mpfr_xsrcptr(), mode);    }
 
 inline ::mpfr_ptr     mpreal::mpfr_ptr()             { return mp; }
 inline ::mpfr_srcptr  mpreal::mpfr_ptr()    const    { return mp; }
-inline ::mpfr_srcptr  mpreal::mpfr_srcptr() const    { return mp; }
+inline ::mpfr_srcptr  mpreal::mpfr_xsrcptr() const    { return mp; }
 
 template <class T>
 inline std::string toString(T t, std::ios_base & (*f)(std::ios_base&))
@@ -1757,7 +1757,7 @@ inline std::string mpreal::toString(const std::string& format) const
 
     if( !format.empty() )
     {
-        if(!(mpfr_asprintf(&s, format.c_str(), mpfr_srcptr()) < 0))
+        if(!(mpfr_asprintf(&s, format.c_str(), mpfr_xsrcptr()) < 0))
         {
             out = std::string(s);
 
@@ -1780,7 +1780,7 @@ inline std::string mpreal::toString(int n, int b, mp_rnd_t mode) const
 
     std::ostringstream format;
 
-    int digits = (n >= 0) ? n : 2 + bits2digits(mpfr_get_prec(mpfr_srcptr()));
+    int digits = (n >= 0) ? n : 2 + bits2digits(mpfr_get_prec(mpfr_xsrcptr()));
 
     format << "%." << digits << "RNg";
 
@@ -1905,7 +1905,7 @@ inline std::ostream& mpreal::output(std::ostream& os) const
     char *s = NULL;
     if(!(mpfr_asprintf(&s, format.str().c_str(),
                         mpfr::mpreal::get_default_rnd(),
-                        mpfr_srcptr())
+                        mpfr_xsrcptr())
         < 0))
     {
         os << std::string(s);
@@ -1951,14 +1951,14 @@ inline int bits2digits(mp_prec_t b)
 // Set/Get number properties
 inline mpreal& mpreal::setSign(int sign, mp_rnd_t RoundingMode)
 {
-    mpfr_setsign(mpfr_ptr(), mpfr_srcptr(), sign < 0, RoundingMode);
+    mpfr_setsign(mpfr_ptr(), mpfr_xsrcptr(), sign < 0, RoundingMode);
     MPREAL_MSVC_DEBUGVIEW_CODE;
     return *this;
 }
 
 inline int mpreal::getPrecision() const
 {
-    return int(mpfr_get_prec(mpfr_srcptr()));
+    return int(mpfr_get_prec(mpfr_xsrcptr()));
 }
 
 inline mpreal& mpreal::setPrecision(int Precision, mp_rnd_t RoundingMode)
@@ -1997,7 +1997,7 @@ inline mpreal& mpreal::setZero(int sign)
 
 inline mp_prec_t mpreal::get_prec() const
 {
-    return mpfr_get_prec(mpfr_srcptr());
+    return mpfr_get_prec(mpfr_xsrcptr());
 }
 
 inline void mpreal::set_prec(mp_prec_t prec, mp_rnd_t rnd_mode)
@@ -2008,7 +2008,7 @@ inline void mpreal::set_prec(mp_prec_t prec, mp_rnd_t rnd_mode)
 
 inline mp_exp_t mpreal::get_exp () const
 {
-    return mpfr_get_exp(mpfr_srcptr());
+    return mpfr_get_exp(mpfr_xsrcptr());
 }
 
 inline int mpreal::set_exp (mp_exp_t e)
@@ -2020,7 +2020,7 @@ inline int mpreal::set_exp (mp_exp_t e)
 
 inline mpreal& negate(mpreal& x) // -x in place
 {
-    mpfr_neg(x.mpfr_ptr(),x.mpfr_srcptr(),mpreal::get_default_rnd());
+    mpfr_neg(x.mpfr_ptr(),x.mpfr_xsrcptr(),mpreal::get_default_rnd());
     return x;
 }
 
@@ -2028,9 +2028,9 @@ inline const mpreal frexp(const mpreal& x, mp_exp_t* exp, mp_rnd_t mode = mpreal
 {
     mpreal y(x);
 #if (MPFR_VERSION >= MPFR_VERSION_NUM(3,1,0))
-    mpfr_frexp(exp,y.mpfr_ptr(),x.mpfr_srcptr(),mode);
+    mpfr_frexp(exp,y.mpfr_ptr(),x.mpfr_xsrcptr(),mode);
 #else
-    *exp = mpfr_get_exp(y.mpfr_srcptr());
+    *exp = mpfr_get_exp(y.mpfr_xsrcptr());
     mpfr_set_exp(y.mpfr_ptr(),0);
 #endif
     return y;
@@ -2049,7 +2049,7 @@ inline const mpreal ldexp(const mpreal& v, mp_exp_t exp)
     mpreal x(v);
 
     // rounding is not important since we are just increasing the exponent (= exact operation)
-    mpfr_mul_2si(x.mpfr_ptr(), x.mpfr_srcptr(), exp, mpreal::get_default_rnd());
+    mpfr_mul_2si(x.mpfr_ptr(), x.mpfr_xsrcptr(), exp, mpreal::get_default_rnd());
     return x;
 }
 
@@ -2109,18 +2109,18 @@ inline bool isEqualFuzzy(const mpreal& a, const mpreal& b)
 inline mpreal copysign(const mpreal& x, const  mpreal& y, mp_rnd_t rnd_mode = mpreal::get_default_rnd())
 {
     mpreal rop(0, mpfr_get_prec(x.mpfr_ptr()));
-    mpfr_setsign(rop.mpfr_ptr(), x.mpfr_srcptr(), mpfr_signbit(y.mpfr_srcptr()), rnd_mode);
+    mpfr_setsign(rop.mpfr_ptr(), x.mpfr_xsrcptr(), mpfr_signbit(y.mpfr_xsrcptr()), rnd_mode);
     return rop;
 }
 
 inline bool signbit(const mpreal& x)
 {
-    return mpfr_signbit(x.mpfr_srcptr());
+    return mpfr_signbit(x.mpfr_xsrcptr());
 }
 
 inline mpreal& setsignbit(mpreal& x, bool minus, mp_rnd_t rnd_mode = mpreal::get_default_rnd())
 {
-    mpfr_setsign(x.mpfr_ptr(), x.mpfr_srcptr(), minus, rnd_mode);
+    mpfr_setsign(x.mpfr_ptr(), x.mpfr_xsrcptr(), minus, rnd_mode);
     return x;
 }
 
@@ -2129,8 +2129,8 @@ inline const mpreal modf(const mpreal& v, mpreal& n)
     mpreal f(v);
 
     // rounding is not important since we are using the same number
-    mpfr_frac (f.mpfr_ptr(),f.mpfr_srcptr(),mpreal::get_default_rnd());
-    mpfr_trunc(n.mpfr_ptr(),v.mpfr_srcptr());
+    mpfr_frac (f.mpfr_ptr(),f.mpfr_xsrcptr(),mpreal::get_default_rnd());
+    mpfr_trunc(n.mpfr_ptr(),v.mpfr_xsrcptr());
     return f;
 }
 
@@ -2190,8 +2190,8 @@ inline mp_exp_t mpreal::get_emax_max (void)
 // Mathematical Functions
 //////////////////////////////////////////////////////////////////////////
 #define MPREAL_UNARY_MATH_FUNCTION_BODY(f)                    \
-        mpreal y(0, mpfr_get_prec(x.mpfr_srcptr()));          \
-        mpfr_##f(y.mpfr_ptr(), x.mpfr_srcptr(), r);           \
+        mpreal y(0, mpfr_get_prec(x.mpfr_xsrcptr()));          \
+        mpfr_##f(y.mpfr_ptr(), x.mpfr_xsrcptr(), r);           \
         return y;
 
 inline const mpreal sqr  (const mpreal& x, mp_rnd_t r = mpreal::get_default_rnd())
@@ -2226,30 +2226,30 @@ inline const mpreal sqrt(const int v, mp_rnd_t rnd_mode)
 
 inline const mpreal root(const mpreal& x, unsigned long int k, mp_rnd_t r = mpreal::get_default_rnd())
 {
-    mpreal y(0, mpfr_get_prec(x.mpfr_srcptr()));
+    mpreal y(0, mpfr_get_prec(x.mpfr_xsrcptr()));
 #if (MPFR_VERSION >= MPFR_VERSION_NUM(4,0,0))
-    mpfr_rootn_ui(y.mpfr_ptr(), x.mpfr_srcptr(), k, r);
+    mpfr_rootn_ui(y.mpfr_ptr(), x.mpfr_xsrcptr(), k, r);
 #else
-    mpfr_root(y.mpfr_ptr(), x.mpfr_srcptr(), k, r);
+    mpfr_root(y.mpfr_ptr(), x.mpfr_xsrcptr(), k, r);
 #endif
     return y;
 }
 
 inline const mpreal dim(const mpreal& a, const mpreal& b, mp_rnd_t r = mpreal::get_default_rnd())
 {
-    mpreal y(0, mpfr_get_prec(a.mpfr_srcptr()));
-    mpfr_dim(y.mpfr_ptr(), a.mpfr_srcptr(), b.mpfr_srcptr(), r);
+    mpreal y(0, mpfr_get_prec(a.mpfr_xsrcptr()));
+    mpfr_dim(y.mpfr_ptr(), a.mpfr_xsrcptr(), b.mpfr_xsrcptr(), r);
     return y;
 }
 
 inline int cmpabs(const mpreal& a,const mpreal& b)
 {
-    return mpfr_cmpabs(a.mpfr_ptr(), b.mpfr_srcptr());
+    return mpfr_cmpabs(a.mpfr_ptr(), b.mpfr_xsrcptr());
 }
 
 inline int sin_cos(mpreal& s, mpreal& c, const mpreal& v, mp_rnd_t rnd_mode = mpreal::get_default_rnd())
 {
-    return mpfr_sin_cos(s.mpfr_ptr(), c.mpfr_ptr(), v.mpfr_srcptr(), rnd_mode);
+    return mpfr_sin_cos(s.mpfr_ptr(), c.mpfr_ptr(), v.mpfr_xsrcptr(), rnd_mode);
 }
 
 inline const mpreal sqrt  (const long double v, mp_rnd_t rnd_mode)    {   return sqrt(mpreal(v),rnd_mode);    }
@@ -2321,14 +2321,14 @@ inline const mpreal nextpow2(const mpreal& x, mp_rnd_t r = mpreal::get_default_r
 inline const mpreal atan2 (const mpreal& y, const mpreal& x, mp_rnd_t rnd_mode = mpreal::get_default_rnd())
 {
     mpreal a(0,(std::max)(y.getPrecision(), x.getPrecision()));
-    mpfr_atan2(a.mpfr_ptr(), y.mpfr_srcptr(), x.mpfr_srcptr(), rnd_mode);
+    mpfr_atan2(a.mpfr_ptr(), y.mpfr_xsrcptr(), x.mpfr_xsrcptr(), rnd_mode);
     return a;
 }
 
 inline const mpreal hypot (const mpreal& x, const mpreal& y, mp_rnd_t rnd_mode = mpreal::get_default_rnd())
 {
     mpreal a(0,(std::max)(y.getPrecision(), x.getPrecision()));
-    mpfr_hypot(a.mpfr_ptr(), x.mpfr_srcptr(), y.mpfr_srcptr(), rnd_mode);
+    mpfr_hypot(a.mpfr_ptr(), x.mpfr_xsrcptr(), y.mpfr_xsrcptr(), rnd_mode);
     return a;
 }
 
@@ -2373,7 +2373,7 @@ inline const mpreal hypot(const mpreal& a, const mpreal& b, const mpreal& c, con
 inline const mpreal remainder (const mpreal& x, const mpreal& y, mp_rnd_t rnd_mode = mpreal::get_default_rnd())
 {
     mpreal a(0,(std::max)(y.getPrecision(), x.getPrecision()));
-    mpfr_remainder(a.mpfr_ptr(), x.mpfr_srcptr(), y.mpfr_srcptr(), rnd_mode);
+    mpfr_remainder(a.mpfr_ptr(), x.mpfr_xsrcptr(), y.mpfr_xsrcptr(), rnd_mode);
     return a;
 }
 
@@ -2381,7 +2381,7 @@ inline const mpreal remquo (const mpreal& x, const mpreal& y, int* q, mp_rnd_t r
 {
     long lq;
     mpreal a(0,(std::max)(y.getPrecision(), x.getPrecision()));
-    mpfr_remquo(a.mpfr_ptr(), &lq, x.mpfr_srcptr(), y.mpfr_srcptr(), rnd_mode);
+    mpfr_remquo(a.mpfr_ptr(), &lq, x.mpfr_xsrcptr(), y.mpfr_xsrcptr(), rnd_mode);
     if (q) *q = int(lq);
     return a;
 }
@@ -2400,8 +2400,8 @@ inline const mpreal lgamma (const mpreal& v, int *signp = 0, mp_rnd_t rnd_mode =
     mpreal x(v);
     int tsignp;
 
-    if(signp)   mpfr_lgamma(x.mpfr_ptr(),  signp,v.mpfr_srcptr(),rnd_mode);
-    else        mpfr_lgamma(x.mpfr_ptr(),&tsignp,v.mpfr_srcptr(),rnd_mode);
+    if(signp)   mpfr_lgamma(x.mpfr_ptr(),  signp,v.mpfr_xsrcptr(),rnd_mode);
+    else        mpfr_lgamma(x.mpfr_ptr(),&tsignp,v.mpfr_xsrcptr(),rnd_mode);
 
     return x;
 }
@@ -2410,14 +2410,14 @@ inline const mpreal lgamma (const mpreal& v, int *signp = 0, mp_rnd_t rnd_mode =
 inline const mpreal besseljn (long n, const mpreal& x, mp_rnd_t r = mpreal::get_default_rnd())
 {
     mpreal  y(0, x.getPrecision());
-    mpfr_jn(y.mpfr_ptr(), n, x.mpfr_srcptr(), r);
+    mpfr_jn(y.mpfr_ptr(), n, x.mpfr_xsrcptr(), r);
     return y;
 }
 
 inline const mpreal besselyn (long n, const mpreal& x, mp_rnd_t r = mpreal::get_default_rnd())
 {
     mpreal  y(0, x.getPrecision());
-    mpfr_yn(y.mpfr_ptr(), n, x.mpfr_srcptr(), r);
+    mpfr_yn(y.mpfr_ptr(), n, x.mpfr_xsrcptr(), r);
     return y;
 }
 
@@ -2471,7 +2471,7 @@ inline const mpreal sum (const mpreal tab[], const unsigned long int n, int& sta
     mpfr_srcptr *p = new mpfr_srcptr[n];
 
     for (unsigned long int  i = 0; i < n; i++)
-        p[i] = tab[i].mpfr_srcptr();
+        p[i] = tab[i].mpfr_xsrcptr();
 
     mpreal x;
     status = mpfr_sum(x.mpfr_ptr(), (mpfr_ptr*)p, n, mode);
@@ -2651,7 +2651,7 @@ inline int sgn(const mpreal& op)
 {
     // Please note, this is classic signum function which ignores sign of zero.
     // Use signbit if you need sign of zero.
-    return mpfr_sgn(op.mpfr_srcptr());
+    return mpfr_sgn(op.mpfr_xsrcptr());
 }
 
 //////////////////////////////////////////////////////////////////////////

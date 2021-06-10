@@ -2,7 +2,16 @@ AUTOMATICALLY GENERATE MPFR libraries
 =====================================
 Open up this directory in a shell.
 
-1. $ ./make-generate-mpfr-lib.sh
+NOTE:
+====
+This file includes a patched version of "mpreal.h"
+I did replace all places with "srcptr()"" to "xsrcptr()".
+This makes it possible to use "mpreal.h" with recent versions of mpfr library, which
+defined "xsrcptr" to something else!
+
+Copy "mpreal.h" to "/usr/local/include".
+
+1. $ export CC=clang && export CCPP=clang++ && zerobuild zerobuild-generate.txt
 1.1 $ ./generate-mpfr-lib
 2. Load "mpfr-lib-head.l1com" into an text editor.
 3. Create an lib file with the name: "mpfr-lib-auto.l1com".
@@ -13,7 +22,7 @@ Open up this directory in a shell.
 8. Create new file: "mpfr-combined.cpp"
 9. Paste the file: "mpfr.cpp" into new file.
 10. Build C library:
-11. $ ./make-mpfr.sh
+11. $ export CC=clang && export CCPP=clang++ && zerobuild zerobuild.txt
 12. Copy "libl1vmmpfr.so" into "~/bin" or "/usr/local/lib".
 13. Copy file: "mpfr-lib-auto.l1com" into "l1vm/lib" directory.
 13. Build VM library goto "l1vm" root directory!

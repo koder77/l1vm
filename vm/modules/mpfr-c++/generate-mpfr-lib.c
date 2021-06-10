@@ -351,7 +351,7 @@ int main (int ac, char *av[])
 	S8 max_vars ALIGN;
 	char *read;
 
-	mpreal_h = fopen ("mpreal-list.h", "r");
+	mpreal_h = fopen ("mpreal.h", "r");
 	if (mpreal_h == NULL)
 	{
 		printf ("ERROR opening 'mpreal.h'\n");

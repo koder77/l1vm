@@ -1,7 +1,13 @@
 L1VM - (1.1.0)
 	NEW: math module: more functions added from C math library
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Jun 5 2021 10:12 +0200
+	NEW: mpfr math library:
+	I included a patched version of "mpreal.h"
+	I did replace all places with "srcptr()"" to "xsrcptr()".
+	This makes it possible to use "mpreal.h" with recent versions of mpfr library, which
+	defined "xsrcptr" to something else!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu Jun 10 2021 16:25 +0200
 
 L1VM - (1.0.15)
 	NEW: sdl sdl_toggle_mouse_pointer:
