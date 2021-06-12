@@ -7,7 +7,10 @@ L1VM - (1.1.0)
 	This makes it possible to use "mpreal.h" with recent versions of mpfr library, which
 	defined "xsrcptr" to something else!
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu Jun 10 2021 16:25 +0200
+	NEW: "clang-toolchain" directory added with "build-toolchain-12.0.sh" script to
+	build Clang 12.0.0 C compilers.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Jun 12 2021 12:27 +0200
 
 L1VM - (1.0.15)
 	NEW: sdl sdl_toggle_mouse_pointer:
