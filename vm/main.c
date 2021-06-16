@@ -2182,6 +2182,14 @@ S2 run (void *arg)
 				free (jumpoffs);
 				pthread_exit ((void *) 1);
 			}
+			eoffs = 5;
+			break;
+
+		case 27:
+			// print out debug note
+			printf ("INTR0: 27 DEBUG marking\n")
+			PRINT_EPOS();
+			eoffs = 5;
 			break;
 
 		case 251:
@@ -2192,6 +2200,7 @@ S2 run (void *arg)
 			{
 				overflow = 1;
 			}
+			eoffs = 5;
 			break;
 
 		case 252:

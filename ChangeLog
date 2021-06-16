@@ -10,7 +10,11 @@ L1VM - (1.1.0)
 	NEW: "clang-toolchain" directory added with "build-toolchain-12.0.sh" script to
 	build Clang 12.0.0 C compilers.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Jun 12 2021 12:27 +0200
+	NEW: VM: interrupt 0: 27 print out DEBUG marking text and current epos.
+
+	BUGFIXES: VM: set missing "eoffs = 5" on interrupts.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed Jun 16 2021 16:41 +0200
 
 L1VM - (1.0.15)
 	NEW: sdl sdl_toggle_mouse_pointer:
