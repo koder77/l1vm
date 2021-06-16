@@ -37,7 +37,7 @@ void set_regd (S4 reg, U1 *name)
 S4 get_regi (U1 *name)
 {
 	S4 i;
-	
+
 	for (i = 0; i < MAXREG; i++)
 	{
 		if (strcmp ((const char *) regi[i], (const char *) name) == 0)
@@ -51,7 +51,7 @@ S4 get_regi (U1 *name)
 S4 get_regd (U1 *name)
 {
 	S4 i;
-	
+
 	for (i = 0; i < MAXREG; i++)
 	{
 		if (strcmp ((const char *) regd[i], (const char *) name) == 0)
@@ -65,10 +65,15 @@ S4 get_regd (U1 *name)
 void init_registers (void)
 {
 	S4 i;
-	
-	for (i = 0; i < MAXREG; i++)
+
+	// leave register zero = 0 untouched
+	for (i = 1; i < MAXREG; i++)
 	{
 		set_regi (i, (U1 *) "");
+	}
+
+	for (i = 0; i < MAXREG; i++)
+	{
 		set_regd (i, (U1 *) "");
 	}
 }
@@ -76,7 +81,7 @@ void init_registers (void)
 S4 get_free_regi (void)
 {
 	S4 i;
-	
+
 	for (i = 1; i < MAXREG; i++)
 	{
 		if (strcmp ((const char *) regi[i], "") == 0)
@@ -84,14 +89,14 @@ S4 get_free_regi (void)
 			return (i);
 		}
 	}
-	
+
 	return (-1);
 }
 
 S4 get_free_regd (void)
 {
 	S4 i;
-	
+
 	for (i = 1; i < MAXREG; i++)
 	{
 		if (strcmp ((const char *) regd[i], "") == 0)
@@ -99,6 +104,6 @@ S4 get_free_regd (void)
 			return (i);
 		}
 	}
-	
+
 	return (-1);
 }
