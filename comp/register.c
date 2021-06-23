@@ -66,7 +66,6 @@ void init_registers (void)
 {
 	S4 i;
 
-	// leave register zero = 0 untouched
 	for (i = 0; i < MAXREG; i++)
 	{
 		set_regi (i, (U1 *) "");
