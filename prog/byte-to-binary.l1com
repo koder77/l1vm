@@ -8,7 +8,6 @@
 	(set int64 1 num 134)
 	(set int64 1 i 0)
 	(set int64 1 maxbit 8)
-	(set int64 1 shift 0)
 	(set int64 1 bitset)
 	(set string s bitstr "bit: ")
 	(set string s bitsetstr " = 1")
