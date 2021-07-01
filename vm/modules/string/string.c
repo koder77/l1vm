@@ -178,6 +178,7 @@ U1 *string_int64_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+
 	if (snprintf ((char *) &data[strdestaddr], str_len, "%lli", num) <= 0)
 	{
 		printf ("string_int64_to_string: ERROR: conversion failed!\n");

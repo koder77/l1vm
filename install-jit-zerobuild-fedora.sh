@@ -107,7 +107,7 @@ else
 fi
 
 cd ../vm
-if zerobuild force; then
+if zerobuild zerobuild.txt force; then
 	echo "l1vm JIT build ok!"
 else
 	echo "l1vm JIT build error!"
