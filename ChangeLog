@@ -13,8 +13,9 @@ L1VM - (1.1.0)
 	NEW: VM: interrupt 0: 27 print out DEBUG marking text and current epos.
 
 	BUGFIXES: VM: set missing "eoffs = 5" on interrupts.
+	BUGFIXES: VM: string module bugfixes "string_mid" function.
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed Jun 16 2021 16:41 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Fri Jul 2 2021 22:18 +0200
 
 L1VM - (1.0.15)
 	NEW: sdl sdl_toggle_mouse_pointer:

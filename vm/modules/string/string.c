@@ -620,7 +620,7 @@ U1 *string_mid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	strsource_len = strlen_safe ((const char *) &data[strsourceaddr], MAXLINELEN);
-	if (pos < 1 || pos > strsource_len)
+	if (pos < 0 || pos > strsource_len)
 	{
 		// ERROR:
 		printf ("string_mid: ERROR: source array overflow!\n");
@@ -671,7 +671,7 @@ U1 *string_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	strdest_len = strlen_safe ((const char *) &data[strdestaddr], MAXLINELEN);
-	if (pos < 1 || pos > strdest_len)
+	if (pos < 0 || pos > strdest_len)
 	{
 		// ERROR:
 		printf ("string_to_string: ERROR: source array overflow!\n");
