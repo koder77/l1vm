@@ -770,7 +770,7 @@ U1 *rand_init (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	#if LIBCRYPTO_RANDOM_SEED
-	// libcrypt random number seed init
+	// libcrypto random number seed init
 	RAND_poll ();
 
 	written = RAND_bytes (buffer, sizeof (buffer));
