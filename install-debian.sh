@@ -61,6 +61,14 @@ if ! dpkg -s libmpfrc++-dev &> /dev/null; then
 	fi
 fi
 
+if ! dpkg -s libssl-dev &> /dev/null; then
+	echo "try to install libssl-dev..."
+	if ! sudo apt-get install libssl-dev; then
+		echo "installation failed!"
+		exit 1
+	fi
+fi
+
 if ! dpkg -s cmake &> /dev/null; then
 	echo "try to install cmake..."
 	if ! sudo apt-get install cmake; then

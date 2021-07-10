@@ -15,7 +15,9 @@ L1VM - (1.1.0)
 	BUGFIXES: VM: set missing "eoffs = 5" on interrupts.
 	BUGFIXES: VM: string module bugfixes "string_mid" function.
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri Jul 2 2021 22:18 +0200
+	NEW: VM math module now uses libcrypt (openssl) function for generating random number seeds.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Jul 10 2021 10:18 +0200
 
 L1VM - (1.0.15)
 	NEW: sdl sdl_toggle_mouse_pointer:

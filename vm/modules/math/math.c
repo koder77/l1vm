@@ -21,6 +21,10 @@
 #include <math.h>
 #include "../../../include/stack.h"
 
+// libcrypt for random number generator seed
+#include <openssl/sha.h>
+#include <openssl/rand.h>
+
 // protos
 #include "mt64.h"
 
@@ -749,6 +753,10 @@ U1 *log2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *rand_init (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 startnum ALIGN;
+	U1 *startnum_ptr = (U1 *) &startnum;
+	S8 i ALIGN;
+	U1 buffer[8];
+	S8 written ALIGN;
 
 	sp = stpopi ((U1 *) &startnum, sp, sp_top);
 	if (sp == NULL)
@@ -758,6 +766,19 @@ U1 *rand_init (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	// libcrypt random number seed init
+	RAND_poll ();
+
+	written = RAND_bytes (buffer, sizeof (buffer));
+
+	// generate random 64 bit startnum
+	for (i = 0; i < 8; i++)
+	{
+		*startnum_ptr = buffer[i];
+		startnum_ptr++;
+	}
+
+	// initialize pseudo random number generator with strong seed
 	init_genrand64 (startnum);
 	return (sp);
 }
