@@ -28,6 +28,9 @@
 // protos
 #include "mt64.h"
 
+// set to 1 to use libcrypto random seed function
+#define LIBCRYPTO_RANDOM_SEED 1
+
 // math functions --------------------------------------
 
 U1 *int2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -766,6 +769,7 @@ U1 *rand_init (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	#if LIBCRYPTO_RANDOM_SEED
 	// libcrypt random number seed init
 	RAND_poll ();
 
@@ -777,6 +781,7 @@ U1 *rand_init (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		*startnum_ptr = buffer[i];
 		startnum_ptr++;
 	}
+	#endif
 
 	// initialize pseudo random number generator with strong seed
 	init_genrand64 (startnum);
