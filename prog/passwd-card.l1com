@@ -1,0 +1,70 @@
+// passwd-card.l1com
+// generate a safe password card
+//
+#include <intr.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 one 1)
+	(set int64 1 char_len 0)
+	// list of all allowed chars:
+	(set string s charstr "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$%&/[]{}?*+#.:,;-<>|@~")
+	(set string s headstr "   ABC DEF GHI JKL MNO PQR STU VWX YZ  .")
+	(set string s spacestr " ")
+	(set string 2 chstr "")
+	(set byte 1 ch 0)
+	(set int64 1 x 1)
+	(set int64 1 y 1)
+	(set int64 1 xmax 10)
+	(set int64 1 ymax 10)
+	(set int64 1 random_max 3)
+	(set int64 1 random_i 1)
+	(set int64 1 f 0)
+	(set int64 1 randi 0)
+	(zero :string_init call)
+	(one :math_init call)
+	(charstr :string_len call)
+	(char_len stpopi)
+	((char_len one -) char_len =)
+	// init random number generator
+	(zero :math_randinit call)
+	// print head
+	print_s (headstr)
+	print_n
+	(for-loop)
+	(((y ymax <=) f =) f for)
+		(((y ymax <) f =) f if+)
+			print_s (spacestr)
+			print_i (y)
+			print_s (spacestr)
+		(else)
+			print_i (y)
+			print_s (spacestr)
+		(endif)
+		(one x =)
+		(for-loop)
+			(((x xmax <=) f =) f for)
+			(reset-reg)
+			(one random_i =)
+			(for-loop)
+			(((random_i random_max <=) f =) f for)
+				// generate three random chars and print them
+				(char_len :math_randintmax call)
+				(randi stpopi)
+				// get char at random position in charstr
+				(charstr chstr randi :string_mid call)
+				print_s (chstr)
+				(reset-reg)
+				((random_i one +) random_i =)
+			(next)
+			(reset-reg)
+			print_s (spacestr)
+			((x one +) x =)
+		(next)
+		print_n
+		((y one +) y =)
+	(next)
+	print_n
+	exit (zero)
+(funcend)
+#include <string.l1h>
+#include <math-lib.l1h>
