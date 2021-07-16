@@ -30,6 +30,7 @@ INTR0
 24: start timer
 25: stop timer
 26: stack check: exit program if there is something on the stack, while it should not be there!!
+27: print current epos and "INTR0: 27 DEBUG marking"
 251: check double number overflow
 252: get overflow flag
 253: run JIT-compiler

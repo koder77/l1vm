@@ -32,6 +32,7 @@
 #define start_timer (24 0 0 0 intr0)
 #func stop_timer (TIME) :(25 TIME 0 0 intr0)
 #define stack_check (26 0 0 0 intr0)
+#define debug (27 0 0 0 intr0)
 #func overflow_d (NUM) :(251 NUM 0 0 intr0)
 #func get_overflow (FLAG) :(252 FLAG 0 0 intr0)
 >> JIT-compiler

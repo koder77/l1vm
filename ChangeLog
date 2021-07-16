@@ -17,7 +17,9 @@ L1VM - (1.1.0)
 
 	NEW: VM math module now uses libcrypt (openssl) function for generating random number seeds.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat Jul 10 2021 10:18 +0200
+	NEW: "intr.l1h" now has "debug" interrupt "intr0" 27 to show current execution position.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri Jul 16 2021 19:29 +0200
 
 L1VM - (1.0.15)
 	NEW: sdl sdl_toggle_mouse_pointer:
