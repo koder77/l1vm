@@ -61,7 +61,6 @@ union memptr
 	vector<int32_t> vect_int32ptr;
 	vector<int64_t> vect_int64ptr;
 	vector<double_t> vect_doubleptr;
-
 };
 
 // the memory info structure

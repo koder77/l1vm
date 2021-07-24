@@ -1,3 +1,9 @@
+L1VM - (1.1.1)
+	Updated the osv examples. All run with the exception of the math lib image.
+	It can't find the "RAND_poll" function.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat Jul 24 2021 16:33 +0200
+
 L1VM - (1.1.0)
 	NEW: math module: more functions added from C math library
 
