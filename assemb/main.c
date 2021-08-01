@@ -1313,8 +1313,6 @@ S2 parse (U1 *name)
         read = fgets_uni ((char *) rbuf, MAXLINELEN, fptr);
         if (read != NULL && (code_ind < code_max - 1))
         {
-            convtabs (rbuf);                    /* convert the funny tabs into spaces! */
-			strip_end_commas (rbuf);			/* remove commas at the end of line */
             slen = strlen_safe ((const char *) rbuf, MAXLINELEN);
 			if (slen == 0)
 			{
@@ -1326,6 +1324,8 @@ S2 parse (U1 *name)
 				return (err);
 			}
 
+			convtabs (rbuf);                    /* convert the funny tabs into spaces! */
+			strip_end_commas (rbuf);			/* remove commas at the end of line */
 			// printf ("> %s", rbuf);
 
             pos = searchstr (rbuf, (U1 *) REM_SB, 0, 0, TRUE);
