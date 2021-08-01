@@ -2210,6 +2210,19 @@ S2 run (void *arg)
 #if JIT_COMPILER
         case 253:
         // run JIT compiler
+			if (JIT_initialized == 0)
+			{
+				if (alloc_jit_code () != 0)
+				{
+					printf ("FATAL ERROR: JIT compiler: can't alloc memory!\n");
+					PRINT_EPOS();
+	                free (jumpoffs);
+	            	pthread_exit ((void *) 1);
+				}
+
+				JIT_initialized = 1;	// JIT compiler ready to use!
+			}
+
             arg2 = code[ep + 2];
             arg3 = code[ep + 3];
 
@@ -2932,14 +2945,6 @@ int main (int ac, char *av[])
 		cleanup ();
 		exit (1);
 	}
-
-#if JIT_COMPILER
-	if (alloc_jit_code () != 0)
-	{
-		cleanup ();
-		exit (1);
-	}
-#endif
 
 	if (silent_run == 0)
 	{
