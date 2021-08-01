@@ -1,4 +1,4 @@
-/ array-test.l1com
+// array-test.l1com
 // array with values demo
 // shows how to set up an array
 // and how to access the elements in assembly code

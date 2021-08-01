@@ -1311,12 +1311,20 @@ S2 parse (U1 *name)
     while (ok)
     {
         read = fgets_uni ((char *) rbuf, MAXLINELEN, fptr);
-
         if (read != NULL && (code_ind < code_max - 1))
         {
             convtabs (rbuf);                    /* convert the funny tabs into spaces! */
 			strip_end_commas (rbuf);			/* remove commas at the end of line */
             slen = strlen_safe ((const char *) rbuf, MAXLINELEN);
+			if (slen == 0)
+			{
+				// if string length >= MAXLINELEN - 1, set string overflow!
+				err = 1;
+				printf ("> %s", rbuf);
+				printf ("ERROR: line: %lli length overflow!\n", linenum);
+				fclose (fptr);
+				return (err);
+			}
 
 			// printf ("> %s", rbuf);
 

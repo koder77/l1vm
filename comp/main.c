@@ -4827,9 +4827,14 @@ S2 parse (U1 *name)
         read = fgets_uni ((char *) rbuf, MAXLINELEN, fptr);
         if (read != NULL)
         {
-            convtabs (rbuf);                    /* convert the funny tabs into spaces! */
             slen = strlen_safe ((const char *) rbuf, MAXLINELEN);
+			if (slen == 0)
+			{
+				printf ("ERROR: line: %lli: length is 0 or too long!\n", linenum);
+				return (1);
+			}
 
+			convtabs (rbuf);  /* convert the funny tabs into spaces! */
 			// printf ("[ %s ]\n", rbuf);
 
             pos = searchstr (rbuf, (U1 *) REM_SB, 0, 0, TRUE);
@@ -4893,7 +4898,7 @@ S2 parse (U1 *name)
 						{
 							// ERROR brackets don't match
 							fclose (fptr);
-							return (ret);
+							return (err);
 						}
 					}
 				}

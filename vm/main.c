@@ -249,16 +249,13 @@ void cleanup (void)
 {
 	#if JIT_COMPILER
 		free_jit_code (JIT_code, JIT_code_ind);
+		if (JIT_code) free (JIT_code);
 	#endif
 
     free_modules ();
 	if (data) free (data);
     if (code) free (code);
 	if (threaddata) free (threaddata);
-
-	#if JIT_COMPILER
-		if (JIT_code) free (JIT_code);
-	#endif
 }
 
 U1 double_state (F8 num)
