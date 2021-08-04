@@ -4,8 +4,9 @@ L1VM - (1.1.1)
 	is too long!
 
 	NEW: VM: string input now uses memory bounds check to find string length overflow!
+	NEW: added missing Raspberry Pi GPIO wrapper functions for all functions.
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 04 Aug 2021 17:30 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 04 Aug 2021 18:30 +0200
 
 L1VM - (1.1.0)
 	NEW: math module: more functions added from C math library
