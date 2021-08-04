@@ -3,7 +3,9 @@ L1VM - (1.1.1)
 	BUGFIXES: compiler and assembler now do ERROR exit if the line length in programs
 	is too long!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 01 Aug 2021 17:56 +0200
+	NEW: VM: string input now uses memory bounds check to find string length overflow!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 04 Aug 2021 17:30 +0200
 
 L1VM - (1.1.0)
 	NEW: math module: more functions added from C math library

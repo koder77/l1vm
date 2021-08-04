@@ -1984,6 +1984,14 @@ S2 run (void *arg)
 					if (i < regi[arg2])
 					{
 						ch = getchar ();
+						if (memory_bounds (regi[arg3], i) != 0)
+						{
+							// ERROR string variable overflow!
+							printf ("ERROR: input: string variable overflow!\n");
+							PRINT_EPOS();
+							free (jumpoffs);
+							pthread_exit ((void *) 1);
+						}
 						data[regi[arg3] + i] = ch;
 						if (ch == 10)
 						{
