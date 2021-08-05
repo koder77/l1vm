@@ -11,4 +11,4 @@ c++compiler = $CCPP
 archiver = ar
 
 cflags = "-fomit-frame-pointer -g -Wall -Wextra -fsanitize=address -fsanitize=leak"
-lflags = "-lasan -lm -ldl -lpthread -lasmjit -ll1vm-jit -lstdc++ -lSDL2 -lSDL2_gfx -lSDL2_image -lSDL2_ttf -Wl,--export-dynamic"
+lflags = "-lasan -lm -ldl -lpthread -ll1vm-jit -lstdc++ -lSDL2 -lSDL2_gfx -lSDL2_image -lSDL2_ttf -Wl,--export-dynamic"
