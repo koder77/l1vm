@@ -2971,7 +2971,7 @@ int main (int ac, char *av[])
 		printf ("build on: %s\n", __DATE__);
 
 		#if JIT_COMPILER
-	    	printf ("JIT-compiler inside: lib asmjit.\n");
+	    	printf ("JIT-compiler: ready to load module.\n");
 		#endif
 
 		#if MATH_LIMITS
