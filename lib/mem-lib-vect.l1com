@@ -23,7 +23,7 @@
 		(255 one 0 0 intr0)
 	(endif)
 	// allocate
-	(memsize :alloc_int64_vect call)
+	(:alloc_int64_vect call)
 	(memaddr stpopi)
 	(loadreg)
 	(((memaddr zero <) f =) f if)

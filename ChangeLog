@@ -8,7 +8,9 @@ L1VM - (1.1.1)
 
 	Removed asmjit library from linking to VM binary. It will be linked to JIT-compiler module.
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 05 Aug 2021 17:22 +0200
+	NEW: VM mem module now sets the size for a vector array dynamically.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 06 Aug 2021 11:58 +0200
 
 L1VM - (1.1.0)
 	NEW: math module: more functions added from C math library

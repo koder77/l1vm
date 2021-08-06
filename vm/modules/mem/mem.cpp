@@ -753,17 +753,7 @@ extern "C" U1 *array_to_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 // vector C++ code ===========================================================
 extern "C" U1 *alloc_byte_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	S8 memsize ALIGN = 0;
-
 	S8 memind ALIGN;
-
-	sp = stpopi ((U1 *) &memsize, sp, sp_top);
-	if (sp == NULL)
-	{
-		// error
-		printf ("alloc_byte_vect: ERROR: stack corrupt!\n");
-		return (NULL);
-	}
 
 	memind = get_free_mem ();
 	if (memind == -1)
@@ -774,7 +764,7 @@ extern "C" U1 *alloc_byte_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	mem[memind].used = 1;
 	mem[memind].type = MEMBYTE_VECT;
-	mem[memind].memsize = memsize;
+	mem[memind].memsize = 0;
 
 	// push memory structure handle index
 	sp = stpushi (memind, sp, sp_bottom);
@@ -789,17 +779,7 @@ extern "C" U1 *alloc_byte_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 extern "C" U1 *alloc_int16_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	S8 memsize ALIGN = 0;
-
 	S8 memind ALIGN;
-
-	sp = stpopi ((U1 *) &memsize, sp, sp_top);
-	if (sp == NULL)
-	{
-		// error
-		printf ("alloc_int16_vect: ERROR: stack corrupt!\n");
-		return (NULL);
-	}
 
 	memind = get_free_mem ();
 	if (memind == -1)
@@ -810,7 +790,7 @@ extern "C" U1 *alloc_int16_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	mem[memind].used = 1;
 	mem[memind].type = MEMINT16_VECT;
-	mem[memind].memsize = memsize;
+	mem[memind].memsize = 0;
 
 	// push memory structure handle index
 	sp = stpushi (memind, sp, sp_bottom);
@@ -825,17 +805,7 @@ extern "C" U1 *alloc_int16_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 extern "C" U1 *alloc_int32_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	S8 memsize ALIGN = 0;
-
 	S8 memind ALIGN;
-
-	sp = stpopi ((U1 *) &memsize, sp, sp_top);
-	if (sp == NULL)
-	{
-		// error
-		printf ("alloc_int32_vect: ERROR: stack corrupt!\n");
-		return (NULL);
-	}
 
 	memind = get_free_mem ();
 	if (memind == -1)
@@ -846,7 +816,7 @@ extern "C" U1 *alloc_int32_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	mem[memind].used = 1;
 	mem[memind].type = MEMINT32_VECT;
-	mem[memind].memsize = memsize;
+	mem[memind].memsize = 0;
 
 	// push memory structure handle index
 	sp = stpushi (memind, sp, sp_bottom);
@@ -861,17 +831,7 @@ extern "C" U1 *alloc_int32_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 extern "C" U1 *alloc_int64_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	S8 memsize ALIGN = 0;
-
 	S8 memind ALIGN;
-
-	sp = stpopi ((U1 *) &memsize, sp, sp_top);
-	if (sp == NULL)
-	{
-		// error
-		printf ("alloc_int64_vect: ERROR: stack corrupt!\n");
-		return (NULL);
-	}
 
 	memind = get_free_mem ();
 	if (memind == -1)
@@ -882,7 +842,7 @@ extern "C" U1 *alloc_int64_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	mem[memind].used = 1;
 	mem[memind].type = MEMINT64_VECT;
-	mem[memind].memsize = memsize;
+	mem[memind].memsize = 0;
 
 	// push memory structure handle index
 	sp = stpushi (memind, sp, sp_bottom);
@@ -897,17 +857,7 @@ extern "C" U1 *alloc_int64_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 extern "C" U1 *alloc_double_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	S8 memsize ALIGN = 0;
-
 	S8 memind ALIGN;
-
-	sp = stpopi ((U1 *) &memsize, sp, sp_top);
-	if (sp == NULL)
-	{
-		// error
-		printf ("alloc_double_vect: ERROR: stack corrupt!\n");
-		return (NULL);
-	}
 
 	memind = get_free_mem ();
 	if (memind == -1)
@@ -918,7 +868,7 @@ extern "C" U1 *alloc_double_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	mem[memind].used = 1;
 	mem[memind].type = MEMDOUBLE_VECT;
-	mem[memind].memsize = memsize;
+	mem[memind].memsize = 0;
 
 	// push memory structure handle index
 	sp = stpushi (memind, sp, sp_bottom);
@@ -1076,6 +1026,9 @@ extern "C" U1 *int_to_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			mem[memind].memptr.vect_int64ptr.push_back (value);
 			break;
 	}
+
+	// increase memsize
+	mem[memind].memsize++;
 	return (sp);
 }
 
@@ -1112,6 +1065,8 @@ extern "C" U1 *double_to_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	// assign to array
 	mem[memind].memptr.vect_doubleptr.push_back (value);
+	// increase memsize
+	mem[memind].memsize++;
 	return (sp);
 }
 
@@ -1273,7 +1228,7 @@ extern "C" U1 *vect_erase (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	#endif
 
-	// assign to variable
+	// erase array index
 	switch (mem[memind].type)
 	{
 		case MEMBYTE_VECT:
@@ -1302,6 +1257,8 @@ extern "C" U1 *vect_erase (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			break;
 	}
 
+	// decrease memsize
+	mem[memind].memsize--;
 	return (sp);
 }
 
@@ -1369,6 +1326,9 @@ extern "C" U1 *insert_int_to_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			mem[memind].memptr.vect_int64ptr.insert (mem[memind].memptr.vect_int64ptr.begin() + arrayind, value);
 			break;
 	}
+
+	// increase memsize
+	mem[memind].memsize++;
 	return (sp);
 }
 
@@ -1418,5 +1378,8 @@ extern "C" U1 *insert_double_to_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *dat
 
 	// assign to array
 	mem[memind].memptr.vect_doubleptr.insert (mem[memind].memptr.vect_doubleptr.begin() + arrayind, value);
+
+	// increase memsize
+	mem[memind].memsize++;
 	return (sp);
 }
