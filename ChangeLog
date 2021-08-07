@@ -9,8 +9,9 @@ L1VM - (1.1.1)
 	Removed asmjit library from linking to VM binary. It will be linked to JIT-compiler module.
 
 	NEW: VM mem module now sets the size for a vector array dynamically.
+	BUGFIX: Added VM math module: double_rounded_string function return string length check.
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 06 Aug 2021 11:58 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 07 Aug 2021 20:37 +0200
 
 L1VM - (1.1.0)
 	NEW: math module: more functions added from C math library

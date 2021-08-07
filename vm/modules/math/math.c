@@ -27,6 +27,8 @@
 
 // protos
 #include "mt64.h"
+S2 memory_bounds (S8 start, S8 offset_access);
+
 
 // set to 1 to use libcrypto random seed function
 #define LIBCRYPTO_RANDOM_SEED 1
@@ -866,6 +868,7 @@ U1 *double_rounded_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	F8 number ALIGN;
 	S8 deststraddr ALIGN;
 	S8 ret ALIGN;
+	S8 offset ALIGN;
 
 	sp = stpopi ((U1 *) &deststr_len, sp, sp_top);
 	if (sp == NULL)
@@ -903,6 +906,13 @@ U1 *double_rounded_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	{
 		printf ("double_rounded_string: ERROR: number of digits out of range!\n");
   		return (NULL);
+	}
+
+	offset = number_of_digits;
+	if (memory_bounds (deststraddr, offset) != 0)
+	{
+		printf ("double_rounded_string: ERROR dest string overflow!\n");
+		return (NULL);
 	}
 
 	switch (number_of_digits)
