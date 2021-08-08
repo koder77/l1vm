@@ -5,4 +5,4 @@ if [ $# -eq 0 ]
 	exit 1
 fi
 
-gpg --detach-sign --default-key YOURKEYID -o $1.gpg $1.l1obj
+gpg --detach-sign --default-key YOURKEYID -o $1.gpg $1.l1obj.bz2
