@@ -11,7 +11,9 @@ L1VM - (1.1.1)
 	NEW: VM mem module now sets the size for a vector array dynamically.
 	BUGFIX: Added VM math module: double_rounded_string function return string length check.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 07 Aug 2021 20:37 +0200
+	NEW: added distribution folder: there is a script to sign .l1obj files and one to download them from a server and run them.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 8 Aug 2021 23:30 +0200
 
 L1VM - (1.1.0)
 	NEW: math module: more functions added from C math library
