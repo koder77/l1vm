@@ -9,9 +9,9 @@ You have to edit this to your gpg key ID!
 
 Now you can run it:
 
-´´´
+```
 $ ./sign-obj.sh hello
-´´´
+```
 
 This will create the signature file "hello.gpg" for you.
 
@@ -19,16 +19,16 @@ The distribution directory can be in your local network or somewhere in the inte
 
 You have to edit the "get-obj.sh" script to your server on your network:
 
-´´´
+```
 curl -O http://localhost:2000/web/$1.l1obj
 curl -O http://localhost:2000/web/$1.gpg
-´´´
+```
 
 Now you can use it:
 
-´´´
+```
 $ get-obj.sh hello
-´´´
+```
 
 This will download "hello.l1obj" from the server and run it.
 
