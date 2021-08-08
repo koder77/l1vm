@@ -3,7 +3,9 @@ DISTRIBUTION
 Here is a script for signing .l1obj object files by gpg: "sign-obj.sh".
 The usage is simple, however you have to customize the script first:
 
+```
 gpg --detach-sign --default-key YOURKEYID -o $1.gpg $1.l1obj
+```
 
 You have to edit this to your gpg key ID!
 
