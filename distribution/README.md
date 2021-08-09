@@ -1,10 +1,10 @@
 DISTRIBUTION
 ============
-Here is a script for signing .l1obj object files by gpg: "sign-obj.sh".
+Here is a script for signing .l1obj.bz2 object files by gpg: "sign.sh".
 The usage is simple, however you have to customize the script first:
 
 ```
-gpg --detach-sign --default-key YOURKEYID -o $1.gpg $1.l1obj
+gpg --detach-sign --default-key YOURKEYID -o $1.gpg $1.l1obj.bz2
 ```
 
 You have to edit this to your gpg key ID!
