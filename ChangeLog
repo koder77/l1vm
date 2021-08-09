@@ -12,8 +12,13 @@ L1VM - (1.1.1)
 	BUGFIX: Added VM math module: double_rounded_string function return string length check.
 
 	NEW: added distribution folder: there is a script to sign .l1obj files and one to download them from a server and run them.
+	NEW: modified build.sh script, now flags can be set:
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 8 Aug 2021 23:30 +0200
+	$ ./build.sh prog/hello.l1com -pack -lines 100000
+
+	Builds a packed .l1obj.bz2 file and sets the max linenumber to 100000.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 9 Aug 2021 11:42 +0200
 
 L1VM - (1.1.0)
 	NEW: math module: more functions added from C math library
