@@ -10,6 +10,9 @@ curl -O http://localhost:2000/web/$1.gpg
 
 if ! gpg --verify $1.gpg $1.l1obj.bz2; then
 	echo "ERROR: file signature not valid!"
+	echo "removing files..."
+	rm $1.gpg
+	rm $1.l1obj.bz2
 	exit 1
 fi
 
