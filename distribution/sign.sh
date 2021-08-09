@@ -1,7 +1,7 @@
 #!/bin/sh
 if [ $# -eq 0 ]
   then
-    echo "usage: sign-obj.sh filename"
+    echo "usage: sign.sh filename"
 	exit 1
 fi
 

@@ -12,7 +12,7 @@ You have to edit this to your gpg key ID!
 Now you can run it:
 
 ```
-$ ./sign-obj.sh hello
+$ ./sign.sh hello
 ```
 
 This will create the signature file "hello.gpg" for you.
@@ -29,7 +29,7 @@ curl -O http://localhost:2000/web/$1.gpg
 Now you can use it:
 
 ```
-$ get-obj.sh hello
+$ run.sh hello
 ```
 
 This will download "hello.l1obj" from the server and run it.
