@@ -131,6 +131,8 @@
 	(set string s error_get_filename "webserver: ERROR can't get filename!")
 	(set string s file_send "try to send file: ")
 	(set string s error_close_accept "ERROR: close accept socket call!")
+	(set string s webserver_rootstr "web")
+	(set string 256 filename_realstr "")
 	// get values from stack
 	(accept stpopi)
 	(server stpopi)
@@ -169,6 +171,9 @@
 		(7 0 0 0 intr0)
 		(:close_accept jmp)
 	(endif)
+	(filename_realstraddr webserver_rootstraddr :string_copy call)
+	(filename_realstraddr filenameaddr :string_cat call)
+	(filenameaddr filename_realstraddr :string_copy call)
 	(:parse_end)
 	//
 	//

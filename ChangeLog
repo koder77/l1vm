@@ -18,6 +18,8 @@ L1VM - (1.1.1)
 
 	Builds a packed .l1obj.bz2 file and sets the max linenumber to 100000.
 
+	NEW: the webserver program now searches for files in the ~/l1vm/web directory.
+
 -- Stefan Pietzonke <jay-t@gmx.net> Mon 9 Aug 2021 11:42 +0200
 
 L1VM - (1.1.0)

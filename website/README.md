@@ -1,6 +1,6 @@
 L1VM webserver demo README
 ==========================
-Just copy the files here into: /home/username/l1vm.
+Just copy the files here into: /home/username/l1vm/web.
 The prog/webserver.l1com program will search it's files there if SANDBOX mode
 in include/global.h is set!
 

@@ -2291,7 +2291,7 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 		// set 404.html as filename
 		#if SANDBOX
-		if (get_sandbox_filename ((U1 *) "404.html", file_name, 255) != 0)
+		if (get_sandbox_filename ((U1 *) "web/404.html", file_name, 255) != 0)
 		{
 			printf ("ERROR: socket_send_file: illegal filename: %s\n", &data[nameaddr]);
 			return (NULL);
@@ -2299,7 +2299,7 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		#else
 		if (strlen_safe (&data[nameaddr], MAXLINELEN) < 255)
 		{
-			strcpy ((char *) file_name, (char *) "404.html");
+			strcpy ((char *) file_name, (char *) "web/404.html");
 		}
 		else
 		{
@@ -2307,6 +2307,8 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			return (NULL);
 		}
 		#endif
+
+		// printf ("socket_send_file: DEBUG: 404 filename: %s\n", file_name);
 
 		file = fopen ((char *) file_name, "r");
 		if (file == NULL)
