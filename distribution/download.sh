@@ -17,8 +17,8 @@ curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$1.l1com.gpg
 if ! gpg --verify $1.l1com.gpg $1.l1com.bz2; then
 	echo "ERROR: file signature of source code not valid!"
 	echo "removing files..."
-	rm $1.gpg
-	rm $1.l1obj.bz2
+	rm $1.l1com.gpg
+	rm $1.l1com.bz2
 fi
 
 # unpack source code and install it
@@ -29,7 +29,7 @@ cp $1.l1com ~/l1vm/prog
 if ! gpg --verify $1.l1obj.gpg $1.l1obj.bz2; then
 	echo "ERROR: file signature of program not valid!"
 	echo "removing files..."
-	rm $1.gpg
+	rm $1.l1obj.gpg
 	rm $1.l1obj.bz2
 	exit 1
 fi
