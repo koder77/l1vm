@@ -30,8 +30,8 @@ if [ -f $1.readme.txt.bz2 ]; then
 if ! gpg --verify $1.readme.txt.gpg $1.readme.txt.bz2; then
 	echo "ERROR: file signature of readme not valid!"
 	echo "removing files..."
-	rm $1.l1com.gpg
-	rm $1.l1com.bz2
+	rm $1.readme.txt.gpg
+	rm $1.readme.txt.bz2
 fi
 fi
 
