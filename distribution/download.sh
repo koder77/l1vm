@@ -60,5 +60,6 @@ echo "cleaning up..."
 rm *.l1com
 rm *.bz2
 rm *.gpg
+rm *.txt
 
 exit 0
