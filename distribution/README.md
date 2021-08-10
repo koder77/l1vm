@@ -35,3 +35,15 @@ $ run.sh hello
 This will download "hello.l1obj" from the server and run it.
 
 This scripts are useful if you want to make sure your programs are not modified by someone else and maybe do some hosting of programs.
+
+
+UPDATE
+======
+Now I started my own repo on my blog.
+You can download the "pov-edit" program for my LED POV project:
+
+```
+$ ./download.sh pov-edit
+```
+
+Have some fun!

@@ -274,6 +274,8 @@ S2 load_object (U1 *name)
 			}
 			else
 			{
+				home = get_home ();
+				strcpy ((char *) full_path, (const char *) home);
 				strcpy ((char *) objname, SANDBOX_ROOT);
 				strcat ((char *) objname, (const char *) "prog/");
 				strcat ((char *) objname, (const char *) name);
