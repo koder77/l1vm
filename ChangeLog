@@ -1,7 +1,9 @@
 L1VM - (1.1.2)
 	NEW: I updated the distribution scripts to download and install programs from my own repo.
+	Now readme files can be installed via download script too, if there!
+	The installation path is ~/l1vm/man.
 
--- Stefan Pietzonke <jay-t@gmx.net> Tue 10 Aug 2021 13:20 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Tue 10 Aug 2021 17:42 +0200
 
 L1VM - (1.1.1)
 	Updated the osv examples.

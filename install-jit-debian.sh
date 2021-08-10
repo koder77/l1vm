@@ -256,5 +256,7 @@ cp fonts/ ~/l1vm -r
 mkdir ~/l1vm/include
 cp include-lib/* ~/l1vm/include/
 
+mkdir ~/l1vm/man
+
 echo "installation finished!"
 exit 0
