@@ -1,7 +1,7 @@
 #!/bin/sh
 if [ $# -eq 0 ]
   then
-    echo "usage: download.sh filename"
+    echo "usage: run.sh filename"
 	exit 1
 fi
 
