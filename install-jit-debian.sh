@@ -1,10 +1,6 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 
-if uname -a | grep -q "Debian"; then
-echo "Debian detected..."
-echo "checking for needed libraries..."
-
 if ! dpkg -s libsdl2-dev &> /dev/null; then
 	echo "try to install libsdl2-dev..."
 	if ! sudo apt-get install libsdl2-dev; then

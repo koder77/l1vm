@@ -1,5 +1,9 @@
 #!/bin/bash
-# changed: install to /home/foo/bin instead to /usr/local/bin
+# changed: install to /home/pi/bin instead to /usr/local/bin!
+
+if uname -a | grep -q "raspberrypi"; then
+echo "Raspberry Pi Debian detected..."
+echo "checking for needed libraries..."
 
 if ! dpkg -s libsdl2-dev &> /dev/null; then
 	echo "try to install libsdl2-dev..."
@@ -57,14 +61,6 @@ if ! dpkg -s libmpfrc++-dev &> /dev/null; then
 	fi
 fi
 
-if ! dpkg -s libssl-dev &> /dev/null; then
-	echo "try to install libssl-dev..."
-	if ! sudo apt-get install libssl-dev; then
-		echo "installation failed!"
-		exit 1
-	fi
-fi
-
 if ! dpkg -s cmake &> /dev/null; then
 	echo "try to install cmake..."
 	if ! sudo apt-get install cmake; then
@@ -90,6 +86,12 @@ if ! dpkg -s git &> /dev/null; then
 fi
 
 echo "libraries installed! building compiler, assembler and VM..."
+
+else
+	echo "ERROR: detected OS not Raspberry Pi Debian GNU Linux!"
+	echo "You have to install the dependency libraries by hand..."
+	echo "See this installation script for more info..."
+fi
 
 export CC=clang
 export CCPP=clang++
@@ -172,12 +174,12 @@ else
 	echo "l1vm JIT build error!"
 	exit 1
 fi
-cp l1vm l1vm-nojit
+cp l1vm-nojit l1vm
 cd ..
 cp assemb/l1asm ~/bin
 cp comp/l1com ~/bin
 cp prepro/l1pre ~/bin
-cp vm/l1vm-jit ~/bin
+cp vm/l1vm ~/bin
 echo "VM binaries installed into ~/bin"
 
 cd modules

@@ -56,10 +56,6 @@ cd ../mem
 zerobuild zerobuild-win.txt force script
 chmod +x make-script.sh
 ./make-script.sh
-cd ../l1vm-data
-zerobuild zerobuild-win.txt force script
-chmod +x make-script.sh
-./make-script.sh
 cd ../../../modules
 cp ../vm/modules/endianess/libl1vm* .
 cp ../vm/modules/fann/libl1vm* .
@@ -74,5 +70,4 @@ cp ../vm/modules/sdl-2.0/libl1vm* .
 cp ../vm/modules/string/libl1vm* .
 cp ../vm/modules/time/libl1vm* .
 cp ../vm/modules/mem/libl1vm* .
-cp ../vm/modules/l1vm-data/libl1vm* .
 # sudo cp libl1vm* /usr/local/lib
