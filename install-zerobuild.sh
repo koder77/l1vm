@@ -82,5 +82,7 @@ else
 fi
 cd ..
 
+mkdir ~/l1vm/man
+
 echo "installation finished!"
 exit 0

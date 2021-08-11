@@ -1,5 +1,7 @@
 L1VM - (1.1.2)
 	NEW: I updated the distribution scripts to download and install programs from my own repo.
+	Now readme files can be installed via download script too, if there!
+	The installation path is ~/l1vm/man.
 
 	Added a Raspberry Pi build script. And did some chnages to the other build scripts too!
 	So there is no ERROR exit if a module fails to build.
