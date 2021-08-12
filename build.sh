@@ -1,5 +1,5 @@
 #!/bin/bash
-l1pre $1 out.l1com ~/l1vm/include/
+l1pre $1.l1com out.l1com ~/l1vm/include/
 RETVAL=$?
 [ $RETVAL -ne 0 ] && echo "preprocessor build failed: " && echo $i && exit 1
 l1com out $2 $3 $4 $5 $6

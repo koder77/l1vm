@@ -6,7 +6,13 @@ L1VM - (1.1.2)
 	Added a Raspberry Pi build script. And did some chnages to the other build scripts too!
 	So there is no ERROR exit if a module fails to build.
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 11 Aug 2021 16:53 +0200
+	NEW: build script: "build.sh" now must be called without ".l1com" filename extension:
+
+	$ ./build.sh prog/hello
+
+	This will build the "hello.l1com" program.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 12 Aug 2021 14:50 +0200
 
 L1VM - (1.1.1)
 	Updated the osv examples.
