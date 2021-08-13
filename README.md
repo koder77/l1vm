@@ -2,8 +2,6 @@ L1VM README  2021-06-03
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2f0638b0ab6b433aad4d35c18d2f85c4)](https://www.codacy.com/app/koder77/l1vm?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=koder77/l1vm&amp;utm_campaign=Badge_Grade)
-
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/P5P2Y3KP)
 
 NEW: Now you can purchase the JIT-compiler at my new ko-fi shop: <br>
@@ -270,6 +268,6 @@ finally executes program "test.l1obj"
 <h3>compile using preprocessor</h3>
 Compile "lib/sdl-lib.l1com" example:
 <pre>
-$ ./build.sh lib/sdl-lib.l1com
+$ ./build.sh lib/sdl-lib
 </pre>
 Always the full name must be used by the preprocessor l1pre!
