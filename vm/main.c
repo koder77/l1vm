@@ -1535,7 +1535,6 @@ S2 run (void *arg)
 	#if STACK_CHECK
 		if (stack_types[stack_types_ind] != BYTE)
 		{
-			// ERROR stack_types array full!
 			printf ("FATAL ERROR: stack type is not byte!\n");
 			PRINT_EPOS();
 			free (jumpoffs);
@@ -1655,7 +1654,6 @@ S2 run (void *arg)
 	#if STACK_CHECK
 		if (stack_types[stack_types_ind] != QUADWORD)
 		{
-			// ERROR stack_types array full!
 			printf ("FATAL ERROR: stack type is not int64!\n");
 			PRINT_EPOS();
 			free (jumpoffs);
@@ -1773,7 +1771,6 @@ S2 run (void *arg)
 	#if STACK_CHECK
 		if (stack_types[stack_types_ind] != DOUBLEFLOAT)
 		{
-			// ERROR stack_types array full!
 			printf ("FATAL ERROR: stack type is not double!\n");
 			PRINT_EPOS();
 			free (jumpoffs);
