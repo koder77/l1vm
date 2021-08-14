@@ -12,7 +12,11 @@ L1VM - (1.1.2)
 
 	This will build the "hello.l1com" program.
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 12 Aug 2021 14:50 +0200
+	NEW: Stack check setting in include/global.h: STACK_CHECK.
+	If set to 1 then you will get run time errors if something went wrong on stack.
+	Some programs do not work if it is switched on!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 14 Aug 2021 05:00 +0200
 
 L1VM - (1.1.1)
 	Updated the osv examples.

@@ -65,17 +65,22 @@
  size_t strlen_safe (const char * str, int maxlen);
  #endif
 
- #define EXE_NEXT(); ep = ep + eoffs; goto *jumpt[code[ep]];
- #define PRINT_EPOS(); printf ("epos: %lli\n\n", ep);
+#if STACK_CHECK
+U1 stack_types[MAX_STACK_TYPES];
+S8 stack_types_ind ALIGN = -1;			// types stack empty
+#endif
 
- //#define EXE_NEXT(); ep = ep + eoffs; printf ("next opcode: %i\n", code[ep]); goto *jumpt[code[ep]];
+#define EXE_NEXT(); ep = ep + eoffs; goto *jumpt[code[ep]];
+#define PRINT_EPOS(); printf ("epos: %lli\n\n", ep);
 
- // protos
- S2 load_object (U1 *name);
- void free_modules (void);
- size_t strlen_safe (const char * str, int maxlen);
+//#define EXE_NEXT(); ep = ep + eoffs; printf ("next opcode: %i\n", code[ep]); goto *jumpt[code[ep]];
 
- // code_datasize.c
- void show_code_data_size (S8 codesize, S8 datasize);
+// protos
+S2 load_object (U1 *name);
+void free_modules (void);
+size_t strlen_safe (const char * str, int maxlen);
 
- #endif
+// code_datasize.c
+void show_code_data_size (S8 codesize, S8 datasize);
+
+#endif

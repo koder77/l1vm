@@ -21,6 +21,11 @@
 // stack operations ---------------------------------------
 // byte
 
+#if STACK_CHECK
+extern U1 stack_types[MAX_STACK_TYPES];
+extern S8 stack_types_ind ALIGN;
+#endi
+
 U1 *stpushb (U1 data, U1 *sp, U1 *sp_bottom)
 {
 	if (sp >= sp_bottom)
@@ -28,6 +33,23 @@ U1 *stpushb (U1 data, U1 *sp, U1 *sp_bottom)
 		sp--;
 
 		*sp = data;
+
+		#f STACK_CHECK
+			if (stack_types_ind < MAX_STACK_TYPES - 1)
+			{
+				stack_types_ind++;
+				stack_types[stack_types_ind] = BYTE;
+			}
+			else
+			{
+				// ERROR stack_types array full!
+				printf ("FATAL ERROR: stack_types overflow: %lli too low!\n", stack_types_ind);
+				PRINT_EPOS();
+				free (jumpoffs);
+				pthread_exit ((void *) 1);
+			}
+		#endif
+
 		return (sp);		// success
 	}
 	else
@@ -46,6 +68,29 @@ U1 *stpopb (U1 *data, U1 *sp, U1 *sp_top)
 	}
 
 	*data = *sp;
+
+	#if STACK_CHECK
+		if (stack_type[stack_types_ind] != BYTE)
+		{
+			// ERROR stack_types array full!
+			printf ("FATAL ERROR: stack type is not byte!\n");
+			PRINT_EPOS();
+			free (jumpoffs);
+			pthread_exit ((void *) 1);
+		}
+		if (stack_types_ind >= 0)
+		{
+			stack_types_ind--;
+		}
+		else
+		{
+			// ERROR stack_types array full!
+			printf ("FATAL ERROR: stack type: stack corrupt!\n");
+			PRINT_EPOS();
+			free (jumpoffs);
+			pthread_exit ((void *) 1);
+		}
+	#endif
 
 	sp++;
 	return (sp);			// success
@@ -81,6 +126,22 @@ U1 *stpushi (S8 data, U1 *sp, U1 *sp_bottom)
 		bptr++;
 		*sp = *bptr;
 
+		#f STACK_CHECK
+			if (stack_types_ind < MAX_STACK_TYPES - 1)
+			{
+				stack_types_ind++;
+				stack_types[stack_types_ind] = QUADWORD;
+			}
+			else
+			{
+				// ERROR stack_types array full!
+				printf ("FATAL ERROR: stack_types overflow: %lli too low!\n", stack_types_ind);
+				PRINT_EPOS();
+				free (jumpoffs);
+				pthread_exit ((void *) 1);
+			}
+		#endif
+
 		return (sp);			// success
 	}
 	else
@@ -106,6 +167,29 @@ U1 *stpopi (U1 *data, U1 *sp, U1 *sp_top)
 	data[2] = *sp++;
 	data[1] = *sp++;
 	data[0] = *sp++;
+
+	#if STACK_CHECK
+		if (stack_type[stack_types_ind] != QUADWORD)
+		{
+			// ERROR stack_types array full!
+			printf ("FATAL ERROR: stack type is not int64!\n");
+			PRINT_EPOS();
+			free (jumpoffs);
+			pthread_exit ((void *) 1);
+		}
+		if (stack_types_ind >= 0)
+		{
+			stack_types_ind--;
+		}
+		else
+		{
+			// ERROR stack_types array full!
+			printf ("FATAL ERROR: stack type: stack corrupt!\n");
+			PRINT_EPOS();
+			free (jumpoffs);
+			pthread_exit ((void *) 1);
+		}
+	#endif
 
 	return (sp);			// success
 }
@@ -137,6 +221,22 @@ U1 *stpushd (F8 data, U1 *sp, U1 *sp_bottom)
 		bptr++;
 		*sp = *bptr;
 
+		#f STACK_CHECK
+			if (stack_types_ind < MAX_STACK_TYPES - 1)
+			{
+				stack_types_ind++;
+				stack_types[stack_types_ind] = DOUBLEFLOAT;
+			}
+			else
+			{
+				// ERROR stack_types array full!
+				printf ("FATAL ERROR: stack_types overflow: %lli too low!\n", stack_types_ind);
+				PRINT_EPOS();
+				free (jumpoffs);
+				pthread_exit ((void *) 1);
+			}
+		#endif
+
 		return (sp);			// success
 	}
 	else
@@ -162,6 +262,29 @@ U1 *stpopd (U1 *data, U1 *sp, U1 *sp_top)
 	data[2] = *sp++;
 	data[1] = *sp++;
 	data[0] = *sp++;
+
+	#if STACK_CHECK
+		if (stack_type[stack_types_ind] != DOUBLEFLOAT)
+		{
+			// ERROR stack_types array full!
+			printf ("FATAL ERROR: stack type is not double!\n");
+			PRINT_EPOS();
+			free (jumpoffs);
+			pthread_exit ((void *) 1);
+		}
+		if (stack_types_ind >= 0)
+		{
+			stack_types_ind--;
+		}
+		else
+		{
+			// ERROR stack_types array full!
+			printf ("FATAL ERROR: stack type: stack corrupt!\n");
+			PRINT_EPOS();
+			free (jumpoffs);
+			pthread_exit ((void *) 1);
+		}
+	#endif
 
 	return (sp);			// success
 }

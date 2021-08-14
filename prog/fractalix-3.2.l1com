@@ -76,7 +76,7 @@
 	stpushi I21
 	stpushi I22
 	intr0 3, I0, I0, 0
-	stpopb I50
+	stpopi I50
 	intr0 15, I60, 0, 0
 	loada four, 0, I70
 	loada eight, 0, I80
