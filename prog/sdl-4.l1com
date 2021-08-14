@@ -37,6 +37,7 @@
     ((x one +) x =)
     ((x width <) f =)
     (f :xloop jmpi)
+	(reset-reg)
     // call sdl update
     (:sdl_update call)
     (loadreg)

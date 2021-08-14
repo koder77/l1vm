@@ -24,7 +24,7 @@
 #if STACK_CHECK
 extern U1 stack_types[MAX_STACK_TYPES];
 extern S8 stack_types_ind ALIGN;
-#endi
+#endif
 
 U1 *stpushb (U1 data, U1 *sp, U1 *sp_bottom)
 {
@@ -34,7 +34,7 @@ U1 *stpushb (U1 data, U1 *sp, U1 *sp_bottom)
 
 		*sp = data;
 
-		#f STACK_CHECK
+		#if STACK_CHECK
 			if (stack_types_ind < MAX_STACK_TYPES - 1)
 			{
 				stack_types_ind++;
@@ -126,7 +126,7 @@ U1 *stpushi (S8 data, U1 *sp, U1 *sp_bottom)
 		bptr++;
 		*sp = *bptr;
 
-		#f STACK_CHECK
+		#if STACK_CHECK
 			if (stack_types_ind < MAX_STACK_TYPES - 1)
 			{
 				stack_types_ind++;
@@ -221,7 +221,7 @@ U1 *stpushd (F8 data, U1 *sp, U1 *sp_bottom)
 		bptr++;
 		*sp = *bptr;
 
-		#f STACK_CHECK
+		#if STACK_CHECK
 			if (stack_types_ind < MAX_STACK_TYPES - 1)
 			{
 				stack_types_ind++;
