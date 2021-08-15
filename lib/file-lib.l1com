@@ -2,6 +2,7 @@
 // test program
 //
 //
+#include <intr.l1h>
 (main func)
     (set int64 1 zero 0)
 	(set int64 1 one 1)
@@ -33,6 +34,7 @@
 	(endif)
 	(4 ret 0 0 intr0)
 	(7 0 0 0 intr0)
+	(reset-reg)
     // write data -----------------------------------------
     (mode_write filenameaddr :file_open call)
 	//
@@ -53,8 +55,10 @@
     (handle hellostraddr :file_put_string call)
     (error stpopi)
     (loadreg)
+	(reset-reg)
     (handle newline :file_putc call)
     (error stpopi)
+	stack_check
     (handle :file_close call)
     (loadreg)
     // read data ------------------------------------------

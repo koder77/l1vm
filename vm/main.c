@@ -1546,7 +1546,6 @@ S2 run (void *arg)
 		}
 		else
 		{
-			// ERROR stack_types array full!
 			printf ("FATAL ERROR: stack type: stack corrupt!\n");
 			PRINT_EPOS();
 			free (jumpoffs);
@@ -1665,7 +1664,6 @@ S2 run (void *arg)
 		}
 		else
 		{
-			// ERROR stack_types array full!
 			printf ("FATAL ERROR: stack type: stack corrupt!\n");
 			PRINT_EPOS();
 			free (jumpoffs);
@@ -1782,7 +1780,6 @@ S2 run (void *arg)
 		}
 		else
 		{
-			// ERROR stack_types array full!
 			printf ("FATAL ERROR: stack type: stack corrupt!\n");
 			PRINT_EPOS();
 			free (jumpoffs);
