@@ -3101,6 +3101,10 @@ int main (int ac, char *av[])
 			printf (">> divisioncheck << ");
 		#endif
 
+		#if STACK_CHECK
+			printf (">> stackcheck <<");
+		#endif
+
 		printf ("\n");
 		printf ("machine: ");
 		#if MACHINE_BIG_ENDIAN

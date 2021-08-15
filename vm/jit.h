@@ -22,7 +22,7 @@
 //
 
 // set to 1 to build with JIT compiler
-#define JIT_COMPILER 0
+#define JIT_COMPILER	1
 
 #define MAXJITCODE 40960
 #define MAXJUMPLEN 40960
