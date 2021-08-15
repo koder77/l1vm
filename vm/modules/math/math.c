@@ -69,7 +69,7 @@ U1 *double2int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 intval ALIGN;
 	F8 doubleval ALIGN;
 
-	sp = stpopi ((U1 *) &doubleval, sp, sp_top);
+	sp = stpopd ((U1 *) &doubleval, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
