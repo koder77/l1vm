@@ -27,7 +27,7 @@
     (set string 10 txt_2 "0 xor 1: ")
     (set string 10 txt_3 "1 xor 0: ")
     (set string 10 txt_4 "1 xor 1: ")
-    (set string 11 run "running..." )
+    (set string 11 run "running...")
 	(set int64 1 handle 0)
     (set int64 1 three 3)
     // init genann library
