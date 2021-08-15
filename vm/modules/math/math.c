@@ -682,11 +682,11 @@ U1 *sqrtdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	F8 value ALIGN;
 	F8 returnval ALIGN;
 
-	sp = stpopi ((U1 *) &value, sp, sp_top);
+	sp = stpopd ((U1 *) &value, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
-		printf ("sqrtdouble ERROR: stack corrupt!\n");
+		printf ("sqrtdouble: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
@@ -707,7 +707,7 @@ U1 *logdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	F8 value ALIGN;
 	F8 returnval ALIGN;
 
-	sp = stpopi ((U1 *) &value, sp, sp_top);
+	sp = stpopd ((U1 *) &value, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
@@ -733,7 +733,7 @@ U1 *log2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	F8 returnval ALIGN;
 	F8 m_ln2 ALIGN = 0.69314718055994530942;
 
-	sp = stpopi ((U1 *) &value, sp, sp_top);
+	sp = stpopd ((U1 *) &value, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error

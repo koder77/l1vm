@@ -68,7 +68,7 @@ U1 *stpopb (U1 *data, U1 *sp, U1 *sp_top)
 	*data = *sp;
 
 	#if STACK_CHECK
-		if (stack_type[stack_types_ind] != BYTE)
+		if (stack_types[stack_types_ind] != BYTE)
 		{
 			printf ("FATAL ERROR: stack type is not byte!\n");
 			return (NULL);
@@ -159,7 +159,7 @@ U1 *stpopi (U1 *data, U1 *sp, U1 *sp_top)
 	data[0] = *sp++;
 
 	#if STACK_CHECK
-		if (stack_type[stack_types_ind] != QUADWORD)
+		if (stack_types[stack_types_ind] != QUADWORD)
 		{
 			printf ("FATAL ERROR: stack type is not int64!\n");
 			return (NULL);
@@ -245,7 +245,7 @@ U1 *stpopd (U1 *data, U1 *sp, U1 *sp_top)
 	data[0] = *sp++;
 
 	#if STACK_CHECK
-		if (stack_type[stack_types_ind] != DOUBLEFLOAT)
+		if (stack_types[stack_types_ind] != DOUBLEFLOAT)
 		{
 			printf ("FATAL ERROR: stack type is not double!\n");
 			return (NULL);
