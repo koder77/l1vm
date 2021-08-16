@@ -1,6 +1,7 @@
 // genann library demo
 // train XOR function and run trained neural network
 //
+#include <intr.l1h>
 (main func)
     (set int64 1 zero 0)
     (set int64 1 one 1)
@@ -31,6 +32,7 @@
 	(set int64 1 handle 0)
     (set int64 1 three 3)
     // init genann library
+	(reset-reg)
     (zero one :genann_init_lib call)
 	(ret stpopi)
     (loadreg)
@@ -38,6 +40,8 @@
 		(1 zero 0 0 intr0)
 		(255 zero 0 0 intr0)
 	(endif)
+	(reset-reg)
+	stack_check
     (two one two one :genann_init call)
     (handle stpopb)
     (loadreg)

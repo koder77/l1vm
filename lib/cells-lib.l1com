@@ -74,6 +74,7 @@
 	// update ANN
 	(zerof node_xor_inputsf [ zero ] =)
 	(zerof node_xor_inputsf [ offset ] =)
+	(reset-reg)
 	(cell node_xor inputs node_xor_inputsfaddr :cells_fann_do_update_ann call)
 	(ret stpopi)
 	(loadreg)
@@ -85,6 +86,7 @@
 	(loadreg)
 	(5 outputf 0 0 intr0)
 	(7 0 0 0 intr0)
+	(reset-reg)
 	(zero zero max_layer_readout_addr :cells_fann_get_max_layer call)
 	(ret stpopi)
 	(loadreg)

@@ -49,7 +49,7 @@ U1 *file_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 i ALIGN;
 	S8 maxind ALIGN;
-	
+
 	sp = stpopi ((U1 *) &maxind, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -57,13 +57,13 @@ U1 *file_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("file_init_state: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	
+
 	// allocate gobal mem structure
 	files = (struct file*) calloc (maxind, sizeof (struct file));
 	if (files == NULL)
 	{
 		printf ("file_init_state: ERROR can't allocate %lli memory indexes!\n", maxind);
-		
+
 		sp = stpushi (1, sp, sp_bottom);
 		if (sp == NULL)
 		{
@@ -73,9 +73,9 @@ U1 *file_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		}
 		return (sp);
 	}
-	
+
 	filemax = maxind;	// save to global var
-	
+
 	for (i = 0; i < filemax; i++)
 	{
 		files[i].state = FILECLOSED;
@@ -101,7 +101,7 @@ U1 *free_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 S8 get_free_file_handle (void)
 {
 	S8 i ALIGN;
-	
+
 	for (i = 0; i < filemax; i++)
 	{
 		if (files[i].state == FILECLOSED)
@@ -109,7 +109,7 @@ S8 get_free_file_handle (void)
 			return (i);
 		}
 	}
-	
+
 	// no free file handle found
 	return (-1);
 }
@@ -473,22 +473,24 @@ U1 *file_get_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		return (NULL);
     	}
     }
-
-    sp = stpushi (num, sp, sp_bottom);
-	if (sp == NULL)
+	else
 	{
-		// error
-		printf ("file_get_int16: ERROR: stack corrupt!\n");
-		return (NULL);
-	}
+    	sp = stpushi (num, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("file_get_int16: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
 
-    sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
-    if (sp == NULL)
-    {
-        // error
-        printf ("file_get_int16 ERROR: stack corrupt!\n");
-        return (NULL);
-    }
+    	sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
+	    if (sp == NULL)
+    	{
+        	// error
+        	printf ("file_get_int16 ERROR: stack corrupt!\n");
+        	return (NULL);
+		}
+	}
 
 	return (sp);
 }
@@ -610,21 +612,23 @@ U1 *file_get_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		return (NULL);
     	}
     }
-
-    sp = stpushi (num, sp, sp_bottom);
-	if (sp == NULL)
+	else
 	{
-		// error
-		printf ("file_get_int32: ERROR: stack corrupt!\n");
-		return (NULL);
-	}
+    	sp = stpushi (num, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("file_get_int32: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
 
-    sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
-    if (sp == NULL)
-    {
-        // error
-        printf ("file_get_int32 ERROR: stack corrupt!\n");
-        return (NULL);
+	    sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
+	    if (sp == NULL)
+	    {
+	        // error
+	        printf ("file_get_int32 ERROR: stack corrupt!\n");
+        	return (NULL);
+		}
     }
 
 	return (sp);
@@ -747,21 +751,23 @@ U1 *file_get_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		return (NULL);
     	}
     }
-
-    sp = stpushi (num, sp, sp_bottom);
-	if (sp == NULL)
+	else
 	{
-		// error
-		printf ("file_get_int64: ERROR: stack corrupt!\n");
-		return (NULL);
-	}
+    	sp = stpushi (num, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("file_get_int64: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
 
-    sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
-    if (sp == NULL)
-    {
-        // error
-        printf ("file_get_int64 ERROR: stack corrupt!\n");
-        return (NULL);
+	    sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
+    	if (sp == NULL)
+	    {
+        	// error
+        	printf ("file_get_int64 ERROR: stack corrupt!\n");
+        	return (NULL);
+		}
     }
 
 	return (sp);
@@ -884,21 +890,23 @@ U1 *file_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		return (NULL);
     	}
     }
-
-    sp = stpushd (num, sp, sp_bottom);
-	if (sp == NULL)
+	else
 	{
-		// error
-		printf ("file_get_double: ERROR: stack corrupt!\n");
-		return (NULL);
-	}
+    	sp = stpushd (num, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("file_get_double: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
 
-    sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
-    if (sp == NULL)
-    {
-        // error
-        printf ("file_get_double ERROR: stack corrupt!\n");
-        return (NULL);
+    	sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
+    	if (sp == NULL)
+    	{
+        	// error
+        	printf ("file_get_double ERROR: stack corrupt!\n");
+	        return (NULL);
+		}
     }
 
 	return (sp);
