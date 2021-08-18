@@ -2324,7 +2324,7 @@ S2 run (void *arg)
 			break;
 
 		case 29:
-			// check if int variable value is in legal range
+			// check if double variable value is in legal range
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];	// min range
 			arg4 = code[ep + 4];	// max range
