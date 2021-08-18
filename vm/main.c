@@ -2309,6 +2309,34 @@ S2 run (void *arg)
 			eoffs = 5;
 			break;
 
+		case 28:
+			// check if int variable value is in legal range
+			arg2 = code[ep + 2];
+			arg3 = code[ep + 3];	// min range
+			arg4 = code[ep + 4];	// max range
+
+			if (regi[arg2] < regi[arg3] || regi[arg2] > regi[arg4])
+			{
+				printf ("ERROR: int variable value in illegal range!\n");
+				PRINT_EPOS();
+			}
+			eoffs = 5;
+			break;
+
+		case 29:
+			// check if int variable value is in legal range
+			arg2 = code[ep + 2];
+			arg3 = code[ep + 3];	// min range
+			arg4 = code[ep + 4];	// max range
+
+			if (regd[arg2] < regd[arg3] || regd[arg2] > regd[arg4])
+			{
+				printf ("ERROR: double variable value in illegal range!\n");
+				PRINT_EPOS();
+			}
+			eoffs = 5;
+			break;
+
 		case 251:
 			// set overflow on double reg
 			arg2 = code[ep + 2];
