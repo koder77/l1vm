@@ -39,8 +39,8 @@
 #func run_jit_comp (SLAB, ELAB) :(253 SLAB ELAB 0 intr0)
 #func run_jit_code (CODE) :(254 CODE 0 0 intr0)
 #func exit (RETCODE) :(255 RETCODE 0 0 intr0)
-#func irange (VAR, MIN, MAX) :(28 VAR MIN MAX 0 intr0)
-#func drange (VAR, MIN, MAX) :(29 VAR MIN MAX 0 intr0)
+#func range_int (VAR, MIN, MAX) :(28 VAR MIN MAX intr0)
+#func drange (VAR, MIN, MAX) :(29 VAR MIN MAX intr0)
 >>
 >>	intr1
 >>

@@ -1,13 +1,13 @@
 // range.l1com
 // check if variable is in legal range interrupt
-// 
+//
 #include <intr.l1h>
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 a_range_min 0)
 	(set int64 1 a_range_max 10)
 	(set int64 1 a 0)
-	(set int64 1 overflow 11)
+	(set int64 1 overflow 10)
 	(overflow a =)
 	range_int (a, a_range_min, a_range_max)
 	exit (zero)
