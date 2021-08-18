@@ -1,13 +1,14 @@
 #!/bin/bash
 for j in *.l1asm
 do
-	l1asm $j -sizes 1000000 1000000000
+	filename=$(basename "$j" .l1asm)
+	l1asm $filename -sizes 1000000 1000000000
 	RETVAL=$?
 	[ $RETVAL -ne 0 ] && echo "build failed: " && echo $j && exit 1
 done
 for i in *.l1com
 do
-	l1pre $i out.l1com ~/l1vm/include/
+	l1pre $filename out.l1com ~/l1vm/include/
 	RETVAL=$?
 	[ $RETVAL -ne 0 ] && echo "preprocessor build failed: " && echo $i && exit 1
 	l1com out -sizes 1000000 1000000000
