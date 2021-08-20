@@ -6,7 +6,16 @@ L1VM - (1.1.3)
 	NEW: ranges interrupts: 28/29 to check if a variable is in a defined range.
 	See "include/intr.l1h"
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 18 Aug 2021 13:51 +0200
+	NEW: "prog/shell.l1com": a simple L1VM shell. You can run L1VM programs by
+	the commands: "run" or simple by "!":
+
+	l1vm-sh $ run hello-2
+	l1vm-sh ! hello-2
+
+	All other commands are executed as normal. Note there is no history of input lines
+	at the moment!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 20 Aug 2021 19:26 +0200
 
 L1VM - (1.1.2)
 	NEW: I updated the distribution scripts to download and install programs from my own repo.
