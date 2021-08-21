@@ -104,7 +104,7 @@
 	(history_max i~ =)
 	((i~ one -) i~ =)
 	(for-loop)
-	(((i~ zero >) f~ =) f~ for)
+	(((i~ zero >=) f~ =) f~ for)
 		(historystr historylinestr~ i~ history_len history_size :array_to_string !)
 		print_i (i~)
 		print_s (colonstr~)
