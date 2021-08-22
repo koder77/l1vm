@@ -13,7 +13,7 @@ L1VM - (1.1.3)
 	l1vm-sh ! hello-2
 
 	All other commands are executed as normal.
-	NEW: there is a new shell: "shell-2.l1com" with a "hist" command to list
+	NEW: there is a new shell: "shell-2.l1com" with a "<" command to list
 	the command history. You have to enter the number before the command to
 	execute it.
 
