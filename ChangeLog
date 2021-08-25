@@ -1,3 +1,12 @@
+L1VM - (1.1.4)
+	NEW: I added the fp16 fixed floating point library as a module.
+	See prog/math-circle-nofp.l1com. The range goes from -32767 to 32767.
+	It is for CPUs without floating point opcodes.
+	I did this for use on Kludged Linux on my Psion 5MX.
+	As there is no floating point numbers support there!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 25 Aug 2021 14:00 +0200
+
 L1VM - (1.1.3)
 	BUGFIXES: VM: math module serious stack type BUGFIXES!
 	prog/build-all.sh: wrong suffixes BUGFIX!

@@ -1,0 +1,102 @@
+// math-circle-nofp.l1com
+// calculate diameter or circumference of circle
+//
+#include <intr.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 one 1)
+	(set int64 1 two 2)
+	(set int64 1 three 3)
+	(set double 1 diam 0.0)
+	(set double 1 circ 0.0)
+	(set double 1 zerod 0.0)
+	(set string s menu_diamstr "1: calculate diameter of circle")
+	(set string s menu_circstr "2: calculate circumference of circle")
+	(set string s menu_quitstr "3: quit")
+	(set string s menu_chstr "? ")
+	(set string s diamstr "diameter:      ")
+	(set string s circstr "circumference: ")
+	(set int64 1 input 0)
+	(set int64 1 f 0)
+	// set constant -----------------------------------------
+	(set const-double 1 m_pi@math 3.14159265358979323846)
+	// -------------------------------------------------------
+	(zero :math_init !)
+	(:loop)
+	print_s (menu_diamstr)
+	print_n
+	print_s (menu_circstr)
+	print_n
+	print_s (menu_quitstr)
+	print_n
+	print_s (menu_chstr)
+	// read input
+	input_i (input)
+	(((input three ==) f =) f if)
+		// quit
+		exit (zero)
+	(endif)
+	(((input one ==) f =) f if+)
+		// reset used variables and set used registers to zero
+		// no context register saving here
+		(reset-reg)
+		(:calc_diam !)
+		(loadreg)
+	(else)
+		// reset used variables and set used registers to zero
+		// no context register saving here
+		(reset-reg)
+		(:calc_circ !)
+		(loadreg)
+	(endif)
+	print_n
+	print_n
+	(:loop jmp)
+(funcend)
+(calc_diam func)
+	(set int64 1 circ_fp 0)
+	(set int64 1 diam_fp 0)
+	(set int64 1 m_pi_fp 0)
+	(set double 1 _diam 0.0)
+	// calculate diameter
+	(zerod circ =)
+	(zerod diam =)
+	print_s (circstr)
+	// input double circ
+	input_d (_diam)
+	(_diam circ =)
+	(circ :math_double2fp !)
+	(circ_fp stpopi)
+	(m_pi@math :math_double2fp !)
+	(m_pi_fp stpopi)
+	(circ_fp m_pi_fp :math_divdouble !)
+	(diam_fp stpopi)
+	(diam_fp :math_fp2double !)
+	(diam stpopd)
+	print_s (diamstr)
+	print_d (diam)
+(funcend)
+(calc_circ func)
+	(set int64 1 circ_fp 0)
+	(set int64 1 diam_fp 0)
+	(set int64 1 m_pi_fp 0)
+	(set double 1 _circ 0.0)
+	// calculate circumference
+	(zerod diam =)
+	(zerod circ =)
+	print_s (diamstr)
+	// input double diam
+	input_d (_circ)
+	(_circ diam =)
+	(diam :math_double2fp !)
+	(diam_fp stpopi)
+	(m_pi@math :math_double2fp !)
+	(m_pi_fp stpopi)
+	(diam_fp m_pi_fp :math_muldouble !)
+	(circ_fp stpopi)
+	(circ_fp :math_fp2double !)
+	(circ stpopd)
+	print_s (circstr)
+	print_d (circ)
+(funcend)
+#include <math-lib-nofp.l1h>
