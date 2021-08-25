@@ -38,7 +38,7 @@ The authors of libserialport: the sigrok team. <br>
 The authors of mt19937-64.c random number generator :Takuji Nishimura and Makoto Matsumoto. <br>
 The author of Wiring Pi, the Raspberry Pi GPIO library: drogon. <br>
 The author of libasmjit, JIT-compiler: Petr Kobalicek. <br>
-The authors of www.tutorialspoint.com, for their polish math notation parser example!
+The authors of www.tutorialspoint.com, for their polish math notation parser example! <br>
 The author of the fp16 fixed floating point library: https://github.com/kmilo17pet/fp16
 <br><br>
 
