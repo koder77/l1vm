@@ -1,7 +1,7 @@
 # zerobuild makefile
 
 [executable, shared, name = libl1vmmath-nofp.so]
-sources =  math.c, mt19937-64.c, fp16.c, fp16.h
+sources =  math-nofp.c, mt19937-64.c, fp16.c, fp16.h, mt64.h
 
 includes = ../include, /usr/local/include
 
