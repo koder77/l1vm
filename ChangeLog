@@ -5,7 +5,9 @@ L1VM - (1.1.4)
 	I did this for use on Kludged Linux on my Psion 5MX.
 	As there is no floating point numbers support there!
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 25 Aug 2021 14:00 +0200
+	UPDATE: I did update the sign and download scripts for L1VM packages on my repository.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 26 Aug 2021 21:08 +0200
 
 L1VM - (1.1.3)
 	BUGFIXES: VM: math module serious stack type BUGFIXES!
