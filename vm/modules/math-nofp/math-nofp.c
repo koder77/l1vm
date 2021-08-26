@@ -23,10 +23,6 @@
 #include <math.h>
 #include "../../../include/stack.h"
 
-// libcrypt for random number generator seed
-#include <openssl/sha.h>
-#include <openssl/rand.h>
-
 #include "fp16.h"
 
 // protos
