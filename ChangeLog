@@ -6,8 +6,9 @@ L1VM - (1.1.4)
 	As there is no floating point numbers support there!
 
 	UPDATE: I did update the sign and download scripts for L1VM packages on my repository.
+	BUGFIX: endianess library n_to_hostw function now set.
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 26 Aug 2021 21:08 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 3 Sep 2021 20:44 +0200
 
 L1VM - (1.1.3)
 	BUGFIXES: VM: math module serious stack type BUGFIXES!
