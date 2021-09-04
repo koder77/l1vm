@@ -60,7 +60,7 @@
 	(((ind~ msg_max~ <) f~ =) f~ for)
 		(msg_addr~ ind~ :vect_to_int !)
 		(msg~ stpopi)
-		(((msg~ msg_search~ ==) f =) f if)
+		(((msg~ msg_search~ ==) f~ =) f~ if)
 			// found message, remove it from messages
 			(msg_addr~ ind~ :vect_erase !)
 			(zero~ ret~ =)
@@ -101,7 +101,7 @@
 	(((ind~ msg_max~ <) f~ =) f~ for)
 		(msg_addr~ ind~ :vect_to_int !)
 		(msg~ stpopi)
-		(((msg~ msg_search~ ==) f =) f if)
+		(((msg~ msg_search~ ==) f~ =) f~ if)
 			// found message, remove it from messages
 			(msg_addr~ ind~ :vect_erase !)
 			(zero~ ret~ =)
