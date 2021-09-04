@@ -1383,3 +1383,36 @@ extern "C" U1 *insert_double_to_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *dat
 	mem[memind].memsize++;
 	return (sp);
 }
+
+extern "C" U1 *get_vect_size (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 memind ALIGN = 0;
+	S8 size ALIGN;
+
+	sp = stpopi ((U1 *) &memind, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_vect_size: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	#if BOUNDSCHECK
+	if (memind < 0 || memind >= memmax)
+	{
+		printf ("get_vect_size: ERROR: memory index out of range!\n");
+		return (NULL);
+	}
+	#endif
+
+	size = mem[memind].memsize;
+
+	sp = stpushi (size, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_vect_size:  ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}

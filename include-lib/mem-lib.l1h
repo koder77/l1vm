@@ -30,6 +30,7 @@
 	(set string s vect_erasestr@mem "vect_erase")
 	(set string s insert_int_to_vectstr@mem "insert_int_to_vect")
 	(set string s insert_double_to_vectstr@mem "insert_double_to_vect")
+	(set string s get_vect_sizestr@mem "get_vect_size")
 	(set int64 1 init@mem 0)
 	(set int64 1 allocbyte@mem 1)
 	(set int64 1 allocint16@mem 2)
@@ -56,6 +57,7 @@
 	(set int64 1 vect_erase@mem 22)
 	(set int64 1 insert_int_to_vect@mem 23)
 	(set int64 1 insert_double_to_vect@mem 24)
+	(set int64 1 get_vect_size@mem 25)
 	(set int64 1 mod@mem 0)
 	(set int64 1 maxind@mem 0)
 	// get arguments from stack
@@ -90,6 +92,7 @@
 	(2 mod@mem vect_erase@mem vect_erasestr@memaddr intr0)
 	(2 mod@mem insert_int_to_vect@mem insert_int_to_vectstr@memaddr intr0)
 	(2 mod@mem insert_double_to_vect@mem insert_double_to_vectstr@memaddr intr0)
+	(2 mod@mem get_vect_size@mem get_vect_sizestr@memaddr intr0)
 	// init module
 	(maxind@mem stpushi)
 	(3 mod@mem init@mem 0 intr0)
@@ -172,4 +175,7 @@
 (funcend)
 (insert_double_to_vect func)
 	(3 mod@mem insert_double_to_vect@mem 0 intr0)
+(funcend)
+(get_vect_size func)
+	(3 mod@mem get_vect_size@mem 0 intr0)
 (funcend)

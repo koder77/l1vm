@@ -12,7 +12,6 @@
 	(set int64 1 memaddr 0)
 	(set int64 1 message 2021)
 	(set int64 1 message_read 0)
-	(set int64 1 messages_send 0)
 	(set string s meminitstr "ERROR can't init memory")
 	(set string s memerrstr "ERROR can't allocate memory!")
 	(set string s messagestr "got message!")
@@ -34,16 +33,27 @@
 	(endif)
 	// all ok, send message
 	(memaddr message :msg_put_message !)
-	// increase counter
-	((messages_send one +) messages_send =)
-	// get message
-	(memaddr message messages_send :msg_wait_message !)
+	// get message wait
+	(memaddr message :msg_wait_message !)
 	(ret stpopi)
+	print_i (ret)
+	print_n
+	(((ret zero ==) f =) f if)
+		print_s (messagestr)
+		print_n
+	(endif)
+	// all ok, send message
+	(memaddr message :msg_put_message !)
+	// get message poll
+	(memaddr message :msg_poll_message !)
+	(ret stpopi)
+	print_i (ret)
+	print_n
 	(((ret zero ==) f =) f if)
 		print_s (messagestr)
 		print_n
 	(endif)
 	exit (zero)
 (funcend)
-#include <mem-lib-vect.l1h>
+#include <mem-lib.l1h>
 #include <messages-lib.l1h>
