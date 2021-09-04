@@ -7,7 +7,7 @@
 (main func)
 	(set const-int64 1 zero 0)
 	(set const-int64 1 one 1)
-	(set const-int64 1 memalloc 10)
+	(set const-int64 1 memalloc 1)
 	(set int64 1 ret 0)
 	(set int64 1 memaddr 0)
 	(set int64 1 message 2021)
@@ -25,9 +25,6 @@
 		print_n
 		exit (one)
 	(endif)
-	// allocate
-	(:alloc_int64_vect !)
-	(memaddr stpopi)
 	(:msg_init !)
 	(memaddr stpopi)
 	(((memaddr zero <) f =) f if)
