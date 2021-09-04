@@ -64,10 +64,13 @@
 			// found message, remove it from messages
 			(msg_addr~ ind~ :vect_erase !)
 			(zero~ ret~ =)
+			(ret~ stpushi)
+			(ASM)
+			rts
+			(ASM_END)
 		(endif)
 		((ind~ one~ +) ind~ =)
 	(next)
-	(:msg_poll_message_end)
 	(ret~ stpushi)
 (funcend)
 (msg_wait_message func)
@@ -102,6 +105,10 @@
 			// found message, remove it from messages
 			(msg_addr~ ind~ :vect_erase !)
 			(zero~ ret~ =)
+			(ret~ stpushi)
+			(ASM)
+			rts
+			(ASM_END)
 		(endif)
 		((ind~ one~ +) ind~ =)
 	(next)
@@ -109,6 +116,5 @@
 		detime (time_ticks~)
 		(:msg_wait_message_loop jmp)
 	(endif)
-	(:msg_wait_message_end)
 	(ret~ stpushi)
 (funcend)
