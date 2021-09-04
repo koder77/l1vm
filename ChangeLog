@@ -8,7 +8,10 @@ L1VM - (1.1.4)
 	UPDATE: I did update the sign and download scripts for L1VM packages on my repository.
 	BUGFIX: endianess library n_to_hostw function now set.
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 3 Sep 2021 20:44 +0200
+	NEW: messages-lib: "include-lib/messages-lib.l1h" for sending and receiving messages codes.
+	See example "lib/messages-lib.l1com"
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 4 Sep 2021 15:38 +0200
 
 L1VM - (1.1.3)
 	BUGFIXES: VM: math module serious stack type BUGFIXES!

@@ -1,0 +1,52 @@
+// messages-lib.l1com
+//
+// message send/receive module
+// sends message number codes
+// needs "mem-lib-vect.l1h" to be included
+#include <intr.l1h>
+(main func)
+	(set const-int64 1 zero 0)
+	(set const-int64 1 one 1)
+	(set const-int64 1 memalloc 10)
+	(set int64 1 ret 0)
+	(set int64 1 memaddr 0)
+	(set int64 1 message 2021)
+	(set int64 1 message_read 0)
+	(set int64 1 messages_send 0)
+	(set string s meminitstr "ERROR can't init memory")
+	(set string s memerrstr "ERROR can't allocate memory!")
+	(set string s messagestr "got message!")
+	(set int64 1 f 0)
+	(zero memalloc :mem_init !)
+	(ret stpopi)
+	(((ret zero !=) f =) f if)
+		// ERROR can't allocate memory
+		print_s (meminitstr)
+		print_n
+		exit (one)
+	(endif)
+	// allocate
+	(:alloc_int64_vect !)
+	(memaddr stpopi)
+	(:msg_init !)
+	(memaddr stpopi)
+	(((memaddr zero <) f =) f if)
+		print_s (memerrstr)
+		print_n
+		exit (one)
+	(endif)
+	// all ok, send message
+	(memaddr message :msg_put_message !)
+	// increase counter
+	((messages_send one +) messages_send =)
+	// get message
+	(memaddr message messages_send :msg_wait_message !)
+	(ret stpopi)
+	(((ret zero ==) f =) f if)
+		print_s (messagestr)
+		print_n
+	(endif)
+	exit (zero)
+(funcend)
+#include <mem-lib-vect.l1h>
+#include <messages-lib.l1h>
