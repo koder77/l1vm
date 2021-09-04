@@ -11,10 +11,11 @@
 	(set int64 1 msgs_addr~)
 	(set string s alloc_errorstr "ERROR: msg_init: can't allocate memory!")
 	(set int64 1 ret~ 0)
+	(set int64 1 f~ 0)
 	// allocate message space
 	(:alloc_int64_vect !)
 	(msgs_addr~ stpopi)
-	(((msgs_addr~ zero <) f =) f if)
+	(((msgs_addr~ zero <) f~ =) f~ if)
 		// ERROR can't allocate memory
 		print_s (alloc_errorstr)
 		print_n
