@@ -2991,7 +2991,7 @@ S2 parse_line (U1 *line)
 									switch_pos = get_switch_pos ();
 									if (switch_pos == -1)
 									{
-										printf ("compile: error: switch: out of memory switch-list\n");
+										printf ("error: line %lli: switch: out of memory switch-list!\n", linenum);
 										return (FALSE);
 									}
 
@@ -3001,7 +3001,12 @@ S2 parse_line (U1 *line)
 								if ((strcmp ((const char *) ast[level].expr[j][last_arg], "switch-end") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], "switchend") == 0) && last_arg == 0)
 								{
 									switch_pos = get_act_switch ();
-
+									if (switch_pos == -1)
+									{
+										printf ("error: line %lli: switchend without switch!\n", linenum);
+										return (1);
+									}
+									
 									set_switch_finished (switch_pos);
 
 									continue;
