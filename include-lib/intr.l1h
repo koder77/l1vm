@@ -47,8 +47,8 @@
 >>
 #func new_cpu (LAB) :(0 LAB 0 0 intr1)
 #define join (1 0 0 0 intr1)
-#define thlock (2 0 0 0 intr1)
-#define thunlock (3 0 0 0 intr1)
+#define threadlock (2 0 0 0 intr1)
+#define threadunlock (3 0 0 0 intr1)
 #func get_cpu (CURRENT) :(4 CURRENT 0 0 intr1)
 #func free_cpus (NUMBER) :(5 NUMBER 0 0 intr1)
 #func thread_ex (RETCODE) :(255 RETCODE 0 0 intr1)

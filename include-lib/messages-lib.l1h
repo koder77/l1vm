@@ -35,9 +35,9 @@
 	(msg_send~ stpopi)
 	(msgs_addr~ stpopi)
 	// thread mutex lock
-	thlock
+	threadlock
 	(msgs_addr~ msg_send~ :int_to_vect !)
-	thunlock
+	threadunlock
 (funcend)
 (msg_poll_message func)
 	// check if there is a message in the list
@@ -59,7 +59,7 @@
 	(msg_addr~ :get_vect_size !)
 	(msg_max~ stpopi)
 	// thread mutex lock
-	thlock
+	threadlock
 	(for-loop)
 	(((ind~ msg_max~ <) f~ =) f~ for)
 		(msg_addr~ ind~ :vect_to_int !)
@@ -69,14 +69,14 @@
 			(msg_addr~ ind~ :vect_erase !)
 			(zero~ ret~ =)
 			(ret~ stpushi)
-			thunlock
+			threadunlock
 			(ASM)
 			rts
 			(ASM_END)
 		(endif)
 		((ind~ one~ +) ind~ =)
 	(next)
-	thunlock
+	threadunlock
 	(ret~ stpushi)
 (funcend)
 (msg_wait_message func)
@@ -99,7 +99,7 @@
 	(zero~ ind~ =)
 	(reset-reg)
 	// thread mutex lock
-	thlock
+	threadlock
 	(:msg_wait_message_loop)
 	(one~ ret~ =)
 	(zero~ ind~ =)
@@ -114,7 +114,7 @@
 			(msg_addr~ ind~ :vect_erase !)
 			(zero~ ret~ =)
 			(ret~ stpushi)
-			thunlock
+			threadunlock
 			(ASM)
 			rts
 			(ASM_END)
@@ -125,6 +125,6 @@
 		detime (time_ticks~)
 		(:msg_wait_message_loop jmp)
 	(endif)
-	thunlock
+	threadunlock
 	(ret~ stpushi)
 (funcend)
