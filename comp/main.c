@@ -2769,7 +2769,7 @@ S2 parse_line (U1 *line)
 													strcat ((char *) code[code_line], "\n");
 												}
 
-												if_pos = get_if_pos ();
+												if_pos = get_ifplus_pos ();
 							                	if (if_pos == -1)
 							                	{
 							                    	printf ("compile: error: if: out of memory if-list\n");
@@ -2903,10 +2903,10 @@ S2 parse_line (U1 *line)
 
 								if ( strcmp ((const char *) ast[level].expr[j][last_arg], "else") == 0)
 								{
-									if_pos = get_act_if ();
+									if_pos = get_act_ifplus ();
 									if (if_pos == -1)
 									{
-										printf ("error: line %lli: else: if not set!\n", linenum);
+										printf ("error: line %lli: else: if+ not set!\n", linenum);
 										return (1);
 									}
 

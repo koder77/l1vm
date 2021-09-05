@@ -46,6 +46,7 @@ void init_if (void)
         if_comp[i].used = FALSE;
         if_comp[i].else_pos = EMPTY_IF;
         if_comp[i].endif_pos = EMPTY_IF;
+		if_comp[i].ifplus = FALSE;
     }
 
 	if_ind = -1;
@@ -73,6 +74,26 @@ S4 get_if_pos (void)
         if (if_comp[i].used == FALSE)
         {
             if_comp[i].used = TRUE;
+			if_comp[i].ifplus = FALSE;
+            return (i);
+        }
+    }
+
+    /* no EMPTY_IF if found => error! */
+
+    return (-1);
+}
+
+S4 get_ifplus_pos (void)
+{
+    S4 i;
+
+    for (i = 0; i < MAXIF; i++)
+    {
+        if (if_comp[i].used == FALSE)
+        {
+            if_comp[i].used = TRUE;
+			if_comp[i].ifplus = TRUE;
             return (i);
         }
     }
@@ -95,6 +116,25 @@ S4 get_act_if (void)
     }
     return (-1);
 }
+
+S4 get_act_ifplus (void)
+{
+    S4 i;
+
+    for (i = MAXIF - 1; i >= 0; i--)
+    {
+        if (if_comp[i].used == TRUE)
+        {
+			if (if_comp[i].ifplus == TRUE)
+			{
+				// found if+ which was set earlier
+            	return (i);
+			}
+        }
+    }
+    return (-1);
+}
+
 
 U1 get_if_label (S8 ind, U1 *label)
 {

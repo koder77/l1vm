@@ -40,6 +40,7 @@ struct if_comp
     S8 endif_pos ALIGN;
     U1 else_name[MAXJUMPNAME + 1];
     U1 endif_name[MAXJUMPNAME + 1];
+	U1 ifplus;
 };
 
 struct while_comp
@@ -75,7 +76,9 @@ struct jumplist
 //forward declarations
 void init_if (void);
 S4 get_if_pos (void);
+S4 get_ifplus_pos (void);
 S4 get_act_if (void);
+S4 get_act_ifplus (void);
 U1 get_if_label (S8 ind, U1 *label);
 U1 get_else_label (S8 ind, U1 *label);
 U1 get_endif_label (S8 ind, U1 *label);
