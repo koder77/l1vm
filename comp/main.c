@@ -3667,6 +3667,8 @@ S2 parse_line (U1 *line)
 											strcpy ((char *) code[code_line], (const char *) for_label);
 											strcat ((char *) code[code_line], "\n");
 
+											set_for (for_pos);
+
 											continue;
 										}
 										else
@@ -3687,8 +3689,14 @@ S2 parse_line (U1 *line)
 									for_pos = get_act_for ();
 									if (for_pos == -1)
 									{
-										printf ("compile: error: while: out of memory for-list\n");
-										return (FALSE);
+										printf ("error: line: %lli: next without for!\n", linenum);
+										return (1);
+									}
+
+									if (check_for (for_pos) == FALSE)
+									{
+										printf ("error: line: %lli: next without for!\n", linenum);
+										return (1);
 									}
 
 									get_for_label (for_pos, for_label);

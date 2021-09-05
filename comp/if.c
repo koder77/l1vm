@@ -346,6 +346,7 @@ void init_for (void)
         for_comp[i].used = FALSE;
         for_comp[i].for_pos = EMPTY_IF;
         for_comp[i].for_set = FALSE;
+		for_comp[i].for_def_set = FALSE;
     }
 }
 
@@ -439,6 +440,15 @@ void set_for_end (S8 ind)
     for_comp[ind].for_set = TRUE;
 }
 
+void set_for (S8 ind)
+{
+	for_comp[ind].for_def_set = TRUE;
+}
+
+S4 check_for (S8 ind)
+{
+	return (for_comp[ind].for_def_set);
+}
 
 // switch =====================================================================
 S4 get_switch_pos (void)

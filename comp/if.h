@@ -58,6 +58,7 @@ struct for_comp
     S8 for_pos ALIGN;
     U1 for_set;
     U1 for_name[MAXJUMPNAME + 1];
+	U1 for_def_set;
 };
 
 struct switch_comp
@@ -102,6 +103,8 @@ S4 get_act_for (void);
 U1 get_for_label (S8 ind, U1 *label);
 U1 get_for_label_2 (S8 ind, U1 *label);
 S4 get_for_lab (S8 ind);
+void set_for (S8 ind);
+S4 check_for (S8 ind);
 U1 get_for_label_end (S8 ind, U1 *label);
 void set_for_end (S8 ind);
 
