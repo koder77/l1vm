@@ -41,6 +41,7 @@ struct if_comp
     U1 else_name[MAXJUMPNAME + 1];
     U1 endif_name[MAXJUMPNAME + 1];
 	U1 ifplus;
+	U1 else_set;
 };
 
 struct while_comp
@@ -79,6 +80,9 @@ S4 get_if_pos (void);
 S4 get_ifplus_pos (void);
 S4 get_act_if (void);
 S4 get_act_ifplus (void);
+S4 check_ifplus (S8 ind);
+void set_else (S8 ind);
+S4 check_else (S8 ind);
 U1 get_if_label (S8 ind, U1 *label);
 U1 get_else_label (S8 ind, U1 *label);
 U1 get_endif_label (S8 ind, U1 *label);

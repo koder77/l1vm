@@ -47,6 +47,7 @@ void init_if (void)
         if_comp[i].else_pos = EMPTY_IF;
         if_comp[i].endif_pos = EMPTY_IF;
 		if_comp[i].ifplus = FALSE;
+		if_comp[i].else_set = FALSE;
     }
 
 	if_ind = -1;
@@ -135,6 +136,27 @@ S4 get_act_ifplus (void)
     return (-1);
 }
 
+S4 check_ifplus (S8 ind)
+{
+	if (if_comp[ind].ifplus == TRUE)
+	{
+		return (0);
+	}
+	else
+	{
+		return (1);
+	}
+}
+
+void set_else (S8 ind)
+{
+	if_comp[ind].else_set = TRUE;
+}
+
+S4 check_else (S8 ind)
+{
+	return (if_comp[ind].else_set);
+}
 
 U1 get_if_label (S8 ind, U1 *label)
 {

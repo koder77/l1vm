@@ -2910,6 +2910,8 @@ S2 parse_line (U1 *line)
 										return (1);
 									}
 
+									set_else (if_pos);
+
 									get_endif_label (if_pos, endif_label);
 									get_else_label (if_pos, else_label);
 
@@ -2950,7 +2952,15 @@ S2 parse_line (U1 *line)
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "endif") == 0)
 								{
 									if_pos = get_act_if ();
-
+									if (check_ifplus (if_pos) == 0)
+									{
+										// was "if+", check if else is set
+										if (check_else (if_pos) != TRUE)
+										{
+											printf ("error: line %lli: if+ without else!\n", linenum);
+											return (1);
+										}
+									}
 									get_endif_label (if_pos, endif_label);
 
 									code_line++;
