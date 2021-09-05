@@ -2901,7 +2901,7 @@ S2 parse_line (U1 *line)
 									continue;
 								}
 
-								if ( strcmp ((const char *) ast[level].expr[j][last_arg], "else") == 0)
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "else") == 0)
 								{
 									if_pos = get_act_ifplus ();
 									if (if_pos == -1)
