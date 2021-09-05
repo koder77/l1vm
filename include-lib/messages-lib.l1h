@@ -99,10 +99,10 @@
 	(zero~ ind~ =)
 	(reset-reg)
 	// thread mutex lock
-	threadlock
 	(:msg_wait_message_loop)
 	(one~ ret~ =)
 	(zero~ ind~ =)
+	threadlock
 	(msg_addr~ :get_vect_size !)
 	(msg_max~ stpopi)
 	(for-loop)
@@ -122,6 +122,7 @@
 		((ind~ one~ +) ind~ =)
 	(next)
 	(((ret~ one~ ==) f~ =) f~ if)
+		threadunlock
 		detime (time_ticks~)
 		(:msg_wait_message_loop jmp)
 	(endif)
