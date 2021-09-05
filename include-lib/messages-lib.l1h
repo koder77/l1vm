@@ -98,7 +98,6 @@
 	(msg_addr~ stpopi)
 	(zero~ ind~ =)
 	(reset-reg)
-	// thread mutex lock
 	(:msg_wait_message_loop)
 	(one~ ret~ =)
 	(zero~ ind~ =)
