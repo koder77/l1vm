@@ -15,7 +15,7 @@
 	// allocate message space
 	(:alloc_int64_vect !)
 	(msgs_addr~ stpopi)
-	(((msgs_addr~ zero <) f~ =) f~ if)
+	(((msgs_addr~ zero <) f~ =) f~ if+)
 		// ERROR can't allocate memory
 		print_s (alloc_errorstr)
 		print_n
