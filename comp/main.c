@@ -2961,6 +2961,12 @@ S2 parse_line (U1 *line)
 											return (1);
 										}
 									}
+									if (if_pos == -1)
+									{
+										printf ("error: line %lli: endif without if!\n", linenum);
+										return (1);
+									}
+
 									get_endif_label (if_pos, endif_label);
 
 									code_line++;
