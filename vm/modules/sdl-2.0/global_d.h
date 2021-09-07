@@ -78,8 +78,8 @@
 
 #define MAXGADGET           256
 
-#define OK                                  0
-#define ERROR                               1
+#define OK                  0
+#define ERROR               1
 
 
 /* gadget event stuff */

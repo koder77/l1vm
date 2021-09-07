@@ -1288,6 +1288,113 @@ U1 draw_gadget_string (S2 screennum, U2 gadget_index, U1 selected)
     return (TRUE);
 }
 
+U1 draw_gadget_string_multiline (S2 screennum, U2 gadget_index, U1 selected)
+{
+    Sint16 cursor_x, cursor_y;
+    struct gadget_string_multiline *string;
+
+    string = (struct gadget_string_multiline *) screen[screennum].gadget[gadget_index].gptr;
+
+    draw_gadget_input (renderer, string->x, string->y, string->x2, string->y2);
+
+    boxRGBA (renderer, string->text_x, string->text_y, string->text_x2, string->text_y2, screen[screennum].gadget_color.backgr_light.r, screen[screennum].gadget_color.backgr_light.g, screen[screennum].gadget_color.backgr_light.b, 255);
+
+	if (! draw_text_ttf (surf, screennum, string->text, string->text_x, string->text_y, screen[screennum].gadget_color.text_light.r, screen[screennum].gadget_color.text_light.g, screen[screennum].gadget_color.text_light.b))
+    {
+        return (FALSE);
+    }
+
+	{
+		// draw string gadget text into text edit box
+		U1 *str_show;
+		U1 ch;
+		S8 string_y ALIGN;
+		S8 string_x ALIGN;
+		S8 string_x_end ALIGN;
+		S8 i ALIGN;
+		S8 j ALIGN;
+		Sint16 text_x, text_y;
+
+		str_show = (U1 *) calloc ((string->visible_len + 1), sizeof (U1));
+		if (str_show == NULL)
+		{
+			return (FALSE);
+		}
+
+		text_x = string->input_x;
+		text_y = string->input_y;
+
+		for (string_y = 0; string_y < string->text_lines; string_y++)
+		{
+			string_x = string_y * string->visible_len;
+			string_x_end = string_x + string->visible_len;
+			j = 0;
+
+			printf ("\nDEBUG: string_x: %lli, string_x_end: %lli\n", string_x, string_x_end);
+
+			for (i = string_x; i < string_x_end; i++)
+			{
+				string->display[i] = string->value[i];
+
+				ch = string->value[i];
+				if (ch != '\0')
+				{
+					str_show[j] = string->value[i];
+				}
+				j++;
+			}
+			str_show[j] = '\0';
+
+			printf ("DEBUG: str_show: '%s'\n\n", str_show);
+
+			if (strlen_safe ((const char *) str_show, MAXLINELEN) != 0)
+			{
+				// display text lines if string has chars
+				if (! draw_text_ttf (surf, screennum, str_show, text_x, text_y, screen[screennum].gadget_color.text_light.r, screen[screennum].gadget_color.text_light.g, screen[screennum].gadget_color.text_light.b))
+		    	{
+		        	return (FALSE);
+		    	}
+			}
+			text_y = text_y + string->text_height;
+
+			// reset text buffer
+			for (i = 0; i < string->visible_len; i++)
+			{
+				str_show[i] = '\0';
+			}
+		}
+		free (str_show);
+	}
+
+    if (selected == GADGET_SELECTED)
+    {
+        if (string->cursor_pos_x == -1 && string->cursor_pos_y == -1)
+        {
+            /* init cursor position */
+			string->cursor_pos_x = 0;
+			string->cursor_pos_y = string->input_y;
+        }
+
+        /* draw cursor */
+
+        cursor_x = string->input_x + (string->cursor_width * string->cursor_pos_x);
+		cursor_y = string->input_y + (string-> cursor_height * string->cursor_pos_y);
+        boxRGBA (renderer, cursor_x, cursor_y, cursor_x + string->cursor_width, cursor_y + string->cursor_height, screen[screennum].gadget_color.text_light.r, screen[screennum].gadget_color.text_light.g, screen[screennum].gadget_color.text_light.b, 50);
+    }
+
+    if (string->status == GADGET_NOT_ACTIVE)
+    {
+        draw_ghost_gadget (renderer, string->x, string->y, string->x2, string->y2);
+    }
+
+    // SDL_UpdateRect (renderer, string->x, string->y, string->x2 - string->x + 1, string->y2 - string->y + 1);
+    // SDL_UpdateRect (renderer, string->text_x, string->text_y, string->text_x2 - string->text_x + 1, string->text_y2 - string->text_y + 1);
+
+    SDL_RenderPresent (renderer);
+    SDL_UpdateWindowSurface (window);
+    return (TRUE);
+}
+
 
 U1 event_gadget_string (S2 screennum, U2 gadget_index)
 {
@@ -1674,6 +1781,574 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 	return (TRUE);
 }
 
+U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
+{
+	/*
+	 * String gadget event handling using SDL TextInput ()
+	 *
+	 * Keymap for a German keyboard layout
+	 * with German umlauts like ae, oe and ue
+	 *
+	 */
+
+
+    SDL_Event event;
+	SDL_Keycode key;
+
+    U1 *string_buf, wait;
+    S2 value_len;
+
+	S2 i, insert_pos;
+	S2 char_code;
+
+	S2 shift = 0; // set to 1 if shift is pressed down
+
+    struct gadget_string_multiline *string;
+
+    string = (struct gadget_string_multiline *) screen[screennum].gadget[gadget_index].gptr;
+
+    /* allocate string buffer */
+
+    string_buf = (U1 *) malloc ((string->text_lines * (string->visible_len + 1)) * sizeof (U1));
+    if (string_buf == NULL)
+    {
+        printf ("event_gadget_string: error can't allocate string buffer!\n");
+        return (FALSE);
+    }
+
+    if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
+    {
+        free (string_buf);
+        return (FALSE);
+    }
+
+    /* wait for event */
+
+	SDL_StartTextInput ();
+
+	wait = TRUE;
+
+	while (wait)
+	{
+		if (! SDL_WaitEvent (&event))
+		{
+			printf ("event_gadget_string: error can't wait for event!\n");
+			free (string_buf);
+			return FALSE;
+		}
+
+		value_len = string->visible_len;
+
+		switch (event.type)
+		{
+			case SDL_KEYDOWN:
+				key = event.key.keysym.sym;
+				switch (key)
+				{
+					case SDLK_BACKSPACE:
+						printf ("event_gadget_string: BACKSPACE\n");
+
+						if (string->insert_pos > 0)
+						{
+							strremoveleft (string_buf, string->value, string->insert_pos);
+							my_strcpy (string->value, string_buf);
+
+							string->cursor_pos_x--;
+							string->insert_pos--;
+
+							if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
+							{
+								free (string_buf);
+								return (FALSE);
+							}
+						}
+						break;
+
+					case SDLK_DELETE:
+						printf ("event_gadget_string: DELETE\n");
+
+						strremoveright (string_buf, string->value, string->insert_pos);
+						my_strcpy (string->value, string_buf);
+
+						if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
+						{
+							free (string_buf);
+							return (FALSE);
+						}
+						break;
+
+						break;
+
+					case SDLK_LEFT:
+						printf ("event_gadget_string: CURSOR LEFT\n");
+
+						if (string->cursor_pos_x > 0)
+						{
+							string->cursor_pos_x--;
+							string->insert_pos--;
+
+							if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
+							{
+								free (string_buf);
+								return (FALSE);
+							}
+						}
+
+						break;
+
+					case SDLK_RIGHT:
+						printf ("event_gadget_string: CURSOR RIGHT\n");
+
+						if (string->cursor_pos_x < string->visible_len)
+						{
+							string->cursor_pos_x++;
+							string->insert_pos++;
+
+							if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
+							{
+								free (string_buf);
+								return (FALSE);
+							}
+						}
+						break;
+
+					case SDLK_UP:
+						printf ("event_gadget_string: CURSOR UP\n");
+
+						if (string->cursor_pos_y > 0)
+						{
+							string->cursor_pos_y--;
+							string->insert_pos = (string->cursor_pos_y * string->visible_len) + string->cursor_pos_x;
+
+							if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
+							{
+								free (string_buf);
+								return (FALSE);
+							}
+						}
+						break;
+
+					case SDLK_DOWN:
+						printf ("event_gadget_string: CURSOR DOWN\n");
+
+						if (string->cursor_pos_y < string->text_lines - 1)
+						{
+							string->cursor_pos_y++;
+							string->insert_pos = (string->cursor_pos_y * string->visible_len) + string->cursor_pos_x;
+
+							if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
+							{
+								free (string_buf);
+								return (FALSE);
+							}
+						}
+						break;
+
+					case SDLK_RETURN:
+						printf ("event_gadget_string: RETURN\n");
+						wait = FALSE;
+						break;
+
+					case SDLK_LSHIFT:
+						shift = 1;
+						break;
+
+					case SDLK_RSHIFT:
+						shift = 1;
+						break;
+				}
+				break;
+
+				case SDL_TEXTINPUT:
+					/* update the composition text */
+
+					printf ("DEBUG: SDL_TEXTINPUT\n");
+
+					i = 0; insert_pos = string->insert_pos;
+
+					while (event.text.text[i] != '\0')
+					{
+						char_code = event.text.text[i];
+						// DEBUG ONLY:
+						// printf ("event_gadget_string: text[%i]: %i\n", i, char_code);
+
+						if (i > 0)
+						{
+							// if (value_len < string->visible_len)
+							// {
+								// ä Ä
+								if (event.text.text[i] == -92 && event.text.text[i - 1] == -61)
+								{
+									// ä
+									printf ("key: ä\n");
+
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									{
+										strinsertchar (string_buf, string->value, 228, insert_pos);
+
+										my_strcpy (string->value, string_buf);
+
+										i = i + 1;
+										insert_pos = insert_pos + 1;
+										value_len = value_len + 1;
+
+										if (string->cursor_pos_x < string->visible_len)
+										{
+											string->cursor_pos_x++;
+										}
+										else
+										{
+											if (string->cursor_pos_y < string->text_lines -1)
+											{
+												string->cursor_pos_x = 1;
+												string->cursor_pos_y++;
+											}
+										}
+
+										string->insert_pos++;
+									}
+									continue;
+								}
+
+								if (event.text.text[i] == -124 && event.text.text[i - 1] == -61)
+								{
+									// Ä
+									printf ("key: Ä\n");
+
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									{
+										strinsertchar (string_buf, string->value, 196, insert_pos);
+
+										my_strcpy (string->value, string_buf);
+
+										i = i + 1;
+										insert_pos = insert_pos + 1;
+										value_len = value_len + 1;
+
+										if (string->cursor_pos_x < string->visible_len)
+										{
+											string->cursor_pos_x++;
+										}
+										else
+										{
+											if (string->cursor_pos_y < string->text_lines -1)
+											{
+												string->cursor_pos_x = 1;
+												string->cursor_pos_y++;
+											}
+										}
+
+										string->insert_pos++;
+									}
+									continue;
+								}
+
+								// ö Ö
+								if (event.text.text[i] == -74 && event.text.text[i - 1] == -61)
+								{
+									// ö
+									printf ("key: ö\n");
+
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									{
+										strinsertchar (string_buf, string->value, 246, insert_pos);
+
+										my_strcpy (string->value, string_buf);
+
+										i = i + 1;
+										insert_pos = insert_pos + 1;
+										value_len = value_len + 1;
+
+										if (string->cursor_pos_x < string->visible_len)
+										{
+											string->cursor_pos_x++;
+										}
+										else
+										{
+											if (string->cursor_pos_y < string->text_lines -1)
+											{
+												string->cursor_pos_x = 1;
+												string->cursor_pos_y++;
+											}
+										}
+
+										string->insert_pos++;
+									}
+									continue;
+								}
+
+								if (event.text.text[i] == -106 && event.text.text[i - 1] == -61)
+								{
+									// Ö
+									printf ("key: Ö\n");
+
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									{
+										strinsertchar (string_buf, string->value, 214, insert_pos);
+
+										my_strcpy (string->value, string_buf);
+
+										i = i + 1;
+										insert_pos = insert_pos + 1;
+										value_len = value_len + 1;
+
+										if (string->cursor_pos_x < string->visible_len)
+										{
+											string->cursor_pos_x++;
+										}
+										else
+										{
+											if (string->cursor_pos_y < string->text_lines -1)
+											{
+												string->cursor_pos_x = 1;
+												string->cursor_pos_y++;
+											}
+										}
+
+										string->insert_pos++;
+									}
+									continue;
+								}
+
+								// ü Ü
+								if (event.text.text[i] == -68 && event.text.text[i - 1] == -61)
+								{
+									printf ("key: ü\n");
+									// ü
+
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									{
+										strinsertchar (string_buf, string->value, 252, insert_pos);
+
+										my_strcpy (string->value, string_buf);
+
+										i = i + 1;
+										insert_pos = insert_pos + 1;
+										value_len = value_len + 1;
+
+										if (string->cursor_pos_x < string->visible_len)
+										{
+											string->cursor_pos_x++;
+										}
+										else
+										{
+											if (string->cursor_pos_y < string->text_lines -1)
+											{
+												string->cursor_pos_x = 1;
+												string->cursor_pos_y++;
+											}
+										}
+
+										string->insert_pos++;
+									}
+									continue;
+								}
+
+								if (event.text.text[i] == -100 && event.text.text[i - 1] == -61)
+								{
+									// Ü
+									printf ("key: Ü\n");
+
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									{
+										strinsertchar (string_buf, string->value, 220, insert_pos);
+
+										my_strcpy (string->value, string_buf);
+
+										i = i + 1;
+										insert_pos = insert_pos + 1;
+										value_len = value_len + 1;
+
+										if (string->cursor_pos_x < string->visible_len)
+										{
+											string->cursor_pos_x++;
+										}
+										else
+										{
+											if (string->cursor_pos_y < string->text_lines -1)
+											{
+												string->cursor_pos_x = 1;
+												string->cursor_pos_y++;
+											}
+										}
+
+										string->insert_pos++;
+									}
+									continue;
+								}
+
+								if (event.text.text[i] == -97 && event.text.text[i - 1] == -61)
+								{
+									// ß
+									printf ("key: ß\n");
+
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									{
+										strinsertchar (string_buf, string->value, 223, insert_pos);
+
+										my_strcpy (string->value, string_buf);
+
+										i = i + 1;
+										insert_pos = insert_pos + 1;
+										value_len = value_len + 1;
+
+										if (string->cursor_pos_x < string->visible_len)
+										{
+											string->cursor_pos_x++;
+										}
+										else
+										{
+											if (string->cursor_pos_y < string->text_lines -1)
+											{
+												string->cursor_pos_x = 1;
+												string->cursor_pos_y++;
+											}
+										}
+
+										string->insert_pos++;
+									}
+									continue;
+								}
+
+								if (event.text.text[i] == -89 && event.text.text[i - 1] == -62)
+								{
+									// §
+									printf ("key: §\n");
+
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									{
+										strinsertchar (string_buf, string->value, 167, insert_pos);
+
+										my_strcpy (string->value, string_buf);
+
+										i = i + 1;
+										insert_pos = insert_pos + 1;
+										value_len = value_len + 1;
+
+										if (string->cursor_pos_x < string->visible_len)
+										{
+											string->cursor_pos_x++;
+										}
+										else
+										{
+											if (string->cursor_pos_y < string->text_lines -1)
+											{
+												string->cursor_pos_x = 1;
+												string->cursor_pos_y++;
+											}
+										}
+
+										string->insert_pos++;
+									}
+									continue;
+								}
+
+
+								if (event.text.text[i] == -126 && event.text.text[i - 1] == -30)
+								{
+									// € Euro char
+									printf ("key: €\n");
+
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									{
+										strinsertchar (string_buf, string->value, 128, insert_pos);
+
+										my_strcpy (string->value, string_buf);
+
+										i = i + 1;
+										insert_pos = insert_pos + 1;
+										value_len = value_len + 1;
+
+										if (string->cursor_pos_x < string->visible_len)
+										{
+											string->cursor_pos_x++;
+										}
+										else
+										{
+											if (string->cursor_pos_y < string->text_lines -1)
+											{
+												string->cursor_pos_x = 1;
+												string->cursor_pos_y++;
+											}
+										}
+
+										string->insert_pos++;
+									}
+									continue;
+								}
+							//}
+						}
+
+						if (event.text.text[i] >= 0)
+						{
+							// if (value_len < string->visible_len)
+							//{
+								if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+								{
+									strinsertchar (string_buf, string->value, event.text.text[i], insert_pos);
+									my_strcpy (string->value, string_buf);
+
+									i = i + 1;
+									insert_pos = insert_pos + 1;
+									value_len = value_len + 1;
+
+									if (string->cursor_pos_x < string->visible_len)
+									{
+										string->cursor_pos_x++;
+									}
+									else
+									{
+										if (string->cursor_pos_y < string->text_lines -1)
+										{
+										string->cursor_pos_x = 1;
+										string->cursor_pos_y++;
+										}
+									}
+
+									string->insert_pos++;
+								}
+
+							//}
+						}
+						if (i >= 1)
+						{
+							break;
+						}
+						if (i == 0)
+						{
+							i++;
+						}
+					}
+
+					if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
+					{
+						free (string_buf);
+						return (FALSE);
+					}
+					break;
+
+			case SDL_KEYUP:
+				key = event.key.keysym.sym;
+				switch (key)
+				{
+					case SDLK_LSHIFT:
+						shift = 0;
+						break;
+
+					case SDLK_RSHIFT:
+						shift = 0;
+						break;
+				}
+				break;
+		}
+
+	}
+
+	SDL_StopTextInput();
+
+	free (string_buf);
+	return (TRUE);
+}
 
 U1 *event_gadget_slider (S2 screennum, U2 gadget_index)
 {
@@ -2140,6 +2815,7 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     struct gadget_checkbox *checkbox;
     struct gadget_cycle *cycle;
     struct gadget_string *string;
+	struct gadget_string_multiline *string_multiline;
     struct gadget_box *box;
     struct gadget_slider *slider;
 
@@ -2757,6 +3433,135 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                             }
                         }
                         break;
+
+						case GADGET_STRING_MULTILINE:
+						    printf ("DEBUG: gadget_event: string_multiline multiline\n\n");
+
+						    string_multiline = (struct gadget_string_multiline *) screen[screennum].gadget[i].gptr;
+
+						    if ((x > string_multiline->x && x < string_multiline->x2) && (y > string_multiline->y && y < string_multiline->y2) && string_multiline->status == GADGET_ACTIVE)
+						    {
+						        mouse_button = 1;
+						        while (mouse_button == 1)
+						        {
+						            SDL_Delay (100);
+
+						            SDL_PumpEvents ();
+						            buttonmask = SDL_GetMouseState (&x, &y);
+
+						            if (! (buttonmask & SDL_BUTTON (1)))
+						            {
+						                mouse_button = 0;
+						            }
+
+						            if ((x > string_multiline->x && x < string_multiline->x2) && (y > string_multiline->y && y < string_multiline->y2))
+						            {
+						                printf ("gadget_event: drawing string_multiline %i selected.\n", i);
+
+						                if (! event_gadget_string_multiline (screennum, i))
+						                {
+						                    printf ("gadget_event: error can't draw gadget!\n");
+						                    return (NULL);
+						                }
+						                else
+						                {
+						                    /* gadget was selected */
+
+						                    printf ("gadget_event: drawing string_multiline %i normal.\n", i);
+
+						                    if (! draw_gadget_string_multiline (screennum, i, GADGET_NOT_SELECTED))
+						                    {
+						                        printf ("gadget_event: error can't draw gadget!\n");
+						                        return (NULL);
+						                    }
+
+						                    sp = stpushi (i, sp, sp_bottom);
+						                    if (sp == NULL)
+						                    {
+						                        // error
+						                        printf ("gadget_event: ERROR: stack corrupt!\n");
+						                        return (NULL);
+						                    }
+
+						                    strcpy ((char *) &data[text_address], (const char *) string_multiline->value);
+
+						                    // value = dummy
+						                    sp = stpushi (0, sp, sp_bottom);
+						                    if (sp == NULL)
+						                    {
+						                        // error
+						                        printf ("gadget_event: ERROR: stack corrupt!\n");
+						                        return (NULL);
+						                    }
+
+						                    // push 1 = all OK!
+						                    sp = stpushi (1, sp, sp_bottom);
+						                    if (sp == NULL)
+						                    {
+						                        // error
+						                        printf ("gadget_event: ERROR: stack corrupt!\n");
+						                        return (NULL);
+						                    }
+
+						                    return (sp);
+						                }
+						            }
+						            else
+						            {
+						                printf ("gadget_event: drawing string_multiline %i normal.\n", i);
+
+						                if (! draw_gadget_string_multiline (screennum, i, GADGET_NOT_SELECTED))
+						                {
+						                    printf ("gadget_event: error can't draw gadget!\n");
+						                    return (NULL);
+						                }
+						            }
+						        }
+
+						        if (! draw_gadget_string_multiline (screennum, i, GADGET_NOT_SELECTED))
+						        {
+						            printf ("gadget_event: error can't draw gadget!\n");
+						            return (NULL);
+						        }
+
+						        if ((x > string_multiline->x && x < string_multiline->x2) && (y > string_multiline->y && y < string_multiline->y2))
+						        {
+						            /* gadget was selected */
+
+						            printf ("gadget_event: string_multiline gadget %i selected.\n", i);
+
+						            sp = stpushi (i, sp, sp_bottom);
+						            if (sp == NULL)
+						            {
+						                // error
+						                printf ("gadget_event: ERROR: stack corrupt!\n");
+						                return (NULL);
+						            }
+
+						            strcpy ((char *) &data[text_address], (const char *) string_multiline->value);
+
+						            // value = dummy
+						            sp = stpushi (0, sp, sp_bottom);
+						            if (sp == NULL)
+						            {
+						                // error
+						                printf ("gadget_event: ERROR: stack corrupt!\n");
+						                return (NULL);
+						            }
+
+						            // push 1 = all OK!
+						            sp = stpushi (1, sp, sp_bottom);
+						            if (sp == NULL)
+						            {
+						                // error
+						                printf ("gadget_event: ERROR: stack corrupt!\n");
+						                return (NULL);
+						            }
+
+						            return (sp);
+						        }
+						    }
+						    break;
 
                     case GADGET_BOX:
                         box = (struct gadget_box *) screen[screennum].gadget[i].gptr;
@@ -3873,6 +4678,230 @@ U1 *set_gadget_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 }
 
+U1 *set_gadget_string_multiline (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// set a multi lines text edit gadget
+    S2 text_len;
+    Sint16 x2, y2, text_x, text_y, input_x, input_y;
+    int text_height, text_width, char_width, dummy;
+    struct gadget_string_multiline *string;
+	S8 gadget_index ALIGN;
+	S8 x ALIGN;
+	S8 y ALIGN;
+	S8 text_address ALIGN;
+	S8 status ALIGN;
+	S8 value_address ALIGN;
+	S8 string_visible_len ALIGN;
+	S8 text_lines ALIGN;
+	U1 err = 0;
+
+	// gadget number, x, y, textstr, valuestr, visible_len, status
+
+	sp = stpopi ((U1 *) &status, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &text_lines, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &string_visible_len, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &value_address, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &text_address, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &y, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &x, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &gadget_index, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	if (err == 1)
+    {
+ 	   printf ("set_gadget_string_multiline: ERROR, stack corrupt!\n");
+ 	   return (NULL);
+    }
+
+/*
+    if (strlen_safe ((const char *) &data[value_address], MAXLINELEN) > screen[screennum].gadget_string_string_len)
+    {
+        printf ("set_gadget_string_multiline: error string value overflow!\n");
+        return (NULL);
+    }
+*/
+
+    text_len = strlen_safe ((const char *) &data[text_address], MAXLINELEN);
+
+    if (! screen[screennum].gadget)
+    {
+        printf ("set_gadget_string_multiline: error gadget list not allocated!\n");
+        return (NULL);
+    }
+
+    if (gadget_index >= screen[screennum].gadgets)
+    {
+        printf ("set_gadget_string_multiline: error gadget index out of range!\n");
+        return (NULL);
+    }
+
+    if (! screen[screennum].font_ttf.font)
+    {
+        printf ("set_gadget_string_multiline: error no ttf font loaded!\n");
+        return (NULL);
+    }
+
+    free_gadget (screennum, gadget_index);
+
+    screen[screennum].gadget[gadget_index].gptr = (struct gadget_string_multiline *) malloc (sizeof (struct gadget_string_multiline));
+    if (screen[screennum].gadget[gadget_index].gptr == NULL)
+    {
+        printf ("set_gadget_string_multiline: error can't allocate structure!\n");
+        return (NULL);
+    }
+
+    string = (struct gadget_string_multiline *) screen[screennum].gadget[gadget_index].gptr;
+
+    /* allocate space for gadget title */
+
+    string->text = (U1 *) malloc ((text_len + 1) * sizeof (U1));
+    if (string->text == NULL)
+    {
+        printf ("set_gadget_string_multiline: error can't allocate text!\n");
+        return (NULL);
+    }
+
+    /* allocate space for input string */
+
+    string->value = (U1 *) malloc (((string_visible_len + 1) * text_lines) * sizeof (U1));
+    if (string->value == NULL)
+    {
+        printf ("set_gadget_string_multiline: error can't allocate value!\n");
+        return (NULL);
+    }
+
+	// copy value string data to gadget string */
+	{
+		S8 i ALIGN;
+		S8 max ALIGN;
+
+		max = text_lines * string_visible_len;
+
+		for (i = 0; i < max; i++)
+		{
+			string->value[i] = data[value_address + i];
+		}
+	}
+
+    /* allocate space for display-buffer string */
+
+    string->display = (U1 *) malloc (((string_visible_len + 1) * text_lines) * sizeof (U1));
+    if (string->display == NULL)
+    {
+        printf ("set_gadget_string_multiline: error can't allocate display!\n");
+        return (NULL);
+    }
+
+
+    /* get text width and height */
+
+    text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
+    if (TTF_SizeText (screen[screennum].font_ttf.font, (const char *) &data[text_address], &text_width, &dummy) != 0)
+    {
+        printf ("set_gadget_string_multiline: error can't get text width!\n");
+        return (NULL);
+    }
+
+    /* get width of one char */
+
+    if (TTF_SizeText (screen[screennum].font_ttf.font, "W", &char_width, &dummy) != 0)
+    {
+        printf ("set_gadget_string_multiline: error can't get char width!\n");
+        return (NULL);
+    }
+
+    /* layout string */
+
+    text_x = x;
+    text_y = y + (text_height / 4);
+
+    x = text_x + text_width + text_height;
+    x2 = (x + (string_visible_len + 1) * char_width) + (char_width * 2);
+    y2 = y + (text_height * text_lines)  + (text_height / 2);
+
+    input_x = x + char_width;
+    input_y = text_y;
+
+    screen[screennum].gadget[gadget_index].type = GADGET_STRING_MULTILINE;
+    strcpy ((char *) string->text, (const char *) &data[text_address]);
+    strcpy ((char *) string->value, (const char *) &data[value_address]);
+    string->status = status;
+    string->x = x;
+    string->y = y;
+    string->x2 = x2;
+    string->y2 = y2;
+    string->text_x = text_x;
+    string->text_y = text_y;
+    string->text_x2 = text_x + text_width;
+    string->text_y2 = text_y + text_height;
+
+    string->input_x = input_x;
+    string->input_y = input_y;
+    string->string_len = screen[screennum].gadget_string_string_len;
+    string->visible_len = string_visible_len;
+	string->text_lines = text_lines;
+
+    string->cursor_width = char_width;
+    string->cursor_height = text_height;
+    string->cursor_pos_x = 0;
+	string->cursor_pos_y = 0;
+    string->insert_pos = 0;
+	string->text_height = text_height;
+	string->text_width = text_width;
+
+	string->passwd = 0;		// show input chars, can be set with "set_gadget_string_multiline_passwd" function
+
+    printf ("set_gadget_string_multiline: status = %i\n", string->status);
+
+    if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_NOT_SELECTED))
+    {
+        printf ("set_gadget_string_multiline: error can't draw gadget!\n");
+        return (NULL);
+    }
+    else
+    {
+        return (sp);
+    }
+}
+
 U1 *set_gadget_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     /* set a gadget box without a drawed box, to set a active area */
@@ -4638,6 +5667,131 @@ U1 *change_gadget_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         return (sp);
     }
+}
+
+U1 *change_gadget_string_multiline (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    /* change value and status (active / inactive) */
+
+    S8 gadget_index ALIGN;
+	S8 text_address ALIGN;
+	S8 status ALIGN;
+	U1 err = 0;
+
+	sp = stpopi ((U1 *) &status, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &text_address, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &gadget_index, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	if (err == 1)
+	{
+	   printf ("change_gadget_string_multiline: ERROR, stack corrupt!\n");
+	   return (NULL);
+	}
+
+    struct gadget_string_multiline *string;
+
+    if (! screen[screennum].gadget)
+    {
+        printf ("change_gadget_string_multiline: error gadget list not allocated!\n");
+        return (NULL);
+    }
+
+    if (screen[screennum].gadget[gadget_index].gptr == NULL)
+    {
+        printf ("change_gadget_string_multiline: error gadget %lli not allocated!\n", gadget_index);
+        return (NULL);
+    }
+
+    if (screen[screennum].gadget[gadget_index].type != GADGET_STRING_MULTILINE)
+    {
+        printf ("change_gadget_string_multiline: error %lli not a string gadget!\n", gadget_index);
+        return (NULL);
+    }
+
+    string = (struct gadget_string_multiline *) screen[screennum].gadget[gadget_index].gptr;
+
+	if (strlen_safe ((const char *) &data[text_address], (string->visible_len * string->text_lines)) > (string->visible_len * string->text_lines))
+	{
+        printf ("change_gadget_string_multiline: error string value overflow!\n");
+        return (NULL);
+    }
+
+    strcpy ((char *) string->value, (const char *) &data[text_address]);
+    string->status = status;
+
+    if (! draw_gadget_string (screennum, gadget_index, GADGET_NOT_SELECTED))
+    {
+        printf ("change_gadget_string_multiline: error can't draw gadget!\n");
+        return (NULL);
+    }
+    else
+    {
+        return (sp);
+    }
+}
+
+U1 *get_gadget_string_multiline (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 gadget_index ALIGN;
+	S8 text_address ALIGN;
+	U1 err = 0;
+
+	struct gadget_string_multiline *string;
+
+	sp = stpopi ((U1 *) &text_address, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &gadget_index, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	if (err == 1)
+	{
+	   printf ("get_gadget_string_multiline: ERROR, stack corrupt!\n");
+	   return (NULL);
+	}
+
+	if (! screen[screennum].gadget)
+    {
+        printf ("change_gadget_string_multiline: error gadget list not allocated!\n");
+        return (NULL);
+    }
+
+    if (screen[screennum].gadget[gadget_index].gptr == NULL)
+    {
+        printf ("change_gadget_string_multiline: error gadget %lli not allocated!\n", gadget_index);
+        return (NULL);
+    }
+
+    if (screen[screennum].gadget[gadget_index].type != GADGET_STRING_MULTILINE)
+    {
+        printf ("change_gadget_string_multiline: error %lli not a string gadget!\n", gadget_index);
+        return (NULL);
+    }
+
+    string = (struct gadget_string_multiline *) screen[screennum].gadget[gadget_index].gptr;
+	strcpy ((char *) &data[text_address], (const char *) string->value);
+
+	return (sp);
 }
 
 U1 *set_gadget_string_passwd (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)

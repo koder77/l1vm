@@ -47,7 +47,7 @@
 #define GADGET_PROGRESS_BAR 6
 #define GADGET_SLIDER       7   // horizontal
 #define GADGET_SLIDER_VERT  8   // vertical
-
+#define GADGET_STRING_MULTILINE 9
 
 // string gadget passwd stars output max
 #define GADGET_STRING_PASSWD_STARS	512
@@ -83,13 +83,16 @@ U1 draw_gadget_cycle(S2 screennum, U2 gadget_index, U1 selected, S4 value);
 U1 draw_gadget_progress_bar(S2 screennum, U2 gadget_index, U1 selected);
 U1 draw_gadget_slider_bar (S2 screennum, U2 gadget_index, U1 selected);
 U1 draw_gadget_string (S2 screennum, U2 gadget_index, U1 selected);
+U1 draw_gadget_string_multiline (S2 screennum, U2 gadget_index, U1 selected);
 U1 event_gadget_string (S2 screennum, U2 gadget_index);
+U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index);
 U1 *gadget_event(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *set_gadget_button(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *set_gadget_progress_bar(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *set_gadget_checkbox(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *set_gadget_cycle(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *set_gadget_string(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+U1 *set_gadget_string_multiline (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *set_gadget_box(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *change_gadget_checkbox(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *change_gadget_cycle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
@@ -229,6 +232,39 @@ U1 *my_strcpy (U1 *destination, const U1 *source);
      S2 cursor_pos;                      /* cursor position */
      S2 insert_pos;                      /* text insert position */
  };
+
+// multi line text input gadget
+ struct gadget_string_multiline
+ {
+ 	U1 *text;                           /* info text */
+ 	struct font_ttf font;
+ 	U1 *value;                          /* input string */
+ 	U1 *display;                        /* display-buffer string */
+ 	U1 status;
+ 	U2 string_len;                      /* max input string length */
+ 	U2 visible_len;                     /* visible chars of input string */
+	U2 text_lines;						/* number of text lines in gadget */
+ 	U1 passwd;						    /* is 1: don't show char input! */
+ 	Sint16 x;
+ 	Sint16 y;
+ 	Sint16 x2;
+ 	Sint16 y2;
+ 	Sint16 text_x;                      /* gadget info text */
+ 	Sint16 text_y;
+ 	Sint16 text_x2;
+ 	Sint16 text_y2;
+ 	Sint16 input_x;                     /* gadget entry text */
+ 	Sint16 input_y;
+ 	Sint16 cursor_width;
+ 	Sint16 cursor_height;
+ 	S2 cursor_pos_x;                      /* cursor position */
+	S2 cursor_pos_y;
+ 	S2 insert_pos;                      /* text insert position */
+	S2 text_height;						// font height
+	S2 text_width;						// font width
+ };
+
+
 
  struct gadget_box
  {

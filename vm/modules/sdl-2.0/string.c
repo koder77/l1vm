@@ -210,16 +210,16 @@ int strinsertchar (U1 *dst, U1 *src, U1 chr, int pos)
     return (1);
 }
 
-U1 *my_strcpy (U1 *destination, const U1 *source )
+U1 *my_strcpy (U1 *destination, const U1 *source)
 {
 	int i = 0;
-	
+
 	while (source[i] != '\0')
 	{
 		destination[i] = source[i];
 		i++;
 	}
-	
+
 	destination[i] = '\0';
 	return (destination);
 }
