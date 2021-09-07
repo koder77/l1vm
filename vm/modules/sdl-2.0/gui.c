@@ -1791,7 +1791,6 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 	 *
 	 */
 
-
     SDL_Event event;
 	SDL_Keycode key;
 
@@ -1912,6 +1911,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 						}
 						break;
 
+						/* FIXME, how can it be done safe???
 					case SDLK_UP:
 						printf ("event_gadget_string: CURSOR UP\n");
 
@@ -1943,6 +1943,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 							}
 						}
 						break;
+						*/
 
 					case SDLK_RETURN:
 						printf ("event_gadget_string: RETURN\n");
@@ -5750,7 +5751,16 @@ U1 *get_gadget_string_multiline (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 text_address ALIGN;
 	U1 err = 0;
 
+	U1 ch;
+    S8 string_y ALIGN;
+    S8 string_x ALIGN;
+    S8 string_x_end ALIGN;
+	S8 ind ALIGN;
+	S8 i ALIGN;
+
 	struct gadget_string_multiline *string;
+
+	printf ("\nget_gadget_string_multiline...\n");
 
 	sp = stpopi ((U1 *) &text_address, sp, sp_top);
     if (sp == NULL)
@@ -5772,25 +5782,48 @@ U1 *get_gadget_string_multiline (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	if (! screen[screennum].gadget)
     {
-        printf ("change_gadget_string_multiline: error gadget list not allocated!\n");
+        printf ("get_gadget_string_multiline: error gadget list not allocated!\n");
         return (NULL);
     }
 
     if (screen[screennum].gadget[gadget_index].gptr == NULL)
     {
-        printf ("change_gadget_string_multiline: error gadget %lli not allocated!\n", gadget_index);
+        printf ("get_gadget_string_multiline: error gadget %lli not allocated!\n", gadget_index);
         return (NULL);
     }
 
     if (screen[screennum].gadget[gadget_index].type != GADGET_STRING_MULTILINE)
     {
-        printf ("change_gadget_string_multiline: error %lli not a string gadget!\n", gadget_index);
+        printf ("get_gadget_string_multiline: error %lli not a string gadget!\n", gadget_index);
         return (NULL);
     }
 
-    string = (struct gadget_string_multiline *) screen[screennum].gadget[gadget_index].gptr;
-	strcpy ((char *) &data[text_address], (const char *) string->value);
+	string = (struct gadget_string_multiline *) screen[screennum].gadget[gadget_index].gptr;
 
+	ind = 0;
+	for (string_y = 0; string_y < string->text_lines; string_y++)
+    {
+        string_x = string_y * string->visible_len;
+        string_x_end = string_x + string->visible_len;
+
+        printf ("\nDEBUG: get_string_multiline string_x: %lli, string_x_end: %lli\n", string_x, string_x_end);
+
+        for (i = string_x; i < string_x_end; i++)
+        {
+            ch = string->value[i];
+            if (ch != '\0')
+            {
+                 data[text_address + ind] = string->value[i];
+				 ind++;
+            }
+			else
+			{
+				// assign sapce char
+				data[text_address + ind] = ' ';
+				ind++;
+			}
+        }
+    }
 	return (sp);
 }
 
