@@ -1852,7 +1852,20 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 							strremoveleft (string_buf, string->value, string->insert_pos);
 							my_strcpy (string->value, string_buf);
 
-							string->cursor_pos_x--;
+							if (string->cursor_pos_x > 0)
+							{
+								string->cursor_pos_x--;
+							}
+							else
+							{
+								// check if line > 0 and then set cursor one line above
+								if (string->cursor_pos_y > 0)
+								{
+									string->cursor_pos_y--;
+									string->cursor_pos_x = string->visible_len - 1;
+								}
+							}
+
 							string->insert_pos--;
 
 							if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
