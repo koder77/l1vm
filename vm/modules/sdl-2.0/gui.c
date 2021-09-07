@@ -1895,6 +1895,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 
 						break;
 
+						/*
 					case SDLK_RIGHT:
 						printf ("event_gadget_string: CURSOR RIGHT\n");
 
@@ -1911,7 +1912,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 						}
 						break;
 
-						/* FIXME, how can it be done safe???
+						// FIXME, how can it be done safe???
 					case SDLK_UP:
 						printf ("event_gadget_string: CURSOR UP\n");
 
