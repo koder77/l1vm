@@ -1811,7 +1811,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
     string_buf = (U1 *) malloc ((string->text_lines * (string->visible_len + 1)) * sizeof (U1));
     if (string_buf == NULL)
     {
-        printf ("event_gadget_string: error can't allocate string buffer!\n");
+        printf ("event_gadget_string_multiline: error can't allocate string buffer!\n");
         return (FALSE);
     }
 
@@ -1831,7 +1831,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 	{
 		if (! SDL_WaitEvent (&event))
 		{
-			printf ("event_gadget_string: error can't wait for event!\n");
+			printf ("event_gadget_string_multiline: error can't wait for event!\n");
 			free (string_buf);
 			return FALSE;
 		}
@@ -1845,7 +1845,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 				switch (key)
 				{
 					case SDLK_BACKSPACE:
-						printf ("event_gadget_string: BACKSPACE\n");
+						printf ("event_gadget_string_multiline: BACKSPACE\n");
 
 						if (string->insert_pos > 0)
 						{
@@ -1877,7 +1877,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 						break;
 
 					case SDLK_DELETE:
-						printf ("event_gadget_string: DELETE\n");
+						printf ("event_gadget_string_multiline: DELETE\n");
 
 						strremoveright (string_buf, string->value, string->insert_pos);
 						my_strcpy (string->value, string_buf);
@@ -1892,42 +1892,64 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 						break;
 
 					case SDLK_LEFT:
-						printf ("event_gadget_string: CURSOR LEFT\n");
+						printf ("event_gadget_string_multiline: CURSOR LEFT\n");
 
 						if (string->cursor_pos_x > 0)
 						{
 							string->cursor_pos_x--;
 							string->insert_pos--;
-
-							if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
+						}
+						else
+						{
+							if (string->cursor_pos_y > 0)
 							{
-								free (string_buf);
-								return (FALSE);
+								string->cursor_pos_y--;
+								string->cursor_pos_x = string->visible_len;
+								string->insert_pos--;
 							}
 						}
 
+						if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
+						{
+							free (string_buf);
+							return (FALSE);
+						}
+						break;
+
+					/*	
+
+					case SDLK_RIGHT:
+						printf ("event_gadget_string_multiline: CURSOR RIGHT\n");
+
+						if (string->insert_pos <= strlen_safe ((const char *) string->value, (string->visible_len * string->text_lines)))						if (string->cursor_pos_x < string->visible_len)
+						{
+							if (string->cursor_pos_x < string->visible_len)
+							{
+								string->cursor_pos_x++;
+								string->insert_pos++;
+							}
+							else
+							{
+								if (string->cursor_pos_y < string->text_lines -1)
+				            	{
+				                	string->cursor_pos_x = 1;
+				                	string->cursor_pos_y++;
+									string->insert_pos++;
+				            	}
+							}
+						}
+
+						if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
+						{
+							free (string_buf);
+							return (FALSE);
+						}
 						break;
 
 						/*
-					case SDLK_RIGHT:
-						printf ("event_gadget_string: CURSOR RIGHT\n");
-
-						if (string->cursor_pos_x < string->visible_len)
-						{
-							string->cursor_pos_x++;
-							string->insert_pos++;
-
-							if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
-							{
-								free (string_buf);
-								return (FALSE);
-							}
-						}
-						break;
-
 						// FIXME, how can it be done safe???
 					case SDLK_UP:
-						printf ("event_gadget_string: CURSOR UP\n");
+						printf ("event_gadget_string_multiline: CURSOR UP\n");
 
 						if (string->cursor_pos_y > 0)
 						{
@@ -1943,7 +1965,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 						break;
 
 					case SDLK_DOWN:
-						printf ("event_gadget_string: CURSOR DOWN\n");
+						printf ("event_gadget_string_multiline: CURSOR DOWN\n");
 
 						if (string->cursor_pos_y < string->text_lines - 1)
 						{
@@ -1960,7 +1982,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 						*/
 
 					case SDLK_RETURN:
-						printf ("event_gadget_string: RETURN\n");
+						printf ("event_gadget_string_multiline: RETURN\n");
 						wait = FALSE;
 						break;
 
@@ -1985,7 +2007,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 					{
 						char_code = event.text.text[i];
 						// DEBUG ONLY:
-						// printf ("event_gadget_string: text[%i]: %i\n", i, char_code);
+						// printf ("event_gadget_string_multiline: text[%i]: %i\n", i, char_code);
 
 						if (i > 0)
 						{
