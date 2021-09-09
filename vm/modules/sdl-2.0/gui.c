@@ -1330,7 +1330,7 @@ U1 draw_gadget_string_multiline (S2 screennum, U2 gadget_index, U1 selected)
 			string_x_end = string_x + string->visible_len;
 			j = 0;
 
-			printf ("\nDEBUG: string_x: %lli, string_x_end: %lli\n", string_x, string_x_end);
+			// printf ("\nDEBUG: string_x: %lli, string_x_end: %lli\n", string_x, string_x_end);
 
 			for (i = string_x; i < string_x_end; i++)
 			{
@@ -1345,7 +1345,7 @@ U1 draw_gadget_string_multiline (S2 screennum, U2 gadget_index, U1 selected)
 			}
 			str_show[j] = '\0';
 
-			printf ("DEBUG: str_show: '%s'\n\n", str_show);
+			// printf ("DEBUG: str_show: '%s'\n\n", str_show);
 
 			if (strlen_safe ((const char *) str_show, MAXLINELEN) != 0)
 			{
@@ -1800,6 +1800,8 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 	S2 i, insert_pos;
 	S2 char_code;
 
+	S2 string_len;
+
 	S2 shift = 0; // set to 1 if shift is pressed down
 
     struct gadget_string_multiline *string;
@@ -1904,7 +1906,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 							if (string->cursor_pos_y > 0)
 							{
 								string->cursor_pos_y--;
-								string->cursor_pos_x = string->visible_len;
+								string->cursor_pos_x = string->visible_len - 1;
 								string->insert_pos--;
 							}
 						}
@@ -1916,23 +1918,35 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 						}
 						break;
 
-					/*	
-
 					case SDLK_RIGHT:
 						printf ("event_gadget_string_multiline: CURSOR RIGHT\n");
 
-						if (string->insert_pos <= strlen_safe ((const char *) string->value, (string->visible_len * string->text_lines)))						if (string->cursor_pos_x < string->visible_len)
+						string_len = strlen_safe ((const char *) string->value, (string->visible_len * string->text_lines));
+
+						printf ("DEBUG: insert pos: %i, string len: %i\n", string->insert_pos, string_len);
+
+						if (string->insert_pos < string_len)
 						{
-							if (string->cursor_pos_x < string->visible_len)
+							printf ("DEBUG: cursor right!\n");
+
+							printf ("DEBUG: cursor_pos_x: %i, string len: %i\n", string->cursor_pos_x, string->visible_len);
+
+							if (string->cursor_pos_x < string->visible_len - 1)
 							{
+								printf ("DEBUG: cursor < visible_len\n");
+
 								string->cursor_pos_x++;
 								string->insert_pos++;
 							}
 							else
 							{
-								if (string->cursor_pos_y < string->text_lines -1)
+								printf ("DEBUG: else\n");
+
+								if (string->cursor_pos_y < string->text_lines - 1)
 				            	{
-				                	string->cursor_pos_x = 1;
+									printf ("DEBUG: cursor right: newline, x = 0\n");
+
+				                	string->cursor_pos_x = 0;
 				                	string->cursor_pos_y++;
 									string->insert_pos++;
 				            	}
@@ -2019,7 +2033,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									// ä
 									printf ("key: ä\n");
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
 									{
 										strinsertchar (string_buf, string->value, 228, insert_pos);
 
@@ -2029,20 +2043,24 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 										insert_pos = insert_pos + 1;
 										value_len = value_len + 1;
 
-										if (string->cursor_pos_x < string->visible_len)
+										if (string->cursor_pos_x < string->visible_len - 1)
 										{
 											string->cursor_pos_x++;
 										}
 										else
 										{
-											if (string->cursor_pos_y < string->text_lines -1)
+											if (string->cursor_pos_y < string->text_lines - 1)
 											{
-												string->cursor_pos_x = 1;
+												string->cursor_pos_x = 0;
 												string->cursor_pos_y++;
 											}
 										}
 
 										string->insert_pos++;
+									}
+									else
+									{
+										break;
 									}
 									continue;
 								}
@@ -2052,7 +2070,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									// Ä
 									printf ("key: Ä\n");
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
 									{
 										strinsertchar (string_buf, string->value, 196, insert_pos);
 
@@ -2062,7 +2080,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 										insert_pos = insert_pos + 1;
 										value_len = value_len + 1;
 
-										if (string->cursor_pos_x < string->visible_len)
+										if (string->cursor_pos_x < string->visible_len - 1)
 										{
 											string->cursor_pos_x++;
 										}
@@ -2070,12 +2088,16 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 										{
 											if (string->cursor_pos_y < string->text_lines -1)
 											{
-												string->cursor_pos_x = 1;
+												string->cursor_pos_x = 0;
 												string->cursor_pos_y++;
 											}
 										}
 
 										string->insert_pos++;
+									}
+									else
+									{
+										break;
 									}
 									continue;
 								}
@@ -2086,7 +2108,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									// ö
 									printf ("key: ö\n");
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
 									{
 										strinsertchar (string_buf, string->value, 246, insert_pos);
 
@@ -2096,7 +2118,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 										insert_pos = insert_pos + 1;
 										value_len = value_len + 1;
 
-										if (string->cursor_pos_x < string->visible_len)
+										if (string->cursor_pos_x < string->visible_len - 1)
 										{
 											string->cursor_pos_x++;
 										}
@@ -2104,12 +2126,16 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 										{
 											if (string->cursor_pos_y < string->text_lines -1)
 											{
-												string->cursor_pos_x = 1;
+												string->cursor_pos_x = 0;
 												string->cursor_pos_y++;
 											}
 										}
 
 										string->insert_pos++;
+									}
+									else
+									{
+										break;
 									}
 									continue;
 								}
@@ -2119,7 +2145,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									// Ö
 									printf ("key: Ö\n");
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
 									{
 										strinsertchar (string_buf, string->value, 214, insert_pos);
 
@@ -2129,7 +2155,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 										insert_pos = insert_pos + 1;
 										value_len = value_len + 1;
 
-										if (string->cursor_pos_x < string->visible_len)
+										if (string->cursor_pos_x < string->visible_len - 1)
 										{
 											string->cursor_pos_x++;
 										}
@@ -2137,12 +2163,16 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 										{
 											if (string->cursor_pos_y < string->text_lines -1)
 											{
-												string->cursor_pos_x = 1;
+												string->cursor_pos_x = 0;
 												string->cursor_pos_y++;
 											}
 										}
 
 										string->insert_pos++;
+									}
+									else
+									{
+										break;
 									}
 									continue;
 								}
@@ -2153,7 +2183,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									printf ("key: ü\n");
 									// ü
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
 									{
 										strinsertchar (string_buf, string->value, 252, insert_pos);
 
@@ -2163,7 +2193,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 										insert_pos = insert_pos + 1;
 										value_len = value_len + 1;
 
-										if (string->cursor_pos_x < string->visible_len)
+										if (string->cursor_pos_x < string->visible_len - 1)
 										{
 											string->cursor_pos_x++;
 										}
@@ -2171,12 +2201,16 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 										{
 											if (string->cursor_pos_y < string->text_lines -1)
 											{
-												string->cursor_pos_x = 1;
+												string->cursor_pos_x = 0;
 												string->cursor_pos_y++;
 											}
 										}
 
 										string->insert_pos++;
+									}
+									else
+									{
+										break;
 									}
 									continue;
 								}
@@ -2186,7 +2220,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									// Ü
 									printf ("key: Ü\n");
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
 									{
 										strinsertchar (string_buf, string->value, 220, insert_pos);
 
@@ -2196,7 +2230,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 										insert_pos = insert_pos + 1;
 										value_len = value_len + 1;
 
-										if (string->cursor_pos_x < string->visible_len)
+										if (string->cursor_pos_x < string->visible_len - 1)
 										{
 											string->cursor_pos_x++;
 										}
@@ -2204,12 +2238,16 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 										{
 											if (string->cursor_pos_y < string->text_lines -1)
 											{
-												string->cursor_pos_x = 1;
+												string->cursor_pos_x = 0;
 												string->cursor_pos_y++;
 											}
 										}
 
 										string->insert_pos++;
+									}
+									else
+									{
+										break;
 									}
 									continue;
 								}
@@ -2219,7 +2257,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									// ß
 									printf ("key: ß\n");
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
 									{
 										strinsertchar (string_buf, string->value, 223, insert_pos);
 
@@ -2229,7 +2267,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 										insert_pos = insert_pos + 1;
 										value_len = value_len + 1;
 
-										if (string->cursor_pos_x < string->visible_len)
+										if (string->cursor_pos_x < string->visible_len - 1)
 										{
 											string->cursor_pos_x++;
 										}
@@ -2237,12 +2275,16 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 										{
 											if (string->cursor_pos_y < string->text_lines -1)
 											{
-												string->cursor_pos_x = 1;
+												string->cursor_pos_x = 0;
 												string->cursor_pos_y++;
 											}
 										}
 
 										string->insert_pos++;
+									}
+									else
+									{
+										break;
 									}
 									continue;
 								}
@@ -2252,7 +2294,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									// §
 									printf ("key: §\n");
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
 									{
 										strinsertchar (string_buf, string->value, 167, insert_pos);
 
@@ -2262,7 +2304,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 										insert_pos = insert_pos + 1;
 										value_len = value_len + 1;
 
-										if (string->cursor_pos_x < string->visible_len)
+										if (string->cursor_pos_x < string->visible_len - 1)
 										{
 											string->cursor_pos_x++;
 										}
@@ -2270,12 +2312,16 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 										{
 											if (string->cursor_pos_y < string->text_lines -1)
 											{
-												string->cursor_pos_x = 1;
+												string->cursor_pos_x = 0;
 												string->cursor_pos_y++;
 											}
 										}
 
 										string->insert_pos++;
+									}
+									else
+									{
+										break;
 									}
 									continue;
 								}
@@ -2286,7 +2332,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									// € Euro char
 									printf ("key: €\n");
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
 									{
 										strinsertchar (string_buf, string->value, 128, insert_pos);
 
@@ -2296,7 +2342,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 										insert_pos = insert_pos + 1;
 										value_len = value_len + 1;
 
-										if (string->cursor_pos_x < string->visible_len)
+										if (string->cursor_pos_x < string->visible_len - 1)
 										{
 											string->cursor_pos_x++;
 										}
@@ -2304,12 +2350,16 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 										{
 											if (string->cursor_pos_y < string->text_lines -1)
 											{
-												string->cursor_pos_x = 1;
+												string->cursor_pos_x = 0;
 												string->cursor_pos_y++;
 											}
 										}
 
 										string->insert_pos++;
+									}
+									else
+									{
+										break;
 									}
 									continue;
 								}
@@ -2320,7 +2370,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 						{
 							// if (value_len < string->visible_len)
 							//{
-								if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines))
+								if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
 								{
 									strinsertchar (string_buf, string->value, event.text.text[i], insert_pos);
 									my_strcpy (string->value, string_buf);
@@ -2329,7 +2379,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									insert_pos = insert_pos + 1;
 									value_len = value_len + 1;
 
-									if (string->cursor_pos_x < string->visible_len)
+									if (string->cursor_pos_x < string->visible_len - 1)
 									{
 										string->cursor_pos_x++;
 									}
@@ -2337,12 +2387,16 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									{
 										if (string->cursor_pos_y < string->text_lines -1)
 										{
-										string->cursor_pos_x = 1;
-										string->cursor_pos_y++;
+											string->cursor_pos_x = 0;
+											string->cursor_pos_y++;
 										}
 									}
 
 									string->insert_pos++;
+								}
+								else
+								{
+									break;
 								}
 
 							//}
@@ -5796,8 +5850,6 @@ U1 *get_gadget_string_multiline (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	struct gadget_string_multiline *string;
 
-	printf ("\nget_gadget_string_multiline...\n");
-
 	sp = stpopi ((U1 *) &text_address, sp, sp_top);
     if (sp == NULL)
     {
@@ -5842,7 +5894,7 @@ U1 *get_gadget_string_multiline (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         string_x = string_y * string->visible_len;
         string_x_end = string_x + string->visible_len;
 
-        printf ("\nDEBUG: get_string_multiline string_x: %lli, string_x_end: %lli\n", string_x, string_x_end);
+        // printf ("\nDEBUG: get_string_multiline string_x: %lli, string_x_end: %lli\n", string_x, string_x_end);
 
         for (i = string_x; i < string_x_end; i++)
         {

@@ -132,6 +132,7 @@
 	(gadget_sel stpopi)
 	(loadreg)
 	(4 gadget_sel 0 0 intr0)
+	(7 0 0 0 intr0)
 	(((gadget_sel one ==) f =) f if)
 		(255 0 0 0 intr0)
 	(endif)
