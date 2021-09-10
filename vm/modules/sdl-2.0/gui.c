@@ -1919,33 +1919,19 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 						break;
 
 					case SDLK_RIGHT:
-						printf ("event_gadget_string_multiline: CURSOR RIGHT\n");
-
 						string_len = strlen_safe ((const char *) string->value, (string->visible_len * string->text_lines));
-
-						printf ("DEBUG: insert pos: %i, string len: %i\n", string->insert_pos, string_len);
 
 						if (string->insert_pos < string_len)
 						{
-							printf ("DEBUG: cursor right!\n");
-
-							printf ("DEBUG: cursor_pos_x: %i, string len: %i\n", string->cursor_pos_x, string->visible_len);
-
 							if (string->cursor_pos_x < string->visible_len - 1)
 							{
-								printf ("DEBUG: cursor < visible_len\n");
-
 								string->cursor_pos_x++;
 								string->insert_pos++;
 							}
 							else
 							{
-								printf ("DEBUG: else\n");
-
 								if (string->cursor_pos_y < string->text_lines - 1)
 				            	{
-									printf ("DEBUG: cursor right: newline, x = 0\n");
-
 				                	string->cursor_pos_x = 0;
 				                	string->cursor_pos_y++;
 									string->insert_pos++;
@@ -3526,9 +3512,7 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                         break;
 
 						case GADGET_STRING_MULTILINE:
-						    printf ("DEBUG: gadget_event: string_multiline multiline\n\n");
-
-						    string_multiline = (struct gadget_string_multiline *) screen[screennum].gadget[i].gptr;
+					    	string_multiline = (struct gadget_string_multiline *) screen[screennum].gadget[i].gptr;
 
 						    if ((x > string_multiline->x && x < string_multiline->x2) && (y > string_multiline->y && y < string_multiline->y2) && string_multiline->status == GADGET_ACTIVE)
 						    {
