@@ -5890,7 +5890,7 @@ U1 *get_gadget_string_multiline (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             }
 			else
 			{
-				// assign sapce char
+				// assign space char
 				data[text_address + ind] = ' ';
 				ind++;
 			}

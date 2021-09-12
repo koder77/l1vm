@@ -1011,19 +1011,51 @@ extern "C" U1 *int_to_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	switch (mem[memind].type)
 	{
 		case MEMBYTE_VECT:
-			mem[memind].memptr.vect_int8ptr.push_back (value);
+			try
+			{
+				mem[memind].memptr.vect_int8ptr.push_back (value);
+			}
+			catch(std::bad_alloc&)
+		    {
+				printf ("int_to_vect: ERROR can't allocate byte memory!\n");
+				return (NULL);
+			}
 			break;
 
 		case MEMINT16_VECT:
-			mem[memind].memptr.vect_int16ptr.push_back (value);
+			try
+			{
+				mem[memind].memptr.vect_int16ptr.push_back (value);
+			}
+			catch(std::bad_alloc&)
+		    {
+				printf ("int_to_vect: ERROR can't allocate int16 memory!\n");
+				return (NULL);
+			}
 			break;
 
 		case MEMINT32_VECT:
-			mem[memind].memptr.vect_int32ptr.push_back (value);
+			try
+			{
+				mem[memind].memptr.vect_int32ptr.push_back (value);
+			}
+			catch(std::bad_alloc&)
+		    {
+				printf ("int_to_vect: ERROR can't allocate int32 memory!\n");
+				return (NULL);
+			}
 			break;
 
 		case MEMINT64_VECT:
-			mem[memind].memptr.vect_int64ptr.push_back (value);
+			try
+			{
+				mem[memind].memptr.vect_int64ptr.push_back (value);
+			}
+			catch(std::bad_alloc&)
+		    {
+				printf ("int_to_vect: ERROR can't allocate int64 memory!\n");
+				return (NULL);
+			}
 			break;
 	}
 
@@ -1064,7 +1096,15 @@ extern "C" U1 *double_to_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	#endif
 
 	// assign to array
-	mem[memind].memptr.vect_doubleptr.push_back (value);
+	try
+	{
+		mem[memind].memptr.vect_doubleptr.push_back (value);
+	}
+	catch(std::bad_alloc&)
+	{
+		printf ("double_to_vect: ERROR can't allocate double memory!\n");
+		return (NULL);
+	}
 	// increase memsize
 	mem[memind].memsize++;
 	return (sp);
