@@ -1,0 +1,15 @@
+# zerobuild makefile
+
+[executable, shared, name = libl1vm-jit.so]
+sources = jit.cpp
+
+includes = ../include, /usr/local/include
+
+ccompiler = clang
+c++compiler = clang++
+
+linker = ld
+aflags = "cru"
+
+cflags = "-fPIC -O2 -fomit-frame-pointer -Wall"
+lflags = "-shared -lasmjit -lcrypto -Wl,-z,relro,-z,now"
