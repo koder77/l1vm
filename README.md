@@ -4,9 +4,6 @@ L1VM README  2021-06-03
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/P5P2Y3KP)
 
-NEW: Now you can purchase the JIT-compiler at my new ko-fi shop: <br>
-[ko-fi-shop-koder77](https://ko-fi.com/koder77/shop)
-
 L1VM is an incredible tiny virtual machine with RISC (or comparable style) CPU, about 61 opcodes and about 40 KB binary size on X86_64 Linux (without JIT-compiler)!
 The VM has a 64 bit core (256 registers for integer and double float) and can run object code
 written in Brackets (a high level programming language) or l1asm assembly language.
@@ -25,6 +22,8 @@ The design goals are:
 
 In pure console text I/O programs not linked with SDL library, the memory footprint is very low.
 About 2 MB RAM only as shown in the taskmanager by running a minimal test program!
+
+NEW: Now the full JIT-compiler is in the "lbjit" directory!
 
 <h2>Credits</h2>
 Thanks goes to: <br>
