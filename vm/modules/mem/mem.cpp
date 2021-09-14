@@ -24,7 +24,8 @@
 #include <iostream>
 #include <vector>
 
-using namespace std;
+
+using std::vector;
 
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
