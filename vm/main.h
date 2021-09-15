@@ -57,7 +57,7 @@
  S8 JIT_code_ind ALIGN = -1;
  struct JIT_code *JIT_code = NULL;
 
- int jit_compiler (S8 init_code, U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *regd, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start, S8 end, struct JIT_code *JIT_code, S8 JIT_code_ind, S8 code_size);
+ int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs, S8 *regi, F8 *regd, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start, S8 end, struct JIT_code *JIT_code, S8 JIT_code_ind, S8 code_size);
  int run_jit (S8 code, struct JIT_code *JIT_code, S8 JIT_code_ind);
  int free_jit_code (struct JIT_code *JIT_code, S8 JIT_code_ind);
  void get_jit_compiler_type (void);

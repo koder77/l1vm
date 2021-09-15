@@ -115,7 +115,7 @@ S8 set_double_reg (S8 cpu_reg, S8 reg)
 	return (1);
 }
 
-extern "C" int jit_compiler (S8 init_code, U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi ALIGN, F8 *regd ALIGN, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start ALIGN, S8 end ALIGN, struct JIT_code *JIT_code, S8 JIT_code_ind ALIGN, S8 code_size ALIGN)
+extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi ALIGN, F8 *regd ALIGN, U1 *sp, U1 *sp_top, U1 *sp_bottom, S8 start ALIGN, S8 end ALIGN, struct JIT_code *JIT_code, S8 JIT_code_ind ALIGN, S8 code_size ALIGN)
 {
     S8 i ALIGN;
     S8 j ALIGN;
@@ -146,12 +146,6 @@ extern "C" int jit_compiler (S8 init_code, U1 *code, U1 *data, S8 *jumpoffs ALIG
     // X86Gp RSIback;
     a.mov (RSI, imm ((intptr_t)(void *) regi)); /* long registers base: rsi */
 	a.mov (RDI, imm ((intptr_t)(void *) regd)); /* double registers base: rdi */
-
-	if (init_code != 20210105)
-	{
-		printf ("jit_compiler: ERROR wrong init code set by L1VM!\n");
-		return (1);
-	}
 
     /* initialize label pos */
 	for (i = 0; i < MAXJUMPLEN; i++)

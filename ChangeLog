@@ -1,3 +1,8 @@
+L1VM - (1.1.5)
+	VM: JIT-compiler: removed init code.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 15 Sep 2021 18:37 +0200
+
 L1VM - (1.1.4)
 	NEW: I added the fp16 fixed floating point library as a module.
 	See prog/math-circle-nofp.l1com. The range goes from -32767 to 32767.
@@ -15,6 +20,8 @@ L1VM - (1.1.4)
 	set_gadget_string_multiline, change_gadget_string_multiline and get_gadget_string_multiline.
 	See lib/sdl-lib-test.l1com for an example.
 	This is the multiline string edit gadget.
+
+	NEW: the JIT-compiler is now added as open source.
 
 -- Stefan Pietzonke <jay-t@gmx.net> Tue 7 Sep 2021 18:49 +0200
 
