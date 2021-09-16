@@ -1,0 +1,6 @@
+// mem-obj-lib-types.l1h
+//
+// set mem objects defines for the variable types
+//
+(set int64 1 int64obj 0)
+(set int64 1 doubleobj 1)

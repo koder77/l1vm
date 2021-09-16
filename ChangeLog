@@ -1,7 +1,11 @@
 L1VM - (1.1.5)
 	VM: JIT-compiler: removed init code.
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 15 Sep 2021 18:37 +0200
+	NEW: include-lib/mem-obj-lib.l1h, lib/mem-obj-lib.l1com:
+	In this module a memory object can save both int64 and double variables into one array.
+	See the examples noted above!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 16 Sep 2021 23:19 +0200
 
 L1VM - (1.1.4)
 	NEW: I added the fp16 fixed floating point library as a module.
