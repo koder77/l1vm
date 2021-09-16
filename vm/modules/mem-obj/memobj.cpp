@@ -18,7 +18,7 @@
  */
 
 // store int64 and double variables into a memory object
-// see lib/mem-obj-lib.l1com 
+// see lib/mem-obj-lib.l1com
 
 #include <cstdlib>
 #include <iostream>
@@ -413,8 +413,6 @@ extern "C" U1 *load_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("load_obj_mem: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-
-	printf ("DEBUG: load_obj_mem got arguments...\n");
 
 	// get the variable types ans the variables from stack
 	for (i = 0; i < variables; i++)
