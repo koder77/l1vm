@@ -2907,7 +2907,6 @@ int main (int ac, char *av[])
 	S8 avind ALIGN;
 	U1 cmd_args = 0;		// switched to one, if arguments follow
 
-	U1 av_found = 0;
 	pthread_t id;
 
 	S8 new_cpu ALIGN;
@@ -2937,7 +2936,6 @@ int main (int ac, char *av[])
     {
         for (i = 1; i < ac; i++)
         {
-			av_found = 0;
             arglen = strlen_safe (av[i], MAXLINELEN);
 
 			// printf ("DEBUG: arg: '%s'\n", av[i]);
@@ -2990,7 +2988,6 @@ int main (int ac, char *av[])
 										exit (1);
 									}
 									printf ("max_cpu: cores set to: %lli\n", max_cpu);
-									av_found = 1;
 								}
 							}
 
@@ -3007,7 +3004,6 @@ int main (int ac, char *av[])
 										exit (1);
 									}
 									printf ("stack_size: stack size set to %lli\n", stack_size);
-									av_found = 1;
 								}
 							}
 
@@ -3046,7 +3042,6 @@ int main (int ac, char *av[])
                         				exit (1);
                     				}
                 				}
-								av_found = 1;
                 			}
                 			else
 							{

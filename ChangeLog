@@ -5,7 +5,11 @@ L1VM - (1.1.5)
 	In this module a memory object can save both int64 and double variables into one array.
 	See the examples noted above!
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 16 Sep 2021 23:19 +0200
+	I got "false" memory bounds errors running my "pov-edit" program.
+	Now I changed the string module to use memory_bounds not if the "BOUNDSCHECK" in global.h is not set.
+	So "BOUNDSCHECK" is now turned of as default!!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 17 Sep 2021 18:43 +0200
 
 L1VM - (1.1.4)
 	NEW: I added the fp16 fixed floating point library as a module.
