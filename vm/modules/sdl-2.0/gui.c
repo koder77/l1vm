@@ -6286,6 +6286,7 @@ U1 *get_gadget_x2y2 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     struct gadget_string *string;
     struct gadget_box *box;
 	struct gadget_progress_bar *progress;
+	struct gadget_string_multiline  *string_multi;
 
 	sp = stpopi ((U1 *) &gadget_index, sp, sp_top);
 	if (sp == NULL)
@@ -6343,7 +6344,18 @@ U1 *get_gadget_x2y2 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             x2 = progress->x2;
             y2 = progress->y2;
             break;
-    }
+
+		case GADGET_STRING_MULTILINE:
+			string_multi = (struct gadget_string_multiline *) screen[screennum].gadget[gadget_index].gptr;
+
+			x2 = string_multi->x2;
+			y2 = string_multi->y2;
+			break;
+
+		default:
+			printf ("get_gadget_x2y2: ERROR, gadget type unknown!\n");
+			return (NULL);
+	}
 
 	sp = stpushi (y2, sp, sp_bottom);
 	if (sp == NULL)
