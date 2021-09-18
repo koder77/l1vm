@@ -9,7 +9,9 @@ L1VM - (1.1.5)
 	Now I changed the string module to use memory_bounds not if the "BOUNDSCHECK" in global.h is not set.
 	So "BOUNDSCHECK" is now turned of as default!!
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 17 Sep 2021 18:43 +0200
+	NEW: string module: "string_regex" for searching regex string patterns in a string.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 18 Sep 2021 16:36 +0200
 
 L1VM - (1.1.4)
 	NEW: I added the fp16 fixed floating point library as a module.

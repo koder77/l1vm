@@ -20,6 +20,9 @@
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
+// for regular expression function
+#include <regex.h>
+
 // protos
 
 S2 memory_bounds (S8 start, S8 offset_access);
@@ -980,5 +983,59 @@ U1 *stringmem_search_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	return (sp);
+}
+
+U1 *string_regex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// regular expression match search
+
+	S8 strsourceaddr ALIGN;
+	S8 strregexaddr ALIGN;
+	S8 ret ALIGN;
+
+	regex_t regex;
+
+	sp = stpopi ((U1 *) &strregexaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_regex: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_regex: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (regcomp (&regex, (const char *) &data[strregexaddr], REG_EXTENDED) != 0)
+	{
+		printf ("string_regex: ERROR can't compile regex: '%s'\n", (const char *) &data[strregexaddr]);
+
+		// return -1, error exit!!
+		sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// ERROR:
+			printf ("string_regex: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+	}
+
+	// do regex search
+	ret = regexec (&regex, (const char *) &data[strsourceaddr], 0, NULL, 0);
+
+	// return regex return code
+	sp = stpushi (ret, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_regex: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 	return (sp);
 }
