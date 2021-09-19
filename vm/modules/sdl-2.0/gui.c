@@ -202,6 +202,7 @@ void free_gadget (S2 screennum, S2 gadget_index)
     struct gadget_checkbox *checkbox;
     struct gadget_cycle *cycle;
     struct gadget_string *string;
+	struct gadget_string_multiline *string_multi;
 
     if (screen[screennum].gadget[gadget_index].gptr)
     {
@@ -264,6 +265,31 @@ void free_gadget (S2 screennum, S2 gadget_index)
                     printf ("free_gadget: %i string->display freed.\n", gadget_index);
                 }
                 break;
+
+			case GADGET_STRING_MULTILINE:
+				string_multi = (struct gadget_string_multiline *) screen[screennum].gadget[gadget_index].gptr;
+
+				if (string_multi->text)
+				{
+					free (string_multi->text);
+					string_multi->text = NULL;
+					printf ("free_gadget: %i string_multi->text freed.\n", gadget_index);
+				}
+
+				if (string_multi->value)
+				{
+					free (string_multi->value);
+					string_multi->value = NULL;
+					printf ("free_gadget: %i string:multi->value freed.\n", gadget_index);
+				}
+
+				if (string_multi->display)
+				{
+					free (string_multi->display);
+					string_multi->display = NULL;
+					printf ("free_gadget: %i string_multi->display freed.\n", gadget_index);
+				}
+				break;
         }
 
         free (screen[screennum].gadget[gadget_index].gptr);
@@ -6689,5 +6715,12 @@ U1 *get_joystick_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("get_joystick_info: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
+	return (sp);
+}
+
+U1 *free_all_gadgets (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	free_gadgets ();
+
 	return (sp);
 }

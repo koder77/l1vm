@@ -100,6 +100,7 @@ U1 *change_gadget_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *change_gadget_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *set_gadget_slider (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *change_gadget_progress_bar(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+U1 *change_gadget_string_multiline (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *get_gadget_x2y2 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *change_gadget_slider (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 Uint32 getpixel (SDL_Surface *surface, Sint16 x, Sint16 y);

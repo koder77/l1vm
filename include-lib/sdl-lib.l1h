@@ -64,6 +64,7 @@
     (set string s set_gadget_string_multilinestr@sdl "set_gadget_string_multiline")
     (set string s change_gadget_string_multilinestr@sdl "change_gadget_string_multiline")
     (set string s get_gadget_string_multilinestr@sdl "get_gadget_string_multiline")
+	(set string s free_all_gadgetsstr@sdl "free_all_gadgets")
     (set int64 1 open@sdl 0)
     (set int64 1 quit@sdl 1)
     (set int64 1 update@sdl 2)
@@ -121,6 +122,7 @@
     (set int64 1 set_gadget_string_multiline@sdl 55)
     (set int64 1 change_gadget_string_multiline@sdl 56)
     (set int64 1 get_gadget_string_multiline@sdl 57)
+	(set int64 1 free_all_gadgets@sdl 58)
     // call arguments
     (set int64 1 width@sdl 0)
     (set int64 1 height@sdl 0)
@@ -193,6 +195,7 @@
     (2 mod@sdl set_gadget_string_multiline@sdl set_gadget_string_multilinestr@sdladdr intr0)
     (2 mod@sdl change_gadget_string_multiline@sdl change_gadget_string_multilinestr@sdladdr intr0)
     (2 mod@sdl get_gadget_string_multiline@sdl get_gadget_string_multilinestr@sdladdr intr0)
+	(2 mod@sdl free_all_gadgets@sdl free_all_gadgetsstr@sdladdr intr0)
     // open screen
     (width@sdl stpushi)
     (height@sdl stpushi)
@@ -392,4 +395,7 @@
 (funcend)
 (sdl_get_joystick_info func)
 	(3 mod@sdl get_joystick_info@sdl 0 intr0)
+(funcend)
+(sdl_free_all_gadgets func)
+	(3 mod@sdl free_all_gadgets@sdl 0 intr0)
 (funcend)

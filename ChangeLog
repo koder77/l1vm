@@ -10,9 +10,11 @@ L1VM - (1.1.5)
 	So "BOUNDSCHECK" is now turned of as default!!
 
 	NEW: string module: "string_regex" for searching regex string patterns in a string.
-	VM: sdl module: get_gadget_x2y2: string multiline added.
+	VM: SDL module: get_gadget_x2y2: string multiline added.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 18 Sep 2021 20:24 +0200
+	VM_ SDL module: "free_all_gadgets" function added. And code to free the multiline string gadget.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 19 Sep 2021 13:32 +0200
 
 L1VM - (1.1.4)
 	NEW: I added the fp16 fixed floating point library as a module.
