@@ -12,9 +12,10 @@ L1VM - (1.1.5)
 	NEW: string module: "string_regex" for searching regex string patterns in a string.
 	VM: SDL module: get_gadget_x2y2: string multiline added.
 
-	VM_ SDL module: "free_all_gadgets" function added. And code to free the multiline string gadget.
+	VM_SDL module: "free_all_gadgets" function added. And code to free the multiline string gadget.
+	VM SDL module: "sdl_get_key" added to read raw keycodes. See "lib/sdl-lib-key.l1com" example!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 19 Sep 2021 13:32 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 20 Sep 2021 17:20 +0200
 
 L1VM - (1.1.4)
 	NEW: I added the fp16 fixed floating point library as a module.

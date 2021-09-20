@@ -6718,6 +6718,34 @@ U1 *get_joystick_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+U1 *get_key (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// check if key is pressed
+
+	SDL_Event event;
+	SDL_Keycode key;
+	S8 ret_key ALIGN = -1;	// set as no key
+
+	if (SDL_PollEvent (&event) == 1)
+	{
+		// got event, check if it is key down
+		if (event.type == SDL_KEYDOWN)
+		{
+			key = event.key.keysym.sym;
+			ret_key = key;	// set return variable
+		}
+	}
+
+	sp = stpushi (ret_key, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_key: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
 U1 *free_all_gadgets (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	free_gadgets ();

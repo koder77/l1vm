@@ -82,7 +82,7 @@
 #define MATH_LIMITS_DOUBLE_FULL	0
 
 // data bounds check exactly
-#define BOUNDSCHECK             0
+#define BOUNDSCHECK             1
 
 // switch on on Linux
 #define CPU_SET_AFFINITY		1
