@@ -109,6 +109,21 @@ void dealloc_array_U1 (U1 **array, S4 x);
 void sdl_do_delay (S8 delay);
 U1 *set_gadget_string_passwd (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 
+U1 *get_mouse_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+
+// joystick input handling ----------------------------------------------------
+U1 *close_joystick (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+U1 *get_joystick_x_axis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+U1 *get_joystick_y_axis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+U1 *get_joystick_x2_axis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+U1 *get_joystick_y2_axis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+U1 *get_joystick_buttons (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+U1 *get_joystick_button (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+U1 *get_joystick_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+
+U1 *get_key (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+U1 *free_all_gadgets (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+
 // gadget box grid
 U1 *set_gadget_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 U1 *change_gadget_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
