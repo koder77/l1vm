@@ -15,7 +15,9 @@ L1VM - (1.1.5)
 	VM_SDL module: "free_all_gadgets" function added. And code to free the multiline string gadget.
 	VM SDL module: "sdl_get_key" added to read raw keycodes. See "lib/sdl-lib-key.l1com" example!
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon 20 Sep 2021 17:20 +0200
+	VM/file module: "fput_c" stack BUGFIXES.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 23 Sep 2021 17:09 +0200
 
 L1VM - (1.1.4)
 	NEW: I added the fp16 fixed floating point library as a module.

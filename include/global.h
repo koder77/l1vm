@@ -107,7 +107,7 @@
 
 #define LOW_RAM					0				// set to 1 on a machine with LOW RAM, like I do on the Psion 5MX Linux build! :)
 
-#define STACK_CHECK				0				// set to 1 for stack data types check
+#define STACK_CHECK				1				// set to 1 for stack data types check
 #define MAX_STACK_TYPES			10000			// max objects on stack
 
 // user settings end ==========================================================

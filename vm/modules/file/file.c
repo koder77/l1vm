@@ -137,8 +137,13 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    access = *sp;
-    sp++;
+	sp = stpopb ((U1 *) &access, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_open: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
 	handle = get_free_file_handle ();
 	if (handle == -1)
@@ -931,8 +936,13 @@ U1 *file_putc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    ch = *sp;
-    sp++;
+	sp = stpopb ((U1 *) &ch, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_putc: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
 	sp = stpopi ((U1 *) &handle, sp, sp_top);
 	if (sp == NULL)
