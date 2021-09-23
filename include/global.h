@@ -69,7 +69,7 @@
 // #define M_ARM				1
 
 // division by zero checking
-#define DIVISIONCHECK 			0
+#define DIVISIONCHECK 			1
 
 // integer and double floating point math functions overflow detection
 // See vm/main.c interrupt0:
