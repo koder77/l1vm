@@ -1,0 +1,69 @@
+// GUI button gadget demo
+//
+// set a button gadget and get the status
+//
+#include <intr.l1h>
+(main func)
+	(set const-int64 1 zero 0)
+	(set const-int64 1 one 1)
+	// screen width and height
+	(set const-int64 1 width 800)
+	(set const-int64 1 height 600)
+	(set const-int64 1 width_b 799)
+	(set const-int64 1 height_b 599)
+	(set const-int64 1 bit 32)
+	(set const-int64 1 gadgets 1)
+	// font and background color
+	(set const-int64 1 fontsize 20)
+	(set string s fontname "fonts/FreeMono.ttf")
+	(set byte 1 back_r 143)
+	(set byte 1 back_g 147)
+	(set byte 1 back_b 151)
+	(set byte 1 alpha 255)
+	(set byte 1 black 0)
+	(set int64 1 ret 0)
+	(set int64 1 f 0)
+	// button gadget text
+	(set string s buttonstr "click me!")
+	// gadget position
+	(set const-int64 1 x 10)
+	(set const-int64 1 y 10)
+	// set status of button gadget: 1 = gadget selectable, 0 = gadget not active
+	(set int64 1 status 1)
+	(set string 256 retstr "")
+	(set int64 1 value 0)
+	(set int64 1 gadget_sel 0)
+	(set string s screenopenerrstr "ERROR: can't open screen!")
+	// open screen
+	(reset-reg)
+    (zero width height bit zero :sdl_open_screen call)
+	(ret stpopi)
+	// check if screen was opened
+	(((ret zero !=) f =) f if)
+		print_s (screenopenerrstr)
+		print_n
+		exit (one);
+	(endif)
+	// load font
+    (fontnameaddr fontsize :sdl_font_ttf call)
+	// screen is opened, draw background color
+	(zero zero width_b height_b back_r back_g back_b alpha :sdl_rectangle_fill call)
+	// allocate space for one gadget
+	(gadgets :init_gui call)
+	// set button gadget
+	(zero x y buttonstr status :set_gadget_button call)
+	(:loop)
+	// wait till button gets clicked
+	(retstr :gadget_event call)
+	// get return values
+	(ret stpopi)
+	(value stpopi)
+	(gadget_sel stpopi)
+	(((gadget_sel zero ==) f =) f if)
+		// user clicked button, clean up and exit
+		(:sdl_free_all_gadgets call)
+		exit (zero)
+	(endif)
+	(:loop jmp)
+(funcend)
+#include <sdl-lib.l1h>
