@@ -72,6 +72,8 @@
 	loada width, 0, I20
 	loada height, 0, I21
 	loada bit, 0, I22
+	loada zero, 0, I23
+	stpushi I23
 	stpushi I100
 	stpushi I21
 	stpushi I22

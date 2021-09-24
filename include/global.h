@@ -69,7 +69,7 @@
 // #define M_ARM				1
 
 // division by zero checking
-#define DIVISIONCHECK 			1
+#define DIVISIONCHECK           1
 
 // integer and double floating point math functions overflow detection
 // See vm/main.c interrupt0:
@@ -107,7 +107,7 @@
 
 #define LOW_RAM					0				// set to 1 on a machine with LOW RAM, like I do on the Psion 5MX Linux build! :)
 
-#define STACK_CHECK				1				// set to 1 for stack data types check
+#define STACK_CHECK				0				// set to 1 for stack data types check
 #define MAX_STACK_TYPES			10000			// max objects on stack
 
 // user settings end ==========================================================

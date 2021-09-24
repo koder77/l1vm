@@ -3092,7 +3092,7 @@ int main (int ac, char *av[])
 	if (silent_run == 0)
 	{
 		printf ("l1vm - %s -%s\n", VM_VERSION_STR, COPYRIGHT_STR);
-		printf (">>> superpowered <<<\n");
+		printf (">>> hyperpowered <<<\n");
 	    printf ("CPU cores: %lli (STATIC)\n", max_cpu);
 
 		printf ("internal type check: S8 = %lli bytes, F8 = %lli bytes. All OK!\n", size_int64, size_double64);
