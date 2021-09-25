@@ -24,7 +24,6 @@
 	// search primes
 	//
 	// start timer
-	(optimize-if)
 	(24 0 0 0 intr0)
 	(two i =)
 	(:search_primes)
