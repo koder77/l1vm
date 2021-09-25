@@ -2834,7 +2834,7 @@ S2 parse_line (U1 *line)
 													return (1);
 												}
 
-												if_pos = get_if_pos ();
+												if_pos = get_ifplus_pos ();
 							                	if (if_pos == -1)
 							                	{
 							                    	printf ("compile: error: if: out of memory if-list\n");
@@ -3006,7 +3006,7 @@ S2 parse_line (U1 *line)
 										printf ("error: line %lli: switchend without switch!\n", linenum);
 										return (1);
 									}
-									
+
 									set_switch_finished (switch_pos);
 
 									continue;

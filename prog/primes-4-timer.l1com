@@ -4,9 +4,10 @@
 //
 (main func)
 	(set int64 1 zero 0)
-	(set byte 100000000 primes)
-	(set int64 1 limit 100000000)
-	//(set int64 1 limit 10000)
+	//(set byte 100000000 primes)
+	(set byte 1000000 primes)
+	//(set int64 1 limit 100000000)
+	(set int64 1 limit 1000000)
 	(set int64 1 one 1)
 	(set int64 1 two 2)
 	(set int64 1 i 2)
@@ -22,8 +23,8 @@
 	//
 	// search primes
 	//
-	// (optimize-if)
 	// start timer
+	(optimize-if)
 	(24 0 0 0 intr0)
 	(two i =)
 	(:search_primes)
