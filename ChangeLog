@@ -1,3 +1,8 @@
+L1VM - (1.1.6)
+	NEW: include/settings.h with all user settings.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 01 Oct 2021 16:57 +0200
+
 L1VM - (1.1.5)
 	VM: JIT-compiler: removed init code.
 
