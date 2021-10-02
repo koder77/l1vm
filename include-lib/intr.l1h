@@ -45,7 +45,7 @@
 >>
 >>	intr1
 >>
-#func new_cpu (LAB) :(0 LAB 0 0 intr1)
+#func thread (XL) :(0 XL 0 0 intr1)
 #define join (1 0 0 0 intr1)
 #define threadlock (2 0 0 0 intr1)
 #define threadunlock (3 0 0 0 intr1)
