@@ -47,8 +47,8 @@
 	(set int64 1 f_th 0)
 	(set int64 1 delay_th 2500)
 	(reset-reg)
-	(:hello_a, lab_hello_one loadl)
-	(:hello_b, lab_hello_two loadl)
+	(:hello_a lab_hello_one loadl)
+	(:hello_b lab_hello_two loadl)
 	(((run_th zero_th ==) f_th =) f_th if)
 		// run threads
 		(0 lab_hello_one 0 0 intr1)
