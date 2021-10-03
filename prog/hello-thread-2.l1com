@@ -1,6 +1,6 @@
 // Brackets - Hello world! threads
 //
-// This is an exammple how to launch threads using inline assembly.
+// This is an exammple how to launch threads using the new compiler opcode "loadl".
 //
 (main func)
 	(set int64 1 zero 0)
