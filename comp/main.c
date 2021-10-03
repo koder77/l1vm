@@ -4221,6 +4221,15 @@ S2 parse_line (U1 *line)
 											return (1);
 										}
 										break;
+
+									case LOADL:
+										// set label
+										if (set_call_label (ast[level].expr[j][last_arg - 2]) != 0)
+										{
+											printf ("error: line %lli: call label list full!\n", linenum);
+											return (1);
+										}
+										break;
 								}
 							}
 							else
@@ -4777,6 +4786,71 @@ S2 parse_line (U1 *line)
 									code_temp[e - 2] = '\0';
 								}
 							}
+
+							// LOADL check
+							if (translate[t].assemb_op == LOADL)
+							{
+								// printf ("DEBUG: loadl...\n");
+
+								// correct the code in assembly listing
+								{
+									S8 ALIGN i;
+									S8 ALIGN j = 0;
+									U1 reg[MAXLINELEN];
+									U1 comma = ',';
+									U1 comma_count = 0;
+									S8 slen ALIGN;
+									S8 pos ALIGN;
+									U1 ch;
+									slen = strlen_safe (code[code_line], MAXLINELEN);
+									for (i = 0; i < slen; i++)
+									{
+										if (code[code_line][i] == comma)
+										{
+											comma_count++;
+										}
+										if (comma_count == 2)
+										{
+											pos = i + 2;
+											break;
+										}
+									}
+									// get register after the second comma
+									for (i = pos; i < slen; i++)
+									{
+										ch = code[code_line][i];
+										if (ch != ' ' && ch != 10 && ch != 13)
+										{
+											reg[j] = ch;
+											j++;
+										}
+									}
+									reg[j] = '\0';		// set end of register number string
+
+									// printf ("register: '%s'\n", reg);
+
+									// search for register number in current temp assembly line
+									pos = searchstr (code_temp, (U1 *) reg, 0, 0, TRUE);
+									if (pos > -1)
+									{
+										code_temp[pos] = ',';
+										code_temp[pos + 1] = ' ';
+
+										// insert register into current temp code line end
+										slen = strlen_safe (reg, MAXLINELEN);
+										j = pos + 2;
+										for (i = 0; i < slen; i++)
+										{
+											code_temp[j] = reg[i];
+											j++;
+										}
+										code_temp[j] = '\0';
+									}
+
+									// printf ("code_temp: '%s'\n", code_temp);
+								}
+							}
+
 							code_line++;
 							if (code_line >= line_len)
 							{
