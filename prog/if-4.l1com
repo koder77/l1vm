@@ -18,7 +18,7 @@
 	(set string s five_less_str " x <= 5")
 	(set string s five_more_str " x > 5")
     // check if x is less or more ten
-	(optimize-if)
+	// (optimize-if)
     (((x y <) f =) f if+)
         (6 less_str 0 0 intr0)
 		(((x z <=) f =) f if+)
