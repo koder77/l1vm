@@ -31,8 +31,7 @@ using namespace std;
 
 // arrays memory codes
 #define MEMINT64	0
-#define MEMDOUBLE	1
-
+#define MEMDOUBLE   1
 
 // structures
 
@@ -41,6 +40,7 @@ union memptr
 {
 	S8 int64v;
 	F8 doublev;
+	S8 straddr;
 };
 
 struct obj

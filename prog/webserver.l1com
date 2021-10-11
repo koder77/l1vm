@@ -14,7 +14,7 @@
 	(set int64 1 portnum 2000)
 	(set int64 1 server_open 0)
 	(set int64 1 server_accept 0)
-	(set string s ip "127.0.0.1")
+	(set string s ip "192.168.178.45")
 	(set int64 1 ip_len 10)
 	(set string s filenamestr "")
 	// (set string 256 mimetypestr "")
