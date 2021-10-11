@@ -65,11 +65,6 @@
  size_t strlen_safe (const char * str, int maxlen);
  #endif
 
-#if STACK_CHECK
-U1 stack_types[MAX_STACK_TYPES];
-S8 stack_types_ind ALIGN = -1;			// types stack empty
-#endif
-
 #define EXE_NEXT(); ep = ep + eoffs; goto *jumpt[code[ep]];
 #define PRINT_EPOS(); printf ("epos: %lli\n\n", ep);
 
