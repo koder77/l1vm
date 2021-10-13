@@ -232,6 +232,7 @@ S4 get_if_optimize_reg (U1 *code_line)
 
 	// printf ("DEBUG: if.c: optimize if code_line: '%s'\n", code_line);
 
+	// eqi to lseqd compare opcodes
 	str_len = strlen_safe ((const char *) code_line, MAXLINELEN);
 	for (i = EQI; i <= LSEQD; i++)
 	{
@@ -242,6 +243,18 @@ S4 get_if_optimize_reg (U1 *code_line)
 			break;
 		}
 	}
+
+	// andi and ori
+	for (i = ANDI; i <= ORI; i++)
+	{
+		pos = searchstr (code_line, opcode[i].op, 0, 0, TRUE);
+		if (pos != -1)
+		{
+			if_found = 1;
+			break;
+		}
+	}
+
 	if (if_found == 0)
 	{
 		// no if found, return -1
