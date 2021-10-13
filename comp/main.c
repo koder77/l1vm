@@ -2651,6 +2651,8 @@ S2 parse_line (U1 *line)
 											}
 											else
 											{
+												printf ("optimizing if: code line: %lli\n", linenum);
+
 												// comment out not needed opcodes set earlier
 												strcpy ((char *) code[code_line - 1], "");
 												strcpy ((char *) code[code_line], "");
@@ -2823,6 +2825,8 @@ S2 parse_line (U1 *line)
 											}
 											else
 											{
+												printf ("optimizing if: code line: %lli\n", linenum);
+
 												// comment out not needed opcodes set earlier
 												strcpy ((char *) code[code_line - 1], "");
 												strcpy ((char *) code[code_line], "");
@@ -4800,9 +4804,9 @@ S2 parse_line (U1 *line)
 									U1 comma = ',';
 									U1 comma_count = 0;
 									S8 slen ALIGN;
-									S8 pos ALIGN;
+									S8 pos ALIGN = 0;
 									U1 ch;
-									slen = strlen_safe (code[code_line], MAXLINELEN);
+									slen = strlen_safe ((const char *) code[code_line], MAXLINELEN);
 									for (i = 0; i < slen; i++)
 									{
 										if (code[code_line][i] == comma)
@@ -4837,7 +4841,7 @@ S2 parse_line (U1 *line)
 										code_temp[pos + 1] = ' ';
 
 										// insert register into current temp code line end
-										slen = strlen_safe (reg, MAXLINELEN);
+										slen = strlen_safe ((const char *) reg, MAXLINELEN);
 										j = pos + 2;
 										for (i = 0; i < slen; i++)
 										{

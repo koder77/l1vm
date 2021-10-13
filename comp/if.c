@@ -226,6 +226,11 @@ S4 get_if_optimize_reg (U1 *code_line)
 	U1 if_found = 0;
 	U1 reg_num[256];
 	S4 reg;
+	U1 comma = ',';
+	U1 comma_count = 0;
+	U1 ch;
+
+	// printf ("DEBUG: if.c: optimize if code_line: '%s'\n", code_line);
 
 	str_len = strlen_safe ((const char *) code_line, MAXLINELEN);
 	for (i = EQI; i <= LSEQD; i++)
@@ -244,25 +249,35 @@ S4 get_if_optimize_reg (U1 *code_line)
 	}
 
 	// get last argument, it's the needed register number
-	pos = searchstr (code_line, (unsigned char *) ",", 0, 0, TRUE);
-	if (pos != -1)
+	for (i = 0; i < str_len; i++)
 	{
-		pos = searchstr (code_line, (unsigned char *) ",", pos + 1, 0, TRUE);
-		j = 0;
-		for (i = pos + 1; i < str_len; i++)
+		if (code_line[i] == comma)
 		{
-			reg_num[j] = code_line[i];
+			comma_count++;
+		}
+		if (comma_count == 2)
+		{
+			pos = i + 2;
+			break;
+		}
+	}
+	// get register after the second comma
+	for (i = pos; i < str_len; i++)
+	{
+		ch = code_line[i];
+		if (ch != ' ' && ch != 10 && ch != 13)
+		{
+			reg_num[j] = ch;
 			j++;
 		}
-		reg_num[j] = '\0';
-		reg = atoi ((const char *) reg_num);
+	}
+	reg_num[j] = '\0';		// set end of register number string
 
-		return (reg);
-	}
-	else
-	{
-		return (-1);
-	}
+	reg = atoi ((const char *) reg_num);
+
+	// printf ("DEBUG: if.c: optimize if last_arg: '%s'\n", reg_num);
+
+	return (reg);
 }
 
 // while ====================================================
