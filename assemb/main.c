@@ -232,7 +232,7 @@ S2 get_args (U1 *line)
 
 // write data ---------------------------------------------
 
-S2 write_data_byte (S8 offset ALIGN, S8 val ALIGN, S8 size ALIGN)
+S2 write_data_byte (S8 offset, S8 val, S8 size)
 {
 	if (offset + size < data_max)
 	{
@@ -246,7 +246,7 @@ S2 write_data_byte (S8 offset ALIGN, S8 val ALIGN, S8 size ALIGN)
     }
 }
 
-S2 write_data_string (S8 offset ALIGN, U1 *str)
+S2 write_data_string (S8 offset, U1 *str)
 {
 	S8 slen ALIGN;
 	S8 i ALIGN;
@@ -270,7 +270,7 @@ S2 write_data_string (S8 offset ALIGN, U1 *str)
 	}
 }
 
-S2 write_data_word (S8 offset ALIGN, S2 val, S8 size ALIGN)
+S2 write_data_word (S8 offset, S2 val, S8 size)
 {
 	S8 i ALIGN;
     U1 *bptr = (U1 *) &val;
@@ -298,7 +298,7 @@ S2 write_data_word (S8 offset ALIGN, S2 val, S8 size ALIGN)
     }
 }
 
-S2 write_data_doubleword (S8 offset ALIGN, S4 val, S8 size ALIGN)
+S2 write_data_doubleword (S8 offset, S4 val, S8 size)
 {
 	S8 i ALIGN;
     U1 *bptr = (U1 *) &val;
@@ -336,7 +336,7 @@ S2 write_data_doubleword (S8 offset ALIGN, S4 val, S8 size ALIGN)
     }
 }
 
-S2 write_data_quadword (S8 offset ALIGN, S8 val ALIGN, S8 size ALIGN)
+S2 write_data_quadword (S8 offset, S8 val, S8 size)
 {
     U1 *bptr = (U1 *) &val;
     S8 i ALIGN;
@@ -390,7 +390,7 @@ S2 write_data_quadword (S8 offset ALIGN, S8 val ALIGN, S8 size ALIGN)
     }
 }
 
-S2 write_data_doublefloat (S8 offset ALIGN, F8 val ALIGN, S8 size ALIGN)
+S2 write_data_doublefloat (S8 offset, F8 val, S8 size)
 {
 	S8 i ALIGN;
     U1 *bptr = (U1 *) &val;
@@ -445,7 +445,7 @@ S2 write_data_doublefloat (S8 offset ALIGN, F8 val ALIGN, S8 size ALIGN)
 
 // write code ---------------------------------------------
 
-S2 write_code_byte (S8 code_ind ALIGN, S8 val ALIGN)
+S2 write_code_byte (S8 code_ind, S8 val)
 {
     if (code_ind < code_max)
     {
@@ -458,7 +458,7 @@ S2 write_code_byte (S8 code_ind ALIGN, S8 val ALIGN)
     }
 }
 
-S2 write_code_quadword (S8 code_ind ALIGN, S8 val ALIGN)
+S2 write_code_quadword (S8 code_ind, S8 val)
 {
     U1 *bptr = (U1 *) &val;
 
@@ -1348,7 +1348,7 @@ S2 parse (U1 *name)
     return (err);
 }
 
- S8 conv_quadword (S8 val ALIGN)
+ S8 conv_quadword (S8 val)
  {
 	 S8 ret ALIGN;
 

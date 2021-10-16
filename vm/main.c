@@ -168,7 +168,7 @@ S2 alloc_jit_code ()
 }
 #endif
 
-S2 load_module (U1 *name, S8 ind ALIGN)
+S2 load_module (U1 *name, S8 ind)
 {
 #if __linux__
     modules[ind].lptr = dlopen ((const char *) name, RTLD_LAZY);
@@ -198,7 +198,7 @@ S2 load_module (U1 *name, S8 ind ALIGN)
     return (0);
 }
 
-void free_module (S8 ind ALIGN)
+void free_module (S8 ind)
 {
 #if __linux__
     dlclose (modules[ind].lptr);
@@ -212,7 +212,7 @@ void free_module (S8 ind ALIGN)
     strcpy ((char *) modules[ind].name, "");
 }
 
-S2 set_module_func (S8 ind ALIGN, S8 func_ind ALIGN, U1 *func_name)
+S2 set_module_func (S8 ind, S8 func_ind, U1 *func_name)
 {
 #if __linux__
 	dlerror ();
@@ -240,7 +240,7 @@ S2 set_module_func (S8 ind ALIGN, S8 func_ind ALIGN, U1 *func_name)
 #endif
 }
 
-U1 *call_module_func (S8 ind ALIGN, S8 func_ind ALIGN, U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+U1 *call_module_func (S8 ind, S8 func_ind, U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     return (*modules[ind].func[func_ind])(sp, sp_top, sp_bottom, data);
 }

@@ -3,8 +3,9 @@ L1VM - (1.2.0)
 	It did not work right because the modules couldn't acces the local threads stack type data!
 
 	BUGFIXES: now (optimize-if) works without errors!
+	FIXES: did a gcc/g++ compile run and removed all "ALIGN" macros out of function arguments!!!
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 13 Oct 2021 17:25 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 16 Oct 2021 17:22 +0200
 
 L1VM - (1.1.6)
 	NEW: include/settings.h with all user settings.

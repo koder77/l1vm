@@ -91,7 +91,7 @@ S4 conv_doubleword (S4 val)
 	return (ret);
 }
 
-S8 conv_quadword (S8 val ALIGN)
+S8 conv_quadword (S8 val)
 {
 	S8 ret ALIGN;
 
