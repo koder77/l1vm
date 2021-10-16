@@ -1436,10 +1436,8 @@ S2 run (void *arg)
 	#if DEBUG
 	printf ("%lli JMP\n", cpu_core);
 	#endif
-	arg1 = jumpoffs[ep];
-
+	ep = jumpoffs[ep];
 	eoffs = 0;
-	ep = arg1;
 
 	EXE_NEXT();
 
