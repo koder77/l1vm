@@ -1,0 +1,5 @@
+// file-def.l1h - file library
+// file_fseek definitions
+(set int64 1 file_seek_set 0)
+(set int64 1 file_seek_cur 1)
+(set int64 1 file_seek_end 2)

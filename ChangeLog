@@ -1,11 +1,16 @@
 L1VM - (1.2.0)
 	NEW: CODE CLEANUP all stack check code removed.
-	It did not work right because the modules couldn't acces the local threads stack type data!
+	It did not work right because the modules couldn't access the local threads stack type data!
 
 	BUGFIXES: now (optimize-if) works without errors!
 	FIXES: did a gcc/g++ compile run and removed all "ALIGN" macros out of function arguments!!!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 16 Oct 2021 17:22 +0200
+	File module: get_string function BUIGFIX: set read error code.
+	Added file module: "file-def.l1h": definitions for file_fseek function.
+
+	NEW: distribution/get-koder77-key.sh script to add my gpg key to your keyring.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 23 Oct 2021 22:19 +0200
 
 L1VM - (1.1.6)
 	NEW: include/settings.h with all user settings.

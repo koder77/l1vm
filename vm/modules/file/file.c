@@ -1253,8 +1253,8 @@ U1 *file_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         // error!!!
 
-        // push ERROR code WRITE
-        sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
+        // push ERROR code READ
+        sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
     	if (sp == NULL)
     	{
     		// error
