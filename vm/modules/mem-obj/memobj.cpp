@@ -290,7 +290,7 @@ extern "C" U1 *save_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (memind < 0 || memind >= memmax)
 	{
 		// error
-		printf ("save_obj_mem: ERROR: memind address index out of range!\n");
+		printf ("save_obj_mem: ERROR: memind index out of range!\n");
 		return (NULL);
 	}
 
@@ -590,7 +590,7 @@ extern "C" U1 *load_string_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (memind < 0 || memind >= memmax)
 	{
 		// error
-		printf ("load_string_obj_mem: ERROR: object index out of range!\n");
+		printf ("load_string_obj_mem: ERROR: memind index out of range!\n");
 		return (NULL);
 	}
 
@@ -606,7 +606,7 @@ extern "C" U1 *load_string_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (ind < 0 || ind >= mem[memind].memsize)
 	{
 		// error
-		printf ("load_string_obj_mem: ERROR: object index out of range!\n");
+		printf ("load_string_obj_mem: ERROR: ind index out of range!\n");
 		return (NULL);
 	}
 
