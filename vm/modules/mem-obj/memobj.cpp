@@ -29,24 +29,31 @@ using namespace std;
 #include "../../../include/stack.h"
 
 
+// protos
+
+extern "C" S2 memory_bounds (S8 start, S8 offset_access);
+
+
 // arrays memory codes
 #define MEMINT64	0
 #define MEMDOUBLE   1
+#define MEMSTRING	2
 
 // structures
 
 // allocated memory pointers union
 union memptr
 {
-	S8 int64v;
-	F8 doublev;
-	S8 straddr;
+	S8 int64v ALIGN;
+	F8 doublev ALIGN;
+	U1 *straddr;
 };
 
 struct obj
 {
 	union memptr memptr;
 	U1 type;
+	S8 strlen ALIGN;
 };
 
 // the memory info structure
@@ -60,6 +67,26 @@ struct mem
 static struct mem *mem = NULL;
 static S8 memmax ALIGN = 0;
 
+size_t strlen_safe (const char * str, int maxlen)
+{
+	 long long int i = 0;
+
+	 while (1)
+	 {
+	 	if (str[i] != '\0')
+		{
+			i++;
+		}
+		else
+		{
+			return (i);
+		}
+		if (i > maxlen)
+		{
+			return (0);
+		}
+	}
+}
 
 // mem functions ==============================================================
 
@@ -144,6 +171,7 @@ extern "C" U1 *alloc_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 memind ALIGN;
 	S8 memsize ALIGN;
 	S8 variables ALIGN;
+	S8 i ALIGN;
 
 	sp = stpopi ((U1 *) &memsize, sp, sp_top);
 	if (sp == NULL)
@@ -187,6 +215,12 @@ extern "C" U1 *alloc_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	mem[memind].used = 1;
 	mem[memind].memsize = memsize * variables;
 
+	// set string lengths to zero, to mark them as empty
+	for (i = 0; i < memsize; i++)
+	{
+		mem[memind].objptr[i].strlen = 0;
+	}
+
 	// return memory index
 	sp = stpushi (memind, sp, sp_bottom);
 	if (sp == NULL)
@@ -202,6 +236,7 @@ extern "C" U1 *alloc_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 extern "C" U1 *free_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 memind ALIGN;
+	S8 i ALIGN;
 
 	sp = stpopi ((U1 *) &memind, sp, sp_top);
 	if (sp == NULL)
@@ -218,11 +253,16 @@ extern "C" U1 *free_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (mem[memind].objptr != NULL)
+	for (i = 0; i < mem[memind].memsize; i++)
 	{
-		free (mem[memind].objptr);
+		if (mem[memind].objptr[i].strlen != 0)
+		{
+			free (mem[memind].objptr[i].memptr.straddr);
+			mem[memind].objptr[i].strlen = 0;
+		}
 	}
 
+	free (mem[memind].objptr);
 	return (sp);
 }
 
@@ -235,6 +275,8 @@ extern "C" U1 *save_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 i ALIGN;
 	S8 var_i ALIGN;
 	F8 var_d ALIGN;
+	S8 var_saddr ALIGN;
+	S8 string_len ALIGN;
 
 	// get object array index to write the variables into
 	sp = stpopi ((U1 *) &memind, sp, sp_top);
@@ -248,7 +290,7 @@ extern "C" U1 *save_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (memind < 0 || memind >= memmax)
 	{
 		// error
-		printf ("save_obj_mem: ERROR: object address index out of range!\n");
+		printf ("save_obj_mem: ERROR: memind address index out of range!\n");
 		return (NULL);
 	}
 
@@ -264,7 +306,7 @@ extern "C" U1 *save_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (ind < 0 || ind >= mem[memind].memsize)
 	{
 		// error
-		printf ("save_obj_mem: ERROR: object index out of range!\n");
+		printf ("save_obj_mem: ERROR: ind index out of range!\n");
 		return (NULL);
 	}
 
@@ -288,6 +330,8 @@ extern "C" U1 *save_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			printf ("save_obj_mem: ERROR: stack corrupt!\n");
 			return (NULL);
 		}
+
+		// printf ("DEBUG save_obj_mem: variable type: %lli\n", type);
 
 		switch (type)
 		{
@@ -352,6 +396,50 @@ extern "C" U1 *save_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 				}
 				ind++;
 				break;
+
+			case MEMSTRING:
+				// create a new string in memory and copy the string argument to it
+				// printf ("DEBUG: save_obj_mem: save string...\n");
+
+				sp = stpopi ((U1 *) &var_saddr, sp, sp_top);
+				if (sp == NULL)
+				{
+					// error
+					printf ("save_obj_mem: ERROR: stack corrupt!\n");
+					return (NULL);
+				}
+
+				if (mem[memind].objptr[ind].strlen != 0)
+				{
+					// found allocated string in memory, free it now
+					free (mem[memind].objptr[ind].memptr.straddr);
+					mem[memind].memsize = 0;
+				}
+
+				if (ind < mem[memind].memsize)
+				{
+					mem[memind].objptr[ind].type = MEMSTRING;
+					string_len = strlen_safe ((char *) &data[var_saddr], MAXLINELEN);
+					if (string_len > 0)
+					{
+						// string not empty, create mem string
+						mem[memind].objptr[ind].strlen = string_len + 1;
+						mem[memind].objptr[ind].memptr.straddr = (U1 *) calloc (string_len + 1, sizeof (U1));
+						if (mem[memind].objptr[ind].memptr.straddr == NULL)
+						{
+							// error out of memory!
+							printf ("save_obj_mem: out of memory: %lli of size string\n", string_len + 1);
+							return (NULL);
+						}
+
+						// copy string to new memory
+
+						strcpy ((char *) mem[memind].objptr[ind].memptr.straddr, (const char *) &data[var_saddr]);
+						// printf ("DEBUG: save_obj_mem: string: '%s' copied into mem obj: %lli\n", &data[var_saddr], ind);
+					}
+				}
+				ind++;
+				break;
 		}
 	}
 
@@ -385,7 +473,7 @@ extern "C" U1 *load_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (memind < 0 || memind >= memmax)
 	{
 		// error
-		printf ("load_obj_mem: ERROR: object index out of range!\n");
+		printf ("load_obj_mem: ERROR: memind index out of range!\n");
 		return (NULL);
 	}
 
@@ -401,7 +489,7 @@ extern "C" U1 *load_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (ind < 0 || ind >= mem[memind].memsize)
 	{
 		// error
-		printf ("load_obj_mem: ERROR: object index out of range!\n");
+		printf ("load_obj_mem: ERROR: ind index out of range!\n");
 		return (NULL);
 	}
 
@@ -471,4 +559,97 @@ extern "C" U1 *load_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+}
+
+// load string from memory ====================================================
+extern "C" U1 *load_string_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 memind ALIGN;
+	S8 ind ALIGN;
+	S8 var_saddr ALIGN;
+	S8 offset ALIGN;
+
+	// address of target string
+	sp = stpopi ((U1 *) &var_saddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("load_string_obj_mem: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	// get object array index to write the variables into
+	sp = stpopi ((U1 *) &memind, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("load_string_obj_mem: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (memind < 0 || memind >= memmax)
+	{
+		// error
+		printf ("load_string_obj_mem: ERROR: object index out of range!\n");
+		return (NULL);
+	}
+
+	// get mem obj variable index start
+	sp = stpopi ((U1 *) &ind, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("load_string_obj_mem: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (ind < 0 || ind >= mem[memind].memsize)
+	{
+		// error
+		printf ("load_string_obj_mem: ERROR: object index out of range!\n");
+		return (NULL);
+	}
+
+	if (mem[memind].objptr[ind].type != MEMSTRING)
+	{
+		printf ("load_string_obj_mem: ERROR: variable type: %i is not string: %i!\n", mem[memind].objptr[ind].type, MEMSTRING);
+		return (NULL);
+	}
+
+	offset = strlen_safe ((char *) mem[memind].objptr[ind].memptr.straddr, MAXLINELEN);
+
+	if (offset >= 0)
+	{
+		#if BOUNDSCHECK
+		if (memory_bounds (var_saddr, offset) != 0)
+		{
+			printf ("string_copy: ERROR: dest string overflow!\n");
+			return (NULL);
+		}
+		#endif
+
+		strcpy ((char *) &data[var_saddr], (const char *)  mem[memind].objptr[ind].memptr.straddr);
+
+		// ok exit
+		sp = stpushi (0, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("load_string_obj_mem: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		return (sp);
+	}
+	else
+	{
+		// error no string set, ERROR exit
+		sp = stpushi (1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("load_string_obj_mem: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		return (sp);
+	}
 }

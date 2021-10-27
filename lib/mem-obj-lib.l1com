@@ -5,10 +5,12 @@
 (main func)
     (set int64 1 zero 0)
 	(set int64 1 one 1)
+	(set int64 1 two 2)
+	(set int64 1 three 3)
 	(set int64 1 memaddr 0)
 	(set int64 1 memind 0)
 	(set int64 1 memsize 1)
-	(set int64 1 variables 3)
+	(set int64 1 variables 4)
 	(set int64 1 a 23)
 	(set int64 1 b 42)
 	(set double 1 c 3.1415)
@@ -24,6 +26,9 @@
 	(set string s saveerrstr "ERROR can't save to memory object!")
 	(set string s writing "writing: ")
 	(set string s reading "reading: ")
+	(set string s hellostr "Hello world!")
+	(set string 256 getstr "")
+	(set string s debugstr "load string object...")
 	#include <mem-obj-lib-types.l1h>
 	(zero one :mem_obj_init call)
 	(ret stpopi)
@@ -47,9 +52,10 @@
 	// write to memory obj array
 	(4 memaddr 0 0 intr0)
 	(7 0 0 0 intr0)
-	// store variables a, b and c in memory object
-	// note the variable types are set by "int64obj" and "doubleobj" !!!
-	(c doubleobj b int64obj a int64obj variables zero memaddr :save_obj_memobj call)
+	// store variables a, b, c and hellostr in memory object
+	// note the variable types are set by "i_type", "d_type" and "s_type" !!!
+	(reset-reg)
+	(c d_type b i_type a i_type hellostr s_type variables zero memaddr :save_obj_memobj call)
 	(ret stpopi)
 	(((ret zero !=) f =) f if)
 		// ERROR can't allocate memory
@@ -57,8 +63,14 @@
 		(7 0 0 0 intr0)
 		(255 one 0 0 intr0)
 	(endif)
-	(reset-reg)
-	(variables zero memaddr :load_obj_memobj call)
+	(6 debugstr 0 0 intr0)
+	(7 0 0 0 intr0)
+	// get string from mem obj
+	(zero memaddr getstr :load_obj_string_memobj call)
+	(ret stpopi)
+	(6 getstr 0 0 intr0)
+	(7 0 0 0 intr0)
+	(three one memaddr :load_obj_memobj call)
 	// pop variables from stack
 	(ret stpopi)
 	(cread stpopd)

@@ -10,7 +10,9 @@ L1VM - (1.2.0)
 
 	NEW: distribution/get-koder77-key.sh script to add my gpg key to your keyring.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 23 Oct 2021 22:19 +0200
+	ADDED: now module mem-obj can store strings too. See lib/mem-obj-lib.l1com.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 27 Oct 2021 09:17 +0200
 
 L1VM - (1.1.6)
 	NEW: include/settings.h with all user settings.

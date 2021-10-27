@@ -2,5 +2,6 @@
 //
 // set mem objects defines for the variable types
 //
-(set int64 1 int64obj 0)
-(set int64 1 doubleobj 1)
+(set int64 1 i_type 0)
+(set int64 1 d_type 1)
+(set int64 1 s_type 2)
