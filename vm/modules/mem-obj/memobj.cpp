@@ -413,7 +413,7 @@ extern "C" U1 *save_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 				{
 					// found allocated string in memory, free it now
 					free (mem[memind].objptr[ind].memptr.straddr);
-					mem[memind].memsize = 0;
+				 	mem[memind].objptr[ind].strlen = 0;
 				}
 
 				if (ind < mem[memind].memsize)
