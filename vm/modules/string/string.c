@@ -1088,8 +1088,6 @@ S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end)
 
 U1 *string_search (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	// regular expression match search
-
 	S8 strsourceaddr ALIGN;
 	S8 strsearchaddr ALIGN;
 	S8 ret ALIGN;
