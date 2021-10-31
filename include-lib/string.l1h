@@ -20,6 +20,7 @@
 	(set string s stringmemtostringstr@string "stringmem_to_string")
 	(set string s stringmemsearchstr@string "stringmem_search_string")
     (set string s stringregexstr@string "string_regex")
+	(set string s stringsearchstr@string "string_search")
     (set int64 1 len@string 0)
     (set int64 1 copy@string 1)
     (set int64 1 cat@string 2)
@@ -37,6 +38,7 @@
 	(set int64 1 stringmemtostring@string 14)
 	(set int64 1 stringmemsearch@string 15)
 	(set int64 1 stringregex@string 16)
+	(set int64 1 stringsearch@string 17)
     (set int64 1 mod@string 0)
     // get argument from stack
     (mod@string stpopi)
@@ -60,6 +62,7 @@
 	(2 mod@string stringmemtostring@string stringmemtostringstr@stringaddr intr0)
 	(2 mod@string stringmemsearch@string stringmemsearchstr@stringaddr intr0)
 	(2 mod@string stringregex@string stringregexstr@stringaddr intr0)
+	(2 mod@string stringsearch@string stringsearchstr@stringaddr intr0)
 (funcend)
 (string_len func)
 // argument: int64 string address
@@ -125,4 +128,7 @@
 (funcend)
 (string_regex func)
 	(3 mod@string stringregex@string 0 intr0)
+(funcend)
+(string_search func)
+	(3 mod@string stringsearch@string 0 intr0)
 (funcend)

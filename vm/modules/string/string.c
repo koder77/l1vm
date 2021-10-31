@@ -1039,3 +1039,86 @@ U1 *string_regex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	return (sp);
 }
+
+// normal string search functions =============================================
+
+S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end)
+{
+	/* replaces the old buggy code */
+
+	S2 pos = -1, str_len, i = 0, new_end = 0;
+	str_len = strlen_safe ((const char *) str, MAXLINELEN);
+
+	U1 *sptr;
+	U1 *startptr;
+
+	if (start < 0 || start > str_len - 1)
+	{
+		i = 0;
+	}
+	else
+	{
+		i = start;
+	}
+
+	if (end == 0)
+	{
+		new_end = str_len - 1;
+	}
+	else
+	{
+		new_end = end;
+	}
+
+	startptr = str;
+	if (start > 0)
+	{
+		startptr = startptr + start;
+	}
+
+	sptr = (U1 *) strstr ((const char *) startptr, (const char *) srchstr);
+	if (sptr)
+	{
+		// get position of substring
+		pos = sptr - startptr;
+	}
+
+	return (pos);
+}
+
+U1 *string_search (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// regular expression match search
+
+	S8 strsourceaddr ALIGN;
+	S8 strsearchaddr ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &strsearchaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_search: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_search: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	ret = searchstr (&data[strsourceaddr], &data[strsearchaddr], 0, 0);
+
+	// return search return code
+	sp = stpushi (ret, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_search: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
