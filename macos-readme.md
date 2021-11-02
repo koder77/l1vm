@@ -33,7 +33,7 @@ $ ./install-zerobuild-macos.sh
 ```
 
 If you get error messages while building the "mpfr-c++" library then try to copy the file:
-"vm/modules/mpfr-c++/mpreal.h" to /usr/local/include. My "mpreal.h" is a patched version with some fixes in it. See "vm/modules/mpfr-c++/README.md"
+"vm/modules/mpfr-c++/mpreal.h" to "/usr/local/include". My "mpreal.h" is a patched version with some fixes in it. See "vm/modules/mpfr-c++/README.md"
 
 This is not really tested yet. Feel free to contact me about this if you are a macOS user.
 So we can finish this!
