@@ -12,7 +12,10 @@ L1VM - (1.2.0)
 
 	ADDED: now module mem-obj can store strings too. See lib/mem-obj-lib.l1com.
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 27 Oct 2021 09:17 +0200
+	BUGFIXES: VM now doesn't link the SDL libraries directly anymore in the build scripts.
+	Serious memory leaks are fixed now!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue 02 Nov 2021 17:55 +0100
 
 L1VM - (1.1.6)
 	NEW: include/settings.h with all user settings.

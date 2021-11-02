@@ -1,6 +1,6 @@
 #!/bin/sh
 # set vm/main.c JIT_COMPILER to 0 and compile using this script
-if $CC -Wall -Wextra main.c load-object.c ../lib-func/string.c ../lib-func/code_datasize.c -o l1vm-nojit -lm -ldl -lpthread -lSDL2 -lSDL2_gfx -lSDL2_image -lSDL2_ttf -O2 -g -fomit-frame-pointer -I/usr/include/SDL -Wl,--export-dynamic; then
+if $CC -Wall -Wextra main.c load-object.c ../lib-func/string.c ../lib-func/code_datasize.c -o l1vm-nojit -lm -ldl -lpthread -O2 -g -fomit-frame-pointer -I/usr/include/SDL -Wl,--export-dynamic; then
 	exit 0
 else
 	exit 1
