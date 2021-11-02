@@ -22,4 +22,3 @@ $ ./install-zerobuild-macos.sh
 
 This is not really tested yet. Feel free to contact me about this if you are a macOS user.
 So we can finish this!
-S
