@@ -47,6 +47,13 @@ The author of the fp16 fixed floating point library: https://github.com/kmilo17p
 Without them this L1VM project would not be possible! Thank you! <br>
 ----------------------- <br>
 
+<h2>macOS experimental build</h2>
+Just read the file "macos-readme.md".
+Together with Floh I try to make build scripts for macOS.
+This is a WIP and not finished yet. We got zerobuild to compile on macOS.
+And we try to continue this work.
+If you are a macOS user and want to help us then contact me please.
+
 <h2>New: l1pre - the preprocessor</h2>
 The new "l1pre" preprocessor can be used to define macros and include files.
 See the new "include-lib" directory with all header files. The "prog/hello-6.l1com" example shows how to use this!

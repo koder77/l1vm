@@ -1,0 +1,14 @@
+# zerobuild makefile
+
+[executable, name = l1vm-nojit]
+sources = main.c, load-object.c, ../lib-func/string.c, ../lib-func/code_datasize.c
+
+includes = ../include, /usr/local/include
+
+ccompiler = $CC
+c++compiler = $CCPP
+
+archiver = ar
+
+cflags = "-O2 -fomit-frame-pointer -Wall -Wextra"
+lflags = "-lm -ldl -lpthread"

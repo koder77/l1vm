@@ -1,5 +1,17 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin!
+#
+# Install the following packages with Homebrew:
+#
+# SDL2-devel, SDL2_gfx, SDL2_image, SDL2_ttf, SDL2_mixer
+# fann-devel
+# mpfr-devel
+# cmake
+# make
+# git
+# openssl-devel
+
+# Then run this build script.
 
 echo "building compiler, assembler and VM..."
 
@@ -56,7 +68,7 @@ else
 fi
 
 cd ../vm
-if zerobuild zerobuild-nojit.txt force; then
+if zerobuild zerobuild-nojit-macos.txt force; then
 	echo "l1vm build ok!"
 else
 	echo "l1vm build error!"

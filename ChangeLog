@@ -15,7 +15,10 @@ L1VM - (1.2.0)
 	BUGFIXES: VM now doesn't link the SDL libraries directly anymore in the build scripts.
 	Serious memory leaks are fixed now!
 
--- Stefan Pietzonke <jay-t@gmx.net> Tue 02 Nov 2021 17:55 +0100
+	NEW: build script for macOS build: "zerobuild-nojit-macos.sh". This is experimental
+	and may not work yet!!! I did modify "include/global.h": now it sets Linux to TRUE if  __MACH__ is declared.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue 02 Nov 2021 23:25 +0100
 
 L1VM - (1.1.6)
 	NEW: include/settings.h with all user settings.
