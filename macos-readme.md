@@ -23,7 +23,18 @@ You have to edit "include/settings.h" to:
 #define DIVISIONCHECK           0
 
 // switch on on Linux
-#define CPU_SET_AFFINITY		0
+#define CPU_SET_AFFINITY        0
+```
+
+The next step is to create a "bin/" and a "l1vm/" directory in your home directory.
+The L1VM programs and libraries are installed into the "~/bin" directory and the data into "~/l1vm".
+
+You now have to add the "~/bin" directory to your PATH env variable.
+Go to "/etc/paths.d" directory and create a new file: "l1vm".
+In this file insert the following line:
+
+```
+export PATH="$HOME/bin:$PATH"
 ```
 
 Now you can try to build on macOS:
