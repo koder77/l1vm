@@ -24,7 +24,7 @@ The design goals are:
 </pre>
 
 In pure console text I/O programs not linked with SDL library, the memory footprint is very low.
-About 2 MB RAM only as shown in the taskmanager by running a minimal test program!
+About 6 MB RAM only as shown in the taskmanager by running a minimal test program!
 
 NEW: Now the full JIT-compiler is in the "lbjit" directory!
 
