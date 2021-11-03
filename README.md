@@ -31,6 +31,7 @@ NEW: Now the full JIT-compiler is in the "lbjit" directory!
 <h2>Credits</h2>
 Thanks goes to: <br>
 Andreas Weber (Andy1978) for fixing some serious bugs. <br>
+Florian Bruder (sportfloh) for the help on the macOS build scripts. <br>
 The team behind SDL and A. Schiffler (ferzkopp) for their great work! <br>
 The author of genann networks library: Lewis Van Winkle (codeplea). <br>
 The authors of the libfann library. <br>
