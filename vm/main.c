@@ -1977,11 +1977,12 @@ S2 run (void *arg)
 			{
 				S8 newline_pos ALIGN = 0;
 
-				if (fgets ((char *) &data[regi[arg3]], regi[arg2], stdin))
-				{
-					newline_pos = strcspn ((const char *) &data[regi[arg3]], "\n");
-					data[regi[arg3 + newline_pos]] = '\0';
-				}
+					if (fgets ((char *) &data[regi[arg3]], regi[arg2], stdin) != NULL)
+					{
+						newline_pos = strcspn ((const char *) &data[regi[arg3]], "\n");
+						data[regi[arg3 + newline_pos]] = '\0';
+						break;
+					}
 			}
 			eoffs = 5;
 			break;
