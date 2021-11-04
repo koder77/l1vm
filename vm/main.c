@@ -1976,12 +1976,21 @@ S2 run (void *arg)
 
 			{
 				S8 newline_pos ALIGN = 0;
+				S8 i ALIGN = 0;
+				S8 input_len ALIGN = 0;
 
-					if (fgets ((char *) &data[regi[arg3]], regi[arg2], stdin) != NULL)
+				if (fgets ((char *) &data[regi[arg3]], regi[arg2], stdin) != NULL)
+				{
+					input_len = strlen_safe (&data[regi[arg3]], regi[arg2]);
+					for (i = 0; i < input_len; i++)
 					{
-						newline_pos = strcspn ((const char *) &data[regi[arg3]], "\n");
-						data[regi[arg3 + newline_pos]] = '\0';
+						if (data[regi[arg3]] == '\r' || data[regi[arg3]] == '\n')
+						{
+							data[regi[arg3]] = '\0';
+							break;
+						}
 					}
+				}
 			}
 			eoffs = 5;
 			break;
