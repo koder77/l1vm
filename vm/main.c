@@ -1975,42 +1975,12 @@ S2 run (void *arg)
 			arg3 = code[ep + 3];
 
 			{
-				U1 ch;
-				S8 i = 0;
+				S8 newline_pos ALIGN = 0;
 
-				while (1)
+				if (fgets ((char *) &data[regi[arg3]], regi[arg2], stdin))
 				{
-					if (i < regi[arg2])
-					{
-						ch = getchar ();
-						if (memory_bounds (regi[arg3], i) != 0)
-						{
-							// ERROR string variable overflow!
-							printf ("ERROR: input: string variable overflow!\n");
-							PRINT_EPOS();
-							free (jumpoffs);
-							pthread_exit ((void *) 1);
-						}
-						data[regi[arg3] + i] = ch;
-						if (ch == 10)
-						{
-							if (i == 0)
-							{
-								data[regi[arg3]] = '\0';
-								break;
-							}
-							else
-							{
-								data[regi[arg3] + i] = '\0';
-								break;
-							}
-						}
-						i++;
-					}
-					else
-					{
-						break;
-					}
+					newline_pos = strcspn ((const char *) &data[regi[arg3]], "\n");
+					data[regi[arg3 + newline_pos]] = '\0';
 				}
 			}
 			eoffs = 5;
