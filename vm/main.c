@@ -1981,7 +1981,6 @@ S2 run (void *arg)
 					{
 						newline_pos = strcspn ((const char *) &data[regi[arg3]], "\n");
 						data[regi[arg3 + newline_pos]] = '\0';
-						break;
 					}
 			}
 			eoffs = 5;
