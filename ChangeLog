@@ -1,3 +1,8 @@
+L1VM - (1.2.1)
+	BUGFIXES: compiler: now string sizes are checked for overflow is size is set.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 06 Nov 2021 15:58 +0100
+
 L1VM - (1.2.0)
 	NEW: CODE CLEANUP all stack check code removed.
 	It did not work right because the modules couldn't access the local threads stack type data!

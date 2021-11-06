@@ -735,13 +735,26 @@ S2 parse_line (U1 *line)
 
 						data_info[data_ind].size = get_temp_int ();
 
-						// Set real string size, if 0 length was set or "s" was set.
-						if ((data_info[data_ind].size == 0 || ast[level].expr[j][2][0] == 's') && data_info[data_ind].type == STRING)
+						if (data_info[data_ind].size > 0 && data_info[data_ind].type == STRING)
 						{
-							// set string size automatically:
-							data_info[data_ind].size = strlen_safe ((char *) ast[level].expr[j][4], MAXLINELEN) - 1;
-							// set size string:
-							sprintf ((char *) ast[level].expr[j][2], "%lli", data_info[data_ind].size);
+							// check if string size is right
+							if (data_info[data_ind].size < strlen_safe ((char *) ast[level].expr[j][4], MAXLINELEN) - 1)
+							{
+								// ERROR string size on set define too small to store string
+								printf ("error: line %lli: string size overflow!\n", linenum);
+								return (1);
+							}
+						}
+						else
+						{
+							// Set real string size, if 0 length was set or "s" was set.
+							if ((data_info[data_ind].size == 0 || ast[level].expr[j][2][0] == 's') && data_info[data_ind].type == STRING)
+							{
+								// set string size automatically:
+								data_info[data_ind].size = strlen_safe ((char *) ast[level].expr[j][4], MAXLINELEN) - 1;
+								// set size string:
+								sprintf ((char *) ast[level].expr[j][2], "%lli", data_info[data_ind].size);
+							}
 						}
 
 						// value
