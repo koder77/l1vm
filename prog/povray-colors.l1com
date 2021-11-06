@@ -23,7 +23,6 @@
 	(set string s pov_collinestr "color rgb<")
 	(set string s pov_commastr ", ")
 	(set string s pov_closestr ">")
-	(set string s printdstr "%.4lf")
 	(set int64 1 input_len 255)
 	(set int64 1 str_len 0)
 	(set int64 1 f 0)
