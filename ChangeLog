@@ -1,7 +1,10 @@
 L1VM - (1.2.1)
 	BUGFIXES: compiler: now string sizes are checked for overflow is size is set.
+	NEW: math module now uses cleaned up "double_rounded_string" function.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 06 Nov 2021 15:58 +0100
+	After 4 years of development this is now the 1024+ commit!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 06 Nov 2021 21:50 +0100
 
 L1VM - (1.2.0)
 	NEW: CODE CLEANUP all stack check code removed.

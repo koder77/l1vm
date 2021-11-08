@@ -1,10 +1,11 @@
-L1VM README  2021-09-14
+L1VM README  2021-11-09
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/P5P2Y3KP)
 
 This project started on 9. November 2017 as an experimental fast VM.
+Now this project got >= 1024 commits! :)
 I had some knowledge already from my Nano VM project. But I started from scratch.
 
 L1VM is an incredible tiny virtual machine with RISC (or comparable style) CPU, about 61 opcodes and about 40 KB binary size on X86_64 Linux (without JIT-compiler)!
