@@ -4,7 +4,11 @@ L1VM - (1.2.1)
 
 	After 4 years of development this is now the 1024+ commit!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 06 Nov 2021 21:50 +0100
+	NEW: VM file module cleanup. In "include/settings.h" now a different installation path as home directory
+	can be set! See:
+	#define SANDBOX_HOME			""    line!!!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 10 Nov 2021 17:44 +0100
 
 L1VM - (1.2.0)
 	NEW: CODE CLEANUP all stack check code removed.

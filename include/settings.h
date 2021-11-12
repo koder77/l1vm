@@ -32,6 +32,8 @@
 // SANDBOX FILE ACCESS
 #define SANDBOX                 1			// secure file acces: 1 = use secure access, 0 = OFF!!
 #define SANDBOX_ROOT			"/l1vm/"	// in /home directory!, get by $HOME env variable
+#define SANDBOX_HOME			""			// if you want no install into your home folder, then set this path to your installation folder
+											// leave it empty to use your home directory
 
 // VM: max sizes of code
 #define MAX_CODE_SIZE 			4294967296L		// 4GB

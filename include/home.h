@@ -17,9 +17,21 @@
  * along with L1vm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+size_t strlen_safe (const char * str, int maxlen);
+
 // get home directory path
 char *get_home (void)
 {
-	char *home_name = getenv ("HOME");
+	char *home_name;
+
+	if (strlen_safe (SANDBOX_HOME, MAXLINELEN) > 0)
+	{
+		// user defined own sandbox home directory
+		home_name = SANDBOX_HOME;
+	}
+	else
+	{
+		home_name = getenv ("HOME");
+	}
 	return (home_name);
 }
