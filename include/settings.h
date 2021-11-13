@@ -23,6 +23,9 @@
 // data bounds check exactly
 #define BOUNDSCHECK             1
 
+// stack variable types are checked
+#define STACK_CHECK				0
+
 // switch on on Linux
 #define CPU_SET_AFFINITY		1
 
