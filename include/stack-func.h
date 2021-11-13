@@ -80,8 +80,6 @@ U1 *stpushi (S8 data, U1 *sp, U1 *sp_bottom)
 
 	if (sp >= sp_bottom + 9)
 	{
-		// set stack pointer to lower address
-
 		bptr = (U1 *) &data;
 
 		sp--;
@@ -125,7 +123,6 @@ U1 *stpopi (U1 *data, U1 *sp, U1 *sp_top)
 	else
 	{
 		// check type
-		// check if byte type
 		type = *sp;
 		if (type != STACK_INT)
 		{
@@ -159,8 +156,6 @@ U1 *stpushd (F8 data, U1 *sp, U1 *sp_bottom)
 
 	if (sp >= sp_bottom + 9)
 	{
-		// set stack pointer to lower address
-
 		bptr = (U1 *) &data;
 
 		sp--;
@@ -204,7 +199,6 @@ U1 *stpopd (U1 *data, U1 *sp, U1 *sp_top)
 	else
 	{
 		// check type
-		// check if byte type
 		type = *sp;
 		if (type != STACK_DOUBLE)
 		{
