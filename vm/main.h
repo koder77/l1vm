@@ -27,9 +27,6 @@
  #if _WIN32
  	#pragma message ("Windows host detected!")
  #endif
- #if  __MACH__
- 	#pragma message ("macOS host detected!")
-#endif
 
  // show math limits settings on compile time
  #if MATH_LIMITS

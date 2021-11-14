@@ -1,11 +1,10 @@
-L1VM README  2021-11-09
+L1VM README  2021-09-14
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/P5P2Y3KP)
 
 This project started on 9. November 2017 as an experimental fast VM.
-Now this project got >= 1024 commits! :)
 I had some knowledge already from my Nano VM project. But I started from scratch.
 
 L1VM is an incredible tiny virtual machine with RISC (or comparable style) CPU, about 61 opcodes and about 40 KB binary size on X86_64 Linux (without JIT-compiler)!
@@ -25,14 +24,13 @@ The design goals are:
 </pre>
 
 In pure console text I/O programs not linked with SDL library, the memory footprint is very low.
-About 6 MB RAM only as shown in the taskmanager by running a minimal test program!
+About 2 MB RAM only as shown in the taskmanager by running a minimal test program!
 
 NEW: Now the full JIT-compiler is in the "lbjit" directory!
 
 <h2>Credits</h2>
 Thanks goes to: <br>
 Andreas Weber (Andy1978) for fixing some serious bugs. <br>
-Florian Bruder (sportfloh) for the help on the macOS build scripts. <br>
 The team behind SDL and A. Schiffler (ferzkopp) for their great work! <br>
 The author of genann networks library: Lewis Van Winkle (codeplea). <br>
 The authors of the libfann library. <br>
@@ -48,13 +46,6 @@ The author of the fp16 fixed floating point library: https://github.com/kmilo17p
 
 Without them this L1VM project would not be possible! Thank you! <br>
 ----------------------- <br>
-
-<h2>macOS experimental build</h2>
-Just read the file "macos-readme.md".
-Together with Floh I try to make build scripts for macOS.
-This is a WIP and not finished yet. We got zerobuild to compile on macOS.
-And we try to continue this work.
-If you are a macOS user and want to help us then contact me please.
 
 <h2>New: l1pre - the preprocessor</h2>
 The new "l1pre" preprocessor can be used to define macros and include files.

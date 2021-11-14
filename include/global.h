@@ -22,8 +22,8 @@
 #define _GNU_SOURCE 1
 #endif
 
-// set __linux__ on Cygwin or macOS
-#if __CYGWIN__ ||  __MACH__
+// set __linux__ on Cygwin
+#if __CYGWIN__
 	#define __linux__	1
 #endif
 
@@ -103,7 +103,7 @@
 // info strings:
 #define COPYRIGHT_STR " (C) 2017-2021 Stefan Pietzonke"
 
-#define  VM_VERSION_STR		"1.2.1"		// version number
+#define  VM_VERSION_STR		"1.2.0"		// version number
 
 // no user defined definitions below this section! ============================
 

@@ -1975,20 +1975,41 @@ S2 run (void *arg)
 			arg3 = code[ep + 3];
 
 			{
-				S8 newline_pos ALIGN = 0;
-				S8 i ALIGN = 0;
-				S8 input_len ALIGN = 0;
+				U1 ch;
+				S8 i = 0;
 
-				if (fgets ((char *) &data[regi[arg3]], regi[arg2], stdin) != NULL)
+				while (1)
 				{
-					input_len = strlen_safe (&data[regi[arg3]], regi[arg2]);
-					for (i = 0; i < input_len; i++)
+					if (i < regi[arg2])
 					{
-						if (data[regi[arg3]] == '\r' || data[regi[arg3]] == '\n')
+						ch = getchar ();
+						if (memory_bounds (regi[arg3], i) != 0)
 						{
-							data[regi[arg3]] = '\0';
-							break;
+							// ERROR string variable overflow!
+							printf ("ERROR: input: string variable overflow!\n");
+							PRINT_EPOS();
+							free (jumpoffs);
+							pthread_exit ((void *) 1);
 						}
+						data[regi[arg3] + i] = ch;
+						if (ch == 10)
+						{
+							if (i == 0)
+							{
+								data[regi[arg3]] = '\0';
+								break;
+							}
+							else
+							{
+								data[regi[arg3] + i] = '\0';
+								break;
+							}
+						}
+						i++;
+					}
+					else
+					{
+						break;
 					}
 				}
 			}
