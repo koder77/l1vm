@@ -25,6 +25,7 @@
 #include "../include/global.h"
 #include "main.h"
 
+
 S8 data_size ALIGN;
 S8 code_size ALIGN;
 
@@ -1469,10 +1470,17 @@ S2 run (void *arg)
 	#endif
 	arg1 = code[ep + 1];
 
-	sp = stpushb (regi[arg1], sp, sp_bottom);
-	if (sp == NULL)
+	if (sp >= sp_bottom)
 	{
-		printf ("ERROR: stack full can't stpushb!\n")
+		sp--;
+
+		bptr = (U1 *) &regi[arg1];
+
+		*sp = *bptr;
+	}
+	else
+	{
+		printf ("FATAL ERROR: stack pointer can't go below address 0!\n");
 		PRINT_EPOS();
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
@@ -1487,19 +1495,25 @@ S2 run (void *arg)
 	#endif
 	arg1 = code[ep + 1];
 
-	sp = stpopb ((U1 *) &regi[arg1], sp, sp_top);
-	if (sp == NULL)
-	{
-		PRINT_EPOS();
-		free (jumpoffs);
-	}
-
 	if (sp == sp_top)
 	{
+		// nothing on stack!! can't pop!!
+
+		printf ("FATAL ERROR: stack pointer can't pop empty stack!\n");
 		PRINT_EPOS();
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
+
+	// clear arg1
+	regi[arg1] = 0;
+
+	bptr = (U1 *) &regi[arg1];
+
+	*bptr = *sp;
+
+	sp++;
+
 	eoffs = 2;
 
 	EXE_NEXT();
@@ -1511,14 +1525,37 @@ S2 run (void *arg)
 
 	arg1 = code[ep + 1];
 
-	sp = stpushi (regi[arg1], sp, sp_bottom);
-	if (sp == NULL)
+	if (sp >= sp_bottom + 8)
 	{
-		printf ("ERROR: stack full can't stpushi!\n")
+		// set stack pointer to lower address
+
+		bptr = (U1 *) &regi[arg1];
+
+		sp--;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp = *bptr;
+	}
+	else
+	{
+		printf ("FATAL ERROR: stack pointer can't go below address 0!\n");
 		PRINT_EPOS();
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
 	}
+
 	eoffs = 2;
 
 	EXE_NEXT();
@@ -1529,12 +1566,35 @@ S2 run (void *arg)
 	#endif
 	arg1 = code[ep + 1];
 
-	sp = stpopi ((U1 *) &regi[arg1], sp, sp_top);
-	if (sp == NULL)
+	if (sp >= sp_top - 7)
 	{
+		// nothing on stack!! can't pop!!
+
+		printf ("FATAL ERROR: stack pointer can't pop empty stack!\n");
 		PRINT_EPOS();
 		free (jumpoffs);
+		pthread_exit ((void *) 1);
 	}
+
+	bptr = (U1 *) &regi[arg1];
+	bptr += 7;
+
+	*bptr = *sp++;
+	bptr--;
+	*bptr = *sp++;
+	bptr--;
+	*bptr = *sp++;
+	bptr--;
+	*bptr = *sp++;
+	bptr--;
+	*bptr = *sp++;
+	bptr--;
+	*bptr = *sp++;
+	bptr--;
+	*bptr = *sp++;
+	bptr--;
+	*bptr = *sp++;
+
 	eoffs = 2;
 
 	EXE_NEXT();
@@ -1545,10 +1605,32 @@ S2 run (void *arg)
 	#endif
 	arg1 = code[ep + 1];
 
-	sp = stpushd (regd[arg1], sp, sp_bottom);
-	if (sp == NULL)
+	if (sp >= sp_bottom + 8)
 	{
-		printf ("ERROR: stack full can't stpushd!\n");
+		// set stack pointer to lower address
+
+		bptr = (U1 *) &regd[arg1];
+
+		sp--;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp = *bptr;
+	}
+	else
+	{
+		printf ("FATAL ERROR: stack pointer can't go below address 0!\n");
 		PRINT_EPOS();
 		free (jumpoffs);
 		pthread_exit ((void *) 1);
@@ -1563,12 +1645,35 @@ S2 run (void *arg)
 	#endif
 	arg1 = code[ep + 1];
 
-	sp = stpopd ((U1 *) &regd[arg1], sp, sp_top);
-	if (sp == NULL)
+	if (sp >= sp_top - 7)
 	{
+		// nothing on stack!! can't pop!!
+
+		printf ("FATAL ERROR: stack pointer can't pop empty stack!\n");
 		PRINT_EPOS();
 		free (jumpoffs);
+		pthread_exit ((void *) 1);
 	}
+
+	bptr = (U1 *) &regd[arg1];
+	bptr += 7;
+
+	*bptr = *sp++;
+	bptr--;
+	*bptr = *sp++;
+	bptr--;
+	*bptr = *sp++;
+	bptr--;
+	*bptr = *sp++;
+	bptr--;
+	*bptr = *sp++;
+	bptr--;
+	*bptr = *sp++;
+	bptr--;
+	*bptr = *sp++;
+	bptr--;
+	*bptr = *sp++;
+
 	eoffs = 2;
 
 	EXE_NEXT();
@@ -1876,7 +1981,7 @@ S2 run (void *arg)
 
 				if (fgets ((char *) &data[regi[arg3]], regi[arg2], stdin) != NULL)
 				{
-					input_len = strlen_safe ((const char *) &data[regi[arg3]], regi[arg2]);
+					input_len = strlen_safe (&data[regi[arg3]], regi[arg2]);
 					for (i = 0; i < input_len; i++)
 					{
 						if (data[regi[arg3]] == '\r' || data[regi[arg3]] == '\n')
@@ -2853,7 +2958,7 @@ int main (int ac, char *av[])
 	if (silent_run == 0)
 	{
 		printf ("l1vm - %s -%s\n", VM_VERSION_STR, COPYRIGHT_STR);
-		printf (">>> hyperstacked <<<\n");
+		printf (">>> hyperpowered <<<\n");
 	    printf ("CPU cores: %lli (STATIC)\n", max_cpu);
 
 		printf ("internal type check: S8 = %lli bytes, F8 = %lli bytes. All OK!\n", size_int64, size_double64);

@@ -138,11 +138,6 @@ typedef double                  F8;     /* DOUBLE */
 #define TRUE					1
 #define FALSE					0
 
-// stack check types
-#define STACK_BYTE				0
-#define STACK_INT				1
-#define STACK_DOUBLE			2
-
 // machine
 #define MAXREG			256			// registers (integer and double float)
 
