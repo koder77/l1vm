@@ -24,7 +24,6 @@
 #include "jit.h"
 #include "../include/global.h"
 #include "main.h"
-#include "../include/stack-func.h"
 
 S8 data_size ALIGN;
 S8 code_size ALIGN;

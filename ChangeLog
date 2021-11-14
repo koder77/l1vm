@@ -8,9 +8,7 @@ L1VM - (1.2.1)
 	can be set! See:
 	#define SANDBOX_HOME			""    line!!!
 
-	NEW: finally I got a stack check working. Now stack errors are shown if a wrong variable type is taken from stack!
-
--- Stefan Pietzonke <jay-t@gmx.net> Fri 12 Nov 2021 23:00 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 14 Nov 2021 05:30 +0100
 
 L1VM - (1.2.0)
 	NEW: CODE CLEANUP all stack check code removed.
