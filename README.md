@@ -28,8 +28,12 @@ About 2 MB RAM only as shown in the taskmanager by running a minimal test progra
 
 NEW: Now the full JIT-compiler is in the "lbjit" directory!
 
+NEW: macOS experimental build scripts made together with sportfloh.
+See main directory: "install-zerobuild-macos.sh".
+
 <h2>Credits</h2>
 Thanks goes to: <br>
+Florian Bruder (sportfloh) for helping on the macOS port.
 Andreas Weber (Andy1978) for fixing some serious bugs. <br>
 The team behind SDL and A. Schiffler (ferzkopp) for their great work! <br>
 The author of genann networks library: Lewis Van Winkle (codeplea). <br>
