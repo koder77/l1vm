@@ -2,7 +2,7 @@
 //
 // message send/receive module
 // sends message number codes
-// needs "mem-lib-vect.l1h" to be included
+// needs "mem-lib.l1h" to be included
 #include <intr.l1h>
 (main func)
 	(set const-int64 1 zero 0)

@@ -777,6 +777,12 @@ S2 parse_line (U1 *line)
 
 							if (data_info[data_ind].type == STRING)
 							{
+								if (strlen_safe ((const char *) ast[level].expr[j][4], MAXLINELEN) - 1  > data_info[data_ind].size)
+								{
+									printf ("error: line %lli: string variable: '%s' too small for string!\n", linenum, ast[level].expr[j][4]);
+									return (1);
+								}
+
 								strcpy ((char *) data_info[data_ind].value_str, (const char *) ast[level].expr[j][4]);
 							}
 						}

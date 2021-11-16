@@ -1,3 +1,10 @@
+L1VM - (1.3.0)
+	NEW: compiler now checks size of string and shows an error message if the set size is too small!!
+	(set string 5 hellostr "Hello world!")
+	This will get an error message!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 15 Nov 2021 17:19 +0100
+
 L1VM - (1.2.0)
 	NEW: CODE CLEANUP all stack check code removed.
 	It did not work right because the modules couldn't access the local threads stack type data!

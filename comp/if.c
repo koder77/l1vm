@@ -222,7 +222,7 @@ S4 get_else_set (S8 ind)
 
 S4 get_if_optimize_reg (U1 *code_line)
 {
-	S4 pos, i, j, str_len;
+	S4 pos, i, j = 0, str_len;
 	U1 if_found = 0;
 	U1 reg_num[256];
 	S4 reg;
