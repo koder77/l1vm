@@ -1,6 +1,6 @@
 // hello-run.l1com
-// Brackets - Hello world! threads
-//
+// Brackets - Hello world!
+// 
 // This is an exammple how to use "jsra" and "loadl".
 //
 #include <intr.l1h>
