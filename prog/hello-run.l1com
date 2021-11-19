@@ -1,6 +1,6 @@
 // hello-run.l1com
 // Brackets - Hello world!
-// 
+//
 // This is an exammple how to use "jsra" and "loadl".
 //
 #include <intr.l1h>
@@ -17,7 +17,7 @@
 	(set string s hellostra "Hello world! hello_a")
 	print_s (hellostra)
 	print_n
-	(funcend)
+(funcend)
 (hello_b func)
 	(set string s hellostrb "Hello world! hello_b")
 	print_s (hellostrb)
