@@ -24,7 +24,7 @@
 #define EMPTY 0
 #define LABEL 5
 
-#define MAXTRANSLATE 41
+#define MAXTRANSLATE 42
 
 struct translate translate[] =
 {
@@ -60,6 +60,7 @@ struct translate translate[] =
 	{ "jsr", 1, { LABEL, EMPTY, EMPTY, EMPTY }, JSR},
 	{ "jsra", 1, { INTEGER, EMPTY, EMPTY, EMPTY }, JSRA},
 	{ "jmpi", 2, { INTEGER, LABEL, EMPTY, EMPTY }, JMPI},
+	{ "jmpa", 2, { INTEGER, EMPTY, EMPTY, EMPTY }, JMPA},
 	{ "stpushb", 1, { INTEGER, EMPTY, EMPTY, EMPTY }, STPUSHB},
 	{ "stpopb", 1, { INTEGER, EMPTY, EMPTY, EMPTY }, STPOPB},
 	{ "stpushi", 1, { INTEGER, EMPTY, EMPTY, EMPTY }, STPUSHI},

@@ -1,0 +1,57 @@
+// hello-run.l1com
+// Brackets - Hello world! threads
+//
+// This is an exammple how to use "jsra" and "loadl".
+//
+#include <intr.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 one 1)
+	(set string s messagestr "starting...")
+	print_s (messagestr)
+	print_n
+	(:start !)
+	exit (zero)
+(funcend)
+(hello_a func)
+	(set string s hellostra "Hello world! hello_a")
+	print_s (hellostra)
+	print_n
+	(funcend)
+(hello_b func)
+	(set string s hellostrb "Hello world! hello_b")
+	print_s (hellostrb)
+	print_n
+(funcend)
+(end func)
+	exit (zero)
+(funcend)
+(start func)
+	(set int64 1 lab_hello_one 0)
+	(set int64 1 lab_hello_two 0)
+	(set int64 1 lab_hello_end 0)
+	(set int64 1 lab_end 0)
+	(set int64 10 jmp_array 0 1 2)
+	(set int64 1 ep 0)
+	(set int64 1 i 0)
+	(set int64 1 offset 8)
+	(set int64 1 op_label 0)
+	(reset-reg)
+	(:set_labels)
+	(:hello_a lab_hello_one loadl)
+	(:hello_b lab_hello_two loadl)
+	(:end lab_end loadl)
+	// save labels into jump array
+	(lab_hello_one jmp_array [ i ] =)
+	((i offset +) i =)
+	(lab_hello_two jmp_array [ i ] =)
+	((i offset +) i =)
+	(lab_end jmp_array [ i ] =)
+	(:load_opcode)
+	(reset-reg)
+	(jmp_array [ ep ] op_label =)
+	(op_label jsra)
+	(:next_opcode)
+	((ep offset +) ep =)
+	(:load_opcode jmp)
+(funcend)
