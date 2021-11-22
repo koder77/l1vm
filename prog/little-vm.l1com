@@ -133,7 +133,6 @@
 	(set int64 1 offset~ 8)
 	(set int64 1 bp_offset~ 16)
 	(set int64 1 f 0)
-	(set string s printistr "printi")
 	((ep one +) bp~ =)
 	(bytecode [ bp~ ] arg1 =)
 	((arg1 zero +) arg1 =)
