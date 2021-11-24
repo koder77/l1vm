@@ -111,7 +111,6 @@
 	((arg2 zero +) arg2 =)
 	// add offset 8 to registers
 	((arg1 offset~ *) arg1 =)
-	((arg2 offset~ *) arg2 =)
 	(regi [ arg1 ] r1~ =)
 	(((r1~ zero !=) f =) f if+)
 		(reset-reg)
