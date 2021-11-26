@@ -116,6 +116,7 @@
 		(reset-reg)
 		(arg2 ep =)
 		(arg2 bp =)
+		((bp offset~ *) bp =)
 	(else)
 		(reset-reg)
 		((ep three~ +) ep =)
