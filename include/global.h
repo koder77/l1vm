@@ -22,8 +22,8 @@
 #define _GNU_SOURCE 1
 #endif
 
-// set __linux__ on Cygwin
-#if __CYGWIN__
+// set __linux__ on Cygwin or macOS
+#if __CYGWIN__ || __MACH__
 	#define __linux__	1
 #endif
 
