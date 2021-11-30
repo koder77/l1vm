@@ -4,6 +4,8 @@ L1VM README  2021-11-14
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/P5P2Y3KP)
 
+[![C/C++ CI](https://github.com/koder77/l1vm/actions/workflows/build.yml/badge.svg)](https://github.com/koder77/l1vm/actions/workflows/build.yml)
+
 This project started on 9. November 2017 as an experimental fast VM.
 I had some knowledge already from my Nano VM project. But I started from scratch.
 
