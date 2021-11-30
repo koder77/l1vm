@@ -11,5 +11,5 @@ jobs:
       runs-on: ubuntu-latest
       steps:
       - uses: actions/checkout@v2
-      - name: make
+      - name: build
       run: ./install-debian.sh
