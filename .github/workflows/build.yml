@@ -10,6 +10,6 @@ jobs:
   build:
       runs-on: ubuntu-latest
       steps:
-      - uses: actions/checkout@v2
       - name: build
-      run: ./install-debian.sh
+        uses: actions/checkout@v2
+        run: ./install-debian.sh
