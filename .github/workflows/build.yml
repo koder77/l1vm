@@ -13,4 +13,5 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: build
+        shell: bash
         run: ./install-debian.sh
