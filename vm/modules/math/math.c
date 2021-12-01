@@ -21,17 +21,23 @@
 #include <math.h>
 #include "../../../include/stack.h"
 
-// libcrypt for random number generator seed
-#include <openssl/sha.h>
-#include <openssl/rand.h>
+#if __MACH__
+	#define LIBCRYPTO_RANDOM_SEED 0					// don't use on macOS for now, maybe using it later
+#else
+	// set to 1 to use libcrypto random seed function
+	#define LIBCRYPTO_RANDOM_SEED 1
+#endif
+
+#if LIBCRYPTO_RANDOM_SEED
+	// libcrypt for random number generator seed
+	#include <openssl/sha.h>
+	#include <openssl/rand.h>
+#endif
 
 // protos
 #include "mt64.h"
 S2 memory_bounds (S8 start, S8 offset_access);
 
-
-// set to 1 to use libcrypto random seed function
-#define LIBCRYPTO_RANDOM_SEED 1
 
 // math functions --------------------------------------
 
