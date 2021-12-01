@@ -14,7 +14,7 @@
 # Then run this build script.
 
 export PATH="$HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
+export DYLD_LIBRARY_PATH="$HOME/bin:$DYLD_LIBRARY_PATH"
 
 #install brew
 xcode-select --install
