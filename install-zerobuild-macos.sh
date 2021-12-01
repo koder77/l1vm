@@ -28,6 +28,8 @@ brew install sdl2_ttf
 brew install sdl2_mixer
 brew install fann
 brew install mpfr
+brew install openssl
+brew link openssl --force
 brew install cmake
 brew install make
 brew install git
