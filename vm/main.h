@@ -29,6 +29,8 @@
  #endif
 
 #if __MACH__
+	#undef DIVISIONCHECK
+	#undef CPU_SET_AFFINITY
 	#define DIVISIONCHECK 0
 	#define CPU_SET_AFFINITY 0
 #endif
