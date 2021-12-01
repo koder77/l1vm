@@ -28,6 +28,11 @@
  	#pragma message ("Windows host detected!")
  #endif
 
+#if __MACH__
+	#define DIVISIONCHECK 0
+	#define CPU_SET_AFFINITY 0
+#endif
+
  // show math limits settings on compile time
  #if MATH_LIMITS
  	#pragma message ("MATH LIMITS ON")
