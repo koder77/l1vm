@@ -103,7 +103,7 @@ echo "VM binaries installed into ~/bin"
 cd modules
 echo "installing modules..."
 chmod +x *.sh
-./build.sh
+./build-macos.sh
 if ./install.sh; then
 	echo "modules build ok!"
 else
