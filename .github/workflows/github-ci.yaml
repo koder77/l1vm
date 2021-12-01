@@ -1,0 +1,19 @@
+name: "C/C++ CI"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+
+    - name: build
+      shell: bash
+      run: ./install-debian.sh
