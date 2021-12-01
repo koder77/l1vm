@@ -3,29 +3,29 @@ set -e
 cd ../vm/modules/endianess
 zerobuild zerobuild-macos.txt force
 cd ../fann
-zerobuild force
+zerobuild zerobuild-macos.txt force
 cd ../file
-zerobuild force
+zerobuild zerobuild-macos.txt force
 cd ../genann
-zerobuild force
+zerobuild zerobuild-macos.txt force
 cd ../math
-zerobuild force
+zerobuild zerobuild-macos.txt force
 cd ../net
-zerobuild force
+zerobuild zerobuild-macos.txt force
 cd ../process
-zerobuild force
-cd ../rs232
-zerobuild force
+zerobuild zerobuild-macos.txt force
+# cd ../rs232
+# zerobuild force
 cd ../sdl-2.0
-zerobuild force
+zerobuild zerobuild-macos.txt force
 cd ../string
-zerobuild force
+zerobuild zerobuild-macos.txt force
 cd ../time
-zerobuild force
+zerobuild zerobuild-macos.txt force
 cd ../mem
-zerobuild force
+zerobuild zerobuild-macos.txt force
 cd ../mpfr-c++
-zerobuild force
+zerobuild zerobuild-macos.txt force
 
 cd ../../../modules
 cp ../vm/modules/endianess/libl1vm* .
