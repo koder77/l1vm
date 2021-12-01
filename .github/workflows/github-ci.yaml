@@ -26,4 +26,4 @@ jobs:
 
     - name: build
       shell: bash
-      run: ./install-zerobuild-macos.sh
+      run: chmod +x install-zerobuild-macos.sh && ./install-zerobuild-macos.sh
