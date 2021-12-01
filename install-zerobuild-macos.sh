@@ -16,6 +16,22 @@
 export PATH="$HOME/bin:$PATH"
 export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
 
+#install brew
+xcode-select --install
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# install needed libraries
+brew install sdl2
+brew install sdl2_gfx
+brew install sdl2_image
+brew install sdl2_ttf
+brew install sdl2_mixer
+brew install fann
+brew install mpfr
+brew install cmake
+brew install make
+brew install git
+
 echo "building compiler, assembler and VM..."
 
 export CC=clang
