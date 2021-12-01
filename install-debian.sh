@@ -234,7 +234,4 @@ cp include-lib/* ~/l1vm/include/
 mkdir ~/l1vm/man
 
 echo "installation finished!"
-echo "Add these two lines to your .bashrc file:"
-echo "export PATH=\"$HOME/bin:$PATH\""
-echo "export LD_LIBRARY_PATH=\"$HOME/bin:$LD_LIBRARY_PATH\""
 exit 0

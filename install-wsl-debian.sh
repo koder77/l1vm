@@ -2,6 +2,9 @@
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 # Install script for Windows 10 WSL Debian
 
+export PATH="$HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
+
 if uname -a | grep -q "Microsoft"; then
 echo "Windows 10 WSL Debian detected?"
 echo "checking for needed libraries..."

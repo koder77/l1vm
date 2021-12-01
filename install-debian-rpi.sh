@@ -1,6 +1,9 @@
 #!/bin/bash
 # changed: install to /home/pi/bin instead to /usr/local/bin!
 
+export PATH="$HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
+
 if uname -a | grep -q "raspberrypi"; then
 echo "Raspberry Pi Debian detected..."
 echo "checking for needed libraries..."

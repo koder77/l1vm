@@ -13,6 +13,9 @@
 
 # Then run this build script.
 
+export PATH="$HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
+
 echo "building compiler, assembler and VM..."
 
 export CC=clang
