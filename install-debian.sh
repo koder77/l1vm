@@ -1,6 +1,9 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin
 
+export PATH="$HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
+
 if ! dpkg -s libsdl2-dev &> /dev/null; then
 	echo "try to install libsdl2-dev..."
 	if ! sudo apt-get install libsdl2-dev; then
@@ -231,4 +234,7 @@ cp include-lib/* ~/l1vm/include/
 mkdir ~/l1vm/man
 
 echo "installation finished!"
+echo "Add these two lines to your .bashrc file:"
+echo "export PATH=\"$HOME/bin:$PATH\""
+echo "export LD_LIBRARY_PATH=\"$HOME/bin:$LD_LIBRARY_PATH\""
 exit 0
