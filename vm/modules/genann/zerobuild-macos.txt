@@ -1,7 +1,7 @@
 # zerobuild makefile
 
 [executable, shared, name = libl1vmgenann.so]
-sources = genann.c, genann-lib.c, ../file/file-sandbox.c
+sources = genann.c, genann-lib.c, ../file/file-sandbox.c, ../../../lib-func/string.c
 
 includes = ../include, /usr/local/include
 
@@ -11,5 +11,5 @@ c++compiler = $CCPP
 linker = ld
 aflags = "cru"
 
-cflags = "-dynamiclib -fPIC -O3 -fomit-frame-pointer -Wall"
+cflags = "-fPIC -O3 -fomit-frame-pointer -Wall"
 lflags = "-shared -lm"

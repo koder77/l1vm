@@ -11,5 +11,5 @@ c++compiler = $CCPP
 linker = ld
 aflags = "cru"
 
-cflags = "-dynamiclib -fPIC -O3 -fomit-frame-pointer -Wall"
+cflags = "-fPIC -O3 -fomit-frame-pointer -Wall"
 lflags = "-shared -lm"
