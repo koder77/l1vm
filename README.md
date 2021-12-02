@@ -1,4 +1,4 @@
-L1VM README  2021-11-30
+L1VM README  2021-12-02
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -26,18 +26,18 @@ The design goals are:
 </pre>
 
 In pure console text I/O programs not linked with SDL library, the memory footprint is very low.
-About 2 MB RAM only as shown in the taskmanager by running a minimal test program!
+About 10 MB RAM only as shown in the taskmanager by running a minimal test program!
 
 NEW: Now the full JIT-compiler is in the "lbjit" directory!
 
-<h2>macOS</2>
+<h2>macOS</h2>
 NEW: macOS experimental build scripts made together with sportfloh.
-And cedi did write the .yaml GitHUb Actions file.
+And cedi did write the .yaml GitHub Actions file.
 See main directory: "install-zerobuild-macos.sh".
 
 What works right now: l1asm, l1com, l1pre and the l1vm.
 And the following modules:
-endianess, fann, genann, math, net, process, sdl-2-0, string, time
+endianess, fann, file, genann, math, net, process, sdl-2.0, string, time
 
 <h2>Credits</h2>
 Thanks goes to: <br>
