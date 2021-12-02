@@ -12,4 +12,4 @@ linker = ld
 aflags = "cru"
 
 cflags = "-fPIC -O3 -fomit-frame-pointer -Wall"
-lflags = "-shared -lm -lcrypto"
+lflags = "-shared -lm -lsodium"
