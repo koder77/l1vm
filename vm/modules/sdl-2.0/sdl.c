@@ -33,11 +33,6 @@
 
 #include "gui.h"
 
-// macOS endianess, little endianess
-#if __MACH___
-   #undef SDL_BYTEORDER
-   #define SDL_BYTEORDER 1234
-#endif
 
 SDL_Surface *surf = NULL;
 SDL_Window *window = NULL;
@@ -1645,14 +1640,18 @@ Uint32 getpixel (SDL_Surface *surface, Sint16 x, Sint16 y)
 			return *(Uint16 *)p;
 
 		case 3:
-			if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-			{
-				return p[0] << 16 | p[1] << 8 | p[2];
-			}
-			else
-			{
+			#if __MACH__ 	// macOS little endianess
 				return p[0] | p[1] << 8 | p[2] << 16;
-			}
+			#else
+				if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+				{
+					return p[0] << 16 | p[1] << 8 | p[2];
+				}
+				else
+				{
+					return p[0] | p[1] << 8 | p[2] << 16;
+				}
+			#endif
 
 		case 4:
 			return *(Uint32 *)p;
@@ -1798,10 +1797,14 @@ U1 *sdl_save_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	U1 sandbox_filename[256];
 	S2 ret;
 
-	#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-	rmask = 0xff000000; gmask = 0x00ff0000; bmask = 0x0000ff00; amask = 0x000000ff;
+	#if __MACH__ 	// macOS little endianess
+		rmask = 0x000000ff; gmask = 0x0000ff00; bmask = 0x00ff0000; amask = 0xff000000;
 	#else
-	rmask = 0x000000ff; gmask = 0x0000ff00; bmask = 0x00ff0000; amask = 0xff000000;
+		#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+		rmask = 0xff000000; gmask = 0x00ff0000; bmask = 0x0000ff00; amask = 0x000000ff;
+		#else
+		rmask = 0x000000ff; gmask = 0x0000ff00; bmask = 0x00ff0000; amask = 0xff000000;
+		#endif
 	#endif
 
 	sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
