@@ -13,11 +13,14 @@
 
 # Then run this build script.
 
+
 export PATH="$HOME/bin:$PATH"
 export DYLD_LIBRARY_PATH="$HOME/bin:$DYLD_LIBRARY_PATH"
 
 #install brew
 xcode-select --install
+cp /usr/include/machine/endianess.h /usr/include
+
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 # install needed libraries
