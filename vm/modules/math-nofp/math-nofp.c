@@ -27,7 +27,7 @@
 
 // protos
 #include "mt64.h"
-S2 memory_bounds (S8 start, S8 offset_access);
+// S2 memory_bounds (S8 start, S8 offset_access);
 
 
 // math functions --------------------------------------

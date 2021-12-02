@@ -17,6 +17,9 @@
  * along with L1vm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// memory_bounds turned off, for experimental macOS build
+// maybe fixed later!
+
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
@@ -25,7 +28,7 @@
 
 // protos
 
-S2 memory_bounds (S8 start, S8 offset_access);
+// S2 memory_bounds (S8 start, S8 offset_access);
 
 
 size_t strlen_safe (const char * str, int maxlen)
@@ -100,6 +103,7 @@ U1 *string_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	offset = strlen_safe ((char *) &data[strsourceaddr], MAXLINELEN);
 
+	/*
 	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, offset) != 0)
 	{
@@ -107,6 +111,7 @@ U1 *string_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#endif
+	*/
 
 	strcpy ((char *) &data[strdestaddr], (const char *) &data[strsourceaddr]);
 	return (sp);
@@ -138,6 +143,7 @@ U1 *string_cat (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	offset_src = strlen_safe ((char *) &data[strsourceaddr], MAXLINELEN);
 	offset_dst = strlen_safe ((char *) &data[strdestaddr], MAXLINELEN);
 
+	/*
 	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, offset_src + offset_dst) != 0)
 	{
@@ -145,6 +151,7 @@ U1 *string_cat (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#endif
+	*/
 
 	strcat ((char *) &data[strdestaddr], (const char *) &data[strsourceaddr]);
 	return (sp);
@@ -180,6 +187,7 @@ U1 *string_int64_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	/*
 	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, str_len) != 0)
 	{
@@ -187,6 +195,7 @@ U1 *string_int64_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#endif
+	*/
 
 	if (snprintf ((char *) &data[strdestaddr], str_len, "%lli", num) <= 0)
 	{
@@ -228,6 +237,7 @@ U1 *string_byte_to_hexstring (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	/*
 	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, str_len) != 0)
 	{
@@ -235,6 +245,7 @@ U1 *string_byte_to_hexstring (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#endif
+	*/
 
 	if (snprintf ((char *) &data[strdestaddr], str_len, "%02x", num) <= 0)
 	{
@@ -275,6 +286,7 @@ U1 *string_double_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	/*
 	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, str_len) != 0)
 	{
@@ -282,6 +294,7 @@ U1 *string_double_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#endif
+	*/
 
 	if (snprintf ((char *) &data[strdestaddr], str_len, "%.10lf", num) <= 0)
 	{
@@ -314,6 +327,7 @@ U1 *string_bytenum_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	/*
 	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, 1) != 0)
 	{
@@ -321,6 +335,7 @@ U1 *string_bytenum_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#endif
+	*/
 
 	data[strdestaddr] = num;
 	data[strdestaddr + 1] = '\0';
@@ -396,6 +411,7 @@ U1 *string_string_to_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	/*
 	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr + index_real, string_len_src) != 0)
 	{
@@ -403,6 +419,7 @@ U1 *string_string_to_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#endif
+	*/
 
 	// printf ("DEBUG: string_string_to_array: '%s'\n", &data[strsrcaddr]);
 
@@ -479,6 +496,7 @@ U1 *string_array_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	/*
 	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, string_len_src) != 0)
 	{
@@ -486,6 +504,7 @@ U1 *string_array_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#endif
+	*/
 
 	strcpy ((char *) &data[strdestaddr], (const char *) &data[strsrcaddr + index_real]);
 	return (sp);
@@ -532,6 +551,7 @@ U1 *string_left (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	/*
 	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, str_len) != 0)
 	{
@@ -539,6 +559,7 @@ U1 *string_left (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#endif
+	*/
 
 	for (i = 0; i < str_len; i++)
 	{
@@ -591,6 +612,7 @@ U1 *string_right (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	/*
 	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, str_len) != 0)
 	{
@@ -598,6 +620,7 @@ U1 *string_right (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#endif
+	*/
 
 	i = 0;
 	for (j = strsource_len - str_len; j < strsource_len; j++)
@@ -650,6 +673,7 @@ U1 *string_mid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	/*
 	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, 1) != 0)
 	{
@@ -657,6 +681,7 @@ U1 *string_mid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#endif
+	*/
 
 	data[strdestaddr] = data[strsourceaddr + pos];
 	data[strdestaddr + 1] = '\0';
@@ -703,6 +728,7 @@ U1 *string_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	/*
 	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, pos) != 0)
 	{
@@ -710,6 +736,7 @@ U1 *string_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#endif
+	*/
 
 	data[strdestaddr + pos] = data[strsourceaddr];
 
@@ -829,6 +856,7 @@ U1 *stringmem_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		{
 			if (destindex < destsize - 1)
 			{
+				/*
 				#if BOUNDSCHECK
 				if (memory_bounds (strsourceaddr, pos) != 0)
 				{
@@ -837,6 +865,7 @@ U1 *stringmem_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 					break;
 				}
 				#endif
+				*/
 
 				if (data[strsourceaddr + pos] == separator)
 				{

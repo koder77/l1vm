@@ -782,7 +782,7 @@ U1 *rand_init (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		}
 	}
 
-	randombytes_buf (buffer, sizeof (buffer);
+	randombytes_buf (buffer, sizeof (buffer));
 
 	// generate random 64 bit startnum
 	for (i = 0; i < 8; i++)
@@ -790,7 +790,6 @@ U1 *rand_init (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		*startnum_ptr = buffer[i];
 		startnum_ptr++;
 	}
-	#endif
 
 	// initialize pseudo random number generator with strong seed
 	init_genrand64 (startnum);
