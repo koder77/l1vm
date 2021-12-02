@@ -21,11 +21,12 @@
 #include <math.h>
 #include "../../../include/stack.h"
 
+// libsodium for random number generator seed
 #include <sodium.h>
 
 // protos
 #include "mt64.h"
-S2 memory_bounds (S8 start, S8 offset_access);
+// S2 memory_bounds (S8 start, S8 offset_access);
 
 static U1 init_libsodium = 1;
 
@@ -754,8 +755,10 @@ U1 *log2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *rand_init (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 startnum ALIGN;
+	U1 *startnum_ptr = (U1 *) &startnum;
+	S8 i ALIGN;
+	U1 buffer[8];
 
-	// dummy read for backwards compatibility
 	sp = stpopi ((U1 *) &startnum, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -779,6 +782,18 @@ U1 *rand_init (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		}
 	}
 
+	randombytes_buf (buffer, sizeof (buffer);
+
+	// generate random 64 bit startnum
+	for (i = 0; i < 8; i++)
+	{
+		*startnum_ptr = buffer[i];
+		startnum_ptr++;
+	}
+	#endif
+
+	// initialize pseudo random number generator with strong seed
+	init_genrand64 (startnum);
 	return (sp);
 }
 
@@ -786,7 +801,7 @@ U1 *rand_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 rand_int ALIGN;
 
-	rand_int = randombytes_uniform (4294967295);
+	rand_int = genrand64_int64 ();
 
 	sp = stpushi (rand_int, sp, sp_bottom);
 	if (sp == NULL)
@@ -801,11 +816,8 @@ U1 *rand_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *rand_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	F8 rand_double ALIGN;
-	S8 rand_int ALIGN;
-	S8 maxvalue ALIGN = 4294967295;
 
-	rand_int = randombytes_uniform (maxvalue);
-	rand_double = (F8) rand_int / maxvalue;
+	rand_double = genrand64_real1 ();
 
 	sp = stpushd (rand_double, sp, sp_bottom);
 	if (sp == NULL)
@@ -904,11 +916,13 @@ U1 *double_rounded_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	offset = number_of_digits;
+	/*
 	if (memory_bounds (deststraddr, offset) != 0)
 	{
 		printf ("double_rounded_string: ERROR dest string overflow!\n");
 		return (NULL);
 	}
+	*/
 
 	switch (number_of_digits)
 	{
