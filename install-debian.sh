@@ -1,7 +1,7 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin
 
-apt-get update
+sudo apt-get update
 
 export PATH="$HOME/bin:$PATH"
 export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"

@@ -9,7 +9,6 @@ export DYLD_LIBRARY_PATH="$HOME/bin:$DYLD_LIBRARY_PATH"
 xcode-select --install
 # find / -name endian.h
 
-# curl https://opensource.apple.com/source/CarbonHeaders/CarbonHeaders-18.1/Endian.h --output endian.h
 cp /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk/usr/include/machine/endian.h /usr/local/include
 
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -54,6 +53,19 @@ else
 	cd zerobuild
 	./make.sh
 	cp zerobuild ~/bin/
+	cd ..
+fi
+
+# check if mpreal.h is installed
+FILE=/usr/local/include/mpreal.h
+if test -f "$FILE"; then
+    echo "$FILE exists!"
+else
+	echo "mpreal.h not installed into $FILE!"
+	echo "cloning and building it now..."
+	git clone https://github.com/advanpix/mpreal.git
+	cd mpreal
+	sudo cp mpreal.h /usr/local/include
 	cd ..
 fi
 
