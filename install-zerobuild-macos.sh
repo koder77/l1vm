@@ -19,7 +19,7 @@ export DYLD_LIBRARY_PATH="$HOME/bin:$DYLD_LIBRARY_PATH"
 
 #install brew
 xcode-select --install
-find /usr -name endian.h
+find / -name endian.h
 cp /usr/include/machine/endian.h /usr/include
 
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
