@@ -60,7 +60,7 @@ fi
 echo "mpreal.h installation"
 echo "cloning and building it now..."
 git clone https://github.com/advanpix/mpreal.git
-cd mpreal
+# cd mpreal
 # sudo cp mpreal.h /usr/local/include
 cp vm/modules/mpfr-c++/mpreal.h /usr/local/include
 cd ..
