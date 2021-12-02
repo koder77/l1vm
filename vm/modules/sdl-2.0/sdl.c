@@ -17,6 +17,11 @@
  * along with L1vm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+ // macOS endianess, little endianess
+ #if __MACH___
+ 	#define __BYTE_ORDER 1234
+ #endif
+
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
@@ -28,14 +33,9 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_endian.h>
 
 #include "gui.h"
-
-
-// macOS endianess
-#if __MACH___
-	#define __BYTE_ORDER SDL_LIL_ENDIAN
-#endif
 
 
 SDL_Surface *surf = NULL;
