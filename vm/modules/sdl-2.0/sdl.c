@@ -31,6 +31,13 @@
 
 #include "gui.h"
 
+
+// macOS endianess
+#if __MACH___
+	#define __BYTE_ORDER SDL_LIL_ENDIAN
+#endif
+
+
 SDL_Surface *surf = NULL;
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
