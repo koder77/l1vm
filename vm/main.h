@@ -85,4 +85,6 @@ size_t strlen_safe (const char * str, int maxlen);
 // code_datasize.c
 void show_code_data_size (S8 codesize, S8 datasize);
 
+S2 memory_bounds (S8 start, S8 offset_access);
+
 #endif
