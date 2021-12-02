@@ -21,23 +21,13 @@
 #include <math.h>
 #include "../../../include/stack.h"
 
-#if __MACH__
-	#define LIBCRYPTO_RANDOM_SEED 0					// don't use on macOS for now, maybe using it later
-#else
-	// set to 1 to use libcrypto random seed function
-	#define LIBCRYPTO_RANDOM_SEED 1
-#endif
-
-#if LIBCRYPTO_RANDOM_SEED
-	// libcrypt for random number generator seed
-	#include <openssl/sha.h>
-	#include <openssl/rand.h>
-#endif
+#include <sodium.h>
 
 // protos
 #include "mt64.h"
 S2 memory_bounds (S8 start, S8 offset_access);
 
+static U1 init_libsodium = 1;
 
 // math functions --------------------------------------
 
@@ -764,11 +754,8 @@ U1 *log2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *rand_init (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 startnum ALIGN;
-	U1 *startnum_ptr = (U1 *) &startnum;
-	S8 i ALIGN;
-	U1 buffer[8];
-	S8 written ALIGN;
 
+	// dummy read for backwards compatibility
 	sp = stpopi ((U1 *) &startnum, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -777,22 +764,21 @@ U1 *rand_init (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	#if LIBCRYPTO_RANDOM_SEED
-	// libcrypto random number seed init
-	RAND_poll ();
-
-	written = RAND_bytes (buffer, sizeof (buffer));
-
-	// generate random 64 bit startnum
-	for (i = 0; i < 8; i++)
+	// libsodium random number seed init
+	if (init_libsodium == 1)
 	{
-		*startnum_ptr = buffer[i];
-		startnum_ptr++;
+		if (sodium_init () < 0)
+		{
+			// error can't init lib sodium
+			printf ("rand_init: ERROR: can't initialize lib sodium!\n");
+			return (NULL);
+		}
+		else
+		{
+			init_libsodium = 0;		// library init done!!!
+		}
 	}
-	#endif
 
-	// initialize pseudo random number generator with strong seed
-	init_genrand64 (startnum);
 	return (sp);
 }
 
@@ -800,7 +786,7 @@ U1 *rand_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 rand_int ALIGN;
 
-	rand_int = genrand64_int64 ();
+	rand_int = randombytes_uniform (4294967295);
 
 	sp = stpushi (rand_int, sp, sp_bottom);
 	if (sp == NULL)
@@ -815,8 +801,11 @@ U1 *rand_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *rand_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	F8 rand_double ALIGN;
+	S8 rand_int ALIGN;
+	S8 maxvalue ALIGN = 4294967295;
 
-	rand_double = genrand64_real1 ();
+	rand_int = randombytes_uniform (maxvalue);
+	rand_double = (F8) rand_int / maxvalue;
 
 	sp = stpushd (rand_double, sp, sp_bottom);
 	if (sp == NULL)

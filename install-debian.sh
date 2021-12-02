@@ -60,9 +60,9 @@ if ! dpkg -s libmpfrc++-dev &> /dev/null; then
 	fi
 fi
 
-if ! dpkg -s libssl-dev &> /dev/null; then
-	echo "try to install libssl-dev..."
-	if ! sudo apt-get install libssl-dev; then
+if ! dpkg -s libsodium-dev &> /dev/null; then
+	echo "try to install libsodium-dev..."
+	if ! sudo apt-get install libsodium-dev; then
 		echo "installation failed!"
 		exit 1
 	fi
