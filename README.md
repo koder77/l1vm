@@ -30,12 +30,19 @@ About 2 MB RAM only as shown in the taskmanager by running a minimal test progra
 
 NEW: Now the full JIT-compiler is in the "lbjit" directory!
 
+<h2>macOS</2>
 NEW: macOS experimental build scripts made together with sportfloh.
+And cedi did write the .yaml GitHUb Actions file.
 See main directory: "install-zerobuild-macos.sh".
+
+What works right now: l1asm, l1com, l1pre and the l1vm.
+And the following modules:
+endianess, fann, genann, math, net, process, sdl-2-0, string, time
 
 <h2>Credits</h2>
 Thanks goes to: <br>
 Florian Bruder (sportfloh) for helping on the macOS port.
+Cedric Kienzler (cedi) for helping setup GitHub Actions .yaml script.
 Andreas Weber (Andy1978) for fixing some serious bugs. <br>
 The team behind SDL and A. Schiffler (ferzkopp) for their great work! <br>
 The author of genann networks library: Lewis Van Winkle (codeplea). <br>
