@@ -19,8 +19,8 @@
 
  // macOS endianess, little endianess
  #if __MACH___
- 	#undef SDL_BYTEORDER
- 	#define SDL_BYTEORDER 1234
+ 	#undef __BYTE_ORDER
+ 	#define __BYTE_ORDER 1234
  #endif
 
 #include "../../../include/global.h"
