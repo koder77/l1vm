@@ -7,7 +7,7 @@ export DYLD_LIBRARY_PATH="$HOME/bin:$DYLD_LIBRARY_PATH"
 
 #install brew
 xcode-select --install
-# find / -name endian.h
+find / -name features.h
 
 cp /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk/usr/include/machine/endian.h /usr/local/include
 
