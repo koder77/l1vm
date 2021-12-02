@@ -1,26 +1,16 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 #
-# Install the following packages with Homebrew:
-#
-# SDL2-devel, SDL2_gfx, SDL2_image, SDL2_ttf, SDL2_mixer
-# fann-devel
-# mpfr-devel
-# cmake
-# make
-# git
-# openssl-devel
-
-# Then run this build script.
-
 
 export PATH="$HOME/bin:$PATH"
 export DYLD_LIBRARY_PATH="$HOME/bin:$DYLD_LIBRARY_PATH"
 
 #install brew
 xcode-select --install
-find / -name endian.h
-cp /usr/include/machine/endian.h /usr/include
+# find / -name endian.h
+
+# curl https://opensource.apple.com/source/CarbonHeaders/CarbonHeaders-18.1/Endian.h --output endian.h
+cp /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk/usr/include/machine/endian.h /usr/local/include
 
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
