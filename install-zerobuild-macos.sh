@@ -57,18 +57,12 @@ else
 	cd ..
 fi
 
-# check if mpreal.h is installed
-FILE=/usr/local/include/mpreal.h
-if test -f "$FILE"; then
-    echo "$FILE exists!"
-else
-	echo "mpreal.h not installed into $FILE!"
-	echo "cloning and building it now..."
-	git clone https://github.com/advanpix/mpreal.git
-	cd mpreal
-	sudo cp mpreal.h /usr/local/include
-	cd ..
-fi
+echo "mpreal.h installation"
+echo "cloning and building it now..."
+git clone https://github.com/advanpix/mpreal.git
+cd mpreal
+sudo cp mpreal.h /usr/local/include
+cd ..
 
 cd assemb
 if zerobuild force; then
