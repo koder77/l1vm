@@ -77,7 +77,7 @@ fi
 
 if ! dpkg -s libserialport-dev &> /dev/null; then
 	echo "try to install libserialport-dev..."
-	if ! sudo apt-get install libsodium-dev; then
+	if ! sudo apt-get install libserialport-dev; then
 		echo "installation failed!"
 		exit 1
 	fi

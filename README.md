@@ -35,9 +35,10 @@ NEW: macOS build scripts made together with sportfloh.
 And cedi did write the .yaml GitHub Actions file.
 See main directory: "install-zerobuild-macos.sh".
 
-What works right now: l1asm, l1com, l1pre and the l1vm.
-And the following modules:
-endianess, fann, file, genann, math, net, process, sdl-2.0, string, time
+What works right now: l1asm, l1com, l1pre and the l1vm. <br>
+And the following modules: <br>
+endianess, fann, file, genann, math, net, process, sdl-2.0, string, time <br>
+librs232 (serialport by libserialport) <br>
 
 <h2>Credits</h2>
 Thanks goes to: <br>
