@@ -40,6 +40,13 @@ And the following modules: <br>
 endianess, fann, file, genann, math, net, process, sdl-2.0, string, time <br>
 librs232 (serialport by libserialport) <br><br>
 
+After installation you have to add the following lines to your "~/.bashrc" bash config file: <br>
+
+```
+export PATH="$HOME/bin:$PATH"
+export DYLD_LIBRARY_PATH="$HOME/bin:$DYLD_LIBRARY_PATH"
+```
+
 The "mem" module and the "mpfr-c++" module still can not be build! <br>
 **If you are a developer on macOS then you could help me to build them too!** <br>
 **Any help is welcome!** <br>
@@ -131,6 +138,14 @@ Edit the "vm/jit.h" file, set:
 
 
 <h2>2. Installation</h2>
+
+After installation you have to add the following lines to your "~/.bashrc" bash config file: <br>
+
+```
+export PATH="$HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
+```
+
 <h3>Debian Linux</h3>
 Use: install-debian.sh or install-jit-debian.sh
 
