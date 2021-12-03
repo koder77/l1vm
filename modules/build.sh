@@ -14,7 +14,7 @@ cd ../net
 zerobuild force
 cd ../process
 zerobuild force
-cd ../rs232
+cd ../rs232-libserialport
 zerobuild force
 cd ../sdl-2.0
 zerobuild force

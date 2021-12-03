@@ -14,8 +14,8 @@ cd ../net
 zerobuild zerobuild-macos.txt force
 cd ../process
 zerobuild zerobuild-macos.txt force
-# cd ../rs232
-# zerobuild force
+cd ../rs232-libserialport
+zerobuild force
 cd ../sdl-2.0
 zerobuild zerobuild-macos.txt force
 cd ../string

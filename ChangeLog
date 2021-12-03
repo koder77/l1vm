@@ -13,7 +13,9 @@ L1VM - (1.3.0)
 	NEW: experimental GitHub actions build script added.
 	Math module now uses libsodium for random numbers.
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 02 Dec 2021 16:41 +0100
+	NEW: added libserialport installation to build scripts
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 03 Dec 2021 13:03 +0100
 
 L1VM - (1.2.0)
 	NEW: CODE CLEANUP all stack check code removed.

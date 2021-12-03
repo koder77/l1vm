@@ -20,6 +20,7 @@ sudo dnf install cmake.x86_64
 sudo dnf install make.x86_64
 sudo dnf install git.x86_64
 sudo dnf install libsodium-devel.x86_64
+sudo dnf install libserialport-devel.x86_64
 
 # check if clang C compiler is installed
 FILE=/usr/bin/clang

@@ -36,7 +36,7 @@ chmod +x make-script.sh
 #zerobuild zerobuild-win.txt force script
 #chmod +x make-script.sh
 #./make-script.sh
-cd ../rs232
+cd ../rs232-libserialport
 zerobuild zerobuild-win.txt force script
 chmod +x make-script.sh
 ./make-script.sh

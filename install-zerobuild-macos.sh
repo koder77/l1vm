@@ -23,6 +23,7 @@ brew install sdl2_mixer
 brew install fann
 brew install mpfr
 brew install libsodium
+brew install libserialport
 brew install cmake
 brew install make
 brew install git
