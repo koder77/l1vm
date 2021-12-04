@@ -1,0 +1,25 @@
+{
+    "name": "l1com-highlights",
+    "displayName": "l1com highlights",
+    "description": "l1com syntax highlighter",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.62.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "l1com",
+            "aliases": ["l1com", "l1com"],
+            "extensions": [".l1com",".l1asm"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "l1com",
+            "scopeName": "source.l1com",
+            "path": "./syntaxes/l1com.tmLanguage.json"
+        }]
+    }
+}

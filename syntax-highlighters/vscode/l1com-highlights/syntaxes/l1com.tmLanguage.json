@@ -1,0 +1,32 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "l1com",
+	"patterns": [
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#strings"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.var.l1com",
+				"match": "\\b(if+|if|else|endif|for-loop|for|next|do|while|set|byte|string|int16|int32|int64|double|pushb|pushw|pushdw|pushd|pullb|pullw|pulldw|pullqw|pulld|addi|subi|muli|divi|addd|subd|muld|divd|smuli|sdivi|andi|ori|bandi|bori|bxori|modi|eqi|neqi|gri|lsi|greqi|lseqi|eqd|neqd|grd|lsd|greqd|lseqd|jmp|jmpi|stpushb|stpopb|stpushi|stpopi|stpushd|stpopd|loada|loadd|intr0|intr1|inclsijmpi|decgrijmpi|movi|movd|loadl|jmpa|jsr|rts|load|noti|call|!|exit)\\b"
+			}]
+		},
+		"strings": {
+			"name": "string.quoted.double.l1com",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.l1com",
+					"match": "\\\\."
+				}
+			]
+		}
+	},
+	"scopeName": "source.l1com"
+}
