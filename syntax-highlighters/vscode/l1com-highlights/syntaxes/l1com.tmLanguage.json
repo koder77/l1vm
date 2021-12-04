@@ -13,7 +13,7 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.var.l1com",
-				"match": "\\b(funcend|func|switchend|switch|break|ASM_END|ASM|if+|if|else|endif|for-loop|for|next|do|while|set|const-byte|const-int16|const-int32|const-int64|const-double|byte|string|int16|int32|int64|double|pushb|pushw|pushdw|pushd|pullb|pullw|pulldw|pullqw|pulld|addi|subi|muli|divi|addd|subd|muld|divd|smuli|sdivi|andi|ori|bandi|bori|bxori|modi|eqi|neqi|gri|lsi|greqi|lseqi|eqd|neqd|grd|lsd|greqd|lseqd|jmp|jmpi|stpushb|stpopb|stpushi|stpopi|stpushd|stpopd|loada|loadd|intr0|intr1|inclsijmpi|decgrijmpi|movi|movd|loadl|jmpa|jsr|rts|load|noti|call|!|exit)\\b"
+				"match": "\\b(funcend|func|switchend|switch|break|ASM_END|ASM|#include|#func|#define|#var|if+|if|else|endif|for-loop|for|next|do|while|set|const-byte|const-int16|const-int32|const-int64|const-double|byte|string|int16|int32|int64|double|pushb|pushw|pushdw|pushd|pullb|pullw|pulldw|pullqw|pulld|addi|subi|muli|divi|addd|subd|muld|divd|smuli|sdivi|andi|ori|bandi|bori|bxori|modi|eqi|neqi|gri|lsi|greqi|lseqi|eqd|neqd|grd|lsd|greqd|lseqd|jmp|jmpi|stpushb|stpopb|stpushi|stpopi|stpushd|stpopd|loada|loadd|intr0|intr1|inclsijmpi|decgrijmpi|movi|movd|loadl|jmpa|jsr|rts|load|noti|call|!|exit)\\b"
 			}]
 		},
 		"strings": {
