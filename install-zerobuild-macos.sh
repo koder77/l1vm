@@ -140,6 +140,10 @@ fi
 
 cd ..
 
+echo "DEBUG: ls:"
+ls
+echo "ls END!"
+
 echo "installing programs to ~/l1vm"
 cp -R prog/ ~/l1vm
 cp lib/sdl-lib* ~/l1vm/prog
