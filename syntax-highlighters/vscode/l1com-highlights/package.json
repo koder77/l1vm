@@ -13,7 +13,7 @@
         "languages": [{
             "id": "l1com",
             "aliases": ["l1com", "l1com"],
-            "extensions": [".l1com",".l1asm"],
+            "extensions": [".l1com",".l1asm",".l1h"],
             "configuration": "./language-configuration.json"
         }],
         "grammars": [{
