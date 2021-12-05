@@ -102,9 +102,6 @@ if ! dpkg -s git &> /dev/null; then
 	fi
 fi
 
-echo "searching mpreal.h:"
-find /usr -name mpreal.h
-
 echo "libraries installed! building compiler, assembler and VM..."
 
 export CC=clang
