@@ -163,8 +163,7 @@ S2 get_ast (U1 *line, U1 *parse_cont)
 
 	if (check_brackets_match (line) == 1)
 	{
-		printf ("error: line %lli: brackets don't match!\n", linenum);
-		// printf ("DEBUG get_ast\n");
+		// brackets don't match!
 		return (2);
 	}
 
@@ -287,7 +286,7 @@ S2 get_ast (U1 *line, U1 *parse_cont)
 						{
 							if (ast_ind == -1)
 							{
-								printf ("error: line %lli: brackets don't match!\n", linenum);
+								// brackets don't match!
 								return (2);
 							}
 							// printf ("ast_ind: %i, exp_ind: %i, arg_ind: %i, arg_pos: %i\n", ast_ind, exp_ind, arg_ind, arg_pos);
@@ -351,7 +350,7 @@ S2 get_ast (U1 *line, U1 *parse_cont)
 	}
 	if (ast_ind != -1)
 	{
-		printf ("error: line %lli: brackets don't match!\n", linenum);
+		// brackets don't match!
 		return (2);
 	}
 	return (0);
@@ -412,7 +411,7 @@ S2 check_for_brackets (U1 *line)
 	// check if brackets counter is 0, all opening brackets are closed or not
 	if (brackets_open != brackets_close)
 	{
-		printf ("error: line %lli: brackets don't match!\n", linenum);
+		// printf ("error: line %lli: brackets don't match!\n", linenum);
 		// printf ("DEBUG check_for_brackets\n");
 		return (0);
 	}
@@ -471,6 +470,32 @@ S8 loadreg (void)
 	return (0);
 }
 
+S2 check_for_whitespace (U1 *line)
+{
+	S8 str_len ALIGN;
+	S8 i ALIGN;
+	U1 space = ' ';
+	U1 tab = 8;
+	U1 ret = 13;
+	U1 newline = 10;	
+
+	str_len = strlen_safe (line, MAXLINELEN);
+	if (str_len > 0)
+	{
+		for (i = 0; i < str_len; i++)
+		{
+			// printf ("check_for_whitespace: char num: %i, ascii code: %i\n", i, line[i]);
+			if (line[i] != space && line[i] != tab && line[i] != ret && line[i] != newline)
+			{
+				// ERROR no whitespace char found
+				return (1);
+			}
+		}
+	}
+	// all OK!
+	return (0);
+}
+
 S2 parse_line (U1 *line)
 {
     S4 level, j, last_arg, last_arg_2, t, v, reg, reg2, reg3, reg4, target, e, exp;
@@ -518,9 +543,16 @@ S2 parse_line (U1 *line)
 	}
 	if (ret == 2)
 	{
-		// fatal ERROR!!! such as brackets don't match in line!!!
-		// printf ("DEBUG parse_line: brackets don't match!\n");
-		return (2);
+		if (check_for_whitespace (line) == 1)
+		{
+			printf ("error: line %lli: brackets don't match!\n", linenum);
+			return (2);
+		}
+		else 
+		{
+			printf ("line %lli: blank line, ignored!\n", linenum);
+			return (0);
+		}
 	}
 
 	if (parse_cont)
