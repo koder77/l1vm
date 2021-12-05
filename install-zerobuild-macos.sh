@@ -141,14 +141,14 @@ fi
 cd ..
 
 echo "installing programs to ~/l1vm"
-cp prog/ ~/l1vm -r
+cp prog/ ~/l1vm -R
 cp lib/sdl-lib* ~/l1vm/prog
 
 echo "installing lib to ~/lib"
-cp lib/ ~/l1vm -r
+cp lib/ ~/l1vm -R
 
 echo "installing fonts to ~/l1vm"
-cp fonts/ ~/l1vm -r
+cp fonts/ ~/l1vm -R
 
 mkdir ~/l1vm/include
 cp include-lib/* ~/l1vm/include/
