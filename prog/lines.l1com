@@ -1,6 +1,6 @@
 // lines.l1com
 // a draw lines program
-
+//
 (main func)
     (set int64 1 zero 0)
     (set int64 1 one 1)
