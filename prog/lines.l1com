@@ -1,6 +1,6 @@
 // lines.l1com
 // a draw lines program
-//
+
 (main func)
     (set int64 1 zero 0)
     (set int64 1 one 1)
@@ -32,12 +32,14 @@
     // quit
     (255 0 0 0 intr0)
 (funcend)
+
 (draw_ptop func)
 	(set int64 1 one 1)
 	(set int64 1 f 0)
 	(set int64 1 y 0)
 	(set int64 1 x 0)
 	(set byte 1 col 255)
+
 	(ypos y =)
 	(for-loop)
 	(((y ymax <=) f =) f for)
@@ -50,6 +52,7 @@
 		((y posstep +) y =)
 	(next)
 	(ymax y =)
+	
 	(for-loop)
 	(((y ypos >=) f =) f for)
 		(xmax x =)

@@ -550,7 +550,7 @@ S2 parse_line (U1 *line)
 		}
 		else 
 		{
-			printf ("line %lli: blank line, ignored!\n", linenum);
+			// printf ("line %lli: blank line, ignored!\n", linenum);
 			return (0);
 		}
 	}
