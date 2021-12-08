@@ -2,7 +2,7 @@
 //
 //
 (endianess_init func)
-    (set string s modulestr@end "libl1vmendianess.so")
+    (set string s modulestr@end "libl1vmendianess")
     (set string s host_to_nwstr@end "host_to_nw")
     (set string s n_to_hostwstr@end "n_to_hostw")
     (set string s host_to_ndwstr@end "host_to_ndw")

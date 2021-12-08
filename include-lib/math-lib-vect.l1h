@@ -2,7 +2,7 @@
 //
 //
 (math_vect_init func)
-    (set string s modulestr@mathvect "libl1vmmathvect.so")
+    (set string s modulestr@mathvect "libl1vmmathvect")
 	// int array
 	(set string s mvect_add_intstr@mathvect "mvect_add_int")
 	(set string s mvect_sub_intstr@mathvect "mvect_sub_int")

@@ -2,7 +2,7 @@
 //
 //
 (mp_math_init func)
-    (set string s modulestr@gmp "libl1vmmpfr.so")
+    (set string s modulestr@gmp "libl1vmmpfr")
 	(set string s cleanupstr@gmp "mp_cleanup")
 	(set string s setstr@gmp "mp_set_float")
 	(set string s addstr@gmp "mp_add_float")

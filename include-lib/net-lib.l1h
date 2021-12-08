@@ -2,7 +2,7 @@
 //
 //
 (net_init func)
-	(set string s modulestr@net "libl1vmnet.so")
+	(set string s modulestr@net "libl1vmnet")
     (set string s initstr@net "init_sockets")
     (set string s open_server_socketstr@net "open_server_socket")
     (set string s open_accept_serverstr@net "open_accept_server")

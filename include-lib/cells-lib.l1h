@@ -2,7 +2,7 @@
 // neural networks using Cells FANN library
 //
 (cells_init_lib func)
-	(set string s modulestr@cells "libl1vmcells.so")
+	(set string s modulestr@cells "libl1vmcells")
 	(set string s alloc_neurons_equalstr@cells "cells_alloc_neurons_equal")
 	(set string s alloc_neuronsstr@cells "cells_alloc_neurons")
 	(set string s dealloc_neuronsstr@cells "cells_dealloc_neurons")

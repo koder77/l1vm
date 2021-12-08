@@ -5,7 +5,7 @@
 (sdl_open_screen func)
     (set int64 1 zero 0)
     (set int64 1 f 0)
-    (set string s modulestr@sdl "libl1vmsdl.so")
+    (set string s modulestr@sdl "libl1vmsdl")
     (set string s openstr@sdl "sdl_open_screen")
     (set string s openfullstr@sdl "sdl_open_screen_full")
     (set string s quitstr@sdl "sdl_quit")

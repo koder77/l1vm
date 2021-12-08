@@ -2,7 +2,7 @@
 //
 //
 (string_init func)
-    (set string s modulestr@string "libl1vmstring.so")
+    (set string s modulestr@string "libl1vmstring")
     (set string s lenstr@string "string_len")
     (set string s copystr@string "string_copy")
     (set string s catstr@string "string_cat")

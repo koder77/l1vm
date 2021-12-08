@@ -102,30 +102,50 @@ S2 alloc_jit_code ()
 
 S2 load_module (U1 *name, S8 ind)
 {
+	U1 linux_lib_suffix[] = ".so";
+	U1 macos_lib_suffix[] = ".dylib";
+	U1 libname[MAXLINELEN];
+
+	if (strlen (name) > MAXLINELEN - 7)
+	{
+		printf ("load_module: ERROR library name overflow!\n");
+		return (1);
+	}
+
+#if __linux__ || _WIN32 
+	strcpy (libname, name);
+	strcat (libname, linux_lib_suffix);
+#endif
+
+#if __MACH__
+	strcpy (libname, name);
+	strcat (libname, macos_lib_suffix);
+#endif
+
 #if __linux__
-    modules[ind].lptr = dlopen ((const char *) name, RTLD_LAZY);
+    modules[ind].lptr = dlopen ((const char *) libname, RTLD_LAZY);
     if (!modules[ind].lptr)
 	{
-        printf ("error load module %s!\n", (const char *) name);
+        printf ("error load module %s!\n", (const char *) libname);
         return (1);
     }
 #endif
 
 #if _WIN32
-    modules[ind].lptr = LoadLibrary ((const char *) name);
+    modules[ind].lptr = LoadLibrary ((const char *) libname);
     if (! modules[ind].lptr)
     {
-        printf ("error load module %s!\n", (const char *) name);
+        printf ("error load module %s!\n", (const char *) libname);
         return (1);
     }
 #endif
 
-    strcpy ((char *) modules[ind].name, (const char *) name);
+    strcpy ((char *) modules[ind].name, (const char *) libname);
 
 	// print module name:
 	if (silent_run == 0)
 	{
-		printf ("module: %lli %s loaded\n", ind, name);
+		printf ("module: %lli %s loaded\n", ind, libname);
   	}
     return (0);
 }

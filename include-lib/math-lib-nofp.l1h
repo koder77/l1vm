@@ -3,7 +3,7 @@
 // floating point math for CPUs without floating point opcodes
 //
 (math_init func)
-    (set string s modulestr@math "libl1vmmath-nofp.so")
+    (set string s modulestr@math "libl1vmmath-nofp")
     (set string s int2doublestr@math "int2double")
     (set string s double2intstr@math "double2int")
     (set string s sqrtdoublestr@math "sqrtdouble")

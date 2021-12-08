@@ -2,7 +2,7 @@
 // neural networks
 //
 (genann_init_lib func)
-    (set string s modulestr@genann "libl1vmgenann.so")
+    (set string s modulestr@genann "libl1vmgenann")
     (set string s readstr@genann "genann_read_ann")
     (set string s writestr@genann "genann_write_ann")
     (set string s initstr@genann "genann_init_ann")

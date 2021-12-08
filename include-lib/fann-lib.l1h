@@ -2,7 +2,7 @@
 // neural networks using FANN library
 //
 (fann_init_lib func)
-	(set string s modulestr@fann "libl1vmfann.so")
+	(set string s modulestr@fann "libl1vmfann")
 	(set string s readstr@fann "fann_read_ann")
 	(set string s runstr@fann "fann_run_ann")
 	(set string s freestr@fann "fann_free_ann")

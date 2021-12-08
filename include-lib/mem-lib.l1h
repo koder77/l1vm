@@ -3,7 +3,7 @@
 //
 (mem_init func)
 	// normal array functions
-	(set string s modulestr@mem "libl1vmmem.so")
+	(set string s modulestr@mem "libl1vmmem")
 	(set string s initstr@mem "init_mem")
 	(set string s allocbytestr@mem "alloc_byte")
 	(set string s allocint16str@mem "alloc_int16")

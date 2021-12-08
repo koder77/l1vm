@@ -3,7 +3,7 @@
 // mem object library
 //
 (mem_obj_init func)
-	(set string s modulestr@memobj "libl1vmmemobj.so")
+	(set string s modulestr@memobj "libl1vmmemobj")
 	(set string s initstr@memobj "init_mem")
 	(set string s freestr@memobj "free_mem")
 	(set string s alloc_obj_memstr@memobj "alloc_obj_mem")

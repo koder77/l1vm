@@ -2,7 +2,7 @@
 //
 //
 (time_init func)
-    (set string s modulestr@time "libl1vmtime.so")
+    (set string s modulestr@time "libl1vmtime")
 	(set string s datetostringstr@time "time_date_to_string")
 	(set string s timetostringstr@time "time_time_to_string")
 	(set int64 1 datetostring@time 0)

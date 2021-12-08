@@ -2,7 +2,7 @@
 //
 //
 (rs232_init func)
-	(set string s modulestr@rs232 "libl1vmrs232.so")
+	(set string s modulestr@rs232 "libl1vmrs232")
 	(set string s open_comportstr@rs232 "rs232_OpenComport")
 	(set string s poll_comportstr@rs232 "rs232_PollComport")
 	(set string s send_bytestr@rs232 "rs232_SendByte")

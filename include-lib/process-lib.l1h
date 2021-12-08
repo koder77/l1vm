@@ -2,7 +2,7 @@
 //
 //
 (process_init func)
-	(set string s modulestr@process "libl1vmprocess.so")
+	(set string s modulestr@process "libl1vmprocess")
 	(set string s run_shellstr@process "run_shell")
 	(set int64 1 run_shell@process 0)
 	(set int64 1 mod@process 0)

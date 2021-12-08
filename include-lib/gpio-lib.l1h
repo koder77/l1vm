@@ -2,7 +2,7 @@
 //
 //
 (gpio_init func)
-	(set string s modulestr@gpio "libl1vmgpio.so")
+	(set string s modulestr@gpio "libl1vmgpio")
 	(set string s setupstr@gpio "gpio_setup")
 	(set string s digital_writestr@gpio "gpio_digital_write")
 	(set string s digital_readstr@gpio  "gpio_digital_read")

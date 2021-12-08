@@ -2,7 +2,7 @@
 //
 //
 (file_init func)
-    (set string s modulestr@file "libl1vmfile.so")
+    (set string s modulestr@file "libl1vmfile")
     (set string s openstr@file "file_open")
     (set string s closestr@file "file_close")
     (set string s seekstr@file "file_seek")
