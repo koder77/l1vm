@@ -105,7 +105,7 @@ cd modules
 echo "installing modules..."
 chmod +x *.sh
 ./build-macos.sh
-if ./install.sh; then
+if ./install-macos.sh; then
 	echo "modules build ok!"
 else
 	echo "modules build FAILED!"
