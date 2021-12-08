@@ -151,4 +151,10 @@ cp include-lib/* ~/l1vm/include/
 mkdir ~/l1vm/man
 
 echo "installation finished!"
+
+echo "building lines..."
+./build.sh prog/lines
+echo "running lines GUI program..."
+l1vm prog/lines
+
 exit 0
