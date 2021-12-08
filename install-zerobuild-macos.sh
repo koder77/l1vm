@@ -153,9 +153,9 @@ mkdir ~/l1vm/man
 echo "installation finished!"
 
 sudo update_dyld_shared_cache
-echo "building lines..."
-./build.sh prog/lines
-echo "running lines GUI program..."
-l1vm prog/lines
+echo "building fann library demo"
+./build.sh lib/fann-lib
+echo "running fann library demo"
+l1vm lib/fann
 
 exit 0
