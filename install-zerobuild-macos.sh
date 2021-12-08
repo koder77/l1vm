@@ -156,6 +156,6 @@ sudo update_dyld_shared_cache
 echo "building fann library demo"
 ./build.sh lib/fann-lib
 echo "running fann library demo"
-l1vm lib/fann
+l1vm lib/fann-lib
 
 exit 0
