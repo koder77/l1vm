@@ -2950,10 +2950,15 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			SDL_UpdateWindowSurface (window);
 
 			/* wait for event */
+            gadget_event_wait:
             if (! SDL_WaitEvent (&event))
             {
-                printf ("gadget_event: error can't wait for event!\n");
-                return (NULL);
+                // printf ("gadget_event: error can't wait for event!\n");
+                // return (NULL);
+                SDL_Delay (100);
+
+                SDL_PumpEvents ();
+                goto gadget_event_wait;
             }
 
             switch (event.type)

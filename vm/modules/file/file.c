@@ -219,6 +219,7 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             return (NULL);
     }
 
+	// DEBUG
     // printf ("file_open: filename: '%s'\n", files[handle].name);
 
     files[handle].fptr = fopen ((char *) files[handle].name, (char *) access_str);

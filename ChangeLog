@@ -5,7 +5,9 @@ L1VM - (1.3.1)
 	NEW: VM main.c load_module now sets OS specific .so dynamic library extension.
 	In the modules includes now the name is set without ".so" ending: "libl1vmsdl".
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 08 Dec 2021 18:50 +0100
+	FIXES: SDL module now stays in event poll loop if no event can be read.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 09 Dec 2021 18:50 +0100
 
 L1VM - (1.3.0)
 	NEW: compiler now checks size of string and shows an error message if the set size is too small!!
