@@ -1,4 +1,8 @@
+// math-lib.l1com
+// math library demo
+// 
 #include <math-const.l1h>
+#include <intr.l1h>
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 randstart 2003)
@@ -15,22 +19,22 @@
 	(:math_randint call)
 	(random stpopi)
 	(loadreg)
-	(4 random 0 0 intr0)
-	(7 0 0 0 intr0)
-	(5 m_pi@math 0 0 intr0)
-	(7 0 0 0 intr0)
+	print_i (random)
+	print_n
+	print_d (m_pi@math)
+	print_n
 	// round pi to "digits" (3) digits and store number in string
 	(m_pi@math digits numstraddr numstr_len :double_rounded_string call)
 	(loadreg)
-	(6 numstr 0 0 intr0)
-	(7 0 0 0 intr0)
+	print_s (numstr)
+	print_n
 	(not_num :math_not call)
 	(not_ret stpopi)
 	(loadreg)
-	(4 not_ret 0 0 intr0)
-	(7 0 0 0 intr0)
+	print_i (not_ret)
+	print_n
 	// close module
-	(1 zero 0 0 intr0)
-	(255 zero 0 0 intr0)
+	free_mod (zero)
+	exit (zero)
 (funcend)
 #include <math-lib.l1h>

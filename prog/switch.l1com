@@ -1,30 +1,32 @@
+// switch.l1com
 // Brackets - Hello world! switch
 //
+#include <intr.l1h>
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 x 23)
 	(set int64 1 y 42)
-	(set int64 1 a 0)
-	(set string s hello "Hello world!")
-	(set string s 23_str "= 23")
-	(set string s 42_str "= 42")
+	(set string s 23_str "y = 23")
+	(set string s 42_str "y = 42")
 	(set const-int64 1 23_const 23)
 	(set const-int64 1 42_const 42)
+	(set string s hello_str "Hello world!")
+	(set int64 1 a 0)
 	// print string
-	(6 hello 0 0 intr0)
-	(7 0 0 0 intr0)
+    print_s (hello_str)
+    print_n
 	((x y *) a =)
-	(4 a 0 0 intr0)
-	(7 0 0 0 intr0)
+    print_i (a)
+    print_n
 	(switch)
 		(y 23_const ?)
-			(6 23_str 0 0 intr0)
-			(7 0 0 0 intr0)
+            print_s (23_str)
+            print_n
 			(break)
 		(y 42_const ?)
-			(6 42_str 0 0 intr0)
-			(7 0 0 0 intr0)
+            print_s (42_str)
+            print_n
 			(break)
 	(switchend)
-	(255 zero 0 0 intr0)
+    exit (zero)
 (funcend)
