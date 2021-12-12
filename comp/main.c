@@ -3140,7 +3140,7 @@ S2 parse_line (U1 *line)
 												strcat ((char *) code[code_line], (const char *) ast[level].expr[j][last_arg - 2]);
 												strcat ((char *) code[code_line], ", 0, ");
 												sprintf ((char *) str, "%i", reg2);
-												strcpy ((char *) code[code_line], (const char *) str);
+												strcat ((char *) code[code_line], (const char *) str);
 												strcat ((char *) code[code_line], "\n");
 											}
 										}

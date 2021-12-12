@@ -7,10 +7,10 @@ L1VM - (1.3.1)
 
 	FIXES: SDL module now stays in event poll loop if no event can be read.
 
-	BUG: I found out that a "switch" can not be in the first code line of a program!
-	The compiler creates a wrong "loada" line!
+	BUGFIX: I found out that a "switch" can not be in the first code line of a program!
+	The compiler creates a wrong "loada" line! NOW FIXED!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 11 Dec 2021 22:15 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 12 Dec 2021 18:07 +0100
 
 L1VM - (1.3.0)
 	NEW: compiler now checks size of string and shows an error message if the set size is too small!!
