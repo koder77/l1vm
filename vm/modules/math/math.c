@@ -26,7 +26,7 @@
 
 // protos
 #include "mt64.h"
-// S2 memory_bounds (S8 start, S8 offset_access);
+S2 memory_bounds (S8 start, S8 offset_access);
 
 static U1 init_libsodium = 1;
 
@@ -915,13 +915,14 @@ U1 *double_rounded_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	offset = number_of_digits;
-	/*
+	
+	#if BOUNDSCHECK && ! __MACH__
 	if (memory_bounds (deststraddr, offset) != 0)
 	{
 		printf ("double_rounded_string: ERROR dest string overflow!\n");
 		return (NULL);
 	}
-	*/
+	#endif
 
 	switch (number_of_digits)
 	{

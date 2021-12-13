@@ -31,7 +31,7 @@ using namespace std;
 
 // protos
 
-// extern "C" S2 memory_bounds (S8 start, S8 offset_access);
+extern "C" S2 memory_bounds (S8 start, S8 offset_access);
 
 
 // arrays memory codes
@@ -620,15 +620,13 @@ extern "C" U1 *load_string_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	if (offset >= 0)
 	{
-		/*
-		#if BOUNDSCHECK
+		#if BOUNDSCHECK && ! __MACH__
 		if (memory_bounds (var_saddr, offset) != 0)
 		{
 			printf ("string_copy: ERROR: dest string overflow!\n");
 			return (NULL);
 		}
 		#endif
-		*/
 
 		strcpy ((char *) &data[var_saddr], (const char *)  mem[memind].objptr[ind].memptr.straddr);
 
