@@ -10,7 +10,12 @@ L1VM - (1.3.1)
 	BUGFIX: I found out that a "switch" can not be in the first code line of a program!
 	The compiler creates a wrong "loada" line! NOW FIXED!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 12 Dec 2021 18:07 +0100
+	NEW: the compiler now checks if RPN or bracket expression assigns a high precision to a lower precision var.
+	For example:
+	{ret = x y z + *}  Where x is int64 and ret = int32, this will get an error!
+	code in comp/parse-rpolish.c
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 15 Dec 2021 18:48 +0100
 
 L1VM - (1.3.0)
 	NEW: compiler now checks size of string and shows an error message if the set size is too small!!

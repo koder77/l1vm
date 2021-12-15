@@ -561,6 +561,8 @@ S2 parse_rpolish (U1 *postfix)
 
 	U1 target_var[MAXLINELEN];
 	S2 target_var_len = MAXLINELEN - 1;
+	U1 target_var_type = UNKNOWN;
+	U1 expression_var_type_max = UNKNOWN;
 
 	S2 math_exp_begin;
 
@@ -573,6 +575,8 @@ S2 parse_rpolish (U1 *postfix)
 		// printf ("error: line %lli: no '=' variable assign found!\n", linenum);
 		return (1);
 	}
+
+	target_var_type = getvartype_real (target_var);
 
 	i = math_exp_begin;
 
@@ -628,6 +632,12 @@ S2 parse_rpolish (U1 *postfix)
 		   {
 			   return (1);
 		   }
+
+			// set to higher bits, if variable has more bytes
+			if (getvartype_real (buf) > expression_var_type_max)
+			{
+				expression_var_type_max = getvartype_real (buf);
+	   		}
 
 		   if (getvartype_real (buf) != DOUBLE)
 		   {
@@ -961,6 +971,13 @@ S2 parse_rpolish (U1 *postfix)
 				}
 			}
 		}
+	}
+
+	// check if for examnple an int64 is assigned to int32, loosing precision
+	if (expression_var_type_max > target_var_type)
+	{
+		printf ("error: line %lli: expression assigns to target of lower precision!\n", linenum);
+		return (1);
 	}
 
    return (0);
