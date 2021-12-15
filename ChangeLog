@@ -14,8 +14,10 @@ L1VM - (1.3.1)
 	For example:
 	{ret = x y z + *}  Where x is int64 and ret = int32, this will get an error!
 	code in comp/parse-rpolish.c
+	NOW variable assign looks like this:
+	{ret = foo }
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 15 Dec 2021 18:48 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 15 Dec 2021 20:48 +0100
 
 L1VM - (1.3.0)
 	NEW: compiler now checks size of string and shows an error message if the set size is too small!!

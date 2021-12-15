@@ -565,6 +565,7 @@ S2 parse_rpolish (U1 *postfix)
 	U1 expression_var_type_max = UNKNOWN;
 
 	S2 math_exp_begin;
+	U1 found_op = 0;			// set to true if found operator
 
 	// printf ("math exp: %s\n", postfix);
 
@@ -679,6 +680,8 @@ S2 parse_rpolish (U1 *postfix)
 			   }
 			   strcpy ((char *) operand1, (const char *) strptr);
 			   */
+
+			  found_op = 1;
 
 			   reg2 = pop_reg_stack ();
 			   if (reg2 == -1)
@@ -801,6 +804,15 @@ S2 parse_rpolish (U1 *postfix)
        }
        i++;
    }
+
+	if (found_op == 0)
+	{
+		// no operator found, was assign expression:
+		// {ret = foo }
+
+		target_reg = target;
+		// printf ("no OP: target= %lli\n", target_reg);		
+	}
 
 	// assign target reg to target variable
 
