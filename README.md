@@ -1,4 +1,4 @@
-L1VM README  2021-12-02
+L1VM README  2021-12-16
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -31,6 +31,7 @@ About 10 MB RAM only as shown in the taskmanager by running a minimal test progr
 NEW: Now the full JIT-compiler is in the "lbjit" directory!
 
 <h2>macOS</h2>
+UPDATE now the modules are working!! I had to build them as "bundle"!
 NEW: macOS build scripts made together with sportfloh.
 And cedi did write the .yaml GitHub Actions file.
 See main directory: "install-zerobuild-macos.sh".
