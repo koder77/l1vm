@@ -12,4 +12,4 @@ linker = ld
 aflags = "cru"
 
 cflags = "-O3 -fomit-frame-pointer -Wall"
-lflags = "-bundle -undefined dynamic_lookup -shared -lserialport"
+lflags = "-bundle -undefined dynamic_lookup -lserialport"
