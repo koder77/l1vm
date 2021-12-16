@@ -11,5 +11,5 @@ c++compiler = $CCPP
 linker = ld
 aflags = "cru"
 
-cflags = "-O3 -fomit-frame-pointer -bundle -undefined dynamic_lookup -Wall"
-lflags = "-lm -lfann"
+cflags = "-O3 -fomit-frame-pointer -Wall"
+lflags = "-bundle -undefined dynamic_lookup -lm -lfann"
