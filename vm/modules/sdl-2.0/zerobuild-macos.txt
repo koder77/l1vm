@@ -1,6 +1,6 @@
 # zerobuild makefile
 
-[executable, shared, name = libl1vmsdl.dylib]
+[executable, shared, name = libl1vmsdl.so]
 sources =  sdl.c, gui.c, string.c, ../file/file-sandbox.c
 
 includes = ../include, /usr/local/include
