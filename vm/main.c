@@ -103,7 +103,7 @@ S2 alloc_jit_code ()
 S2 load_module (U1 *name, S8 ind)
 {
 	U1 linux_lib_suffix[] = ".so";
-	U1 macos_lib_suffix[] = ".dylib";
+	U1 macos_lib_suffix[] = ".so";
 	U1 libname[MAXLINELEN];
 
 	if (strlen (name) > MAXLINELEN - 7)
