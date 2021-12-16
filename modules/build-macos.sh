@@ -22,8 +22,8 @@ cd ../string
 zerobuild zerobuild-macos.txt force
 cd ../time
 zerobuild zerobuild-macos.txt force
-cd ../mpfr-c++
-zerobuild zerobuild-macos.txt force
+# cd ../mpfr-c++
+# zerobuild zerobuild-macos.txt force
 # build of mem module fails!
 # cd ../mem
 # zerobuild zerobuild-macos.txt force
