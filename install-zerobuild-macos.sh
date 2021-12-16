@@ -154,8 +154,6 @@ echo "copy fann demo neural networks"
 cp -R fann ~/l1vm
 
 echo "installation finished!"
-echo "listing /usr/lib..."
-ls /usr/lib -lh
 echo "listing modules..."
 ls modules -lh
 sudo update_dyld_shared_cache

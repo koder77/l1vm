@@ -235,5 +235,8 @@ cp include-lib/* ~/l1vm/include/
 
 mkdir ~/l1vm/man
 
+echo "copy fann demo neural networks"
+cp -R fann ~/l1vm
+
 echo "installation finished!"
 exit 0
