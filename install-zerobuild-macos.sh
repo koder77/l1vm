@@ -151,7 +151,10 @@ cp include-lib/* ~/l1vm/include/
 mkdir ~/l1vm/man
 
 echo "installation finished!"
-
+echo "listing /usr/lib..."
+ls /usr/lib -lh
+echo "listing modules..."
+ls modules -lh
 sudo update_dyld_shared_cache
 echo "building fann library demo"
 ./build.sh lib/fann-lib
