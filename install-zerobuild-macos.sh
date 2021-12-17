@@ -14,6 +14,10 @@ cp /usr/local/include/c++/9.4.0/parallel/features.h /usr/local/include
 
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
+#install clang
+brew update
+brew install llvm
+
 # install needed libraries
 brew install sdl2
 brew install sdl2_gfx
