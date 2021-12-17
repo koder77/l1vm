@@ -16,6 +16,7 @@ cp /usr/local/include/c++/9.4.0/parallel/features.h /usr/local/include
 
 #install clang
 brew update
+brew upgrade
 brew install llvm
 
 # install needed libraries
@@ -32,6 +33,7 @@ brew install cmake
 brew install make
 brew install git
 
+clang --version
 echo "building compiler, assembler and VM..."
 
 export CC=clang
