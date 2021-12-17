@@ -37,7 +37,7 @@ And cedi did write the .yaml GitHub Actions file.
 See main directory: "install-zerobuild-macos.sh".
 
 What works right now: l1asm, l1com, l1pre and the l1vm. <br>
-And the following modules: <br>
+And the all the following standard modules: <br>
 endianess, fann, file, genann, math, mem, mmpfr (high precision math library), net, process, sdl-2.0, string, time <br>
 librs232 (serialport by libserialport) <br><br>
 
@@ -45,12 +45,7 @@ After installation you have to add the following lines to your "~/.bashrc" bash 
 
 ```
 export PATH="$HOME/bin:$PATH"
-export DYLD_LIBRARY_PATH="$HOME/bin:$DYLD_LIBRARY_PATH"
 ```
-
-The "mem" module and the "mpfr-c++" module still can not be build! <br>
-**If you are a developer on macOS then you could help me to build them too!** <br>
-**Any help is welcome!** <br>
 
 <h2>Credits</h2>
 Thanks goes to: <br>
