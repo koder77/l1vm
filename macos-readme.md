@@ -1,9 +1,9 @@
 L1VM macOS README
 =================
 UPDATE: I made the following modules build on macOS:
-endianess, fann, file, genann, math, net, process, rs232, sdl-2.0, string, time
+endianess, fann, file, genann, math, mem, mmpfr (high precision math library), net, process, rs232, sdl-2.0, string, time
+librs232 (serialport by libserialport) <br><br>
 
-The others need some more work.
 I did find out that on macOS .so libraries must be build as "bundle".
 
 If you want to try it, then here is what I found out so far:

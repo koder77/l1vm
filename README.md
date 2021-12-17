@@ -38,7 +38,7 @@ See main directory: "install-zerobuild-macos.sh".
 
 What works right now: l1asm, l1com, l1pre and the l1vm. <br>
 And the following modules: <br>
-endianess, fann, file, genann, math, net, process, sdl-2.0, string, time <br>
+endianess, fann, file, genann, math, mem, mmpfr (high precision math library), net, process, sdl-2.0, string, time <br>
 librs232 (serialport by libserialport) <br><br>
 
 After installation you have to add the following lines to your "~/.bashrc" bash config file: <br>
