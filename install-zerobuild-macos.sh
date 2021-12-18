@@ -161,11 +161,12 @@ cp -R fann ~/l1vm
 
 echo "installation finished!"
 echo "listing modules..."
-ls modules -lh
+ls -lh modules
 sudo update_dyld_shared_cache
 echo "building fann library demo"
 ./build.sh lib/fann-lib
-echo "running fann library demo"
+echo "running fann library demo..."
 l1vm lib/fann-lib
-
+echo "running SDL module test..."
+l1vm prog/lines
 exit 0
