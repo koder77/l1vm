@@ -41,9 +41,13 @@ And the all the following standard modules: <br>
 endianess, fann, file, genann, math, mem, mmpfr (high precision math library), net, process, string, time <br>
 librs232 (serialport by libserialport) <br><br>
 
-The sdl-2.0 module can not be used. The SDL library is called from a non main thread!
-Resulting in the following error message:
-sdl_open_screen: ERROR window can't be opened: NSWindow drag regions should only be invalidated on the Main Thread! <br><br>
+The sdl-2.0 module can not be used. <br>
+Resulting in the following error message: <br>
+running lines SDL demo... <br>
+2021-12-18 19:54:21.241 l1vm[18905:51693] Attempting to add observer to main runloop, but the main thread has exited. This message will only log once. Break on _CFRunLoopError_MainThreadHasExited to debug. <br><br>
+
+Now the SDL library is used from the main thread, but still not working right! <br>
+If you know how to fix this then you could help me! <br><br>
 
 After installation you have to add the following lines to your "~/.bashrc" bash config file: <br>
 
