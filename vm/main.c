@@ -2813,6 +2813,8 @@ S2 run_main_loop_thread (void *arg)
 		{
 			usleep (500 * 1000); // delay
 			// printf ("run_main_loop_thread: EXIT!\n");
+			threaddata[1].status = STOP;
+
 			pthread_exit ((void *) 0);
 		}
 	}
@@ -3082,6 +3084,7 @@ int main (int ac, char *av[])
 		cleanup ();
 		exit (1);
 	}
+	threaddata[1].status = RUNNING;
 
 	// start main thread
 	run (0);
