@@ -1,8 +1,12 @@
 L1VM macOS README
 =================
 UPDATE: I made the following modules build on macOS:
-endianess, fann, file, genann, math, mem, mmpfr (high precision math library), net, process, rs232, sdl-2.0, string, time
+endianess, fann, file, genann, math, mem, mmpfr (high precision math library), net, process, rs232, string, time
 librs232 (serialport by libserialport) <br><br>
+
+The sdl-2.0 module can not be used. The SDL library is called from a non main thread!
+Resulting in the following error message:
+sdl_open_screen: ERROR window can't be opened: NSWindow drag regions should only be invalidated on the Main Thread! <br><br>
 
 I did find out that on macOS .so libraries must be build as "bundle".
 

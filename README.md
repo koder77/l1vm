@@ -38,8 +38,12 @@ See main directory: "install-zerobuild-macos.sh".
 
 What works right now: l1asm, l1com, l1pre and the l1vm. <br>
 And the all the following standard modules: <br>
-endianess, fann, file, genann, math, mem, mmpfr (high precision math library), net, process, sdl-2.0, string, time <br>
+endianess, fann, file, genann, math, mem, mmpfr (high precision math library), net, process, string, time <br>
 librs232 (serialport by libserialport) <br><br>
+
+The sdl-2.0 module can not be used. The SDL library is called from a non main thread!
+Resulting in the following error message:
+sdl_open_screen: ERROR window can't be opened: NSWindow drag regions should only be invalidated on the Main Thread! <br><br>
 
 After installation you have to add the following lines to your "~/.bashrc" bash config file: <br>
 
