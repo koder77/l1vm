@@ -3002,10 +3002,6 @@ int main (int ac, char *av[])
 		exit (1);
 	}
 
-	#if __MACH__
-	pthread_main_np ();
-	#endif
-
 	threaddata = (struct threaddata *) calloc (max_cpu, sizeof (struct threaddata));
 	if (threaddata == NULL)
 	{
