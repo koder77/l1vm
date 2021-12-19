@@ -45,6 +45,14 @@ sdl-2.0: prog/lines.l1com now works! I had to call a SDL event function in the d
 (:sdl_get_mouse_state !) <br>
 This is needed to avoid errors on macOS. <br>
 
+I get this errror messsage: <br>
+running lines SDL demo... <bR>
+Assertion failed: (!needsMainQueue() || pthread_main_np() != 0), function invoke, file /System/Volumes/Data/SWE/macOS/BuildRoots/220e8a1b79/Library/Caches/com.apple.xbs/Sources/SkyLight/SkyLight-588.8/SkyLight/Services/PortStreams/CGSDatagramReadStream.cc, line 147. <br><br>
+
+So now the SDL module seems to run  to the end of the lines.l1com program. <br>
+If you are a macOS user then you could run the build script and tell me if the lines demo
+shows the window and the lines! <br>
+
 After installation you have to add the following lines to your "~/.bashrc" bash config file: <br>
 
 ```
