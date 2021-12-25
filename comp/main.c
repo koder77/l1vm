@@ -479,7 +479,7 @@ S2 check_for_whitespace (U1 *line)
 	U1 ret = 13;
 	U1 newline = 10;	
 
-	str_len = strlen_safe (line, MAXLINELEN);
+	str_len = strlen_safe ((const char *) line, MAXLINELEN);
 	if (str_len > 0)
 	{
 		for (i = 0; i < str_len; i++)
@@ -809,7 +809,7 @@ S2 parse_line (U1 *line)
 
 							if (data_info[data_ind].type == STRING)
 							{
-								if (strlen_safe ((const char *) ast[level].expr[j][4], MAXLINELEN) - 1  > data_info[data_ind].size)
+								if ((S8) (strlen_safe ((const char *) ast[level].expr[j][4], MAXLINELEN) - 1)  > data_info[data_ind].size)
 								{
 									printf ("error: line %lli: string variable: '%s' too small for string!\n", linenum, ast[level].expr[j][4]);
 									return (1);

@@ -110,20 +110,20 @@ S2 load_module (U1 *name, S8 ind)
 	U1 macos_lib_suffix[] = ".so";
 	U1 libname[MAXLINELEN];
 
-	if (strlen (name) > MAXLINELEN - 5)
+	if (strlen ((const char*) name) > MAXLINELEN - 5)
 	{
 		printf ("load_module: ERROR library name overflow!\n");
 		return (1);
 	}
 
 #if __linux__ || _WIN32 
-	strcpy (libname, name);
-	strcat (libname, linux_lib_suffix);
+	strcpy ((char *) libname, (const char *) name);
+	strcat ((char *) libname, (const char *) linux_lib_suffix);
 #endif
 
 #if __MACH__
-	strcpy (libname, name);
-	strcat (libname, macos_lib_suffix);
+	strcpy ((char *) libname, (const char *) name);
+	strcat ((char *) libname, (const char *) macos_lib_suffix);
 #endif
 
 #if __linux__
