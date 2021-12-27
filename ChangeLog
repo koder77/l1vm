@@ -1,3 +1,9 @@
+L1VM - (1.4.1)
+	NEW: compiler now gives errors if array variable assign gives loose in precision.
+	For example assign int64 to an int32 array!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 27 Dec 2021 16:45 +0100
+
 L1VM - (1.4)
 	NEW: macOS support: now with the sdl-2.0 module!
 	All modules build now!

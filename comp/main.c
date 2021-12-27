@@ -535,6 +535,10 @@ S2 parse_line (U1 *line)
 	// multi line array assign
 	U1 array_multi = 0;
 
+	// for variable assign type checks
+	U1 target_var_type = UNKNOWN;
+	U1 expression_var_type_max = UNKNOWN;
+
 	ret = get_ast (line, &parse_cont);
 	if (ret == 1)
 	{
@@ -1138,6 +1142,8 @@ S2 parse_line (U1 *line)
 											return (1);
 										}
 
+										target_var_type = getvartype_real (ast[level].expr[j][last_arg - 4]);
+
 										if (checkdef (ast[level].expr[j][last_arg - 5]) != 0)
 										{
 											return (1);
@@ -1147,6 +1153,13 @@ S2 parse_line (U1 *line)
 										if (get_var_is_const (ast[level].expr[j][last_arg - 4]) == 1)
 										{
 											printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][last_arg - 4]);
+											return (1);
+										}
+
+										expression_var_type_max = getvartype_real (ast[level].expr[j][last_arg - 5]);
+										if (expression_var_type_max > target_var_type)
+										{
+											printf ("error: line %lli: expression assigns to target of lower precision!\n", linenum);
 											return (1);
 										}
 
@@ -1389,6 +1402,8 @@ S2 parse_line (U1 *line)
 											return (1);
 										}
 
+										target_var_type = getvartype_real (ast[level].expr[j][last_arg - 1]);
+
 										if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
 										{
 											return (1);
@@ -1401,6 +1416,13 @@ S2 parse_line (U1 *line)
 											return (1);
 										}
 
+										expression_var_type_max = getvartype_real (ast[level].expr[j][last_arg - 5]);
+										if (expression_var_type_max > target_var_type)
+										{
+											printf ("error: line %lli: expression assigns to target of lower precision!\n", linenum);
+											return (1);
+										}
+									
 										if (getvartype (ast[level].expr[j][last_arg - 1]) == DOUBLE)
 										{
 											// printf ("DEBUG: assign array variable to variable.\n");
@@ -1637,6 +1659,8 @@ S2 parse_line (U1 *line)
 										printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][last_arg - 1]);
 										return (1);
 									}
+
+									target_var_type = getvartype_real (ast[level].expr[j][last_arg - 1]);
 
 									if (getvartype (ast[level].expr[j][last_arg - 1]) == DOUBLE)
 									{
