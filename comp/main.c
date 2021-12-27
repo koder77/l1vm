@@ -860,10 +860,12 @@ S2 parse_line (U1 *line)
 
 							if (ast[level].expr_args[j] > 4)
 							{
+								S8 array_index ALIGN = 0;
 								for (i = 5; i <= ast[level].expr_args[j]; i++)
 								{
 									if ((data_info[data_ind].type >= BYTE && data_info[data_ind].type <= QUADWORD) || data_info[data_ind].type == DOUBLEFLOAT)
 									{
+										array_index++;		// count assigned array variables
 										if (ast[level].expr[j][i][0] == '/')
 										{
 											// found end of line mark of multi line array data
@@ -893,6 +895,12 @@ S2 parse_line (U1 *line)
 								if (array_multi == 0)
 								{
 									strcat ((char *) data[data_line], ", ;");
+								}
+								if (array_index > data_info[data_ind].size)
+								{
+									// error: array variable overflow!
+									printf ("error: line %lli: array variable overflow!\n", linenum);
+									return (1);
 								}
 							}
 
@@ -933,10 +941,12 @@ S2 parse_line (U1 *line)
 
 							if (ast[level].expr_args[j] > 4 && data_info[data_ind].type != STRING)
 							{
+								S8 array_index ALIGN = 0;
 								for (i = 5; i <= ast[level].expr_args[j]; i++)
 								{
 									if ((data_info[data_ind].type >= BYTE && data_info[data_ind].type <= QUADWORD) || data_info[data_ind].type == DOUBLEFLOAT)
 									{
+										array_index++;		// count assigned array variables
 										if (ast[level].expr[j][i][0] == '/')
 										{
 											// found end of line mark of multi line array data
@@ -966,6 +976,12 @@ S2 parse_line (U1 *line)
 								if (array_multi == 0)
 								{
 									strcat ((char *) data[data_line], ", ;");
+								}
+								if (array_index > data_info[data_ind].size)
+								{
+									// error: array variable overflow!
+									printf ("error: line %lli: array variable overflow!\n", linenum);
+									return (1);
 								}
 							}
 
