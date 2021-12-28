@@ -60,11 +60,11 @@
         (:wait_loop jmp)
     (endif)
     (:sdl_quit jsr)
-    // close sdl module
-   free_mod (zero)
-   print_s (sdl_finishedstr)
-   print_n
-   exit (zero)
+   	// close sdl module
+  	free_mod (zero)
+ 	print_s (sdl_finishedstr)
+  	print_n
+  	exit (zero)
 (funcend)
 (draw_ptop func)
 	(set int64 1 one 1)

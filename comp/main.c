@@ -896,7 +896,7 @@ S2 parse_line (U1 *line)
 								{
 									strcat ((char *) data[data_line], ", ;");
 								}
-								if (array_index > data_info[data_ind].size)
+								if (array_index >= atoi (ast[level].expr[j][2]))
 								{
 									// error: array variable overflow!
 									printf ("error: line %lli: array variable overflow!\n", linenum);
@@ -977,7 +977,7 @@ S2 parse_line (U1 *line)
 								{
 									strcat ((char *) data[data_line], ", ;");
 								}
-								if (array_index > data_info[data_ind].size)
+								if (array_index >= atoi (ast[level].expr[j][2]))
 								{
 									// error: array variable overflow!
 									printf ("error: line %lli: array variable overflow!\n", linenum);

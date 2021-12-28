@@ -11,7 +11,6 @@
 	(set const-int64 1 23_const 23)
 	(set const-int64 1 42_const 42)
 	(set string s hello_str "Hello world!")
-	(set int64 1 a 0)
 	// print string
     print_s (hello_str)
     print_n
