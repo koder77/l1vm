@@ -30,6 +30,9 @@ pullqw 10, 11, 0
 addi 1, 2, 12
 load a, 0, 13
 pullqw 12, 13, 0
+load a, 0, 14
+loada z, 0, 15
+pullqw 15, 14, 0
 loada ret, 0, 14
 intr0 4, 14, 0, 0
 intr0 7, 0, 0, 0

@@ -9,6 +9,7 @@
 	(set int64 1 a 0)
 	((((x y +)(y z +) +)((z z +)(x x +) +) +) ret =)
 	((x y +) a =)
+	(z a =)
 	// print ret
 	(4 ret 0 0 intr0)
 	// print newline

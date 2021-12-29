@@ -528,7 +528,7 @@ S2 parse_line (U1 *line)
 	S8 found_let_cont ALIGN = 0;
 
 	// returned by get_ast ()
-	// to parse: { x + y * z a = } like code stuff!
+	// to parse: {a = x + y * z} like code stuff!
 	U1 parse_cont = 0;
 	S2 ret;
 
@@ -1106,6 +1106,14 @@ S2 parse_line (U1 *line)
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "=") == 0)
 								{
 									// do variable assign
+#
+									target_var_type = getvartype_real (ast[level].expr[j][last_arg - 1]);
+
+									if (expression_var_type_max > target_var_type)
+									{
+										printf ("\nerror: line %lli: expression assigns to target of lower precision!\n", linenum);
+										return (1);
+									}
 
 									found_let++;
 									if (found_let == 1)
@@ -1175,7 +1183,7 @@ S2 parse_line (U1 *line)
 										expression_var_type_max = getvartype_real (ast[level].expr[j][last_arg - 5]);
 										if (expression_var_type_max > target_var_type)
 										{
-											printf ("error: line %lli: expression assigns to target of lower precision!\n", linenum);
+											printf ("\nerror: line %lli: expression assigns to target of lower precision!\n", linenum);
 											return (1);
 										}
 
@@ -1435,7 +1443,7 @@ S2 parse_line (U1 *line)
 										expression_var_type_max = getvartype_real (ast[level].expr[j][last_arg - 5]);
 										if (expression_var_type_max > target_var_type)
 										{
-											printf ("error: line %lli: expression assigns to target of lower precision!\n", linenum);
+											printf ("\nerror: line %lli: expression assigns to target of lower precision!\n", linenum);
 											return (1);
 										}
 									
@@ -1932,6 +1940,16 @@ S2 parse_line (U1 *line)
 													{
 														return (1);
 													}
+
+													target_var_type = getvartype_real (ast[level].expr[j][last_arg - 1]);
+													expression_var_type_max = getvartype_real (ast[level].expr[j][last_arg - 2]);
+
+													if (expression_var_type_max > target_var_type)
+													{
+														printf ("\nWARNING: line: %lli variable assign to a lower precision variable!\n", linenum);
+														printf ("> %s\n", line);
+													}
+
 													if (getvartype_real (ast[level].expr[j][last_arg - 1]) != DOUBLE)
 													{
 														target = get_regi (ast[level].expr[j][last_arg - 1]);
@@ -4284,6 +4302,16 @@ S2 parse_line (U1 *line)
 
 							if (t < MAXTRANSLATE)
 							{
+								if (last_arg >= 2)
+								{
+									// get variable types 
+									expression_var_type_max = getvartype_real (ast[level].expr[j][last_arg - 2]);
+									if (getvartype_real (ast[level].expr[j][last_arg - 1]) > expression_var_type_max)
+									{
+										expression_var_type_max = getvartype_real (ast[level].expr[j][last_arg - 2]);
+									}
+								}
+
 								// write opcode name to code_temp
 
 								strcpy ((char *) code_temp, (const char *) opcode[translate[t].assemb_op].op);
@@ -5076,7 +5104,7 @@ S2 parse (U1 *name)
 					ret = parse_line (rbuf);
 					if (ret != 0)
 					{
-						printf ("> %s", rbuf);
+						printf ("> %s\n", rbuf);
 						err = 1;
 
 						if (ret == 2)
