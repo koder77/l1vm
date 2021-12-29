@@ -4305,10 +4305,14 @@ S2 parse_line (U1 *line)
 								if (last_arg >= 2)
 								{
 									// get variable types 
-									expression_var_type_max = getvartype_real (ast[level].expr[j][last_arg - 2]);
-									if (getvartype_real (ast[level].expr[j][last_arg - 1]) > expression_var_type_max)
+									if (getvartype_real (ast[level].expr[j][last_arg - 2]) > expression_var_type_max)
 									{
 										expression_var_type_max = getvartype_real (ast[level].expr[j][last_arg - 2]);
+									}
+
+									if (getvartype_real (ast[level].expr[j][last_arg - 1]) > expression_var_type_max)
+									{
+										expression_var_type_max = getvartype_real (ast[level].expr[j][last_arg - 1]);
 									}
 								}
 
