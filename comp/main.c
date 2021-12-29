@@ -1946,7 +1946,7 @@ S2 parse_line (U1 *line)
 
 													if (expression_var_type_max > target_var_type)
 													{
-														printf ("\nWARNING: line: %lli variable assign to a lower precision variable!\n", linenum);
+														printf ("\nWARNING: line %lli: variable assign to a lower precision variable!\n", linenum);
 														printf ("> %s\n", line);
 													}
 
