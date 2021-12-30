@@ -1950,6 +1950,7 @@ S2 parse_line (U1 *line)
 														if (strcmp (ast[level].expr[j][last_arg - 3], "cast") == 0)
 														{
 															printf ("\ncast: line %lli: cast to lower precision variable!\n", linenum);
+															printf ("> %s\n", line);
 														}
 														else 
 														{
