@@ -1944,21 +1944,37 @@ S2 parse_line (U1 *line)
 														return (1);
 													}
 
-													target_var_type = getvartype_real (ast[level].expr[j][last_arg - 1]);
-													expression_var_type_max = getvartype_real (ast[level].expr[j][last_arg - 2]);
-
-													if (expression_var_type_max > target_var_type)
+													// check if: (cast x y =) case:
+													if (last_arg >= 3)
 													{
-														if (warnings_as_errors == 0)
+														if (strcmp (ast[level].expr[j][last_arg - 3], "cast") == 0)
 														{
-															printf ("\nWARNING: line %lli: variable assign to a lower precision variable!\n", linenum);
-															printf ("> %s\n", line);
+															printf ("\ncast: line %lli: cast to lower precision variable!\n", linenum);
 														}
 														else 
 														{
-															// warnings are ERRORS!
-															printf ("\nERROR: line %lli: variable assign to a lower precision variable!\n", linenum);
+															printf ("\nsyntax error assign line: %lli\n", linenum);
 															return (1);
+														}
+													}
+													else 
+													{
+														target_var_type = getvartype_real (ast[level].expr[j][last_arg - 1]);
+														expression_var_type_max = getvartype_real (ast[level].expr[j][last_arg - 2]);
+
+														if (expression_var_type_max > target_var_type)
+														{
+															if (warnings_as_errors == 0)
+															{
+																printf ("\nWARNING: line %lli: variable assign to a lower precision variable!\n", linenum);
+																printf ("> %s\n", line);
+															}
+															else 
+															{
+																// warnings are ERRORS!
+																printf ("\nERROR: line %lli: variable assign to a lower precision variable!\n", linenum);
+																return (1);
+															}
 														}
 													}
 

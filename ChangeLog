@@ -6,7 +6,14 @@ L1VM - (1.4.1)
 	NEW: compiler now has: "-werror" flag to handle all warnings as errors!
 	This is used for variable type safety checking warnings!
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 30 Dec 2021 17:46 +0100
+	NEW: type cast: 
+	(set int64 1 y 42)
+    (set int32 1 a 0)
+    (cast y a =)
+
+	Will cast from int64 to int32 without errors! As set by the programmer.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 30 Dec 2021 21:08 +0100
 
 L1VM - (1.4)
 	NEW: macOS support: now with the sdl-2.0 module!
