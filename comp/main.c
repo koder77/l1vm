@@ -64,6 +64,9 @@ U1 optimize_if = 0;		// set to one to optimize if call
 U1 call_set = 0;
 U1 call_loadreg = 0;
 
+// set all warnings as errors if 1
+U1 warnings_as_errors = 0;
+
 void init_ast (void)
 {
 	S4 i, j;
@@ -1946,8 +1949,18 @@ S2 parse_line (U1 *line)
 
 													if (expression_var_type_max > target_var_type)
 													{
-														printf ("\nWARNING: line %lli: variable assign to a lower precision variable!\n", linenum);
-														printf ("> %s\n", line);
+														if (warnings_as_errors == 0)
+														{
+															printf ("\nWARNING: line %lli: variable assign to a lower precision variable!\n", linenum);
+															printf ("> %s\n", line);
+														}
+														else 
+														{
+															// warnings are ERRORS!
+															printf ("\nERROR: line %lli: variable assign to a lower precision variable!\n", linenum);
+															printf ("> %s\n", line);
+															return (1);
+														}
 													}
 
 													if (getvartype_real (ast[level].expr[j][last_arg - 1]) != DOUBLE)
@@ -5301,6 +5314,13 @@ int main (int ac, char *av[])
 							}
 						}
 					}
+				}
+			}
+			if (arglen == 7)
+			{
+				if (strcmp (av[i], "-werror") == 0)
+				{
+					warnings_as_errors = 1;
 				}
 			}
 		}
