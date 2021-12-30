@@ -1958,7 +1958,6 @@ S2 parse_line (U1 *line)
 														{
 															// warnings are ERRORS!
 															printf ("\nERROR: line %lli: variable assign to a lower precision variable!\n", linenum);
-															printf ("> %s\n", line);
 															return (1);
 														}
 													}
