@@ -27,7 +27,7 @@ using namespace asmjit;
 JitRuntime rt;                          // Create a runtime specialized for JIT.
 
 
-#include "jit.h"
+#include "../vm/jit.h"
 
 #include "../include/global.h"
 #include "../include/stack.h"
