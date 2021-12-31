@@ -30,6 +30,33 @@ About 10 MB RAM only as shown in the taskmanager by running a minimal test progr
 
 NEW: Now the full JIT-compiler is in the "lbjit" directory!
 
+The L1VM has a full SDL graphics/GUI module for writing desktop applications!
+And you can write your own modules.
+Here is the full standard modules list: <br>
+
+<h2>Modules</h2>
+<pre>
+Cells - linked neural networks with FANN library
+endianess - convert to big endian, or little endian functions
+fann - FANN neural networks
+file - file module
+genann - neural networks module
+gpio - Raspberry Pi GPIO module
+math - some math functions
+math-nofp - math module for use without FPU
+math-vect - math on arrays functions
+mem - memory allocating for arrays and vectors
+mem-vect - C++ vector memory library
+mpfr-c++ - MPFR floating point big num library
+net - TCP/IP sockets module
+process - start a new shell process
+rs232-libserialport - RS232 serial port using libserialport
+rs232 - RS232 serial port module
+sdl 2.0 - graphics primitves module, like pixels, lines..., and GUI with buttons, lists, etc.
+string - some string functions
+time - get time and date
+</pre>
+
 <h2>macOS</h2>
 UPDATE now the modules are working!! I had to build them as "bundle"!
 NEW: macOS build scripts made together with sportfloh.
@@ -258,29 +285,6 @@ A simple "Hello world!" in bra(ets (brackets) my language for L1VM:
 	(7 0 0 0 intr0)
 	(255 zero 0 0 intr0)
 (funcend)
-</pre>
-
-<h2>Modules</h2>
-<pre>
-Cells - linked neural networks with FANN library
-endianess - convert to big endian, or little endian functions
-fann - FANN neural networks
-file - file module
-genann - neural networks module
-gpio - Raspberry Pi GPIO module
-math - some math functions
-math-nofp - math module for use without FPU
-math-vect - math on arrays functions
-mem - memory allocating for arrays and vectors
-mem-vect - C++ vector memory library
-mpfr-c++ - MPFR floating point big num library
-net - TCP/IP sockets module
-process - start a new shell process
-rs232-libserialport - RS232 serial port using libserialport
-rs232 - RS232 serial port module
-sdl 2.0 - graphics primitves module, like pixels, lines..., and GUI with buttons, lists, etc.
-string - some string functions
-time - get time and date
 </pre>
 
 <h2>NEW</h2>
