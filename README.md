@@ -30,7 +30,7 @@ About 10 MB RAM only as shown in the taskmanager by running a minimal test progr
 
 Here is the output of my fractalix fractal program using the SDL module:<br>
 
-![L1VM-fractalix](midnight-koder.net/blog/assets/l1vm/L1VM-fractal.png)
+![L1VM-fractalix](https://midnight-koder.net/blog/assets/l1vm/L1VM-fractal.png)
 
 NEW: Now the full JIT-compiler is in the "lbjit" directory!
 
