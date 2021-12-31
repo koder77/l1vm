@@ -1949,14 +1949,13 @@ S2 parse_line (U1 *line)
 													{
 														if (strcmp (ast[level].expr[j][last_arg - 3], "cast") == 0)
 														{
-															target_var_type = getvartype_real (ast[level].expr[j][last_arg - 1]);
-															expression_var_type_max = getvartype_real (ast[level].expr[j][last_arg - 2]);
-
-															if (expression_var_type_max > target_var_type)
-															{
-																printf ("\ncast: line %lli: cast to lower precision variable!\n", linenum);
-																printf ("> %s\n", line);
-															}
+															printf ("\ncast: line %lli: cast to lower precision variable!\n", linenum);
+															printf ("> %s\n", line);
+														}
+														else 
+														{
+															printf ("\nsyntax error assign line: %lli\n", linenum);
+															return (1);
 														}
 													}
 													else 
