@@ -28,9 +28,23 @@ The design goals are:
 In pure console text I/O programs not linked with SDL library, the memory footprint is very low.
 About 10 MB RAM only as shown in the taskmanager by running a minimal test program!
 
+The L1VM runs on Linux (x86_64, Arm), Windows 10 via WSL and macOS.
+It has an preprocessor, assembler and compiler for my own language Brackets.
+On the Raspberry Pi the GPIO pins can be used with my GPIO module.
+Also the serial port can be used.
+
+Brackets is a statically typed language. Now with variable type safety!
+
 Here is the output of my fractalix fractal program using the SDL module:<br>
 
 ![L1VM-fractalix](https://midnight-koder.net/blog/assets/l1vm/L1VM-fractal.png)
+
+<br>
+Here is the pov-edit program GUI for my LED POV kit: <br>
+
+![L1VM-fractalix](https://midnight-koder.net/blog/assets/l1vm/L1VM-pov-edit-01.png)
+
+<br>
 
 NEW: Now the full JIT-compiler is in the "lbjit" directory!
 
