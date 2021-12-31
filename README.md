@@ -33,9 +33,9 @@ The L1VM runs on Linux (x86_64, Arm), Windows 10 via WSL and macOS.
 It has an preprocessor, assembler and compiler for my own language Brackets.
 On the Raspberry Pi the GPIO pins can be used with my GPIO module.
 Also the serial port can be used.
-</b>
 
 Brackets is a statically typed language. Now with variable type safety!
+</b>
 
 Here is the output of my fractalix fractal program using the SDL module:<br>
 
