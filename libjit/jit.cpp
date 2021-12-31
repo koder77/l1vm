@@ -1899,6 +1899,12 @@ extern "C" int run_jit (S8 code ALIGN, struct JIT_code *JIT_code)
 		printf ("run_jit: code: %lli\n", code);
 	#endif
 
+	if (code < 0 || code >= MAXJITCODE)
+	{
+		printf ("JIT compiler: FATAL ERROR! code index out of range!!!\n");
+		return (1);
+	}
+
 	Func func = JIT_code[code].fn;
 
     #if DEBUG
