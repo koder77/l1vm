@@ -28,6 +28,10 @@ The design goals are:
 In pure console text I/O programs not linked with SDL library, the memory footprint is very low.
 About 10 MB RAM only as shown in the taskmanager by running a minimal test program!
 
+Here is the output of my fractalix fractal program using the SDL module:<br>
+
+![L1VM-fractalix](midnight-koder.net/blog/assets/l1vm/L1VM-fractal.png)
+
 NEW: Now the full JIT-compiler is in the "lbjit" directory!
 
 The L1VM has a full SDL graphics/GUI module for writing desktop applications!
