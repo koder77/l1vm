@@ -1,3 +1,9 @@
+L1VM - (1.4.2)
+
+JIT-compiler now sets a return code for run function and exits the program on error!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 01 Jan 2021 14:05 +0100
+
 L1VM - (1.4.1)
 	NEW: compiler now gives errors if array variable assign gives loose in precision.
 	For example assign int64 to an int32 array!
@@ -12,6 +18,7 @@ L1VM - (1.4.1)
     (cast y a =)
 
 	Will cast from int64 to int32 without errors! As set by the programmer.
+	JIT-compiler now sets a return code for run function and exits the program on error!
 
 -- Stefan Pietzonke <jay-t@gmx.net> Thu 30 Dec 2021 21:08 +0100
 

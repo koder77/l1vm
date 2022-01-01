@@ -2273,7 +2273,14 @@ S2 run (void *arg)
         case 254:
             arg2 = code[ep + 2];
             // printf ("intr0: 254: RUN JIT CODE: %i\n", arg2);
-			run_jit (regi[arg2], JIT_code, JIT_code_ind);
+			if (run_jit (regi[arg2], JIT_code, JIT_code_ind) == 1)
+			{
+				// ERROR can't run JIT-code 
+				PRINT_EPOS();
+                free (jumpoffs);
+				loop_stop ();
+            	pthread_exit ((void *) 1);
+			}
 
             eoffs = 5;
             break;
