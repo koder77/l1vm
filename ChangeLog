@@ -2,7 +2,11 @@ L1VM - (1.4.2)
 
 JIT-compiler now sets a return code for run function and exits the program on error!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 01 Jan 2021 14:05 +0100
+NEW: intr.l1h: global pthread mutexes lock/unlock: globallock/globalunlock.
+It can be up to 255 mutexes set!
+See example hello-thread-4.l1com.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 01 Jan 2021 22:21 +0100
 
 L1VM - (1.4.1)
 	NEW: compiler now gives errors if array variable assign gives loose in precision.

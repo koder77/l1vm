@@ -46,4 +46,6 @@
 
 #define LOW_RAM					0				// set to 1 on a machine with LOW RAM, like I do on the Psion 5MX Linux build! :)
 
+#define MAX_MUTEXES				256				// for interrupt 1
+
 // user settings end ==========================================================

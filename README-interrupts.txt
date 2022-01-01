@@ -46,4 +46,6 @@ INTR1
 3: unlock data mutex
 4: return number of current CPU core
 5: return number of free CPU cores
+6: set global mutex 
+7: unset global mutex
 255: thread EXIT

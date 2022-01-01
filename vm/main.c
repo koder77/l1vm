@@ -78,6 +78,9 @@ S8 data_info_ind ALIGN = -1;
 // pthreads data mutex
 pthread_mutex_t data_mutex;
 
+// mutexes as defined in settings.h
+pthread_mutex_t global_mutex[MAX_MUTEXES];
+
 // wait loop mutex 
 pthread_mutex_t wait_loop;
 U1 run_loop = 1;
@@ -2482,6 +2485,45 @@ S2 run (void *arg)
 			eoffs = 5;
 			break;
 
+		case 6:
+			// set global mutex 
+			arg2 = code[ep + 2];
+			if (regi[arg2] >= 0 || regi[arg2] < MAX_MUTEXES)
+			{
+				pthread_mutex_lock (&global_mutex[regi[arg2]]);
+			}
+			else 
+			{
+				printf ("interrupt 1: set global mutex index overflow!\n");
+				PRINT_EPOS();
+				free (jumpoffs);
+				loop_stop ();
+				pthread_exit ((void *) 1);
+			}
+
+			eoffs = 5;
+			break;
+			
+		case 7:
+			// unset global mutex 
+			arg2 = code[ep + 2];
+			if (regi[arg2] >= 0 || regi[arg2] < MAX_MUTEXES)
+			{
+				pthread_mutex_unlock (&global_mutex[regi[arg2]]);
+			}
+			else 
+			{
+				printf ("interrupt 1: unset global mutex index overflow!\n");
+				PRINT_EPOS();
+				free (jumpoffs);
+				loop_stop ();
+				pthread_exit ((void *) 1);
+			}
+
+			eoffs = 5;
+			break;
+
+			
 		case 255:
 			printf ("thread EXIT\n");
 			arg2 = code[ep + 2];
