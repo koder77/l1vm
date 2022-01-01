@@ -39,7 +39,7 @@
 		(7 0 0 0 intr0)
 		(255 one 0 0 intr0)
 	(endif)
-	// allocate memory for the 3 variables
+	// allocate memory for the 4 variables
 	(variables memsize :alloc_obj_memobj call)
 	(memaddr stpopi)
 	(loadreg)

@@ -1,7 +1,7 @@
 /*
  * This file global.h is part of L1vm.
  *
- * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2017
+ * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2022
  *
  * L1vm is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -102,7 +102,7 @@
 // internal settings end ======================================================
 
 // info strings:
-#define COPYRIGHT_STR " (C) 2017-2021 Stefan Pietzonke"
+#define COPYRIGHT_STR " (C) 2017-2022 Stefan Pietzonke"
 
 #define  VM_VERSION_STR		"1.4.1"		// version number
 
