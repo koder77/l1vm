@@ -2488,7 +2488,7 @@ S2 run (void *arg)
 		case 6:
 			// set global mutex 
 			arg2 = code[ep + 2];
-			if (regi[arg2] >= 0 || regi[arg2] < MAX_MUTEXES)
+			if (regi[arg2] >= 0 && regi[arg2] < MAX_MUTEXES)
 			{
 				pthread_mutex_lock (&global_mutex[regi[arg2]]);
 			}
@@ -2507,7 +2507,7 @@ S2 run (void *arg)
 		case 7:
 			// unset global mutex 
 			arg2 = code[ep + 2];
-			if (regi[arg2] >= 0 || regi[arg2] < MAX_MUTEXES)
+			if (regi[arg2] >= 0 && regi[arg2] < MAX_MUTEXES)
 			{
 				pthread_mutex_unlock (&global_mutex[regi[arg2]]);
 			}
