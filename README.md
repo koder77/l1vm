@@ -34,7 +34,7 @@ It has an preprocessor, assembler and compiler for my own language Brackets.
 On the Raspberry Pi the GPIO pins can be used with my GPIO module.
 Also the serial port can be used.
 
-My langauge Brackets is a statically typed language. Now with variable type safety!
+My language Brackets is a statically typed language. Now with variable type safety!
 </b>
 
 Here is the output of my fractalix fractal program using the SDL module:<br>
