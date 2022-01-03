@@ -1,4 +1,4 @@
-L1VM README  2021-12-31
+L1VM README  2022-01-03
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -34,7 +34,7 @@ It has an preprocessor, assembler and compiler for my own language Brackets.
 On the Raspberry Pi the GPIO pins can be used with my GPIO module.
 Also the serial port can be used.
 
-Brackets is a statically typed language. Now with variable type safety!
+My langauge Brackets is a statically typed language. Now with variable type safety!
 </b>
 
 Here is the output of my fractalix fractal program using the SDL module:<br>
@@ -42,9 +42,14 @@ Here is the output of my fractalix fractal program using the SDL module:<br>
 ![L1VM-fractalix](https://midnight-koder.net/blog/assets/l1vm/L1VM-fractal.png)
 
 <br>
+
 Here is the pov-edit program GUI for my LED POV kit: <br>
 
 ![L1VM-fractalix](https://midnight-koder.net/blog/assets/l1vm/L1VM-pov-edit-01.png)
+
+<br>
+
+[L1VM - pov edit flash video](https://midnight-koder.net/blog/assets/l1vm/LED-POV-8-red-flash.mp4)
 
 <br>
 
