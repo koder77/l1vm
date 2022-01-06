@@ -1114,8 +1114,15 @@ S2 parse_line (U1 *line)
 
 									if (expression_var_type_max > target_var_type)
 									{
-										printf ("\nerror: line %lli: expression assigns to target of lower precision!\n", linenum);
-										return (1);
+										if (expression_var_type_max == DOUBLE && target_var_type == QUADWORD)
+										{
+											printf ("\nfound if like cast: line %lli\n", linenum);
+										}
+										else 
+										{
+											printf ("\nerror: line %lli: expression assigns to target of lower precision!\n", linenum);
+											return (1);
+										}
 									}
 
 									found_let++;
