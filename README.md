@@ -35,6 +35,8 @@ On the Raspberry Pi the GPIO pins can be used with my GPIO module.
 Also the serial port can be used.
 
 My language Brackets is a statically typed language. Now with variable type safety!
+The VM has even a JIT-compiler using "libasmjit" for x86_64 CPUs!
+Code written in inline assembly can be compiled by the JIT-compiler. Increasing run speed!
 </b>
 
 Here is the output of my fractalix fractal program using the SDL module:<br>
@@ -52,8 +54,6 @@ Here is the pov-edit program GUI for my LED POV kit: <br>
 [L1VM - pov edit flash video](https://midnight-koder.net/blog/assets/l1vm/LED-POV-8-red-flash.mp4)
 
 <br>
-
-NEW: Now the full JIT-compiler is in the "lbjit" directory!
 
 The L1VM has a full SDL graphics/GUI module for writing desktop applications!
 And you can write your own modules.
