@@ -55,6 +55,24 @@ Here is the pov-edit program GUI for my LED POV kit: <br>
 
 <br>
 
+How to install "pov-edit" and the internet jargon file database "jargon":
+Go into the distribution folder and download and install my gpg key:
+
+```
+$ ./get-koder77-key.sh
+```
+
+Then install the programs with: <br>
+
+```
+$ ./download.sh pov-edit
+```
+
+```
+$ ./download.sh jargon
+```
+<br>
+
 The L1VM has a full SDL graphics/GUI module for writing desktop applications!
 And you can write your own modules.
 Here is the full standard modules list: <br>
