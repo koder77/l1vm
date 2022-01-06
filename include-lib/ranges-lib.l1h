@@ -27,6 +27,7 @@
 //
 //
 (ranges_double func)
+	#var ~ @ranges_double
 	(set double 1 var~)
 	(set double 1 min~)
 	(set double 1 max~)
