@@ -4368,7 +4368,10 @@ S2 parse_line (U1 *line)
 								}
 								if (translate[t].assemb_op >= ANDI && translate[t].assemb_op <= LSEQD)
 								{
-									expression_if_op = 1;
+									if (expression_if_op == -1)
+									{
+										expression_if_op = 1;
+									}
 								} 
 
 								// write opcode name to code_temp
