@@ -8,7 +8,9 @@ See example hello-thread-4.l1com.
 
 Compiler: BUGFIX: now if espression with double numbers don't results in cast error.
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 06 Jan 2021 22:02 +0100
+Compiler: BUGFIX: updated if expression error message with double numbers.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 07 Jan 2021 15:07 +0100
 
 L1VM - (1.4.1)
 	NEW: compiler now gives errors if array variable assign gives loose in precision.

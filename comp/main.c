@@ -541,6 +541,7 @@ S2 parse_line (U1 *line)
 	// for variable assign type checks
 	U1 target_var_type = UNKNOWN;
 	U1 expression_var_type_max = UNKNOWN;
+	S2 expression_if_op = -1;						// set to 0 if math operation found. set to 1 if on if operator
 
 	ret = get_ast (line, &parse_cont);
 	if (ret == 1)
@@ -1116,7 +1117,15 @@ S2 parse_line (U1 *line)
 									{
 										if (expression_var_type_max == DOUBLE && target_var_type == QUADWORD)
 										{
-											printf ("\nfound if like cast: line %lli\n", linenum);
+											if (expression_if_op == 1)
+											{
+												printf ("\nfound if like cast: line %lli\n", linenum);
+											}
+											else 
+											{
+												printf ("\nerror: line %lli: expression assigns to target of lower precision!\n", linenum);
+												return (1);
+											}
 										}
 										else 
 										{
@@ -4351,6 +4360,16 @@ S2 parse_line (U1 *line)
 										expression_var_type_max = getvartype_real (ast[level].expr[j][last_arg - 1]);
 									}
 								}
+
+								// check if expression is if op or not
+								if (translate[t].assemb_op <= DIVD)
+								{
+									expression_if_op = 0;
+								}
+								if (translate[t].assemb_op >= ANDI && translate[t].assemb_op <= LSEQD)
+								{
+									expression_if_op = 1;
+								} 
 
 								// write opcode name to code_temp
 
