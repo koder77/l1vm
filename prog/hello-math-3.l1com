@@ -1,0 +1,17 @@
+// hello-math-3.l1com - Brackets - Hello world
+//
+//
+(main func)
+    (set int64 1 zero 0)
+    (set double 1 xd 23.0)
+	(set double 1 yd 42.0)
+	(set double 1 zd 0.0)
+	(set double 1 zerod 0.0)
+	(set int64 1 f 0)
+	(set string s messagestr "xd < yd and xd > 0")
+    ((((xd yd <d)(xd zerod >d) &&) f =) f if)
+		(6 messagestr 0 0  intr0)
+		(7 0 0 0 intr0)
+	(endif)
+	(255 zero 0 0 intr0)
+(funcend)
