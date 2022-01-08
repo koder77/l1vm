@@ -1120,6 +1120,7 @@ S2 parse_line (U1 *line)
 											if (expression_if_op == 1)
 											{
 												printf ("\nfound if like cast: line %lli\n", linenum);
+												printf ("> %s\n", line);
 											}
 											else 
 											{
