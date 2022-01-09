@@ -3126,6 +3126,8 @@ int main (int ac, char *av[])
 	threaddata[new_cpu].sp_bottom_thread = threaddata[new_cpu].sp_bottom + (new_cpu * stack_size);
 	threaddata[new_cpu].ep_startpos = 16;
 
+	// on macOS use wait loop thread, because the SDL module must be run from main thread!!!
+	#if __MACH__
 	new_cpu++;
     if (pthread_create (&id, NULL, (void *) run_main_loop_thread, (void *) new_cpu) != 0)
 	{
@@ -3137,6 +3139,14 @@ int main (int ac, char *av[])
 
 	// start main thread
 	run (0);
+	#else
+	if (pthread_create (&id, NULL, (void *) run, (void *) new_cpu) != 0)
+	{
+		printf ("ERROR: can't start main thread!\n");
+		cleanup ();
+		exit (1);
+	}
+	#endif
 
     pthread_join (id, NULL);
 	cleanup ();

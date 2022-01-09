@@ -1,3 +1,11 @@
+L1VM - (1.4.3)
+	VM: main function now uses wait loop thread 1 on macOS only.
+	On macOS the main program will run in thread 0. This is needed to run the SDL module.
+	It can only be run from main program!
+	The other OS will run the VM bytecode in thread 1.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 09 Jan 2021 16:45 +0100
+
 L1VM - (1.4.2)
 
 JIT-compiler now sets a return code for run function and exits the program on error!
