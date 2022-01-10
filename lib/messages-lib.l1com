@@ -16,6 +16,7 @@
 	(set string s memerrstr "ERROR can't allocate memory!")
 	(set string s messagestr "got message!")
 	(set int64 1 f 0)
+	(set int64 1 lock 0)
 	(zero memalloc :mem_init !)
 	(ret stpopi)
 	(((ret zero !=) f =) f if)
@@ -32,9 +33,9 @@
 		exit (one)
 	(endif)
 	// all ok, send message
-	(memaddr message :msg_put_message !)
+	(memaddr message lock :msg_put_message !)
 	// get message wait
-	(memaddr message :msg_wait_message !)
+	(memaddr message lock :msg_wait_message !)
 	(ret stpopi)
 	print_i (ret)
 	print_n
@@ -43,9 +44,9 @@
 		print_n
 	(endif)
 	// all ok, send message
-	(memaddr message :msg_put_message !)
+	(memaddr message lock :msg_put_message !)
 	// get message poll
-	(memaddr message :msg_poll_message !)
+	(memaddr message lock :msg_poll_message !)
 	(ret stpopi)
 	print_i (ret)
 	print_n

@@ -3,6 +3,8 @@
 //
 // needs: #include <mem-lib-vect.l1h>
 //
+// uses new globallock/globalunlock for thread safe locks
+//
 (msg_init func)
 	#var ~ @msg
 	(set const-int64 1 zero~ 0)
@@ -32,12 +34,14 @@
 	(set const-int64 1 one~ 1)
 	(set int64 1 msgs_addr~)
 	(set int64 1 msg_send~ 0)
+	(set int64 1 lock~ 0)
+	(lock~ stpopi)
 	(msg_send~ stpopi)
 	(msgs_addr~ stpopi)
 	// thread mutex lock
-	threadlock
+	globallock (lock~)
 	(msgs_addr~ msg_send~ :int_to_vect !)
-	threadunlock
+	globalunlock (lock~)
 (funcend)
 (msg_poll_message func)
 	// check if there is a message in the list
@@ -51,6 +55,8 @@
 	(set int64 1 msg~ 0)
 	(set int64 1 ret~ 0)
 	(set int64 1 msg_max~ 0)
+	(set int64 1 lock~ 0)
+	(lock~ stpopi)
 	// get message to poll
 	(msg_search~ stpopi)
 	(msg_addr~ stpopi)
@@ -59,7 +65,7 @@
 	(msg_addr~ :get_vect_size !)
 	(msg_max~ stpopi)
 	// thread mutex lock
-	threadlock
+	globallock (lock~)
 	(for-loop)
 	(((ind~ msg_max~ <) f~ =) f~ for)
 		(msg_addr~ ind~ :vect_to_int !)
@@ -69,14 +75,14 @@
 			(msg_addr~ ind~ :vect_erase !)
 			(zero~ ret~ =)
 			(ret~ stpushi)
-			threadunlock
+			globalunlock (lock~)
 			(ASM)
 			rts
 			(ASM_END)
 		(endif)
 		((ind~ one~ +) ind~ =)
 	(next)
-	threadunlock
+	globalunlock (lock~)
 	(ret~ stpushi)
 (funcend)
 (msg_wait_message func)
@@ -93,6 +99,8 @@
 	(set int64 1 ret~ 0)
 	(set int64 1 msg_max~ 0)
 	(set int64 1 time_ticks~ 500)
+	(set int64 1 lock~ 0)
+	(lock~ stpopi)
 	// get message to poll
 	(msg_search~ stpopi)
 	(msg_addr~ stpopi)
@@ -101,7 +109,7 @@
 	(:msg_wait_message_loop)
 	(one~ ret~ =)
 	(zero~ ind~ =)
-	threadlock
+	globallock (lock~)
 	(msg_addr~ :get_vect_size !)
 	(msg_max~ stpopi)
 	(for-loop)
@@ -113,7 +121,7 @@
 			(msg_addr~ ind~ :vect_erase !)
 			(zero~ ret~ =)
 			(ret~ stpushi)
-			threadunlock
+			globalunlock (lock~)
 			(ASM)
 			rts
 			(ASM_END)
@@ -121,10 +129,10 @@
 		((ind~ one~ +) ind~ =)
 	(next)
 	(((ret~ one~ ==) f~ =) f~ if)
-		threadunlock
+		globalunlock (lock~)
 		detime (time_ticks~)
 		(:msg_wait_message_loop jmp)
 	(endif)
-	threadunlock
+	globalunlock (lock~)
 	(ret~ stpushi)
 (funcend)

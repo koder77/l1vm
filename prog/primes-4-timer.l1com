@@ -19,6 +19,7 @@
 	(set int64 1 n 0)
 	(set int64 1 timer 0)
 	(set string s timestr "time: ")
+	(set byte 1 oneb 1)
 	// array primes is filled by zeroes
 	//
 	// search primes
@@ -36,7 +37,7 @@
 			(:search)
 			((i j *) k =)
 			(((k limit <) f =) f if)
-				(one primes [ k ] =)
+				(oneb primes [ k ] =)
 				((j one +) j =)
 				(:search jmp)
 			(endif)
