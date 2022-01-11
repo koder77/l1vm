@@ -4,7 +4,9 @@ L1VM - (1.4.3)
 	It can only be run from main program!
 	The other OS will run the VM bytecode in thread 1.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 09 Jan 2021 16:45 +0100
+	VM: mem-obj-lib: now sets EMPTY as empty variable.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue 11 Jan 2021 18:28 +0100
 
 L1VM - (1.4.2)
 

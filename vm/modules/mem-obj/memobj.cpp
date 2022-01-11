@@ -35,9 +35,10 @@ extern "C" S2 memory_bounds (S8 start, S8 offset_access);
 
 
 // arrays memory codes
-#define MEMINT64	0
-#define MEMDOUBLE   1
-#define MEMSTRING	2
+#define EMPTY 		0
+#define MEMINT64	1
+#define MEMDOUBLE   2
+#define MEMSTRING	3
 
 // structures
 
@@ -218,6 +219,7 @@ extern "C" U1 *alloc_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// set string lengths to zero, to mark them as empty
 	for (i = 0; i < memsize; i++)
 	{
+		mem[memind].objptr[i].type = EMPTY;
 		mem[memind].objptr[i].strlen = 0;
 	}
 
