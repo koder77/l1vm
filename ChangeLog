@@ -1,3 +1,8 @@
+L1vM - (1.4.4)
+VM: mem-obj-lib: now sets EMPTY as empty variable.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 15 Jan 2021 17:31 +0100
+
 L1VM - (1.4.3)
 	VM: main function now uses wait loop thread 1 on macOS only.
 	On macOS the main program will run in thread 0. This is needed to run the SDL module.
