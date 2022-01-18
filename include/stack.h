@@ -23,6 +23,23 @@
 
 U1 *stpushb (U1 data, U1 *sp, U1 *sp_bottom)
 {
+	#if STACK_CHECK
+	if (sp + 1 >= sp_bottom)
+	{
+		sp--;
+		*sp = data;
+
+		sp--;
+		*sp-- = BYTE;
+
+		return (sp);		// success
+	}
+	else
+	{
+		// fatal ERROR: stack pointer can't go below address ZERO!
+		return (NULL);		// FAIL
+	}
+	#else
 	if (sp >= sp_bottom)
 	{
 		sp--;
@@ -36,10 +53,32 @@ U1 *stpushb (U1 data, U1 *sp, U1 *sp_bottom)
 		// fatal ERROR: stack pointer can't go below address ZERO!
 		return (NULL);		// FAIL
 	}
+	#endif
 }
 
 U1 *stpopb (U1 *data, U1 *sp, U1 *sp_top)
 {
+	#if STACK_CHECK
+	if (sp + 1 > sp_top)
+	{
+		printf ("ERROR: nothing on stack!!!\n");
+		// nothing on stack!! can't pop!!
+		return (NULL);		// FAIL
+	}
+
+	sp++;
+	if (*sp != BYTE)
+	{
+		printf ("stpopb: FATAL ERROR! stack element not byte!\n");
+		return (NULL);
+	}
+	sp++;
+
+	*data = *sp;
+
+	sp++;
+	return (sp);			// success
+	#else
 	if (sp == sp_top)
 	{
 		// nothing on stack!! can't pop!!
@@ -50,6 +89,7 @@ U1 *stpopb (U1 *data, U1 *sp, U1 *sp_top)
 
 	sp++;
 	return (sp);			// success
+	#endif
 }
 
 
@@ -59,6 +99,39 @@ U1 *stpushi (S8 data, U1 *sp, U1 *sp_bottom)
 {
 	U1 *bptr;
 
+	#if STACK_CHECK
+	if (sp >= sp_bottom + 9)
+	{
+		// set stack pointer to lower address
+
+		bptr = (U1 *) &data;
+
+		sp--;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		*sp-- = QUADWORD;
+
+		return (sp);			// success
+	}
+	else
+	{
+		// fatal ERROR: stack pointer can't go below address ZERO!
+		return (NULL);			// FAIL
+	}
+	#else
 	if (sp >= sp_bottom + 8)
 	{
 		// set stack pointer to lower address
@@ -89,11 +162,39 @@ U1 *stpushi (S8 data, U1 *sp, U1 *sp_bottom)
 		// fatal ERROR: stack pointer can't go below address ZERO!
 		return (NULL);			// FAIL
 	}
+	#endif
 }
 
 U1 *stpopi (U1 *data, U1 *sp, U1 *sp_top)
 {
-	if (sp == sp_top)
+	#if STACK_CHECK 
+	if (sp >= sp_top - 8)
+	{
+		// nothing on stack!! can't pop!!
+		printf ("ERROR: nothing on stack!!!\n");
+		return (NULL);			// FAIL
+	}
+
+	sp++;
+	if (*sp != QUADWORD)
+	{
+		printf ("stpopi: FATAL ERROR! stack element not int64!\n");
+		return (NULL);
+	}
+	sp++;
+
+	data[7] = *sp++;
+	data[6] = *sp++;
+	data[5] = *sp++;
+	data[4] = *sp++;
+	data[3] = *sp++;
+	data[2] = *sp++;
+	data[1] = *sp++;
+	data[0] = *sp++;
+
+	return (sp);			// success
+	#else
+	if (sp >= sp_top - 7)
 	{
 		// nothing on stack!! can't pop!!
 		return (NULL);			// FAIL
@@ -109,12 +210,46 @@ U1 *stpopi (U1 *data, U1 *sp, U1 *sp_top)
 	data[0] = *sp++;
 
 	return (sp);			// success
+	#endif
 }
 
 U1 *stpushd (F8 data, U1 *sp, U1 *sp_bottom)
 {
 	U1 *bptr;
 
+	#if STACK_CHECK 
+	if (sp >= sp_bottom + 9)
+	{
+		// set stack pointer to lower address
+
+		bptr = (U1 *) &data;
+
+		sp--;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		*sp-- = DOUBLEFLOAT;
+
+		return (sp);			// success
+	}
+	else
+	{
+		// fatal ERROR: stack pointer can't go below address ZERO!
+		return (NULL);			// FAIL
+	}
+	#else 
 	if (sp >= sp_bottom + 8)
 	{
 		// set stack pointer to lower address
@@ -145,11 +280,39 @@ U1 *stpushd (F8 data, U1 *sp, U1 *sp_bottom)
 		// fatal ERROR: stack pointer can't go below address ZERO!
 		return (NULL);			// FAIL
 	}
+	#endif
 }
 
 U1 *stpopd (U1 *data, U1 *sp, U1 *sp_top)
 {
-	if (sp == sp_top)
+	#if STACK_CHECK
+	if (sp >= sp_top - 8)
+	{
+		printf ("ERROR: nothing on stack!!!\n");
+		// nothing on stack!! can't pop!!
+		return (NULL);			// FAIL
+	}
+
+	sp++;
+	if (*sp != DOUBLEFLOAT)
+	{
+		printf ("stpopd: FATAL ERROR! stack element not double!\n");
+		return (NULL);
+	}
+	sp++;
+
+	data[7] = *sp++;
+	data[6] = *sp++;
+	data[5] = *sp++;
+	data[4] = *sp++;
+	data[3] = *sp++;
+	data[2] = *sp++;
+	data[1] = *sp++;
+	data[0] = *sp++;
+
+	return (sp);			// success
+	#else
+	if (sp >= sp_top - 7)
 	{
 		// nothing on stack!! can't pop!!
 		return (NULL);			// FAIL
@@ -165,4 +328,5 @@ U1 *stpopd (U1 *data, U1 *sp, U1 *sp_top)
 	data[0] = *sp++;
 
 	return (sp);			// success
+	#endif
 }

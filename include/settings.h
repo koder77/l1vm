@@ -48,4 +48,5 @@
 
 #define MAX_MUTEXES				256				// for interrupt 1
 
+#define STACK_CHECK				1			// use stack types check, or not
 // user settings end ==========================================================

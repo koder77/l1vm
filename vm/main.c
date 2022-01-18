@@ -23,6 +23,7 @@
 
 #include "jit.h"
 #include "../include/global.h"
+#include "../include/stack.h"
 #include "main.h"
 
 
@@ -110,7 +111,7 @@ S2 alloc_jit_code ()
 S2 load_module (U1 *name, S8 ind)
 {
 	U1 linux_lib_suffix[] = ".so";
-	U1 macos_lib_suffix[] = ".so";
+	// U1 macos_lib_suffix[] = ".so";
 	U1 libname[MAXLINELEN];
 
 	if (strlen ((const char*) name) > MAXLINELEN - 5)
@@ -1453,17 +1454,9 @@ S2 run (void *arg)
 	#endif
 	arg1 = code[ep + 1];
 
-	if (sp >= sp_bottom)
+	sp = stpushb (regi[arg1], sp, sp_bottom);
+	if (sp == NULL)
 	{
-		sp--;
-
-		bptr = (U1 *) &regi[arg1];
-
-		*sp = *bptr;
-	}
-	else
-	{
-		printf ("FATAL ERROR: stack pointer can't go below address 0!\n");
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
@@ -1479,26 +1472,14 @@ S2 run (void *arg)
 	#endif
 	arg1 = code[ep + 1];
 
-	if (sp == sp_top)
+	sp = stpopb ((U1 *) &regi[arg1], sp, sp_top);
+	if (sp == NULL)
 	{
-		// nothing on stack!! can't pop!!
-
-		printf ("FATAL ERROR: stack pointer can't pop empty stack!\n");
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
-
-	// clear arg1
-	regi[arg1] = 0;
-
-	bptr = (U1 *) &regi[arg1];
-
-	*bptr = *sp;
-
-	sp++;
-
 	eoffs = 2;
 
 	EXE_NEXT();
@@ -1510,38 +1491,14 @@ S2 run (void *arg)
 
 	arg1 = code[ep + 1];
 
-	if (sp >= sp_bottom + 8)
+	sp = stpushi (regi[arg1], sp, sp_bottom);
+	if (sp == NULL)
 	{
-		// set stack pointer to lower address
-
-		bptr = (U1 *) &regi[arg1];
-
-		sp--;
-		*sp-- = *bptr;
-		bptr++;
-		*sp-- = *bptr;
-		bptr++;
-		*sp-- = *bptr;
-		bptr++;
-		*sp-- = *bptr;
-		bptr++;
-		*sp-- = *bptr;
-		bptr++;
-		*sp-- = *bptr;
-		bptr++;
-		*sp-- = *bptr;
-		bptr++;
-		*sp = *bptr;
-	}
-	else
-	{
-		printf ("FATAL ERROR: stack pointer can't go below address 0!\n");
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
-
 	eoffs = 2;
 
 	EXE_NEXT();
@@ -1552,36 +1509,14 @@ S2 run (void *arg)
 	#endif
 	arg1 = code[ep + 1];
 
-	if (sp >= sp_top - 7)
+	sp = stpopi ((U1 *) &regi[arg1], sp, sp_top);
+	if (sp == NULL)
 	{
-		// nothing on stack!! can't pop!!
-
-		printf ("FATAL ERROR: stack pointer can't pop empty stack!\n");
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
-
-	bptr = (U1 *) &regi[arg1];
-	bptr += 7;
-
-	*bptr = *sp++;
-	bptr--;
-	*bptr = *sp++;
-	bptr--;
-	*bptr = *sp++;
-	bptr--;
-	*bptr = *sp++;
-	bptr--;
-	*bptr = *sp++;
-	bptr--;
-	*bptr = *sp++;
-	bptr--;
-	*bptr = *sp++;
-	bptr--;
-	*bptr = *sp++;
-
 	eoffs = 2;
 
 	EXE_NEXT();
@@ -1592,32 +1527,9 @@ S2 run (void *arg)
 	#endif
 	arg1 = code[ep + 1];
 
-	if (sp >= sp_bottom + 8)
+	sp = stpushd (regd[arg1], sp, sp_bottom);
+	if (sp == NULL)
 	{
-		// set stack pointer to lower address
-
-		bptr = (U1 *) &regd[arg1];
-
-		sp--;
-		*sp-- = *bptr;
-		bptr++;
-		*sp-- = *bptr;
-		bptr++;
-		*sp-- = *bptr;
-		bptr++;
-		*sp-- = *bptr;
-		bptr++;
-		*sp-- = *bptr;
-		bptr++;
-		*sp-- = *bptr;
-		bptr++;
-		*sp-- = *bptr;
-		bptr++;
-		*sp = *bptr;
-	}
-	else
-	{
-		printf ("FATAL ERROR: stack pointer can't go below address 0!\n");
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
@@ -1633,36 +1545,14 @@ S2 run (void *arg)
 	#endif
 	arg1 = code[ep + 1];
 
-	if (sp >= sp_top - 7)
+	sp = stpopd ((U1 *) &regd[arg1], sp, sp_top);
+	if (sp == NULL)
 	{
-		// nothing on stack!! can't pop!!
-
-		printf ("FATAL ERROR: stack pointer can't pop empty stack!\n");
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
-
-	bptr = (U1 *) &regd[arg1];
-	bptr += 7;
-
-	*bptr = *sp++;
-	bptr--;
-	*bptr = *sp++;
-	bptr--;
-	*bptr = *sp++;
-	bptr--;
-	*bptr = *sp++;
-	bptr--;
-	*bptr = *sp++;
-	bptr--;
-	*bptr = *sp++;
-	bptr--;
-	*bptr = *sp++;
-	bptr--;
-	*bptr = *sp++;
-
 	eoffs = 2;
 
 	EXE_NEXT();
@@ -3089,6 +2979,10 @@ int main (int ac, char *av[])
 
 		#if DIVISIONCHECK
 			printf (">> divisioncheck << ");
+		#endif
+
+		#if STACK_CHECK
+			printf (">> stackcheck <<");
 		#endif
 
 		printf ("\n");
