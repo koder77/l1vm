@@ -141,7 +141,7 @@ U1 *string_cat (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	offset_src = strlen_safe ((char *) &data[strsourceaddr], MAXLINELEN);
 	offset_dst = strlen_safe ((char *) &data[strdestaddr], MAXLINELEN);
 
-	#if BOUNDSCHECK && ! __MACH__
+	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, offset_src + offset_dst) != 0)
 	{
 		printf ("string_cat: ERROR: dest string overflow!\n");
@@ -183,7 +183,7 @@ U1 *string_int64_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	#if BOUNDSCHECK && ! __MACH__
+	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, str_len) != 0)
 	{
 		printf ("string_int64_to_string: ERROR: dest string overflow!\n");
@@ -231,7 +231,7 @@ U1 *string_byte_to_hexstring (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	#if BOUNDSCHECK && ! __MACH__
+	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, str_len) != 0)
 	{
 		printf ("string_byte_to_hexstring: ERROR: dest string overflow!\n");
@@ -278,7 +278,7 @@ U1 *string_double_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	#if BOUNDSCHECK && ! __MACH__
+	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, str_len) != 0)
 	{
 		printf ("string_double_to_string: ERROR: dest string overflow!\n");
@@ -317,7 +317,7 @@ U1 *string_bytenum_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	#if BOUNDSCHECK && ! __MACH__
+	#if BOUNDSCHECK &&
 	if (memory_bounds (strdestaddr, 1) != 0)
 	{
 		printf ("string_bytenum_to_string: ERROR: dest string overflow!\n");
@@ -399,7 +399,7 @@ U1 *string_string_to_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	#if BOUNDSCHECK && ! __MACH__
+	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr + index_real, string_len_src) != 0)
 	{
 		printf ("string_string_to_array: ERROR: dest string overflow!\n");
@@ -482,7 +482,7 @@ U1 *string_array_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	#if BOUNDSCHECK && ! __MACH__
+	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, string_len_src) != 0)
 	{
 		printf ("string_array_to_string: ERROR: dest string overflow!\n");
@@ -535,7 +535,7 @@ U1 *string_left (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	#if BOUNDSCHECK && ! __MACH__
+	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, str_len) != 0)
 	{
 		printf ("string_left: ERROR: dest string overflow!\n");
@@ -594,7 +594,7 @@ U1 *string_right (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	#if BOUNDSCHECK && ! __MACH__
+	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, str_len) != 0)
 	{
 		printf ("string_right: ERROR: dest string overflow!\n");
@@ -653,7 +653,7 @@ U1 *string_mid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	#if BOUNDSCHECK && ! __MACH__
+	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, 1) != 0)
 	{
 		printf ("string_mid: ERROR: dest string overflow!\n");
@@ -706,7 +706,7 @@ U1 *string_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	#if BOUNDSCHECK && ! __MACH__
+	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, pos) != 0)
 	{
 		printf ("string_to_string: ERROR: dest string overflow!\n");
@@ -832,7 +832,7 @@ U1 *stringmem_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		{
 			if (destindex < destsize - 1)
 			{
-				#if BOUNDSCHECK && ! __MACH__
+				#if BOUNDSCHECK
 				if (memory_bounds (strsourceaddr, pos) != 0)
 				{
 					printf ("stringmem_to_string: ERROR: dest string overflow!\n");
