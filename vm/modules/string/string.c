@@ -317,7 +317,7 @@ U1 *string_bytenum_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	#if BOUNDSCHECK &&
+	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, 1) != 0)
 	{
 		printf ("string_bytenum_to_string: ERROR: dest string overflow!\n");
