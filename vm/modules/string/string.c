@@ -103,7 +103,7 @@ U1 *string_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	offset = strlen_safe ((char *) &data[strsourceaddr], MAXLINELEN);
 
-	#if BOUNDSCHECK && ! __MACH__
+	#if BOUNDSCHECK 
 	if (memory_bounds (strdestaddr, offset) != 0)
 	{
 		printf ("string_copy: ERROR: dest string overflow!\n");
