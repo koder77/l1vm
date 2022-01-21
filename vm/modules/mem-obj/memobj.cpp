@@ -622,7 +622,7 @@ extern "C" U1 *load_string_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	if (offset >= 0)
 	{
-		#if BOUNDSCHECK && ! __MACH__
+		#if BOUNDSCHECK
 		if (memory_bounds (var_saddr, offset) != 0)
 		{
 			printf ("string_copy: ERROR: dest string overflow!\n");

@@ -916,7 +916,7 @@ U1 *double_rounded_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	offset = number_of_digits;
 	
-	#if BOUNDSCHECK && ! __MACH__
+	#if BOUNDSCHECK
 	if (memory_bounds (deststraddr, offset) != 0)
 	{
 		printf ("double_rounded_string: ERROR dest string overflow!\n");
