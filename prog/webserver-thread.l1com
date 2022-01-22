@@ -223,7 +223,7 @@
 		(6 error_close_accept 0 0 intr0)
 		(7 0 0 0 intr0)
 	(endif)
-	(255 zero 0 0 intr1)
+	threx (zero)
 (funcend)
 #include <net-lib.l1h>
 #include <string.l1h>

@@ -51,6 +51,6 @@
 #define threadunlock (3 0 0 0 intr1)
 #func get_cpu (CURRENT) :(4 CURRENT 0 0 intr1)
 #func free_cpus (NUMBER) :(5 NUMBER 0 0 intr1)
-#func thread_ex (RETCODE) :(255 RETCODE 0 0 intr1)
+#func threx (RETCODE) :(255 RETCODE 0 0 intr1)
 #func globallock (NUMBER) :(6 NUMBER 0 0 intr1)
 #func globalunlock (NUMBER) :(7 NUMBER 0 0 intr1)
