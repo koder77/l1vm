@@ -2421,7 +2421,7 @@ S2 run (void *arg)
 			pthread_mutex_lock (&data_mutex);
 			threaddata[cpu_core].status = STOP;
 			pthread_mutex_unlock (&data_mutex);
-			loop_stop ();
+			// loop_stop ();
 			pthread_exit ((void *) retcode);
 			break;
 
