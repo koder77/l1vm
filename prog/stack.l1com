@@ -3,8 +3,8 @@
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 one 1)
-	(set byte 1 a 23)
-	(set int64 1 b 123456789)
+	(set byte 1 a 255)
+	(set int64 1 b 123456789000000012)
 	(set double 1 c 3.1415)
 	(set byte 1 a_st 0)
 	(set int64 1 b_st 0)
@@ -29,15 +29,21 @@
 		(one err =)
 		print_s (byte_errstr)
 		print_n
+		print_i (a_st)
+		print_n
 	(endif)
 	(((b b_st !=) f =) f if)
 		(one err =)
 		print_s (int64_errstr)
 		print_n
+		print_i (b_st)
+		print_n
 	(endif)
 	(((c c_st !=d) f =) f if)
 		(one err =)
 		print_s (double_errstr)
+		print_n
+		print_d (c_st)
 		print_n
 	(endif)
 	(((err zero ==) f =) f if)

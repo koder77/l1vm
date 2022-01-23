@@ -27,10 +27,9 @@ U1 *stpushb (U1 data, U1 *sp, U1 *sp_bottom)
 	if (sp + 1 >= sp_bottom)
 	{
 		sp--;
-		*sp = data;
+		*sp-- = data;
 
-		sp--;
-		*sp-- = BYTE;
+		*sp = STACK_BYTE;
 
 		return (sp);		// success
 	}
@@ -66,8 +65,7 @@ U1 *stpopb (U1 *data, U1 *sp, U1 *sp_top)
 		return (NULL);		// FAIL
 	}
 
-	sp++;
-	if (*sp != BYTE)
+	if (*sp != STACK_BYTE)
 	{
 		printf ("stpopb: FATAL ERROR! stack element not byte!\n");
 		return (NULL);
@@ -122,7 +120,7 @@ U1 *stpushi (S8 data, U1 *sp, U1 *sp_bottom)
 		*sp-- = *bptr;
 		bptr++;
 		*sp-- = *bptr;
-		*sp-- = QUADWORD;
+		*sp = STACK_QUADWORD;
 
 		return (sp);			// success
 	}
@@ -175,10 +173,10 @@ U1 *stpopi (U1 *data, U1 *sp, U1 *sp_top)
 		return (NULL);			// FAIL
 	}
 
-	sp++;
-	if (*sp != QUADWORD)
+	if (*sp != STACK_QUADWORD)
 	{
 		printf ("stpopi: FATAL ERROR! stack element not int64!\n");
+		printf ("FOUND: %i\n", *sp);
 		return (NULL);
 	}
 	sp++;
@@ -240,7 +238,7 @@ U1 *stpushd (F8 data, U1 *sp, U1 *sp_bottom)
 		*sp-- = *bptr;
 		bptr++;
 		*sp-- = *bptr;
-		*sp-- = DOUBLEFLOAT;
+		*sp = STACK_DOUBLEFLOAT;
 
 		return (sp);			// success
 	}
@@ -293,8 +291,7 @@ U1 *stpopd (U1 *data, U1 *sp, U1 *sp_top)
 		return (NULL);			// FAIL
 	}
 
-	sp++;
-	if (*sp != DOUBLEFLOAT)
+	if (*sp != STACK_DOUBLEFLOAT)
 	{
 		printf ("stpopd: FATAL ERROR! stack element not double!\n");
 		return (NULL);
