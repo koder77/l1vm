@@ -104,6 +104,8 @@ extern "C" U1 *init_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	// printf ("memobj: init_mem: maxind: %lli\n", maxind);
+
 	// allocate gobal mem structure
 	mem = (struct mem *) calloc (maxind, sizeof (struct mem));
 	if (mem == NULL)

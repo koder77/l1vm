@@ -5,9 +5,10 @@ L1VM - (1.5)
 
 	NEW: macOS now has string bounds check in string module!
 	Now the other modules use bounds check on macOS too.
-	Stack check now turned off by default. I get weird errors if turned on!
+	Stack check errors was coming from too old memobj library.
+	Now stack check is set to 1 in settings.h!
 
- Pietzonke <jay-t@gmx.net> Sun 23 Jan 2021 21:37 +0100
+ Pietzonke <jay-t@gmx.net> Mon 24 Jan 2021 17:14 +0100
 
 
 L1vM - (1.4.4)
