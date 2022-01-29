@@ -266,7 +266,7 @@ U1 *mvect_div_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	// sense check
-	if (iszero (number))
+	if (number == 0)
 	{
 		printf ("mvect_div_int: ERROR division by zero!\n");
 		return (NULL);
@@ -538,7 +538,7 @@ U1 *mvect_div_int_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	    src2_ptr = (S8 *) &data[array_data_src2_ptr + (i * offset)];
 	    dst_ptr = (S8 *) &data[array_data_dst_ptr + (i * offset)];
 
-		if (iszero (*src2_ptr))
+		if (*src2_ptr == 0)
 		{
 			printf ("mvect_div_int_array: ERROR division by zero!\n");
 			return (NULL);
