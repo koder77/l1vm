@@ -98,7 +98,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (sp);
 	}
 
-	printf ("open_screen: %lli x %lli, %i bit\n", width, height, bit);
+	printf ("open_screen: %lli x %lli, %lli bit\n", width, height, bit);
 
 	if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) != 0)
 	{
@@ -262,7 +262,7 @@ U1 *sdl_open_screen_full (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (sp);
 	}
 
-	printf ("open_screen: %lli x %lli, %i bit\n", width, height, bit);
+	printf ("open_screen: %lli x %lli, %lli bit\n", width, height, bit);
 
 	if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) != 0)
 	{
