@@ -900,7 +900,7 @@ S2 parse_line (U1 *line)
 								{
 									strcat ((char *) data[data_line], ", ;");
 								}
-								if (array_index >= atoi (ast[level].expr[j][2]))
+								if (array_index >= atoi ((const char *) ast[level].expr[j][2]))
 								{
 									// error: array variable overflow!
 									printf ("error: line %lli: array variable overflow!\n", linenum);
@@ -981,7 +981,7 @@ S2 parse_line (U1 *line)
 								{
 									strcat ((char *) data[data_line], ", ;");
 								}
-								if (array_index >= atoi (ast[level].expr[j][2]))
+								if (array_index >= atoi ((const char *) ast[level].expr[j][2]))
 								{
 									// error: array variable overflow!
 									printf ("error: line %lli: array variable overflow!\n", linenum);
@@ -1964,7 +1964,7 @@ S2 parse_line (U1 *line)
 													// check if: (cast x y =) case:
 													if (last_arg >= 3)
 													{
-														if (strcmp (ast[level].expr[j][last_arg - 3], "cast") == 0)
+														if (strcmp ((const char *) ast[level].expr[j][last_arg - 3], "cast") == 0)
 														{
 															printf ("\ncast: line %lli: cast to lower precision variable!\n", linenum);
 															printf ("> %s\n", line);
