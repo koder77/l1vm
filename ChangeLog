@@ -8,7 +8,9 @@ L1VM - (1.5)
 	Stack check errors was coming from too old memobj library.
 	Now stack check is set to 1 in settings.h!
 
- Pietzonke <jay-t@gmx.net> Mon 24 Jan 2021 17:14 +0100
+	Build scripts on Linux and macOS now build missing modules.
+
+ Pietzonke <jay-t@gmx.net> Sat 29 Jan 2021 22:14 +0100
 
 
 L1vM - (1.4.4)
