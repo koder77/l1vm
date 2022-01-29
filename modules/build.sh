@@ -11,7 +11,7 @@ zerobuild force
 cd ../math
 zerobuild force
 cd ../math-vect
-zerobuuld force
+zerobuild force
 cd ../mem
 zerobuild force
 cd ../mem-obj
