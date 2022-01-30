@@ -29,7 +29,7 @@ S2 memory_bounds (S8 start, S8 offset_access)
 {
 	S8 i ALIGN;
 
-	if (start + offset_access < 0)
+	if (start + offset_access < 0 || offset_access < 0)
 	{
 		// access ERROR!
 		printf ("memory_bounds: FATAL ERROR: address: %lli, offset: %lli below zero!\n", start, offset_access);
