@@ -21,6 +21,11 @@
 #include <math.h>
 #include "../../../include/stack.h"
 
+// protos
+
+extern S2 memory_bounds (S8 start, S8 offset_access);
+
+
 // 64 bit integer functions
 // math vector functions two arrays  ==========================================
 U1 *mvect_add_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -75,6 +80,30 @@ U1 *mvect_add_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("mvect_add_int: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
+
+	#if BOUNDSCHECK 
+	if (memory_bounds (array_data_src_ptr, start * offset) != 0)
+	{
+		printf ("mvect_add_int ERROR: src overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_src_ptr, end * offset) != 0)
+	{
+		printf ("mvect_add_int ERROR: src overflow!\n");
+		return (NULL);
+	}
+
+	if (memory_bounds (array_data_dst_ptr, start * offset) != 0)
+	{
+		printf ("mvect_add_int ERROR: dst overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_dst_ptr, end * offset) != 0)
+	{
+		printf ("mvect_add_int ERROR: dst overflow!\n");
+		return (NULL);
+	}
+	#endif
 
 	for (i = start; i <= end; i++)
 	{
@@ -139,6 +168,30 @@ U1 *mvect_sub_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	#if BOUNDSCHECK 
+	if (memory_bounds (array_data_src_ptr, start * offset) != 0)
+	{
+		printf ("mvect_sub_int ERROR: src overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_src_ptr, end * offset) != 0)
+	{
+		printf ("mvect_sub_int ERROR: src overflow!\n");
+		return (NULL);
+	}
+
+	if (memory_bounds (array_data_dst_ptr, start * offset) != 0)
+	{
+		printf ("mvect_sub_int ERROR: dst  overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_dst_ptr, end * offset) != 0)
+	{
+		printf ("mvect_sub_int ERROR: dst overflow!\n");
+		return (NULL);
+	}
+	#endif
+
 	for (i = start; i <= end; i++)
 	{
 		src_ptr = (S8 *) &data[array_data_src_ptr + (i * offset)];
@@ -201,6 +254,30 @@ U1 *mvect_mul_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("mvect_mul_int: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
+
+	#if BOUNDSCHECK 
+	if (memory_bounds (array_data_src_ptr, start * offset) != 0)
+	{
+		printf ("mvect_mul_int ERROR: src overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_src_ptr, end * offset) != 0)
+	{
+		printf ("mvect_mul_int ERROR: src overflow!\n");
+		return (NULL);
+	}
+
+	if (memory_bounds (array_data_dst_ptr, start * offset) != 0)
+	{
+		printf ("mvect_mul_int ERROR: dst overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_dst_ptr, end * offset) != 0)
+	{
+		printf ("mvect_mul_int ERROR: dst overflow!\n");
+		return (NULL);
+	}
+	#endif
 
 	for (i = start; i <= end; i++)
 	{
@@ -272,6 +349,30 @@ U1 *mvect_div_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	#if BOUNDSCHECK 
+	if (memory_bounds (array_data_src_ptr, start * offset) != 0)
+	{
+		printf ("mvect_div_int ERROR: src overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_src_ptr, end * offset) != 0)
+	{
+		printf ("mvect_div_int ERROR: src overflow!\n");
+		return (NULL);
+	}
+
+	if (memory_bounds (array_data_dst_ptr, start * offset) != 0)
+	{
+		printf ("mvect_div_int ERROR: dst overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_dst_ptr, end * offset) != 0)
+	{
+		printf ("mvect_div_int ERROR: dst overflow!\n");
+		return (NULL);
+	}
+	#endif
+
 	for (i = start; i <= end; i++)
 	{
 		src_ptr = (S8 *) &data[array_data_src_ptr + (i * offset)];
@@ -336,6 +437,41 @@ U1 *mvect_add_int_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("mvect_add_int_array: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
+
+	#if BOUNDSCHECK 
+	if (memory_bounds (array_data_src_ptr, start * offset) != 0)
+	{
+		printf ("mvect_add_int_array ERROR: src overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_src_ptr, end * offset) != 0)
+	{
+		printf ("mvect_add_int_array ERROR: src overflow!\n");
+		return (NULL);
+	}
+
+	if (memory_bounds (array_data_src2_ptr, start * offset) != 0)
+	{
+		printf ("mvect_add_int_array ERROR: src2 overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_src2_ptr, end * offset) != 0)
+	{
+		printf ("mvect_add_int_array ERROR: src2 overflow!\n");
+		return (NULL);
+	}
+
+	if (memory_bounds (array_data_dst_ptr, start * offset) != 0)
+	{
+		printf ("mvect_add_int_array ERROR: dst overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_dst_ptr, end * offset) != 0)
+	{
+		printf ("mvect_add_int_array ERROR: dst overflow!\n");
+		return (NULL);
+	}
+	#endif
 
 	for (i = start; i <= end; i++)
 	{
@@ -402,6 +538,41 @@ U1 *mvect_sub_int_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	#if BOUNDSCHECK 
+	if (memory_bounds (array_data_src_ptr, start * offset) != 0)
+	{
+		printf ("mvect_sub_int_array ERROR: src overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_src_ptr, end * offset) != 0)
+	{
+		printf ("mvect_sub_int_array ERROR: src overflow!\n");
+		return (NULL);
+	}
+
+	if (memory_bounds (array_data_src2_ptr, start * offset) != 0)
+	{
+		printf ("mvect_sub_int_array ERROR: src2 overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_src2_ptr, end * offset) != 0)
+	{
+		printf ("mvect_sub_int_array ERROR: src2 overflow!\n");
+		return (NULL);
+	}
+
+	if (memory_bounds (array_data_dst_ptr, start * offset) != 0)
+	{
+		printf ("mvect_sub_int_array ERROR: dst overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_dst_ptr, end * offset) != 0)
+	{
+		printf ("mvect_sub_int_array ERROR: dst overflow!\n");
+		return (NULL);
+	}
+	#endif
+
 	for (i = start; i <= end; i++)
 	{
 		src_ptr = (S8 *) &data[array_data_src_ptr + (i * offset)];
@@ -467,6 +638,41 @@ U1 *mvect_mul_int_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	#if BOUNDSCHECK 
+	if (memory_bounds (array_data_src_ptr, start * offset) != 0)
+	{
+		printf ("mvect_mul_int_array ERROR: src overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_src_ptr, end * offset) != 0)
+	{
+		printf ("mvect_mul_int_array ERROR: src overflow!\n");
+		return (NULL);
+	}
+
+	if (memory_bounds (array_data_src2_ptr, start * offset) != 0)
+	{
+		printf ("mvect_mul_int_array ERROR: src2 overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_src2_ptr, end * offset) != 0)
+	{
+		printf ("mvect_mul_int_array ERROR: src2 overflow!\n");
+		return (NULL);
+	}
+
+	if (memory_bounds (array_data_dst_ptr, start * offset) != 0)
+	{
+		printf ("mvect_mul_int_array ERROR: dst overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_dst_ptr, end * offset) != 0)
+	{
+		printf ("mvect_mul_int_array ERROR: dst overflow!\n");
+		return (NULL);
+	}
+	#endif
+
 	for (i = start; i <= end; i++)
 	{
 		src_ptr = (S8 *) &data[array_data_src_ptr + (i * offset)];
@@ -531,6 +737,41 @@ U1 *mvect_div_int_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("mvect_div_int_array: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
+
+	#if BOUNDSCHECK 
+	if (memory_bounds (array_data_src_ptr, start * offset) != 0)
+	{
+		printf ("mvect_div_int_array ERROR: src overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_src_ptr, end * offset) != 0)
+	{
+		printf ("mvect_div_int_array ERROR: src overflow!\n");
+		return (NULL);
+	}
+
+	if (memory_bounds (array_data_src2_ptr, start * offset) != 0)
+	{
+		printf ("mvect_div_int_array ERROR: src2 overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_src2_ptr, end * offset) != 0)
+	{
+		printf ("mvect_div_int_array ERROR: src2 overflow!\n");
+		return (NULL);
+	}
+
+	if (memory_bounds (array_data_dst_ptr, start * offset) != 0)
+	{
+		printf ("mvect_div_int_array ERROR: dst overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_dst_ptr, end * offset) != 0)
+	{
+		printf ("mvect_div_int_array ERROR: dst overflow!\n");
+		return (NULL);
+	}
+	#endif
 
 	for (i = start; i <= end; i++)
 	{

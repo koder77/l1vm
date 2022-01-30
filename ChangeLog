@@ -1,3 +1,8 @@
+L1VM - (1.5.1)
+	NEW: VM: math-vect module now uses memory bounds check!
+
+Pietzonke <jay-t@gmx.net> Sun 30 Jan 2021 21:00 +0100	
+
 L1VM - (1.5)
 	NEW: STACK_CHECK flag in settings.h to switch stack check on/off!
 	With stack check enabled bugs on the stack data types can be found.
