@@ -705,13 +705,15 @@ S2 parse_line (U1 *line)
 	FILE *data_extern;
 	U1 ch;
 	S8 data_extern_index ALIGN = 0;
+	S8 line_len ALIGN;					// input line length
 
-	if (strlen_safe ((const char *) line, MAXLINELEN) == 0)
+	line_len = strlen_safe ((const char *) line, MAXLINELEN);
+	if (line_len == 0)
 	{
 		return (0);
 	}
 
-    if (line[0] == '.')
+    if (line[0] == '.' && line_len >= 4)
     {
         if (line[1] == 'd' && line[2] == 'a' && line[3] == 't' && line[4] == 'a')
         {
