@@ -232,6 +232,14 @@ Use: install-debian.sh or install-jit-debian.sh
 Use: install-zerobuild-fedora.sh or install-jit-zerobuild-fedora.sh
 
 <h3>Windows 10 WSL</h3>
+You need to edit: "include/settings.h:
+
+```
+#define WINDOWS_10_WSL			1
+
+#define DIVISIONCHECK           0
+```
+
 Use: install-wsl-debian.sh or install-wsl-debian-jit.sh
 
 Make the bash install script executable by:
@@ -244,6 +252,19 @@ And run it:
 <pre>
 $ ./install-wsl-debian.sh
 </pre>
+
+NOTE
+====
+If I try to run the lines program demo using SDL library for graphics then I get this error message:
+
+```
+Xlib: extension "MIT-SHM" missing on display ":0".
+```
+
+I already had to disable audio on SDL if "WINDOWS_10_WSL" is set to one.
+See above!
+
+I´m still searching how to fix this issue. If you know more then contact me please!
 
 Note: the install scripts automatically install clang C compiler and my zerobuild build tool!
 
