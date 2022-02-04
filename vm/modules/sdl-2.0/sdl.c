@@ -139,6 +139,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	}
 	}
 
+	#if ! WINDOWS_10_WSL
 	// init audio
 	int audio_rate = 44100; Uint16 audio_format = AUDIO_S16SYS;
 	int audio_channels = 2; int audio_buffers = 4096;
@@ -148,6 +149,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("sdl_open_screen: ERROR: unable to initialize audio: %s\n", Mix_GetError());
 		return (sp);
 	}
+	#endif
 
 
 	/* key input settings */
@@ -307,6 +309,7 @@ U1 *sdl_open_screen_full (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	}
 	}
 
+	#if ! WINDOWS_10_WSL
 	// init audio
 	int audio_rate = 44100; Uint16 audio_format = AUDIO_S16SYS;
 	int audio_channels = 2; int audio_buffers = 4096;
@@ -316,7 +319,7 @@ U1 *sdl_open_screen_full (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("sdl_open_screen: ERROR: unable to initialize audio: %s\n", Mix_GetError());
 		return (sp);
 	}
-
+	#endif
 
 	/* key input settings */
 	/*
