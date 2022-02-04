@@ -232,7 +232,7 @@ Use: install-debian.sh or install-jit-debian.sh
 Use: install-zerobuild-fedora.sh or install-jit-zerobuild-fedora.sh
 
 <h3>Windows 10 WSL</h3>
-You need to edit: "include/settings.h:
+You need to edit: "include/settings.h":
 
 ```
 #define WINDOWS_10_WSL 1
