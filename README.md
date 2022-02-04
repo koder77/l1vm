@@ -235,9 +235,9 @@ Use: install-zerobuild-fedora.sh or install-jit-zerobuild-fedora.sh
 You need to edit: "include/settings.h:
 
 ```
-#define WINDOWS_10_WSL			1
+#define WINDOWS_10_WSL 1
 
-#define DIVISIONCHECK           0
+#define DIVISIONCHECK  0
 ```
 
 Use: install-wsl-debian.sh or install-wsl-debian-jit.sh
