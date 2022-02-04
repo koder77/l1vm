@@ -3,8 +3,9 @@ L1VM - (1.5.1)
 	NEW: assembler "." exp ression input line checks.
 
 	NEW: Moved data info define to include/settings.h and increased it!
+	NEW: settings.h: WINDOWS_10_WSL setting. If turned on the SDL module switches off audio, not supported by the WSL!
 
-Pietzonke <jay-t@gmx.net> Fri 04 Feb 2021 14:37 +0100	
+Pietzonke <jay-t@gmx.net> Fri 04 Feb 2021 17:33 +0100	
 
 L1VM - (1.5)
 	NEW: STACK_CHECK flag in settings.h to switch stack check on/off!

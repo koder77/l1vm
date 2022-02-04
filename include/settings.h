@@ -1,4 +1,6 @@
 // user settings ==============================================================
+#define WINDOWS_10_WSL			0		// set to one if building on Windws 10 WSL! It switches audio support in the SDL module off!
+
 // machine
 #define MAXCPUCORES	    		9		// threads that can be runned, set this to your logical CPU cores + 1
 										// for example to 5 on a 4 CPU core CPU!

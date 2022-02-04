@@ -100,7 +100,11 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	printf ("open_screen: %lli x %lli, %lli bit\n", width, height, bit);
 
+	#if WINDOWS_10_WSL
+	if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0)
+	#else 
 	if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) != 0)
+	#endif
 	{
 		printf ("ERROR SDL_Init!!!\n");
 
@@ -264,7 +268,11 @@ U1 *sdl_open_screen_full (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	printf ("open_screen: %lli x %lli, %lli bit\n", width, height, bit);
 
+	#if WINDOWS_10_WSL
+	if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0)
+	#else
 	if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) != 0)
+	#endif
 	{
 		printf ("ERROR SDL_Init!!!\n");
 
