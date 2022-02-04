@@ -214,8 +214,6 @@ struct t_var
 	U1 base;
 };
 
-#define MAXDATAINFO             4096 // data names
-
 struct data_info
 {
     U1 name[MAXLINELEN];

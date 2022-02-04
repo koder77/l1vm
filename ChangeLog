@@ -2,7 +2,9 @@ L1VM - (1.5.1)
 	NEW: VM: math-vect module now uses memory bounds check!
 	NEW: assembler "." exp ression input line checks.
 
-Pietzonke <jay-t@gmx.net> Wed 02 Feb 2021 20:00 +0100	
+	NEW: Moved data info define to include/settings.h and increased it!
+
+Pietzonke <jay-t@gmx.net> Fri 04 Feb 2021 14:37 +0100	
 
 L1VM - (1.5)
 	NEW: STACK_CHECK flag in settings.h to switch stack check on/off!

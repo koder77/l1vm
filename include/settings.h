@@ -49,4 +49,6 @@
 #define MAX_MUTEXES				256				// for interrupt 1
 
 #define STACK_CHECK				1		// use stack types check, or not
+
+#define MAXDATAINFO             40960	// variable data names: was 4096
 // user settings end ==========================================================
