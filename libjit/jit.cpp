@@ -25,7 +25,7 @@
 using namespace asmjit;
 
 JitRuntime rt;                          // Create a runtime specialized for JIT.
-
+CodeHolder jcode;                   		// Holds code and relocation information.
 
 #include "../vm/jit.h"
 
@@ -138,10 +138,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 	S8 jump_l ALIGN = 0;
 	S8 jump_label ALIGN = 0;
 	S8 jump_target ALIGN = 0;
-
-  	CodeHolder jcode;                       // Create a CodeHolder.
-	jcode.init(rt.environment ());			// use environment for latest asmjit
-  	x86::Assembler a(&jcode);
+ 
+  	jcode.init(rt.environment());      // Initialize code to match the JIT environment.
+ 
+  	x86::Assembler a(&jcode);           // Create and attach x86::Assembler to code.
 
     // X86Gp RSIback;
     a.mov (RSI, imm ((intptr_t)(void *) regi)); /* long registers base: rsi */
