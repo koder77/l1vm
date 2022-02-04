@@ -164,6 +164,10 @@ is the same as: "a = x + y * z * x"
 This needs no brackets for complex math expressions!
 See "prog/hello-4.l1com" example!
 
+<h2>JIT-compiler</h2>
+The JIT-compiler currently can't be used with later versions of asmjit library!
+The API changed, this needs more lot work now!
+
 <h2>New: "(loadreg)" setting</h2>
 it is set automatically after a function call, or the "stpop" opcodes.
 Or you can do it in the code.
