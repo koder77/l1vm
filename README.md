@@ -240,6 +240,22 @@ You need to edit: "include/settings.h":
 #define DIVISIONCHECK  0
 ```
 
+You need to add the following lines to your ".bashrc":
+
+```
+export LD_LIBRARY_PATH="~/bin:/lib:/usr/lib:/usr/local/lib"
+export XDG_RUNTIME_DIR="~/xdg"
+export RUNLEVEL=3
+export DISPLAY=$(grep -m 1 nameserver /etc/resolv.conf | awk '{print $2}'):0
+```
+
+Create "xdg" direcory. In Home folder open shell:
+
+```
+$ mkdir xdg
+```
+
+
 Use: install-wsl-debian.sh or install-wsl-debian-jit.sh
 
 Make the bash install script executable by:
@@ -253,18 +269,8 @@ And run it:
 $ ./install-wsl-debian.sh
 </pre>
 
-NOTE
-====
-If I try to run the lines program demo using SDL library for graphics then I get this error message:
-
-```
-Xlib: extension "MIT-SHM" missing on display ":0".
-```
-
-I already had to disable audio on SDL if "WINDOWS_10_WSL" is set to one.
-See above!
-
-I´m still searching how to fix this issue. If you know more then contact me please!
+For graphics/GUI programs you need a Xserver installed.
+I use VcXsrv as the X11 server. Start VcXsrv first then the WSL shell!
 
 Note: the install scripts automatically install clang C compiler and my zerobuild build tool!
 
