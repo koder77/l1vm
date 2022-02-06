@@ -123,10 +123,11 @@ So now the SDL module seems to run  to the end of the lines.l1com program. <br>
 If you are a macOS user then you could run the build script and tell me if the lines demo
 shows the window and the lines! <br>
 
-After installation you have to add the following lines to your "~/.bashrc" bash config file: <br>
+Before installation you have to add the following lines to your "~/.bashrc" bash config file: <br>
 
 ```
 export PATH="$HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
 ```
 
 <h2>Credits</h2>
@@ -180,6 +181,13 @@ This source of the L1VM is linked with the SDL2 libraries.
 
 
 <h2>1. Configuration</h2>
+Before installation you have to add the following lines to your "~/.bashrc" bash config file: <br>
+
+```
+export PATH="$HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
+```
+
 Configure the file access for SANDBOX mode or not, and set your /home directory name:
 include/global.h:
 
@@ -217,14 +225,6 @@ Edit the "vm/jit.h" file, set:
 
 
 <h2>2. Installation</h2>
-
-After installation you have to add the following lines to your "~/.bashrc" bash config file: <br>
-
-```
-export PATH="$HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
-```
-
 <h3>Debian Linux</h3>
 Use: install-debian.sh or install-jit-debian.sh
 
@@ -243,8 +243,8 @@ You need to edit: "include/settings.h":
 You need to add the following lines to your ".bashrc":
 
 ```
-export LD_LIBRARY_PATH="~/bin:/lib:/usr/lib:/usr/local/lib"
-export XDG_RUNTIME_DIR="~/xdg"
+export LD_LIBRARY_PATH="$HOME/bin:/lib:/usr/lib:/usr/local/lib"
+export XDG_RUNTIME_DIR="$HOME/xdg"
 export RUNLEVEL=3
 export DISPLAY=$(grep -m 1 nameserver /etc/resolv.conf | awk '{print $2}'):0
 ```
