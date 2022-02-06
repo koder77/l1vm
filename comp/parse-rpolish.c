@@ -581,6 +581,8 @@ S2 parse_rpolish (U1 *postfix)
 
 	i = math_exp_begin;
 
+	// printf ("postfix: '%s'\n", postfix);
+
 	while (parse == 1)
 	{
        ch = postfix[i];
@@ -607,10 +609,16 @@ S2 parse_rpolish (U1 *postfix)
            get_var = 0;
            while (get_var == 0)
            {
-               if (ch == ' ')
+			   // printf ("input char: '%c'\n", ch);
+               if (ch == ' ' || ch == '}')
                {
+				   // printf ("adding zero end\n");
                    buf[pos] = '\0';
                    get_var = 1;
+				   if (ch == '}')
+				   {
+					   parse = 0;
+				   }
                }
                else
                {

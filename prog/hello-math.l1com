@@ -31,7 +31,10 @@
 	{ret = (((x - y * z) + (z - x + y) - y * z) + z - x + y) + x * y * z}
 	(4 ret 0 0 intr0)
 	(7 0 0 0 intr0)
-	{ret = foo }
+	{ret = foo}
+	(4 ret 0 0 intr0)
+	(7 0 0 0 intr0)
+	{ret = (x * y) + x}
 	(4 ret 0 0 intr0)
 	(7 0 0 0 intr0)
 	(255 zero 0 0 intr0)
