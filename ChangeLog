@@ -11,7 +11,9 @@ L1VM - (1.5.1)
 
 	now right! No need for: {ret = foo } anymore!
 
-Pietzonke <jay-t@gmx.net> Sun 06 Feb 2021 11:18 +0100
+	Removed "-lcrypto" libary from JIT-compiler build zerobuild make file.
+
+Pietzonke <jay-t@gmx.net> Thu 10 Feb 2022 15:56 +0100
 
 L1VM - (1.5)
 	NEW: STACK_CHECK flag in settings.h to switch stack check on/off!
@@ -31,7 +33,7 @@ L1VM - (1.5)
 L1vM - (1.4.4)
 VM: mem-obj-lib: now sets EMPTY as empty variable.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 15 Jan 2021 17:31 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 15 Jan 2022 17:31 +0100
 
 L1VM - (1.4.3)
 	VM: main function now uses wait loop thread 1 on macOS only.
@@ -41,7 +43,7 @@ L1VM - (1.4.3)
 
 	VM: mem-obj-lib: now sets EMPTY as empty variable.
 
--- Stefan Pietzonke <jay-t@gmx.net> Tue 11 Jan 2021 18:28 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Tue 11 Jan 2022 18:28 +0100
 
 L1VM - (1.4.2)
 
@@ -55,7 +57,7 @@ Compiler: BUGFIX: now if espression with double numbers don't results in cast er
 
 Compiler: BUGFIX: updated if expression error message with double numbers.
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 07 Jan 2021 15:07 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 07 Jan 2022 15:07 +0100
 
 L1VM - (1.4.1)
 	NEW: compiler now gives errors if array variable assign gives loose in precision.

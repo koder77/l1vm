@@ -12,4 +12,4 @@ linker = ld
 aflags = "cru"
 
 cflags = "-fPIC -O2 -fomit-frame-pointer -Wall"
-lflags = "-shared -lasmjit -lcrypto -Wl,-z,relro,-z,now"
+lflags = "-shared -lasmjit -Wl,-z,relro,-z,now"
