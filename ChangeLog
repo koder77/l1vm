@@ -1,6 +1,6 @@
 L1VM - (1.5.2)
 	BUGFIX: load/pulld now frees variable in register on pulld!
-	Fixed cop/parse-rpolish too!
+	Fixed comp/parse-rpolish too!
 	So registers can be saved!
 
 Pietzonke <jay-t@gmx.net> Fri 11 Feb 2022 13:54 +0100
