@@ -19,6 +19,7 @@
 
 //  l1com RISC compiler
 //
+// line 1694: assign to normal variable code
 
 #include "../include/global.h"
 #include "../include/opcodes.h"
@@ -1729,6 +1730,7 @@ S2 parse_line (U1 *line)
 										}
 
 										strcpy ((char *) code[code_line], (const char *) code_temp);
+										set_regd (reg, (U1 *)"");
 									}
 
 									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
@@ -2184,7 +2186,7 @@ S2 parse_line (U1 *line)
 											set_regd (reg2, (U1 *) "");
 										}
 
-										set_regd (reg, (U1 *) "");
+										set_regd (target, (U1 *) "");
 										continue;
 									}
 

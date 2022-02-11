@@ -897,6 +897,8 @@ S2 parse_rpolish (U1 *postfix)
 				}
 			}
 		}
+		set_regd (target_reg, (U1 *) "");
+		set_regd (target, (U1 *) "");
 	}
 
 	if (checkdef (target_var) != 0)
@@ -991,6 +993,8 @@ S2 parse_rpolish (U1 *postfix)
 				}
 			}
 		}
+		set_regi (target_reg, (U1 *) "");
+		set_regi (target, (U1 *) "");
 	}
 
 	// check if for examnple an int64 is assigned to int32, loosing precision
