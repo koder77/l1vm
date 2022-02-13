@@ -1,0 +1,64 @@
+// double-test-optimized.l1com
+//
+// (no-var-pull-on) (no-var-pull-off) optimization demo
+//
+(main func)
+    (set int64 1 zero 0)
+    (set double 1 zerod 0.0)
+    (set double 1 x 23.0)
+    (set double 1 y 42.0)
+    (set int64 1 max 10000000Q)
+    (set int64 1 loop 0)
+    (set int64 1 one 1)
+    (set double 1 count 1.0)
+    (set int64 1 f 0)
+    (optimize-if)
+    (:loop)
+    (no-var-pull-on)
+
+    {count = (count + x)}
+    {count = (count + x)}
+    {count = (count + x)}
+    {count = (count + x)}
+    {count = (count + x)}
+    {count = (count + x)}
+    {count = (count + x)}
+    {count = (count + x)}
+    {count = (count + x)}
+    {count = (count + x)}
+
+    {count = (count + x)}
+    {count = (count + x)}
+    {count = (count + x)}
+    {count = (count + x)}
+    {count = (count + x)}
+    {count = (count + x)}
+    {count = (count + x)}
+    {count = (count + x)}
+    {count = (count + x)}
+    {count = (count + x)}
+
+    {count = (count + y)}
+    {count = (count + y)}
+    {count = (count + y)}
+    {count = (count + y)}
+    {count = (count + y)}
+
+    {count = (count + y)}
+    {count = (count + y)}
+    {count = (count + y)}
+    {count = (count + y)}
+    {count = (count + y)}
+
+    (no-var-pull-off)
+    ((count zerod +d) count =)
+
+    ((loop one +) loop =)
+    (((loop max <=) f =) f if)
+        (:loop jmp)
+    (endif)
+
+    (5 count 0 0 intr0)
+    (7 0 0 0 intr0)
+    (255 0 0 0 intr0)
+(funcend)

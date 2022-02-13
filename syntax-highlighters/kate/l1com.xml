@@ -12,6 +12,8 @@
       <item>ASM_END</item>
 	  <item>optimize-if-off</item>
 	  <item>optimize-if</item>
+    <item>no-var-pull-off</item>
+    <item>no-var-pull-on<</item>
 	  <item>reset-reg</item>
     </list>
     <list name="keywords">

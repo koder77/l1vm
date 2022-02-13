@@ -3,7 +3,11 @@ L1VM - (1.5.2)
 	Fixed comp/parse-rpolish too!
 	So registers can be saved!
 
-Pietzonke <jay-t@gmx.net> Fri 11 Feb 2022 13:54 +0100
+	NEW: compiler: (no-var-pull-on) and (no-var-pull-off) to speedup the {} calculation expressions.
+	If the flag is set to be switched on, then no "pull" opcodes are used. This gives a huge speedup!
+	See "prog/double-test-optimzed.l1com"!!
+
+Pietzonke <jay-t@gmx.net> Sun 13 Feb 2022 15:44 +0100
 
 L1VM - (1.5.1)
 	NEW: VM: math-vect module now uses memory bounds check!

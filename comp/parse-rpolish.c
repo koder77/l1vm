@@ -79,6 +79,10 @@ extern S8 linenum ALIGN;
 extern S8 label_ind ALIGN;
 extern S8 call_label_ind ALIGN;
 
+// don't use pull opcodes to optimize chained math expressions in "parse-rpolish.c" math expressions
+extern U1 no_var_pull;
+
+
 S4 load_variable_int (U1 *var)
 {
 	S4 target;
@@ -836,6 +840,54 @@ S2 parse_rpolish (U1 *postfix)
 	{
 		printf ("error: line %lli: variable '%s' is constant!\n", linenum, target_var);
 		return (1);
+	}
+
+	{
+		U1 run_unset_loop = 1;
+		S8 reg ALIGN;
+		if (no_var_pull == 1)
+		{
+			// use no variable pull set target var into register
+			if (getvartype (target_var) == DOUBLE)
+			{
+				while (run_unset_loop)
+				{
+					reg = get_regd (target_var);
+					if (reg != -1)
+					{
+						// unset old register entry of target var
+						set_regd (reg, (U1 *) "");
+					}
+					else 
+					{
+						run_unset_loop = 0;
+					}
+				}
+				// set target variable register
+				set_regd (target_reg, (U1 *) target_var);
+			}
+			
+			if (getvartype (target_var) == INTEGER)
+			{
+				while (run_unset_loop)
+				{
+					reg = get_regi (target_var);
+					if (reg != -1)
+					{
+						// unset old register entry of target var
+						set_regi (reg, (U1 *) "");
+					}
+					else 
+					{
+						run_unset_loop = 0;
+					}
+				}
+				// set target variable register
+				set_regi (target_reg, (U1 *) target_var);
+			}
+		}
+
+		return (0);
 	}
 
 	if (getvartype (target_var) == DOUBLE)

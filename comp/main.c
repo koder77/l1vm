@@ -68,6 +68,9 @@ U1 call_loadreg = 0;
 // set all warnings as errors if 1
 U1 warnings_as_errors = 0;
 
+// don't use pull opcodes to optimize chained math expressions in "parse-rpolish.c" math expressions
+U1 no_var_pull = 0;
+
 void init_ast (void)
 {
 	S4 i, j;
@@ -3893,6 +3896,20 @@ S2 parse_line (U1 *line)
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "optimize-if-off") == 0)
 								{
 									optimize_if = 0;
+									continue;
+								}
+
+								// set no var pull flag =========================================================
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "no-var-pull-on") == 0)
+								{
+									no_var_pull = 1;
+									continue;
+								}
+
+								// remove no var pull flag ======================================================
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "no-var-pull-off") == 0)
+								{
+									no_var_pull = 0;
 									continue;
 								}
 
