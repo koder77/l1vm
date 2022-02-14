@@ -1,4 +1,4 @@
-// double-test-optimized.l1com
+// double-test-optimized-jit.l1com
 //
 // (no-var-pull-on) (no-var-pull-off) optimization demo
 #include <intr.l1h>
