@@ -1,3 +1,10 @@
+L1VM - (1.5.3)
+	NEW: Compiler: BUGFIXES in parse-rpolish.c.
+	And new math expressions:
+	{i = (xd < yd) && (xd > zerod)}
+
+Pietzonke <jay-t@gmx.net> Tue 15 Feb 2022 18:26 +0100
+
 L1VM - (1.5.2)
 	BUGFIX: load/pulld now frees variable in register on pulld!
 	Fixed comp/parse-rpolish too!

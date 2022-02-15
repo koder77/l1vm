@@ -64,6 +64,11 @@ S2 getvartype (U1 *name);
 S2 getvartype_real (U1 *name);
 S8 get_variable_is_array (U1 *name);
 
+
+// string.c
+size_t strlen_safe (const char * str, int maxlen);
+S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
+
 // assembly text output
 extern U1 **data;
 extern U1 **code;
@@ -358,7 +363,18 @@ S2 isOperator (char symbol)
       case '-':
       case '*':
       case '/':
+	  case '%':
+	  case '<':
+	  case 'L':
+	  case '>':
+	  case 'G':
+	  case 'E':
+	  case 'N':
+	  case '&':
       case '^':
+	  case '|':
+	  case 'A':
+	  case 'O':
       case '(':
       case ')':
 	  case '{':
@@ -375,26 +391,88 @@ S2 isOperator (char symbol)
 S2 precedence (char symbol)
 {
    switch (symbol) {
-      case '+':
-      case '-':
-         return 2;
-         break;
-      case '*':
-      case '/':
-         return 3;
-         break;
-      case '^':
-         return 4;
-         break;
-      case '(':
-      case ')':
-      case '#':
-         return 1;
-         break;
+      	case '+':
+      	case '-':
+        	return 2;
+         	break;
+
+      	case '*':
+     	case '/':
+		case '%':
+     	   return 3;
+       		break;
+
+		case '<':
+		case 'L':
+		case '>':
+		case 'G':
+			return 4;
+			break;
+
+		case 'E':
+		case 'N':
+			return 5;
+
+     	 case '&':
+       		return 6;
+         	break;
+
+		case '^':
+			return 7;
+			break;
+
+		case '|':
+			return 8;
+			break;
+
+		case 'A':
+			return 9;
+			break;
+
+		case 'O':
+			return 10;
+			break;
+
+      	case '(':
+      	case ')':
+      	case '#':
+        	return 1;
+         	break;
    }
    return (0);
 }
 
+void replace_symbols (U1 *linestr)
+{
+	U1 run_loop = 1;
+	S2 i, pos;
+	S2 maxsymb = 6;
+
+	U1 symbstr[6][3] = { "==", "!=", "<=", ">=", "&&", "||" };
+	U1 repstr[6] = { 'E', 'N', 'L', 'G', 'A', 'O' };
+
+	for (i = 0; i < maxsymb; i++)
+	{
+		run_loop = 1;
+		while (run_loop)
+		{
+			pos = searchstr (linestr, symbstr[i], 0, 0, 0);
+			if (pos >= 0)
+			{
+				// found symbol on position pos!
+				// overwrite it with single char in repstr 
+
+				linestr[pos] = repstr[i];
+				linestr[pos + 1] = ' ';
+			}
+			else 
+			{
+				// search symbol not found, set run_loop = 0;
+				run_loop = 0;
+			}
+		}
+	}
+}
 
 //converts infix expression to postfix
 S2 convert (U1 infix[], U1 postfix[])
@@ -405,6 +483,9 @@ S2 convert (U1 infix[], U1 postfix[])
 	U1 buf_push[3];
 
 	stack_ob[++stack_ob_int][0] = '#';
+
+	// call replace symbols 
+	replace_symbols (infix);
 
 	for (i = 0; i < strlen_safe ((const char *) infix, MAXLINELEN); i++)
 	{
@@ -584,6 +665,9 @@ S2 parse_rpolish (U1 *postfix)
 	target_var_type = getvartype_real (target_var);
 
 	i = math_exp_begin;
+
+	// call replace symbols 
+	replace_symbols (postfix);
 
 	// printf ("postfix: '%s'\n", postfix);
 
@@ -771,6 +855,114 @@ S2 parse_rpolish (U1 *postfix)
 	 						strcpy ((char *) code_temp, (const char *) opcode[DIVD].op);
 	 					}
 	 					break;
+
+					case 'E':
+						if (reg_int == 1)
+	 					{
+	 						// write opcode name to code_temp
+	 						strcpy ((char *) code_temp, (const char *) opcode[EQI].op);
+	 					}
+	 					else
+	 					{
+	 						// write opcode name to code_temp
+	 						strcpy ((char *) code_temp, (const char *) opcode[EQD].op);
+	 					}
+	 					break;
+
+					case 'N':
+						if (reg_int == 1)
+	 					{
+	 						// write opcode name to code_temp
+	 						strcpy ((char *) code_temp, (const char *) opcode[NEQI].op);
+	 					}
+	 					else
+	 					{
+	 						// write opcode name to code_temp
+	 						strcpy ((char *) code_temp, (const char *) opcode[NEQD].op);
+	 					}
+	 					break;
+
+					case '<':
+						if (reg_int == 1)
+	 					{
+	 						// write opcode name to code_temp
+	 						strcpy ((char *) code_temp, (const char *) opcode[LSI].op);
+	 					}
+	 					else
+	 					{
+	 						// write opcode name to code_temp
+	 						strcpy ((char *) code_temp, (const char *) opcode[LSD].op);
+	 					}
+	 					break;
+					
+					case '>':
+						if (reg_int == 1)
+	 					{
+	 						// write opcode name to code_temp
+	 						strcpy ((char *) code_temp, (const char *) opcode[GRI].op);
+	 					}
+	 					else
+	 					{
+	 						// write opcode name to code_temp
+	 						strcpy ((char *) code_temp, (const char *) opcode[GRD].op);
+	 					}
+	 					break;
+
+					case 'L':
+						if (reg_int == 1)
+	 					{
+	 						// write opcode name to code_temp
+	 						strcpy ((char *) code_temp, (const char *) opcode[LSEQI].op);
+	 					}
+	 					else
+	 					{
+	 						// write opcode name to code_temp
+	 						strcpy ((char *) code_temp, (const char *) opcode[LSEQD].op);
+	 					}
+	 					break;
+
+					case 'G':
+						if (reg_int == 1)
+	 					{
+	 						// write opcode name to code_temp
+	 						strcpy ((char *) code_temp, (const char *) opcode[GREQI].op);
+	 					}
+	 					else
+	 					{
+	 						// write opcode name to code_temp
+	 						strcpy ((char *) code_temp, (const char *) opcode[GREQD].op);
+	 					}
+	 					break;
+
+					case 'A':
+	 					// write opcode name to code_temp
+	 					strcpy ((char *) code_temp, (const char *) opcode[ANDI].op);
+	 					break;
+
+					case 'O':
+	 					// write opcode name to code_temp
+	 					strcpy ((char *) code_temp, (const char *) opcode[ORI].op);
+	 					break;
+
+					case '&':
+	 					// write opcode name to code_temp
+	 					strcpy ((char *) code_temp, (const char *) opcode[BANDI].op);
+	 					break;
+
+					case '|':
+	 					// write opcode name to code_temp
+	 					strcpy ((char *) code_temp, (const char *) opcode[BORI].op);
+	 					break;
+
+					case '^':
+	 					// write opcode name to code_temp
+	 					strcpy ((char *) code_temp, (const char *) opcode[BXORI].op);
+	 					break;
+
+					case '%':
+	 					// write opcode name to code_temp
+	 					strcpy ((char *) code_temp, (const char *) opcode[MODI].op);
+	 					break;
 				}
 
 				strcat ((char *) code_temp, " ");
@@ -885,9 +1077,8 @@ S2 parse_rpolish (U1 *postfix)
 				// set target variable register
 				set_regi (target_reg, (U1 *) target_var);
 			}
+			return (0);
 		}
-
-		return (0);
 	}
 
 	if (getvartype (target_var) == DOUBLE)
