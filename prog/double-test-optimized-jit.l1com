@@ -18,6 +18,7 @@
     (:jit_start jit_start loadl)
     (:jit_end jit_end loadl)
     run_jit_comp (jit_start, jit_end)
+    (no-var-pull-on)
     {x = (x + zerod)}
     {y = (y + zerod)}
     {count = (count + zerod)}
@@ -25,7 +26,6 @@
     run_jit_code (zero)
     (:next jmp)
     (:jit_start)
-    (no-var-pull-on)
 
     {count = (count + x)}
     {count = (count + x)}
