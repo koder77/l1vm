@@ -10,6 +10,9 @@
     (set int64 1 zerod 0)
     (set int64 1 i 0)
     (set int64 1 f 0)
+    (set int64 1 a 2)
+    (set int64 1 b 0)
+    (set int64 1 shift 5)
     (set string s messagestr "xd < yd and xd > 0")
     // new math expression:
     {i = (xd < yd) && (xd > zerod)}
@@ -23,5 +26,12 @@
         print_s (messagestr)
         print_n
     (endif)
+    // shift
+    {b = (a <| shift)}
+    print_i (b)
+    print_n
+    {b = (b >| shift)}
+    print_i (b)
+    print_n
     (255 zero 0 0 intr0)
 (funcend)

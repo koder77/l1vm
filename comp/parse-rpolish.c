@@ -375,6 +375,8 @@ S2 isOperator (char symbol)
 	  case '|':
 	  case 'A':
 	  case 'O':
+	  case '$':
+	  case '@':
       case '(':
       case ')':
 	  case '{':
@@ -399,38 +401,43 @@ S2 precedence (char symbol)
       	case '*':
      	case '/':
 		case '%':
-     	   return 3;
+     	  	return 3;
        		break;
+
+		case '$':
+		case '@':
+			return 4;
+			break;
 
 		case '<':
 		case 'L':
 		case '>':
 		case 'G':
-			return 4;
+			return 5;
 			break;
 
 		case 'E':
 		case 'N':
-			return 5;
+			return 6;
 
      	 case '&':
-       		return 6;
+       		return 7;
          	break;
 
 		case '^':
-			return 7;
-			break;
-
-		case '|':
 			return 8;
 			break;
 
-		case 'A':
+		case '|':
 			return 9;
 			break;
 
-		case 'O':
+		case 'A':
 			return 10;
+			break;
+
+		case 'O':
+			return 11;
 			break;
 
       	case '(':
@@ -446,10 +453,10 @@ void replace_symbols (U1 *linestr)
 {
 	U1 run_loop = 1;
 	S2 i, pos;
-	S2 maxsymb = 6;
+	S2 maxsymb = 8;
 
-	U1 symbstr[6][3] = { "==", "!=", "<=", ">=", "&&", "||" };
-	U1 repstr[6] = { 'E', 'N', 'L', 'G', 'A', 'O' };
+	U1 symbstr[8][3] = { "==", "!=", "<=", ">=", "&&", "||", "<|", ">|" };
+	U1 repstr[8] = { 'E', 'N', 'L', 'G', 'A', 'O', '$', '@' };
 
 	for (i = 0; i < maxsymb; i++)
 	{
@@ -484,8 +491,12 @@ S2 convert (U1 infix[], U1 postfix[])
 
 	stack_ob[++stack_ob_int][0] = '#';
 
+	// printf ("convert: '%s'\n", infix);
+
 	// call replace symbols 
 	replace_symbols (infix);
+
+	// printf ("convert: replaced: '%s'\n", infix);
 
 	for (i = 0; i < strlen_safe ((const char *) infix, MAXLINELEN); i++)
 	{
@@ -652,7 +663,7 @@ S2 parse_rpolish (U1 *postfix)
 	S2 math_exp_begin;
 	U1 found_op = 0;			// set to true if found operator
 
-	// printf ("math exp: %s\n", postfix);
+	("math exp: %s\n", postfix);
 
 	// get target var name
 	math_exp_begin = get_target_var (postfix, target_var, target_var_len);
@@ -962,6 +973,16 @@ S2 parse_rpolish (U1 *postfix)
 					case '%':
 	 					// write opcode name to code_temp
 	 					strcpy ((char *) code_temp, (const char *) opcode[MODI].op);
+	 					break;
+
+					case '$':
+	 					// write opcode name to code_temp
+	 					strcpy ((char *) code_temp, (const char *) opcode[SMULI].op);
+	 					break;
+
+					case '@':
+	 					// write opcode name to code_temp
+	 					strcpy ((char *) code_temp, (const char *) opcode[SDIVI].op);
 	 					break;
 				}
 

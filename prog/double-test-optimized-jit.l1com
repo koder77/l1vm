@@ -7,7 +7,7 @@
     (set double 1 zerod 0.0)
     (set double 1 x 23.0)
     (set double 1 y 42.0)
-    (set int64 1 max 10000000Q)
+    (set int64 1 max 100000000Q)
     (set int64 1 loop 0)
     (set int64 1 one 1)
     (set double 1 count 1.0)
