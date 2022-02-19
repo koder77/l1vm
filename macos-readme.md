@@ -27,7 +27,7 @@ You have to edit "include/settings.h" to:
 #define CPU_SET_AFFINITY        0
 ```
 
-The next step is to create a "bin/" and a "l1vm/" directory in your home directory.
+The next step is to create a "$HOME/bin" and a "$HOME/l1vm" directory in your home directory.
 The L1VM programs and libraries are installed into the "bin" directory and the data into "l1vm".
 
 You now have to add the "~/bin" directory to your PATH env variable.
