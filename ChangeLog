@@ -5,7 +5,9 @@ L1VM - (1.5.3)
 
 	Compiler: added in rpolish: shiftleft: <| and shift right: >|.
 
-Pietzonke <jay-t@gmx.net> Tue 17 Feb 2022 15:47 +0100
+	Updated the "egypt-callgraph.sh" scripts to generate *.ps files of the function call graphs. 
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 19 Feb 2022 15:18 +0100
 
 L1VM - (1.5.2)
 	BUGFIX: load/pulld now frees variable in register on pulld!
@@ -16,7 +18,7 @@ L1VM - (1.5.2)
 	If the flag is set to be switched on, then no "pull" opcodes are used. This gives a huge speedup!
 	See "prog/double-test-optimzed.l1com"!!
 
-Pietzonke <jay-t@gmx.net> Sun 13 Feb 2022 15:44 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 13 Feb 2022 15:44 +0100
 
 L1VM - (1.5.1)
 	NEW: VM: math-vect module now uses memory bounds check!
@@ -33,7 +35,7 @@ L1VM - (1.5.1)
 
 	Removed "-lcrypto" libary from JIT-compiler build zerobuild make file.
 
-Pietzonke <jay-t@gmx.net> Thu 10 Feb 2022 15:56 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 10 Feb 2022 15:56 +0100
 
 L1VM - (1.5)
 	NEW: STACK_CHECK flag in settings.h to switch stack check on/off!
@@ -47,7 +49,7 @@ L1VM - (1.5)
 
 	Build scripts on Linux and macOS now build missing modules.
 
- Pietzonke <jay-t@gmx.net> Sat 29 Jan 2021 22:14 +0100
+ -- Stefan Pietzonke <jay-t@gmx.net> Sat 29 Jan 2021 22:14 +0100
 
 
 L1vM - (1.4.4)
