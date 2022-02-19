@@ -26,12 +26,12 @@ You have to edit "include/settings.h" to:
 // switch on on Linux
 #define CPU_SET_AFFINITY        0
 ```
-
+In the following lines "$HOME" means your home directory path.
 The next step is to create a "$HOME/bin" and a "$HOME/l1vm" directory in your home directory.
 The L1VM programs and libraries are installed into the "bin" directory and the data into "l1vm".
 
-You now have to add the "~/bin" directory to your PATH env variable.
-Add the following lines to your "~/.bashrc" config file:
+You now have to add the "$HOME/bin" directory to your PATH env variable.
+Add the following lines to your "$HOME/.bashrc" config file:
 
 ```
 export PATH="$HOME/bin:$PATH"
