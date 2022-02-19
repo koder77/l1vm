@@ -1,4 +1,4 @@
-L1VM macOS README 2021-12-18
+L1VM macOS README 2022-02-19
 ============================
 UPDATE: I made the following modules build on macOS:
 endianess, fann, file, genann, math, mem, mmpfr (high precision math library), net, process, rs232, string, time, sdl-2.0
@@ -31,11 +31,19 @@ The next step is to create a "bin/" and a "l1vm/" directory in your home directo
 The L1VM programs and libraries are installed into the "bin" directory and the data into "l1vm".
 
 You now have to add the "~/bin" directory to your PATH env variable.
-Go to "/etc/paths.d" directory and create a new file: "l1vm".
-In this file insert the following line:
+Add the following lines to your "~/.bashrc" config file:
 
 ```
 export PATH="$HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
+```
+
+And write the following lines into your "~/.bash_profile"
+
+```
+if [ -r ~/.bashrc ]; then
+   source ~/.bashrc
+fi
 ```
 
 Now you can try to build on macOS:
