@@ -5,9 +5,11 @@ L1VM - (1.5.3)
 
 	Compiler: added in rpolish: shiftleft: <| and shift right: >|.
 
-	Updated the "egypt-callgraph.sh" scripts to generate *.ps files of the function call graphs. 
+	Updated the "egypt-callgraph.sh" scripts to generate *.ps files of the function call graphs.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 19 Feb 2022 15:18 +0100
+	VM: network module added mimetypes for L1VM files.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 20 Feb 2022 21:44 +0100
 
 L1VM - (1.5.2)
 	BUGFIX: load/pulld now frees variable in register on pulld!

@@ -55,6 +55,7 @@ size_t strlen_safe (const char * str, int maxlen);
 
 U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
 
+
 /* helper function (taken from bgnet_socket_programming) */
 char *get_ip_str (const struct sockaddr *sa, char *s, size_t maxlen)
 {
@@ -2046,7 +2047,12 @@ U1 *get_mimetype_from_filename (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		{ "MOOV", "application/quicktime" },
 		{ "MP4", "video/mp4" },
 		{ "AVI", "video/avi" },
-		{ "ISO", "application/octet-stream" }
+		{ "ISO", "application/octet-stream" },
+        { "L1COM", "text/plain" }, 
+        { "L1H", "text/plain" },
+        { "L1ASM", "text/plain" },
+        { "L1OBJ", "application/octet-stream" },
+        { "L1DBG", "text/plain" }
 	};
 
 	sp = stpopi ((U1 *) &mimetype_len, sp, sp_top);
