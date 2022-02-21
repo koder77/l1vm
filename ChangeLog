@@ -1,3 +1,8 @@
+L1VM - (1.5.4)
+	NEW: VM: string module added: "get_env" and "set_env" functions for working on ENV variables.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 21 Feb 2022 17:23 +0100
+
 L1VM - (1.5.3)
 	NEW: Compiler: BUGFIXES in parse-rpolish.c.
 	And new math expressions:

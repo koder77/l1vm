@@ -52,6 +52,79 @@ size_t strlen_safe (const char * str, int maxlen)
 	}
 }
 
+// get/set env functions -------------------------------
+U1 *get_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 strdestaddr ALIGN;
+	S8 envnameaddr ALIGN;
+	S8 offset ALIGN;
+
+	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("get_env: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &envnameaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("get_env: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	offset = strlen_safe (getenv ((const char *) &data[envnameaddr]), MAXLINELEN);
+
+	#if BOUNDSCHECK 
+	if (memory_bounds (strdestaddr, offset) != 0)
+	{
+		printf ("get_env: ERROR: dest string overflow!\n");
+		return (NULL);
+	}
+	#endif
+
+	strcpy ((char *) &data[strdestaddr], getenv ((const char *) &data[envnameaddr]));
+	return (sp);
+}
+
+U1 *set_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 strvalueaddr ALIGN;
+	S8 envnameaddr ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &strvalueaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("set_env: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &envnameaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("set_env: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	// set env overwrite old env value
+	ret = setenv ((const char *) &data[envnameaddr], (const char *) &data[strvalueaddr], 1);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("set_env: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+
 // string functions ------------------------------------
 
 U1 *string_len (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
