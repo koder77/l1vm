@@ -58,6 +58,8 @@ U1 *get_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 strdestaddr ALIGN;
 	S8 envnameaddr ALIGN;
 	S8 offset ALIGN;
+	char *rptr;
+
 
 	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
 	if (sp == NULL)
@@ -75,8 +77,6 @@ U1 *get_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	offset = strlen_safe (getenv ((const char *) &data[envnameaddr]), MAXLINELEN);
-
 	#if BOUNDSCHECK 
 	if (memory_bounds (strdestaddr, offset) != 0)
 	{
@@ -85,7 +85,16 @@ U1 *get_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	#endif
 
-	strcpy ((char *) &data[strdestaddr], getenv ((const char *) &data[envnameaddr]));
+	rptr = getenv ((const char *) &data[envnameaddr]);
+	if (rptr != NULL)
+	{
+		offset = strlen_safe (rptr, MAXLINELEN);
+		strcpy ((char *) &data[strdestaddr], getenv ((const char *) &data[envnameaddr]));
+	}
+	else 
+	{
+		strcpy ((char *) &data[strdestaddr], "");
+	}
 	return (sp);
 }
 
