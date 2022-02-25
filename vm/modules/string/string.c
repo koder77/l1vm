@@ -60,7 +60,6 @@ U1 *get_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 offset ALIGN;
 	char *rptr;
 
-
 	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -77,18 +76,19 @@ U1 *get_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	#if BOUNDSCHECK 
-	if (memory_bounds (strdestaddr, offset) != 0)
-	{
-		printf ("get_env: ERROR: dest string overflow!\n");
-		return (NULL);
-	}
-	#endif
-
 	rptr = getenv ((const char *) &data[envnameaddr]);
 	if (rptr != NULL)
 	{
 		offset = strlen_safe (rptr, MAXLINELEN);
+
+		#if BOUNDSCHECK 
+		if (memory_bounds (strdestaddr, offset) != 0)
+		{
+			printf ("get_env: ERROR: dest string overflow!\n");
+			return (NULL);
+		}
+		#endif
+
 		strcpy ((char *) &data[strdestaddr], getenv ((const char *) &data[envnameaddr]));
 	}
 	else 
