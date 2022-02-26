@@ -663,8 +663,6 @@ S2 parse_rpolish (U1 *postfix)
 	S2 math_exp_begin;
 	U1 found_op = 0;			// set to true if found operator
 
-	("math exp: %s\n", postfix);
-
 	// get target var name
 	math_exp_begin = get_target_var (postfix, target_var, target_var_len);
 	if (math_exp_begin == -1)

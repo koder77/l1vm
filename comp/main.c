@@ -4542,6 +4542,11 @@ S2 parse_line (U1 *line)
 							{
 								if (translate[t].assemb_op == STPOPI)
 								{
+									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+									{
+										return (1);
+									}
+
 									target = get_regi (ast[level].expr[j][last_arg - 1]);
 									if (target == -1)
 									{
@@ -4639,6 +4644,11 @@ S2 parse_line (U1 *line)
 
 								if (translate[t].assemb_op == STPOPB)
 								{
+									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+									{
+										return (1);
+									}
+
 									target = get_regi (ast[level].expr[j][last_arg - 1]);
 									if (target == -1)
 									{
@@ -4714,6 +4724,11 @@ S2 parse_line (U1 *line)
 
 								if (translate[t].assemb_op == STPOPD)
 								{
+									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+									{
+										return (1);
+									}
+									
 									target = get_regd (ast[level].expr[j][last_arg - 1]);
 									if (target == -1)
 									{
