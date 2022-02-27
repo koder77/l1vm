@@ -1,0 +1,25 @@
+// Brackets - Hello world!
+//
+#include <intr.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 x 23)
+	(set int64 1 y 42)
+	(set int64 1 a 0)
+	(set string s hello_str "Hello world!")
+    (set string s addr_str "The address of string hello is: ")
+    (set int64 1 pointeraddr 0)
+	// print string
+	print_s (hello_str)
+	print_n
+	((x y *) a =)
+	print_i (a)
+	print_n
+    print_n
+    // get address of variable hello:
+    (hello_str pointeraddr pointer)
+    print_s (addr_str)
+    print_i (pointeraddr)
+    print_n
+	exit (zero)
+(funcend)

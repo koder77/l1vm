@@ -3911,6 +3911,103 @@ S2 parse_line (U1 *line)
 								{
 									no_var_pull = 0;
 									continue;
+								}							
+
+								// pointer: store data address int int64 variable
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "pointer") == 0)
+								{
+									if (last_arg != 2)
+									{
+										printf ("error: line %lli: pointer arguments mismatch!\n", linenum);
+										return (1);
+									}
+
+									// check if variables are defined 
+									if (checkdef (ast[level].expr[j][last_arg - 2]) != 0)
+									{
+										return (1);
+									}
+
+									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+									{
+										return (1);
+									}
+									
+									// check if target variable is int64
+									target_var_type = getvartype_real (ast[level].expr[j][last_arg - 1]);
+									if (target_var_type != QUADWORD)
+									{
+										printf ("error: line %lli: pointer target variable not of int64 type!\n", linenum);
+										return (1);
+									}
+
+									// get empty register for load opcode. loading variable address
+									reg = get_regi (ast[level].expr[j][last_arg - 2]);
+									if (reg == -1)
+									{
+										// variable is not in register, load it
+
+										reg = get_free_regi ();
+										set_regi (reg, ast[level].expr[j][last_arg - 2]);
+									}
+
+									strcpy ((char *) code[code_line], "load ");
+									strcat ((char *) code[code_line], (const char *) ast[level].expr[j][last_arg - 2]);
+									strcat ((char *) code[code_line], ", 0, ");
+									sprintf ((char *) str, "%i", reg);
+									strcat ((char *) code[code_line], (const char *) str);
+									strcat ((char *) code[code_line], "\n");
+
+									code_line++;
+									if (code_line >= line_len)
+									{
+										printf ("error: line %lli: code list full!\n", linenum);
+										return (1);
+									}
+
+									// get empty register for load opcode. loading target register
+									target = get_regi (ast[level].expr[j][last_arg - 1]);
+									if (target == -1)
+									{
+										// variable is not in register, load it
+
+										target = get_free_regi ();
+										set_regi (target, ast[level].expr[j][last_arg - 1]);
+									}
+
+									strcpy ((char *) code[code_line], "load ");
+									strcat ((char *) code[code_line], (const char *) ast[level].expr[j][last_arg - 1]);
+									strcat ((char *) code[code_line], ", 0, ");
+									sprintf ((char *) str, "%i", target);
+									strcat ((char *) code[code_line], (const char *) str);
+									strcat ((char *) code[code_line], "\n");
+
+									code_line++;
+									if (code_line >= line_len)
+									{
+										printf ("error: line %lli: code list full!\n", linenum);
+										return (1);
+									}
+
+									strcpy ((char *) code_temp, "pullqw ");
+
+									sprintf ((char *) str, "%i", reg);
+									strcat ((char *) code_temp, (const char *) str);
+									strcat ((char *) code_temp, ", ");
+									sprintf ((char *) str, "%i", target);
+									strcat ((char *) code_temp, (const char *) str);
+									strcat ((char *) code_temp, ", 0\n");
+
+									code_line++;
+									if (code_line >= line_len)
+									{
+										printf ("error: line %lli: code list full!\n", linenum);
+										return (1);
+									}
+
+									strcpy ((char *) code[code_line], (const char *) code_temp);
+									set_regi (target, (U1 *) "");
+									continue;
 								}
 
 								// call =========================================================================

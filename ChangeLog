@@ -3,8 +3,10 @@ L1VM - (1.5.4)
 	VM: string module: get_env function BUGFIX!
 
 	Compiler: error message if using undefined variable on "stpop" opcode.
+	NEW: compiler: "pointer" command for getting the real address of a variable.
+	See program "prog/hello-pointer.l1com"!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 26 Feb 2022 13:01 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 27 Feb 2022 13:08 +0100
 
 L1VM - (1.5.3)
 	NEW: Compiler: BUGFIXES in parse-rpolish.c.
