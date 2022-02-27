@@ -1184,10 +1184,15 @@ S2 parse_line (U1 *line)
 											return (1);
 										}
 
-										if (get_variable_is_array (ast[level].expr[j][last_arg - 4]) <= 1)
+
+										if (ast[level].expr[j][last_arg - 4][0] != 'P')
 										{
-											printf ("error: line %lli: variable '%s' is not an array!\n", linenum, ast[level].expr[j][last_arg - 4]);
-											return (1);
+											// variable name doesn't begin with P, check if array
+											if (get_variable_is_array (ast[level].expr[j][last_arg - 4]) <= 1)
+											{
+												printf ("error: line %lli: variable '%s' is not an array!\n", linenum, ast[level].expr[j][last_arg - 4]);
+												return (1);
+											}
 										}
 
 										target_var_type = getvartype_real (ast[level].expr[j][last_arg - 4]);
@@ -1266,7 +1271,15 @@ S2 parse_line (U1 *line)
 
 											// assign to array variable
 
-											strcpy ((char *) code_temp, "load ");
+											if (ast[level].expr[j][last_arg - 4][0] == 'P')
+											{
+												// variable is pointer
+												strcpy ((char *) code_temp, "loada ");
+											}
+											else 
+											{
+												strcpy ((char *) code_temp, "load ");
+											}
 											strcat ((char *) code_temp, (const char *) ast[level].expr[j][last_arg - 4]);
 											strcat ((char *) code_temp, ", 0, ");
 
@@ -1363,7 +1376,15 @@ S2 parse_line (U1 *line)
 
 											// assign to array variable
 
-											strcpy ((char *) code_temp, "load ");
+											if (ast[level].expr[j][last_arg - 4][0] == 'P')
+											{
+												// variable is pointer
+												strcpy ((char *) code_temp, "loada ");
+											}
+											else 
+											{
+												strcpy ((char *) code_temp, "load ");
+											}
 											strcat ((char *) code_temp, (const char *) ast[level].expr[j][last_arg - 4]);
 											strcat ((char *) code_temp, ", 0, ");
 
@@ -1444,10 +1465,15 @@ S2 parse_line (U1 *line)
 											return (1);
 										}
 
-										if (get_variable_is_array (ast[level].expr[j][last_arg - 5]) <= 1)
+										if (ast[level].expr[j][last_arg - 5][0] != 'P')
 										{
-											printf ("error: line %lli: variable '%s' is not an array!\n", linenum, ast[level].expr[j][last_arg - 5]);
-											return (1);
+											// not a pointer variable
+										
+											if (get_variable_is_array (ast[level].expr[j][last_arg - 5]) <= 1)
+											{
+												printf ("error: line %lli: variable '%s' is not an array!\n", linenum, ast[level].expr[j][last_arg - 5]);
+												return (1);
+											}
 										}
 
 										target_var_type = getvartype_real (ast[level].expr[j][last_arg - 1]);
@@ -1526,7 +1552,15 @@ S2 parse_line (U1 *line)
 
 											// assign array variable to variable
 
-											strcpy ((char *) code_temp, "load ");
+											if (ast[level].expr[j][last_arg - 5][0] == 'P')
+											{
+												// variable is pointer
+												strcpy ((char *) code_temp, "loada ");
+											}
+											else 
+											{
+												strcpy ((char *) code_temp, "load ");
+											}
 											strcat ((char *) code_temp, (const char *) ast[level].expr[j][last_arg - 5]);
 											strcat ((char *) code_temp, ", 0, ");
 
@@ -1624,7 +1658,15 @@ S2 parse_line (U1 *line)
 
 											// assign array variable to variable
 
-											strcpy ((char *) code_temp, "load ");
+											if (ast[level].expr[j][last_arg - 5][0] == 'P')
+											{
+												// variable is pointer
+												strcpy ((char *) code_temp, "loada ");
+											}
+											else 
+											{
+												strcpy ((char *) code_temp, "load ");
+											}
 											strcat ((char *) code_temp, (const char *) ast[level].expr[j][last_arg - 5]);
 											strcat ((char *) code_temp, ", 0, ");
 
@@ -3933,6 +3975,13 @@ S2 parse_line (U1 *line)
 										return (1);
 									}
 									
+									// check if variable name begins with uppercase P
+									if (ast[level].expr[j][last_arg - 1][0] != 'P')
+									{
+										printf ("error: line %lli: pointer name must begin with uppercase P!\n", linenum);
+										return (1);
+									}
+
 									// check if target variable is int64
 									target_var_type = getvartype_real (ast[level].expr[j][last_arg - 1]);
 									if (target_var_type != QUADWORD)

@@ -3,12 +3,21 @@
 #include <intr.l1h>
 (main func)
 	(set int64 1 zero 0)
+	(set int64 1 one 1)
 	(set int64 1 x 23)
 	(set int64 1 y 42)
 	(set int64 1 a 0)
 	(set string s hello_str "Hello world!")
     (set string s addr_str "The address of string hello is: ")
-    (set int64 1 pointeraddr 0)
+    (set int64 1 Pointeraddr 0)
+	(set int64 5 array 23 42 10 20 8)
+	(set const-int64 1 offset 8)
+	(set int64 1 Parray 0)
+	(set int64 1 i 0)
+	(set const-int64 1 array_max 5)
+	(set int64 1 array_ind 0)
+	(set int64 1 num 0)
+	(set int64 1 f 0)
 	// print string
 	print_s (hello_str)
 	print_n
@@ -17,9 +26,36 @@
 	print_n
     print_n
     // get address of variable hello:
-    (hello_str pointeraddr pointer)
+    (hello_str Pointeraddr pointer)
     print_s (addr_str)
-    print_i (pointeraddr)
+    print_i (Pointeraddr)
     print_n
+	print_n
+	// get array pointer 
+	(array Parray pointer)
+	(for-loop)
+	(((i array_max <) f =) f for)
+		(Parray [ array_ind ] num =)
+		print_i (num)
+		print_n
+		((array_ind offset +) array_ind =)
+		((i one +) i =)
+	(next)
+	print_n
+	
+	// change first array element
+	(y Parray [ zero ] =)
+
+	// print array again 
+	(zero i =)
+	(zero array_ind =)
+	(for-loop)
+	(((i array_max <) f =) f for)
+		(Parray [ array_ind ] num =)
+		print_i (num)
+		print_n
+		((array_ind offset +) array_ind =)
+		((i one +) i =)
+	(next)
 	exit (zero)
 (funcend)

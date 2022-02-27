@@ -6,7 +6,9 @@ L1VM - (1.5.4)
 	NEW: compiler: "pointer" command for getting the real address of a variable.
 	See program "prog/hello-pointer.l1com"!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 27 Feb 2022 13:08 +0100
+	NEW pointer variables begin with uppercase 'P'. They can be used in the array variable assigns.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 27 Feb 2022 22:00 +0100
 
 L1VM - (1.5.3)
 	NEW: Compiler: BUGFIXES in parse-rpolish.c.
