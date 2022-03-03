@@ -53,9 +53,10 @@
 	(set int64 1 msg_addr~)
 	(set int64 1 msg_search~ 0)
 	(set int64 1 msg~ 0)
-	(set int64 1 ret~ 0)
+	(set int64 1 ret~ 1)
 	(set int64 1 msg_max~ 0)
 	(set int64 1 lock~ 0)
+	(one~ ret~ =)
 	(lock~ stpopi)
 	// get message to poll
 	(msg_search~ stpopi)
@@ -66,6 +67,13 @@
 	(msg_max~ stpopi)
 	// thread mutex lock
 	globallock (lock~)
+	(((msg_max~ zero~ ==) f =) f if)
+		globalunlock (lock~)
+		(ret~ stpushi)
+		(ASM)
+		rts
+		(ASM_END)
+	(endif)
 	(for-loop)
 	(((ind~ msg_max~ <) f~ =) f~ for)
 		(msg_addr~ ind~ :vect_to_int !)
@@ -105,6 +113,7 @@
 	(msg_search~ stpopi)
 	(msg_addr~ stpopi)
 	(zero~ ind~ =)
+	(one~ ret~ =)
 	(reset-reg)
 	(:msg_wait_message_loop)
 	(one~ ret~ =)
@@ -112,6 +121,14 @@
 	globallock (lock~)
 	(msg_addr~ :get_vect_size !)
 	(msg_max~ stpopi)
+	(((msg_max~ zero~ ==) f =) f if)
+		globalunlock (lock~)
+		(ret~ stpushi)
+		(ASM)
+		rts
+		(ASM_END)
+	(endif)
+
 	(for-loop)
 	(((ind~ msg_max~ <) f~ =) f~ for)
 		(msg_addr~ ind~ :vect_to_int !)
