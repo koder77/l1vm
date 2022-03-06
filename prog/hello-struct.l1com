@@ -64,6 +64,7 @@
     (set int64 1 five~ 5)
     (set int64 1 memaddr~ 0)
     (set int64 1 ret~ 0)
+    (set string s height_format~ "%.2lf")
     (set string 256 person.first_name~ "")
     (set string 256 person.last_name~ "")
     (set string 256 person.sex~ "")
@@ -90,7 +91,7 @@
     (person.age~ stpopi)
     print_i (person.age~)
     print_n
-    print_d (person.height~)
+    printf_d (height_format~, person.height~)
     print_n
     (five~ memaddr~ person.eye_color~ :load_obj_string_memobj call)
 	(ret~ stpopi)
