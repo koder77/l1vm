@@ -1,0 +1,100 @@
+// hello-struct.l1com
+// use . variable names to build something like a pseudo data structure like in other
+// programming languages
+//
+#include <intr.l1h>
+(main func)
+	(set int64 1 zero 0)
+    (set int64 1 one  1)
+    (set string 256 person.first_name "Jane")
+    (set string 256 person.last_name "Doe")
+    (set string 256 person.sex "female")
+    (set int64 1 person.age 30)
+    (set double 1 person.height 1.80)
+    (set string 256 person.eye_color "brown")
+    (set string s meminitstr "ERROR can't init memory")
+	(set string s memerrstr "ERROR can't allocate memory!")
+	(set string s saveerrstr "ERROR can't save to memory object!")
+    (set int64 1 memaddr 0)
+    (set int64 1 memind 0)
+    (set int64 1 memsize 1)
+	(set int64 1 variables 6)
+    (set int64 1 ret 0)
+    (set int64 1 f 0)
+    #include <mem-obj-lib-types.l1h>
+    (zero one :mem_obj_init call)
+	(ret stpopi)
+    (((ret zero !=) f =) f if)
+		// ERROR can't allocate memory
+		print_s (meminitstr)
+		print_n
+		exit (one)
+	(endif)
+    // allocate memory for the 6 variables
+	(variables memsize :alloc_obj_memobj call)
+	(memaddr stpopi)
+	(loadreg)
+	(((memaddr zero <) f =) f if)
+		// ERROR can't allocate memory
+        print_s (memerrstr)
+		print_n
+		exit (one)
+	(endif)
+	// store person data in mem object:
+    (person.eye_color s_type person.height d_type person.age i_type person.sex s_type person.last_name s_type person.first_name s_type variables zero memaddr :save_obj_memobj !)
+    (ret stpopi)
+	(((ret zero !=) f =) f if)
+		// ERROR can't allocate memory
+        print_s (saveerrstr)
+		print_n
+        exit (one)
+	(endif)
+    (memaddr :person_list_data !)
+    exit (zero)
+(funcend)
+
+// get person data from mem object
+(person_list_data func)
+    #var ~ @person_list_data
+    (set int64 1 f~)
+    (set int64 1 zero~ 0)
+    (set int64 1 one~ 1)
+    (set int64 1 two~ 2)
+    (set int64 1 three~ 3)
+    (set int64 1 five~ 5)
+    (set int64 1 memaddr~ 0)
+    (set int64 1 ret~ 0)
+    (set string 256 person.first_name~ "")
+    (set string 256 person.last_name~ "")
+    (set string 256 person.sex~ "")
+    (set int64 1 person.age~ 0)
+    (set double 1 person.height~ 0.0)
+    (set string 256 person.eye_color~ "")
+    // get mem address of person data
+    (memaddr~ stpopi)
+    (zero~ memaddr~ person.first_name~ :load_obj_string_memobj call)
+	(ret~ stpopi)
+    print_s (person.first_name~)
+    print_n
+    (one~ memaddr~ person.last_name~ :load_obj_string_memobj call)
+	(ret~ stpopi)
+    print_s (person.last_name~)
+    print_n
+    (two~ memaddr~ person.sex~ :load_obj_string_memobj call)
+	(ret~ stpopi)
+    print_s (person.sex~)
+    print_n
+    (two~ three~ memaddr :load_obj_memobj call)
+    (ret~ stpopi)
+    (person.height~ stpopd)
+    (person.age~ stpopi)
+    print_i (person.age~)
+    print_n
+    print_d (person.height~)
+    print_n
+    (five~ memaddr~ person.eye_color~ :load_obj_string_memobj call)
+	(ret~ stpopi)
+    print_s (person.eye_color~)
+    print_n
+(funcend)
+#include <mem-obj-lib.l1h>
