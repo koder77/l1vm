@@ -5,4 +5,4 @@ sources = main.c, labels.c, register.c, var.c, parse-rpolish.c, ../lib-func/file
 
 ccompiler = $CC
 
-cflags = "-Wall -Wextra -g"
+cflags = "-Wall -Wextra"

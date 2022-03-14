@@ -11,7 +11,12 @@
 	(set int64 1 numstr_len 30)
 	(set int64 1 not_num 0)
 	(set int64 1 not_ret)
+	(set double 1 angle 45.0)
+	(set double 1 rad)
+	(set double 1 angle_sin)
 	(set string 30 numstr "")
+	(set string s anglestr "angle sin: ")
+	(set string s anglestr_2 " = ")
 	(zero :math_init call)
 	(loadreg)
 	(randstart :math_randinit call)
@@ -21,10 +26,10 @@
 	(loadreg)
 	print_i (random)
 	print_n
-	print_d (m_pi@math)
+	print_d (m_pimath)
 	print_n
 	// round pi to "digits" (3) digits and store number in string
-	(m_pi@math digits numstraddr numstr_len :double_rounded_string call)
+	(m_pimath digits numstraddr numstr_len :double_rounded_string call)
 	(loadreg)
 	print_s (numstr)
 	print_n
@@ -32,6 +37,15 @@
 	(not_ret stpopi)
 	(loadreg)
 	print_i (not_ret)
+	print_n
+	(angle :math_degree_to_rad !)
+	(rad stpopd)
+	(rad :math_sindouble !)
+	(rad stpopd)
+	print_s (anglestr)
+	print_d (angle)
+	print_s (anglestr_2)
+	print_d (rad)
 	print_n
 	// close module
 	free_mod (zero)

@@ -5316,6 +5316,7 @@ S2 parse (U1 *name)
 				// search for "@," array variable assign in more than one line:
 				// @, 32Q, 10, 5,
 				// @, 1234567890, 4, 3, ;
+				
 				pos = searchstr (rbuf, (U1 *) "@,", 0, 0, TRUE);
 				if (pos != -1)
 				{
@@ -5329,7 +5330,6 @@ S2 parse (U1 *name)
 					strcpy ((char *) data[data_line], (const char *) rbuf);
 					continue;
 				}
-
 
 				if (inline_asm == 1)
 				{
