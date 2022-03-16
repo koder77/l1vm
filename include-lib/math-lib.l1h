@@ -23,6 +23,7 @@
 	(set string s coshdoublestr@math "coshdouble")
 	(set string s sindoublestr@math "sindouble")
 	(set string s sinhdoublestr@math "sinhdouble")
+	(set string s tandoublestr@math "tandouble")
 	(set string s tanhdoublestr@math "tanhdouble")
 	(set string s expdoublestr@math "expdouble")
 	(set string s frexpdoublestr@math "frexpdouble")
@@ -65,6 +66,7 @@
 	(set int64 1 fabsdouble@math 28)
 	(set int64 1 floordouble@math 29)
 	(set int64 1 fmoddouble@math 30)
+	(set int64 1 tandouble@math 31)
     (set int64 1 mod@math 0)
     // get argument from stack
     (mod@math stpopi)
@@ -101,6 +103,7 @@
 	(2 mod@math ceildouble@math ceildoublestr@mathaddr intr0)
 	(2 mod@math fabsdouble@math fabsdoublestr@mathaddr intr0)
 	(2 mod@math floordouble@math floordoublestr@mathaddr intr0)
+	(2 mod@math tandouble@math tandoublestr@mathaddr intr0)
 (funcend)
 // wrapper functions
 (math_int2double func)
@@ -175,6 +178,9 @@
 (funcend)
 (math_tanhdouble func)
 	(3 mod@math tanhdouble@math 0 intr0)
+(funcend)
+(math_tandouble func)
+	(3 mod@math tandouble@math 0 intr0)
 (funcend)
 (math_expdouble func)
 	(3 mod@math expdouble@math 0 intr0)

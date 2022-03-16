@@ -354,6 +354,31 @@ U1 *sinhdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+U1 *tandouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 value ALIGN;
+	S8 returnval ALIGN;
+
+	sp = stpopi ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("tandouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	returnval = fp16_tan (value);
+
+	sp = stpushi (returnval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("tandouble: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
 U1 *tanhdouble (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 value ALIGN;
