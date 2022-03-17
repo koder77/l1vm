@@ -31,8 +31,9 @@
     (set string s welcome "Rectangles, a demo by Stefan Pietzonke aka koder77.")
     (set int64 1 fontsize 20)
     (set int64 1 delay_welcome 8000)
+    #include <math-const.l1h>
     // open screen
-    (zero width height bit :sdl_open_screen call)
+    (zero width height bit zero :sdl_open_screen call)
     (ret stpopi)
     (loadreg)
     (one :math_init call)

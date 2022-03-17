@@ -113,7 +113,7 @@
 	(2 mod@math divdouble@math divdoublestr@mathaddr intr0)
 	(2 mod@math double2fp@math double2fpstr@mathaddr intr0)
 	(2 mod@math fp2double@math fp2doublestr@mathaddr intr0)
-	(2 mod@math tandouble@math tandoublestr@mathaddr intr0
+	(2 mod@math tandouble@math tandoublestr@mathaddr intr0)
 (funcend)
 // wrapper functions
 (math_int2double func)

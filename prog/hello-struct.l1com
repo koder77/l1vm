@@ -50,6 +50,7 @@
         exit (one)
 	(endif)
     (memaddr :person_list_data !)
+    free_mod (zero)
     exit (zero)
 (funcend)
 
