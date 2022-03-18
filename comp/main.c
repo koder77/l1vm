@@ -1194,8 +1194,14 @@ S2 parse_line (U1 *line)
 												return (1);
 											}
 										}
-
-										target_var_type = getvartype_real (ast[level].expr[j][last_arg - 4]);
+										if (ast[level].expr[j][last_arg - 4][0] != 'P')
+										{
+											target_var_type = getvartype_real (ast[level].expr[j][last_arg - 4]);
+										}
+										else 
+										{
+											target_var_type = getvartype_real (ast[level].expr[j][last_arg - 5]);
+										}
 
 										if (checkdef (ast[level].expr[j][last_arg - 5]) != 0)
 										{
