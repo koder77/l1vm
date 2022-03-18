@@ -5,7 +5,9 @@ L1VM - (1.5.5)
 	Renamed math-const.l1h constants without the @ char, because some compile trouble!
 	NEW: math modules: missing tandouble function added.
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 16 Mar 2022 20:13 +0100
+	NEW: Brackets: pointer bugfixes on double array variables.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 18 Mar 2022 16:43 +0100
 
 L1VM - (1.5.4)
 	NEW: VM: string module added: "get_env" and "set_env" functions for working on ENV variables.
