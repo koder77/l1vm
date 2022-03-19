@@ -128,7 +128,7 @@ S2 check_brackets_match (U1 *line)
 		}
 		else
 		{
-			if (line[i] != '(' && line[i] != ')')
+			if (line[i] != '(' && line[i] != ')' && line[i] != ' ')
 			{
 				is_space = 0;
 			}
@@ -277,7 +277,7 @@ S2 get_ast (U1 *line, U1 *parse_cont)
 						if (line[pos] != ' ' && line[pos] != ',' && line[pos] != '\n' && line[pos] != ')' && line[pos] != '}')
 						{
 							// BUGFIX -> avoid write byte error in valgrind.
-							// do check of all index varaibles!!!
+							// do check of all index variables!!!
 							if (ast_ind >= 0 && exp_ind >= 0 && arg_ind >= 0 && arg_pos >= 0)
 							{
 								ast[ast_ind].expr[exp_ind][arg_ind][arg_pos] = line[pos];
@@ -299,7 +299,7 @@ S2 get_ast (U1 *line, U1 *parse_cont)
 							// printf ("ast_ind: %i, exp_ind: %i, arg_ind: %i, arg_pos: %i\n", ast_ind, exp_ind, arg_ind, arg_pos);
 
 							// BUGFIX -> avoid write byte error in valgrind.
-							// do check of all index varaibles!!!
+							// do check of all index variables!!!
 							if (ast_ind >= 0 && exp_ind >= 0 && arg_ind >= 0 && arg_pos >= 0)
 							{
 								ast[ast_ind].expr[exp_ind][arg_ind][arg_pos] = '\0';
@@ -310,7 +310,7 @@ S2 get_ast (U1 *line, U1 *parse_cont)
 							{
 								// next char is open bracket, new expression next
 								// BUGFIX -> avoid write byte error in valgrind.
-								// do check of all index varaibles!!!
+								// do check of all index variables!!!
 								if (ast_ind >= 0 && exp_ind >= 0)
 								{
 									ast[ast_ind].expr_args[exp_ind] = arg_ind;
