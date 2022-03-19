@@ -27,6 +27,9 @@
 #include "main.h"
 
 
+// include/home.h 
+char *get_home (void);
+
 S8 data_size ALIGN;
 S8 code_size ALIGN;
 
@@ -2753,10 +2756,23 @@ S2 run_main_loop_thread (void *arg)
 			usleep (500 * 1000); // delay
 			// printf ("run_main_loop_thread: EXIT!\n");
 			threaddata[1].status = STOP;
-
 			pthread_exit ((void *) 0);
 		}
 	}
+	threaddata[1].status = STOP;
+	pthread_exit ((void *) 0);
+}
+
+void show_file_root_path (void)
+{
+	char *home;
+
+	#if SANDBOX
+	home = get_home ();
+	printf ("sandbox root = %s%s\n", home, SANDBOX_ROOT);
+	#else 
+	printf ("no sandbox root set!\n");
+	#endif
 }
 
 int main (int ac, char *av[])
@@ -2964,6 +2980,8 @@ int main (int ac, char *av[])
 		#endif
 
 		printf ("build on: %s\n", __DATE__);
+
+		show_file_root_path ();
 
 		#if JIT_COMPILER
 	    	printf ("JIT-compiler: ready to load module.\n");

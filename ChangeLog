@@ -1,3 +1,8 @@
+L1VM - (1.5.6)
+	NEW: VM: shows if file sanbox root is set or not.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 19 Mar 2022 17:27 +0100
+
 L1VM - (1.5.5)
 	NEW: added math library degree to rad and rad to degree functions.
 	Added sin () math test to math library demo.
