@@ -8,7 +8,7 @@
     (set int64 1 one  1)
     (set string 256 person.first_name "Jane")
     (set string 256 person.last_name "Doe")
-    (set string 256 person.sex "female")
+    (set string 256 person.gender "female")
     (set int64 1 person.age 30)
     (set double 1 person.height 1.80)
     (set string 256 person.eye_color "brown")
@@ -41,7 +41,7 @@
 		exit (one)
 	(endif)
 	// store person data in mem object:
-    (person.eye_color s_type person.height d_type person.age i_type person.sex s_type person.last_name s_type person.first_name s_type variables zero memaddr :save_obj_memobj !)
+    (person.eye_color s_type person.height d_type person.age i_type person.gender s_type person.last_name s_type person.first_name s_type variables zero memaddr :save_obj_memobj !)
     (ret stpopi)
 	(((ret zero !=) f =) f if)
 		// ERROR can't allocate memory
@@ -68,7 +68,7 @@
     (set string s height_format~ "%.2lf")
     (set string 256 person.first_name~ "")
     (set string 256 person.last_name~ "")
-    (set string 256 person.sex~ "")
+    (set string 256 person.gender~ "")
     (set int64 1 person.age~ 0)
     (set double 1 person.height~ 0.0)
     (set string 256 person.eye_color~ "")
@@ -82,9 +82,9 @@
 	(ret~ stpopi)
     print_s (person.last_name~)
     print_n
-    (two~ memaddr~ person.sex~ :load_obj_string_memobj call)
+    (two~ memaddr~ person.gender~ :load_obj_string_memobj call)
 	(ret~ stpopi)
-    print_s (person.sex~)
+    print_s (person.gender~)
     print_n
     (two~ three~ memaddr :load_obj_memobj call)
     (ret~ stpopi)

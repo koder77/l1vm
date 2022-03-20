@@ -1,0 +1,114 @@
+// people-obj.l1com
+//
+// store people data
+//
+#include <intr.l1h>
+(main func)
+    (set const-int64 1 zero 0)
+	(set const-int64 1 one 1)
+	(set const-int64 1 two 2)
+    (set const-int64 1 three 3)
+    (set const-int64 1 four 4)
+    (set const-int64 1 five 5)
+    (set int64 1 f 0)
+    (set int64 1 ret 0)
+    (set const-int64 1 memsize 1)
+	(set const-int64 1 variables 6)
+    (set int64 1 memaddr 0)
+    // Jane Doe data:
+    (set string s first_name "Jane")
+    (set string s last_name "Doe")
+    (set int64 1 age 30)
+    (set string s sex "female")
+    (set double 1 height 1.80)
+    (set string s eye_color "brown")
+    // data read:
+    (set string 256 get_first_name "")
+    (set string 256 get_last_name "")
+    (set int64 1 get_age 0)
+    (set string 256 get_sex "")
+    (set double 1 get_height 0.0)
+    (set string 256 get_eye_color "")
+    // error messages
+    (set string s memopenerrstr "ERROR can't open mem object module!")
+	(set string s meminiterrstr "ERROR can't init memory")
+	(set string s memerrstr "ERROR can't allocate memory!")
+	(set string s saveerrstr "ERROR can't save to memory object!")
+    (set string s readmemobjerrstr "ERROR can't read memory object!")
+    (set string s comma ",")
+    (set const-int64 1 digits 2)
+    (set string 256 get_heightstr "")
+    (set int64 1 get_height_len 255)
+    #include <mem-obj-lib-types.l1h>
+    (reset-reg)
+	(zero one :mem_obj_init call)
+	(ret stpopi)
+    (((ret zero !=) f =) f if)
+        print_s (memopenerrstr)
+        print_n
+        exit (one)
+    (endif)
+    (one :math_init call)
+	(loadreg)
+	(((ret zero !=) f =) f if)
+		// ERROR can't allocate memory
+        print_s (meminiterrstr)
+		print_n
+		exit (one)
+	(endif)
+    // allocate memory for the peple data
+	(variables memsize :alloc_obj_memobj call)
+	(memaddr stpopi)
+	(loadreg)
+	(((memaddr zero <) f =) f if)
+		// ERROR can't allocate memory
+        print_s (memerrstr)
+		print_n
+		exit (one) 
+	(endif)
+    // store variables in people mem object
+    (eye_color s_type height d_type sex s_type age i_type last_name s_type first_name s_type variables zero memaddr :save_obj_memobj call)
+    // print people mem object
+    // get first name
+    (zero memaddr get_first_name :load_obj_string_memobj call)
+    (ret stpopi)
+    // get last name
+    (one memaddr get_last_name :load_obj_string_memobj call)
+    (ret stpopi)
+    // get age
+    (one two memaddr :load_obj_memobj call)
+    (ret stpopi)
+    (get_age stpopi)
+    // get sex
+    (three memaddr get_sex :load_obj_string_memobj call)
+    (ret stpopi)
+    // get height
+    (one four memaddr :load_obj_memobj call)
+    (ret stpopi)
+    (get_height stpopd)
+    // get eye color
+    (five memaddr get_eye_color :load_obj_string_memobj call)
+    (ret stpopi)
+	(get_height digits get_heightstr get_height_len :double_rounded_string call)
+    // print data
+    print_s (get_last_name)
+    print_s (comma)
+    print_s (get_first_name)
+    print_s (comma)
+    print_i (get_age)
+    print_s (comma)
+    print_s (get_sex)
+    print_s (comma)
+    print_s (get_heightstr)
+    print_s (comma)
+    print_s (get_eye_color)
+    print_n
+    // free mem object
+	(memaddr :free_obj_memobj call)
+	(:free_memobj call)
+	// close mem module
+	free_mod (zero)
+    exit (zero)
+(funcend)
+#include <mem-obj-lib.l1h>
+#include <math-lib.l1h>
