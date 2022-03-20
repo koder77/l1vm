@@ -56,7 +56,7 @@
 
 // get person data from mem object
 (person_list_data func)
-    #var ~ @person_list_data
+    #var ~ person_list_data
     (set int64 1 f~)
     (set int64 1 zero~ 0)
     (set int64 1 one~ 1)
