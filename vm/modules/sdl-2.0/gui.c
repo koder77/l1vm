@@ -1862,12 +1862,16 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 
 	while (wait)
 	{
+        /*
 		if (! SDL_WaitEvent (&event))
 		{
 			printf ("event_gadget_string_multiline: error can't wait for event!\n");
 			free (string_buf);
 			return FALSE;
 		}
+        */
+
+        SDL_WaitEvent (&event);
 
 		value_len = string->visible_len;
 

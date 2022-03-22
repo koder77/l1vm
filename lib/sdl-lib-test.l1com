@@ -134,7 +134,7 @@
 	(4 gadget_sel 0 0 intr0)
 	(7 0 0 0 intr0)
 	(((gadget_sel one ==) f =) f if)
-		(:free_all_gadgets call)
+		// (:free_all_gadgets call)
 		(255 0 0 0 intr0)
 	(endif)
 	(((gadget_sel zero ==) f =) f if)
