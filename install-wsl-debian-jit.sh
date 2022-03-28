@@ -224,6 +224,7 @@ cp l1vm l1vm-jit
 cd ..
 cp assemb/l1asm ~/bin
 cp comp/l1com ~/bin
+cp prepro/l1pre ~/bin
 cp vm/l1vm-jit ~/bin
 echo "VM binaries installed into ~/bin"
 
