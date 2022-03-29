@@ -4,6 +4,8 @@ L1VM README  2022-03-29
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/P5P2Y3KP)
 
+Running my Blog and keep my hardware going costs money! So you can support me on Ko-fi!
+
 [![C/C++ CI](https://github.com/koder77/l1vm/actions/workflows/github-ci.yaml/badge.svg)](https://github.com/koder77/l1vm/actions/workflows/github-ci.yaml)
 
 This project started on 9. November 2017 as an experimental fast VM.
