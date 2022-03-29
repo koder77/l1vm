@@ -1,4 +1,4 @@
-L1VM README  2022-01-08
+L1VM README  2022-03-29
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -189,22 +189,27 @@ export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
 ```
 
 Configure the file access for SANDBOX mode or not, and set your /home directory name:
-include/global.h:
+include/settings.h:
 
 <pre>
 // SANDBOX FILE ACCESS
 #define SANDBOX                 1			// secure file acces: 1 = use secure access, 0 = OFF!!
-#define SANDBOX_ROOT			"/l1vm/"	// in /home directory!
+#define SANDBOX_ROOT			"/l1vm/"	// in /home directory!, get by $HOME env variable
 </pre>
 
 And you can choose if the array variable bounds check and math checks should be run:
 
 <pre>
 // data bounds check exactly
-#define BOUNDSCHECK				1
+#define BOUNDSCHECK             1
 </pre>
 
+Math limits checks, on/off:
+
 <pre>
+// division by zero checking
+#define DIVISIONCHECK           1
+
 // integer and double floating point math functions overflow detection
 // See vm/main.c interrupt0:
 // 251 sets overflow flag for double floating point number
