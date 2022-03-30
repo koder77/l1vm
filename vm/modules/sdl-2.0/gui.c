@@ -2054,7 +2054,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									// ä
 									printf ("key: ä\n");
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 2)
 									{
 										strinsertchar (string_buf, string->value, 228, insert_pos);
 
@@ -2091,7 +2091,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									// Ä
 									printf ("key: Ä\n");
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 2)
 									{
 										strinsertchar (string_buf, string->value, 196, insert_pos);
 
@@ -2129,7 +2129,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									// ö
 									printf ("key: ö\n");
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 2)
 									{
 										strinsertchar (string_buf, string->value, 246, insert_pos);
 
@@ -2166,7 +2166,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									// Ö
 									printf ("key: Ö\n");
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 2)
 									{
 										strinsertchar (string_buf, string->value, 214, insert_pos);
 
@@ -2204,7 +2204,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									printf ("key: ü\n");
 									// ü
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 2)
 									{
 										strinsertchar (string_buf, string->value, 252, insert_pos);
 
@@ -2241,7 +2241,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									// Ü
 									printf ("key: Ü\n");
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 2)
 									{
 										strinsertchar (string_buf, string->value, 220, insert_pos);
 
@@ -2278,7 +2278,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									// ß
 									printf ("key: ß\n");
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 2)
 									{
 										strinsertchar (string_buf, string->value, 223, insert_pos);
 
@@ -2315,7 +2315,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									// §
 									printf ("key: §\n");
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 2)
 									{
 										strinsertchar (string_buf, string->value, 167, insert_pos);
 
@@ -2353,7 +2353,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									// € Euro char
 									printf ("key: €\n");
 
-									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
+									if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 2)
 									{
 										strinsertchar (string_buf, string->value, 128, insert_pos);
 
@@ -2391,7 +2391,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 						{
 							// if (value_len < string->visible_len)
 							//{
-								if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 1)
+								if (strlen_safe ((const char *) string_buf, (string->visible_len * string->text_lines)) < (string->visible_len * string->text_lines) - 2)
 								{
 									strinsertchar (string_buf, string->value, event.text.text[i], insert_pos);
 									my_strcpy (string->value, string_buf);
