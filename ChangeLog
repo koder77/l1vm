@@ -7,8 +7,9 @@ L1VM - (1.5.6)
 	like vm and compiler.
 
 	NEW: SDL GUI string multiline text input string overflow BUG fix.
+	NEW: SDL GUI string multiline cursor up/down edit fixes.
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 30 Mar 2022 16:43 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 31 Mar 2022 20:03 +0200
 
 L1VM - (1.5.5)
 	NEW: added math library degree to rad and rad to degree functions.

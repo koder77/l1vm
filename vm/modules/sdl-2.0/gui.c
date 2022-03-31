@@ -1954,6 +1954,8 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 						break;
 
 					case SDLK_RIGHT:
+                        printf ("event_gadget_string_multiline: CURSOR RIGHT\n");
+
 						string_len = strlen_safe ((const char *) string->value, (string->visible_len * string->text_lines));
 
 						if (string->insert_pos < string_len)
@@ -1981,16 +1983,24 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 						}
 						break;
 
-						/*
 						// FIXME, how can it be done safe???
 					case SDLK_UP:
 						printf ("event_gadget_string_multiline: CURSOR UP\n");
 
+                        string_len = strlen_safe ((const char *) string->value, (string->visible_len * string->text_lines));
+
 						if (string->cursor_pos_y > 0)
 						{
 							string->cursor_pos_y--;
-							string->insert_pos = (string->cursor_pos_y * string->visible_len) + string->cursor_pos_x;
-
+                            if (string_len < string->visible_len)
+                            {
+                                string->insert_pos = (string->cursor_pos_y * string_len) + string->cursor_pos_x;
+                            }
+                            else 
+                            {
+                                string->insert_pos = (string->cursor_pos_y * string->visible_len) + string->cursor_pos_x;
+                            }
+							
 							if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
 							{
 								free (string_buf);
@@ -2000,21 +2010,36 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 						break;
 
 					case SDLK_DOWN:
+                        {
+                        // new variable scope:
+                        S2 input_row;
+                        S2 max_cursor_x;
+
 						printf ("event_gadget_string_multiline: CURSOR DOWN\n");
+                        string_len = strlen_safe ((const char *) string->value, (string->visible_len * string->text_lines));
 
 						if (string->cursor_pos_y < string->text_lines - 1)
 						{
-							string->cursor_pos_y++;
-							string->insert_pos = (string->cursor_pos_y * string->visible_len) + string->cursor_pos_x;
+                            input_row = string_len / string->visible_len;
+                            max_cursor_x = string_len % string->visible_len;
 
-							if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
-							{
-								free (string_buf);
-								return (FALSE);
-							}
-						}
+                            if (string->cursor_pos_y < input_row)
+                            {
+                                if (string->cursor_pos_x > max_cursor_x && string->cursor_pos_y == input_row - 1)
+                                {
+                                    string->cursor_pos_x = max_cursor_x;
+                                }
+							    string->cursor_pos_y++;
+							    string->insert_pos = (string->cursor_pos_y * string->visible_len) + string->cursor_pos_x;
+							    if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
+							    {
+								    free (string_buf);
+								    return (FALSE);
+							    }
+						    }
+                        }
+                        }
 						break;
-						*/
 
 					case SDLK_RETURN:
 						printf ("event_gadget_string_multiline: RETURN\n");
