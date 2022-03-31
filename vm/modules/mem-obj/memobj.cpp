@@ -657,3 +657,133 @@ extern "C" U1 *load_string_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (sp);
 	}
 }
+
+extern "C" U1 *load_obj_mem_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 memind ALIGN;
+	S8 ind ALIGN;
+	S8 variables ALIGN;
+	S8 i ALIGN;
+	S8 address ALIGN;
+	S8 offset ALIGN;
+	S8 *int_ptr;
+	F8 *double_ptr;
+
+	// get object array index to write the variables into
+	sp = stpopi ((U1 *) &memind, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("load_obj_mem_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (memind < 0 || memind >= memmax)
+	{
+		// error
+		printf ("load_obj_mem_array: ERROR: memind index out of range!\n");
+		return (NULL);
+	}
+
+	// get mem obj variable index start
+	sp = stpopi ((U1 *) &ind, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("load_obj_mem_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (ind < 0 || ind >= mem[memind].memsize)
+	{
+		// error
+		printf ("load_obj_mem_array: ERROR: ind index out of range!\n");
+		return (NULL);
+	}
+
+	// get number of variables to load from the array
+	sp = stpopi ((U1 *) &variables, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("load_obj_mem_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	// get the variable types ans the variables from stack
+	for (i = 0; i < variables; i++)
+	{
+		if (ind < mem[memind].memsize)
+		{
+			sp = stpopi ((U1 *) &address, sp, sp_top);
+			if (sp == NULL)
+			{
+				// error
+				printf ("load_obj_mem_array: ERROR: stack corrupt!\n");
+				return (NULL);
+			}
+
+			switch (mem[memind].objptr[ind].type)
+			{
+				case MEMINT64:
+					// get int64 variable from object array
+					// write to variable address on stack
+					int_ptr = (S8 *) &data[address];
+					*int_ptr = (S8) mem[memind].objptr[ind].memptr.int64v;
+					break;
+
+				case MEMDOUBLE:
+					// get double variable from object array
+					// write to variable address on stack
+					double_ptr = (F8 *) &data[address];
+					*double_ptr = (F8) mem[memind].objptr[ind].memptr.doublev;
+					break;
+
+				case MEMSTRING:
+					// get double variable from object array
+					// write to variable address on stack
+					offset = strlen_safe ((char *) mem[memind].objptr[ind].memptr.straddr, MAXLINELEN);
+
+					if (offset >= 0)
+					{
+						#if BOUNDSCHECK
+						if (memory_bounds (address, offset) != 0)
+						{
+							printf ("load_obj_mem_array: string_copy: ERROR: dest string overflow!\n");
+							return (NULL);
+						}
+						#endif
+					}
+
+					strcpy ((char *) &data[address], (const char *)  mem[memind].objptr[ind].memptr.straddr);
+					break;
+			}
+			ind++;
+		}
+		else
+		{
+			// variable index overflow
+			printf ("load_obj_mem_array: error obj variable index overflow: %lli\n", memind);
+
+			// error exit
+			sp = stpushi (1, sp, sp_bottom);
+			if (sp == NULL)
+			{
+				// error
+				printf ("load_obj_mem_array: ERROR: stack corrupt!\n");
+				return (NULL);
+			}
+			return (sp);
+		}
+	}
+	// ok exit
+		sp = stpushi (0, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("load_string_obj_mem_array: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		return (sp);
+}
+	

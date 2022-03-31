@@ -11,6 +11,7 @@
 	(set string s save_obj_memstr@memobj "save_obj_mem")
 	(set string s load_obj_memstr@memobj "load_obj_mem")
 	(set string s load_obj_string_memstr@memobj "load_string_obj_mem")
+	(set string s load_obj_array_memstr@memobj "load_obj_mem_array")
 	(set int64 1 init@memobj 0)
 	(set int64 1 free@memobj 1)
 	(set int64 1 alloc_obj_mem@memobj 2)
@@ -18,6 +19,7 @@
 	(set int64 1 save_obj_mem@memobj 4)
 	(set int64 1 load_obj_mem@memobj 5)
 	(set int64 1 load_obj_string_mem@memobj 6)
+	(set int64 1 load_obj_array_mem@memobj 7)
 	(set int64 1 maxind@memobj 0)
 	(set int64 1 mod@memobj 0)
 	// get arguments from stack
@@ -33,6 +35,7 @@
 	(2 mod@memobj save_obj_mem@memobj save_obj_memstr@memobjaddr intr0)
 	(2 mod@memobj load_obj_mem@memobj load_obj_memstr@memobjaddr intr0)
 	(2 mod@memobj load_obj_string_mem@memobj load_obj_string_memstr@memobj intr0)
+	(2 mod@memobj load_obj_array_mem@memobj load_obj_array_memstr@memobj intr0)
 	// init module
 	(maxind@memobj stpushi)
 	(3 mod@memobj init@memobj 0 intr0)
@@ -56,4 +59,7 @@
 (funcend)
 (load_obj_string_memobj func)
 	(3 mod@memobj load_obj_string_mem@memobj 0 intr0)
+(funcend)
+(load_obj_array_memobj func)
+	(3 mod@memobj load_obj_array_mem@memobj 0 intr0)
 (funcend)
