@@ -2775,18 +2775,8 @@ void show_file_root_path (void)
 	#endif
 }
 
-int main (int ac, char *av[])
+void show_run_info (void)
 {
-	S8 i ALIGN;
-	S8 arglen ALIGN;
-	S8 strind ALIGN;
-	S8 avind ALIGN;
-	U1 cmd_args = 0;		// switched to one, if arguments follow
-
-	pthread_t id;
-
-	S8 new_cpu ALIGN;
-
 	// do compilation time sense check on integer 64 bit and double 64 bit type!!
 	S8 size_int64 ALIGN;
 	S8 size_double64 ALIGN;
@@ -2805,6 +2795,63 @@ int main (int ac, char *av[])
 		cleanup ();
 		exit (1);
 	}
+
+	printf ("l1vm - %s -%s\n", VM_VERSION_STR, COPYRIGHT_STR);
+	printf (">>> lightning speed <<<\n");
+	printf ("CPU cores: %lli (STATIC)\n", max_cpu);
+
+	printf ("internal type check: S8 = %lli bytes, F8 = %lli bytes. All OK!\n", size_int64, size_double64);
+
+	#if defined(__clang__)
+		printf ("C compiler: clang version %s\n", __clang_version__);
+	#elif defined(__GNUC__) || defined(__GNUG__)
+		printf ("C compiler: gcc version %s\n", __VERSION__);
+	#endif
+
+	printf ("build on: %s\n", __DATE__);
+
+	show_file_root_path ();
+
+	#if JIT_COMPILER
+	    printf ("JIT-compiler: ready to load module.\n");
+	#endif
+
+	#if MATH_LIMITS
+		printf (">> math overflow check << ");
+	#endif
+
+	#if BOUNDSCHECK
+		printf (">> boundscheck << ");
+	#endif
+
+	#if DIVISIONCHECK
+		printf (">> divisioncheck << ");
+	#endif
+
+	#if STACK_CHECK
+		printf (">> stackcheck <<");
+	#endif
+
+	printf ("\n");
+	printf ("machine: ");
+	#if MACHINE_BIG_ENDIAN
+		printf ("big endianess\n");
+	#else
+		printf ("little endianess\n");
+	#endif
+}
+
+int main (int ac, char *av[])
+{
+	S8 i ALIGN;
+	S8 arglen ALIGN;
+	S8 strind ALIGN;
+	S8 avind ALIGN;
+	U1 cmd_args = 0;		// switched to one, if arguments follow
+
+	pthread_t id;
+
+	S8 new_cpu ALIGN;
 
 	// printf ("DEBUG: ac: %i\n", ac);
 
@@ -2953,6 +3000,7 @@ int main (int ac, char *av[])
     else
 	{
 		show_info ();
+		show_run_info ();
 		cleanup ();
 		exit (1);
 	}
@@ -2967,49 +3015,7 @@ int main (int ac, char *av[])
 
 	if (silent_run == 0)
 	{
-		printf ("l1vm - %s -%s\n", VM_VERSION_STR, COPYRIGHT_STR);
-		printf (">>> lightning speed <<<\n");
-	    printf ("CPU cores: %lli (STATIC)\n", max_cpu);
-
-		printf ("internal type check: S8 = %lli bytes, F8 = %lli bytes. All OK!\n", size_int64, size_double64);
-
-		#if defined(__clang__)
-			printf ("C compiler: clang version %s\n", __clang_version__);
-		#elif defined(__GNUC__) || defined(__GNUG__)
-			printf ("C compiler: gcc version %s\n", __VERSION__);
-		#endif
-
-		printf ("build on: %s\n", __DATE__);
-
-		show_file_root_path ();
-
-		#if JIT_COMPILER
-	    	printf ("JIT-compiler: ready to load module.\n");
-		#endif
-
-		#if MATH_LIMITS
-			printf (">> math overflow check << ");
-		#endif
-
-		#if BOUNDSCHECK
-			printf (">> boundscheck << ");
-		#endif
-
-		#if DIVISIONCHECK
-			printf (">> divisioncheck << ");
-		#endif
-
-		#if STACK_CHECK
-			printf (">> stackcheck <<");
-		#endif
-
-		printf ("\n");
-		printf ("machine: ");
-		#if MACHINE_BIG_ENDIAN
-			printf ("big endianess\n");
-		#else
-			printf ("little endianess\n");
-		#endif
+		show_run_info ();
 	}
     if (load_object ((U1 *) av[1]))
     {

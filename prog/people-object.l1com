@@ -106,7 +106,7 @@
     ((Pheight~ zero~ +) Pheight~ =)
 
     (person.eye_color~ Peye_color~ pointer)
-    ((Peye_color~ zero +) Peye_color~ =)
+    ((Peye_color~ zero~ +) Peye_color~ =)
 
     (Peye_color~ Pheight~ Page~ Pgender~ Plast_name~ Pfirst_name~ variables~ zero~ memaddr~ :load_obj_array_memobj call)
 
