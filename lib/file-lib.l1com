@@ -27,6 +27,7 @@
     (set int64 1 offset 8)
     (set int64 1 real_ind 0)
     (set int64 1 start 0)
+    (set int64 1 size 10000)
     (set int64 1 Parray 0)
 	(set string s error_init_files "error: can't allocate file handles!")
 	(set string s error_open_file "error: can't open file test-file!")
@@ -119,7 +120,7 @@
         ((ind one +) ind =)
     (next)
     // write array
-    (handle Parray start maxmem array_int64 :file_write_array !)
+    (handle Parray start size array_int64 :file_write_array !)
     (error stpopi)
     (((error zero !=) f =) f if)
         (6 array_error_write 0 0 intr0)
@@ -147,7 +148,7 @@
         (255 one 0 0 intr0)
     (endif)
     // read array
-    (handle Parray start maxmem array_int64 :file_read_array !)
+    (handle Parray start size array_int64 :file_read_array !)
     (error stpopi)
     (((error zero !=) f =) f if)
         (6 array_error_write 0 0 intr0)

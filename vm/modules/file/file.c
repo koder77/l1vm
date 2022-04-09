@@ -1363,7 +1363,7 @@ U1 *file_read_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 				printf ("file_read_array: ERROR: array overflow!\n");
 				return (NULL);
 			}
-			if (memory_bounds (array_data_ptr, size - 1) != 0)
+			if (memory_bounds (array_data_ptr, start + (size - 1) != 0))
 			{
 				printf ("file_read_array: ERROR: array overflow!\n");
 				return (NULL);
@@ -1392,7 +1392,7 @@ U1 *file_read_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 				printf ("file_read_array: ERROR: array overflow!\n");
 				return (NULL);
 			}
-			if (memory_bounds (array_data_ptr, ((size - 1) * 2)) != 0)
+			if (memory_bounds (array_data_ptr, (start * 2) + ((size - 1) * 2)) != 0)
 			{
 				printf ("file_read_array: ERROR: array overflow!\n");
 				return (NULL);
@@ -1421,7 +1421,7 @@ U1 *file_read_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 				printf ("file_read_array: ERROR: array overflow!\n");
 				return (NULL);
 			}
-			if (memory_bounds (array_data_ptr, ((size - 1) * 4)) != 0)
+			if (memory_bounds (array_data_ptr, (start * 4) + ((size - 1) * 4)) != 0)
 			{
 				printf ("file_read_array: ERROR: array overflow!\n");
 				return (NULL);
@@ -1450,7 +1450,7 @@ U1 *file_read_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 				printf ("file_read_array: ERROR: array overflow!\n");
 				return (NULL);
 			}
-			if (memory_bounds (array_data_ptr, ((size - 1) * 8)) != 0)
+			if (memory_bounds (array_data_ptr, (start * 8) + ((size - 1) * 8)) != 0)
 			{
 				printf ("file_read_array: ERROR: array overflow!\n");
 				return (NULL);
@@ -1479,7 +1479,7 @@ U1 *file_read_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 				printf ("file_read_array: ERROR: array overflow!\n");
 				return (NULL);
 			}
-			if (memory_bounds (array_data_ptr, ((size - 1) * 8)) != 0)
+			if (memory_bounds (array_data_ptr, (start * 8) + ((size - 1) * 8)) != 0)
 			{
 				printf ("file_read_array: ERROR: array overflow!\n");
 				return (NULL);
@@ -1586,7 +1586,7 @@ U1 *file_write_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 				printf ("file_write_array: ERROR: array overflow!\n");
 				return (NULL);
 			}
-			if (memory_bounds (array_data_ptr, size - 1) != 0)
+			if (memory_bounds (array_data_ptr, start + (size - 1) != 0))
 			{
 				printf ("file_write_array: ERROR: array overflow!\n");
 				return (NULL);
@@ -1615,7 +1615,7 @@ U1 *file_write_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 				printf ("file_write_array: ERROR: array overflow!\n");
 				return (NULL);
 			}
-			if (memory_bounds (array_data_ptr, ((size - 1) * 2)) != 0)
+			if (memory_bounds (array_data_ptr, (start * 2) + ((size - 1) * 2)) != 0)
 			{
 				printf ("file_write_array: ERROR: array overflow!\n");
 				return (NULL);
@@ -1644,7 +1644,7 @@ U1 *file_write_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 				printf ("file_write_array: ERROR: array overflow!\n");
 				return (NULL);
 			}
-			if (memory_bounds (array_data_ptr, ((size - 1) * 4)) != 0)
+			if (memory_bounds (array_data_ptr, (start * 4) + ((size - 1) * 4)) != 0)
 			{
 				printf ("file_write_array: ERROR: array overflow!\n");
 				return (NULL);
@@ -1673,7 +1673,7 @@ U1 *file_write_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 				printf ("file_write_array: ERROR: array overflow!\n");
 				return (NULL);
 			}
-			if (memory_bounds (array_data_ptr, ((size - 1) * 8)) != 0)
+			if (memory_bounds (array_data_ptr, (start * 8) + ((size - 1) * 8)) != 0)
 			{
 				printf ("file_write_array: ERROR: array overflow!\n");
 				return (NULL);
@@ -1702,7 +1702,7 @@ U1 *file_write_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 				printf ("file_write_array: ERROR: array overflow!\n");
 				return (NULL);
 			}
-			if (memory_bounds (array_data_ptr, ((size - 1) * 8)) != 0)
+			if (memory_bounds (array_data_ptr, (start * 8) + ((size - 1) * 8)) != 0)
 			{
 				printf ("file_write_array: ERROR: array overflow!\n");
 				return (NULL);
