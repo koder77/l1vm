@@ -25,6 +25,10 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+// protos
+
+extern S2 memory_bounds (S8 start, S8 offset_access);
+
 #define SOCKADDRESSLEN      16      /* max dotted ip len */
 #define SOCKBUFSIZE         10240    /* socket data buffer len */
 
@@ -1061,7 +1065,7 @@ U1 *get_hostname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (sp == NULL)
     {
         // error
-        printf ("getclientaddr: ERROR: stack corrupt!\n");
+        printf ("get_hostname: ERROR: stack corrupt!\n");
         return (NULL);
     }
 
@@ -1078,6 +1082,15 @@ U1 *get_hostname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     hostname_len = strlen_safe ((char *) hostname, MAXLINELEN) + 1;
+
+    #if BOUNDSCHECK
+    if (memory_bounds (ret_addr, hostname_len - 1) != 0)
+    {
+        printf ("get_hostname: string oveflow!\n");
+        return (NULL);
+    }
+    #endif
+
     for (i = 0; i <= hostname_len; i++)
     {
         ret_data[ret_addr + i] = hostname[i];
@@ -1145,6 +1158,15 @@ U1 *get_hostbyname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             strcpy ((char *) ret, inet_ntoa (addr));
 
             ret_len = strlen_safe ((char *) ret, MAXLINELEN) + 1;
+
+            #if BOUNDSCHECK
+            if (memory_bounds (ret_addr, ret_len - 1) != 0)
+            {
+                printf ("get_hostbyname: string oveflow!\n");
+                return (NULL);
+            }
+            #endif
+
             for (i = 0; i <= ret_len; i++)
             {
                 ret_data[ret_addr + i] = ret[i];
@@ -1234,6 +1256,16 @@ U1 *get_hostbyaddr (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         strcpy ((char *) hostname, hp->h_name);
 
         hostname_len = strlen_safe ((const char *) hostname, MAXLINELEN) + 1;
+
+        #if BOUNDSCHECK
+        if (memory_bounds (ret_addr, hostname_len - 1) != 0)
+        {
+            printf ("get_hostbyaddr: string oveflow!\n");
+            return (NULL);
+        }
+        #endif
+
+
         for (i = 0; i <= hostname_len; i++)
         {
             ret_data[ret_addr + i] = hostname[i];
@@ -3805,8 +3837,21 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
     // copy buffer to return string
-    strcpy ((char *) &data[return_str_addr], (const char *) buf);
+    { 
+        S2 buf_len;
+        buf_len = strlen_safe (buf, MAXLINELEN);
 
+        #if BOUNDSCHECK
+        if (memory_bounds (return_str_addr, buf_len - 1) != 0)
+        {
+            printf ("socket_get_string: string oveflow!\n");
+            return (NULL);
+        }
+        #endif
+
+        strcpy ((char *) &data[return_str_addr], (const char *) buf);
+    }
+    
     sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -4255,7 +4300,20 @@ U1 *socket_remove_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
     // copy buffer to return string
-    strcpy ((char *) &data[return_str_addr], (const char *) buf);
+    { 
+        S2 buf_len;
+        buf_len = strlen_safe (buf, MAXLINELEN);
+
+        #if BOUNDSCHECK
+        if (memory_bounds (return_str_addr, buf_len - 1) != 0)
+        {
+            printf ("socket_remove_string: string oveflow!\n");
+            return (NULL);
+        }
+        #endif
+
+        strcpy ((char *) &data[return_str_addr], (const char *) buf);
+    }
 
     sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     if (sp == NULL)
@@ -4375,7 +4433,20 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
     // copy buffer to return string
-    strcpy ((char *) &data[return_var_addr], (const char *) buf);
+    { 
+        S2 buf_len;
+        buf_len = strlen_safe (buf, MAXLINELEN);
+
+        #if BOUNDSCHECK
+        if (memory_bounds (return_var_addr, buf_len - 1) != 0)
+        {
+            printf ("socket_get_info: string oveflow!\n");
+            return (NULL);
+        }
+        #endif
+
+        strcpy ((char *) &data[return_var_addr], (const char *) buf);
+    }
 
 	// get type
 	ret = socket_data_read_string (handle, buf, buf_len);
@@ -4391,8 +4462,21 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (sp);
     }
 
-	// copy buffer to return string
-    strcpy ((char *) &data[return_type_addr], (const char *) buf);
+    // copy buffer to return string
+    { 
+        S2 buf_len;
+        buf_len = strlen_safe (buf, MAXLINELEN);
+
+        #if BOUNDSCHECK
+        if (memory_bounds (return_type_addr, buf_len - 1) != 0)
+        {
+            printf ("socket_get_info: string oveflow!\n");
+            return (NULL);
+        }
+        #endif
+
+        strcpy ((char *) &data[return_type_addr], (const char *) buf);
+    }
 
 	// get OK
 	ret = socket_data_read_string (handle, buf, buf_len);

@@ -13,7 +13,9 @@ L1VM - (1.5.6)
 
 	NEW: VM: file module: file_read_array and file_write_array to read/write arrays.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 9 Apr 2022 09:53 +0200
+	NEW: VM: BUGFIX: network module added string return buffer overflow check!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 9 Apr 2022 14:13 +0200
 
 L1VM - (1.5.5)
 	NEW: added math library degree to rad and rad to degree functions.
