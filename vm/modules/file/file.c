@@ -20,6 +20,11 @@
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
+// protos
+
+extern S2 memory_bounds (S8 start, S8 offset_access);
+
+
 #define FILEOPEN 1              // state flags
 #define FILECLOSED 0
 
@@ -1281,6 +1286,452 @@ U1 *file_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             printf ("file_get_string: ERROR: stack corrupt!\n");
             return (NULL);
         }
+    }
+    return (sp);
+}
+
+// array read
+U1 *file_read_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 handle ALIGN;
+    S8 array_data_ptr ALIGN;
+	S8 start ALIGN;
+	S8 size ALIGN;
+	S8 type ALIGN;
+	S8 readsize ALIGN;
+
+    if (sp == sp_top)
+    {
+        // nothing on stack!! can't pop!!
+
+        printf ("FATAL ERROR: file_read_array: stack pointer can't pop empty stack!\n");
+        return (NULL);
+    }
+
+	sp = stpopi ((U1 *) &type, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_read_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &size, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_read_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &start, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_read_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &array_data_ptr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_read_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_read_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    if (handle < 0 || handle >= filemax)
+    {
+        printf ("ERROR: file_read_array: handle out of range!\n");
+        return (NULL);
+    }
+
+	switch (type)
+	{
+		case BYTE:
+			#if BOUNDSCHECK
+			if (memory_bounds (array_data_ptr, start) != 0)
+			{
+				printf ("file_read_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			if (memory_bounds (array_data_ptr, start + size - 1) != 0)
+			{
+				printf ("file_read_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			#endif
+			
+			readsize = fread (&data[array_data_ptr + start], sizeof (U1), size, files[handle].fptr);
+			if (readsize != size)
+			{
+				// push ERROR code READ
+        		sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
+    			if (sp == NULL)
+    			{
+    				// error
+    				printf ("file_read_array: ERROR: stack corrupt!\n");
+    				return (NULL);
+    			}
+				return (sp);
+			}
+			break;
+
+		case WORD:
+			#if BOUNDSCHECK
+			if (memory_bounds (array_data_ptr, start * 2) != 0)
+			{
+				printf ("file_read_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			if (memory_bounds (array_data_ptr, (start * 2) + ((size - 1) * 2)) != 0)
+			{
+				printf ("file_read_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			#endif
+			
+			readsize = fread (&data[array_data_ptr + (start * 2)], sizeof (S2), size, files[handle].fptr);
+			if (readsize != size)
+			{
+				// push ERROR code READ
+        		sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
+    			if (sp == NULL)
+    			{
+    				// error
+    				printf ("file_read_array: ERROR: stack corrupt!\n");
+    				return (NULL);
+    			}
+				return (sp);
+			}
+			break;
+
+		case DOUBLEWORD:
+			#if BOUNDSCHECK
+			if (memory_bounds (array_data_ptr, start * 4) != 0)
+			{
+				printf ("file_read_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			if (memory_bounds (array_data_ptr, (start * 4) + ((size - 1) * 4)) != 0)
+			{
+				printf ("file_read_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			#endif
+			
+			readsize = fread (&data[array_data_ptr + (start * 4)], sizeof (S4), size, files[handle].fptr);
+			if (readsize != size)
+			{
+				// push ERROR code READ
+        		sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
+    			if (sp == NULL)
+    			{
+    				// error
+    				printf ("file_read_array: ERROR: stack corrupt!\n");
+    				return (NULL);
+    			}
+				return (sp);
+			}
+			break;
+
+		case QUADWORD:
+			#if BOUNDSCHECK
+			if (memory_bounds (array_data_ptr, start * 8) != 0)
+			{
+				printf ("file_read_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			if (memory_bounds (array_data_ptr, (start * 8) + ((size - 1) * 8)) != 0)
+			{
+				printf ("file_read_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			#endif
+			
+			readsize = fread (&data[array_data_ptr + (start * 8)], sizeof (S8), size, files[handle].fptr);
+			if (readsize != size)
+			{
+				// push ERROR code READ
+        		sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
+    			if (sp == NULL)
+    			{
+    				// error
+    				printf ("file_read_array: ERROR: stack corrupt!\n");
+    				return (NULL);
+    			}
+				return (sp);
+			}
+			break;
+
+		case DOUBLEFLOAT:
+			#if BOUNDSCHECK
+			if (memory_bounds (array_data_ptr, start * 8) != 0)
+			{
+				printf ("file_read_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			if (memory_bounds (array_data_ptr, (start * 8) + ((size - 1) * 8)) != 0)
+			{
+				printf ("file_read_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			#endif
+			
+			readsize = fread (&data[array_data_ptr + (start * 8)], sizeof (F8), size, files[handle].fptr);
+			if (readsize != size)
+			{
+				// push ERROR code READ
+        		sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
+    			if (sp == NULL)
+    			{
+    				// error
+    				printf ("file_read_array: ERROR: stack corrupt!\n");
+    				return (NULL);
+    			}
+				return (sp);
+			}
+			break;
+	}
+
+	// push ERROR code OK
+    sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
+    if (sp == NULL)
+    {
+    	// error
+    	printf ("file_read_array: ERROR: stack corrupt!\n");
+    	return (NULL);
+    }
+    return (sp);
+}
+
+// array write
+U1 *file_write_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 handle ALIGN;
+    S8 array_data_ptr ALIGN;
+	S8 start ALIGN;
+	S8 size ALIGN;
+	S8 type ALIGN;
+	S8 writesize ALIGN;
+
+    if (sp == sp_top)
+    {
+        // nothing on stack!! can't pop!!
+
+        printf ("FATAL ERROR: file_write_array: stack pointer can't pop empty stack!\n");
+        return (NULL);
+    }
+
+	sp = stpopi ((U1 *) &type, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_write_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &size, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_write_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &start, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_write_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &array_data_ptr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_write_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: file_write_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    if (handle < 0 || handle >= filemax)
+    {
+        printf ("ERROR: file_write_array: handle out of range!\n");
+        return (NULL);
+    }
+
+	switch (type)
+	{
+		case BYTE:
+			#if BOUNDSCHECK
+			if (memory_bounds (array_data_ptr, start) != 0)
+			{
+				printf ("file_write_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			if (memory_bounds (array_data_ptr, start + size - 1) != 0)
+			{
+				printf ("file_write_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			#endif
+			
+			writesize = fwrite (&data[array_data_ptr + start], sizeof (U1), size, files[handle].fptr);
+			if (writesize != size)
+			{
+				// push ERROR code WRITE
+        		sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
+    			if (sp == NULL)
+    			{
+    				// error
+    				printf ("file_write_array: ERROR: stack corrupt!\n");
+    				return (NULL);
+    			}
+				return (sp);
+			}
+			break;
+
+		case WORD:
+			#if BOUNDSCHECK
+			if (memory_bounds (array_data_ptr, start * 2) != 0)
+			{
+				printf ("file_write_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			if (memory_bounds (array_data_ptr, (start * 2) + ((size - 1) * 2)) != 0)
+			{
+				printf ("file_write_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			#endif
+			
+			writesize = fwrite (&data[array_data_ptr + (start * 2)], sizeof (S2), size, files[handle].fptr);
+			if (writesize != size)
+			{
+				// push ERROR code WRITE
+        		sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
+    			if (sp == NULL)
+    			{
+    				// error
+    				printf ("file_write_array: ERROR: stack corrupt!\n");
+    				return (NULL);
+    			}
+				return (sp);
+			}
+			break;
+
+		case DOUBLEWORD:
+			#if BOUNDSCHECK
+			if (memory_bounds (array_data_ptr, start * 4) != 0)
+			{
+				printf ("file_write_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			if (memory_bounds (array_data_ptr, (start * 4) + ((size - 1) * 4)) != 0)
+			{
+				printf ("file_write_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			#endif
+			
+			writesize = fwrite (&data[array_data_ptr + (start * 4)], sizeof (S4), size, files[handle].fptr);
+			if (writesize != size)
+			{
+				// push ERROR code WRITE
+        		sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
+    			if (sp == NULL)
+    			{
+    				// error
+    				printf ("file_write_array: ERROR: stack corrupt!\n");
+    				return (NULL);
+    			}
+				return (sp);
+			}
+			break;
+
+		case QUADWORD:
+			#if BOUNDSCHECK
+			if (memory_bounds (array_data_ptr, start * 8) != 0)
+			{
+				printf ("file_write_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			if (memory_bounds (array_data_ptr, (start * 8) + ((size - 1) * 8)) != 0)
+			{
+				printf ("file_write_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			#endif
+			
+			writesize = fwrite (&data[array_data_ptr + (start * 8)], sizeof (S8), size, files[handle].fptr);
+			if (writesize != size)
+			{
+				// push ERROR code WRITE
+        		sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
+    			if (sp == NULL)
+    			{
+    				// error
+    				printf ("file_write_array: ERROR: stack corrupt!\n");
+    				return (NULL);
+    			}
+				return (sp);
+			}
+			break;
+
+		case DOUBLEFLOAT:
+			#if BOUNDSCHECK
+			if (memory_bounds (array_data_ptr, start * 8) != 0)
+			{
+				printf ("file_write_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			if (memory_bounds (array_data_ptr, (start * 8) + ((size - 1) * 8)) != 0)
+			{
+				printf ("file_write_array: ERROR: array overflow!\n");
+				return (NULL);
+			}
+			#endif
+			
+			writesize = fwrite (&data[array_data_ptr + (start * 8)], sizeof (F8), size, files[handle].fptr);
+			if (writesize != size)
+			{
+				// push ERROR code WRITE
+        		sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
+    			if (sp == NULL)
+    			{
+    				// error
+    				printf ("file_write_array: ERROR: stack corrupt!\n");
+    				return (NULL);
+    			}
+				return (sp);
+			}
+			break;
+	}
+	
+	// push ERROR code OK
+    sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
+    if (sp == NULL)
+    {
+    	// error
+    	printf ("file_write_array: ERROR: stack corrupt!\n");
+    	return (NULL);
     }
     return (sp);
 }

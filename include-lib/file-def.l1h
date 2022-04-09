@@ -3,3 +3,9 @@
 (set int64 1 file_seek_set 0)
 (set int64 1 file_seek_cur 1)
 (set int64 1 file_seek_end 2)
+// file array definitions
+(set int64 1 array_byte 8)
+(set int64 1 array_int16 9)
+(set int64 1 array_int32 10)
+(set int64 1 array_int64 11)
+(set int64 1 array_double 12)

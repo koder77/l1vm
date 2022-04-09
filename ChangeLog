@@ -11,7 +11,9 @@ L1VM - (1.5.6)
 
 	NEW: updated example: people-struct.l1com. Now uses new load_obj_array_memobj function.
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 31 Mar 2022 23:30 +0200
+	NEW: VM: file module: file_read_array and file_write_array to read/write arrays.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 9 Apr 2022 09:53 +0200
 
 L1VM - (1.5.5)
 	NEW: added math library degree to rad and rad to degree functions.
