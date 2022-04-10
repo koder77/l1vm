@@ -1483,7 +1483,7 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
        
         SDL_WaitEvent (&event);
 
-		value_len = strlen ((const char *) string->value);
+		value_len = strlen_safe ((const char *) string->value, MAXLINELEN);
 
 		switch (event.type)
 		{

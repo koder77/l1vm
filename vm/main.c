@@ -117,7 +117,7 @@ S2 load_module (U1 *name, S8 ind)
 	U1 macos_lib_suffix[] = ".so";
 	U1 libname[MAXLINELEN];
 
-	if (strlen ((const char*) name) > MAXLINELEN - 5)
+	if (strlen_safe ((const char*) name, MAXLINELEN) > MAXLINELEN - 5)
 	{
 		printf ("load_module: ERROR library name overflow!\n");
 		return (1);
