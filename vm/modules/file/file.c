@@ -186,7 +186,7 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#else
-	if (strlen (&data[nameaddr]) < 255)
+	if (strlen_safe (&data[nameaddr], 255) < 255)
 	{
     	strcpy ((char *) files[handle].name, (char *) &data[nameaddr]);
 	}
