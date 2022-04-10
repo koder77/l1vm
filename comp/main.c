@@ -5500,7 +5500,7 @@ int main (int ac, char *av[])
 			{
 				if (strcmp (av[i], "-pack") == 0)
 				{
-					str_len_assembler_args = strlen ((const char *) assembler_args);
+					str_len_assembler_args = strlen_safe ((const char *) assembler_args, MAXLINELEN);
 					if (str_len_assembler_args < MAXLINELEN - 7)
 					{
 						strcat ((char *) assembler_args, " -pack ");
@@ -5529,15 +5529,15 @@ int main (int ac, char *av[])
 					if (ac > i + 1)
 					{
 						strcat ((char *) assembler_args, "-sizes ");
-						str_len_arg = strlen (av[i + 1]);
+						str_len_arg = strlen_safe (av[i + 1], MAXLINELEN);
 						if (str_len_arg < MAXLINELEN - 7)
 						{
 							strcat ((char *) assembler_args, av[i + 1]);
 							strcat ((char *) assembler_args, " ");
-							str_len_assembler_args = strlen ((const char *) assembler_args);
+							str_len_assembler_args = strlen_safe ((const char *) assembler_args, MAXLINELEN);
 							if (str_len_assembler_args < MAXLINELEN - 1)
 							{
-								str_len_arg = strlen (av[i + 2]);
+								str_len_arg = strlen_safe (av[i + 2], MAXLINELEN);
 								if (str_len_arg + str_len_assembler_args < MAXLINELEN - 1)
 								{
 									strcat ((char *) assembler_args, av[i + 2]);

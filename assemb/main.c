@@ -1610,7 +1610,7 @@ int main (int ac, char *av[])
 
 	// open debug output file
 	strcpy ((char *) debug_file_name, av[1]);
-	if (strlen ((const char *) debug_file_name) > 503)
+	if (strlen_safe ((const char *) debug_file_name, MAXLINELEN) > 503)
 	{
 		// ERROR filename to long
 		printf ("\033[31mERROR: can't open debug file, filename too long!\n");
