@@ -62,6 +62,7 @@ typedef U1* (*dll_func)(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 struct module
 {
     U1 name[512];
+	U1 used;
 
 #if __linux__
     void *lptr;
@@ -152,6 +153,7 @@ S2 load_module (U1 *name, S8 ind)
 #endif
 
     strcpy ((char *) modules[ind].name, (const char *) libname);
+	modules[ind].used = 1;
 
 	// print module name:
 	if (silent_run == 0)
@@ -163,16 +165,20 @@ S2 load_module (U1 *name, S8 ind)
 
 void free_module (S8 ind)
 {
-#if __linux__
-    dlclose (modules[ind].lptr);
-#endif
+	if (modules[ind].used != 0)
+	{
+		#if __linux__
+   			dlclose (modules[ind].lptr);
+		#endif
 
-#if _WIN32
-    FreeLibrary (modules[ind].lptr);
-#endif
+		#if _WIN32
+    		FreeLibrary (modules[ind].lptr);
+		#endif
 
-// mark as free
-    strcpy ((char *) modules[ind].name, "");
+		// mark as free
+    	strcpy ((char *) modules[ind].name, "");
+		modules[ind].used = 0;		// mark as free!
+	}
 }
 
 S2 set_module_func (S8 ind, S8 func_ind, U1 *func_name)
@@ -2704,6 +2710,7 @@ void init_modules (void)
     for (i = 0; i < MODULES; i++)
     {
         strcpy ((char *) modules[i].name, "");
+		modules[i].used = 0;
     }
 }
 
@@ -2713,7 +2720,7 @@ void free_modules (void)
 
     for (i = MODULES - 1; i >= 0; i--)
     {
-        if (modules[i].name[0] != '\0')
+        if (modules[i].used != 0)
         {
 			if (silent_run == 0)
 			{
