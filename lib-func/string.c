@@ -33,7 +33,8 @@ size_t strlen_safe (const char * str, int maxlen)
 		{
 			return (i);
 		}
-		if (i > maxlen)
+
+		if (i >= maxlen)
 		{
 			return (0);
 		}

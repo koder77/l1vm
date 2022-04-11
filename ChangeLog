@@ -15,7 +15,9 @@ L1VM - (1.5.6)
 
 	NEW: VM: BUGFIX: network module added string return buffer overflow check!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 9 Apr 2022 14:13 +0200
+	NEW: string function strlen_safe fix.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 11 Apr 2022 20:07 +0200
 
 L1VM - (1.5.5)
 	NEW: added math library degree to rad and rad to degree functions.
