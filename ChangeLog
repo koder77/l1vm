@@ -1,3 +1,8 @@
+L1VM - (1.5.7)
+	include/global.h: MAXLINELEN set to 4096.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 11 Apr 2022 20:31 +0200
+
 L1VM - (1.5.6)
 	NEW: VM: shows if file sandbox root is set or not.
 

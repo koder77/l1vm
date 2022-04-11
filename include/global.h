@@ -104,7 +104,7 @@
 // info strings:
 #define COPYRIGHT_STR " (C) 2017-2022 Stefan Pietzonke"
 
-#define  VM_VERSION_STR		"1.5.6"		// version number
+#define  VM_VERSION_STR		"1.5.7"		// version number
 
 // no user defined definitions below this section! ============================
 
@@ -142,7 +142,7 @@ typedef double                  F8;     /* DOUBLE */
 // machine
 #define MAXREG			256			// registers (integer and double float)
 
-#define MAXLINELEN      512
+#define MAXLINELEN      4096
 #define MAXARGS         64
 #define MAXBRACKETLEVEL	64
 #define MAXEXPRESSION	32				// expressions per bracket level
