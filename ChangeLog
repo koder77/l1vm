@@ -1,7 +1,8 @@
 L1VM - (1.5.7)
 	include/global.h: MAXLINELEN set to 4096.
+	VM: show free module message on free_module.
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon 11 Apr 2022 20:31 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Tue 12 Apr 2022 06:32 +0200
 
 L1VM - (1.5.6)
 	NEW: VM: shows if file sandbox root is set or not.

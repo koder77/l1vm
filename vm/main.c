@@ -175,6 +175,11 @@ void free_module (S8 ind)
     		FreeLibrary (modules[ind].lptr);
 		#endif
 
+		if (silent_run == 0)
+		{
+			printf ("free_module: %lli %s\n", ind, modules[ind].name);
+		}
+
 		// mark as free
     	strcpy ((char *) modules[ind].name, "");
 		modules[ind].used = 0;		// mark as free!
