@@ -91,22 +91,11 @@
     (memaddr~ stpopi)
      // set pointers 
     (person.first_name~ Pfirst_name~ pointer)
-    ((Pfirst_name~ zero~ +) Pfirst_name~ =)
-
     (person.last_name~ Plast_name~ pointer)
-    ((Plast_name~ zero~ +) Plast_name~ =)
-
     (person.gender~ Pgender~ pointer)
-    ((Pgender~ zero~ +) Pgender~ =)
-
     (person.age~ Page~ pointer)
-    ((Page~ zero~ +) Page~ =)
-
     (person.height~ Pheight~ pointer)
-    ((Pheight~ zero~ +) Pheight~ =)
-
     (person.eye_color~ Peye_color~ pointer)
-    ((Peye_color~ zero~ +) Peye_color~ =)
 
     (Peye_color~ Pheight~ Page~ Pgender~ Plast_name~ Pfirst_name~ variables~ zero~ memaddr~ :load_obj_array_memobj call)
 

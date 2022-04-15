@@ -4006,6 +4006,13 @@ S2 parse_line (U1 *line)
 										set_regi (reg, ast[level].expr[j][last_arg - 2]);
 									}
 
+									code_line++;
+									if (code_line >= line_len)
+									{
+										printf ("error: line %lli: code list full!\n", linenum);
+										return (1);
+									}
+
 									strcpy ((char *) code[code_line], "load ");
 									strcat ((char *) code[code_line], (const char *) ast[level].expr[j][last_arg - 2]);
 									strcat ((char *) code[code_line], ", 0, ");
@@ -4045,7 +4052,6 @@ S2 parse_line (U1 *line)
 									}
 
 									strcpy ((char *) code_temp, "pullqw ");
-
 									sprintf ((char *) str, "%i", reg);
 									strcat ((char *) code_temp, (const char *) str);
 									strcat ((char *) code_temp, ", ");
