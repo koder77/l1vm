@@ -723,6 +723,14 @@ extern "C" U1 *load_obj_mem_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 				return (NULL);
 			}
 
+			#if BOUNDSCHECK
+			if (memory_bounds (address, 0) != 0)
+			{
+				printf ("load_obj_mem_array: address: %lli overflow!\n", address);
+				return (NULL);
+			}
+			#endif
+
 			switch (mem[memind].objptr[ind].type)
 			{
 				case MEMINT64:
@@ -749,7 +757,7 @@ extern "C" U1 *load_obj_mem_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 						#if BOUNDSCHECK
 						if (memory_bounds (address, offset) != 0)
 						{
-							printf ("load_obj_mem_array: string_copy: ERROR: dest string overflow!\n");
+							printf ("load_obj_mem_array: string_copy: ERROR: dest string overflow: address: %lli\n", address);
 							return (NULL);
 						}
 						#endif
