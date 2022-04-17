@@ -13,7 +13,7 @@
     (set string s quotestr~ "@@q")
     (set string s spacestr~ " ")
     (set int64 1 twolen~ 2)
-    (set string 256 commandstr~ "")
+    (set string 4097 commandstr~ "")
     (set int64 1 retlen~ 4096)
     (set int64 1 ret 0)
     // get args
@@ -44,7 +44,7 @@
     (set string s commstr~ "get key ")
     (set string s colonstr~ ":")
     (set string s spacesstr~ " ")
-    (set string 256 commandstr~ "")
+    (set string 4097 commandstr~ "")
     (set int64 1 retlen~ 4096)
     // get args
     (Pdatastraddr~ stpopi)
@@ -69,7 +69,7 @@
     (set string s colonstr~ ":")
     (set string s quotestr~ "@@q")
     (set string s spacesstr~ " ")
-    (set string 256 commandstr~ "")
+    (set string 4097 commandstr~ "")
     (set string 4096 bufstr~ "")
     (set int64 1 buflen~ 4095)
     (set int64 1 quotech~ 34)
@@ -97,7 +97,7 @@
     (set string s commstr~ "remove ")
     (set string s colonstr~ ":")
     (set string s spacesstr~ " ")
-    (set string 256 commandstr~ "")
+    (set string 4097 commandstr~ "")
     (set int64 1 retlen~ 4096)
     // get args
     (Pdatastraddr~ stpopi)
@@ -128,7 +128,7 @@
     (set string s quotestr~ "@@q")
     (set string s commstr~ "save :save ")
     (set int64 1 Pretstraddr~ 0)
-    (set string 256 commandstr~ "")
+    (set string 4097 commandstr~ "")
     (set int64 1 retlen~ 4096)
     (set int64 1 twolen~ 2)
     // get args
@@ -153,7 +153,7 @@
     (set string s quotestr~ "@@q")
     (set string s commstr~ "load :load ")
     (set int64 1 Pretstraddr~ 0)
-    (set string 256 commandstr~ "")
+    (set string 4097 commandstr~ "")
     (set int64 1 retlen~ 4096)
     (set int64 1 twolen~ 2)
     // get args
