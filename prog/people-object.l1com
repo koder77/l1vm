@@ -13,13 +13,6 @@
     (set int64 1 person.age 30)
     (set double 1 person.height 1.80)
     (set string 256 person.eye_color "brown")
-    // data pointer:
-    (set int64 1 Pfirst_name 0)
-    (set int64 1 Plast_name 0)
-    (set int64 1 Pgender 0)
-    (set int64 1 Page 0)
-    (set int64 1 Pheight 0)
-    (set int64 1 Peye_color 0)
     (set string s meminitstr "ERROR can't init memory!")
 	(set string s memerrstr "ERROR can't allocate memory!")
 	(set string s saveerrstr "ERROR can't save to memory object!")
@@ -80,13 +73,13 @@
     (set int64 1 person.age~ 0)
     (set double 1 person.height~ 0.0)
     (set string 256 person.eye_color~ "")
-    // data pointer:
-    (set int64 1 Pfirst_name~ 0)
-    (set int64 1 Plast_name~ 0)
-    (set int64 1 Pgender~ 0)
-    (set int64 1 Page~ 0)
-    (set int64 1 Pheight~ 0)
-    (set int64 1 Peye_color~ 0)
+    // data pointer, make only changeable by "pointer" function to avoid memory errors
+    (set const-int64 1 Pfirst_name~ 0)
+    (set const-int64 1 Plast_name~ 0)
+    (set const-int64 1 Pgender~ 0)
+    (set const-int64 1 Page~ 0)
+    (set const-int64 1 Pheight~ 0)
+    (set const-int64 1 Peye_color~ 0)
     // get mem address of person data
     (memaddr~ stpopi)
      // set pointers 
