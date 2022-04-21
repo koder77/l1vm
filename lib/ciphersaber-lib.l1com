@@ -22,7 +22,7 @@
     (set const-int64 1 Pdecryptarray)
     (set string 256 keystr "swordfish")
     (set string s okstr "ciphersaber decrypt/encrypt ok!")
-    (set string s errstr "ciphersaber decrypt/encvrypt ERROR!")
+    (set string s errstr "ciphersaber decrypt/encrypt ERROR!")
     (inarray Pinarray pointer)
     (outarray Poutarray pointer)
     (keystr Pkeystr pointer)
