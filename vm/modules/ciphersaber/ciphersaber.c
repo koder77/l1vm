@@ -155,7 +155,7 @@ U1 *ciphersaber (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (mode == DECRYPT)
     {
         #if BOUNDSCHECK
-        if (memory_bounds (key_address, key_len) != 0)
+        if (memory_bounds (key_address, 255) != 0)
 	    {
 		    printf ("ciphersaber: ERROR: key array overflow!\n");
 		    return (NULL);
