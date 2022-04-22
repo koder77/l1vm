@@ -177,6 +177,13 @@ U1 *ciphersaber (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
     else
     {
+        #if BOUNDSCHECK
+        if (memory_bounds (key_address, key_len) != 0)
+	    {
+		    printf ("ciphersaber: ERROR: key array overflow!\n");
+		    return (NULL);
+	    }
+        #endif
         if (get_random (&data[key_address + key_len]) < 0)
         {
             printf ("ciphersaber: ERROR: can't get random data!\n");
