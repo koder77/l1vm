@@ -1,6 +1,6 @@
 // ciphersaber-lib.l1com
 //
-// encyrpt/decrypt demo
+// encrypt/decrypt demo
 //
 #include <intr.l1h>
 (main func)
