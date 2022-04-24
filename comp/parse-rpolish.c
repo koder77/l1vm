@@ -637,6 +637,51 @@ S2 convert (U1 infix[], U1 postfix[])
    return (0);
 }
 
+S2 check_rpn_expression (U1 *postfix)
+{
+	S2 i;
+	U1 ch;
+	S2 len;
+
+	U1 found_equal = 0;
+	U1 found_op = 0;
+	U1 found_var = 0;
+	S2 ret = 0;
+
+	len = strlen_safe (postfix, MAXLINELEN);
+	for (i = 0; i < len; i++)
+	{
+		ch = postfix[i];
+
+		if (ch == '=')
+		{
+			found_equal = 1;
+		}
+		else
+		{
+			if (isOperator (ch) == 1)
+			{
+				found_op = 1;
+			}
+			if (ch != ' ' && isOperator (ch) == 0)
+			{
+				found_var = 1;
+			}
+		}
+	}
+	if (found_equal == 0)
+	{
+		printf ("error: line %lli: no variable found in expression!\n", linenum);
+		ret = 1;
+	}
+	if (found_var == 0)
+	{
+		printf ("error: line %lli: no variable found in expression!\n", linenum);
+		ret = 1;
+	}
+	return (0);
+}
+
 // evaluates reverse polish postfix expression
 S2 parse_rpolish (U1 *postfix)
 {
@@ -677,6 +722,12 @@ S2 parse_rpolish (U1 *postfix)
 
 	// call replace symbols 
 	replace_symbols (postfix);
+
+	// check expression
+	if (check_rpn_expression (postfix) == 1)
+	{
+		return (1);
+	}
 
 	// printf ("postfix: '%s'\n", postfix);
 
