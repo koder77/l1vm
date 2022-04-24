@@ -671,7 +671,7 @@ S2 check_rpn_expression (U1 *postfix)
 	}
 	if (found_equal == 0)
 	{
-		printf ("error: line %lli: no variable found in expression!\n", linenum);
+		printf ("error: line %lli: no equal sign found in expression!\n", linenum);
 		ret = 1;
 	}
 	if (found_var == 0)
