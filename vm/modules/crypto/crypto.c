@@ -111,7 +111,7 @@ U1 *encrypt_sodium (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	    }
         if (memory_bounds (nonce_address, crypto_secretbox_NONCEBYTES - 1) != 0)
 	    {
-		    printf ("encrypt_sodium: ERROR: key array overflow! Need %i bytes!\n", crypto_secretbox_NONCEBYTES);
+		    printf ("encrypt_sodium: ERROR: nonce array overflow! Need %i bytes!\n", crypto_secretbox_NONCEBYTES);
 		    return (NULL);
 	    }
         #endif
@@ -144,7 +144,7 @@ U1 *encrypt_sodium (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	    }
         if (memory_bounds (nonce_address, crypto_secretbox_NONCEBYTES - 1) != 0)
 	    {
-		    printf ("encrypt_sodium: ERROR: key array overflow! Need %i bytes!\n", crypto_secretbox_NONCEBYTES);
+		    printf ("encrypt_sodium: ERROR: nonce array overflow! Need %i bytes!\n", crypto_secretbox_NONCEBYTES);
 		    return (NULL);
 	    }
         if (memory_bounds (out_address, cipher_text_len - 1) != 0)
