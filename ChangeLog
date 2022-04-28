@@ -1,3 +1,8 @@
+L1VM - (1.5.8)
+	NEW: added libsodium easy encrypt/decrypt function
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 28 Apr 2022 19:19 +0200
+
 L1VM - (1.5.7)
 	include/global.h: MAXLINELEN set to 4096.
 	VM: show free module message on free_module.

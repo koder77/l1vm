@@ -21,6 +21,8 @@
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
+#include <sodium.h>
+
 #define ENCRYPT 0
 #define DECRYPT 1
 
