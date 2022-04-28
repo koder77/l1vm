@@ -132,11 +132,21 @@ U1 *encrypt_sodium (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	    }
         #endif
 
-        crypto_secretbox_easy (&data[out_address], &data[in_address], size, &data[key_address], &data[key_address]);
+        crypto_secretbox_easy (&data[out_address], &data[in_address], size, &data[nonce_address], &data[key_address]);
     }
     else
     {
         #if BOUNDSCHECK
+        if (memory_bounds (key_address, crypto_secretbox_KEYBYTES - 1) != 0)
+	    {
+		    printf ("encrypt_sodium: ERROR: key array overflow! Need %i bytes!\n", crypto_secretbox_KEYBYTES);
+		    return (NULL);
+	    }
+        if (memory_bounds (nonce_address, crypto_secretbox_NONCEBYTES - 1) != 0)
+	    {
+		    printf ("encrypt_sodium: ERROR: key array overflow! Need %i bytes!\n", crypto_secretbox_NONCEBYTES);
+		    return (NULL);
+	    }
         if (memory_bounds (out_address, cipher_text_len - 1) != 0)
 	    {
 		    printf ("encrypt_sodium: ERROR: output array overflow!\n");
@@ -149,7 +159,7 @@ U1 *encrypt_sodium (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	    }
         #endif
 
-        if (crypto_secretbox_open_easy (&data[out_address], &data[in_address], cipher_text_len, &data[key_address], &data[key_address]) != 0)
+        if (crypto_secretbox_open_easy (&data[out_address], &data[in_address], cipher_text_len, &data[nonce_address], &data[key_address]) != 0)
         {
             // error on decrypt!!!
             sp = stpushi (1, sp, sp_bottom);
