@@ -25,6 +25,8 @@
     (set byte 256 keystr)
     (set string s okstr "crypt decrypt/encrypt ok!")
     (set string s errstr "crypt decrypt/encrypt ERROR!")
+    (set int64 1 ret 0)
+    (set int64 1 f 0)
     (inarray Pinarray pointer)
     (outarray Poutarray pointer)
     (keystr Pkeystr pointer)
@@ -41,6 +43,12 @@
     // decrypt
     (one mode =)
     (Poutarray size Pdecryptarray Pkeystr Pnoncearray mode :encrypt !)
+    (ret stpopi)
+    (((ret zero !=) f =) f if)
+        print_s (errstr)
+        print_n
+        exit (one)
+    (endif)
     // check array
     (zerob i =)
     (for-loop)
