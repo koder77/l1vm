@@ -1,4 +1,4 @@
-// ciphersaber-lib.l1com
+// crypto-lib.l1com
 //
 // encrypt/decrypt demo
 //
@@ -9,9 +9,9 @@
     (set byte 1 zerob 0)
     (set byte 1 oneb 1)
     (set byte 256 inarray)
-    (set byte 300 outarray)
-    (set byte 300 decryptarray)
-    (set byte 265 noncearray)
+    (set byte 272 outarray)
+    (set byte 272 decryptarray)
+    (set byte 24 noncearray)
     (set byte 1 i 0)
     (set int64 1 size 256)
     (set int64 1 mode 0)
