@@ -815,7 +815,49 @@ S2 parse_line (U1 *line)
 								}
 								else
 								{
-									strcpy ((char *) data_info[data_ind].value_str, (const char *) ast[level].expr[j][4]);
+									{
+										// check if variable value is in legal range
+										S8 value ALIGN;
+										U1 *ptr;
+										value = strtoll((const char *) ast[level].expr[j][4], &ptr, 10);
+
+										switch (data_info[data_ind].type)
+										{
+											case BYTE:
+												if (value < 0 || value > UCHAR_MAX)
+												{
+													printf ("error: line %lli: byte value out of range!\n", linenum);
+													return (1);
+												}
+												break;
+
+											case WORD:
+												if (value <  SHRT_MIN || value > SHRT_MAX)
+												{
+													printf ("error: line %lli: int16 value out of range!\n", linenum);
+													return (1);
+												}
+												break;
+
+											case DOUBLEWORD:
+												if (value < LONG_MIN || value > LONG_MAX)
+												{
+													printf ("error: line %lli: int32 value out of range!\n", linenum);
+													return (1);
+												}
+												break;
+
+											case QUADWORD:
+												if (value < LLONG_MIN  || value > LLONG_MAX)
+												{
+													printf ("error: line %lli: int64 value out of range!\n", linenum);
+													return (1);
+												}
+												break;
+										}
+
+										strcpy ((char *) data_info[data_ind].value_str, (const char *) ast[level].expr[j][4]);
+									}
 								}
 							}
 
