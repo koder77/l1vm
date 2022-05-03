@@ -840,7 +840,7 @@ S2 parse_line (U1 *line)
 												break;
 
 											case DOUBLEWORD:
-												if (value < LONG_MIN || value > LONG_MAX)
+												if (value < -2147483648 || value > 2147483647)
 												{
 													printf ("error: line %lli: int32 value out of range!\n", linenum);
 													return (1);
