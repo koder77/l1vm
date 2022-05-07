@@ -225,7 +225,7 @@
     (set int64 1 zero~ 0)
     (set int64 2 one~ 1)
     (set int64 1 f~ 0)
-    (set string s errorstr~ "go_data_save socket error!")
+    (set string s errorstr~ "go_data_load socket error!")
     // get args
     (Pretstraddr~ stpopi)
     (Pnamestraddr~ stpopi)
