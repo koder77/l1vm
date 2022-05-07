@@ -36,7 +36,7 @@
     // send command
     (shandle~ commandstr~ :socket_write_string !)
     (ret~ stpopi)
-    (((ret~ zero~ !=) f =) f if)
+    (((ret~ zero~ !=) f~ =) f~ if)
         print_s (errorstr~)
         print_n
         (one~ stpushi)
@@ -74,7 +74,7 @@
     // send command
     (shandle~ commandstr~ :socket_write_string !)
     (ret~ stpopi)
-    (((ret~ zero~ !=) f =) f if)
+    (((ret~ zero~ !=) f~ =) f~ if)
         print_s (errorstr~)
         print_n
         (one~ stpushi)
@@ -116,7 +116,7 @@
     (commandstr~ Pdatastraddr~ :string_cat !)
     (commandstr~ quotestr~ :string_cat !)
     (shandle~ commandstr~ :socket_write_string !)
-    (((ret~ zero~ !=) f =) f if)
+    (((ret~ zero~ !=) f~ =) f~ if)
         print_s (errorstr~)
         print_n
         (one~ stpushi)
@@ -153,7 +153,7 @@
     (commandstr~ Pkeystraddr~ :string_cat !)
     // send command
     (shandle~ commandstr~ :socket_write_string !)
-    (((ret~ zero~ !=) f =) f if)
+    (((ret~ zero~ !=) f~ =) f~ if)
         print_s (errorstr~)
         print_n
         (one~ stpushi)
@@ -199,7 +199,7 @@
     (commandstr~ quotestr~ :string_cat !)
     // send command
     (shandle~ commandstr~ :socket_write_string !)
-    (((ret~ zero~ !=) f =) f if)
+    (((ret~ zero~ !=) f~ =) f~ if)
         print_s (errorstr~)
         print_n
         (one~ stpushi)
@@ -237,7 +237,7 @@
     (commandstr~ quotestr~ :string_cat !)
     // send command
     (shandle~ commandstr~ :socket_write_string !)
-     (((ret~ zero~ !=) f =) f if)
+     (((ret~ zero~ !=) f~ =) f~ if)
         print_s (errorstr~)
         print_n
         (one~ stpushi)
