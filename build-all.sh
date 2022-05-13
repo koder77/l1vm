@@ -1,4 +1,10 @@
 #!/bin/bash
+# install includes
+
+mkdir ~/l1vm
+mkdir ~/l1vm/include
+cp include-lib/* ~/l1vm/include/
+
 for i in prog/*.l1asm
 do
 	filename=$(basename "$i" .l1asm)

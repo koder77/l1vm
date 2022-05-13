@@ -3839,7 +3839,7 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // copy buffer to return string
     { 
         S2 buf_len;
-        buf_len = strlen_safe (buf, MAXLINELEN);
+        buf_len = strlen_safe ((const char *) buf, MAXLINELEN);
 
         #if BOUNDSCHECK
         if (memory_bounds (return_str_addr, buf_len - 1) != 0)
@@ -4302,7 +4302,7 @@ U1 *socket_remove_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // copy buffer to return string
     { 
         S2 buf_len;
-        buf_len = strlen_safe (buf, MAXLINELEN);
+        buf_len = strlen_safe ((const char *) buf, MAXLINELEN);
 
         #if BOUNDSCHECK
         if (memory_bounds (return_str_addr, buf_len - 1) != 0)
@@ -4435,7 +4435,7 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // copy buffer to return string
     { 
         S2 buf_len;
-        buf_len = strlen_safe (buf, MAXLINELEN);
+        buf_len = strlen_safe ((const char *) buf, MAXLINELEN);
 
         #if BOUNDSCHECK
         if (memory_bounds (return_var_addr, buf_len - 1) != 0)
@@ -4465,7 +4465,7 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // copy buffer to return string
     { 
         S2 buf_len;
-        buf_len = strlen_safe (buf, MAXLINELEN);
+        buf_len = strlen_safe ((const char *) buf, MAXLINELEN);
 
         #if BOUNDSCHECK
         if (memory_bounds (return_type_addr, buf_len - 1) != 0)
