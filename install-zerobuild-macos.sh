@@ -104,7 +104,7 @@ cd ..
 cp assemb/l1asm ~/bin
 cp comp/l1com ~/bin
 cp prepro/l1pre ~/bin
-cp vm/l1vm-nojit ~/bin/l1vm
+cp vm/l1v* ~/bin/l1vm
 echo "VM binaries installed into ~/bin"
 
 cd modules
@@ -118,15 +118,15 @@ else
 	exit 1
 fi
 
+cd ../
+
 echo "all modules installed. building programs..."
-cd ../prog
 chmod +x *.sh
 if ./build-all.sh; then
 	echo "building programs successfully!"
 else
 	echo "building programs FAILED!"
 fi
-cd ..
 
 echo "checking for ~/l1vm directory..."
 

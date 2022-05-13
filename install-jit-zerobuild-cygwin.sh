@@ -96,7 +96,7 @@ cd ..
 cp assemb/l1asm ~/bin
 cp comp/l1com ~/bin
 cp prepro/l1pre ~/bin
-cp vm/l1vm-jit ~/bin
+cp vm/l1v* ~/bin
 echo "VM binaries installed into ~/bin"
 
 cd modules
@@ -110,8 +110,9 @@ else
 	exit 1
 fi
 
+cd ../
+
 echo "all modules installed. building programs..."
-cd ../prog
 chmod +x *.sh
 if ./build-all.sh; then
 	echo "building programs successfully!"
@@ -131,8 +132,6 @@ else
   echo "${DIR} will be created now..."
   mkdir ~/l1vm
 fi
-
-cd ..
 
 echo "installing programs to ~/l1vm"
 cp prog/ ~/l1vm -r

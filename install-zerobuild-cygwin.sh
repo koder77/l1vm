@@ -92,6 +92,8 @@ else
 	exit 1
 fi
 
+cd ../
+
 echo "all modules installed. building programs..."
 cd ../prog
 chmod +x *.sh

@@ -10,6 +10,7 @@
 	(set string s 42_str "y = 42")
 	(set const-int64 1 23_const 23)
 	(set const-int64 1 42_const 42)
+	(set int64 1 a 0)
 	(set string s hello_str "Hello world!")
 	// print string
     print_s (hello_str)
