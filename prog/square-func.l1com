@@ -1,0 +1,40 @@
+// square-func.l1com
+//
+// calculate square of number
+//
+#include <intr.l1h>
+(main func)
+    (set int64 1 zero 0)
+    (set double 1 a 2.0)
+    (set double 1 b 13.5)
+    (set double 1 c 7.8)
+    (set double 1 as 0.0)
+    (set double 1 bs 0.0)
+    (set double 1 cs 0.0)
+
+    // call square functions with numbers a, b and c:
+    (a :square !)
+    (as stpopd)
+    print_d (as)
+    print_n
+
+    (b :square !)
+    (bs stpopd)
+    print_d (bs)
+    print_n
+
+    (c :square !)
+    (cs stpopd)
+    print_d (cs)
+    print_n
+
+    exit (zero)
+(funcend)
+
+(square func)
+    (set double 1 num 0.0)
+    (set double 1 square 0.0)
+    (num stpopd)
+    {square = num num *}
+    (square stpushd)
+(funcend)
