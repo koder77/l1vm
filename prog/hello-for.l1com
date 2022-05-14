@@ -1,5 +1,6 @@
-// hello-for - bra(et - Hello world! do loop
+// hello-for - Brackets - Hello world! do loop
 //
+#include <intr.l1h>
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 one 1)
@@ -13,10 +14,10 @@
 	(zero loop =)
 	(for-loop)
 	(((loop maxloop <) f =) f for)
-		(6 hello 0 0 intr0)
+        print_s (hello)
 		// print newline
-		(7 0 0 0 intr0)
+        print_n
 		((loop one +) loop =)
 	(next)
-	(255 zero 0 0 intr0)
+	exit (zero)
 (funcend)
