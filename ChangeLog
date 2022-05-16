@@ -6,7 +6,9 @@ L1VM - (1.5.8)
 
 	NEW: changed all build scripts to use "build.sh" script for building the Bracket programs.
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 13 May 2022 18:08 +0200
+	Security fixes in process library. "sudo" and "su" not allowed anymore!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 16 May 2022 22:04 +0200
 
 L1VM - (1.5.7)
 	include/global.h: MAXLINELEN set to 4096.

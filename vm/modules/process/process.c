@@ -42,6 +42,38 @@ U1 *run_shell (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   return (NULL);
     }
 
+    if (searchstr (&data[commandaddr], "sudo", 0, 0, 0) >= 0)
+    {
+        // ERROR: "sudo" not allowed!
+
+        printf ("run_shell: ERROR command contains sudo!\n");
+
+        sp = stpushi (1, sp, sp_bottom);
+        if (sp == NULL)
+        {
+            // error
+            printf ("run_shell: ERROR: stack corrupt!\n");
+            return (NULL);
+        }
+        return (sp);
+    }
+
+    if (searchstr (&data[commandaddr], "su", 0, 0, 0) >= 0)
+    {
+        // ERROR: "su" not allowed!
+
+        printf ("run_shell: ERROR command contains su!\n");
+
+        sp = stpushi (1, sp, sp_bottom);
+        if (sp == NULL)
+        {
+            // error
+            printf ("run_shell: ERROR: stack corrupt!\n");
+            return (NULL);
+        }
+        return (sp);
+    }
+
     #if _WIN32
     ret = system ((const char *) &data[commandaddr]);
     if (ret == -1)
