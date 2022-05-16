@@ -1,5 +1,13 @@
-L1VM macOS README 2022-02-19
+L1VM macOS README 2022-05-16
 ============================
+The build script can't run the fann library demo:
+
+```
+error load module libl1vmfann.so!4
+```
+
+Can someone help me to fix this? Seems like the library was not installed right!
+
 UPDATE: I made the following modules build on macOS:
 endianess, fann, file, genann, math, mem, mmpfr (high precision math library), net, process, rs232, string, time, sdl-2.0
 librs232 (serialport by libserialport) <br><br>
