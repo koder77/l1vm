@@ -3,7 +3,7 @@ L1VM macOS README 2022-05-16
 The build script can't run the fann library demo:
 
 ```
-error load module libl1vmfann.so!4
+error load module libl1vmfann.so!
 ```
 
 Can someone help me to fix this? Seems like the library was not installed right!
