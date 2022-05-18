@@ -35,6 +35,10 @@
 #define SANDBOX                 1			// secure file acces: 1 = use secure access, 0 = OFF!!
 #define SANDBOX_ROOT			"/l1vm/"	// in /home directory!, get by $HOME env variable
 
+#define PROCESS_MODULE			0			// set to 1 to make process module working, if set to 0 then dummy code will be build
+// switch this only to 1 if you know the risks!!! see vm/modules/process module source code for more!
+
+
 // VM: max sizes of code
 #define MAX_CODE_SIZE 			4294967296L		// 4GB
 

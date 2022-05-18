@@ -17,17 +17,30 @@
  * along with L1vm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// NOTE: only set PROCESS_MODULE in 'include/settings.h' to 1 if you know:
+// that it can not avoided to run 'su' and 'sudo' in scripts!
+// This can be very dangerous!
+
+
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
 // proto
 S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
+size_t strlen_safe (const char * str, int maxlen);
+
+#if PROCESS_MODULE
 
 U1 *run_shell (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 commandaddr ALIGN;
 	S8 ret ALIGN;
 
+	U1 command_str[4097];
+	U1 *sudo_str = (U1 *) "sudo -u $USER ";
+	S8 sudo_str_len = 0;
+	S8 command_len = 0;
+	
 	if (sp == sp_top)
     {
         // nothing on stack!! can't pop!!
@@ -76,6 +89,21 @@ U1 *run_shell (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (sp);
     }
 
+    // get sudo_str len 
+	sudo_str_len = strlen_safe ((const char *) &data[commandaddr], MAXLINELEN);
+    
+	// get command len 
+	command_len = strlen_safe ((const char *) &data[commandaddr], MAXLINELEN);
+	if (sudo_str_len + command_len > MAXLINELEN)
+	{
+		printf ("ERROR: run_shell: ERROR: command string overflow!\n");
+ 	   return (NULL);
+    }
+    
+    // string sizes ok, build command_str for linux
+    strcpy ((char *) command_str, (const char *) sudo_str);
+	strcat ((char *) command_str, (const char *) &data[commandaddr]);
+    
     #if _WIN32
     ret = system ((const char *) &data[commandaddr]);
     if (ret == -1)
@@ -83,7 +111,7 @@ U1 *run_shell (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         perror ("run_shell:\n");
     }
     #else
-    ret = system ((const char *) &data[commandaddr]);
+    ret = system ((const char *) command_str);
     if (ret == -1)
     {
         perror ("run_shell:\n");
@@ -104,3 +132,14 @@ U1 *run_shell (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     return (sp);
 }
+
+#else
+
+U1 *run_shell (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// print error message!
+	printf ("run_shell: process calling module switched off by default!\nSee 'include/settings.h' !!!\n");
+	return (NULL);
+}
+
+#endif

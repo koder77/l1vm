@@ -10,8 +10,14 @@ L1VM - (1.5.8)
 
 	Test: macOS: install vm modules in to "~/bin".
 	BUGFIX: VM process module now has searchstr() prototype!
+	VM process module now needs: include/settings.h PROCESS_MODULE flag to be set for build!
+	As a default it is switched off:
+	
+	NOTE: only set PROCESS_MODULE in 'include/settings.h' to 1 if you know:
+	that it can not avoided to run 'su' and 'sudo' in scripts!
+	This can be very dangerous!
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 18 May 2022 19:03 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 18 May 2022 22:55 +0200
 
 L1VM - (1.5.7)
 	include/global.h: MAXLINELEN set to 4096.
