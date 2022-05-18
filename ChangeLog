@@ -8,7 +8,9 @@ L1VM - (1.5.8)
 
 	Security fixes in process library. "sudo" and "su" not allowed anymore!
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon 16 May 2022 22:04 +0200
+	Test: macOS: install vm modules in to "~/bin".
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 18 May 2022 17:20 +0200
 
 L1VM - (1.5.7)
 	include/global.h: MAXLINELEN set to 4096.
