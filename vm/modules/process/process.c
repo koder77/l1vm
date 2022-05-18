@@ -20,6 +20,8 @@
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
+// proto
+S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
 
 U1 *run_shell (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
@@ -42,7 +44,7 @@ U1 *run_shell (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   return (NULL);
     }
 
-    if (searchstr (&data[commandaddr], "sudo", 0, 0, 0) >= 0)
+    if (searchstr (&data[commandaddr], (U1 *) "sudo", 0, 0, 0) >= 0)
     {
         // ERROR: "sudo" not allowed!
 
@@ -58,7 +60,7 @@ U1 *run_shell (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (sp);
     }
 
-    if (searchstr (&data[commandaddr], "su", 0, 0, 0) >= 0)
+    if (searchstr (&data[commandaddr], (U1 *) "su", 0, 0, 0) >= 0)
     {
         // ERROR: "su" not allowed!
 
