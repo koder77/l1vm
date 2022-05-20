@@ -3,6 +3,9 @@
 //
 // This is an exammple how to use "jsra" and "loadl".
 //
+// about 1000 points on Lenovo L340: Intel(R) Core(TM) i5-9300HF CPU @ 2.40GHz
+// Single core benchmark!
+//
 #include <intr.l1h>
 #include <math-const.l1h>
 (main func)
@@ -42,9 +45,9 @@
 	(set double 1 opcodes_sec_d 0.0)
 	(set double 1 ticks_per_sec_d 1000.0)
 	(set double 1 points_ref_d 37469016.0)
-	(set double 1 points_fac_d 0.018)
 	(set double 1 points_d 0.0)
 	(set int64 1 points_i 0)
+	(set double 1 thousand_d 1000.0)
 	(set string s opcodes_str "opcodes per sec: ")
 	(set string s points_str "points: ")
 	(time_ms_i :math_int2double !)
@@ -56,7 +59,7 @@
 	print_d (opcodes_sec_d)
 	print_n
 	// calculate points
-	{points_d = (time_ms_d * points_fac_d)}
+	{points_d = (thousand_d / points_ref_d) * opcodes_sec_d}
 	(points_d :math_double2int !)
 	(points_i stpopi)
 	print_n
