@@ -4,6 +4,7 @@
 // This is an exammple how to use "jsra" and "loadl".
 //
 #include <intr.l1h>
+#include <math-const.l1h>
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 one 1)
@@ -18,8 +19,11 @@
 	(set int64 1 bp 0)
 	(set int64 1 offset 8)
 	(set int64 1 ind 0)
-	// (set int64 1 maxloop 10000000000)
+	// (set int64 1 maxloop 1000)
 	(set int64 1 maxloop 10000000)
+	// timing save variable
+	(set int64 1 time_ms_i 0)
+	(zero :math_init !)
 	(zero regi [ ind ] =)
 	((ind offset +) ind =)
 	(one regi [ ind ] =)
@@ -30,6 +34,35 @@
 	print_n
 	(:start !)
 	exit (zero)
+(funcend)
+(opcodes_per_sec func)
+	(set double 1 time_ms_d 0.0)
+	(set double 1 opcodes_loop_d 195.0)
+	(set double 1 maxloop_d 0.0)
+	(set double 1 opcodes_sec_d 0.0)
+	(set double 1 ticks_per_sec_d 1000.0)
+	(set double 1 points_ref_d 37469016.0)
+	(set double 1 points_fac_d 0.018)
+	(set double 1 points_d 0.0)
+	(set int64 1 points_i 0)
+	(set string s opcodes_str "opcodes per sec: ")
+	(set string s points_str "points: ")
+	(time_ms_i :math_int2double !)
+	(time_ms_d stpopd)
+	(maxloop :math_int2double !)
+	(maxloop_d stpopd)
+	{opcodes_sec_d = ((maxloop_d * opcodes_loop_d) * ticks_per_sec_d / time_ms_d)}
+	print_s (opcodes_str)
+	print_d (opcodes_sec_d)
+	print_n
+	// calculate points
+	{points_d = (time_ms_d * points_fac_d)}
+	(points_d :math_double2int !)
+	(points_i stpopi)
+	print_n
+	print_s (points_str)
+	print_i (points_i)
+	print_n
 (funcend)
 (addi func)
 	#var ~ @addi
@@ -146,6 +179,9 @@
 	((bp bp_offset~ +) bp =)
 (funcend)
 (end func)
+	(25 time_ms_i 0 0 intr0)
+	{time_ms_i = (time_ms_i + zero)}
+	(:opcodes_per_sec !)
 	exit (zero)
 (funcend)
 (create_jumptable func)
@@ -238,9 +274,11 @@
 	(reset-reg)
 	(zero i =)
 	(zero bp =)
+	start_timer
 	(:load_opcode)
 	(reset-reg)
 	(jmp_array [ bp ] op_label =)
 	(op_label jsra)
 	(:load_opcode jmp)
 (funcend)
+#include <math-lib.l1h>
