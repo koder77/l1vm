@@ -1,4 +1,4 @@
-L1VM README  2022-03-29
+L1VM README  2022-05-22
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -103,6 +103,7 @@ time - get time and date
 </pre>
 
 <h2>macOS</h2>
+The GitHub CI build now uses macOS 11 to build the VM.
 UPDATE now the modules are working!! I had to build them as "bundle"!
 NEW: macOS build scripts made together with sportfloh.
 And cedi did write the .yaml GitHub Actions file.
