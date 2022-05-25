@@ -1,0 +1,28 @@
+// Brackets - ranges
+//
+#include <intr.l1h>
+#include <ranges.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 x 23)
+	(set int64 1 y 42)
+	(set int64 1 r 43)
+	(set int64 1 f~ 0)
+	(set double 1 xd 23.0)
+	(set double 1 yd 42.0)
+	(set double 1 rd 43.0)
+	(set string s out_of_rangestr "variable r is out of range!")
+	(set string s out_of_rangedstr "variable rd is out of range!")
+
+	int_out_of_range (r, x, y)
+		print_s (out_of_rangestr)
+		print_n
+	(endif)
+
+	double_out_of_range (rd, xd, yd)
+		print_s (out_of_rangedstr)
+		print_n
+	(endif)
+
+	exit (zero)
+(funcend)
