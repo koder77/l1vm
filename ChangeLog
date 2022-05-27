@@ -1,7 +1,11 @@
 L1VM - (1.5.9)
 	NEW: "ranges.l1h" and "prog/range-new.l1com" variable range checks macros.
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 25 May 2022 19:00 +0200
+	NEW: now you can set a window title for the SDL windows:
+
+	(window_title_str :sdl_set_window_title call)
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 27 May 2022 19:13 +0200
 
 L1VM - (1.5.8)
 	NEW: added libsodium easy encrypt/decrypt function
