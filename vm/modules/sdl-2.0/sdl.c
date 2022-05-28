@@ -399,12 +399,15 @@ U1 *sdl_set_window_title (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	sp = stpopi ((U1 *) &title_address, sp, sp_top);
 	if (sp == NULL)
 	{
-		printf ("sdl_toggle_mouse_pointer: ERROR: stack corrupt!\n");
+		printf ("sdl_set_window_title: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
-	SDL_SetWindowTitle (window, (const char *) &data[title_address]);
-
+	if (window != NULL)
+	{
+		SDL_SetWindowTitle (window, (const char *) &data[title_address]);
+	}
+	
 	return (sp);
 }
 
