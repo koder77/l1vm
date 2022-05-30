@@ -155,6 +155,24 @@ The team of the libsodium library. I use for generating random numbers.
 Without them this L1VM project would not be possible! Thank you! <br>
 ----------------------- <br>
 
+<h2>New: variable range checks</h2>
+```
+>> ranges.l1h
+>> check if variable is out of range
+>>
+#func int_out_of_range (VAR, MIN, MAX) :((((VAR MIN <) (VAR MAX >) ||) f~ =) f~ if)
+#func double_out_of_range (VAR, MIN, MAX) :((((VAR MIN <d) (VAR MAX >d) ||) f~ =) f~ if)
+```
+
+Here is an example (prog/range-new.l1com):
+
+```
+int_out_of_range (r, x, y)
+		print_s (out_of_rangestr)
+		print_n
+	(endif)
+```
+
 <h2>New: l1pre - the preprocessor</h2>
 The new "l1pre" preprocessor can be used to define macros and include files.
 See the new "include-lib" directory with all header files. The "prog/hello-6.l1com" example shows how to use this!
