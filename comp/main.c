@@ -4023,6 +4023,13 @@ S2 parse_line (U1 *line)
 										return (1);
 									}
 									
+									// check if source variable is const
+									if (get_var_is_const (ast[level].expr[j][last_arg - 2]) == 1)
+									{
+										printf ("error: line %lli: pointer source variable is constant!\n", linenum);
+										return (1);
+									}
+
 									// check if variable name begins with uppercase P
 									if (ast[level].expr[j][last_arg - 1][0] != 'P')
 									{

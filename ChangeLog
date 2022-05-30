@@ -5,7 +5,9 @@ L1VM - (1.5.9)
 
 	(window_title_str :sdl_set_window_title call)
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 27 May 2022 19:13 +0200
+	NEW: check if pointer variable source is constant: show error message if true.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 30 May 2022 20:41 +0200
 
 L1VM - (1.5.8)
 	NEW: added libsodium easy encrypt/decrypt function
