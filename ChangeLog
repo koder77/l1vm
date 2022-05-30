@@ -6,8 +6,9 @@ L1VM - (1.5.9)
 	(window_title_str :sdl_set_window_title call)
 
 	NEW: check if pointer variable source is constant: show error message if true.
+	NEW: syntax highlighters: "cast" command added.
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon 30 May 2022 20:41 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 30 May 2022 21:20 +0200
 
 L1VM - (1.5.8)
 	NEW: added libsodium easy encrypt/decrypt function

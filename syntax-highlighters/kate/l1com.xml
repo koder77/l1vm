@@ -107,6 +107,7 @@
     <item>switch</item>
     <item>break</item>
     <item>pointer</item>
+    <item>cast</item>
     <item>?</item>
 
     </list>
