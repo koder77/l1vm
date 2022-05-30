@@ -165,6 +165,8 @@ int_out_of_range (r, x, y)
 (endif)
 ```
 
+The code inside the "if" macro is run if "r" is less than "x" or greater as "y"!
+
 <h2>New: l1pre - the preprocessor</h2>
 The new "l1pre" preprocessor can be used to define macros and include files.
 See the new "include-lib" directory with all header files. The "prog/hello-6.l1com" example shows how to use this!
