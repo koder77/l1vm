@@ -1,12 +1,19 @@
+// process-lib.l1com
+//
+// You have to add a new user "l1vm" for executing processes!
+// And the user "l1vm" must not be in "sudoers" to make this safe!!!
+//
+// See process module!
+//
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 ret 0)
-	(set string s hello "xeyes &")
+	(set string s procstr "ls")
 	// init library
 	(zero :process_init call)
 	(loadreg)
 	// call system process
-	(helloaddr :run_shell call)
+	(procstr :run_shell call)
 	(ret stpopi)
 	(loadreg)
 	// print return value of shell call

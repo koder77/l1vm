@@ -17,10 +17,7 @@
  * along with L1vm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// NOTE: only set PROCESS_MODULE in 'include/settings.h' to 1 if you know:
-// that it can not avoided to run 'su' and 'sudo' in scripts!
-// This can be very dangerous!
-
+// You have to create a new user "l1vm" with no "sudo" or "su" rights, to make this safe!
 
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
@@ -37,7 +34,7 @@ U1 *run_shell (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 ret ALIGN;
 
 	U1 command_str[4097];
-	U1 *sudo_str = (U1 *) "sudo -u $USER ";
+	U1 *sudo_str = (U1 *) "sudo -u l1vm ";
 	S8 sudo_str_len = 0;
 	S8 command_len = 0;
 	
@@ -102,8 +99,8 @@ U1 *run_shell (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     
     // string sizes ok, build command_str for linux
     strcpy ((char *) command_str, (const char *) sudo_str);
-	strcat ((char *) command_str, (const char *) &data[commandaddr]);
-    
+    strcat ((char *) command_str, (const char *) &data[commandaddr]);
+
     #if _WIN32
     ret = system ((const char *) &data[commandaddr]);
     if (ret == -1)

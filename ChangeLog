@@ -8,6 +8,8 @@ L1VM - (1.5.9)
 	NEW: check if pointer variable source is constant: show error message if true.
 	NEW: syntax highlighters: "cast" command added.
 
+	NEW: process module now uses user "l1vm" which should "not" be in "sudoers" for making it safe!
+
 -- Stefan Pietzonke <jay-t@gmx.net> Mon 30 May 2022 21:20 +0200
 
 L1VM - (1.5.8)
