@@ -12,7 +12,7 @@ L1VM - (1.5.9)
 
 	NEW: Windows 11 WSL: updated build scripts to use "clang" and "clang++" compiler names!
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon 30 May 2022 21:20 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 05 Jun 2022 16:51 +0200
 
 L1VM - (1.5.8)
 	NEW: added libsodium easy encrypt/decrypt function
