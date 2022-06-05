@@ -5,7 +5,7 @@
 export PATH="$HOME/bin:$PATH"
 export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
 
-if uname -a | grep -q "Microsoft"; then
+if uname -a | grep -q "microsoft"; then
 echo "Windows 10 WSL Debian detected?"
 echo "checking for needed libraries..."
 
@@ -115,8 +115,8 @@ else
 	echo "See this installation script for more info..."
 fi
 
-export CC=clang-7
-export CCPP=clang++-7
+export CC=clang
+export CCPP=clang++
 
 # check if clang C compiler is installed
 if ! dpkg -s clang &> /dev/null; then
