@@ -1924,6 +1924,8 @@ S2 run (void *arg)
 
 		case 13:
 			//printf ("GETSHELLARG\n");
+			{
+			S8 shell_arg_len ALIGN = 0;
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
 			if (regi[arg2] > shell_args_ind)
@@ -1935,8 +1937,21 @@ S2 run (void *arg)
 				pthread_exit ((void *) 1);
 			}
 
-			snprintf ((char *) &data[regi[arg3]], sizeof ((const char *) shell_args[regi[arg2]]), "%s", (const char *) shell_args[regi[arg2]]);
+			// check target string size
+			shell_arg_len = strlen_safe ((const char *) shell_args[regi[arg2]], MAXLINELEN) + 1;
+
+			if (memory_bounds (regi[arg3], shell_arg_len) != 0)
+			{
+				printf ("ERROR: string overflow: shell argument %lli can't be saved in variable!\n", regi[arg2]);
+				PRINT_EPOS();
+				free (jumpoffs);
+				loop_stop ();
+        		pthread_exit ((void *) 1);
+			}
+
+			snprintf ((char *) &data[regi[arg3]], shell_arg_len, "%s", (const char *) shell_args[regi[arg2]]);
 			eoffs = 5;
+			}
 			break;
 
 		case 14:

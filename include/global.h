@@ -265,7 +265,7 @@ struct call_label
 
 // shell arguments
 #define MAXSHELLARGS			32
-#define MAXSHELLARGLEN			256
+#define MAXSHELLARGLEN			1048576
 
 
 // This is type of function we will generate

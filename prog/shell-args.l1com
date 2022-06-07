@@ -4,7 +4,7 @@
 	(set int64 1 zero 0)
 	(set int64 1 one 1)
 	(set int64 1 args 0)
-	(set string 255 shell_arg "")
+	(set string 256 shell_arg "")
 	(set int64 1 i 0)
 	(set int64 1 f 0)
 	(set string s argstr " shell arguments: ")
