@@ -19,8 +19,8 @@
 
 #include "../include/global.h"
 
-extern U1 regi[MAXREG][MAXLINELEN];
-extern U1 regd[MAXREG][MAXLINELEN];
+extern U1 regi[MAXREG][MAXSTRLEN];
+extern U1 regd[MAXREG][MAXSTRLEN];
 
 
 // register tracking functions

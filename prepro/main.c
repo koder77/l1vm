@@ -39,14 +39,14 @@
 #define COMMENT_SB			">>"
 #define COMMENT_COMP_SB		"//"
 
-U1 include_path[MAXLINELEN + 1];
+U1 include_path[MAXSTRLEN + 1];
 
 struct define
 {
 	U1 type; 					// 0 = normal define, 1 = macro
-	U1 def[MAXLINELEN + 1];
-	U1 out[MAXLINELEN + 1];
-	U1 args[ARGS_MAX][MAXLINELEN + 1];
+	U1 def[MAXSTRLEN + 1];
+	U1 out[MAXSTRLEN + 1];
+	U1 args[ARGS_MAX][MAXSTRLEN + 1];
 	S2 args_num;				// number of arguments
 };
 
@@ -181,7 +181,7 @@ S2 replace_str (U1 *line_str, U1 *search_str, U1 *replace_str)
 {
 	S4 i, pos, slen, define_len, define_out_len, j, end, n, real_end;
 	U1 ok;
-	U1 new_line[MAXLINELEN + 1];
+	U1 new_line[MAXSTRLEN + 1];
 
 	slen = strlen_safe ((const char*) line_str, MAXLINELEN);
 
@@ -252,7 +252,7 @@ S2 replace_define (U1 *line_str)
 {
 	S4 ind;
 
-	U1 new_line[MAXLINELEN + 1];
+	U1 new_line[MAXSTRLEN + 1];
 
 	// printf ("DEBUG: replace_define: start...\n");
 
@@ -276,7 +276,7 @@ S2 replace_varname (U1 *line_str)
 {
 	S4 ind;
 
-	U1 new_line[MAXLINELEN + 1];
+	U1 new_line[MAXSTRLEN + 1];
 
 	// printf ("DEBUG: replace_define: start...\n");
 
@@ -422,8 +422,8 @@ S2 replace_macro (U1 *line_str)
 	S4 ind;
 	S4 defines_len;
 
-	U1 new_line[MAXLINELEN + 1];
-	U1 arg[MAXLINELEN + 1];
+	U1 new_line[MAXSTRLEN + 1];
+	U1 arg[MAXSTRLEN + 1];
 	S4 arg_ind = -1;
 
 	slen = strlen_safe ((const char*) line_str, MAXLINELEN);
@@ -555,8 +555,8 @@ S2 replace_macro (U1 *line_str)
 
 S2 include_file (U1 *line_str)
 {
-	U1 rbuf[MAXLINELEN + 1];
-	U1 buf[MAXLINELEN + 1];
+	U1 rbuf[MAXSTRLEN + 1];
+	U1 buf[MAXSTRLEN + 1];
 	U1 ok;
 	char *read;
 	U1 get_include_start;
@@ -567,8 +567,8 @@ S2 include_file (U1 *line_str)
 	S4 include_path_len, include_name_len;
 
 	FILE *fincludeptr;
-	U1 include_file_name[MAXLINELEN + 1];
-	U1 include_full_path[MAXLINELEN + 1];
+	U1 include_file_name[MAXSTRLEN + 1];
+	U1 include_full_path[MAXSTRLEN + 1];
 
 	slen = strlen_safe ((const char *) line_str, MAXLINELEN);
 	pos = searchstr (line_str, (U1 *) INCLUDE_SB, 0, 0, TRUE);
@@ -775,8 +775,8 @@ void show_info (void)
 
 int main (int ac, char *av[])
 {
-	U1 rbuf[MAXLINELEN + 1];                        /* read-buffer for one line */
-	U1 buf[MAXLINELEN + 1];
+	U1 rbuf[MAXSTRLEN + 1];                        /* read-buffer for one line */
+	U1 buf[MAXSTRLEN + 1];
 
 	char *read;
 	U1 ok;

@@ -34,10 +34,10 @@
 #define FUNCTION_HEAD			18
 
 // input line splitted into arguments
-U1 line_args[LINE_ARGS][MAXLINELEN];
-U1 num_names[LINE_ARGS][MAXLINELEN];
+U1 line_args[LINE_ARGS][MAXSTRLEN];
+U1 num_names[LINE_ARGS][MAXSTRLEN];
 
-U1 func_names[MAXFUNC][MAXLINELEN];
+U1 func_names[MAXFUNC][MAXSTRLEN];
 S8 func_ind ALIGN = FUNCTION_HEAD;
 
 // protos
@@ -341,7 +341,7 @@ int main (int ac, char *av[])
 	FILE *mpreal_c;
 	FILE *mpreal_vm;
 
-	U1 mpreal_h_line[MAXLINELEN];
+	U1 mpreal_h_line[MAXSTRLEN];
 
 	U1 ok;
 	S8 mpreal_h_linenum ALIGN = 0;

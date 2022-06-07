@@ -25,7 +25,7 @@ size_t strlen_safe (const char * str, int maxlen);
 
 U1 checkdigit (U1 *str)
 {
-    U1 binarystr[MAXLINELEN];
+    U1 binarystr[MAXSTRLEN];
 	S2 i, j, b, str_len;
     U1 ok = FALSE, check;
 

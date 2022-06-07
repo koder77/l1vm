@@ -22,7 +22,7 @@
 
  struct ast
  {
- 	U1 expr[MAXEXPRESSION][MAXARGS][MAXLINELEN];
+ 	U1 expr[MAXEXPRESSION][MAXARGS][MAXSTRLEN];
  	S4 expr_max;
  	S4 expr_args[MAXEXPRESSION]; 						// number of arguments in expression
  	S4 expr_reg[MAXEXPRESSION];							// registers of expression calculations = target registers

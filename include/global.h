@@ -104,7 +104,7 @@
 // info strings:
 #define COPYRIGHT_STR " (C) 2017-2022 Stefan Pietzonke"
 
-#define  VM_VERSION_STR		"1.5.9"		// version number
+#define  VM_VERSION_STR		"1.6.0"		// version number
 
 // no user defined definitions below this section! ============================
 
@@ -142,7 +142,8 @@ typedef double                  F8;     /* DOUBLE */
 // machine
 #define MAXREG			256			// registers (integer and double float)
 
-#define MAXLINELEN      4096
+#define MAXLINELEN      4096		// MAX LENGTH for strlen_safe string length
+#define MAXSTRLEN		4096		// MAX LENGTH for maximum string size for static allocation
 #define MAXARGS         64
 #define MAXBRACKETLEVEL	64
 #define MAXEXPRESSION	32				// expressions per bracket level
@@ -209,14 +210,14 @@ struct threaddata
 struct t_var
 {
     U1 type;
-    U1 digitstr[MAXLINELEN];
+    U1 digitstr[MAXSTRLEN];
     U1 digitstr_type;
 	U1 base;
 };
 
 struct data_info
 {
-    U1 name[MAXLINELEN];
+    U1 name[MAXSTRLEN];
 	S8 offset ALIGN;
 	S8 size ALIGN;
 	S8 end ALIGN;
@@ -224,7 +225,7 @@ struct data_info
 	U1 type;
 
 	// compiler
-	U1 value_str[MAXLINELEN];
+	U1 value_str[MAXSTRLEN];
 	U1 type_str[2];
 	U1 constant;				// set to one if variable is constant
 };

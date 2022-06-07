@@ -46,8 +46,8 @@ S8 line_len ALIGN = MAXLINES;
 S8 data_line ALIGN = 0;
 S8 code_line ALIGN = 0;
 
-U1 regi[MAXREG][MAXLINELEN];
-U1 regd[MAXREG][MAXLINELEN];
+U1 regi[MAXREG][MAXSTRLEN];
+U1 regd[MAXREG][MAXSTRLEN];
 
 U1 save_regi[MAXREG];
 U1 save_regd[MAXREG];
@@ -428,8 +428,8 @@ S2 check_for_brackets (U1 *line)
 S8 loadreg (void)
 {
 	S8 e;
-	U1 str[MAXLINELEN];
-	U1 code_temp[MAXLINELEN];
+	U1 str[MAXSTRLEN];
+	U1 code_temp[MAXSTRLEN];
 
 	// load double registers
     for (e = MAXREG - 1; e >= 0; e--)
@@ -510,21 +510,21 @@ S2 parse_line (U1 *line)
 	S8 i ALIGN;
 
 	// for convert brackets expression to RPN
-	U1 conv[MAXLINELEN];
+	U1 conv[MAXSTRLEN];
 
-	U1 str[MAXLINELEN];
-	U1 code_temp[MAXLINELEN];
+	U1 str[MAXSTRLEN];
+	U1 code_temp[MAXSTRLEN];
 
 	S8 if_pos ALIGN;
-	U1 if_label[MAXLINELEN];
-	U1 else_label[MAXLINELEN];
-	U1 endif_label[MAXLINELEN];
+	U1 if_label[MAXSTRLEN];
+	U1 else_label[MAXSTRLEN];
+	U1 endif_label[MAXSTRLEN];
 
 	S8 while_pos ALIGN;
-	U1 while_label[MAXLINELEN];
+	U1 while_label[MAXSTRLEN];
 
 	S8 for_pos ALIGN;
-	U1 for_label[MAXLINELEN];
+	U1 for_label[MAXSTRLEN];
 
 	S8 switch_pos ALIGN;
 
@@ -5210,7 +5210,7 @@ S2 parse_line (U1 *line)
 								{
 									S8 ALIGN i;
 									S8 ALIGN j = 0;
-									U1 reg[MAXLINELEN];
+									U1 reg[MAXSTRLEN];
 									U1 comma = ',';
 									U1 comma_count = 0;
 									S8 slen ALIGN;
@@ -5311,7 +5311,7 @@ S2 parse (U1 *name)
     FILE *fptr;
     U1 asmname[512];
     S4 slen, pos;
-    U1 rbuf[MAXLINELEN + 1];                        /* read-buffer for one line */
+    U1 rbuf[MAXSTRLEN + 1];                        /* read-buffer for one line */
     char *read;
 	S8 ret ALIGN;
 
@@ -5534,7 +5534,7 @@ int main (int ac, char *av[])
 	S8 str_len_arg ALIGN;
 	S8 str_len_assembler_args ALIGN;
 
-	U1 assembler_args[MAXLINELEN];
+	U1 assembler_args[MAXSTRLEN];
 
     if (ac < 2)
     {

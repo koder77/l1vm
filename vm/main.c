@@ -116,7 +116,7 @@ S2 load_module (U1 *name, S8 ind)
 {
 	U1 linux_lib_suffix[] = ".so";
 	U1 macos_lib_suffix[] = ".so";
-	U1 libname[MAXLINELEN];
+	U1 libname[MAXSTRLEN];
 
 	if (strlen_safe ((const char*) name, MAXLINELEN) > MAXLINELEN - 5)
 	{

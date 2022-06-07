@@ -29,7 +29,7 @@
 
 
 S8 linenum ALIGN = 1;
-U1 args[MAXARGS][MAXLINELEN];
+U1 args[MAXARGS][MAXSTRLEN];
 
 
 S8 code_ind ALIGN = 0;
@@ -1285,7 +1285,7 @@ S2 parse (U1 *name)
     FILE *fptr;
     U1 asmname[512];
     S4 slen, pos;
-    U1 rbuf[MAXLINELEN + 1];                        /* read-buffer for one line */
+    U1 rbuf[MAXSTRLEN + 1];                        /* read-buffer for one line */
     char *read;
 
     slen = strlen_safe ((const char *) name, MAXLINELEN);

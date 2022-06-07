@@ -38,14 +38,14 @@ S2 get_var_is_const (U1 *name);
 #define MAX_STACK 256
 // #define MAXLINELEN 256
 
-U1 stack_ob[MAX_STACK][MAXLINELEN];
+U1 stack_ob[MAX_STACK][MAXSTRLEN];
 S2 stack_ob_int = -1;
 
 S2 stack_reg[MAX_STACK];
 int stack_reg_int = -1;
 
 //int stack
-int stack[MAXLINELEN];
+int stack[MAXSTRLEN];
 int top_int = -1;
 
 // register tracking functions
@@ -92,8 +92,8 @@ S4 load_variable_int (U1 *var)
 {
 	S4 target;
 	S4 reg2, reg3;
-	U1 str[MAXLINELEN];
-	U1 code_temp[MAXLINELEN];
+	U1 str[MAXSTRLEN];
+	U1 code_temp[MAXSTRLEN];
 
 	if (checkdef (var) != 0)
 	{
@@ -207,7 +207,7 @@ S4 load_variable_double (U1 *var)
 {
 	S4 target;
 	S4 reg2;
-	U1 str[MAXLINELEN];
+	U1 str[MAXSTRLEN];
 
 	if (getvartype_real (var) == DOUBLE)
 	{
@@ -690,17 +690,17 @@ S2 parse_rpolish (U1 *postfix)
 	S2 pos = 0;
 	S2 get_var = 0;
 	S2 parse = 1;
-	U1 buf[MAXLINELEN];
+	U1 buf[MAXSTRLEN];
 
    	S2 reg = 0;
 	S2 reg_int = 0;
 
 	S2 target, target_reg;
 	S2 reg1, reg2;
-	U1 str[MAXLINELEN];
-	U1 code_temp[MAXLINELEN];
+	U1 str[MAXSTRLEN];
+	U1 code_temp[MAXSTRLEN];
 
-	U1 target_var[MAXLINELEN];
+	U1 target_var[MAXSTRLEN];
 	S2 target_var_len = MAXLINELEN - 1;
 	U1 target_var_type = UNKNOWN;
 	U1 expression_var_type_max = UNKNOWN;
