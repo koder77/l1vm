@@ -22,7 +22,7 @@
     (set string s threestr "3.0")
 	(set string s maxnumstr "5.0")
 	(set string s resstr "")
-    (set string s zerostr "1.0")
+    (set string s zerostr "0.0")
 	(set string s formatstr "%.20Ff")
 	(set string 262144 outstr "")
 
@@ -85,7 +85,7 @@
     // check if number is even 
     (numaddr twoaddr remaddr :mp_fmod_float !)
 
-    (remaddr zeroaddr :mp_equal !)
+    (remaddr oneaddr :mp_equal !)
     (f stpopi)
     (((f zero ==) fset =) fset if+)
         // print_s (evenstr)
