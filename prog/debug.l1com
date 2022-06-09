@@ -1,0 +1,33 @@
+// debug.l1com
+#include <intr.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 one 1)
+	(set int64 1 offset 8)
+	(set int64 10 array 12 10 23 42 5 6 7 8 9 0)
+	(set int64 1 maxarray 11)
+	(set int64 1 arrayind 0)
+	(set int64 1 val 0)
+	(set int64 1 i 0)
+	(set int64 1 f 0)
+	(set string s hellostr "hello")
+	(set string s worldstr " world !")
+	(set string s commastr "@@c ")
+
+	(zero :string_init call)
+	(hellostr worldstr :string_cat !)
+
+	// assign to array
+	(for-loop)
+    (((i maxarray <) f =) f for)
+		(array [ arrayind ] val =)
+		print_i (val)
+		print_s (commastr)
+		((i one +) i =)
+		((arrayind offset +) arrayind =)
+	(next)
+
+	print_n
+	exit (zero)
+(funcend)
+#include <string.l1h>

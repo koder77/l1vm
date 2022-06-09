@@ -68,9 +68,7 @@
     // set variable maxnum
     (maxnumstr base maxaddr :mp_set_float !)
 
-    // print number
-    (numaddr outstraddr outstr_len formatstr precision :mp_prints_float !)
-    print_s (outstr)
+    (numaddr formatstr precision :mp_print_float !)
     print_s (commastr)
 
     (:loop)
