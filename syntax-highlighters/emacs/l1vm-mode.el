@@ -36,10 +36,10 @@
             (x-types-regexp (regexp-opt x-types 'words))
             (x-constants-regexp (regexp-opt x-constants 'words))
             (x-functions-regexp (regexp-opt x-functions 'words)))
-        `(
-          (,x-types-regexp . 'font-lock-type-face)
-          (,x-constants-regexp . 'font-lock-constant-face)
-          (,x-functions-regexp . 'font-lock-function-name-face)
+          `(
+            (,x-functions-regexp . 'font-lock-function-name-face)
+            (,x-constants-regexp . 'font-lock-constant-face)
+            (,x-types-regexp . 'font-lock-type-face)
           (,x-keywords-regexp . 'font-lock-keyword-face)
           ;; note: order above matters, because once colored, that part won't change.
           ;; in general, put longer words first
