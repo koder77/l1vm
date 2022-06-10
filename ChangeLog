@@ -2,7 +2,9 @@ L1VM - (1.6.0)
 	NEW: replaced all string constant sizes MAXLINELEN by MAXSTRLEN.
 	BUGFIX: VM: shell arguments length check added!
 
--- Stefan Pietzonke <jay-t@gmx.net> Tue 07 Jun 2022 20:23 +0200
+	NEW: Doom Emacs syntax highlighter added.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 10 Jun 2022 19:48 fs +0200
 
 L1VM - (1.5.9)
 	NEW: "ranges.l1h" and "prog/range-new.l1com" variable range checks macros.
