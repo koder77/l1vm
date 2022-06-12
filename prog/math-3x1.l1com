@@ -17,7 +17,7 @@
     (set int64 1 fset 0)
 
 	(set string 1048576 numstr "")
-    (set string 1048567 outstr "")
+    (set string 1048576 outstr "")
     (set string s onestr "1.0")
     (set string s twostr "2.0")
     (set string s threestr "3.0")
@@ -29,9 +29,8 @@
     (set string s commastr "@@c ")
 
 	(set const-int64 1 outstr_len 1048575)
-	(set const-int64 1 one 1)
 	(set const-int64 1 base 10)
-	(set const-int64 1 precision 1)
+	(set const-int64 1 precision 0)
     (set int64 1 args 0)
     (set string s argsinfostr "l1vm math-3x1 -args number")
 
