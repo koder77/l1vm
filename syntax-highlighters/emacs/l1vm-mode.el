@@ -47,7 +47,7 @@
 
 ;;;###autoload
 (define-derived-mode l1vm-mode c-mode "l1vm mode"
-  "Major mode for editing l1com files"
+  "Major mode for editing l1com files."
 
   ;; code for syntax highlighting
   (setq font-lock-defaults '((l1vm-font-lock-keywords))))
