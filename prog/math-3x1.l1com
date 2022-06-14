@@ -19,7 +19,7 @@
 	(set string 1048576 numstr "")
     (set string 1048576 outstr "")
     (set string s onestr "1.0")
-    (set string s twostr "2.0")
+    (set string s twostr "2.0"
     (set string s threestr "3.0")
     (set string s zerostr "0.0")
 	(set string s formatstr "%.20Ff")
