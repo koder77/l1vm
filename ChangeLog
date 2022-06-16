@@ -4,7 +4,9 @@ L1VM - (1.6.0)
 
 	NEW: Doom Emacs syntax highlighter added.
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 10 Jun 2022 19:48 fs +0200
+	VM: JIT-compiler double numbers code now uses less move opcodes resulting in a speedup.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 17 Jun 2022 01:18 +0200
 
 L1VM - (1.5.9)
 	NEW: "ranges.l1h" and "prog/range-new.l1com" variable range checks macros.
