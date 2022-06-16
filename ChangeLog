@@ -4,7 +4,7 @@ L1VM - (1.6.0)
 
 	NEW: Doom Emacs syntax highlighter added.
 
-	VM: JIT-compiler double numbers code now uses less move opcodes resulting in a speedup.
+	VM: JIT-compiler reset to working version.
 
 -- Stefan Pietzonke <jay-t@gmx.net> Fri 17 Jun 2022 01:18 +0200
 
