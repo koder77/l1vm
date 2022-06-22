@@ -28,7 +28,7 @@
     // build command line 
     (commandstr~ commstr~ :string_copy !)
     (commandstr~ colonstr~ :string_cat !)
-    (commandstr~ Pdatastraddr~ :string_cat !)
+    (commandstr~ Pkeystraddr~ :string_cat !)
     (commandstr~ spacestr~ :string_cat !)
     (commandstr~ quotestr~ :string_cat !)
     (commandstr~ Pdatastraddr~ :string_cat !)
@@ -116,6 +116,7 @@
     (commandstr~ Pdatastraddr~ :string_cat !)
     (commandstr~ quotestr~ :string_cat !)
     (shandle~ commandstr~ :socket_write_string !)
+    (ret~ stpopi)
     (((ret~ zero~ !=) f~ =) f~ if)
         print_s (errorstr~)
         print_n
@@ -153,6 +154,7 @@
     (commandstr~ Pkeystraddr~ :string_cat !)
     // send command
     (shandle~ commandstr~ :socket_write_string !)
+    (ret~ stpopi)
     (((ret~ zero~ !=) f~ =) f~ if)
         print_s (errorstr~)
         print_n
@@ -199,6 +201,7 @@
     (commandstr~ quotestr~ :string_cat !)
     // send command
     (shandle~ commandstr~ :socket_write_string !)
+    (ret~ stpopi)
     (((ret~ zero~ !=) f~ =) f~ if)
         print_s (errorstr~)
         print_n
@@ -237,7 +240,8 @@
     (commandstr~ quotestr~ :string_cat !)
     // send command
     (shandle~ commandstr~ :socket_write_string !)
-     (((ret~ zero~ !=) f~ =) f~ if)
+    (ret~ stpopi)
+    (((ret~ zero~ !=) f~ =) f~ if)
         print_s (errorstr~)
         print_n
         (one~ stpushi)

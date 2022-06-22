@@ -5,8 +5,10 @@ L1VM - (1.6.0)
 	NEW: Doom Emacs syntax highlighter added.
 
 	VM: JIT-compiler reset to working version.
+	NEW: process handling flags in settings.h.
+	NEW "worker-hello" folder with experimental l1vmgodata data base client worker. See README there!
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 17 Jun 2022 01:18 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 22 Jun 2022 18:27 +0200
 
 L1VM - (1.5.9)
 	NEW: "ranges.l1h" and "prog/range-new.l1com" variable range checks macros.

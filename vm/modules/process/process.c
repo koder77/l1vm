@@ -34,7 +34,11 @@ U1 *run_shell (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 ret ALIGN;
 
 	U1 command_str[4097];
-	U1 *sudo_str = (U1 *) "sudo -u l1vm ";
+    #if PROCCESS_L1VM_USER
+    U1 *sudo_str = (U1 *) "sudo -u l1vm ";
+    #else
+    U1 *sudo_str = (U1 *) "";
+    #endif
 	S8 sudo_str_len = 0;
 	S8 command_len = 0;
 	

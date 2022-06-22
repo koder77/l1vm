@@ -39,6 +39,7 @@
 // switch this only to 1 if you know the risks!!! see vm/modules/process module source code for more!
 // You have to create a new user "l1vm" with no "sudo" and "su" rights, to make this safe!
 // See "process" module!
+#define PROCESS_L1VM_USER         0 // switch to one if user: l1vm is on your system!
 
 // VM: max sizes of code
 #define MAX_CODE_SIZE 			4294967296L		// 4GB
