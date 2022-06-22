@@ -27,10 +27,7 @@ $ lvm run-worker -args 127.0.0.1 2000 worker01
 
 This should run the program and download and run the "hello-worker" data base client program
 
-The following doesn't work right! There is a bug in my l1vmgodata handling code.
-I have to find what is going on there. So this still won't work:
-
-Now in the shell with th "nc" connected you can try:
+Now in the shell with th "nc" connected you can do:
 
 ```
 get key :01hello
