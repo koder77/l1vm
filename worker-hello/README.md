@@ -8,16 +8,22 @@ In this example we set the data base entry by hand. You can modify the "download
 
 Here we start: first run the "l1vmgodata" data base:
 
+```
 $ ./l1vmgodata 127.0.0.1 2000
+```
 
 Then open an new shell:
 
+```
 $nc 127.0.0.1 2000
 store data :worker01 "hello-worker"
+```
 
 Then open a new shell and type in:
 
+```
 $ lvm run-worker -args 127.0.0.1 2000 worker01
+```
 
 This should run the program and download and run the "hello-worker" data base client program
 
@@ -26,8 +32,10 @@ I have to find what is going on there. So this still won't work:
 
 Now in the shell with th "nc" connected you can try:
 
+```
 get key :01hello
 Hello world!
+```
 
 So here the client stored "Hello world!" into the data basse.
 I hope you find this demo useful. You can do much more stuff with this!
