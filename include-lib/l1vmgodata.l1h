@@ -10,7 +10,7 @@
     (set int64 1 Pretstraddr~)
     (set string s commstr~ "store data ")
     (set string s colonstr~ ":")
-    (set string s quotestr~ "@@q")
+    (set string 2 quotestr~ "'")
     (set string s spacestr~ " ")
     (set int64 1 twolen~ 2)
     (set string 4097 commandstr~ "")
@@ -33,6 +33,12 @@
     (commandstr~ quotestr~ :string_cat !)
     (commandstr~ Pdatastraddr~ :string_cat !)
     (commandstr~ quotestr~ :string_cat !)
+
+    (set string s dbg_str "DEBUG: go_data_store: ")
+    print_s (dbg_str)
+    print_s (commandstr~)
+    print_n
+
     // send command
     (shandle~ commandstr~ :socket_write_string !)
     (ret~ stpopi)
@@ -93,7 +99,7 @@
     (set int64 1 Pdatastraddr~)
     (set string s commstr~ "get value ")
     (set string s colonstr~ ":")
-    (set string s quotestr~ "@@q")
+    (set string s quotestr~ "'")
     (set string s spacesstr~ " ")
     (set string 4097 commandstr~ "")
     (set string 4096 bufstr~ "")
@@ -179,7 +185,7 @@
     #var ~ go_data_save
     (set int64 1 shandle~ 0)
     (set int64 1 Pnamestraddr~)
-    (set string s quotestr~ "@@q")
+    (set string s quotestr~ "'")
     (set string s commstr~ "save :save ")
     (set int64 1 Pretstraddr~ 0)
     (set string 4097 commandstr~ "")
@@ -218,7 +224,7 @@
     #var ~ go_data_load
     (set int64 1 shandle~ 0)
     (set int64 1 Pnamestraddr~)
-    (set string s quotestr~ "@@q")
+    (set string s quotestr~ "'")
     (set string s commstr~ "load :load ")
     (set int64 1 Pretstraddr~ 0)
     (set string 4097 commandstr~ "")
