@@ -27,7 +27,7 @@ $ lvm run-worker -args 127.0.0.1 2000 worker01
 
 This should run the program and download and run the "hello-worker" data base client program
 
-Now in the shell with th "nc" connected you can do:
+Now in the shell with the "nc" connected you can do:
 
 ```
 get key :01hello
