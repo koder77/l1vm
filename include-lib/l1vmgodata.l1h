@@ -34,11 +34,6 @@
     (commandstr~ Pdatastraddr~ :string_cat !)
     (commandstr~ quotestr~ :string_cat !)
 
-    (set string s dbg_str "DEBUG: go_data_store: ")
-    print_s (dbg_str)
-    print_s (commandstr~)
-    print_n
-
     // send command
     (shandle~ commandstr~ :socket_write_string !)
     (ret~ stpopi)
