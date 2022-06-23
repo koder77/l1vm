@@ -34,5 +34,5 @@ get key :01hello
 Hello world!
 ```
 
-So here the client stored "Hello world!" into the data basse.
+So here the client stored "Hello world!" into the data base.
 I hope you find this demo useful. You can do much more stuff with this!
