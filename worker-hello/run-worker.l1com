@@ -1,0 +1,132 @@
+#include <intr.l1h>
+#include <math-const.l1h>
+(main func)
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+	(set const-int64 1 two 2)
+	(set int64 1 portnum 2000Q)
+	(set string 256 portstr "")
+	(set string 4097 worker_id_str "")
+	(set int64 1 error 0)
+	(set int64 1 f 0)
+	(set string 256 ip "127.0.0.1")
+    (set string 256 hoststr)
+    (set int64 1 ip_len 10)
+    (set int64 1 ret 0)
+    (set int64 1 socket_handle 0)
+    (set const-int64 1 mod_net 0)
+    (set const-int64 1 mod_string 1)
+	(set const-int64 1 mod_process 2)
+	(set const-int64 1 mod_math 3)
+    (set string s netinitstr "error: can't init networking sockets!")
+    (set string s addressstr "error can't get host address!")
+    (set string s connectstr "error: can't connect to server!")
+    (set string s storestr "error can't store data in data base!")
+    (set string s dataokstr "data read ok!")
+    (set string s process_errstr "run process ERROR: can't run program!")
+    (set string s call_str "l1vm run-worker -args <ip> <port> <worker-id>")
+    (set string 4097 retstr "")
+    (set string 4097 runstr "./run-worker.sh ")
+    (set string 4097 processstr "")
+    (set int64 1 args 0)
+    (set int64 1 args_needed 3)
+	(set string s worker_env_str "L1VMWORKERID")
+	(set string s okstr "OK")
+    (set string s errstr "ERROR")
+    (set string s nojobstr "no job!")
+	(set int64 1 delay 1000)
+    (set int64 1 delay_end 5000)
+    (set string s process_run_str "running: ")
+
+    (mod_net one :net_init !)
+	(ret stpopi)
+	(mod_string :string_init !)
+	(((ret zero !=) f =) f if)
+		// ERROR can't allocate memory
+		print_s (netinitstr)
+        print_n
+		exit (one)
+	(endif)
+	(mod_process :process_init call)
+    (mod_math :math_init call)
+
+    // get number of shell args
+    shell_args (args)
+    (((args args_needed <) f =) f if)
+		print_s (call_str)
+		print_n
+		exit (one)
+	(endif)
+	// read arguments
+	// ip
+	get_shell_arg (zero, ip)
+	// port
+	get_shell_arg (one, portstr)
+	(portstr portnum :string_to_int !)
+	// worker id
+	get_shell_arg (two, worker_id_str)
+    (ip portnum :open_client_socket !)
+    (socket_handle stpopi)
+    (ret stpopi)
+    (((ret zero !=) f =) f if)
+		// ERROR can't connect to server
+		print_s (connectstr)
+		print_n
+		exit (one)
+	(endif)
+
+	// set env variable
+	(worker_env_str worker_id_str :set_env !)
+
+	(:loop)
+	detime (delay)
+	// read data from data base
+    (socket_handle worker_id_str retstr :go_data_remove !)
+    (ret stpopi)
+    (((ret zero !=) f =) f if)
+		// ERROR can't connect to server
+		print_s (storestr)
+		print_n
+		exit (one)
+	(endif)
+    (retstr errstr :string_compare !)
+    (ret stpopi)
+    (((ret zero ==) f =) f if+)
+	    print_s (nojobstr)
+		print_n
+	    (:loop jmp)
+	(else)
+        print_s (dataokstr)
+	    print_n
+    (endif)
+
+    // run go-data-run.sh with the retstr value we got from server
+    print_s (process_run_str)
+    (processstr runstr :string_copy !)
+    (processstr retstr :string_cat !)
+    print_s (processstr)
+    print_n
+    // run process
+    (processstr :run_shell call)
+	(ret stpopi)
+    (((ret zero !=) f =) f if+)
+		print_s (process_errstr)
+		print_n
+		exit (one)
+	(else)
+		print_s (okstr)
+		print_n
+    (endif)
+    // close connection
+    // (socket_handle :go_data_close !)
+    // (ret stpopi)
+    // process finished jump to loop start
+    (detime (delay_end)
+    (:loop jmp)
+    exit (zero)
+(funcend)
+#include <net-lib.l1h>
+#include <string.l1h>
+#include <l1vmgodata.l1h>
+#include <process-lib.l1h>
+#include <math-lib.l1h>
