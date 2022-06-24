@@ -16,7 +16,7 @@ Then open an new shell:
 
 ```
 $nc 127.0.0.1 2000
-store data :worker01 "hello-worker"
+store data :worker01 'hello-worker'
 ```
 
 Then open a new shell and type in:
