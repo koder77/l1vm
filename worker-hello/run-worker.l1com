@@ -1,3 +1,4 @@
+#include <intr.l1h>
 #include <math-const.l1h>
 (main func)
     (set const-int64 1 zero 0)
@@ -43,7 +44,7 @@
 	(((ret zero !=) f =) f if)
 		// ERROR can't allocate memory
 		print_s (netinitstr)
-		print_n
+        print_n
 		exit (one)
 	(endif)
 	(mod_process :process_init call)
