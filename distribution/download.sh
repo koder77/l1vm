@@ -21,6 +21,15 @@ curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$1.readme.txt.gpg
 curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$1.data.tar.bz2
 curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$1.data.tar.gpg
 
+if [ -f $1.l1obj.bz2 ]; then
+	if ! gpg --verify $1.l1obj.gpg $1.l1obj.bz2; then
+	echo "ERROR: file signature of source code not valid!"
+	echo "removing files..."
+	rm $1.l1obj.gpg
+	rm $1.l1obj.bz2
+fi
+fi
+
 if [ -f $1.l1com.bz2 ]; then
 if ! gpg --verify $1.l1com.gpg $1.l1com.bz2; then
 	echo "ERROR: file signature of source code not valid!"
@@ -49,7 +58,11 @@ fi
 fi
 
 
-# unpack source code and install it
+## unpack obj file and install it
+bzip2 -d $1.l1obj.bz2
+cp $1.l1obj ~/l1vm/prog
+
+// unpack source code and install it
 bzip2 -d $1.l1com.bz2
 cp $1.l1com ~/l1vm/prog
 
