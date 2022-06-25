@@ -84,7 +84,7 @@ if ! gpg --verify $1.l1obj.gpg $1.l1obj.bz2; then
 fi
 
 # copy program
-cp $1.l1obj.bz2 ~/l1vm/prog
+# cp $1.l1obj.bz2 ~/l1vm/prog
 
 echo "files installed!"
 echo "cleaning up..."
