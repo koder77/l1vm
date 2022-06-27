@@ -10,7 +10,7 @@ xcode-select --install
 find / -name features.h
 
 cp /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk/usr/include/machine/endian.h /usr/local/include
-cp /usr/local/include/c++/9.4.0/parallel/features.h /usr/local/include
+cp /usr/local/include/c++/11/parallel/features.h /usr/local/include
 
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
