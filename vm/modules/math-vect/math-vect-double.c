@@ -23,7 +23,7 @@
 // protos
 U1 *stpushb (U1 data, U1 *sp, U1 *sp_bottom);
 U1 *stpopb (U1 *data, U1 *sp, U1 *sp_top);
-U1 *stpushi (S8 data ALIGN, U1 *sp, U1 *sp_bottom);
+U1 *stpushi (S8 data, U1 *sp, U1 *sp_bottom);
 U1 *stpopi (U1 *data, U1 *sp, U1 *sp_top);
 U1 *stpushd (F8 data, U1 *sp, U1 *sp_bottom);
 U1 *stpopd (U1 *data, U1 *sp, U1 *sp_top);

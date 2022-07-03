@@ -54,7 +54,7 @@
 
 // protos
 
-U1 *stpushi (S8 data ALIGN, U1 *sp, U1 *sp_bottom);
+U1 *stpushi (S8 data, U1 *sp, U1 *sp_bottom);
 U1 *stpopi (U1 *data, U1 *sp, U1 *sp_top);
 
 U1 *init_gadgets(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
