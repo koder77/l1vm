@@ -32,7 +32,7 @@
 // htonq, ntohq, htond, ntohd
 
 #if ! MACHINE_BIG_ENDIAN
-S8 htonq (S8 num ALIGN)
+S8 htonq (S8 num)
 {
     U1 *num_ptr, *new_ptr;
     S8 newv ALIGN;
@@ -52,7 +52,7 @@ S8 htonq (S8 num ALIGN)
     return (newv);
 }
 
-S8 ntohq (S8 num ALIGN)
+S8 ntohq (S8 num)
 {
     U1 *num_ptr, *new_ptr;
     S8 newv ALIGN;
@@ -73,18 +73,18 @@ S8 ntohq (S8 num ALIGN)
 }
 
 #else
-S8 htonq (S8 num ALIGN)
+S8 htonq (S8 num)
 {
 	return (num);
 }
 
-S8 ntohq (S8 num ALIGN)
+S8 ntohq (S8 num)
 {
 	return (num);
 }
 #endif
 
-F8 htond (F8 hostd ALIGN)
+F8 htond (F8 hostd)
 {
     U1 *netdptr;
     U1 *hostdptr;
@@ -108,7 +108,7 @@ F8 htond (F8 hostd ALIGN)
     return (netd);
 }
 
-F8 ntohd (F8 netd ALIGN)
+F8 ntohd (F8 netd)
 {
     U1 *netdptr;
     U1 *hostdptr;

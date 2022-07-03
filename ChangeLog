@@ -9,8 +9,9 @@ L1VM - (1.6.0)
 	NEW "worker-hello" folder with experimental l1vmgodata data base client worker. See README there!
 
 	NEW: now download.sh script also installs .obj files!
+	VM/modules/endianess: aligning of function arguments removed to compile with gcc.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 25 Jun 2022 20:15 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 3 Jul 2022 13:42 +0200
 
 L1VM - (1.5.9)
 	NEW: "ranges.l1h" and "prog/range-new.l1com" variable range checks macros.

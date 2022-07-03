@@ -20,7 +20,7 @@
 #include "../include/global.h"
 #include "../include/opcodes-types.h"
 
-extern struct data_info data_info[MAXDATAINFO];;
+extern struct data_info data_info[MAXDATAINFO];
 extern S8 data_ind;
 extern S8 linenum;
 
