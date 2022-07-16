@@ -239,8 +239,8 @@ S2 write_data_byte (S8 offset, S8 val, S8 size)
 		data[offset] = (U1) val;
 
         return (0);
-    }
-    else
+	}
+	else
     {
         return (1);
     }

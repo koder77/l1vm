@@ -19,7 +19,7 @@
 	(set int64 1 input 0)
 	(set int64 1 f 0)
 	// set constant -----------------------------------------
-	(set const-double 1 m_pi@math 3.14159265358979323846)
+	(set const-double 1 m_pi 3.14159265358979323846)
 	// -------------------------------------------------------
 	(:loop)
 	print_s (menu_diamstr)
@@ -59,7 +59,7 @@
 	print_s (circstr)
 	// input double circ
 	input_d (circ)
-	((circ m_pi@math /d) diam =)
+    {diam = (circ / m_pi)}
 	print_s (diamstr)
 	print_d (diam)
 (funcend)
@@ -70,7 +70,7 @@
 	print_s (diamstr)
 	// input double diam
 	input_d (diam)
-	((diam m_pi@math *d) circ =)
+	{circ = (diam * m_pi)}
 	print_s (circstr)
 	print_d (circ)
 (funcend)

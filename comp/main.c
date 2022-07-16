@@ -819,7 +819,7 @@ S2 parse_line (U1 *line)
 										// check if variable value is in legal range
 										S8 value ALIGN;
 										U1 *ptr;
-										value = strtoll((const char *) ast[level].expr[j][4], &ptr, 10);
+										value = strtoll((const char *) ast[level].expr[j][4], (char **) &ptr, 10);
 
 										switch (data_info[data_ind].type)
 										{
