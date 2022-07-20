@@ -90,7 +90,7 @@
     (person.height~ Pheight~ pointer)
     (person.eye_color~ Peye_color~ pointer)
 
-    (Peye_color~ Pheight~ Page~ Pgender~ Plast_name~ Pfirst_name~ variables~ zero~ memaddr~ :load_obj_array_memobj call)
+    (Peye_color~ Pheight~ Page~ Pgender~ Plast_name~ Pfirst_name~ variables~ zero~ memaddr~ :load_obj_array_memobj !)
 
     print_s (person.first_name~)
     print_n
