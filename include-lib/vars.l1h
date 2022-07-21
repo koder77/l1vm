@@ -1,0 +1,7 @@
+// vars.l1h
+// variables byte sizes
+(set int64 1 byte_size 1)
+(set int64 1 int16_size 2)
+(set int64 1 int32_size 4)
+(set int64 1 int64_size 8)
+(set int64 1 double_size 8)
