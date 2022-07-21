@@ -30,6 +30,8 @@
     <item>stpopi</item>
     <item>stpushd</item>
     <item>stpopd</item>
+    <item>stpush</item>
+    <item>stpop</item>
     <item>jmpi</item>
     <item>jmp</item>
     <item>jsr</item>

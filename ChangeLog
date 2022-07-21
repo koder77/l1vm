@@ -1,3 +1,9 @@
+L1VM (1.7.0)
+	NEW: compiler: "stpush" and "stpop" for use with multiple variables.
+	See example "prog/stack-new.l1com"
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 21 Jul 2022 19:27 +0200
+
 L1VM - (1.6.0)
 	NEW: replaced all string constant sizes MAXLINELEN by MAXSTRLEN.
 	BUGFIX: VM: shell arguments length check added!

@@ -4565,6 +4565,482 @@ S2 parse_line (U1 *line)
 									continue;
 								}
 
+							// stpush  =========================================================================
+							if (strcmp ((const char *) ast[level].expr[j][last_arg], "stpush") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], "s>") == 0)
+							{
+								// exp: (num1 num2 stpush)
+								// (num1 num2 s>)
+
+								for (e = 0; e < last_arg; e++)
+								{
+									if (checkdef (ast[level].expr[j][e]) != 0)
+									{
+										return (1);
+									}
+									if (getvartype (ast[level].expr[j][e]) == INTEGER)
+									{
+										if (getvartype_real (ast[level].expr[j][e]) == BYTE)
+										{
+											strcpy ((char *) code_temp, "stpushb ");
+										}
+										else
+										{
+											strcpy ((char *) code_temp, "stpushi ");
+										}
+
+										reg = get_regi (ast[level].expr[j][e]);
+										if (reg == -1 || reg > -1)
+										{
+											if (reg > -1)
+											{
+												// clear old value of register
+												set_regi (reg, (U1 *) "");
+												reg = get_free_regi ();
+												set_regi (reg, ast[level].expr[j][e]);
+											}
+											else
+											{
+												reg = get_free_regi ();
+												set_regi (reg, ast[level].expr[j][e]);
+											}
+
+											// write code loada
+
+											code_line++;
+											if (code_line >= line_len)
+											{
+												printf ("error: line %lli: code list full!\n", linenum);
+												return (1);
+											}
+
+											{
+												// new scope
+												S2 reg_p;
+
+												if (getvartype_real (ast[level].expr[j][e]) == BYTE)
+												{
+													strcpy ((char *) code[code_line], "load ");
+													strcat ((char *) code[code_line], (const char *) ast[level].expr[j][e]);
+													strcat ((char *) code[code_line], ", 0, ");
+													sprintf ((char *) str, "%i", reg);
+													strcat ((char *) code[code_line], (const char *) str);
+													strcat ((char *) code[code_line], "\n");
+
+													code_line++;
+													if (code_line >= line_len)
+													{
+														printf ("error: line %lli: code list full!\n", linenum);
+														return (1);
+													}
+
+													// set stpushb opcode
+													strcpy ((char *) code[code_line], "pushb ");
+													sprintf ((char *) str, "%i", reg);
+													strcat ((char *) code[code_line], (const char *) str);
+													strcat ((char *) code[code_line], ", 0, ");
+
+													// get free register
+													reg_p = get_free_regi ();
+													// set_regi (reg, ast[level].expr[j][e]);
+
+													sprintf ((char *) str, "%i", reg_p);
+													strcat ((char *) code[code_line], (const char *) str);
+													strcat ((char *) code[code_line], "\n");
+
+													// set register as used
+													set_regi (reg_p, ast[level].expr[j][e]);
+												}
+
+												if (getvartype_real (ast[level].expr[j][e]) == WORD)
+												{
+													// set load opcode
+													strcpy ((char *) code[code_line], "load ");
+													strcat ((char *) code[code_line], (const char *) ast[level].expr[j][e]);
+													strcat ((char *) code[code_line], ", 0, ");
+													sprintf ((char *) str, "%i", reg);
+													strcat ((char *) code[code_line], (const char *) str);
+													strcat ((char *) code[code_line], "\n");
+
+													code_line++;
+													if (code_line >= line_len)
+													{
+														printf ("error: line %lli: code list full!\n", linenum);
+														return (1);
+													}
+
+													// set pushw opcode
+													strcpy ((char *) code[code_line], "pushw ");
+													sprintf ((char *) str, "%i", reg);
+													strcat ((char *) code[code_line], (const char *) str);
+													strcat ((char *) code[code_line], ", 0, ");
+
+													// get free register
+													reg_p = get_free_regi ();
+
+													sprintf ((char *) str, "%i", reg_p);
+													strcat ((char *) code[code_line], (const char *) str);
+													strcat ((char *) code[code_line], "\n");
+
+													// set register as used
+													set_regi (reg_p, ast[level].expr[j][e]);
+												}
+
+												if (getvartype_real (ast[level].expr[j][e]) == DOUBLEWORD)
+												{
+													// set load opcode
+													strcpy ((char *) code[code_line], "load ");
+													strcat ((char *) code[code_line], (const char *) ast[level].expr[j][e]);
+													strcat ((char *) code[code_line], ", 0, ");
+													sprintf ((char *) str, "%i", reg);
+													strcat ((char *) code[code_line], (const char *) str);
+													strcat ((char *) code[code_line], "\n");
+
+													code_line++;
+													if (code_line >= line_len)
+													{
+														printf ("error: line %lli: code list full!\n", linenum);
+														return (1);
+													}
+
+													// set pushw opcode
+													strcpy ((char *) code[code_line], "pushdw ");
+													sprintf ((char *) str, "%i", reg);
+													strcat ((char *) code[code_line], (const char *) str);
+													strcat ((char *) code[code_line], ", 0, ");
+
+													// get free register
+													reg_p = get_free_regi ();
+
+													sprintf ((char *) str, "%i", reg_p);
+													strcat ((char *) code[code_line], (const char *) str);
+													strcat ((char *) code[code_line], "\n");
+
+													// set register as used
+													set_regi (reg_p, ast[level].expr[j][e]);
+												}
+
+												if (getvartype_real (ast[level].expr[j][e]) == QUADWORD)
+												{
+													strcpy ((char *) code[code_line], "loada ");
+													strcat ((char *) code[code_line], (const char *) ast[level].expr[j][e]);
+													strcat ((char *) code[code_line], ", 0, ");
+													sprintf ((char *) str, "%i", reg);
+													strcat ((char *) code[code_line], (const char *) str);
+													strcat ((char *) code[code_line], "\n");
+
+													// set register as used
+													set_regi (reg, ast[level].expr[j][e]);
+												}
+
+												strcat ((char *) code_temp, (const char *) str);
+											} // new scope end
+										}
+										else
+										{
+											sprintf ((char *) str, "%i", reg);
+											strcat ((char *) code_temp, (const char *) str);
+										}
+									}
+
+									if (getvartype (ast[level].expr[j][e]) == DOUBLE)
+									{
+										strcpy ((char *) code_temp, "stpushd ");
+
+										// double float type
+										reg = get_regd (ast[level].expr[j][e]);
+										if (reg == -1 || reg > -1)
+										{
+											if (reg > -1)
+											{
+												// clear old value of register
+												set_regd (reg, (U1 *) "");
+												reg = get_free_regi ();
+												set_regd (reg, ast[level].expr[j][e]);
+											}
+											else
+											{
+												reg = get_free_regd ();
+												set_regd (reg, ast[level].expr[j][e]);
+											}
+
+											// write code loadd
+
+											code_line++;
+											if (code_line >= line_len)
+											{
+												printf ("error: line %lli: code list full!\n", linenum);
+												return (1);
+											}
+
+											strcpy ((char *) code[code_line], "loadd ");
+											strcat ((char *) code[code_line], (const char *) ast[level].expr[j][e]);
+											strcat ((char *) code[code_line], ", 0, ");
+											sprintf ((char *) str, "%i", reg);
+											strcat ((char *) code[code_line], (const char *) str);
+											strcat ((char *) code[code_line], "\n");
+
+											strcat ((char *) code_temp, (const char *) str);
+										}
+										else
+										{
+											sprintf ((char *) str, "%i", reg);
+											strcat ((char *) code_temp, (const char *) str);
+										}
+									}
+
+									if (getvartype (ast[level].expr[j][e]) == STRING)
+									{
+										strcpy ((char *) code_temp, "stpushi ");
+
+										strcpy ((char *) str, (const char *) ast[level].expr[j][e]);
+										strcat ((char *) str, "addr");
+
+										reg = get_regi (ast[level].expr[j][e]);
+										if (reg == -1 || reg > -1)
+										{
+											if (reg > -1)
+											{
+												// clear old value of register
+												set_regi (reg, (U1 *) "");
+												reg = get_free_regi ();
+												set_regi (reg, ast[level].expr[j][e]);
+											}
+											else
+											{
+												reg = get_free_regi ();
+												set_regi (reg, ast[level].expr[j][e]);
+											}
+
+											// write code loada
+
+											code_line++;
+											if (code_line >= line_len)
+											{
+												printf ("error: line %lli: code list full!\n", linenum);
+												return (1);
+											}
+
+											strcpy ((char *) code[code_line], "loada ");
+											strcat ((char *) code[code_line], (const char *) str);
+											strcat ((char *) code[code_line], ", 0, ");
+											sprintf ((char *) str, "%i", reg);
+											strcat ((char *) code[code_line], (const char *) str);
+											strcat ((char *) code[code_line], "\n");
+
+											strcat ((char *) code_temp, (const char *) str);
+										}
+										else
+										{
+											sprintf ((char *) str, "%i", reg);
+											strcat ((char *) code_temp, (const char *) str);
+										}
+									}
+
+									code_line++;
+									if (code_line >= line_len)
+									{
+										printf ("error: line %lli: code list full!\n", linenum);
+										return (1);
+									}
+
+									strcpy ((char *) code[code_line], (const char *) code_temp);
+									strcat ((char *) code[code_line], "\n");
+								}
+
+								continue;
+							}
+
+							// stpop  =========================================================================
+							if (strcmp ((const char *) ast[level].expr[j][last_arg], "stpop") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], "s<") == 0)
+							{
+								// exp: (num1 num2 stpull)
+								// (num1 num2 s<)
+
+								for (e = 0; e < last_arg; e++)
+								{
+									if (checkdef (ast[level].expr[j][e]) != 0)
+									{
+										return (1);
+									}
+									if (getvartype (ast[level].expr[j][e]) == INTEGER)
+                                    {
+										target = get_regi (ast[level].expr[j][e]);
+										if (target == -1)
+										{
+											// variable is not in register, load it
+
+											reg2 = get_free_regi ();
+											set_regi (reg2, ast[level].expr[j][e]);
+											target = reg2;
+										}
+
+										if (getvartype_real (ast[level].expr[j][e]) == BYTE)
+										{
+											strcpy ((char *) code_temp, "stpopb ");
+										}
+										else
+										{
+											strcpy ((char *) code_temp, "stpopi ");
+										}
+
+										sprintf ((char *) str, "%i", target);
+										strcat ((char *) code_temp, (const char *) str);
+										strcat ((char *) code_temp, "\n");
+
+										code_line++;
+										if (code_line >= line_len)
+										{
+											printf ("error: line %lli: code list full!\n", linenum);
+											return (1);
+										}
+
+										strcpy ((char *) code[code_line], (const char *) code_temp);
+
+										strcpy ((char *) code_temp, "load ");
+										strcat ((char *) code_temp, (const char *) ast[level].expr[j][e]);
+										strcat ((char *) code_temp, ", 0, ");
+
+										reg = get_free_regi ();
+
+										sprintf ((char *) str, "%i", reg);
+										strcat ((char *) code_temp, (const char *) str);
+										strcat ((char *) code_temp, "\n");
+
+										code_line++;
+										if (code_line >= line_len)
+										{
+											printf ("error: line %lli: code list full!\n", linenum);
+											return (1);
+										}
+
+										strcpy ((char *) code[code_line], (const char *) code_temp);
+
+										// create new scope for setting the needed pull opcode:
+										{
+											S8 vartype ALIGN;
+											vartype = getvartype_real (ast[level].expr[j][e]);
+											switch (vartype)
+											{
+												case BYTE:
+													strcpy ((char *) code_temp, "pullb ");
+													break;
+
+												case WORD:
+													strcpy ((char *) code_temp, "pullw ");
+													break;
+
+												case DOUBLEWORD:
+													strcpy ((char *) code_temp, "pulldw ");
+													break;
+
+												case QUADWORD:
+													strcpy ((char *) code_temp, "pullqw ");
+													break;
+											}
+										}
+
+										sprintf ((char *) str, "%i", target);
+										strcat ((char *) code_temp, (const char *) str);
+										strcat ((char *) code_temp, ", ");
+										sprintf ((char *) str, "%i", reg);
+										strcat ((char *) code_temp, (const char *) str);
+										strcat ((char *) code_temp, ", 0\n");
+
+										code_line++;
+										if (code_line >= line_len)
+										{
+											printf ("error: line %lli: code list full!\n", linenum);
+											return (1);
+										}
+
+										strcpy ((char *) code[code_line], (const char *) code_temp);
+
+										reg = get_regi (ast[level].expr[j][e]);
+										if (reg != -1)
+										{
+											// set old value of reg as empty
+											set_regi (reg, (U1 *) "");
+										}
+
+										set_regi (target, ast[level].expr[j][e]);
+									}
+
+									if (getvartype (ast[level].expr[j][e]) == DOUBLE)
+                                    {
+										target = get_regd (ast[level].expr[j][e]);
+										if (target == -1)
+										{
+											// variable is not in register, load it
+
+											reg2 = get_free_regd ();
+											set_regd (reg2, ast[level].expr[j][e]);
+											target = reg2;
+										}
+
+										strcpy ((char *) code_temp, "stpopd ");
+										sprintf ((char *) str, "%i", target);
+										strcat ((char *) code_temp, (const char *) str);
+										strcat ((char *) code_temp, "\n");
+
+										code_line++;
+										if (code_line >= line_len)
+										{
+											printf ("error: line %lli: code list full!\n", linenum);
+											return (1);
+										}
+
+										strcpy ((char *) code[code_line], (const char *) code_temp);
+
+										strcpy ((char *) code_temp, "load ");
+										strcat ((char *) code_temp, (const char *) ast[level].expr[j][e]);
+										strcat ((char *) code_temp, ", 0, ");
+
+										reg = get_free_regd ();
+
+										sprintf ((char *) str, "%i", reg);
+										strcat ((char *) code_temp, (const char *) str);
+										strcat ((char *) code_temp, "\n");
+
+										code_line++;
+							            if (code_line >= line_len)
+										{
+											printf ("error: line %lli: code list full!\n", linenum);
+											return (1);
+										}
+
+										strcpy ((char *) code[code_line], (const char *) code_temp);
+
+										strcpy ((char *) code_temp, "pulld ");
+										sprintf ((char *) str, "%i", target);
+										strcat ((char *) code_temp, (const char *) str);
+										strcat ((char *) code_temp, ", ");
+										sprintf ((char *) str, "%i", reg);
+										strcat ((char *) code_temp, (const char *) str);
+										strcat ((char *) code_temp, ", 0\n");
+
+										code_line++;
+										if (code_line >= line_len)
+										{
+											printf ("error: line %lli: code list full!\n", linenum);
+											return (1);
+										}
+
+										strcpy ((char *) code[code_line], (const char *) code_temp);
+
+										reg = get_regd (ast[level].expr[j][e]);
+										if (reg != -1)
+										{
+											// set old value of reg as empty
+											set_regd (reg, (U1 *) "");
+										}
+
+										set_regd (target, ast[level].expr[j][e]);
+									}
+								}
+
+								continue;
+							}
+
 								if (ok == 0)
 								{
 									printf ("error: line %lli: unknown operator: '%s'\n", linenum, ast[level].expr[j][last_arg]);
