@@ -648,7 +648,7 @@ S2 check_rpn_expression (U1 *postfix)
 	U1 found_var = 0;
 	S2 ret = 0;
 
-	len = strlen_safe (postfix, MAXLINELEN);
+	len = strlen_safe ((const char *) postfix, MAXLINELEN);
 	for (i = 0; i < len; i++)
 	{
 		ch = postfix[i];
