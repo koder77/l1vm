@@ -2753,7 +2753,7 @@ void free_modules (void)
 
 void show_info (void)
 {
-	printf ("l1vm <program> [-C cpu_cores] [-S stacksize] [-q] <-args> <cmd args>\n");
+	printf ("l1vm <program> [-C cpu_cores] [-S stacksize] [-q] [-p run priority (-20 - 19)] <-args> <cmd args>\n");
 	printf ("-C cores : set maximum of threads that can be run\n");
 	printf ("-S stacksize : set the stack size\n");
 	printf ("-q : quiet run, don't show welcome messages\n\n");
@@ -2880,6 +2880,10 @@ int main (int ac, char *av[])
 
 	S8 new_cpu ALIGN;
 
+	// process priority on Linux
+    S4 run_priority = 0;        // -20 = highest priority, 19 = lowest priority
+
+
 	// printf ("DEBUG: ac: %i\n", ac);
 
     if (ac > 1)
@@ -2964,6 +2968,17 @@ int main (int ac, char *av[])
 								cleanup ();
 								exit (1);
 							}
+
+							if (av[i][0] == '-' && av[i][1] == 'p')
+							{
+								// set VM run priority
+								run_priority = atoi (av[i + 1]);
+								if (run_priority < -20 || run_priority > 19)
+								{
+									printf ("Run priority out of legal range! Set to default 0!\n");
+									run_priority = 0;
+								}
+							}
 						}
             			if (arglen > 2)
             			{
@@ -3031,6 +3046,9 @@ int main (int ac, char *av[])
 		cleanup ();
 		exit (1);
 	}
+
+	// set run priority
+	nice (run_priority);
 
 	threaddata = (struct threaddata *) calloc (max_cpu, sizeof (struct threaddata));
 	if (threaddata == NULL)

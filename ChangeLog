@@ -2,6 +2,11 @@ L1VM (1.7.0)
 	NEW: compiler: "stpush" and "stpop" for use with multiple variables.
 	See example "prog/stack-new.l1com"
 
+	NEW: VM: run process priority flag on Linux:
+	$ l1vm fractalix-3.2 -p 19
+
+	The ranges go from -20 high priority to 19 lowest priority.
+
 -- Stefan Pietzonke <jay-t@gmx.net> Thu 21 Jul 2022 19:27 +0200
 
 L1VM - (1.6.0)
