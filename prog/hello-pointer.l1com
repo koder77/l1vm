@@ -1,6 +1,7 @@
 // Brackets - Hello world!
 //
 #include <intr.l1h>
+#include <vars.l1h>
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 one 1)
@@ -11,7 +12,6 @@
 	(set string s addr_str "The address of string hello is: ")
 	(set int64 1 Pointeraddr 0)
 	(set int64 5 array 23 42 10 20 8)
-	(set const-int64 1 offset 8)
 	(set int64 1 Parray 0)
 	(set int64 1 i 0)
 	(set const-int64 1 array_max 5)
@@ -38,7 +38,7 @@
 		(Parray [ array_ind ] num =)
 		print_i (num)
 		print_n
-		((array_ind offset +) array_ind =)
+		((array_ind int64_size +) array_ind =)
 		((i one +) i =)
 	(next)
 	print_n
@@ -54,7 +54,7 @@
 		(Parray [ array_ind ] num =)
 		print_i (num)
 		print_n
-		((array_ind offset +) array_ind =)
+		((array_ind int64_size +) array_ind =)
 	((i one +) i =)
 	(next)
 	exit (zero)
