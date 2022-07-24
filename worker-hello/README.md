@@ -22,7 +22,7 @@ store data :worker01 'hello-worker'
 Then open a new shell and type in:
 
 ```
-$ lvm run-worker -args 127.0.0.1 2000 worker01
+$ l1vm run-worker -args 127.0.0.1 2000 worker01
 ```
 
 This should run the program and download and run the "hello-worker" data base client program
