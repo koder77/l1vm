@@ -251,7 +251,7 @@ Use: install-debian.sh or install-jit-debian.sh
 <h3>Fedora Linux</h3>
 Use: install-zerobuild-fedora.sh or install-jit-zerobuild-fedora.sh
 
-<h3>Windows 10 WSL</h3>
+<h3>Windows 10, 11 WSL</h3>
 You need to edit: "include/settings.h":
 
 ```
