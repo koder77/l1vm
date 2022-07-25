@@ -1156,7 +1156,7 @@ S2 parse_line (U1 *line)
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "=") == 0)
 								{
 									// do variable assign
-#
+
 									target_var_type = getvartype_real (ast[level].expr[j][last_arg - 1]);
 
 									if (expression_var_type_max > target_var_type)
