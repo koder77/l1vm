@@ -2756,7 +2756,8 @@ void show_info (void)
 	printf ("l1vm <program> [-C cpu_cores] [-S stacksize] [-q] [-p run priority (-20 - 19)] <-args> <cmd args>\n");
 	printf ("-C cores : set maximum of threads that can be run\n");
 	printf ("-S stacksize : set the stack size\n");
-	printf ("-q : quiet run, don't show welcome messages\n\n");
+	printf ("-q : quiet run, don't show welcome messages\n");
+	printf ("-p : set run priority, -20 = highest, 19 = lowest priority\n\n");
 	printf ("program arguments for the program must be set by '-args':\n");
 	printf ("l1vm programname -args foo bar\n");
 	printf ("%s", VM_VERSION_STR);
