@@ -5,21 +5,25 @@ if [ $# -eq 0 ]
 	exit 1
 fi
 
+# get program name and first char of program name
+progname="$1"
+progfchar=${progname::1}
+
 # get program obj file and signature
-curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$1.l1obj.bz2
-curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$1.l1obj.gpg
+curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$progfchar/$progname/$progname.l1obj.bz2
+curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$progfchar/$progname/$progname.l1obj.gpg
 
 # get program source code if available
-curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$1.l1com.bz2
-curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$1.l1com.gpg
+curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$progfchar/$progname/$progname.l1com.bz2
+curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$progfchar/$progname/$progname.l1com.gpg
 
 # get readme if available
-curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$1.readme.txt.bz2
-curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$1.readme.txt.gpg
+curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$progfchar/$progname/$progname.readme.txt.bz2
+curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$progfchar/$progname/$progname.readme.txt.gpg
 
 #get data if available
-curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$1.data.tar.bz2
-curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$1.data.tar.gpg
+curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$progfchar/$progname/$progname.data.tar.bz2
+curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$progfchar/$progname/$progname.data.tar.gpg
 
 if [ -f $1.l1obj.bz2 ]; then
 	if ! gpg --verify $1.l1obj.gpg $1.l1obj.bz2; then
