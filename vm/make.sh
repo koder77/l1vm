@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # $CCPP -Wall jit.cpp -c -I/usr/local/include -O3 -fomit-frame-pointer
 #clang -Wall main.c load-object.c jit.o ../lib-func/string.c -o l1vm -lm -ldl -lpthread -lasmjit -lstdc++ -lSDL -lSDL_gfx -lSDL_image -lSDL_ttf -Os -fomit-frame-pointer -g -Wl,--export-dynamic
 
