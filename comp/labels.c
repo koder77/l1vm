@@ -115,3 +115,30 @@ S2 check_labels (void)
 	}
 	return (ret);
 }
+
+S2 search_label (U1 *search_label)
+{
+	// returns 1 if label already defined
+	S8 i ALIGN;
+	U1 search_str[MAXSTRLEN];
+
+	if (search_label[0] != ':')
+	{
+		strcpy ((char *) search_str, ":");
+		strcat ((char *) search_str, (char *) search_label);
+	}
+	else
+	{
+		strcpy ((char *) search_str, (char *) search_label);
+	}
+
+	// check if already set:
+	for (i = 0; i <= label_ind; i++)
+	{
+		if (strcmp ((const char *) label[i].name, (const char *) search_str) == 0)
+		{
+			return (1);
+		}
+	}
+	return (0);
+}

@@ -49,6 +49,7 @@
  void init_call_labels (void);
  S2 set_call_label (U1 *label);
  S2 check_labels (void);
+ S2 search_label (U1 *label);
 
  // string functions ===============================================================================
  size_t strlen_safe (const char * str, int maxlen);

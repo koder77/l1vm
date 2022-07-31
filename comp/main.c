@@ -2300,6 +2300,12 @@ S2 parse_line (U1 *line)
 								{
 									// operator is label name
 
+									if (search_label (ast[level].expr[j][last_arg]) == 1)
+									{
+										printf ("error: line %lli: label: %s already defined!\n", linenum, ast[level].expr[j][last_arg]);
+										return (1);
+									}
+
 									strcpy ((char *) code_temp, (const char *) ast[level].expr[j][last_arg]);
 
 									code_line++;
@@ -2343,6 +2349,12 @@ S2 parse_line (U1 *line)
 										// not main function, initialize the registers
 
 										init_registers ();
+									}
+
+									if (search_label (ast[level].expr[j][last_arg - 1]) == 1)
+									{
+										printf ("error: line %lli: label: %s already defined!\n", linenum, ast[level].expr[j][last_arg - 1]);
+										return (1);
 									}
 
 									strcpy ((char *) code_temp, ":");
