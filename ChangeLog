@@ -4,7 +4,9 @@ L1VM (1.7.1)
 
 	FIXES: compiler now gives error if label is defined twice. And if function name already used.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 31 Jul 2022 23:58 +0200
+	Compiler: update: now "stpop" opcode to loadreg code part set.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 01 Aug 2022 10:29 +0200
 
 L1VM (1.7.0)
 	NEW: compiler: "stpush" and "stpop" for use with multiple variables.

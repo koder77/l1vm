@@ -1115,6 +1115,10 @@ S2 parse_line (U1 *line)
 							    {
 									ok = 1;
 								}
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "stpop") == 0)
+							    {
+									ok = 1;
+								}
 							}
 							if (call_set == 1 && ok == 0)
 							{
