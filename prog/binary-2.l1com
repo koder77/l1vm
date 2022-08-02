@@ -10,7 +10,7 @@
 	(set int64 1 i64hex &FFFFFFFFFFFFFFFF)
 	// binary numbers
 	(set byte 1 bbin B$10000001)
-	(set int16 1 i16bin D$1000000000000001)
+	(set int16 1 i16bin W$1000000000000001)
 	// normal number
 	(set int64 1 i64norm 1234567890123456)
 	print_i (bhex)
