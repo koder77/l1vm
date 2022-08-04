@@ -2,25 +2,37 @@
 // run without sieve of Eratosthenes
 // using brute force trial division with modulo
 //
+#include <intr.l1h>
+#include <math-const.l1h>
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 one 1)
 	(set int64 1 two 2)
 	(set int64 1 f 0)
 	(set int64 1 i 1)
-	(set int64 1 max_num 100)
+	(set int64 1 max_num 1000000)
 	(set int64 1 num 2)
 	(set int64 1 mod 0)
 	(set int64 1 isprime 1)
+	(set int64 1 sqrmax 0)
+	(set double 1 sqrdouble 0.0)
+	(zero :math_init call)
 	// print first prime 2
-	(4 two 0 0 intr0)
-	(7 0 0 0 intr0)
+	print_i (two)
+    print_n
 	(for-loop)
 	(((num max_num <) f =) f for)
 		(one isprime =)
 		(two i =)
+        // calculate square of num
+        (num :math_int2double !)
+        (sqrdouble stpop)
+        (sqrdouble :math_sqrtdouble !)
+        (sqrdouble stpop)
+	    (sqrdouble :math_double2int !)
+	    (sqrmax stpop)
 		(for-loop)
-		(((i num <) f =) f for)
+		(((i sqrmax <=) f =) f for)
 			((num i %) mod =)
 			(((mod zero ==) f =) f if)
 				(zero isprime =)
@@ -30,12 +42,13 @@
 		(next)
 		(:next_jump)
 		(((isprime one ==) f =) f if)
-			(4 num 0 0 intr0)
-			(7 0 0 0 intr0)
+			print_i (num)
+			print_n
 		(endif)
 		(reset-reg)
 		((num one +) num =)
 	(next)
-	(7 0 0 0 intr0)
-	(255 zero 0 0 intr0)
+	print_n
+	exit (zero)
 (funcend)
+#include <math-lib.l1h>
