@@ -1,0 +1,6 @@
+>> misc-macros.l1h
+>> some useful macros
+>> variable pull macros, add zero to store register into variable
+>> you have to set variables zero and zerod!
+#func pull_int_var (VAR) :((VAR zero +) VAR =)
+#func pull_double_var (VAR) :((VAR zerod +) VAR =)
