@@ -7,7 +7,9 @@ L1VM (1.7.1)
 	Compiler: update: now "stpop" opcode to loadreg code part set.
 	Added script to build and install latest Clang from GitHub.
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon 01 Aug 2022 15:35 +0200
+	NEW: prog/bool.l1com include/bool.l1h : define variable true/false.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 05 Aug 2022 18:15 +0200
 
 L1VM (1.7.0)
 	NEW: compiler: "stpush" and "stpop" for use with multiple variables.
