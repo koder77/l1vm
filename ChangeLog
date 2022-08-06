@@ -9,7 +9,14 @@ L1VM (1.7.1)
 
 	NEW: prog/bool.l1com include/bool.l1h : define variable true/false.
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 05 Aug 2022 18:15 +0200
+	Now boolean variable assign is checked by the "bool" command:
+
+	(bool true Bool =)
+
+	Only "true" or "false" are allowed in this expression!
+	Here the variable "Bool" will be set to "true".
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 06 Aug 2022 18:39 +0200
 
 L1VM (1.7.0)
 	NEW: compiler: "stpush" and "stpop" for use with multiple variables.

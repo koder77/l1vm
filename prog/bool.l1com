@@ -1,4 +1,6 @@
 // bool.l1com
+// set boolean variable checks by using "bool" command
+// only true or false allowed!
 #include <intr.l1h>
 #include <bool.l1h>
 (main func)
@@ -13,9 +15,9 @@
 	(a c =)
 	// set Bool to true if number = 42
 	(((c a ==) f =) f if+)
-	    (true Bool =)
+	    (bool true Bool =)
 	(else)
-	    (false Bool =)
+	    (bool false Bool =)
 	(endif)
 	print_s (boolstr)
 	print_i (Bool)

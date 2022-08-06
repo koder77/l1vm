@@ -2063,15 +2063,46 @@ S2 parse_line (U1 *line)
 													// check if: (cast x y =) case:
 													if (last_arg >= 3)
 													{
-														if (strcmp ((const char *) ast[level].expr[j][last_arg - 3], "cast") == 0)
+														if (strcmp ((const char *) ast[level].expr[j][last_arg - 3], "cast") == 0 || (strcmp ((const char *) ast[level].expr[j][last_arg - 3], "bool") == 0))
 														{
-															printf ("\ncast: line %lli: cast to lower precision variable!\n", linenum);
-															printf ("> %s\n", line);
+															if (strcmp ((const char *) ast[level].expr[j][last_arg - 3], "cast") == 0)
+															{
+																printf ("\ncast: line %lli: cast to lower precision variable!\n", linenum);
+																printf ("> %s\n", line);
+															}
 														}
-														else 
+														else
 														{
 															printf ("\nsyntax error assign line: %lli\n", linenum);
 															return (1);
+														}
+
+														// check if bool assign
+														{
+															U1 bool_set = 0;    // no bool expression found
+
+															if (strcmp ((const char *) ast[level].expr[j][last_arg - 3], "bool") == 0)
+															{
+																// printf ("\nbool: line %lli: bool expression assign variable!\n", linenum);
+																// printf ("> %s\n", line);
+
+																if (strcmp ((const char * )ast[level].expr[j][last_arg - 2], "false") == 0)
+																{
+																	// false found
+																	bool_set = 1;
+																}
+																if (strcmp ((const char * )ast[level].expr[j][last_arg - 2], "true") == 0)
+																{
+																	// true found
+																	bool_set = 1;
+																}
+
+																if (bool_set == 0)
+																{
+																	printf ("\nbool: line %lli: error variable assign must be true or false!\n", linenum);
+																	return (1);
+																}
+															}
 														}
 													}
 													else 
