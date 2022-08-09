@@ -16,7 +16,17 @@ L1VM (1.7.1)
 	Only "true" or "false" are allowed in this expression!
 	Here the variable "Bool" will be set to "true".
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 06 Aug 2022 18:39 +0200
+	Compiler:
+	NEW: new "bool" variable type in "set" variable setting.
+	The bool variable name must begin with a uppercase "B"!
+
+	// boolean variable name must beginn with upercase B!
+	(set bool 1 Bool 1)
+
+	The parser checks if the boolean variable is used in a normal math expression and returns an error if so!
+	This also includes the RPN parser and the infix expression parser.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue 09 Aug 2022 18:00 +0200
 
 L1VM (1.7.0)
 	NEW: compiler: "stpush" and "stpop" for use with multiple variables.

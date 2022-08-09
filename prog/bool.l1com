@@ -10,7 +10,9 @@
 	(set int64 1 b 23)
 	(set int64 1 c 0)
 	(set int64 1 f 0)
-	(set byte 1 Bool 0)
+	// boolean variable name must beginn with upercase B!
+	(set bool 1 Bool 1)
+	(set byte 1 bvar 23)
 	(set string s boolstr "Bool = ")
 	(a c =)
 	// set Bool to true if number = 42

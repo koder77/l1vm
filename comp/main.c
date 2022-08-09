@@ -547,6 +547,8 @@ S2 parse_line (U1 *line)
 	U1 expression_var_type_max = UNKNOWN;
 	S2 expression_if_op = -1;						// set to 0 if math operation found. set to 1 if on if operator
 
+	U1 boolean_var = 0;
+
 	ret = get_ast (line, &parse_cont);
 	if (ret == 1)
 	{
@@ -646,6 +648,17 @@ S2 parse_line (U1 *line)
 						{
 							printf ("error: line %lli: data list full!\n", linenum);
 							return (1);
+						}
+
+						// boolean variable definition ===========================================
+						if (strcmp ((const char *) ast[level].expr[j][1], "bool") == 0)
+						{
+							data_info[data_ind].type = BYTE;
+							data_info[data_ind].type_size = sizeof (U1);
+							strcpy ((char *) data_info[data_ind].type_str, "B");
+							data_info[data_ind].constant = 0;
+							boolean_var = 1;    // set to one, for definition check later
+							ok = 1;
 						}
 
 						// normal variable definition ===========================================
@@ -767,6 +780,16 @@ S2 parse_line (U1 *line)
 						// name
 						strcpy ((char *) data_info[data_ind].name, (const char *) ast[level].expr[j][3]);
 
+						// do check if bool variable name begins with uppercase B
+						if (boolean_var == 1)
+						{
+							if (data_info[data_ind].name[0] != 'B')
+                            {
+								printf ("error: line %lli: boolean variable name must begin with 'B' !\n", linenum);
+								return (1);
+							}
+						}
+
 						// size
 						if (checkdigit (ast[level].expr[j][2]) != 1)
 						{
@@ -828,6 +851,15 @@ S2 parse_line (U1 *line)
 												{
 													printf ("error: line %lli: byte value out of range!\n", linenum);
 													return (1);
+												}
+
+												if (boolean_var == 1)
+												{
+													if (value != 0 && value != 1)
+													{
+														printf ("error: line %lli: boolean value out of range! Must be 0 = false or 1 = true!\n", linenum);
+														return (1);
+													}
 												}
 												break;
 
@@ -1160,6 +1192,13 @@ S2 parse_line (U1 *line)
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "=") == 0)
 								{
 									// do variable assign
+
+									// check if target is boolean variable
+									if (ast[level].expr[j][last_arg - 1][0] == 'B' && strcmp ((const char *) ast[level].expr[j][last_arg - 3], "bool") != 0)
+									{
+										printf ("error: line %lli: boolean variable must be set by bool command!\n", linenum);
+										return (1);
+									}
 
 									target_var_type = getvartype_real (ast[level].expr[j][last_arg - 1]);
 

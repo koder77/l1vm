@@ -155,7 +155,7 @@ repository:
           (?xi)
              # (?<=(\\s|\\()) # preceded by space or (
               ( const-byte|const-string|const-int16|const-int32|const-int64|const-double|
-                byte|string|int16|int32|int64|double|
+                byte|string|int16|int32|int64|double|bool|
                 funcend|func|ASM_END|ASM|optimize-if-off|optimize-if|no-var-pull-off|no-var-pull-on|reset-reg|pointer|
                 set|stpushb|stpopb|stpushi|stpopi|stpushd|stpopd|stpush|stpop
                 intr0|intr1|

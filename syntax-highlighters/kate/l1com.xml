@@ -130,6 +130,7 @@
         <item>int32</item>
         <item>int64</item>
         <item>double</item>
+        <item>bool</item>
     </list>
 
     <contexts>

@@ -716,6 +716,13 @@ S2 parse_rpolish (U1 *postfix)
 		return (1);
 	}
 
+	// check if boolean variable
+	if (target_var[0] == 'B')
+	{
+		printf ("error: line %lli: variable '%s' is boolean! Use bool command to set!\n", linenum, target_var);
+		return (1);
+	}
+
 	target_var_type = getvartype_real (target_var);
 
 	i = math_exp_begin;
