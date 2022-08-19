@@ -33,7 +33,7 @@
 	(set string s gad_random_str "SDL random")
 	(set string s gad_sdl_four_str "   SDL 4  ")
 	(set string s gad_quit_str "   Quit   ")
-	(set string s fontname "fonts/FreeMono.ttf")
+	(set string s fontname "fonts/free/FreeMono.ttf")
 	// process strings
 	(set string s run_fract_str "l1vm fractalix-3.2 &")
 	(set string s run_sdl_demo_str "l1vm sdl-lib &")

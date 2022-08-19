@@ -26,7 +26,9 @@ L1VM (1.7.1)
 	The parser checks if the boolean variable is used in a normal math expression and returns an error if so!
 	This also includes the RPN parser and the infix expression parser.
 
--- Stefan Pietzonke <jay-t@gmx.net> Tue 09 Aug 2022 18:00 +0200
+	NEW: more mono fonts added. Moved standard free mono font into /free.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 19 Aug 2022 11:58 +0200
 
 L1VM (1.7.0)
 	NEW: compiler: "stpush" and "stpop" for use with multiple variables.

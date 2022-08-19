@@ -41,7 +41,7 @@
 	(set string 256 gadget_clicks_str "")
 	(set int64 1 gadget_clicks_len 255)
 	(set string 256 gadget_clicks_show_str "")
-	(set string s fontname "fonts/FreeMono.ttf")
+	(set string s fontname "fonts/free/FreeMono.ttf")
 	(set int64 1 fontsize 20)
 	(set byte 1 black 0)
 	// open screen
