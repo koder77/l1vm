@@ -6212,6 +6212,14 @@ int main (int ac, char *av[])
 		exit (1);
 	}
 
+	// check for main function label
+	if (search_label ((U1 *) ":main") == 0)
+	{
+		printf ("\033[31mERROR! no main function defined!\n");
+		cleanup ();
+		exit (1);
+	}
+
 	if (write_asm ((U1 *) av[1]) == 1)
 	{
 		printf ("\033[31mERRORS! can't write assembly file!\n");

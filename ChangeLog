@@ -1,3 +1,8 @@
+L1VM (1.7.2)
+	NEW: compiler now exits with error if no main function is defined.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 20 Aug 2022 12:23 +0200
+
 L1VM (1.7.1)
 	NEW: VM: main.c show -p flag infos.
 	NEW: scripts in distribution now use "bash" as the shell, this fixes some errors!
