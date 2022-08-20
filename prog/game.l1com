@@ -1,5 +1,7 @@
 // game.l1com
 // Maybe this will become some simple game in Brackets!
+// Now you can move a circle around in the window by a joystick.
+// That's all for the moment
 //
 #include <intr.l1h>
 (main func)
