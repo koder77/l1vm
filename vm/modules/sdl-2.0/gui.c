@@ -26,6 +26,7 @@
 #include <SDL2/SDL.h>
 // #include <SDL2/SDL_byteorder.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
+#include <SDL2/SDL_joystick.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
 
@@ -6725,18 +6726,29 @@ U1 *get_joystick_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	name_real_len = strlen_safe (SDL_JoystickNameForIndex (0), name_len);
-	if (name_real_len > name_len)
+	if (SDL_NumJoysticks () > 0)
 	{
-		printf ("get_joystick_info: ERROR name string overflow!\n");
-		return (NULL);
+		name_real_len = strlen_safe (SDL_JoystickNameForIndex (0), name_len);
+		if (name_real_len > name_len)
+		{
+			printf ("get_joystick_info: ERROR name string overflow!\n");
+			return (NULL);
+		}
+
+		// save joystick name in string variable
+		strcpy ((char *) &data[name_address], SDL_JoystickNameForIndex (0));
+
+		joystick_axis_max = SDL_JoystickNumAxes (joystick);
+		joystick_buttons_max = SDL_JoystickNumButtons (joystick);
 	}
+	else
+	{
+		// no joystick found set empty name and zero data
+		strcpy ((char *) &data[name_address], "");
 
-	// save joystick name in string variable
-	strcpy ((char *) &data[name_address], SDL_JoystickNameForIndex (0));
-
-	joystick_axis_max = SDL_JoystickNumAxes (joystick);
-	joystick_buttons_max = SDL_JoystickNumButtons (joystick);
+		joystick_axis_max = 0;
+		joystick_buttons_max = 0;
+	}
 
 	// return values
 	sp = stpushi (joystick_buttons_max, sp, sp_bottom);
