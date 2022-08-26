@@ -33,7 +33,11 @@ L1VM (1.7.1)
 
 	NEW: more mono fonts added. Moved standard free mono font into /free.
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 19 Aug 2022 11:58 +0200
+	NEW: now you just can do:
+	(true Bool =)
+	to set a boolean variable!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 26 Aug 2022 21:40 +0200
 
 L1VM (1.7.0)
 	NEW: compiler: "stpush" and "stpop" for use with multiple variables.

@@ -1194,10 +1194,27 @@ S2 parse_line (U1 *line)
 									// do variable assign
 
 									// check if target is boolean variable
-									if (ast[level].expr[j][last_arg - 1][0] == 'B' && strcmp ((const char *) ast[level].expr[j][last_arg - 3], "bool") != 0)
+									if (ast[level].expr[j][last_arg - 1][0] == 'B')
 									{
-										printf ("error: line %lli: boolean variable must be set by bool command!\n", linenum);
-										return (1);
+										{
+											U1 found_bool = 0;
+
+											if (strcmp ((const char *) ast[level].expr[j][last_arg - 2], "true") == 0)
+											{
+												found_bool = 1;
+											}
+
+											if (strcmp ((const char *) ast[level].expr[j][last_arg - 2], "false") == 0)
+											{
+												found_bool = 1;
+											}
+
+											if (found_bool == 0)
+											{
+												printf ("error: line %lli: boolean variable only can be true or false!\n", linenum);
+												return (1);
+											}
+										}
 									}
 
 									target_var_type = getvartype_real (ast[level].expr[j][last_arg - 1]);

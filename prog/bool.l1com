@@ -17,9 +17,9 @@
 	(a c =)
 	// set Bool to true if number = 42
 	(((c a ==) f =) f if+)
-	    (bool true Bool =)
+	    (true Bool =)
 	(else)
-	    (bool false Bool =)
+	    (false Bool =)
 	(endif)
 	print_s (boolstr)
 	print_i (Bool)
