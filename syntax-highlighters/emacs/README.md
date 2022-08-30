@@ -4,6 +4,12 @@ Just copy the file "l1vm-mode.el" into:
 
 ~/.emacs.d/core/autoload/
 
+Emacs 27.x
+==========
+Copy the "l1vm-mode.el" into:
+
+~/.config/emacs/modules/tools/lsp/autoload/
+
 Now run:
 
 $ doom sync
