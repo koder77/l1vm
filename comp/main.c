@@ -71,6 +71,9 @@ U1 warnings_as_errors = 0;
 // don't use pull opcodes to optimize chained math expressions in "parse-rpolish.c" math expressions
 U1 no_var_pull = 0;
 
+// Set to 1 at function start. It calls reset_registers () on: if, else, endif, switch ?, for, next, do, while
+U1 nested_code = 1;
+
 void init_ast (void)
 {
 	S4 i, j;
@@ -1171,6 +1174,13 @@ S2 parse_line (U1 *line)
 								init_registers ();
 								continue;
 							}
+
+							// set nested_code_off
+							if (strcmp ((const char *) ast[level].expr[j][last_arg], "nested-code-off") == 0)
+							{
+								nested_code = 0;
+							}
+
 							// ============================================
 
 							ok = 0;
@@ -2427,6 +2437,8 @@ S2 parse_line (U1 *line)
 								}
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "func") == 0)
 								{
+									nested_code = 1; // beginn of function switch on
+
 									if (last_arg < 1)
 									{
 										printf ("error: line %lli: no function name set!\n", linenum);
@@ -2904,6 +2916,11 @@ S2 parse_line (U1 *line)
 
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "if") == 0 && last_arg > 0)
 								{
+                                    if (nested_code == 1)
+									{
+										init_registers ();
+									}
+
 									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
 									{
 										return (1);
@@ -3076,6 +3093,11 @@ S2 parse_line (U1 *line)
 
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "if+") == 0 && last_arg > 0)
 								{
+									if (nested_code == 1)
+									{
+										init_registers ();
+									}
+
 									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
 									{
 										return (1);
@@ -3247,6 +3269,11 @@ S2 parse_line (U1 *line)
 
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "else") == 0)
 								{
+									if (nested_code == 1)
+									{
+										init_registers ();
+									}
+
 									if_pos = get_act_ifplus ();
 									if (if_pos == -1)
 									{
@@ -3325,6 +3352,11 @@ S2 parse_line (U1 *line)
 
 									set_endif_finished (if_pos);
 
+								    if (nested_code == 1)
+									{
+										init_registers ();
+									}
+
 									continue;
 								}
 
@@ -3344,6 +3376,11 @@ S2 parse_line (U1 *line)
 
 								if ((strcmp ((const char *) ast[level].expr[j][last_arg], "switch-end") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], "switchend") == 0) && last_arg == 0)
 								{
+									if (nested_code == 1)
+									{
+										init_registers ();
+									}
+
 									switch_pos = get_act_switch ();
 									if (switch_pos == -1)
 									{
@@ -3379,6 +3416,11 @@ S2 parse_line (U1 *line)
 
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "?") == 0 && last_arg == 2)
 								{
+									if (nested_code == 1)
+									{
+										init_registers ();
+									}
+
 									// it should be switch case statement: "x y ?"
 									// check if variables are defined
 									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
@@ -3803,6 +3845,11 @@ S2 parse_line (U1 *line)
 								// do/ while loop ===============================================================
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "do") == 0)
 								{
+									if (nested_code == 1)
+									{
+										init_registers ();
+									}
+
 									while_pos = get_while_pos ();
 									if (while_pos == -1)
 									{
@@ -3900,6 +3947,11 @@ S2 parse_line (U1 *line)
 										printf ("error: line %lli: while variable must be int64 type!\n", linenum);
 										return (1);
 									}
+
+									if (nested_code == 1)
+									{
+										init_registers ();
+									}
 								}
 
 
@@ -3932,6 +3984,11 @@ S2 parse_line (U1 *line)
 
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "for") == 0 && last_arg > 0)
 								{
+									if (nested_code == 1)
+									{
+										init_registers ();
+									}
+
 									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
 									{
 										return (1);
@@ -4075,6 +4132,11 @@ S2 parse_line (U1 *line)
 									strcat ((char *) code[code_line], "\n");
 
 									set_for_end (for_pos);
+
+									if (nested_code == 1)
+									{
+										init_registers ();
+									}
 									continue;
 								}
 

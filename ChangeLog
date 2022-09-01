@@ -1,3 +1,12 @@
+L1VM (1.8.0)
+	NEW: now nested code flag is set to 1 on function start.
+	init_registers () is then called at: if, else, endif, for, next, do, while, switch ? statements.
+	This removes the need for "reset-reg" call in the code.
+
+	Syntax highlighters updated: "nested-code-off" added.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 1 Sep 2022 15:57 +0200
+
 L1VM (1.7.2)
 	NEW: compiler now exits with error if no main function is defined.
 

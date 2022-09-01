@@ -15,6 +15,7 @@
     <item>no-var-pull-off</item>
     <item>no-var-pull-on</item>
 	  <item>reset-reg</item>
+    <item>nested-code-off</item>
     </list>
     <list name="keywords">
     <item>funcend</item>
