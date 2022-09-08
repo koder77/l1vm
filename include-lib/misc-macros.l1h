@@ -1,7 +1,6 @@
 >> misc-macros.l1h
 >> some useful macros
 >> variable pull macros, add zero to store register into variable
->> you have to set variables zero and zerod!
 >> You must include "zero.l1h" first!
 #func pull_byte_var (VAR) :((VAR zero_byte +) VAR =)
 #func pull_int16_var (VAR) :((VAR zero_int16 +) VAR =)
