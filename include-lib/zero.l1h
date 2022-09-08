@@ -1,0 +1,5 @@
+>> zero.l1h
+(set byte 1 zero_byte 0)
+(set int16 1 zero_int16 0)
+(set int32 1 zero_int32 0)
+(set double 1 zero_double 0.0)
