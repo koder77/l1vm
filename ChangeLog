@@ -1,3 +1,8 @@
+L1VM (1.9.0)
+	NEW: module file-tools added: file_copy, directory_create, remove_all, file_rename, file_size_bytes, file_exists
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 9 Sep 2022 23:44 +0200
+
 L1VM (1.8.0)
 	NEW: now nested code flag is set to 1 on function start.
 	init_registers () is then called at: if, else, endif, for, next, do, while, switch ? statements.
