@@ -1,4 +1,5 @@
-// file library//
+// file-tools library
+//
 //
 (file_tools_init func)
     (set string s modulestr@file_tools "libl1vmfiletools")
