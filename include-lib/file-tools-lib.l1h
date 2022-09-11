@@ -9,6 +9,8 @@
     (set string s file_renamestr@file_tools "file_rename")
     (set string s file_sizestr@file_tools "file_size_bytes")
     (set string s file_existsstr@file_tools "file_exists")
+    (set string s file_dir_entriesstr@file_tools "directory_entries")
+    (set string s file_dir_filesstr@file_tools "directory_files")
 
     (set int64 1 copy@file_tools 0)
     (set int64 1 dir_create@file_tools 1)
@@ -16,6 +18,8 @@
     (set int64 1 file_ren@file_tools 3)
     (set int64 1 file_size@file_tools 4)
     (set int64 1 file_exists@file_tools 5)
+    (set int64 1 file_dir_entries@file_tools 6)
+    (set int64 1 file_dir_files@file_tools 7)
 
     (set int64 1 mod@file_tools 0)
     // get arguments from stack
@@ -29,6 +33,8 @@
     (2 mod@file_tools file_ren@file_tools file_renamestr@file_toolsaddr intr0)
     (2 mod@file_tools file_size@file_tools file_sizestr@file_toolsaddr intr0)
     (2 mod@file_tools file_exists@file_tools file_existsstr@file_toolsaddr intr0)
+    (2 mod@file_tools file_dir_entries@file_tools file_dir_entriesstr@file_toolsaddr intr0)
+    (2 mod@file_tools file_dir_files@file_tools file_dir_filesstr@file_toolsaddr intr0)
 (funcend)
 
 // wrapper functions
@@ -54,4 +60,12 @@
 
 (file_tools_exists func)
     (3 mod@file_tools file_exists@file_tools 0 intr0)
+(funcend)
+
+(file_tools_dir_entries func)
+    (3 mod@file_tools file_dir_entries@file_tools 0 intr0)
+(funcend)
+
+(file_tools_dir_files func)
+    (3 mod@file_tools file_dir_files@file_tools 0 intr0)
 (funcend)

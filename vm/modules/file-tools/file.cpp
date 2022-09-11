@@ -36,7 +36,6 @@ extern "C" S2 memory_bounds (S8 start, S8 offset_access);
 
 
 extern "C" U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
-
 extern "C" size_t strlen_safe (const char * str, int maxlen);
 
 extern "C" U1 *file_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -382,7 +381,6 @@ extern "C" U1 *file_rename (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 extern "C" U1 *file_size_bytes (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     S8 filenameaddr ALIGN;
-    S8 ret ALIGN = 0;
 	S8 file_name_len ALIGN;
     S8 file_size_bytes ALIGN;
 
@@ -444,7 +442,6 @@ extern "C" U1 *file_exists (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 filenameaddr ALIGN;
     S8 ret ALIGN = 0;
 	S8 file_name_len ALIGN;
-    S8 file_size_bytes ALIGN;
 
     bool file_exists;
 
@@ -507,5 +504,195 @@ extern "C" U1 *file_exists (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	printf ("file_size_exists: ERROR: stack corrupt!\n");
     	return (NULL);
     }
+    return (sp);
+}
+
+extern "C" U1 *directory_entries (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S8 diraddr ALIGN;
+	S8 dir_name_len ALIGN;
+    S8 dir_entries ALIGN = 0;     // number of files in directory
+
+    U1 dir_namestr[256];
+
+    std::string dirstr;
+
+    sp = stpopi ((U1 *) &diraddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: directory_entries: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    dir_name_len = strlen_safe ((char *) &data[diraddr], 255);
+	if (dir_name_len > 255)
+	{
+		printf ("ERROR: directory %s' too long!\n", (char *) &data[diraddr]);
+		return (NULL);
+	}
+
+   // get dir full name
+    #if SANDBOX
+	if (get_sandbox_filename (&data[diraddr], dir_namestr, 255) != 0)
+	{
+		printf ("ERROR: directory_entries: illegal name: %s\n", &data[diraddr]);
+		return (NULL);
+	}
+	#else
+	if (strlen_safe (&data[diraddr], 255) < 255)
+	{
+    	strcpy ((char *) dir_namestr, (char *) &data[sourceaddr]);
+	}
+	else
+	{
+		printf ("ERROR: directory_entries: name too long!\n", &data[diraddr]);
+		return (NULL);
+	}
+    #endif
+
+    dirstr.assign ((const char *) dir_namestr);
+
+    for (const directory_entry& entry: directory_iterator{dirstr})
+    {
+        dir_entries++;
+    }
+
+    // push return value file entries
+    sp = stpushi (dir_entries, sp, sp_bottom);
+    if (sp == NULL)
+    {
+    	// error
+    	printf ("directory_entries: ERROR: stack corrupt!\n");
+    	return (NULL);
+    }
+    return (sp);
+}
+
+extern "C" U1 *directory_files (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S8 diraddr ALIGN;
+	S8 dir_name_len ALIGN;
+    S8 dir_entries ALIGN = 0;     // number of files in directory
+
+    U1 dir_namestr[256];
+
+    S8 strdestaddr ALIGN;
+	S8 index ALIGN = 0;
+	S8 array_size ALIGN;
+	S8 string_len ALIGN;
+	S8 index_real ALIGN;
+	S8 string_len_src ALIGN;
+
+    std::string dirstr;
+    std::string direlement;
+
+	sp = stpopi ((U1 *) &array_size, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_string_to_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &string_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_string_to_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_string_to_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &diraddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("ERROR: directory_files: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    dir_name_len = strlen_safe ((char *) &data[diraddr], 255);
+	if (dir_name_len > 255)
+	{
+		printf ("ERROR: directory %s' too long!\n", (char *) &data[diraddr]);
+		return (NULL);
+	}
+
+    // get dir full name
+    #if SANDBOX
+	if (get_sandbox_filename (&data[diraddr], dir_namestr, 255) != 0)
+	{
+		printf ("ERROR: directory_files: illegal name: %s\n", &data[diraddr]);
+		return (NULL);
+	}
+	#else
+	if (strlen_safe (&data[diraddr], 255) < 255)
+	{
+    	strcpy ((char *) dir_namestr, (char *) &data[sourceaddr]);
+	}
+	else
+	{
+		printf ("ERROR: directory_files: name too long!\n", &data[diraddr]);
+		return (NULL);
+	}
+    #endif
+
+    dirstr.assign ((const char *) dir_namestr);
+
+    for (const directory_entry& entry: directory_iterator{dirstr})
+    {
+        direlement = entry.path ();
+
+        // convert string to C string
+        U1 *dir_namestr = (U1 *) direlement.c_str ();
+
+        string_len_src = strlen_safe ((const char *) dir_namestr, MAXLINELEN);
+        if (string_len_src > string_len)
+        {
+            // ERROR:
+            printf ("directory_files: ERROR: source string overflow!\n");
+            return (NULL);
+        }
+
+        index_real = index * string_len;
+        if (index_real < 0 || index_real > array_size)
+        {
+            // ERROR:
+            printf ("directory_files: ERROR: destination array overflow!\n");
+            return (NULL);
+        }
+
+        #if BOUNDSCHECK
+     	if (memory_bounds (strdestaddr + index_real, string_len_src) != 0)
+        {
+            printf ("directiory_files: ERROR: dest string overflow!\n");
+            return (NULL);
+        }
+        #endif
+
+        strcpy ((char *) &data[strdestaddr + index_real], (const char *) dir_namestr);
+
+        dir_entries++;
+        // increase target string index
+        index++;
+    }
+
+    // push return value file entries
+    sp = stpushi (dir_entries, sp, sp_bottom);
+    if (sp == NULL)
+    {
+    	// error
+    	printf ("directory_files: ERROR: stack corrupt!\n");
+    	return (NULL);
+    }
+
     return (sp);
 }
