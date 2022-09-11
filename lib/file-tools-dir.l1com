@@ -1,4 +1,4 @@
-// file-tools-dir
+// file-tools-dir.l1com
 // file library module
 // test program
 //
@@ -16,7 +16,7 @@
 
     (set int64 1 string_len 256)
     (set int64 1 filesarraylen 5120)
-    (set string 256 file_entrystr 256)
+    (set string 256 file_entrystr)
     (set string 5120 filesarraystr)
     (set int64 1 files_max 20)
     (set int64 1 f 0)
