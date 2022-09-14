@@ -11,3 +11,8 @@
 (set const-int64 1 int32_ptr 10)
 (set const-int64 1 int64_ptr 11)
 (set const-int64 1 double_ptr 12)
+// mem object types
+(set const-int64 1 mem_obj_empty 0)
+(set const-int64 1 mem_obj_int64 1)
+(set const-int64 1 mem_obj_double 2)
+(set const-int64 1 mem_obj_string 3)

@@ -794,4 +794,53 @@ extern "C" U1 *load_obj_mem_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		}
 		return (sp);
 }
-	
+
+extern "C" U1 *get_obj_mem_type (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 memind ALIGN;
+	S8 ind ALIGN;
+	S8 mem_type ALIGN = -1;
+
+	// get object array index to write the variables into
+	sp = stpopi ((U1 *) &memind, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_obj_mem_type: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (memind < 0 || memind >= memmax)
+	{
+		// error
+		printf ("get_obj_mem_type: ERROR: memind index out of range!\n");
+		return (NULL);
+	}
+
+	// get mem obj variable index start
+	sp = stpopi ((U1 *) &ind, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("get_obj_mem_type: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (ind < 0 || ind >= mem[memind].memsize)
+	{
+		// error
+		printf ("get_obj_mem_type: ERROR: ind index out of range!\n");
+		return (NULL);
+	}
+
+	mem_type = mem[memind].objptr[ind].type;
+
+	sp = stpushi (mem_type, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("load_string_obj_mem_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
