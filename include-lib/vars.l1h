@@ -5,3 +5,9 @@
 (set const-int64 1 int32_size 4)
 (set const-int64 1 int64_size 8)
 (set const-int64 1 double_size 8)
+// pointer check variable types
+(set const-int64 1 byte_ptr 8)
+(set const-int64 1 int16_ptr 9)
+(set const-int64 1 int32_ptr 10)
+(set const-int64 1 int64_ptr 11)
+(set const-int64 1 double_ptr 12)
