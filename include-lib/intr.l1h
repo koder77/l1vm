@@ -41,6 +41,7 @@
 >> variable range checks
 #func range_int (VAR, MIN, MAX) :(28 VAR MIN MAX intr0)
 #func range_double (VAR, MIN, MAX) :(29 VAR MIN MAX intr0)
+#func check_pointer (PVAR, TYPE) :(30 PVAR TYPE 0 intr0)
 >>
 >>	intr1
 >>

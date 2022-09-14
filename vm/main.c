@@ -2142,6 +2142,21 @@ S2 run (void *arg)
 			eoffs = 5;
 			break;
 
+		case 30:
+			// check if pointer variable is of check type
+			arg2 = code[ep + 2];    // pointer var
+			arg3 = code[ep + 3];	// pointer type var
+
+			if (pointer_check (regi[arg2], regi[arg3]) != 0)
+			{
+				PRINT_EPOS();
+				free (jumpoffs);
+				loop_stop ();
+				pthread_exit ((void *) 1);
+			}
+			eoffs = 5;
+			break;
+
 		case 251:
 			// set overflow on double reg
 			arg2 = code[ep + 2];

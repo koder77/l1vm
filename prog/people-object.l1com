@@ -3,6 +3,7 @@
 // programming languages
 //
 #include <intr.l1h>
+#include <vars.l1h>
 (main func)
 	(set int64 1 zero 0)
     (set int64 1 one  1)
@@ -82,13 +83,25 @@
     (set const-int64 1 Peye_color~ 0)
     // get mem address of person data
     (memaddr~ stpopi)
-     // set pointers 
+
+     // set pointers, use new check_pointer interrupt for pointer type checks
     (person.first_name~ Pfirst_name~ pointer)
+    check_pointer (Pfirst_name~, byte_ptr)
+
     (person.last_name~ Plast_name~ pointer)
+    check_pointer (Plast_name~, byte_ptr)
+
     (person.gender~ Pgender~ pointer)
+    check_pointer (Pgender~, byte_ptr)
+
     (person.age~ Page~ pointer)
+    check_pointer (Page~, int64_ptr)
+
     (person.height~ Pheight~ pointer)
+    check_pointer (Pheight~, double_ptr)
+
     (person.eye_color~ Peye_color~ pointer)
+    check_pointer (Peye_color~, byte_ptr)
 
     (Peye_color~ Pheight~ Page~ Pgender~ Plast_name~ Pfirst_name~ variables~ zero~ memaddr~ :load_obj_array_memobj !)
 
