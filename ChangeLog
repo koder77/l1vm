@@ -1,5 +1,5 @@
 L1VM (2.0.0)
-	NEW: check_pointer interrupt. See prog/people-object.1com for more!
+	NEW: check_pointer interrupt. See prog/people-object.l1com for more!
 	NEW: memory object function: get_obj_mem_type to return the type of a memory object index.
 
 -- Stefan Pietzonke <jay-t@gmx.net> Wed 14 Sep 2022 20:30 +0200
