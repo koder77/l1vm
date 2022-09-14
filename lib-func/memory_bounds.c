@@ -89,27 +89,3 @@ S2 memory_bounds (S8 start, S8 offset_access)
 	printf ("memory_bounds: FATAL ERROR: variable not found overflow address: %lli, offset: %lli!\n", start, offset_access);
 	return (1);
 }
-
-// memory bounds checking function
-S2 pointer_check (S8 start, S8 pointer_type)
-{
-	S8 i ALIGN;
-
-	for (i = 0; i <= data_info_ind; i++)
-	{
-		if ((start >= data_info[i].offset) && (start <= data_info[i].end))
-		{
-			if (data_info[i].type != pointer_type)
-			{
-				printf ("pointer_check: FATAL ERROR: pointer address: %lli not of matching type!\n", start);
-				return (1);
-			}
-			else
-			{
-				return (0); // all ok!
-			}
-		}
-	}
-	printf ("pointer_check: FATAL ERROR: variable not found overflow address: %lli !\n", start);
-	return (1);
-}
