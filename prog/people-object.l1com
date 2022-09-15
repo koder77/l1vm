@@ -104,6 +104,7 @@
     check_pointer (Peye_color~, byte_ptr)
 
     (Peye_color~ Pheight~ Page~ Pgender~ Plast_name~ Pfirst_name~ variables~ zero~ memaddr~ :load_obj_array_memobj !)
+    (ret stpopi)
 
     print_s (person.first_name~)
     print_n
