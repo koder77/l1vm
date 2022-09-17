@@ -22,7 +22,7 @@
 	    exit (one)
 	(endif)
 	// allocate
-	(stringsize :alloc_int64 call)
+	(stringsize :alloc_byte call)
 	(memaddr stpopi)
 	(loadreg)
 	(((memaddr zero <) f =) f if)
