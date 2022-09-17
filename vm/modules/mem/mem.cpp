@@ -672,6 +672,57 @@ extern "C" U1 *array_to_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 // access array functions double ===============================================
 
+extern "C" U1 *double_to_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// assign double to double array
+
+	S8 memind ALIGN = 0;
+	S8 arrayind ALIGN = 0;
+	F8 value ALIGN;
+
+	sp = stpopd ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("double_to_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &arrayind, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("double_to_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &memind, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("double_to_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	#if BOUNDSCHECK
+	if (memind < 0 || memind >= memmax)
+	{
+		printf ("double_to_array: ERROR: memory index out of range!\n");
+		return (NULL);
+	}
+
+	if (arrayind < 0 || arrayind >= mem[memind].memsize)
+	{
+		printf ("double_to_array: ERROR: array index out of range!\n");
+		return (NULL);
+	}
+	#endif
+
+	// assign to array
+	mem[memind].memptr.doubleptr[arrayind] = value;
+	return (sp);
+}
+
 extern "C" U1 *array_to_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// assign double array to double
