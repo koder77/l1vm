@@ -834,6 +834,12 @@ extern "C" U1 *string_to_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
     #endif
 
+	if (mem[memind].type != MEMBYTE)
+	{
+		printf ("string_to_array: ERROR array not of byte type!\n");
+		return (NULL);
+	}
+
 	string_len_src = strlen_safe ((const char *) &data[strsrcaddr], MAXLINELEN);
 	if (string_len_src > string_len)
 	{
@@ -910,6 +916,12 @@ extern "C" U1 *array_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
     #endif
+
+	if (mem[memind].type != MEMBYTE)
+	{
+		printf ("array_to_string: ERROR array not of byte type!\n");
+		return (NULL);
+	}
 
 	string_len_src = strlen_safe ((const char *) &mem[memind].memptr.byteptr[index_real], MAXLINELEN);
 	if (string_len_src > string_len)
