@@ -1,3 +1,8 @@
+L1VM (2.0.1)
+	NEW: mem library now has string_to_array and array_to_string functions.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 17 Sep 2022 17:32 +0200
+
 L1VM (2.0.0)
 	NEW: check_pointer interrupt. See prog/people-object.l1com for more!
 	NEW: memory object function: get_obj_mem_type to return the type of a memory object index.

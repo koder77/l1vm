@@ -76,6 +76,30 @@ struct mem
 static struct mem *mem = NULL;
 static S8 memmax ALIGN = 0;
 
+// protos
+S2 memory_bounds (S8 start, S8 offset_access);
+
+
+size_t strlen_safe (const char * str, int maxlen)
+{
+	 long long int i = 0;
+
+	 while (1)
+	 {
+	 	if (str[i] != '\0')
+		{
+			i++;
+		}
+		else
+		{
+			return (i);
+		}
+		if (i > maxlen)
+		{
+			return (0);
+		}
+	}
+}
 
 // mem functions ==============================================================
 
@@ -646,58 +670,7 @@ extern "C" U1 *array_to_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
-// access array functions double ==============================================
-
-extern "C" U1 *double_to_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
-{
-	// assign double to double array
-
-	S8 memind ALIGN = 0;
-	S8 arrayind ALIGN = 0;
-	F8 value ALIGN;
-
-	sp = stpopd ((U1 *) &value, sp, sp_top);
-	if (sp == NULL)
-	{
-		// error
-		printf ("double_to_array: ERROR: stack corrupt!\n");
-		return (NULL);
-	}
-
-	sp = stpopi ((U1 *) &arrayind, sp, sp_top);
-	if (sp == NULL)
-	{
-		// error
-		printf ("double_to_array: ERROR: stack corrupt!\n");
-		return (NULL);
-	}
-
-	sp = stpopi ((U1 *) &memind, sp, sp_top);
-	if (sp == NULL)
-	{
-		// error
-		printf ("double_to_array: ERROR: stack corrupt!\n");
-		return (NULL);
-	}
-
-	#if BOUNDSCHECK
-	if (memind < 0 || memind >= memmax)
-	{
-		printf ("double_to_array: ERROR: memory index out of range!\n");
-		return (NULL);
-	}
-
-	if (arrayind < 0 || arrayind >= mem[memind].memsize)
-	{
-		printf ("double_to_array: ERROR: array index out of range!\n");
-		return (NULL);
-	}
-	#endif
-
-	// assign to array
-	mem[memind].memptr.doubleptr[arrayind] = value;
-	return (sp);
-}
+// access array functions double ===============================================
 
 extern "C" U1 *array_to_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
@@ -748,6 +721,171 @@ extern "C" U1 *array_to_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+}
+
+// string array functions ======================================================
+
+extern "C" U1 *string_to_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// assign string to array
+
+	S8 memind ALIGN = 0;
+	S8 arrayind ALIGN = 0;
+	F8 value ALIGN;
+	S8 strsrcaddr ALIGN;
+	S8 string_len ALIGN;
+	S8 string_len_src ALIGN;
+	S8 index_real ALIGN;
+
+	sp = stpopi ((U1 *) &string_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_string_to_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strsrcaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_string_to_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &arrayind, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_to_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &memind, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("string_to_array: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	#if BOUNDSCHECK
+	if (memind < 0 || memind >= memmax)
+	{
+		printf ("string_to_array: ERROR: memory index out of range!\n");
+		return (NULL);
+	}
+
+	if (arrayind < 0 || arrayind >= mem[memind].memsize)
+	{
+		printf ("string_to_array: ERROR: array index out of range!\n");
+		return (NULL);
+	}
+    #endif
+
+	string_len_src = strlen_safe ((const char *) &data[strsrcaddr], MAXLINELEN);
+	if (string_len_src > string_len)
+	{
+		// ERROR:
+		printf ("string_to_array: ERROR: source string overflow!\n");
+		return (NULL);
+	}
+
+	index_real = arrayind * string_len;
+	if (index_real < 0 || index_real > mem[memind].memsize)
+	{
+		// ERROR:
+		printf ("string_to_array: ERROR: destination array overflow!\n");
+		return (NULL);
+	}
+	strcpy ((char *) &mem[memind].memptr.byteptr[index_real],  (const char *) &data[strsrcaddr]);
+    return (sp);
+}
+
+extern "C" U1 *array_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// assign string to array
+
+	S8 memind ALIGN = 0;
+	S8 arrayind ALIGN = 0;
+	F8 value ALIGN;
+	S8 strdestaddr ALIGN;
+	S8 string_len ALIGN;
+	S8 string_len_src ALIGN;
+	S8 index_real ALIGN;
+
+	sp = stpopi ((U1 *) &string_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("array_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("array_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &arrayind, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("array_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &memind, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("array_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	#if BOUNDSCHECK
+	if (memind < 0 || memind >= memmax)
+	{
+		printf ("array_to_string: ERROR: memory index out of range!\n");
+		return (NULL);
+	}
+
+	if (arrayind < 0 || arrayind >= mem[memind].memsize)
+	{
+		printf ("array_to_string: ERROR: array index out of range!\n");
+		return (NULL);
+	}
+    #endif
+
+	string_len_src = strlen_safe ((const char *) &mem[memind].memptr.byteptr[index_real], MAXLINELEN);
+	if (string_len_src > string_len)
+	{
+		// ERROR:
+		printf ("array_to_string: ERROR: source string overflow!\n");
+		return (NULL);
+	}
+
+	index_real = arrayind * string_len;
+	if (index_real < 0 || index_real > mem[memind].memsize)
+	{
+		// ERROR:
+		printf ("array_to_string: ERROR: destination array overflow!\n");
+		return (NULL);
+	}
+
+	#if BOUNDSCHECK
+	if (memory_bounds (strdestaddr, string_len_src) != 0)
+	{
+		printf ("string_array_to_string: ERROR: dest string overflow!\n");
+		return (NULL);
+	}
+	#endif
+
+	strcpy ((char *) &data[strdestaddr], (const char *)  &mem[memind].memptr.byteptr[index_real]);
+    return (sp);
 }
 
 
