@@ -77,7 +77,7 @@ static struct mem *mem = NULL;
 static S8 memmax ALIGN = 0;
 
 // protos
-S2 memory_bounds (S8 start, S8 offset_access);
+extern "C" S2 memory_bounds (S8 start, S8 offset_access);
 
 
 size_t strlen_safe (const char * str, int maxlen)
