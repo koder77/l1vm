@@ -19,6 +19,7 @@
     (set string 256 file_entrystr)
     (set string 5120 filesarraystr)
     (set int64 1 files_max 20)
+    (set int64 1 files_ind_max 19)
     (set int64 1 f 0)
     (set int64 1 i 0)
     (set int64 1 index 0)
@@ -36,7 +37,8 @@
     print_n
 
     (((files files_max <=) f =) f if+)
-        (directorystr filesarraystr string_len filesarraylen :file_tools_dir_files !)
+        // zero = file names array start index, files_ind_max = max index number of our filesarraystr array
+        (directorystr filesarraystr string_len filesarraylen zero files_ind_max :file_tools_dir_files !)
         (files stpop)
     (else)
         print_s (error_files_overflowstr)

@@ -1,7 +1,9 @@
 L1VM (2.0.1)
 	NEW: mem library now has string_to_array and array_to_string functions.
+        NEW: filetools directory read now has index start and end flags to read a part of the filelist.
+	See "lib/file-tools-dir.l1com" example!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 17 Sep 2022 17:32 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 18 Sep 2022 16:30 +0200
 
 L1VM (2.0.0)
 	NEW: check_pointer interrupt. See prog/people-object.l1com for more!
