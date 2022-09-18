@@ -580,6 +580,7 @@ extern "C" U1 *directory_files (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     S8 strdestaddr ALIGN;
 	S8 index ALIGN = 0;
+    S8 index_files ALIGN = 0;
 	S8 array_size ALIGN;
 	S8 string_len ALIGN;
 	S8 index_real ALIGN;
@@ -678,7 +679,7 @@ extern "C" U1 *directory_files (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("directory_files: ERROR: start_index out of range!\n");
         return (NULL);
     }
-    if (end_index < 0 || end_index < dir_entries - 1)
+    if (end_index < 0 || end_index > dir_entries - 1)
     {
         printf ("directory_files: ERROR: end_index out of range!\n");
         return (NULL);
@@ -688,7 +689,7 @@ extern "C" U1 *directory_files (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         direlement = entry.path ();
 
-        if ((index >= start_index ) && (index <= end_index))
+        if ((index_files >= start_index ) && (index_files <= end_index))
         {
             // convert string to C string
             U1 *dir_namestr = (U1 *) direlement.c_str ();
@@ -721,8 +722,9 @@ extern "C" U1 *directory_files (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
             return_dir_entries++;
             // increase target string index
+            index++;
         }
-        index++;
+        index_files++;
     }
 
     // push return value file entries
