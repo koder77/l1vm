@@ -36,7 +36,11 @@
     print_i (files)
     print_n
 
-     // zero = file names array start index, files_ind_max = max index number of our filesarraystr array
+    (((files zero ==) f =) f if)
+         exit (zero)
+    (endif)
+
+    // zero = file names array start index, files_ind_max = max index number of our filesarraystr array
     (directorystr filesarraystr string_len filesarraylen zero files_ind_max :file_tools_dir_files !)
     (files stpop)
 
