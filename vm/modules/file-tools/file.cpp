@@ -713,7 +713,7 @@ extern "C" U1 *directory_files (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             #if BOUNDSCHECK
             if (memory_bounds (strdestaddr + index_real, string_len_src) != 0)
             {
-                printf ("directiory_files: ERROR: dest string overflow!\n");
+                printf ("directory_files: ERROR: dest string overflow!\n");
                 return (NULL);
             }
             #endif

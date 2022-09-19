@@ -15,14 +15,13 @@
     (set int64 1 ret 0)
 
     (set int64 1 string_len 256)
-    (set int64 1 filesarraylen 2560)
+    (set int64 1 filesarraylen 256)
     (set string 256 file_entrystr)
-    (set string 2560 filesarraystr)
-    (set int64 1 files_max 10)
-    (set int64 1 files_ind_max 9)
+    (set string 256 filesarraystr)
+    (set int64 1 index 0)
+
     (set int64 1 f 0)
     (set int64 1 i 0)
-    (set int64 1 index 0)
 
     (zero :file_tools_init !)
     (one :string_init !)
@@ -40,18 +39,17 @@
          exit (zero)
     (endif)
 
-    // zero = file names array start index, files_ind_max = max index number of our filesarraystr array
-    (directorystr filesarraystr string_len filesarraylen zero files_ind_max :file_tools_dir_files !)
-    (files stpop)
-
-    // read string array
+    // get objects in directory: "test"
     (for-loop)
     (((i files <) f =) f for)
+         (directorystr filesarraystr string_len filesarraylen i i :file_tools_dir_files !)
+         (ret stpop)
+
          (filesarraystr file_entrystr index string_len filesarraylen :array_to_string !)
          print_s (file_entrystr)
          print_n
-         ((index one +) index =)
-         ((i one +) i =)
+
+         {i = (i + one)}
     (next)
     exit (zero)
 (funcend)
