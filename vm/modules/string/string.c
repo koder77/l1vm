@@ -474,7 +474,7 @@ U1 *string_string_to_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	index_real = index * string_len;
-	if (index_real < 0 || index_real > array_size)
+	if (index_real < 0 || index_real >= array_size)
 	{
 		// ERROR:
 		printf ("string_string_to_array: ERROR: destination array overflow!\n");
@@ -549,7 +549,7 @@ U1 *string_array_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	index_real = index * string_len;
-	if (index_real < 0 || index_real > array_size)
+	if (index_real < 0 || index_real >= array_size)
 	{
 		// ERROR:
 		printf ("string_array_to_string: ERROR: source array overflow!\n");

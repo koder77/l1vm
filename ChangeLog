@@ -3,7 +3,9 @@ L1VM (2.0.1)
         NEW: filetools directory read now has index start and end flags to read a part of the filelist.
 	See "lib/file-tools-dir.l1com" example!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 18 Sep 2022 16:30 +0200
+	BUGFIXES: string module: array functions index overflow check fixed!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 19 Sep 2022 19:43 +0200
 
 L1VM (2.0.0)
 	NEW: check_pointer interrupt. See prog/people-object.l1com for more!
