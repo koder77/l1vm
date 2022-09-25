@@ -21,7 +21,7 @@ curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$progfchar/$progname/$pr
 curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$progfchar/$progname/$progname.readme.txt.bz2
 curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$progfchar/$progname/$progname.readme.txt.gpg
 
-#get data if available
+# get data if available
 curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$progfchar/$progname/$progname.data.tar.bz2
 curl -O http://midnight-koder.net/blog/assets/l1vm/repo/$progfchar/$progname/$progname.data.tar.gpg
 
@@ -62,11 +62,11 @@ fi
 fi
 
 
-## unpack obj file and install it
+# unpack obj file and install it
 bzip2 -d $1.l1obj.bz2
 cp $1.l1obj ~/l1vm/prog
 
-// unpack source code and install it
+# unpack source code and install it
 bzip2 -d $1.l1com.bz2
 cp $1.l1com ~/l1vm/prog
 
