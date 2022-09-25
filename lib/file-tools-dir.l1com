@@ -7,7 +7,7 @@
 (main func)
     #include <file-def.l1h>
     (set int64 1 zero 0)
-	(set int64 1 one 1)
+    (set int64 1 one 1)
     (set string s directorystr "test")
     (set string s filesstr " files: ")
     (set string s error_files_overflowstr "ERROR: file max overflow!")
