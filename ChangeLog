@@ -1,3 +1,8 @@
+L1VM (2.0.2)
+	BUGFIX: compiler: nested-code-off added continue statement to fix operator not known error!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 3 Oct 2022 23:30 +0200
+
 L1VM (2.0.1)
 	NEW: mem library now has string_to_array and array_to_string functions.
         NEW: filetools directory read now has index start and end flags to read a part of the filelist.

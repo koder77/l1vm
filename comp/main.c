@@ -1179,6 +1179,7 @@ S2 parse_line (U1 *line)
 							if (strcmp ((const char *) ast[level].expr[j][last_arg], "nested-code-off") == 0)
 							{
 								nested_code = 0;
+								continue;
 							}
 
 							// ============================================

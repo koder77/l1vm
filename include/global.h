@@ -104,7 +104,7 @@
 // info strings:
 #define COPYRIGHT_STR " (C) 2017-2022 Stefan Pietzonke"
 
-#define  VM_VERSION_STR		"2.0.1"		// version number
+#define  VM_VERSION_STR		"2.0.2"		// version number
 
 // no user defined definitions below this section! ============================
 
