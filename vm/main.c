@@ -1878,7 +1878,7 @@ S2 run (void *arg)
 
 				while (1)
 				{
-					if (i < regi[arg2])
+					if (i < regi[arg2] - 1)
 					{
 						ch = getchar ();
 						if (memory_bounds (regi[arg3], i) != 0)
