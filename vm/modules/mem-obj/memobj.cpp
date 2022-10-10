@@ -1,5 +1,5 @@
 /*
- * This file mem.cpp is part of L1vm.
+ * This file memobj.cpp is part of L1vm.
  *
  * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2020
  *
