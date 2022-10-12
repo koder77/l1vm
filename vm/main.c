@@ -2157,6 +2157,15 @@ S2 run (void *arg)
 			eoffs = 5;
 			break;
 
+		case 31:
+			// get pointer variable type
+			arg2 = code[ep + 2];    // pointer var
+			arg3 = code[ep + 3];	// pointer type var return
+
+			regi[arg3] = pointer_type (regi[arg2]);
+			eoffs = 5;
+			break;
+
 		case 251:
 			// set overflow on double reg
 			arg2 = code[ep + 2];

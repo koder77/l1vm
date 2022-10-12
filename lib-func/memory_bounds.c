@@ -113,3 +113,18 @@ S2 pointer_check (S8 start, S8 pointer_type)
 	printf ("pointer_check: FATAL ERROR: variable not found overflow address: %lli !\n", start);
 	return (1);
 }
+
+// get variable type from pointer var
+S2 pointer_type (S8 start)
+{
+	S8 i ALIGN;
+
+	for (i = 0; i <= data_info_ind; i++)
+	{
+		if ((start >= data_info[i].offset) && (start <= data_info[i].end))
+		{
+			return (data_info[i].type);
+		}
+	}
+	return (0); // error pointer variable address not found!
+}
