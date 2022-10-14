@@ -1,7 +1,8 @@
 L1VM (2.0.3)
 	NEW: interrupt 0: 31: pointer_type to get the pointer variable type.
+	NEW: added nested code to switch statement: switch.
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 12 Oct 2022 16:49 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 14 Oct 2022 11:57 +0200
 
 L1VM (2.0.2)
 	BUGFIX: compiler: nested-code-off added continue statement to fix operator not known error!

@@ -3372,6 +3372,10 @@ S2 parse_line (U1 *line)
 										return (FALSE);
 									}
 
+									if (nested_code == 1)
+									{
+										init_registers ();
+									}
 									continue;
 								}
 
@@ -3411,6 +3415,11 @@ S2 parse_line (U1 *line)
 									strcat ((char *) code[code_line], "\n");
 
 									set_endif_finished (if_pos);
+
+									if (nested_code == 1)
+									{
+										init_registers ();
+									}
 
 									continue;
 								}
