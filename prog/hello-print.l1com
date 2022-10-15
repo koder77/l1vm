@@ -5,45 +5,45 @@
 #include <vars.l1h>
 #include <misc-macros.l1h>
 (main func)
-	(set const-int64 1 zero 0)
-	(set int64 1 x 23)
-	(set int64 1 y 42)
-	(set int64 1 a 0)
-	(set string 13 hello "Hello world!")
+    (set const-int64 1 zero 0)
+    (set int64 1 x 23)
+    (set int64 1 y 42)
+    (set int64 1 a 0)
+    (set string 13 hello "Hello world!")
     (set double 1 d 123.456)
-	(set int64 1 Pvar 0)
+    (set int64 1 Pvar 0)
 
     // get string pointer
-	(hello Pvar pointer)
+    (hello Pvar pointer)
     (Pvar :print_var !)
-	print_n
+    print_n
 
-	((x y *) a =)
+    ((x y *) a =)
     // get int64 pointer
-	(a Pvar pointer)
-	(Pvar :print_var !)
-	print_n
+    (a Pvar pointer)
+    (Pvar :print_var !)
+    print_n
 
     // get double pointer
     (d Pvar pointer)
     (Pvar :print_var !)
     print_n
 
-	exit (zero)
+    exit (zero)
 (funcend)
 
 (print_var func)
     // Print variable the pointer points at.
-	#var ~ print_var
+    #var ~ print_var
     (set const-int64 1 zero~ 0)
-	(set int64 1 Pvar~ 0)
-	(set int64 1 vartype~ 0)
-	(set int64 1 f~ 0)
+    (set int64 1 Pvar~ 0)
+    (set int64 1 vartype~ 0)
+    (set int64 1 f~ 0)
     (set int64 1 int_var~)
     (set double 1 double_var~)
-	(Pvar~ stpop)
+    (Pvar~ stpop)
     // get pointer type
-	pointer_type (Pvar~, vartype~)
+    pointer_type (Pvar~, vartype~)
     // pull vartype~ to variable
     pull_int64_var (vartype~)
 
