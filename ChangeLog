@@ -1,3 +1,8 @@
+L1VM (2.0.4)
+	NEW: lib/array.l1com, include/array.l1h functions to assign variable lists to arrays.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 14 Oct 2022 11:57 +0200
+
 L1VM (2.0.3)
 	NEW: interrupt 0: 31: pointer_type to get the pointer variable type.
 	NEW: added nested code to switch statement: switch.

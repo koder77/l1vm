@@ -1,0 +1,36 @@
+// array.l1com
+//
+// array lists demo
+//
+#include <intr.l1h>
+(main func)
+	(set const-int64 1 zero 0)
+	(set const-int64 1 one 1)
+    (set int64 1 a 10)
+	(set int64 1 b 23)
+	(set int64 1 c 100)
+	(set int64 1 d 66)
+	(set double 1 ad 10.0)
+	(set double 1 bd 23.5)
+	(set double 1 cd 100.36)
+	(set double 1 dd 66.0)
+	(set int64 1 vars 4)
+	(set int64 4 array)
+	(set double 4 array_d)
+	(set int16 4 array_16)
+	(set int64 1 Parray)
+	(array Parray pointer)
+	// call int64_to_array
+	(a b c d Parray zero vars :int64_to_array !)
+
+	(array_16 Parray pointer)
+	// call int16_to_array
+	(a b c d Parray zero vars :int16_to_array !)
+
+	(array_d Parray pointer)
+	// call double_to_array
+	(ad bd cd dd Parray zero vars :double_to_array !)
+
+	exit (zero)
+(funcend)
+#include <array.l1h>
