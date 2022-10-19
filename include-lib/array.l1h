@@ -3,7 +3,7 @@
 #include <misc-macros.l1h>
 #include <vars.l1h>
 (int16_to_array func)
-    #var ~ int64_to_array
+    #var ~ int16_to_array
 	(set int64 1 index~ 0)
 	(set int64 1 count~ 0)
 	(set int64 1 f~ 0)
@@ -36,7 +36,7 @@
 (funcend)
 
 (int32_to_array func)
-    #var ~ int64_to_array
+    #var ~ int32_to_array
 	(set int64 1 index~ 0)
 	(set int64 1 count~ 0)
 	(set int64 1 f~ 0)
