@@ -1610,10 +1610,14 @@ S2 parse_line (U1 *line)
 										}
 
 										expression_var_type_max = getvartype_real (ast[level].expr[j][last_arg - 5]);
-										if (expression_var_type_max > target_var_type)
+										if (ast[level].expr[j][last_arg - 5][0] != 'P')
 										{
-											printf ("\nerror: line %lli: expression assigns to target of lower precision!\n", linenum);
-											return (1);
+											// not a array pointer, check target variable
+											if (expression_var_type_max > target_var_type)
+											{
+												printf ("\nerror: line %lli: expression assigns to target of lower precision!\n", linenum);
+												return (1);
+											}
 										}
 									
 										if (getvartype (ast[level].expr[j][last_arg - 1]) == DOUBLE)
@@ -1812,24 +1816,51 @@ S2 parse_line (U1 *line)
 												return (1);
 											}
 
-											if (getvartype_real (ast[level].expr[j][last_arg - 5]) == BYTE)
+											// check if array pointer is used
+											// and set the push opcode based on the variable type we assign to!
+										    if (ast[level].expr[j][last_arg - 5][0] == 'P')
 											{
-												strcpy ((char *) code_temp, "pushb ");
-											}
+												if (getvartype_real (ast[level].expr[j][last_arg - 1]) == BYTE)
+												{
+													strcpy ((char *) code_temp, "pushb ");
+												}
 
-											if (getvartype_real (ast[level].expr[j][last_arg - 5]) == WORD)
-											{
-												strcpy ((char *) code_temp, "pushw ");
-											}
+												if (getvartype_real (ast[level].expr[j][last_arg - 1]) == WORD)
+												{
+													strcpy ((char *) code_temp, "pushw ");
+												}
 
-											if (getvartype_real (ast[level].expr[j][last_arg - 5]) == DOUBLEWORD)
-											{
-												strcpy ((char *) code_temp, "pushdw ");
-											}
+												if (getvartype_real (ast[level].expr[j][last_arg - 1]) == DOUBLEWORD)
+												{
+													strcpy ((char *) code_temp, "pushdw ");
+												}
 
-											if (getvartype_real (ast[level].expr[j][last_arg - 5]) == QUADWORD)
+												if (getvartype_real (ast[level].expr[j][last_arg - 1]) == QUADWORD)
+												{
+													strcpy ((char *) code_temp, "pushqw ");
+												}
+											}
+											else
 											{
-												strcpy ((char *) code_temp, "pushqw ");
+												if (getvartype_real (ast[level].expr[j][last_arg - 5]) == BYTE)
+												{
+													strcpy ((char *) code_temp, "pushb ");
+												}
+
+												if (getvartype_real (ast[level].expr[j][last_arg - 5]) == WORD)
+												{
+													strcpy ((char *) code_temp, "pushw ");
+												}
+
+												if (getvartype_real (ast[level].expr[j][last_arg - 5]) == DOUBLEWORD)
+												{
+													strcpy ((char *) code_temp, "pushdw ");
+												}
+
+												if (getvartype_real (ast[level].expr[j][last_arg - 5]) == QUADWORD)
+												{
+													strcpy ((char *) code_temp, "pushqw ");
+												}
 											}
 
 											sprintf ((char *) str, "%i", reg3);

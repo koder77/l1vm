@@ -38,16 +38,33 @@
 	// call double_to_array
 	(ad bd cd dd Parray zero vars :double_to_array !)
 
-    // print int64 array
-    (for-loop)
-    (((i vars <) f =) f for)
-        ((i offset *) real_ind =)
-        (array [ real_ind ] num =)
-        print_i (num)
-        print_n
 
-        ((i one +) i =)
-    (next)
+    // get int16 array variable list
+    (array_16 Parray pointer)
+    (Parray zero vars :array_to_int16 !)
+    (d c b a stpop)
+    print_i (a)
+    print_n
+    print_i (b)
+    print_n
+    print_i (c)
+    print_n
+    print_i (d)
+    print_n
+    print_n
+
+	// get int64 array variable list
+    (array Parray pointer)
+    (Parray zero vars :array_to_int64 !)
+    (d c b a stpop)
+    print_i (a)
+    print_n
+    print_i (b)
+    print_n
+    print_i (c)
+    print_n
+    print_i (d)
+    print_n
 
 	exit (zero)
 (funcend)
