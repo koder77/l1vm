@@ -39,10 +39,8 @@
 	(ad bd cd dd Parray zero vars :double_to_array !)
 
     // print int64 array
-    (reset-reg)
     (for-loop)
     (((i vars <) f =) f for)
-        (reset-reg)
         ((i offset *) real_ind =)
         (array [ real_ind ] num =)
         print_i (num)
