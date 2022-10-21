@@ -202,7 +202,7 @@
     (entries~ stpop)
     (((entries~ zero~ ==) f~ =) f~ if)
        // no json entries found, return with error code zero
-       (one~ stpushi)
+       (zero~ one~ stpushi)
        (ASM)
        rts
        (ASM_END)
