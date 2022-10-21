@@ -1,7 +1,8 @@
 L1VM (2.0.4)
 	NEW: lib/array.l1com, include/array.l1h functions to assign variable lists to arrays.
+	Added lib/json-l1com and include/json.l1h with functions for parsing json strings.
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 14 Oct 2022 11:57 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 21 Oct 2022 21:05 +0200
 
 L1VM (2.0.3)
 	NEW: interrupt 0: 31: pointer_type to get the pointer variable type.
