@@ -196,8 +196,6 @@
     (json_value_str~ Pjson_value_str~ pointer)
     (zero~ i~ =)
     (zero~ parse_start~ =)
-    print_s (Pjson_str~)
-    print_n
 
     // get number of json elements
     (Pjson_str~ :entries_json !)
