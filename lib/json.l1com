@@ -36,6 +36,10 @@
         exit (one)
 	(endif)
 
+    // print json string
+    print_s (json_str)
+    print_n
+
     (json_str Pjson_str pointer)
     (Pjson_str zero :parse_json !)
     (entries memaddr stpop)
