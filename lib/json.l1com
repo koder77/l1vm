@@ -24,7 +24,7 @@
     (set string s agek_str "age")
     (set string s agev_str "39")
     (set string s cityk_str "city")
-    (set string s cityv_str "New_York")
+    (set string s cityv_str "New York")
     (set string s get_json_str "Get JSON entries of string by 'parse_json'")
     (set string s create_json_str "Create JSON string by 'create_json'.")
     (set string s space_str " ")
