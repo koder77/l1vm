@@ -244,8 +244,6 @@
     (set string s cbracket_open_str~ "{")
     (set string s cbracket_close_str~ "}")
     (set string s space_str~ " ")
-    (set string 2 char_str~ "")
-    (set string s empty_str~ "")
     (set int64 1 entries~ 0)
     (set int64 1 last_entry~ 0)
     (Pjson_str~ entries~ stpop)
