@@ -19,6 +19,15 @@
     (set int64 1 i 0)
     (set int64 1 j 0)
     (set int64 1 ret 0)
+    (set string s namek_str "name")
+    (set string s namev_str "John")
+    (set string s agek_str "age")
+    (set string s agev_str "39")
+    (set string s cityk_str "city")
+    (set string s cityv_str "New_York")
+    (set string s get_json_str "Get JSON entries of string by 'parse_json'")
+    (set string s create_json_str "Create JSON string by 'create_json'.")
+    (set string s space_str " ")
 
     (zero :string_init !)
     (one one :mem_obj_init call)
@@ -31,6 +40,8 @@
         exit (one)
 	(endif)
 
+    print_s (get_json_str)
+    print_n
     // print json string
     print_s (json_str)
     print_n
@@ -48,13 +59,22 @@
     (do)
         (i memaddr key_str :load_obj_string_memobj !)
         print_s (key_str)
-        print_n
+        print_s (space_str)
         ((i one +) j =)
         (j memaddr value_str :load_obj_string_memobj !)
         print_s (value_str)
         print_n
         {i = (i + two )}
     (((i max_entries <) f =) f while)
+
+    print_n
+    print_s (create_json_str)
+    print_n
+    // create JSON string
+    (cityv_str cityk_str agev_str agek_str namev_str namek_str entries Pjson_str :create_json !)
+    // print JSON
+    print_s (Pjson_str)
+    print_n
 
     exit (zero)
 (funcend)
