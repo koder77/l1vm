@@ -222,7 +222,7 @@ extern "C" U1 *alloc_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	for (i = 0; i < memsize; i++)
 	{
 		mem[memind].objptr[i].type = EMPTY;
-		mem[memind].objptr[i].strlen = 0;
+		mem[memind].objptr[i].strlen = -1; // empty string
 	}
 
 	// return memory index
@@ -415,11 +415,11 @@ extern "C" U1 *save_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 					return (NULL);
 				}
 
-				if (mem[memind].objptr[ind].strlen != 0)
+				if (mem[memind].objptr[ind].strlen != -1)
 				{
 					// found allocated string in memory, free it now
 					free (mem[memind].objptr[ind].memptr.straddr);
-				 	mem[memind].objptr[ind].strlen = 0;
+				 	mem[memind].objptr[ind].strlen = -1;
 				}
 
 				if (ind < mem[memind].memsize)

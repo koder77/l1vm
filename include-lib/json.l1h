@@ -99,7 +99,7 @@
     (set string s colon_str~ ":")
     (set string 2 char_str~ "")
     (set string s empty_str~ "")
-    (set string s no_value_str~ "NO-VALUE")
+    (set string s no_value_str~ "")
     (set int64 1 quotes~ 0)
     (set int64 1 spos~ 0)
     (Pvalue_str~ Pkey_str~ Pentry_str~ stpop)
