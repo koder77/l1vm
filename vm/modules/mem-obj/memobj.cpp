@@ -405,6 +405,8 @@ extern "C" U1 *save_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 				// create a new string in memory and copy the string argument to it
 				// printf ("DEBUG: save_obj_mem: save string...\n");
 
+				 // printf ("DEBUG: save memobject string start...\n");
+
 				sp = stpopi ((U1 *) &var_saddr, sp, sp_top);
 				if (sp == NULL)
 				{
@@ -424,8 +426,11 @@ extern "C" U1 *save_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 				{
 					mem[memind].objptr[ind].type = MEMSTRING;
 					string_len = strlen_safe ((char *) &data[var_saddr], MAXLINELEN);
-					if (string_len > 0)
-					{
+
+                    // printf ("DEBUG: save memobject string len var: %lli\n", string_len);
+
+					//if (string_len > 0)
+					//{
 						// string not empty, create mem string
 						mem[memind].objptr[ind].strlen = string_len + 1;
 						mem[memind].objptr[ind].memptr.straddr = (U1 *) calloc (string_len + 1, sizeof (U1));
@@ -440,7 +445,7 @@ extern "C" U1 *save_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 						strcpy ((char *) mem[memind].objptr[ind].memptr.straddr, (const char *) &data[var_saddr]);
 						// printf ("DEBUG: save_obj_mem: string: '%s' copied into mem obj: %lli\n", &data[var_saddr], ind);
-					}
+					//}
 				}
 				ind++;
 				break;
@@ -621,7 +626,6 @@ extern "C" U1 *load_string_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	offset = strlen_safe ((char *) mem[memind].objptr[ind].memptr.straddr, MAXLINELEN);
-
 	if (offset >= 0)
 	{
 		#if BOUNDSCHECK

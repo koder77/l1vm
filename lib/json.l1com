@@ -11,9 +11,10 @@
     (set int64 1 entries 0)
     (set int64 1 max_entries 0)
     (set int64 1 Pjson_str)
-    (set string 4096 json_str "{@@qname@@q:@@qJohn@@q, @@qage@@q:@@q39@@q, @@qcity@@q:@@qNew York@@q}")
-    //(set string s json_str "@@qauthor@@q: {")
+   // (set string 4096 json_str "{@@qname@@q:@@qJohn@@q, @@qage@@q:@@q39@@q, @@qcity@@q:@@qNew York@@q}")
+    (set string s json_str "@@qauthor@@q: {")
     (set string s mem_error_allocstr "ERROR: can't allocate mem object!")
+    (set string s mem_error_no_varstr "ERROR: can't read mem object string!")
     (set string 4096 key_str "")
     (set string 4096 value_str "")
     (set int64 1 f 0)
@@ -59,10 +60,26 @@
     {max_entries = (entries * two) - one}
     (do)
         (i memaddr key_str :load_obj_string_memobj !)
+        (ret stpop)
+        (((ret zero !=) f =) f if)
+            // error reading string from mem object
+            print_s (mem_error_no_varstr)
+            print_n
+           exit (1)
+        (endif)
+
         print_s (key_str)
         print_s (space_str)
         ((i one +) j =)
         (j memaddr value_str :load_obj_string_memobj !)
+        (ret stpop)
+        (((ret zero !=) f =) f if)
+            // error reading string from mem object
+            print_s (mem_error_no_varstr)
+            print_n
+           exit (1)
+        (endif)
+
         print_s (value_str)
         print_n
         {i = (i + two )}
@@ -77,6 +94,8 @@
     print_s (Pjson_str)
     print_n
 
+	(memaddr :free_obj_memobj !)
+    (:free_memobj !)
     exit (zero)
 (funcend)
 
