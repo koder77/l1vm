@@ -11,8 +11,9 @@
     (set int64 1 entries 0)
     (set int64 1 max_entries 0)
     (set int64 1 Pjson_str)
+    (set int64 1 create_entries 3)
    // (set string 4096 json_str "{@@qname@@q:@@qJohn@@q, @@qage@@q:@@q39@@q, @@qcity@@q:@@qNew York@@q}")
-    (set string s json_str "@@qauthor@@q: {")
+    (set string 4096 json_str "@@qauthor@@q: {")
     (set string s mem_error_allocstr "ERROR: can't allocate mem object!")
     (set string s mem_error_no_varstr "ERROR: can't read mem object string!")
     (set string 4096 key_str "")
@@ -89,7 +90,7 @@
     print_s (create_json_str)
     print_n
     // create JSON string
-    (cityv_str cityk_str agev_str agek_str namev_str namek_str entries Pjson_str :create_json !)
+    (cityv_str cityk_str agev_str agek_str namev_str namek_str create_entries Pjson_str :create_json !)
     // print JSON
     print_s (Pjson_str)
     print_n
