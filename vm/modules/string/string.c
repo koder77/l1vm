@@ -969,21 +969,12 @@ U1 *stringmem_search_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 strsourceaddr ALIGN;
 	S8 strsearchaddr ALIGN;
 	S8 pos ALIGN;
-	S8 destsize ALIGN;
 	S8 stringmemsize ALIGN;
 	S8 startpos ALIGN;		// startpos to search string start in memory string
 	S8 searchlen ALIGN;
 	S8 i ALIGN;
 	U1 found_string;
 	S8 found_pos ALIGN;
-
-	sp = stpopi ((U1 *) &destsize, sp, sp_top);
-	if (sp == NULL)
-	{
-		// ERROR:
-		printf ("stringmem_search_string: ERROR: stack corrupt!\n");
-		return (NULL);
-	}
 
 	sp = stpopi ((U1 *) &stringmemsize, sp, sp_top);
 	if (sp == NULL)
@@ -1019,15 +1010,52 @@ U1 *stringmem_search_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	searchlen = strlen_safe ((const char *) &data[strsearchaddr], 256);
 
-	i = 0;
+    // startpos check
+    if (startpos >= stringmemsize || startpos < 0)
+	{
+		// ERROR:
+		printf ("stringmem_search_string: ERROR: startpos out of range!\n");
+		return (NULL);
+	}
+
+	i = startpos;
 	while (1)
 	{
+        #if BOUNDSCHECK
+		if (memory_bounds (strsourceaddr, i) != 0)
+		{
+			printf ("stringmem_search_string: ERROR: source string overflow!\n");
+			return (NULL);
+		}
+
+		if (memory_bounds (strsearchaddr, 0) != 0)
+		{
+			printf ("stringmem_search_string: ERROR: source string overflow!\n");
+			return (NULL);
+		}
+		#endif
+
 		if (data[strsourceaddr + i] == data[strsearchaddr])
 		{
 			found_string = 1; found_pos = i;
 			for (pos = 1; pos < searchlen; pos++)
 			{
 				i++;
+
+				 #if BOUNDSCHECK
+				if (memory_bounds (strsourceaddr, i) != 0)
+				{
+					printf ("stringmem_search_string: ERROR: source string overflow!\n");
+					return (NULL);
+				}
+
+				if (memory_bounds (strsearchaddr, pos) != 0)
+				{
+					printf ("stringmem_search_string: ERROR: source string overflow!\n");
+					return (NULL);
+				}
+                #endif
+
 				if (data[strsourceaddr + i] != data[strsearchaddr + pos])
 				{
 					found_string = 0;
@@ -1039,7 +1067,7 @@ U1 *stringmem_search_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 				// return found_pos
 
-				printf ("stringmem_search_string: found string at pos: %lli\n", found_pos);
+				// printf ("stringmem_search_string: found string at pos: %lli\n", found_pos);
 
 				sp = stpushi (found_pos, sp, sp_bottom);
 				if (sp == NULL)

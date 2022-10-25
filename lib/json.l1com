@@ -12,6 +12,7 @@
     (set int64 1 max_entries 0)
     (set int64 1 Pjson_str)
     (set string 4096 json_str "{@@qname@@q:@@qJohn@@q, @@qage@@q:@@q39@@q, @@qcity@@q:@@qNew York@@q}")
+    //(set string s json_str "@@qauthor@@q: {")
     (set string s mem_error_allocstr "ERROR: can't allocate mem object!")
     (set string 4096 key_str "")
     (set string 4096 value_str "")

@@ -99,7 +99,9 @@
     (set string s colon_str~ ":")
     (set string 2 char_str~ "")
     (set string s empty_str~ "")
+    (set string s no_value_str~ "NO-VALUE")
     (set int64 1 quotes~ 0)
+    (set int64 1 spos~ 0)
     (Pvalue_str~ Pkey_str~ Pentry_str~ stpop)
     (Pentry_str~ :string_len !)
     (entry_strlen~ stpop)
@@ -134,6 +136,25 @@
 
     // get value
     (:get_json_get_value)
+
+    // check if value is defined, check for colon and following quote for value
+    (Pentry_str~ colon_str~ i~ entry_strlen~ :string_memsearch !)
+    (spos~ stpop)
+    (((spos~ zero~ <) f =) f if)
+        // no colon found: return
+        (:get_json_end jmp)
+    (endif)
+
+    // search for value start quote
+    // ((i~ one~ +) i~ =)
+    (Pentry_str~ quote_str~ spos~ entry_strlen~ :string_memsearch !)
+    (spos~ stpop)
+    (((spos~ zero~ <) f =) f if)
+        // no quote found: return
+        (Pvalue_str~ no_value_str~ :string_copy !)
+        (:get_json_end jmp)
+    (endif)
+
     (zero~ quotes~ =)
     (do)
         (Pentry_str~ char_str~ i~ :string_mid !)
