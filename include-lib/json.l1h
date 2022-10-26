@@ -3,6 +3,7 @@
 // you have to include: mem-obj-lib.l1h and string.l1h in your program
 // see lib/json.l1com
 //
+#include <misc-macros.l1h>
 (entries_json func)
     #var ~ entries_json
     (set const-int64 1 zero~ 0)
@@ -94,18 +95,20 @@
     (set int64 1 entry_strlen~ 0)
     (set int64 1 ret~ 0)
     (set int64 1 f~ 0)
+    (set int64 1 f1~ 0)
+    (set int64 1 f2~ 0)
     (set string 2 quote_str~ "")
     (set int64 1 quote_ascii~ 34)
     (set string s colon_str~ ":")
     (set string 2 char_str~ "")
     (set string s empty_str~ "")
-    (set string s no_value_str~ "")
+    (set string s space_str~ " ")
     (set int64 1 quotes~ 0)
     (set int64 1 spos~ 0)
     (Pvalue_str~ Pkey_str~ Pentry_str~ stpop)
     (Pentry_str~ :string_len !)
     (entry_strlen~ stpop)
-    ((entry_strlen~ one~ -) entry_strlen~ =)
+    // ((entry_strlen~ one~ -) entry_strlen~ =)
     (quote_ascii~ quote_str~ :string_bytenumtostring !)
     // clear key and value
     (Pkey_str~ empty_str~ :string_copy !)
@@ -145,42 +148,27 @@
         (:get_json_end jmp)
     (endif)
 
-    // search for value start quote
-    // ((i~ one~ +) i~ =)
-    (Pentry_str~ quote_str~ spos~ entry_strlen~ :string_memsearch !)
-    (spos~ stpop)
-    (((spos~ zero~ <) f =) f if)
-        // no quote found: return
-        (Pvalue_str~ no_value_str~ :string_copy !)
-        (:get_json_end jmp)
-    (endif)
+    ((entry_strlen~ one~ +) entry_strlen~ =)
 
-    (zero~ quotes~ =)
+    ((spos~ one~ +) i~ =)
     (do)
         (Pentry_str~ char_str~ i~ :string_mid !)
-        // check if char_str~ is quote "
+        // check if char_str~ is quote
         (char_str~ quote_str~ :string_compare !)
         (ret~ stpop)
-        (((ret~ zero~ !=) f~ =) f~ if+)
-            // no quote, check if colon :
-            (char_str~ colon_str~ :string_compare !)
-            (ret~ stpop)
-            (((ret~ zero~ !=) f~ =) f~ if)
-                // no quote, add char if first quote found
-                (((quotes~ one~ ==) f~ =) f~ if)
-                    (Pvalue_str~ char_str~ :string_cat !)
-                (endif)
-            (endif)
-        (else)
-           ((quotes~ one~ +) quotes~ =)
-           (((quotes~ two~ ==) f~ =) f~ if)
-              // found closing quote, exit
-              ((i~ one~ +) i~ =)
-              (:get_json_end jmp)
-           (endif)
+        ((ret~ zero~ !=) f1~ =)
+        // check if char_str~ is space
+        (char_str~ space_str~ :string_compare !)
+        (ret~ stpop)
+        ((ret~ zero~ !=) f2~ =)
+
+        ((((f1~ one~ ==)(f2~ one~ ==) &&) f =) f if)
+            // no quote and no space, add char
+            (Pvalue_str~ char_str~ :string_cat !)
         (endif)
         ((i~ one~ +) i~ =)
     (((i~ entry_strlen~ <) f~ =) f~ while)
+
     (:get_json_end)
 (funcend)
 

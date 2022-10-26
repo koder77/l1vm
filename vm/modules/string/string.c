@@ -746,6 +746,9 @@ U1 *string_mid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	data[strdestaddr] = data[strsourceaddr + pos];
 	data[strdestaddr + 1] = '\0';
 
+	// DEBUG
+	// printf ("string_mid: pos: %lli, char: %s\n", pos, &data[strdestaddr]);
+
 	return (sp);
 }
 
