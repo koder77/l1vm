@@ -156,11 +156,11 @@
         // check if char_str~ is quote
         (char_str~ quote_str~ :string_compare !)
         (ret~ stpop)
-        ((ret~ zero~ !=) f1~ =)
+        ((ret~ zero~ ==) f1~ =)
         // check if char_str~ is space
         (char_str~ space_str~ :string_compare !)
         (ret~ stpop)
-        ((ret~ zero~ !=) f2~ =)
+        ((ret~ zero~ ==) f2~ =)
 
         ((((f1~ one~ ==)(f2~ one~ ==) &&) f =) f if)
             // no quote and no space, add char
