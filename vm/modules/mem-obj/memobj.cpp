@@ -429,23 +429,20 @@ extern "C" U1 *save_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
                     // printf ("DEBUG: save memobject string len var: %lli\n", string_len);
 
-					//if (string_len > 0)
-					//{
-						// string not empty, create mem string
-						mem[memind].objptr[ind].strlen = string_len + 1;
-						mem[memind].objptr[ind].memptr.straddr = (U1 *) calloc (string_len + 1, sizeof (U1));
-						if (mem[memind].objptr[ind].memptr.straddr == NULL)
-						{
-							// error out of memory!
-							printf ("save_obj_mem: out of memory: %lli of size string\n", string_len + 1);
-							return (NULL);
-						}
+					// string not empty, create mem string
+					mem[memind].objptr[ind].strlen = string_len + 1;
+					mem[memind].objptr[ind].memptr.straddr = (U1 *) calloc (string_len + 1, sizeof (U1));
+					if (mem[memind].objptr[ind].memptr.straddr == NULL)
+					{
+						// error out of memory!
+						printf ("save_obj_mem: out of memory: %lli of size string\n", string_len + 1);
+						return (NULL);
+					}
 
-						// copy string to new memory
+					// copy string to new memory
 
-						strcpy ((char *) mem[memind].objptr[ind].memptr.straddr, (const char *) &data[var_saddr]);
-						// printf ("DEBUG: save_obj_mem: string: '%s' copied into mem obj: %lli\n", &data[var_saddr], ind);
-					//}
+					strcpy ((char *) mem[memind].objptr[ind].memptr.straddr, (const char *) &data[var_saddr]);
+					// printf ("DEBUG: save_obj_mem: string: '%s' copied into mem obj: %lli\n", &data[var_saddr], ind);
 				}
 				ind++;
 				break;
