@@ -28,8 +28,9 @@ L1VM (2.0.1)
 	See "lib/file-tools-dir.l1com" example!
 
 	BUGFIXES: string module: array functions index overflow check fixed!
+	BUGFIX: string.c searchstr now gives the right position of the substring, if searched by a startpos greater than 0!
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon 19 Sep 2022 19:43 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 27 Oct 2022 17:11 +0200
 
 L1VM (2.0.0)
 	NEW: check_pointer interrupt. See prog/people-object.l1com for more!

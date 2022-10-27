@@ -44,31 +44,15 @@ size_t strlen_safe (const char * str, int maxlen)
 S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens)
 {
 	/* replaces the old buggy code */
-
-	// S2 pos = -1, str_len, srchstr_len, i = 0, new_end = 0;
-	S2 pos = -1, str_len, i = 0, new_end = 0;
+	S2 pos = -1, str_len, i = 0;
 	str_len = strlen_safe ((const char *) str, MAXLINELEN);
-	// srchstr_len = strlen_safe ((const char *) srchstr, MAXLINELEN);
 
 	U1 *sptr;
 	U1 *startptr;
 
 	if (start < 0 || start > str_len - 1)
 	{
-		i = 0;
-	}
-	else
-	{
-		i = start;
-	}
-
-	if (end == 0)
-	{
-		new_end = str_len - 1;
-	}
-	else
-	{
-		new_end = end;
+		start = 0;
 	}
 
 	startptr = str;
@@ -81,7 +65,7 @@ S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens)
 	if (sptr)
 	{
 		// get position of substring
-		pos = sptr - startptr;
+		pos = start + sptr - startptr;
 	}
 
 	return (pos);
