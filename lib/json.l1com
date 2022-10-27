@@ -11,7 +11,7 @@
     (set int64 1 entries 0)
     (set int64 1 max_entries 0)
     (set int64 1 create_entries 3)
-    // (set string 4096 json_str "{@@qname@@q:@@qJohn@@q, @@qage@@q:@@q39@@q, @@qcity@@q:@@qNew York@@q}")
+    //(set string 4096 json_str "{@@qname@@q:@@qJohn@@q, @@qage@@q:@@q39@@q, @@qcity@@q:@@qNew York@@q}")
     //
     // entries with no quotes around key must end by a space. This is a work around!
     (set string 4096 json_str "@@qauthor@@q: 1234.5678 ")
