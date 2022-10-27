@@ -65,6 +65,8 @@ S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens)
 	if (sptr)
 	{
 		// get position of substring
+		// old code:
+		// pos = sptr - startptr;
 		pos = start + sptr - startptr;
 	}
 

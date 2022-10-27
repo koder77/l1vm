@@ -1,4 +1,4 @@
-// hello-thread-3.l1com
+// hello-thread-4.l1com
 // Brackets - Hello world! threads
 //
 // This is an exammple how to launch threads using the new compiler opcode "loadl".

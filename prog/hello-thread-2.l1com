@@ -2,42 +2,41 @@
 // Brackets - Hello world! threads
 //
 // This is an exammple how to launch threads using the new compiler opcode "loadl".
-//
+#include <intr.l1h>
 (main func)
-	(set int64 1 zero 0)
-	(set int64 1 one 1)
-	(set int64 1 two 2)
-	(set int64 1 three 3)
-	(set int64 1 four 4)
+	(set const-int64 1 zero 0)
 	(set int64 1 run 0)
 	(set int64 1 f 0)
-	(set int64 1 delay 4000)
+	(set const-int64 1 delay 4000)
 	(set int64 1 cpu 0)
 	(set string s infostr "starting threads...")
 	// run the two threads
-	(4 cpu 0 0 intr1)
+	//print_i (cpu)
+	// print_n
 	(((cpu zero ==) f =) f if)
-		(6 infostr 0 0 intr0)
-		(7 0 0 0 intr0)
+	    print_s (infostr)
+	    print_n
 		(:start_thread !)
-		(8 delay 0 0 intr0)
+	    detime (delay)
 		(one run =)
 	(endif)
-	(255 0 0 0 intr0)
+	exit (zero)
 (funcend)
 (hello_a func)
-	(set string s hello@hello_one "Hello world! thread 1")
-	(set int64 1 delay@hello_one 2000)
-	(6 hello@hello_one 0 0 intr0)
-	(7 0 0 0 intr0)
-	(8 delay@hello_one 0 0 intr0)
+	#var ~ hello_a
+	(set string s hellostr~ "Hello world! thread 1")
+	(set const-int64 1 delay~ 2000)
+	print_s (hellostr~)
+    print_n
+    detime (delay~)
 (funcend)
 (hello_b func)
-	(set string s hello@hello_two "Hello world! thread 2")
-	(set int64 1 delay@hello_two 2000)
-	(6 hello@hello_two 0 0 intr0)
-	(7 0 0 0 intr0)
-	(8 delay@hello_two 0 0 intr0)
+    #var ~ hello_b
+	(set string s hellostr~ "Hello world! thread 2")
+	(set const-int64 1 delay~ 2000)
+	print_s (hellostr~)
+    print_n
+    detime (delay~)
 (funcend)
 (start_thread func)
 	(set int64 1 run_th 0)
@@ -52,11 +51,13 @@
 	(:hello_b lab_hello_two loadl)
 	(((run_th zero_th ==) f_th =) f_th if)
 		// run threads
-		(0 lab_hello_one 0 0 intr1)
-		(0 lab_hello_two 0 0 intr1)
+		//thread (lab_hello_one)
+        // thread (lab_hello_two)
+        (0 lab_hello_one 0 0 intr1)
+        (0 lab_hello_two 0 0 intr1)
 		(one_th run_th =)
 	(endif)
-	(8 delay_th 0 0 intr0)
-	(1 0 0 0 intr1)
-	(255 0 0 0 intr0)
+    detime (delay_ch)
+    join
+	threadexit (zero)
 (funcend)
