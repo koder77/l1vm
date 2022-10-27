@@ -3,13 +3,10 @@ L1VM (2.0.4)
 	Added lib/json-l1com and include/json.l1h with functions for parsing json strings.
 
 	BUGFIXES: string module: string mem search function now sets string search start position right!
-	Now the JSON module returns "NO-VALUE" on strings like this:
+	NEW: string module now has the "string_parse_json" function!
+	See lib/strin.l1com.
 
-	"author":
-
-	Only the key "author" and "NO-VALUE" as value will be get.
-
--- Stefan Pietzonke <jay-t@gmx.net> Tue 25 Oct 2022 16:55 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Tue 25 Oct 2022 18:20 +0200
 
 L1VM (2.0.3)
 	NEW: interrupt 0: 31: pointer_type to get the pointer variable type.

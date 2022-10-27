@@ -1045,7 +1045,7 @@ U1 *stringmem_search_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			{
 				i++;
 
-				 #if BOUNDSCHECK
+			    #if BOUNDSCHECK
 				if (memory_bounds (strsourceaddr, i) != 0)
 				{
 					printf ("stringmem_search_string: ERROR: source string overflow!\n");
@@ -1157,12 +1157,10 @@ U1 *string_regex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 }
 
 // normal string search functions =============================================
-
 S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end)
 {
 	/* replaces the old buggy code */
-
-	S2 pos = -1, str_len, i = 0, new_end = 0;
+	S2 pos = -1, str_len;
 	str_len = strlen_safe ((const char *) str, MAXLINELEN);
 
 	U1 *sptr;
@@ -1170,20 +1168,7 @@ S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end)
 
 	if (start < 0 || start > str_len - 1)
 	{
-		i = 0;
-	}
-	else
-	{
-		i = start;
-	}
-
-	if (end == 0)
-	{
-		new_end = str_len - 1;
-	}
-	else
-	{
-		new_end = end;
+		start = 0;
 	}
 
 	startptr = str;
@@ -1196,7 +1181,7 @@ S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end)
 	if (sptr)
 	{
 		// get position of substring
-		pos = sptr - startptr;
+		pos = start + sptr - startptr;
 	}
 
 	return (pos);
@@ -1234,5 +1219,183 @@ U1 *string_search (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("string_search: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
+	return (sp);
+}
+
+S2 parse_json (U1 *json_str, U1 *key_str, U1 *value_str, S8 max_len)
+{
+    S8 i ALIGN = 0;
+    S8 j ALIGN = 0;
+    S8 json_str_len ALIGN = 0;
+    S8 start_pos ALIGN = 0;
+    S8 end_pos ALIGN = 0;
+    S8 colon_pos ALIGN = 0;
+
+    // clear value string
+    value_str[0] = '\0';
+
+    json_str_len = strlen_safe ((const char *) json_str, MAXLINELEN);
+    if (json_str_len == 0)
+    {
+        return (1);
+    }
+
+    // get start of key
+    start_pos = searchstr (json_str, (U1 *) "\"", i, 0);
+    if (start_pos == -1)
+    {
+        // no quote found, return
+        return (1);
+    }
+
+    // get end of key
+    end_pos = searchstr (json_str, (U1 *) "\"", start_pos + 1, 0);
+    if (end_pos == -1)
+    {
+        // no quote found, return
+        return (1);
+    }
+
+    // get key string
+    j = 0;
+    for (i = start_pos + 1; i < end_pos; i++)
+    {
+        if (j < max_len)
+        {
+            key_str[j] = json_str[i];
+        }
+        j++;
+    }
+    key_str[j] = '\0';
+
+    // get value, check for quote
+    start_pos = searchstr (json_str, (U1 *) "\"", end_pos + 2, 0);
+    if (start_pos == -1)
+    {
+        // no quote found get value not inside of quote
+        j = 0;
+        for (i = end_pos + 2; i < json_str_len; i++)
+        {
+            switch (json_str[i])
+            {
+                case ',':
+                case '{':
+                case '}':
+                case '[':
+                case ']':
+                case ' ':
+                case ':':
+                    break;
+
+                default:
+                    if (j < max_len)
+                    {
+                        value_str[j] = json_str[i];
+                        j++;
+                    }
+                    break;
+            }
+        }
+    }
+    else
+    {
+        // search for start value quote
+        colon_pos = searchstr (json_str, (U1 *) ":", 0, 0);
+        if (colon_pos == -1)
+        {
+            return (1);
+        }
+
+        colon_pos++;
+        start_pos = searchstr (json_str, (U1 *) "\"", colon_pos, 0);
+        if (start_pos == -1)
+        {
+            return (1);
+        }
+
+        j = 0;
+        for (i = start_pos + 1; i < json_str_len; i++)
+        {
+            if (json_str[i] == '\"')
+            {
+                break;
+            }
+
+            if (j < max_len)
+            {
+				value_str[j] = json_str[i];
+                 j++;
+            }
+        }
+    }
+    value_str[j] = '\0';
+    return (0);
+}
+
+U1 *string_parse_json (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 jsonstraddr ALIGN;
+	S8 keystraddr ALIGN;
+	S8 valuestraddr ALIGN;
+	S8 max_len ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &max_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_search: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &valuestraddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_search: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &keystraddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_search: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &jsonstraddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_search: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	#if BOUNDSCHECK
+	if (memory_bounds (keystraddr, max_len) != 0)
+    {
+		printf ("strin_parse_json: ERROR: key string overflow!\n");
+		return (NULL);
+	}
+
+	if (memory_bounds (valuestraddr, max_len) != 0)
+    {
+		printf ("strin_parse_json: ERROR: value string overflow!\n");
+		return (NULL);
+	}
+    #endif
+
+	ret = parse_json (&data[jsonstraddr], &data[keystraddr], &data[valuestraddr], max_len);
+
+    // return return code
+	sp = stpushi (ret, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_parse_json: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
 	return (sp);
 }
