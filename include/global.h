@@ -103,8 +103,8 @@
 
 // info strings:
 #define COPYRIGHT_STR " (C) 2017-2022 Stefan Pietzonke"
-
-#define  VM_VERSION_STR		"2.0.5"		// version number
+#define VM_VERSION_STR		"2.0.5"		// version number
+#define MOTTO_STR "upgraded ^ 2"
 
 // no user defined definitions below this section! ============================
 
@@ -152,9 +152,6 @@ typedef double                  F8;     /* DOUBLE */
 #define REM_SB          "//"
 #define ASM_SB 			"(ASM)"
 #define ASM_END_SB		"(ASM_END)"
-
-#define COMP_AOT_SB      "(COMP_AOT)"
-#define COMP_AOT_END_SB  "(COMP_AOT_END)"
 
 // data types UNKNOWN (0) -> x
 #define UNKNOWN         7

@@ -2849,7 +2849,7 @@ void show_run_info (void)
 	}
 
 	printf ("l1vm - %s -%s\n", VM_VERSION_STR, COPYRIGHT_STR);
-	printf (">>> lightning speed <<<\n");
+	printf (">>> %s <<<\n", MOTTO_STR);
 	printf ("CPU cores: %lli (STATIC)\n", max_cpu);
 
 	printf ("internal type check: S8 = %lli bytes, F8 = %lli bytes. All OK!\n", size_int64, size_double64);
