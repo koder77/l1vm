@@ -1,3 +1,7 @@
+L1VM (2.0.5)
+	Code cleanup.
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 28 Oct 2022 16:47 +0200
+
 L1VM (2.0.4)
 	NEW: lib/array.l1com, include/array.l1h functions to assign variable lists to arrays.
 	Added lib/json-l1com and include/json.l1h with functions for parsing json strings.

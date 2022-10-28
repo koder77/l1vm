@@ -25,7 +25,7 @@ size_t strlen_safe (const char * str, int maxlen)
 
 	 while (1)
 	 {
-	 	if (str[i] != '\0')
+		if (str[i] != '\0')
 		{
 			i++;
 		}

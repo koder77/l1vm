@@ -19,8 +19,6 @@
 
 #include "../include/global.h"
 
-// #define NULL    0L
-
 char *fgets_uni (char *str, int len, FILE *fptr)
 {
     int ch, nextch;
@@ -83,8 +81,6 @@ char *fgets_uni (char *str, int len, FILE *fptr)
 
     if (feof (fptr))
     {
-//        str[i] = '\n';
-//        i++;
         str[i] = '\0';
     }
     else
