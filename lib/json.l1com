@@ -14,7 +14,7 @@
     //(set string 4096 json_str "{@@qname@@q:@@qJohn@@q, @@qage@@q:@@q39@@q, @@qcity@@q:@@qNew York@@q}")
     //
     // entries with no quotes around key must end by a space. This is a work around!
-    (set string 4096 json_str "@@qauthor@@q: 1234.5678")
+    (set string 4096 json_str "@@qtest@@q: 1234.5678")
     (set string s mem_error_allocstr "ERROR: can't allocate mem object!")
     (set string s mem_error_no_varstr "ERROR: can't read mem object string!")
     (set string 4096 key_str "")
