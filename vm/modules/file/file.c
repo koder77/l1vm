@@ -283,8 +283,12 @@ U1 *file_close (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	fclose (files[handle].fptr);
-	files[handle].state = FILECLOSED;
+    // avoid double close bug
+    if (files[handle].state == FILEOPEN)
+    {
+        fclose (files[handle].fptr);
+        files[handle].state = FILECLOSED;
+    }
 	return (sp);
 }
 

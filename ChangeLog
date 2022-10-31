@@ -2,8 +2,9 @@ L1VM (2.0.5)
 	Code cleanup.
 	NEW: Compiler now exits on first "code list full" error message.
 	BUGFIXES: vm/modules/file-tools.
+	BUGFIX: vm/file file_close now checks if file handle was open.
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon 31 Oct 2022 17:45 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 31 Oct 2022 21:43 +0200
 
 L1VM (2.0.4)
 	NEW: lib/array.l1com, include/array.l1h functions to assign variable lists to arrays.
