@@ -90,13 +90,13 @@ extern "C" U1 *file_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#else
-	if (strlen_safe (&data[sourceaddr], 255) < 255)
+	if (strlen_safe ((char *) &data[sourceaddr], 255) < 255)
 	{
     	strcpy ((char *) source_fullnamestr, (char *) &data[sourceaddr]);
 	}
 	else
 	{
-		printf ("ERROR: file_copy: filename too long!\n", &data[sourceaddr]);
+		printf ("ERROR: file_copy: filename %s too long!\n", &data[sourceaddr]);
 		return (NULL);
 	}
     #endif
@@ -109,13 +109,13 @@ extern "C" U1 *file_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#else
-	if (strlen_safe (&data[destaddr], 255) < 255)
+	if (strlen_safe ((char *) &data[destaddr], 255) < 255)
 	{
     	strcpy ((char *) dest_fullnamestr, (char *) &data[destaddr]);
 	}
 	else
 	{
-		printf ("ERROR: file_copy: filename too long!\n", &data[destaddr]);
+		printf ("ERROR: file_copy: filename %s too long!\n", &data[destaddr]);
 		return (NULL);
 	}
     #endif
@@ -179,13 +179,13 @@ extern "C" U1 *directory_create (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#else
-	if (strlen_safe (&data[diraddr], 255) < 255)
+	if (strlen_safe ((char *) &data[diraddr], 255) < 255)
 	{
-    	strcpy ((char *) dir_namestr, (char *) &data[sourceaddr]);
+    	strcpy ((char *) dir_namestr, (char *) &data[diraddr]);
 	}
 	else
 	{
-		printf ("ERROR: directory_create: dirname too long!\n", &data[diraddr]);
+		printf ("ERROR: directory_create: dirname %s too long!\n", &data[diraddr]);
 		return (NULL);
 	}
     #endif
@@ -247,13 +247,13 @@ extern "C" U1 *remove_all (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#else
-	if (strlen_safe (&data[diraddr], 255) < 255)
+	if (strlen_safe ((char *) &data[diraddr], 255) < 255)
 	{
-    	strcpy ((char *) dir_namestr, (char *) &data[sourceaddr]);
+    	strcpy ((char *) dir_namestr, (char *) &data[diraddr]);
 	}
 	else
 	{
-		printf ("ERROR: remove_all: name too long!\n", &data[diraddr]);
+		printf ("ERROR: remove_all: name %s too long!\n", &data[diraddr]);
 		return (NULL);
 	}
     #endif
@@ -332,13 +332,13 @@ extern "C" U1 *file_rename (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#else
-	if (strlen_safe (&data[sourceaddr], 255) < 255)
+	if (strlen_safe ((char *) &data[sourceaddr], 255) < 255)
 	{
     	strcpy ((char *) source_fullnamestr, (char *) &data[sourceaddr]);
 	}
 	else
 	{
-		printf ("ERROR: file_rename: filename too long!\n", &data[sourceaddr]);
+		printf ("ERROR: file_rename: filename %s too long!\n", &data[sourceaddr]);
 		return (NULL);
 	}
     #endif
@@ -351,13 +351,13 @@ extern "C" U1 *file_rename (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#else
-	if (strlen_safe (&data[destaddr], 255) < 255)
+	if (strlen_safe ((char *) &data[destaddr], 255) < 255)
 	{
     	strcpy ((char *) dest_fullnamestr, (char *) &data[destaddr]);
 	}
 	else
 	{
-		printf ("ERROR: file_rename: filename too long!\n", &data[destaddr]);
+		printf ("ERROR: file_rename: filename %s too long!\n", &data[destaddr]);
 		return (NULL);
 	}
     #endif
@@ -411,13 +411,13 @@ extern "C" U1 *file_size_bytes (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#else
-	if (strlen_safe (&data[filenameeaddr], 255) < 255)
+	if (strlen_safe ((char *) &data[filenameaddr], 255) < 255)
 	{
     	strcpy ((char *) source_fullnamestr, (char *) &data[filenameaddr]);
 	}
 	else
 	{
-		printf ("ERROR: file_size_bytes: filename too long!\n", &data[filenameddr]);
+		printf ("ERROR: file_size_bytes: filename %s too long!\n", &data[filenameaddr]);
 		return (NULL);
 	}
     #endif
@@ -472,13 +472,13 @@ extern "C" U1 *file_exists (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#else
-	if (strlen_safe (&data[filenameeaddr], 255) < 255)
+	if (strlen_safe ((char *) &data[filenameaddr], 255) < 255)
 	{
     	strcpy ((char *) source_fullnamestr, (char *) &data[filenameaddr]);
 	}
 	else
 	{
-		printf ("ERROR: file_exists: filename too long!\n", &data[filenameddr]);
+		printf ("ERROR: file_exists: filename %s too long!\n", &data[filenameaddr]);
 		return (NULL);
 	}
     #endif
@@ -540,13 +540,13 @@ extern "C" U1 *directory_entries (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#else
-	if (strlen_safe (&data[diraddr], 255) < 255)
+	if (strlen_safe ((char *) &data[diraddr], 255) < 255)
 	{
-    	strcpy ((char *) dir_namestr, (char *) &data[sourceaddr]);
+    	strcpy ((char *) dir_namestr, (char *) &data[diraddr]);
 	}
 	else
 	{
-		printf ("ERROR: directory_entries: name too long!\n", &data[diraddr]);
+		printf ("ERROR: directory_entries: name %s too long!\n", &data[diraddr]);
 		return (NULL);
 	}
     #endif
@@ -654,13 +654,13 @@ extern "C" U1 *directory_files (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#else
-	if (strlen_safe (&data[diraddr], 255) < 255)
+	if (strlen_safe ((char *) &data[diraddr], 255) < 255)
 	{
-    	strcpy ((char *) dir_namestr, (char *) &data[sourceaddr]);
+    	strcpy ((char *) dir_namestr, (char *) &data[diraddr]);
 	}
 	else
 	{
-		printf ("ERROR: directory_files: name too long!\n", &data[diraddr]);
+		printf ("ERROR: directory_files: name %s too long!\n", &data[diraddr]);
 		return (NULL);
 	}
     #endif
