@@ -186,13 +186,13 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	#else
-	if (strlen_safe (&data[nameaddr], 255) < 255)
+	if (strlen_safe ((char *) &data[nameaddr], 255) < 255)
 	{
     	strcpy ((char *) files[handle].name, (char *) &data[nameaddr]);
 	}
 	else
 	{
-		printf ("ERROR: file_open: filename too long!\n", &data[nameaddr]);
+		printf ("ERROR: file_open: filename %s too long!\n", &data[nameaddr]);
 		return (NULL);
 	}
 	#endif
