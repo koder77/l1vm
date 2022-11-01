@@ -84,7 +84,7 @@
             // error reading string from mem object
             print_s (mem_error_no_varstr)
             print_n
-           exit (1)
+            exit (one)
         (endif)
 
         print_s (key_str)
@@ -96,7 +96,7 @@
             // error reading string from mem object
             print_s (mem_error_no_varstr)
             print_n
-           exit (1)
+            exit (one)
         (endif)
 
         print_s (value_str)
