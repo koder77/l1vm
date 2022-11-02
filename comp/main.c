@@ -4340,9 +4340,6 @@ S2 parse_line (U1 *line)
 
                                     // check if target variable is int64
 									target_var_type = getvartype_real (ast[level].expr[j][last_arg - 1]);
-
-									printf ("target var type: %i\n", target_var_type);
-
                                     if (target_var_type == QUADWORD)
 									{
 										type_ok = 1;
