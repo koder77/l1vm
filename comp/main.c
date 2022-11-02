@@ -4326,6 +4326,87 @@ S2 parse_line (U1 *line)
 									continue;
 								}
 
+								// load opcode for loading variable into register. Use it before JIT-compiler blocks NEW CODE
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "load") == 0)
+								{
+									// new varaible scope for U1 type_ok
+									{
+									U1 type_ok = 0;
+
+									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+									{
+										return (1);
+									}
+
+                                    // check if target variable is int64
+									target_var_type = getvartype_real (ast[level].expr[j][last_arg - 1]);
+
+									printf ("target var type: %i\n", target_var_type);
+
+                                    if (target_var_type == QUADWORD)
+									{
+										type_ok = 1;
+										// get empty register for load opcode. loading target register
+										target = get_regi (ast[level].expr[j][last_arg - 1]);
+										if (target == -1)
+										{
+											// variable is not in register, load it
+
+											target = get_free_regi ();
+											set_regi (target, ast[level].expr[j][last_arg - 1]);
+										}
+
+										code_line++;
+									    if (code_line >= line_len)
+									    {
+										     printf ("error: line %lli: code list full!\n", linenum);
+										     return (3);
+									    }
+
+	                                    strcpy ((char *) code[code_line], "loada ");
+										strcat ((char *) code[code_line], (const char *) ast[level].expr[j][last_arg - 1]);
+										strcat ((char *) code[code_line], ", 0, ");
+										sprintf ((char *) str, "%i", target);
+										strcat ((char *) code[code_line], (const char *) str);
+										strcat ((char *) code[code_line], "\n");
+									}
+
+									if (target_var_type == DOUBLE)
+									{
+										type_ok = 1;
+										// get empty register for load opcode. loading target register
+										target = get_regd (ast[level].expr[j][last_arg - 1]);
+										if (target == -1)
+										{
+											// variable is not in register, load it
+
+											target = get_free_regd ();
+											set_regd (target, ast[level].expr[j][last_arg - 1]);
+										}
+
+										code_line++;
+									    if (code_line >= line_len)
+									    {
+										     printf ("error: line %lli: code list full!\n", linenum);
+										     return (3);
+									    }
+
+	                                    strcpy ((char *) code[code_line], "loadd ");
+										strcat ((char *) code[code_line], (const char *) ast[level].expr[j][last_arg - 1]);
+										strcat ((char *) code[code_line], ", 0, ");
+										sprintf ((char *) str, "%i", target);
+										strcat ((char *) code[code_line], (const char *) str);
+										strcat ((char *) code[code_line], "\n");
+									}
+									if (type_ok == 0)
+									{
+										printf ("error: line %lli: load variable not int64 or double type!\n", linenum);
+										return (1);
+									}
+									} // scope block end
+									continue;
+								}
+
 								// call =========================================================================
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "call") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], "!") == 0)
 								{
