@@ -30,6 +30,7 @@
     (set string s storestr "error can't store data in data base!")
     (set string s dataokstr "data read OK!")
     (set string s ok_str "OK")
+    (set string s error_str "ERROR")
     (set string s sending_str "sending: ")
 
 	(mod_string :string_init !)
@@ -77,16 +78,32 @@
 		    // ERROR can't connect to server
             print_s (storestr)
             print_n
+            // close data base connection
+            (socket_handle :go_data_close !)
+            // close socket
+            (socket_handle :close_client_socket !)
+
             exit (one)
 	    (endif)
+        (ret_str error_str :string_compare !)
+        (ret stpop)
+        (((ret zero ==) f =) f if)
+            print_s (storestr)
+            print_n
+            // close data base connection
+            (socket_handle :go_data_close !)
+            // close socket
+            (socket_handle :close_client_socket !)
+
+            exit (one)
+        (endif)
         ((i one +) i =)
     (next)
 
-    // close data base connection
-    (socket_handle :go_data_close !)
-
-    // close socket
-    (socket_handle :close_client_socket !)
+// close data base connection
+(socket_handle :go_data_close !)
+// close socket
+(socket_handle :close_client_socket !)
 
 	exit (zero)
 (funcend)
