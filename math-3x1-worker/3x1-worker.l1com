@@ -1,0 +1,189 @@
+// 3x1-workerl1com
+// connect to l1vmgodata data base with 3x1 numbers in it
+//
+#include <intr.l1h>
+#include <math-const.l1h>
+#include <misc-macros.l1h>
+(main func)
+	(set const-int64 1 zero 0)
+	(set const-int64 1 one 1)
+    (set const-int64 1 two 2)
+    (set const-int64 1 three 3)
+    (set int64 1 num 1)
+    (set int64 1 maxnum 10000)
+    (set int64 1 result 0)
+	(set const-int64 1 mod_string 0)
+	(set const-int64 1 mod_net 1)
+    (set const-int64 1 mod_math 2)
+	(set int64 1 portnum 2000Q)
+	(set int64 1 socket_handle 0)
+    (set int64 1 work 1)
+	(set string 256 ip "127.0.0.1")
+    (set string 256 hoststr)
+    (set int64 1 ip_len 10)
+	(set int64 1 f 0)
+	(set int64 1 ret 0)
+    (set string 4097 key_str "num")
+    (set string 4097 value_str "")
+    (set string 4097 res_start_str "res")
+    (set string 4098 res_num_str "")
+    (set string 4097 num_str "")
+    (set string 256 ret_str "")
+    (set string 4098 request_str "")
+    (set int64 1 string_len 4096)
+	(set string 256 worker_id_str "")
+//	(set string s worker_env_str "L1VMWORKERID")
+	(set string 4097 ret_str "")
+	(set string s netinitstr "error: can't init networking sockets!")
+    (set string s addressstr "error can't get host address!")
+    (set string s connectstr "error: can't connect to server!")
+    (set string s storestr "error can't store data in data base!")
+    (set string s dataokstr "data read OK!")
+    (set string s ok_str "OK")
+    (set string s error_str "ERROR")
+    (set string s receiving_str "receiving ")
+    (set string s calc_str "calculated number: ")
+    (set string s colon_str " : ")
+    (set string s one_str "1")
+
+    (mod_string :string_init !)
+	(mod_net one :net_init !)
+	(ret stpopi)
+	(((ret zero !=) f =) f if)
+		// ERROR can't allocate memory
+        print_s (netinitstr)
+        print_n
+        exit (one)
+	(endif)
+
+    (mod_math :math_init !)
+
+    // connect to l11vmgodata server
+    (ip portnum :open_client_socket !)
+    (ret stpopi)
+    (socket_handle stpopi)
+    print_n
+    (((ret zero !=) f =) f if)
+		// ERROR can't connect to server
+        print_s (connectstr)
+        print_n
+        exit (one)
+	(endif)
+
+    // get key from server
+    (do)
+        (num num_str string_len :string_int64tostring !)
+        (request_str key_str :string_copy !)
+        (request_str num_str :string_cat !)
+
+        // send key and get value from l1vmgodata server
+        (socket_handle request_str value_str :go_data_remove !)
+        (ret stpop)
+        (((ret zero !=) f =) f if)
+		    // ERROR can't connect to server
+            print_s (storestr)
+            print_n
+
+            // close data base connection
+            (socket_handle :go_data_close !)
+            // close socket
+            (socket_handle :close_client_socket !)
+
+            exit (one)
+	    (endif)
+
+        // check if no value found ERROR return
+        (value_str error_str :string_compare !)
+        (ret stpop)
+        (((ret zero ==) f =) f if+)
+            // got ERROR message, key not found
+            (((num maxnum <) f =) f if)
+                ((num one +) num =)
+            (endif)
+        (else)
+            // convert value string to number
+            (value_str :string_to_int !)
+            (num stpop)
+
+            // calculate 3x1
+            (num :calc !)
+            (result stpop)
+
+            (num num_str string_len :string_int64tostring !)
+            (res_num_str res_start_str :string_copy !)
+            (res_num_str num_str :string_cat !)
+
+            (socket_handle res_num_str one_str ret_str :go_data_store !)
+            (ret stpop)
+            (((ret zero !=) f =) f if+)
+		        // ERROR can't connect to server
+                print_s (storestr)
+                print_n
+
+                // close data base connection
+                (socket_handle :go_data_close !)
+                // close socket
+                (socket_handle :close_client_socket !)
+
+                exit (one)
+	        (else)
+                (ret_str ok_str :string_compare !)
+                (ret stpop)
+                (((ret zero ==) f =) f if+)
+                    // all ok, data send
+
+                    // print out message
+                    print_s (calc_str)
+                    print_s (res_num_str)
+                    print_s (colon_str)
+                    print_i (num)
+                    print_n
+                (else)
+                    print_s (storestr)
+                    print_n
+                (endif)
+            (endif)
+            ((num one +) num =)
+        (endif)
+    (((num maxnum <) f =) f while)
+
+    // close data base connection
+    (socket_handle :go_data_close !)
+    // close socket
+    (socket_handle :close_client_socket !)
+
+	exit (zero)
+(funcend)
+
+(calc func)
+    // calculate 3x1
+    #var ~ calc
+    (set int64 1 num~ 0)
+    (set int64 1 result~ 0)
+    (set int64 1 zero~ 0)
+    (set int64 1 one~ 1)
+    (set int64 1 two~ 2)
+    (set int64 1 three~ 3)
+    (set int64 1 f~ 0)
+    (num~ stpop)
+    (do)
+        (reset-reg)
+        // print_i (num~)
+        // print_n
+        ((num~ two~ %) result~ =)
+        (((result~ zero~ ==) f~ =) f~ if+)
+            // even
+            ((num~ two~ /) num~ =)
+        (else)
+             // odd
+             ((num~ three *) num~ =)
+             ((num~ one~ +) num~ =)
+        (endif)
+    (((num~ one~ !=) f~ =) f~ while)
+    (num~ stpush)
+(funcend)
+    
+#include <net-lib.l1h>
+#include <string.l1h>
+#include <l1vmgodata.l1h>
+#include <math-lib.l1h>
