@@ -145,7 +145,7 @@
             (endif)
             ((num one +) num =)
         (endif)
-    (((num maxnum <) f =) f while)
+    (((num maxnum <=) f =) f while)
 
     // close data base connection
     (socket_handle :go_data_close !)
