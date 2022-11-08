@@ -95,12 +95,7 @@
         // check if no value found ERROR return
         (value_str error_str :string_compare !)
         (ret stpop)
-        (((ret zero ==) f =) f if+)
-            // got ERROR message, key not found
-            (((num maxnum <) f =) f if)
-                ((num one +) num =)
-            (endif)
-        (else)
+        (((ret zero !=) f =) f if)
             // convert value string to number
             (value_str :string_to_int !)
             (num stpop)
@@ -143,8 +138,8 @@
                     print_n
                 (endif)
             (endif)
-            ((num one +) num =)
         (endif)
+        ((num one +) num =)
     (((num maxnum <=) f =) f while)
 
     // close data base connection
