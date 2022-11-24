@@ -1264,7 +1264,7 @@ S2 parse_line (U1 *line)
 											}
 											else
 											{
-												// check if both variables are double var
+												// check if both variables are integer var
 												if (getvartype (ast[level].expr[j][last_arg - 2]) != INTEGER)
 												{
 													printf ("error: line %lli: variable '%s' is not int var!\n", linenum, ast[level].expr[j][last_arg - 2]);
