@@ -1200,9 +1200,109 @@ S2 parse_line (U1 *line)
 
 								// check if = operator
 
-								if (strcmp ((const char *) ast[level].expr[j][last_arg], "=") == 0)
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "=") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], "m=") == 0)
 								{
 									// do variable assign
+                                    // check if : "x y move =" expression
+									if (last_arg >= 2 && strcmp ((const char *) ast[level].expr[j][last_arg], "m=") == 0)
+									{
+											if (checkdef (ast[level].expr[j][last_arg - 2]) != 0)
+											{
+												return (1);
+											}
+
+											if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+											{
+												return (1);
+											}
+
+											// check if variable is int type
+											target_var_type = getvartype (ast[level].expr[j][last_arg - 1]);
+
+											if (get_var_is_const (ast[level].expr[j][last_arg - 1]) == 1)
+											{
+												printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][last_arg - 1]);
+												return (1);
+											}
+
+										    if (target_var_type == DOUBLE)
+											{
+												// check if both variables are double var
+												if (getvartype (ast[level].expr[j][last_arg - 2]) != DOUBLE)
+												{
+													printf ("error: line %lli: variable '%s' is not double var!\n", linenum, ast[level].expr[j][last_arg - 2]);
+													return (1);
+												}
+
+												// check if both variables are in registers
+												reg2 = get_regd (ast[level].expr[j][last_arg - 1]);
+												if (reg == -1)
+												{
+													goto move_end;
+												}
+
+												reg = get_regd (ast[level].expr[j][last_arg - 2]);
+												if (reg == -1)
+												{
+													goto move_end;
+												}
+
+											    code_line++;
+												if (code_line >= line_len)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (3);
+												}
+
+												strcpy ((char *) code[code_line], "movd ");
+											    sprintf ((char *) str, "%i", reg);
+												strcat ((char *) code[code_line], (const char *) str);
+												strcat ((char *) code[code_line], ", ");
+												sprintf ((char *) str, "%i", reg2);
+												strcat ((char *) code[code_line], (const char *) str);
+												strcat ((char *) code[code_line], "\n");
+											}
+											else
+											{
+												// check if both variables are double var
+												if (getvartype (ast[level].expr[j][last_arg - 2]) != INTEGER)
+												{
+													printf ("error: line %lli: variable '%s' is not int var!\n", linenum, ast[level].expr[j][last_arg - 2]);
+													return (1);
+												}
+
+												// check if both variables are in registers
+												reg2 = get_regi (ast[level].expr[j][last_arg - 1]);
+												if (reg == -1)
+												{
+													goto move_end;
+												}
+
+												reg = get_regi (ast[level].expr[j][last_arg - 2]);
+												if (reg == -1)
+												{
+													goto move_end;
+												}
+
+											    code_line++;
+												if (code_line >= line_len)
+												{
+													printf ("error: line %lli: code list full!\n", linenum);
+													return (3);
+												}
+
+												strcpy ((char *) code[code_line], "movi ");
+											    sprintf ((char *) str, "%i", reg);
+												strcat ((char *) code[code_line], (const char *) str);
+												strcat ((char *) code[code_line], ", ");
+												sprintf ((char *) str, "%i", reg2);
+												strcat ((char *) code[code_line], (const char *) str);
+												strcat ((char *) code[code_line], "\n");
+
+											}
+										continue;
+									}
+								    move_end:
 
 									// check if target is boolean variable
 									if (ast[level].expr[j][last_arg - 1][0] == 'B')

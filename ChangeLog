@@ -6,7 +6,13 @@ L1VM (2.0.5)
 	NEW: before JIT compile blocks you can now use (x load) to load a int64 or double number into a register.
 	So the code inside the JIT compiled block can do calcualtions without "unknown" opcodes in it!
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 02 Nov 2022 21:25 +0200
+	NEW: "m=" assign to use the "move" opcode if both variables are in registers.
+	See "prog/hello-move.l1com" for more!
+
+	(xd id m=)
+	Moves variable "xd" to "id" var.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 24 Nov 2022 23:01 +0100
 
 L1VM (2.0.4)
 	NEW: lib/array.l1com, include/array.l1h functions to assign variable lists to arrays.
