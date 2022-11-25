@@ -16,7 +16,6 @@
 	(set int64 1 f 0)
     ((xd yd *) ad =)
     ((id jd +) bd =)
-    (id load)
     (xd load)
     (xd id m=)
     print_d (id)
