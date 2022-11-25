@@ -1216,7 +1216,6 @@ S2 parse_line (U1 *line)
 												return (1);
 											}
 
-											// check if variable is int type
 											target_var_type = getvartype (ast[level].expr[j][last_arg - 1]);
 
 											if (get_var_is_const (ast[level].expr[j][last_arg - 1]) == 1)
@@ -1261,6 +1260,8 @@ S2 parse_line (U1 *line)
 												sprintf ((char *) str, "%i", reg2);
 												strcat ((char *) code[code_line], (const char *) str);
 												strcat ((char *) code[code_line], "\n");
+
+												printf ("move: line %lli: opcode set!\n", linenum);
 											}
 											else
 											{
@@ -1299,6 +1300,7 @@ S2 parse_line (U1 *line)
 												strcat ((char *) code[code_line], (const char *) str);
 												strcat ((char *) code[code_line], "\n");
 
+												printf ("move: line %lli: opcode set!\n", linenum);
 											}
 										continue;
 									}
