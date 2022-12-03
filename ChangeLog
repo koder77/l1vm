@@ -1,3 +1,8 @@
+L1VM (2.0.6)
+	NEW: compiler flag: "-wsetundef" warns if a variable has no value set!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 3 Dec 2022 15:58 +0100
+
 L1VM (2.0.5)
 	Code cleanup.
 	NEW: Compiler now exits on first "code list full" error message.

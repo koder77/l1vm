@@ -68,6 +68,9 @@ U1 call_loadreg = 0;
 // set all warnings as errors if 1
 U1 warnings_as_errors = 0;
 
+// warn if set does'nt set a value on variable definiton if 1
+U1 warn_set_not_def = 0;
+
 // don't use pull opcodes to optimize chained math expressions in "parse-rpolish.c" math expressions
 U1 no_var_pull = 0;
 
@@ -812,6 +815,23 @@ S2 parse_line (U1 *line)
 							data_info[data_ind].size = strlen_safe ((char *) ast[level].expr[j][4], MAXLINELEN) - 1;
 							// set size string:
 							sprintf ((char *) ast[level].expr[j][2], "%lli", data_info[data_ind].size);
+						}
+
+						if (ast[level].expr_args[j] == 3)
+						{
+							// no value set on variable definition
+							if (warn_set_not_def == 1)
+							{
+								if (warnings_as_errors == 1)
+								{
+									printf ("error: line %lli: variable has no value set!\n", linenum);
+									return (1);
+								}
+								else
+								{
+									printf ("warning: line %lli: variable has no value set!\n", linenum);
+								}
+							}
 						}
 
 						// value
@@ -6372,7 +6392,7 @@ void cleanup (void)
 
 void show_info (void)
 {
-	printf ("l1com <file> [-a] [-lines] [max linenumber]\n");
+	printf ("l1com <file> [-a] [-lines] [max linenumber] [-wsetundef] [-werror]\n");
 	printf ("\nCompiler for bra(ets, a programming language with brackets ;-)\n");
 	printf ("%s", VM_VERSION_STR);
 	printf ("%s\n", COPYRIGHT_STR);
@@ -6470,6 +6490,14 @@ int main (int ac, char *av[])
 				if (strcmp (av[i], "-werror") == 0)
 				{
 					warnings_as_errors = 1;
+				}
+			}
+
+			if (arglen == 10)
+			{
+				if (strcmp (av[i], "-wsetundef") == 0)
+				{
+					warn_set_not_def = 1;
 				}
 			}
 		}
