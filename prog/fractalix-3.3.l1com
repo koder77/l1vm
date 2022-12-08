@@ -1,0 +1,581 @@
+// fractalix-3.l1com
+// SDL fractal demo
+// now zoom and move can be set by shell argument:
+//
+//  l1vm prog/fractalix-3.3 -args 1000 -1.0 0.0 2.5
+//
+(main func)
+(set int64 1 zero 0)
+(set int64 1 one 1)
+(set int64 1 two 2)
+(set int64 1 three 3)
+(set int64 1 four 4)
+(set int64 1 five 5)
+(set int64 1 width 1200)
+(set int64 1 sdl_width 1200)
+(set int64 1 height 800)
+(set int64 1 maxcol 255)
+(set string s sdlmodulestr "libl1vmsdl")
+(set string s sdlquitstr "sdl_quit")
+(set string s sdlpixelstr "sdl_pixel_alpha")
+(set string s sdlopenstr "sdl_open_screen")
+(set string s sdlupdatestr "sdl_update")
+(set int64 1 bit 32)
+(set int64 1 delay 5000)
+(set double 1 Pzoom 1.0)
+(set double 1 PmoveX -0.5)
+(set double 1 PmoveY 0.0)
+(set double 1 Ptwo 2.0)
+(set double 1 Pfour 4.0)
+(set double 1 P256 256.0)
+(set int64 1 Pblue 255)
+(set string s mathmodulestr "libl1vmmath")
+(set string s mathint2doublestr "int2double")
+(set string s mathlogstr "log2double")
+(set string s mathstr2int_str "string_to_int")
+(set string s mathstrtodoublestr "string_to_double")
+(set int64 1 Pmaxiterations 1000)
+(set double 1 Phalf 0.5)
+(set double 1 Ponehalf 1.5)
+(set double 1 Pzero 0.0)
+(set string s sqrtstr "sqrtdouble")
+(set double 1 oneq 1.75)
+(set string s mathdouble2intstr "double2int")
+(set int64 1 delaysmall 50)
+(set int64 1 four 4)
+(set int64 1 eight 8)
+(set int64 1 f 0)
+	(ASM)
+	loada zero, 0, I0
+	loada one, 0, I1
+	loada two, 0, I2
+	loada three, 0, I3
+	loada four, 0, I4
+	loada five, 0, I5
+// load math module
+	loada mathmodulestraddr, 0, I15
+	loada mathint2doublestraddr, 0, I16
+	loada mathlogstraddr, 0, I17
+	loada sqrtstraddr, 0, I18
+	loada mathdouble2intstraddr, 0, I19
+	loada mathstr2int_straddr, 0, I20
+	loada mathstrtodoublestraddr, 0, I21
+	intr0 0, I15, I1, 0
+// set functions
+	intr0 2, I1, I0, I16
+	intr0 2, I1, I1, I17
+	intr0 2, I1, I2, I18
+	intr0 2, I1, I3, I19
+	intr0 2, I1, I4, I20
+	intr0 2, I1, I5, I21
+	stpushi I0
+	stpushi I1
+	stpushi I2
+	stpushi I3
+	stpushi I4
+	stpushi I5
+	stpushi I15
+	stpushi I16
+	stpushi I17
+	stpushi I18
+	stpushi I19
+	stpushi I20
+	stpushi I21
+	jsr :get_cli_args
+	stpopi I21
+	stpopi I20
+	stpopi I19
+	stpopi I18
+	stpopi I17
+	stpopi I16
+	stpopi I15
+	stpopi I5
+	stpopi I4
+	stpopi I3
+	stpopi I2
+	stpopi I1
+	stpopi I0
+	intr0 26, 0, 0, 0
+// sdl
+	loada sdlmodulestraddr, 0, I10
+	loada sdlopenstraddr, 0, I11
+	loada sdlpixelstraddr, 0, I12
+	loada sdlupdatestraddr, 0, I13
+	loada sdlquitstraddr, 0, I14
+// load sdl module
+	intr0 0, I10, I0, 0
+// set functions
+	intr0 2, I0, I0, I11
+	intr0 2, I0, I1, I12
+	intr0 2, I0, I2, I13
+	intr0 2, I0, I3, I14
+// open screen
+	loada sdl_width, 0, I100
+	loada width, 0, I20
+	loada height, 0, I21
+	loada bit, 0, I22
+	stpushi I100
+	stpushi I21
+	stpushi I22
+	intr0 3, I0, I0, 0
+	stpopi I50
+	intr0 15, I60, 0, 0
+	loada four, 0, I70
+	loada eight, 0, I80
+	greqi I60, I80, I61
+	jmpi I61, :eight_threads
+	greqi I60, I70, I61
+	jmpi I61, :four_threads
+//
+//
+// two threads:
+//
+//
+// thread 1
+	divi I20, I2, I220
+	stpushi I220
+	stpushi I0
+	loadl :startfractal, I230
+	intr1 0, I230, 0, 0
+	loada delaysmall, 0, I200
+	intr0 8, I200, 0, 0
+// thread 2
+	stpopi 255
+	stpopi 255
+	stpushi I20
+	stpushi I220
+	loadl :startfractal, I230
+	intr1 0, I230, 0, 0
+	jmp :join
+//
+//
+// eight threads:
+//
+//
+:eight_threads
+// thread 1
+	divi I20, I80, I220
+	stpushi I220
+	stpushi I0
+	loadl :startfractal, I230
+	intr1 0, I230, 0, 0
+	loada delaysmall, 0, I200
+	intr0 8, I200, 0, 0
+// thread 2
+	addi I220, I220, I221
+	stpushi I221
+	stpushi I220
+	loadl :startfractal, I230
+	intr1 0, I230, 0, 0
+	loada delaysmall, 0, I200
+	intr0 8, I200, 0, 0
+// thread 3
+	addi I221, I220, I221
+	addi I220, I220, I222
+	stpushi I221
+	stpushi I222
+	loadl :startfractal, I230
+	intr1 0, I230, 0, 0
+	loada delaysmall, 0, I200
+	intr0 8, I200, 0, 0
+// thread 4
+	addi I221, I220, I221
+	addi I220, I220, I222
+	stpushi I221
+	stpushi I222
+	loadl :startfractal, I230
+	intr1 0, I230, 0, 0
+	loada delaysmall, 0, I200
+	intr0 8, I200, 0, 0
+// thread 5
+	addi I221, I220, I221
+	addi I220, I220, I222
+	stpushi I221
+	stpushi I222
+	loadl :startfractal, I230
+	intr1 0, I230, 0, 0
+	loada delaysmall, 0, I200
+	intr0 8, I200, 0, 0
+// thread 6
+	addi I221, I220, I221
+	addi I220, I220, I222
+	stpushi I221
+	stpushi I222
+	loadl :startfractal, I230
+	intr1 0, I230, 0, 0
+	loada delaysmall, 0, I200
+	intr0 8, I200, 0, 0
+// thread 7
+	addi I221, I220, I221
+	addi I220, I220, I222
+	stpushi I221
+	stpushi I222
+	loadl :startfractal, I230
+	intr1 0, I230, 0, 0
+	loada delaysmall, 0, I200
+	intr0 8, I200, 0, 0
+// thread 8
+	addi I221, I220, I221
+	addi I220, I220, I222
+	stpushi I221
+	stpushi I222
+	loadl :startfractal, I230
+	intr1 0, I230, 0, 0
+	jmp :join
+//
+//
+// four threads:
+//
+//
+:four_threads
+// thread 1
+	divi I20, I70, I220
+	stpushi I220
+	stpushi I0
+	loadl :startfractal, I230
+	intr1 0, I230, 0, 0
+	loada delaysmall, 0, I200
+	intr0 8, I200, 0, 0
+// tread 2
+    addi I220, I220, I221
+    stpushi I221
+    stpushi I220
+    loadl :startfractal, I230
+	intr1 0, I230, 0, 0
+	loada delaysmall, 0, I200
+	intr0 8, I200, 0, 0
+// thread 3
+    addi I221, I220, I221
+    addi I220, I220, I222
+    stpushi I221
+    stpushi I222
+    loadl :startfractal, I230
+	intr1 0, I230, 0, 0
+	loada delaysmall, 0, I200
+	intr0 8, I200, 0, 0
+// thread 4
+    addi I221, I220, I221
+    addi I220, I220, I222
+    stpushi I221
+    stpushi I222
+    loadl :startfractal, I230
+	intr1 0, I230, 0, 0
+// join threads
+:join
+	intr1 1, 0, 0, 0
+:waitloop
+	loada delay, 0, I200
+	loada zero, 0, I0
+	loada one, 0, I1
+	loada two, 0, I2
+	loada three, 0, I3
+	intr0 8, I200, 0, 0
+	// update screen
+	//	loada zero, 0, I0
+	//	loada two, 0, I2
+	// set mutex
+	intr1 2, 0, 0, 0
+	intr0 3, I0, I2, 0
+	intr1, 3, 0, 0, 0
+// do loop forever
+	jmp :waitloop
+	intr0 3, I0, I3, 0
+	intr0 1, I0, 0, 0
+	intr0 1, I1, 0, 0
+// exit
+	intr0, 255, 0, 0, 0
+:startfractal
+// xstart
+	stpopi I220
+// xend
+	stpopi I221
+// print I221
+	intr0 4, I221, 0, 0
+	intr0 7, 0, 0, 0
+	intr0 7, 0, 0, 0
+	loada zero, 0, I0
+	loada one, 0, I1
+	loada two, 0, I2
+	loada three, 0, I3
+	loada width, 0, I20
+	loada height, 0, I21
+	loada bit, 0, I22
+//	intr0 14, 0, 0, 0
+// convert 2 double
+	stpushi I20
+	intr0, 3, I1, I0, 0
+//	width
+//	intr0 14, 0, 0, 0
+	stpopd F0
+//	intr0 14, 0, 0, 0
+	stpushi I21
+	intr0, 3, I1, I0, 0
+// height
+	stpopd F1
+	loada Pmaxiterations, 0, I22
+	stpushi I22
+	intr0, 3, I1, I0, 0
+// Pmaxiterations
+	stpopd F2
+// begin
+	loadd Ptwo, 0, F100
+	loadd Pzoom, 0, F101
+	loadd Phalf, 0, F102
+	loadd Ponehalf, 0, F103
+	loadd Pzero, 0, F104
+	loadd PmoveX, 0, F105
+	loadd PmoveY, 0, F106
+	loadd Pfour, 0, F107
+	loadd oneq, 0, F108
+	loadd P256, 0, F109
+	loada maxcol, 0, I61
+	loada Pblue, 0, I100
+// y
+	loada zero, 0, I30
+//	intr0 4, I30, 0, 0
+//	intr0 7, 0, 0, 0
+:loopy
+// x
+	movi I220, I31
+:loopx
+	jsr :calc_fract
+:loopxnext
+//	intr0 4, I31, 0, 0
+//	intr0 7, 0, 0, 0
+	inclsijmpi I31, I221, :loopx
+//	intr0 4, I30, 0, 0
+//	intr0 7, 0, 0, 0
+	inclsijmpi I30, I21, :loopy
+	// update screen
+//	loada zero, 0, I0
+//	loada two, 0, I2
+// set mutex
+	intr1 2, 0, 0, 0
+	intr0 3, I0, I2, 0
+	intr1, 3, 0, 0, 0
+// end thread
+	intr0, 255, 0, 0, 0
+:calc_fract
+// convert x 2 double
+//	loada zero, 0, I0
+//	loada one, 0, I1
+	stpushi I31
+	intr0, 3, I1, I0, 0
+	stpopd F3
+// convert y 2 double
+	stpushi I30
+	intr0, 3, I1, I0, 0
+	stpopd F4
+// Pwh = F5
+	divd F0, F100, F5
+// Pa = F6
+	subd F3, F5, F6
+// Pb = F7
+	muld F102, F101, F7
+	muld F7, F0, F7
+// debug
+//	intr0 5, F7, 0, 0
+//	intr0 7, 0, 0, 0
+// Ppr = F8 ok
+	muld F103, F6, F8
+	divd F8, F7, F8
+	addd F8, F105, F8
+// debug
+//	intr0 5, F8, 0, 0
+//	intr0 7, 0, 0, 0
+// Phh = F9
+	divd F1, F100, F9
+// Pa = F10 ok
+	subd F4, F9, F10
+//	intr0 5, F10, 0, 0
+//	intr0 7, 0, 0, 0
+// Pb = F11 ok
+	muld F102, F101, F11
+	muld F11, F1, F11
+//	intr0 5, F11, 0, 0
+//	intr0 7, 0, 0, 0
+// Ppi = F12 ok
+	divd F10, F11, F12
+	addd F12, F106, F12
+// debug
+//	intr0 5, F12, 0, 0
+//	intr0 7, 0, 0, 0
+//	loadd Pzero, 0, F104
+//	loadd Pfour, 0, F107
+// PnewRe = F13
+	movd F104, F13
+// PnewIm = F14
+	movd F104, F14
+// PoldRe = F15
+	movd F104, F15
+// PoldIm = F16
+	movd F104, F16
+// Pi = I40
+	loada zero, 0, I40
+	loada Pmaxiterations, 0, I22
+:iterate
+	movd F13, F15
+	movd F14, F16
+	muld F15, F15, F10
+	muld F16, F16, F11
+// debug
+//	intr0 5, F10, 0, 0
+//	intr0 7, 0, 0, 0
+//	intr0 5, F11, 0, 0
+//	intr0 7, 0, 0, 0
+	subd F10, F11, F13
+	addd F13, F8, F13
+	muld F100, F15, F14
+	muld F14, F16, F14
+	addd F14, F12, F14
+	muld F13, F13, F10
+	muld F14, F14, F11
+	addd F10, F11, F17
+// debug
+//	intr0 5, F17, 0, 0
+//	intr0 7, 0, 0, 0
+	grd F17, F107, I200
+	jmpi I200, :break
+	inclsijmpi I40, I22, :iterate
+//
+:break
+	loada zero, 0, I0
+	loada one, 0, I1
+	eqi I40, I22, I42
+	jmpi I42, :color_black
+// color
+	stpushd F17
+	intr0 3, I1, I2, 0
+// Pz = F18
+	stpopd F18
+// Pi 2 double = F18
+	stpushi I40
+	intr0, 3, I1, I0, 0
+	stpopd F18
+// Pz log
+	stpushd F18
+	intr0, 3, I1, I1, 0
+	stpopd F19
+//
+	stpushd F19
+	loada one, 0, I1
+	intr0, 3, I1, I1, 0
+	stpopd F19
+// Pb = F11
+	addd F108, F18, F11
+	subd F11, F19, F11
+	stpushd F11
+	intr0, 3, I1, I1, 0
+	stpopd F11
+// Pd = F11
+	muld F11, F109, F11
+// Pe = F12
+	stpushd F2
+	intr0, 3, I1, I1, 0
+	stpopd F12
+// Pbrightness = F13
+	divd F11, F12, F13
+	stpushd F13
+	loada one, 0, I1
+	loada three, 0, I3
+	intr0, 3, I1, I3, 0
+	stpopi I50
+	stpushi I31
+	stpushi I30
+	stpushb I50
+	stpushb I50
+	stpushb I61
+	stpushb I61
+//	intr0 4, I61, 0, 0
+//	intr0 7, 0, 0, 0
+	loada zero, 0, I0
+	loada one, 0, I1
+// set mutex
+	intr1 2, 0, 0, 0
+	intr0 3, I0, I1, 0
+	intr1 3, 0, 0, 0
+	rts
+:color_black
+	stpushi I31
+	stpushi I30
+	stpushb I0
+	stpushb I0
+	stpushb I0
+	stpushb I61
+	loada zero, 0, I0
+	loada one, 0, I1
+// set mutex
+	intr1, 2, 0, 0, 0
+	intr0, 3, I0, I1, 0
+	intr1, 3, 0, 0, 0
+	rts
+	(ASM_END)
+(funcend)
+
+(str2int func)
+    (ASM)
+    loada one, 0, I1
+	loada four, 0, I4
+	intr0 3, I1, I4, 0
+	rts
+	(ASM_END)
+(funcend)
+
+(str2double func)
+	(ASM)
+	loada one, 0, I1
+	loada five, 0, I5
+	intr0 3, I1, I5, 0
+	rts
+	(ASM_END)
+(funcend)
+
+(get_cli_args func)
+	(set string 256 argget_cli_args "")
+	(set int64 1 argsget_cli_args 0)
+	(set int64 1 indexget_cli_args 0)
+	(set int64 1 fget_cli_args 0)
+	(set int64 1 args_neededget_cli_args 4)
+	(set string s info_strget_cli_args "CLI arguments: maxiterations, movex (double), movey (double), zoom (double)")
+	(set string s args_got_ok "using args!")
+	(set int64 1 oneget_cli_args 1)
+	(set int64 1 zeroget_cli_args 0)
+	// get number of CLI arguments
+	(reset-reg)
+	(12 argsget_cli_args 0 0 intr0)
+	// arguments:
+	// Pmaxiterations, PmoveX, PmoveY, Pzoom
+	// check if arguments number is ok:
+
+	(6 info_strget_cli_args 0 0 intr0)
+	(7 0 0 0 intr0)
+
+	(((argsget_cli_args args_neededget_cli_args ==) fget_cli_args =) fget_cli_args if)
+	     // get shell args
+	    (13 indexget_cli_args argget_cli_args 0 intr0)
+
+	    (argget_cli_args :str2int !)
+	    (Pmaxiterations stpopi)
+	    ((indexget_cli_args oneget_cli_args +) indexget_cli_args =)
+
+	    (13 indexget_cli_args argget_cli_args 0 intr0)
+
+	    (argget_cli_args :str2double !)
+	    (PmoveX stpopd)
+	    ((indexget_cli_args oneget_cli_args +) indexget_cli_args =)
+
+	    (13 indexget_cli_args argget_cli_args 0 intr0)
+
+	    (argget_cli_args :str2double !)
+	    (PmoveY stpopd)
+	    ((indexget_cli_args oneget_cli_args +) indexget_cli_args =)
+
+        (13 indexget_cli_args argget_cli_args 0 intr0)
+
+	    (argget_cli_args :str2double !)
+	    (Pzoom stpopd)
+	    ((indexget_cli_args oneget_cli_args +) indexget_cli_args =)
+	    (6 args_got_ok 0 0 intr0)
+	    (7 0 0 0 intr0)
+	(endif)
+(funcend)
