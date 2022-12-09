@@ -537,6 +537,7 @@
 	(set int64 1 fget_cli_args 0)
 	(set int64 1 args_neededget_cli_args 4)
 	(set string s info_strget_cli_args "CLI arguments: maxiterations, movex (double), movey (double), zoom (double)")
+	(set string s info_normal_args "normal settings: 1000 -0.5 0.0 1.0")
 	(set string s args_got_ok "using args!")
 	(set int64 1 oneget_cli_args 1)
 	(set int64 1 zeroget_cli_args 0)
@@ -548,6 +549,8 @@
 	// check if arguments number is ok:
 
 	(6 info_strget_cli_args 0 0 intr0)
+	(7 0 0 0 intr0)
+	(6 info_normal_args 0 0 intr0)
 	(7 0 0 0 intr0)
 
 	(((argsget_cli_args args_neededget_cli_args ==) fget_cli_args =) fget_cli_args if)
