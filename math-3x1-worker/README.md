@@ -47,6 +47,10 @@ To get the next steps just increase the step number:
 get key :res1000-2
 250
 ```
+
+You can also open the database webpage form at: ```http://127.0.0.1:10001/```
+And type in the commands!
+
 Here is the worker output for ```999```:
 
 ```
