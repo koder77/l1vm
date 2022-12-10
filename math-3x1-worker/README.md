@@ -11,7 +11,7 @@ Here we go:
 start l1vmgodata database:
 
 ```
-$ ./l1vmgodata 127.0.0.1 2000 10001
+$ ./l1vmgodata 127.0.0.1 2000 10001 60000
 ```
 
 now open a second shell:
