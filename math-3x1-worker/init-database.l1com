@@ -9,7 +9,7 @@
 	(set const-int64 1 mod_net 1)
 	(set int64 1 portnum 2000Q)
 	(set int64 1 socket_handle 0)
-    (set int64 1 max_num 10000)
+    (set int64 1 max_num 1000)
     (set int64 1 i 1)
 	(set string 256 ip "127.0.0.1")
     (set string 256 hoststr)

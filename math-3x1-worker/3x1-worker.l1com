@@ -10,7 +10,7 @@
     (set const-int64 1 two 2)
     (set const-int64 1 three 3)
     (set int64 1 num 1)
-    (set int64 1 maxnum 10000)
+    (set int64 1 maxnum 1000)
     (set int64 1 result 0)
 	(set const-int64 1 mod_string 0)
 	(set const-int64 1 mod_net 1)
@@ -26,6 +26,8 @@
     (set string 4097 key_str "num")
     (set string 4097 value_str "")
     (set string 4097 res_start_str "res")
+    (set string s res_minus "-")
+    (set int64 1 res_index 1)
     (set string 4098 res_num_str "")
     (set string 4097 num_str "")
     (set string 256 ret_str "")
@@ -58,7 +60,7 @@
 
     (mod_math :math_init !)
 
-    // connect to l11vmgodata server
+    // connect to l1vmgodata server
     (ip portnum :open_client_socket !)
     (ret stpopi)
     (socket_handle stpopi)
@@ -96,48 +98,13 @@
         (value_str error_str :string_compare !)
         (ret stpop)
         (((ret zero !=) f =) f if)
+            (one res_index =)
             // convert value string to number
             (value_str :string_to_int !)
             (num stpop)
 
             // calculate 3x1
             (num :calc !)
-            (result stpop)
-
-            (num num_str string_len :string_int64tostring !)
-            (res_num_str res_start_str :string_copy !)
-            (res_num_str num_str :string_cat !)
-
-            (socket_handle res_num_str one_str ret_str :go_data_store !)
-            (ret stpop)
-            (((ret zero !=) f =) f if+)
-		        // ERROR can't connect to server
-                print_s (storestr)
-                print_n
-
-                // close data base connection
-                (socket_handle :go_data_close !)
-                // close socket
-                (socket_handle :close_client_socket !)
-
-                exit (one)
-	        (else)
-                (ret_str ok_str :string_compare !)
-                (ret stpop)
-                (((ret zero ==) f =) f if+)
-                    // all ok, data send
-
-                    // print out message
-                    print_s (calc_str)
-                    print_s (res_num_str)
-                    print_s (colon_str)
-                    print_i (num)
-                    print_n
-                (else)
-                    print_s (storestr)
-                    print_n
-                (endif)
-            (endif)
         (endif)
         ((num one +) num =)
     (((num maxnum <=) f =) f while)
@@ -160,11 +127,26 @@
     (set int64 1 two~ 2)
     (set int64 1 three~ 3)
     (set int64 1 f~ 0)
+    (set string 4097 res_start_str~ "res")
+    (set string s res_minus_str~ "-")
+    (set int64 1 res_index~ 1)
+    (set int64 1 res_num~ 0)
+    (set string 4097 res_num_str~ "")
+    (set string 4097 num_str~ "")
+    (set string s empty_str~ "")
+    (set string 4097 value_str~ "")
+    (set int64 1 string_len~ 4096)
+    (set string 256 ret_str~ "")
+    (set string s space_str~ " ")
+    (set int64 1 ret~ 0)
+    (set int64 1 f~ 0)
+    (set string s ok_str~ "OK")
+    (one~ res_index~ =)
     (num~ stpop)
+    (num~ res_num~ =)
+    (res_num_str~ empty_str~ :string_copy !)
     (do)
         (reset-reg)
-        // print_i (num~)
-        // print_n
         ((num~ two~ %) result~ =)
         (((result~ zero~ ==) f~ =) f~ if+)
             // even
@@ -174,8 +156,46 @@
              ((num~ three *) num~ =)
              ((num~ one~ +) num~ =)
         (endif)
+
+        // example: "res10-1" key string
+        (res_num_str~ res_start_str~ :string_copy !)
+        (res_num~ num_str~ string_len~ :string_int64tostring !)
+        (res_num_str~ num_str~ :string_cat !)
+        (res_num_str~ res_minus_str~ :string_cat !)
+        (res_index~ num_str~ string_len~ :string_int64tostring !)
+        (res_num_str~ num_str~ :string_cat !)
+
+        // value string
+        (num~ value_str~ string_len~ :string_int64tostring !)
+
+        (socket_handle res_num_str~ value_str~ ret_str~ :go_data_store !)
+        (ret~ stpop)
+        (((ret~ zero !=) f~ =) f~ if+)
+            // ERROR can't connect to server
+            print_s (storestr)
+            print_n
+
+            // close data base connection
+            (socket_handle :go_data_close !)
+            // close socket
+            (socket_handle :close_client_socket !)
+
+            exit (one)
+        (else)
+            (ret_str~ ok_str~ :string_compare !)
+            (ret stpop)
+            (((ret zero ==) f =) f if+)
+                print_s (res_num_str~)
+                print_s (space_str~)
+                print_s (value_str~)
+                print_n
+            (else)
+                print_s (storestr)
+                print_n
+            (endif)
+        (endif)
+        ((res_index~ one~ +) res_index~ =)
     (((num~ one~ !=) f~ =) f~ while)
-    (num~ stpush)
 (funcend)
     
 #include <net-lib.l1h>
