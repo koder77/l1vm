@@ -48,7 +48,7 @@
 (set int64 1 f 0)
 (set string 4096 picture_namestr "fractal.bmp")
 (set string s savepicturestr "saving picture...")
-(set int64 1 save_picture 0)
+(set int64 1 save_picture 1)
 	(ASM)
 	loada zero, 0, I0
 	loada one, 0, I1
@@ -285,9 +285,14 @@
 	intr1, 3, 0, 0, 0
 // do loop forever
 // save picture
+    loada save_picture, 0, I220
+	eqi I220, I0, I221
+	jmpi I221, :waitloop
 	loada picture_namestraddr, 0, I210
 	stpushi I210
 	intr0 3, I0, I4, 0
+	load save_picture, 0, I222
+	pullqw I0, I222, 0
 //
 //
 	jmp :waitloop
