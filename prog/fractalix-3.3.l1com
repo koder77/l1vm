@@ -1,8 +1,8 @@
-// fractalix-3.l1com
+// fractalix-3.3.l1com
 // SDL fractal demo
 // now zoom and move can be set by shell argument:
 //
-//  l1vm prog/fractalix-3.3 -args 1000 -1.0 0.0 2.5
+//  l1vm prog/fractalix-3.3 -args 1000 -1.0 0.0 2.5 fractal.bmp
 //
 (main func)
 (set int64 1 zero 0)
@@ -20,6 +20,7 @@
 (set string s sdlpixelstr "sdl_pixel_alpha")
 (set string s sdlopenstr "sdl_open_screen")
 (set string s sdlupdatestr "sdl_update")
+(set string s sdlsavepicturestr "sdl_save_picture")
 (set int64 1 bit 32)
 (set int64 1 delay 5000)
 (set double 1 Pzoom 1.0)
@@ -45,6 +46,9 @@
 (set int64 1 four 4)
 (set int64 1 eight 8)
 (set int64 1 f 0)
+(set string 4096 picture_namestr "fractal.bmp")
+(set string s savepicturestr "saving picture...")
+(set int64 1 save_picture 0)
 	(ASM)
 	loada zero, 0, I0
 	loada one, 0, I1
@@ -102,6 +106,7 @@
 	loada sdlpixelstraddr, 0, I12
 	loada sdlupdatestraddr, 0, I13
 	loada sdlquitstraddr, 0, I14
+	loada sdlsavepicturestraddr, 0, I15
 // load sdl module
 	intr0 0, I10, I0, 0
 // set functions
@@ -109,6 +114,7 @@
 	intr0 2, I0, I1, I12
 	intr0 2, I0, I2, I13
 	intr0 2, I0, I3, I14
+	intr0 2, I0, I4, I15
 // open screen
 	loada sdl_width, 0, I100
 	loada width, 0, I20
@@ -278,6 +284,12 @@
 	intr0 3, I0, I2, 0
 	intr1, 3, 0, 0, 0
 // do loop forever
+// save picture
+	loada picture_namestraddr, 0, I210
+	stpushi I210
+	intr0 3, I0, I4, 0
+//
+//
 	jmp :waitloop
 	intr0 3, I0, I3, 0
 	intr0 1, I0, 0, 0
@@ -535,10 +547,13 @@
 	(set int64 1 argsget_cli_args 0)
 	(set int64 1 indexget_cli_args 0)
 	(set int64 1 fget_cli_args 0)
-	(set int64 1 args_neededget_cli_args 4)
-	(set string s info_strget_cli_args "CLI arguments: maxiterations, movex (double), movey (double), zoom (double)")
+	(set int64 1 args_neededget_cli_args 5)
+	(set int64 1 args_pictureget_cli_args 5)
+	(set string s info_strget_cli_args "CLI arguments: maxiterations, movex (double), movey (double), zoom (double), picture-name")
 	(set string s info_normal_args "normal settings: 1000 -0.5 0.0 1.0")
 	(set string s args_got_ok "using args!")
+	(set string s savemsgstr "saving picture: ")
+	(set string s picture_name_setstr "got picture name!")
 	(set int64 1 oneget_cli_args 1)
 	(set int64 1 zeroget_cli_args 0)
 	// get number of CLI arguments
@@ -553,7 +568,7 @@
 	(6 info_normal_args 0 0 intr0)
 	(7 0 0 0 intr0)
 
-	(((argsget_cli_args args_neededget_cli_args ==) fget_cli_args =) fget_cli_args if)
+	(((argsget_cli_args args_neededget_cli_args >=) fget_cli_args =) fget_cli_args if)
 	     // get shell args
 	    (13 indexget_cli_args argget_cli_args 0 intr0)
 
@@ -578,7 +593,14 @@
 	    (argget_cli_args :str2double !)
 	    (Pzoom stpopd)
 	    ((indexget_cli_args oneget_cli_args +) indexget_cli_args =)
+
+	    (13 indexget_cli_args picture_namestr 0 intr0)
+
 	    (6 args_got_ok 0 0 intr0)
 	    (7 0 0 0 intr0)
 	(endif)
+
+	(6 savemsgstr 0 0 intr0)
+	(6 picture_namestr 0 0 intr0)
+	(7 0 0 0 intr0)
 (funcend)
