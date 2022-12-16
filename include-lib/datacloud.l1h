@@ -1,0 +1,293 @@
+// datacloud library
+//
+// use multiple l1vmgodata databases at a time, which are run on different machines to use RAM storage.
+//
+// this needs also l1vmgodata.l1h, vars.l1h, net-lib.l1h and string.l1h included in the main program!
+//
+//
+(dcloud_init func)
+    #var ~ dcloud
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 port~ 0)
+    (set const-int64 1 max_sockets~ 256)
+    (set int64 1 i~ 0)
+    (set int64 1 f~ 0)
+    (set int64 1 socket~ 0)
+    (set int64 1 sockets~ 0)
+    // ip string pointer
+    (set int64 1 Pip~ 0)
+    // port number
+    (set int64 1 port~ 0)
+    (set int64 1 socket_ind_max~ 0)
+    (set int64 1 ret~ 0)
+    (set string s socket_err_str~ "dcloud_init: ERROR number of sockets greater as: ")
+    (set string s connect_err_str~ "dcloud_init: ERROR can't connect to: ")
+    (set string s connect_port_str~ " port: ")
+    (set string s info_str~ "dcloud_init")
+    (set string s ip_str~ "ip: ")
+    (set string s port_str~ " port: ")
+    (set string 4097 usage_ret_str~ "")
+    (set string s usage_error_str~ "dcloud_init: can't run usage command on server!")
+    (set string s got_socket_handle_str~ "dcloud_init: got socket handle: ")
+    // set actual handle, and alternate write accesses over all databases
+    (set int64 1 act_handle~ 0)
+    (sockets~ stpop)
+    (zero~ ret~ =)
+    (reset-reg)
+    (((sockets~ max_sockets~ >) f~ =) f~ if)
+        // sockets overflow!!
+        print_s (socket_err_str~)
+        print_i (max_sockets~)
+        print_n
+        (one~ ret~ =)
+        (:dcloud_init_end jmp)
+    (endif)
+
+    (zero~ i~ =)
+    (sockets~ socket_ind_max~ =)
+    (do)
+        (port~ stpop)
+        (Pip~ stpop)
+
+        print_s (info_str~)
+        print_n
+        print_s (ip_str~)
+        print_s (Pip~)
+        print_s (port_str~)
+        print_i (port~)
+        print_n
+
+        // try to open client socket ip/port
+        (Pip~ port~ :open_client_socket !)
+        (ret~ stpop)
+        (socket~ stpop)
+        (((ret~ zero~ !=) f~ =) f~ if)
+            // ERROR can't connect to server
+            print_s (connect_err_str~)
+            print_s (Pip~)
+            print_s (connect_port_str~)
+            print_i (port~)
+            print_n
+            (one~ ret~ =)
+            (:dcloud_init_end jmp)
+        (endif)
+
+        // send usage request
+        (socket~ usage_ret_str~ :go_data_usage !)
+        (ret~ stpopi)
+        (((ret~ zero~ !=) f~ =) f~ if)
+            // ERROR can't use usage command
+            print_s (usage_error_str~)
+            print_n
+            (one~ ret~ =)
+            (:dcloud_init_end jmp)
+        (endif)
+
+        print_s (usage_ret_str~)
+        print_n
+
+        (reset-reg)
+        print_s (got_socket_handle_str~)
+        print_i (socket~)
+        print_n
+
+        ((i~ one~ +) i~ =)
+        (((i~ socket_ind_max~ <) f~ =) f~ while)
+    (:dcloud_init_end)
+    (ret~ stpush)
+(funcend)
+
+(dcloud_close func)
+    #var ~ dcloud_close
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 i~ 0)
+    (set int64 1 real_ind~ 0)
+    (set int64 1 f~ 0)
+    (set int64 1 socket~ 0)
+
+    (zero~ i~ =)
+    (do)
+        (i~ :go_data_close !)
+        (i~ :close_client_socket !)
+
+        ((i~ one~ +) i~ =)
+    (((i~ socketsdcloud <) f~ =) f~ while)
+(funcend)
+
+(get_act_handle func)
+    (set int64 1 zero~ 0)
+    (set int64 1 one~ 1)
+    (set int64 1 i~ 0)
+    (set int64 1 f~ 0)
+    (set int64 1 socketsmax~ 0)
+    ((socketsdcloud one~ -) socketsmax~ =)
+    // get next database socket handle
+    (((act_handledcloud socketsmax~ <) f~ =) f~ if+)
+        ((act_handledcloud one~ +) act_handledcloud =)
+    (else)
+        (zero~ act_handledcloud =)
+    (endif)
+(funcend)
+
+(dcloud_data_store func)
+    #var ~ dcloud_data_store
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 ret~ 0)
+    (set int64 1 Pkeystraddr~)
+    (set int64 1 Pdatastraddr~)
+    (set int64 1 Pretstraddr~)
+    (set int64 1 i~ 0)
+    (set int64 1 f~ 0)
+    (set string s ok_str~ "OK")
+    (set string s handle_str "dcloud_data_store: socket handle: ")
+    (set int64 1 comp~ 0)
+    (set int64 1 socket~ 0)
+    // get args
+    (Pretstraddr~ stpop)
+    (Pdatastraddr~ stpop)
+    (Pkeystraddr~ stpop)
+    // set ret to error code
+    (one~ ret~ =)
+    (zero~ i~ =)
+    // try to send data
+
+    (:get_act_handle !)
+    (act_handledcloud socket~ =)
+    (socket~ Pkeystraddr~ Pdatastraddr~ Pretstraddr~ :go_data_store !)
+    (ret~ stpop)
+    (((ret~ zero~ ==) f~ =) f~ if)
+        (Pretstraddr~ ok_str~ :string_compare !)
+        (comp~ stpop)
+        (((comp~ zero~ ==) f~ =) f~ if)
+            // got OK answer, data stored
+        (:dcloud_data_store_end jmp)
+        (endif)
+    (endif)
+
+    (do)
+        (i~ Pkeystraddr~ Pdatastraddr~ Pretstraddr~ :go_data_store !)
+        (ret~ stpop)
+        (((ret~ zero~ ==) f~ =) f~ if)
+             (Pretstraddr~ ok_str~ :string_compare !)
+             (comp~ stpop)
+             (((comp~ zero~ ==) f~ =) f~ if)
+                 // got OK answer, data stored
+                (:dcloud_data_store_end jmp)
+             (endif)
+        (endif)
+        ((i~ one~ +) i~ =)
+    (((i~ socketsdcloud <) f~ =) f~ while)
+    (:dcloud_data_store_end)
+    (ret~ stpush)
+(funcend)
+
+(dcloud_get_key func)
+    #var ~ dcloud_get_key
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 ret~ 0)
+    (set int64 1 Pkeystraddr~)
+    (set int64 1 Pdatastraddr~)
+    (set int64 1 i~ 0)
+    (set int64 1 f~ 0)
+    (set string s error_str~ "ERROR")
+    (set int64 1 comp~ 0)
+    // get args
+    (Pdatastraddr~ stpop)
+    (Pkeystraddr~ stpop)
+    // set ret to error code
+    (one~ ret~ =)
+    (zero~ i~ =)
+    // try to send data
+    (do)
+        (i~ Pkeystraddr~ Pdatastraddr~ :go_data_get_key !)
+        (ret~ stpop)
+        (((ret~ zero~ ==) f~ =) f~ if)
+             (Pdatastraddr~ error_str~ :string_compare !)
+             (comp~ stpop)
+             (((comp~ zero~ !=) f~ =) f~ if)
+                 // got not ERROR message
+                 (zero~ ret~ =)
+                (:dcloud_get_key_end jmp)
+             (endif)
+        (endif)
+        ((i~ one~ +) i~ =)
+    (((i~ socketsdcloud <) f~ =) f~ while)
+    (:dcloud_get_key_end)
+    (ret~ stpush)
+(funcend)
+
+(dcloud_get_value func)
+    #var ~ dcloud_get_value
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 ret~ 0)
+    (set int64 1 Pkeystraddr~)
+    (set int64 1 Pdatastraddr~)
+    (set int64 1 i~ 0)
+    (set int64 1 f~ 0)
+    (set string s error_str~ "ERROR")
+    (set int64 1 comp~ 0)
+    // get args
+    (Pdatastraddr~ stpop)
+    (Pkeystraddr~ stpop)
+    // set ret to error code
+    (one~ ret~ =)
+    (zero~ i~ =)
+    // try to send data
+    (do)
+        (i~ Pkeystraddr~ Pdatastraddr~ :go_data_get_value !)
+        (ret~ stpop)
+        (((ret~ zero~ ==) f~ =) f~ if)
+             (Pkeystraddr~ error_str~ :string_compare !)
+             (comp~ stpop)
+             (((comp~ zero~ !=) f~ =) f~ if)
+                 // got not ERROR message
+                 (zero~ ret~ =)
+                (:dcloud_get_value_end jmp)
+             (endif)
+        (endif)
+        ((i~ one~ +) i~ =)
+    (((i~ socketsdcloud <) f~ =) f~ while)
+    (:dcloud_get_value_end)
+    (ret~ stpush)
+(funcend)
+
+(dcloud_data_remove func)
+    #var ~ dcloud_data_remove
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 ret~ 0)
+    (set int64 1 Pkeystraddr~)
+    (set int64 1 Pdatastraddr~)
+    (set int64 1 i~ 0)
+    (set int64 1 f~ 0)
+    (set string s error_str~ "ERROR")
+    (set int64 1 comp~ 0)
+    // get args
+    (Pdatastraddr~ stpop)
+    (Pkeystraddr~ stpop)
+    // set ret to error code
+    (one~ ret~ =)
+    (zero~ i~ =)
+    // try to send data
+    (do)
+        (i~ Pkeystraddr~ Pdatastraddr~ :go_data_remove !)
+        (ret~ stpop)
+        (((ret~ zero~ ==) f~ =) f~ if)
+             (Pdatastraddr~ error_str~ :string_compare !)
+             (comp~ stpop)
+             (((comp~ zero~ !=) f~ =) f~ if)
+                 // got not ERROR message
+                 (zero~ ret~ =)
+                 (:dcloud_data_remove_end jmp)
+             (endif)
+        (endif)
+        ((i~ one~ +) i~ =)
+    (((i~ socketsdcloud <) f~ =) f~ while)
+    (:dcloud_data_remove_end)
+    (ret~ stpush)
+(funcend)
