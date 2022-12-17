@@ -1,6 +1,6 @@
-L1VM l1vmgodata 3x1 problem demo using dcloud cluster l1vmgodata databases
-==========================================================================
-This example shows how to use a database cluster running more than one database on different machines.
+L1VM l1vmgodata 3x1 problem demo using datacloud cluster l1vmgodata databases
+=============================================================================
+This example shows how to use the datacloud database cluster running more than one database on different machines.
 The l1vmgodata databases are used as if there is one big database on one machine.
 The store data function stores the data cycled on all databases.
 The read functions gets the data from the cluster node where it is stored.
