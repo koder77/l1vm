@@ -103,9 +103,7 @@
             print_n
 
             // close data base connection
-            (socket_handle :go_data_close !)
-            // close socket
-            (socket_handle :close_client_socket !)
+            (:dcloud_close !)
 
             exit (one)
 	    (endif)
