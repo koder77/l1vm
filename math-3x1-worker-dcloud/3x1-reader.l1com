@@ -54,6 +54,7 @@
     (set string s one_str "1")
     (set string s empty_str "")
     (set string s prompt_str "number? (empty input to end) ")
+    (set string s num_not_found_str "number not found!")
     (set int64 1 value 0)
     (mod_string :string_init !)
 	(mod_net two :net_init !)
@@ -111,7 +112,7 @@
         // check if no value found ERROR return
         (value_str error_str :string_compare !)
         (ret stpop)
-        (((ret zero !=) f =) f if)
+        (((ret zero !=) f =) f if+)
             (one res_index =)
             // convert value string to number
             (value_str :string_to_int !)
@@ -119,6 +120,10 @@
 
              print_i (value)
              print_n
+        (else)
+             print_s (num_not_found_str)
+             print_n
+             (:loop jmp)
         (endif)
         ((res_step one +) res_step =)
     (((value one !=) f =) f while)
