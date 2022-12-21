@@ -1,4 +1,4 @@
-// 3x1-workerl1com
+// 3x1-worker.l1com
 // connect to l1vmgodata data base with 3x1 numbers in it
 //
 #include <intr.l1h>

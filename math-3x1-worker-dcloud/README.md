@@ -24,7 +24,7 @@ $ ./l1vmgodata 127.0.0.1 2000 10001 35000
 $ ./l1vmgodata 127.0.0.1 2001 10002 35000
 ```
 
-now open a second shell:
+now open a third shell:
 
 ```
 $ l1vm init-database 
