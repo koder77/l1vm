@@ -227,6 +227,13 @@ struct data_info
 	U1 constant;				// set to one if variable is constant
 };
 
+// compiler, set variables as unused/used
+// to get defined but unused variables
+struct data_info_var
+{
+	U1 used;
+};
+
 #define MAXOPCODES              61
 
 

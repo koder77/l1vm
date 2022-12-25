@@ -21,6 +21,7 @@
 #include "../include/opcodes-types.h"
 
 extern struct data_info data_info[MAXDATAINFO];
+extern struct data_info_var data_info_var[MAXDATAINFO];
 extern S8 data_ind;
 extern S8 linenum;
 
@@ -70,6 +71,9 @@ S2 getvartype (U1 *name)
 	{
 		if (strcmp ((const char *) name, (const char *) data_info[i].name) == 0)
 		{
+			// set variable as used:
+			data_info_var[i].used = 1;
+
 			switch (data_info[i].type)
 			{
 				case BYTE:
@@ -182,5 +186,52 @@ S2 get_var_is_const (U1 *name)
 			}
 		}
 	}
-	return (-1);	// ERROR #
+	return (-1);	// ERROR
+}
+
+// data info var
+// init data_info_var
+void init_data_info_var (void)
+{
+	S4 i;
+
+	for (i = 0; i < MAXDATAINFO; i++)
+	{
+		data_info_var[i].used = 0;
+	}
+}
+
+// check if defined but unused variables are in code
+S2 get_unused_var (void)
+{
+	S4 i;
+	S2 ret = 0;
+	U1 is_string_addr = 0;
+	S2 pos;
+	S2 slen;
+
+	for (i = 0; i <= data_ind; i++)
+	{
+		if (data_info_var[i].used == 0)
+		{
+			is_string_addr = 0;
+			slen = strlen_safe (data_info[i].name, MAXLINELEN);
+		    if (slen >= 5)
+			{
+				if (data_info[i].name[slen - 1] == 'r' && data_info[i].name[slen - 2] == 'd' &&  data_info[i].name[slen - 3] == 'd' && data_info[i].name[slen - 4] == 'a')
+				{
+					is_string_addr = 1;
+				}
+			}
+			if (is_string_addr == 0)
+			{
+				// ptrint in red text color
+				printf ("\033[31mwarning: set but unused variable: %s\n", data_info[i].name);
+				ret = 1; // found unused variable
+			}
+		}
+	}
+	// set normal bash text color
+	printf ("\033[0m");
+	return (ret);
 }

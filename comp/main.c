@@ -54,6 +54,7 @@ U1 save_regd[MAXREG];
 
 struct t_var t_var;
 struct data_info data_info[MAXDATAINFO];
+struct data_info_var data_info_var[MAXDATAINFO];
 struct label label[MAXLABELS];
 struct call_label call_label[MAXLABELS];
 
@@ -76,6 +77,9 @@ U1 no_var_pull = 0;
 
 // Set to 1 at function start. It calls reset_registers () on: if, else, endif, switch ?, for, next, do, while
 U1 nested_code = 1;
+
+// set to 1 if warning for defined but unused variables should be set
+U1 warn_unused_variables = 0;
 
 void init_ast (void)
 {
@@ -6288,7 +6292,7 @@ S2 parse (U1 *name)
 				else
 				{
 					ret = parse_line (rbuf);
-					if (ret != 0)
+ 					if (ret != 0)
 					{
 						printf ("> %s\n", rbuf);
 						err = 1;
@@ -6409,6 +6413,8 @@ int main (int ac, char *av[])
 	init_labels ();
 	init_call_labels ();
 
+	init_data_info_var ();
+
 	U1 syscallstr[256] = "l1asm ";		// system syscall for assembler
 	S8 ret ALIGN = 0;					// return value of assembler
 	S8 arglen ALIGN;
@@ -6417,6 +6423,8 @@ int main (int ac, char *av[])
 	S8 str_len_assembler_args ALIGN;
 
 	U1 assembler_args[MAXSTRLEN];
+
+	S2 warn_unused_vars = 0;
 
     if (ac < 2)
     {
@@ -6500,6 +6508,14 @@ int main (int ac, char *av[])
 					warn_set_not_def = 1;
 				}
 			}
+
+			if (arglen == 11)
+			{
+				if (strcmp (av[i], "-wvarunused") == 0)
+				{
+					warn_unused_variables = 1;
+				}
+			}
 		}
 	}
 
@@ -6524,6 +6540,8 @@ int main (int ac, char *av[])
 	// switch to red text
 	printf ("\033[31m");
 
+	init_data_info_var ();
+
     if (parse ((U1 *) av[1]) == 1)
 	{
 		printf ("\033[31mERRORS! can't read source file!\n");
@@ -6546,6 +6564,18 @@ int main (int ac, char *av[])
 		printf ("\033[31mERROR! no main function defined!\n");
 		cleanup ();
 		exit (1);
+	}
+
+	if (warn_unused_variables == 1)
+	{
+		warn_unused_vars = get_unused_var ();
+		if (warn_unused_vars == 1 && warnings_as_errors == 1)
+		{
+			printf ("\033[31mERROR: found defined but unused variables!\n");
+			printf ("\033[0m\n");
+			cleanup ();
+			exit (1);
+		}
 	}
 
 	if (write_asm ((U1 *) av[1]) == 1)
