@@ -1,8 +1,6 @@
 // train-ann.l1com
 // fann train library demo
 // train XOR function and run trained neural network
-// not really working yet! This is a WIP.
-// At least you can try to train a fann...
 #include <intr.l1h>
 (main func)
     (set int64 1 zero 0)
@@ -74,7 +72,7 @@
     // run ann
     (6 runaddr 0 0 intr0)
     (7 0 0 0 intr0)
-    // run genann with one output variable
+    // run fann with one output variable
     (handle input1_addr output_addr two one :fann_run call)
     (loadreg)
     (6 txt_1addr 0 0 intr0)
