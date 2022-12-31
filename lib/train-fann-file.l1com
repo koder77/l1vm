@@ -10,7 +10,7 @@
     (set int64 1 ret 0)
     (set double 2 input1 -1.0 -1.0)
     (set double 2 input2 -1.0 1.0)
-    (set double 2 input3 1.0 0.0)
+    (set double 2 input3 1.0 -1.0)
     (set double 2 input4 1.0 1.0)
     (set double 1 des_output_null -1.0)
     (set double 1 des_output_one 1.0)
