@@ -42,7 +42,7 @@
     (set int64 1 epochs_between_reports 1000)
     (set double 1 desired_error 0.001)
 
-    // init fnann library
+    // init fann library
 	(reset-reg)
     (zero one :fann_init_lib call)
 	(ret stpopi)
