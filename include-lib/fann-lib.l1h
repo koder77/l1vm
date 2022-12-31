@@ -11,6 +11,7 @@
 	(set string s trainstr@fann "fann_train_ann")
 	(set string s savestr@fann "fann_save_ann")
     (set string s createstr@fann "fann_create_ann")
+    (set string s fann_train_ann_filestr@fann "fann_train_ann_file")
 	(set int64 1 read@fann 0)
 	(set int64 1 run@fann 1)
 	(set int64 1 free@fann 2)
@@ -19,6 +20,7 @@
 	(set int64 1 train@fann 5)
 	(set int64 1 save@fann 6)
     (set int64 1 create@fann 7)
+    (set int64 1 fann_train_ann_file@fann)
 	(set int64 1 mod@fann 0)
 	(set int64 1 maxind@fann 0)
 	// get arguments from stack
@@ -35,6 +37,7 @@
     (2 mod@fann train@fann trainstr@fannaddr intr0)
     (2 mod@fann save@fann savestr@fannaddr intr0)
     (2 mod@fann create@fann createstr@fannaddr intr0)
+    (2 mod@fann fann_train_ann_file@fann fann_train_ann_filestr@fannaddr intr0)
 	// call init fann function
 	(maxind@fann stpushi)
 	(3 mod@fann fanninit@fann 0 intr0)
@@ -66,4 +69,8 @@
 (fann_create func)
 // args: fann handle number, string filename
 	(3 mod@fann create@fann 0 intr0)
+(funcend)
+(fann_train_ann_file func)
+// args: fann handle number, datafile, max_eopochs, epochs_between_reports, desired_error (double)
+    (3 mod@fann fann_train_ann_file@fann 0 intr0)
 (funcend)

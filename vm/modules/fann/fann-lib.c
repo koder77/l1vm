@@ -560,3 +560,75 @@ U1 *fann_train_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	free (input_f);
     return (sp);
 }
+
+U1 *fann_train_ann_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 nameaddr ALIGN;
+    S8 max_epochs ALIGN;
+    S8 epochs_between_reports ALIGN;
+    F8 desired_error ALIGN;
+	S8 handle ALIGN;
+
+	U1 sandbox_filename[256];
+
+    sp = stpopd ((U1 *) &desired_error, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   // error
+ 	   printf ("ERROR: fann_train_ann_file: ERROR: stack corrupt!\n");
+ 	   return (NULL);
+    }
+
+    sp = stpopi ((U1 *) &epochs_between_reports, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   // error
+ 	   printf ("ERROR: fann_train_ann_file: ERROR: stack corrupt!\n");
+ 	   return (NULL);
+    }
+
+
+    sp = stpopi ((U1 *) &max_epochs, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   // error
+ 	   printf ("ERROR: fann_train_ann_file: ERROR: stack corrupt!\n");
+ 	   return (NULL);
+    }
+
+    sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   // error
+ 	   printf ("ERROR: fann_train_ann_file: ERROR: stack corrupt!\n");
+ 	   return (NULL);
+    }
+
+    sp = stpopi ((U1 *) &handle, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   // error
+ 	   printf ("ERROR: fann_train_ann_file: ERROR: stack corrupt!\n");
+ 	   return (NULL);
+    }
+
+	if (handle < 0 || handle >= fannmax)
+    {
+        printf ("ERROR: fann_train_ann_file: handle out of range!\n");
+        return (NULL);
+    }
+
+#if SANDBOX
+	if (get_sandbox_filename (&data[nameaddr], sandbox_filename, 255) != 0)
+	{
+		printf ("ERROR: fann_train_ann_file: ERROR filename illegal: %s\n", &data[nameaddr]);
+		return (NULL);
+	}
+
+    fann_train_on_file (fanns[handle].ann, (const char *) sandbox_filename, max_epochs, epochs_between_reports, desired_error);
+#else
+    fann_train_on_file (fanns[handle].ann, (const char *) &data[nameaddr], max_epochs, epochs_between_reports, desired_error);
+#endif
+
+	return (sp);
+}

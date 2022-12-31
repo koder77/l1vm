@@ -39,6 +39,10 @@
     (set int64 1 outputs 1)
     (set int64 1 hidden_neurons 3)
     (set string s create_str "creating xor fann...")
+    (set string s fann_data_file_str "fann/xor.data")
+    (set int64 1 max_epochs 500000)
+    (set int64 1 epochs_between_reports 1000)
+    (set double 1 desired_error 0.001)
 
     // init fnann library
 	(reset-reg)
@@ -58,19 +62,9 @@
     (layers inputs hidden_neurons outputs :fann_create !)
     (handle stpop)
 
-    (loadreg)
-    (4 ret 0 0 intr0)
-    (7 0 0 0 intr0)
-    (6 learningaddr 0 0 intr0)
-    (7 0 0 0 intr0)
-    (:learn)
-    (handle input1_addr des_output_null_addr two one :fann_train call)
-    (handle input4_addr des_output_null_addr two one :fann_train call)
-    (handle input2_addr des_output_one_addr two one :fann_train call)
-    (handle input3_addr des_output_one_addr two one :fann_train call)
-    ((i one -) i =)
-    ((i zero >) f =)
-    (f :learn jmpi)
+    // train fann from xor data file
+    (handle fann_data_file_str max_epochs epochs_between_reports desired_error :fann_train_ann_file !)
+
     // run ann
     (6 runaddr 0 0 intr0)
     (7 0 0 0 intr0)
