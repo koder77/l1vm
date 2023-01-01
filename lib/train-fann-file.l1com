@@ -1,4 +1,4 @@
-// train-ann.l1com
+// train-fann-file.l1com
 // fann train library demo
 // train XOR function and run trained neural network
 #include <intr.l1h>
@@ -46,17 +46,16 @@
 	(reset-reg)
     (zero one :fann_init_lib call)
 	(ret stpopi)
-    (loadreg)
 	(((ret zero !=) f =) f if)
-		(1 zero 0 0 intr0)
-		(255 zero 0 0 intr0)
+        free_mod (zero)
+        exit (one)
 	(endif)
 	(reset-reg)
 	stack_check
 
     // create fann
-    (6 create_str 0 0 intr0)
-    (7 0 0 0 intr0)
+    print_s (create_str)
+    print_n
     (layers inputs hidden_neurons outputs :fann_create !)
     (handle stpop)
 
@@ -64,34 +63,28 @@
     (handle fann_data_file_str max_epochs epochs_between_reports desired_error :fann_train_ann_file !)
 
     // run ann
-    (6 runaddr 0 0 intr0)
-    (7 0 0 0 intr0)
+    print_s (runaddr)
+    print_n
     // run fann with one output variable
-    (handle input1_addr output_addr two one :fann_run call)
-    (loadreg)
-    (6 txt_1addr 0 0 intr0)
-    (5 output 0 0 intr0)
-    (7 0 0 0 intr0)
-    (handle input2_addr output_addr two one :fann_run call)
-    (loadreg)
-    (6 txt_2addr 0 0 intr0)
-    (5 output 0 0 intr0)
-    (7 0 0 0 intr0)
-    (handle input3_addr output_addr two one :fann_run call)
-    (loadreg)
-    (6 txt_3addr 0 0 intr0)
-    (5 output 0 0 intr0)
-    (7 0 0 0 intr0)
-    (handle input4_addr output_addr two one :fann_run call)
-    (loadreg)
-    (6 txt_4addr 0 0 intr0)
-    (5 output 0 0 intr0)
-    (7 0 0 0 intr0)
+    (handle input1_addr output_addr two one :fann_run !)
+    print_s (txt_1addr)
+    print_d (output)
+    print_n
+    (handle input2_addr output_addr two one :fann_run !)
+    print_s (txt_2addr)
+    print_d (output)
+    print_n
+    (handle input3_addr output_addr two one :fann_run !)
+    print_s (txt_3addr)
+    print_d (output)
+    print_n
+    (handle input4_addr output_addr two one :fann_run !)
+    print_s (txt_4addr)
+    print_d (output)
+    print_n
     (handle :fann_free call)
-    (loadreg)
 	(:free_fanns call)
-	(loadreg)
-    (1 zero 0 0 intr0)
-    (255 zero 0 0 intr0)
+    free_mod (zero)
+    exit (zero)
 (funcend)
 #include <fann-lib.l1h>
