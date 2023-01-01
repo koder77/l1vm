@@ -3,8 +3,9 @@ L1VM (2.0.6)
 	NEW: compiler flag: "-wvarunused" warns if defined but unused variables are found!
 	NEW: fann module: train, save and train from data file functions added.
 	Examples in /lib: train_fann.l1com and train_fann_file.l1com.
+        FANN module code cleanup. Now uses pointers for the input/output vars.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 31 Dec 2022 16:46 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 1 Jan 2022 04:29 +0100
 
 L1VM (2.0.5)
 	Code cleanup.
