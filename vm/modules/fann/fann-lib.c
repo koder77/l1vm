@@ -175,6 +175,8 @@ U1 *fann_create_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     fann_set_activation_function_hidden(fanns[handle].ann, FANN_SIGMOID_SYMMETRIC);
     fann_set_activation_function_output(fanns[handle].ann, FANN_SIGMOID_SYMMETRIC);
 
+    fann_randomize_weights (fanns[handle].ann, -1.0, 1.0);
+
     fanns[handle].state = ANNOPEN;
 
     // return handle

@@ -145,6 +145,7 @@
     (set string s handle_str "dcloud_data_store: socket handle: ")
     (set int64 1 comp~ 0)
     (set int64 1 socket~ 0)
+    (optimize-if)
     // get args
     (Pretstraddr~ stpop)
     (Pdatastraddr~ stpop)
@@ -195,6 +196,7 @@
     (set int64 1 f~ 0)
     (set string s error_str~ "ERROR")
     (set int64 1 comp~ 0)
+    (optimize-if)
     // get args
     (Pdatastraddr~ stpop)
     (Pkeystraddr~ stpop)
@@ -231,6 +233,7 @@
     (set int64 1 f~ 0)
     (set string s error_str~ "ERROR")
     (set int64 1 comp~ 0)
+    (optimize-if)
     // get args
     (Pdatastraddr~ stpop)
     (Pkeystraddr~ stpop)
@@ -267,6 +270,7 @@
     (set int64 1 f~ 0)
     (set string s error_str~ "ERROR")
     (set int64 1 comp~ 0)
+    (optimize-if)
     // get args
     (Pdatastraddr~ stpop)
     (Pkeystraddr~ stpop)
