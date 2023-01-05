@@ -122,6 +122,7 @@
     (set int64 1 i~ 0)
     (set int64 1 f~ 0)
     (set int64 1 socketsmax~ 0)
+    (optimize-if)
     ((socketsdcloud one~ -) socketsmax~ =)
     // get next database socket handle
     (((act_handledcloud socketsmax~ <) f~ =) f~ if+)
