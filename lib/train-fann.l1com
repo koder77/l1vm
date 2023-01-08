@@ -5,7 +5,7 @@
 (main func)
     (set int64 1 zero 0)
     (set int64 1 one 1)
-    (set int64 1 i 5000000)
+    (set int64 1 i 500000)
     (set int64 1 f 0)
     (set int64 1 ret 0)
     (set double 2 input1 -1.0 -1.0)
