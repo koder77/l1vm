@@ -25,7 +25,6 @@
     (set int64 1 numbers 0)
 	(zero :string_init !)
     (one :math_init !)
-
     print_s (hintstr)
     print_n
 	(:loop)
