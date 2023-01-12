@@ -1,4 +1,5 @@
 // now with string array demo
+#include <intr.l1h>
 (main func)
     (set int64 1 zero 0)
 	(set int64 1 one 1)
@@ -33,81 +34,79 @@
     (set int64 1 maxlen 255)
 	(set int64 1 ret 0)
 	(set int64 1 f 0)
+    (set string s rep_in_str "Hello 123!")
+    (set string 4097 rep_out_str "")
+    (set string s search_rep_str "123")
+    (set string s rep_str "world")
     (zero :string_init call)
-	(loadreg)
 	// copy hellostr to array
 	(hellostraddr arraystraddr zero string_len array_size :string_to_array call)
-	(loadreg)
 	// copy worldstr to array
 	(worldstraddr arraystraddr one string_len array_size :string_to_array call)
-    (loadreg)
 	// get strings from array
 	(arraystraddr hellostr2addr zero string_len array_size :array_to_string call)
-	(loadreg)
 	(arraystraddr worldstr2addr one string_len array_size :array_to_string call)
-	(loadreg)
-	(6 hellostr2 0 0 intr0)
-	(6 worldstr2 0 0 intr0)
-	(7 0 0 0 intr0)
-	(7 0 0 0 intr0)
+    print_s (hellostr2)
+    print_n
+    print_s (worldstr2)
+    print_n
+    print_n
     (hellostraddr worldstraddr :string_cat call)
-    (loadreg)
-    (6 hellostr 0 0 intr0)
-    (7 0 0 0 intr0)
+    print_s (hellostr)
+    print_n
     (hellostraddr :string_len call)
     (slen stpopi)
-    (loadreg)
-    (4 slen 0 0 intr0)
-    (7 0 0 0 intr0)
+    print_i (slen)
+    print_n
 	(hellostraddr hellostr2addr hello_len :string_left call)
-	(loadreg)
-	(6 hellostr2 0 0 intr0)
-	(7 0 0 0 intr0)
+    print_s (hellostr2)
+    print_n
 	(hellostraddr worldstr2addr world_len :string_right call)
-	(loadreg)
-	(6 worldstr2 0 0 intr0)
-	(7 0 0 0 intr0)
+	print_s (worldstr2)
+    print_n
     (slen bufstr buflen :string_int64tostring call)
-    (loadreg)
-    (6 bufstr 0 0 intr0)
-    (7 0 0 0 intr0)
+    print_s (bufstr)
+    print_n
     (bytenum bufstr buflen :string_bytetohexstring call)
-    (loadreg)
-    (6 bufstr 0 0 intr0)
-    (7 0 0 0 intr0)
+    print_s (bufstr)
+    print_n
 	// get char at positon mid_pos in hellostr
 	(hellostraddr bufstr mid_pos :string_mid call)
-	(loadreg)
-	(6 bufstr 0 0 intr0)
-    (7 0 0 0 intr0)
+	print_s (bufstr)
+    print_n
 	(dotstraddr hellostraddr dot_pos :string_to_string call)
-	(loadreg)
-	(6 hellostr 0 0 intr0)
-	(7 0 0 0 intr0)
+	print_s (hellostr)
+    print_n
 	// check regex function:
 	(regexsrcstraddr regexstr :string_regex call)
 	(ret stpopi)
 	(((ret zero ==) f =) f if+)
-		(6 regex_foundstr 0 0 intr0)
-		(7 0 0 0 intr0)
+        print_s (regex_foundstr)
+        print_n
 	(else)
-		(6 regex_notfoundstr 0 0 intr0)
-		(7 0 0 0 intr0)
+        print_s (regex_notfoundstr)
+        print_n
 	(endif)
 
     // JSON parse function
-    (6 json_infostr 0 0 intr0)
-    (7 0 0 0 intr0)
-    (6 jsonstr 0 0 intr0)
-    (7 0 0 0 intr0)
+    print_s (json_infostr)
+    print_n
+    print_s (jsonstr)
+    print_n
     (jsonstr keystr valuestr maxlen :string_parse_json !)
     (ret stpop)
-    (4 ret 0 0 intr0)
-    (7 0 0 0 intr0)
-    (6 keystr 0 0 intr0)
-    (7 0 0 0 intr0)
-    (6 valuestr 0 0 intr0)
-    (7 0 0 0 intr0)
-	(255 0 0 0 intr0)
+    print_i (ret)
+    print_n
+    print_s (keystr)
+    print_n
+    print_s (valuestr)
+    print_n
+
+    // replace string
+    (rep_in_str search_rep_str rep_str rep_out_str :string_replace !)
+    print_s (rep_out_str)
+    print_n
+    exit (zero)
 (funcend)
 #include <string.l1h>
+#include <string-tools.l1h>
