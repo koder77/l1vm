@@ -5,7 +5,7 @@ L1VM (2.0.6)
 	Examples in /lib: train_fann.l1com and train_fann_file.l1com.
         FANN module code cleanup. Now uses pointers for the input/output vars.
 
-	NEW: string module demo update, string-tools.l1h now uses strimg_left and string_right in string replace function.
+	NEW: string module demo update, string-tools.l1h now uses string_left and string_right in string replace function.
 
 -- Stefan Pietzonke <jay-t@gmx.net> Thu 12 Jan 2022 20:33 +0100
 
