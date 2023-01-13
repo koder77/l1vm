@@ -1,3 +1,8 @@
+L1VM (2.0.7)
+	Updated copyright in global.h to 2023.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 13 Jan 2023 13:15 +0100
+
 L1VM (2.0.6)
 	NEW: compiler flag: "-wsetundef" warns if a variable has no value set!
 	NEW: compiler flag: "-wvarunused" warns if defined but unused variables are found!
@@ -7,7 +12,7 @@ L1VM (2.0.6)
 
 	NEW: string module demo update, string-tools.l1h now uses string_left and string_right in string replace function.
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 12 Jan 2022 20:33 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 12 Jan 2023 20:33 +0100
 
 L1VM (2.0.5)
 	Code cleanup.
