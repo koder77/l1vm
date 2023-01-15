@@ -37,6 +37,10 @@ S8 ast_level ALIGN;
 
 S8 data_ind ALIGN = -1;
 
+// variable ranges set
+struct range ranges[MAXRANGESVAR];
+S8 ranges_ind ALIGN = -1;
+
 // assembly text output
 U1 **data = NULL;
 U1 **code = NULL;
@@ -1248,6 +1252,12 @@ S2 parse_line (U1 *line)
 												return (1);
 											}
 
+											if (get_ranges_index (ast[level].expr[j][last_arg - 1]) != -1)
+											{
+												printf ("error: line %lli: variable '%s' is range variable, use {var = } expression!\n", linenum, ast[level].expr[j][last_arg - 1]);
+												return (1);
+											}
+
 										    if (target_var_type == DOUBLE)
 											{
 												// check if both variables are double var
@@ -1451,6 +1461,12 @@ S2 parse_line (U1 *line)
 										if (get_var_is_const (ast[level].expr[j][last_arg - 4]) == 1)
 										{
 											printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][last_arg - 4]);
+											return (1);
+										}
+
+										if (get_ranges_index (ast[level].expr[j][last_arg - 4]) != -1)
+										{
+											printf ("error: line %lli: variable '%s' is range variable, use {var = } expression!\n", linenum, ast[level].expr[j][last_arg - 4]);
 											return (1);
 										}
 
@@ -1732,6 +1748,12 @@ S2 parse_line (U1 *line)
 										if (get_var_is_const (ast[level].expr[j][last_arg - 1]) == 1)
 										{
 											printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][last_arg - 1]);
+											return (1);
+										}
+
+										if (get_ranges_index (ast[level].expr[j][last_arg - 1]) != -1)
+										{
+											printf ("error: line %lli: variable '%s' is range variable, use {var = } expression!\n", linenum, ast[level].expr[j][last_arg - 1]);
 											return (1);
 										}
 
@@ -2023,6 +2045,12 @@ S2 parse_line (U1 *line)
 									if (get_var_is_const (ast[level].expr[j][last_arg - 1]) == 1)
 									{
 										printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][last_arg - 1]);
+										return (1);
+									}
+
+									if (get_ranges_index (ast[level].expr[j][last_arg - 1]) != -1)
+									{
+										printf ("error: line %lli: variable '%s' is range variable, use {var = } expression!\n", linenum, ast[level].expr[j][last_arg - 1]);
 										return (1);
 									}
 
@@ -2468,6 +2496,12 @@ S2 parse_line (U1 *line)
 									if (get_var_is_const (ast[level].expr[j][last_arg - 1]) == 1)
 									{
 										printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][last_arg - 1]);
+										return (1);
+									}
+
+									if (get_ranges_index (ast[level].expr[j][last_arg - 1]) != -1)
+									{
+										printf ("error: line %lli: variable '%s' is range variable, use {var = } expression!\n", linenum, ast[level].expr[j][last_arg - 1]);
 										return (1);
 									}
 
@@ -4362,6 +4396,12 @@ S2 parse_line (U1 *line)
 										return (1);
 									}
 
+									if (get_ranges_index (ast[level].expr[j][last_arg - 2]) != -1)
+									{
+										printf ("error: line %lli: variable '%s' is range variable, use {var = } expression!\n", linenum, ast[level].expr[j][last_arg - 2]);
+										return (1);
+									}
+
 									// check if variable name begins with uppercase P
 									if (ast[level].expr[j][last_arg - 1][0] != 'P')
 									{
@@ -4528,6 +4568,106 @@ S2 parse_line (U1 *line)
 									}
 									} // scope block end
 									continue;
+								}
+
+								// range: get variable min max ranges ============================================================================
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "range") == 0)
+								{
+									// new variable scope
+									{
+									S2 target_type;
+									S2 min_type;
+									S2 max_type;
+
+									if (last_arg != 3)
+									{
+										printf ("error: line %lli: range arguments mismatch!\n", linenum);
+										return (1);
+									}
+
+									// check if variables are defined
+									if (checkdef (ast[level].expr[j][last_arg - 3]) != 0)
+									{
+										return (1);
+									}
+
+									if (checkdef (ast[level].expr[j][last_arg - 2]) != 0)
+									{
+										return (1);
+									}
+
+									if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
+									{
+										return (1);
+									}
+
+									// check if ranges variables are constant
+									if (get_var_is_const (ast[level].expr[j][last_arg - 2]) != 1)
+									{
+										printf ("error: line %lli: range argument min: %s is not constant!\n", linenum, ast[level].expr[j][last_arg - 2]);
+										return (1);
+									}
+
+									if (get_var_is_const (ast[level].expr[j][last_arg - 1]) != 1)
+									{
+										printf ("error: line %lli: range argument max: %s is not constant!\n", linenum, ast[level].expr[j][last_arg - 1]);
+										return (1);
+									}
+
+									// get variable types
+								    target_type = getvartype (ast[level].expr[j][last_arg - 3]);
+									min_type = getvartype (ast[level].expr[j][last_arg - 2]);
+									max_type = getvartype (ast[level].expr[j][last_arg - 1]);
+
+									// do check
+									if (target_type == DOUBLE)
+									{
+										if (min_type != DOUBLE || max_type != DOUBLE)
+										{
+											printf ("error: line %lli: range arguments are not double type!\n", linenum);
+											return (1);
+										}
+									}
+									else
+									{
+										if (min_type != INTEGER || max_type != INTEGER)
+										{
+											printf ("error: line %lli: range arguments are not int type!\n", linenum);
+											return (1);
+										}
+									}
+
+									if (strlen_safe ((const char *) ast[level].expr[j][last_arg - 3], MAXSTRLEN) >= MAXSTRLEN)
+									{
+										printf ("error: line %lli: variable: %s name overflow!\n", linenum, ast[level].expr[j][last_arg - 3]);
+										return (1);
+									}
+
+									if (strlen_safe ((const char *) ast[level].expr[j][last_arg - 2], MAXSTRLEN) >= MAXSTRLEN)
+									{
+										printf ("error: line %lli: variable: %s min overflow!\n", linenum, ast[level].expr[j][last_arg - 2]);
+										return (1);
+									}
+
+									if (strlen_safe ((const char *) ast[level].expr[j][last_arg - 1], MAXSTRLEN) >= MAXSTRLEN)
+									{
+										printf ("error: line %lli: variable: %s max overflow!\n", linenum, ast[level].expr[j][last_arg - 1]);
+										return (1);
+									}
+
+									if (ranges_ind >= MAXRANGESVAR)
+									{
+										printf ("error: line %lli: range index overflow!\n", linenum);
+										return (1);
+									}
+
+									ranges_ind++;
+                                    strcpy ((char *) ranges[ranges_ind].varname, (const char *) ast[level].expr[j][last_arg - 3]);
+									strcpy ((char *) ranges[ranges_ind].min, (const char *) ast[level].expr[j][last_arg - 2]);
+									strcpy ((char *) ranges[ranges_ind].max, (const char *) ast[level].expr[j][last_arg - 1]);
+
+									continue;
+									}
 								}
 
 								// call =========================================================================

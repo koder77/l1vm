@@ -2124,6 +2124,9 @@ S2 run (void *arg)
 			{
 				printf ("ERROR: int variable value in illegal range!\n");
 				PRINT_EPOS();
+				free (jumpoffs);
+				loop_stop ();
+				pthread_exit ((void *) 1);
 			}
 			eoffs = 5;
 			break;
@@ -2138,6 +2141,9 @@ S2 run (void *arg)
 			{
 				printf ("ERROR: double variable value in illegal range!\n");
 				PRINT_EPOS();
+				free (jumpoffs);
+				loop_stop ();
+				pthread_exit ((void *) 1);
 			}
 			eoffs = 5;
 			break;

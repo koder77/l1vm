@@ -281,6 +281,14 @@ struct JIT_code
 	Func fn;
 };
 
+// ranges for variable assign checks
+// store the variable name and the min/max variable names
+struct range
+{
+    U1 varname[MAXSTRLEN];
+    U1 min[MAXSTRLEN];
+    U1 max[MAXSTRLEN];
+};
 
 // 61 opcodes
 #define PUSHB   0

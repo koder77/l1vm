@@ -59,4 +59,6 @@
 #define STACK_CHECK				1		// use stack types check, or not
 
 #define MAXDATAINFO             40960	// variable data names: was 4096
+
+#define MAXRANGESVAR            4096   // variable ranges can be saved
 // user settings end ==========================================================

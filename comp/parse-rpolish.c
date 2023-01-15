@@ -84,6 +84,10 @@ extern S8 linenum ALIGN;
 extern S8 label_ind ALIGN;
 extern S8 call_label_ind ALIGN;
 
+// variable ranges min/max
+extern struct range ranges[];
+extern S8 ranges_ind;
+
 // don't use pull opcodes to optimize chained math expressions in "parse-rpolish.c" math expressions
 extern U1 no_var_pull;
 
@@ -682,6 +686,22 @@ S2 check_rpn_expression (U1 *postfix)
 	return (0);
 }
 
+// get range variable index
+S8 get_ranges_index (U1 *varname)
+{
+	S8 i ALIGN;
+
+	for (i = 0; i <= ranges_ind; i++)
+	{
+		if (strcmp ((const char *) ranges[i].varname, (const char *) varname) == 0)
+		{
+			return (i);
+		}
+	}
+
+	return (-1); // variable not found
+}
+
 // evaluates reverse polish postfix expression
 S2 parse_rpolish (U1 *postfix)
 {
@@ -707,6 +727,14 @@ S2 parse_rpolish (U1 *postfix)
 
 	S2 math_exp_begin;
 	U1 found_op = 0;			// set to true if found operator
+
+	// variable range index
+	S8 var_range_ind ALIGN;
+	S2 min_reg;
+	S2 max_reg;
+	U1 min_reg_str[MAXSTRLEN];
+	U1 max_reg_str[MAXSTRLEN];
+	U1 target_reg_str[MAXSTRLEN];
 
 	// get target var name
 	math_exp_begin = get_target_var (postfix, target_var, target_var_len);
@@ -1219,6 +1247,37 @@ S2 parse_rpolish (U1 *postfix)
 		}
 		set_regd (target_reg, (U1 *) "");
 		set_regd (target, (U1 *) "");
+
+		// check if variable ranges are set
+		var_range_ind = get_ranges_index (target_var);
+		if (var_range_ind >= 0)
+		{
+			 // found variable in ranges, set range variables
+			 target_reg = load_variable_double (target_var);
+             min_reg = load_variable_double (ranges[var_range_ind].min);
+			 max_reg = load_variable_double (ranges[var_range_ind].max);
+
+			 sprintf ((char *) min_reg_str, "%i", min_reg);
+			 sprintf ((char *) max_reg_str, "%i", max_reg);
+			 sprintf ((char *) target_reg_str, "%i", target_reg);
+
+			 strcpy ((char *) code_temp, "intr0, 29, ");
+			 strcat ((char *) code_temp, (const char *) target_reg_str);
+			 strcat ((char *) code_temp, ", ");
+			 strcat ((char *) code_temp, (const char *) min_reg_str);
+			 strcat ((char *) code_temp, ", ");
+			 strcat ((char *) code_temp, (const char *) max_reg_str);
+			 strcat ((char *) code_temp, "\n");
+
+			 code_line++;
+			 if (code_line >= line_len)
+			 {
+				 printf ("error: line %lli: code list full!\n", linenum);
+				 return (1);
+			 }
+
+			 strcpy ((char *) code[code_line], (const char *) code_temp);
+		 }
 	}
 
 	if (checkdef (target_var) != 0)
@@ -1315,6 +1374,37 @@ S2 parse_rpolish (U1 *postfix)
 		}
 		set_regi (target_reg, (U1 *) "");
 		set_regi (target, (U1 *) "");
+
+		// check if variable ranges are set
+		var_range_ind = get_ranges_index (target_var);
+		if (var_range_ind >= 0)
+		{
+			 // found variable in ranges, set range variables
+			 target_reg = load_variable_int (target_var);
+             min_reg = load_variable_int (ranges[var_range_ind].min);
+			 max_reg = load_variable_int (ranges[var_range_ind].max);
+
+			 sprintf ((char *) min_reg_str, "%i", min_reg);
+			 sprintf ((char *) max_reg_str, "%i", max_reg);
+			 sprintf ((char *) target_reg_str, "%i", target_reg);
+
+			 strcpy ((char *) code_temp, "intr0, 28, ");
+			 strcat ((char *) code_temp, (const char *) target_reg_str);
+			 strcat ((char *) code_temp, ", ");
+			 strcat ((char *) code_temp, (const char *) min_reg_str);
+			 strcat ((char *) code_temp, ", ");
+			 strcat ((char *) code_temp, (const char *) max_reg_str);
+			 strcat ((char *) code_temp, "\n");
+
+			 code_line++;
+			 if (code_line >= line_len)
+			 {
+				 printf ("error: line %lli: code list full!\n", linenum);
+				 return (1);
+			 }
+
+			 strcpy ((char *) code[code_line], (const char *) code_temp);
+		 }
 	}
 
 	// check if for examnple an int64 is assigned to int32, loosing precision
