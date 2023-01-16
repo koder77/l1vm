@@ -832,12 +832,12 @@ S2 parse_line (U1 *line)
 							{
 								if (warnings_as_errors == 1)
 								{
-									printf ("error: line %lli: variable has no value set!\n", linenum);
+									printf ("error: line %lli: variable %s has no value set!\n", linenum, ast[level].expr[j][3]);
 									return (1);
 								}
 								else
 								{
-									printf ("warning: line %lli: variable has no value set!\n", linenum);
+									printf ("warning: line %lli: variable %s has no value set!\n", linenum, ast[level].expr[j][3]);
 								}
 							}
 						}

@@ -5,8 +5,9 @@ L1VM (2.0.7)
 	(x x_min x_max range)
 
 	See prog/hello-ranges.l1com
+	NEW: -wsetundef compiler flag now shows the variable name in the message!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 15 Jan 2023 16:07 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 16 Jan 2023 18:08 +0100
 
 L1VM (2.0.6)
 	NEW: compiler flag: "-wsetundef" warns if a variable has no value set!
