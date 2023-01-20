@@ -7,7 +7,10 @@ L1VM (2.0.7)
 	See prog/hello-ranges.l1com
 	NEW: -wsetundef compiler flag now shows the variable name in the message!
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon 16 Jan 2023 18:08 +0100
+	NEW: data cloud now can load/save all data bases too!
+	See datacloud.l1h!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 20 Jan 2023 19:00 +0100
 
 L1VM (2.0.6)
 	NEW: compiler flag: "-wsetundef" warns if a variable has no value set!
