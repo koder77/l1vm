@@ -50,6 +50,13 @@
     (set string s calc_str "calculated number: ")
     (set string s colon_str " : ")
     (set string s one_str "1")
+    (set string s even_str "even")
+    (set string s odd_str "odd")
+    (set string s cli_args_str "l1vm 3x1-worker <even | odd>")
+    (set int64 1 step 2)
+    (set int64 1 cli_args_ok 0)
+    (set int64 1 cli_args 0)
+    (set string 256 cli_arg_str "")
 
     (mod_string :string_init !)
 	(mod_net two :net_init !)
@@ -68,6 +75,40 @@
     (ret stpop)
     (((ret zero !=) f =) f if)
         print_s (connectstr)
+        print_n
+        exit (one)
+    (endif)
+
+    // check cli args
+    get_shell_args (cli_args)
+    (((cli_args one !=) f =) f if)
+        print_s (cli_args_str)
+        print_n
+        exit (one)
+    (endif)
+
+    get_shell_arg (zero, cli_arg_str)
+    // check if even
+    (cli_arg_str even_str :string_compare !)
+    (ret stpop)
+    (((ret zero ==) f =) f if)
+        // even
+        (two num =)
+        (one cli_args_ok =)
+    (endif)
+
+    // check if odd
+    (cli_arg_str odd_str :string_compare !)
+    (ret stpop)
+    (((ret zero ==) f =) f if)
+        // odd
+        (one num =)
+        (one cli_args_ok =)
+    (endif)
+
+    // check if argument ok
+    (((cli_args_ok zero ==) f =) f if)
+        print_s (cli_args_str)
         print_n
         exit (one)
     (endif)
@@ -106,7 +147,7 @@
             // calculate 3x1
             (num :calc !)
         (endif)
-        ((num one +) num =)
+        ((num step +) num =)
     (((num maxnum <=) f =) f while)
     
     (:dcloud_close !)

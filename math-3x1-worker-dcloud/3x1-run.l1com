@@ -69,7 +69,7 @@
 	(endif)
 
     (mod_math :math_init !)
-    (mod_process :process_init call)
+    (mod_process :process_init !)
 
     get_shell_arg (zero, worker_name_str)
 
@@ -104,13 +104,13 @@
         (ret stpop)
         (((ret zero !=) f =) f if+)
             // start process
-            (process_str :run_shell call)
+            (process_str :run_shell !)
         (else)
              print_s (no_job_found_str)
              print_n
         (endif)
 
-        /// wait 3 secs
+        // wait 3 secs
         detime (delay_3_sec)
     (:loop jmp)
 	exit (zero)

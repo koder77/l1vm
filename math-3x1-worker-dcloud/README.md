@@ -30,10 +30,14 @@ now open a third shell:
 $ l1vm init-database 
 ```
 
-If this is finished, you can run the worker:
+If this is finished, you can run the two workers at the same time:
 
 ```
-$ l1vm 3x1-worker
+$ l1vm 3x1-worker -args even
+```
+
+```
+$ l1vm 3x1-worker -args odd
 ```
 
 Now the calculations are done.
