@@ -216,6 +216,12 @@ S2 set_module_func (S8 ind, S8 func_ind, U1 *func_name)
 
 U1 *call_module_func (S8 ind, S8 func_ind, U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
+	// avoid call without loaded module
+	if (modules[ind].used == 0)
+	{
+		printf ("FATAL error: module not load!\n");
+        return (NULL);
+	}
     return (*modules[ind].func[func_ind])(sp, sp_top, sp_bottom, data);
 }
 
