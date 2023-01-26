@@ -13,7 +13,9 @@ L1VM (2.0.7)
 	NEW: datacloud 3x1 worker update, now using even/odd args for worker runs.
 	NEW: module not load check on module function call.
 
--- Stefan Pietzonke <jay-t@gmx.net> Tue 24 Jan 2023 17:11 +0100
+	NEW: math-3x1-cluster/3x1-worker.l1com example added. It outputs a l1vmgodata database with the given input range of the 3x1 problem.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 26 Jan 2023 18:37 +0100
 
 L1VM (2.0.6)
 	NEW: compiler flag: "-wsetundef" warns if a variable has no value set!

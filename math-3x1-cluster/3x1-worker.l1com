@@ -1,0 +1,231 @@
+// 3x1-worker.l1com
+// run 3x1 problem solving and save the data into a l1vmgodata database file on disk
+// example run:
+// $ l1vm 3x1-worker -args 1-1000000.l1db 1 1000000
+// saves all calculations from 1 to 999999
+// I did develop this for my Raspberry Pi cluster.
+//
+#include <intr.l1h>
+#include <math-const.l1h>
+#include <misc-macros.l1h>
+#include <file-def.l1h>
+(main func)
+	(set const-int64 1 zero 0)
+	(set const-int64 1 one 1)
+    (set const-int64 1 two 2)
+    (set const-int64 1 three 3)
+    (set int64 1 num 1)
+    (set int64 1 maxnum 1000)
+    (set int64 1 result 0)
+	(set const-int64 1 mod_string 0)
+    (set const-int64 1 mod_math 1)
+    (set const-int64 1 mod_file 2)
+    (set int64 1 work 1)
+	(set int64 1 f 0)
+	(set int64 1 ret 0)
+    (set string 4097 key_str "num")
+    (set string 4097 value_str "")
+    (set string 4097 res_start_str "res")
+    (set string s res_minus "-")
+    (set int64 1 res_index 1)
+    (set string 4098 res_num_str "")
+    (set string 4097 num_str "")
+    (set string 256 ret_str "")
+    (set string 4098 request_str "")
+    (set int64 1 string_len 4096)
+	(set string 4097 ret_str "")
+    (set string s fileinitstr "error: can't init file!")
+    (set string s fileopenstr "error: can't open file!")
+    (set string s filewritestr "error: can't write to file!")
+    (set string s storestr "error can't store data in data base!")
+    (set string s dataokstr "data read OK!")
+    (set string s ok_str "OK")
+    (set string s error_str "ERROR")
+    (set string s receiving_str "receiving ")
+    (set string s calc_str "calculated number: ")
+    (set string s colon_str " : ")
+    (set string s one_str "1")
+    (set string s cli_args_str "l1vm 3x1-worker -args <file-name> <start-num> <end-num>")
+    (set int64 1 cli_args_ok 0)
+    (set int64 1 cli_args 0)
+    (set string 256 cli_arg_str "")
+    (set string 256 start_num_str "")
+    (set string 256 end_num_str "")
+    (set int64 1 start_num 0)
+    (set int64 1 end_num 0)
+    (set int64 1 file_handle 0)
+    (set string 256 file_name_str "")
+    (set string s database_header_str "l1vmgodata database")
+    (set const-byte 1 newline_ch 10)
+
+    (mod_string :string_init !)
+    (mod_math :math_init !)
+
+    (mod_file one :file_init call)
+	(ret stpop)
+    (((ret zero !=) f =) f if)
+		// ERROR can't allocate memory
+        print_s (fileinitstr)
+        print_n
+        exit (one)
+	(endif)
+
+    // check cli args
+    get_shell_args (cli_args)
+    (((cli_args three !=) f =) f if)
+        print_s (cli_args_str)
+        print_n
+        exit (one)
+    (endif)
+
+    get_shell_arg (zero, file_name_str)
+
+    get_shell_arg (one, start_num_str)
+    (start_num_str :string_to_int !)
+    (start_num stpop)
+
+    get_shell_arg (two, end_num_str)
+    (end_num_str :string_to_int !)
+    (end_num stpop)
+
+    // open file
+    (file_mode_write file_name_str :file_open !)
+	//
+	// get file handle from file_open call
+	//
+    (file_handle stpop)
+    (((file_handle zero <) f =) f if)
+        print_s (fileopenstr)
+        print_n
+        exit (one)
+    (endif)
+
+    // write database header
+    (file_handle database_header_str :file_put_string !)
+    (ret stpop)
+    (((ret zero !=) f =) f if)
+        print_s (filewritestr)
+        print_n
+        exit (one)
+    (endif)
+
+    (file_handle newline_ch :file_putc !)
+    (ret stpop)
+    (((ret zero !=) f =) f if)
+        print_s (filewritestr)
+        print_n
+        exit (one)
+    (endif)
+
+    (start_num num =)
+
+    print_i (start_num)
+    print_n
+    print_i (end_num)
+    print_n
+
+    (do)
+        // calculate 3x1
+        print_i (num)
+        print_n
+
+        (num :calc !)
+        ((num one +) num =)
+    (((num end_num <) f =) f while)
+
+     (file_handle :file_close !)
+	exit (zero)
+(funcend)
+
+(calc func)
+    // calculate 3x1
+    #var ~ calc
+    (set int64 1 num~ 0)
+    (set int64 1 result~ 0)
+    (set int64 1 zero~ 0)
+    (set int64 1 one~ 1)
+    (set int64 1 two~ 2)
+    (set int64 1 three~ 3)
+    (set int64 1 f~ 0)
+    (set string 4097 res_start_str~ "res")
+    (set string s res_minus_str~ "-")
+    (set int64 1 res_index~ 1)
+    (set int64 1 res_num~ 0)
+    (set string 4097 res_num_str~ "")
+    (set string 4097 num_str~ "")
+    (set string s empty_str~ "")
+    (set string 4097 value_str~ "")
+    (set int64 1 string_len~ 4096)
+    (set string 256 ret_str~ "")
+    (set string s space_str~ " ")
+    (set int64 1 ret~ 0)
+    (set int64 1 f~ 0)
+    (set string s ok_str~ "OK")
+    (set string 4097 write_str~ "")
+    (set string 2 colon_str~ ":")
+    (set string 2 quote_str~ "")
+    (set const-int64 1 quote_ch~ 34)
+
+    (optimize-if)
+    (quote_ch~ quote_str~ :string_bytenumtostring !)
+
+    (one~ res_index~ =)
+    (num~ stpop)
+    (num~ res_num~ =)
+    (res_num_str~ empty_str~ :string_copy !)
+    (do)
+        (reset-reg)
+        ((num~ two~ %) result~ =)
+        (((result~ zero~ ==) f~ =) f~ if+)
+            // even
+            ((num~ two~ /) num~ =)
+        (else)
+             // odd
+             ((num~ three *) num~ =)
+             ((num~ one~ +) num~ =)
+        (endif)
+
+        // example: "res10-1" key string
+        (res_num_str~ colon_str~ :string_copy !)
+        (res_num_str~ res_start_str~ :string_cat !)
+        (res_num~ num_str~ string_len~ :string_int64tostring !)
+        (res_num_str~ num_str~ :string_cat !)
+        (res_num_str~ res_minus_str~ :string_cat !)
+        (res_index~ num_str~ string_len~ :string_int64tostring !)
+        (res_num_str~ num_str~ :string_cat !)
+
+        // value string
+        (num~ value_str~ string_len~ :string_int64tostring !)
+
+        (write_str~ res_num_str~ :string_copy !)
+        (write_str~ space_str~ :string_cat !)
+
+        (write_str~ quote_str~ :string_cat !)
+        (write_str~ value_str~ :string_cat !)
+        (write_str~ quote_str~ :string_cat !)
+
+        (file_handle write_str~ :file_put_string !)
+
+        (file_handle newline_ch :file_putc !)
+        (ret~ stpop)
+        (((ret~ zero~ !=) f~ =) f~ if)
+            print_s (filewritestr)
+            print_n
+            exit (one)
+        (endif)
+
+        (ret~ stpop)
+        (((ret~ zero !=) f~ =) f~ if)
+            // ERROR can't write to file
+            print_s (filewritestr)
+            print_n
+
+            exit (one)
+        (endif)
+        ((res_index~ one~ +) res_index~ =)
+    (((num~ one~ !=) f~ =) f~ while)
+(funcend)
+
+#include <string.l1h>
+#include <math-lib.l1h>
+#include <file-lib.l1h>
