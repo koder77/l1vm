@@ -14,8 +14,10 @@ L1VM (2.0.7)
 	NEW: module not load check on module function call.
 
 	NEW: math-3x1-cluster/3x1-worker.l1com example added. It outputs a l1vmgodata database with the given input range of the 3x1 problem.
+	NEW: now all module function call on unset functions exit the VM by an error.
+	So not initialized functions cause this new error!
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 26 Jan 2023 18:37 +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 27 Jan 2023 17:31 +0100
 
 L1VM (2.0.6)
 	NEW: compiler flag: "-wsetundef" warns if a variable has no value set!

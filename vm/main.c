@@ -73,6 +73,7 @@ struct module
 #endif
 
     dll_func func[MODULES_MAXFUNC];
+	U1 func_set[MODULES_MAXFUNC];
 };
 
 struct module modules[MODULES];
@@ -200,6 +201,7 @@ S2 set_module_func (S8 ind, S8 func_ind, U1 *func_name)
 		printf ("%s\n", dlsym_error);
         return (1);
     }
+	modules[ind].func_set[func_ind] = 1; // module function set flag
     return (0);
 #endif
 
@@ -210,6 +212,7 @@ S2 set_module_func (S8 ind, S8 func_ind, U1 *func_name)
         printf ("error set module %s, function: '%s'!\n", modules[ind].name, func_name);
         return (1);
     }
+	modules[ind].func_set[func_ind] = 1; // module function set flag
     return (0);
 #endif
 }
@@ -219,9 +222,15 @@ U1 *call_module_func (S8 ind, S8 func_ind, U1 *sp, U1 *sp_top, U1 *sp_bottom, U1
 	// avoid call without loaded module
 	if (modules[ind].used == 0)
 	{
-		printf ("FATAL error: module not load!\n");
+		printf ("FATAL ERROR: module %lli not loaded!\n", ind);
         return (NULL);
 	}
+    if (modules[ind].func_set[func_ind] == 0)
+	{
+		printf ("FATAL ERROR: module %lli func %lli not loaded!\n", ind, func_ind);
+		return (NULL);
+	}
+
     return (*modules[ind].func[func_ind])(sp, sp_top, sp_bottom, data);
 }
 
@@ -2762,11 +2771,17 @@ void break_handler (void)
 void init_modules (void)
 {
     S8 i ALIGN;
+	S8 func ALIGN;
 
     for (i = 0; i < MODULES; i++)
     {
         strcpy ((char *) modules[i].name, "");
 		modules[i].used = 0;
+
+		for (func = 0; func < MODULES_MAXFUNC; func++)
+		{
+			modules[i].func_set[func] = 0;
+		}
     }
 }
 
