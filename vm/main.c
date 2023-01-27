@@ -103,11 +103,19 @@ struct threaddata *threaddata;
 #if JIT_COMPILER
 S2 alloc_jit_code ()
 {
+	S8 ind ALIGN;
+
 	JIT_code = (struct JIT_code*) calloc (MAXJITCODE, sizeof (struct JIT_code));
 	if (JIT_code == NULL)
 	{
 		printf ("FATAL ERROR: can't allocate JIT_code structure!\n");
 		return (1);
+	}
+
+	// set used as free:
+	for (ind = 0; ind < MAXJITCODE; ind++)
+	{
+		JIT_code[ind].used = 0;
 	}
 	return (0);
 }
@@ -2207,21 +2215,7 @@ S2 run (void *arg)
 
 #if JIT_COMPILER
         case 253:
-        // run JIT compiler
-			if (JIT_initialized == 0)
-			{
-				if (alloc_jit_code () != 0)
-				{
-					printf ("FATAL ERROR: JIT compiler: can't alloc memory!\n");
-					PRINT_EPOS();
-	                free (jumpoffs);
-					loop_stop ();
-	            	pthread_exit ((void *) 1);
-				}
-
-				JIT_initialized = 1;	// JIT compiler ready to use!
-			}
-
+			// run JIT compiler
             arg2 = code[ep + 2];
             arg3 = code[ep + 3];
 
@@ -3109,6 +3103,15 @@ int main (int ac, char *av[])
 		cleanup ();
 		exit (1);
 	}
+
+	#if JIT_COMPILER
+		if (alloc_jit_code () != 0)
+		{
+			printf ("FATAL ERROR: JIT compiler: can't alloc memory!\n");
+		    cleanup ();
+			exit (1);
+		}
+	#endif
 
 	if (silent_run == 0)
 	{

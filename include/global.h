@@ -279,6 +279,7 @@ typedef void (*Func)(void);
 struct JIT_code
 {
 	Func fn;
+	U1 used;
 };
 
 // ranges for variable assign checks

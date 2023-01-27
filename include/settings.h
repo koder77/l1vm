@@ -29,7 +29,7 @@
 #define CPU_SET_AFFINITY		1
 
 // set to defined for DEBUGGING
-#define DEBUG					0
+#define DEBUG				0
 
 // SANDBOX FILE ACCESS
 #define SANDBOX                 1			// secure file acces: 1 = use secure access, 0 = OFF!!

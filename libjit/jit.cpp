@@ -1877,7 +1877,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
             }
 
             JIT_code[JIT_code_ind].fn = (Func) funcptr;
-
+            JIT_code[JIT_code_ind].used = 1;
             #if DEBUG
                 printf ("JIT compiler: function saved.\n");
             #endif
@@ -1901,7 +1901,13 @@ extern "C" int run_jit (S8 code ALIGN, struct JIT_code *JIT_code)
 
 	if (code < 0 || code >= MAXJITCODE)
 	{
-		printf ("JIT compiler: FATAL ERROR! code index out of range!!!\n");
+		printf ("JIT compiler: FATAL ERROR! code index %lli out of range!!!\n", code);
+		return (1);
+	}
+
+	if (JIT_code[code].used == 0)
+	{
+		printf ("JIT compiler: FATAL ERROR! code index %lli not compiled!\n", code);
 		return (1);
 	}
 
@@ -1913,7 +1919,7 @@ extern "C" int run_jit (S8 code ALIGN, struct JIT_code *JIT_code)
 
     if (func == NULL)
 	{
-		printf("JIT compiler: FATAL ERROR! NULL pointer code!!!\n");
+		printf ("JIT compiler: FATAL ERROR! NULL pointer code!!!\n");
 		return (1);
 	}
 

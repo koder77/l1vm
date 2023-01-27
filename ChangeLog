@@ -17,7 +17,9 @@ L1VM (2.0.7)
 	NEW: now all module function call on unset functions exit the VM by an error.
 	So not initialized functions cause this new error!
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 27 Jan 2023 17:31 +0100
+	Security BUGFIX: JIT-compiler now checks if code at given index is compiled or not. Resulting in an runtime ERROR if no code found!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 27 Jan 2023 19:29 +0100
 
 L1VM (2.0.6)
 	NEW: compiler flag: "-wsetundef" warns if a variable has no value set!
