@@ -181,7 +181,7 @@
             ((num~ two~ /) num~ =)
         (else)
              // odd
-             ((num~ three *) num~ =)
+             ((num~ three~ *) num~ =)
              ((num~ one~ +) num~ =)
         (endif)
 
