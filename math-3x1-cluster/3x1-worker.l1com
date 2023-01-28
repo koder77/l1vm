@@ -205,6 +205,14 @@
         (write_str~ quote_str~ :string_cat !)
 
         (file_handle write_str~ :file_put_string !)
+        (ret~ stpop)
+        (((ret~ zero !=) f~ =) f~ if)
+            // ERROR can't write to file
+            print_s (filewritestr)
+            print_n
+
+            exit (one)
+        (endif)
 
         (file_handle newline_ch :file_putc !)
         (ret~ stpop)
@@ -214,14 +222,6 @@
             exit (one)
         (endif)
 
-        (ret~ stpop)
-        (((ret~ zero !=) f~ =) f~ if)
-            // ERROR can't write to file
-            print_s (filewritestr)
-            print_n
-
-            exit (one)
-        (endif)
         ((res_index~ one~ +) res_index~ =)
     (((num~ one~ !=) f~ =) f~ while)
 (funcend)
