@@ -1,3 +1,8 @@
+L1VM (2.1.0)
+	Security BUGFIX: JIT-compiler now checks if code at given index is compiled or not. Resulting in an runtime ERROR if no code found!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 28 Jan 2023 07:57 +0100
+
 L1VM (2.0.7)
 	Updated copyright in global.h to 2023.
 	NEW: now legal value ranges for variables can be set:
@@ -16,8 +21,6 @@ L1VM (2.0.7)
 	NEW: math-3x1-cluster/3x1-worker.l1com example added. It outputs a l1vmgodata database with the given input range of the 3x1 problem.
 	NEW: now all module function call on unset functions exit the VM by an error.
 	So not initialized functions cause this new error!
-
-	Security BUGFIX: JIT-compiler now checks if code at given index is compiled or not. Resulting in an runtime ERROR if no code found!
 
 -- Stefan Pietzonke <jay-t@gmx.net> Fri 27 Jan 2023 19:29 +0100
 
