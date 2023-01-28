@@ -210,13 +210,13 @@
             // ERROR can't write to file
             print_s (filewritestr)
             print_n
-
             exit (one)
         (endif)
 
         (file_handle newline_ch :file_putc !)
         (ret~ stpop)
         (((ret~ zero~ !=) f~ =) f~ if)
+            // ERROR can't write to file
             print_s (filewritestr)
             print_n
             exit (one)
