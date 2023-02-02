@@ -57,7 +57,17 @@
     (set string 256 file_name_str "")
     (set string s database_header_str "l1vmgodata database")
     (set const-byte 1 newline_ch 10)
-
+    (set string 4097 file_name_full_str "")
+    (set int64 1 num_count 1)
+    (set int64 1 max_num_count 100000)
+    (set string 4907 num_buf_str "")
+    (set int64 1 string_len 4096)
+    (set string 2 minus_str "-")
+    (set string s end_name_str ".l1db")
+    (set int64 1 curr_num 0)
+    (set int64 1 end_num 0)
+    (set int64 1 range_start 0)
+    (set int64 1 range_end 0)
     (mod_string :string_init !)
     (mod_math :math_init !)
 
@@ -88,8 +98,25 @@
     (end_num_str :string_to_int !)
     (end_num stpop)
 
+    (start_num num =)
+    (start_num range_start =)
+    ((start_num max_num_count +) range_end =)
+
+    (:loop)
+    (one num_count =)
+
+    // create full file name
+    (file_name_full_str file_name_str :string_copy !)
+    (range_start num_buf_str string_len :string_int64tostring !)
+    (file_name_full_str num_buf_str :string_cat !)
+    (file_name_full_str minus_str :string_cat !)
+
+    (range_end num_buf_str string_len :string_int64tostring !)
+    (file_name_full_str num_buf_str :string_cat !)
+    (file_name_full_str end_name_str :string_cat !)
+
     // open file
-    (file_mode_write file_name_str :file_open !)
+    (file_mode_write file_name_full_str :file_open !)
 	//
 	// get file handle from file_open call
 	//
@@ -117,13 +144,6 @@
         exit (one)
     (endif)
 
-    (start_num num =)
-
-    print_i (start_num)
-    print_n
-    print_i (end_num)
-    print_n
-
     (do)
         // calculate 3x1
         print_i (num)
@@ -131,9 +151,17 @@
 
         (num :calc !)
         ((num one +) num =)
-    (((num end_num <) f =) f while)
+        ((num_count one +) num_count =)
+    (((num_count max_num_count <=) f =) f while)
 
-     (file_handle :file_close !)
+    (file_handle :file_close !)
+
+    (((num end_num <=) f =) f if)
+        ((range_start max_num_count +) range_start =)
+        ((range_end max_num_count +) range_end =)
+        (:loop jmp)
+    (endif)
+
 	exit (zero)
 (funcend)
 
