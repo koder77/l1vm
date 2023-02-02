@@ -1,7 +1,7 @@
 // 3x1-worker.l1com
 // run 3x1 problem solving and save the data into a l1vmgodata database file on disk
 // example run:
-// $ l1vm 3x1-worker -args 1-1000000.l1db 1 1000000
+// $ l1vm 3x1-worker -args 3x1/3x1- 1 1000000
 // saves all calculations from 1 to 999999
 // I did develop this for my Raspberry Pi cluster.
 //
