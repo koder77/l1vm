@@ -164,6 +164,7 @@ Now legal value ranges for variables can be set:
 
 If x is out of range then an exception is executed to exit the program.
 This was inspired by Ada!
+See prog/hello-ranges.l1com!
 
 <h2>l1pre - the preprocessor</h2>
 The new "l1pre" preprocessor can be used to define macros and include files.
