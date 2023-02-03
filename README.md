@@ -1,4 +1,4 @@
-L1VM README  2022-05-22
+L1VM README  2023-02-03
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -156,22 +156,20 @@ Without them this L1VM project would not be possible! Thank you! <br>
 ----------------------- <br>
 
 <h2>New: variable range checks</h2>
-Here is an example (prog/range-new.l1com):
+Now legal value ranges for variables can be set:
 
 ```
-int_out_of_range (r, x, y)
-	print_s (out_of_rangestr)
-	print_n
-(endif)
+(x x_min x_max range)
 ```
 
-The code inside the "if" macro is run if "r" is less than "x" or greater as "y"!
+If x is out of range then an exception is executed to exit the program.
+This was inspired by Ada!
 
-<h2>New: l1pre - the preprocessor</h2>
+<h2>l1pre - the preprocessor</h2>
 The new "l1pre" preprocessor can be used to define macros and include files.
 See the new "include-lib" directory with all header files. The "prog/hello-6.l1com" example shows how to use this!
 
-<h2>New: reversed polish math notation</h2>
+<h2>reversed polish math notation</h2>
 Math expressions in: { }, are parsed as reversed polish notation:
 
 {a = x y + z x * *}
@@ -180,11 +178,11 @@ is the same as: "a = x + y * z * x"
 This needs no brackets for complex math expressions!
 See "prog/hello-4.l1com" example!
 
-<h2>New: "(loadreg)" setting</h2>
+<h2>"(loadreg)" setting</h2>
 it is set automatically after a function call, or the "stpop" opcodes.
 Or you can do it in the code.
 
-<h2>New SDL 2.0!</h2>
+<h2>SDL 2.0!</h2>
 Finally I ported the SDL gfx/GUI library to SDL 2.0!
 The source code is in: vm/modules/sdl-2.0/
 
