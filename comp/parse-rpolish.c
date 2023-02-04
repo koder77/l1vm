@@ -813,6 +813,12 @@ S2 parse_rpolish (U1 *postfix)
                i++;
                ch = postfix[i];
            }
+           // if target variable short name: _ then replace _ by target variable name!
+           if (buf[0] == '_')
+		   {
+			   strcpy ((char *) buf, (const char *) target_var);
+		   }
+
            if (push_stack (buf) != 0)
 		   {
 			   return (1);

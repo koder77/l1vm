@@ -1,8 +1,14 @@
 L1VM (2.1.0)
 	Security BUGFIX: JIT-compiler now checks if code at given index is compiled or not. Resulting in an runtime ERROR if no code found!
 	Updated README.md.
+	NEW: now in the infix/RPN parser you can write a short name for the target variable: _ like this:
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 3 Feb 2023 20:08 +0100
+	{target = (_ + x + (_ * y))}
+
+	Every _ will be replaced by "target"!
+	See prog/hello-target-shortname.l1com.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 4 Feb 2023 14:04 +0100
 
 L1VM (2.0.7)
 	Updated copyright in global.h to 2023.

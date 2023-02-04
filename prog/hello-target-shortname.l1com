@@ -1,0 +1,18 @@
+// hello.l1com
+// Brackets - Hello world!
+//
+#include <intr.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 x 23)
+	(set int64 1 y 42)
+	(set int64 1 target 13)
+	(set string 13 hello "Hello world!")
+	// print string
+	print_s (hello)
+	print_n
+	{target = (_ + x + (_ * y))}
+	print_i (target)
+	print_n
+	exit (zero)
+(funcend)
