@@ -2200,10 +2200,15 @@ S2 run (void *arg)
 			arg2 = code[ep + 2];
 
 			sp = stack_type ((U1 *) &regi[arg2], sp, sp_top);
-		   if (sp == NULL)
-		   {
-
+			if (sp == NULL)
+			{
+				PRINT_EPOS();
+				free (jumpoffs);
+				loop_stop ();
+				pthread_exit ((void *) 1);
 	       }
+		   eoffs = 5;
+		   break;
 
 		case 251:
 			// set overflow on double reg
