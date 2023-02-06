@@ -1,5 +1,6 @@
 // stack.l1com - Brackets - stack check program
 #include <intr.l1h>
+#include <misc-macros.l1h>
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 one 1)
@@ -15,15 +16,20 @@
 	(set string s double_errstr "error reading double from stack!")
 	(set string s no_errstr "all stack checks passed as OK!")
 	(set int64 1 err 0)
+	(set int64 1 type 10)
 	show_st_p
 	(a stpushb)
 	(b stpushi)
 	(c stpushd)
+	stack_type (type)
+    pull_int64_var (type)
 	(c_st stpopd)
 	(b_st stpopi)
 	(a_st stpopb)
 	show_st_p
 	(reset-reg)
+	print_i (type)
+    print_n
 	// check st values!!!
 	(((a a_st !=) f =) f if)
 		(one err =)

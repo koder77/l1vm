@@ -2195,6 +2195,16 @@ S2 run (void *arg)
 			eoffs = 5;
 			break;
 
+        case 32:
+			// get type of stack object
+			arg2 = code[ep + 2];
+
+			sp = stack_type ((U1 *) &regi[arg2], sp, sp_top);
+		   if (sp == NULL)
+		   {
+
+	       }
+
 		case 251:
 			// set overflow on double reg
 			arg2 = code[ep + 2];

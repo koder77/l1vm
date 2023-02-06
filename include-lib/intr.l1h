@@ -43,6 +43,7 @@
 #func range_double (VAR, MIN, MAX) :(29 VAR MIN MAX intr0)
 #func check_pointer (PVAR, TYPE) :(30 PVAR TYPE 0 intr0)
 #func pointer_type (PVAR, TYPE) :(31 PVAR TYPE 0 intr0)
+#func stack_type (STTYPE) :(32 STTYPE 0 0 intr0)
 >>
 >>	intr1
 >>

@@ -327,3 +327,16 @@ U1 *stpopd (U1 *data, U1 *sp, U1 *sp_top)
 	return (sp);			// success
 	#endif
 }
+
+U1 *stack_type (U1 *data, U1 *sp, U1 *sp_top)
+{
+	if (sp + 1 > sp_top)
+	{
+		printf ("ERROR: stack_type: nothing on stack!!!\n");
+		// nothing on stack!! can't pop!!
+		return (NULL);		// FAIL
+	}
+
+	*data = *sp;
+	return (sp);
+}
