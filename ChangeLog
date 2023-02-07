@@ -11,7 +11,9 @@ L1VM (2.1.0)
 	NEW: VM stack interrrupt 0: 32 stack_type returns the type on the top of the stack.
 	See prog/stack.l1com! And include/intr.l1h.
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon 6 Feb 2023 20:38 +0100
+	Update: include/vars.l1h stack types added.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue 7 Feb 2023 20:46 +0100
 
 L1VM (2.0.7)
 	Updated copyright in global.h to 2023.
