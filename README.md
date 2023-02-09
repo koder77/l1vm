@@ -11,7 +11,7 @@ Running my blog and keep my hardware going costs money! So you can support me on
 This project started on 9. November 2017 as an experimental fast VM.
 I had some knowledge already from my Nano VM project. But I started from scratch.
 
-L1VM is an incredible tiny virtual machine with RISC (or comparable style) CPU, about 61 opcodes and about 40 KB binary size on X86_64 Linux (without JIT-compiler)!
+L1VM is an incredible tiny virtual machine with RISC (or comparable style) CPU, about 61 opcodes and about 49 KB binary size on X86_64 Linux!
 The VM has a 64 bit core (256 registers for integer and double float) and can run object code
 written in Brackets (a high level programming language) or l1asm assembly language.
 
