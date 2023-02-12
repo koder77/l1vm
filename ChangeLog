@@ -1,3 +1,5 @@
+L1VM (2.1.1)
+
 L1VM (2.1.0)
 	Security BUGFIX: JIT-compiler now checks if code at given index is compiled or not. Resulting in an runtime ERROR if no code found!
 	Updated README.md.
