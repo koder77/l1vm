@@ -6536,12 +6536,13 @@ void cleanup (void)
 
 void show_info (void)
 {
-	printf ("l1com <file> [-a] [-lines] [max linenumber] [-wsetundef] [-wvarunused] [-werror]\n");
+	printf ("l1com <file> [-a] [-lines] [max linenumber] [-wsetundef] [-wvarunused] [-wall] [-werror]\n");
 	printf ("\nCompiler for bra(ets, a programming language with brackets ;-)\n");
 	printf ("%s", VM_VERSION_STR);
 	printf ("%s\n", COPYRIGHT_STR);
 	printf ("-wsetundef : warn on set variables without value defined\n");
 	printf ("-wvarunused : warn on defined but unused variables\n");
+	printf ("-wall : all -w warn flags turned on!\n");
 	printf ("-werror : handle all warnings as ERRORs!\n");
 }
 
@@ -6656,6 +6657,16 @@ int main (int ac, char *av[])
 			{
 				if (strcmp (av[i], "-wvarunused") == 0)
 				{
+					warn_unused_variables = 1;
+				}
+			}
+
+			// check if -wall is set
+			if (arglen == 5)
+			{
+				if (strcmp (av[i], "-wall") == 0)
+				{
+					warn_set_not_def = 1;
 					warn_unused_variables = 1;
 				}
 			}
