@@ -164,11 +164,11 @@ echo "listing modules..."
 ls -lh modules
 sudo update_dyld_shared_cache
 echo "building fann library demo..."
-./build.sh lib/fann-lib
+./l1vm-build.sh lib/fann-lib
 echo "running fann library demo..."
 l1vm lib/fann-lib
 echo "building lines SDL demo..."
-./build.sh prog/lines
+./l1vm-build.sh prog/lines
 echo "running lines SDL demo..."
 l1vm prog/lines
 exit 0
