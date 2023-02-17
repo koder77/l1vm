@@ -22,11 +22,21 @@
 #define _GNU_SOURCE 1
 #endif
 
+// OS type messsage
+#if __CYGWIN__
+#pragma message ("OS type: CYGWIN")
+#endif
+#if __MACH__
+#pragma message ("OS type: macOS")
+#endif
+#if __linux__
+#pragma message ("OS type: Linux")
+#endif
+
 // set __linux__ on Cygwin or macOS
 #if __CYGWIN__ || __MACH__
 	#define __linux__	1
 #endif
-
 
 // new for parse-infix.c compiler
 #include <sys/types.h>
