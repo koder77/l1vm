@@ -27,6 +27,9 @@
 #include "main.h"
 #include "if.h"
 
+// protos
+S8 get_ranges_index (U1 *varname);
+
 S8 linenum ALIGN = 1;
 
 S8 label_ind ALIGN = -1;
