@@ -25,7 +25,9 @@ extern struct data_info_var data_info_var[MAXDATAINFO];
 extern S8 data_ind;
 extern S8 linenum;
 
+// protos
 U1 checkdigit (U1 *str);
+size_t strlen_safe (const char *str, int maxlen);
 
 S2 checkdef (U1 *name)
 {
