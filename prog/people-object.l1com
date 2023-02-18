@@ -2,59 +2,63 @@
 // use . variable names to build something like a pseudo data structure like in other
 // programming languages
 //
+// NEW: using:
+// #var ~ main to be more safe!
+//
 #include <intr.l1h>
 #include <vars.l1h>
 (main func)
+    #var ~ main
 	(set int64 1 zero 0)
     (set int64 1 one  1)
     // person data with person. names
-    (set string 256 person.first_name "Jane")
-    (set string 256 person.last_name "Doe")
-    (set string 256 person.gender "female")
-    (set int64 1 person.age 30)
-    (set double 1 person.height 1.80)
-    (set string 256 person.eye_color "brown")
-    (set string s meminitstr "ERROR can't init memory!")
-	(set string s memerrstr "ERROR can't allocate memory!")
-	(set string s saveerrstr "ERROR can't save to memory object!")
-    (set int64 1 memaddr 0)
-    (set int64 1 memind 0)
-    (set int64 1 memsize 1)
-	(set int64 1 variables 6)
-    (set int64 1 ret 0)
-    (set int64 1 f 0)
+    (set string 256 person.first_name~ "Jane")
+    (set string 256 person.last_name~ "Doe")
+    (set string 256 person.gender~ "female")
+    (set int64 1 person.age~ 30)
+    (set double 1 person.height~ 1.80)
+    (set string 256 person.eye_color~ "brown")
+    (set string s meminitstr~ "ERROR can't init memory!")
+	(set string s memerrstr~ "ERROR can't allocate memory!")
+	(set string s saveerrstr~ "ERROR can't save to memory object!")
+    (set int64 1 memaddr~ 0)
+    (set int64 1 memind~ 0)
+    (set int64 1 memsize~ 1)
+	(set int64 1 variables~ 6)
+    (set int64 1 ret~ 0)
+    (set int64 1 f~ 0)
     // include memory object variable types
     #include <mem-obj-lib-types.l1h>
     (zero one :mem_obj_init call)
-	(ret stpopi)
-    (((ret zero !=) f =) f if)
+	(ret~ stpopi)
+    (((ret~ zero !=) f~ =) f~ if)
 		// ERROR can't allocate memory
-		print_s (meminitstr)
+		print_s (meminitstr~)
 		print_n
 		exit (one)
 	(endif)
     // allocate memory for the 6 variables
-	(variables memsize :alloc_obj_memobj call)
-	(memaddr stpopi)
+	(variables~ memsize~ :alloc_obj_memobj call)
+	(memaddr~ stpopi)
 	(loadreg)
-	(((memaddr zero <) f =) f if)
+	(((memaddr~ zero <) f~ =) f~ if)
 		// ERROR can't allocate memory
-        print_s (memerrstr)
+        print_s (memerrstr~)
 		print_n
 		exit (one)
 	(endif)
 
 	// store person data in mem object using memory variable types: s_type, i_type and d_type
     // going from right to left with variable types first before variable
-    (person.eye_color s_type person.height d_type person.age i_type person.gender s_type person.last_name s_type person.first_name s_type variables zero memaddr :save_obj_memobj !)
-    (ret stpopi)
-	(((ret zero !=) f =) f if)
+    (person.eye_color~ s_type person.height~ d_type person.age~ i_type person.gender~ s_type person.last_name~ s_type person.first_name~ s_type variables~ zero memaddr~ :save_obj_memobj !)
+    (ret~ stpopi)
+	(((ret~ zero !=) f~ =) f~ if)
 		// ERROR can't allocate memory
-        print_s (saveerrstr)
+        print_s (saveerrstr~)
 		print_n
         exit (one)
 	(endif)
-    (memaddr :person_list_data !)
+    (memaddr~ :person_list_data !)
     free_mod (zero)
     exit (zero)
 (funcend)
@@ -74,6 +78,7 @@
     (set int64 1 person.age~ 0)
     (set double 1 person.height~ 0.0)
     (set string 256 person.eye_color~ "")
+    (set string s memobj_err_str~ "ERROR reading memobject array!")
     // data pointer, make only changeable by "pointer" function to avoid memory errors
     (set const-int64 1 Pfirst_name~ 0)
     (set const-int64 1 Plast_name~ 0)
@@ -104,19 +109,23 @@
     check_pointer (Peye_color~, byte_ptr)
 
     (Peye_color~ Pheight~ Page~ Pgender~ Plast_name~ Pfirst_name~ variables~ zero~ memaddr~ :load_obj_array_memobj !)
-    (ret stpopi)
-
-    print_s (person.first_name~)
-    print_n
-    print_s (person.last_name~)
-    print_n
-    print_s (person.gender~)
-    print_n
-    print_i (person.age~)
-    print_n
-    printf_d (height_format~, person.height~)
-    print_n
-    print_s (person.eye_color~)
-    print_n
+    (ret~ stpopi)
+    (((ret~ zero !=) f~ =) f~ if+)
+        print_s (memobj_err_str~)
+        print_n
+    (else)
+        print_s (person.first_name~)
+        print_n
+        print_s (person.last_name~)
+        print_n
+        print_s (person.gender~)
+        print_n
+        print_i (person.age~)
+        print_n
+        printf_d (height_format~, person.height~)
+        print_n
+        print_s (person.eye_color~)
+        print_n
+    (endif)
 (funcend)
 #include <mem-obj-lib.l1h>

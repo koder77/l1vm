@@ -57,6 +57,15 @@ Here is the pov-edit program GUI for my LED POV kit: <br>
 
 <br>
 
+A more advanced demo program is "prog/people-object.l1com". It shows how to use a memory object and pointers.
+I did change the program to use a variable end "main" part by using:
+
+<pre>
+#var ~ main
+</pre>
+
+This is more safe because now every variable in main ends with "main". Take a look at this example.
+
 How to install "pov-edit" and the internet jargon file database "jargon":
 Go into the distribution folder and download and install my gpg key:
 
