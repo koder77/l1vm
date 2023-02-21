@@ -20,15 +20,23 @@ $ git clone https://github.com/koder77/l1vm.git <br>
 $ cd l1vm/include <br>
 $ nano global.h <br><br>
 
-Now find the line with the SANDBOX_ROOT: <br>
-#define SANDBOX_ROOT			"/home/stefan/l1vm/" <br>
-and change it to: <br>
-#define SANDBOX_ROOT			"/home/user/l1vm/" <br><br>
+Type "ctrl + O" to save the file, and "ctrl + X" to exit the editor. <br>
+
+cd ..
+
+Now edit vm/jit.h: <br>
+cd vm/jit.h <br>
+nano jit.h <br>
+
+#define JIT_COMPILER          1 <br><br>
 
 Type "ctrl + O" to save the file, and "ctrl + X" to exit the editor. <br>
+
+cd .. <br>
+mv l1vm l1vm-work <br>
 <br>
-$ cd .. <br>
-$ mkdir /home/user/l1vm <br> 
+$ mkdir /home/user/l1vm <br>
+ cd l1vm-work <br>
 $ sh l1vm-podman/install-jit-zerobuild-fedora-podman.sh <br>
 $ sudo ldconfig <br>
 
