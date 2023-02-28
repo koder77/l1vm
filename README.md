@@ -75,9 +75,7 @@ Now legal value ranges for variables can be set:
 (x x_min x_max range)
 ```
 
-If x is outside of the range then it results in a runtime exception.
-
-(x x_min x_max range)
+If x is outside of the range then it results in a runtime exception. <br>
 
 Now in the infix/RPN parser you can write a short name for the target variable: _ like this:
 
