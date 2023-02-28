@@ -2,7 +2,9 @@ L1VM (2.1.1)
 	prog/hello-math-stack.l1com added
         Compiler: -wall flag added to set all -w warning flags!
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 16 Feb 2023 19:50 +0100
+	README update.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue 28 Feb 2023 18:20 +0100
 
 L1VM (2.1.0)
 	Security BUGFIX: JIT-compiler now checks if code at given index is compiled or not. Resulting in an runtime ERROR if no code found!

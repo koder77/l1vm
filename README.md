@@ -1,4 +1,4 @@
-L1VM README  2023-02-03
+L1VM README  2023-02-28
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -26,6 +26,8 @@ The design goals are:
 	- be simple
 	- be modular
 </pre>
+
+Here is the [L1VM course](https://midnight-koder.net/blog/l1vm) on my blog.
 
 In pure console text I/O programs not linked with SDL library, the memory footprint is very low.
 About 10 MB RAM only as shown in the taskmanager by running a minimal test program!
@@ -65,6 +67,27 @@ I did change the program to use a variable end "main" part by using:
 </pre>
 
 This is more safe because now every variable in main ends with "main". Take a look at this example.
+
+<b>NEW features</b>
+Now legal value ranges for variables can be set:
+
+```
+(x x_min x_max range)
+```
+
+If x is outside of the range then it results in a runtime exception.
+
+(x x_min x_max range)
+
+Now in the infix/RPN parser you can write a short name for the target variable: _ like this:
+
+```
+{target = (_ + x + (_ * y))}
+```
+
+Every _ will be replaced by "target"!
+See prog/hello-target-shortname.l1com. <br>
+
 
 How to install "pov-edit" and the internet jargon file database "jargon":
 Go into the distribution folder and download and install my gpg key:
