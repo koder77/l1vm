@@ -68,7 +68,7 @@ I did change the program to use a variable end "main" part by using:
 
 This is more safe because now every variable in main ends with "main". Take a look at this example.
 
-<b>NEW features</b>
+<b>NEW features</b> <br>
 Now legal value ranges for variables can be set:
 
 ```
