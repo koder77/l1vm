@@ -5,6 +5,7 @@
 // In this example I used the "intr.l1h" include to use the new interrupt macros.
 //
 #include <intr.l1h>
+#include <misc-macros.l1h>
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 one 1)
@@ -13,7 +14,7 @@
 	(set int64 1 four 4)
 	(set int64 1 run 0)
 	(set int64 1 f 0)
-	(set int64 1 delay 4000)
+	(set int64 1 delay 8000)
 	(set int64 1 cpu_number 0)
     (set int64 1 global_num 0)
 	(set string s messagestr "starting...")
@@ -29,26 +30,32 @@
 	exit (zero)
 (funcend)
 (hello_a func)
-	#var ~ @hello_a
+	#var ~ hello_a
+    (set int64 1 zero~ 0)
+    (set int64 1 one~ 1)
 	(set string s hellostr~ "Hello world! Thread 1")
 	(set int64 1 delay~ 2000)
 	print_s (hellostr~)
 	print_n
-    globallock (zero)
-    {global_num = (global_num + one)}
-    globalunlock (zero)
+    globallock (zero~)
+    {global_num = (global_num + one~)}
+    globalunlock (zero~)
 	detime (delay~)
+	threadexit (zero~)
 (funcend)
 (hello_b func)
-	#var ~ @hello_b
+	#var ~ hello_b
+	(set int64 1 zero~ 0)
+	(set int64 1 one~ 1)
 	(set string s hellostr~ "Hello world! Thread 2")
 	(set int64 1 delay~ 2000)
 	print_s (hellostr~)
 	print_n
-    globallock (zero)
-    {global_num = (global_num + one)}
-    globalunlock (zero)
+    globallock (zero~)
+    {global_num = (global_num + one~)}
+    globalunlock (zero~)
 	detime (delay~)
+	threadexit (zero~)
 (funcend)
 (start_thr func)
 	(set int64 1 run_th 0)
@@ -57,11 +64,15 @@
 	(set int64 1 zero_th 0)
 	(set int64 1 one_th 1)
 	(set int64 1 f_th 0)
-	(set int64 1 delay_th 2500)
+	(set int64 1 delay_th 5000)
     (set string s globalstr "global_num = ")
 	(reset-reg)
 	(:hello_a lab_hello_one loadl)
 	(:hello_b lab_hello_two loadl)
+
+	pull_int64_var (lab_hello_one)
+    pull_int64_var (lab_hello_two)
+
 	(((run_th zero_th ==) f_th =) f_th if)
 		// run threads
 		thread (lab_hello_one)
