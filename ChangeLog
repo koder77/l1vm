@@ -1,5 +1,5 @@
 L1VM (2.2.0)
-	NEW: The Brackets compiler has now a object type for some OOP style functions.
+	NEW: The Brackets compiler has now an object type for some OOP style functions.
 	See: prog/math-circle-oop.l1com!
 
 -- Stefan Pietzonke <jay-t@gmx.net> Thu 9 Mar 2023 16:36 +0100
