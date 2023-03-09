@@ -35,10 +35,8 @@
 	(endif)
 	(((input one ==) f =) f if+)
 		(:calc_diam->circle !)
-		(loadreg)
 	(else)
 		(:calc_circ->circle !)
-		(loadreg)
 	(endif)
 	print_n
 	print_n
