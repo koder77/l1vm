@@ -46,7 +46,7 @@
 
 (circle object)
 (calc_diam->circle func)
-    #var ~ calc_diam
+    #var ~ calc_diam_circle
 
     (set double 1 circ~ 0.0)
     (set double 1 diam~ 0.0)
@@ -61,7 +61,7 @@
 	print_d (diam~)
 (funcend)
 (calc_circ->circle func)
-    #var ~ calc_circ
+    #var ~ calc_circ_circle
 
     (set double 1 circ~ 0.0)
     (set double 1 diam~ 0.0)
