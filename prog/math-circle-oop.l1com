@@ -56,7 +56,7 @@
     print_s (circstr~)
 	// input double circ
 	input_d (circ~)
-    {diam = (circ~ / m_pimath)}
+    {diam~ = (circ~ / m_pimath)}
 	print_s (diamstr~)
 	print_d (diam~)
 (funcend)
