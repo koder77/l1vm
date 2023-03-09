@@ -113,7 +113,7 @@
 
 // info strings:
 #define COPYRIGHT_STR " (C) 2017-2023 Stefan Pietzonke"
-#define VM_VERSION_STR		"2.1.1"		// version number
+#define VM_VERSION_STR		"2.2.0"		// version number
 #define MOTTO_STR "upgraded ^ 2"
 
 // no user defined definitions below this section! ============================

@@ -88,6 +88,9 @@ U1 nested_code = 1;
 // set to 1 if warning for defined but unused variables should be set
 U1 warn_unused_variables = 0;
 
+// set to 1 if inside object functions
+U1 inside_object = 0;
+
 void init_ast (void)
 {
 	S4 i, j;
@@ -2640,6 +2643,14 @@ S2 parse_line (U1 *line)
 										return (1);
 									}
 
+									// check if inside object
+									if (inside_object == 0 && ast[level].expr[j][last_arg - 1][0] == 'P')
+									{
+										// error
+										printf ("error: line %lli: private object function not in object!\n", linenum);
+										return (1);
+									}
+
 									// start of a function
 
 									if (strcmp ((const char *) ast[level].expr[j][last_arg - 1], "main") != 0)
@@ -4673,10 +4684,47 @@ S2 parse_line (U1 *line)
 									}
 								}
 
+                                // object flag
+                                // object start  =======================================================================================
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "object") == 0)
+								{
+									if (inside_object == 1)
+									{
+										printf ("error: line %lli: object start is nested!\n", linenum);
+										return (1);
+									}
+
+									inside_object = 1;
+
+									continue;
+								}
+
+                                // object end  =======================================================================================
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "objectend") == 0)
+								{
+									if (inside_object != 1)
+									{
+										printf ("error: line %lli: object start is not set!\n", linenum);
+										return (1);
+									}
+
+									inside_object = 0;
+
+									continue;
+								}
+
 								// call =========================================================================
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "call") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], "!") == 0)
 								{
 									// function call with arguments: "call" or "!" !!!
+
+									if (inside_object == 0 && ast[level].expr[j][last_arg - 1][1] == 'P')
+									{
+										// found private function call outside object: ERROR!
+
+										printf ("error: line %lli: private object function called outside object!\n", linenum);
+										return (1);
+									}
 
 									// first of all use save register code
 

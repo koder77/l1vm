@@ -16,6 +16,8 @@
     <item>no-var-pull-on</item>
 	  <item>reset-reg</item>
     <item>nested-code-off</item>
+    <item>objectend</item>
+    <item>object</item>
     </list>
     <list name="keywords">
     <item>funcend</item>

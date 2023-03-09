@@ -1,3 +1,9 @@
+L1VM (2.2.0)
+	NEW: The Brackets compiler has now a object type for some OOP style functions.
+	See: prog/math-circle-oop.l1com!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 9 Mar 2023 16:36 +0100
+
 L1VM (2.1.1)
 	prog/hello-math-stack.l1com added
         Compiler: -wall flag added to set all -w warning flags!

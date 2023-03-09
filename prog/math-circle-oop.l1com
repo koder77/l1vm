@@ -1,0 +1,80 @@
+// math-circle-oop.l1com
+// calculate diameter or circumference of circle
+// NEW: OOP style functions and private functions beginning with uppercase P
+//
+#include <intr.l1h>
+#include <math-const.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 one 1)
+	(set int64 1 two 2)
+	(set int64 1 three 3)
+	(set double 1 diam 0.0)
+	(set double 1 circ 0.0)
+	(set double 1 zerod 0.0)
+	(set string s menu_diamstr "1: calculate diameter of circle")
+	(set string s menu_circstr "2: calculate circumference of circle")
+	(set string s menu_quitstr "3: quit")
+	(set string s menu_chstr "? ")
+	(set int64 1 input 0)
+	(set int64 1 f 0)
+	// -------------------------------------------------------
+	(:loop)
+	print_s (menu_diamstr)
+	print_n
+	print_s (menu_circstr)
+	print_n
+	print_s (menu_quitstr)
+	print_n
+	print_s (menu_chstr)
+	// read input
+	input_i (input)
+	(((input three ==) f =) f if)
+		// quit
+		exit (zero)
+	(endif)
+	(((input one ==) f =) f if+)
+		(:calc_diam->circle !)
+		(loadreg)
+	(else)
+		(:calc_circ->circle !)
+		(loadreg)
+	(endif)
+	print_n
+	print_n
+
+	(:loop jmp)
+(funcend)
+
+(circle object)
+(calc_diam->circle func)
+    #var ~ calc_diam
+
+    (set double 1 circ~ 0.0)
+    (set double 1 diam~ 0.0)
+    (set string s circstr~ "circumference: ")
+    (set string s diamstr~ "diameter:      ")
+
+    print_s (circstr~)
+	// input double circ
+	input_d (circ~)
+    {diam = (circ~ / m_pimath)}
+	print_s (diamstr~)
+	print_d (diam~)
+(funcend)
+(calc_circ->circle func)
+    #var ~ calc_circ
+
+    (set double 1 circ~ 0.0)
+    (set double 1 diam~ 0.0)
+	(set string s diamstr~ "diameter:      ")
+    (set string s circstr~ "circumference: ")
+
+    print_s (diamstr~)
+	// input double diam
+	input_d (diam~)
+	{circ~ = (diam~ * m_pimath)}
+    print_s (circstr~)
+	print_d (circ~)
+(funcend)
+(objectend)

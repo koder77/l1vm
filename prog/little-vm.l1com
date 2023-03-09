@@ -5,6 +5,7 @@
 //
 #include <intr.l1h>
 #include <math-const.l1h>
+#include <misc-macros.l1h>
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 one 1)
@@ -207,11 +208,11 @@
 	(:printi lab_printi loadl)
 	(:end lab_end loadl)
 	(:pull_labels)
-	((lab_addi zero +) lab_addi =)
-	((lab_lsi zero +) lab_lsi =)
-	((lab_jmpi zero +) lab_jmpi =)
-	((lab_printi zero +) lab_printi =)
-	((lab_end zero +) lab_end =)
+	pull_int64_var (lab_addi)
+	pull_int64_var (lab_lsi)
+	pull_int64_var (lab_jmpi)
+	pull_int64_var (lab_printi)
+	pull_int64_var (lab_end)
 	(reset-reg)
 	// save labels into jump array
 	(zero i =)
