@@ -41,7 +41,11 @@ Also the serial port can be used.
 My language Brackets is a statically typed language. Now with variable type safety!
 The VM has even a JIT-compiler using "libasmjit" for x86_64 CPUs!
 Code written in inline assembly can be compiled by the JIT-compiler. Increasing run speed!
+
+NEW: Now you can define objects in Brackets. You can write functions inside the object which are using the object data.
+A example is here: [math-circle-oop](https://github.com/koder77/l1vm/blob/master/prog/math-circle-oop.l1com).
 </b>
+
 
 Here is the output of my fractalix fractal program using the SDL module:<br>
 
