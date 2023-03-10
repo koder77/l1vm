@@ -217,7 +217,7 @@ S2 get_unused_var (void)
 		if (data_info_var[i].used == 0)
 		{
 			is_string_addr = 0;
-			slen = strlen_safe (data_info[i].name, MAXLINELEN);
+			slen = strlen_safe ((const char *) data_info[i].name, MAXLINELEN);
 		    if (slen >= 5)
 			{
 				if (data_info[i].name[slen - 1] == 'r' && data_info[i].name[slen - 2] == 'd' &&  data_info[i].name[slen - 3] == 'd' && data_info[i].name[slen - 4] == 'a')

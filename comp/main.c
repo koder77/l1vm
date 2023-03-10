@@ -90,6 +90,8 @@ U1 warn_unused_variables = 0;
 
 // set to 1 if inside object functions
 U1 inside_object = 0;
+// current object name
+U1 object_name[MAXSTRLEN];
 
 void init_ast (void)
 {
@@ -2651,6 +2653,26 @@ S2 parse_line (U1 *line)
 										return (1);
 									}
 
+									if (inside_object == 1)
+									{   // check if object function name is of foobar->objectname type!
+										// new scope
+										{
+											U1 object_function_end[MAXSTRLEN];
+											S8 pos;
+
+											strcpy ((char *) object_function_end, "->");
+											strcat ((char *) object_function_end, (char *) object_name);
+
+											pos = searchstr (ast[level].expr[j][last_arg - 1], (U1 *) object_function_end, 0, 0, TRUE);
+											if (pos == -1)
+											{
+												// objectc name end not found: ERROR!
+												printf ("error: line %lli: object function end not: %s !\n", linenum, object_function_end);
+												return (1);
+											}
+										}
+									}
+
 									// start of a function
 
 									if (strcmp ((const char *) ast[level].expr[j][last_arg - 1], "main") != 0)
@@ -4688,6 +4710,12 @@ S2 parse_line (U1 *line)
                                 // object start  =======================================================================================
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "object") == 0)
 								{
+									if (last_arg != 1)
+									{
+										printf ("error: line %lli: no object name set!\n", linenum);
+										return (1);
+									}
+
 									if (inside_object == 1)
 									{
 										printf ("error: line %lli: object start is nested!\n", linenum);
@@ -4695,6 +4723,9 @@ S2 parse_line (U1 *line)
 									}
 
 									inside_object = 1;
+
+									// save object name
+									strcpy ((char *) object_name, (char *) ast[level].expr[j][last_arg - 1]);
 
 									continue;
 								}

@@ -4,14 +4,17 @@
 //
 #include <intr.l1h>
 #include <math-const.l1h>
+#include <misc-macros.l1h>
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 one 1)
 	(set int64 1 two 2)
 	(set int64 1 three 3)
+    (set int64 1 four 4)
 	(set string s menu_diamstr "1: calculate diameter of circle")
 	(set string s menu_circstr "2: calculate circumference of circle")
-	(set string s menu_quitstr "3: quit")
+    (set string s menu_areastr "3: calculate area of circle")
+	(set string s menu_quitstr "4: quit")
 	(set string s menu_chstr "? ")
 	(set int64 1 input 0)
 	(set int64 1 f 0)
@@ -21,20 +24,32 @@
 	print_n
 	print_s (menu_circstr)
 	print_n
+    print_s (menu_areastr)
+    print_n
 	print_s (menu_quitstr)
 	print_n
 	print_s (menu_chstr)
 	// read input
 	input_i (input)
-	(((input three ==) f =) f if)
-		// quit
-		exit (zero)
-	(endif)
-	(((input one ==) f =) f if+)
-		(:calc_diam->circle !)
-	(else)
-		(:calc_circ->circle !)
-	(endif)
+    pull_int64_var (input)
+
+    (switch)
+        (input one ?)
+            (:calc_diam->circle !)
+            (break)
+
+        (input two ?)
+            (:calc_circ->circle !)
+            (break)
+
+        (input three ?)
+            (:calc_area->circle !)
+            (break)
+
+        (input four ?)
+            exit (zero)
+            (break)
+    (switchend)
 	print_n
 	print_n
 
@@ -71,5 +86,20 @@
 	{circ~ = (diam~ * m_pimath)}
     print_s (circstr~)
 	print_d (circ~)
+(funcend)
+(calc_area->circle func)
+    #var ~ calc_area_circle
+
+    (set double 1 area~ 0.0)
+    (set double 1 radius~ 0.0)
+	(set string s radiusstr~ "radius:        ")
+    (set string s areastr~ "area:          ")
+
+    print_s (radiusstr~)
+	// input double diam
+	input_d (radius~)
+	{area~ = (m_pimath * radius~ * radius~)}
+    print_s (areastr~)
+	print_d (area~)
 (funcend)
 (objectend)
