@@ -96,7 +96,7 @@
     (set string s areastr~ "area:          ")
 
     print_s (radiusstr~)
-	// input double diam
+	// input double radius
 	input_d (radius~)
 	{area~ = (m_pimath * radius~ * radius~)}
     print_s (areastr~)
