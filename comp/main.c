@@ -2659,12 +2659,24 @@ S2 parse_line (U1 *line)
 										{
 											U1 object_function_end[MAXSTRLEN];
 											S8 pos;
+											S8 object_function_end_len;
+											S8 function_name_len;
 
 											strcpy ((char *) object_function_end, "->");
 											strcat ((char *) object_function_end, (char *) object_name);
 
 											pos = searchstr (ast[level].expr[j][last_arg - 1], (U1 *) object_function_end, 0, 0, TRUE);
 											if (pos == -1)
+											{
+												// objectc name end not found: ERROR!
+												printf ("error: line %lli: object function end not: %s !\n", linenum, object_function_end);
+												return (1);
+											}
+
+											object_function_end_len = strlen_safe ((const char *) object_function_end, MAXLINELEN);
+											function_name_len = strlen_safe ((const char *) ast[level].expr[j][last_arg - 1], MAXLINELEN);
+
+											if (function_name_len - object_function_end_len != pos)
 											{
 												// objectc name end not found: ERROR!
 												printf ("error: line %lli: object function end not: %s !\n", linenum, object_function_end);
