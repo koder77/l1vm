@@ -2682,6 +2682,12 @@ S2 parse_line (U1 *line)
 												printf ("error: line %lli: object function end not: %s !\n", linenum, object_function_end);
 												return (1);
 											}
+											if (pos == 0)
+											{
+												// no function name set, only ending: ERROR!
+												printf ("error: line %lli: object function name not valid: %s !\n", linenum, ast[level].expr[j][last_arg - 1]);
+												return (1);
+											}
 										}
 									}
 
