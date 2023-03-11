@@ -57,13 +57,20 @@
 (funcend)
 
 (circle object)
-(calc_diam->circle func)
-    #var ~ calc_diam_circle
+    #var ~ circle
 
     (set double 1 circ~ 0.0)
     (set double 1 diam~ 0.0)
+    (set double 1 radius~ 0.0)
+    (set double 1 area~ 0.0)
+
     (set string s circstr~ "circumference: ")
     (set string s diamstr~ "diameter:      ")
+    (set string s radiusstr~ "radius:        ")
+    (set string s areastr~ "area:          ")
+
+(calc_diam->circle func)
+    #var ~ circle
 
     print_s (circstr~)
 	// input double circ
@@ -73,12 +80,7 @@
 	print_d (diam~)
 (funcend)
 (calc_circ->circle func)
-    #var ~ calc_circ_circle
-
-    (set double 1 circ~ 0.0)
-    (set double 1 diam~ 0.0)
-	(set string s diamstr~ "diameter:      ")
-    (set string s circstr~ "circumference: ")
+    #var ~ circle
 
     print_s (diamstr~)
 	// input double diam
@@ -88,12 +90,7 @@
 	print_d (circ~)
 (funcend)
 (calc_area->circle func)
-    #var ~ calc_area_circle
-
-    (set double 1 area~ 0.0)
-    (set double 1 radius~ 0.0)
-	(set string s radiusstr~ "radius:        ")
-    (set string s areastr~ "area:          ")
+    #var ~ circle
 
     print_s (radiusstr~)
 	// input double radius
