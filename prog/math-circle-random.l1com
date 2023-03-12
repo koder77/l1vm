@@ -1,0 +1,131 @@
+// math-circle-random.l1com
+// calculate diameter or circumference of circle
+// NEW: OOP style functions and private functions beginning with uppercase P
+// show 10 random circles and do calculations
+#include <intr.l1h>
+#include <math-const.l1h>
+#include <misc-macros.l1h>
+#include <vars.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 one 1)
+	(set int64 1 two 2)
+	(set int64 1 three 3)
+    (set int64 1 four 4)
+    (set int64 1 radius 0)
+    (set int64 1 radius_max 1000)
+    (set double 1 radius_d 0.0)
+    (set double 1 circ_d 0.0)
+    (set double 1 area_d 0.0)
+    (set int64 1 start_random 0)
+    (set int64 1 max_circles 10)
+    (set int64 1 i 0)
+	(set int64 1 f 0)
+    (set string s circstr "circumference: ")
+    (set string s diamstr "diameter:      ")
+    (set string s radiusstr "radius:        ")
+    (set string s areastr "area:          ")
+	// -------------------------------------------------------
+	(zero :math_init !)
+    (start_random :math_randinit !)
+    (zero i =)
+    (for-loop)
+    (((i max_circles <) f =) f for)
+        (radius_max :math_randintmax !)
+        (radius stpop)
+
+        // convert to double num
+        (i radius :math_int2double !)
+        (radius_d stpop)
+
+        // save radius in circle object
+        (radius_d :store->circle !)
+        print_s (radiusstr)
+        print_d (radius_d)
+        print_n
+
+        // get circumference
+        (i :calc_circ->circle !)
+        (circ_d stpop)
+        print_s (circstr)
+        print_d (circ_d)
+        print_n
+
+        // get area
+        (i :calc_area->circle !)
+        (area_d stpop)
+        print_s (areastr)
+        print_d (area_d)
+        print_n
+        print_n
+
+        ((i one +) i =)
+    (next)
+    
+    exit (zero)
+(funcend)
+
+(circle object)
+    #var ~ circle
+
+    (set double 1 zero_d 0.0)
+    (set double 1 two_d~ 2.0)
+    (set double 1 circ~ 0.0)
+    (set double 10 radius_array~ 0.0)
+    (set double 1 radius~ 0.0)
+    (set int64 1 max_circle~ 10)
+    (set int64 1 circle_ind~ 0)
+    (set int64 1 real_ind~ 0)
+    (set double 1 area~ 0.0)
+    (set int64 1 f~ 0)
+
+    (set string s error_no_spacestr~ "ERROR: can't save circle, out of indexes!")
+    (set string s error_indexstr~ "ERROR: circle index out of range")
+
+(store->circle func)
+    #var ~ circle
+
+    (radius~ stpop)
+    (circle_ind~ stpop)
+    (((circle_ind~ max_circle~ <) f~ =) f~ if+)
+        // store circle radius
+        {real_ind~ = (circle_ind~ * double_size)}
+        (radius~ radius_array~ [ real_ind~ ] =)
+    (else)
+        print_s (error_no_spacestr~)
+        print_n
+    (endif)
+(funcend)
+(calc_circ->circle func)
+    #var ~ circle
+
+    (circle_ind~ stpop)
+    (((circle_ind~ max_circle~ >=) f~ =) f~ if+)
+        print_s (error_indexstr~)
+        print_n
+        (zero_d circ~ =)
+    (else)
+        {real_ind~ = (circle_ind~ * double_size)}
+        (radius_array~ [ real_ind~ ] radius~ =)
+        {circ~ = (radius~ * two_d~ * m_pimath)}
+    (endif)
+    (circ~ stpush)
+(funcend)
+(calc_area->circle func)
+    #var ~ circle
+
+    (circle_ind~ stpop)
+    (((circle_ind~ max_circle~ >=) f~ =) f~ if+)
+        print_s (error_indexstr~)
+        print_n
+        (zero_d area~ =)
+    (else)
+        {real_ind~ = (circle_ind~ * double_size)}
+        (radius_array~ [ real_ind~ ] radius~ =)
+        {area~ = (m_pimath * radius~ * radius~)}
+    (endif)
+    (area~ stpush)
+(funcend)
+(objectend)
+
+#include <math-lib.l1h>
