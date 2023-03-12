@@ -35,11 +35,11 @@
         (radius stpop)
 
         // convert to double num
-        (i radius :math_int2double !)
+        (radius :math_int2double !)
         (radius_d stpop)
 
         // save radius in circle object
-        (radius_d :store->circle !)
+        (i radius_d :store->circle !)
         print_s (radiusstr)
         print_d (radius_d)
         print_n
