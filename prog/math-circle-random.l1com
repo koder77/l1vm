@@ -68,7 +68,7 @@
 (circle object)
     #var ~ circle
 
-    (set double 1 zero_d 0.0)
+    (set double 1 zero_d~ 0.0)
     (set double 1 two_d~ 2.0)
     (set double 1 circ~ 0.0)
     (set double 10 radius_array~ 0.0)
@@ -103,7 +103,7 @@
     (((circle_ind~ max_circle~ >=) f~ =) f~ if+)
         print_s (error_indexstr~)
         print_n
-        (zero_d circ~ =)
+        (zero_d~ circ~ =)
     (else)
         {real_ind~ = (circle_ind~ * double_size)}
         (radius_array~ [ real_ind~ ] radius~ =)
@@ -118,7 +118,7 @@
     (((circle_ind~ max_circle~ >=) f~ =) f~ if+)
         print_s (error_indexstr~)
         print_n
-        (zero_d area~ =)
+        (zero_d~ area~ =)
     (else)
         {real_ind~ = (circle_ind~ * double_size)}
         (radius_array~ [ real_ind~ ] radius~ =)
