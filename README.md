@@ -1,4 +1,4 @@
-L1VM README  2023-02-28
+L1VM README  2023-03-13
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -43,7 +43,7 @@ The VM has even a JIT-compiler using "libasmjit" for x86_64 CPUs!
 Code written in inline assembly can be compiled by the JIT-compiler. Increasing run speed!
 
 NEW: Now you can define objects in Brackets. You can write functions inside the object which are using the object data.
-A example is here: [math-circle-oop](https://github.com/koder77/l1vm/blob/master/prog/math-circle-oop.l1com).
+An example is here: [math-circle-oop](https://github.com/koder77/l1vm/blob/master/prog/math-circle-oop.l1com).
 </b>
 
 
