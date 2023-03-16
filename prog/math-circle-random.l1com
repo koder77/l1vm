@@ -7,26 +7,46 @@
 #include <misc-macros.l1h>
 #include <vars.l1h>
 (main func)
-	(set int64 1 zero 0)
-	(set int64 1 one 1)
-	(set int64 1 two 2)
-	(set int64 1 three 3)
-    (set int64 1 four 4)
+	(set const-int64 1 zero 0)
+	(set const-int64 1 one 1)
+	(set const-int64 1 two 2)
+	(set const-int64 1 three 3)
+    (set const-int64 1 four 4)
     (set int64 1 radius 0)
     (set int64 1 radius_max 1000)
     (set double 1 radius_d 0.0)
     (set double 1 circ_d 0.0)
     (set double 1 area_d 0.0)
     (set int64 1 start_random 0)
-    (set int64 1 max_circles 10)
+    (set int64 1 max_circles 1000)
     (set int64 1 i 0)
 	(set int64 1 f 0)
+    (set int64 1 ret 0)
+    (set int64 1 memaddr 0)
     (set string s circstr "circumference: ")
     (set string s diamstr "diameter:      ")
     (set string s radiusstr "radius:        ")
     (set string s areastr "area:          ")
+	(set string s meminitstr "ERROR can't init memory")
+	(set string s memerrstr "ERROR can't allocate memory!")
 	// -------------------------------------------------------
 	(zero :math_init !)
+    (one one :mem_init !)
+    (ret stpop)
+    (((ret zero !=) f =) f if)
+		// ERROR can't allocate memory
+		print_s (meminitstr)
+        print_n
+        exit (one)
+	(endif)
+	// allocate
+	(max_circles :alloc->circle !)
+    (memaddr stpop)
+    (((memaddr zero <) f =) f if)
+        // error can't allocate memory
+        exit (one)
+    (endif)
+
     (start_random :math_randinit !)
     (zero i =)
     (for-loop)
@@ -61,27 +81,50 @@
 
         ((i one +) i =)
     (next)
-    
+
+    (:dealloc->circle !)
+    (:free_mem !)
     exit (zero)
 (funcend)
 
 (circle object)
     #var ~ circle
 
+    (set int64 1 zero~ 0)
     (set double 1 zero_d~ 0.0)
     (set double 1 two_d~ 2.0)
     (set double 1 circ~ 0.0)
     (set double 10 radius_array~ 0.0)
     (set double 1 radius~ 0.0)
-    (set int64 1 max_circle~ 10)
+    (set int64 1 max_circle~ 0)
     (set int64 1 circle_ind~ 0)
-    (set int64 1 real_ind~ 0)
     (set double 1 area~ 0.0)
     (set int64 1 f~ 0)
-
-    (set string s error_no_spacestr~ "ERROR: can't save circle, out of indexes!")
+    (set int64 1 ret~ 0)
+    (set int64 1 memaddr~ 0)
     (set string s error_indexstr~ "ERROR: circle index out of range")
+    (set string s memerrstr "ERROR can't allocate memory!")
 
+(alloc->circle func)
+    #var ~ circle
+
+    (max_circle~ stpop)
+    // allocate
+	(max_circle~ :alloc_double call)
+	(memaddr~ stpopi)
+	(loadreg)
+	(((memaddr~ zero~ <) f~ =) f~ if)
+		// ERROR can't allocate memory
+		print_s (memerrstr)
+        print_n
+	(endif)
+    (memaddr~ stpush)
+(funcend)
+(dealloc->circle func)
+    #var ~ circle
+
+    (memaddr~ :dealloc call)
+(funcend)
 (store->circle func)
     #var ~ circle
 
@@ -89,10 +132,9 @@
     (circle_ind~ stpop)
     (((circle_ind~ max_circle~ <) f~ =) f~ if+)
         // store circle radius
-        {real_ind~ = (circle_ind~ * double_size)}
-        (radius~ radius_array~ [ real_ind~ ] =)
+        (memaddr~ circle_ind~ radius~ :double_to_array !)
     (else)
-        print_s (error_no_spacestr~)
+        print_s (error_indexstr~)
         print_n
     (endif)
 (funcend)
@@ -105,8 +147,8 @@
         print_n
         (zero_d~ circ~ =)
     (else)
-        {real_ind~ = (circle_ind~ * double_size)}
-        (radius_array~ [ real_ind~ ] radius~ =)
+        (memaddr~ circle_ind~ :array_to_double !)
+        (radius~ stpop)
         {circ~ = (radius~ * two_d~ * m_pimath)}
     (endif)
     (circ~ stpush)
@@ -120,8 +162,8 @@
         print_n
         (zero_d~ area~ =)
     (else)
-        {real_ind~ = (circle_ind~ * double_size)}
-        (radius_array~ [ real_ind~ ] radius~ =)
+        (memaddr~ circle_ind~ :array_to_double !)
+        (radius~ stpop)
         {area~ = (m_pimath * radius~ * radius~)}
     (endif)
     (area~ stpush)
@@ -129,3 +171,4 @@
 (objectend)
 
 #include <math-lib.l1h>
+#include <mem-lib.l1h>
