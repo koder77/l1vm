@@ -100,7 +100,7 @@
     (set int64 1 ret~ 0)
     (set int64 1 memaddr~ 0)
     (set string s error_indexstr~ "ERROR: circle index out of range")
-    (set string s memerrstr "ERROR can't allocate memory!")
+    (set string s memerrstr~ "ERROR can't allocate memory!")
 
 (alloc->circle func)
     #var ~ circle
@@ -112,7 +112,7 @@
 	(loadreg)
 	(((memaddr~ zero~ <) f~ =) f~ if)
 		// ERROR can't allocate memory
-		print_s (memerrstr)
+		print_s (memerrstr~)
         print_n
 	(endif)
     (memaddr~ stpush)
