@@ -1,7 +1,7 @@
 // math-circle-random.l1com
 // calculate diameter or circumference of circle
 // NEW: OOP style functions and private functions beginning with uppercase P
-// show 10 random circles and do calculations
+// show 1000 random circles and do calculations
 #include <intr.l1h>
 #include <math-const.l1h>
 #include <misc-macros.l1h>
