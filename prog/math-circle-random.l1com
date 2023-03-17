@@ -94,7 +94,6 @@
     (set double 1 zero_d~ 0.0)
     (set double 1 two_d~ 2.0)
     (set double 1 circ~ 0.0)
-    (set double 10 radius_array~ 0.0)
     (set double 1 radius~ 0.0)
     (set int64 1 max_circle~ 0)
     (set int64 1 circle_ind~ 0)
