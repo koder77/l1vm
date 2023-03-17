@@ -24,11 +24,9 @@
     (set int64 1 ret 0)
     (set int64 1 memaddr 0)
     (set string s circstr "circumference: ")
-    (set string s diamstr "diameter:      ")
     (set string s radiusstr "radius:        ")
     (set string s areastr "area:          ")
 	(set string s meminitstr "ERROR can't init memory")
-	(set string s memerrstr "ERROR can't allocate memory!")
 	// -------------------------------------------------------
 	(zero :math_init !)
     (one one :mem_init !)
