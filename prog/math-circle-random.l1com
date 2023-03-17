@@ -107,7 +107,7 @@
 
     (max_circle~ stpop)
     // allocate
-	(max_circle~ :alloc_double call)
+	(max_circle~ :alloc_double !)
 	(memaddr~ stpopi)
 	(loadreg)
 	(((memaddr~ zero~ <) f~ =) f~ if)
@@ -120,7 +120,7 @@
 (dealloc->circle func)
     #var ~ circle
 
-    (memaddr~ :dealloc call)
+    (memaddr~ :dealloc !)
 (funcend)
 (store->circle func)
     #var ~ circle
