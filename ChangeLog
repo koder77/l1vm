@@ -2,7 +2,10 @@ L1VM (2.2.0)
 	NEW: The Brackets compiler has now an object type for some OOP style functions.
 	See: prog/math-circle-oop.l1com!
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 9 Mar 2023 16:36 +0100
+	NEW: include/settings.h now sets 256 chars MAXSTRLEN and 256 chars MAXLINELEN on LOW_MEM setting activated by "1"!
+	To save memory in the compiler.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 23 Mar 2023 16:57 +0100
 
 L1VM (2.1.1)
 	prog/hello-math-stack.l1com added

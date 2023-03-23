@@ -97,6 +97,12 @@
 
 	// max number of code labels, and their name length:
 	#define MAXLABELS			1024	// 1024 on low RAM
+										//
+    // max number of Brackets objects
+    #define MAXOBJECTS          1024
+
+    #define MAXLINELEN      256		// MAX LENGTH for strlen_safe string length
+    #define MAXSTRLEN		256		// MAX LENGTH for maximum string size for static allocation
 #else
 	#define MODULES				1024
 	#define MODULES_MAXFUNC		4096
@@ -107,6 +113,12 @@
 
 	// max number of code labels:
 	#define MAXLABELS			40960
+
+	// max number of Brackets objects
+    #define MAXOBJECTS          40960
+
+    #define MAXLINELEN      4096		// MAX LENGTH for strlen_safe string length
+    #define MAXSTRLEN		4096		// MAX LENGTH for maximum string size for static allocation
 #endif
 
 // internal settings end ======================================================
@@ -152,8 +164,6 @@ typedef double                  F8;     /* DOUBLE */
 // machine
 #define MAXREG			256			// registers (integer and double float)
 
-#define MAXLINELEN      4096		// MAX LENGTH for strlen_safe string length
-#define MAXSTRLEN		4096		// MAX LENGTH for maximum string size for static allocation
 #define MAXARGS         64
 #define MAXBRACKETLEVEL	64
 #define MAXEXPRESSION	32				// expressions per bracket level
