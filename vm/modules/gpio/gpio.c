@@ -120,7 +120,7 @@ U1 *gpio_pwm_write (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
- U1 *gpio_pwm_set_mode (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+ U1 *gpio_pwm_Set_mode (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  {
 	 // arguments: mode
 
