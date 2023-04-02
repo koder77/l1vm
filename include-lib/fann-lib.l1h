@@ -20,7 +20,7 @@
 	(set int64 1 train@fann 5)
 	(set int64 1 save@fann 6)
     (set int64 1 create@fann 7)
-    (set int64 1 fann_train_ann_file@fann)
+    (set int64 1 fann_train_ann_file@fann 8)
 	(set int64 1 mod@fann 0)
 	(set int64 1 maxind@fann 0)
 	// get arguments from stack
