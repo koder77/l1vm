@@ -61,7 +61,7 @@
 		(:read_loop jmp)
 	(endif)
 	// dealloc mem
-	(memaddr :dealloc call)
+	// (memaddr :dealloc call)
 	(loadreg)
 	(:free_mem call)
 	(loadreg)

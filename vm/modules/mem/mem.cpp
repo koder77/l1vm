@@ -154,8 +154,118 @@ extern "C" U1 *init_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+// cleanup memory
+void cleanup (void)
+{
+    S8 memind;
+
+    for (memind = 0; memind < memmax; memind++)
+    {
+        switch (mem[memind].type)
+        {
+            // free vector memory
+            case MEMBYTE_VECT:
+                if (mem[memind].memptr.byteptr && mem[memind].used == 1)
+                {
+                    mem[memind].memptr.vect_int8ptr.clear ();
+                    mem[memind].memptr.vect_int8ptr.shrink_to_fit ();
+
+                    mem[memind].used = 0;
+                }
+                break;
+
+            case MEMINT16_VECT:
+                if (mem[memind].memptr.int16ptr && mem[memind].used == 1)
+                {
+                    mem[memind].memptr.vect_int16ptr.clear ();
+                    mem[memind].memptr.vect_int16ptr.shrink_to_fit ();
+
+                    mem[memind].used = 0;
+                }
+                break;
+
+            case MEMINT32_VECT:
+                if (mem[memind].memptr.int32ptr && mem[memind].used == 1)
+                {
+                    mem[memind].memptr.vect_int32ptr.clear ();
+                    mem[memind].memptr.vect_int32ptr.shrink_to_fit ();
+
+                    mem[memind].used = 0;
+                }
+                break;
+
+            case MEMINT64_VECT:
+                if (mem[memind].memptr.int64ptr && mem[memind].used == 1)
+                {
+                    mem[memind].memptr.vect_int64ptr.clear ();
+                    mem[memind].memptr.vect_int64ptr.shrink_to_fit ();
+
+                    mem[memind].used = 0;
+                }
+                break;
+
+            // free normal variable arrays
+            case MEMDOUBLE_VECT:
+                if (mem[memind].memptr.doubleptr && mem[memind].used == 1)
+                {
+                    mem[memind].memptr.vect_doubleptr.clear ();
+                    mem[memind].memptr.vect_doubleptr.shrink_to_fit ();
+
+                    mem[memind].used = 0;
+                }
+                break;
+
+            case MEMBYTE:
+                if (mem[memind].memptr.byteptr && mem[memind].used == 1)
+                {
+                    free (mem[memind].memptr.byteptr);
+
+                    mem[memind].used = 0;
+                }
+                break;
+
+            case MEMINT16:
+                if (mem[memind].memptr.int16ptr && mem[memind].used == 1)
+                {
+                    free (mem[memind].memptr.int16ptr);
+
+                    mem[memind].used = 0;
+                }
+                break;
+
+            case MEMINT32:
+                if (mem[memind].memptr.int32ptr && mem[memind].used == 1)
+                {
+                    free (mem[memind].memptr.int32ptr);
+
+                    mem[memind].used = 0;
+                }
+                break;
+
+            case MEMINT64:
+                if (mem[memind].memptr.int64ptr && mem[memind].used == 1)
+                {
+                    free (mem[memind].memptr.int64ptr);
+
+                    mem[memind].used = 0;
+                }
+                break;
+
+            case MEMDOUBLE:
+                if (mem[memind].memptr.doubleptr && mem[memind].used == 1)
+                {
+                    free (mem[memind].memptr.doubleptr);
+
+                    mem[memind].used = 0;
+                }
+                break;
+        }
+    }
+}
+
 extern "C" U1 *free_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
+	cleanup ();
 	// free global mem
 	if (mem) free (mem);
 	return (sp);
@@ -782,7 +892,6 @@ extern "C" U1 *string_to_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	S8 memind ALIGN = 0;
 	S8 arrayind ALIGN = 0;
-	F8 value ALIGN;
 	S8 strsrcaddr ALIGN;
 	S8 string_len ALIGN;
 	S8 string_len_src ALIGN;
@@ -865,7 +974,6 @@ extern "C" U1 *array_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	S8 memind ALIGN = 0;
 	S8 arrayind ALIGN = 0;
-	F8 value ALIGN;
 	S8 strdestaddr ALIGN;
 	S8 string_len ALIGN;
 	S8 string_len_src ALIGN;
@@ -923,19 +1031,19 @@ extern "C" U1 *array_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	string_len_src = strlen_safe ((const char *) &mem[memind].memptr.byteptr[index_real], MAXLINELEN);
-	if (string_len_src > string_len)
-	{
-		// ERROR:
-		printf ("array_to_string: ERROR: source string overflow!\n");
-		return (NULL);
-	}
-
 	index_real = arrayind * string_len;
 	if (index_real < 0 || index_real > mem[memind].memsize)
 	{
 		// ERROR:
 		printf ("array_to_string: ERROR: destination array overflow!\n");
+		return (NULL);
+	}
+
+	string_len_src = strlen_safe ((const char *) &mem[memind].memptr.byteptr[index_real], MAXLINELEN);
+	if (string_len_src > string_len)
+	{
+		// ERROR:
+		printf ("array_to_string: ERROR: source string overflow!\n");
 		return (NULL);
 	}
 
