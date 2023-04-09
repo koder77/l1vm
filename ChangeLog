@@ -6,7 +6,7 @@ L1VM (2.2.0)
 	To save memory in the compiler.
 
 	BUGFIXES: memory module string code fixes. New function "cleanup" to free all memory allocs on "free_mem" global memory free call!
-	NEW: memory objects module now calls clenaup functiion on global memory free.
+	NEW: memory objects module now calls cleanup function on global memory free.
 
 -- Stefan Pietzonke <jay-t@gmx.net> Sun 9 Apr 2023 14:30 +0200
 
