@@ -157,10 +157,15 @@ extern "C" U1 *init_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 // cleanup memory
 void cleanup (void)
 {
-    S8 memind;
+    S8 memind ALIGN;
 
     for (memind = 0; memind < memmax; memind++)
     {
+		if (mem[memind].used == 0)
+		{
+			continue;
+		}
+
         switch (mem[memind].type)
         {
             // free vector memory
@@ -572,6 +577,13 @@ extern "C" U1 *dealloc_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	{
 		printf ("dealloc_mem: ERROR: memory index out of range!\n");
 		return (NULL);
+	}
+
+     // do sane check!
+	if (mem[memind].used == 0)
+	{
+		// no memory allocated, return
+		return (sp);
 	}
 
 	// free memory if allocated and set to used == 1
@@ -1210,6 +1222,13 @@ extern "C" U1 *dealloc_mem_vect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	{
 		printf ("dealloc_mem_vect: ERROR: memory index out of range!\n");
 		return (NULL);
+	}
+
+	// do sane check!
+	if (mem[memind].used == 0)
+	{
+		// no memory allocated, return
+		return (sp);
 	}
 
 	// free memory if allocated and set to used == 1

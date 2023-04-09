@@ -145,8 +145,35 @@ extern "C" U1 *init_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+// cleanup memory
+void cleanup (void)
+{
+    S8 memind ALIGN;
+    S8 i ALIGN;
+
+    for (memind = 0; memind < memmax; memind++)
+    {
+        if (mem[memind].used == 1)
+        {
+           for (i = 0; i < mem[memind].memsize; i++)
+           {
+               if (mem[memind].objptr[i].strlen != 0)
+               {
+                   free (mem[memind].objptr[i].memptr.straddr);
+                   mem[memind].objptr[i].strlen = 0;
+               }
+           }
+
+           free (mem[memind].objptr);
+
+		   mem[memind].used = 0;
+        }
+    }
+}
+
 extern "C" U1 *free_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
+	cleanup ();
 	// free global mem
 	if (mem) free (mem);
 	return (sp);
@@ -257,16 +284,20 @@ extern "C" U1 *free_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	for (i = 0; i < mem[memind].memsize; i++)
+	if (mem[memind].used == 1)
 	{
-		if (mem[memind].objptr[i].strlen != 0)
+		for (i = 0; i < mem[memind].memsize; i++)
 		{
-			free (mem[memind].objptr[i].memptr.straddr);
-			mem[memind].objptr[i].strlen = 0;
+			if (mem[memind].objptr[i].strlen != 0)
+			{
+				free (mem[memind].objptr[i].memptr.straddr);
+				mem[memind].objptr[i].strlen = 0;
+			}
 		}
-	}
+		free (mem[memind].objptr);
 
-	free (mem[memind].objptr);
+		mem[memind].used = 0;
+	}
 	return (sp);
 }
 
