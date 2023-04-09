@@ -6670,6 +6670,10 @@ int main (int ac, char *av[])
 
 	S2 warn_unused_vars = 0;
 
+	// compile time vars
+ 	struct timeval  timer_start, timer_end;
+ 	F8 timer_double ALIGN;
+
     if (ac < 2)
     {
 		show_info ();
@@ -6773,6 +6777,8 @@ int main (int ac, char *av[])
 		}
 	}
 
+	gettimeofday (&timer_start, NULL);
+
 	data = alloc_array_U1 (line_len, MAXLINELEN);
 	if (data == NULL)
 	{
@@ -6848,6 +6854,13 @@ int main (int ac, char *av[])
 	printf ("assembler args: '%s'\n", assembler_args);
 	strcat ((char *) syscallstr, (const char *) assembler_args);
 	ret = system ((const char *) syscallstr);
+
+	// get build time end
+	gettimeofday (&timer_end, NULL);
+
+	timer_double = (double) (timer_end.tv_usec - timer_start.tv_usec) / 1000000 + (double) (timer_end.tv_sec - timer_start.tv_sec);
+	// timer_double = timer_double; 	// get seconds
+	printf ("build in %.4lf seconds\n", timer_double);
 
 	exit (ret);
 }

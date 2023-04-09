@@ -8,7 +8,9 @@ L1VM (2.2.0)
 	BUGFIXES: memory module string code fixes. New function "cleanup" to free all memory allocs on "free_mem" global memory free call!
 	NEW: memory objects module now calls cleanup function on global memory free.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 9 Apr 2023 14:30 +0200
+	NEW: compiler: added compile time output.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 9 Apr 2023 20:54 +0200
 
 L1VM (2.1.1)
 	prog/hello-math-stack.l1com added
