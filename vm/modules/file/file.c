@@ -230,6 +230,8 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     files[handle].fptr = fopen ((char *) files[handle].name, (char *) access_str);
     if (files[handle].fptr == NULL)
     {
+        files[handle].state = FILECLOSED;
+
         // push ERROR code ERROR
         sp = stpushi (ERR_FILE_OPEN, sp, sp_bottom);
     	if (sp == NULL)
@@ -250,8 +252,6 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		return (NULL);
     	}
     }
-
-    files[handle].state = FILEOPEN;
     return (sp);
 }
 

@@ -4273,7 +4273,8 @@ U1 *set_gadget_progress_bar (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     progress->text_y = text_y;
 	progress->value = value;
 
-	printf ("progress_bar value: %lli\n", progress->value);
+	printf ("progress_bar %lli, value: %lli\n", gadget_index, progress->value);
+    printf ("progress_bar text: '%s'\n\n", &data[text_address]);
 
     if (! draw_gadget_progress_bar (screennum, gadget_index, GADGET_NOT_SELECTED))
     {

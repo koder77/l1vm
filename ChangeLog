@@ -9,8 +9,9 @@ L1VM (2.2.0)
 	NEW: memory objects module now calls cleanup function on global memory free.
 
 	NEW: compiler: added compile time output.
+	BUGFIXES: file module: file open function now sets right file open/closed flag.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 9 Apr 2023 20:54 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 16 Apr 2023 22:33 +0200
 
 L1VM (2.1.1)
 	prog/hello-math-stack.l1com added
