@@ -16,7 +16,6 @@
 	(set int64 1 cell_neurons 3)
 	(set double 2 node_xor_inputsf 1.0 0.0)
 	(set double 1 node_xor_outputsf 0.0)
-	// following data addresses taken from assembly output!
 	(set const-int64 1 Pnode_xor_inputsfaddr 0)
 	(set const-int64 1 Pnode_xor_outputsfaddr 0)
 	(set double 1 outputf 0.0)
@@ -29,8 +28,6 @@
 	(set int64 1 offset 8)
 	(set int64 1 f 0)
 	(set int64 1 max_layer_readout 0)
-
-	// following data address taken from assembly output!
 	(set const-int64 1 Pmax_layer_readoutaddr 0)
 	// set path to "xor_float.net" file of Cells C library:
 	(set string s node_xor_filestr "fann/xor_float.net")
