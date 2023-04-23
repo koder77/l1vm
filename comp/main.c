@@ -6637,7 +6637,7 @@ void cleanup (void)
 void show_info (void)
 {
 	printf ("l1com <file> [-a] [-lines] [max linenumber] [-wsetundef] [-wvarunused] [-wall] [-werror]\n");
-	printf ("\nCompiler for bra(ets, a programming language with brackets ;-)\n");
+	printf ("\nCompiler for Brackets, a programming language with brackets ;-)\n");
 	printf ("%s", VM_VERSION_STR);
 	printf ("%s\n", COPYRIGHT_STR);
 	printf ("-wsetundef : warn on set variables without value defined\n");
