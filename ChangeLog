@@ -11,7 +11,9 @@ L1VM (2.2.0)
 	NEW: compiler: added compile time output.
 	BUGFIXES: file module: file open function now sets right file open/closed flag.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 16 Apr 2023 22:33 +0200
+	NEW added new text for copyright.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 23 Apr 2023 16:43 +0200
 
 L1VM (2.1.1)
 	prog/hello-math-stack.l1com added
