@@ -7,7 +7,10 @@ L1VM (2.3.0)
 	(array tarray [ index ] =) -> error
 	(tarray [ index ] array =) -> error
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 28 Apr 2023 17:14 +0200
+	Preprocessor now gives error message if #include is with quotes " ", instead of < >.
+	So if not an Brackets source code file is compiled, you get an error message!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 28 Apr 2023 21:26 +0200
 
 L1VM (2.2.0)
 	NEW: The Brackets compiler has now an object type for some OOP style functions.

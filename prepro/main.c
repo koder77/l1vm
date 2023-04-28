@@ -573,6 +573,14 @@ S2 include_file (U1 *line_str)
 	slen = strlen_safe ((const char *) line_str, MAXLINELEN);
 	pos = searchstr (line_str, (U1 *) INCLUDE_SB, 0, 0, TRUE);
 
+	// check for C sytle quote: "
+
+	if (searchstr (line_str, (U1 *) "\"", 0, 0, TRUE) != 0)
+	{
+		printf ("error: #include: quote found: \" !\n");
+		return (1);
+	}
+
 	// found include definition, get file name
 	i = pos + 8; // next char after "#include"
 	get_include_start = 0;
