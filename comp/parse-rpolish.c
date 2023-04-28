@@ -751,6 +751,13 @@ S2 parse_rpolish (U1 *postfix)
 		return (1);
 	}
 
+	if (get_variable_is_array (target_var) > 1)
+	{
+		printf ("error: line %lli: target variable is array: '%s' !\n", linenum, target_var);
+		return (1);
+	}
+
+
 	target_var_type = getvartype_real (target_var);
 
 	i = math_exp_begin;
@@ -831,11 +838,36 @@ S2 parse_rpolish (U1 *postfix)
 			   return (1);
 		   }
 
-			// set to higher bits, if variable has more bytes
-			if (getvartype_real (buf) > expression_var_type_max)
-			{
-				expression_var_type_max = getvartype_real (buf);
-	   		}
+		   // set to higher bits, if variable has more bytes
+		   if (getvartype_real (buf) > expression_var_type_max)
+		   {
+			   expression_var_type_max = getvartype_real (buf);
+		   }
+
+		   // type array check
+		   if (get_variable_is_array (buf) > 1)
+		   {
+			   printf ("error: line %lli: variable is array: '%s' !\n", linenum, buf);
+			   return (1);
+		   }
+
+		   // type sane check
+		   if (target_var_type == DOUBLE)
+		   {
+			   if (getvartype_real (buf) != DOUBLE)
+			   {
+				   	printf ("error: line %lli: variable not double: '%s' !\n", linenum, buf);
+					return (1);
+			   }
+		   }
+		   else
+		   {
+			   if (getvartype_real (buf) == DOUBLE)
+			   {
+				   	printf ("error: line %lli: variable is double not int: '%s' !\n", linenum, buf);
+					return (1);
+			   }
+		   }
 
 		   if (getvartype_real (buf) != DOUBLE)
 		   {

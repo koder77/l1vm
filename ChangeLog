@@ -1,3 +1,9 @@
+L1VM (2.3.0)
+	NEW: compiler: type check in infix/RPN parser (parse-rpolish.c). If types of int and double are mixed then it results in a compile error!
+	Also gives an error if the variable inside a math expression is an array!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 28 Apr 2023 14:38 +0200
+
 L1VM (2.2.0)
 	NEW: The Brackets compiler has now an object type for some OOP style functions.
 	See: prog/math-circle-oop.l1com!
