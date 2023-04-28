@@ -1441,7 +1441,6 @@ S2 parse_line (U1 *line)
 											return (1);
 										}
 
-
 										if (ast[level].expr[j][last_arg - 4][0] != 'P')
 										{
 											// variable name doesn't begin with P, check if array
@@ -1462,6 +1461,13 @@ S2 parse_line (U1 *line)
 
 										if (checkdef (ast[level].expr[j][last_arg - 5]) != 0)
 										{
+											return (1);
+										}
+
+										// check if source variable is array
+										if (get_variable_is_array(ast[level].expr[j][last_arg - 5]) > 1)
+										{
+											printf ("error: line %lli: variable '%s' is array!\n", linenum, ast[level].expr[j][last_arg - 5]);
 											return (1);
 										}
 
@@ -1749,6 +1755,13 @@ S2 parse_line (U1 *line)
 
 										if (checkdef (ast[level].expr[j][last_arg - 1]) != 0)
 										{
+											return (1);
+										}
+
+										// check if source variable is array
+										if (get_variable_is_array(ast[level].expr[j][last_arg - 1]) > 1)
+										{
+											printf ("error: line %lli: variable '%s' is array!\n", linenum, ast[level].expr[j][last_arg - 1]);
 											return (1);
 										}
 
