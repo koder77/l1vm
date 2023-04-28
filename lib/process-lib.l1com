@@ -5,20 +5,19 @@
 //
 // See process module!
 //
+#include <intr.l1h>
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 ret 0)
 	(set string s procstr "ls")
 	// init library
-	(zero :process_init call)
-	(loadreg)
+	(zero :process_init !)
 	// call system process
-	(procstr :run_shell call)
+	(procstr :run_shell !)
 	(ret stpopi)
-	(loadreg)
 	// print return value of shell call
-	(4 ret 0 0 intr0)
-	(7 0 0 0 intr0)
-	(255 0 0 0 intr0)
+    print_i (ret)
+    print_n
+    exit (zero)
 (funcend)
 #include <process-lib.l1h>

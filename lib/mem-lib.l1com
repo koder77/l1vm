@@ -1,3 +1,5 @@
+// mem-lib.l1com
+#include <intr.l1h>
 (main func)
     (set int64 1 zero 0)
 	(set int64 1 one 1)
@@ -18,9 +20,9 @@
 	(loadreg)
 	(((ret zero !=) f =) f if)
 		// ERROR can't allocate memory
-		(6 meminitstr 0 0 intr0)
-		(7 0 0 0 intr0)
-		(255 one 0 0 intr0)
+		print_s (meminitstr)
+        print_n
+        exit (one)
 	(endif)
 	// allocate
 	(memsize :alloc_int64 call)
@@ -28,34 +30,32 @@
 	(loadreg)
 	(((memaddr zero <) f =) f if)
 		// ERROR can't allocate memory
-		(6 memerrstr 0 0 intr0)
-		(7 0 0 0 intr0)
-		(255 one 0 0 intr0)
+		print_s (memerrstr)
+        print_n
+		exit (one)
 	(endif)
 	// write to array
 	(:write_loop)
-	(6 writing 0 0 intr0)
-	(4 i 0 0 intr0)
-	(7 0 0 0 intr0)
+	print_s (writing)
+    print_i (i)
+    print_n
 	(memaddr i i :int_to_array call)
 	(loadreg)
 	((i one +) i =)
 	(((i memsize <) f =) f if)
 		(:write_loop jmp)
 	(endif)
-	(7 0 0 0 intr0)
-	(7 0 0 0 intr0)
+	print_n
+	print_n
 	// read from array
 	(zero j =)
-	(4 j 0 0 intr0)
-	(7 0 0 0 intr0)
 	(:read_loop)
 	(memaddr j :array_to_int call)
 	(read stpopi)
 	(loadreg)
-	(6 reading 0 0 intr0)
-	(4 read 0 0 intr0)
-	(7 0 0 0 intr0)
+	print_s (reading)
+    print_i (read)
+    print_n
 	((j one +) j =)
 	(((j memsize <) f =) f if)
 		(:read_loop jmp)
@@ -66,8 +66,8 @@
 	(:free_mem call)
 	(loadreg)
 	// close mem module
-	(1 zero 0 0 intr0)
+	free_mod (zero)
 	// exit OK
-	(255 0 0 0 intr0)
+	exit (zero)
 (funcend)
 #include <mem-lib.l1h>
