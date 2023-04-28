@@ -1522,6 +1522,14 @@ S2 parse_line (U1 *line)
 											{
 												return (1);
 											}
+
+											// check if index variable is array
+											if (get_variable_is_array(ast[level].expr[j][last_arg - 2]) > 1)
+											{
+												printf ("error: line %lli: variable '%s' is array!\n", linenum, ast[level].expr[j][last_arg - 2]);
+												return (1);
+											}
+
 											// get array index
 											reg2 = get_regi (ast[level].expr[j][last_arg - 2]);
 											if (reg2 == -1)
@@ -1820,6 +1828,14 @@ S2 parse_line (U1 *line)
 											{
 												return (1);
 											}
+
+											// check if index variable is array
+											if (get_variable_is_array(ast[level].expr[j][last_arg - 3]) > 1)
+											{
+												printf ("error: line %lli: variable '%s' is array!\n", linenum, ast[level].expr[j][last_arg - 3]);
+												return (1);
+											}
+
 											// get array index
 											reg2 = get_regi (ast[level].expr[j][last_arg - 3]);
 											if (reg2 == -1)
