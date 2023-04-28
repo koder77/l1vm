@@ -561,7 +561,7 @@ S2 include_file (U1 *line_str)
 	char *read;
 	U1 get_include_start;
 	U1 get_include_name;
-	S4 pos, slen;
+	S4 pos, slen, quote_pos;
 	S4 i, j;
 
 	S4 include_path_len, include_name_len;
@@ -574,9 +574,8 @@ S2 include_file (U1 *line_str)
 	pos = searchstr (line_str, (U1 *) INCLUDE_SB, 0, 0, TRUE);
 
 	// check for C sytle quote: "
-
-	if (searchstr (line_str, (U1 *) "\"", 0, 0, TRUE) != 0)
-	{
+	quote_pos = searchstr (line_str, (U1 *) "\"", 0, 0, TRUE);
+	if (quote_pos != -1){
 		printf ("error: #include: quote found: \" !\n");
 		return (1);
 	}
