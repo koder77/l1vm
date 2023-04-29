@@ -635,7 +635,7 @@ S2 include_file (U1 *line_str)
 	fincludeptr = fopen ((const char *) include_full_path, "r");
 	if (fincludeptr == NULL)
 	{
-		printf ("ERROR: can't open include file: '%s' !", include_file_name);
+		printf ("ERROR: can't open include file: '%s' !\n", include_file_name);
 		return (1);
 	}
 

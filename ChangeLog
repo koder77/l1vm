@@ -10,7 +10,10 @@ L1VM (2.3.0)
 	Preprocessor now gives error message if #include is with quotes " ", instead of < >.
 	So if not an Brackets source code file is compiled, you get an error message!
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 28 Apr 2023 21:26 +0200
+	Added checks if source code line has brackets or not. Give a compiler error if no brackets are found in line.
+	So the Brackets compiler now does not crash any mor on non Brackets source code files!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 29 Apr 2023 13:10 +0200
 
 L1VM (2.2.0)
 	NEW: The Brackets compiler has now an object type for some OOP style functions.

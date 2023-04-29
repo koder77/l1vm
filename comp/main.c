@@ -415,38 +415,6 @@ U1 *get_variable_value (S8 maxind, U1 *name)
 	return (NULL);		// variable name not found, return empty string
 }
 
-S2 check_for_brackets (U1 *line)
-{
-	S2 i, len;
-	S2 brackets_open = 0, brackets_close = 0;
-	S2 brackets_found = 0;
-
-	len = strlen_safe ((const char *) line, MAXLINELEN);
-	if (len > 0)
-	{
-		for (i = 0; i < len; i++)
-		{
-			if (line[i] == '(')
-			{
-				brackets_open++;
-				brackets_found = 1;
-			}
-			if (line[i] == ')')
-			{
-				brackets_close++;
-			}
-		}
-	}
-	// check if brackets counter is 0, all opening brackets are closed or not
-	if (brackets_open != brackets_close)
-	{
-		// printf ("error: line %lli: brackets don't match!\n", linenum);
-		// printf ("DEBUG check_for_brackets\n");
-		return (0);
-	}
-	return (brackets_found);	// no brackets in line
-}
-
 S8 loadreg (void)
 {
 	S8 e;
@@ -525,6 +493,97 @@ S2 check_for_whitespace (U1 *line)
 	return (0);
 }
 
+S2 check_for_brackets (U1 *line)
+{
+	S2 i, len;
+	S2 brackets_open = 0, brackets_close = 0;
+	S2 brackets_found = 0;
+
+	len = strlen_safe ((const char *) line, MAXLINELEN);
+	if (len > 0)
+	{
+		for (i = 0; i < len; i++)
+		{
+			if (line[i] == '(')
+			{
+				brackets_open++;
+				brackets_found = 1;
+			}
+			if (line[i] == ')')
+			{
+				brackets_close++;
+			}
+		}
+	}
+	// check if brackets counter is 0, all opening brackets are closed or not
+	if (brackets_open != brackets_close)
+	{
+		// printf ("error: line %lli: brackets don't match!\n", linenum);
+		// printf ("DEBUG check_for_brackets\n");
+		return (0);
+	}
+	return (brackets_found);	// no brackets in line
+}
+
+S2 check_for_bracket_sane (U1 *line)
+{
+	S4 pos_bracket_start, pos_bracket_end;
+	S4 pos_dbracket_start, pos_dbracket_end;
+	U1 found_bracket = 0;
+	U1 found_dbracket = 0;
+
+	pos_dbracket_start = searchstr (line, (U1 *) "{", 0, 0, TRUE);
+	if (pos_dbracket_start > -1)
+	{
+		pos_dbracket_end = searchstr (line, (U1 *) "}", 0, 0, TRUE);
+		if (pos_dbracket_end > -1)
+		{
+			if (pos_dbracket_end > pos_dbracket_start)
+			{
+				found_dbracket = 1;
+			}
+		}
+		else
+		{
+			// dbracket closing } not found
+			printf ("error: no closing bracket } found!\n");
+			return (1);
+		}
+	}
+
+	pos_bracket_start = searchstr (line, (U1 *) "(", 0, 0, TRUE);
+	if (pos_bracket_start > -1)
+	{
+		pos_bracket_end = searchstr (line, (U1 *) ")", 0, 0, TRUE);
+		if (pos_bracket_end > -1)
+		{
+			if (pos_bracket_end > pos_bracket_start)
+			{
+				found_bracket = 1;
+			}
+		}
+		else
+		{
+			// bracket closing ) not found
+			printf ("error: no closing bracket ) found!\n");
+			return (1);
+		}
+    }
+
+	if (found_dbracket == 0 && found_bracket == 0)
+	{
+		if (check_for_whitespace (line) != 0)
+		{
+			printf ("error: no bracket found!\n");
+			return (1);
+		}
+	}
+	else
+	{
+		return (0);
+	}
+}
+
 S2 parse_line (U1 *line)
 {
     S4 level, j, last_arg, last_arg_2, t, v, reg, reg2, reg3, reg4, target, e, exp;
@@ -570,6 +629,14 @@ S2 parse_line (U1 *line)
 	S2 expression_if_op = -1;						// set to 0 if math operation found. set to 1 if on if operator
 
 	U1 boolean_var = 0;
+
+    ret = check_for_bracket_sane (line);
+	if (ret == 1)
+	{
+		// error:
+		printf ("error: line: %lli brackets error!\n", linenum);
+		return (1);
+	}
 
 	ret = get_ast (line, &parse_cont);
 	if (ret == 1)
