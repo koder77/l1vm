@@ -493,39 +493,9 @@ S2 check_for_whitespace (U1 *line)
 	return (0);
 }
 
+
+
 S2 check_for_brackets (U1 *line)
-{
-	S2 i, len;
-	S2 brackets_open = 0, brackets_close = 0;
-	S2 brackets_found = 0;
-
-	len = strlen_safe ((const char *) line, MAXLINELEN);
-	if (len > 0)
-	{
-		for (i = 0; i < len; i++)
-		{
-			if (line[i] == '(')
-			{
-				brackets_open++;
-				brackets_found = 1;
-			}
-			if (line[i] == ')')
-			{
-				brackets_close++;
-			}
-		}
-	}
-	// check if brackets counter is 0, all opening brackets are closed or not
-	if (brackets_open != brackets_close)
-	{
-		// printf ("error: line %lli: brackets don't match!\n", linenum);
-		// printf ("DEBUG check_for_brackets\n");
-		return (0);
-	}
-	return (brackets_found);	// no brackets in line
-}
-
-S2 check_for_bracket_sane (U1 *line)
 {
 	S4 pos_bracket_start, pos_bracket_end;
 	S4 pos_dbracket_start, pos_dbracket_end;
@@ -630,7 +600,7 @@ S2 parse_line (U1 *line)
 
 	U1 boolean_var = 0;
 
-    ret = check_for_bracket_sane (line);
+    ret = check_for_brackets (line);
 	if (ret == 1)
 	{
 		// error:

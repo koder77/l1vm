@@ -780,6 +780,50 @@ void show_info (void)
 	printf ("%s\n", COPYRIGHT_STR);
 }
 
+S2 check_if_l1com_file (char *file)
+{
+	FILE *fptr;
+	U1 rbuf[MAXSTRLEN + 1];
+    U1 ok = TRUE;
+	S2 ret = 1;
+	char *read;
+	S4 pos;
+
+
+	fptr = fopen (file, "r");
+	if (fptr == NULL)
+	{
+		// error can't open input file
+		printf ("ERROR: can't open input file: '%s' !\n", file);
+		return (1);
+	}
+
+	// scan file for: (main func)
+	// read input line loop
+	ok = TRUE;
+	while (ok)
+	{
+		read = fgets_uni ((char *) rbuf, MAXLINELEN, fptr);
+        if (read != NULL)
+        {
+			pos = searchstr (rbuf, (U1 *) "(main func)", 0, 0, TRUE);
+			if (pos >= 0)
+			{
+				// found Brackets main start, allo ok!
+			    fclose (fptr);
+				return (0);
+			}
+		}
+		else
+		{
+			ok = FALSE;
+		}
+	}
+	fclose (fptr);
+	// no (main func) Brackets main found!!
+	return (1);
+}
+
 int main (int ac, char *av[])
 {
 	U1 rbuf[MAXSTRLEN + 1];                        /* read-buffer for one line */
@@ -792,6 +836,13 @@ int main (int ac, char *av[])
 	if (ac < 4)
 	{
 		show_info ();
+		exit (1);
+	}
+
+	// file check:
+	if (check_if_l1com_file (av[1]) == 1)
+	{
+		printf ("ERROR: no Brackets main function found!\nIs this not a Brackets soure code file?\n");
 		exit (1);
 	}
 
