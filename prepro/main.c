@@ -785,7 +785,6 @@ S2 check_if_l1com_file (char *file)
 	FILE *fptr;
 	U1 rbuf[MAXSTRLEN + 1];
     U1 ok = TRUE;
-	S2 ret = 1;
 	char *read;
 	S4 pos;
 
