@@ -14,8 +14,9 @@ L1VM (2.3.0)
 	So the Brackets compiler now does not crash any mor on non Brackets source code files!
 
 	BUGFIX: file/open did not set file open flag.
+	BUGFIXES: ciphersaber module now works!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 30 Apr 2023 9:39 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 30 Apr 2023 17:33 +0200
 
 L1VM (2.2.0)
 	NEW: The Brackets compiler has now an object type for some OOP style functions.
