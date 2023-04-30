@@ -243,6 +243,8 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
     else
     {
+        files[handle].state = FILEOPEN;
+
         // push file handle
         sp = stpushi (handle, sp, sp_bottom);
     	if (sp == NULL)
@@ -1375,6 +1377,9 @@ U1 *file_read_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			#endif
 			
 			readsize = fread (&data[array_data_ptr + start], sizeof (U1), size, files[handle].fptr);
+
+            // printf ("DEBUG: file_read_array: readsize: %lli, size: %lli, handle: %lli\n", readsize, size, handle);
+
 			if (readsize != size)
 			{
 				// push ERROR code READ

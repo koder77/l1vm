@@ -788,7 +788,6 @@ S2 check_if_l1com_file (char *file)
 	char *read;
 	S4 pos;
 
-
 	fptr = fopen (file, "r");
 	if (fptr == NULL)
 	{

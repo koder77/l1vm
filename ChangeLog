@@ -13,7 +13,9 @@ L1VM (2.3.0)
 	Added checks if source code line has brackets or not. Give a compiler error if no brackets are found in line.
 	So the Brackets compiler now does not crash any mor on non Brackets source code files!
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 29 Apr 2023 13:10 +0200
+	BUGFIX: file/open did not set file open flag.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 30 Apr 2023 9:39 +0200
 
 L1VM (2.2.0)
 	NEW: The Brackets compiler has now an object type for some OOP style functions.
