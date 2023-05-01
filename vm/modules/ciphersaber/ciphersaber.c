@@ -60,13 +60,13 @@ int get_random (unsigned char *ptr)
     #if RANDOM_DEV
     if (! (rand = fopen ("/dev/random", "rb")))
     {
-        fprintf (stderr, "error: can't open /dev/random\n");
+        printf ("error: can't open /dev/random\n");
         return (-1);
     }
 
     if (fread (ptr, sizeof (unsigned char), 10, rand) != 10)
     {
-        fprintf (stderr, "error: can't read from /dev/random!\n");
+        printf ("error: can't read from /dev/random!\n");
         fclose (rand);
         return (-1);
     }
@@ -234,7 +234,7 @@ U1 *ciphersaber (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
         fclose (outfile);
         fclose (infile);
-
+        cleanup ();
         // error
         sp = stpushi (1, sp, sp_bottom);
         if (sp == NULL)
@@ -251,6 +251,9 @@ U1 *ciphersaber (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         printf ("ciphersaber: error key string overflow!\n");
 
+        fclose (outfile);
+        fclose (infile);
+        cleanup ();
         // error
         sp = stpushi (1, sp, sp_bottom);
         if (sp == NULL)
@@ -268,17 +271,41 @@ U1 *ciphersaber (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
         if (fread (ptr, sizeof (unsigned char), 10, infile) != 10)
         {
-            fprintf (stderr, "ciphersaber: error: can't read initialization vector!\n");
+            printf ("ciphersaber: error: can't read initialization vector!\n");
+
+            fclose (outfile);
+            fclose (infile);
             cleanup ();
-            return (NULL);
+            // error
+            sp = stpushi (1, sp, sp_bottom);
+            if (sp == NULL)
+            {
+                // error
+                printf ("ciphersaber: ERROR: stack corrupt!\n");
+                return (NULL);
+            }
+            return (sp);
         }
     }
     else
     {
         if (get_random (&data[key_addr + key_len]) < 0)
         {
+            printf ("ciphersaber: error: can't get random data!\n");
+
+            fclose (outfile);
+            fclose (infile);
             cleanup ();
-            return (NULL);
+            // error
+            sp = stpushi (1, sp, sp_bottom);
+            if (sp == NULL)
+            {
+                // error
+                printf ("ciphersaber: ERROR: stack corrupt!\n");
+                return (NULL);
+            }
+            return (sp);
+
         }
 
         i = key_len;
@@ -286,9 +313,20 @@ U1 *ciphersaber (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         {
             if (fputc ((int) data[key_addr + i], outfile) < 0)
             {
-                fprintf (stderr, "ciphersaber: error: can't write output-file %s \n", &data[outfile_addr]);
+                printf ( "ciphersaber: error: can't write output-file %s \n", &data[outfile_addr]);
+
+                fclose (outfile);
+                fclose (infile);
                 cleanup ();
-                exit (1);
+                // error
+                sp = stpushi (1, sp, sp_bottom);
+                if (sp == NULL)
+                {
+                    // error
+                    printf ("ciphersaber: ERROR: stack corrupt!\n");
+                    return (NULL);
+                }
+                return (sp);
             }
             i++;
         }
@@ -300,18 +338,6 @@ U1 *ciphersaber (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         state[i] = i;
     }
-
-    /*
-    j = 0;
-    for (i = 0; i <= 255; i++)
-    {
-        j = (j + state[i] + data[key_addr + (i % key_len)]) % 256;
-
-        s = state[i];
-        state[i] = state[j];
-        state[j] = s;
-    }
-*/
 
     j = 0;
     for (k = 1; k <= KEYSET_REPEAT; k++)
@@ -325,7 +351,6 @@ U1 *ciphersaber (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             state[j] = s;
         }
     }
-
 
     i = 0; j = 0;
 
@@ -352,14 +377,25 @@ U1 *ciphersaber (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
         if (fputc (out, outfile) < 0)
         {
-            fprintf (stderr, "ciphersaber: error: can't write output-file %s \n", &data[outfile_addr]);
+            printf ("ciphersaber: error: can't write output-file %s \n", &data[outfile_addr]);
+
+            fclose (outfile);
+            fclose (infile);
             cleanup ();
-            exit (1);
+            // error
+            sp = stpushi (1, sp, sp_bottom);
+            if (sp == NULL)
+            {
+                // error
+                printf ("ciphersaber: ERROR: stack corrupt!\n");
+                return (NULL);
+            }
+            return (sp);
         }
     }
 
-    fclose (infile);
     fclose (outfile);
+    fclose (infile);
     cleanup ();
 
     // all ok!
@@ -370,6 +406,5 @@ U1 *ciphersaber (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("ciphersaber: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-
     return (sp);
 }
