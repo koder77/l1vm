@@ -16,6 +16,10 @@ Copy the "l1vm-mode.el" into:
 ~/.emacs/modules/lang/l1vm/autoload/
 ```
 
+
+
+Both (27.x and 28.x)
+====================
 Put the following line into your "~/.config/doom/init.el" file after the line: "(doom! :input)" (where the other syntax highlighter are set):
 
 ```
