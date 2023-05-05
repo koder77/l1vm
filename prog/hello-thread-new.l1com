@@ -22,6 +22,7 @@
     pull_int64_var (t1_l)
     pull_int64_var (t2_l)
 
+    get_cpu (cpu)
 	(((cpu zero ==) f =) f if)
 	    thread (t1_l)
 	    thread (t2_l)
