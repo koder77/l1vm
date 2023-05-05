@@ -40,6 +40,7 @@
 #define COMMENT_COMP_SB		"//"
 
 U1 include_path[MAXSTRLEN + 1];
+U1 include_path_two[MAXSTRLEN + 1];
 
 struct define
 {
@@ -635,8 +636,24 @@ S2 include_file (U1 *line_str)
 	fincludeptr = fopen ((const char *) include_full_path, "r");
 	if (fincludeptr == NULL)
 	{
-		printf ("ERROR: can't open include file: '%s' !\n", include_file_name);
-		return (1);
+		// try to load file with second include path
+		strcpy ((char *) include_full_path, (const char *) include_path_two);
+		include_path_len = strlen_safe ((const char *) include_full_path, MAXLINELEN);
+		include_name_len = strlen_safe ((const char *) include_file_name, MAXLINELEN);
+		if (include_path_len + include_name_len > MAXLINELEN)
+		{
+			printf ("ERROR: can't open include files, names too long!\n");
+			return (1);
+		}
+		// cat filename to path name
+		strcat ((char *) include_full_path, (const char *) include_file_name);
+
+		fincludeptr = fopen ((const char *) include_full_path, "r");
+		if (fincludeptr == NULL)
+		{
+			printf ("ERROR: can't open include file: '%s' !\n", include_file_name);
+			return (1);
+		}
 	}
 
 	// read include file
@@ -829,7 +846,8 @@ int main (int ac, char *av[])
 
 	char *read;
 	U1 ok;
-	S4 pos, slen;
+	S4 pos;
+    S4 slen;
 
 	if (ac < 4)
 	{
@@ -870,6 +888,20 @@ int main (int ac, char *av[])
 		exit (1);
 	}
 	strcpy ((char *) include_path, av[3]);
+	strcpy ((char *) include_path_two, "");
+
+	if (ac == 5)
+	{
+		if (strlen_safe ((const char *) av[4], MAXLINELEN) > MAXLINELEN - 1)
+		{
+			printf ("ERROR: include path: '%s' too long!\n", av[4]);
+			fclose (finptr);
+			fclose (foutptr);
+			exit (1);
+		}
+		strcpy ((char *) include_path_two, av[4]);
+		printf ("second include path: '%s'\n", include_path_two);
+	}
 
 	// read input line loop
 	ok = TRUE;
