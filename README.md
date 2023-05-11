@@ -120,7 +120,7 @@ ciphersaber - encrypt/decrypt functions
 crypto - libsodium encrypt/decrypt functions
 endianess - convert to big endian, or little endian functions
 fann - FANN neural networks
-file - file module
+file - file module - read/write files
 filetools - file functions like copy, create directory, etc.
 genann - neural networks module
 gpio - Raspberry Pi GPIO module
