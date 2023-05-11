@@ -11,7 +11,7 @@ defined "xsrcptr" to something else!
 
 Copy "mpreal.h" to "/usr/local/include".
 
-1. $ export CC=clang && export CCPP=clang++ && zerobuild zerobuild-generate.txt
+1. $ export CC=clang && export CCPP=clang++ && zerobuild zerobuild-generate.txt <br>
    $ ./generate-mpfr-lib
 2. Load "mpfr-lib-head.l1com" into an text editor.
 3. Create an lib file with the name: "mpfr-lib-auto.l1com".
