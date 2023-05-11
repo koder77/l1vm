@@ -21,7 +21,7 @@ $ zerobuild zerobuild-nojit.txt force
 
 BUILD with JIT-compiler
 -----------------------
-Set "JIT_COMPILER" definition in vm/main.c to "1"!
+Set "JIT_COMPILER" definition in vm/jit.h to "1"!
 <pre>
 #define JIT_COMPILER 1
 </pre>

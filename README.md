@@ -1,4 +1,4 @@
-L1VM README  2023-03-17
+L1VM README  2023-05-11
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -116,18 +116,23 @@ Here is the full standard modules list: <br>
 <h2>Modules</h2>
 <pre>
 Cells - linked neural networks with FANN library
+ciphersaber - encrypt/decrypt functions
+crypto - libsodium encrypt/decrypt functions
 endianess - convert to big endian, or little endian functions
 fann - FANN neural networks
 file - file module
+filetools - file functions like copy, create directory, etc.
 genann - neural networks module
 gpio - Raspberry Pi GPIO module
 math - some math functions
 math-nofp - math module for use without FPU
 math-vect - math on arrays functions
 mem - memory allocating for arrays and vectors
+mem-obj - memory functions to store different variables into one memory array
 mem-vect - C++ vector memory library
 mpfr-c++ - MPFR floating point big num library
 net - TCP/IP sockets module
+pigpio - Raspberry Pi GPIO module
 process - start a new shell process
 rs232-libserialport - RS232 serial port using libserialport
 rs232 - RS232 serial port module

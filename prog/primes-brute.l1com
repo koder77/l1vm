@@ -16,6 +16,7 @@
 	(set int64 1 isprime 1)
 	(set int64 1 sqrmax 0)
 	(set double 1 sqrdouble 0.0)
+	(optimize-if)
 	(zero :math_init call)
 	// print first prime 2
 	print_i (two)
