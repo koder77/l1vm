@@ -791,7 +791,7 @@ S2 include_file (U1 *line_str)
 
 void show_info (void)
 {
-	printf ("l1pre <file-in> <file-out> <include-path>\n");
+	printf ("l1pre <file-in> <file-out> <include-path> [optional-include-path]\n");
 	printf ("\nPreprocessor for Brackets, a programming language with brackets ;-)\n");
 	printf ("%s", VM_VERSION_STR);
 	printf ("%s\n", COPYRIGHT_STR);

@@ -1,3 +1,8 @@
+L1VM (2.4.0)
+	NEW: l1pre now shows optional include path in info function.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 12 May 2023 21:42 +0200
+
 L1VM (2.3.0)
 	NEW: compiler: type check in infix/RPN parser (parse-rpolish.c). If types of int and double are mixed then it results in a compile error!
 	Also gives an error if the variable inside a math expression is an array!
