@@ -133,7 +133,7 @@ U1 *time_time_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, 8) != 0)
 	{
-		// strdestaddr is not at least 10 chars in size, ERROR!
+		// strdestaddr is not at least 8 chars in size, ERROR!
 		printf ("time_time_to_string: ERROR: dest string overflow!\n");
 		return (NULL);
 	}
