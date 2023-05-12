@@ -19,7 +19,9 @@ L1VM (2.3.0)
 	NEW: now the l1vm-build.sh script searches for includes in the current folder too!
 	ADDED a unit test demo.
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 05 May 2023 19:48 +0200
+	NEW: time module: added better string overflow checks.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 12 May 2023 13:09 +0200
 
 L1VM (2.2.0)
 	NEW: The Brackets compiler has now an object type for some OOP style functions.

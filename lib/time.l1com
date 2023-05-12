@@ -1,6 +1,6 @@
 (main func)
     (set int64 1 zero 0)
-	(set string 9 time "")
+	(set string 9  time "")
 	(set string 11 date "")
 	(set int64 1 time_len 9)
 	(set int64 1 date_len 11)
