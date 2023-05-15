@@ -1,3 +1,11 @@
+L1VM (2.4.1)
+	BUHFIX: The compiler now checks if a variable was already defined at "set".
+	So this will result in an error!
+
+	BUGFIX: now the infix/RPN parser works again! Sorry for this!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 15 May 2023 16:47 +0200
+
 L1VM (2.4.0)
 	NEW: l1pre now shows optional include path in info function.
 

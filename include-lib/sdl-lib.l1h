@@ -3,8 +3,9 @@
 //
 //
 (sdl_open_screen func)
-    (set int64 1 zero 0)
-    (set int64 1 f 0)
+    (set int64 1 zero@sdl 0)
+    (set int64 1 one@sdl 1)
+    (set int64 1 f@sdl 0)
     (set string s modulestr@sdl "libl1vmsdl")
     (set string s openstr@sdl "sdl_open_screen")
     (set string s openfullstr@sdl "sdl_open_screen_full")
@@ -205,7 +206,7 @@
     (width@sdl stpushi)
     (height@sdl stpushi)
     (bit@sdl stpushi)
-    (((fullscreen@sdl one ==) f =) f if+)
+    (((fullscreen@sdl one@sdl ==) f@sdl =) f@sdl if+)
         (3 mod@sdl openfull@sdl 0 intr0)
     (else)
         (3 mod@sdl open@sdl 0 intr0)

@@ -58,6 +58,35 @@ S2 checkdef (U1 *name)
 	return (1);
 }
 
+S2 checkset (U1 *name)
+{
+	S4 i;
+
+	if (name[0] == ':')
+	{
+		// label: set checked
+		return (0);
+	}
+
+	if (checkdigit (name) == TRUE)
+	{
+		// is number not variable name: set checked
+		return (0);
+	}
+
+	for (i = 0; i <= data_ind; i++)
+	{
+		if (strcmp ((const char *) name, (const char *) data_info[i].name) == 0)
+		{
+			// variable already defined!
+			return (0);
+		}
+	}
+	// variable not defined, check ok!
+	return (1);
+}
+
+
 S2 getvartype (U1 *name)
 {
 	S4 i;

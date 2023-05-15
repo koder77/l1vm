@@ -67,6 +67,7 @@
 
  // var.c
  S2 checkdef (U1 *name);
+ S2 checkset (U1 *name);
  S2 getvartype (U1 *name);
  S2 getvartype_real (U1 *name);
  S8 get_variable_is_array (U1 *name);

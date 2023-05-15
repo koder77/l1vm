@@ -494,7 +494,6 @@ S2 check_for_whitespace (U1 *line)
 }
 
 
-
 S2 check_for_brackets (U1 *line)
 {
 	S4 pos_bracket_start, pos_bracket_end;
@@ -554,6 +553,42 @@ S2 check_for_brackets (U1 *line)
 	}
 }
 
+S2 check_for_normal_brackets (U1 *line)
+{
+	S4 pos_bracket_start, pos_bracket_end;
+	U1 found_bracket = 0;
+
+	pos_bracket_start = searchstr (line, (U1 *) "(", 0, 0, TRUE);
+	if (pos_bracket_start > -1)
+	{
+		pos_bracket_end = searchstr (line, (U1 *) ")", 0, 0, TRUE);
+		if (pos_bracket_end > -1)
+		{
+			if (pos_bracket_end > pos_bracket_start)
+			{
+				found_bracket = 1;
+			}
+		}
+		else
+		{
+			// bracket closing ) not found
+			printf ("error: no closing bracket ) found!\n");
+			return (2);
+		}
+    }
+
+	if (found_bracket == 1)
+	{
+		// normal brackets found
+		return (0);
+	}
+	else
+	{
+		// no normal brackets found
+		return (1);
+	}
+}
+
 S2 parse_line (U1 *line)
 {
     S4 level, j, last_arg, last_arg_2, t, v, reg, reg2, reg3, reg4, target, e, exp;
@@ -599,6 +634,7 @@ S2 parse_line (U1 *line)
 	S2 expression_if_op = -1;						// set to 0 if math operation found. set to 1 if on if operator
 
 	U1 boolean_var = 0;
+	S2 normal_brackets = 0;
 
     ret = check_for_brackets (line);
 	if (ret == 1)
@@ -632,7 +668,13 @@ S2 parse_line (U1 *line)
 	{
 		// printf ("DEBUG parse_cont: '%s'\n", line);
 
-		if (check_for_brackets (line) == 1)
+		normal_brackets = check_for_normal_brackets (line);
+		if (normal_brackets == 2)
+		{
+			// ERROR
+			return (1);
+		}
+		if (normal_brackets == 0)
 		{
 			// found brackets in math expression, convert to RPN
 			if (convert (line, conv) == 1)
@@ -837,6 +879,13 @@ S2 parse_line (U1 *line)
 						}
 
 						// name
+						if (checkset (ast[level].expr[j][3]) == 0)
+						{
+							// ERROR variable already defined!
+							printf ("error: line: %lli: variable '%s' already defined!\n", linenum, ast[level].expr[j][3]);
+							return (1);
+						}
+
 						strcpy ((char *) data_info[data_ind].name, (const char *) ast[level].expr[j][3]);
 
 						// do check if bool variable name begins with uppercase B
