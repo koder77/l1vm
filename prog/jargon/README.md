@@ -1,6 +1,6 @@
 INSTALLATION README
 ===================
-This is the hacker jaron file reader.
+This is the hacker jargon file reader.
 
 Copy "jargon.l1com" to your "/prog" L1VM folder.
 Copy "jargon" directory into your "home/user/l1vm" folder.
