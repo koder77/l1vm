@@ -219,7 +219,7 @@
 	(set double 1 rad~ 0.0)
 	(set double 1 half_circle~ 180.0)
 	(degree~ stpopd)
-	{rad~ = degree~ m_pimath * half_circle~ *}
+	{rad~ = degree~ m_pimath * half_circle~ /}
 	(rad~ stpushd)
 (funcend)
 (math_rad_to_degree func)
