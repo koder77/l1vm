@@ -1,0 +1,308 @@
+// jargon.l1com
+//
+// jargon file keyword search
+//
+#include <intr.l1h>
+(main func)
+(set const-int64 1 zero 0)
+(set const-int64 1 one 1)
+(set int64 1 ret 0)
+(set string s error_init_filestr "error: can't allocate file handles!")
+(set string s error_open_filestr "error: can't open file jarg447.txt !")
+(set string s error_seekstr "error: can't rewind file!")
+(set string s usagestr "'topic foo' only show topics | '@box' norm. search | 'topic @foo'")
+(set string s regexusagestr "'topic C.*' search using regular expressions, get every topic starting by C")
+(set string s readtext_modestr "show text page per page: 'PAGES'")
+(set string s promptstr "text to search for? (QUIT to Exit)? ")
+(set string 256 inputstr "")
+(set int64 1 inputstr_len 255)
+(set string 256 readlinestr "")
+(set int64 1 readlinestr_len 255)
+(set string 256 bufstr "")
+(set int64 1 bufstr_len 255)
+(set string s quitstr "QUIT")
+(set string s topicstr "topic")
+(set string s read_modestr "PAGES")
+(set int64 1 topicstr_len 5)
+(set int64 1 topic_inputlen 7)
+(set int64 1 topicstr_cutlen 6)
+(set string 256 topic_searchstr "")
+(set int64 1 topic_search 0)
+(set int64 1 srch_right 0)
+(set string s jargfilestr "jargon/jarg447.txt")
+(set string s colonstr ":")
+(set string s bash_clearcstr "c")
+(set int64 1 escape_b 27)
+(set string 2 escape_str "")
+(set string 3 bash_clearstr "")
+(set const-byte 1 mode_read 1)
+(set int64 1 file_handle 0)
+(set int64 1 f 0)
+(set int64 1 inp_len 0)
+(set int64 1 do_read 1)
+(set int64 1 i 0)
+(set string s show_topicstr "show topics only:")
+(set int64 1 regex_search 1)
+(set string s excact_search_charstr "@")
+(set string 2 chstr)
+(set string s emptystr "")
+(set int64 1 maxline 23)
+(set int64 1 line 0)
+// fseek definitions:
+#include <file-def.l1h>
+(zero one :file_init call)
+(ret stpopi)
+(loadreg)
+(((ret zero !=) f =) f if)
+	print_s (error_init_filestr)
+	print_n
+	exit (one)
+(endif)
+(one :string_init call)
+// set bash clear string
+(escape_b escape_str :string_bytenumtostring  call)
+(bash_clearstr escape_str :string_copy call)
+(bash_clearstr bash_clearcstr :string_cat call)
+// open jargon file txt
+(mode_read jargfilestr :file_open call)
+//
+// get file handle from file_open call
+//
+(file_handle stpopi)
+(((file_handle zero <) f =) f if)
+	print_s (error_open_filestr)
+	print_n
+	exit (one)
+(endif)
+(loadreg)
+print_s (readtext_modestr)
+print_n
+print_s (regexusagestr)
+print_n
+(:loop)
+	(reset-reg)
+	(zero topic_search =)
+	print_s (usagestr)
+	print_n
+	print_s (promptstr)
+	(11 inputstr_len inputstr 0 intr0)
+	print_s (inputstr)
+	print_n
+	(inputstr :string_len call)
+    (inp_len stpopi)
+	(((inp_len zero >) f =) f if)
+		(reset-reg)
+		// got a not empty string
+		// check for QUIT
+		(inputstr quitstr :string_compare call)
+		(ret stpopi)
+		(((ret zero ==) f =) f if)
+			// user wants to quit
+			(:quit jmp)
+		(endif)
+		// check if read text mode is set
+		(((inp_len topicstr_len <) f =) f if)
+			(:skip_topic_search_check jmp)
+		(endif)
+		(inputstr topic_searchstr topicstr_len :string_left call)
+		(topic_searchstr read_modestr :string_compare call)
+		(ret stpopi)
+		(((ret zero ==) f =) f if)
+			(:read_text call)
+			// do file seek to first line
+			(file_handle zero file_seek_set :file_seek call)
+			(ret stpopi)
+			(((ret zero !=) f =) f if)
+				// ERROR on seek
+				print_s (error_seekstr)
+				print_n
+				(:quit jmp)
+			(endif)
+			(zero topic_search =)
+			(:loop jmp)
+		(endif)
+		// check if topic search only using "topic" argument
+		(((inp_len topic_inputlen <) f =) f if)
+			(zero topic_search =)
+			(:skip_topic_search_check jmp)
+		(endif)
+		(inputstr topic_searchstr topicstr_len :string_left call)
+		(topic_searchstr topicstr :string_compare call)
+		(ret stpopi)
+		(((ret zero ==) f =) f if+)
+			((inp_len topicstr_cutlen -) i =)
+			(inputstr bufstr i :string_right call)
+			(inputstr bufstr :string_copy call)
+			(one topic_search =)
+			// user wants to list topics only
+		(else)
+			(zero topic_search =)
+			// user wants full topics shown
+		(endif)
+		(:skip_topic_search_check)
+		// check if exact string search or regular expression search
+		// get first char of inputstr
+		(inputstr bufstr one :string_left call)
+		(bufstr excact_search_charstr :string_compare call)
+		(ret stpopi)
+		(((ret zero ==) f =) f if+)
+			// exact search
+			(zero regex_search =)
+			(inputstr :string_len call)
+		    (inp_len stpopi)
+			((inp_len one -) i =)
+			(((i one >) f =) f if+)
+				(inputstr bufstr i :string_right call)
+				(inputstr bufstr :string_copy call)
+			(else)
+				(inputstr emptystr :string_copy call)
+			(endif)
+		(else)
+			(one regex_search =)
+		(endif)
+		print_s (bash_clearstr)
+		(reset-reg)
+		(((topic_search one ==) f =) f if)
+			print_s (show_topicstr)
+			print_n
+		(endif)
+		// search jargon file for topic
+		print_n
+		(:search_loop)
+		// read line fom file
+		(file_handle readlinestr readlinestr_len :file_get_string call)
+	    (ret stpopi)
+		(((ret zero !=) f =) f if+)
+			// EOF?
+			// do file seek to first line
+			(file_handle zero file_seek_set :file_seek call)
+			(ret stpopi)
+			(((ret zero !=) f =) f if)
+				// ERROR on seek
+				print_s (error_seekstr)
+				print_n
+				(:quit jmp)
+			(endif)
+			(:loop jmp)
+		(else)
+			// search jargon file for user input
+			// check for line that begins by a colon :
+			// check for empty line, skip it:
+			(readlinestr :string_len call)
+			(readlinestr_len stpopi)
+			(((readlinestr_len zero ==) f =) f if)
+				// skip empty line, return to main search loop
+				(:search_loop jmp)
+			(endif)
+			(readlinestr bufstr one :string_left call)
+			(bufstr colonstr :string_compare call)
+			(ret stpopi)
+			(((ret zero ==) f =) f if)
+				// found colon
+				(reset-reg)
+				// search for user input in this new entry name
+				(((regex_search one ==) f =) f if+)
+					(readlinestr inputstr :string_regex call)
+					(ret stpopi)
+				(else)
+					(readlinestr inputstr :string_search call)
+					(ret stpopi)
+					(((ret zero >=) f =) f if)
+						(reset-reg)
+						// got position of searched string
+						(zero ret =)
+					(endif)
+				(endif)
+				(reset-reg)
+				(((ret zero ==) f =) f if)
+					// found regex
+					// print entry till next colon line begin
+					(:print_loop)
+					print_s (readlinestr)
+					print_n
+					(((topic_search one ==) f =) f if)
+						(:search_loop jmp)
+					(endif)
+					(file_handle readlinestr readlinestr_len :file_get_string call)
+				    (ret stpopi)
+					(((ret zero !=) f =) f if)
+						(:print_loop_Exit jmp)
+					(endif)
+					// check for empty line, skip it:
+					(readlinestr :string_len call)
+					(readlinestr_len stpopi)
+					(((readlinestr_len zero ==) f =) f if)
+						// skip empty line, return to main search loop
+						(:print_loop jmp)
+					(endif)
+					(readlinestr bufstr one :string_left call)
+					(bufstr colonstr :string_compare call)
+					(ret stpopi)
+					(((ret zero ==) f =) f if)
+						// found colon of next entry start, exit print loop
+						(:print_loop_Exit jmp)
+					(endif)
+					(:print_loop jmp)
+				(endif)
+			(endif)
+			(:print_loop_Exit)
+			(:search_loop jmp)
+		(endif)
+	(endif)
+	(:loop jmp)
+(:quit)
+	(file_handle :file_close call)
+	// close file module
+	(:file_free_mem call)
+	exit (zero)
+(funcend)
+(read_text func)
+	(set string s menustr "'RETURN' show next lines | 'QUIT' to Exit read: ")
+	(zero line =)
+	(:read_loop)
+	// read line fom file
+	(file_handle readlinestr readlinestr_len :file_get_string call)
+	(ret stpopi)
+	(((ret zero !=) f =) f if+)
+		// EOF?
+		// do file seek to first line
+		(file_handle zero file_seek_set :file_seek call)
+		(ret stpopi)
+		(((ret zero !=) f =) f if)
+			// ERROR on seek
+			print_s (error_seekstr)
+			print_n
+			(:read_text_end jmp)
+		(endif)
+		(:loop jmp)
+	(else)
+		print_s (readlinestr)
+		print_n
+		((line one +) line =)
+		(((line maxline <) f =) f if+)
+			(:read_loop jmp)
+		(else)
+			print_s (menustr)
+			(11 inputstr_len inputstr 0 intr0)
+			(inputstr :string_len call)
+		    (inp_len stpopi)
+			(((inp_len zero ==) f =) f if+)
+				// read next lines from file
+				(zero line =)
+				print_s (bash_clearstr)
+				(:read_loop jmp)
+			(else)
+				// check for QUIT command
+				(inputstr quitstr :string_compare call)
+				(ret stpopi)
+				(((ret zero ==) f =) f if)
+					// quit read text by line mode
+					(:read_text_end jmp)
+				(endif)
+			(endif)
+		(endif)
+	(endif)
+	(:read_text_end)
+(funcend)
+#include <file-lib.l1h>
+#include <string.l1h>
