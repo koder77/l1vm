@@ -86,12 +86,11 @@ fi
 
 cd ../vm
 if zerobuild zerobuild-nojit.txt force; then
-	echo "l1vm JIT build ok!"
+	echo "l1vm build ok!"
 else
-	echo "l1vm JIT build error!"
+	echo "l1vm build error!"
 	exit 1
 fi
-cp l1vm l1vm-nojit
 cd ..
 cp assemb/l1asm ~/bin
 cp comp/l1com ~/bin
