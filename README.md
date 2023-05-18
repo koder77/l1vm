@@ -384,6 +384,8 @@ on: vm/fann, vm/math, vm/crypto, vm/rs232-libserialport
 lflags = "-shared -lm -L/usr/local/lib -lfann"
 </pre>
 
+Currently the MPFR module can't be build: "features.h" include is missing!
+And the SDL 2.0 module can't find "_BYTE_ORDER" define!
 
 <h3>DragonFly BSD</h3>
 You have to add a "bin/" directory in your "/home/user" directory:

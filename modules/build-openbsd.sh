@@ -24,8 +24,8 @@ cd ../process
 zerobuild force
 cd ../rs232-libserialport
 zerobuild force
-cd ../sdl-2.0
-zerobuild force
+#cd ../sdl-2.0
+#zerobuild force
 cd ../string
 zerobuild force
 cd ../time
@@ -44,7 +44,7 @@ cp ../vm/modules/mem-obj/libl1vm* .
 cp ../vm/modules/net/libl1vm* .
 cp ../vm/modules/process/libl1vm* .
 cp ../vm/modules/rs232-libserialport/libl1vm* .
-cp ../vm/modules/sdl-2.0/libl1vm* .
+#cp ../vm/modules/sdl-2.0/libl1vm* .
 cp ../vm/modules/string/libl1vm* .
 cp ../vm/modules/time/libl1vm* .
 
