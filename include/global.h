@@ -32,9 +32,12 @@
 #if __linux__
 #pragma message ("OS type: Linux")
 #endif
+#if __OpenBSD__
+#pragma message ("OS type: OpenBSD")
+#endif
 
-// set __linux__ on Cygwin or macOS
-#if __CYGWIN__ || __MACH__
+// set __linux__ on Cygwin, macOS and OpenBSD
+#if __CYGWIN__ || __MACH__ || __OpenBSD__
 	#define __linux__	1
 #endif
 

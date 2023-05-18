@@ -4,6 +4,8 @@ L1VM (2.4.1)
 
 	BUGFIX: now the infix/RPN parser works again! Sorry for this!
 
+	Added "install-zerobuild-openbsd.sh" experimental install script for OpenBSD.
+
 -- Stefan Pietzonke <jay-t@gmx.net> Mon 15 May 2023 16:47 +0200
 
 L1VM (2.4.0)
