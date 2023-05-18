@@ -13,7 +13,7 @@ doas pkg_add sdl2
 doas pkg_add sdl2-gfx
 doas pkg_add sdl2-image
 doas pkg_add sdl2-ttf
-dpas pkg_add sdl2-mixer
+doas pkg_add sdl2-mixer
 doas pkg_add fann
 doas pkg_add mpfr
 doas pkg_add cmake
@@ -27,7 +27,7 @@ FILE=/usr/bin/clang
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
-	sudo dnf install clang
+	doas dnf install clang
 fi
 
 # check if ~/bin exists
@@ -58,7 +58,7 @@ fi
 # install mpreal.h include
 	echo "installing mpreal.h include file now..."
 	git clone https://github.com/advanpix/mpreal.git
-	sudo cp vm/modules/mpfr-c++/mpreal.h /usr/include
+	doas cp vm/modules/mpfr-c++/mpreal.h /usr/include
 
 cd assemb
 if zerobuild force; then
