@@ -101,8 +101,8 @@ echo "VM binaries installed into ~/bin"
 cd modules
 echo "installing modules..."
 chmod +x *.sh
-./build.sh
-if ./install.sh; then
+sh ./build.sh
+if sh ./install.sh; then
 	echo "modules build ok!"
 else
 	echo "modules build FAILED!"
@@ -113,7 +113,7 @@ cd ../
 
 echo "all modules installed. building programs..."
 chmod +x *.sh
-if ./build-all.sh; then
+if sh ./build-all.sh; then
 	echo "building programs successfully!"
 else
 	echo "building programs FAILED!"
