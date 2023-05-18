@@ -101,8 +101,8 @@ echo "VM binaries installed into ~/bin"
 cd modules
 echo "installing modules..."
 chmod +x *.sh
-sh ./build.sh
-if sh ./install.sh; then
+sh ./build-openbsd.sh
+if sh ./install-openbsd.sh; then
 	echo "modules build ok!"
 else
 	echo "modules build FAILED!"

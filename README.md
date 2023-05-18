@@ -377,6 +377,13 @@ And change the linker flags on the VM zerobuild file: "vm/zerobuild-nojit.sh"
 lflags = "-lm -lpthread -Wl,--export-dynamic"
 </pre>
 
+Add the "-L/usr/local/lib" path to the "zerobuild.txt" make files linker line:
+on: vm/fann, vm/math, vm/crypto
+
+<pre>
+lflags = "-shared -lm -L/usr/local/lib -lfann"
+</pre>
+
 
 <h3>DragonFly BSD</h3>
 You have to add a "bin/" directory in your "/home/user" directory:
