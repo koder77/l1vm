@@ -360,7 +360,7 @@ To compile for cli (bashs) text in/output only with no SDL gfx support:
 Set "#define SDL_module 0" in "include/global.h".
 Then run in "vm/" the bash script: "make-cli.sh".
 
-<h3>Open BSD</h3>
+<h3>OpenBSD</h3>
 You have to edit the settings.h include file:
 
 <pre>
