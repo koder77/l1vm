@@ -11,13 +11,13 @@ export CCPP=clang++
 
 doas pkg_add sdl2
 doas pkg_add sdl2-gfx
-doas pkg_add sd2-image
+doas pkg_add sdl2-image
 doas pkg_add sdl2-ttf
 dpas pkg_add sdl2-mixer
 doas pkg_add fann
 doas pkg_add mpfr
 doas pkg_add cmake
-doas pkg_add make
+doas pkg_add gmake
 doas pkg_add git
 doas pkg_add libsodium
 doas pkg_add libserialport
