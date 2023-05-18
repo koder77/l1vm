@@ -384,7 +384,7 @@ on: vm/modules/fann, vm/modules/math, vm/modules/crypto, vm/modules/rs232-libser
 lflags = "-shared -lm -L/usr/local/lib -lfann"
 </pre>
 
-Now replace every "SDL_BYTEORDER" in vm/modules/sdl-2.0 by "_BYTE_ORDER".
+Now replace every "SDL_BYTEORDER" in vm/modules/sdl-2.0/sdl.c by "_BYTE_ORDER".
 
 Currently the MPFR module can't be build: "features.h" include is missing!
 
