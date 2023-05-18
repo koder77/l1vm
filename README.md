@@ -378,7 +378,7 @@ lflags = "-lm -lpthread -Wl,--export-dynamic"
 </pre>
 
 Add the "-L/usr/local/lib" path to the "zerobuild.txt" make files linker line:
-on: vm/fann, vm/math, vm/crypto
+on: vm/fann, vm/math, vm/crypto, vm/rs232-libserialport
 
 <pre>
 lflags = "-shared -lm -L/usr/local/lib -lfann"
