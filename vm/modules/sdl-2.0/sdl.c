@@ -102,8 +102,12 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	#if WINDOWS_10_WSL
 	if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0)
-	#else 
-	if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) != 0)
+	#else
+		#if WITH_SOUND
+		if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) != 0)
+		#else
+		if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0)
+        #endif
 	#endif
 	{
 		printf ("ERROR SDL_Init!!!\n");
@@ -140,6 +144,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	#if ! WINDOWS_10_WSL
+	#if WITH_SOUND
 	// init audio
 	int audio_rate = 44100; Uint16 audio_format = AUDIO_S16SYS;
 	int audio_channels = 2; int audio_buffers = 4096;
@@ -149,6 +154,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("sdl_open_screen: ERROR: unable to initialize audio: %s\n", Mix_GetError());
 		return (sp);
 	}
+	#endif
 	#endif
 
 

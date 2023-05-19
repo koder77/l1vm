@@ -378,7 +378,7 @@ lflags = "-lm -lpthread -Wl,--export-dynamic"
 </pre>
 
 Add the "-L/usr/local/lib" path to the "zerobuild.txt" make files linker line:
-on: vm/modules/fann, vm/modules/math, vm/modules/crypto, vm/modules/rs232-libserialport, vm/modules/sdl-2.0
+on: vm/modules/fann, vm/modules/math, vm/modules/crypto, vm/modules/rs232-libserialport and vm/modules/sdl-2.0
 
 <pre>
 lflags = "-shared -lm -L/usr/local/lib -lfann"
@@ -386,7 +386,14 @@ lflags = "-shared -lm -L/usr/local/lib -lfann"
 
 Now replace every "SDL_BYTEORDER" in vm/modules/sdl-2.0/sdl.c by "_BYTE_ORDER".
 
+Change the SOUND setting in vm/modules/sdl-2.0/global-d.h:
+
+<pre>
+#define WITH_SOUND		0
+</pre>
+
 Currently the MPFR module can't be build: "features.h" include is missing!
+
 
 <h3>DragonFly BSD</h3>
 You have to add a "bin/" directory in your "/home/user" directory:
