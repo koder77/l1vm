@@ -393,6 +393,11 @@ Change the SOUND setting in vm/modules/sdl-2.0/global-d.h:
 </pre>
 
 Currently the MPFR module can't be build: "features.h" include is missing!
+However: there is a workaround:
+
+Copy the "features.h" header in vm/modules/mpfr-c++/openbsd/ to "/usr/include".
+This header was patched by me to make the MPFR module build.
+
 
 Now you can start the build with:
 
