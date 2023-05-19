@@ -394,6 +394,19 @@ Change the SOUND setting in vm/modules/sdl-2.0/global-d.h:
 
 Currently the MPFR module can't be build: "features.h" include is missing!
 
+Now you can start the build with:
+
+<pre>
+sh ./install-zerobuild-openbsd.sh
+</pre>
+
+Edit your "~/.bashrc" config file, add the following lines:
+
+```
+export PATH="$HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
+```
+
 
 <h3>DragonFly BSD</h3>
 You have to add a "bin/" directory in your "/home/user" directory:
