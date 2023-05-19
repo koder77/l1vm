@@ -386,12 +386,6 @@ lflags = "-shared -lm -L/usr/local/lib -lfann"
 
 Now replace every "SDL_BYTEORDER" in vm/modules/sdl-2.0/sdl.c by "_BYTE_ORDER".
 
-Change the SOUND setting in vm/modules/sdl-2.0/global-d.h:
-
-<pre>
-#define WITH_SOUND		0
-</pre>
-
 Currently the MPFR module can't be build: "features.h" include is missing!
 However: there is a workaround:
 

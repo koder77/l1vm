@@ -21,6 +21,8 @@ doas pkg_add gmake
 doas pkg_add git
 doas pkg_add libsodium
 doas pkg_add libserialport
+doas pkg_add pulseaudio
+doas pkg_add pavucontrol
 
 # check if clang C compiler is installed
 FILE=/usr/bin/clang
