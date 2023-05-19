@@ -33,7 +33,7 @@ In pure console text I/O programs not linked with SDL library, the memory footpr
 About 10 MB RAM only as shown in the taskmanager by running a minimal test program!
 
 <b>
-The L1VM runs on Linux (x86_64, Arm), Windows 10, 11 via WSL and macOS.
+The L1VM runs on Linux (x86_64, Arm), BSD OS: OpenBSD, DragonFly BSD, Windows 10, 11 via WSL and macOS.
 It has an preprocessor, assembler and compiler for my own language Brackets.
 On the Raspberry Pi the GPIO pins can be used with my GPIO module.
 Also the serial port can be used.
