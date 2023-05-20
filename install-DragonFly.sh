@@ -5,33 +5,63 @@ if uname -a | grep -q "DragonFly"; then
 	echo "DragonFly BSD detected..."
 	echo "checking for needed libraries..."
 
-	if ! sudo pkg install sdl2-2.0.10_1; then
+	if ! sudo pkg install sdl2; then
 		echo "installation of sdl library failed!"
 		exit 1
 	fi
 
-	if ! sudo pkg install sdl2_gfx-1.0.4; then
+	if ! sudo pkg install sdl2_gfx; then
 		echo "installation of sdl gfx library failed!"
 		exit 1
 	fi
 
-	if ! sudo pkg install sdl2_image-2.0.5; then
+	if ! sudo pkg install sdl2_image; then
 		echo "installation of sdl image library failed!"
 		exit 1
 	fi
 
-	if ! sudo pkg install sdl2_ttf-2.0.15; then
+	if ! sudo pkg install sdl2_ttf; then
 		echo "installation of sdl ttf library failed!"
 		exit 1
 	fi
 
-	if ! sudo pkg install fann-2.2.0; then
+	if ! sudo pkg install sdl2_mixer; then
+		echo "installation of sdl mixer library failed!"
+		exit 1
+	fi
+
+	if ! sudo pkg install fann; then
 		echo "installation of fann library failed!"
 		exit 1
 	fi
 
-	if ! sudo pkg install mpfrc++-3.6.2; then
+	if ! sudo pkg install mpfrc++; then
 		echo "installation of mpfrc++ library failed!"
+		exit 1
+	fi
+
+	if ! sudo pkg install cmake; then
+		echo "installation of cmake failed!"
+		exit 1
+	fi
+
+	if ! sudo pkg install gmake; then
+		echo "installation of gmake failed!"
+		exit 1
+	fi
+
+	if ! sudo pkg install git; then
+		echo "installation of git failed!"
+		exit 1
+	fi
+
+	if ! sudo pkg install libsodium; then
+		echo "installation of sodium library failed!"
+		exit 1
+	fi
+
+	if ! sudo pkg install libserialport; then
+		echo "installation of serialport library failed!"
 		exit 1
 	fi
 
