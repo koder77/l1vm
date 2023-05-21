@@ -371,7 +371,7 @@ You have to edit the settings.h include file:
 #define CPU_SET_AFFINITY		0
 </pre>
 
-And change the linker flags on the VM zerobuild file: "vm/zerobuild-nojit.sh"
+And change the linker flags on the VM zerobuild file: "vm/zerobuild-nojit.txt"
 
 <pre>
 lflags = "-lm -lpthread -Wl,--export-dynamic"
