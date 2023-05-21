@@ -33,7 +33,7 @@ In pure console text I/O programs not linked with SDL library, the memory footpr
 About 10 MB RAM only as shown in the taskmanager by running a minimal test program!
 
 <b>
-The L1VM runs on Linux (x86_64, Arm), BSD OS: OpenBSD, DragonFly BSD, Windows 10, 11 via WSL and macOS.
+The L1VM runs on Linux (x86_64, Arm), BSD OS: OpenBSD, FreeBSD, DragonFly BSD, Windows 10, 11 via WSL and macOS.
 It has an preprocessor, assembler and compiler for my own language Brackets.
 On the Raspberry Pi the GPIO pins can be used with my GPIO module.
 Also the serial port can be used.
@@ -360,7 +360,7 @@ To compile for cli (bashs) text in/output only with no SDL gfx support:
 Set "#define SDL_module 0" in "include/global.h".
 Then run in "vm/" the bash script: "make-cli.sh".
 
-<h3>OpenBSD</h3>
+<h3>OpenBSD / FreeBSD</h3>
 You have to edit the settings.h include file:
 
 <pre>
@@ -395,8 +395,17 @@ This header was patched by me to make the MPFR module build.
 
 Now you can start the build with:
 
+OpenBSD: <br>
 <pre>
 sh ./install-zerobuild-openbsd.sh
+</pre>
+
+FreeBSD: <br>
+Install the "sudo" program as root: ```pkg install sudo```.
+Then as a normal user:
+
+<pre>
+sh ./install-zerobuild-freebsd.sh
 </pre>
 
 Edit your "~/.bashrc" config file, add the following lines:
