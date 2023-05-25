@@ -1,4 +1,4 @@
-// hello.l1com
+// Hello.l1com
 // Brackets - Hello world!
 //
 #include <intr.l1h>
@@ -7,7 +7,7 @@
 	(set int64 1 x 23)
 	(set int64 1 y 42)
 	(set const-int64 1 x_min 0)
-	(set const-int64 1 x_max 10000)
+	(set const-int64 1 x_max 2000)
 	(set double 1 xd 23.0)
 	(set double 1 yd 42.0)
 	(set const-double 1 x_mind 0.0)

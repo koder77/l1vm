@@ -2145,7 +2145,7 @@ S2 run (void *arg)
 
 			if (regi[arg2] < regi[arg3] || regi[arg2] > regi[arg4])
 			{
-				printf ("ERROR: int variable value in illegal range!\n");
+				printf ("ERROR: int variable value in illegal range!\nvar: %lli : min: %lli, max: %lli\n\n", regi[arg2], regi[arg3], regi[arg4]);
 				PRINT_EPOS();
 				free (jumpoffs);
 				loop_stop ();
@@ -2162,7 +2162,7 @@ S2 run (void *arg)
 
 			if (regd[arg2] < regd[arg3] || regd[arg2] > regd[arg4])
 			{
-				printf ("ERROR: double variable value in illegal range!\n");
+				printf ("ERROR: double variable value in illegal range!\nvar: %.10lf : min: %.10lf, max: %.10lf\n\n", regd[arg2], regd[arg3], regd[arg4]);
 				PRINT_EPOS();
 				free (jumpoffs);
 				loop_stop ();
