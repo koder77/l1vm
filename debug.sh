@@ -1,7 +1,7 @@
 #!/bin/bash
 # call this with the epos number as argument:
 # ./debug.sh epos
-# exp: ./debug 100
+# exp: ./debug.sh 100
 search=': '$1','
 #echo $search
 gline="$(grep "$search" out.l1dbg)"
