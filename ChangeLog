@@ -7,7 +7,9 @@ L1VM (2.4.1)
 	Added "install-zerobuild-openbsd.sh" experimental install script for OpenBSD.
 	Added VM range check now prints out variable value and min max values.
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 25 May 2023 18:30 +0200
+	Set STACKSIZE in include/global.h to 4096 bytes. Should be enough!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 28 May 2023 18:03 +0200
 
 L1VM (2.4.0)
 	NEW: l1pre now shows optional include path in info function.
