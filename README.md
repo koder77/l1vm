@@ -337,7 +337,7 @@ And cedi did write the .yaml GitHub Actions file.
 See main directory: "install-zerobuild-macos.sh".
 
 What works right now: l1asm, l1com, l1pre and the l1vm. <br>
-And the all the following standard modules: <br>
+And all the following standard modules: <br>
 endianess, fann, file, genann, math, mem, mmpfr (high precision math library), net, process, string, time, sdl-2.0 <br>
 librs232 (serialport by libserialport) <br><br>
 
