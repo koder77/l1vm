@@ -1,4 +1,4 @@
-L1VM README  2023-05-30
+L1VM README  2023-06-03
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -140,37 +140,6 @@ sdl 2.0 - graphics primitves module, like pixels, lines..., and GUI with buttons
 string - some string functions
 time - get time and date
 </pre>
-
-<h2>macOS</h2>
-The GitHub CI build now uses macOS 11 to build the VM.
-UPDATE now the modules are working!! I had to build them as "bundle"!
-NEW: macOS build scripts made together with sportfloh.
-And cedi did write the .yaml GitHub Actions file.
-See main directory: "install-zerobuild-macos.sh".
-
-What works right now: l1asm, l1com, l1pre and the l1vm. <br>
-And the all the following standard modules: <br>
-endianess, fann, file, genann, math, mem, mmpfr (high precision math library), net, process, string, time, sdl-2.0 <br>
-librs232 (serialport by libserialport) <br><br>
-
-sdl-2.0: prog/lines.l1com now works! I had to call a SDL event function in the delay loop! <br>
-(:sdl_get_mouse_state !) <br>
-This is needed to avoid errors on macOS. <br>
-
-I get this errror messsage: <br>
-running lines SDL demo... <bR>
-Assertion failed: (!needsMainQueue() || pthread_main_np() != 0), function invoke, file /System/Volumes/Data/SWE/macOS/BuildRoots/220e8a1b79/Library/Caches/com.apple.xbs/Sources/SkyLight/SkyLight-588.8/SkyLight/Services/PortStreams/CGSDatagramReadStream.cc, line 147. <br><br>
-
-So now the SDL module seems to run  to the end of the lines.l1com program. <br>
-If you are a macOS user then you could run the build script and tell me if the lines demo
-shows the window and the lines! <br>
-
-Before installation you have to add the following lines to your "~/.bashrc" bash config file: <br>
-
-```
-export PATH="$HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
-```
 
 <h2>Credits</h2>
 Thanks goes to: <br>
@@ -359,6 +328,29 @@ And run the "install-zerobuild.sh" script.
 To compile for cli (bashs) text in/output only with no SDL gfx support:
 Set "#define SDL_module 0" in "include/global.h".
 Then run in "vm/" the bash script: "make-cli.sh".
+
+<h2>macOS</h2>
+The GitHub CI build now uses macOS 11 to build the VM.
+UPDATE now the modules are working!! I had to build them as "bundle"!
+NEW: macOS build scripts made together with sportfloh.
+And cedi did write the .yaml GitHub Actions file.
+See main directory: "install-zerobuild-macos.sh".
+
+What works right now: l1asm, l1com, l1pre and the l1vm. <br>
+And the all the following standard modules: <br>
+endianess, fann, file, genann, math, mem, mmpfr (high precision math library), net, process, string, time, sdl-2.0 <br>
+librs232 (serialport by libserialport) <br><br>
+
+sdl-2.0: prog/lines.l1com now works! I had to call a SDL event function in the delay loop! <br>
+(:sdl_get_mouse_state !) <br>
+This is needed to avoid errors on macOS. <br>
+
+Before installation you have to add the following lines to your "~/.bashrc" bash config file: <br>
+
+```
+export PATH="$HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
+```
 
 <h3>OpenBSD / FreeBSD</h3>
 You have to edit the settings.h include file:
