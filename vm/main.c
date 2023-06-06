@@ -2820,8 +2820,6 @@ void show_info (void)
 	printf ("-p : set run priority, -20 = highest, 19 = lowest priority\n\n");
 	printf ("program arguments for the program must be set by '-args':\n");
 	printf ("l1vm programname -args foo bar\n");
-	printf ("%s", VM_VERSION_STR);
-	printf ("%s\n", COPYRIGHT_STR);
 }
 
 S2 run_main_loop_thread (void *arg)
