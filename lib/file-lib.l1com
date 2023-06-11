@@ -44,10 +44,10 @@
 	(((ret zero !=) f =) f if)
         print_s (error_init_files)
         print_n
+        (:file_free_mem call)
         free_mod (zero)
         exit (one)
 	(endif)
-	(reset-reg)
     // write data -----------------------------------------
     (mode_write filenameaddr :file_open call)
 	//
@@ -57,6 +57,7 @@
 	(((handle zero <) f =) f if)
         print_s (error_open_file)
         print_n
+        (:file_free_mem call)
         free_mod (zero)
         exit (one)
 	(endif)
@@ -65,12 +66,20 @@
     (handle hellostraddr :file_put_string call)
     (error stpopi)
     // (handle newline :file_putc call)
-    // (error stpopi)
     (handle :file_close call)
     // read data ------------------------------------------
-    (handle mode_read filenameaddr :file_open call)
-    (error stpopi)
-	(reset-reg)
+    (mode_read filenameaddr :file_open call)
+    //
+	// get file handle from file_open call
+	//
+    (handle stpopi)
+	(((handle zero <) f =) f if)
+        print_s (error_open_file)
+        print_n
+        (:file_free_mem call)
+        free_mod (zero)
+        exit (one)
+	(endif)
     (handle :file_get_int64 call)
     (error stpopi)
     (read stpopi)
@@ -79,7 +88,6 @@
     print_s (readstr)
     print_n
     (handle :file_close call)
-    
     // array testing code
     (array Parray pointer)
     print_s (array_write)
@@ -91,6 +99,7 @@
         print_n
         (handle :file_close call)
         // close file module
+        (handle :file_close call)
 	    (:file_free_mem call)
         free_mod (zero)
         exit (one)
@@ -113,6 +122,7 @@
         print_n
         (handle :file_close call)
         // close file module
+         (handle :file_close call)
 	    (:file_free_mem call)
         free_mod (zero)
         exit (one)
@@ -127,6 +137,7 @@
         print_n
         (handle :file_close call)
         // close file module
+        (handle :file_close call)
 	    (:file_free_mem call)
         free_mod (zero)
         exit (one)
@@ -139,6 +150,7 @@
         print_n
         (handle :file_close call)
         // close file module
+         (handle :file_close call)
 	    (:file_free_mem call)
         free_mod (zero)
         exit (one)
@@ -163,6 +175,7 @@
     print_s (array_ok)
     print_n
     // close file module
+    (handle :file_close call)
 	(:file_free_mem call)
     free_mod (zero)
     exit (zero)
