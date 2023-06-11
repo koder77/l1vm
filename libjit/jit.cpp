@@ -1860,7 +1860,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
 		// printf ("JIT_code_ind: %lli\n", JIT_code_ind);
 
-        if (JIT_code_ind < MAXJITCODE)
+        if (JIT_code_ind < MAXJITCODE - 1) // JIT_code_ind overflow fix!!
         {
             // create JIT code function
 
