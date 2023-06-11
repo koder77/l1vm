@@ -16,6 +16,7 @@
     // rename file
     (oldfilenameaddr newfilenameaddr :file_tools_rename !)
     (ret stpop)
+    free_mod (zero)
     exit (zero)
 (funcend)
 

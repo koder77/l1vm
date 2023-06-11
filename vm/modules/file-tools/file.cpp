@@ -134,6 +134,10 @@ extern "C" U1 *file_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         ret = 1; // error
     }
 
+    // clenanup
+    sourcestr.clear ();
+    deststr.clear ();
+
     // push return value
     sp = stpushi (ret, sp, sp_bottom);
     if (sp == NULL)
@@ -202,6 +206,9 @@ extern "C" U1 *directory_create (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         ret = 1; // error
     }
 
+    // clenaup
+    dirstr.clear ();
+
     // push return value
     sp = stpushi (ret, sp, sp_bottom);
     if (sp == NULL)
@@ -269,6 +276,9 @@ extern "C" U1 *remove_all (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         ret = 1; // error
     }
+
+   // clenaup
+   dirstr.clear ();
 
     // push return value
     sp = stpushi (ret, sp, sp_bottom);
@@ -365,7 +375,19 @@ extern "C" U1 *file_rename (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     sourcestr.assign ((const char *) source_fullnamestr);
     deststr.assign ((const char *) dest_fullnamestr);
 
-    rename (sourcestr, deststr);
+    if (exists (sourcestr) == true)
+    {
+        rename (sourcestr, deststr);
+        ret = 1;
+    }
+    else
+    {
+        ret = 0;
+    }
+
+    // cleanup
+    sourcestr.clear();
+    deststr.clear();
 
     // push return value
     sp = stpushi (ret, sp, sp_bottom);
@@ -425,6 +447,9 @@ extern "C" U1 *file_size_bytes (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     filenamestr.assign ((const char *) source_fullnamestr);
 
     file_size_bytes = file_size (filenamestr);
+
+    // cleanup
+    filenamestr.clear ();
 
     // push return value
     sp = stpushi (file_size_bytes, sp, sp_bottom);
@@ -496,6 +521,9 @@ extern "C" U1 *file_exists (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         ret = 0;
     }
 
+    // cleanup
+    filenamestr.clear ();
+
     // push return value
     sp = stpushi (ret, sp, sp_bottom);
     if (sp == NULL)
@@ -557,6 +585,9 @@ extern "C" U1 *directory_entries (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         dir_entries++;
     }
+
+    // clenaup
+    dirstr.clear ();
 
     // push return value file entries
     sp = stpushi (dir_entries, sp, sp_bottom);
@@ -726,6 +757,10 @@ extern "C" U1 *directory_files (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         }
         index_files++;
     }
+
+    // cleannup
+    dirstr.clear ();
+    direlement.clear ();
 
     // push return value file entries
     sp = stpushi (return_dir_entries, sp, sp_bottom);
