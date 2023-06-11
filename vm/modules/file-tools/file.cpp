@@ -134,7 +134,7 @@ extern "C" U1 *file_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         ret = 1; // error
     }
 
-    // clenanup
+    // cleanup
     sourcestr.clear ();
     deststr.clear ();
 
@@ -206,7 +206,7 @@ extern "C" U1 *directory_create (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         ret = 1; // error
     }
 
-    // clenaup
+    // cleanup
     dirstr.clear ();
 
     // push return value
@@ -277,7 +277,7 @@ extern "C" U1 *remove_all (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         ret = 1; // error
     }
 
-   // clenaup
+   // cleanup
    dirstr.clear ();
 
     // push return value
@@ -586,7 +586,7 @@ extern "C" U1 *directory_entries (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         dir_entries++;
     }
 
-    // clenaup
+    // cleanup
     dirstr.clear ();
 
     // push return value file entries
