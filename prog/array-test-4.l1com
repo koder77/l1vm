@@ -1,0 +1,40 @@
+// array-test4.l1com
+// array with values demo
+// shows how to set up an array by multiline assign
+// and how to access the elements in assembly code
+// shows how to use get_size () function to get the array size in bytes
+#include <intr.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 one 1)
+	(set int64 1 array_max 0)
+	(set int64 1 array_size 0)
+	(set int64 1 offset 8)
+	(set int64 1 index 0)
+	(set int64 1 i 0)
+	(set int64 1 f 0)
+	(set int64 1 v 0)
+	(set string s spacestr " ")
+	// set array data
+	(set int64 8 array 10 5 /)
+	@, 23, 42,
+	@, 64, 1234567890, 4, 3, ;
+    (set const-int64 1 Parray 0)
+    (array Parray pointer)
+    // get array size in bytes
+    get_size (Parray, array_size)
+	((array_size offset /) array_max =)
+    // print array
+    (do)
+	    ((i offset *) index =)
+	    (array [ index ] v =)
+
+	    print_i (i)
+	    print_s (spacestr)
+	    print_i (v)
+	    print_n
+
+		((i one +) i =)
+	(((i array_max <) f =) f while)
+	exit (zero)
+(funcend)
