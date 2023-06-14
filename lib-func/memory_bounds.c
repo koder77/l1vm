@@ -90,6 +90,34 @@ S2 memory_bounds (S8 start, S8 offset_access)
 	return (1);
 }
 
+// memory size get function
+S2 memory_size (S8 start)
+{
+	S8 i ALIGN;
+	S8 size ALIGN = 0;
+
+	if (start < 0)
+	{
+		// access ERROR!
+		printf ("memory_size: FATAL ERROR: address: %lli below zero!\n", start);
+		return (size);
+	}
+
+	for (i = 0; i <= data_info_ind; i++)
+	{
+		if ((start >= data_info[i].offset) && (start <= data_info[i].end))
+		{
+			// calculate variable size in bytes
+			size =  data_info[i].end - data_info[i].offset + 1;
+
+			printf ("pointer address: %lli, start: %lli, end: %lli, size : %lli\n", start, data_info[i].offset, data_info[i].end, size);
+
+			return (size); // all OK, variable pointer found!
+		}
+	}
+	return (size);  // return 0, as ERROR variable not found!
+}
+
 // memory bounds checking function
 S2 pointer_check (S8 start, S8 pointer_type)
 {

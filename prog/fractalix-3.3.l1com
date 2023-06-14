@@ -45,7 +45,6 @@
 (set double 1 oneq 1.75)
 (set string s mathdouble2intstr "double2int")
 (set int64 1 delaysmall 50)
-(set int64 1 four 4)
 (set int64 1 eight 8)
 (set int64 1 f 0)
 (set string 4096 picture_namestr "fractal.bmp")

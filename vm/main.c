@@ -2210,6 +2210,23 @@ S2 run (void *arg)
 		   eoffs = 5;
 		   break;
 
+		case 33:
+			// get variable pointer byte size
+			arg2 = code[ep + 2];    // pointer var
+			arg3 = code[ep + 3];	// pointer type var return
+
+			regi[arg3] = memory_size (regi[arg2]);
+			if (regi[arg3] == 0)
+			{
+				// ERROR: variable pointer not found in vars!
+				PRINT_EPOS();
+				free (jumpoffs);
+				loop_stop ();
+				pthread_exit ((void *) 1);
+			}
+			eoffs = 5;
+			break;
+
 		case 251:
 			// set overflow on double reg
 			arg2 = code[ep + 2];
