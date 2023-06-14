@@ -44,7 +44,7 @@
 #func check_pointer (PVAR, TYPE) :(30 PVAR TYPE 0 intr0)
 #func pointer_type (PVAR, TYPE) :(31 PVAR TYPE 0 intr0)
 #func stack_type (STTYPE) :(32 STTYPE 0 0 intr0)
-#func get_size (PVAR, SIZE) : (33 PVAR SIZE 0 0 intr0)
+#func get_size (PVAR, SIZE) :(33 PVAR SIZE 0 0 intr0)
 >>
 >>	intr1
 >>
