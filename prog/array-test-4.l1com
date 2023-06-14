@@ -1,7 +1,6 @@
 // array-test4.l1com
 // array with values demo
 // shows how to set up an array by multiline assign
-// and how to access the elements in assembly code
 // shows how to use get_size () function to get the array size in bytes
 #include <intr.l1h>
 (main func)
