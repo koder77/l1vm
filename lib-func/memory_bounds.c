@@ -110,7 +110,7 @@ S2 memory_size (S8 start)
 			// calculate variable size in bytes
 			size =  data_info[i].end - data_info[i].offset + 1;
 
-			printf ("pointer address: %lli, start: %lli, end: %lli, size : %lli\n", start, data_info[i].offset, data_info[i].end, size);
+			// printf ("pointer address: %lli, start: %lli, end: %lli, size : %lli\n", start, data_info[i].offset, data_info[i].end, size);
 
 			return (size); // all OK, variable pointer found!
 		}
