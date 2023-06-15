@@ -11,8 +11,9 @@ L1VM (2.4.1)
 
 	NEW: VM "get_size" interrupt 33 pointer variable to get the variable size in bytes.
 	NEW: added "print_lni", "print_lnd" and "print_lns" macros int "intr.l1h" to print variables with a new line at the end.
+	NEW: l1pre now has multiline @@ line split chars.
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 15 May 2023 15:46 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 15 May 2023 18:09 +0200
 
 L1VM (2.4.0)
 	NEW: l1pre now shows optional include path in info function.

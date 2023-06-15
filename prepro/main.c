@@ -39,6 +39,8 @@
 #define COMMENT_SB			">>"
 #define COMMENT_COMP_SB		"//"
 
+#define MULTILINE_SB        "@@"
+
 U1 include_path[MAXSTRLEN + 1];
 U1 include_path_two[MAXSTRLEN + 1];
 
@@ -774,7 +776,7 @@ S2 include_file (U1 *line_str)
 				// save line
 				if (fprintf (foutptr, "%s", buf) < 0)
 				{
-					printf ("ERROR: can't write to output file!\n");
+ 					printf ("ERROR: can't write to output file!\n");
 					fclose (fincludeptr);
 					return (1);
 				}
@@ -848,6 +850,10 @@ int main (int ac, char *av[])
 	U1 ok;
 	S4 pos;
     S4 slen;
+
+	// multiline
+	S4 multi_pos;
+	U1 multi_len;
 
 	if (ac < 4)
 	{
@@ -1021,13 +1027,73 @@ int main (int ac, char *av[])
 			}
 			else
 			{
-				// save line
-				if (fprintf (foutptr, "%s", buf) < 0)
+				// check for multiline macro
+				multi_pos = searchstr (buf, (U1 *) MULTILINE_SB, 0, 0, TRUE);
+				if (multi_pos >=  0)
 				{
-					printf ("ERROR: can't write to output file!\n");
-					fclose (finptr);
-					fclose (foutptr);
-					exit (1);
+					multi_len = strlen_safe ((const char *) buf, MAXLINELEN);
+					if (multi_len > 1)
+					{
+						for (pos = 0; pos < multi_len - 1; pos++)
+						{
+							if (buf[pos] == '@')
+							{
+								if (buf[pos + 1] == '@')
+								{
+									// found @@ in line, print new line char 10
+
+									if (fprintf (foutptr, "%c", 10) < 0)
+									{
+										printf ("ERROR: can't write to output file!\n");
+										fclose (finptr);
+										fclose (foutptr);
+										exit (1);
+									}
+									pos = pos + 1;
+								}
+								else
+							    {
+									if (fprintf (foutptr, "%c", buf[pos]) < 0)
+									{
+										printf ("ERROR: can't write to output file!\n");
+										fclose (finptr);
+										fclose (foutptr);
+										exit (1);
+									}
+								}
+							}
+							else
+							{
+								if (fprintf (foutptr, "%c", buf[pos]) < 0)
+								{
+									printf ("ERROR: can't write to output file!\n");
+									fclose (finptr);
+									fclose (foutptr);
+									exit (1);
+								}
+							}
+						}
+					    // print new line char 10 at end of line
+
+						if (fprintf (foutptr, "%c", 10) < 0)
+						{
+							printf ("ERROR: can't write to output file!\n");
+							fclose (finptr);
+							fclose (foutptr);
+							exit (1);
+						}
+					}
+				}
+				else
+				{
+					// save line
+					if (fprintf (foutptr, "%s", buf) < 0)
+					{
+						printf ("ERROR: can't write to output file!\n");
+						fclose (finptr);
+						fclose (foutptr);
+						exit (1);
+					}
 				}
 			}
 		}
