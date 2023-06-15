@@ -10,6 +10,10 @@
 #func print_i (X) :(4 X 0 0 intr0)
 #func print_d (X) :(5 X 0 0 intr0)
 #func print_s (X) :(6 X 0 0 intr0)
+>> print with newline at end
+#func print_lni (X) :(4 X 0 0 intr0) (7 0 0 0 intr0)
+#func print_lnd (X) :(5 X 0 0 intr0) (7 0 0 0 intr0)
+#func print_lns (X) :(6 X 0 0 intr0) (7 0 0 0 intr0)
 #define print_n (7 0 0 0 intr0)
 #func detime (DTIME) :(8 DTIME 0 0 intr0)
 #func input_i (X) :(9 X 0 0 intr0)
