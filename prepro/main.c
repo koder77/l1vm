@@ -1040,7 +1040,7 @@ int main (int ac, char *av[])
 							{
 								if (buf[pos + 1] == '#')
 								{
-									// found @@ in line, print new line char 10
+									// found @# in line, print new line char 10
 
 									if (fprintf (foutptr, "%c", 10) < 0)
 									{
