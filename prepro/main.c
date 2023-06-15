@@ -39,7 +39,7 @@
 #define COMMENT_SB			">>"
 #define COMMENT_COMP_SB		"//"
 
-#define MULTILINE_SB        "@@"
+#define MULTILINE_SB        "@#"
 
 U1 include_path[MAXSTRLEN + 1];
 U1 include_path_two[MAXSTRLEN + 1];
@@ -1038,7 +1038,7 @@ int main (int ac, char *av[])
 						{
 							if (buf[pos] == '@')
 							{
-								if (buf[pos + 1] == '@')
+								if (buf[pos + 1] == '#')
 								{
 									// found @@ in line, print new line char 10
 
