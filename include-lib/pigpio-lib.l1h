@@ -1,6 +1,6 @@
 // PIGPIO library - Raspberry Pi
 //
-//
+// NOTE: include "gpio-vars.l1h" at the top of your program!
 (gpio_init func)
     #var ~ @gpio
 	(set string s modulestr@gpio "libl1vmpigpio")
@@ -201,10 +201,6 @@
 	(set int64 1 ygyro_out@read_accel 0)
 	(set int64 1 zgyro_out@read_accel 0)
 	(set int64 1 fd@read_accel 0)
-    // set in main program:
-    // (set int64 1 xout@read_accel 0)
-	// (set int64 1 yout@read_accel 0)
-	// (set int64 1 zout@read_accel 0)
 	(fd@read_accel stpopi)
 	(fd@read_accel x@read_accel :read_word_2c call)
 	(xout@read_accel stpopi)

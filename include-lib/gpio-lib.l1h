@@ -1,6 +1,6 @@
 // GPIO library - Raspberry Pi
 //
-//
+// NOTE: include "gpio-vars.l1h" at the top of your program!
 (gpio_init func)
 	(set string s modulestr@gpio "libl1vmgpio")
 	(set string s setupstr@gpio "gpio_setup")
@@ -175,10 +175,6 @@
 	(set int64 1 xgyro@read_accel &43)
 	(set int64 1 ygyro@read_accel &45)
 	(set int64 1 zgyro@read_accel &47)
-    // set in main program:
-	// (set int64 1 xout@read_accel 0)
-	// (set int64 1 yout@read_accel 0)
-	// (set int64 1 zout@read_accel 0)
 	(set int64 1 xgyro_out@read_accel 0)
 	(set int64 1 ygyro_out@read_accel 0)
 	(set int64 1 zgyro_out@read_accel 0)
