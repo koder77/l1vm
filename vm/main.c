@@ -3175,7 +3175,7 @@ int main (int ac, char *av[])
 	threaddata[new_cpu].ep_startpos = 16;
 
 	// on macOS use wait loop thread, because the SDL module must be run from main thread!!!
-	#if __MACH__
+	#if __MACH__ || __HAIKU__
 	new_cpu++;
     if (pthread_create (&id, NULL, (void *) run_main_loop_thread, (void *) new_cpu) != 0)
 	{

@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpfr.h>
-#include <mpreal.h>
+#include "mpreal.h"
 
 
 #include "../../../include/stack.h"

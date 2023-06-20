@@ -9,7 +9,6 @@
     (set string s inputstr "input.txt")
     (set string s outputstr "output-encr.txt")
     (set string s outputdecrstr "output-decr.txt")
-    (set string 256 keystr "test12345")
     (set const-int64 1 Pin 0)
     (set const-int64 1 Pout 0)
     (set const-int64 1 Pkeystr 0)
