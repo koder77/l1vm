@@ -3,8 +3,20 @@
 
 echo "building compiler, assembler and VM..."
 
-export CC=clang
-export CCPP=clang++
+# use GCC, because clang can't build some modules!
+export CC=gcc
+export CCPP=g++
+
+pkgman install libsdl2_devel
+pkgman install sdl2_gfx_devel
+pkgman install sdl2_image_devel
+pkgman install sdl2_mixer_devel
+pkgman install sdl2_ttf_devel
+pkgman install mpfr_devel
+pkgman install CMake
+pkgman install make
+pkgman install Git
+pkgman install libsodium
 
 cd assemb
 if zerobuild force; then
