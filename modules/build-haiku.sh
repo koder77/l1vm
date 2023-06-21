@@ -23,7 +23,7 @@ zerobuild force
 cd ../process
 zerobuild force
 #cd ../rs232-libserialport
-äzerobuild force
+#zerobuild force
 cd ../sdl-2.0
 zerobuild force
 cd ../string
