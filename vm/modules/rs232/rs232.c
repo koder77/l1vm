@@ -31,7 +31,7 @@
 /* For more info and how to use this library, visit: http://www.teuniz.net/RS-232/ */
 
 
-/* DragonFly BSD added by Stefan Pietzonke 2020 */
+/* DragonFly BSD, Haiku, GetComportNumber() added by Stefan Pietzonke 2023 */
 
 
 #include "rs232.h"
@@ -64,6 +64,22 @@ static char *comports[RS232_PORTNR]={"/dev/ttyS0","/dev/ttyS1","/dev/ttyS2","/de
              "/dev/ports/pc_serial0", "/dev/ports/pc_serial1", "/dev/ports/pc_serial2", "/dev/ports/pc_serial3", "/dev/ports/pc_serial4",  /* Haiku */
              "/dev/ports/usb0", "/dev/ports/usb1", "/dev/ports/usb2", "/dev/ports/usb3", "/dev/ports/usb4"
 };
+
+int GetComportNumber (const char *portstr)
+{
+  int i;
+
+  for (i = 0; i < RS232_PORTNR; i++)
+  {
+    if (strcmp (portstr, comports[i]) == 0)
+    {
+      return (i);
+    }
+  }
+  // serial port name not found
+  printf ("GetComportNumber: ERROR can't find port: %s\n", portstr);
+  return (-1);
+}
 
 int RS232_OpenComport(int comport_number, int baudrate, const char *mode)
 {

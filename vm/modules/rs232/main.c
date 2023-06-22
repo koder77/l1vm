@@ -22,6 +22,31 @@
 
 #include "rs232.h"
 
+U1 *rs232_GetPortNumber  (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S8 portnumber ALIGN;
+    S8 portnameaddr ALIGN;
+
+    sp = stpopi ((U1 *) &portnameaddr, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   // error
+ 	   printf ("ERROR: rs232_GetPortNumber: ERROR: stack corrupt!\n");
+ 	   return (NULL);
+    }
+
+    portnumber = GetComportNumber ((const char *) &data[portnameaddr]);
+
+    sp = stpushi (portnumber, sp, sp_bottom);
+    if (sp == NULL)
+    {
+      // error
+      printf ("rs232_GetPortNumber: ERROR: stack corrupt!\n");
+      return (NULL);
+    }
+
+    return (sp);
+}
 
 U1 *rs232_OpenComport (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {

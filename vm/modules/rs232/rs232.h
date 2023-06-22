@@ -60,6 +60,7 @@ extern "C" {
 
 #endif
 
+int GetComportNumber (const char *portstr);
 int RS232_OpenComport(int, int, const char *);
 int RS232_PollComport(int, unsigned char *, int);
 int RS232_SendByte(int, unsigned char);
