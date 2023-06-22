@@ -13,7 +13,18 @@ L1VM (2.4.1)
 	NEW: added "print_lni", "print_lnd" and "print_lns" macros int "intr.l1h" to print variables with a new line at the end.
 	NEW: l1pre now has multiline @@ line split chars.
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 15 May 2023 18:09 +0200
+	NEW: Haiku port: RS232 module now uses Haiku RS232 port names too!
+
+	I did also build the FANN library and copied it into the Haiku libs folder.
+	You have to download the FANN library source code.
+	Then you need to configure it:
+
+	$ cmake . -DCMAKE_INSTALL_PREFIX=/boot/home/config/non-packaged
+	$ make install
+
+	Now you can build the L1VM FANN module.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 22 May 2023 20:19 +0200
 
 L1VM (2.4.0)
 	NEW: l1pre now shows optional include path in info function.

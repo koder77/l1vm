@@ -39,10 +39,9 @@
 size_t strlen_safe (const char * str, int maxlen);
 
 
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__)   /* Linux & FreeBSD & DragonFly BSD*/
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__) || defined(__HAIKU__)  /* Linux & FreeBSD & DragonFly BSD*/
 
-// #define RS232_PORTNR  38
-#define RS232_PORTNR 49
+#define RS232_PORTNR 59
 
 static int Cport[RS232_PORTNR],
     error;
@@ -61,7 +60,9 @@ static char *comports[RS232_PORTNR]={"/dev/ttyS0","/dev/ttyS1","/dev/ttyS2","/de
 					   "/dev/tty",												/* DragonFly BSD */
 					   "/dev/ttyv0", "/dev/ttyv1", "/dev/ttyv2", "/dev/ttyv3",
 					   "/dev/ttyv4", "/dev/ttyv5", "/dev/ttyv6", "/dev/ttyv7",
-					   "/dev/ttyv8", "/dev/ttyv9"
+					   "/dev/ttyv8", "/dev/ttyv9",
+             "/dev/ports/pc_serial0", "/dev/ports/pc_serial1", "/dev/ports/pc_serial2", "/dev/ports/pc_serial3", "/dev/ports/pc_serial4",  /* Haiku */
+             "/dev/ports/usb0", "/dev/ports/usb1", "/dev/ports/usb2", "/dev/ports/usb3", "/dev/ports/usb4"
 };
 
 int RS232_OpenComport(int comport_number, int baudrate, const char *mode)
@@ -113,9 +114,9 @@ int RS232_OpenComport(int comport_number, int baudrate, const char *mode)
                    break;
     case  230400 : baudr = B230400;
                    break;
+#if ! (defined(__DragonFly__) || defined(__HAIKU__))
     case  460800 : baudr = B460800;
                    break;
-#if ! defined(__DragonFly__)
     case  500000 : baudr = B500000;
                    break;
     case  576000 : baudr = B576000;
