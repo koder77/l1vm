@@ -245,7 +245,6 @@ U1 *call_module_func (S8 ind, S8 func_ind, U1 *sp, U1 *sp_top, U1 *sp_bottom, U1
 void clean_code (void)
 {
 	// erase all code and free memory
-
 	S8 i ALIGN;
 
 	for (i = 0; i < code_size; i++)
