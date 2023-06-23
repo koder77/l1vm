@@ -242,6 +242,33 @@ U1 *call_module_func (S8 ind, S8 func_ind, U1 *sp, U1 *sp_top, U1 *sp_bottom, U1
     return (*modules[ind].func[func_ind])(sp, sp_top, sp_bottom, data);
 }
 
+void clean_code (void)
+{
+	// erase all code and free memory
+
+	S8 i ALIGN;
+
+	for (i = 0; i < code_size; i++)
+	{
+		code[i] = 0;
+	}
+
+	free (code);
+}
+
+void clean_data (void)
+{
+	// erase all data and free memory
+	S8 i ALIGN;
+
+	for (i = 0; i < data_size; i++)
+	{
+		data[i] = 0;
+	}
+
+	free (data);
+}
+
 void cleanup (void)
 {
 	#if JIT_COMPILER
@@ -250,8 +277,8 @@ void cleanup (void)
 	#endif
 
     free_modules ();
-	if (data) free (data);
-    if (code) free (code);
+	if (data) clean_data ();
+    if (code) clean_code ();
 	if (threaddata) free (threaddata);
 }
 

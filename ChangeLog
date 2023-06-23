@@ -23,8 +23,9 @@ L1VM (2.4.1)
 	$ make install
 
 	Now you can build the L1VM FANN module.
+	NEW: now code and data are erased before freeing the RAM.
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 22 May 2023 20:19 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 24 May 2023 00:13 +0200
 
 L1VM (2.4.0)
 	NEW: l1pre now shows optional include path in info function.
