@@ -260,7 +260,7 @@ void clean_data (void)
 	// erase all data and free memory
 	S8 i ALIGN;
 
-	for (i = 0; i < data_size; i++)
+	for (i = 0; i < data_mem_size; i++)
 	{
 		data[i] = 0;
 	}
