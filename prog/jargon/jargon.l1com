@@ -274,7 +274,7 @@ print_n
 			print_n
 			(:read_text_end jmp)
 		(endif)
-		(:loop jmp)
+		(:read_loop jmp)
 	(else)
 		print_s (readlinestr)
 		print_n
