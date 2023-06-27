@@ -39,7 +39,7 @@
 #pragma message ("OS type: FreeBSD")
 #endif
 #if __HAIKU__
-#pragma message "(OS type: Haiku")
+#pragma message ("OS type: Haiku")
 #endif
 
 // set __linux__ on Cygwin, macOS, OpenBSD and FreeBSD
