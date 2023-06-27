@@ -4,8 +4,8 @@
 echo "building compiler, assembler and VM..."
 
 # use GCC, because clang can't build some modules!
-export CC=gcc
-export CCPP=g++
+export CC=clang
+export CCPP=clang++
 
 pkgman install libsdl2_devel
 pkgman install sdl2_gfx_devel
@@ -35,7 +35,7 @@ else
 fi
 
 cd ../vm
-if zerobuild zerobuild-nojit.txt force; then
+if zerobuild zerobuild-nojit-haiku.txt force; then
 	echo "l1vm JIT build ok!"
 else
 	echo "l1vm JIT build error!"
