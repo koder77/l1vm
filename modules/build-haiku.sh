@@ -12,12 +12,6 @@ cd ../math
 zerobuild force
 cd ../math-vect
 zerobuild force
-cd ../mem
-zerobuild force
-cd ../mem-obj
-zerobuild force
-cd ../mpfr-c++
-zerobuild force
 cd ../net
 zerobuild force
 cd ../process
@@ -29,6 +23,15 @@ zerobuild force
 cd ../string
 zerobuild force
 cd ../time
+zerobuild force
+
+export CC=gcc
+export CCPP=g+++
+cd ../mem
+zerobuild force
+cd ../mem-obj
+zerobuild force
+cd ../mpfr-c++
 zerobuild force
 
 cd ../../../modules
