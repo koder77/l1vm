@@ -1,4 +1,4 @@
-L1VM README  2023-06-03
+L1VM README  2023-06-29
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -33,7 +33,7 @@ In pure console text I/O programs not linked with SDL library, the memory footpr
 About 10 MB RAM only as shown in the taskmanager by running a minimal test program!
 
 <b>
-The L1VM runs on Linux (x86_64, Arm), BSD OS: OpenBSD, FreeBSD, DragonFly BSD, Windows 10, 11 via WSL and macOS.
+The L1VM runs on Linux (x86_64, Arm), BSD OS: OpenBSD, FreeBSD, DragonFly BSD, Windows 10, 11 via WSL, Haiku and macOS.
 It has an preprocessor, assembler and compiler for my own language Brackets.
 On the Raspberry Pi the GPIO pins can be used with my GPIO module.
 Also the serial port can be used.
@@ -351,6 +351,12 @@ Before installation you have to add the following lines to your "~/.bashrc" bash
 export PATH="$HOME/bin:$PATH"
 export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
 ```
+
+<h3>Haiku OS</h3>
+I did write an installer script for the current beta version of Haiku.
+Programs which use multithreading can't run! This results in a "segmentation fault" in the OS.
+Maybe this gets fixed by newer Haiku beta releases.
+
 
 <h3>OpenBSD / FreeBSD</h3>
 You have to edit the settings.h include file:
