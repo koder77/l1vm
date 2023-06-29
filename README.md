@@ -329,7 +329,7 @@ To compile for cli (bashs) text in/output only with no SDL gfx support:
 Set "#define SDL_module 0" in "include/global.h".
 Then run in "vm/" the bash script: "make-cli.sh".
 
-<h2>macOS</h2>
+<h3>macOS</h3>
 The GitHub CI build now uses macOS 11 to build the VM.
 UPDATE now the modules are working!! I had to build them as "bundle"!
 NEW: macOS build scripts made together with sportfloh.
