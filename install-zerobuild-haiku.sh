@@ -18,6 +18,21 @@ pkgman install make
 pkgman install Git
 pkgman install libsodium
 
+
+# check if zerobuild installed into ~/bin
+FILE=/boot/home/config/non-packaged/bin/zerobuild
+if test -f "$FILE"; then
+    echo "$FILE exists!"
+else
+	echo "zerobuild not installed into $FILE!"
+	echo "cloning and building it now..."
+	git clone https://github.com/koder77/zerobuild.git
+	cd zerobuild
+	./make.sh
+	cp zerobuild /boot/home/config/non-packaged/bin
+	cd ..
+fi
+
 cd assemb
 if zerobuild force; then
 	echo "l1asm build ok!"
@@ -36,9 +51,9 @@ fi
 
 cd ../vm
 if zerobuild zerobuild-nojit-haiku.txt force; then
-	echo "l1vm JIT build ok!"
+	echo "l1vm build ok!"
 else
-	echo "l1vm JIT build error!"
+	echo "l1vm build error!"
 	exit 1
 fi
 cp l1vm-nojit l1vm
