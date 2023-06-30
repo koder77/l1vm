@@ -19,7 +19,7 @@ pkgman install Git
 pkgman install libsodium
 
 
-# check if zerobuild installed into ~/bin
+# check if zerobuild installed into /boot/home/config/non-packaged/bin/
 FILE=/boot/home/config/non-packaged/bin/zerobuild
 if test -f "$FILE"; then
     echo "$FILE exists!"
