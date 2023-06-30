@@ -49,6 +49,14 @@ else
 	exit 1
 fi
 
+cd ../prepro
+if zerobuild force; then
+	echo "l1pre build ok!"
+else
+	echo "l1pre build error!"
+	exit 1
+fi
+
 cd ../vm
 if zerobuild zerobuild-nojit-haiku.txt force; then
 	echo "l1vm build ok!"
