@@ -68,6 +68,7 @@ cp l1vm-nojit l1vm
 cd ..
 cp assemb/l1asm /boot/home/config/non-packaged/bin
 cp comp/l1com /boot/home/config/non-packaged/bin
+cp prepro/l1pre /boot/home/config/non-packaged/bin
 cp vm/l1v* /boot/home/config/non-packaged/bin
 echo "VM binaries installed into /boot/home/config/non-packaged/bin"
 
