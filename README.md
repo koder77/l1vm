@@ -357,6 +357,16 @@ I did write an installer script for the current beta version of Haiku.
 Programs which use multithreading can't run! This results in a "segmentation fault" in the OS.
 Maybe this gets fixed by newer Haiku beta releases.
 
+You need to edit the ```include/settings.h``` file:
+
+```
+#define DIVISIONCHECK 0
+
+#define CPU_SET_AFFINITY 0
+```
+
+Now you are ready to run the install script!
+
 
 <h3>OpenBSD / FreeBSD</h3>
 You have to edit the settings.h include file:
