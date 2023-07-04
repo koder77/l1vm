@@ -17,7 +17,7 @@ pkgman install mpfr_devel
 pkgman install cmake
 pkgman install make
 pkgman install git
-pkgman install libsodium
+pkgman install libsodium_devel
 
 
 # check if zerobuild installed into /boot/home/config/non-packaged/bin/
