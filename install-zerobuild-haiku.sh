@@ -7,13 +7,14 @@ echo "building compiler, assembler and VM..."
 export CC=clang
 export CCPP=clang++
 
+pkgman install llvm12_clang
 pkgman install libsdl2_devel
 pkgman install sdl2_gfx_devel
 pkgman install sdl2_image_devel
 pkgman install sdl2_mixer_devel
 pkgman install sdl2_ttf_devel
 pkgman install mpfr_devel
-pkgman install CMake
+pkgman install cmake
 pkgman install make
 pkgman install Git
 pkgman install libsodium

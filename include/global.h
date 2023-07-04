@@ -78,6 +78,10 @@
 #include <assert.h>
 #include <limits.h>
 
+// unicode support
+#include <wchar.h>
+#include <locale.h>
+
 // include user settings file
 #include "settings.h"
 
