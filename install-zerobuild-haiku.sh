@@ -16,7 +16,7 @@ pkgman install sdl2_ttf_devel
 pkgman install mpfr_devel
 pkgman install cmake
 pkgman install make
-pkgman install Git
+pkgman install git
 pkgman install libsodium
 
 
