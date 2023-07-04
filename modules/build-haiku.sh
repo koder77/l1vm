@@ -26,7 +26,7 @@ cd ../time
 zerobuild force
 
 export CC=gcc
-export CCPP=g+++
+export CCPP=g++
 cd ../mem
 zerobuild force
 cd ../mem-obj
