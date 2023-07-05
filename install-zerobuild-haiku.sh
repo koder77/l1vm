@@ -4,8 +4,8 @@
 echo "building compiler, assembler and VM..."
 
 # use GCC, because clang can't build some modules!
-export CC=clang
-export CCPP=clang++
+export CC=gcc
+export CCPP=g++
 
 pkgman install llvm12_clang
 pkgman install libsdl2_devel
@@ -57,6 +57,9 @@ else
 	echo "l1pre build error!"
 	exit 1
 fi
+
+export CC=clang
+export CCPP=clang++
 
 cd ../vm
 if zerobuild zerobuild-nojit-haiku.txt force; then

@@ -1,4 +1,7 @@
 #!/bin/bash
+export CC=clang
+export CCPP=clang++
+
 set -e
 cd ../vm/modules/endianess
 zerobuild force
