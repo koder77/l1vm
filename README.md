@@ -1,4 +1,4 @@
-L1VM README  2023-06-30
+L1VM README  2023-07-06
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -364,6 +364,8 @@ You need to edit the ```include/settings.h``` file:
 
 #define CPU_SET_AFFINITY 0
 ```
+
+<b>Update:</b/> I fixed the installer scripts. Now the modules can be loady the VM too!
 
 Now you are ready to run the install script!
 
