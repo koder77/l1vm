@@ -104,13 +104,13 @@ fi
 
 echo "libraries installed! building compiler, assembler and VM..."
 
-export CC=clang
-export CCPP=clang++
+export CC=clang-15
+export CCPP=clang++-15
 
 # check if clang C compiler is installed
-if ! dpkg -s clang &> /dev/null; then
+if ! dpkg -s clang-15 &> /dev/null; then
 	echo "try to install clang..."
-	if ! sudo apt-get install clang; then
+	if ! sudo apt-get install clang-15; then
 		echo "installation failed!"
 		exit 1
 	fi

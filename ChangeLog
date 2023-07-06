@@ -25,7 +25,9 @@ L1VM (2.4.1)
 	Now you can build the L1VM FANN module.
 	NEW: now code and data are erased before freeing the RAM.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 24 May 2023 00:13 +0200
+	Debian install scripts now use clang-15 package for install and build.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 6 Jul 2023 22:03 +0200
 
 L1VM (2.4.0)
 	NEW: l1pre now shows optional include path in info function.
