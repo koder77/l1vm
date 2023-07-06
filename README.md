@@ -365,7 +365,7 @@ You need to edit the ```include/settings.h``` file:
 #define CPU_SET_AFFINITY 0
 ```
 
-<b>Update:</b/> I fixed the installer scripts. Now the modules can be loady the VM too!
+<b>Update:</b/> I fixed the installer scripts. Now the modules can be load by the VM too!
 
 Now you are ready to run the install script!
 
