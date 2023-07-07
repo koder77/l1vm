@@ -1,3 +1,9 @@
+L1VM (2.4.2)
+	NEW: This version has the working Haiku installer scripts.
+	So Haiku OS is now official supported.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 7 Jul 2023 17:09 +0200
+
 L1VM (2.4.1)
 	BUHFIX: The compiler now checks if a variable was already defined at "set".
 	So this will result in an error!
