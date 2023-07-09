@@ -65,22 +65,6 @@ static char *comports[RS232_PORTNR]={"/dev/ttyS0","/dev/ttyS1","/dev/ttyS2","/de
              "/dev/ports/usb0", "/dev/ports/usb1", "/dev/ports/usb2", "/dev/ports/usb3", "/dev/ports/usb4"
 };
 
-int GetComportNumber (const char *portstr)
-{
-  int i;
-
-  for (i = 0; i < RS232_PORTNR; i++)
-  {
-    if (strcmp (portstr, comports[i]) == 0)
-    {
-      return (i);
-    }
-  }
-  // serial port name not found
-  printf ("GetComportNumber: ERROR can't find port: %s\n", portstr);
-  return (-1);
-}
-
 int RS232_OpenComport(int comport_number, int baudrate, const char *mode)
 {
   int baudr,

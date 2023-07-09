@@ -35,7 +35,7 @@ U1 *rs232_GetPortNumber  (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   return (NULL);
     }
 
-    portnumber = GetComportNumber ((const char *) &data[portnameaddr]);
+    portnumber =  RS232_GetPortnr ((const char *) &data[portnameaddr]);
 
     sp = stpushi (portnumber, sp, sp_bottom);
     if (sp == NULL)
