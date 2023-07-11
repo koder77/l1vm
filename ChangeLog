@@ -1,8 +1,11 @@
+L1VM (2.4.3)
+	VM: RS232 module code cleanup.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 11 Jul 2023 17:38 +0200
+
 L1VM (2.4.2)
 	NEW: This version has the working Haiku installer scripts.
 	So Haiku OS is now official supported.
-
-	VM: RS232 module code cleanup.
 
 -- Stefan Pietzonke <jay-t@gmx.net> Sun 9 Jul 2023 22:04 +0200
 
