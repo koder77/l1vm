@@ -321,7 +321,7 @@ export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
 Now you can run the installation script:
 
 ```
-./install-zerobuild-msys2.sh
+$ ./install-zerobuild-msys2.sh
 ```
 
 
