@@ -48,10 +48,10 @@ cd ../string
 zerobuild zerobuild-win.txt force script
 chmod +x make-script.sh
 ./make-script.sh
-#cd ../time
-#zerobuild zerobuild-win.txt force script
-#chmod +x make-script.sh
-#./make-script.sh
+cd ../time
+zerobuild zerobuild-win.txt force script
+chmod +x make-script.sh
+./make-script.sh
 cd ../mem
 zerobuild zerobuild-win.txt force script
 chmod +x make-script.sh
