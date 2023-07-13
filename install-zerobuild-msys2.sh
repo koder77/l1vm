@@ -17,8 +17,8 @@ pacman -S mingw-w64-x86_64-libserialport --noconfirm
 
 echo "building compiler, assembler and VM..."
 
-export CC=clang
-export CCPP=clang++
+export CC=/mingw64/bin/clang
+export CCPP=/mingw64/bin/clang++
 
 # check if ~/bin exists
 DIR="~/bin"
@@ -71,9 +71,9 @@ fi
 
 cd ../vm
 if zerobuild zerobuild-nojit.txt force; then
-	echo "l1vm JIT build ok!"
+	echo "l1vm build ok!"
 else
-	echo "l1vm JIT build error!"
+	echo "l1vm build error!"
 	exit 1
 fi
 cp l1vm l1vm-nojit

@@ -57,7 +57,7 @@ S8 max_cpu ALIGN = MAXCPUCORES;    // number of threads that can be runned
 
 U1 silent_run = 0;				// switch startup and status messages of: "-q" flag on shell
 
-typedef U1* (*dll_func)(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+typedef S8 (*dll_func)(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 
 struct module
 {
@@ -79,7 +79,7 @@ struct module
 struct module modules[MODULES];
 
 // for memory_bounds () initialization in modules
-typedef S2 (*dll_memory_init_func)(struct data_info *data_infoptr, S8 data_info_ind);
+typedef S8 (*dll_memory_init_func)(struct data_info *data_infoptr, S8 data_info_ind);
 
 struct module_init
 {
@@ -207,7 +207,7 @@ S2 load_module (U1 *name, S8 ind)
 #endif
 
 #if _WIN32
-    module_init.func = GetProcAddress (modules[ind].lptr, "init_memory_bounds";
+    module_init.func = GetProcAddress (modules[ind].lptr, "init_memory_bounds");
     if (! module_init.func)
     {
         printf ("error set module %s, function: '%s'!\n", modules[ind].name, "init_memory_bounds");
@@ -286,7 +286,7 @@ U1 *call_module_func (S8 ind, S8 func_ind, U1 *sp, U1 *sp_top, U1 *sp_bottom, U1
 		return (NULL);
 	}
 
-    return (*modules[ind].func[func_ind])(sp, sp_top, sp_bottom, data);
+    return ((U1 *)(*modules[ind].func[func_ind])(sp, sp_top, sp_bottom, data));
 }
 
 void clean_code (void)
