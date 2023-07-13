@@ -40,6 +40,10 @@ extern S2 memory_bounds (S8 start, S8 offset_access);
 #define SOCKSERVER          0
 #define SOCKCLIENT          1
 
+#if _WIN32
+#define SHUT_RDWR 2
+#define MSG_NOSIGNAL MSG_WAITALL
+#endif
 
 typedef int NINT;
 
@@ -314,7 +318,7 @@ U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     /* avoiding socket already in use error */
 
-    error = (setsockopt (server, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof (NINT)));
+    error = (setsockopt (server, SOL_SOCKET, SO_REUSEADDR, (const char *) &yes, sizeof (NINT)));
     if (error == -1)
     {
 		sp = stpushi (-1, sp, sp_bottom);
@@ -1250,7 +1254,7 @@ U1 *get_hostbyaddr (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     addr = &data[addr_addr];
 
     hostaddr.s_addr = inet_addr ((const char *) addr);
-    hp = (struct hostent *) gethostbyaddr ((U1 *) &hostaddr, sizeof (struct in_addr), AF_INET);
+    hp = (struct hostent *) gethostbyaddr ((const char *) &hostaddr, sizeof (struct in_addr), AF_INET);
     if (hp == NULL)
     {
         sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
@@ -1448,7 +1452,7 @@ U1 exe_sread (S4 slist_ind, S4 len)
 
     while (todo > 0)
     {
-        ret = recv (sockh, &(buf[buf_ind]), todo, MSG_NOSIGNAL);
+        ret = recv (sockh, (char *) &(buf[buf_ind]), todo, MSG_NOSIGNAL);
         if (ret == -1)
         {
             return (errno);
@@ -1498,7 +1502,7 @@ U1 exe_swrite (S4 slist_ind, S4 len)
 
     while (todo > 0)
     {
-        ret = send (sockh, &(buf[buf_ind]), todo, MSG_NOSIGNAL);
+        ret = send (sockh, (const char *) &(buf[buf_ind]), todo, MSG_NOSIGNAL);
         if (ret == -1)
         {
             return (errno);
@@ -2722,7 +2726,7 @@ S2 socket_data_read_string (S2 handle, U1 *string, S8 string_len)
 
 	while (! end)
  	{
-		ret = recv (sockh, &ch, sizeof (U1), MSG_NOSIGNAL);
+		ret = recv (sockh, (char *) &ch, sizeof (U1), MSG_NOSIGNAL);
     	if (ret == -1)
     	{
         	error = TRUE;
