@@ -1127,7 +1127,6 @@ U1 *stringmem_search_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
-#if __linux__
 U1 *string_regex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// regular expression match search
@@ -1181,13 +1180,6 @@ U1 *string_regex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	return (sp);
 }
-#else
-U1 *string_regex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
-{
-	printf ("string_regex not supported on this OS!\n");
-	return (sp);
-}
-#endif
 
 // normal string search functions =============================================
 S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end)
