@@ -20,10 +20,12 @@
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
+#if __linux__
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#endif
 
 // protos
 

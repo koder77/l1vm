@@ -24,10 +24,11 @@ cd ../mpfr-c++
 zerobuild zerobuild-win.txt force script
 chmod +x make-script.sh
 ./make-script.sh
-cd ../net
-zerobuild zerobuild-win.txt force script
-chmod +x make-script.sh
-./make-script.sh
+# net module currently porting to windows...
+#cd ../net
+#zerobuild zerobuild-win.txt force script
+#chmod +x make-script.sh
+#./make-script.sh
 cd ../process
 zerobuild zerobuild-win.txt force script
 chmod +x make-script.sh
@@ -48,10 +49,10 @@ cd ../string
 zerobuild zerobuild-win.txt force script
 chmod +x make-script.sh
 ./make-script.sh
-cd ../time
-zerobuild zerobuild-win.txt force script
-chmod +x make-script.sh
-./make-script.sh
+#cd ../time
+#zerobuild zerobuild-win.txt force script
+#chmod +x make-script.sh
+#./make-script.sh
 cd ../mem
 zerobuild zerobuild-win.txt force script
 chmod +x make-script.sh

@@ -17,8 +17,8 @@ pacman -S mingw-w64-x86_64-libserialport --noconfirm
 
 echo "building compiler, assembler and VM..."
 
-export CC=/mingw64/bin/clang
-export CCPP=/mingw64/bin/clang++
+export CC=clang
+export CCPP=clang++
 
 # check if ~/bin exists
 DIR="~/bin"
@@ -87,8 +87,8 @@ echo "VM binaries installed into ~/bin"
 cd modules
 echo "installing modules..."
 chmod +x *.sh
-./build.sh
-if ./install.sh; then
+./build-win.sh
+if ./install-win.sh; then
 	echo "modules build ok!"
 else
 	echo "modules build FAILED!"

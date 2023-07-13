@@ -64,6 +64,8 @@
 #include <dlfcn.h>
 #endif
 #if _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <Windows.h>
 #endif
 #include <inttypes.h>

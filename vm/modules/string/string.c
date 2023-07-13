@@ -63,6 +63,7 @@ size_t strlen_safe (const char * str, int maxlen)
 }
 
 // get/set env functions -------------------------------
+#if __linux__
 U1 *get_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 strdestaddr ALIGN;
@@ -142,6 +143,20 @@ U1 *set_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	return (sp);
 }
+#else
+// not on system
+U1 *get_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	printf ("get_env not supported on this OS!\n");
+	return (sp);
+}
+
+U1 *set_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	printf ("set_env not supported on this OS!\n");
+	return (sp);
+}
+#endif
 
 
 // string functions ------------------------------------
@@ -1112,6 +1127,7 @@ U1 *stringmem_search_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+#if __linux__
 U1 *string_regex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// regular expression match search
@@ -1165,6 +1181,13 @@ U1 *string_regex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	return (sp);
 }
+#else
+U1 *string_regex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	printf ("string_regex not supported on this OS!\n");
+	return (sp);
+}
+#endif
 
 // normal string search functions =============================================
 S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end)
