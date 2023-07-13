@@ -184,14 +184,14 @@ S2 load_object (U1 *name)
 
 	strcpy ((char *) full_path, "");	// init full_path
 
-	fptr = fopen ((const char *) objname, "r");
+	fptr = fopen ((const char *) objname, "rb");
 	if (fptr == NULL)
 	{
 		// check if .bz2 compressed object archive?
 		strcpy ((char *) objname, (const char *) name);
 		strcat ((char *) objname, ".l1obj.bz2");
 
-		fptr = fopen ((const char *) objname, "r");
+		fptr = fopen ((const char *) objname, "rb");
 		if (fptr == NULL)
 		{
 			// check if program is in SANDBOX_ROOT directory
@@ -208,13 +208,13 @@ S2 load_object (U1 *name)
 			strcat ((char *) full_path, (const char *) name);
 			strcat ((char *) full_path, ".l1obj");
 
-			fptr = fopen ((const char *) full_path, "r");
+			fptr = fopen ((const char *) full_path, "rb");
 			if (fptr == NULL)
 			{
 				// check if .bz2 compressed object archive?
 				strcat ((char *) full_path, ".bz2");
 
-				fptr = fopen ((const char *) full_path, "r");
+				fptr = fopen ((const char *) full_path, "rb");
 				if (fptr == NULL)
 				{
 					strcpy ((char *) objname, (const char *) name);
@@ -282,7 +282,7 @@ S2 load_object (U1 *name)
 				strcat ((char *) objname, ".l1obj");
 			}
 
-			fptr = fopen ((const char *) objname, "r");
+			fptr = fopen ((const char *) objname, "rb");
 			if (fptr == NULL)
 			{
 				printf ("ERROR: can't open object file '%s'!\n", objname);

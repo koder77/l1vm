@@ -1421,7 +1421,7 @@ S2 dump_object (U1 *name)
 	strcpy ((char *) objname, (const char *) name);
 	strcat ((char *) objname, ".l1obj");
 
-	fptr = fopen ((const char *) objname, "w");
+	fptr = fopen ((const char *) objname, "wb");
 	if (fptr == NULL)
 	{
 		printf ("ERROR: can't open object file '%s'!\n", objname);
