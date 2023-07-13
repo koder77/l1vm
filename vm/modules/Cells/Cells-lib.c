@@ -25,11 +25,18 @@
 
 #include <cells.h>
 
+
+
 U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
 
 // global struct
 static struct cell *cells = NULL;
 static S8 ALIGN cells_number = 0;
+
+S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+{
+	return (0);
+}
 
 U1 *cells_alloc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {

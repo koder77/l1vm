@@ -22,6 +22,11 @@
 
 #include "rs232.h"
 
+S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+{
+	return (0);
+}
+
 U1 *rs232_GetPortNumber  (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     S8 portnumber ALIGN;

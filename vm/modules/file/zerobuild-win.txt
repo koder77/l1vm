@@ -1,7 +1,7 @@
 # zerobuild makefile
 
 [executable, shared, name = libl1vmfile.so]
-sources =file.c, file-sandbox.c, ../../../lib-func/string.c
+sources =file.c, file-sandbox.c, ../../../lib-func/string.c, ../lib/memory_bounds.c
 
 includes = ../include, /usr/local/include
 

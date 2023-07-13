@@ -1,7 +1,7 @@
 # zerobuild makefile
 
 [executable, shared, name = libl1vmmem.so]
-sources = mem.cpp
+sources = mem.cpp, ../lib/memory_bounds.c
 
 includes = ../include, /usr/local/include
 

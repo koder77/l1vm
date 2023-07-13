@@ -79,6 +79,17 @@ static S8 memmax ALIGN = 0;
 // protos
 extern "C" S2 memory_bounds (S8 start, S8 offset_access);
 
+extern struct data_info data_info[MAXDATAINFO];
+extern S8 data_info_ind;
+
+S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+{
+	memcpy (&data_info, &data_info_orig, sizeof (data_info_orig));
+	data_info_ind = data_info_ind_orig;
+
+	return (0);
+}
+
 
 size_t strlen_safe (const char * str, int maxlen)
 {

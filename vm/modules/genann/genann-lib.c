@@ -34,8 +34,13 @@ struct genanns
 static struct genanns *genanns = NULL;
 static S8 genannmax ALIGN = 0;
 
-
 U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
+
+S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+{
+	return (0);
+}
+
 
 U1 *genann_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {

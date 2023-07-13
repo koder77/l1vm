@@ -53,6 +53,11 @@ extern SDL_Renderer *temp_renderer;
 // sandbox file access
 U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
 
+S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+{
+	return (0);
+}
+
 // sdl gfx functions --------------------------------------
 U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {

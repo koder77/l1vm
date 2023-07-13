@@ -59,6 +59,16 @@ size_t strlen_safe (const char * str, int maxlen);
 
 U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
 
+extern struct data_info data_info[MAXDATAINFO];
+extern S8 data_info_ind;
+
+S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+{
+	memcpy (&data_info, &data_info_orig, sizeof (data_info_orig));
+	data_info_ind = data_info_ind_orig;
+
+	return (0);
+}
 
 /* helper function (taken from bgnet_socket_programming) */
 char *get_ip_str (const struct sockaddr *sa, char *s, size_t maxlen)

@@ -78,6 +78,25 @@ struct module
 
 struct module modules[MODULES];
 
+// for memory_bounds () initialization in modules
+typedef S2 (*dll_memory_init_func)(struct data_info *data_infoptr, S8 data_info_ind);
+
+struct module_init
+{
+#if __linux__
+    void *lptr;
+#endif
+
+#if _WIN32
+    HINSTANCE lptr;
+#endif
+
+    dll_memory_init_func func;
+};
+
+struct module_init module_init;
+
+
 struct data_info data_info[MAXDATAINFO];
 S8 data_info_ind ALIGN = -1;
 
@@ -169,7 +188,35 @@ S2 load_module (U1 *name, S8 ind)
 	{
 		printf ("module: %lli %s loaded\n", ind, libname);
   	}
-    return (0);
+
+
+	// call memory_bounds init function in module
+	// load init_memory_bounds function
+#if __linux__
+	dlerror ();
+
+    // load the symbols (handle to function)
+    module_init.func = dlsym (modules[ind].lptr, "init_memory_bounds");
+    const char* dlsym_error = dlerror ();
+    if (dlsym_error)
+	{
+        printf ("error set module %s, function: '%s'!\n", modules[ind].name, "init_memory_bounds");
+		printf ("%s\n", dlsym_error);
+        return (1);
+    }
+#endif
+
+#if _WIN32
+    module_init.func = GetProcAddress (modules[ind].lptr, "init_memory_bounds";
+    if (! module_init.func)
+    {
+        printf ("error set module %s, function: '%s'!\n", modules[ind].name, "init_memory_bounds");
+        return (1);
+    }
+#endif
+
+	// call init_memory_bounds function
+	return (*module_init.func)(data_info, data_info_ind);
 }
 
 void free_module (S8 ind)

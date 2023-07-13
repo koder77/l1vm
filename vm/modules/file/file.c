@@ -34,6 +34,16 @@ extern S2 memory_bounds (S8 start, S8 offset_access);
 #define FILEWRITEREAD   4
 #define FILEAPPEND		5
 
+extern struct data_info data_info[MAXDATAINFO];
+extern S8 data_info_ind;
+
+S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+{
+	memcpy (&data_info, &data_info_orig, sizeof (data_info_orig));
+	data_info_ind = data_info_ind_orig;
+
+	return (0);
+}
 
 U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
 

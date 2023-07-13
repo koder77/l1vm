@@ -31,6 +31,12 @@
 // helper functions endianess
 // htonq, ntohq, htond, ntohd
 
+S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+{
+	return (0);
+}
+
+
 #if ! MACHINE_BIG_ENDIAN
 S8 htonq (S8 num)
 {

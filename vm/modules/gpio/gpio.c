@@ -25,6 +25,11 @@
 #include <wiringPi.h>
 #include <wiringPiI2C.h>
 
+S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+{
+	return (0);
+}
+
 
 // GPIO ------------------------------------------------------
 

@@ -29,6 +29,11 @@
 #include "mt64.h"
 // S2 memory_bounds (S8 start, S8 offset_access);
 
+2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+{
+	return (0);
+}
+
 
 // math functions --------------------------------------
 

@@ -1,3 +1,8 @@
+L1VM (2.5.0)
+	VM: modules total cleanup, global variables for memory_bounds now copied to module on module load.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 13 Jul 2023 17:05 +0200
+
 L1VM (2.4.3)
 	VM: RS232 module code cleanup.
 

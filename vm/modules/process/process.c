@@ -26,6 +26,11 @@
 S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
 size_t strlen_safe (const char * str, int maxlen);
 
+S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+{
+	return (0);
+}
+
 #if PROCESS_MODULE
 
 U1 *run_shell (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)

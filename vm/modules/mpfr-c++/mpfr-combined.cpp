@@ -1,5 +1,10 @@
 #include "mpfr-head.cpp"
 
+S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+{
+	return (0);
+}
+
 extern "C" U1 *mp_sqr_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 S8 float_index_res ALIGN;

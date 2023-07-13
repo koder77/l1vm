@@ -38,6 +38,17 @@ extern "C" S2 memory_bounds (S8 start, S8 offset_access);
 extern "C" U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
 extern "C" size_t strlen_safe (const char * str, int maxlen);
 
+extern struct data_info data_info[MAXDATAINFO];
+extern S8 data_info_ind;
+
+S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+{
+	memcpy (&data_info, &data_info_orig, sizeof (data_info_orig));
+	data_info_ind = data_info_ind_orig;
+
+	return (0);
+}
+
 extern "C" U1 *file_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     S8 sourceaddr ALIGN;
