@@ -301,6 +301,30 @@ I use VcXsrv as the X11 server. Start VcXsrv first then the WSL shell!
 
 Note: the install scripts automatically install clang C compiler and my zerobuild build tool!
 
+<h3>Windows MSYS2</h3>
+You need to edit: "include/settings.h":
+
+```
+#define DIVISIONCHECK  0
+
+#define CPU_SET_AFFINITY   0
+
+```
+
+And you need to put this at your "/etc/bash.bashrc":
+
+```
+export PATH="$PATH:/mingw64/bin:$HOME/bin"
+export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
+```
+
+Now you can run the installation script:
+
+```
+./install-zerobuild-msys2.sh
+```
+
+
 <h3>Windows Cygwin</h3>
 You have to install the clang compiler, SDL2 libraries and a window manager like Xfce for graphics output.
 This can be done with the installer on: https://www.cygwin.com/
