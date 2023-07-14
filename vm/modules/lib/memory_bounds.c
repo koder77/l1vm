@@ -20,8 +20,8 @@
 #include "../../../include/global.h"
 
 
-//struct data_info data_info[MAXDATAINFO];
-//S8 data_info_ind;
+extern struct data_info data_info[MAXDATAINFO];
+extern S8 data_info_ind;
 
 
 // memory bounds checking function
