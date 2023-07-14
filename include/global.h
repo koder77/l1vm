@@ -142,7 +142,7 @@
 // info strings:
 #define COPYRIGHT_STR " (C) 2017-2023 Stefan Pietzonke - software research"
 #define VM_VERSION_STR		"2.5.0"		// version number
-#define MOTTO_STR "deep blue"
+#define MOTTO_STR "supernova"
 
 // no user defined definitions below this section! ============================
 
