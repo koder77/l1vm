@@ -34,6 +34,11 @@
 
 #define LOOKUP_SIZE 4096
 
+S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+{
+	return (0);
+}
+
 double genann_act_sigmoid(double a) {
     if (a < -45.0) return 0;
     if (a > 45.0) return 1;

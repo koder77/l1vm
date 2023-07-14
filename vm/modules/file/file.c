@@ -34,8 +34,8 @@ extern S2 memory_bounds (S8 start, S8 offset_access);
 #define FILEWRITEREAD   4
 #define FILEAPPEND		5
 
-extern struct data_info data_info[MAXDATAINFO];
-extern S8 data_info_ind;
+struct data_info data_info[MAXDATAINFO];
+S8 data_info_ind;
 
 S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
 {
