@@ -147,7 +147,7 @@ else
 	echo "cloning and building it now..."
 	git clone https://github.com/koder77/zerobuild.git
 	cd zerobuild
-	./make.sh
+	./make-clang-15.sh
 	cp zerobuild ~/bin/
 	cd ..
 fi

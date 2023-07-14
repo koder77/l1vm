@@ -23,21 +23,11 @@
  *
  */
 
+#include "../../../include/global.h"
+
 #include "genann.h"
 
-#include <assert.h>
-#include <errno.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #define LOOKUP_SIZE 4096
-
-S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
-{
-	return (0);
-}
 
 double genann_act_sigmoid(double a) {
     if (a < -45.0) return 0;
