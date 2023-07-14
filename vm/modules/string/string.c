@@ -63,7 +63,6 @@ size_t strlen_safe (const char * str, int maxlen)
 }
 
 // get/set env functions -------------------------------
-#if __linux__
 U1 *get_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 strdestaddr ALIGN;
@@ -115,6 +114,10 @@ U1 *set_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 envnameaddr ALIGN;
 	S8 ret ALIGN;
 
+	U1 win_env[MAXSTRLEN];
+	S8 env_len ALIGN;
+	S8 value_len ALIGN;
+
 	sp = stpopi ((U1 *) &strvalueaddr, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -132,7 +135,27 @@ U1 *set_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	// set env overwrite old env value
+	#if __linux__
 	ret = setenv ((const char *) &data[envnameaddr], (const char *) &data[strvalueaddr], 1);
+	#endif
+
+	#if _WIN32
+	env_len = strlen_safe ((const char *) &data[envnameaddr], MAXSTRLEN);
+	value_len = strlen_safe ((const char *) &data[strvalueaddr], MAXSTRLEN);
+
+	if (env_len + value_len + 1 >= MAXSTRLEN)
+	{
+		// ERROR string overflow
+		printf ("set_env: ERROR: env string overflow!\n");
+		return (NULL);
+	}
+
+	strcpy ((char *) win_env, (const char *) &data[envnameaddr]);
+	strcat ((char *) win_env, "=");
+	strcat ((char *) win_env, (const cahr *) &data[strvalueaddr]);
+
+	ret = _putenv ((const char *) win_env);
+	#endif
 
 	sp = stpushi (ret, sp, sp_bottom);
 	if (sp == NULL)
@@ -143,20 +166,6 @@ U1 *set_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	return (sp);
 }
-#else
-// not on system
-U1 *get_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
-{
-	printf ("get_env not supported on this OS!\n");
-	return (sp);
-}
-
-U1 *set_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
-{
-	printf ("set_env not supported on this OS!\n");
-	return (sp);
-}
-#endif
 
 
 // string functions ------------------------------------
