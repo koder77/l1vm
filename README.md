@@ -318,6 +318,12 @@ export PATH="$PATH:/mingw64/bin:$HOME/bin"
 export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
 ```
 
+Create the "~/bin" directory:
+
+```
+$ mkdir bin
+```
+
 Now you can run the installation script:
 
 ```
