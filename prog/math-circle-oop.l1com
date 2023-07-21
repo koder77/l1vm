@@ -6,11 +6,11 @@
 #include <math-const.l1h>
 #include <misc-macros.l1h>
 (main func)
-	(set int64 1 zero 0)
-	(set int64 1 one 1)
-	(set int64 1 two 2)
-	(set int64 1 three 3)
-    (set int64 1 four 4)
+	(set const-int64 1 zero 0)
+	(set const-int64 1 one 1)
+	(set const-int64 1 two 2)
+	(set const-int64 1 three 3)
+    (set const-int64 1 four 4)
 	(set string s menu_diamstr "1: calculate diameter of circle")
 	(set string s menu_circstr "2: calculate circumference of circle")
     (set string s menu_areastr "3: calculate area of circle")
