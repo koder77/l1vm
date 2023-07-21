@@ -164,7 +164,7 @@ S2 load_module (U1 *name, S8 ind)
 
 #if __linux__
     modules[ind].lptr = dlopen ((const char *) libname, RTLD_LAZY);
-    if (!modules[ind].lptr)
+    if (! modules[ind].lptr)
 	{
         printf ("error load module %s!\n", (const char *) libname);
         return (1);

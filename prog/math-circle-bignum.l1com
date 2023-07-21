@@ -5,10 +5,10 @@
 //
 #include <intr.l1h>
 (main func)
-	(set int64 1 zero 0)
-	(set int64 1 one 1)
-	(set int64 1 two 2)
-	(set int64 1 three 3)
+	(set const-int64 1 zero 0)
+	(set const-int64 1 one 1)
+	(set const-int64 1 two 2)
+	(set const-int64 1 three 3)
 	(set int64 1 diam_mp 0)
 	(set int64 1 circ_mp 1)
 	(set int64 1 pi_mp 2)
