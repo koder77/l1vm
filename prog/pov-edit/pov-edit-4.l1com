@@ -1009,11 +1009,14 @@
 	(textx~ texty~ textx2~ texty2~ back_r back_g back_b alpha :sdl_rectangle_fill call)
 (funcend)
 // include one of them: ========================================================
+// libserialport
 #include <rs232-libserialport.l1h>
+#include <rs232-lib-libserialport.l1h>
+// rs232 library ===============================================================
 // #include <rs232-normal.l1h>
+// #include <rs232-lib.l1h>
 // =============================================================================
 #include <sdl-lib.l1h>
 #include <string.l1h>
 #include <file-lib.l1h>
 #include <math-lib.l1h>
-#include <rs232-lib-libserialport.l1h>
