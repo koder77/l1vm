@@ -30,7 +30,7 @@
     (set int64 1 f~ 0)
     // include memory object variable types
     #include <mem-obj-lib-types.l1h>
-    (zero one :mem_obj_init call)
+    (zero one :mem_obj_init !)
 	(ret~ stpopi)
     (((ret~ zero !=) f~ =) f~ if)
 		// ERROR can't allocate memory
@@ -39,7 +39,7 @@
 		exit (one)
 	(endif)
     // allocate memory for the 6 variables
-	(variables~ memsize~ :alloc_obj_memobj call)
+	(variables~ memsize~ :alloc_obj_memobj !)
 	(memaddr~ stpopi)
 	(loadreg)
 	(((memaddr~ zero <) f~ =) f~ if)
