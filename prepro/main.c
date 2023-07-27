@@ -128,7 +128,7 @@ S2 set_define (U1 *line_str)
 S2 set_varname (U1 *line_str)
 {
 	U1 ok = 1;
-	S4 i, pos, slen, j, k;
+	S4 i, pos, slen, j, k, s;
 
 	if (defines_ind < DEFINE_MAX - 1)
 	{
@@ -159,10 +159,29 @@ S2 set_varname (U1 *line_str)
 		}
 		else
 		{
+			defines[defines_ind].def[j] = '\0';
 			ok = 0;
 		}
 		i++;
 	}
+
+//	printf ("DEBUG: defines_ind: %i\n\n", defines_ind);
+
+	// check if macro already defined
+	for (s = 0; s < defines_ind; s++)
+	{
+	//	printf ("DEBUG: %i, set_varname: define old: '%s', define new: '%s'\n", s, defines[s].def, defines[defines_ind].def);
+
+		pos = searchstr (defines[s].def, defines[defines_ind].def, 0, 0, TRUE);
+		if (pos >= 0)
+		{
+			// found old define of var, erase it!
+			strcpy ((char *) defines[s].def, "");
+			strcpy ((char *) defines[s].out, "");
+		}
+	}
+
+	// printf ("DEBUG: end of search loop\n");
 
 	j = 0;
 	for (k = i; k < slen; k++)
@@ -175,7 +194,7 @@ S2 set_varname (U1 *line_str)
 	}
 	defines[defines_ind].out[j] = '\0';
 
-	// printf ("set_varname: def: '%s', out: '%s'\n", defines[defines_ind].def, defines[defines_ind].out);
+	// printf ("DEBUG: set_varname: def: '%s', out: '%s'\n", defines[defines_ind].def, defines[defines_ind].out);
 	return (0);
 }
 

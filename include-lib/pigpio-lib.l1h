@@ -2,8 +2,8 @@
 //
 // NOTE: include "gpio-vars.l1h" at the top of your program!
 (gpio_init func)
-    #var ~ @gpio
-	(set string s modulestr@gpio "libl1vmpigpio")
+    #var ~ gpio
+	(set string s modulestr~ "libl1vmpigpio")
 	(set string s setupstr~ "gpio_setup")
     (set string s gpio_quitstr~ "gpio_quit")
     (set string s gpio_pinstr~ "gpio_st_mode")
