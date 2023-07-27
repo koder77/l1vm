@@ -1,4 +1,4 @@
-*
+/*
  * This file pigpio.c is part of L1vm.
  *
  * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2017
@@ -110,7 +110,7 @@ U1 *gpio_get_mode (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  		return (NULL);
  	}
 
-    mode = gpioGetMode (pin, mode);
+    mode = gpioGetMode (pin);
 
     sp = stpushi (mode, sp, sp_bottom);
     if (sp == NULL)
