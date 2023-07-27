@@ -71,7 +71,7 @@ U1 *gpio_quit (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 // GPIO basic ---------------------------------------------
 
-U1 *gpio_set_mode (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+U1 *gpio_st_mode (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     S8 mode ALIGN;
     S8 pin ALIGN;
