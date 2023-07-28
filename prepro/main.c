@@ -41,6 +41,8 @@
 
 #define MULTILINE_SB        "@#"
 
+#define CLEAR_DEFINES_SB    "#clear"    // clear all defines, reset defines index to: -1
+
 U1 include_path[MAXSTRLEN + 1];
 U1 include_path_two[MAXSTRLEN + 1];
 
@@ -70,6 +72,23 @@ FILE *finptr;
 FILE *foutptr;
 
 S8 linenum ALIGN = 1;
+
+
+void clear_defines (void)
+{
+	// clear ALL defines
+	S4 i;
+
+	for (i = 0; i <= defines_ind; i++)
+	{
+		strcpy ((char *) defines[i].def, "");
+		strcpy ((char *) defines[i].out, "");
+		defines[i].args_num = -1;
+	}
+
+	// reset defines index
+	defines_ind = -1;
+}
 
 S2 set_define (U1 *line_str)
 {
@@ -141,6 +160,8 @@ S2 set_varname (U1 *line_str)
 		return (1);
 	}
 
+	// printf ("DEBUG: set_varname: index: %i, '%s'\n", defines_ind, line_str);
+
 	slen = strlen_safe ((const char*) line_str, MAXLINELEN);
 	pos = searchstr (line_str, (U1 *) FUNC_VAR_NAMES_SB, 0, 0, TRUE);
 
@@ -159,6 +180,7 @@ S2 set_varname (U1 *line_str)
 		}
 		else
 		{
+			defines[defines_ind].def[j] = '\0';
 			ok = 0;
 		}
 		i++;
@@ -956,6 +978,13 @@ int main (int ac, char *av[])
 
 				// check if macro is set
 				replace_macro (buf);
+			}
+
+			pos = searchstr (buf, (U1 *) CLEAR_DEFINES_SB, 0, 0, TRUE);
+            if (pos >= 0)
+			{
+				clear_defines ();
+				continue;
 			}
 
 			pos = searchstr (buf, (U1 *) DEFINE_SB, 0, 0, TRUE);
