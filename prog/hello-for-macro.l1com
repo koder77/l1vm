@@ -14,12 +14,12 @@
 	// print string
 	// for
 	(zero loop =)
-    for-loop (loop, maxloop, <)
+    for (loop, maxloop, <)
 		(6 hello 0 0 intr0)
 		// print newline
 		(7 0 0 0 intr0)
 		(zero loop_foo =)
-        for-loop (loop_foo, maxloop, <)
+        for (loop_foo, maxloop, <)
 			(6 foo 0 0 intr0)
 			// print newline
 			(7 0 0 0 intr0)
