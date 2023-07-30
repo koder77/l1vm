@@ -513,8 +513,8 @@ S2 replace_macro (U1 *line_str)
 								}
 								else
 								{
-									printf ("ERROR: replace_macro: too much arguments!\n");
-									printf ("> '%s'\n", line_str);
+									// printf ("ERROR: replace_macro: too much arguments!\n");
+									// printf ("> '%s'\n", line_str);
 									return (1);
 								}
 
