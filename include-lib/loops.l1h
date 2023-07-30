@@ -2,5 +2,6 @@
 >> loops definitions
 >> needs f to be defined by set
 >>
+#func for-each-in (PVAR, X, SIZE) :(33 PVAR SIZE 0 intr0)@#((SIZE zero +) SIZE =)@#(for-loop)@#(((X SIZE <) f =) f for)
 #func for (X, M, OP) :(for-loop)@#(((X M OP) f =) f for)
 #func while (X, M, OP) :(((X M OP) f =) f while)
