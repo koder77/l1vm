@@ -37,8 +37,6 @@
     for-each-in (Parray, realind, asize)
 	    (array [ realind ] a =)
 	    print_lni (a)
-		((ind one +) ind =)
-		{realind = (ind * int64_type)}
-	(next)
+	next-in (ind, realind, int64_type)
 	exit (zero)
 (funcend)
