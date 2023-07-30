@@ -1,0 +1,6 @@
+>> loops.l1h
+>> loops definitions
+>> needs f~ to be defined by set
+>>
+#func for-loop (X, M, OP) :(for-loop)@#(((X M OP) f~ =) f~ for)
+#func while-loop (X, M, OP) :(((X M OP) f~ =) f~ while)

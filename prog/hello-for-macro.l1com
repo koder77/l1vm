@@ -1,0 +1,31 @@
+// hello-for-macro - Hello world! for loop
+//
+#include <loops.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 one 1)
+	(set int64 1 loop 0)
+	(set int64 1 loop_foo 0)
+	(set int64 1 maxloop 10)
+	(set int64 1 f~ 0)
+	// set string length automatic, by setting "s"
+	(set string s hello "Hello world!")
+	(set string s foo "foobar!")
+	// print string
+	// for
+	(zero loop =)
+    for-loop (loop, maxloop, <)
+		(6 hello 0 0 intr0)
+		// print newline
+		(7 0 0 0 intr0)
+		(zero loop_foo =)
+        for-loop (loop_foo, maxloop, <)
+			(6 foo 0 0 intr0)
+			// print newline
+			(7 0 0 0 intr0)
+			((loop_foo one +) loop_foo =)
+		(next)
+		((loop one +) loop =)
+	(next)
+	(255 zero 0 0 intr0)
+(funcend)
