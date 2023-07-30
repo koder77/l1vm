@@ -1,5 +1,6 @@
 // hello-for-macro - Hello world! for loop
 //
+#include <intr.l1h>
 #include <loops.l1h>
 (main func)
 	(set int64 1 zero 0)
@@ -15,17 +16,13 @@
 	// for
 	(zero loop =)
     for (loop, maxloop, <)
-		(6 hello 0 0 intr0)
-		// print newline
-		(7 0 0 0 intr0)
+		print_lns (hello)
 		(zero loop_foo =)
         for (loop_foo, maxloop, <)
-			(6 foo 0 0 intr0)
-			// print newline
-			(7 0 0 0 intr0)
+			print_lns (foo)
 			((loop_foo one +) loop_foo =)
 		(next)
 		((loop one +) loop =)
 	(next)
-	(255 zero 0 0 intr0)
+	exit (zero)
 (funcend)
