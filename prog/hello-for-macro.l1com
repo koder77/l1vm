@@ -38,5 +38,14 @@
 	    (array [ realind ] a =)
 	    print_lni (a)
 	next-in (ind, realind, int64_type)
+
+	print_n
+	(zero ind =)
+	(zero realind =)
+	thr-for-each-in (Parray, realind, asize, f)
+	    (array [ realind ] a =)
+	    print_lni (a)
+	next-in (ind, realind, int64_type)
+
 	exit (zero)
 (funcend)
