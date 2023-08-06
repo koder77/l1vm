@@ -1,17 +1,37 @@
 // hello-math-3.l1com - Brackets - Hello world
 //
 //
+#include <intr.l1h>
+#include <misc-macros.l1h>
 (main func)
     (set int64 1 zero 0)
+    (set int64 1 one 1)
     (set double 1 xd 23.0)
 	(set double 1 yd 42.0)
 	(set double 1 zd 0.0)
 	(set double 1 zerod 0.0)
 	(set int64 1 f 0)
+    (set int64 1 i 42)
 	(set string s messagestr "xd < yd and xd > 0")
+    (set string s ivalstr "i: ")
+    (set string s istr "i++: ")
+    (set string s dstr "i--: ")
     ((((xd yd <d)(xd zerod >d) &&) f =) f if)
-		(6 messagestr 0 0  intr0)
-		(7 0 0 0 intr0)
+        print_lns (messagestr)
 	(endif)
-	(255 zero 0 0 intr0)
+    // inc and dec demo
+    print_s (ivalstr)
+    print_i (i)
+    print_n
+    // decrease i
+    dec (i)
+    print_s (dstr)
+    print_i (i)
+    print_n
+    // increase i
+    inc (i)
+    print_s (istr)
+    print_i (i)
+    print_n
+	exit (zero)
 (funcend)

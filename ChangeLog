@@ -4,7 +4,10 @@ L1VM (2.5.0)
 
 	l1pre update: replace_macro error messages fixes.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 30 Jul 2023 18:26 +0200
+	Added inc () and dec () macros in misc-macros to increase/decrease an integer by one.
+	See hello-math-3.l1com.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 06 Aug 2023 20:14 +0200
 
 L1VM (2.4.3)
 	VM: RS232 module code cleanup.

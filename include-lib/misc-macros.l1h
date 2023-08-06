@@ -7,3 +7,6 @@
 #func pull_int32_var (VAR) :((VAR zero_int32 +) VAR =)
 #func pull_int64_var (VAR) :((VAR zero +) VAR =)
 #func pull_double_var (VAR) :((VAR zero_double +) VAR =)
+>> inc and dec integers
+#func inc (VAR) :((VAR one +) VAR =)
+#func dec (VAR) :((VAR one -) VAR =)
