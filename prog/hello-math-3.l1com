@@ -1,9 +1,12 @@
 // hello-math-3.l1com - Brackets - Hello world
 //
+// shows how to use #replace and #noreplace
+// to switch macro replace on and off
 //
 #include <intr.l1h>
 #include <misc-macros.l1h>
 (main func)
+    #noreplace
     (set int64 1 zero 0)
     (set int64 1 one 1)
     (set double 1 xd 23.0)
@@ -14,8 +17,9 @@
     (set int64 1 i 42)
 	(set string s messagestr "xd < yd and xd > 0")
     (set string s ivalstr "i: ")
-    (set string s istr "i++: ")
-    (set string s dstr "i--: ")
+    (set string s istr "inc: ")
+    (set string s dstr "dec: ")
+    #replace
     ((((xd yd <d)(xd zerod >d) &&) f =) f if)
         print_lns (messagestr)
 	(endif)

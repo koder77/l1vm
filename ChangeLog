@@ -7,7 +7,10 @@ L1VM (2.5.0)
 	Added inc () and dec () macros in misc-macros to increase/decrease an integer by one.
 	See hello-math-3.l1com.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 06 Aug 2023 20:14 +0200
+	NEW: prepro: #replace and #noreplace block markers. To switch preprocessor replace of macros on and off.
+	See prog/hello-math-3.l1com example.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 07 Aug 2023 21:47 +0200
 
 L1VM (2.4.3)
 	VM: RS232 module code cleanup.

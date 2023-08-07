@@ -1,7 +1,7 @@
 /*
  * This file main.c is part of L1vm.
  *
- * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2020
+ * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2023
  *
  * L1vm is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,9 @@
 
 #define CLEAR_DEFINES_SB    "#clear"    // clear all defines, reset defines index to: -1
 
+#define NO_REPLACE_SB      "#noreplace"
+#define REPLACE_SB         "#replace"
+
 U1 include_path[MAXSTRLEN + 1];
 U1 include_path_two[MAXSTRLEN + 1];
 
@@ -61,6 +64,9 @@ S8 defines_ind ALIGN = -1;
 // for @func name tackon
 U1 var_tackon_set = 0;
 S8 replace_varname_index = 0;
+
+// for replace on/off
+U1 replace = 1;
 
 // protos
 char *fgets_uni (char *str, int len, FILE *fptr);
@@ -691,6 +697,20 @@ S2 include_file (U1 *line_str)
 			convtabs (buf);
 			slen = strlen_safe ((const char *) buf, MAXLINELEN);
 
+			pos = searchstr (buf, (U1 *) REPLACE_SB, 0, 0, TRUE);
+			if (pos >= 0)
+			{
+				replace = 1;
+				continue;
+			}
+
+			pos = searchstr (buf, (U1 *) NO_REPLACE_SB, 0, 0, TRUE);
+			if (pos >= 0)
+			{
+				replace = 0;
+				continue;
+			}
+
 			pos = searchstr (buf, (U1 *) COMMENT_SB, 0, 0, TRUE);
 			if (pos >= 0)
 			{
@@ -717,13 +737,16 @@ S2 include_file (U1 *line_str)
 			{
 				// no definition start found, check replace
 				// check if define is set
-				replace_define (buf);
+                if (replace == 1)
+				{
+					replace_define (buf);
 
-				// check function name to variable name tackon
-				replace_varname (buf);
+					// check function name to variable name tackon
+					replace_varname (buf);
 
-				// check if macro is set
-				replace_macro (buf);
+					// check if macro is set
+					replace_macro (buf);
+				}
 			}
 
 			pos = searchstr (buf, (U1 *) DEFINE_SB, 0, 0, TRUE);
@@ -942,6 +965,20 @@ int main (int ac, char *av[])
 			convtabs (buf);
 			slen = strlen_safe ((const char *) buf, MAXLINELEN);
 
+			pos = searchstr (buf, (U1 *) REPLACE_SB, 0, 0, TRUE);
+			if (pos >= 0)
+			{
+				replace = 1;
+				continue;
+			}
+
+			pos = searchstr (buf, (U1 *) NO_REPLACE_SB, 0, 0, TRUE);
+			if (pos >= 0)
+			{
+				replace = 0;
+				continue;
+			}
+
 			pos = searchstr (buf, (U1 *) COMMENT_SB, 0, 0, TRUE);
 			if (pos >= 0)
 			{
@@ -971,13 +1008,16 @@ int main (int ac, char *av[])
 			{
 				// no definition start found, check replace
 				// check if define is set
-				replace_define (buf);
+				if (replace == 1)
+				{
+					replace_define (buf);
 
-				// check function name to variable name tackon
-				replace_varname (buf);
+					// check function name to variable name tackon
+					replace_varname (buf);
 
-				// check if macro is set
-				replace_macro (buf);
+					// check if macro is set
+					replace_macro (buf);
+				}
 			}
 
 			pos = searchstr (buf, (U1 *) CLEAR_DEFINES_SB, 0, 0, TRUE);

@@ -1,4 +1,4 @@
-// range.l1com
+// Range.l1com
 // check if variable is in legal range interrupt
 //
 #include <intr.l1h>
