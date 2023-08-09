@@ -1,6 +1,6 @@
 #include "mpfr-head.cpp"
 
-S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+extern "C" S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
 {
 	return (0);
 }

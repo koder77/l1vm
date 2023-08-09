@@ -10,7 +10,9 @@ L1VM (2.5.0)
 	NEW: prepro: #replace and #noreplace block markers. To switch preprocessor replace of macros on and off.
 	See prog/hello-math-3.l1com example.
 
--- Stefan Pietzonke <jay-t@gmx.net> Mon 07 Aug 2023 21:47 +0200
+	BUGFIX: mpfr big num module: init_memory_bounds now is extern "C".
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 09 Aug 2023 19:05 +0200
 
 L1VM (2.4.3)
 	VM: RS232 module code cleanup.
