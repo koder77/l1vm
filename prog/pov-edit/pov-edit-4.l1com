@@ -1144,7 +1144,7 @@
 	(:flash_pattern_end)
 (funcend)
 
-#include <rs232-libserialport.l1h>
+#include <rs232-lib-libserialport.l1h>
 // rs232 library ===============================================================
 // include <rs232-normal.l1h>
 // include <rs232-lib.l1h>
