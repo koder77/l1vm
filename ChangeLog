@@ -12,7 +12,9 @@ L1VM (2.5.0)
 
 	BUGFIX: mpfr big num module: init_memory_bounds now is extern "C".
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 09 Aug 2023 19:05 +0200
+	NEW: preprocessor now can use multiline definitions in included file too!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 10 Aug 2023 18:58 +0200
 
 L1VM (2.4.3)
 	VM: RS232 module code cleanup.
