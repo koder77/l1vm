@@ -1,7 +1,7 @@
 // hello-for-macro.l1com - Hello world! for loop
 //
 #include <intr.l1h>
-#include <vartypes.l1h>
+#include <vars.l1h>
 #include <loops.l1h>
 (main func)
 	(set int64 1 zero 0)
@@ -35,17 +35,17 @@
 
     // array print
     for-each-in (Parray, realind, asize)
-	    (array [ realind ] a =)
+	    (Parray [ realind ] a =)
 	    print_lni (a)
-	next-in (ind, realind, int64_type)
+	next-in (ind, realind, int64_size)
 
 	print_n
 	(zero ind =)
 	(zero realind =)
 	thr-for-each-in (Parray, realind, asize, f)
-	    (array [ realind ] a =)
+	    (Parray [ realind ] a =)
 	    print_lni (a)
-	next-in (ind, realind, int64_type)
+	next-in (ind, realind, int64_size)
 
 	exit (zero)
 (funcend)
