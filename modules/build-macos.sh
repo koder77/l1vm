@@ -12,8 +12,8 @@ cd ../math
 zerobuild zerobuild-macos.txt force
 cd ../math-vect
 zerobuild zerobuild-macos.txt force
-cd ../mem
-zerobuild zerobuild-macos.txt force
+#cd ../mem
+#zerobuild zerobuild-macos.txt force
 cd ../mem-obj
 zerobuild zerobuild-macos.txt force
 cd ../mpfr-c++
@@ -38,7 +38,7 @@ cp ../vm/modules/file/libl1vm* .
 cp ../vm/modules/genann/libl1vm* .
 cp ../vm/modules/math/libl1vm* .
 cp ../vm/modules/math-vect/libl1vm* .
-cp ../vm/modules/mem/libl1vm* .
+#cp ../vm/modules/mem/libl1vm* .
 cp ../vm/modules/mem-obj/libl1vm* .
 cp ../vm/modules/mpfr-c++/libl1vm* .
 cp ../vm/modules/net/libl1vm* .
