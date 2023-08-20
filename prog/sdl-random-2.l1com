@@ -18,14 +18,12 @@
     (set double 1 maxcol_d 255.0)
     (set int64 1 loops 0)
     (set int64 1 loopsmax 1000)
-    (set int64 1 delay 20000)
     (set int64 1 delay_rect 500)
     (set int64 1 f 0)
     // colors
     (set byte 1 r 255)
     (set byte 1 g 255)
     (set byte 1 b 255)
-    (set int64 1 f 0)
     (set int64 1 delay 20000)
     (set string s fontname "fonts/FreeMono.ttf")
     (set string s welcome "Rectangles, a demo by Stefan Pietzonke aka koder77.")
@@ -48,7 +46,7 @@
     (loadreg)
     (8 delay_welcome 0 0 intr0)
     // draw gfx
-    (rand_init :math_randinit call)
+    (:math_randinit call)
     (loadreg)
     (:loop)
     // first edge

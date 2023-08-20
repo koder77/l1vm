@@ -786,22 +786,13 @@ U1 *log2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
-// random number generator
-
+// random number generator =====================================================
 U1 *rand_init (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 startnum ALIGN;
 	U1 *startnum_ptr = (U1 *) &startnum;
 	S8 i ALIGN;
 	U1 buffer[8];
-
-	sp = stpopi ((U1 *) &startnum, sp, sp_top);
-	if (sp == NULL)
-	{
-		// error
-		printf ("rand_init: ERROR: stack corrupt!\n");
-		return (NULL);
-	}
 
 	// libsodium random number seed init
 	if (init_libsodium == 1)
@@ -903,6 +894,25 @@ U1 *rand_int_max (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+U1 *rand_byte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// return random byte
+
+	U1 rand_byte;
+
+	randombytes_buf ((U1 *) &rand_byte, sizeof (U1));
+
+	sp = stpushb (rand_byte, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("rand_byte: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+// string ======================================================================
 U1 *double_rounded_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
   	S8 deststr_len ALIGN;

@@ -45,7 +45,7 @@
         exit (one)
     (endif)
 
-    (start_random :math_randinit !)
+    (:math_randinit !)
     (zero i =)
     (for-loop)
     (((i max_circles <) f =) f for)
