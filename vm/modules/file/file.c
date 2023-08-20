@@ -1012,7 +1012,7 @@ U1 *file_getc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     // return value: ERROR CODE
 
 	S8 handle ALIGN;
-    U1 ch;
+    S2 ch;
 
     if (sp == sp_top)
     {
@@ -1035,8 +1035,7 @@ U1 *file_getc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("ERROR: file_getc: handle out of range!\n");
         return (NULL);
     }
-
-    if ((ch = getc (files[handle].fptr) != EOF))
+    if ((ch = getc (files[handle].fptr)) != EOF)
     {
         sp = stpushi (ch, sp, sp_bottom);
     	if (sp == NULL)
