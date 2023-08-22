@@ -18,7 +18,9 @@ L1VM (2.5.0)
 	vmath_min_int, vmath_max_int, vmath_min_double, vmath_max_double
 	See prog/array-min-max.l1com example!
 
--- Stefan Pietzonke <jay-t@gmx.net> Tue 22 Aug 2023 12:28 +0200
+	Array sort functions for int64 and double arrays added.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue 22 Aug 2023 17:02 +0200
 
 L1VM (2.4.3)
 	VM: RS232 module code cleanup.
