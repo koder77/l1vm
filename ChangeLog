@@ -14,7 +14,11 @@ L1VM (2.5.0)
 
 	NEW: preprocessor now can use multiline definitions in included file too!
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 10 Aug 2023 18:58 +0200
+	NEW: min/max values of an array can now be get by the new math-vect functions:
+	vmath_min_int, vmath_max_int, vmath_min_double, vmath_max_double
+	See prog/array-min-max.l1com example!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue 22 Aug 2023 12:28 +0200
 
 L1VM (2.4.3)
 	VM: RS232 module code cleanup.

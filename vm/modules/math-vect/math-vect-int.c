@@ -36,6 +36,151 @@ S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
 	return (0);
 }
 
+// 64 bit array min/max value of array functions
+U1 *mvect_min_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 array_data_src_ptr ALIGN;
+	S8 start ALIGN;
+	S8 end ALIGN;
+	S8 i ALIGN = 0;
+	S8 offset ALIGN = 8;
+	S8 number ALIGN = 0;
+	S8 min ALIGN = 0;
+	S8 *src_ptr;
+
+	sp = stpopi ((U1 *) &end, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_min_int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &start, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_min_int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &array_data_src_ptr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_min_int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	#if BOUNDSCHECK
+	if (memory_bounds (array_data_src_ptr, start * offset) != 0)
+	{
+		printf ("mvect_min_int ERROR: src overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_src_ptr, end * offset) != 0)
+	{
+		printf ("mvect_min_int ERROR: src overflow!\n");
+		return (NULL);
+	}
+	#endif
+
+	src_ptr = (S8 *) &data[array_data_src_ptr + (i * offset)];
+	min = *src_ptr;
+
+	for (i = start; i <= end; i++)
+	{
+		src_ptr = (S8 *) &data[array_data_src_ptr + (i * offset)];
+		number = *src_ptr;
+        if (number < min)
+		{
+			min = number;
+		}
+	}
+
+	sp = stpushi (min, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_min_int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	return (sp);
+}
+
+U1 *mvect_max_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 array_data_src_ptr ALIGN;
+	S8 start ALIGN;
+	S8 end ALIGN;
+	S8 i ALIGN = 0;
+	S8 offset ALIGN = 8;
+	S8 number ALIGN = 0;
+	S8 max ALIGN = 0;
+	S8 *src_ptr;
+
+	sp = stpopi ((U1 *) &end, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_max_int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &start, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_max_int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &array_data_src_ptr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_max_int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	#if BOUNDSCHECK
+	if (memory_bounds (array_data_src_ptr, start * offset) != 0)
+	{
+		printf ("mvect_max_int ERROR: src overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_src_ptr, end * offset) != 0)
+	{
+		printf ("mvect_max_int ERROR: src overflow!\n");
+		return (NULL);
+	}
+	#endif
+
+	src_ptr = (S8 *) &data[array_data_src_ptr + (i * offset)];
+	max = *src_ptr;
+
+	for (i = start; i <= end; i++)
+	{
+		src_ptr = (S8 *) &data[array_data_src_ptr + (i * offset)];
+		number = *src_ptr;
+        if (number > max)
+		{
+			max = number;
+		}
+	}
+
+	sp = stpushi (max, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_max_int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	return (sp);
+}
+
 // 64 bit integer functions
 // math vector functions two arrays  ==========================================
 U1 *mvect_add_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
