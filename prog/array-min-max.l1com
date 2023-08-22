@@ -26,13 +26,14 @@
     // print array
     (for-loop)
     (((ind maxarray <) f =) f for)
-    //#replace
         ((ind offset *) realind =)
         (array [ realind ] num =)
         print_i (num)
         print_n
         ((ind one +) ind =)
     (next)
+
+    // get min number
     (Parray zero maxind :vmath_min_int !)
     (min stpop)
     print_n
@@ -40,6 +41,7 @@
     print_i (min)
     print_n
 
+    // get max number
     (Parray zero maxind :vmath_max_int !)
     (max stpop)
     print_s (maxstr)
