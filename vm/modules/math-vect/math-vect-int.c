@@ -181,6 +181,108 @@ U1 *mvect_max_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+// sort functions ==============================================================
+int compare_int_inc (const void* a, const void* b)
+{
+    S8 arg1 = *(const S8*) a;
+    S8 arg2 = *(const S8*) b;
+
+    if (arg1 < arg2) return -1;
+    if (arg1 > arg2) return 1;
+    return 0;
+
+    // return (arg1 > arg2) - (arg1 < arg2); // possible shortcut
+    // return arg1 - arg2; // erroneous shortcut (fails if INT_MIN is present)
+}
+
+int compare_int_dec (const void* a, const void* b)
+{
+    S8 arg1 = *(const S8*) a;
+    S8 arg2 = *(const S8*) b;
+
+    if (arg1 > arg2) return -1;
+    if (arg1 < arg2) return 1;
+    return 0;
+
+    // return (arg1 > arg2) - (arg1 < arg2); // possible shortcut
+    // return arg1 - arg2; // erroneous shortcut (fails if INT_MIN is present)
+}
+
+U1 *mvect_sort_int_inc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 array_data_src_ptr ALIGN;
+	S8 end ALIGN;
+	S8 offset ALIGN = 8;
+	S8 *src_ptr;
+
+	sp = stpopi ((U1 *) &end, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_sort_int_inc: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &array_data_src_ptr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_sort_int_inc: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	#if BOUNDSCHECK
+	if (memory_bounds (array_data_src_ptr, end * offset) != 0)
+	{
+		printf ("mvect_sort_int_inc ERROR: src overflow!\n");
+		return (NULL);
+	}
+	#endif
+
+	src_ptr = (S8 *) &data[array_data_src_ptr];
+
+    qsort (src_ptr, end + 1, sizeof (S8), compare_int_inc);
+	return (sp);
+}
+
+U1 *mvect_sort_int_dec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 array_data_src_ptr ALIGN;
+	S8 end ALIGN;
+	S8 offset ALIGN = 8;
+	S8 *src_ptr;
+
+	sp = stpopi ((U1 *) &end, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_sort_int_dec: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &array_data_src_ptr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_sort_int_dec: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	#if BOUNDSCHECK
+	if (memory_bounds (array_data_src_ptr, end * offset) != 0)
+	{
+		printf ("mvect_sort_int_dec ERROR: src overflow!\n");
+		return (NULL);
+	}
+	#endif
+
+	src_ptr = (S8 *) &data[array_data_src_ptr];
+
+    qsort (src_ptr, end + 1, sizeof (S8), compare_int_dec);
+	return (sp);
+}
+
+
 // 64 bit integer functions
 // math vector functions two arrays  ==========================================
 U1 *mvect_add_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)

@@ -21,6 +21,8 @@
     (set int64 1 max 0)
     (set string s minstr "min: ")
     (set string s maxstr "max: ")
+    (set string s sortincstr "sorted increasing:")
+    (set string s sortdecstr "sorted decreasing:")
     (zero :math_vect_init !)
     (array Parray pointer)
     // print array
@@ -47,6 +49,40 @@
     print_s (maxstr)
     print_i (max)
     print_n
+    print_n
+
+    // sort array increasing numbers
+    (Parray maxind :vmath_sort_int_inc !)
+    (zero ind =)
+
+    print_s (sortincstr)
+    print_n
+    // print array
+    (for-loop)
+    (((ind maxarray <) f =) f for)
+        ((ind offset *) realind =)
+        (array [ realind ] num =)
+        print_i (num)
+        print_n
+        ((ind one +) ind =)
+    (next)
+    print_n
+
+     // sort array increasing numbers
+    (Parray maxind :vmath_sort_int_dec !)
+    (zero ind =)
+
+    print_s (sortdecstr)
+    print_n
+    // print array
+    (for-loop)
+    (((ind maxarray <) f =) f for)
+        ((ind offset *) realind =)
+        (array [ realind ] num =)
+        print_i (num)
+        print_n
+        ((ind one +) ind =)
+    (next)
 
 	exit (zero)
 (funcend)

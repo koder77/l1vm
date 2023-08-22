@@ -26,6 +26,11 @@
     (set string s mvect_max_intstr@mathvect "mvect_max_int")
 	(set string s mvect_min_doublestr@mathvect "mvect_min_double")
     (set string s mvect_max_doublestr@mathvect "mvect_max_double")
+	// sort functions
+	(set string s mvect_sort_int_incstr@mathvect "mvect_sort_int_inc")
+	(set string s mvect_sort_int_decstr@mathvect "mvect_sort_int_dec")
+	(set string s mvect_sort_double_incstr@mathvect "mvect_sort_double_inc")
+	(set string s mvect_sort_double_decstr@mathvect "mvect_sort_double_dec")
 	// number defs int
 	(set int64 1 mvect_add_int@mathvect 0)
 	(set int64 1 mvect_sub_int@mathvect 1)
@@ -49,6 +54,12 @@
 	(set int64 1 mvect_max_int@mathvect 17)
 	(set int64 1 mvect_min_double@mathvect 18)
 	(set int64 1 mvect_max_double@mathvect 19)
+	// sort number functions
+	(set int64 1 mvect_sort_int_inc@mathvect 20)
+	(set int64 1 mvect_sort_int_dec@mathvect 21)
+	(set int64 1 mvect_sort_double_inc@mathvect 22)
+	(set int64 1 mvect_sort_double_dec@mathvect 23)
+
     (set int64 1 mod@mathvect 0)
     // get argument from stack
     (mod@mathvect stpopi)
@@ -76,6 +87,11 @@
 	(2 mod@mathvect mvect_max_int@mathvect mvect_max_intstr@mathvect intr0)
 	(2 mod@mathvect mvect_min_double@mathvect mvect_min_doublestr@mathvect intr0)
 	(2 mod@mathvect mvect_max_double@mathvect mvect_max_doublestr@mathvect intr0)
+	// sort
+	(2 mod@mathvect mvect_sort_int_inc@mathvect mvect_sort_int_incstr@mathvect intr0)
+	(2 mod@mathvect mvect_sort_int_dec@mathvect mvect_sort_int_decstr@mathvect intr0)
+	(2 mod@mathvect mvect_sort_double_inc@mathvect mvect_sort_double_incstr@mathvect intr0)
+	(2 mod@mathvect mvect_sort_double_dec@mathvect mvect_sort_double_decstr@mathvect intr0)
 (funcend)
 // wrapper functions
 (vmath_add_int func)
@@ -137,4 +153,11 @@
 (funcend)
 (vmath_max_double func)
 	(3 mod@mathvect mvect_max_double@mathvect 0 intr0)
+(funcend)
+// sort
+(vmath_sort_int_inc func)
+	(3 mod@mathvect mvect_sort_int_inc@mathvect 0 intr0)
+(funcend)
+(vmath_sort_int_dec func)
+	(3 mod@mathvect mvect_sort_int_dec@mathvect 0 intr0)
 (funcend)
