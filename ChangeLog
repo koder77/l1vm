@@ -1,3 +1,15 @@
+L1VM (2.5.1)
+	Version now is 2.5.1.
+	NEW: preprocessor now can use multiline definitions in included file too!
+
+	NEW: min/max values of an array can now be get by the new math-vect functions:
+	vmath_min_int, vmath_max_int, vmath_min_double, vmath_max_double
+	See prog/array-min-max.l1com example!
+
+	Array sort functions for int64 and double arrays added.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue 22 Aug 2023 17:02 +0200
+
 L1VM (2.5.0)
 	VM: modules total cleanup, global variables for memory_bounds now copied to module on module load.
 	loops.l1h added, it has some loops defining macros
@@ -13,12 +25,6 @@ L1VM (2.5.0)
 	BUGFIX: mpfr big num module: init_memory_bounds now is extern "C".
 
 	NEW: preprocessor now can use multiline definitions in included file too!
-
-	NEW: min/max values of an array can now be get by the new math-vect functions:
-	vmath_min_int, vmath_max_int, vmath_min_double, vmath_max_double
-	See prog/array-min-max.l1com example!
-
-	Array sort functions for int64 and double arrays added.
 
 -- Stefan Pietzonke <jay-t@gmx.net> Tue 22 Aug 2023 17:02 +0200
 

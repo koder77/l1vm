@@ -102,12 +102,6 @@ fi
 
 echo "libraries installed! building compiler, assembler and VM..."
 
-else
-	echo "ERROR: detected OS not Debian GNU Linux!"
-	echo "You have to install the dependency libraries by hand..."
-	echo "See this installation script for more info..."
-fi
-
 export CC=clang-15
 export CCPP=clang++-15
 
