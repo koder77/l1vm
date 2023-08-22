@@ -68,7 +68,7 @@
     (next)
     print_n
 
-     // sort array increasing numbers
+     // sort array decreasing numbers
     (Parray maxind :vmath_sort_int_dec !)
     (zero ind =)
 
