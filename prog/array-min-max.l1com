@@ -4,9 +4,6 @@
 // and how to access the elements
 //
 #include <intr.l1h>
-#include <vars.l1h>
-#include <loops.l1h>
-#include <misc-macros.l1h>
 (main func)
 	(set int64 1 zero 0)
     (set int64 1 one 1)
@@ -27,10 +24,9 @@
     (zero :math_vect_init !)
     (array Parray pointer)
     // print array
-    #noreplace
     (for-loop)
     (((ind maxarray <) f =) f for)
-    #replace
+    //#replace
         ((ind offset *) realind =)
         (array [ realind ] num =)
         print_i (num)
