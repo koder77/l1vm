@@ -20,7 +20,7 @@
 // JIT-compiler uses asmjit library.
 // Generates code for x86 64 bit. The double floating point number opcodes use SSE opcodes.
 
-#include <asmjit/asmjit.h>
+#include <asmjit/x86.h>
 
 using namespace asmjit;
 
