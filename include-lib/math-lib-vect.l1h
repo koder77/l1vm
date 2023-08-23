@@ -31,6 +31,9 @@
 	(set string s mvect_sort_int_decstr@mathvect "mvect_sort_int_dec")
 	(set string s mvect_sort_double_incstr@mathvect "mvect_sort_double_inc")
 	(set string s mvect_sort_double_decstr@mathvect "mvect_sort_double_dec")
+	// average functions
+	(set string s mvect_average_intstr@mathvect "mvect_average_int")
+	(set string s mvect_average_doublestr@mathvect "mvect_average_double")
 	// number defs int
 	(set int64 1 mvect_add_int@mathvect 0)
 	(set int64 1 mvect_sub_int@mathvect 1)
@@ -59,6 +62,9 @@
 	(set int64 1 mvect_sort_int_dec@mathvect 21)
 	(set int64 1 mvect_sort_double_inc@mathvect 22)
 	(set int64 1 mvect_sort_double_dec@mathvect 23)
+	// average functions
+	(set int64 1 mvect_average_int@mathvect 24)
+	(set int64 1 mvect_average_double@mathvect 25)
 
     (set int64 1 mod@mathvect 0)
     // get argument from stack
@@ -92,6 +98,9 @@
 	(2 mod@mathvect mvect_sort_int_dec@mathvect mvect_sort_int_decstr@mathvect intr0)
 	(2 mod@mathvect mvect_sort_double_inc@mathvect mvect_sort_double_incstr@mathvect intr0)
 	(2 mod@mathvect mvect_sort_double_dec@mathvect mvect_sort_double_decstr@mathvect intr0)
+	// average
+	(2 mod@mathvect mvect_average_int@mathvect mvect_average_intstr@mathvect intr0)
+	(2 mod@mathvect mvect_average_double@mathvect mvect_average_doublestr@mathvect intr0)
 (funcend)
 // wrapper functions
 (vmath_add_int func)
@@ -160,4 +169,10 @@
 (funcend)
 (vmath_sort_int_dec func)
 	(3 mod@mathvect mvect_sort_int_dec@mathvect 0 intr0)
+(funcend)
+(vmath_average_int func)
+	(3 mod@mathvect mvect_average_int@mathvect 0 intr0)
+(funcend)
+(vmath_average_double func)
+	(3 mod@mathvect mvect_average_double@mathvect 0 intr0)
 (funcend)

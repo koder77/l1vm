@@ -19,10 +19,12 @@
     (set const-int64 1 Parray 0)
     (set int64 1 min 0)
     (set int64 1 max 0)
+    (set double 1 averaged 0.0)
     (set string s minstr "min: ")
     (set string s maxstr "max: ")
     (set string s sortincstr "sorted increasing:")
     (set string s sortdecstr "sorted decreasing:")
+    (set string s averagestr "average: ")
     (zero :math_vect_init !)
     (array Parray pointer)
     // print array
@@ -48,6 +50,13 @@
     (max stpop)
     print_s (maxstr)
     print_i (max)
+    print_n
+
+    // get average
+    (Parray zero maxind :vmath_average_int !)
+    (averaged stpop)
+    print_s (averagestr)
+    print_d (averaged)
     print_n
     print_n
 
