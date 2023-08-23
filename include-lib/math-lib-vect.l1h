@@ -34,6 +34,8 @@
 	// average functions
 	(set string s mvect_average_intstr@mathvect "mvect_average_int")
 	(set string s mvect_average_doublestr@mathvect "mvect_average_double")
+	// array copy function
+	(set string s mvect_array_copystr@mathvect "mvect_array_copy")
 	// number defs int
 	(set int64 1 mvect_add_int@mathvect 0)
 	(set int64 1 mvect_sub_int@mathvect 1)
@@ -65,6 +67,8 @@
 	// average functions
 	(set int64 1 mvect_average_int@mathvect 24)
 	(set int64 1 mvect_average_double@mathvect 25)
+	// array copy
+	(set int64 1 mvect_array_copy@mathvect 26)
 
     (set int64 1 mod@mathvect 0)
     // get argument from stack
@@ -101,6 +105,8 @@
 	// average
 	(2 mod@mathvect mvect_average_int@mathvect mvect_average_intstr@mathvect intr0)
 	(2 mod@mathvect mvect_average_double@mathvect mvect_average_doublestr@mathvect intr0)
+	// array copy
+	(2 mod@mathvect mvect_array_copy@mathvect mvect_array_copystr@mathvect intr0)
 (funcend)
 // wrapper functions
 (vmath_add_int func)
@@ -175,4 +181,7 @@
 (funcend)
 (vmath_average_double func)
 	(3 mod@mathvect mvect_average_double@mathvect 0 intr0)
+(funcend)
+(vmath_array_copy func)
+	(3 mod@mathvect mvect_array_copy@mathvect 0 intr0)
 (funcend)

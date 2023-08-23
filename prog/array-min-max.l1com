@@ -6,17 +6,19 @@
 #include <intr.l1h>
 #include <vars.l1h>
 (main func)
-	(set const-int64 1 zero 0)
+    (set const-int64 1 zero 0)
     (set const-int64 1 one 1)
     (set int64 1 ind 0)
     (set int64 1 f 0)
     (set int64 1 num 0)
     (set int64 1 realind 0)
-	// set array data using spaces as elements separator
-	(set int64 10 array 10 5 8 4 3 2 7 23 45 30)
+    // set array data using spaces as elements separator
+    (set int64 10 array 10 5 8 4 3 2 7 23 45 30)
+    (set int64 10 array_new)
     (set int64 1 maxarray 10)
     (set int64 1 maxind 9)
     (set const-int64 1 Parray 0)
+    (set const-int64 1 Parray_new 0)
     (set int64 1 min 0)
     (set int64 1 max 0)
     (set double 1 averaged 0.0)
@@ -25,8 +27,10 @@
     (set string s sortincstr "sorted increasing:")
     (set string s sortdecstr "sorted decreasing:")
     (set string s averagestr "average: ")
+    (set string s array_copystr "array_new copy of array: ")
     (zero :math_vect_init !)
     (array Parray pointer)
+    (array_new Parray_new pointer)
     // print array
     (for-loop)
     (((ind maxarray <) f =) f for)
@@ -77,7 +81,7 @@
     (next)
     print_n
 
-     // sort array decreasing numbers
+    // sort array decreasing numbers
     (Parray maxind :vmath_sort_int_dec !)
     (zero ind =)
 
@@ -93,6 +97,23 @@
         ((ind one +) ind =)
     (next)
 
-	exit (zero)
+    // copy array
+    (Parray Parray_new zero maxind int64_size :vmath_array_copy !)
+    (zero ind =)
+
+    print_n
+    print_s (array_copystr)
+    print_n
+    // print array
+    (for-loop)
+    (((ind maxarray <) f =) f for)
+        ((ind int64_size *) realind =)
+        (array_new [ realind ] num =)
+        print_i (num)
+        print_n
+        ((ind one +) ind =)
+    (next)
+
+    exit (zero)
 (funcend)
 #include <math-lib-vect.l1h>
