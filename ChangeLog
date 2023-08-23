@@ -9,7 +9,7 @@ L1VM (2.5.1)
 	Array sort functions for int64 and double arrays added.
 	Array average number functions added.
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 23 Aug 2023 11:51 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 23 Aug 2023 12:00 +0200
 
 L1VM (2.5.0)
 	VM: modules total cleanup, global variables for memory_bounds now copied to module on module load.
