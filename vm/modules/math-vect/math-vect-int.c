@@ -416,12 +416,12 @@ U1 *mvect_array_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	if (memory_bounds (array_data_dst_ptr, real_ind_start) != 0)
 	{
-		printf ("mvect_avray_copy ERROR: src overflow!\n");
+		printf ("mvect_avray_copy ERROR: dst overflow!\n");
 		return (NULL);
 	}
 	if (memory_bounds (array_data_dst_ptr, real_ind_end) != 0)
 	{
-		printf ("mvect_array_copy ERROR: src overflow!\n");
+		printf ("mvect_array_copy ERROR: dst overflow!\n");
 		return (NULL);
 	}
 	#endif
