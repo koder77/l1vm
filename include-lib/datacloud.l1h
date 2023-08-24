@@ -17,8 +17,6 @@
     (set int64 1 sockets~ 0)
     // ip string pointer
     (set int64 1 Pip~ 0)
-    // port number
-    (set int64 1 port~ 0)
     (set int64 1 socket_ind_max~ 0)
     (set int64 1 ret~ 0)
     (set string s socket_err_str~ "dcloud_init: ERROR number of sockets greater as: ")
@@ -183,6 +181,46 @@
         ((i~ one~ +) i~ =)
     (((i~ socketsdcloud <) f~ =) f~ while)
     (:dcloud_data_store_end)
+    (ret~ stpush)
+(funcend)
+
+(dcloud_data_store_redundant func)
+    #var ~ dcloud_data_store_redundant
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 ret~ 0)
+    (set int64 1 Pkeystraddr~)
+    (set int64 1 Pdatastraddr~)
+    (set int64 1 Pretstraddr~)
+    (set int64 1 i~ 0)
+    (set int64 1 f~ 0)
+    (set string s ok_str~ "OK")
+    (set string s handle_str~ "dcloud_data_store_redundant socket handle: ")
+    (set int64 1 comp~ 0)
+    (optimize-if)
+    // get args
+    (Pretstraddr~ stpop)
+    (Pdatastraddr~ stpop)
+    (Pkeystraddr~ stpop)
+    // set ret to error code
+    (one~ ret~ =)
+    (zero~ i~ =)
+    // try to send data
+
+    (do)
+        (i~ Pkeystraddr~ Pdatastraddr~ Pretstraddr~ :go_data_store !)
+        (ret~ stpop)
+        (((ret~ zero~ ==) f~ =) f~ if)
+             (Pretstraddr~ ok_str~ :string_compare !)
+             (comp~ stpop)
+             (((comp~ zero~ !=) f~ =) f~ if)
+                 // got not OK answer, return
+                (:dcloud_data_store_redundant_end jmp)
+             (endif)
+        (endif)
+        ((i~ one~ +) i~ =)
+    (((i~ socketsdcloud <) f~ =) f~ while)
+    (:dcloud_data_store_redundant_end)
     (ret~ stpush)
 (funcend)
 
