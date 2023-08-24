@@ -433,6 +433,72 @@ U1 *mvect_array_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+// array clear
+U1 *mvect_array_clear (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 array_data_src_ptr ALIGN;
+	S8 start ALIGN;
+	S8 end ALIGN;
+	S8 i ALIGN = 0;
+	S8 offset ALIGN;
+	S8 real_ind_start ALIGN;
+	S8 real_ind_end ALIGN;
+
+	sp = stpopi ((U1 *) &offset, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_array_clear: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &end, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_array_clear: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &start, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_array_clear: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &array_data_src_ptr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_array_clear: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	real_ind_start = start * offset;
+	real_ind_end = end * offset;
+
+	#if BOUNDSCHECK
+	if (memory_bounds (array_data_src_ptr, real_ind_start) != 0)
+	{
+		printf ("mvect_avray_clear ERROR: src overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_src_ptr, real_ind_end) != 0)
+	{
+		printf ("mvect_array_clear ERROR: src overflow!\n");
+		return (NULL);
+	}
+	#endif
+
+	for (i = real_ind_start; i <= real_ind_end; i++)
+	{
+		data[array_data_src_ptr + i] = 0;
+	}
+	return (sp);
+}
+
 
 // 64 bit integer functions
 // math vector functions two arrays  ==========================================

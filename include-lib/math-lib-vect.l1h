@@ -36,6 +36,8 @@
 	(set string s mvect_average_doublestr@mathvect "mvect_average_double")
 	// array copy function
 	(set string s mvect_array_copystr@mathvect "mvect_array_copy")
+	// array clear
+	(set string s mvect_array_clearstr@mathvect "mvect_array_clear")
 	// number defs int
 	(set int64 1 mvect_add_int@mathvect 0)
 	(set int64 1 mvect_sub_int@mathvect 1)
@@ -69,6 +71,8 @@
 	(set int64 1 mvect_average_double@mathvect 25)
 	// array copy
 	(set int64 1 mvect_array_copy@mathvect 26)
+	// array clear
+	(set int64 1 mvect_array_clear@mathvect 27)
 
     (set int64 1 mod@mathvect 0)
     // get argument from stack
@@ -107,6 +111,8 @@
 	(2 mod@mathvect mvect_average_double@mathvect mvect_average_doublestr@mathvect intr0)
 	// array copy
 	(2 mod@mathvect mvect_array_copy@mathvect mvect_array_copystr@mathvect intr0)
+	// array clear
+	(2 mod@mathvect mvect_array_clear@mathvect mvect_array_clearstr@mathvect intr0)
 (funcend)
 // wrapper functions
 (vmath_add_int func)
@@ -184,4 +190,7 @@
 (funcend)
 (vmath_array_copy func)
 	(3 mod@mathvect mvect_array_copy@mathvect 0 intr0)
+(funcend)
+(vmath_array_clear func)
+    (3 mod@mathvect mvect_array_clear@mathvect 0 intr0)
 (funcend)

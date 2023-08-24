@@ -27,7 +27,8 @@
     (set string s sortincstr "sorted increasing:")
     (set string s sortdecstr "sorted decreasing:")
     (set string s averagestr "average: ")
-    (set string s array_copystr "array_new copy of array: ")
+    (set string s array_copystr "array_new copy of array:")
+    (set string s array_clearstr "array_new cleared:")
     (zero :math_vect_init !)
     (array Parray pointer)
     (array_new Parray_new pointer)
@@ -103,6 +104,23 @@
 
     print_n
     print_s (array_copystr)
+    print_n
+    // print array
+    (for-loop)
+    (((ind maxarray <) f =) f for)
+        ((ind int64_size *) realind =)
+        (array_new [ realind ] num =)
+        print_i (num)
+        print_n
+        ((ind one +) ind =)
+    (next)
+
+     // copy array
+    (Parray Parray_new zero maxind int64_size :vmath_array_clear !)
+    (zero ind =)
+
+    print_n
+    print_s (array_clearstr)
     print_n
     // print array
     (for-loop)
