@@ -116,7 +116,7 @@
     (next)
 
     // copy array
-    (Parray Parray_new zero maxind int64_size :vmath_array_clear !)
+    (Parray_new zero maxind int64_size :vmath_array_clear !)
     (zero ind =)
 
     print_n
