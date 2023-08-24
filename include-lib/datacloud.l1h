@@ -335,6 +335,42 @@
     (ret~ stpush)
 (funcend)
 
+(dcloud_data_remove_redudant func)
+    #var ~ dcloud_data_remove_redundant
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 ret~ 0)
+    (set int64 1 Pkeystraddr~)
+    (set int64 1 Pdatastraddr~)
+    (set int64 1 i~ 0)
+    (set int64 1 f~ 0)
+    (set string s error_str~ "ERROR")
+    (set int64 1 comp~ 0)
+    (optimize-if)
+    // get args
+    (Pdatastraddr~ stpop)
+    (Pkeystraddr~ stpop)
+    // set ret to error code
+    (one~ ret~ =)
+    (zero~ i~ =)
+    // try to send data
+    (do)
+        (i~ Pkeystraddr~ Pdatastraddr~ :go_data_remove !)
+        (ret~ stpop)
+        (((ret~ zero~ ==) f~ =) f~ if)
+             (Pdatastraddr~ error_str~ :string_compare !)
+             (comp~ stpop)
+             (((comp~ zero~ ==) f~ =) f~ if)
+                 // got ERROR message
+                 (:dcloud_data_remove_redundant_end jmp)
+             (endif)
+        (endif)
+        ((i~ one~ +) i~ =)
+    (((i~ socketsdcloud <) f~ =) f~ while)
+    (:dcloud_data_remove_redundant_end)
+    (ret~ stpush)
+(funcend)
+
 (dcloud_data_save func)
     #var ~ dcloud_data_save
     (set const-int64 1 zero~ 0)
