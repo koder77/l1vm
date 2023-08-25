@@ -140,7 +140,7 @@
 // internal settings end ======================================================
 
 // info strings:
-#define COPYRIGHT_STR " (C) 2017-2023 Stefan Pietzonke - software research"
+#define COPYRIGHT_STR " 2023/summer (C) 2017-2023 Stefan Pietzonke - software research"
 #define VM_VERSION_STR		"2.5.1"		// version number
 #define MOTTO_STR "blue sky"
 
