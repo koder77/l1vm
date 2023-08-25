@@ -1,3 +1,10 @@
+L1VM (2.6.0)
+	2023/fall version
+
+	Added string_array_sort to string module.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 25 Aug 2023 16:30 +0200
+
 L1VM (2.5.1)
 	Version now is 2.5.1.
 	NEW: preprocessor now can use multiline definitions in included file too!

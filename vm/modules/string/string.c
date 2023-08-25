@@ -28,6 +28,11 @@
 
 // protos
 
+// sort string array
+#define EQUAL               0
+#define ASCENDING           0
+#define DESCENDING          1
+
 S2 memory_bounds (S8 start, S8 offset_access);
 
 struct data_info data_info[MAXDATAINFO];
@@ -1429,6 +1434,152 @@ U1 *string_parse_json (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		// ERROR:
 		printf ("string_parse_json: ERROR: stack corrupt!\n");
 		return (NULL);
+	}
+
+	return (sp);
+}
+
+// sort string array ===========================================================
+S2 swap_str (char *str1, char *str2)
+{
+
+    char *temp;
+	S8 temp_len;
+
+	temp_len = strlen_safe (str1, MAXSTRLEN);
+	temp = calloc (temp_len, sizeof (char));
+    if (temp == NULL)
+	{
+		printf ("swap_str: ERROR! out of memory!\n");
+		return (1);
+	}
+
+    strcpy (temp, str1);
+    strcpy (str1, str2);
+    strcpy (str2, temp);
+
+	free (temp);
+	return (0);
+}
+
+S2 sort_strings (char *str, int len, int string_len, int order_type)
+{
+    int i = 0;
+    while (i < len)
+	{
+        int j = 0;
+        while (j < len)
+		{
+            if ((order_type == ASCENDING) && (strcmp (&str[i * string_len], &str[j *string_len]) < EQUAL))
+			{
+                if (swap_str (&str[i * string_len], &str[j * string_len]) == 1)
+				{
+					return (1);
+				}
+            }
+			else
+			{
+			    if ((order_type == DESCENDING) && (strcmp (&str[i * string_len], &str[j * string_len]) > EQUAL))
+				{
+					if (swap_str (&str[i * string_len], &str[j * string_len]) == 1)
+					{
+						return (1);
+					}
+				}
+            }
+            j++;
+        }
+        i++;
+    }
+    return (0);
+}
+
+U1 *string_array_sort (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: sourceaddr, index, stringlen, arraysize
+	S8 strsrcaddr ALIGN;
+	S8 index ALIGN;
+	S8 array_size ALIGN;
+	S8 string_len ALIGN;
+	S8 index_real ALIGN;
+	S8 entries ALIGN;
+	S8 order ALIGN;
+
+	sp = stpopi ((U1 *) &order, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_array_sort: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &array_size, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_array_sort: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &string_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_array_sort: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &index, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_array_sort: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strsrcaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_array_sort: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	index_real = index * string_len;
+	if (index_real < 0 || index_real >= array_size)
+	{
+		// ERROR:
+		printf ("string_array_sort: ERROR: destination array overflow!\n");
+		return (NULL);
+	}
+
+	#if BOUNDSCHECK
+	if (memory_bounds (strsrcaddr + index_real, array_size - 1) != 0)
+	{
+		printf ("string_array_sort: ERROR: dest string overflow!\n");
+		return (NULL);
+	}
+	#endif
+
+	entries = array_size / string_len;
+
+	if (sort_strings ((char *) &data[strsrcaddr + index_real], entries, string_len, order) == 0)
+	{
+		sp = stpushi (0, sp, sp_bottom); // all OK
+		if (sp == NULL)
+		{
+			printf ("string_array_sort: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+	}
+	else
+	{
+		sp = stpushi (1, sp, sp_bottom); // ERRIR
+		if (sp == NULL)
+		{
+			printf ("string_array_sort: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
 	}
 
 	return (sp);

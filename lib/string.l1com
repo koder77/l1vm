@@ -38,6 +38,10 @@
     (set string 4097 rep_out_str "")
     (set string s search_rep_str "123")
     (set string s rep_str "world")
+    (set string s sortastr "xyz")
+    (set string s sortbstr "abcde")
+    (set string 15 sortedastr "")
+    (set string 15 sortedbstr "")
     (zero :string_init call)
 	// copy hellostr to array
 	(hellostraddr arraystraddr zero string_len array_size :string_to_array call)
@@ -106,6 +110,24 @@
     (rep_in_str search_rep_str rep_str rep_out_str :string_replace !)
     print_s (rep_out_str)
     print_n
+
+    // copy hellostr to array
+	(sortastraddr arraystraddr zero string_len array_size :string_to_array call)
+	// copy worldstr to array
+	(sortbstraddr arraystraddr one string_len array_size :string_to_array call)
+    // sort string array
+    (arraystr zero string_len array_size zero :string_array_sort !)
+    (ret stpop)
+    // print sorted array
+    (arraystraddr sortedastraddr zero string_len array_size :array_to_string call)
+	(arraystraddr sortedbstraddr one string_len array_size :array_to_string call)
+    print_s (sortedastr)
+    print_n
+    print_s (sortedbstr)
+    print_n
+
+    free_mod (zero)
+
     exit (zero)
 (funcend)
 #include <string.l1h>
