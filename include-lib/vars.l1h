@@ -20,3 +20,6 @@
 (set const-int64 1 byte_stack 0)
 (set const-int64 1 int64_stack 1)
 (set const-int64 1 double_stack 2)
+// string sort
+(set const-int64 1 sort_string_asc 0)
+(set const-int64 1 sort_string_desc 1)

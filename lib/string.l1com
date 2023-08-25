@@ -1,5 +1,6 @@
 // now with string array demo
 #include <intr.l1h>
+#include <vars.l1h>
 (main func)
     (set int64 1 zero 0)
 	(set int64 1 one 1)
@@ -116,7 +117,7 @@
 	// copy worldstr to array
 	(sortbstraddr arraystraddr one string_len array_size :string_to_array call)
     // sort string array
-    (arraystr zero string_len array_size zero :string_array_sort !)
+    (arraystr zero string_len array_size sort_string_asc :string_array_sort !)
     (ret stpop)
     // print sorted array
     (arraystraddr sortedastraddr zero string_len array_size :array_to_string call)
