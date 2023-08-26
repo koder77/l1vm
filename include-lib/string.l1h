@@ -22,6 +22,7 @@
     (set string s stringregexstr@string "string_regex")
 	(set string s stringsearchstr@string "string_search")
     (set string s string_array_sortstr@string "string_array_sort")
+    (set string s string_array_searchstr@string "string_array_search")
 
 	(set string s get_envstr@string "get_env")
 	(set string s set_envstr@string "set_env")
@@ -50,6 +51,7 @@
 	(set int64 1 set_env@string 19)
     (set int64 1 stringparsejson@string 20)
     (set int64 1 string_array_sort@string 21)
+    (set int64 1 string_array_search@string 22)
     (set int64 1 mod@string 0)
     // get argument from stack
     (mod@string stpopi)
@@ -78,6 +80,7 @@
 	(2 mod@string set_env@string set_envstr@stringaddr intr0)
     (2 mod@string stringparsejson@string stringparsejsonstr@stringaddr intr0)
     (2 mod@string string_array_sort@string string_array_sortstr@stringaddr intr0)
+    (2 mod@string string_array_search@string string_array_searchstr@stringaddr intr0)
 (funcend)
 (string_len func)
 // argument: int64 string address
@@ -163,4 +166,7 @@
 (string_array_sort func)
 // args: sourceaddr, index, stringlen, arraysize, order: 0 ascend, 1 descend
     (3 mod@string string_array_sort@string 0 intr0)
+(funcend)
+(string_array_search func)
+    (3 mod@string string_array_search@string 0 intr0)
 (funcend)

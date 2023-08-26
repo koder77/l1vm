@@ -156,6 +156,11 @@
 	#endif
 #endif
 
+// BOUNDSCHECK now always must be set!
+#if BOUNDSCHECK == 0
+    #error "BOUNDSCHECK always must be set to 1!"
+#endif
+
 
 typedef unsigned char           U1;		/* UBYTE   */
 typedef int16_t                 S2;     /* INT     */

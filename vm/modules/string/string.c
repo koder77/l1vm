@@ -1496,7 +1496,7 @@ S2 sort_strings (char *str, int len, int string_len, int order_type)
 
 U1 *string_array_sort (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-	// args: sourceaddr, index, stringlen, arraysize
+	// args: sourceaddr, index, stringlen, arraysize, order
 	S8 strsrcaddr ALIGN;
 	S8 index ALIGN;
 	S8 array_size ALIGN;
@@ -1549,14 +1549,14 @@ U1 *string_array_sort (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (index_real < 0 || index_real >= array_size)
 	{
 		// ERROR:
-		printf ("string_array_sort: ERROR: destination array overflow!\n");
+		printf ("string_array_sort: ERROR: source array overflow!\n");
 		return (NULL);
 	}
 
 	#if BOUNDSCHECK
 	if (memory_bounds (strsrcaddr + index_real, array_size - 1) != 0)
 	{
-		printf ("string_array_sort: ERROR: dest string overflow!\n");
+		printf ("string_array_sort: ERROR: source string overflow!\n");
 		return (NULL);
 	}
 	#endif
@@ -1580,6 +1580,107 @@ U1 *string_array_sort (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			printf ("string_array_sort: ERROR: stack corrupt!\n");
 			return (NULL);
 		}
+	}
+
+	return (sp);
+}
+
+U1 *string_array_search (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: sourceaddr, searchstringaddr, index, stringlen, arraysize
+	S8 strsrcaddr ALIGN;
+	S8 strsearchaddr ALIGN;
+	S8 index ALIGN;
+	S8 array_size ALIGN;
+	S8 string_len ALIGN;
+	S8 index_real ALIGN;
+	S8 entries ALIGN;
+	S8 i ALIGN;
+	S8 pos ALIGN = -1;
+	S8 ret ALIGN = -1;
+
+	sp = stpopi ((U1 *) &array_size, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_array_search: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &string_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_array_search: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &index, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_array_search: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strsearchaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_array_search: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strsrcaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_array_search: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	index_real = index * string_len;
+	if (index_real < 0 || index_real >= array_size)
+	{
+		// ERROR:
+		printf ("string_array_search: ERROR: source array overflow!\n");
+		return (NULL);
+	}
+
+	#if BOUNDSCHECK
+	if (memory_bounds (strsrcaddr + index_real, array_size - 1) != 0)
+	{
+		printf ("string_array_search: ERROR: source string overflow!\n");
+		return (NULL);
+	}
+	#endif
+
+	entries = array_size / string_len;
+	// search for string in array
+	for (i = 0; i < entries; i++)
+	{
+		pos = searchstr (&data[strsrcaddr + index_real], &data[strsearchaddr], 0, 0);
+		if (pos != -1)
+		{
+			// found search string in array entry
+			ret = i;
+			break;
+		}
+        index_real = index_real + string_len;
+    }
+
+	sp = stpushi (pos, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		printf ("string_array_search: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpushi (ret, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		printf ("string_array_search: ERROR: stack corrupt!\n");
+		return (NULL);
 	}
 
 	return (sp);

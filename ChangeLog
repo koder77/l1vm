@@ -1,9 +1,11 @@
 L1VM (2.6.0)
 	2023/fall version
 
+	String module:
 	Added string_array_sort to string module.
+	Added string_array_search string search function.
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 25 Aug 2023 16:30 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 26 Aug 2023 15:46 +0200
 
 L1VM (2.5.1)
 	Version now is 2.5.1.

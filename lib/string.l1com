@@ -41,8 +41,11 @@
     (set string s rep_str "world")
     (set string s sortastr "xyz")
     (set string s sortbstr "abcde")
+    (set string s searchstr "cde")
     (set string 15 sortedastr "")
     (set string 15 sortedbstr "")
+    (set int64 1 pos -1)
+    (set int64 1 index -1)
     (zero :string_init call)
 	// copy hellostr to array
 	(hellostraddr arraystraddr zero string_len array_size :string_to_array call)
@@ -125,6 +128,14 @@
     print_s (sortedastr)
     print_n
     print_s (sortedbstr)
+    print_n
+
+    // search for string in array
+    (arraystraddr searchstraddr zero string_len array_size :string_array_search call)
+    (index pos stpop)
+    print_i (index)
+    print_n
+    print_i (pos)
     print_n
 
     free_mod (zero)
