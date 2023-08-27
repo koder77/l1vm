@@ -5,7 +5,7 @@ L1VM (2.6.0)
 	Added string_array_sort to string module.
 	Added string_array_search string search function.
 
-	Math module:
+	Math vect module:
 	Array search added.
 
 -- Stefan Pietzonke <jay-t@gmx.net> Sun 27 Aug 2023 17:00 +0200
