@@ -38,6 +38,9 @@
 	(set string s mvect_array_copystr@mathvect "mvect_array_copy")
 	// array clear
 	(set string s mvect_array_clearstr@mathvect "mvect_array_clear")
+	// search
+	(set string s mvect_array_search_intstr@mathvect "mvect_array_search_int")
+	(set string s mvect_array_search_doublestr@mathvect "mvect_array_search_double")
 	// number defs int
 	(set int64 1 mvect_add_int@mathvect 0)
 	(set int64 1 mvect_sub_int@mathvect 1)
@@ -73,6 +76,9 @@
 	(set int64 1 mvect_array_copy@mathvect 26)
 	// array clear
 	(set int64 1 mvect_array_clear@mathvect 27)
+	// search
+	(set int64 1 mvect_array_search_int@mathvect 28)
+	(set int64 1 mvect_array_search_double@mathvect 29)
 
     (set int64 1 mod@mathvect 0)
     // get argument from stack
@@ -113,6 +119,9 @@
 	(2 mod@mathvect mvect_array_copy@mathvect mvect_array_copystr@mathvect intr0)
 	// array clear
 	(2 mod@mathvect mvect_array_clear@mathvect mvect_array_clearstr@mathvect intr0)
+	// search
+	(2 mod@mathvect mvect_array_search_int@mathvect mvect_array_search_intstr@mathvect intr0)
+	(2 mod@mathvect mvect_array_search_double@mathvect mvect_array_search_doublestr@mathvect intr0)
 (funcend)
 // wrapper functions
 (vmath_add_int func)
@@ -193,4 +202,10 @@
 (funcend)
 (vmath_array_clear func)
     (3 mod@mathvect mvect_array_clear@mathvect 0 intr0)
+(funcend)
+(vmath_array_search_int func)
+    (3 mod@mathvect mvect_array_search_int@mathvect 0 intr0)
+(funcend)
+(vmath_array_search_double func)
+    (3 mod@mathvect mvect_array_search_double@mathvect 0 intr0)
 (funcend)

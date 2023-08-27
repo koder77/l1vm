@@ -22,6 +22,8 @@
     (set int64 1 min 0)
     (set int64 1 max 0)
     (set double 1 averaged 0.0)
+    (set int64 1 searchnum 23)
+    (set int64 1 ret 0)
     (set string s minstr "min: ")
     (set string s maxstr "max: ")
     (set string s sortincstr "sorted increasing:")
@@ -29,6 +31,7 @@
     (set string s averagestr "average: ")
     (set string s array_copystr "array_new copy of array:")
     (set string s array_clearstr "array_new cleared:")
+    (set string s array_searchstr "array search: found 23 at position: ")
     (zero :math_vect_init !)
     (array Parray pointer)
     (array_new Parray_new pointer)
@@ -114,6 +117,13 @@
         print_n
         ((ind one +) ind =)
     (next)
+
+    // search array
+    (Parray searchnum zero maxind :vmath_array_search_int !)
+    (ret stpop)
+    print_s (array_searchstr)
+    print_i (ret)
+    print_n
 
     // clear array
     (Parray_new zero maxind int64_size :vmath_array_clear !)
