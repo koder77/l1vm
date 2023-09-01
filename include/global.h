@@ -140,9 +140,9 @@
 // internal settings end ======================================================
 
 // info strings:
-#define COPYRIGHT_STR " 2023/fall (C) 2017-2023 Stefan Pietzonke - software research"
+#define COPYRIGHT_STR " 2023/summer reloaded (C) 2017-2023 Stefan Pietzonke - software research"
 #define VM_VERSION_STR		"2.6.0"		// version number
-#define MOTTO_STR "colorful leaves"
+#define MOTTO_STR "clear sky"
 
 // no user defined definitions below this section! ============================
 
