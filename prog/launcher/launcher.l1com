@@ -37,7 +37,7 @@
     (set string s sdl_demostr  "demo          ")
     (set string s quitstr      "quit          ")
     (set string s lines_runstr "l1vm lines &")
-    (set string s fractalix_runstr "l1vm fractalix-3.2")
+    (set string s fractalix_runstr "l1vm fractalix-3.2.1 &")
     (set string s demo_runstr "l1vm sdl-lib-2 &")
     (set const-int64 1 status 1)
 	(set int64 1 gadget_sel 0)
