@@ -40,6 +40,7 @@
     (set string s lines_runstr "l1vm lines &")
     (set string s fractalix_runstr "l1vm fractalix-3.2.1 &")
     (set string s demo_runstr "l1vm sdl-lib-2 &")
+    (set string s window_titlestr "L1VM - launcher")
     (set const-int64 1 status 1)
 	(set int64 1 gadget_sel 0)
 	(set string 256 gadget_retstr "")
@@ -61,6 +62,7 @@
 	(one :string_init !)
 	(two :process_init !)
     (three :time_init !)
+	(window_titlestr :sdl_set_window_title !)
 
 	// load font
     (fontnamestr fontsize :sdl_font_ttf !)
