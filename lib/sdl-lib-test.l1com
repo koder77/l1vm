@@ -49,7 +49,7 @@
 	(set string s stringstr "test")
 	(set string 53 valuestr "Hello world! Hello koder77!")
 	(set string 53 gadget_valuestr "")
-	(set string s fontname "fonts/FreeMono.ttf")
+	(set string s fontname "fonts/free/FreeMono.ttf")
 	(set string s red_cyclestr "red")
 	(set string s green_cyclestr "green")
 	(set string s blue_cyclestr "blue")

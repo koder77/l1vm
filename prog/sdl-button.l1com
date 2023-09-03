@@ -15,7 +15,7 @@
 	(set const-int64 1 gadgets 1)
 	// font and background color
 	(set const-int64 1 fontsize 20)
-	(set string s fontname "fonts/FreeMono.ttf")
+	(set string s fontname "fonts/free/FreeMono.ttf")
 	(set byte 1 back_r 143)
 	(set byte 1 back_g 147)
 	(set byte 1 back_b 151)

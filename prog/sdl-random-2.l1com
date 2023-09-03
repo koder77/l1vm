@@ -25,7 +25,7 @@
     (set byte 1 g 255)
     (set byte 1 b 255)
     (set int64 1 delay 20000)
-    (set string s fontname "fonts/FreeMono.ttf")
+    (set string s fontname "fonts/free/FreeMono.ttf")
     (set string s welcome "Rectangles, a demo by Stefan Pietzonke aka koder77.")
     (set int64 1 fontsize 20)
     (set int64 1 delay_welcome 8000)

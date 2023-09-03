@@ -48,7 +48,7 @@
     (set int64 1 mouse_button_left 0)
     (set int64 1 mouse_button_middle 0)
     (set int64 1 mouse_button_right 0)
-	(set string s fontnamestr "fonts/FreeMono.ttf")
+	(set string s fontnamestr "fonts/free/FreeMono.ttf")
     (set string s linesstr     "lines         ")
     (set string s fractalixstr "fractalix-3.2 ")
     (set string s sdl_demostr  "demo          ")
