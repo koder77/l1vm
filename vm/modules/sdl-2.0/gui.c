@@ -6448,6 +6448,8 @@ U1 *get_mouse_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	S8 x ALIGN;
 	S8 y ALIGN;
+    int xi;
+    int yi;
 	S8 mouse_button_left ALIGN = 0;
 	S8 mouse_button_middle ALIGN = 0;
 	S8 mouse_button_right ALIGN = 0;
@@ -6457,7 +6459,10 @@ U1 *get_mouse_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	SDL_PumpEvents ();
 
 	// get mouse data
-	buttonmask = SDL_GetMouseState ((int *) &x, (int *) &y);
+	buttonmask = SDL_GetMouseState ((int *) &xi, (int *) &yi);
+
+    x = xi;
+    y = yi;
 
 	// set the buttons as pressed
 	if (! (buttonmask & SDL_BUTTON (SDL_BUTTON_LEFT)))
