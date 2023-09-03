@@ -8,7 +8,9 @@ L1VM (2.6.0)
 	Math vect module:
 	Array search added.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 27 Aug 2023 17:00 +0200
+	prog/launcher/ added. A tiny launcher program for my SDL/GUI programs.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 03 Sep 2023 01:59 +0200
 
 L1VM (2.5.1)
 	Version now is 2.5.1.
