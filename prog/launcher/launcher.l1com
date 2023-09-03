@@ -66,7 +66,6 @@
 	(ret stpopi)
 	(value stpopi)
 	(gadget_sel stpopi)
-	(loadreg)
 	(((gadget_sel quit ==) f =) f if)
         (:sdl_quit !)
 	    exit (zero)
