@@ -162,7 +162,7 @@ U1 *time_time_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	{
 		strcat ((char *) timestr, "0");
 	}
-	strcpy ((char *) timestr, (const char *) buf);
+	strcat ((char *) timestr, (const char *) buf);
 	strcat ((char *) timestr, ":");
 
 	if (snprintf ((char *) buf, bufsize, "%i", tm->tm_min) <= 0)
