@@ -10,7 +10,10 @@ L1VM (2.6.0)
 
 	prog/launcher/ added. A tiny launcher program for my SDL/GUI programs.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 03 Sep 2023 01:59 +0200
+	Added OTP crypt/decrypt programs.
+	Fixed file-tools module.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue 12 Sep 2023 17:24 +0200
 
 L1VM (2.5.1)
 	Version now is 2.5.1.

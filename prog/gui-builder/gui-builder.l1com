@@ -34,7 +34,7 @@
 	(set int64 1 bit 32)
 	(set string s fontname "fonts/free/FreeMono.ttf")
 	(set int64 1 fontsize 16)
-	// (set int64 1 fontsize 20)
+	//(set int64 1 fontsize 20)
 	(set byte 1 back_r 143)
 	(set byte 1 back_g 147)
 	(set byte 1 back_b 151)
@@ -75,9 +75,10 @@
 	(set int64 1 file 3)
 	(set int64 1 file_x 250)
 	(set int64 1 file_y 5)
-	(set string s filenamestr " File:")
-	(set string 256 filevaluestr "code-gfx/default.cgfx")
-	(set int64 1 filelen 40)
+	(set string s filenamestr "  File:")
+	(set string 256 filevaluestr "foo.l1h")
+	(set int64 1 filelen 20)
+
 	// edit line
 	// x
 	(set int64 1 editx 4)
@@ -88,6 +89,7 @@
     (set string s editxstr " x:")
     (set string 4 editxvalstr "0")
     (set int64 1 editx_len 4)
+
     // y
 	(set int64 1 edity 5)
 	(set int64 1 edity_x 130)
@@ -97,6 +99,16 @@
     (set string s editystr " y:")
     (set string 4 edityvalstr "0")
     (set int64 1 edity_len 4)
+
+    // variable names prefix
+    (set int64 1 editname 6)
+    (set int64 1 editname_x 0)
+    (set int64 1 editname_y 0)
+    (set int64 1 editname_x2 0)
+    (set int64 1 editname_y2 0)
+    (set string s editnamestr " name:")
+    (set string 10 editnamevalstr "foo")
+    (set int64 1 editname_len 10)
 
 	(:set_screen_size !)
 	// open screen
@@ -155,6 +167,10 @@
     (editx_x2 editx_y2 stpop)
     ((editx_x2 offset_x +) edity_x =)
     (edity edity_x editx_y editystr edityvalstr edity_len status :set_gadget_string !)
+    (edity :get_gadget_x2y2 !)
+    (edity_x2 edity_y2 stpop)
+    ((edity_x2 offset_x +) editname_x =)
+    (editname editname_x editx_y editnamestr editnamevalstr editname_len status :set_gadget_string !)
 (funcend)
 
 #include <sdl-lib.l1h>

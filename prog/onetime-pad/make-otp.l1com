@@ -1,0 +1,79 @@
+// make-otp.l1com - (C) 2023 Stefan Pietzonke aka koder77
+// create one time pad random key file
+
+#include <intr.l1h>
+(main func)
+    #include <file-def.l1h>
+    #include <math-const.l1h>
+
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set int64 1 i 0)
+    (set int64 1 f 0)
+    (set int64 1 bytes 0)
+    (set byte 1 random 0)
+    (set int64 1 ret 0)
+    (set string 4096 file_name_str "")
+    (set int64 1 file_name_max 4095)
+    (set int64 1 file_handle 0)
+    (set string s error_init_files_str "error: can't allocate file handles!")
+    (set string s error_open_file_str "error: can't open file!")
+    (set string s error_write_file_str "error: can't write file!")
+    (set string s file_name_inpstr "otp file name: ")
+    (set string s bytes_inpstr "number of bytes: ")
+
+    (zero :math_init !)
+    (one one :file_init !)
+    (ret stpop)
+    (((ret zero !=) f =) f if)
+        print_s (error_init_files_str)
+        print_n
+        exit (one)
+	(endif)
+
+    // get input
+    print_s (file_name_inpstr)
+    input_s (file_name_max, file_name_str)
+
+    print_s (bytes_inpstr)
+    input_i (bytes)
+    ((bytes zero +) bytes =)
+
+    // open file
+    (file_mode_write file_name_str :file_open !)
+    (file_handle stpop)
+    (((file_handle zero <) f =) f if)
+        print_s (error_open_file_str)
+        print_n
+        exit (one)
+    (endif)
+
+    // init random number generator
+    (:math_randinit !)
+
+    // write random numbers to file
+    (zero i =)
+
+    (for-loop)
+    (((i bytes <) f =) f for)
+        (:math_randbyte !)
+        (random stpop)
+
+        (file_handle random :file_putc !)
+        (ret stpop)
+        (((ret zero !=) f =) f if)
+            print_s (error_write_file_str)
+            print_n
+             (file_handle :file_close !)
+            exit (one)
+        (endif)
+
+        ((i one +) i =)
+    (next)
+
+    (file_handle :file_close !)
+    exit (zero)
+(funcend)
+
+#include <math-lib.l1h>
+#include <file-lib.l1h>
