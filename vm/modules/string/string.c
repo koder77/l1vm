@@ -791,6 +791,51 @@ U1 *string_mid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+U1 *string_mid_to_byte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// get char at given position in source string
+	S8 strsourceaddr ALIGN;
+	S8 pos ALIGN;
+	S8 strsource_len ALIGN;
+	U1 byte;
+
+	sp = stpopi ((U1 *) &pos, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_mid_to_byte: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_mid_to_byte: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	strsource_len = strlen_safe ((const char *) &data[strsourceaddr], MAXLINELEN);
+	if (pos < 0 || pos > strsource_len)
+	{
+		// ERROR:
+		printf ("string_mid_to_byte: ERROR: source array overflow!\n");
+		return (NULL);
+	}
+
+	byte =  data[strsourceaddr + pos];
+
+	sp = stpushb (byte, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_mid_to_byte: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	return (sp);
+}
+
 U1 *string_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 strsourceaddr ALIGN;
