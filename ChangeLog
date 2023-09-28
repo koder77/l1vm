@@ -1,7 +1,9 @@
 L1VM (2.6.1)
 	Added string module string mid to byte function.
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 21 Sep 2023 18:20 +0200
+	Update: Clang toolchain git build.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 28 Sep 2023 15:41 +0200
 
 L1VM (2.6.0)
 	2023/summer reloaded version :)
