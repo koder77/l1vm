@@ -2,8 +2,9 @@ L1VM (2.6.1)
 	Added string module string mid to byte function.
 
 	Update: Clang toolchain git build.
+	Debian build scripts updated to use clang-15 for zerobuild build.
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 28 Sep 2023 15:41 +0200
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 28 Sep 2023 22:23 +0200
 
 L1VM (2.6.0)
 	2023/summer reloaded version :)
