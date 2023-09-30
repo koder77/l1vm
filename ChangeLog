@@ -1,6 +1,6 @@
 L1VM (2.6.2)
 	New: compiler flags:
-	(variable-immutable) (variable-mutable) to set the default behavior on varaibles.
+	(variable-immutable) (variable-mutable) to set the default behavior on variables.
 	See demo prog/hello-mut.l1com!
 
 	Update: syntax highlighters to contain new "mut-byte" etc. variable definitions.
