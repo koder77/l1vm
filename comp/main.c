@@ -93,6 +93,9 @@ U1 inside_object = 0;
 // current object name
 U1 object_name[MAXSTRLEN];
 
+// set immutable variables flag
+U1 var_immutable = 0;
+
 void init_ast (void)
 {
 	S4 i, j;
@@ -817,6 +820,12 @@ S2 parse_line (U1 *line)
 							ok = 1;
 						}
 
+						if (var_immutable == 1)
+						{
+							// all normal variables are set as immutable by flag
+							data_info[data_ind].constant = 1;
+						}
+
 						// const, constant variable definition ==================================
 						if (strcmp ((const char *) ast[level].expr[j][1], "const-byte") == 0)
 						{
@@ -869,6 +878,62 @@ S2 parse_line (U1 *line)
 							data_info[data_ind].type_size = sizeof (U1);
 							strcpy ((char *) data_info[data_ind].type_str, "B");
 							data_info[data_ind].constant = 1;
+							ok = 1;
+						}
+
+						// mutable variable definition ==================================
+						// for use if immutable var as default is set!
+						if (strcmp ((const char *) ast[level].expr[j][1], "mut-byte") == 0)
+						{
+							data_info[data_ind].type = BYTE;
+							data_info[data_ind].type_size = sizeof (U1);
+							strcpy ((char *) data_info[data_ind].type_str, "B");
+							data_info[data_ind].constant = 0;
+							ok = 1;
+						}
+
+						if (strcmp ((const char *) ast[level].expr[j][1], "mut-int16") == 0)
+						{
+							data_info[data_ind].type = WORD;
+							data_info[data_ind].type_size = sizeof (S2);
+							strcpy ((char *) data_info[data_ind].type_str, "W");
+							data_info[data_ind].constant = 0;
+							ok = 1;
+						}
+
+						if (strcmp ((const char *) ast[level].expr[j][1], "mut-int32") == 0)
+						{
+							data_info[data_ind].type = DOUBLEWORD;
+							data_info[data_ind].type_size = sizeof (S4);
+							strcpy ((char *) data_info[data_ind].type_str, "D");
+							data_info[data_ind].constant = 0;
+							ok = 1;
+						}
+
+						if (strcmp ((const char *) ast[level].expr[j][1], "mut-int64") == 0)
+						{
+							data_info[data_ind].type = QUADWORD;
+							data_info[data_ind].type_size = sizeof (S8);
+							strcpy ((char *) data_info[data_ind].type_str, "Q");
+							data_info[data_ind].constant = 0;
+							ok = 1;
+						}
+
+						if (strcmp ((const char *) ast[level].expr[j][1], "mut-double") == 0)
+						{
+							data_info[data_ind].type = DOUBLEFLOAT;
+							data_info[data_ind].type_size = sizeof (F8);
+							strcpy ((char *) data_info[data_ind].type_str, "F");
+							data_info[data_ind].constant = 0;
+							ok = 1;
+						}
+
+						if (strcmp ((const char *) ast[level].expr[j][1], "mut-string") == 0)
+						{
+							data_info[data_ind].type = STRING;
+							data_info[data_ind].type_size = sizeof (U1);
+							strcpy ((char *) data_info[data_ind].type_str, "B");
+							data_info[data_ind].constant = 0;
 							ok = 1;
 						}
 
@@ -4537,6 +4602,20 @@ S2 parse_line (U1 *line)
 									no_var_pull = 0;
 									continue;
 								}							
+
+								// set variable is immutable by default ========================================
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "variable-immutable") == 0)
+								{
+									var_immutable = 1;
+									continue;
+								}
+
+								// set variable is immutable by default ========================================
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "variable-mutable") == 0)
+								{
+									var_immutable = 0;
+									continue;
+								}
 
 								// pointer: store data address int int64 variable
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "pointer") == 0)

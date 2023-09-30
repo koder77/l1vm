@@ -28,7 +28,7 @@
       (let* (
             ;; define several category of keywords
             (x-keywords '("if+" "if" "else" "endif" "for-loop" "for" "next" "do" "while" "switchend" "switch" "set" "pushb" "pushw" "pushdw" "pushd" "pullb" "pullw" "pulldw" "pullqw" "pulld" "addi" "subi" "muli" "divi" "addd" "subd" "muld" "divd" "smuli" "sdivi" "andi" "ori" "bandi" "bori" "bxori" "modi" "eqi" "neqi" "gri" "lsi" "greqi" "lseqi" "eqd" "neqd" "grd" "lsd" "greqd" "lseqd" "jmp" "jmpi" "stpushb" "stpopb" "stpushi" "stpopi" "stpushd" "stpopd" "stpush" "stpop" "loada" "loadd" "intr0" "intr1" "inclsijmpi" "decgrijmpi" "movi" "movd" "loadl" "jmpa" "jsra" "jsr" "rts" "load" "noti" "call" "!" "exit" "loadreg" "reset-reg" "pointer" "cast" "range"))
-            (x-types '("byte" "string" "int16" "int32" "int64" "double" "bool"))
+            (x-types '("mut-byte" "mut-string" "mut-int16" "mut-int32" "mut-int64" "mut-double" "byte" "string" "int16" "int32" "int64" "double" "bool"))
             (x-constants '("const-byte" "const-string" "const-int16" "const-int32" "const-int64" "const-double"))
             (x-functions '("#func" "#define" "#var" "#include" "func" "funcend" "ASM" "ASM_END" "optimize-if-off" "optimize-if" "no-var-pull-off" "no-var-pull-on" "reset-reg" "nested-code-off" "objectend" "object"))
             ;; generate regex string for each category of keywords

@@ -128,6 +128,12 @@
         <item>const-int32</item>
         <item>const-int64</item>
         <item>const-double</item>
+         <item>mut-byte</item>
+        <item>mut-string</item>
+        <item>mut-int16</item>
+        <item>mut-int32</item>
+        <item>mut-int64</item>
+        <item>mut-double</item>
         <item>byte</item>
         <item>string</item>
         <item>int16</item>

@@ -1,3 +1,12 @@
+L1VM (2.6.2)
+	New: compiler flags:
+	(variable-immutable) (variable-mutable) to set the default behavior on varaibles.
+	See demo prog/hello-mut.l1com!
+
+	Update: syntax highlighters to contain new "mut-byte" etc. variable definitions.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 30 Sep 2023 21:38 +0200
+
 L1VM (2.6.1)
 	Added string module string mid to byte function.
 
