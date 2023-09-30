@@ -104,6 +104,13 @@ U1 *cells_alloc_neurons_equal (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	if (max_cells > cells_number)
+	{
+		// error
+		printf ("cells_alloc_neurons_equal: ERROR: max cells to high!\n");
+		return (NULL);
+	}
+
 	ret = Cells_alloc_neurons_equal (cells, max_cells, neurons);
 
 	// push return value to stack
@@ -140,6 +147,13 @@ U1 *cells_alloc_neurons (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	if (cell > cells_number)
+	{
+		// error
+		printf ("cells_alloc_neurons: ERROR: cell to high!\n");
+		return (NULL);
+	}
+
 	ret = Cells_alloc_neurons (cells, cell, neurons);
 
 	// push return value to stack
@@ -164,6 +178,13 @@ U1 *cells_dealloc_neurons (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	{
 		// error
 		printf ("cells_dealloc_neurons: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (max_cells > cells_number)
+	{
+		// error
+		printf ("cells_dealloc_neurons: ERROR: max cells to high!\n");
 		return (NULL);
 	}
 
@@ -227,6 +248,14 @@ U1 *cells_fann_do_update_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("cells_fann_do_update_ann: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
+
+	if (cell > cells_number)
+	{
+		// error
+		printf ("cells_fann_do_update_ann: ERROR: max cells to high!\n");
+		return (NULL);
+	}
+
 
 	inputf = calloc (inputs, sizeof (F8));
 	if (inputf == NULL)
@@ -364,6 +393,13 @@ U1 *cells_fann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	if (cell > cells_number)
+	{
+		// error
+		printf ("cells_fann_read_ann: ERROR: cell to high!\n");
+		return (NULL);
+	}
+
 	inputf = calloc (inputs, sizeof (F8));
 	if (inputf == NULL)
 	{
@@ -459,6 +495,13 @@ U1 *cells_fann_run_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	if (cell > cells_number)
+	{
+		// error
+		printf ("cells_fann_run_ann: ERROR: cell to high!\n");
+		return (NULL);
+	}
+
 	ret = Cells_fann_run_ann (cells, cell, node);
 
 	// push return value to stack
@@ -517,6 +560,13 @@ U1 *cells_fann_get_output (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	if (cell > cells_number)
+	{
+		// error
+		printf ("cells_fann_get_output: ERROR: cell to high!\n");
+		return (NULL);
+	}
+
 	ret = Cells_fann_get_output (cells, cell, node, output, &outputf);
 
 	// printf ("cells_fann_get_output: output: %lf\n", outputf);
@@ -570,6 +620,13 @@ U1 *cells_alloc_node_links (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	{
 		// error
 		printf ("cells_alloc_node_links: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (cell > cells_number)
+	{
+		// error
+		printf ("cells_alloc_node_links: ERROR: cell to high!\n");
 		return (NULL);
 	}
 
@@ -645,6 +702,13 @@ U1 *cells_set_node_link (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	if (cell > cells_number)
+	{
+		// error
+		printf ("cells_set_node_link: ERROR: cell to high!\n");
+		return (NULL);
+	}
+
 	ret = Cells_set_node_link (cells, cell, node, link, link_node, input, output);
 
 	// push return value to stack
@@ -690,6 +754,20 @@ U1 *cells_fann_get_max_layer (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	if (start_cell > cells_number)
+	{
+		// error
+		printf ("cells_fann_get_max_layer: ERROR: start cell to high!\n");
+		return (NULL);
+	}
+
+	if (end_cell > cells_number)
+	{
+		// error
+		printf ("cells_fann_get_max_layer: ERROR: end cell to high!\n");
+		return (NULL);
+	}
+
 	ret = Cells_fann_get_max_layer (cells, start_cell, end_cell, (S8 *) &data[max_layer_addr]);
 
 	// push return value to stack
@@ -723,6 +801,13 @@ U1 *cells_fann_get_max_nodes (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	{
 		// error
 		printf ("cells_fann_get_max_nodes: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (cell > cells_number)
+	{
+		// error
+		printf ("cells_fann_get_max_nodes: ERROR: cell to high!\n");
 		return (NULL);
 	}
 
@@ -780,6 +865,20 @@ U1 *cells_fann_run_ann_go_links (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	if (start_cell >= cells_number)
+	{
+		// error
+		printf ("cells_fann_run_ann_go_links: ERROR: start cell to high!\n");
+		return (NULL);
+	}
+
+	if (end_cell > cells_number)
+	{
+		// error
+		printf ("cells_fann_run_ann_go_links: ERROR: end cell to high!\n");
+		return (NULL);
+	}
+
 	ret = Cells_fann_run_ann_go_links (cells, start_cell, end_cell, start_layer, end_layer);
 
 	// push return value to stack
@@ -824,6 +923,20 @@ U1 *cells_fann_save_cells (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	{
 		// error
 		printf ("cells_fann_save_cells: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (start_cell > cells_number)
+	{
+		// error
+		printf ("cells_fann_save_cells: ERROR: start cell to high!\n");
+		return (NULL);
+	}
+
+	if (end_cell > cells_number)
+	{
+		// error
+		printf ("cells_fann_save_cells: ERROR: end cell to high!\n");
 		return (NULL);
 	}
 
