@@ -18,6 +18,8 @@
     <item>nested-code-off</item>
     <item>objectend</item>
     <item>object</item>
+    <item>variable-immutable</item>
+    <item>variable-mutable</item>
     </list>
     <list name="keywords">
     <item>funcend</item>
