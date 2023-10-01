@@ -2,5 +2,5 @@
 echo "building modules finished!"
 echo "copying modules to ~/bin..."
 
-cp libl1vm* ~/bin
+cp libl1vm* ~/l1vm/bin
 exit 0

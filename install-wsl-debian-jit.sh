@@ -2,8 +2,8 @@
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 # Install script for Windows 10 WSL Debian
 
-export PATH="$HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
+export PATH="$HOME/l1vm/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
 
 if uname -a | grep -q "microsoft"; then
 echo "Windows 10 WSL Debian detected?"
@@ -128,18 +128,19 @@ if ! dpkg -s clang-15 &> /dev/null; then
 fi
 
 # check if ~/bin exists
-DIR="~/bin"
+DIR="~/l1vm/bin"
 if [ -d "$DIR" ]; then
   ### Take action if $DIR exists ###
   echo "${DIR} already exists!"
 else
   ###  Control will jump here if $DIR does NOT exists ###
   echo "${DIR} will be created now..."
-  mkdir ~/bin
+  mkdir ~/l1vm
+  mkdir ~/l1vm/bin
 fi
 
 # check if zerobuild installed into ~/bin
-FILE=~/bin/zerobuild
+FILE=~/l1vm/bin/zerobuild
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
@@ -148,7 +149,7 @@ else
 	git clone https://github.com/koder77/zerobuild.git
 	cd zerobuild
 	./make-clang-15.sh
-	cp zerobuild ~/bin/
+	cp zerobuild ~/l1vm/bin/
 	cd ..
 fi
 
@@ -222,10 +223,10 @@ else
 fi
 cp l1vm l1vm-jit
 cd ..
-cp assemb/l1asm ~/bin
-cp comp/l1com ~/bin
-cp prepro/l1pre ~/bin
-cp vm/l1v* ~/bin
+cp assemb/l1asm ~/l1vm/bin
+cp comp/l1com ~/l1vm/bin
+cp prepro/l1pre ~/l1vm/bin
+cp vm/l1v* ~/l1vm/bin
 echo "VM binaries installed into ~/bin"
 
 cd modules

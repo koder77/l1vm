@@ -5,7 +5,10 @@ L1VM (2.6.2)
 
 	Update: syntax highlighters to contain new "mut-byte" etc. variable definitions.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 30 Sep 2023 21:38 +0200
+	NEW: most installation scripts now install the binaries and libraries into ~/l1vm/bin
+	You have to set this directory in your PATH and LD_LIBRARY_PATH env variables!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 01 Oct 2023 10:31 +0200
 
 L1VM (2.6.1)
 	Added string module string mid to byte function.

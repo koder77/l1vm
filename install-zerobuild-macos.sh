@@ -2,8 +2,8 @@
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 #
 
-export PATH="$HOME/bin:$PATH"
-export DYLD_LIBRARY_PATH="$HOME/bin:$DYLD_LIBRARY_PATH"
+export PATH="$HOME/l1vm/bin:$PATH"
+export DYLD_LIBRARY_PATH="$HOME/l1vm/bin:$DYLD_LIBRARY_PATH"
 
 #install brew
 xcode-select --install
@@ -40,18 +40,19 @@ export CC=clang
 export CCPP=clang++
 
 # check if ~/bin exists
-DIR="~/bin"
+DIR="~/l1vm/bin"
 if [ -d "$DIR" ]; then
   ### Take action if $DIR exists ###
   echo "${DIR} already exists!"
 else
   ###  Control will jump here if $DIR does NOT exists ###
   echo "${DIR} will be created now..."
-  mkdir ~/bin
+  mkdir ~/l1vm
+  mkdir ~/l1vm/bin
 fi
 
 # check if zerobuild installed into ~/bin
-FILE=~/bin/zerobuild
+FILE=~/l1vm/bin/zerobuild
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
@@ -60,7 +61,7 @@ else
 	git clone https://github.com/koder77/zerobuild.git
 	cd zerobuild
 	./make.sh
-	cp zerobuild ~/bin/
+	cp zerobuild ~/l1vm/bin/
 	cd ..
 fi
 
@@ -101,10 +102,10 @@ else
 	exit 1
 fi
 cd ..
-cp assemb/l1asm ~/bin
-cp comp/l1com ~/bin
-cp prepro/l1pre ~/bin
-cp vm/l1v* ~/bin/l1vm
+cp assemb/l1asm ~/l1vm/bin
+cp comp/l1com ~/l1vm/bin
+cp prepro/l1pre ~/l1vm/bin
+cp vm/l1v* ~/bin/l1vm/l1vm
 echo "VM binaries installed into ~/bin"
 
 cd modules

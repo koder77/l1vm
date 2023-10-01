@@ -3,8 +3,8 @@
 
 sudo apt-get update
 
-export PATH="$HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
+export PATH="$HOME/l1vm/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
 
 if ! dpkg -s libsdl2-dev &> /dev/null; then
 	echo "try to install libsdl2-dev..."
@@ -117,18 +117,19 @@ if ! dpkg -s clang-15 &> /dev/null; then
 fi
 
 # check if ~/bin exists
-DIR="~/bin"
+DIR="~/l1vm/bin"
 if [ -d "$DIR" ]; then
   ### Take action if $DIR exists ###
   echo "${DIR} already exists!"
 else
   ###  Control will jump here if $DIR does NOT exists ###
   echo "${DIR} will be created now..."
-  mkdir ~/bin
+  mkdir ~/l1vm
+  mkdir ~/l1vm/bin
 fi
 
 # check if zerobuild installed into ~/bin
-FILE=~/bin/zerobuild
+FILE=~/l1vm/bin/zerobuild
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
@@ -179,10 +180,10 @@ else
 fi
 cp l1vm l1vm-nojit
 cd ..
-cp assemb/l1asm ~/bin
-cp comp/l1com ~/bin
-cp prepro/l1pre ~/bin
-cp vm/l1v* ~/bin
+cp assemb/l1asm ~/l1vm/bin
+cp comp/l1com ~/l1vm/bin
+cp prepro/l1pre ~/l1vm/bin
+cp vm/l1v* ~/l1vm/bin
 echo "VM binaries installed into ~/bin"
 
 cd modules
