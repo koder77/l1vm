@@ -203,12 +203,15 @@ This source of the L1VM is linked with the SDL2 libraries.
 
 
 <h2>1. Configuration</h2>
+<b>NEW</b>
 Before installation you have to add the following lines to your "~/.bashrc" bash config file: <br>
 
 ```
-export PATH="$HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
+export PATH="$HOME/l1vm/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
 ```
+
+You also can run the ```set-path.sh``` script to do this.
 
 Configure the file access for SANDBOX mode or not, and set your /home directory name:
 include/settings.h:
