@@ -22,7 +22,6 @@
 	(set const-int64 1 Poutputfaddr 120)
 	(set int64 1 layer_zero 0)
 	(set int64 1 layer_one 1)
-	(set int64 1 ret 0)
 	(set double 1 zerof 0.0)
 	(set double 1 onef 1.0)
 	(set int64 1 offset 8)

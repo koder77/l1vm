@@ -1,3 +1,8 @@
+L1VM (2.6.4)
+	Cells module update: added dealloc node links function.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 06 Oct 2023 19:28 +0200
+
 L1VM (2.6.3)
 	Net module socket_write_string: possible buffer overflow fix!
 

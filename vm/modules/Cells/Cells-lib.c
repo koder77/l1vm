@@ -644,6 +644,49 @@ U1 *cells_alloc_node_links (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+U1 *cells_dealloc_node_links (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 cell ALIGN;
+	S8 node ALIGN;
+	S2 ret;
+
+	sp = stpopi ((U1 *) &node, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("cells_dealloc_node_links: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &cell, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("cells_dealloc_node_links: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (cell > cells_number)
+	{
+		// error
+		printf ("cells_dealloc_node_links: ERROR: cell to high!\n");
+		return (NULL);
+	}
+
+	ret = Cells_dealloc_node_links (cells, cell, node);
+
+	// push return value to stack
+	sp = stpushi (ret, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("cells_dealloc_node_links: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	return (sp);
+}
+
 U1 *cells_set_node_link (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 cell ALIGN;
