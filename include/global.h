@@ -141,7 +141,7 @@
 
 // info strings:
 #define COPYRIGHT_STR " 2023/fall (C) 2017-2023 Stefan Pietzonke - software research"
-#define VM_VERSION_STR		"2.6.4"		// version number
+#define VM_VERSION_STR "2.6.5"		// version number
 #define MOTTO_STR "colorful leaves"
 
 // no user defined definitions below this section! ============================

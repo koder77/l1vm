@@ -1,3 +1,9 @@
+L1VM (2.6.5)
+	Compiler update: added set const-bool and mut-bool varaible definitions.
+	Syntax highlighters update.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 07 Oct 2023 17:58 +0200
+
 L1VM (2.6.4)
 	Cells module update: added dealloc node links function.
 

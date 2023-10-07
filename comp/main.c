@@ -827,6 +827,16 @@ S2 parse_line (U1 *line)
 						}
 
 						// const, constant variable definition ==================================
+						if (strcmp ((const char *) ast[level].expr[j][1], "const-bool") == 0)
+						{
+							data_info[data_ind].type = BYTE;
+							data_info[data_ind].type_size = sizeof (U1);
+							strcpy ((char *) data_info[data_ind].type_str, "B");
+							data_info[data_ind].constant = 1;
+							boolean_var = 1;    // set to one, for definition check later
+							ok = 1;
+						}
+
 						if (strcmp ((const char *) ast[level].expr[j][1], "const-byte") == 0)
 						{
 							data_info[data_ind].type = BYTE;
@@ -883,6 +893,16 @@ S2 parse_line (U1 *line)
 
 						// mutable variable definition ==================================
 						// for use if immutable var as default is set!
+						if (strcmp ((const char *) ast[level].expr[j][1], "mut-bool") == 0)
+						{
+							data_info[data_ind].type = BYTE;
+							data_info[data_ind].type_size = sizeof (U1);
+							strcpy ((char *) data_info[data_ind].type_str, "B");
+							data_info[data_ind].constant = 0;
+							boolean_var = 1;    // set to one, for definition check later
+							ok = 1;
+						}
+
 						if (strcmp ((const char *) ast[level].expr[j][1], "mut-byte") == 0)
 						{
 							data_info[data_ind].type = BYTE;

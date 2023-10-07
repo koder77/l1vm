@@ -124,12 +124,14 @@
 
     </list>
 	<list name="variables">
+        <item>const-bool</item>
         <item>const-byte</item>
         <item>const-string</item>
         <item>const-int16</item>
         <item>const-int32</item>
         <item>const-int64</item>
         <item>const-double</item>
+        <item>mut-bool</item>
          <item>mut-byte</item>
         <item>mut-string</item>
         <item>mut-int16</item>
