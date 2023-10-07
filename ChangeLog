@@ -1,5 +1,5 @@
 L1VM (2.6.5)
-	Compiler update: added set const-bool and mut-bool varaible definitions.
+	Compiler update: added set const-bool and mut-bool variable definitions.
 	Syntax highlighters update.
 
 -- Stefan Pietzonke <jay-t@gmx.net> Sat 07 Oct 2023 17:58 +0200
