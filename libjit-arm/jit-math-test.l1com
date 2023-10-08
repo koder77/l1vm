@@ -1,0 +1,66 @@
+// jit-math-test.l1com
+//	JIT compiler math test
+#include <intr.l1h>
+(main func)
+    (set int64 1 zero 0)
+    (set int64 1 one 1)
+	(set int64 1 x 4000000000)
+    (set int64 1 y 100)
+    (set int64 1 z 2)
+    (set int64 1 d 4)
+    (set int64 1 math_int_res 0)
+    (set int64 1 math_int_jit_res 0)
+    (set int64 1 ret 0)
+    (set int64 1 f 0)
+    (set int64 1 jit_int_1 0)
+    (set int64 1 jit_int_2 0)
+    (set string s integer_jit_failstr "ERROR: JIT-compiler integer fails!")
+    (set string s integer_jit_okstr "JIT-compiler integer passed: OK!")
+    (set string s run_compilerstr "running JIT-compiler... ")
+    (set string s run_codestr "running JIT code... ")
+    (set string s okstr "ok!")
+    {math_int_res = (x + y - y * z / d)}
+    (:test_math_int !)
+    (math_int_jit_res stpopi)
+    (((math_int_res math_int_jit_res !=) f =) f if+)
+        print_s (integer_jit_failstr)
+        print_n
+        exit (one)
+    (else)
+        print_s (integer_jit_okstr)
+        print_n
+    (endif)
+    exit (0)
+(funcend)
+(test_math_int func)
+    (ASM)
+    loada zero, 0, I0
+    loada x, 0, I1
+    loada y, 0, I2
+    loada z, 0, I3
+    loada d, 0, I4
+    loadl :jit_int_1, I20
+    loadl :jit_int_2, I21
+    loada run_compilerstraddr, 0, I30
+    loada run_codestraddr, 0, I31
+    loada okstraddr, 0, I32
+    intr0 6, I30, 0, 0
+    intr0 253, I20, I21, 0
+    intr0 6, I32, 0, 0
+    intr0 7, 0, 0, 0
+    intr0 6, I31, 0, 0
+    intr0 254, I0, 0, 0
+    intr0 6, I32, 0, 0
+    intr0 7, 0, 0, 0
+    jmp :jit_end
+    :jit_int_1
+    addi I1, I2, I10
+    subi I10, I2, I10
+    muli I10, I3, I10
+    :jit_int_2
+    divi I10, I4, I10
+    :jit_end
+    stpushi I10
+    rts
+    (ASM_END)
+(funcend)

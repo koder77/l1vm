@@ -1,0 +1,15 @@
+# zerobuild makefile
+
+[executable, shared, name = libl1vm-jit.so]
+sources = jit-arm-64.cpp
+
+includes = ../include, /usr/local/include
+
+ccompiler = $CC
+c++compiler = $CCPP
+
+linker = ld
+aflags = "cru"
+
+cflags = "-fPIC -O2 -fomit-frame-pointer -Wall"
+lflags = "-shared -lasmjit -Wl,-z,relro,-z,now"
