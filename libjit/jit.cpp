@@ -21,10 +21,9 @@
 // Generates code for x86 64 bit. The double floating point number opcodes use SSE opcodes.
 
 //
-// unit pass: addi, subi, muli, divi, addd, subd, muld, divd
+// unit pass: ALL opcodes did pass the tests! Everything allright!
 //
 //
-// rest to be tested and tests to be written!
 
 
 #include <asmjit/x86.h>

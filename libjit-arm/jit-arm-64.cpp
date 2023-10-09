@@ -358,8 +358,8 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 					}
 				#endif
 
-	            a.ldrsb (R8, ptr (RSI, OFFSET(r1)));
-	            a.ldrsb (R9, ptr (RSI, OFFSET(r2)));
+	            a.ldr (R8, ptr (RSI, OFFSET(r1)));
+	            a.ldr (R9, ptr (RSI, OFFSET(r2)));
 
 				/// x86:
 				// a.mov (R8, ptr (RSI, OFFSET(r1))); /* r1v */
