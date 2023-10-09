@@ -20,13 +20,11 @@
 // JIT-compiler uses asmjit library.
 // Generates code for x86 64 bit. The double floating point number opcodes use SSE opcodes.
 
-// DON'T USE THIS! working on testing
 //
-// unit pass: addd, subd, muld, divd
+// unit pass: addi, subi, muli, divi, addd, subd, muld, divd
 //
-// unit fail: divi
 //
-// rest to be tested
+// rest to be tested and tests to be written!
 
 
 #include <asmjit/x86.h>
@@ -62,6 +60,7 @@ typedef void (*Func)(void);
 		#define RCX 	x86::rcx
 		#define EAX 	x86::eax
 		#define EDX		x86::edx
+        #define RAX     x86::rax
 		#define ST0     x86::fp7
 		#define ST1     x86::fp6
 	#endif
@@ -375,15 +374,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 						break;
 
 					case DIVI:
-						/*
-						a.mov (EAX, R10);
-						a.xor_ (EDX, EDX);
+						a.mov (RAX, R8);
+						a.cqo ();
 						a.idiv (R9);
-						a.mov (R8, EAX);
-						*/
-
-						printf ("JIT-compiler: ERROR: divi not implemented! EXITNG!\n");
-						return (1);
+						a.mov (R8, RAX);
 						break;
 				}
 
