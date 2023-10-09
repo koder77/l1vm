@@ -20,6 +20,15 @@
 // JIT-compiler uses asmjit library.
 // Generates code for x86 64 bit. The double floating point number opcodes use SSE opcodes.
 
+// currently disabled, working on testing
+//
+// unit pass: addd, subd, muld, divd
+//
+// unit fail: divi
+//
+// rest to be tested
+
+
 #include <asmjit/x86.h>
 
 using namespace asmjit;
@@ -138,7 +147,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 	S8 jump_l ALIGN = 0;
 	S8 jump_label ALIGN = 0;
 	S8 jump_target ALIGN = 0;
- 
+
   	jcode.init(rt.environment());      // Initialize code to match the JIT environment.
  
   	x86::Assembler a(&jcode);           // Create and attach x86::Assembler to code.
@@ -324,6 +333,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
                 r1 = code[i + 1];
                 r2 = code[i + 2];
                 r3 = code[i + 3];
+
+				// BREAK HERE
+				printf ("JIT-compiler: currently under development. OPCODE NOT WORKING SORRY!\n");
+                return (1);
 
 				#if DEBUG
 					printf ("JIT-compiler: int opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
