@@ -20,7 +20,7 @@
 // JIT-compiler uses asmjit library.
 // Generates code for x86 64 bit. The double floating point number opcodes use SSE opcodes.
 
-// currently disabled, working on testing
+// DON'T USE THIS! working on testing
 //
 // unit pass: addd, subd, muld, divd
 //
@@ -334,10 +334,6 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
                 r2 = code[i + 2];
                 r3 = code[i + 3];
 
-				// BREAK HERE
-				printf ("JIT-compiler: currently under development. OPCODE NOT WORKING SORRY!\n");
-                return (1);
-
 				#if DEBUG
 					printf ("JIT-compiler: int opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
 
@@ -379,10 +375,15 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 						break;
 
 					case DIVI:
+						/*
 						a.mov (EAX, R10);
-						a.xor_ (EDX, EDX);		/* clear the upper 64 bit */
+						a.xor_ (EDX, EDX);
 						a.idiv (R9);
 						a.mov (R8, EAX);
+						*/
+
+						printf ("JIT-compiler: ERROR: divi not implemented! EXITNG!\n");
+						return (1);
 						break;
 				}
 
