@@ -621,11 +621,9 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
 		// printf ("JIT_code_ind: %lli\n", JIT_code_ind);
 
-        if (JIT_code_ind < MAXJITCODE - 1) // JIT_code_ind overflow fix!!
+        if (JIT_code_ind < MAXJITCODE) // JIT_code_ind overflow fix!!
         {
             // create JIT code function
-
-            JIT_code_ind++;
 
             Func funcptr;
 
@@ -695,9 +693,9 @@ extern "C" int free_jit_code (struct JIT_code *JIT_code, S8 JIT_code_ind)
 
 	S4 i;
 
-	if (JIT_code_ind > -1)
+	for (i = 0; i < MAXJITCODE; i++)
 	{
-		for (i = 0; i <= JIT_code_ind; i++)
+		if (JIT_code[i].used == 1)
 		{
 			rt.release((Func *) JIT_code[i].fn);
 		}
