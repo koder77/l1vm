@@ -1871,7 +1871,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
         {
             // create JIT code function
 
-            JIT_code_ind++;
+            //JIT_code_ind++;
 
             Func funcptr;
 
@@ -1941,9 +1941,9 @@ extern "C" int free_jit_code (struct JIT_code *JIT_code, S8 JIT_code_ind)
 
 	S4 i;
 
-	if (JIT_code_ind > -1)
+	for (i = 0; i < MAXJITCODE; i++)
 	{
-		for (i = 0; i <= JIT_code_ind; i++)
+		if (JIT_code[i].used == 1)
 		{
 			rt.release((Func *) JIT_code[i].fn);
 		}

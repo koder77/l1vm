@@ -318,7 +318,7 @@ void clean_data (void)
 void cleanup (void)
 {
 	#if JIT_COMPILER
-		free_jit_code (JIT_code, JIT_code_ind);
+		free_jit_code (JIT_code);
 		if (JIT_code) free (JIT_code);
 	#endif
 
@@ -2323,8 +2323,8 @@ S2 run (void *arg)
 			// run JIT compiler
             arg2 = code[ep + 2];
             arg3 = code[ep + 3];
-
-			if (jit_compiler ((U1 *) code, (U1 *) data, (S8 *) jumpoffs, (S8 *) &regi, (F8 *) &regd, (U1 *) sp, sp_top, sp_bottom, regi[arg2], regi[arg3], JIT_code, JIT_code_ind, code_size) != 0)
+            arg4 = code[ep + 4];
+			if (jit_compiler ((U1 *) code, (U1 *) data, (S8 *) jumpoffs, (S8 *) &regi, (F8 *) &regd, (U1 *) sp, sp_top, sp_bottom, regi[arg2], regi[arg3], JIT_code, regi[arg4], code_size) != 0)
             {
                 printf ("FATAL ERROR: JIT compiler: can't compile!\n");
 				PRINT_EPOS();
@@ -2339,7 +2339,7 @@ S2 run (void *arg)
         case 254:
             arg2 = code[ep + 2];
             // printf ("intr0: 254: RUN JIT CODE: %i\n", arg2);
-			if (run_jit (regi[arg2], JIT_code, JIT_code_ind) == 1)
+			if (run_jit (regi[arg2], JIT_code) == 1)
 			{
 				// ERROR can't run JIT-code 
 				PRINT_EPOS();

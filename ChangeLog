@@ -2,7 +2,9 @@ L1VM (2.6.5)
 	Compiler update: added set const-bool and mut-bool variable definitions.
 	Syntax highlighters update.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sat 07 Oct 2023 17:58 +0200
+	VM: JIT-compiler code cleanup. JIT_code_ind removed
+
+-- Stefan Pietzonke <jay-t@gmx.net> Tue 10 Oct 2023 22:26 +0200
 
 L1VM (2.6.4)
 	Cells module update: added dealloc node links function.
