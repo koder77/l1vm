@@ -1,3 +1,9 @@
+L1VM (2.6.6)
+	JIT-compiler code cleanup.
+        VM: JIT_code cleanup fixed if VM runs without arguments set.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 11 Oct 2023 16:51 +0200
+
 L1VM (2.6.5)
 	Compiler update: added set const-bool and mut-bool variable definitions.
 	Syntax highlighters update.

@@ -157,6 +157,12 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
     a.mov (RSI, imm ((intptr_t)(void *) regi)); /* long registers base: rsi */
 	a.mov (RDI, imm ((intptr_t)(void *) regd)); /* double registers base: rdi */
 
+	if (JIT_code_ind < 0 || JIT_code_ind >= MAXJITCODE)
+	{
+		printf ("JIT compiler: error code index out of range!\n");
+		return (1);
+	}
+
     /* initialize label pos */
 	for (i = 0; i < MAXJUMPLEN; i++)
 	{
@@ -619,35 +625,23 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
     {
         a.ret (x0);		// return to main program code
 
-		// printf ("JIT_code_ind: %lli\n", JIT_code_ind);
+        // create JIT code function
 
-        if (JIT_code_ind < MAXJITCODE) // JIT_code_ind overflow fix!!
+        Func funcptr;
+
+		// store JIT code:
+        Error err = rt.add (&funcptr, &jcode);
+        if (err == 1)
         {
-            // create JIT code function
-
-            Func funcptr;
-
-			// store JIT code:
-            Error err = rt.add (&funcptr, &jcode);
-            if (err == 1)
-            {
-                printf ("JIT compiler: code generation failed!\n");
-                return (1);
-            }
-
-            JIT_code[JIT_code_ind].fn = (Func) funcptr;
-            JIT_code[JIT_code_ind].used = 1;
-            #if DEBUG
-                printf ("JIT compiler: function saved.\n");
-            #endif
-
-            return (0);
-        }
-        else
-        {
-            printf ("JIT compiler: error jit code list full!\n");
+            printf ("JIT compiler: code generation failed!\n");
             return (1);
         }
+
+        JIT_code[JIT_code_ind].fn = (Func) funcptr;
+        JIT_code[JIT_code_ind].used = 1;
+        #if DEBUG
+            printf ("JIT compiler: function saved.\n");
+        #endif
 	}
 	return (0);
 }

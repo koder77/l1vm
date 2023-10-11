@@ -318,8 +318,11 @@ void clean_data (void)
 void cleanup (void)
 {
 	#if JIT_COMPILER
-		free_jit_code (JIT_code);
-		if (JIT_code) free (JIT_code);
+	    if (JIT_code)
+		{
+			free_jit_code (JIT_code);
+			if (JIT_code) free (JIT_code);
+		}
 	#endif
 
     free_modules ();
