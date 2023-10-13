@@ -270,6 +270,8 @@
 	intr1 0, I230, 0, 0
 // join threads
 :join
+	loada delay, 0, I200
+	intr0 8, I200, 0, 0
 	intr1 1, 0, 0, 0
 	loada do_delay, 0, I230
 :waitloop

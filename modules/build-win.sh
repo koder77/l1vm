@@ -36,10 +36,6 @@ chmod +x make-script.sh
 #zerobuild zerobuild-win.txt force script
 #chmod +x make-script.sh
 #./make-script.sh
-cd ../rs232-libserialport
-zerobuild zerobuild-win.txt force script
-chmod +x make-script.sh
-./make-script.sh
 cd ../sdl-2.0
 zerobuild zerobuild-win.txt force script
 chmod +x make-script.sh
@@ -65,7 +61,7 @@ cp ../vm/modules/math/libl1vm* .
 cp ../vm/modules/mpfr-c++/libl1vm* .
 cp ../vm/modules/net/libl1vm* .
 cp ../vm/modules/process/libl1vm* .
-cp ../vm/modules/rs232/libl1vm* .
+#cp ../vm/modules/rs232/libl1vm* .
 cp ../vm/modules/sdl-2.0/libl1vm* .
 cp ../vm/modules/string/libl1vm* .
 cp ../vm/modules/time/libl1vm* .

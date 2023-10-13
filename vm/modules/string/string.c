@@ -157,7 +157,7 @@ U1 *set_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	strcpy ((char *) win_env, (const char *) &data[envnameaddr]);
 	strcat ((char *) win_env, "=");
-	strcat ((char *) win_env, (const cahr *) &data[strvalueaddr]);
+	strcat ((char *) win_env, (const char *) &data[strvalueaddr]);
 
 	ret = _putenv ((const char *) win_env);
 	#endif

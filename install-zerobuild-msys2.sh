@@ -1,6 +1,9 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 
+export PATH="$HOME/l1vm/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
+
 pacman -S mingw-w64-x86_64-clang --noconfirm
 pacman -S git --noconfirm
 pacman -S cmake --noconfirm
@@ -20,19 +23,20 @@ echo "building compiler, assembler and VM..."
 export CC=clang
 export CCPP=clang++
 
-# check if ~/bin exists
-DIR="~/bin"
+# check if ~/l1vm/bin exists
+DIR="~/l1vm/bin"
 if [ -d "$DIR" ]; then
   ### Take action if $DIR exists ###
   echo "${DIR} already exists!"
 else
   ###  Control will jump here if $DIR does NOT exists ###
   echo "${DIR} will be created now..."
-  mkdir ~/bin
+  mkdir ~/l1vm
+  mkdir ~/l1vm/bin
 fi
 
 # check if zerobuild installed into ~/bin
-FILE=~/bin/zerobuild
+FILE=~/l1vm/bin/zerobuild
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
@@ -40,8 +44,8 @@ else
 	echo "cloning and building it now..."
 	git clone https://github.com/koder77/zerobuild.git
 	cd zerobuild
-	./make.sh
-	cp zerobuild ~/bin/
+	./make-clang.sh
+	cp zerobuild ~/l1vm/bin/
 	cd ..
 fi
 
@@ -78,11 +82,11 @@ else
 fi
 cp l1vm l1vm-nojit
 cd ..
-cp assemb/l1asm ~/bin
-cp comp/l1com ~/bin
-cp prepro/l1pre ~/bin
-cp vm/l1v* ~/bin
-echo "VM binaries installed into ~/bin"
+cp assemb/l1asm ~/l1vm/bin
+cp comp/l1com ~/l1v/bin
+cp prepro/l1pre ~/l1vm/bin
+cp vm/l1v* ~/l1vm/bin
+echo "VM binaries installed into ~/l1vm/bin"
 
 cd modules
 echo "installing modules..."
