@@ -1,3 +1,8 @@
+L1vM (2.6.7)
+	Update: memory module init code fixes.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 20 Oct 2023 23:00 +0200
+
 L1VM (2.6.6)
 	JIT-compiler code cleanup.
         VM: JIT_code cleanup fixed if VM runs without arguments set.
