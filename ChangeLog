@@ -1,3 +1,12 @@
+L1vM (2.7.0)
+	I did change the way how the global data is used.
+	It is now possible to allocate local data in a thread.
+	The "data_local_alloc" interrupt allocates local memory and copies the whole global data in it.
+	So all data accesses in the thread are local. As long as you don't switch to global data.
+	See "prog/hello-thread-3-local.l1com" and "prog/webserver-thread-local.l1com".
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 23 Oct 2023 20:56 +0200
+
 L1vM (2.6.7)
 	Update: memory module init code fixes.
 

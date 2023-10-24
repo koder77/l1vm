@@ -44,7 +44,7 @@ S8 stack_size ALIGN = STACKSIZE;		// stack size added to data size when dumped t
 U1 *code = NULL;
 
 // data
-U1 *data = NULL;
+U1 *data_global = NULL;
 
 
 S8 code_ind ALIGN;
@@ -309,14 +309,16 @@ void clean_data (void)
 
 	for (i = 0; i < data_mem_size; i++)
 	{
-		data[i] = 0;
+		data_global[i] = 0;
 	}
 
-	free (data);
+	free (data_global);
 }
 
 void cleanup (void)
 {
+	S8 i ALIGN;
+
 	#if JIT_COMPILER
 	    if (JIT_code)
 		{
@@ -326,9 +328,17 @@ void cleanup (void)
 	#endif
 
     free_modules ();
-	if (data) clean_data ();
+	if (data_global) clean_data ();
     if (code) clean_code ();
+
+	pthread_mutex_lock (&data_mutex);
+	for (i = 0; i < max_cpu; i++)
+	{
+		if (threaddata[i].data != NULL) free (threaddata[i].data);
+	}
+
 	if (threaddata) free (threaddata);
+	pthread_mutex_unlock (&data_mutex);
 }
 
 U1 double_state (F8 num)
@@ -377,6 +387,8 @@ S2 run (void *arg)
 	U1 *srcptr, *dstptr;
 
 	U1 *bptr;
+
+	U1 *data = data_global;
 
 	// jump call stack for jsr, jsra
 	S8 jumpstack[MAXSUBJUMPS];
@@ -2589,13 +2601,67 @@ S2 run (void *arg)
 			eoffs = 5;
 			break;
 
-			
+		case 8:
+		{
+			S8 data_local_size ALIGN = data_mem_size - (stack_size * max_cpu);
+
+		    if (threaddata[cpu_core].data == NULL)
+			{
+				threaddata[cpu_core].data = (U1 *) calloc (data_local_size, sizeof (U1));
+				if (threaddata[cpu_core].data == NULL)
+				{
+					printf ("interrupt 1: allocate local data: out of memory!\n");
+					free (jumpoffs);
+					loop_stop ();
+					pthread_exit ((void *) 1);
+				}
+			}
+
+			// copy data global to data local
+			if (memcpy (threaddata[cpu_core].data, data_global, data_local_size) == NULL)
+			{
+				printf ("interrupt 1: allocate local data: memory copy error!\n");
+				free (jumpoffs);
+				loop_stop ();
+				free (threaddata[cpu_core].data);
+				pthread_exit ((void *) 1);
+			}
+		}
+
+		eoffs = 5;
+		break;
+
+		case 9:
+			// sane check:
+		    if (threaddata[cpu_core].data == NULL)
+			{
+				// ERROR no data local allocated!
+				printf ("interrupt 1: switch to local data: local data not allocated!\n");
+				free (jumpoffs);
+				loop_stop ();
+				pthread_exit ((void *) 1);
+			}
+			// switch data access to data local
+			data = 	threaddata[cpu_core].data;
+
+			eoffs =  5;
+			break;
+
+		case 10:
+			// switch data access to data global
+			data = data_global;
+
+			eoffs = 5;
+			break;
+
+
 		case 255:
 			printf ("thread EXIT\n");
 			arg2 = code[ep + 2];
 			retcode = regi[arg2];
 			pthread_mutex_lock (&data_mutex);
 			threaddata[cpu_core].status = STOP;
+			// if (threaddata[cpu_core].data != NULL) free (threaddata[cpu_core].data);
 			pthread_mutex_unlock (&data_mutex);
 			// loop_stop ();
 			pthread_exit ((void *) retcode);
@@ -3238,12 +3304,14 @@ int main (int ac, char *av[])
 	for (i = 1; i < max_cpu; i++)
 	{
 		threaddata[i].status = STOP;
+		threaddata[i].data = NULL;
 	}
 	threaddata[0].status = RUNNING;		// main thread will run
+	threaddata[0].data = NULL;
 
 	new_cpu = 0;
 
-	threaddata[new_cpu].sp = (U1 *) &data + (data_mem_size - ((max_cpu - 1) * stack_size) - 1);
+	threaddata[new_cpu].sp = (U1 *) &data_global + (data_mem_size - ((max_cpu - 1) * stack_size) - 1);
 	threaddata[new_cpu].sp_top = threaddata[new_cpu].sp;
 	threaddata[new_cpu].sp_bottom = threaddata[new_cpu].sp_top - stack_size + 1;
 

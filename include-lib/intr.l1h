@@ -61,4 +61,7 @@
 #func free_cpus (NUMBER) :(5 NUMBER 0 0 intr1)
 #func globallock (NUMBER) :(6 NUMBER 0 0 intr1)
 #func globalunlock (NUMBER) :(7 NUMBER 0 0 intr1)
+#define data_local_alloc (8 0 0 0 intr1)
+#define data_local (9 0 0 0 intr1)
+#define data_global (10 0 0 0 intr1)
 #func exit (RETCODE) :(255 RETCODE 0 0 intr0)

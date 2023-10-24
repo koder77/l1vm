@@ -141,7 +141,7 @@
 
 // info strings:
 #define COPYRIGHT_STR " 2023/fall (C) 2017-2023 Stefan Pietzonke - software research"
-#define VM_VERSION_STR "2.6.7"		// version number
+#define VM_VERSION_STR "2.7.0"		// version number
 #define MOTTO_STR "colorful leaves"
 
 // no user defined definitions below this section! ============================
@@ -243,6 +243,7 @@ struct threaddata
 	S8 ep_startpos ALIGN;	// code startpos for new thread
 	pthread_t id;			// thread ID
 	U1 status;				// thread status
+    U1 *data;               // own thread data
 };
 
 struct t_var

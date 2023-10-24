@@ -22,7 +22,7 @@
 #include "../include/home.h"
 
 extern U1 *code;
-extern U1 *data;
+extern U1 *data_global;
 extern struct data_info data_info[MAXDATAINFO];
 extern S8 data_info_ind ALIGN;
 
@@ -164,6 +164,8 @@ S2 load_object (U1 *name)
 	S8 i ALIGN;
 	S8 j ALIGN;
 	S8 k ALIGN;
+
+	U1 *data;   // local data pointer, points to data_global later
 
 	U1 *bptr;
 
@@ -702,8 +704,8 @@ S2 load_object (U1 *name)
 		return (1);
 	}
 
-	data = (U1 *) calloc (data_mem_size, sizeof (U1));
-	if (data == NULL)
+	data_global = (U1 *) calloc (data_mem_size, sizeof (U1));
+	if (data_global == NULL)
 	{
 		printf ("ERROR: can't allocate %lli bytes for data!\n", data_mem_size);
 		fclose (fptr);
@@ -713,6 +715,8 @@ S2 load_object (U1 *name)
 		}
 		return (1);
 	}
+
+	data = data_global;
 
 	i = 0;
 	for (j = 0; j <= data_info_ind; j++)
