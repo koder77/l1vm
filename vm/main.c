@@ -332,12 +332,15 @@ void cleanup (void)
     if (code) clean_code ();
 
 	pthread_mutex_lock (&data_mutex);
-	for (i = 0; i < max_cpu; i++)
+	if (threaddata)
 	{
-		if (threaddata[i].data != NULL) free (threaddata[i].data);
-	}
+		for (i = 0; i < max_cpu; i++)
+		{
+			if (threaddata[i].data != NULL) free (threaddata[i].data);
+		}
 
-	if (threaddata) free (threaddata);
+		if (threaddata) free (threaddata);
+	}
 	pthread_mutex_unlock (&data_mutex);
 }
 
