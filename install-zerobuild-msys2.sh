@@ -74,7 +74,8 @@ else
 fi
 
 cd ../vm
-if zerobuild zerobuild-nojit.txt force; then
+# if zerobuild zerobuild-nojit.txt force; then
+if ./make-win.sh; then
 	echo "l1vm build ok!"
 else
 	echo "l1vm build error!"
