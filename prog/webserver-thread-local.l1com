@@ -149,10 +149,10 @@
 	(set string s webserver_rootstr~ "web")
 	(set string 256 filename_realstr~ "")
 	// get values from stack
-	(accept~ stpopi)
-	(server~ stpopi)
 	data_local_alloc
 	data_local
+	(accept~ stpopi)
+	(server~ stpopi)
 	//
 	//
 	// parse loop =============================================================
