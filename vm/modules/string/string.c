@@ -35,6 +35,9 @@
 
 S2 memory_bounds (S8 start, S8 offset_access);
 
+// protos
+S2 memory_bounds (S8 start, S8 offset_access);
+
 struct data_info data_info[MAXDATAINFO];
 S8 data_info_ind;
 
