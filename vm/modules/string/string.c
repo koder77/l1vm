@@ -26,14 +26,10 @@
 // for regular expression function
 #include <regex.h>
 
-// protos
-
 // sort string array
 #define EQUAL               0
 #define ASCENDING           0
 #define DESCENDING          1
-
-S2 memory_bounds (S8 start, S8 offset_access);
 
 // protos
 S2 memory_bounds (S8 start, S8 offset_access);
