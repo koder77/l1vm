@@ -1488,9 +1488,22 @@ S2 swap_str (char *str1, char *str2)
 {
 
     char *temp;
-	S8 temp_len;
+	S8 temp_len ALIGN;
+	S8 str1_len ALIGN;
+	S8 str2_len ALIGN;
 
-	temp_len = strlen_safe (str1, MAXSTRLEN);
+	str1_len = strlen_safe (str1, MAXSTRLEN);
+	str2_len = strlen_safe (str2, MAXSTRLEN);
+
+	if (str1_len > str2_len)
+	{
+		temp_len = str1_len + 1;
+	}
+	else
+	{
+		temp_len = str2_len + 1;
+	}
+
 	temp = calloc (temp_len, sizeof (char));
     if (temp == NULL)
 	{
