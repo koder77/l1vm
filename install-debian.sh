@@ -138,7 +138,7 @@ else
 	git clone https://github.com/koder77/zerobuild.git
 	cd zerobuild
 	./make-clang-15.sh
-	cp zerobuild ~/bin/
+	cp zerobuild ~/l1vm/bin/
 	cd ..
 fi
 
