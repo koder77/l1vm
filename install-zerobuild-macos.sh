@@ -105,7 +105,7 @@ cd ..
 cp assemb/l1asm ~/l1vm/bin
 cp comp/l1com ~/l1vm/bin
 cp prepro/l1pre ~/l1vm/bin
-cp vm/l1v* ~/bin/l1vm/l1vm
+cp vm/l1vm-nojit ~/l1vm/bin/l1vm
 echo "VM binaries installed into ~/bin"
 
 cd modules
