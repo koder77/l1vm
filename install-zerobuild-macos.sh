@@ -10,7 +10,8 @@ xcode-select --install
 #find / -name endian.h
 #exit 0
 
-cp /Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk/usr/include/machine/endian.h /usr/local/include
+# macOS 13 build
+cp /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/machine/endian.h /usr/local/include
 cp /usr/local/include/c++/11/parallel/features.h /usr/local/include
 
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
