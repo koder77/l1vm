@@ -16,6 +16,7 @@
 	(set string 256 circ "")
 	(set string s zerod "0.0")
 	(set int64 1 base 10)
+	(set int64 1 precision_set 4096)
 	(set string s prog_name "math-circle-bignum")
 	(set string s menu_diamstr "1: calculate diameter of circle")
 	(set string s menu_circstr "2: calculate circumference of circle")
@@ -35,7 +36,7 @@
 	(zero :mp_math_init call)
 	(loadreg)
 	// set pi
-	(m_pi@mp_mathaddr base pi_mp :mp_set_float call)
+	(m_pi@mp_mathaddr base precision_set pi_mp :mp_set_float_prec call)
 	(loadreg)
 	(:loop)
 	print_s (prog_name)
@@ -49,17 +50,20 @@
 	print_s (menu_chstr)
 	// read input
 	input_i (input_menu)
+	((input_menu zero +) input_menu =)
 	(((input_menu three ==) f =) f if)
 		// quit
 		exit (zero)
 	(endif)
-	(((input_menu one ==) f =) f if+)
+	(reset-reg)
+	(((input_menu one ==) f =) f if)
 		// reset used variables and set used registers to zero
 		// no context register saving here
 		(reset-reg)
 		(:calc_diam !)
 		(loadreg)
-	(else)
+	(endif)
+	(((input_menu two ==) f =) f if)
 		// reset used variables and set used registers to zero
 		// no context register saving here
 		(reset-reg)
@@ -75,9 +79,9 @@
 	print_s (circstr)
 	// input string circ
 	input_s (input_len, circ)
-	(circaddr base circ_mp :mp_set_float call)
+	(circaddr base precision_set circ_mp :mp_set_float_prec call)
 	(loadreg)
-	(zerodaddr base diam_mp :mp_set_float call)
+	(zerodaddr base precision_set diam_mp :mp_set_float_prec call)
 	(loadreg)
 	(circ_mp pi_mp diam_mp :mp_div_float call)
 	(loadreg)
@@ -91,9 +95,9 @@
 	print_s (diamstr)
 	// input string diam
 	input_s (input_len, diam)
-	(zerodaddr base circ_mp :mp_set_float call)
+	(zerodaddr base precision_set circ_mp :mp_set_float_prec call)
 	(loadreg)
-	(diamaddr base diam_mp :mp_set_float call)
+	(diamaddr base precision_set diam_mp :mp_set_float_prec call)
 	(loadreg)
 	// ((diam m_pi@math *d) circ =)
 	(diam_mp pi_mp circ_mp :mp_mul_float call)
