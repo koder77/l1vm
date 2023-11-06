@@ -1,7 +1,7 @@
 // primes-bignum.l1com
 // check if number in given range is prime or not
 //
-// NEW: mp_set_float_prec function to set numbers base and precision (internal bytes)
+// NEW: mp_set_float_prec function to set numbers base and precision (internal bits)
 //
 #include <intr.l1h>
 
