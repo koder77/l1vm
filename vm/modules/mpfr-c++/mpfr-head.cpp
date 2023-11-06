@@ -30,7 +30,7 @@
 
 using mpfr::mpreal;
 using std::cout;
-using std::endl;
+//using std::endl;
 
 
 #define MAX_FLOAT_NUM 256
@@ -170,11 +170,63 @@ extern "C" U1 *mp_set_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	// printf ("DEBUG: mp_set_float: '%s'\n", (const char *) &data[numstring_address]);
-
 	mpf_float[float_index] = mpfr::mpreal ((const char *) &data[numstring_address]);
+
 	return (sp);
 }
+
+extern "C" U1 *mp_set_float_prec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index ALIGN;
+	S8 numstring_address ALIGN;
+	S8 num_base ALIGN;
+	S8 precision ALIGN;
+
+	sp = stpopi ((U1 *) &float_index, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_set_float_prec: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &precision, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_set_float_prec: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &num_base, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_set_float_prec: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &numstring_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_set_float_prec: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (float_index >= MAX_FLOAT_NUM || float_index < 0)
+	{
+		printf ("mp_set_float_prec: ERROR float index out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
+		return (NULL);
+	}
+
+	// printf ("DEBUG: mp_set_float: '%s'\n", (const char *) &data[numstring_address]);
+
+	mpf_float[float_index] = mpfr::mpreal ((const char *) &data[numstring_address], precision, num_base, MPFR_RNDN);
+
+	return (sp);
+}
+
 
 // get const ==================================================================
 
