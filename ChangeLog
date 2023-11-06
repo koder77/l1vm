@@ -1,4 +1,11 @@
-L1vM (2.7.0)
+L1VM (2.7.1)
+	NEW: MPFR module: mp_set_float_prec function to set numbers base and precision (internal bits).
+	So you can calculate with real big numbers.
+	See prog/primes-bignum.l1com.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 06 Nov 2023 19:51 +0100
+
+L1VM (2.7.0)
 	I did change the way how the global data is used.
 	It is now possible to allocate local data in a thread.
 	The "data_local_alloc" interrupt allocates local memory and copies the whole global data in it.
