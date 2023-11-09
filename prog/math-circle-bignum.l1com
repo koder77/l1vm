@@ -19,8 +19,6 @@
 	(set string s menu_chstr "? ")
 	(set int64 1 input_menu 0)
 	(set int64 1 f 0)
-	(set int64 1 precision 14)
-    (set int64 1 base 10)
 
 	(zero :mp_math_init !)
     (:init->circle !)
