@@ -11,8 +11,6 @@
 	(set const-int64 1 two 2)
 	(set const-int64 1 three 3)
 	(set const-int64 1 four 4)
-	(set int64 1 pi_mp 2)
-	(set int64 1 precision_set 4096)
 	(set string s prog_name "math-circle-bignum")
 	(set string s menu_diamstr "1: calculate diameter of circle")
 	(set string s menu_circstr "2: calculate circumference of circle")
@@ -102,7 +100,7 @@
 	#var ~ circle
 
 	// set pi
-	(m_pi@mp_mathaddr base~ precision_set~ pi_mp :mp_set_float_prec !)
+	(m_pi@mp_mathaddr base~ precision_set~ pi_mp~ :mp_set_float_prec !)
 (funcend)
 (calc_diam->circle func)
 	 #var ~ circle
