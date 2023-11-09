@@ -76,7 +76,6 @@
 	(set string s circstr~ "circumference: ")
     (set string s radiusstr~  "radius:        ")
     (set string s areastr~ "area:          ")
-	(set string 4096 input~ "")
 	(set string s formatstr~ "%.200Ff")
 
 	(set int64 1 precision~ 14)
