@@ -133,15 +133,15 @@
 	// max number of Brackets objects
     #define MAXOBJECTS          40960
 
-    #define MAXLINELEN      4096		// MAX LENGTH for strlen_safe string length
-    #define MAXSTRLEN		4096		// MAX LENGTH for maximum string size for static allocation
+    #define MAXLINELEN      256		// MAX LENGTH for strlen_safe string length, was 4096
+    #define MAXSTRLEN		4096	// MAX LENGTH for maximum string size for static allocation
 #endif
 
 // internal settings end ======================================================
 
 // info strings:
 #define COPYRIGHT_STR " 2023/fall (C) 2017-2023 Stefan Pietzonke - software research"
-#define VM_VERSION_STR "2.7.1"		// version number
+#define VM_VERSION_STR "2.7.2"		// version number
 #define MOTTO_STR "colorful leaves"
 
 // no user defined definitions below this section! ============================

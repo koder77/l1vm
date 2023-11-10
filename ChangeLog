@@ -1,3 +1,9 @@
+L1VM (2.7.2)
+	I did set a maximum source code line length tp 256 chars.
+	The default settimng was 4096 and this was way to high for programs with a lot of lines.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 10 Nov 2023 17:09 +0100
+
 L1VM (2.7.1)
 	NEW: MPFR module: mp_set_float_prec function to set numbers base and precision (internal bits).
 	So you can calculate with real big numbers.
