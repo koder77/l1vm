@@ -140,7 +140,6 @@
 	(set string 256 header~)
 	(set string s space~ " ")
 	(set string 256 read~ "r")
-	(set string 256 client+)
 	(set string 256 mimetype~)
 	(set string s emptystr~ "")
 	(set int64 1 mimetype_len~ 255)
