@@ -7,6 +7,7 @@
 // Use new thread for socket connection of client
 //
 #include <intr.l1h>
+#include <misc-macros.l1h>
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 one 1)
@@ -33,6 +34,7 @@
 	(set int64 1 cpu_number 0)
     (set int64 1 fcpus 0)
     (set int64 1 delay_sec 1000)
+    (set int64 1 delay_thr 100)
 	(zero maxsockets :net_init !)
 	(ret stpopi)
 	(((ret zero !=) f =) f if)
@@ -79,22 +81,27 @@
 		(endif)
 		// (socket_handle server_accept :run !)
 		get_cpu (cpu_number)
+	    pull_int64_var (cpu_number)
 		(((cpu_number zero ==) f =) f if)
 	        (:wait_run)
 	        free_cpus (fcpus)
-	        ((fcpus zero +) fcpus =)
-	        (((fcpus zero >) f =) f if+)
+	        pull_int64_var (fcpus)
+	        (((fcpus one >) f =) f if+)
 			    (socket_handle stpushi)
 		     	(server_accept stpushi)
 			    thread (lab_run)
+	            detime (delay_thr)
+	            // get values of current main thread stack
+	            (ret stpopi)
+	            (ret stpopi)
 		    (else)
 			     detime (delay_sec)
 	             (:wait_run jmp)
 		    (endif)
 		(endif)
-		(((cpu_number zero !=) f =) f if)
-			join
-		(endif)
+		//(((cpu_number zero !=) f =) f if)
+		//	join
+		// (endif)
 		// do loop
 		(:wait_conn jmp)
 	(:end)
