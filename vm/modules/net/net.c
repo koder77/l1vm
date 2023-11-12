@@ -2254,7 +2254,6 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// send file requested by "GET" HTTP command
 	// for building a simple webserver in brackets
 
-	S8 i ALIGN;
 	S8 nameaddr ALIGN;;
 	S8 mimetype_addr ALIGN;
 	S2 handle;
@@ -2556,7 +2555,7 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     todo_size = file_size;
 
-	for (i = 0; i < file_size; i++)
+	do
 	{
 		//ch = fgetc (file);
 		//if (feof (file)) break;
@@ -2605,9 +2604,8 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             write_size = todo_size;
         }
 
-        //DEBUG
-        if (write_size == 0) break;
-	}
+	} while (write_size > 0);
+
 	fclose (file);
 
 	// push ERROR code OK
