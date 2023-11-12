@@ -1,6 +1,15 @@
+L1VM (2.7.3)
+	Update: now the network module uses a read/write buffer on the file send function.
+	This gives a very high speedup!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 12 Nov 2023 17:40 +0100
+
 L1VM (2.7.2)
 	I did set a maximum source code line length tp 512 chars.
 	The default settimng was 4096 and this was way to high for programs with a lot of lines.
+
+	Update: now the network module uses a read/write buffer on the file send function.
+	This gives a very high speedup!
 
 -- Stefan Pietzonke <jay-t@gmx.net> Fri 10 Nov 2023 17:09 +0100
 

@@ -2268,6 +2268,8 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	S8 header_len ALIGN;
 	S8 ret ALIGN;
+    S8 write_size ALIGN;
+    S8 todo_size ALIGN;
 
 	U1 not_found = 0;	// 1 if 404 HTTP error
 
@@ -2543,14 +2545,44 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 
 	// send file
+	if (file_size < SOCKBUFSIZE)
+    {
+        write_size = file_size;
+    }
+    else
+    {
+        write_size = SOCKBUFSIZE - 1;
+    }
+
+    todo_size = file_size;
+
 	for (i = 0; i < file_size; i++)
 	{
-		ch = fgetc (file);
-		if (feof (file)) break;
+		//ch = fgetc (file);
+		//if (feof (file)) break;
+		//
+		// fread(buffer, sizeof(buffer), 1, filePointer);
+		//printf ("write_size: %lli\n", write_size);
 
-		sockets[handle].buf[0] = (U1) ch;
+        ret = fread (sockets[handle].buf, sizeof (U1), write_size, file);
+        // printf ("ret: %lli\n", ret);
 
-		ret = exe_swrite (handle, sizeof (U1));
+        if (ret != write_size)
+        {
+            printf ("socket_send_file: ERROR: reading data!\n");
+
+			// push ERROR code ERROR
+			sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
+			if (sp == NULL)
+			{
+				// error
+				printf ("socket_send_file: ERROR: stack corrupt!\n");
+				return (NULL);
+			}
+			fclose (file);
+        }
+
+		ret = exe_swrite (handle, write_size);
 		if (ret != ERR_FILE_OK)
 		{
 			printf ("socket_send_file: ERROR: sending data!\n");
@@ -2566,6 +2598,15 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			fclose (file);
 			return (sp);
 		}
+
+        todo_size = todo_size - write_size;
+        if (todo_size < SOCKBUFSIZE)
+        {
+            write_size = todo_size;
+        }
+
+        //DEBUG
+        if (write_size == 0) break;
 	}
 	fclose (file);
 
