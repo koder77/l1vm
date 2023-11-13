@@ -138,7 +138,7 @@
 	(:Pprint_calc_circ->circle !)
 (funcend)
 (Pcalc_circ_input->circle func)
-	 #var ~ circle
+	#var ~ circle
 
 	print_s (diamstr~)
 	// input string diam
