@@ -35,6 +35,7 @@
     (set int64 1 fcpus 0)
     (set int64 1 delay_sec 1000)
     (set int64 1 delay_thr 100)
+    (set int64 1 thr_sync 0)
 	(zero maxsockets :net_init !)
 	(ret stpopi)
 	(((ret zero !=) f =) f if)
@@ -89,8 +90,20 @@
 	        (((fcpus one >) f =) f if+)
 			    (socket_handle stpushi)
 		     	(server_accept stpushi)
+                // set sync flag to zero
+	            globallock (zero)
+	            (zero thr_sync =)
+	            globalunlock (zero)
 			    thread (lab_run)
+	            // wait till thread got the stack values and set sync flag to one!
+	            (:wait_thr)
 	            detime (delay_thr)
+	            globallock (zero)
+	            (((thr_sync one !=) f =) f if)
+				    globalunlock (zero)
+				    (:wait_thr jmp)
+				(endif)
+	            globalunlock (zero)
 	            // get values of current main thread stack
 	            (ret stpopi)
 	            (ret stpopi)
@@ -157,6 +170,12 @@
 	data_local
 	(accept~ stpopi)
 	(server~ stpopi)
+	data_global
+	// set sync flag to one
+	globallock (zero)
+	(one thr_sync =)
+	globalunlock (zero)
+    data_local
 	//
 	//
 	// parse loop =============================================================
