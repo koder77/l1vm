@@ -65,6 +65,10 @@ struct data_info_var data_info_var[MAXDATAINFO];
 struct label label[MAXLABELS];
 struct call_label call_label[MAXLABELS];
 
+// globals for local variable ending check only allow local and global (main) ending if set!
+U1 check_varname_end = 0;
+U1 varname_end[MAXLINELEN];
+
 U1 inline_asm = 0;		// set to one, if inline assembly is used
 
 U1 optimize_if = 0;		// set to one to optimize if call
@@ -2845,6 +2849,13 @@ S2 parse_line (U1 *line)
 										return (1);
 									}
 
+									if (inside_object == 0)
+									{
+										// is standalone function not inside object!!
+										// for variable ending check, set function name
+										strcpy ((char *) varname_end, (const char *) ast[level].expr[j][last_arg -1]);
+									}
+
 									// check if inside object
 									if (inside_object == 0 && ast[level].expr[j][last_arg - 1][0] == 'P')
 									{
@@ -4637,6 +4648,19 @@ S2 parse_line (U1 *line)
 									continue;
 								}
 
+								// set local variable ending check, to allow only access to local function variables or 'main' global variables
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "variable-local-on") == 0)
+								{
+									check_varname_end = 1;
+									continue;
+								}
+
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "variable-local-off") == 0)
+								{
+									check_varname_end = 0;
+									continue;
+								}
+
 								// pointer: store data address int int64 variable
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "pointer") == 0)
 								{
@@ -4957,7 +4981,10 @@ S2 parse_line (U1 *line)
 									inside_object = 1;
 
 									// save object name
-									strcpy ((char *) object_name, (char *) ast[level].expr[j][last_arg - 1]);
+									strcpy ((char *) object_name, (const char *) ast[level].expr[j][last_arg - 1]);
+
+									// for variable ending check, set function name
+								    strcpy ((char *) varname_end, (const char *) ast[level].expr[j][last_arg - 1]);
 
 									continue;
 								}

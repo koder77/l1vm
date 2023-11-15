@@ -29,6 +29,7 @@
  	U1 expr_type[MAXEXPRESSION];						// type of register (INTEGER or DOUBLE)
  };
 
+
  // forward declarations
  U1 checkdigit (U1 *str);
  S8 get_temp_int (void);

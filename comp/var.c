@@ -19,15 +19,62 @@
 
 #include "../include/global.h"
 #include "../include/opcodes-types.h"
+#include <bits/pthreadtypes.h>
 
 extern struct data_info data_info[MAXDATAINFO];
 extern struct data_info_var data_info_var[MAXDATAINFO];
 extern S8 data_ind;
 extern S8 linenum;
 
+// globals for local variable ending check only allow local and global (main) ending if set!
+extern U1 check_varname_end;
+extern U1 varname_end[MAXLINELEN];
+
 // protos
 U1 checkdigit (U1 *str);
 size_t strlen_safe (const char *str, int maxlen);
+S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
+
+S2 check_varname_ending (U1 *varname, U1 *ending)
+{
+	// check if variable has ending set local function name or 'main' for global variables
+
+	S2 pos, varname_len, ending_len;
+
+	varname_len = strlen_safe ((const char *) varname, MAXLINELEN);
+	ending_len = strlen_safe ((const char *) ending, MAXLINELEN);
+
+	pos = searchstr (varname, ending, 0, 0, 0);
+	if (pos < 0)
+	{
+		// check for main ending
+	    ending_len = strlen_safe ("main", MAXLINELEN);
+
+		pos = searchstr (varname, (U1 *) "main", 0, 0, 0);
+		if (pos < 0)
+		{
+			printf ("check_ending: no variable ending 'main' or '%s' found!\n", ending);
+			return (1);
+		}
+
+		// check if ending is on end
+		if (varname_len - ending_len != pos)
+		{
+			printf ("check_ending: no variable ending 'main' or '%s' found!\n", ending);
+			return (1);
+		}
+	}
+
+	// check if ending is on end
+	if (varname_len - ending_len != pos)
+	{
+		printf ("check_ending: no variable ending '%s' found!\n", ending);
+		return (1);
+	}
+
+	return (0);
+}
+
 
 S2 checkdef (U1 *name)
 {
@@ -43,6 +90,14 @@ S2 checkdef (U1 *name)
 	{
 		// is number not variable name: set checked
 		return (0);
+	}
+
+	if (check_varname_end == 1)
+	{
+		if (check_varname_ending (name, varname_end) != 0)
+		{
+			return (1);
+		}
 	}
 
 	for (i = 0; i <= data_ind; i++)

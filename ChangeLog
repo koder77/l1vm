@@ -1,3 +1,24 @@
+L1VM (2.8.0)
+	Now I did change the way how local and global variables are used.
+	I did add two new compiler flags:
+
+	(variable-local-on)
+        (variable-local-off)
+
+	If the flag is set to one then only the current function local variables and the main function global variables can be accessed.
+	You need to use this in your main function:
+
+	#var ~ main
+
+	So all variables in main are set with the "main" ending:
+
+	(set int64 1 foo~ 12)
+
+	This variable would be named "foomain".
+	If you want to see an example then have a look at: "prog/math-circle-bignum-2.l1com".
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 15 Nov 2023 19:00 +0100
+
 L1VM (2.7.3)
 	Update: now the network module uses a read/write buffer on the file send function.
 	This gives a very high speedup!
