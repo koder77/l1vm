@@ -20,6 +20,8 @@
     <item>object</item>
     <item>variable-immutable</item>
     <item>variable-mutable</item>
+     <item>variable-local-off</item>
+    <item>variable-local-on</item>
     </list>
     <list name="keywords">
     <item>funcend</item>
