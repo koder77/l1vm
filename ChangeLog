@@ -17,7 +17,9 @@ L1VM (2.8.0)
 	This variable would be named "foomain".
 	If you want to see an example then have a look at: "prog/math-circle-bignum-2.l1com".
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 15 Nov 2023 19:00 +0100
+	UPDATE: string module: all MAXLINELEN now replaced by MAXSTRLEN!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 15 Nov 2023 22:04 +0100
 
 L1VM (2.7.3)
 	Update: now the network module uses a read/write buffer on the file send function.

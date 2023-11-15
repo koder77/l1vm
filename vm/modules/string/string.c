@@ -93,7 +93,7 @@ U1 *get_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	rptr = getenv ((const char *) &data[envnameaddr]);
 	if (rptr != NULL)
 	{
-		offset = strlen_safe (rptr, MAXLINELEN);
+		offset = strlen_safe (rptr, MAXSTRLEN);
 
 		#if BOUNDSCHECK 
 		if (memory_bounds (strdestaddr, offset) != 0)
@@ -187,7 +187,7 @@ U1 *string_len (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	slen = strlen_safe ((char *) &data[straddr], MAXLINELEN);
+	slen = strlen_safe ((char *) &data[straddr], MAXSTRLEN);
 
 	sp = stpushi (slen, sp, sp_bottom);
 	if (sp == NULL)
@@ -221,7 +221,7 @@ U1 *string_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	offset = strlen_safe ((char *) &data[strsourceaddr], MAXLINELEN);
+	offset = strlen_safe ((char *) &data[strsourceaddr], MAXSTRLEN);
 
 	#if BOUNDSCHECK 
 	if (memory_bounds (strdestaddr, offset) != 0)
@@ -258,8 +258,8 @@ U1 *string_cat (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	offset_src = strlen_safe ((char *) &data[strsourceaddr], MAXLINELEN);
-	offset_dst = strlen_safe ((char *) &data[strdestaddr], MAXLINELEN);
+	offset_src = strlen_safe ((char *) &data[strsourceaddr], MAXSTRLEN);
+	offset_dst = strlen_safe ((char *) &data[strdestaddr], MAXSTRLEN);
 
 	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, offset_src + offset_dst) != 0)
@@ -503,7 +503,7 @@ U1 *string_string_to_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	string_len_src = strlen_safe ((const char *) &data[strsrcaddr], MAXLINELEN);
+	string_len_src = strlen_safe ((const char *) &data[strsrcaddr], MAXSTRLEN);
 	if (string_len_src > string_len)
 	{
 		// ERROR:
@@ -594,7 +594,7 @@ U1 *string_array_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	string_len_src = strlen_safe ((const char *) &data[strsrcaddr + index_real], MAXLINELEN);
+	string_len_src = strlen_safe ((const char *) &data[strsrcaddr + index_real], MAXSTRLEN);
 	if (string_len_src > string_len)
 	{
 		// ERROR:
@@ -647,7 +647,7 @@ U1 *string_left (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	strsource_len = strlen_safe ((const char *) &data[strsourceaddr], MAXLINELEN);
+	strsource_len = strlen_safe ((const char *) &data[strsourceaddr], MAXSTRLEN);
 	if (str_len < 1 || str_len > strsource_len)
 	{
 		// ERROR:
@@ -706,7 +706,7 @@ U1 *string_right (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	strsource_len = strlen_safe ((const char *) &data[strsourceaddr], MAXLINELEN);
+	strsource_len = strlen_safe ((const char *) &data[strsourceaddr], MAXSTRLEN);
 	if (str_len < 1 || str_len > strsource_len)
 	{
 		// ERROR:
@@ -765,7 +765,7 @@ U1 *string_mid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	strsource_len = strlen_safe ((const char *) &data[strsourceaddr], MAXLINELEN);
+	strsource_len = strlen_safe ((const char *) &data[strsourceaddr], MAXSTRLEN);
 	if (pos < 0 || pos > strsource_len)
 	{
 		// ERROR:
@@ -814,7 +814,7 @@ U1 *string_mid_to_byte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	strsource_len = strlen_safe ((const char *) &data[strsourceaddr], MAXLINELEN);
+	strsource_len = strlen_safe ((const char *) &data[strsourceaddr], MAXSTRLEN);
 	if (pos < 0 || pos > strsource_len)
 	{
 		// ERROR:
@@ -866,7 +866,7 @@ U1 *string_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	strdest_len = strlen_safe ((const char *) &data[strdestaddr], MAXLINELEN);
+	strdest_len = strlen_safe ((const char *) &data[strdestaddr], MAXSTRLEN);
 	if (pos < 0 || pos > strdest_len)
 	{
 		// ERROR:
@@ -1244,7 +1244,7 @@ S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end)
 {
 	/* replaces the old buggy code */
 	S2 pos = -1, str_len;
-	str_len = strlen_safe ((const char *) str, MAXLINELEN);
+	str_len = strlen_safe ((const char *) str, MAXSTRLEN);
 
 	U1 *sptr;
 	U1 *startptr;
@@ -1317,7 +1317,7 @@ S2 parse_json (U1 *json_str, U1 *key_str, U1 *value_str, S8 max_len)
     // clear value string
     value_str[0] = '\0';
 
-    json_str_len = strlen_safe ((const char *) json_str, MAXLINELEN);
+    json_str_len = strlen_safe ((const char *) json_str, MAXSTRLEN);
     if (json_str_len == 0)
     {
         return (1);
