@@ -8,56 +8,58 @@
 //
 #include <intr.l1h>
 (main func)
-	(set const-int64 1 zero 0)
-	(set const-int64 1 one 1)
-	(set const-int64 1 two 2)
-	(set const-int64 1 three 3)
-	(set const-int64 1 four 4)
-	(set string s prog_name "math-circle-bignum")
-	(set string s menu_diamstr "1: calculate diameter of circle")
-	(set string s menu_circstr "2: calculate circumference of circle")
-	(set string s menu_areastr "3: calculate area of circle")
-	(set string s menu_quitstr "4: quit")
-	(set string s menu_chstr "? ")
-	(set int64 1 input_menu 0)
-	(set int64 1 f 0)
+	#var ~ main
+    (set const-int64 1 zero 0)
+	(set const-int64 1 zero~ 0)
+	(set const-int64 1 one~ 1)
+	(set const-int64 1 two~ 2)
+	(set const-int64 1 three~ 3)
+	(set const-int64 1 four~ 4)
+	(set string s prog_name~ "math-circle-bignum")
+	(set string s menu_diamstr~ "1: calculate diameter of circle")
+	(set string s menu_circstr~ "2: calculate circumference of circle")
+	(set string s menu_areastr~ "3: calculate area of circle")
+	(set string s menu_quitstr~ "4: quit")
+	(set string s menu_chstr~ "? ")
+	(set int64 1 input_menu~ 0)
+	(set int64 1 f~ 0)
 
-	(zero :mp_math_init !)
+	(zero~ :mp_math_init !)
     (:init->circle !)
 
 	(:loop)
-	print_s (prog_name)
+	print_s (prog_name~)
 	print_n
-	print_s (menu_diamstr)
+	print_s (menu_diamstr~)
 	print_n
-	print_s (menu_circstr)
+	print_s (menu_circstr~)
 	print_n
-	print_s (menu_areastr)
+	print_s (menu_areastr~)
 	print_n
-	print_s (menu_quitstr)
+	print_s (menu_quitstr~)
 	print_n
-	print_s (menu_chstr)
+	print_s (menu_chstr~)
 	// read input
-	input_i (input_menu)
-	((input_menu zero +) input_menu =)
-	(((input_menu four ==) f =) f if)
+	input_i (input_menu~)
+	((input_menu~ zero~ +) input_menu~ =)
+	(((input_menu~ four~ ==) f~ =) f~ if)
 		// quit
-		exit (zero)
+		exit (zero~)
 	(endif)
 	(reset-reg)
-	(((input_menu one ==) f =) f if)
+	(((input_menu~ one~ ==) f~ =) f~ if)
 		// reset used variables and set used registers to zero
 		// no context register saving here
 		(reset-reg)
 		(:do_calc_diam->circle !)
 	(endif)
-	(((input_menu two ==) f =) f if)
+	(((input_menu~ two~ ==) f~ =) f~ if)
 		// reset used variables and set used registers to zero
 		// no context register saving here
 		(reset-reg)
 		(:do_calc_circ->circle !)
 	(endif)
-	(((input_menu three ==) f =) f if)
+	(((input_menu~ three~ ==) f~ =) f~ if)
 		// reset used variables and set used registers to zero
 		// no context register saving here
 		(reset-reg)
@@ -68,11 +70,13 @@
 	(:loop jmp)
 (funcend)
 
+(variable-local-on)
+
 (circle object)
     #var ~ circle
 
 	// set constant -----------------------------------------
-	(set const-string s m_pi@mp_math "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679")
+	(set const-string s m_pi~ "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679")
 
 	(set string s diamstr~ "diameter:      ")
 	(set string s circstr~ "circumference: ")
@@ -99,7 +103,7 @@
 	#var ~ circle
 
 	// set pi
-	(m_pi@mp_mathaddr base~ precision_set~ pi_mp~ :mp_set_float_prec !)
+	(m_pi~ base~ precision_set~ pi_mp~ :mp_set_float_prec !)
 (funcend)
 
 // calc diam ===================================================================
@@ -190,5 +194,7 @@
 	(area_mp~ pi_mp~ area_mp~ :mp_mul_float !)
 (funcend)
 (objectend)
+
+(variable-local-off)
 
 #include <mpfr-lib-auto.l1h>
