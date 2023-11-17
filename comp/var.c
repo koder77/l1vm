@@ -19,7 +19,6 @@
 
 #include "../include/global.h"
 #include "../include/opcodes-types.h"
-#include <bits/pthreadtypes.h>
 
 extern struct data_info data_info[MAXDATAINFO];
 extern struct data_info_var data_info_var[MAXDATAINFO];
