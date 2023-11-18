@@ -29,7 +29,7 @@ FILE=/usr/bin/clang
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
-	doas dnf install clang
+	sudo pkg install clang
 fi
 
 # check if ~/bin exists

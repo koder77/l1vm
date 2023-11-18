@@ -19,7 +19,10 @@ L1VM (2.8.0)
 
 	UPDATE: string module: all MAXLINELEN now replaced by MAXSTRLEN!
 
--- Stefan Pietzonke <jay-t@gmx.net> Wed 15 Nov 2023 22:04 +0100
+	NEW: I did add a experimental install script for NetBSD. It may not work at all.
+	I need to test it on my NetBSD installation.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 18 Nov 2023 18:06 +0100
 
 L1VM (2.7.3)
 	Update: now the network module uses a read/write buffer on the file send function.

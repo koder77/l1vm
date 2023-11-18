@@ -42,7 +42,7 @@ extern "C" {
 
 
 
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__) || defined(__HAIKU__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__) || defined(__NetBSD__) || defined(__HAIKU__)
 
 #include <termios.h>
 #include <sys/ioctl.h>

@@ -39,9 +39,9 @@
 size_t strlen_safe (const char * str, int maxlen);
 
 
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__) || defined(__HAIKU__)  /* Linux & FreeBSD & DragonFly BSD*/
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__) || defined(__NetBSD__) ||  defined(__HAIKU__)  /* Linux & FreeBSD & DragonFly BSD*/
 
-#define RS232_PORTNR 59
+#define RS232_PORTNR 79
 
 static int Cport[RS232_PORTNR],
     error;
@@ -62,7 +62,11 @@ static char *comports[RS232_PORTNR]={"/dev/ttyS0","/dev/ttyS1","/dev/ttyS2","/de
 					   "/dev/ttyv4", "/dev/ttyv5", "/dev/ttyv6", "/dev/ttyv7",
 					   "/dev/ttyv8", "/dev/ttyv9",
              "/dev/ports/pc_serial0", "/dev/ports/pc_serial1", "/dev/ports/pc_serial2", "/dev/ports/pc_serial3", "/dev/ports/pc_serial4",  /* Haiku */
-             "/dev/ports/usb0", "/dev/ports/usb1", "/dev/ports/usb2", "/dev/ports/usb3", "/dev/ports/usb4"
+             "/dev/ports/usb0", "/dev/ports/usb1", "/dev/ports/usb2", "/dev/ports/usb3", "/dev/ports/usb4",
+
+             "/dev/tty00", "/dev/tty01", "/dev/tty02", "/dev/tty03", "/dev/tty04", "/dev/tty05", "/dev/tty06", "/dev/tty07", "/dev/tty08", "/dev/tty09",  /* NetBSD */
+             "/dev/ttyU0", "/dev/ttyU1", "/dev/ttyU2", "/dev/ttyU3", "/dev/ttyU4", "/dev/ttyU5", "/dev/ttyU6", "/dev/ttyU7", "/dev/ttyU8", "/dev/ttyU9"
+
 };
 
 int RS232_OpenComport(int comport_number, int baudrate, const char *mode)
@@ -805,7 +809,7 @@ int RS232_GetPortnr(const char *devname)
 
   char str[32];
 
-#if defined(__linux__) || defined(__FreeBSD__)   /* Linux & FreeBSD */
+#if defined(__linux__) || defined(__FreeBSD__)  || defined(__NetBSD__) /* Linux & FreeBSD, NetBSD */
   strcpy(str, "/dev/");
 #else  /* windows */
   strcpy(str, "\\\\.\\");
