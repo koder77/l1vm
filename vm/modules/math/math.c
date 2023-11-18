@@ -22,7 +22,11 @@
 #include "../../../include/stack.h"
 
 // libsodium for random number generator seed
+#if __NetBSD__
+#include </usr/pkg/include/sodium.h>
+#else
 #include <sodium.h>
+#endif
 
 // protos
 #include "mt64.h"

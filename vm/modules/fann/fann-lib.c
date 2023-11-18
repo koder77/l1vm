@@ -23,7 +23,11 @@
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
+#if __NetBSD__
+#include </usr/pkg/include/floatfann.h>
+#else
 #include <floatfann.h>
+#endif
 
 #define ANNOPEN 1              // state flags
 #define ANNCLOSED 0
