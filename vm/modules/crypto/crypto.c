@@ -23,11 +23,7 @@
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
-#if __NetBSD__
-#include </usr/pkg/include/sodium.h>
-#else
 #include <sodium.h>
-#endif
 
 #define ENCRYPT 0
 #define DECRYPT 1
