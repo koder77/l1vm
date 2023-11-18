@@ -60,8 +60,8 @@ fi
 
 # install mpreal.h include
 	echo "installing mpreal.h include file now..."
-	git clone https://github.com/advanpix/mpreal.git
-	doas cp vm/modules/mpfr-c++/mpreal.h /usr/include
+	GIT_SSL_NO_VERIFY=true git clone https://github.com/advanpix/mpreal.git
+	sudo cp vm/modules/mpfr-c++/mpreal.h /usr/include
 
 cd assemb
 if zerobuild force; then
