@@ -381,8 +381,8 @@ This is needed to avoid errors on macOS. <br>
 Before installation you have to add the following lines to your "~/.bashrc" bash config file: <br>
 
 ```
-export PATH="$HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
+export PATH="$HOME/l1vm/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
 ```
 
 <h3>Haiku OS</h3>
@@ -454,10 +454,32 @@ sh ./install-zerobuild-freebsd.sh
 Edit your "~/.bashrc" config file, add the following lines:
 
 ```
-export PATH="$HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/bin:$LD_LIBRARY_PATH"
+export PATH="$HOME/l1vm/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
 ```
 
+<h3>NetBSD</h3>
+You have to edit the settings.h include file:
+
+<pre>
+// division by zero checking
+#define DIVISIONCHECK           0
+
+// switch on on Linux
+#define CPU_SET_AFFINITY		0
+</pre>
+
+Then you can run the install script for NetBSD.
+Note: the SDL module can't be build. I have to find out what the error is.
+And the script for building the programs for L1VM fails. It shows a out of memory error message.
+If you use NetBSD and could take a look after it, this would be nice!
+
+Edit your "~/.bashrc" config file, add the following lines:
+
+```
+export PATH="$HOME/l1vm/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
+```
 
 <h3>DragonFly BSD</h3>
 You have to add a "bin/" directory in your "/home/user" directory:
@@ -474,7 +496,7 @@ in your "/home" directory:
 # $HOME/bin
 # prepend it to $PATH if so
 if [ -d $HOME/bin ]; then
-    export PATH=$HOME/bin:$PATH
+    export PATH=$HOME/l1vm/bin:$PATH
 fi
 </pre>
 
