@@ -105,7 +105,7 @@ cd modules
 echo "installing modules..."
 chmod +x *.sh
 sh ./build-openbsd.sh
-if sh ./install-openbsd.sh; then
+if sh ./install-netbsd.sh; then
 	echo "modules build ok!"
 else
 	echo "modules build FAILED!"
