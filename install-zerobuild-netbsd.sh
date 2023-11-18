@@ -104,7 +104,6 @@ echo "VM binaries installed into ~/bin"
 cd modules
 echo "installing modules..."
 chmod +x *.sh
-sh ./build-openbsd.sh
 if sh ./install-netbsd.sh; then
 	echo "modules build ok!"
 else
