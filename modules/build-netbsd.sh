@@ -9,7 +9,7 @@ zerobuild force
 cd ../genann
 zerobuild force
 cd ../math
-zerobuild force
+zerobuild zerobuild-netbsd.txt force
 cd ../math-vect
 zerobuild force
 cd ../mem
@@ -22,10 +22,10 @@ cd ../net
 zerobuild force
 cd ../process
 zerobuild force
-cd ../rs232-libserialport
+cd ../rs232
 zerobuild force
-#cd ../sdl-2.0
-#zerobuild force
+cd ../sdl-2.0
+zerobuild zerobuild-netbsd.txt force
 cd ../string
 zerobuild force
 cd ../time
@@ -43,8 +43,8 @@ cp ../vm/modules/mem-obj/libl1vm* .
 #cp ../vm/modules/mpfr-c++/libl1vm* .
 cp ../vm/modules/net/libl1vm* .
 cp ../vm/modules/process/libl1vm* .
-cp ../vm/modules/rs232-libserialport/libl1vm* .
-#cp ../vm/modules/sdl-2.0/libl1vm* .
+cp ../vm/modules/rs232/libl1vm* .
+cp ../vm/modules/sdl-2.0/libl1vm* .
 cp ../vm/modules/string/libl1vm* .
 cp ../vm/modules/time/libl1vm* .
 

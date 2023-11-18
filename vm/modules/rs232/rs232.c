@@ -118,7 +118,7 @@ int RS232_OpenComport(int comport_number, int baudrate, const char *mode)
                    break;
     case  230400 : baudr = B230400;
                    break;
-#if ! (defined(__DragonFly__) || defined(__HAIKU__))
+#if ! (defined(__DragonFly__) || defined(__NetBSD__) || defined(__HAIKU__))
     case  460800 : baudr = B460800;
                    break;
     case  500000 : baudr = B500000;
