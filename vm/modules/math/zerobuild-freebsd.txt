@@ -1,0 +1,15 @@
+# zerobuild makefile
+
+[executable, shared, name = libl1vmmath.so]
+sources =  math.c, mt19937-64.c, ../lib/memory_bounds.c
+
+includes = ../include, /usr/local/include
+
+ccompiler = $CC
+c++compiler = $CCPP
+
+linker = ld
+aflags = "cru"
+
+cflags = "-fPIC -O3 -fomit-frame-pointer -Wall"
+lflags = "-shared -lm -L/usr/local/lib -lsodium"

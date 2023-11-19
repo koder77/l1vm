@@ -61,7 +61,7 @@ fi
 # install mpreal.h include
 	echo "installing mpreal.h include file now..."
 	git clone https://github.com/advanpix/mpreal.git
-	doas cp vm/modules/mpfr-c++/mpreal.h /usr/include
+	sudo cp vm/modules/mpfr-c++/mpreal.h /usr/include
 
 cd assemb
 if zerobuild force; then
@@ -104,7 +104,7 @@ echo "VM binaries installed into ~/bin"
 cd modules
 echo "installing modules..."
 chmod +x *.sh
-sh ./build-openbsd.sh
+sh ./build-freebsd.sh
 if sh ./install-openbsd.sh; then
 	echo "modules build ok!"
 else
