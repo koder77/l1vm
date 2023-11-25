@@ -10,6 +10,7 @@
 #include <vars.l1h>
 (main func)
     #var ~ main
+
 	(set int64 1 zero 0)
     (set int64 1 one  1)
     // person data with person. names
@@ -64,21 +65,25 @@
     exit (zero)
 (funcend)
 
+// set veriable ending check on: only local variables ending with "person" or globals ending with "main" allowed!
+(variable-local-on)
+
 // get person data from mem object
 (person object)
     #var ~ person
+
     (set int64 1 f~)
     (set int64 1 zero~ 0)
     (set int64 1 variables~ 6)
     (set int64 1 memaddr~ 0)
     (set int64 1 ret~ 0)
     (set string s height_format~ "%.2lf")
-    (set string 256 person.first_name~ "")
-    (set string 256 person.last_name~ "")
-    (set string 256 person.gender~ "")
-    (set int64 1 person.age~ 0)
-    (set double 1 person.height~ 0.0)
-    (set string 256 person.eye_color~ "")
+    (set string 256 first_name~ "")
+    (set string 256 last_name~ "")
+    (set string 256 gender~ "")
+    (set int64 1 age~ 0)
+    (set double 1 height~ 0.0)
+    (set string 256 eye_color~ "")
     (set string s memobj_err_str~ "ERROR reading memobject array!")
     // data pointer, make only changeable by "pointer" function to avoid memory errors
     (set const-int64 1 Pfirst_name~ 0)
@@ -88,6 +93,32 @@
     (set const-int64 1 Pheight~ 0)
     (set const-int64 1 Peye_color~ 0)
 
+(Pshow_data->person func)
+    #var ~ person
+
+    (Peye_color~ Pheight~ Page~ Pgender~ Plast_name~ Pfirst_name~ variables~ zero~ memaddr~ :load_obj_array_memobj !)
+    (ret~ stpopi)
+    (((ret~ zero~ !=) f~ =) f~ if+)
+        print_s (memobj_err_str~)
+        print_n
+    (else)
+        print_s (first_name~)
+        print_n
+        print_s (last_name~)
+        print_n
+        print_s (gender~)
+        print_n
+        print_i (age~)
+        print_n
+        printf_d (height_format~, height~)
+        print_n
+        print_s (eye_color~)
+        print_n
+    (endif)
+(funcend)
+
+(variable-local-off)
+
 (list_data->person func)
     #var ~ person
 
@@ -95,47 +126,26 @@
     (memaddr~ stpopi)
 
      // set pointers, use new check_pointer interrupt for pointer type checks
-    (person.first_name~ Pfirst_name~ pointer)
+    (first_name~ Pfirst_name~ pointer)
     check_pointer (Pfirst_name~, byte_ptr)
 
-    (person.last_name~ Plast_name~ pointer)
+    (last_name~ Plast_name~ pointer)
     check_pointer (Plast_name~, byte_ptr)
 
-    (person.gender~ Pgender~ pointer)
+    (gender~ Pgender~ pointer)
     check_pointer (Pgender~, byte_ptr)
 
-    (person.age~ Page~ pointer)
+    (age~ Page~ pointer)
     check_pointer (Page~, int64_ptr)
 
-    (person.height~ Pheight~ pointer)
+    (height~ Pheight~ pointer)
     check_pointer (Pheight~, double_ptr)
 
-    (person.eye_color~ Peye_color~ pointer)
+    (eye_color~ Peye_color~ pointer)
     check_pointer (Peye_color~, byte_ptr)
 
     (:Pshow_data->person !)
 (funcend)
-(Pshow_data->person func)
-    #var ~ person
-    (Peye_color~ Pheight~ Page~ Pgender~ Plast_name~ Pfirst_name~ variables~ zero~ memaddr~ :load_obj_array_memobj !)
-    (ret~ stpopi)
-    (((ret~ zero !=) f~ =) f~ if+)
-        print_s (memobj_err_str~)
-        print_n
-    (else)
-        print_s (person.first_name~)
-        print_n
-        print_s (person.last_name~)
-        print_n
-        print_s (person.gender~)
-        print_n
-        print_i (person.age~)
-        print_n
-        printf_d (height_format~, person.height~)
-        print_n
-        print_s (person.eye_color~)
-        print_n
-    (endif)
-(funcend)
 (objectend)
+
 #include <mem-obj-lib.l1h>
