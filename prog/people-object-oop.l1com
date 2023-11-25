@@ -65,7 +65,7 @@
     exit (zero)
 (funcend)
 
-// set veriable ending check on: only local variables ending with "person" or globals ending with "main" allowed!
+// set variable ending check on: only local variables ending with "person" or globals ending with "main" allowed!
 (variable-local-on)
 
 // get person data from mem object
