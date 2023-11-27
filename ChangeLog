@@ -1,3 +1,8 @@
+L1VM (2.8.1)
+	VM: added "-fPIE" flag to RELRO zerobuild scripts.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Mon 27 Nov 2023 19:10 +0100
+
 L1VM (2.8.0)
 	Now I did change the way how local and global variables are used.
 	I did add two new compiler flags:
