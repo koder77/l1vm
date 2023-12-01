@@ -383,6 +383,39 @@ U1 *file_seek (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     return (sp);
 }
 
+U1 *file_flush (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    // flush open files buffers to disk
+
+    S2 ret;
+
+    ret = fflush (NULL);     // NULL pointer means flush all write file streams buffers to disk.
+    if (ret == 0)
+    {
+        // push ERROR code WRONG POS
+        sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
+    	if (sp == NULL)
+    	{
+    		// error
+    		printf ("file_flush: ERROR: stack corrupt!\n");
+    		return (NULL);
+    	}
+    }
+    else
+    {
+        // push ERROR code WRONG POS
+        sp = stpushi (ERR_FILE_WRITE, sp, sp_bottom);
+    	if (sp == NULL)
+    	{
+    		// error
+    		printf ("file_flush: ERROR: stack corrupt!\n");
+    		return (NULL);
+    	}
+    }
+    return (sp);
+}
+
+
 // int16 put/get
 
 U1 *file_put_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)

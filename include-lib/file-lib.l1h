@@ -22,6 +22,7 @@
 	(set string s freememstr@file "free_mem")
     (set string s read_arraystr@file "file_read_array")
     (set string s write_arraystr@file "file_write_array")
+    (set string s flushstr@file "file_flush")
     (set int64 1 open@file 0)
     (set int64 1 close@file 1)
     (set int64 1 seek@file 2)
@@ -41,6 +42,7 @@
 	(set int64 1 freemem@file 16)
     (set int64 1 read_array@file 17)
     (set int64 1 write_array@file 18)
+    (set int64 1 flush@file 19)
     (set int64 1 mod@file 0)
 	(set int64 1 maxind@file 0)
     // get arguments from stack
@@ -68,6 +70,7 @@
 	(2 mod@file freemem@file freememstr@fileaddr intr0)
     (2 mod@file read_array@file read_arraystr@file intr0)
     (2 mod@file write_array@file write_arraystr@file intr0)
+    (2 mod@file flush@file flushstr@file intr0)
 	// call init file function
 	(maxind@file stpushi)
 	(3 mod@file fileinit@file 0 intr0)
@@ -81,6 +84,9 @@
 (funcend)
 (file_seek func)
     (3 mod@file seek@file 0 intr0)
+(funcend)
+(file_flush func)
+    (3 mod@file flush@file 0 intr0)
 (funcend)
 // binary put/get access
 //
