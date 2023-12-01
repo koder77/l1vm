@@ -36,6 +36,7 @@
 	(set string s fabsdoublestr@math "fabsdouble")
 	(set string s floordoublestr@math "floordouble")
 	(set string s fmoddoublestr@math "fmoddouble")
+    (set string s byte2intstr@math "byte2int")
     (set int64 1 int2double@math 0)
     (set int64 1 double2int@math 1)
     (set int64 1 sqrtdouble@math 2)
@@ -69,6 +70,7 @@
 	(set int64 1 fmoddouble@math 30)
 	(set int64 1 tandouble@math 31)
     (set int64 1 randombyte@math 32)
+    (set int64 1 byte2int@math 33)
     (set int64 1 mod@math 0)
     // get argument from stack
     (mod@math stpopi)
@@ -107,6 +109,7 @@
 	(2 mod@math fabsdouble@math fabsdoublestr@mathaddr intr0)
 	(2 mod@math floordouble@math floordoublestr@mathaddr intr0)
 	(2 mod@math tandouble@math tandoublestr@mathaddr intr0)
+    (2 mod@math byte2int@math byte2intstr@math intr0)
 (funcend)
 // wrapper functions
 (math_int2double func)
@@ -147,6 +150,9 @@
 (funcend)
 (string_to_double func)
 	(3 mod@math stringtodouble@math 0 intr0)
+(funcend)
+(math_byte2int func)
+    (3 mod@math byte2int@math 0 intr0)
 (funcend)
 (math_not func)
 // get int64 number argument from stack

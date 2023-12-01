@@ -451,6 +451,43 @@ U1 *string_bytenum_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+U1 *string_byte_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 strdestaddr ALIGN;
+	U1 num;
+
+	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_byte_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	// sp = stpopb ((U1 *) &num, sp, sp_top);
+	sp = stpopb ((U1 *) &num, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_byte_to_string: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	#if BOUNDSCHECK
+	if (memory_bounds (strdestaddr, 1) != 0)
+	{
+		printf ("string_byte_to_string: ERROR: dest string overflow!\n");
+		return (NULL);
+	}
+	#endif
+
+	data[strdestaddr] = num;
+	data[strdestaddr + 1] = '\0';
+
+	return (sp);
+}
+
+
 // string array functions
 U1 *string_string_to_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
@@ -1227,6 +1264,7 @@ U1 *string_regex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	// do regex search
 	ret = regexec (&regex, (const char *) &data[strsourceaddr], 0, NULL, 0);
+    regfree (&regex);
 
 	// return regex return code
 	sp = stpushi (ret, sp, sp_bottom);

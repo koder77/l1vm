@@ -43,6 +43,35 @@ S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
 
 // math functions --------------------------------------
 
+U1 *byte2int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	U1 byteval ALIGN;
+	S8 intval ALIGN;
+
+	sp = stpopb ((U1 *) &byteval, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("byte2int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    //printf ("byte2int: byte: %i\n", byteval);
+
+	intval = (S8) byteval;
+
+	//printf ("byte2int: int: %lli\n", intval);
+
+	sp = stpushi (intval, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("byte2int: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
 U1 *int2double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 intval ALIGN;
