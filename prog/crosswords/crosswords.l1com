@@ -1,0 +1,906 @@
+// crosswords.l1com
+//
+// crosswords designer
+//
+//  +-+-+-+-+-+-+
+//  |w|o|r|l|d|#|
+//  +-+-+-+-+-+-+
+//
+// set your username in the wordfile below in the set line:
+//
+// (set byte 4862542 wordfile $/home/stefan/l1vm/dictionary/words-english.txt)
+//
+#include <intr.l1h>
+#include <math-const.l1h>
+#include <misc-macros.l1h>
+(main func)
+    #include <file-def.l1h>
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 two 2)
+    (set const-int64 1 three 3)
+    (set const-int64 1 max_x 20)
+    (set const-int64 1 max_y 20)
+    (set byte 400 cells)
+    (set byte 400 cells_seed)
+    (set byte 1 chb 0)
+    (set int64 1 ret 0)
+    (set int64 1 chi 0)
+    (set string s error_init_filesstr "error: can't allocate file handles!")
+    (set string s error_write_wordliststr "error: can't write to wordlist!")
+    (set string s placed_hstr "placed horizontaly: ")
+    (set string s placed_vstr "placed verticaly: ")
+    (set string s seedstr "telescope")
+    (set string 2 charstr "")
+    (set string s regexstr "^[a-z]+$")
+    (set string s check1_str "telephone")
+    (set string s check2_str "elephant")
+    (set string s check3_str "leopard")
+    (set string s check4_str "dice")
+    (set string s check5_str "hand")
+    (set string s check6_str "dart")
+    (set string s gridstart_str "grid:")
+    (set int64 1 x 0)
+    (set int64 1 y 0)
+    (set int64 1 cells_ind 0)
+    (set int64 1 i 0)
+    // direction: 0 = horizontal, 1 = vertical
+    (set int64 1 direction 0)
+    (set int64 1 seedstr_len 0)
+    (set int64 1 f 0)
+    // global file handle
+    (set int64 1 wordlist 0)
+    (set string 256 wordstr "")
+    (set const-int64 1 Pwordstr 0)
+    (set const-int64 1 search_max 2000000)
+    (set int64 1 search 0)
+    (set int64 1 wordlen 0)
+    (set int64 1 wordlen_max 10)
+    (set int64 1 retval 0)
+    (set byte 1 newline 10)
+    (set int64 1 wordfile_len 4862542)
+    (set byte 4862542 wordfile $/home/stefan/l1vm/dictionary/words-english.txt)
+    (set int64 1 wordfile_index 0)
+    (wordstr Pwordstr pointer)
+
+    (zero :string_init !)
+    (one :math_init !)
+
+    // init file library
+    (two one :file_init !)
+	(ret stpopi)
+	(((ret zero !=) f =) f if)
+        print_s (error_init_filesstr)
+        print_n
+        (:file_free_mem call)
+        (one retval =)
+        (:quit jmp)
+	(endif)
+
+    (:open_wordlist !)
+    (ret stpop)
+    (((ret zero !=) f =) f if)
+        exit (one)
+    (endif)
+
+    // place seedstr in cells array
+    (seedstr :string_len !)
+    (seedstr_len stpop)
+    (zero i =)
+    (:init_grid !)
+
+    (for-loop)
+    (((i seedstr_len <) f =) f for)
+        // get char at position i
+        (seedstr i :string_mid_to_byte !)
+        (chb stpop)
+        (((direction one ==) f =) f if+)
+            (x y chb :set_cell !)
+            (x y chb :set_seed_cell !)
+            ((y one +) y =)
+        (else)
+            (x y chb :set_cell !)
+            (x y chb :set_seed_cell !)
+            ((x one +) x =)
+        (endif)
+        ((i one +) i =)
+    (next)
+
+    (:loop)
+    (Pwordstr :read_wordfile !)
+
+    //print_s (Pwordstr)
+    //print_n
+
+    (Pwordstr :string_len !)
+    (wordlen stpop)
+    (((wordlen wordlen_max >=) f =) f if)
+         // error word to long
+        (:loop jmp)
+    (endif)
+
+    (((wordlen three <) f =) f if)
+        // word to short skip!
+        (:loop jmp)
+    (endif)
+
+    (Pwordstr regexstr :string_regex !)
+	(ret stpop)
+    (((ret zero !=) f =) f if)
+        // found not all lowercase words, read next word
+        (:loop jmp)
+    (endif)
+
+    // print_s (Pwordstr)
+    // print_n
+
+    (((direction zero ==) f =) f if+)
+       (Pwordstr :check_insert_horizontal !)
+       (ret stpop)
+       (((ret zero ==) f =) f if)
+           //print_s (placed_hstr)
+           //print_s (Pwordstr)
+           //print_n
+           (wordlist Pwordstr :file_put_string !)
+           (ret stpop)
+           (((ret zero !=) f =) f if)
+               print_s (error_write_wordliststr)
+               print_n
+               (one retval =)
+               (:quit jmp)
+           (endif)
+           (wordlist newline :file_putc !)
+           (ret stpop)
+           (((ret zero !=) f =) f if)
+               print_s (error_write_wordliststr)
+               print_n
+               (one retval =)
+               (:quit jmp)
+           (endif)
+
+           (:file_flush !)
+           (ret stpop)
+
+           //print_n
+           //print_s (gridstart_str)
+           //print_n
+           //print_n
+           //(:print_grid !)
+           //print_n
+           //print_n
+
+           // exit (one)
+       (endif)
+       (one direction =)
+    (else)
+       (Pwordstr :check_insert_vertical !)
+       (ret stpop)
+       (((ret zero ==) f =) f if)
+           // print_s (placed_vstr)
+           //print_s (Pwordstr)
+           //print_n
+           (wordlist Pwordstr :file_put_string !)
+           (ret stpop)
+           (((ret zero !=) f =) f if)
+               print_s (error_write_wordliststr)
+               print_n
+               (one retval =)
+               (:quit jmp)
+           (endif)
+           (wordlist newline :file_putc !)
+           (ret stpop)
+           (((ret zero !=) f =) f if)
+               print_s (error_write_wordliststr)
+               print_n
+               (one retval =)
+               (:quit jmp)
+           (endif)
+
+           (:file_flush !)
+           (ret stpop)
+
+           //print_n
+           //print_s (gridstart_str)
+           //print_n
+           //print_n
+           //(:print_grid !)
+           //print_n
+           //print_n
+
+           // exit (one)
+       (endif)
+       (zero direction =)
+    (endif)
+
+    // print_i (search)
+    // print_n
+
+    ((search one +) search =)
+    (((search search_max <) f =) f if)
+        (:loop jmp)
+    (endif)
+
+    (:quit)
+    (wordlist :file_close !)
+
+    print_n
+    print_n
+    (:print_grid !)
+
+    print_n
+    print_n
+    (:print_puzzle_grid !)
+    exit (retval)
+(funcend)
+
+(open_wordlist func)
+    #var ~ open_wordlist
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 ret~ 0)
+    (set int64 1 f~ 0)
+    (set string s wordliststr~ "crosswords/wordlist.txt")
+    (set string s error_open_filestr~ "error: can't open wordlist!")
+
+    (file_mode_write wordliststr~ :file_open !)
+	//
+	// get file handle from file_open call
+	//
+    (wordlist stpopi)
+	(((wordlist zero~ <) f~ =) f~ if+)
+        // ERROR open file
+        print_s (error_open_filestr~)
+        print_n
+        (one~ stpush)
+    (else)
+        (zero~ stpush)
+	(endif)
+(funcend)
+
+(read_wordfile func)
+    #var ~ read_wordfile
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 f~ 0)
+    (set byte 1 ch~ 0)
+    (set int64 1 chi~ 0)
+    (set int64 1 word_end~ 10)
+    (set string 2 chstr~ "")
+    (set string s emptystr~ "")
+    (set int64 1 wordstr~ 0)
+    (set string s word_endstr~ "word-end")
+
+    (wordstr~ stpop)
+    (wordstr~ emptystr~ :string_copy !)
+
+    (:read_wordfile_loop)
+        (wordfile [ wordfile_index ] chi~ =)
+
+        pull_int64_var (chi~)
+        //print_n
+        //print_i (chi~)
+        //print_n
+
+        //print_i (word_end~)
+        //print_n
+
+        (((chi~ word_end~ ==) f~ =) f~ if+)
+            ((wordfile_index one~ +) wordfile_index =)
+            (((wordfile_index wordfile_len ==) f~ =) f~ if)
+                // reached end of wordfile data array, set back to zero
+                (zero~ wordfile_index =)
+            (endif)
+            //print_n
+            //print_s (word_endstr~)
+            //print_n
+            (:read_wordfile_end jmp)
+        (else)
+            //(reset-reg)
+            // (chi~ load)
+            //print_i (chi~)
+            //print_n
+            (chi~ chstr~ :string_bytenumtostring !)
+            //print_s (chstr~)
+            //print_n
+            (wordstr~ chstr~ :string_cat !)
+        (endif)
+        ((wordfile_index one~ +) wordfile_index =)
+        (((wordfile_index wordfile_len ==) f~ =) f~ if)
+            // reached end of wordfile data array, set back to zero
+            (zero~ wordfile_index =)
+        (endif)
+        (:read_wordfile_loop jmp)
+
+    (:read_wordfile_end)
+(funcend)
+
+(read_wordfile_test func)
+    #var ~ read_wordfile_test
+    (set string s readstr~ "northpole")
+
+    // set dummy wordstr
+    (wordstr readstr~ :string_copy !)
+(funcend)
+
+// cell words
+(set_cell func)
+    #var ~ set_cell
+    (set int64 1 real_ind~ 0)
+    (set int64 1 x~ 0)
+    (set int64 1 y~ 0)
+    (set byte 1 chb~ 0)
+    (chb~ stpopb)
+    (y~ stpopi)
+    (x~ stpopi)
+
+    ((y~ max_y *) real_ind~ =)
+    ((real_ind~ x~ +) real_ind~ =)
+    (chb~ cells [ real_ind~ ] =)
+(funcend)
+(get_cell func)
+    #var ~ get_cell
+    (set int64 1 real_ind~ 0)
+    (set int64 1 x~ 0)
+    (set int64 1 y~ 0)
+    (set byte 1 chb~ 0)
+    (y~ x~ stpop)
+
+    ((y~ max_y *) real_ind~ =)
+    ((real_ind~ x~ +) real_ind~ =)
+    (cells [ real_ind~ ] chb~ =)
+
+    (chb~ stpushb)
+(funcend)
+
+// cells_seed
+(set_seed_cell func)
+    #var ~ set_seed_cell
+    (set int64 1 real_ind~ 0)
+    (set int64 1 x~ 0)
+    (set int64 1 y~ 0)
+    (set byte 1 chb~ 0)
+    (chb~ stpopb)
+    (y~ stpopi)
+    (x~ stpopi)
+
+    ((y~ max_y *) real_ind~ =)
+    ((real_ind~ x~ +) real_ind~ =)
+    (chb~ cells_seed [ real_ind~ ] =)
+(funcend)
+(get_seed_cell func)
+    #var ~ get_seed_cell
+    (set int64 1 real_ind~ 0)
+    (set int64 1 x~ 0)
+    (set int64 1 y~ 0)
+    (set byte 1 chb~ 0)
+    (y~ x~ stpop)
+
+    ((y~ max_y *) real_ind~ =)
+    ((real_ind~ x~ +) real_ind~ =)
+    (cells_seed [ real_ind~ ] chb~ =)
+
+    (chb~ stpushb)
+(funcend)
+
+
+(init_grid func)
+    #var ~ init_grid
+    (set const-int64 1 zero~ 0)
+    (set const-byte 1 zerob~ 0)
+    (set const-int64 1 one~ 1)
+    (set const-byte 1 spacec~ 32)
+    (set int64 1 x~ 0)
+    (set int64 1 y~ 0)
+    (set int64 1 f~ 0)
+    (zero~ x~ =)
+    (zero~ y~ =)
+    (for-loop)
+    (((y~ max_y <) f~ =) f~ for)
+        (zero~ x~ =)
+        (for-loop)
+        (((x~ max_x <) f~ =) f~ for)
+            (reset-reg)
+            (x~ y~ spacec~ :set_cell !)
+            (x~ y~ spacec~ :set_seed_cell !)
+            ((x~ one~ +) x~ =)
+        (next)
+        //print_n
+        ((y~ one~ +) y~ =)
+    (next)
+(funcend)
+
+(print_grid func)
+    #var ~ print_grid
+    (set const-int64 1 zero~ 0)
+    (set const-byte 1 zerob~ 0)
+    (set const-int64 1 one~ 1)
+    (set const-int64 1 chlen~ 2)
+    (set int64 1 real_ind~ 0)
+    (set int64 1 x~ 0)
+    (set int64 1 y~ 0)
+    (set int64 1 f~ 0)
+    (set byte 1 chb~ 0)
+    (set int64 1 chi~ 0)
+    (set string 2 ch~ "")
+    (set string s formstr~ "%c")
+    (zero~ x~ =)
+    (zero~ y~ =)
+    (for-loop)
+    (((y~ max_y <) f~ =) f~ for)
+        (zero~ x~ =)
+        (for-loop)
+        (((x~ max_x <) f~ =) f~ for)
+            (reset-reg)
+            (x~ y~ :get_cell !)
+            (chb~ stpopb)
+            // ((chb~ zerob~ +) chb~ =)
+            (chb~ chi~ =)
+            // print_i (chi~)
+            // print_n
+             printf_i (formstr~, chi~)
+            //print_i (chi~)
+            //print_n
+            ((x~ one~ +) x~ =)
+        (next)
+        print_n
+        ((y~ one~ +) y~ =)
+    (next)
+(funcend)
+
+(print_puzzle_grid func)
+// print puzzle grid with the text input field empty and the not used marks
+//  +-+-+-+-+-+-+
+//  |w|o|r|l|d|#|
+//  +-+-+-+-+-+-+
+
+    #var ~ print_puzzle_grid
+    (set const-int64 1 zero~ 0)
+    (set const-byte 1 zerob~ 0)
+    (set const-int64 1 one~ 1)
+    (set const-int64 1 chlen~ 2)
+    (set int64 1 real_ind~ 0)
+    (set int64 1 x~ 0)
+    (set int64 1 y~ 0)
+    (set int64 1 f~ 0)
+    (set byte 1 chb~ 0)
+    (set int64 1 chi~ 0)
+    (set const-int64 1 spacec~ 32)
+    (set string 2 ch~ "")
+    (set string s formstr~ "%c")
+    (set string s top_str~ "+-")
+    (set string s plus_str~ "+")
+    (set string s sep_str~ "|")
+    // set ASCI code of #
+    (set int64 1 space_markc~ 35)
+    (set string s space_str~ " ")
+    (set byte 1 seedb~ 0)
+    (set int64 1 seedi~ 0)
+    (zero~ x~ =)
+    (zero~ y~ =)
+    (for-loop)
+    (((y~ max_y <) f~ =) f~ for)
+        (zero~ x~ =)
+        (for-loop)
+        (((x~ max_x <) f~ =) f~ for)
+            print_s (top_str~)
+            ((x~ one~ +) x~ =)
+        (next)
+        print_s (plus_str~)
+        print_n
+        print_s (sep_str~)
+        (zero~ x~ =)
+        (for-loop)
+        (((x~ max_x <) f~ =) f~ for)
+            (reset-reg)
+            (x~ y~ :get_cell !)
+            (chb~ stpopb)
+            (((chb~ spacec~ ==) f~ =) f~ if+)
+                 printf_i (formstr~, space_markc~)
+            (else)
+                (x~ y~ :get_seed_cell !)
+                (seedb~ stpop)
+                (((seedb~ spacec~ !=) f~ =) f~ if+)
+                    (seedb~ seedi~ =)
+                    printf_i (formstr~, seedi~)
+                    (:print_puzzle_grid_next jmp)
+                (else)
+                    print_s (space_str~)
+                (endif)
+            (endif)
+
+            (:print_puzzle_grid_next)
+            print_s (sep_str~)
+            ((x~ one~ +) x~ =)
+        (next)
+        print_n
+        ((y~ one~ +) y~ =)
+    (next)
+     (zero~ x~ =)
+    (for-loop)
+    (((x~ max_x <) f~ =) f~ for)
+        print_s (top_str~)
+        ((x~ one~ +) x~ =)
+    (next)
+    print_s (plus_str~)
+    print_n
+(funcend)
+
+
+(check_insert_vertical func)
+    #var ~ check_insert_vertical
+    (set const-int64 1 zero~ 0)
+    (set const-byte 1 zerob~ 0)
+    (set const-int64 1 one~ 1)
+    (set const-int64 1 two~ 2)
+    (set const-int64 1 chlen~ 2)
+    (set int64 1 real_ind~ 0)
+    (set int64 1 x~ 0)
+    (set int64 1 y~ 0)
+    (set int64 1 f~ 0)
+    (set byte 1 chb~ 0)
+    (set int64 1 chi~ 0)
+    (set string 2 ch~ "")
+    (set int64 1 Pwordstr~ 0)
+    (set int64 1 word_ind~ 0)
+    (set int64 1 wordstr_len~ 0)
+    (set byte 1 wordb~ 0)
+    (set int64 1 match~ 0)
+    (set int64 1 match_x~ 0)
+    (set int64 1 match_y~ 0)
+    (set int64 1 space~ 0)
+    (set int64 1 i~ 0)
+    (set const-int64 1 spacec~ 32)
+    (set int64 1 ysp~ 0)
+    (set string s errstr~ "insert_vertical: ERROR string to long: ")
+    (set string s matchstartstr~ "found match start")
+    (set string s matchxstr~ "match x: ")
+    (set string s insertstr~ "found match end: OK to insert")
+    (set string s spacestr~ " ")
+    (set string s commastr~ ",")
+    (set string s breakstr~ "match break")
+    (set int64 1 ret~ 0)
+    (set int64 1 mod~ 0)
+    (set int64 1 match_two_chars~ 0)
+    (set int64 1 chars_check~ 0)
+    (set string s found_two_set_str~ "found two already set chars, skipping!")
+    (one~ ret~ =)
+    (Pwordstr~ stpop)
+    (Pwordstr~ :string_len !)
+    (wordstr_len~ stpop)
+    (((wordstr_len~ max_y >=) f~ =) f~ if)
+        print_s (errstr~)
+        print_i (wordstr_len~)
+        print_n
+        (:check_insert_vertical_end !)
+    (endif)
+    (zero~ word_ind~ =)
+    (zero~ x~ =)
+    (zero~ y~ =)
+    (zero~ match~ =)
+    (for-loop)
+    (((y~ max_y <) f~ =) f~ for)
+        (zero~ x~ =)
+        (for-loop)
+        (((x~ max_x <) f~ =) f~ for)
+            (reset-reg)
+            (x~ y~ :get_cell !)
+            (chb~ stpopb)
+
+            (Pwordstr~ word_ind~ :string_mid_to_byte !)
+            (wordb~ stpop)
+
+            (reset-reg)
+            (((chb~ wordb~ ==) f~ =) f~ if)
+                // check if x coordinate is even
+                ((x~ two~ ^) mod~ =)
+                (((mod~ one~ ==) f~ =) f~ if)
+                      (zero~ match~ =)
+                      (:check_insert_vertical_next jmp)
+                (endif)
+
+                // found matching char
+                (one~ match~ =)
+                (x~ match_x~ =)
+                (y~ match_y~ =)
+
+                // check if space fits
+                ((y~ wordstr_len~ +) space~ =)
+                (((space~ max_y >=) f~ =) f~ if)
+                    // not enough space, skip
+                    (zero~ match~ =)
+                    (:check_insert_vertical_next jmp)
+                (endif)
+                    (y~ i~ =)
+                    (zero~ match_two_chars~ =)
+                    (zero~ chars_check~ =)
+                    (for-loop)
+                    (((word_ind~ wordstr_len~ <) f~ =) f~ for)
+                        ((i~ one~ +) i~ =)
+                        ((chars_check~ one~ +) chars_check~ =)
+                        ((word_ind~ one~ +) word_ind~ =)
+                        (x~ i~ :get_cell !)
+                        (chb~ stpopb)
+
+                        (Pwordstr~ word_ind~ :string_mid_to_byte !)
+                        (wordb~ stpop)
+
+                        (reset-reg)
+                        // check if equal or zero (unset char)
+                        (zero~ match~ =)
+                        (((word_ind~ zero~ ==) f~ =) f~ if+)
+                            (((chb~ wordb~ ==) f~ =) f~ if)
+                                (one~ match~ =)
+                                ((match_two_chars~ one~ +) match_two_chars~ =)
+                            (endif)
+                        (else)
+                            (((chb~ spacec~ ==) f~ =) f~ if+)
+                                 (one~ match~ =)
+                            (else)
+                                 // found no space, set match to zero
+                                 (zero~ match~ =)
+                                 (:check_insert_vertical_next jmp)
+                            (endif)
+                        (endif)
+
+                        // check if space before y coord
+                        (((y~ zero~ >) f~ =) f~ if)
+                            ((y~ one~ -) ysp~ =)
+                            (x~ ysp~ :get_cell !)
+                            (chb~ stpopb)
+                            (((chb~ spacec~ !=) f~ =) f~ if)
+                                (zero~ match~ =)
+                                (:check_insert_vertical_next jmp)
+                            (endif)
+                        (endif)
+                    (next)
+                    (((match~ one~ ==) f~ =) f~ if)
+                        (:check_insert_vertical_insert jmp)
+                    (endif)
+            (endif)
+            (:check_insert_vertical_next)
+            (zero~ word_ind~ =)
+            ((x~ two~ +) x~ =)
+        (next)
+        ((y~ one~ +) y~ =)
+    (next)
+    (:check_insert_vertical_insert)
+    (((match~ one~ ==) f~ =) f~ if)
+        // insert word into grid
+        (match_x~ x~ =)
+        (match_y~ y~ =)
+        (zero~ word_ind~ =)
+
+        (for-loop)
+        (((word_ind~ wordstr_len~ <) f~ =) f~ for)
+            (Pwordstr~ word_ind~ :string_mid_to_byte !)
+            (wordb~ stpop)
+            (match_x~ y~ wordb~ :set_cell !)
+            ((y~ one~ +) y~ =)
+            ((word_ind~ one~ +) word_ind~ =)
+        (next)
+        (zero~ ret~ =)
+    (endif)
+
+    (:check_insert_vertical_end)
+    (ret~ stpush)
+(funcend)
+
+(check_insert_horizontal func)
+    #var ~ check_insert_horizontal
+    (set const-int64 1 zero~ 0)
+    (set const-byte 1 zerob~ 0)
+    (set const-int64 1 one~ 1)
+    (set const-int64 1 two~ 2)
+    (set const-int64 1 chlen~ 2)
+    (set int64 1 real_ind~ 0)
+    (set int64 1 x~ 0)
+    (set int64 1 y~ 0)
+    (set int64 1 f~ 0)
+    (set byte 1 chb~ 0)
+    (set int64 1 chi~ 0)
+    (set string 2 ch~ "")
+    (set int64 1 Pwordstr~ 0)
+    (set int64 1 word_ind~ 0)
+    (set int64 1 wordstr_len~ 0)
+    (set byte 1 wordb~ 0)
+    (set int64 1 match~ 0)
+    (set int64 1 match_x~ 0)
+    (set int64 1 match_y~ 0)
+    (set int64 1 space~ 0)
+    (set int64 1 i~ 0)
+    (set const-int64 1 spacec~ 32)
+    (set int64 1 xsp~ 0)
+    (set string s errstr~ "insert_horizontal: ERROR string to long: ")
+    (set string s matchstartstr~ "found match start")
+    (set string s matchxstr~ "match x: ")
+    (set string s insertstr~ "found match end: OK to insert")
+    (set string s spacestr~ " ")
+    (set string s commastr~ ",")
+    (set string s breakstr~ "match break")
+    (set int64 1 ret~ 0)
+    (set int64 1 mod~ 0)
+    (set int64 1 print~ 0)
+    // empty space left side of insert word
+    (one~ ret~ =)
+    (Pwordstr~ stpop)
+    (Pwordstr~ :string_len !)
+    (wordstr_len~ stpop)
+    (((wordstr_len~ max_y >=) f~ =) f~ if)
+        print_s (errstr~)
+        print_i (wordstr_len~)
+        print_n
+        (:check_insert_vertical_end jmp)
+    (endif)
+    (zero~ word_ind~ =)
+    (zero~ x~ =)
+    (zero~ y~ =)
+    (zero~ match~ =)
+    (for-loop)
+    (((y~ max_y <) f~ =) f~ for)
+        (zero~ x~ =)
+        (for-loop)
+        (((x~ max_x <) f~ =) f~ for)
+            (reset-reg)
+            (x~ y~ :get_cell !)
+            (chb~ stpopb)
+
+            (Pwordstr~ word_ind~ :string_mid_to_byte !)
+            (wordb~ stpop)
+
+            (reset-reg)
+            (((chb~ wordb~ ==) f~ =) f~ if)
+                // found matching char
+                (one~ match~ =)
+                (x~ match_x~ =)
+                (y~ match_y~ =)
+
+
+                (set string s dstartinsertstr "starting insert check...")
+                //print_s (dstartinsertstr)
+                //print_n
+                //print_i (x~)
+                //print_n
+                //print_i (wordstr_len~)
+                //print_n
+                //print_i (max_x)
+                //print_n
+
+                // check if space fits
+                ((x~ wordstr_len~ +) space~ =)
+                //print_i (space~)
+                //print_n
+                (((space~ max_x >=) f~ =) f~ if)
+                    // not enough space, skip
+                    //
+                    (set string s dnospacestr "no space to insert!")
+                    //print_s (dnospacestr)
+                   //print_n
+                    (zero~ match~ =)
+                    (:check_insert_horizontal_next jmp)
+                (endif)
+
+
+                (set string s dcontinuestr "next, start space check")
+                //print_s (dcontinuestr)
+                //print_n
+                // check if space char is before x start
+                (((x~ zero~ >) f~ =) f~ if)
+                    (set string s dcheckskipstr "start space check")
+                    //print_s (dcheckskipstr)
+                    //print_n
+
+
+                    (reset-reg)
+                    ((x~ one~ -) xsp~ =)
+                    (xsp~ y~ :get_cell !)
+                    (chb~ stpopb)
+
+                    (((chb~ spacec~ !=) f~ =) f~ if)
+                        (zero~ match~ =)
+
+                        (set string s dskipinstr "skipping horizontal insert")
+                        //print_s (dskipinstr)
+                        //print_n
+
+                        (:check_insert_horizontal_next jmp)
+                    (endif)
+                (endif)
+
+                    (reset-reg)
+                    (x~ i~ =)
+                    (for-loop)
+                    (((word_ind~ wordstr_len~ <) f~ =) f~ for)
+                        ((i~ one~ +) i~ =)
+                        ((word_ind~ one~ +) word_ind~ =)
+                        (i~ y~ :get_cell !)
+                        (chb~ stpopb)
+
+                        //(Pwordstr~ word_ind~ :string_mid_to_byte !)
+                        //(wordb~ stpop)
+
+                        (reset-reg)
+                        // check if equal or zero (unset char)
+                        // (zero~ match~ =)
+                        //(((chb~ wordb~ ==) f~ =) f~ if)
+                        //    (one~ match~ =)
+                        // (endif)
+                        (((chb~ spacec~ ==) f~ =) f~ if+)
+                            (one~ match~ =)
+                        (else)
+                            (zero~ match~ =)
+                            (:check_insert_horizontal_next jmp)
+                        (endif)
+                    (next)
+                    (((match~ one~ ==) f~ =) f~ if)
+                        (:check_insert_horizontal_insert jmp)
+                    (endif)
+            (endif)
+            (:check_insert_horizontal_next)
+            (reset-reg)
+            (zero~ word_ind~ =)
+            ((x~ one~ +) x~ =)
+        (next)
+        ((y~ two~ +) y~ =)
+    (next)
+    (:check_insert_horizontal_insert)
+    (((match~ one~ ==) f~ =) f~ if)
+        // insert word into grid
+        (match_x~ x~ =)
+        (match_y~ y~ =)
+        (zero~ word_ind~ =)
+
+        (for-loop)
+        (((word_ind~ wordstr_len~ <) f~ =) f~ for)
+            (Pwordstr~ word_ind~ :string_mid_to_byte !)
+            (wordb~ stpop)
+
+            (x~ match_y~ wordb~ :set_cell !)
+            ((x~ one~ +) x~ =)
+            ((word_ind~ one~ +) word_ind~ =)
+        (next)
+        (zero~ ret~ =)
+    (endif)
+
+    (:check_insert_horizontal_end)
+    (ret~ stpush)
+(funcend)
+
+(get_horiozontal_words func)
+    #var ~ get_horizontal_words
+    (set const-int64 1 zero~ 0)
+    (set const-byte 1 zerob~ 0)
+    (set const-int64 1 one~ 1)
+    (set const-int64 1 two~ 2)
+    (set const-int64 1 chlen~ 2)
+    (set int64 1 real_ind~ 0)
+    (set int64 1 x~ 0)
+    (set int64 1 y~ 0)
+    (set int64 1 f~ 0)
+    (set byte 1 chb~ 0)
+    (set int64 1 chi~ 0)
+    (set int64 1 word_ind~ 0)
+    (set string 256 wordstr~ "")
+    (set string s emptystr~ "")
+    (set const-int64 1 spacec~ 32)
+
+    (zero~ word_ind~ =)
+    (zero~ x~ =)
+    (zero~ y~ =)
+    (for-loop)
+    (((y~ max_y <) f~ =) f~ for)
+        (zero~ x~ =)
+        (for-loop)
+        (wordstr~ emptystr~ :string_copy !)
+        (((x~ max_x <) f~ =) f~ for)
+            (reset-reg)
+            (x~ y~ :get_cell !)
+            (chb~ stpopb)
+            (((chb~ spacec~ !=) f~ =) f~ if)
+            (endif)
+        (next)
+    (next)
+(funcend)
+
+#include <string.l1h>
+#include <math-lib.l1h>
+#include <file-lib.l1h>
