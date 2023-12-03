@@ -30,7 +30,7 @@
     (set string s error_write_wordliststr "error: can't write to wordlist!")
     (set string s placed_hstr "placed horizontaly: ")
     (set string s placed_vstr "placed verticaly: ")
-    (set string s seedstr "telescope")
+    (set string s seedstr "motherboard")
     (set string 2 charstr "")
     (set string s regexstr "^[a-z]+$")
     (set string s check1_str "telephone")
@@ -52,7 +52,7 @@
     (set int64 1 wordlist 0)
     (set string 256 wordstr "")
     (set const-int64 1 Pwordstr 0)
-    (set const-int64 1 search_max 2000000)
+    (set const-int64 1 search_max 200000)
     (set int64 1 search 0)
     (set int64 1 wordlen 0)
     (set int64 1 wordlen_max 10)
@@ -61,6 +61,8 @@
     (set int64 1 wordfile_len 4862542)
     (set byte 4862542 wordfile $/home/stefan/l1vm/dictionary/words-english.txt)
     (set int64 1 wordfile_index 0)
+    (set int64 1 randstart 2000)
+
     (wordstr Pwordstr pointer)
 
     (zero :string_init !)
@@ -76,6 +78,9 @@
         (one retval =)
         (:quit jmp)
 	(endif)
+
+    // init random number generator
+    (randstart :math_randinit !)
 
     (:open_wordlist !)
     (ret stpop)
@@ -269,20 +274,19 @@
     (set string s emptystr~ "")
     (set int64 1 wordstr~ 0)
     (set string s word_endstr~ "word-end")
+    (set int64 1 random_max~ 400)
+    (set int64 1 skip_count~ 0)
 
     (wordstr~ stpop)
     (wordstr~ emptystr~ :string_copy !)
 
+    // get random skip over words
+    (random_max~ :math_randintmax !)
+    (skip_count~ stpop)
+
     (:read_wordfile_loop)
         (wordfile [ wordfile_index ] chi~ =)
-
         pull_int64_var (chi~)
-        //print_n
-        //print_i (chi~)
-        //print_n
-
-        //print_i (word_end~)
-        //print_n
 
         (((chi~ word_end~ ==) f~ =) f~ if+)
             ((wordfile_index one~ +) wordfile_index =)
@@ -290,18 +294,10 @@
                 // reached end of wordfile data array, set back to zero
                 (zero~ wordfile_index =)
             (endif)
-            //print_n
-            //print_s (word_endstr~)
-            //print_n
+
             (:read_wordfile_end jmp)
         (else)
-            //(reset-reg)
-            // (chi~ load)
-            //print_i (chi~)
-            //print_n
             (chi~ chstr~ :string_bytenumtostring !)
-            //print_s (chstr~)
-            //print_n
             (wordstr~ chstr~ :string_cat !)
         (endif)
         ((wordfile_index one~ +) wordfile_index =)
@@ -312,14 +308,11 @@
         (:read_wordfile_loop jmp)
 
     (:read_wordfile_end)
-(funcend)
-
-(read_wordfile_test func)
-    #var ~ read_wordfile_test
-    (set string s readstr~ "northpole")
-
-    // set dummy wordstr
-    (wordstr readstr~ :string_copy !)
+    ((skip_count~ one~ -) skip_count~ =)
+    (((skip_count~ zero~ >) f~ =) f~ if)
+        (wordstr~ emptystr~ :string_copy !)
+        (:read_wordfile_loop jmp)
+    (endif)
 (funcend)
 
 // cell words
