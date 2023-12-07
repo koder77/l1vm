@@ -599,7 +599,7 @@
 
                 // check if space fits
                 ((y~ wordstr_len~ +) space~ =)
-                ((space~ one~ -) space~ =)
+                //((space~ one~ -) space~ =)
                 (((space~ max_y >=) f~ =) f~ if)
                     // not enough space, skip
                     (zero~ match~ =)
@@ -754,7 +754,7 @@
 
                 // check if space fits
                 ((x~ wordstr_len~ +) space~ =)
-                ((space~ one~ -) space~ =)
+                //((space~ one~ -) space~ =)
                 (((space~ max_x >=) f~ =) f~ if)
                     // not enough space, skip
                     (zero~ match~ =)
