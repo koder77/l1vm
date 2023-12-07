@@ -752,10 +752,6 @@
                 (x~ match_x~ =)
                 (y~ match_y~ =)
 
-                //    123456
-                // 1234567890
-                // 0123456789
-                //    foobar
                 // check if space fits
                 ((x~ wordstr_len~ +) space~ =)
                 ((space~ one~ -) space~ =)
