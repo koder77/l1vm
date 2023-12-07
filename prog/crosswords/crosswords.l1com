@@ -599,6 +599,7 @@
 
                 // check if space fits
                 ((y~ wordstr_len~ +) space~ =)
+                ((space~ one~ -) space~ =)
                 (((space~ max_y >=) f~ =) f~ if)
                     // not enough space, skip
                     (zero~ match~ =)
@@ -715,6 +716,7 @@
     (set int64 1 mod~ 0)
     (set int64 1 print~ 0)
     (set int64 1 space_end_x~ 0)
+    (set int64 1 space_top_y~ 0)
     // empty space left side of insert word
     (one~ ret~ =)
     (Pwordstr~ stpop)
@@ -750,8 +752,13 @@
                 (x~ match_x~ =)
                 (y~ match_y~ =)
 
+                //    123456
+                // 1234567890
+                // 0123456789
+                //    foobar
                 // check if space fits
                 ((x~ wordstr_len~ +) space~ =)
+                ((space~ one~ -) space~ =)
                 (((space~ max_x >=) f~ =) f~ if)
                     // not enough space, skip
                     (zero~ match~ =)
@@ -793,7 +800,18 @@
 
                         (reset-reg)
                         (((chb~ spacec~ ==) f~ =) f~ if+)
-                            (one~ match~ =)
+                             (((y~ zero~ >) f~ =) f~ if)
+                                 // check if space in up position
+                                 ((y~ one~ -) space_top_y~ =)
+                                 (i~ space_top_y~ :get_cell !)
+                                 (chb~ stpopb)
+                                 (((chb~ spacec~ !=) f~ =) f~ if+)
+                                     (zero~ match~ =)
+                                     (:check_insert_horizontal_next jmp)
+                                 (else)
+                                     (one~ match~ =)
+                                 (endif)
+                            (endif)
                         (else)
                             (zero~ match~ =)
                             (:check_insert_horizontal_next jmp)
