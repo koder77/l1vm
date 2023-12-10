@@ -18,7 +18,7 @@
 	(set string s menu_quitstr "4: quit")
 	(set string s menu_chstr "? ")
 	(set int64 1 input_menu 0)
-	(Set int64 1 f 0)
+	(set int64 1 f 0)
 
 	(zero :mp_math_init !)
     (:init->circle !)
@@ -68,6 +68,28 @@
 
 (circle object)
     #var ~ circle
+
+	#docustart
+    circle object
+    =============
+	Calculate diameter, circumference and area of a circle.
+
+	init->circle
+	____________
+	Set the m_pi Pi variable.
+
+	calc_diam->circle
+	_________________
+	Calculate the diameter of a circle.
+
+	calc_circ->circle
+	_________________
+	Calculate the circumference of a circle.
+
+	calc-area->circle
+	_________________
+	Calculate the area of a circle.
+	#docuend
 
 	// set constant -----------------------------------------
 	(set const-string s m_pi@mp_math "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679")

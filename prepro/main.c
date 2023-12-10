@@ -46,6 +46,16 @@
 #define NO_REPLACE_SB      "#noreplace"
 #define REPLACE_SB         "#replace"
 
+// doucumentaiion blocks start and end
+// will be written in out.md Markdown file
+#define DOCU_START_SB      "#docustart"
+#define DOCU_END_SB        "#docuend"
+
+// for generating documentation file
+FILE *docuptr;
+U1 documentation_on = 0;    // if set to 1 then write the following lines into docu file
+
+
 U1 include_path[MAXSTRLEN + 1];
 U1 include_path_two[MAXSTRLEN + 1];
 
@@ -701,6 +711,23 @@ S2 include_file (U1 *line_str)
 			convtabs (buf);
 			slen = strlen_safe ((const char *) buf, MAXLINELEN);
 
+			if (documentation_on == 1)
+			{
+				pos = searchstr (buf, (U1 *) DOCU_END_SB, 0, 0, TRUE);
+				if (pos >= 0)
+			    {
+				   // begin of documentation blog, set flag
+				   documentation_on = 0;
+				   continue;
+			    }
+
+				if (fprintf (docuptr, "%s", buf) < 0)
+				{
+					printf ("ERROR: can't write to documentation file!\n");
+				}
+				continue;
+			}
+
 			pos = searchstr (buf, (U1 *) REPLACE_SB, 0, 0, TRUE);
 			if (pos >= 0)
 			{
@@ -736,6 +763,14 @@ S2 include_file (U1 *line_str)
 				continue;
 			}
 
+			pos = searchstr (buf, (U1 *) DOCU_START_SB, 0, 0, TRUE);
+			if (pos >= 0)
+			{
+				// begin of documentation blog, set flag
+				documentation_on = 1;
+				continue;
+			}
+
 			pos = searchstr (buf, (U1 *) "#", 0, 0, TRUE);
 			if (pos < 0)
 			{
@@ -762,6 +797,7 @@ S2 include_file (U1 *line_str)
 				{
 					fclose (finptr);
 					fclose (foutptr);
+					fclose (docuptr);
 					exit (1);
 				}
 				continue;	// don't safe define line!
@@ -776,6 +812,7 @@ S2 include_file (U1 *line_str)
 				{
 					fclose (finptr);
 					fclose (foutptr);
+					fclose (docuptr);
 					exit (1);
 				}
 				continue;	// don't safe define line!
@@ -790,6 +827,7 @@ S2 include_file (U1 *line_str)
 				{
 					fclose (finptr);
 					fclose (foutptr);
+					fclose (docuptr);
 					exit (1);
 				}
 				// replace all @ with the variable end as defined in func var macro
@@ -817,6 +855,7 @@ S2 include_file (U1 *line_str)
 				{
 					fclose (finptr);
 					fclose (foutptr);
+					fclose (docuptr);
 					exit (1);
 				}
 			}
@@ -842,6 +881,7 @@ S2 include_file (U1 *line_str)
 										printf ("ERROR: can't write to output file!\n");
 										fclose (finptr);
 										fclose (foutptr);
+										fclose (docuptr);
 										exit (1);
 									}
 									pos = pos + 1;
@@ -853,6 +893,7 @@ S2 include_file (U1 *line_str)
 										printf ("ERROR: can't write to output file!\n");
 										fclose (finptr);
 										fclose (foutptr);
+										fclose (docuptr);
 										exit (1);
 									}
 								}
@@ -864,6 +905,7 @@ S2 include_file (U1 *line_str)
 									printf ("ERROR: can't write to output file!\n");
 									fclose (finptr);
 									fclose (foutptr);
+									fclose (docuptr);
 									exit (1);
 								}
 							}
@@ -875,6 +917,7 @@ S2 include_file (U1 *line_str)
 							printf ("ERROR: can't write to output file!\n");
 							fclose (finptr);
 							fclose (foutptr);
+							fclose (docuptr);
 							exit (1);
 						}
 					}
@@ -887,6 +930,7 @@ S2 include_file (U1 *line_str)
 						printf ("ERROR: can't write to output file!\n");
 						fclose (finptr);
 						fclose (foutptr);
+						fclose (docuptr);
 						exit (1);
 					}
 				}
@@ -1006,6 +1050,16 @@ int main (int ac, char *av[])
 	strcpy ((char *) include_path, av[3]);
 	strcpy ((char *) include_path_two, "");
 
+	// open documentation file for output
+	docuptr = fopen ("out.md", "w");
+	if (docuptr == NULL)
+	{
+		printf ("ERROR: can't open docmentation file 'out.md' !\n");
+		fclose (finptr);
+		fclose (foutptr);
+		exit (1);
+	}
+
 	if (ac == 5)
 	{
 		if (strlen_safe ((const char *) av[4], MAXLINELEN) > MAXLINELEN - 1)
@@ -1013,6 +1067,7 @@ int main (int ac, char *av[])
 			printf ("ERROR: include path: '%s' too long!\n", av[4]);
 			fclose (finptr);
 			fclose (foutptr);
+			fclose (docuptr);
 			exit (1);
 		}
 		strcpy ((char *) include_path_two, av[4]);
@@ -1029,6 +1084,23 @@ int main (int ac, char *av[])
 			strcpy ((char *) buf, (const char *) rbuf);
 			convtabs (buf);
 			slen = strlen_safe ((const char *) buf, MAXLINELEN);
+
+			if (documentation_on == 1)
+			{
+				pos = searchstr (buf, (U1 *) DOCU_END_SB, 0, 0, TRUE);
+				if (pos >= 0)
+			    {
+			     	// begin of documentation blog, set flag
+			    	documentation_on = 0;
+				    continue;
+			    }
+
+				if (fprintf (docuptr, "%s", rbuf) < 0)
+				{
+					printf ("ERROR: can't write to documentation file!\n");
+				}
+				continue;
+			}
 
 			pos = searchstr (buf, (U1 *) REPLACE_SB, 0, 0, TRUE);
 			if (pos >= 0)
@@ -1061,8 +1133,17 @@ int main (int ac, char *av[])
 					printf ("ERROR: can't write to output file!\n");
 					fclose (finptr);
 					fclose (foutptr);
+					fclose (docuptr);
 					exit (1);
 				}
+				continue;
+			}
+
+			pos = searchstr (buf, (U1 *) DOCU_START_SB, 0, 0, TRUE);
+			if (pos >= 0)
+			{
+				// begin of documentation blog, set flag
+				documentation_on = 1;
 				continue;
 			}
 
@@ -1101,6 +1182,7 @@ int main (int ac, char *av[])
 				{
 					fclose (finptr);
 					fclose (foutptr);
+					fclose (docuptr);
 					exit (1);
 				}
 				continue;	// don't safe define line!
@@ -1115,6 +1197,7 @@ int main (int ac, char *av[])
 				{
 					fclose (finptr);
 					fclose (foutptr);
+					fclose (docuptr);
 					exit (1);
 				}
 				continue;	// don't safe define line!
@@ -1129,6 +1212,7 @@ int main (int ac, char *av[])
 				{
 					fclose (finptr);
 					fclose (foutptr);
+					fclose (docuptr);
 					exit (1);
 				}
 				// replace all @ with the variable end as defined in func var macro
@@ -1156,6 +1240,7 @@ int main (int ac, char *av[])
 				{
 					fclose (finptr);
 					fclose (foutptr);
+					fclose (docuptr);
 					exit (1);
 				}
 			}
@@ -1181,6 +1266,7 @@ int main (int ac, char *av[])
 										printf ("ERROR: can't write to output file!\n");
 										fclose (finptr);
 										fclose (foutptr);
+										fclose (docuptr);
 										exit (1);
 									}
 									pos = pos + 1;
@@ -1192,6 +1278,7 @@ int main (int ac, char *av[])
 										printf ("ERROR: can't write to output file!\n");
 										fclose (finptr);
 										fclose (foutptr);
+										fclose (docuptr);
 										exit (1);
 									}
 								}
@@ -1203,6 +1290,7 @@ int main (int ac, char *av[])
 									printf ("ERROR: can't write to output file!\n");
 									fclose (finptr);
 									fclose (foutptr);
+									fclose (docuptr);
 									exit (1);
 								}
 							}
@@ -1214,6 +1302,7 @@ int main (int ac, char *av[])
 							printf ("ERROR: can't write to output file!\n");
 							fclose (finptr);
 							fclose (foutptr);
+							fclose (docuptr);
 							exit (1);
 						}
 					}
@@ -1226,6 +1315,7 @@ int main (int ac, char *av[])
 						printf ("ERROR: can't write to output file!\n");
 						fclose (finptr);
 						fclose (foutptr);
+						fclose (docuptr);
 						exit (1);
 					}
 				}
@@ -1238,5 +1328,6 @@ int main (int ac, char *av[])
 	}
 	fclose (finptr);
 	fclose (foutptr);
+	fclose (docuptr);
 	exit (0);
 }
