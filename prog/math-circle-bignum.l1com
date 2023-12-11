@@ -75,19 +75,19 @@
 	Calculate diameter, circumference and area of a circle.
 
 	init->circle
-	____________
+	------------
 	Set the m_pi Pi variable.
 
 	calc_diam->circle
-	_________________
+	-----------------
 	Calculate the diameter of a circle.
 
 	calc_circ->circle
-	_________________
+	-----------------
 	Calculate the circumference of a circle.
 
 	calc-area->circle
-	_________________
+	-----------------
 	Calculate the area of a circle.
 	#docuend
 
