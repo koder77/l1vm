@@ -1,4 +1,6 @@
 #!/bin/bash
+echo -n "building: " && echo $1
+
 secondinclude=${PWD}
 secondinclude+='/'
 l1pre $1.l1com out.l1com ~/l1vm/include/ $secondinclude
@@ -20,12 +22,22 @@ else
 	cp out.l1obj $outname
 fi
 
+echo "copying files..."
+
 # get .l1asm file
-outname=$(basename "$i" .l1asm)
+outname=""
+outname=${1%.l1asm}
 outname="${outname}.l1asm"
 cp out.l1asm $outname
 
 # get .l1dbg file
+outname=""
 outname=${1%.l1com}
 outname="${outname}.l1dbg"
 cp out.l1dbg $outname
+
+# get .md markdown docu file
+outname=""
+outname=${1%.md}
+outname="${outname}.md"
+cp out.md $outname
