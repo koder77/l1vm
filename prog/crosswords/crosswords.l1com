@@ -112,6 +112,7 @@
         ((i one +) i =)
     (next)
 
+    // loop starts here
     (:loop)
     (Pwordstr :read_wordfile !)
 
@@ -140,6 +141,8 @@
     // print_s (Pwordstr)
     // print_n
 
+    // check if word list words fit
+    // alternate between horizontal and vertical direction
     (((direction zero ==) f =) f if+)
        (Pwordstr :check_insert_horizontal !)
        (ret stpop)
@@ -241,6 +244,15 @@
 
 (open_wordlist func)
     #var ~ open_wordlist
+
+#docustart
+open_wordlist
+=============
+Open the wordlist file: "wordlist.txt" to write the grid matching words.
+Returns "zero" if file is opened.
+
+#docuend
+
     (set const-int64 1 zero~ 0)
     (set const-int64 1 one~ 1)
     (set int64 1 ret~ 0)
@@ -265,6 +277,16 @@
 
 (read_wordfile func)
     #var ~ read_wordfile
+
+#docustart
+read_wordfile
+=============
+Read words from word file byte array: "wordfile".
+Skip "skip_count~" words and get the next word, to make things more random.
+Reset the byte array index to 0 on array end.
+
+#docuend
+
     (set const-int64 1 zero~ 0)
     (set const-int64 1 one~ 1)
     (set int64 1 f~ 0)
@@ -319,6 +341,14 @@
 // cell words
 (set_cell func)
     #var ~ set_cell
+
+#docustart
+set_cell
+========
+Set char in word grid at given coordinate "x~", "y~".
+
+#docuend
+
     (set int64 1 real_ind~ 0)
     (set int64 1 x~ 0)
     (set int64 1 y~ 0)
@@ -333,6 +363,14 @@
 (funcend)
 (get_cell func)
     #var ~ get_cell
+
+#docustart
+get_cell
+========
+Get char from word grid at given coordinate "x~", "y~".
+
+#docuend
+
     (set int64 1 real_ind~ 0)
     (set int64 1 x~ 0)
     (set int64 1 y~ 0)
@@ -349,6 +387,14 @@
 // cells_seed
 (set_seed_cell func)
     #var ~ set_seed_cell
+
+#docustart
+set_seed_cell
+=============
+Set char in seed word grid at given coordinate "x~", "y~".
+
+#docuend
+
     (set int64 1 real_ind~ 0)
     (set int64 1 x~ 0)
     (set int64 1 y~ 0)
@@ -363,6 +409,14 @@
 (funcend)
 (get_seed_cell func)
     #var ~ get_seed_cell
+
+#docustart
+get_seed_cell
+=============
+Get char from seed word grid at given coordinate "x~", "y~".
+
+#docuend
+
     (set int64 1 real_ind~ 0)
     (set int64 1 x~ 0)
     (set int64 1 y~ 0)
@@ -379,6 +433,14 @@
 
 (init_grid func)
     #var ~ init_grid
+
+#docustart
+init_grid
+=========
+Set the whole word grid and the seed grid to empty chars.
+
+#docuend
+
     (set const-int64 1 zero~ 0)
     (set const-byte 1 zerob~ 0)
     (set const-int64 1 one~ 1)
@@ -405,6 +467,15 @@
 
 (print_grid func)
     #var ~ print_grid
+
+#docustart
+print_grid
+==========
+Print the words in the grid to show the solution at program end.
+Also used for debugging.
+
+#docuend
+
     (set const-int64 1 zero~ 0)
     (set const-byte 1 zerob~ 0)
     (set const-int64 1 one~ 1)
@@ -448,6 +519,14 @@
 //  +-+-+-+-+-+-+
 
     #var ~ print_puzzle_grid
+
+#docustart
+print_puzzle_grid
+=================
+Print the grid with the seed words in it.
+
+#docuend
+
     (set const-int64 1 zero~ 0)
     (set const-byte 1 zerob~ 0)
     (set const-int64 1 one~ 1)
@@ -522,6 +601,16 @@
 
 (check_insert_vertical func)
     #var ~ check_insert_vertical
+
+#docustart
+check_insert_vertical
+====================
+Try to fit the random word into the grid.
+Check if vertical orientation fits.
+Returns "zero" if word fits.
+
+#docuend
+
     (set const-int64 1 zero~ 0)
     (set const-byte 1 zerob~ 0)
     (set const-int64 1 one~ 1)
@@ -716,6 +805,16 @@
 
 (check_insert_horizontal func)
     #var ~ check_insert_horizontal
+
+#docustart
+check_insert_horizontal
+=======================
+Try to fit the random word into the grid.
+Check if horizontal orientation fits.
+Returns "zero" if word fits.
+
+#docuend
+
     (set const-int64 1 zero~ 0)
     (set const-byte 1 zerob~ 0)
     (set const-int64 1 one~ 1)
