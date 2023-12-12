@@ -75,6 +75,28 @@
 (circle object)
     #var ~ circle
 
+#docustart
+circle object
+=============
+Calculate diameter, circumference and area of a circle.
+
+init->circle
+------------
+Set the m_pi Pi variable.
+
+calc_diam->circle
+-----------------
+Calculate the diameter of a circle.
+
+calc_circ->circle
+-----------------
+Calculate the circumference of a circle.
+
+calc-area->circle
+-----------------
+Calculate the area of a circle.
+#docuend
+
 	// set constant -----------------------------------------
 	(set const-string s m_pi~ "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679")
 
