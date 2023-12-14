@@ -11,7 +11,9 @@ L1VM (2.8.2)
 
 	Added crypto module public/private keys generation and encryption/decryption.
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 14 Dec 2023 7:00 +0100
+	BUGFIX: compiler line: main.c 1786 and following: variable to array assign code fixes.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 14 Dec 2023 21:02 +0100
 
 L1VM (2.8.1)
 	VM: added "-fPIE" flag to RELRO zerobuild scripts.
