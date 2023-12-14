@@ -9,7 +9,9 @@ L1VM (2.8.2)
 	The preprocessor outputs this into "out.md" Markdown file.
 	See "prog/math-circle-bignum" for an example.
 
--- Stefan Pietzonke <jay-t@gmx.net> Sun 10 Dec 2023 21:51 +0100
+	Added crypto module public/private keys generation and encryption/decryption.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 14 Dec 2023 7:00 +0100
 
 L1VM (2.8.1)
 	VM: added "-fPIE" flag to RELRO zerobuild scripts.

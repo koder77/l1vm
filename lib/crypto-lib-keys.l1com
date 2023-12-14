@@ -1,0 +1,105 @@
+// crypto-lib.l1com
+//
+// encrypt/decrypt demo
+//
+#include <intr.l1h>
+(main func)
+    (set const-int64 1 zero 0)
+	(set const-int64 1 one 1)
+    (set const-byte 1 zerob 0)
+    (set const-byte 1 oneb 1)
+    (set byte 256 inarray)
+    (set byte 272 outarray)
+    (set byte 272 decryptarray)
+    (set byte 24 noncearray)
+    (set byte 32 alice_public_key)
+    (set byte 32 alice_private_key)
+    (set byte 32 bob_public_key)
+    (set byte 32 bob_private_key)
+    (set int64 1 count 0)
+    (set byte 1 i 0)
+    (set byte 1 c 0)
+    (set const-int64 1 Pinarray 0)
+    (set const-int64 1 Poutarray 0)
+    (set const-int64 1 Pkeystr 0)
+    (set const-int64 1 Pdecryptarray 0)
+    (set const-int64 1 Pnoncearray 0)
+    (set const-int64 1 Palice_public_key 0)
+    (set const-int64 1 Palice_private_key 0)
+    (set const-int64 1 Pbob_public_key 0)
+    (set const-int64 1 Pbob_private_key 0)
+    (set string s okstr "crypt decrypt/encrypt ok!")
+    (set string s errstr "crypt decrypt/encrypt ERROR!")
+    (set string s checkstr "decrypted data, should be all 0...")
+    (set string s genkeysstr "generate key pairs for alice and bob.")
+    (set string s error_encryptstr "ERROR encrypting message!")
+    (set string s error_decryptstr "ERROR decrypting message!")
+    (set string s sepstr ": ")
+    (set int64 1 ret 0)
+    (set int64 1 j 0)
+    (set int64 1 size 256)
+    (set int64 1 mode 0)
+    (set int64 1 f 0)
+
+    (inarray Pinarray pointer)
+    (outarray Poutarray pointer)
+    (decryptarray Pdecryptarray pointer)
+    (noncearray Pnoncearray pointer)
+    (alice_public_key Palice_public_key pointer)
+    (alice_private_key Palice_private_key pointer)
+    (bob_public_key Pbob_public_key pointer)
+    (bob_private_key Pbob_private_key pointer)
+    (zero :crypto_init !)
+
+    // Pinarray is initialized by zeroes
+    // The decrypted output should be all indexes 0!
+
+    print_s (genkeysstr)
+    print_n
+
+    // generate key pairs for alice and bob
+    (Palice_public_key Palice_private_key :generate_keys !)
+    (Pbob_public_key Pbob_private_key :generate_keys !)
+
+    // encrypt message for alice from bob
+    (Pinarray size Poutarray Pnoncearray Pbob_public_key Palice_private_key :encrypt_message !)
+    (ret stpop)
+    (((ret zero <) f =) f if)
+        print_s (error_encryptstr)
+        print_n
+    (endif)
+
+    // alice decrypt message from bob
+    (Poutarray size Pdecryptarray Pnoncearray Palice_public_key Pbob_private_key :decrypt_message !)
+    (ret stpop)
+    (((ret zero <) f =) f if)
+        print_s (error_decryptstr)
+        print_n
+    (endif)
+
+    print_s (checkstr)
+    print_n
+
+    (zerob i =)
+    (zero j =)
+
+    (reset-reg)
+    (for-loop)
+    (((j size <) f =) f for)
+        (reset-reg)
+        print_i (j)
+        print_s (sepstr)
+
+        (Pdecryptarray [ j ] c =)
+
+        print_i (c)
+        print_n
+
+        (reset-reg)
+        ((i oneb +) i =)
+        ((j one +) j =)
+    (next)
+
+    exit (zero)
+(funcend)
+#include <crypto.l1h>

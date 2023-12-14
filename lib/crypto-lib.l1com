@@ -26,7 +26,6 @@
     (set string s okstr "crypt decrypt/encrypt ok!")
     (set string s errstr "crypt decrypt/encrypt ERROR!")
     (set int64 1 ret 0)
-    (set int64 1 f 0)
     (inarray Pinarray pointer)
     (outarray Poutarray pointer)
     (keystr Pkeystr pointer)
