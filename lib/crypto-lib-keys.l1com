@@ -19,6 +19,11 @@
     (set int64 1 count 0)
     (set byte 1 i 0)
     (set byte 1 c 0)
+    (set int64 1 ret 0)
+    (set int64 1 j 0)
+    (set int64 1 size 256)
+    (set int64 1 mode 0)
+    (set int64 1 f 0)
     (set const-int64 1 Pinarray 0)
     (set const-int64 1 Poutarray 0)
     (set const-int64 1 Pkeystr 0)
@@ -30,16 +35,12 @@
     (set const-int64 1 Pbob_private_key 0)
     (set string s okstr "crypt decrypt/encrypt ok!")
     (set string s errstr "crypt decrypt/encrypt ERROR!")
-    (set string s checkstr "decrypted data, should be all 0...")
+    (set string s checkstr "decrypted data, should be all be 0...")
     (set string s genkeysstr "generate key pairs for alice and bob.")
     (set string s error_encryptstr "ERROR encrypting message!")
     (set string s error_decryptstr "ERROR decrypting message!")
+    (set string s init_datastr "initialize data, count index...")
     (set string s sepstr ": ")
-    (set int64 1 ret 0)
-    (set int64 1 j 0)
-    (set int64 1 size 256)
-    (set int64 1 mode 0)
-    (set int64 1 f 0)
 
     (inarray Pinarray pointer)
     (outarray Poutarray pointer)
@@ -51,8 +52,7 @@
     (bob_private_key Pbob_private_key pointer)
     (zero :crypto_init !)
 
-    // Pinarray is initialized by zeroes
-    // The decrypted output should be all indexes 0!
+    // inarray is all zeroes
 
     print_s (genkeysstr)
     print_n
@@ -77,16 +77,17 @@
         print_n
     (endif)
 
-    print_s (checkstr)
-    print_n
-
     (zerob i =)
     (zero j =)
 
-    (reset-reg)
+    print_n
+    print_n
+    print_s (checkstr)
+    print_n
+    (zero j =)
+    (zerob i =)
     (for-loop)
     (((j size <) f =) f for)
-        (reset-reg)
         print_i (j)
         print_s (sepstr)
 
