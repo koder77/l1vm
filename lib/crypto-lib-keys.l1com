@@ -61,7 +61,7 @@
     (Palice_public_key Palice_private_key :generate_keys !)
     (Pbob_public_key Pbob_private_key :generate_keys !)
 
-    // encrypt message for alice from bob
+    // encrypt message for bob
     (Pinarray size Poutarray Pnoncearray Pbob_public_key Palice_private_key :encrypt_message !)
     (ret stpop)
     (((ret zero <) f =) f if)
@@ -69,7 +69,7 @@
         print_n
     (endif)
 
-    // alice decrypt message from bob
+    // bob decrypts the message
     (Poutarray size Pdecryptarray Pnoncearray Palice_public_key Pbob_private_key :decrypt_message !)
     (ret stpop)
     (((ret zero <) f =) f if)
