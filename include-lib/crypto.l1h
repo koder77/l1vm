@@ -4,13 +4,7 @@
 (crypto_init func)
     (set string s modulestr@crypto "libl1vmcrypto")
     (set string s encryptstr@crypto "encrypt_sodium")
-    (set string s generate_keysstr@crypto "generate_keys")
-    (set string s encrypt_messagestr@crypto "encrypt_message")
-    (set string s decrypt_messagestr@crypto "decrypt_message")
     (set int64 1 encrypt@crypto 0)
-    (set int64 1 generate_keys@crypto 1)
-    (set int64 1 encrypt_message@crypto 2)
-    (set int64 1 decrypt_message@crypto 3)
     (set int64 1 mod@crypto 0)
     // get argument from stack
     (mod@crypto stpopi)
@@ -18,22 +12,10 @@
     (0 modulestr@cryptoaddr mod@crypto 0 intr0)
     // set functions
     (2 mod@crypto encrypt@crypto encryptstr@cryptoaddr intr0)
-    (2 mod@crypto generate_keys@crypto generate_keysstr@cryptoaddr intr0)
-    (2 mod@crypto encrypt_message@crypto encrypt_messagestr@crypto intr0)
-    (2 mod@crypto decrypt_message@crypto decrypt_messagestr@crypto intr0)
 (funcend)
 (encrypt func)
     // works on byte arrays only!
     // args: inarray, inarray size, outarray, keyarray, noncearray, mode
     // mode: 0 = encrypt, 1 = decrypt 
     (3 mod@crypto encrypt@crypto 0 intr0)
-(funcend)
-(generate_keys func)
-    (3 mod@crypto generate_keys@crypto 0 intr0)
-(funcend)
-(encrypt_message func)
-    (3 mod@crypto encrypt_message@crypto 0 intr0)
-(funcend)
-(decrypt_message func)
-    (3 mod@crypto decrypt_message@crypto 0 intr0)
 (funcend)
