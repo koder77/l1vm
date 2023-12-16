@@ -44,7 +44,7 @@ S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
 
     if (sodium_init () < 0)
     {
-        printf ("encrypt_sodium: init sodium library error!\n");
+        printf ("Init sodium library error!\n");
         return (1);
     }
 
