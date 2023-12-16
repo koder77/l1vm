@@ -1,6 +1,6 @@
-// crypto-lib.l1com
+// crypto-lib-keys.l1com
 //
-// encrypt/decrypt demo
+// public/private key encrypt/decrypt demo
 //
 #include <intr.l1h>
 (main func)
@@ -36,11 +36,9 @@
     (set const-int64 1 Pbob_private_key 0)
     (set string s okstr "crypt decrypt/encrypt ok!")
     (set string s errstr "crypt decrypt/encrypt ERROR!")
-    (set string s checkstr "decrypted data, should be all be 0...")
     (set string s genkeysstr "generate key pairs for alice and bob.")
     (set string s error_encryptstr "ERROR encrypting message!")
     (set string s error_decryptstr "ERROR decrypting message!")
-    (set string s init_datastr "initialize data, count index...")
     (set string s sepstr ": ")
 
     (inarray Pinarray pointer)
