@@ -201,9 +201,6 @@ U1 *generate_keys (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 public_key_address ALIGN;
     S8 private_key_address ALIGN;
 
-    unsigned char public_key[crypto_box_PUBLICKEYBYTES];
-    unsigned char private_key[crypto_box_SECRETKEYBYTES];
-
     sp = stpopi ((U1 *) &private_key_address, sp, sp_top);
 	if (sp == NULL)
 	{
