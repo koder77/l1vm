@@ -24,6 +24,7 @@
 #include "../../../include/stack.h"
 
 #include <sodium.h>
+#include <sodium/crypto_box.h>
 
 #define ENCRYPT 0
 #define DECRYPT 1
@@ -41,6 +42,12 @@ S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
 	memcpy (&data_info, &data_info_orig, sizeof (data_info_orig));
 	data_info_ind = data_info_ind_orig;
 
+    if (sodium_init () < 0)
+    {
+        printf ("encrypt_sodium: init sodium library error!\n");
+        return (1);
+    }
+
 	return (0);
 }
 
@@ -55,12 +62,6 @@ U1 *encrypt_sodium (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 size ALIGN;
     S8 mode ALIGN = 0;
     S8 cipher_text_len ALIGN;
-
-    if (sodium_init () < 0)
-    {
-        printf ("encrypt_sodium: init sodium library error!\n");
-        return (NULL);
-    }
 
     sp = stpopi ((U1 *) &mode, sp, sp_top);
 	if (sp == NULL)
@@ -190,6 +191,249 @@ U1 *encrypt_sodium (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("encrypt_sodium: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
+
+    return (sp);
+}
+
+// public/private key pair functions
+U1 *generate_keys (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S8 public_key_address ALIGN;
+    S8 private_key_address ALIGN;
+
+    unsigned char public_key[crypto_box_PUBLICKEYBYTES];
+    unsigned char private_key[crypto_box_SECRETKEYBYTES];
+
+    sp = stpopi ((U1 *) &private_key_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("generate_keys: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &public_key_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("generate_keys: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    // check if output arrays are of right size
+    #if BOUNDSCHECK
+    if (memory_bounds (private_key_address, crypto_box_SECRETKEYBYTES - 1 ) != 0)
+	{
+		 printf ("generate_keys: ERROR: private key output array overflow! Not in size of: %i\n", crypto_box_SECRETKEYBYTES);
+		 return (NULL);
+	}
+    if (memory_bounds (public_key_address, crypto_box_PUBLICKEYBYTES - 1) != 0)
+	{
+		printf ("generate_keys: ERROR: public key output array overflow! Not in size of: %i\n", crypto_box_PUBLICKEYBYTES);
+        return (NULL);
+	}
+    #endif
+
+    crypto_box_keypair (&data[public_key_address], &data[private_key_address]) ;
+
+    return (sp);
+}
+
+U1 *encrypt_message (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S8 public_key_address ALIGN;
+    S8 private_key_address ALIGN;
+    S8 message_address ALIGN;
+    S8 message_len ALIGN;
+    S8 encrypt_address ALIGN;
+    S8 nonce_address ALIGN;
+    S8 ret ALIGN;
+    unsigned char nonce[crypto_box_NONCEBYTES];
+
+    sp = stpopi ((U1 *) &private_key_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("encrypt_message: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &public_key_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("encrypt_message: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &nonce_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("encrypt_message: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &encrypt_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("encrypt_message: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &message_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("encrypt_message: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &message_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("encrypt_message: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    #if BOUNDSCHECK
+    if (memory_bounds (encrypt_address, crypto_box_MACBYTES + message_len - 1) != 0)
+	{
+		 printf ("encrypt_message: ERROR: encrypt array overflow! Not in size of: %lli\n", crypto_box_MACBYTES + message_len);
+		 return (NULL);
+	}
+    if (memory_bounds (message_address, message_len - 1) != 0)
+	{
+		 printf ("encrypt_message: ERROR: message array overflow!\n");
+		 return (NULL);
+	}
+    if (memory_bounds (nonce_address, sizeof (nonce) - 1) != 0)
+	{
+		 printf ("encrypt_message: ERROR: nonce array overflow! Not in size of %li\n", sizeof (nonce));
+		 return (NULL);
+	}
+    #endif
+
+    randombytes_buf (&data[nonce_address], sizeof (nonce));
+
+    ret = crypto_box_easy ((unsigned char *) &data[encrypt_address], (const unsigned char *) &data[message_address], message_len, &data[nonce_address], (const unsigned char *) &data[public_key_address], (const unsigned char *) &data[private_key_address]);
+    if (ret < 0)
+    {
+        // error
+        sp = stpushi (1, sp, sp_bottom);
+        if (sp == NULL)
+	    {
+            // error
+		    printf ("encrypt_message: ERROR: stack corrupt!\n");
+		    return (NULL);
+	    }
+    }
+    else
+    {
+        // all OK!
+        sp = stpushi (0, sp, sp_bottom);
+        if (sp == NULL)
+	    {
+            // error
+		    printf ("encrypt_message: ERROR: stack corrupt!\n");
+		    return (NULL);
+	    }
+    }
+
+    return (sp);
+}
+
+U1 *decrypt_message (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S8 public_key_address ALIGN;
+    S8 private_key_address ALIGN;
+    S8 message_address ALIGN;
+    S8 message_len ALIGN;
+    S8 decrypt_address ALIGN;
+    S8 nonce_address ALIGN;
+    S8 ret ALIGN;
+
+    sp = stpopi ((U1 *) &private_key_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("decrypt_message: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &public_key_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("decrypt_message: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &nonce_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("decrypt_message: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &decrypt_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("decrypt_message: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &message_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("decrypt_message: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &message_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("decrypt_message: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    #if BOUNDSCHECK
+    if (memory_bounds (decrypt_address, message_len + crypto_box_MACBYTES - 1) != 0)
+	{
+		 printf ("decrypt_message: ERROR: encrypt array overflow! Not in size of: %lli\n", crypto_box_MACBYTES + message_len);
+		 return (NULL);
+	}
+    #endif
+
+    ret = crypto_box_open_easy ((unsigned char *) &data[decrypt_address], (const unsigned char *) &data[message_address], message_len + crypto_box_MACBYTES, (const unsigned char *) &data[nonce_address], &data[public_key_address], &data[private_key_address]);
+    if (ret < 0)
+    {
+        // error
+        sp = stpushi (1, sp, sp_bottom);
+        if (sp == NULL)
+	    {
+            // error
+		    printf ("decrypt_message: ERROR: stack corrupt!\n");
+		    return (NULL);
+	    }
+    }
+    else
+    {
+        // all OK!
+        sp = stpushi (0, sp, sp_bottom);
+        if (sp == NULL)
+	    {
+            // error
+		    printf ("decrypt_message: ERROR: stack corrupt!\n");
+		    return (NULL);
+	    }
+    }
 
     return (sp);
 }

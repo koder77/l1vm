@@ -22,6 +22,7 @@
     (set int64 1 ret 0)
     (set int64 1 j 0)
     (set int64 1 size 256)
+    (set byte 1 maxnumb 255)
     (set int64 1 mode 0)
     (set int64 1 f 0)
     (set const-int64 1 Pinarray 0)
@@ -52,8 +53,24 @@
     (bob_private_key Pbob_private_key pointer)
     (zero :crypto_init !)
 
-    // inarray is all zeroes
+    (zero j =)
+    (zerob i =)
+    (for-loop)
+    (((j size <) f =) f for)
+        print_i (j)
+        print_s (sepstr)
 
+        (i inarray [ j ] =)
+
+        print_i (i)
+        print_n
+
+        //(reset-reg)
+        ((i oneb +) i =)
+        ((j one +) j =)
+    (next)
+
+    print_n
     print_s (genkeysstr)
     print_n
 
@@ -64,7 +81,7 @@
     // encrypt message for bob
     (Pinarray size Poutarray Pnoncearray Pbob_public_key Palice_private_key :encrypt_message !)
     (ret stpop)
-    (((ret zero <) f =) f if)
+    (((ret zero !=) f =) f if)
         print_s (error_encryptstr)
         print_n
     (endif)
@@ -72,7 +89,7 @@
     // bob decrypts the message
     (Poutarray size Pdecryptarray Pnoncearray Palice_public_key Pbob_private_key :decrypt_message !)
     (ret stpop)
-    (((ret zero <) f =) f if)
+    (((ret zero !=) f =) f if)
         print_s (error_decryptstr)
         print_n
     (endif)
@@ -82,8 +99,6 @@
 
     print_n
     print_n
-    print_s (checkstr)
-    print_n
     (zero j =)
     (zerob i =)
     (for-loop)
@@ -91,7 +106,7 @@
         print_i (j)
         print_s (sepstr)
 
-        (Pdecryptarray [ j ] c =)
+        (decryptarray [ j ] c =)
 
         print_i (c)
         print_n
