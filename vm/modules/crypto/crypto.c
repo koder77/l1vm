@@ -25,6 +25,7 @@
 
 #include <sodium.h>
 #include <sodium/crypto_box.h>
+#include <sodium/crypto_pwhash.h>
 
 #define ENCRYPT 0
 #define DECRYPT 1
@@ -428,6 +429,116 @@ U1 *decrypt_message (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	    {
             // error
 		    printf ("decrypt_message: ERROR: stack corrupt!\n");
+		    return (NULL);
+	    }
+    }
+
+    return (sp);
+}
+
+U1 *generate_key_hash (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S8 hashed_password_address ALIGN;
+    S8 password_address ALIGN;
+    S8 password_len ALIGN;
+    S8 ret ALIGN;
+
+    sp = stpopi ((U1 *) &hashed_password_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("generate_key_hash: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &password_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("generate_key_hash: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    #if BOUNDSCHECK
+    if (memory_bounds (hashed_password_address, crypto_pwhash_STRBYTES - 1) != 0)
+	{
+		 printf ("generate_key_hash: ERROR: hash array overflow! Not in size of: %i\n", crypto_pwhash_STRBYTES);
+		 return (NULL);
+	}
+    #endif
+
+    password_len = strlen_safe ((const char *) &data[password_address], MAXSTRLEN);
+    ret = crypto_pwhash_str ((char *) &data[hashed_password_address], (const char *) &data[password_address], password_len, crypto_pwhash_OPSLIMIT_SENSITIVE, crypto_pwhash_MEMLIMIT_SENSITIVE);
+    if (ret != 0)
+    {
+        // error
+        sp = stpushi (1, sp, sp_bottom);
+        if (sp == NULL)
+	    {
+            // error
+		    printf ("generate_key_hash: ERROR: stack corrupt!\n");
+		    return (NULL);
+	    }
+    }
+    else
+    {
+        // all OK!
+        sp = stpushi (0, sp, sp_bottom);
+        if (sp == NULL)
+	    {
+            // error
+		    printf ("generate_key_hash: ERROR: stack corrupt!\n");
+		    return (NULL);
+	    }
+    }
+
+    return (sp);
+}
+
+U1 *check_key_hash (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S8 hashed_password_address ALIGN;
+    S8 password_address ALIGN;
+    S8 password_len ALIGN;
+    S8 ret ALIGN;
+
+    sp = stpopi ((U1 *) &hashed_password_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("check_key_hash: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &password_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("check_key_hash: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    password_len = strlen_safe ((const char *) &data[password_address], MAXSTRLEN);
+    ret = crypto_pwhash_str_verify ((const char *) &data[hashed_password_address], (const char *) &data[password_address], password_len);
+    if (ret != 0)
+    {
+        // error
+        sp = stpushi (1, sp, sp_bottom);
+        if (sp == NULL)
+	    {
+            // error
+		    printf ("check_key_hash: ERROR: stack corrupt!\n");
+		    return (NULL);
+	    }
+    }
+    else
+    {
+        // all OK!
+        sp = stpushi (0, sp, sp_bottom);
+        if (sp == NULL)
+	    {
+            // error
+		    printf ("check_key_hash: ERROR: stack corrupt!\n");
 		    return (NULL);
 	    }
     }

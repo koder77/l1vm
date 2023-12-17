@@ -35,6 +35,7 @@
     (for-loop)
     (((i size <) f =) f for)
         (i inarray [ i ] =)
+        (i keystr [ i ] =)
         ((i oneb +) i =)
     (next)
     // encrypt

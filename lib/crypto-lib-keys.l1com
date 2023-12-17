@@ -41,6 +41,14 @@
     (set string s error_decryptstr "ERROR decrypting message!")
     (set string s sepstr ": ")
 
+    // for password hash functions
+    (set string s passwordstr "house ship eagle hill telephone")
+    (set byte 128 passwordhash)
+    (set const-int64 1 Ppasswordstr 0)
+    (set const-int64 1 Ppasswordhash 0)
+    (set string s error_generate_hashstr "ERROR generate pasword hash!")
+    (set string s error_check_hashstr "ERROR check pasword with hash!")
+
     (inarray Pinarray pointer)
     (outarray Poutarray pointer)
     (decryptarray Pdecryptarray pointer)
@@ -49,6 +57,10 @@
     (alice_private_key Palice_private_key pointer)
     (bob_public_key Pbob_public_key pointer)
     (bob_private_key Pbob_private_key pointer)
+
+    (passwordstr Ppasswordstr pointer)
+    (passwordhash Ppasswordhash pointer)
+
     (zero :crypto_init !)
 
     (zero j =)
@@ -113,6 +125,20 @@
         ((i oneb +) i =)
         ((j one +) j =)
     (next)
+
+    (Ppasswordstr Ppasswordhash :generate_key_hash !)
+    (ret stpop)
+    (((ret zero !=) f =) f if)
+        print_s (error_generate_hashstr)
+        print_n
+    (endif)
+
+    (Ppasswordstr Ppasswordhash :check_key_hash !)
+    (ret stpop)
+    (((ret zero !=) f =) f if)
+        print_s (error_check_hashstr)
+        print_n
+    (endif)
 
     exit (zero)
 (funcend)
