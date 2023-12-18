@@ -545,3 +545,90 @@ U1 *check_key_hash (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     return (sp);
 }
+
+
+U1 *generate_key (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S8 password_address ALIGN;
+    S8 password_len ALIGN;
+    S8 key_address ALIGN;
+    S8 key_len ALIGN;
+    S8 salt_address ALIGN;
+    S8 ret ALIGN;
+
+    sp = stpopi ((U1 *) &salt_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("generate_key: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &key_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("generate_key: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &key_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("generate_key: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &password_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("generate_key: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    #if BOUNDSCHECK
+    if (memory_bounds (key_address, key_len - 1) != 0)
+	{
+		 printf ("generate_key: ERROR: key array overflow! Not in size of: %i\n", key_len);
+		 return (NULL);
+	}
+    if (memory_bounds (salt_address, crypto_pwhash_SALTBYTES - 1) != 0)
+	{
+		 printf ("generate_key: ERROR: salt array overflow! Not in size of: %i\n", crypto_pwhash_SALTBYTES);
+		 return (NULL);
+	}
+    #endif
+
+    password_len = strlen_safe((const char *) &data[password_address], MAXSTRLEN);
+
+    // generate the salt, you have to store it somewhere and rememeber the password
+    randombytes_buf(&data[salt_address], crypto_pwhash_SALTBYTES);
+
+    ret = crypto_pwhash ((unsigned char *) &data[key_address], key_len, (const char *) &data[password_address], password_len, &data[salt_address], crypto_pwhash_OPSLIMIT_MODERATE, crypto_pwhash_MEMLIMIT_MODERATE, crypto_pwhash_ALG_ARGON2ID13);
+    if (ret != 0)
+    {
+        // error
+        sp = stpushi (1, sp, sp_bottom);
+        if (sp == NULL)
+	    {
+            // error
+		    printf ("generate_key: ERROR: stack corrupt!\n");
+		    return (NULL);
+	    }
+    }
+    else
+    {
+        // all OK!
+        sp = stpushi (0, sp, sp_bottom);
+        if (sp == NULL)
+	    {
+            // error
+		    printf ("generate_key: ERROR: stack corrupt!\n");
+		    return (NULL);
+	    }
+    }
+
+    return (sp);
+}

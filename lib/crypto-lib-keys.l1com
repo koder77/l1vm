@@ -16,6 +16,14 @@
     (set byte 32 alice_private_key)
     (set byte 32 bob_public_key)
     (set byte 32 bob_private_key)
+
+    // for generate single key
+    (set byte 32 key_test)
+    (set int64 1 key_test_len 32)
+    (set byte 32 salt)
+    (set const-int64 1 Pkey_test 0)
+    (set const-int64 1 Psalt 0)
+
     (set int64 1 count 0)
     (set byte 1 i 0)
     (set byte 1 c 0)
@@ -39,6 +47,7 @@
     (set string s genkeysstr "generate key pairs for alice and bob.")
     (set string s error_encryptstr "ERROR encrypting message!")
     (set string s error_decryptstr "ERROR decrypting message!")
+    (set string s error_gen_keystr "ERROR generate key!")
     (set string s sepstr ": ")
 
     // for password hash functions
@@ -60,6 +69,9 @@
 
     (passwordstr Ppasswordstr pointer)
     (passwordhash Ppasswordhash pointer)
+
+    (key_test Pkey_test pointer)
+    (salt Psalt pointer)
 
     (zero :crypto_init !)
 
@@ -137,6 +149,13 @@
     (ret stpop)
     (((ret zero !=) f =) f if)
         print_s (error_check_hashstr)
+        print_n
+    (endif)
+
+    (Ppasswordstr Pkey_test key_test_len Psalt :generate_key !)
+    (ret stpop)
+    (((ret zero !=) f =) f if)
+        print_s (error_gen_keystr)
         print_n
     (endif)
 
