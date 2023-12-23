@@ -48,22 +48,9 @@ pullqw 1, 12, 0
 addi 1, 0, 12
 load z, 0, 13
 pullqw 12, 13, 0
-stpopi 11
-stpopi 10
-stpopi 9
-stpopi 8
-stpopi 7
-stpopi 6
-stpopi 5
-stpopi 4
-stpopi 3
-stpopi 2
-stpopi 0
-loada ret, 0, 1
 intr0 4, 1, 0, 0
 intr0 7, 0, 0, 0
-loada zero, 0, 2
-intr0 255, 2, 0, 0
+intr0 255, 0, 0, 0
 rts
 :test
 loada zero, 0, 0

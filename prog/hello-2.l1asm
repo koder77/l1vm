@@ -12,6 +12,7 @@ B, 13, hello
 Q, 1, helloaddr
 @, 45Q, 32Q
 .dend
+.code
 :main
 loada zero, 0, 0
 loada helloaddr, 0, 1

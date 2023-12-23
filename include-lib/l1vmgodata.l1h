@@ -301,3 +301,192 @@
     (shandle~ Pusagestraddr~ retlen~ :socket_read_string !)
     // leave return value on stack!!!
 (funcend)
+
+// link functions ==============================================================
+(go_data_set_link func)
+    #var ~ go_data_set_link
+    (set int64 1 shandle~ 0)
+    (set int64 1 Pkeystraddr~)
+    (set int64 1 Pdatastraddr~)
+    (set int64 1 Pretstraddr~)
+    (set string s commstr~ "set-link ")
+    (set string s colonstr~ ":")
+    (set string 2 quotestr~ "'")
+    (set string s spacestr~ " ")
+    (set int64 1 twolen~ 2)
+    (set string 4097 commandstr~ "")
+    (set int64 1 retlen~ 4096)
+    (set int64 1 ret~ 0)
+    (set int64 1 zero~ 0)
+    (set int64 1 one~ 1)
+    (set int64 1 f~ 0)
+    (set string s errorstr~ "go_data_set_link: socket error!")
+    // get args
+    (Pretstraddr~ stpopi)
+    (Pdatastraddr~ stpopi)
+    (Pkeystraddr~ stpopi)
+    (shandle~ stpopi)
+    // build command line
+    (commandstr~ commstr~ :string_copy !)
+    (commandstr~ colonstr~ :string_cat !)
+    (commandstr~ Pkeystraddr~ :string_cat !)
+    (commandstr~ spacestr~ :string_cat !)
+    (commandstr~ quotestr~ :string_cat !)
+    (commandstr~ Pdatastraddr~ :string_cat !)
+    (commandstr~ quotestr~ :string_cat !)
+
+    // send command
+    (shandle~ commandstr~ :socket_write_string !)
+    (ret~ stpopi)
+    (((ret~ zero~ !=) f~ =) f~ if)
+        print_s (errorstr~)
+        print_n
+        (one~ stpushi)
+        (ASM)
+        rts
+        (ASM_END)
+    (endif)
+    // get answer
+    (shandle~ Pretstraddr~ retlen~ :socket_read_string !)
+    // leave return value on stack!!!
+(funcend)
+(go_data_remove_link func)
+    #var ~ go_data_remove_link
+    (set int64 1 shandle~ 0)
+    (set int64 1 Pkeystraddr~)
+    (set int64 1 Pdatastraddr~)
+    (set int64 1 Pretstraddr~)
+    (set string s commstr~ "remove-link ")
+    (set string s colonstr~ ":")
+    (set string 2 quotestr~ "'")
+    (set string s spacestr~ " ")
+    (set int64 1 twolen~ 2)
+    (set string 4097 commandstr~ "")
+    (set int64 1 retlen~ 4096)
+    (set int64 1 ret~ 0)
+    (set int64 1 zero~ 0)
+    (set int64 1 one~ 1)
+    (set int64 1 f~ 0)
+    (set string s errorstr~ "go_data_remove_link: socket error!")
+    // get args
+    (Pretstraddr~ stpopi)
+    (Pdatastraddr~ stpopi)
+    (Pkeystraddr~ stpopi)
+    (shandle~ stpopi)
+    // build command line
+    (commandstr~ commstr~ :string_copy !)
+    (commandstr~ colonstr~ :string_cat !)
+    (commandstr~ Pkeystraddr~ :string_cat !)
+    (commandstr~ spacestr~ :string_cat !)
+    (commandstr~ quotestr~ :string_cat !)
+    (commandstr~ Pdatastraddr~ :string_cat !)
+    (commandstr~ quotestr~ :string_cat !)
+
+    // send command
+    (shandle~ commandstr~ :socket_write_string !)
+    (ret~ stpopi)
+    (((ret~ zero~ !=) f~ =) f~ if)
+        print_s (errorstr~)
+        print_n
+        (one~ stpushi)
+        (ASM)
+        rts
+        (ASM_END)
+    (endif)
+    // get answer
+    (shandle~ Pretstraddr~ retlen~ :socket_read_string !)
+    // leave return value on stack!!!
+(funcend)
+(go_data_get_linknum func)
+    #var ~ go_data_get_linknum
+    (set int64 1 shandle~ 0)
+    (set int64 1 Pkeystraddr~)
+    (set int64 1 Pdatastraddr~)
+    (set int64 1 Pretstraddr~)
+    (set string s commstr~ "get-links-number ")
+    (set string s colonstr~ ":")
+    (set string 2 quotestr~ "'")
+    (set string s spacestr~ " ")
+    (set int64 1 twolen~ 2)
+    (set string 4097 commandstr~ "")
+    (set int64 1 retlen~ 4096)
+    (set int64 1 ret~ 0)
+    (set int64 1 zero~ 0)
+    (set int64 1 one~ 1)
+    (set int64 1 f~ 0)
+    (set string s errorstr~ "go_data_get_linknum: socket error!")
+    // get args
+    (Pretstraddr~ stpopi)
+    (Pkeystraddr~ stpopi)
+    (shandle~ stpopi)
+    // build command line
+    (commandstr~ commstr~ :string_copy !)
+    (commandstr~ colonstr~ :string_cat !)
+    (commandstr~ Pkeystraddr~ :string_cat !)
+    (commandstr~ spacestr~ :string_cat !)
+    (commandstr~ quotestr~ :string_cat !)
+    (commandstr~ Pdatastraddr~ :string_cat !)
+    (commandstr~ quotestr~ :string_cat !)
+
+    // send command
+    (shandle~ commandstr~ :socket_write_string !)
+    (ret~ stpopi)
+    (((ret~ zero~ !=) f~ =) f~ if)
+        print_s (errorstr~)
+        print_n
+        (one~ stpushi)
+        (ASM)
+        rts
+        (ASM_END)
+    (endif)
+    // get answer
+    (shandle~ Pretstraddr~ retlen~ :socket_read_string !)
+    // leave return value on stack!!!
+(funcend)
+(go_data_get_link_name func)
+    #var ~ go_data_get_link_name
+    (set int64 1 shandle~ 0)
+    (set int64 1 Pkeystraddr~)
+    (set int64 1 Pdatastraddr~)
+    (set int64 1 Pretstraddr~)
+    (set string s commstr~ "get-link-name ")
+    (set string s colonstr~ ":")
+    (set string 2 quotestr~ "'")
+    (set string s spacestr~ " ")
+    (set int64 1 twolen~ 2)
+    (set string 4097 commandstr~ "")
+    (set int64 1 retlen~ 4096)
+    (set int64 1 ret~ 0)
+    (set int64 1 zero~ 0)
+    (set int64 1 one~ 1)
+    (set int64 1 f~ 0)
+    (set string s errorstr~ "go_data_get_link_name: socket error!")
+    // get args
+    (Pretstraddr~ stpopi)
+    (Pdatastraddr~ stpopi)
+    (Pkeystraddr~ stpopi)
+    (shandle~ stpopi)
+    // build command line
+    (commandstr~ commstr~ :string_copy !)
+    (commandstr~ colonstr~ :string_cat !)
+    (commandstr~ Pkeystraddr~ :string_cat !)
+    (commandstr~ spacestr~ :string_cat !)
+    (commandstr~ quotestr~ :string_cat !)
+    (commandstr~ Pdatastraddr~ :string_cat !)
+    (commandstr~ quotestr~ :string_cat !)
+
+    // send command
+    (shandle~ commandstr~ :socket_write_string !)
+    (ret~ stpopi)
+    (((ret~ zero~ !=) f~ =) f~ if)
+        print_s (errorstr~)
+        print_n
+        (one~ stpushi)
+        (ASM)
+        rts
+        (ASM_END)
+    (endif)
+    // get answer
+    (shandle~ Pretstraddr~ retlen~ :socket_read_string !)
+    // leave return value on stack!!!
+(funcend)

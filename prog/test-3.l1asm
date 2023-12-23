@@ -16,8 +16,8 @@ loadd y, 0, 2
 muld 1, 2, 3
 load z, 0, 4
 pulld 3, 4, 0
-loadd z, 0, 4
-intr0 5, 4, 0, 0
+loadd z, 0, 3
+intr0 5, 3, 0, 0
 intr0 7, 0, 0, 0
 intr0 255, 0, 0, 0
 rts

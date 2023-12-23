@@ -1,3 +1,9 @@
+L1VM (2.8.3)
+	Added l1vmgodata links between keys added.
+	See l1vmgodata on GitHub.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sat 23 Dec 2023 18:49 +0100
+
 L1VM (2.8.2)
 	l1pre preprocessor:
 	Added:

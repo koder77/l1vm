@@ -64,8 +64,6 @@ jsr :test
 stpopi 11
 load z, 0, 13
 pullqw 11, 13, 0
-load ret, 0, 13
-pullqw 12, 13, 0
 stpopi 12
 stpopi 11
 stpopi 10
@@ -79,6 +77,9 @@ stpopi 3
 stpopi 2
 stpopi 1
 stpopi 0
+load ret, 0, 1
+loada z, 0, 2
+pullqw 2, 1, 0
 loada ret, 0, 1
 intr0 4, 1, 0, 0
 intr0 7, 0, 0, 0
@@ -89,9 +90,10 @@ jsr :square
 stpopi 3
 load z, 0, 4
 pullqw 3, 4, 0
-load ret, 0, 4
-pullqw 1, 4, 0
 stpopi 1
+load ret, 0, 1
+loada z, 0, 2
+pullqw 2, 1, 0
 loada ret, 0, 1
 intr0 4, 1, 0, 0
 intr0 7, 0, 0, 0
