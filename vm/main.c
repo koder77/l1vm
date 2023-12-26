@@ -140,10 +140,52 @@ S2 alloc_jit_code ()
 }
 #endif
 
+/*
+ * for osv capstan avoiding .so.so names
+void strip_library_name (char *libname)
+{
+	S2 i;
+	S2 liblen;
+	S2 first_dot = -1;
+	S2 second_dot = -1;
+
+	liblen = strlen_safe (libname, MAXSTRLEN);
+
+	if (liblen > 0)
+	{
+		//printf ("strip_library_name: '%s'\n", libname);
+
+		for (i = 0; i < liblen; i++)
+		{
+			if (libname[i] == '.')
+			{
+				if (first_dot == -1)
+				{
+					first_dot = i;
+				}
+				else
+				{
+					if (second_dot == -1 && first_dot != -1)
+					{
+						second_dot = i;
+					}
+				}
+			}
+	   }
+
+	   if (second_dot != -1)
+	   {
+		   // strip away second .so: libfoo.so.so
+		   libname[second_dot] = '\0';
+		   //printf ("strip_library_name: '%s'\n", libname);
+	   }
+    }
+}
+*/
+
 S2 load_module (U1 *name, S8 ind)
 {
 	U1 linux_lib_suffix[] = ".so";
-	U1 macos_lib_suffix[] = ".so";
 	U1 libname[MAXSTRLEN];
 
 	if (strlen_safe ((const char*) name, MAXLINELEN) > MAXLINELEN - 5)
@@ -157,10 +199,7 @@ S2 load_module (U1 *name, S8 ind)
 	strcat ((char *) libname, (const char *) linux_lib_suffix);
 #endif
 
-#if __MACH__
-	strcpy ((char *) libname, (const char *) name);
-	strcat ((char *) libname, (const char *) macos_lib_suffix);
-#endif
+// strip_library_name((char *) libname);
 
 #if __linux__
     modules[ind].lptr = dlopen ((const char *) libname, RTLD_LAZY);
