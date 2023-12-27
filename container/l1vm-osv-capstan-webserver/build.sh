@@ -15,6 +15,6 @@ cp ../../vm/modules/string/libl1vmstring.so .
 cp ../../website/index.html .
 cp ../../website/404.html .
 capstan package pull osv.bootstrap
-capstan package compose l1vm
+capstan package compose l1vm-webserver
 echo "running OSv image using qemu..."
-capstan run l1vm
+capstan run l1vm-webserver
