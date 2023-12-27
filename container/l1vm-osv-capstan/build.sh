@@ -10,7 +10,7 @@ cp l1vm-osv.so ../container/l1vm-osv-capstan
 cd ../prog
 cp hello-2.l1obj ../container/l1vm-osv-capstan
 cd ../container/l1vm-osv-capstan
-cp ../../modules/libl1vmnet.so .
+cp ../../vm/modules/net/libl1vmnet.so .
 capstan package pull osv.bootstrap
 capstan package compose l1vm
 echo "running OSv image using qemu..."

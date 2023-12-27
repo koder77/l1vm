@@ -10,8 +10,8 @@ cp l1vm-osv.so ../container/l1vm-osv-capstan-webserver
 cd ../prog
 cp webserver.l1obj ../container/l1vm-osv-capstan-webserver
 cd ../container/l1vm-osv-capstan-webserver
-cp ../../modules/libl1vmnet.so .
-cp ../../modules/libl1vmstring.so .
+cp ../../vm/modules/net/libl1vmnet.so .
+cp ../../vm/modules/string/libl1vmstring.so .
 cp ../../website/index.html .
 cp ../../website/404.html .
 capstan package pull osv.bootstrap
