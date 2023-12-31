@@ -1,3 +1,8 @@
+L1VM (2.8.4)
+	Added net module read/write byte arrays
+
+-- Stefan Pietzonke <jay-t@gmx.net> Son 31 Dec 2023 15:18  +0100
+
 L1VM (2.8.3)
 	Added l1vmgodata links between keys added.
 	See l1vmgodata on GitHub.

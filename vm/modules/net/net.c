@@ -89,7 +89,7 @@ char *get_ip_str (const struct sockaddr *sa, char *s, size_t maxlen)
             inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)sa)->sin6_addr), s, maxlen);
             break;
 
-        default:
+        uefault:
             strncpy(s, "Unknown AF", maxlen);
             return NULL;
     }
@@ -1580,6 +1580,89 @@ U1 *socket_read_byte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     return (sp);
 }
 
+U1 *socket_read_byte_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S8 read_byte_array_addr ALIGN;
+    U1 ret;
+    S2 handle;
+    S8 len ALIGN;
+    S8 i ALIGN;
+
+    if (sp == sp_top)
+    {
+        // nothing on stack!! can't pop!!
+        printf ("FATAL ERROR: socket_read_byte_array: stack pointer can't pop empty stack!\n");
+        return (NULL);
+    }
+
+    sp = stpopi ((U1 *) &len, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+        printf ("socket_read_byte_array: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+
+    sp = stpopi ((U1 *) &read_byte_array_addr, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+        printf ("socket_read_byte_array: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+
+    sp = stpopi ((U1 *) &handle, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+        printf ("socket_read_byte_array: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+
+    if (len >= SOCKBUFSIZE)
+    {
+        printf ("socket_read_byte_array: ERROR: read data greater as buffer %i!\n", SOCKBUFSIZE);
+        return (NULL);
+    }
+
+    // check if len is in legal range
+    #if BOUNDSCHECK
+    if (memory_bounds (read_byte_array_addr, len - 1) != 0)
+    {
+        printf ("socket_read_byte_array: ERROR: read array buffer oveflow!\n");
+        return (NULL);
+    }
+    #endif
+
+    ret = exe_sread (handle, len);
+    if (ret != ERR_FILE_OK) {
+         sp = stpushi (ret, sp, sp_bottom);
+         if (sp == NULL)
+         {
+             // error
+             printf ("socket_read_byte_array: ERROR: stack corrupt!\n");
+             return (NULL);
+         }
+         return (sp);
+    }
+
+    // copy data to variable
+    for (i = 0; i < len; i++)
+    {
+        data[read_byte_array_addr + i] = sockets[handle].buf[i];
+    }
+
+    sp = stpushi (ret, sp, sp_bottom);
+    if (sp == NULL)
+    {
+        // error
+        printf ("socket_read_byte_array: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+    return (sp);
+}
+
+
 U1 *socket_read_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     S8 ret ALIGN;
@@ -1635,7 +1718,6 @@ U1 *socket_read_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     value = ntohq (n);
-
     sp = stpushi (value, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -1870,6 +1952,76 @@ U1 *socket_write_byte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         // error
         printf ("socket_write_byte: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+    return (sp);
+}
+
+U1 *socket_write_byte_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S8 write_byte_array_addr ALIGN;
+    U1 ret;
+    S2 handle;
+    S8 len ALIGN;
+    S8 i ALIGN;
+
+    if (sp == sp_top)
+    {
+        // nothing on stack!! can't pop!!
+        printf ("FATAL ERROR: socket_write_byte_array: stack pointer can't pop empty stack!\n");
+        return (NULL);
+    }
+
+    sp = stpopi ((U1 *) &len, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+        printf ("socket_write_byte_array: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+
+    sp = stpopi ((U1 *) &write_byte_array_addr, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+        printf ("socket_write_byte_array: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+
+    sp = stpopi ((U1 *) &handle, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+        printf ("socket_write_byte_array: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+
+    if (len >= SOCKBUFSIZE)
+    {
+        printf ("socket_write_byte_array: ERROR: send data greater as buffer %i!\n", SOCKBUFSIZE);
+        return (NULL);
+    }
+
+    // check if len is in legal range
+    #if BOUNDSCHECK
+    if (memory_bounds (write_byte_array_addr, len - 1) != 0)
+    {
+        printf ("socket_write_byte_array: ERROR: send array buffer oveflow!\n");
+        return (NULL);
+    }
+    #endif
+
+    for (i = 0; i < len; i++)
+    {
+        sockets[handle].buf[i] = (U1) data[write_byte_array_addr + i];
+    }
+
+    ret = exe_swrite (handle, len);
+    sp = stpushi (ret, sp, sp_bottom);
+    if (sp == NULL)
+    {
+        // error
+        printf ("socket_write_byte_array: ERROR: stack corrupt!\n");
         return (NULL);
     }
     return (sp);

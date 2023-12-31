@@ -63,8 +63,17 @@ U1 *encrypt_sodium (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 size ALIGN;
     S8 mode ALIGN = 0;
     S8 cipher_text_len ALIGN;
+    S8 generate_key ALIGN = 1;
 
     sp = stpopi ((U1 *) &mode, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("encrypt_sodium: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &generate_key, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
@@ -129,8 +138,11 @@ U1 *encrypt_sodium (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	    }
         #endif
 
-        crypto_secretbox_keygen (&data[key_address]);
-        randombytes_buf (&data[nonce_address], sizeof (crypto_secretbox_NONCEBYTES));
+        if (generate_key == 1)
+        {
+            crypto_secretbox_keygen (&data[key_address]);
+            randombytes_buf (&data[nonce_address], sizeof (crypto_secretbox_NONCEBYTES));
+        }
 
         #if BOUNDSCHECK
         if (memory_bounds (out_address, cipher_text_len - 1) != 0)
