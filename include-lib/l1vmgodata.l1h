@@ -195,6 +195,8 @@
     (shandle~ retstr~ retlen~ :socket_read_string !)
     // leave return value on stack!!!
 (funcend)
+
+// load/save in l1vmgodata native file format. saves with all links too! =======
 (go_data_save func)
     #var ~ go_data_save
     (set int64 1 shandle~ 0)
@@ -273,6 +275,89 @@
     (shandle~ Pretstraddr~ retlen~ :socket_read_string !)
     // leave return value on stack!!!
 (funcend)
+
+
+// load/save CSV table data ====================================================
+(go_data_save_csv_table func)
+    #var ~ go_data_save
+    (set int64 1 shandle~ 0)
+    (set int64 1 Pnamestraddr~)
+    (set string s quotestr~ "'")
+    (set string s commstr~ "csv-table-export ")
+    (set int64 1 Pretstraddr~ 0)
+    (set string 4097 commandstr~ "")
+    (set int64 1 retlen~ 4096)
+    (set int64 1 twolen~ 2)
+    (set int64 1 ret~ 0)
+    (set int64 1 zero~ 0)
+    (set int64 1 one~ 1)
+    (set int64 1 f~ 0)
+    (set string s errorstr~ "go_data_save_csv_table socket error!")
+    // get args
+    (Pretstraddr~ stpopi)
+    (Pnamestraddr~ stpopi)
+    (shandle~ stpopi)
+    // build command line
+    (commandstr~ commstr~ :string_copy !)
+    (commandstr~ quotestr~ :string_cat !)
+    (commandstr~ Pnamestraddr~ :string_cat !)
+    (commandstr~ quotestr~ :string_cat !)
+    // send command
+    (shandle~ commandstr~ :socket_write_string !)
+    (ret~ stpopi)
+    (((ret~ zero~ !=) f~ =) f~ if)
+        print_s (errorstr~)
+        print_n
+        (one~ stpushi)
+        (ASM)
+        rts
+        (ASM_END)
+    (endif)
+    // get answer
+    (shandle~ Pretstraddr~ retlen~ :socket_read_string !)
+    // leave return value on stack!!!
+(funcend)
+(go_data_load_csv_table func)
+    #var ~ go_data_load
+    (set int64 1 shandle~ 0)
+    (set int64 1 Pnamestraddr~)
+    (set string s quotestr~ "'")
+    (set string s commstr~ "csv-table-import ")
+    (set int64 1 Pretstraddr~ 0)
+    (set string 4097 commandstr~ "")
+    (set int64 1 retlen~ 4096)
+    (set int64 1 twolen~ 2)
+    (set int64 1 ret~ 0)
+    (set int64 1 zero~ 0)
+    (set int64 1 one~ 1)
+    (set int64 1 f~ 0)
+    (set string s errorstr~ "go_data_load_csv_table socket error!")
+    // get args
+    (Pretstraddr~ stpopi)
+    (Pnamestraddr~ stpopi)
+    (shandle~ stpopi)
+    // build command line
+    (commandstr~ commstr~ :string_copy !)
+    (commandstr~ quotestr~ :string_cat !)
+    (commandstr~ Pnamestraddr~ :string_cat !)
+    (commandstr~ quotestr~ :string_cat !)
+    // send command
+    (shandle~ commandstr~ :socket_write_string !)
+    (ret~ stpopi)
+    (((ret~ zero~ !=) f~ =) f~ if)
+        print_s (errorstr~)
+        print_n
+        (one~ stpushi)
+        (ASM)
+        rts
+        (ASM_END)
+    (endif)
+    // get answer
+    (shandle~ Pretstraddr~ retlen~ :socket_read_string !)
+    // leave return value on stack!!!
+(funcend)
+
+
 (go_data_usage func)
     #var ~ go_data_usage
     (set int64 1 shandle~ 0)
