@@ -31,6 +31,12 @@
 #define ASCENDING           0
 #define DESCENDING          1
 
+// Windows MSYS2 fix for false positive bounds error:
+#if _WIN32
+#undef BOUNDSCHECK
+#define BOUNDSCHECK 0
+#endif
+
 // protos
 S2 memory_bounds (S8 start, S8 offset_access);
 

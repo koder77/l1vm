@@ -1,3 +1,8 @@
+L1VM (2.8.5)
+	Added vm/modules/string: MSYS2 fixing false positive BOUNDSCHECK array overflow messages.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Son 14 Dec 2023 01:38  +0100
+
 L1VM (2.8.4)
 	Added net module read/write byte arrays
 
