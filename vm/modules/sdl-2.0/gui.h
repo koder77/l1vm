@@ -48,6 +48,7 @@
 #define GADGET_SLIDER       7   // horizontal
 #define GADGET_SLIDER_VERT  8   // vertical
 #define GADGET_STRING_MULTILINE 9
+#define GADGET_MENU 10
 
 // string gadget passwd stars output max
 #define GADGET_STRING_PASSWD_STARS	512
@@ -108,6 +109,9 @@ U1 **alloc_array_U1 (S4 x, S4 y);
 void dealloc_array_U1 (U1 **array, S4 x);
 void sdl_do_delay (S8 delay);
 U1 *set_gadget_string_passwd (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
+
+// set cycle gadget as drop down menu
+U1 *set_gadget_cycle_menu (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 
 U1 *get_mouse_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 
@@ -207,7 +211,7 @@ U1 *my_strcpy (U1 *destination, const U1 *source);
 	 struct font_ttf font;
      U1 status;
      U1 value;
-     U2 menu_entries;
+     U1 menu_entries;
      Sint16 x;
      Sint16 y;
      Sint16 x2;
@@ -222,6 +226,31 @@ U1 *my_strcpy (U1 *destination, const U1 *source);
      Sint16 arrow_x;
      Sint16 arrow_y;
  };
+
+struct gadget_menu
+{
+     U1 menu;
+     U1 **text;
+	 struct font_ttf font;
+     U1 status;
+     U1 value;
+     U2 menu_entries;
+     U1 *menutext;
+     Sint16 x;
+     Sint16 y;
+     Sint16 x2;
+     Sint16 y2;
+     Sint16 text_x;
+     Sint16 text_y;
+     Sint16 text_height;
+     Sint16 menu_x;
+     Sint16 menu_y;
+     Sint16 menu_x2;
+     Sint16 menu_y2;
+     Sint16 arrow_x;
+     Sint16 arrow_y;
+ };
+
 
  struct gadget_string
  {

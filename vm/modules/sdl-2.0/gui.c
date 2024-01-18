@@ -204,6 +204,7 @@ void free_gadget (S2 screennum, S2 gadget_index)
     struct gadget_cycle *cycle;
     struct gadget_string *string;
 	struct gadget_string_multiline *string_multi;
+    struct gadget_menu *menu;
 
     if (screen[screennum].gadget[gadget_index].gptr)
     {
@@ -291,6 +292,21 @@ void free_gadget (S2 screennum, S2 gadget_index)
 					printf ("free_gadget: %i string_multi->display freed.\n", gadget_index);
 				}
 				break;
+
+            case GADGET_MENU:
+                menu = (struct gadget_menu *) screen[screennum].gadget[gadget_index].gptr;
+
+                if (menu->text)
+                {
+                    dealloc_array_U1 (cycle->text, cycle->menu_entries);
+                    cycle->text = NULL;
+                    printf ("free_gadget: %i cycle->text freed.\n", gadget_index);
+                }
+                if (menu->menutext)
+                 {
+                    free (menu->menutext);
+                }
+                break;
         }
 
         free (screen[screennum].gadget[gadget_index].gptr);
@@ -1041,6 +1057,459 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
     update_rect (cycle->x, cycle->y, cycle->x2 - cycle->x + 1, cycle->y2 - cycle->y + 1);
 	SDL_UpdateWindowSurface (window);
     return (TRUE);
+}
+
+U1 draw_gadget_menu (S2 screennum, U2 gadget_index, U1 selected, S4 value)
+{
+    struct gadget_menu *menu;
+    Uint32 rmask, gmask, bmask, amask;
+    SDL_Rect menu_rect, copy_rect;
+    S4 i;
+    Sint16 text_x, text_y;
+
+    /* SDL interprets each pixel as a 32-bit number, so our masks must depend */
+    /* on the endianness (byte order) of the machine */
+
+    #if SDL_BYTEORDER == SDL_BIG_ENDIAN
+        rmask = 0xff000000;
+        gmask = 0x00ff0000;
+        bmask = 0x0000ff00;
+        amask = 0x000000ff;
+    #else
+        rmask = 0x000000ff;
+        gmask = 0x0000ff00;
+        bmask = 0x00ff0000;
+        amask = 0xff000000;
+    #endif
+
+    menu = (struct gadget_menu *) screen[screennum].gadget[gadget_index].gptr;
+
+    switch (selected)
+    {
+        case GADGET_NOT_SELECTED:
+            draw_gadget_light (renderer, menu->x, menu->y, menu->x2, menu->y2);
+
+			// draw menu name text
+            if (! draw_text_ttf (surf, screennum, menu->menutext, menu->text_x, menu->text_y, screen[screennum].gadget_color.text_light.r, screen[screennum].gadget_color.text_light.g, screen[screennum].gadget_color.text_light.b))
+            {
+                return (FALSE);
+            }
+
+            draw_cycle_arrow_light (screennum, menu->arrow_x, menu->arrow_y, menu->x2, menu->y2);
+            break;
+
+        case GADGET_SELECTED:
+            draw_gadget_shadow (renderer, menu->x, menu->y, menu->x2, menu->y2);
+
+			// draw menu name text
+            if (! draw_text_ttf (surf, screennum, menu->menutext , menu->text_x, menu->text_y, screen[screennum].gadget_color.text_shadow.r, screen[screennum].gadget_color.text_shadow.g, screen[screennum].gadget_color.text_shadow.b))
+            {
+                return (FALSE);
+            }
+
+            draw_cycle_arrow_shadow (screennum, menu->arrow_x, menu->arrow_y, menu->x2, menu->y2);
+            break;
+
+        case GADGET_MENU_DOWN:
+            if (! menu->menu)
+            {
+				/* allocate backup surface, to copy the area that will be covered by the menu */
+
+				copy_surface = SDL_CreateRGBSurface (SDL_SWSURFACE, menu->menu_x2 - menu->menu_x + 1, menu->menu_y2 - menu->menu_y + 1, video_bpp, rmask, gmask, bmask, amask);
+				if (copy_surface == NULL)
+				{
+					printf ("draw_gadget_menu: error can't allocate copy %i surface!\n", gadget_index);
+					return (FALSE);
+				}
+
+                /* Use alpha blending */
+				if (SDL_SetSurfaceBlendMode (copy_surface, SDL_BLENDMODE_BLEND) < 0)
+				{
+					printf ("draw_gadget_menu: error can't set copy alpha channel %i surface!\n", gadget_index);
+					return (FALSE);
+				}
+
+				copy_renderer = SDL_CreateSoftwareRenderer (copy_surface);
+
+                /* make copy of menu area */
+
+                menu_rect.x = menu->menu_x;
+                menu_rect.y = menu->menu_y;
+                menu_rect.w = menu->menu_x2 - menu->menu_x + 1;
+                menu_rect.h = menu->menu_y2 - menu->menu_y + 1;
+
+                copy_rect.x = 0;
+                copy_rect.y = 0;
+
+
+				// DEBUG
+				printf ("draw_gadget_menu: menu_rect.x: %i, menu_rect.y: %i\n", menu_rect.x, menu_rect.y);
+
+				// int copy_surface (SDL_Renderer *dest_renderer, SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect)
+
+				if (do_copy_surface (copy_renderer, surf, &menu_rect, copy_surface, &copy_rect) < 0)
+				{
+					printf ("draw_gadget_menu: error can't blit copy %i surface!\n", gadget_index);
+					return (FALSE);
+				}
+
+				/* allocate menu surface */
+
+				temp_surface = SDL_CreateRGBSurface (SDL_SWSURFACE, menu->menu_x2 - menu->menu_x + 1, menu->menu_y2 - menu->menu_y + 1, video_bpp, rmask, gmask, bmask, amask);
+				if (temp_surface == NULL)
+				{
+					printf ("draw_gadget_menu: error can't allocate menu %i surface!\n", gadget_index);
+					return (FALSE);
+				}
+
+				/* Use alpha blending */
+				if (SDL_SetSurfaceBlendMode (temp_surface, SDL_BLENDMODE_BLEND) < 0)
+				{
+					printf ("draw_gadget_menu: error can't set menu alpha channel %i surface!\n", gadget_index);
+					return (FALSE);
+				}
+
+				/* set renderer */
+				temp_renderer = SDL_CreateSoftwareRenderer (temp_surface);
+				SDL_UpdateWindowSurface (window);
+				menu->menu = TRUE;
+			}
+
+
+            /* draw menu */
+
+            draw_gadget_light (temp_renderer, 0, 0, menu->menu_x2 - menu->menu_x, menu->menu_y2 - menu->menu_y);
+
+            text_x = menu->text_x - menu->menu_x;
+            text_y = menu->text_y - menu->y;
+
+			// Neu
+
+			// DEBUG
+			printf ("draw_gadget_menu: text_x: %i, text_y: %i\n", text_x, text_y);
+
+            for (i = 0; i < menu->menu_entries; i++)
+            {
+                if (i == value)
+                {
+                    boxRGBA (temp_renderer, 1, text_y, menu->menu_x2 - menu->menu_x - 1, text_y + menu->text_height, screen[screennum].gadget_color.backgr_shadow.r, screen[screennum].gadget_color.backgr_shadow.g, screen[screennum].gadget_color.backgr_shadow.b, 255);
+
+					if (! draw_text_ttf (temp_surface, screennum, menu->text[i], menu->menu_x + text_x, menu->menu_y + text_y, screen[screennum].gadget_color.text_shadow.r, screen[screennum].gadget_color.text_shadow.g, screen[screennum].gadget_color.text_shadow.b))
+                    {
+                        return (FALSE);
+                    }
+                    // SDL_UpdateWindowSurface (window);
+                }
+                else
+                {
+					if (! draw_text_ttf (temp_surface, screennum, menu->text[i], menu->menu_x + text_x, menu->menu_y + text_y, screen[screennum].gadget_color.text_light.r, screen[screennum].gadget_color.text_light.g, screen[screennum].gadget_color.text_light.b))
+                    {
+                        return (FALSE);
+                    }
+                    //SDL_UpdateWindowSurface (window);
+                }
+
+                text_y += menu->text_height + (menu->text_height / 2);
+            }
+
+            sdl_do_delay (200);
+            // SDL_UpdateWindowSurface (window);
+
+            menu_rect.x = menu->menu_x;
+            menu_rect.y = menu->menu_y;
+
+			if (do_copy_surface (renderer, temp_surface, NULL, surf, &menu_rect) < 0)
+			{
+				printf ("draw_gadget_menu: error can't blit menu %i surface!\n", gadget_index);
+				return (FALSE);
+			}
+
+			update_rect (menu->menu_x, menu->menu_y, menu->menu_x2 - menu->menu_x + 1, menu->menu_y2 - menu->menu_y + 1);
+			SDL_UpdateWindowSurface (window);
+
+			// DEBUG
+			/*
+			while (1)
+			{
+				usleep (10000);
+			} */
+            break;
+
+        case GADGET_MENU_UP:
+            /* close menu: copy backup surface */
+
+
+			menu_rect.x = menu->menu_x;
+			menu_rect.y = menu->menu_y;
+
+			if (do_copy_surface (renderer, copy_surface, NULL, surf, &menu_rect) < 0)
+			{
+				printf ("draw_gadget_menu: error can't blit copy %i surface!\n", gadget_index);
+				return (FALSE);
+			}
+
+			update_rect (menu->menu_x, menu->menu_y, menu->menu_x2 - menu->menu_x + 1, menu->menu_y2 - menu->menu_y + 1);
+			SDL_UpdateWindowSurface (window);
+
+			/* redraw menu gadget */
+
+			draw_gadget_light (renderer, menu->x, menu->y, menu->x2, menu->y2);
+
+			if (! draw_text_ttf (surf, screennum, menu->text[i] , menu->text_x, menu->text_y, screen[screennum].gadget_color.text_light.r, screen[screennum].gadget_color.text_light.g, screen[screennum].gadget_color.text_light.b))
+			{
+				return (FALSE);
+			}
+
+			draw_cycle_arrow_light (screennum, menu->arrow_x, menu->arrow_y, menu->x2, menu->y2);
+
+			/* free bitmaps */
+
+			if (copy_surface)
+			{
+				SDL_FreeSurface (copy_surface);
+				copy_surface = NULL;
+			}
+			if (temp_surface)
+			{
+				SDL_FreeSurface (temp_surface);
+				temp_surface = NULL;
+			}
+
+			menu->menu = FALSE;
+
+            draw_gadget_light (renderer, menu->x, menu->y, menu->x2, menu->y2);
+
+			if (! draw_text_ttf (surf, screennum, menu->menutext , menu->text_x, menu->text_y, screen[screennum].gadget_color.text_light.r, screen[screennum].gadget_color.text_light.g, screen[screennum].gadget_color.text_light.b))
+			{
+				return (FALSE);
+			}
+
+            draw_cycle_arrow_light (screennum, menu->arrow_x, menu->arrow_y, menu->x2, menu->y2);
+
+			SDL_UpdateWindowSurface (window);
+			break;
+    }
+
+    if (menu->status == GADGET_NOT_ACTIVE)
+    {
+        draw_ghost_gadget (renderer, menu->x, menu->y, menu->x2, menu->y2);
+    }
+
+    update_rect (menu->x, menu->y, menu->x2 - menu->x + 1, menu->y2 - menu->y + 1);
+	SDL_UpdateWindowSurface (window);
+    return (TRUE);
+}
+
+
+U1 *set_gadget_menu (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S2 text_len;
+	// S2 max_text_len = 0;
+    Sint16 x2, y2, text_x, text_y, menu_x, menu_y, menu_x2, menu_y2, menu_height;
+    int text_height, text_width, max_text_width = 0, dummy;
+    U2 i;
+    struct gadget_menu *menu;
+
+	U1 err = 0;
+	S8 gadget_index ALIGN;
+	S8 x ALIGN;
+	S8 y ALIGN;
+	S8 max_texts ALIGN;
+	S8 text_address ALIGN;
+	S8 status ALIGN;
+	S8 value ALIGN;
+
+	// x, y, text, status, value, text_address, ..., max_texts, gadget number
+
+	sp = stpopi ((U1 *) &gadget_index, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   err = 1;
+    }
+
+	sp = stpopi ((U1 *) &max_texts, sp, sp_top);
+	if (sp == NULL)
+	{
+		printf ("set_gadet_menu: ERROR, stack corrupt!\n");
+ 	   	return (NULL);
+   	}
+
+	if (! screen[screennum].gadget)
+    {
+        printf ("set_gadet_menu: error gadget list not allocated!\n");
+        return (NULL);
+    }
+
+    if (gadget_index >= screen[screennum].gadgets)
+    {
+        printf ("set_gadet_menu: error gadget index out of range!\n");
+        return (NULL);
+    }
+
+    if (! screen[screennum].font_ttf.font)
+    {
+        printf ("set_gadet_menu: error no ttf font loaded!\n");
+        return (NULL);
+    }
+
+    free_gadget (screennum, gadget_index);
+
+    screen[screennum].gadget[gadget_index].gptr = (struct gadget_menu *) malloc (sizeof (struct gadget_menu));
+    if (screen[screennum].gadget[gadget_index].gptr == NULL)
+    {
+        printf ("set_gadet_menu: error can't allocate structure!\n");
+        return (NULL);
+    }
+
+    menu = (struct gadget_menu *) screen[screennum].gadget[gadget_index].gptr;
+
+    /* copy menu text list */
+	menu->text = (U1 **) malloc (max_texts * sizeof (U1 *));
+	if (menu->text == NULL)
+	{
+		printf ("set_gadet_menu: error can't allocate menu text list!\n");
+		return (FALSE);
+	}
+
+    for (i = 0; i < max_texts; i++)
+    {
+		sp = stpopi ((U1 *) &text_address, sp, sp_top);
+		if (sp == NULL)
+		{
+		   // error
+		   printf ("set_gadet_menu: ERROR stack error!\n");
+		   return (NULL);
+	   	}
+
+        text_len = strlen_safe ((const char *) &data[text_address], MAXLINELEN);
+
+        menu->text[i] = (U1 *) malloc ((text_len + 1) * sizeof (U1));
+        if (menu->text[i] == NULL)
+        {
+            printf ("set_gadet_menu: error can't allocate menu text!\n");
+            return (NULL);
+        }
+
+        strcpy ((char *) menu->text[i], (const char *) &data[text_address]);
+
+        if (TTF_SizeText (screen[screennum].font_ttf.font, (const char *) menu->text[i], &text_width, &dummy) != 0)
+        {
+            printf ("set_gadet_menu: error can't get text width!\n");
+            return (NULL);
+        }
+
+        if (text_width > max_text_width)
+        {
+            max_text_width = text_width;
+        }
+    }
+
+    text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
+
+	// -------------------------------------------------------
+
+	sp = stpopi ((U1 *) &status, sp, sp_top);
+	if (sp == NULL)
+	{
+	   // error
+	   err = 1;
+   	}
+
+	sp = stpopi ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+	   // error
+	   err = 1;
+   	}
+
+   sp = stpopi ((U1 *) &text_address, sp, sp_top);
+   if (sp == NULL)
+   {
+	   err = 1;
+   }
+
+   sp = stpopi ((U1 *) &y, sp, sp_top);
+   if (sp == NULL)
+   {
+	   err = 1;
+   }
+
+   sp = stpopi ((U1 *) &x, sp, sp_top);
+   if (sp == NULL)
+   {
+	   err = 1;
+   }
+
+   if (err == 1)
+   {
+	   printf ("set_gadet_menu: ERROR, stack corrupt!\n");
+	   return (NULL);
+   }
+
+   text_len = strlen_safe ((const char *) &data[text_address], MAXLINELEN);
+
+   menu->menutext = (U1 *) malloc ((text_len + 1) * sizeof (U1));
+   if (menu->menutext == NULL)
+   {
+       printf ("set_gadet_menu: error can't allocate menu title text!\n");
+       return (NULL);
+   }
+
+    strcpy ((char *) menu->menutext, (const char *) &data[text_address]);
+
+
+    /* layout menu */
+
+    x2 = x + max_text_width + text_height * 2 + (text_height + (text_height / 2));
+    y2 = y + text_height + (text_height / 2);
+
+    text_x = x + text_height;
+    text_y = y + (text_height / 4);
+
+    menu_height = max_texts * (text_height + (text_height / 2));
+
+    menu_x = x;
+
+    if (y + menu_height <= screen[screennum].height - 1)
+    {
+        menu_y = y;
+    }
+    else
+    {
+        menu_y = y2 - menu_height;
+    }
+
+    menu_x2 = x2;
+    menu_y2 = menu_y + menu_height;
+
+    screen[screennum].gadget[gadget_index].type = GADGET_MENU;
+    menu->status = status;
+    menu->value = value;
+    menu->menu_entries = max_texts;
+    menu->x = x;
+    menu->y = y;
+    menu->x2 = x2;
+    menu->y2 = y2;
+    menu->text_x = text_x;
+    menu->text_y = text_y;
+    menu->text_height = text_height;
+    menu->menu_x = menu_x;
+    menu->menu_y = menu_y;
+    menu->menu_x2 = menu_x2;
+    menu->menu_y2 = menu_y2;
+    menu->arrow_x = x2 - (text_height + (text_height / 2));
+    menu->arrow_y = y;
+    menu->menu = FALSE;
+
+    if (! draw_gadget_menu (screennum, gadget_index, GADGET_NOT_SELECTED, value))
+    {
+        printf ("set_gadet_menu: error can't draw gadget!\n");
+        return (NULL);
+    }
+    else
+    {
+        return (sp);
+    }
 }
 
 U1 draw_gadget_progress_bar (S2 screennum, U2 gadget_index, U1 selected)
@@ -2956,6 +3425,7 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	struct gadget_string_multiline *string_multiline;
     struct gadget_box *box;
     struct gadget_slider *slider;
+    struct gadget_menu *menu;
 
 	sp = stpopi ((U1 *) &text_address, sp, sp_top);
     if (sp == NULL)
@@ -4014,6 +4484,239 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                             return (sp);
                         }
                         break;
+
+                    case GADGET_MENU:
+                        menu = (struct gadget_menu *) screen[screennum].gadget[i].gptr;
+
+                        if ((x > menu->x && x < menu->x2) && (y > menu->y && y < menu->y2) && menu->status == GADGET_ACTIVE)
+                        {
+                            mouse_button = 1;
+                            while (mouse_button == 1)
+                            {
+                                SDL_Delay (100);
+
+                                SDL_PumpEvents ();
+                                buttonmask = SDL_GetMouseState (&x, &y);
+
+                                if (! (buttonmask & SDL_BUTTON (1)))
+                                {
+                                    mouse_button = 0;
+                                }
+
+                                if ((x > menu->x && x < menu->x2) && (y > menu->y && y < menu->y2))
+                                {
+                                    printf ("gadget_event: drawing menu %i selected.\n", i);
+
+                                    if (! draw_gadget_menu (screennum, i, GADGET_SELECTED, menu->value))
+                                    {
+                                        printf ("gadget_event: error can't draw gadget!\n");
+                                        return (NULL);
+                                    }
+                                }
+                                else
+                                {
+                                    printf ("gadget_event: drawing menu %i normal.\n", i);
+
+                                    if (! draw_gadget_menu (screennum, i, GADGET_NOT_SELECTED, menu->value))
+                                    {
+                                        printf ("gadget_event: error can't draw gadget!\n");
+                                        return (NULL);
+                                    }
+                                }
+                            }
+
+                            if (! draw_gadget_menu (screennum, i, GADGET_NOT_SELECTED, menu->value))
+                            {
+                                printf ("gadget_event: error can't draw gadget!\n");
+                                return (NULL);
+                            }
+
+                            if ((x > menu->x && x < menu->x2) && (y > menu->y && y < menu->y2))
+                            {
+                                /* gadget was selected */
+
+                                if (! draw_gadget_menu (screennum, i, GADGET_MENU_DOWN, menu->value))
+                                {
+                                    printf ("gadget_event: error can't draw gadget!\n");
+                                    return (NULL);
+                                }
+
+                                cycle_menu = TRUE;
+                                while (cycle_menu)
+                                {
+                                    mouse_button = 0; double_click = 0; select = 0;
+									old_value = -1;
+
+/* On Android the highlighted menu entry will be selected with a double click
+ * this was needed, otherwise the second and following entries could never be selected!
+ * On normal desktop system one click is used!
+ *
+ * This was a FIX to make this usable on Android.
+ */
+
+
+#if GADGET_CYCLE_DOUBLECLICK
+									while (mouse_button == 0)
+                                    {
+										select = 0;
+										SDL_Delay (100);
+
+                                        SDL_PumpEvents ();
+                                        buttonmask = SDL_GetMouseState (&x, &y);
+
+                                        if (buttonmask & SDL_BUTTON (1))
+                                        {
+                                            select = 1;
+                                        }
+
+                                        if ((x > menu->menu_x && x < menu->menu_x2) && (y > menu->menu_y && y < menu->menu_y2))
+                                        {
+                                            for (value = 0; value < menu->menu_entries; value++)
+                                            {
+                                                if ((y > menu->menu_y + (value * (menu->text_height + (menu->text_height / 2)))) && ((y < menu->menu_y + ((value + 1) * (menu->text_height + (menu->text_height / 2))))))
+                                                {
+                                                    menu->value = value;
+
+													if (value == old_value)
+													{
+														if (select == 1)
+														{
+															/* mousebutton pressed, wait for release */
+
+															double_click = 0;
+
+															while (double_click == 0)
+															{
+																SDL_Delay (100);
+
+																SDL_PumpEvents ();
+																buttonmask = SDL_GetMouseState (&x, &y);
+
+																if (! (buttonmask & SDL_BUTTON (1)))
+																{
+																	double_click = 1;
+
+																	/* button down */
+																}
+															}
+
+
+
+															if (double_click == 1)
+															{
+																/* button up = selected */
+																if ((y > menu->menu_y + (value * (menu->text_height + (menu->text_height / 2)))) && ((y < menu->menu_y + ((value + 1) * (menu->text_height + (menu->text_height / 2))))))
+																{
+																	/* click in the same menu entry: select item */
+																	mouse_button = 1;
+																}
+															}
+														}
+													}
+													old_value = value;
+                                                }
+                                            }
+
+                                            if (! draw_gadget_menu (screennum, i, GADGET_MENU_DOWN, menu->value))
+                                            {
+                                                printf ("gadget_event: error can't draw gadget!\n");
+                                                return (NULL);
+                                            }
+                                        }
+									}
+#else
+                                    while (mouse_button == 0)
+                                    {
+                                        SDL_Delay (100);
+
+                                        SDL_PumpEvents ();
+                                        buttonmask = SDL_GetMouseState (&x, &y);
+
+                                        if (buttonmask & SDL_BUTTON (1))
+                                        {
+                                            mouse_button = 1;
+                                        }
+
+                                        if ((x > menu->menu_x && x < menu->menu_x2) && (y > menu->menu_y && y < menu->menu_y2))
+                                        {
+                                            for (value = 0; value < menu->menu_entries; value++)
+                                            {
+                                                if ((y > menu->menu_y + (value * (menu->text_height + (menu->text_height / 2)))) && ((y < menu->menu_y + ((value + 1) * (menu->text_height + (menu->text_height / 2))))))
+                                                {
+                                                    menu->value = value;
+                                                }
+                                            }
+
+                                            if (! draw_gadget_menu (screennum, i, GADGET_MENU_DOWN, menu->value))
+                                            {
+                                                printf ("gadget_event: error can't draw gadget!\n");
+                                                return (NULL);
+                                            }
+                                        }
+                                    }
+#endif
+
+                                    if ((x > menu->menu_x && x < menu->menu_x2) && (y > menu->menu_y && y < menu->menu_y2))
+                                    {
+                                        /* gadget was selected */
+
+                                        cycle_menu = FALSE;
+                                    }
+                                }
+
+                                /* remove all pending mouse down events */
+
+                                wait = TRUE;
+
+                                while (wait)
+                                {
+                                    while (SDL_PollEvent (&event))
+                                    {
+                                        if (event.type == SDL_MOUSEBUTTONUP && event.button.state == SDL_RELEASED)
+                                        {
+                                            wait = FALSE;
+                                        }
+                                    }
+                                }
+                                SDL_Delay (100);
+
+                                if (! draw_gadget_menu (screennum, i, GADGET_MENU_UP, menu->value))
+                                {
+                                    printf ("gadget_event: error can't draw gadget!\n");
+                                    return (NULL);
+                                }
+
+                                printf ("gadget_event: menu gadget %i selected.\n", i);
+
+								sp = stpushi (i, sp, sp_bottom);
+								if (sp == NULL)
+								{
+									// error
+									printf ("gadget_event: ERROR: stack corrupt!\n");
+									return (NULL);
+								}
+
+								sp = stpushi (menu->value, sp, sp_bottom);
+								if (sp == NULL)
+								{
+									// error
+									printf ("gadget_event: ERROR: stack corrupt!\n");
+									return (NULL);
+								}
+
+								// push 1 = all OK!
+								sp = stpushi (1, sp, sp_bottom);
+								if (sp == NULL)
+								{
+									// error
+									printf ("gadget_event: ERROR: stack corrupt!\n");
+									return (NULL);
+								}
+
+                                return (sp);
+                            }
+                        }
+                        break;
                 }
             }
         }
@@ -4622,6 +5325,8 @@ U1 *set_gadget_cycle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (sp);
     }
 }
+
+
 
 U1 *set_gadget_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
@@ -6018,7 +6723,6 @@ U1 *set_gadget_string_passwd (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	return (sp);
 }
-
 
 U1 *change_gadget_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
