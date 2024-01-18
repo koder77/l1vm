@@ -68,6 +68,7 @@
     (set string s get_keystr@sdl "get_key")
 	(set string s free_all_gadgetsstr@sdl "free_all_gadgets")
     (set string s set_window_titlestr@sdl "sdl_set_window_title")
+    (set string s set_gadget_menustr@sdl "set_gadget_menu")
     (set int64 1 open@sdl 0)
     (set int64 1 quit@sdl 1)
     (set int64 1 update@sdl 2)
@@ -128,6 +129,7 @@
     (set int64 1 get_key@sdl 58)
 	(set int64 1 free_all_gadgets@sdl 59)
     (set int64 1 set_window_title@sdl 60)
+    (set int64 1 set_gadget_menu@sdl 61)
     // call arguments
     (set int64 1 width@sdl 0)
     (set int64 1 height@sdl 0)
@@ -203,6 +205,7 @@
     (2 mod@sdl get_key@sdl get_keystr@sdladdr intr0)
 	(2 mod@sdl free_all_gadgets@sdl free_all_gadgetsstr@sdladdr intr0)
     (2 mod@sdl set_window_title@sdl set_window_titlestr@sdladdr intr0)
+    (2 mod@sdl set_gadget_menu@sdl set_gadget_menustr@sdladdr intr0)
     (width@sdl stpushi)
     (height@sdl stpushi)
     (bit@sdl stpushi)
@@ -315,6 +318,9 @@
 (funcend)
 (set_gadget_slider_vert func)
 	(3 mod@sdl set_gadget_slider_vert@sdl 0 intr0)
+(funcend)
+(set_gadget_menu func)
+	(3 mod@sdl set_gadget_menu@sdl 0 intr0)
 (funcend)
 // change -------------------------------------------------
 (change_gadget_checkbox func)

@@ -1,3 +1,8 @@
+L1VM (2.8.7)
+        Added SDL GUI module set_gadget_menu, see: "lib/sdl-lib-test-menu.l1com"!
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thu 18 Jan 2024 22:53  +0100
+
 L1VM (2.8.6)
          The preprocessor now removes empty .md documentation files.
 	 The "l1vm-build.sh" script checks now if a "out.md" file exists and copies it if so.
