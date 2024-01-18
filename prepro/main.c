@@ -53,8 +53,8 @@
 
 // for generating documentation file
 FILE *docuptr;
-U1 documentation_on = 0;    // if set to 1 then write the following lines into docu file
-
+U1 documentation_on = 0;     // if set to 1 then write the following lines into docu file
+U1 documentation_write = 0;  // set to 1 if text was written in program.md documentation file
 
 U1 include_path[MAXSTRLEN + 1];
 U1 include_path_two[MAXSTRLEN + 1];
@@ -725,6 +725,8 @@ S2 include_file (U1 *line_str)
 				{
 					printf ("ERROR: can't write to documentation file!\n");
 				}
+
+				documentation_write = 1;
 				continue;
 			}
 
@@ -1099,6 +1101,8 @@ int main (int ac, char *av[])
 				{
 					printf ("ERROR: can't write to documentation file!\n");
 				}
+
+				documentation_write = 1;
 				continue;
 			}
 
@@ -1326,8 +1330,16 @@ int main (int ac, char *av[])
 			ok = FALSE;
 		}
 	}
+	// normal exit, all ok!
 	fclose (finptr);
 	fclose (foutptr);
 	fclose (docuptr);
+
+	// check if text was written into docu file
+	if (documentation_write == 0)
+	{
+		// no text written delete empty "out.md" file
+		remove ("out.md");
+	}
 	exit (0);
 }

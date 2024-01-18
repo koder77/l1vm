@@ -37,7 +37,9 @@ outname="${outname}.l1dbg"
 cp out.l1dbg $outname
 
 # get .md markdown docu file
+if test -e "out.md"; then
 outname=""
 outname=${1%.md}
 outname="${outname}.md"
 cp out.md $outname
+fi
