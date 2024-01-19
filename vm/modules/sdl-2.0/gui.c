@@ -7520,3 +7520,40 @@ U1 *free_all_gadgets (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	return (sp);
 }
+
+U1 *unset_gadget (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    // this just unsets a gadget from the gadgets list.
+    // You have to blank it out by overpainting it by the window background color!
+
+	S8 gadget_index ALIGN;
+
+	sp = stpopi ((U1 *) &gadget_index, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   printf ("unset_gadet: error missing gadget index!\n");
+       return (NULL);
+    }
+
+	if (! screen[screennum].gadget)
+    {
+        printf ("unset_gadget: error gadget list not allocated!\n");
+        return (NULL);
+    }
+
+    if (gadget_index >= screen[screennum].gadgets)
+    {
+        printf ("unset_gadget error gadget index out of range!\n");
+        return (NULL);
+    }
+
+    if (! screen[screennum].font_ttf.font)
+    {
+        printf ("unset_gadget: error no ttf font loaded!\n");
+        return (NULL);
+    }
+
+    free_gadget (screennum, gadget_index);
+
+    return (sp);
+}
