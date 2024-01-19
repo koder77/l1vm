@@ -1476,7 +1476,6 @@ U1 *set_gadget_menu (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     menu_x = x;
 
-    printf ("DEBUG: set_gadget_menu: y + menu height: %lli, screen height: %lli\n", y + menu_height, screen[screennum].height - 1);
     if (y + menu_height <= screen[screennum].height - 1)
     {
         menu_y = y;
