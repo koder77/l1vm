@@ -66,6 +66,12 @@ static struct screen screen[MAXSCREEN];
 
 // memory functions
 
+void set_screen_dimens (S8 width, S8 height)
+{
+    screen[screennum].width = width;
+    screen[screennum].height = height;
+}
+
 U1 **alloc_array_U1 (S4 x, S4 y)
 {
     S4 i, alloc;
@@ -1470,6 +1476,7 @@ U1 *set_gadget_menu (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     menu_x = x;
 
+    printf ("DEBUG: set_gadget_menu: y + menu height: %lli, screen height: %lli\n", y + menu_height, screen[screennum].height - 1);
     if (y + menu_height <= screen[screennum].height - 1)
     {
         menu_y = y;
@@ -1479,6 +1486,7 @@ U1 *set_gadget_menu (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         menu_y = y2 - menu_height;
     }
 
+    // menu_y = y;
     menu_x2 = x2;
     menu_y2 = menu_y + menu_height;
 

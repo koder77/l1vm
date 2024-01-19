@@ -33,6 +33,9 @@
 
 #include "gui.h"
 
+// protos
+void set_screen_dimens (S8 width, S8 height);
+
 
 SDL_Surface *surf = NULL;
 SDL_Window *window = NULL;
@@ -225,6 +228,9 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	SDL_RenderClear (renderer);
 	SDL_RenderPresent (renderer);
 
+	// save width/height
+	set_screen_dimens (width, height);
+
 	// error OK code
 	sp = stpushi (0, sp, sp_bottom);
 	if (sp == NULL)
@@ -393,6 +399,9 @@ U1 *sdl_open_screen_full (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	SDL_SetRenderDrawColor (renderer, 0, 0, 0, 255);
 	SDL_RenderClear (renderer);
 	SDL_RenderPresent (renderer);
+
+	// save width/height
+	set_screen_dimens (width, height);
 
 	// error OK code
 	sp = stpushi (0, sp, sp_bottom);
