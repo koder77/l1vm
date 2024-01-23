@@ -1463,6 +1463,17 @@ U1 *set_gadget_menu (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     strcpy ((char *) menu->menutext, (const char *) &data[text_address]);
 
+    if (TTF_SizeText (screen[screennum].font_ttf.font, (const char *) &data[text_address], &text_width, &dummy) != 0)
+    {
+        printf ("set_gadet_menu: error can't get text width!\n");
+        return (NULL);
+    }
+
+    if (text_width > max_text_width)
+    {
+        max_text_width = text_width;
+    }
+
 
     /* layout menu */
 
