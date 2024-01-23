@@ -824,7 +824,7 @@ S2 load_object (U1 *name)
 
 				// printf ("load_object: BYTE: size: %lli\n", data_info[j].size);
 
-				printf ("\nbyte offset: %lli\n", i);
+				printf ("\nbyte offset: %lli, size: %lli\n", i, data_info[j].size);
 
 				for (k = 1; k <= data_info[j].size; k++)
 				{
@@ -855,7 +855,7 @@ S2 load_object (U1 *name)
 				//printf ("DATA WORD\n");
 				data_info[j].offset = i;
 
-				printf ("\nint16 offset: %lli\n", i);
+				printf ("\nint16 offset: %lli, size: %lli\n", i, data_info[j].size);
 
 				for (k = 1; k <= (S8) (data_info[j].size / sizeof (S2)); k++)
 				{
@@ -892,7 +892,7 @@ S2 load_object (U1 *name)
 				//printf ("DATA DOUBLEWORD\n");
 				data_info[j].offset = i;
 
-				printf ("\nint32 offset: %lli\n", i);
+				printf ("\nint32 offset: %lli, size: %lli\n", i, data_info[j].size);
 
 				for (k = 1; k <= (S8) (data_info[j].size / sizeof (S4)); k++)
 				{
@@ -934,11 +934,11 @@ S2 load_object (U1 *name)
 
 				if (data_info[j].type == QUADWORD)
 				{
-					printf ("\nint64 offset: %lli\n", i);
+					printf ("\nint64 offset: %lli, size: %lli\n", i, data_info[j].size);
 				}
 				else
 				{
-					printf ("\ndouble offset: %lli\n", i);
+					printf ("\ndouble offset: %lli, size: %lli\n", i, data_info[j].size);
 				}
 
 				{
