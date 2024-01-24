@@ -1,7 +1,8 @@
 L1VM (2.8.7)
         Added SDL GUI module set_gadget_menu, see: "lib/sdl-lib-test-menu.l1com"!
+	Added disassembler: in disasm directory.
 
--- Stefan Pietzonke <jay-t@gmx.net> Thu 18 Jan 2024 22:53  +0100
+-- Stefan Pietzonke <jay-t@gmx.net> Wed 24 Jan 2024 19:31  +0100
 
 L1VM (2.8.6)
          The preprocessor now removes empty .md documentation files.
