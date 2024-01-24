@@ -78,7 +78,7 @@
 //#define EXE_NEXT(); ep = ep + eoffs; printf ("next opcode: %i\n", code[ep]); goto *jumpt[code[ep]];
 
 // protos
-S2 load_object (U1 *name);
+S2 load_object (U1 *name, U1 byte_char);
 void free_modules (void);
 size_t strlen_safe (const char * str, int maxlen);
 

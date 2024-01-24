@@ -179,7 +179,7 @@ F8 conv_double (S8 val)
 	return (ret);
 }
 
-S2 load_object (U1 *name)
+S2 load_object (U1 *name, U1 byte_char)
 {
 	FILE *fptr;
 	U1 objname[512];
@@ -840,7 +840,15 @@ S2 load_object (U1 *name)
 						return (1);
 					}
 
-					printf ("%i, ", byte);
+					if (byte_char == 1)
+					{
+						// print byte value as char also
+						printf ("%i '%c', ", byte, byte);
+					}
+					else
+					{
+						printf ("%i, ", byte);
+					}
 
 					data[i] = byte;
 					i++;

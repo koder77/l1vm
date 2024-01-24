@@ -56,15 +56,29 @@ S8 data_info_ind ALIGN = -1;
 
 int main (int ac, char *av[])
 {
+    U1 byte_char = 0;
+
     printf ("L1VM disassembler\n\n");
 
     if (ac > 1)
     {
-        load_object ((U1 *) av[1]);
+        if (ac == 3)
+        {
+            if (strcmp (av[2], "-byte-char") == 0)
+            {
+                byte_char = 1;
+            }
+            else
+            {
+                printf ("disasm <object-file> -byte-char\n");
+                exit (1);
+            }
+        }
+        load_object ((U1 *) av[1], byte_char);
     }
     else
     {
-        printf ("disasm <object-file>\n");
+        printf ("disasm <object-file> -byte-char\n");
         exit (1);
     }
 
