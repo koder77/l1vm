@@ -279,7 +279,7 @@
 
 // load/save CSV table data ====================================================
 (go_data_save_csv_table func)
-    #var ~ go_data_save
+    #var ~ go_data_save_csv_table
     (set int64 1 shandle~ 0)
     (set int64 1 Pnamestraddr~)
     (set string s quotestr~ "'")
@@ -318,7 +318,7 @@
     // leave return value on stack!!!
 (funcend)
 (go_data_load_csv_table func)
-    #var ~ go_data_load
+    #var ~ go_data_load_csv_table
     (set int64 1 shandle~ 0)
     (set int64 1 Pnamestraddr~)
     (set string s quotestr~ "'")
