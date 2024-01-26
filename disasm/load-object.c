@@ -216,6 +216,10 @@ S2 load_object (U1 *name, U1 byte_char)
 	// bzip compressed file flag
 	U1 bzip2 = 0;
 
+	// for byte array, string decode
+	U1 decodestr[MAXSTRLEN];
+	S8 decodestr_ind ALIGN = 0;
+
 	slen = strlen_safe ((const char *) name, MAXLINELEN);
 	if (slen > 506)
 	{
@@ -821,6 +825,7 @@ S2 load_object (U1 *name, U1 byte_char)
 			case BYTE:
 				//printf ("DATA BYTE\n");
 				data_info[j].offset = i;
+				decodestr_ind = 0;
 
 				// printf ("load_object: BYTE: size: %lli\n", data_info[j].size);
 
@@ -850,13 +855,27 @@ S2 load_object (U1 *name, U1 byte_char)
 						printf ("%i, ", byte);
 					}
 
+					if (decodestr_ind < MAXSTRLEN - 1)
+					{
+						decodestr[decodestr_ind] =  byte;
+						decodestr_ind++;
+					}
+
 					data[i] = byte;
 					i++;
 				}
 				data_info[j].end = i - 1;
 				data_info[j].type_size = sizeof (U1);
 
+				decodestr[decodestr_ind] = '\0'; // add binary zero as string end
+
 				printf ("\n");
+
+				if (byte_char == 1)
+				{
+					printf ("string: '%s'\n", decodestr);
+				}
+
 				break;
 
 			case WORD:
