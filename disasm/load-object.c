@@ -873,7 +873,7 @@ S2 load_object (U1 *name, U1 byte_char)
 
 				if (byte_char == 1)
 				{
-					printf ("string: '%s'\n", decodestr);
+					printf ("string: '%s'\n", decodestr); // print full string
 				}
 
 				break;
