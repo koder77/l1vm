@@ -1,3 +1,9 @@
+L1VM (2.8.8)
+	NEW: Added "tab" to SDL multiline string gadget. With the "tab" key you can insert spaces to "wrap" to the next input line.
+	See program "lib/sdl-lib-test.l1com".
+
+-- Stefan Pietzonke <jay-t@gmx.net> Sun 28 Jan 2024 20:05  +0100
+
 L1VM (2.8.7)
         Added SDL GUI module set_gadget_menu, see: "lib/sdl-lib-test-menu.l1com"!
 	Added disassembler: in disasm directory.

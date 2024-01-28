@@ -2541,6 +2541,60 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 					case SDLK_RSHIFT:
 						shift = 1;
 						break;
+
+                    case SDLK_TAB:
+                        {
+                         // own variable scope
+
+                        S2 chars_to_line_end;
+                        S2 input_row;
+                        S2 max_cursor_x;
+                        S2 i;
+
+                        insert_pos = string->insert_pos;
+                        string_len = strlen_safe ((const char *) string->value, (string->visible_len * string->text_lines));
+
+                        if (string->cursor_pos_y < string->text_lines - 1)
+						{
+                            input_row = string_len / string->visible_len;
+                            max_cursor_x = string_len % string->visible_len;
+
+                            chars_to_line_end = string->visible_len - max_cursor_x;
+
+                            // DEBUG SDL TAB
+                            printf ("tab: chars to line end: %i, max cursor x: %i\n", chars_to_line_end, max_cursor_x);
+                            printf ("tab: string visible len: %i, string_len: %i\n", string->visible_len, string_len);
+
+                            for (i = 0; i < chars_to_line_end; i++)
+                            {
+                                strinsertchar (string_buf, string->value, ' ', string->insert_pos);
+                                my_strcpy (string->value, string_buf);
+
+                                string->insert_pos++;
+                                value_len++;
+
+                                if (string->cursor_pos_x < string->visible_len - 1)
+								{
+									string->cursor_pos_x++;
+								}
+								else
+								{
+									if (string->cursor_pos_y < string->text_lines - 1)
+									{
+										string->cursor_pos_x = 0;
+										string->cursor_pos_y++;
+									}
+								}
+                            }
+                        //my_strcpy (string->value, string_buf);
+                            if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
+							{
+                                free (string_buf);
+								return (FALSE);
+							}
+                        }
+                        }
+                        break;
 				}
 				break;
 
