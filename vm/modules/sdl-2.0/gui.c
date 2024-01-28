@@ -2586,7 +2586,6 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 									}
 								}
                             }
-                        //my_strcpy (string->value, string_buf);
                             if (! draw_gadget_string_multiline (screennum, gadget_index, GADGET_SELECTED))
 							{
                                 free (string_buf);
