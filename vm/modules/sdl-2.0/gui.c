@@ -2562,8 +2562,8 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
                             chars_to_line_end = string->visible_len - max_cursor_x;
 
                             // DEBUG SDL TAB
-                            printf ("tab: chars to line end: %i, max cursor x: %i\n", chars_to_line_end, max_cursor_x);
-                            printf ("tab: string visible len: %i, string_len: %i\n", string->visible_len, string_len);
+                            //printf ("tab: chars to line end: %i, max cursor x: %i\n", chars_to_line_end, max_cursor_x);
+                            //printf ("tab: string visible len: %i, string_len: %i\n", string->visible_len, string_len);
 
                             for (i = 0; i < chars_to_line_end; i++)
                             {
