@@ -596,6 +596,74 @@ S2 check_for_normal_brackets (U1 *line)
 	}
 }
 
+S2 check_for_infix_math (U1 *line)
+{
+	U1 buf[MAXSTRLEN];
+	S4 buf_ind = 0;
+	S4 ind;
+	S4 start = 0;
+	S4 line_len;
+	U1 found_var = 0;
+
+	if (check_for_normal_brackets (line) == 0)
+	{
+		return (0);
+	}
+
+	line_len = strlen_safe ((const char *) line, MAXSTRLEN);
+	for (ind = 0; ind < line_len; ind++)
+	{
+		if (line[ind] == '=')
+		{
+			start = ind + 2;
+			break;
+		}
+	}
+	if (start == 0)
+	{
+		// error no equal sign found
+		return (2);
+	}
+
+	for (ind = start; ind < line_len; ind++)
+	{
+		if (line[ind] != ' ' && line[ind] != '}')
+		{
+			//printf ("check_for_infix_math: char: %c\n", line[ind]);
+
+			if (isOperator (line[ind]) == 1)
+			{
+				//printf ("check_for_infix_math: found operator: %c\n", line[ind]);
+				//printf ("check_for_infix_math: found_var: %i\n", found_var);
+
+				if (found_var == 1)
+				{
+					// infix math found
+					//printf ("check_for_infix_math: found infix expression!\n");
+
+					return (0);
+				}
+				found_var = 0;
+			}
+			else
+			{
+				buf[buf_ind] = line[ind];
+				buf_ind++;
+			}
+		}
+		else
+		{
+			buf[buf_ind] = '\0';
+			buf_ind = 0;
+
+			//printf ("check_for_infix_math: found var: %s\n", buf);
+
+			found_var++;
+		}
+	}
+	return (1);
+}
+
 S2 parse_line (U1 *line)
 {
     S4 level, j, last_arg, last_arg_2, t, v, reg, reg2, reg3, reg4, target, e, exp;
@@ -675,7 +743,7 @@ S2 parse_line (U1 *line)
 	{
 		// printf ("DEBUG parse_cont: '%s'\n", line);
 
-		normal_brackets = check_for_normal_brackets (line);
+		normal_brackets = check_for_infix_math (line);
 		if (normal_brackets == 2)
 		{
 			// ERROR

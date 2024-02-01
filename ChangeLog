@@ -1,3 +1,15 @@
+L1VM (3.0.0)
+	NEW: now math expressions can be written like this in Brackets:
+
+	{i = xd + yd}
+
+	The () brackets are not longer needed for this, to work.
+	The old way was:
+
+	{i = (xd + yd)}
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thur 1 Feb 2024 21:18  +0100
+
 L1VM (2.9.0)
 	Added "return" to compiler. See "prog/return.l1com".
 

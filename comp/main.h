@@ -76,4 +76,7 @@
 void init_data_info_var (void);
 S2 get_unused_var (void);
 
+// parse-rpolish.c
+S2 isOperator (char symbol);
+
  #endif
