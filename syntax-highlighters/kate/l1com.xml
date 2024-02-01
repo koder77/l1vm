@@ -51,6 +51,8 @@
     <item>next</item>
     <item>do</item>
     <item>while</item>
+    <item>return</item>
+
 
     <item>pushb</item>
     <item>pushw</item>

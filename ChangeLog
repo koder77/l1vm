@@ -1,3 +1,8 @@
+L1VM (2.9.0)
+	Added "return" to compiler. See "prog/return.l1com".
+
+-- Stefan Pietzonke <jay-t@gmx.net> Thur 1 Feb 2024 15:54  +0100
+
 L1VM (2.8.8)
 	NEW: Added "tab" to SDL multiline string gadget. With the "tab" key you can insert spaces to "wrap" to the next input line.
 	See program "lib/sdl-lib-test.l1com".

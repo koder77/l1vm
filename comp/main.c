@@ -3016,6 +3016,22 @@ S2 parse_line (U1 *line)
 									continue;
 								}
 
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "return") == 0)
+								{
+									// return from function
+
+									code_line++;
+									if (code_line >= line_len)
+									{
+										printf ("error: line %lli: code list full!\n", linenum);
+										return (3);
+									}
+
+									strcpy ((char *) code[code_line], (const char *) "rts");
+									strcat ((char *) code[code_line], "\n");
+									continue;
+								}
+
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "intr0") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], "intr1") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], "pushb") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], "pullb") == 0)
 								{
 									strcpy ((char *) code_temp, (const char *) ast[level].expr[j][last_arg]);
