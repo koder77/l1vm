@@ -13,7 +13,7 @@
 	(set int64 1 f 0)
 	(set string s byte_errstr "error reading byte from stack!")
 	(set string s int64_errstr "error reading int64 from stack!")
-	(set string s double_errstr "error reading double from stack!")
+	(set string s double_errstr "eRror reading double from stack!")
 	(set string s no_errstr "all stack checks passed as OK!")
 	(set int64 1 err 0)
 	(set int64 1 type 10)

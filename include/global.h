@@ -141,7 +141,7 @@
 
 // info strings:
 #define COPYRIGHT_STR " 2024/winter (C) 2017-2024 Stefan Pietzonke - software research"
-#define VM_VERSION_STR "3.0.0 "		// version number
+#define VM_VERSION_STR "3.0.1 "		// version number
 #define MOTTO_STR "let it snow!"
 
 // no user defined definitions below this section! ============================

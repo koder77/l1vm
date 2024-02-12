@@ -24,7 +24,7 @@
 #define EMPTY 0
 #define LABEL 5
 
-#define MAXTRANSLATE 42
+#define MAXTRANSLATE 48
 
 struct translate translate[] =
 {
@@ -67,6 +67,12 @@ struct translate translate[] =
 	{ "stpopi", 1, { INTEGER, EMPTY, EMPTY, EMPTY }, STPOPI},
 	{ "stpushd", 1, { DOUBLE, EMPTY, EMPTY, EMPTY }, STPUSHD},
 	{ "stpopd", 1, { DOUBLE, EMPTY, EMPTY, EMPTY }, STPOPD},
+	{ "b>|", 1, { INTEGER, EMPTY, EMPTY, EMPTY }, STPUSHB},
+	{ "|>b", 1, { INTEGER, EMPTY, EMPTY, EMPTY }, STPOPB},
+	{ "i>|", 1, { INTEGER, EMPTY, EMPTY, EMPTY }, STPUSHI},
+	{ "|>i", 1, { INTEGER, EMPTY, EMPTY, EMPTY }, STPOPI},
+	{ "d>|", 1, { DOUBLE, EMPTY, EMPTY, EMPTY }, STPUSHD},
+	{ "|>d", 1, { DOUBLE, EMPTY, EMPTY, EMPTY }, STPOPD},
 	{ "movi", 2, { INTEGER, INTEGER, EMPTY, EMPTY }, MOVI},
 	{ "movd", 2, { DOUBLE, DOUBLE, EMPTY, EMPTY }, MOVD},
 	{ "loadl", 2, { LABEL, INTEGER, EMPTY, EMPTY }, LOADL}

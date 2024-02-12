@@ -5272,7 +5272,7 @@ S2 parse_line (U1 *line)
 																return (3);
 															}
 
-															// set stpushb opcode
+															// set pushb opcode
 															strcpy ((char *) code[code_line], "pushb ");
 															sprintf ((char *) str, "%i", reg);
 															strcat ((char *) code[code_line], (const char *) str);
@@ -5649,7 +5649,7 @@ S2 parse_line (U1 *line)
 														return (3);
 													}
 
-													// set stpushb opcode
+													// set pushb opcode
 													strcpy ((char *) code[code_line], "pushb ");
 													sprintf ((char *) str, "%i", reg);
 													strcat ((char *) code[code_line], (const char *) str);
