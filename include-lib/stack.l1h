@@ -1,6 +1,6 @@
 >> stack.l1h
 >> use new stack operators, but set the normal commands
->> to avoid compatibilty trouble with older compilers
+>> to avoid compatibility trouble with older compilers
 #define b>| stpushb
 #define i>| stpushi
 #define d>| stpushd
