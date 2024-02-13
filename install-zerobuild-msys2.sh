@@ -44,7 +44,7 @@ else
 	echo "cloning and building it now..."
 	git clone https://github.com/koder77/zerobuild.git
 	cd zerobuild
-	./make-clang.sh
+	./make.sh
 	cp zerobuild ~/l1vm/bin/
 	cd ..
 fi
