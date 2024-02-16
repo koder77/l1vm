@@ -27,6 +27,7 @@ extern S8 linenum;
 
 // globals for local variable ending check only allow local and global (main) ending if set!
 extern U1 check_varname_end;
+extern U1 check_varname_end_local_only;
 extern U1 varname_end[MAXLINELEN];
 
 // protos
@@ -46,21 +47,24 @@ S2 check_varname_ending (U1 *varname, U1 *ending)
 	pos = searchstr (varname, ending, 0, 0, 0);
 	if (pos < 0)
 	{
-		// check for main ending
-	    ending_len = strlen_safe ("main", MAXLINELEN);
-
-		pos = searchstr (varname, (U1 *) "main", 0, 0, 0);
-		if (pos < 0)
+		if (check_varname_end_local_only == 0)
 		{
-			printf ("check_ending: no variable ending 'main' or '%s' found!\n", ending);
-			return (1);
-		}
+			// check for main ending
+			ending_len = strlen_safe ("main", MAXLINELEN);
 
-		// check if ending is on end
-		if (varname_len - ending_len != pos)
-		{
-			printf ("check_ending: no variable ending 'main' or '%s' found!\n", ending);
-			return (1);
+			pos = searchstr (varname, (U1 *) "main", 0, 0, 0);
+			if (pos < 0)
+			{
+				printf ("check_ending: no variable ending 'main' or '%s' found!\n", ending);
+				return (1);
+			}
+
+			// check if ending is on end
+			if (varname_len - ending_len != pos)
+			{
+				printf ("check_ending: no variable ending 'main' or '%s' found!\n", ending);
+				return (1);
+			}
 		}
 	}
 

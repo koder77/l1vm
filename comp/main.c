@@ -67,6 +67,10 @@ struct call_label call_label[MAXLABELS];
 
 // globals for local variable ending check only allow local and global (main) ending if set!
 U1 check_varname_end = 0;
+
+// globals for local variable ending check only allow local variable if set!
+U1 check_varname_end_local_only = 0;
+
 U1 varname_end[MAXLINELEN];
 
 U1 inline_asm = 0;		// set to one, if inline assembly is used
@@ -4783,6 +4787,21 @@ S2 parse_line (U1 *line)
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "variable-local-off") == 0)
 								{
 									check_varname_end = 0;
+									continue;
+								}
+
+								// set local variable ending check, to allow only access to local function variables or 'main' global variables
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "variable-local-only-on") == 0)
+								{
+									check_varname_end = 1;
+									check_varname_end_local_only = 1;
+									continue;
+								}
+
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "variable-local-only-off") == 0)
+								{
+									check_varname_end = 0;
+									check_varname_end_local_only = 0;
 									continue;
 								}
 

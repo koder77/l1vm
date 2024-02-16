@@ -70,7 +70,7 @@
 	(:loop jmp)
 (funcend)
 
-(variable-local-on)
+(variable-local-only-on)
 
 (circle object)
     #var ~ circle
@@ -217,6 +217,6 @@ Calculate the area of a circle.
 (funcend)
 (objectend)
 
-(variable-local-off)
+(variable-local-only-off)
 
 #include <mpfr-lib-auto.l1h>
