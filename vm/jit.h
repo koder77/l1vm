@@ -21,7 +21,8 @@
 //
 //
 
-// set to 1 to build with JIT ompiler
+// set to 1 to enable JIT-compiler build
 #define JIT_COMPILER           0
+
 #define MAXJUMPLEN             40960
 #define MAXJITCODE             256
