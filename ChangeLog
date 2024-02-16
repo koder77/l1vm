@@ -1,3 +1,8 @@
+L1VM (3.0.2)
+	BUGFIXES in modules and other parts.
+
+-- Stefan Pietzonke <jay-t@gmx.net> Fri 16 Feb 2024 17:33  +0100
+
 L1VM (3.0.1)
 	NEW: stack operators short symbols:
 	new:		standard:

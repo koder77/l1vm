@@ -526,8 +526,10 @@ U1 *fann_train_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
     output_f = calloc (outputs_num, sizeof (F8));
-	if (input_f == NULL)
+	if (output_f == NULL)
 	{
+        free (input_f);
+
 		printf ("ERROR: fann_train_ann: out of memory!\n");
 		return (NULL);
 	}
