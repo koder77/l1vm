@@ -533,10 +533,6 @@
 			(:save_pattern_end jmp)
 		(endif)
 		((x~ one~ +) x~ =)
-
-		print_s (x_str)
-		print_i (x~)
-		print_n
 	(next)
 	(zero~ stpushi)
 	(:save_pattern_end)
