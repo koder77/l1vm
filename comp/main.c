@@ -4555,6 +4555,11 @@ S2 parse_line (U1 *line)
 								// set top for loop label
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "for-loop") == 0)
 								{
+									if (nested_code == 1)
+									{
+										init_registers ();
+									}
+
 									for_pos = get_for_pos ();
 									if (for_pos == -1)
 									{
