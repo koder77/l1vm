@@ -1,7 +1,7 @@
 // square-func.l1com
 //
 // calculate square of number
-// show show to check the variable type on function call stack
+// show how to check the variable type on function call stack
 
 #include <intr.l1h>
 #include <vars.l1h>
