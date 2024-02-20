@@ -19,7 +19,7 @@
     (set int64 1 st_type~ 0)
     (set int64 1 f~ 0)
 
-    // call square functions with numbers a, b and c:
+    // call square function with numbers a, b and c:
     (a~ :square !)
     (as~ stpopd)
     print_d (as~)
