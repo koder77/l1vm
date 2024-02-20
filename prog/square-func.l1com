@@ -20,7 +20,6 @@
     (set int64 1 f~ 0)
 
     // call square functions with numbers a, b and c:
-    //(reset-reg)
     (a~ :square !)
     (as~ stpopd)
     print_d (as~)
