@@ -5,7 +5,6 @@ export PATH="$HOME/l1vm/bin:$PATH"
 export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
 
 pacman -S mingw-w64-x86_64-clang --noconfirm
-pacman -S git --noconfirm
 pacman -S cmake --noconfirm
 
 pacman -S mingw-w64-x86_64-SDL2 --noconfirm
@@ -45,7 +44,7 @@ else
 	git clone https://github.com/koder77/zerobuild.git
 	cd zerobuild
 	./make.sh
-	cp zerobuild ~/l1vm/bin/
+	cp zerobuild.exe ~/l1vm/bin/zerobuild
 	cd ..
 fi
 
@@ -83,10 +82,10 @@ else
 fi
 cp l1vm l1vm-nojit
 cd ..
-cp assemb/l1asm ~/l1vm/bin
-cp comp/l1com ~/l1v/bin
-cp prepro/l1pre ~/l1vm/bin
-cp vm/l1v* ~/l1vm/bin
+cp assemb/l1asm.exe ~/l1vm/bin/l1asm
+cp comp/l1com.exe ~/l1vm/bin/l1com
+cp prepro/l1pre.exe ~/l1vm/bin/l1pre
+cp vm/l1v* ~/l1vm/bin/l1vm
 echo "VM binaries installed into ~/l1vm/bin"
 
 cd modules
