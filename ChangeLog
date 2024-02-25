@@ -3,7 +3,7 @@ L1VM (3.0.2)
 	NEW: "variable-local-only-on" and "variable-local-only-off" compiler flags to allow only local variables and no main global ones.
 	NEW: disassembler build script update. MSYS2 installation script update.
 
--- Stefan Pietzonke <jay-t@gmx.net> Fri 23 Feb 2024 18:52  +0100
+-- Stefan Pietzonke <info@midnight-coding.de> Fri 23 Feb 2024 18:52  +0100
 
 L1VM (3.0.1)
 	NEW: stack operators short symbols:
