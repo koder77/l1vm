@@ -48,6 +48,8 @@ CodeHolder jcode;                   	// Holds code and relocation information.
 // This is type of function we will generate
 typedef void (*Func)(void);
 
+#define DEBUG 1
+
 #define MAXREGJIT_INT 4
 #define MAXREGJIT_DOUBLE 16
 
@@ -640,7 +642,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
     if (run_jit)
     {
-		a.mov (R8, imm (0));   // zero
+		a.mov (R8, imm (0));   // R8 zero
         a.ret (R8);		// return to main program code
 
         // create JIT code function
