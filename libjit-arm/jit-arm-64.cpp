@@ -149,13 +149,30 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 	S8 jump_label ALIGN = 0;
 	S8 jump_target ALIGN = 0;
  
-  	jcode.init(rt.environment());      // Initialize code to match the JIT environment.
- 
+  	jcode.init(rt.environment());       // Initialize code to match the JIT environment.
+	FileLogger logger(stdout);
   	Assembler a(&jcode);           // Create and attach arm::Assembler to code.
 
+	a.setLogger(&logger);					// DEBUG: switch logger on!
+
     // X86Gp RSIback;
-    a.mov (RSI, imm ((intptr_t)(void *) regi)); /* long registers base: rsi */
-	a.mov (RDI, imm ((intptr_t)(void *) regd)); /* double registers base: rdi */
+    //a.mov (RSI, imm ((intptr_t)(void *) regi)); /* long registers base: rsi */
+	// a.mov (RDI, imm ((intptr_t)(void *) regd)); /* double registers base: rdi */
+
+	//a.str (R10, ptr (RSI, OFFSET(r3)));
+    // a.mov (R8, imm (0));
+	// a.add (R8, R8, imm ((intptr_t)(void *) regi));
+	//a.str (RSI, ptr (R8, OFFSET(0)));
+
+    //a.mov (R8, imm ((intptr_t)(void *) regi));
+    //a.str (RSI, ptr (R8, OFFSET(0)));
+    //
+    
+    printf ("DEBUG: regi address: %lli\n", regi);
+    
+	a.mov (RSI, imm ((intptr_t)(void *) regi));
+    
+    //a.ldr (RSI, ptr (R8));
 
 	if (JIT_code_ind < 0 || JIT_code_ind >= MAXJITCODE)
 	{
@@ -623,7 +640,8 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
     if (run_jit)
     {
-        a.ret (x0);		// return to main program code
+		a.mov (R8, imm (0));   // zero
+        a.ret (R8);		// return to main program code
 
         // create JIT code function
 
