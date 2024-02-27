@@ -1,3 +1,13 @@
+L1VM (3.0.3)
+	ARM JIT compiler: first steps are done!
+	Should work:
+	addi, subi, muli, divi
+	addd, subd, muld, divd
+
+	There is still lot work to do.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Tue 27 Feb 2024 19:48  +010
+
 L1VM (3.0.2)
 	BUGFIXES in modules and other parts.
 	NEW: "variable-local-only-on" and "variable-local-only-off" compiler flags to allow only local variables and no main global ones.

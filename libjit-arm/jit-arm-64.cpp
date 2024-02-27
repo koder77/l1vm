@@ -21,15 +21,12 @@
 // Generates code for ARM 64 bit.
 
 // work in progress!!!
-// For now just:
+// This should work:
 // addi, subi, muli, divi
 // addd, subd, muld, divd
 //
 
-// THIS CODE DOESN'T WORK! IT CRASHES!!!
-// If you know how to fix this then contact me please.
-// So we can work together!
-
+// I will add more opcodes later!
 
 #include <asmjit/a64.h>
 #include <asmjit/core.h>
@@ -157,24 +154,9 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
 	a.setLogger(&logger);					// DEBUG: switch logger on!
 
-    // X86Gp RSIback;
-    //a.mov (RSI, imm ((intptr_t)(void *) regi)); /* long registers base: rsi */
-	// a.mov (RDI, imm ((intptr_t)(void *) regd)); /* double registers base: rdi */
-
-	//a.str (R10, ptr (RSI, OFFSET(r3)));
-    // a.mov (R8, imm (0));
-	// a.add (R8, R8, imm ((intptr_t)(void *) regi));
-	//a.str (RSI, ptr (R8, OFFSET(0)));
-
-    //a.mov (R8, imm ((intptr_t)(void *) regi));
-    //a.str (RSI, ptr (R8, OFFSET(0)));
-    //
-    
-    printf ("DEBUG: regi address: %lli\n", regi);
-    
+	// set integer and double register bases
 	a.mov (RSI, imm ((intptr_t)(void *) regi));
-    
-    //a.ldr (RSI, ptr (R8));
+    a.mov (RDI, imm ((intptr_t)(void *) regd));
 
 	if (JIT_code_ind < 0 || JIT_code_ind >= MAXJITCODE)
 	{
@@ -386,10 +368,6 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 	            a.ldr (R8, ptr (RSI, OFFSET(r1)));
 	            a.ldr (R9, ptr (RSI, OFFSET(r2)));
 
-				/// x86:
-				// a.mov (R8, ptr (RSI, OFFSET(r1))); /* r1v */
-				// a.mov (R9, asmjit::arm::qword_ptr (RSI, OFFSET(r2)));
-
 				switch (code[i])
 				{
 					case ADDI:
@@ -410,9 +388,6 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				}
 
 				a.str (R10, ptr (RSI, OFFSET(r3)));
-				
-				// x86:
-				// a.mov (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), R8);
 				run_jit = 1;
 				break;
 
@@ -449,15 +424,11 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 					}
 				#endif
 
-				// move to XMM registers
+				/*
 				r1_d = get_double_reg (r1);
 				if (r1_d == -1)
 				{
 					a.ldr (d0, ptr (RDI, OFFSET(r1)));
-
-					// x86:
-					//a.movsd (asmjit::x86::xmm0, asmjit::x86::qword_ptr (RDI, OFFSET(r1)));
-					// set register r1 to CPU reg 0
 					set_double_reg (0, r1);
 				}
 
@@ -465,170 +436,37 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				if (r2_d == -1)
 				{
 					a.ldr (d1, ptr (RDI, OFFSET(r2)));
-
-					// x86:
-					// a.movsd (asmjit::x86::xmm1, asmjit::x86::qword_ptr (RDI, OFFSET(r2)));
-					// set register r2 to CPU reg 1
-					// set_double_reg (1, r2);
-
-					r3_d = get_free_double_reg (r2);
-					if (r3_d != -1)
-					{
-						switch (r3_d)
-						{
-							case 2:
-								a.fmov (d2, d1);
-								break;
-
-							case 3:
-								a.fmov (d3, d1);
-								break;
-
-							case 4:
-								a.fmov (d4, d1);
-								break;
-
-							case 5:
-								a.fmov (d5, d1);
-								break;
-
-							case 6:
-								a.fmov (d6, d1);
-								break;
-
-							case 7:
-								a.fmov (d7, d1);
-								break;
-
-							case 8:
-								a.fmov (d8, d1);
-								break;
-
-							case 9:
-								a.fmov (d9, d1);
-								break;
-
-							case 10:
-								a.fmov (d10, d1);
-								break;
-
-							case 11:
-								a.fmov (d11, d1);
-								break;
-
-							case 12:
-								a.fmov (d12, d1);
-								break;
-
-							case 13:
-								a.fmov (d13, d1);
-								break;
-
-							case 14:
-							    a.fmov (d14, d1);
-								break;
-
-							case 15:
-								a.fmov (d15, d1);
-								break;
-						}
-
-						set_double_reg (r3_d, r2);
-					}
-					else
-					{
-						// store r2 into CPU reg 15
-						free_double_reg (15);
-						a.fmov (d15, d1);
-						set_double_reg (15, r2);
-					}
-				}
-				else
-				{
-					switch (r2_d)
-					{
-						case 2:
-							a.fmov (d1, d2);
-							break;
-
-						case 3:
-							a.fmov (d1, d3);
-							break;
-
-						case 4:
-							a.fmov (d1, d4);
-							break;
-
-						case 5:
-							a.fmov (d1, d5);
-							break;
-
-						case 6:
-							a.fmov (d1, d6);
-							break;
-
-						case 7:
-							a.fmov (d1, d7);
-							break;
-
-						case 8:
-							a.fmov (d1, d8);
-							break;
-
-						case 9:
-							a.fmov (d1, d9);
-							break;
-
-						case 10:
-							a.fmov (d1, d10);
-							break;
-
-						case 11:
-							a.fmov (d1, d11);
-							break;
-
-						case 12:
-							a.fmov (d1, d12);
-							break;
-
-						case 13:
-							a.fmov (d1, d13);
-							break;
-
-						case 14:
-							a.fmov (d1, d14);
-							break;
-
-						case 15:
-							a.fmov (d1, d15);
-							break;
-					}
-				}
-
+                }
+                */
+                
+                a.ldr (d0, ptr (RDI, OFFSET(r1)));
+                a.ldr (d1, ptr (RDI, OFFSET(r2)));
+                
 				switch (code[i])
 				{
 					case ADDD:
-						a.fadd (d0, d0, d1);
+						a.fadd (d2, d0, d1);
 						break;
 
 					case SUBD:
-						a.fsub (d0, d0, d1);
+						a.fsub (d2, d0, d1);
 						break;
 
 					case MULD:
-						a.fmul (d0, d0, d1);
+						a.fmul (d2, d0, d1);
 						break;
 
 					case DIVD:
-						a.fdiv (d0, d0, d1);
+						a.fdiv (d2, d0, d1);
 						break;
 				}
 
-				a.str (d0, ptr (RDI, OFFSET(r3)));
+				a.str (d2, ptr (RDI, OFFSET(r3)));
+				
+				/* free_double_reg (r1);
+				*  free_double_reg (r2);
+				*/
 
-				// x86:
-				// move to destination register
-				// a.movsd (asmjit::x86::qword_ptr (RDI, OFFSET(r3)), asmjit::x86::xmm0);
 				run_jit = 1;
 				break;
 
@@ -642,8 +480,8 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
     if (run_jit)
     {
-		a.mov (R8, imm (0));   // R8 zero
-        a.ret (R8);		// return to main program code
+		// a.mov (R8, imm (0));   // R8 zero
+        a.ret (x30);		// return to main program code
 
         // create JIT code function
 
