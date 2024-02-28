@@ -24,7 +24,7 @@
 // This should work:
 // addi, subi, muli, divi
 // addd, subd, muld, divd
-//
+// bori, bxori
 
 // I will add more opcodes later!
 
@@ -469,6 +469,74 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
 				run_jit = 1;
 				break;
+
+			// LOGICAL OPCODES =================================================
+			 /*case ANDI:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("ANDI\n\n");
+				#endif
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+			 */
+
+			 /* case BANDI:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("BANDI\n\n");
+				#endif
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				a.ldr (R8, ptr (RSI, OFFSET(r1)));
+	            a.ldr (R9, ptr (RSI, OFFSET(r2)));
+
+				a.and (R10, R8, R9);
+
+				a.str (R10, ptr (RSI, OFFSET(r3)));
+				run_jit = 1;
+				break;
+			 */
+
+			case BORI:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("BORI\n\n");
+				#endif
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				a.ldr (R8, ptr (RSI, OFFSET(r1)));
+	            a.ldr (R9, ptr (RSI, OFFSET(r2)));
+
+				a.orr (R10, R8, R9);
+
+				a.str (R10, ptr (RSI, OFFSET(r3)));
+				run_jit = 1;
+				break;
+
+			case BXORI:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("BXORI\n\n");
+				#endif
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				a.ldr (R8, ptr (RSI, OFFSET(r1)));
+	            a.ldr (R9, ptr (RSI, OFFSET(r2)));
+
+				a.eor (R10, R8, R9);
+
+				a.str (R10, ptr (RSI, OFFSET(r3)));
+				run_jit = 1;
+				break;
+
+
 
 			// DEFAULT: output ERROR message if oopcode not found! =====================
 			default:
