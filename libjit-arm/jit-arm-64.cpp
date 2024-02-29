@@ -25,8 +25,10 @@
 // addi, subi, muli, divi
 // addd, subd, muld, divd
 // bori, bxori
-
-// I will add more opcodes later!
+// jmp, jmpi
+// eqi, neqi, gri, lsi, greqi, lseqi
+// eqd, neqd, grd, lsd, greqd, lseqd
+//
 
 #include <asmjit/a64.h>
 #include <asmjit/core.h>
@@ -45,7 +47,7 @@ CodeHolder jcode;                   	// Holds code and relocation information.
 // This is type of function we will generate
 typedef void (*Func)(void);
 
-#define DEBUG 1
+// #define DEBUG 1
 
 #define MAXREGJIT_INT 4
 #define MAXREGJIT_DOUBLE 16
@@ -149,10 +151,10 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 	S8 jump_target ALIGN = 0;
  
   	jcode.init(rt.environment());       // Initialize code to match the JIT environment.
-	FileLogger logger(stdout);
+	// FileLogger logger(stdout);
   	Assembler a(&jcode);           // Create and attach arm::Assembler to code.
 
-	a.setLogger(&logger);					// DEBUG: switch logger on!
+	// a.setLogger(&logger);					// DEBUG: switch logger on!
 
 	// set integer and double register bases
 	a.mov (RSI, imm ((intptr_t)(void *) regi));
@@ -536,7 +538,1063 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				run_jit = 1;
 				break;
 
+            // COMPARE OPCODES INT =====================================================
+			case EQI:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("EQI\n\n");
+				#endif
 
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				a.ldr (R8, ptr (RSI, OFFSET(r1)));
+	            a.ldr (R9, ptr (RSI, OFFSET(r2)));
+
+				// set label for JUMP equal
+				if (JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b_eq (JIT_label[JIT_label_ind].lab);		// jump equal
+
+				// code for not equal than
+				a.mov (R8, Imm (0));
+				a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				// set label for jump equal
+
+				// set label for JUMP END
+				if (label_created == 0 && JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b (JIT_label[JIT_label_ind].lab);
+
+				a.bind (JIT_label[JIT_label_ind - 1].lab);	// set label for jmp equal
+
+				// code for equal than
+				a.mov (R8, Imm (1));
+				a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				a.bind (JIT_label[JIT_label_ind].lab);		// set label for equal jump
+
+				run_jit = 1;
+				break;
+
+			case NEQI:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("NEQI\n\n");
+				#endif
+
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				a.ldr (R8, ptr (RSI, OFFSET(r1)));
+	            a.ldr (R9, ptr (RSI, OFFSET(r2)));
+
+				a.cmp (R8, R9);		// compare R8, R9
+
+				// set label for JUMP equal
+				if (JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b (JIT_label[JIT_label_ind].lab);		// jump equal
+
+				a.mov (R8, Imm (0));
+				a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				// set label for jump equal
+
+				// set label for JUMP END
+				if (label_created == 0 && JIT_label_ind < MAXJUMPLEN)
+				{
+						JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b (JIT_label[JIT_label_ind].lab);
+
+				a.bind (JIT_label[JIT_label_ind - 1].lab);	// set label for jmp equal
+
+				a.mov (R8, Imm (1));
+				a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				a.bind (JIT_label[JIT_label_ind].lab);		// set label for equal jump
+
+				run_jit = 1;
+				break;
+
+			case GRI:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("GRI\n\n");
+				#endif
+
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				a.ldr (R8, ptr (RSI, OFFSET(r1)));
+	            a.ldr (R9, ptr (RSI, OFFSET(r2)));
+
+				a.cmp (R8, R9);		// compare R8, R9
+
+				// set label for JUMP equal
+				if (JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b_gt (JIT_label[JIT_label_ind].lab);		// jump equal
+
+				// code for not equal than
+				a.mov (R8, Imm (0));
+				a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				// set label for jump equal
+
+				// set label for JUMP END
+				if (label_created == 0 && JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b (JIT_label[JIT_label_ind].lab);
+
+				a.bind (JIT_label[JIT_label_ind - 1].lab);	// set label for jmp equal
+
+				// code for equal than
+				a.mov (R8, Imm (1));
+				a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				a.bind (JIT_label[JIT_label_ind].lab);		// set label for equal jump
+
+				run_jit = 1;
+				break;
+
+			case LSI:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("LSI\n\n");
+				#endif
+
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				a.ldr (R8, ptr (RSI, OFFSET(r1)));
+	            a.ldr (R9, ptr (RSI, OFFSET(r2)));
+
+				a.cmp (R8, R9);		// compare R8, R9
+
+				// set label for JUMP equal
+				if (JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b_le (JIT_label[JIT_label_ind].lab);		// jump equal
+
+				// code for not equal than
+				a.mov (R8, Imm (0));
+				a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				// set label for jump equal
+
+				// set label for JUMP END
+				if (label_created == 0 && JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b (JIT_label[JIT_label_ind].lab);
+
+				a.bind (JIT_label[JIT_label_ind - 1].lab);	// set label for jmp equal
+
+				// code for equal than
+				a.mov (R8, Imm (1));
+				a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				a.bind (JIT_label[JIT_label_ind].lab);		// set label for equal jump
+
+				run_jit = 1;
+				break;
+
+			case GREQI:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("GREQI\n\n");
+				#endif
+
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				a.ldr (R8, ptr (RSI, OFFSET(r1)));
+	            a.ldr (R9, ptr (RSI, OFFSET(r2)));
+
+				a.cmp (R8, R9);		// compare R8, R9
+
+				// set label for JUMP equal
+				if (JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b_ge (JIT_label[JIT_label_ind].lab);		// jump equal
+
+				// code for not equal than
+				a.mov (R8, Imm (0));
+				a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				// set label for jump equal
+
+				// set label for JUMP END
+				if (label_created == 0 && JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b (JIT_label[JIT_label_ind].lab);
+
+				a.bind (JIT_label[JIT_label_ind - 1].lab);	// set label for jmp equal
+
+				// code for equal than
+				a.mov (R8, Imm (1));
+				a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				a.bind (JIT_label[JIT_label_ind].lab);		// set label for equal jump
+
+				run_jit = 1;
+				break;
+
+			case LSEQI:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("LSEQI\n\n");
+				#endif
+
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				a.ldr (R8, ptr (RSI, OFFSET(r1)));
+	            a.ldr (R9, ptr (RSI, OFFSET(r2)));
+
+				a.cmp (R8, R9);		// compare R8, R9
+
+				// set label for JUMP equal
+				if (JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b_le (JIT_label[JIT_label_ind].lab);		// jump equal
+
+				// code for not equal than
+				a.mov (R8, Imm (0));
+				a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				// set label for jump equal
+
+				// set label for JUMP END
+				if (label_created == 0 && JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b (JIT_label[JIT_label_ind].lab);
+
+				a.bind (JIT_label[JIT_label_ind - 1].lab);	// set label for jmp equal
+
+				// code for equal than
+				a.mov (R8, Imm (1));
+				a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				a.bind (JIT_label[JIT_label_ind].lab);		// set label for equal jump
+
+				run_jit = 1;
+				break;
+
+            // COMPARE OPCODES DOUBLE ==================================================
+			case EQD:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("EQD\n\n");
+				#endif
+
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				a.ldr (d0, ptr (RDI, OFFSET(r1)));
+                a.ldr (d1, ptr (RDI, OFFSET(r2)));
+
+				a.fcmp (d0, d1);
+
+				// set label for JUMP equal
+				if (JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b_eq (JIT_label[JIT_label_ind].lab);		// jump equal
+
+				// code for not equal than
+				a.mov (R8, Imm (0));
+                a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				// set label for jump equal
+
+				// set label for JUMP END
+				if (label_created == 0 && JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b (JIT_label[JIT_label_ind].lab);
+
+				a.bind (JIT_label[JIT_label_ind - 1].lab);	// set label for jmp equal
+
+				// code for equal than
+				a.mov (R8, Imm (1));
+                a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				a.bind (JIT_label[JIT_label_ind].lab);		// set label for equal jump
+
+				run_jit = 1;
+				break;
+
+			case NEQD:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("EQD\n\n");
+				#endif
+
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				a.ldr (d0, ptr (RDI, OFFSET(r1)));
+                a.ldr (d1, ptr (RDI, OFFSET(r2)));
+
+				a.fcmp (d0, d1);
+
+				// set label for JUMP equal
+				if (JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b_eq (JIT_label[JIT_label_ind].lab);		// jump equal
+
+				// code for not equal than
+				a.mov (R8, Imm (1));
+                a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				// set label for jump equal
+
+				// set label for JUMP END
+				if (label_created == 0 && JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b (JIT_label[JIT_label_ind].lab);
+
+				a.bind (JIT_label[JIT_label_ind - 1].lab);	// set label for jmp equal
+
+				// code for equal than
+				a.mov (R8, Imm (0));
+                a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				a.bind (JIT_label[JIT_label_ind].lab);		// set label for equal jump
+
+				run_jit = 1;
+				break;
+
+			case GRD:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("EQD\n\n");
+				#endif
+
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				a.ldr (d0, ptr (RDI, OFFSET(r1)));
+                a.ldr (d1, ptr (RDI, OFFSET(r2)));
+
+				a.fcmp (d0, d1);
+
+				// set label for JUMP equal
+				if (JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b_ge (JIT_label[JIT_label_ind].lab);		// jump equal
+
+				// code for not equal than
+				a.mov (R8, Imm (0));
+                a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				// set label for jump equal
+
+				// set label for JUMP END
+				if (label_created == 0 && JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b (JIT_label[JIT_label_ind].lab);
+
+				a.bind (JIT_label[JIT_label_ind - 1].lab);	// set label for jmp equal
+
+				// code for equal than
+				a.mov (R8, Imm (1));
+                a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				a.bind (JIT_label[JIT_label_ind].lab);		// set label for equal jump
+
+				run_jit = 1;
+				break;
+
+			case LSD:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("EQD\n\n");
+				#endif
+
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				a.ldr (d0, ptr (RDI, OFFSET(r1)));
+                a.ldr (d1, ptr (RDI, OFFSET(r2)));
+
+				a.fcmp (d0, d1);
+
+				// set label for JUMP equal
+				if (JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b_ls (JIT_label[JIT_label_ind].lab);		// jump equal
+
+				// code for not equal than
+				a.mov (R8, Imm (0));
+                a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				// set label for jump equal
+
+				// set label for JUMP END
+				if (label_created == 0 && JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b (JIT_label[JIT_label_ind].lab);
+
+				a.bind (JIT_label[JIT_label_ind - 1].lab);	// set label for jmp equal
+
+				// code for equal than
+				a.mov (R8, Imm (1));
+				a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				a.bind (JIT_label[JIT_label_ind].lab);		// set label for equal jump
+
+				run_jit = 1;
+				break;
+
+			case GREQD:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("EQD\n\n");
+				#endif
+
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				a.ldr (d0, ptr (RDI, OFFSET(r1)));
+                a.ldr (d1, ptr (RDI, OFFSET(r2)));
+
+				a.fcmp (d0, d1);
+
+				// set label for JUMP equal
+				if (JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b_ge (JIT_label[JIT_label_ind].lab);		// jump equal
+
+				// code for not equal than
+				a.mov (R8, Imm (0));
+				a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				// set label for jump equal
+
+				// set label for JUMP END
+				if (label_created == 0 && JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b (JIT_label[JIT_label_ind].lab);
+
+				a.bind (JIT_label[JIT_label_ind - 1].lab);	// set label for jmp equal
+
+				// code for equal than
+				a.mov (R8, Imm (1));
+				a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				a.bind (JIT_label[JIT_label_ind].lab);		// set label for equal jump
+
+				run_jit = 1;
+				break;
+
+			case LSEQD:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("EQD\n\n");
+				#endif
+
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				a.ldr (d0, ptr (RDI, OFFSET(r1)));
+                a.ldr (d1, ptr (RDI, OFFSET(r2)));
+
+				a.fcmp (d0, d1);
+
+				// set label for JUMP equal
+				if (JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b_le (JIT_label[JIT_label_ind].lab);		// jump equal
+
+				// code for not equal than
+				a.mov (R8, Imm (0));
+				a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				// set label for jump equal
+
+				// set label for JUMP END
+				if (label_created == 0 && JIT_label_ind < MAXJUMPLEN)
+				{
+					JIT_label_ind++;
+				}
+				else
+				{
+					if (JIT_label_ind == MAXJUMPLEN)
+					{
+						printf ("JIT compiler: error label list full!\n");
+						return (1);
+					}
+				}
+
+				JIT_label[JIT_label_ind].lab = a.newLabel ();
+				JIT_label[JIT_label_ind].pos = jumpoffs[j];
+				JIT_label[JIT_label_ind].if_ = -1;
+				JIT_label[JIT_label_ind].endif = -1;
+
+				a.b (JIT_label[JIT_label_ind].lab);
+
+				a.bind (JIT_label[JIT_label_ind - 1].lab);	// set label for jmp equal
+
+				// code for equal than
+				//
+				a.mov (R8, Imm (1));
+				a.str (R8, ptr (RSI, OFFSET(r3)));
+
+				a.bind (JIT_label[JIT_label_ind].lab);		// set label for equal jump
+
+				run_jit = 1;
+				break;
+
+
+            // JUMP OPCODES ============================================================
+			case JMP:
+				#if DEBUG
+					printf ("JMP\n\n");
+				#endif
+
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				label_created = 0;
+
+				// printf ("DEBUG: JIT: JMP...\n");
+
+				jump_target = jumpoffs[i];
+
+				for (jump_l = 0; jump_l < MAXJUMPLEN; jump_l++)
+				{
+					if (JIT_label[jump_l].pos == jump_target)
+					{
+						// printf ("DEBUG: found jump_target\n");
+						label_created = 1;
+						jump_label = jump_l;
+						break;
+					}
+				}
+
+				if (label_created == 1)
+				{
+					// printf ("DEBUG: jit: jmpi: jump_label: %lli\n, epos: %lli\n", jump_label, i);
+					a.b (JIT_label[jump_label].lab);
+					goto jump_end;
+				}
+				else
+				{
+					if (JIT_label_ind < MAXJUMPLEN)
+					{
+						JIT_label_ind++;
+					}
+					else
+					{
+						if (JIT_label_ind == MAXJUMPLEN)
+						{
+							printf ("JIT compiler: error label list full!\n");
+							return (1);
+						}
+					}
+
+					// set jump  pos to JIT_label
+					JIT_label[JIT_label_ind].lab = a.newLabel ();
+					JIT_label[JIT_label_ind].pos = jump_target;
+					JIT_label[JIT_label_ind].if_ = -1;
+					JIT_label[JIT_label_ind].endif = -1;
+
+					a.b (JIT_label[JIT_label_ind].lab);
+					goto jump_end;
+				}
+				if (jump_ok == 1)
+				{
+					goto jump_end;
+				}
+
+				jump_end:
+				run_jit = 1;
+				break;
+
+			case JMPI:
+				// DEBUG: OK: prog/jit-test-loop.l1com
+				#if DEBUG
+					printf ("JMPI\n\n");
+				#endif
+
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				a.ldr (R8, ptr (RSI, OFFSET(r1)));
+	            a.mov (R9, Imm (1));
+
+				a.cmp (R8, R9);		// compare R8, R9
+
+				label_created = 0;
+
+				// printf ("DEBUG: JIT: JMPI...\n");
+
+				jump_target = jumpoffs[i];
+
+				for (jump_l = 0; jump_l < MAXJUMPLEN; jump_l++)
+				{
+					if (JIT_label[jump_l].pos == jump_target)
+					{
+						// printf ("DEBUG: found jump_target\n");
+						label_created = 1;
+						jump_label = jump_l;
+						break;
+					}
+				}
+
+				if (label_created == 1)
+				{
+					// printf ("DEBUG: jit: jmpi: jump_label: %lli\n, epos: %lli\n", jump_label, i);
+					a.b_eq (JIT_label[jump_label].lab);
+					goto jumpi_end;
+				}
+				else
+				{
+					if (JIT_label_ind < MAXJUMPLEN)
+					{
+						JIT_label_ind++;
+					}
+					else
+					{
+						if (JIT_label_ind == MAXJUMPLEN)
+						{
+							printf ("JIT compiler: error label list full!\n");
+							return (1);
+						}
+					}
+
+					// set jump  pos to JIT_label
+					JIT_label[JIT_label_ind].lab = a.newLabel ();
+					JIT_label[JIT_label_ind].pos = jump_target;
+					JIT_label[JIT_label_ind].if_ = -1;
+					JIT_label[JIT_label_ind].endif = -1;
+
+					a.b_eq (JIT_label[JIT_label_ind].lab);
+					goto jumpi_end;
+				}
+				if (jump_ok == 1)
+				{
+					goto jumpi_end;
+				}
+
+				jumpi_end:
+				run_jit = 1;
+				break;
+
+            // MOVI, MOVD ==============================================================
+			case MOVI:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("MOVI\n\n");
+				#endif
+
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+
+				a.ldr (R8, ptr (RSI, OFFSET(r1)));
+				a.mov (R9, R8);
+				a.str (R9, ptr (RSI, OFFSET(r2)));
+
+				run_jit = 1;
+				break;
+
+			case MOVD:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("MOVD\n\n");
+				#endif
+
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+
+				a.ldr (d0, ptr (RDI, OFFSET(r1)));
+				a.fmov (d1, d0);
+				a.str (d1, ptr (RDI, OFFSET(r2)));
+
+				run_jit = 1;
+				break;
 
 			// DEFAULT: output ERROR message if oopcode not found! =====================
 			default:

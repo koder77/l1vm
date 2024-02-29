@@ -1750,7 +1750,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				}
 				if (jump_ok == 1)
 				{
-					goto jumpi_end;
+					goto jump_end;
 				}
 
 				jump_end:
