@@ -24,7 +24,7 @@
 // This should work:
 // addi, subi, muli, divi
 // addd, subd, muld, divd
-// bori, bxori
+// bandi, bori, bxori
 // jmp, jmpi
 // eqi, neqi, gri, lsi, greqi, lseqi
 // eqd, neqd, grd, lsd, greqd, lseqd
@@ -473,17 +473,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				break;
 
 			// LOGICAL OPCODES =================================================
-			 /*case ANDI:
-				#if DEBUG
-				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
-				printf ("ANDI\n\n");
-				#endif
-				r1 = code[i + 1];
-				r2 = code[i + 2];
-				r3 = code[i + 3];
-			 */
-
-			 /* case BANDI:
+			 case BANDI:
 				#if DEBUG
 				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
 				printf ("BANDI\n\n");
@@ -495,12 +485,11 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				a.ldr (R8, ptr (RSI, OFFSET(r1)));
 	            a.ldr (R9, ptr (RSI, OFFSET(r2)));
 
-				a.and (R10, R8, R9);
+				a.ands (R10, R8, R9);
 
 				a.str (R10, ptr (RSI, OFFSET(r3)));
 				run_jit = 1;
 				break;
-			 */
 
 			case BORI:
 				#if DEBUG
@@ -574,7 +563,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				a.b_eq (JIT_label[JIT_label_ind].lab);		// jump equal
 
 				// code for not equal than
-				a.mov (R8, Imm (0));
+				a.mov (R8, Imm (1));
 				a.str (R8, ptr (RSI, OFFSET(r3)));
 
 				// set label for jump equal
@@ -603,7 +592,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				a.bind (JIT_label[JIT_label_ind - 1].lab);	// set label for jmp equal
 
 				// code for equal than
-				a.mov (R8, Imm (1));
+				a.mov (R8, Imm (0));
 				a.str (R8, ptr (RSI, OFFSET(r3)));
 
 				a.bind (JIT_label[JIT_label_ind].lab);		// set label for equal jump
