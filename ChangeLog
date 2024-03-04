@@ -2,12 +2,12 @@ L1VM (3.0.4)
 	Should work:
 	addi, subi, muli, divi
 	addd, subd, muld, divd
-	bori, bxori
+	bandi, bori, bxori
 	jmp, jmpi
 	eqi, neqi, gri, lsi, greqi, lseqi
 	eqd, neqd, grd, lsd, greqd, lseqd
 
--- Stefan Pietzonke <info@midnight-coding.de> Thu 29 Feb 2024 21:39  +010
+-- Stefan Pietzonke <info@midnight-coding.de> Mon 04 Mar 2024 16:52  +010
 
 L1VM (3.0.3)
 	ARM JIT compiler: first steps are done!
