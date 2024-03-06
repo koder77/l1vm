@@ -1,16 +1,19 @@
 // webserver-thread-local.l1com
 //
 // simple http webserver
-// demo opens on port 2000:
-// http://127.0.0.1:2000
+// example call:
+// l1vm prog/webserver-thread-local -args 127.0.0.1 2000
+// for loaclhost port 2000
 //
 // Use new thread for socket connection of client
 //
 #include <intr.l1h>
 #include <misc-macros.l1h>
+#include <math-const.l1h>
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 one 1)
+	(set int64 1 two 2)
 	(set int64 1 ret 0)
 	(set int64 1 maxsockets 10)
 	(set int64 1 f 0)
@@ -18,7 +21,6 @@
 	(set int64 1 portnum 2000)
 	(set int64 1 server_open 0)
 	(set int64 1 server_accept 0)
-	(set string s ip "127.0.0.1")
 	(set int64 1 ip_len 10)
 	(set string s filenamestr "")
 	(set string 256 buf "")
@@ -29,14 +31,31 @@
 	(set string s erroropenstr "error: can't open accept server socket!")
 	(set string s errorserverstr "error: can't open server socket!")
 	(set string 11 waiting "waiting...")
-	(set int64 1 request_len 0)
+    (set string s args_errstr "args: <ip> <port>")
 	(set int64 1 lab_run 0)
 	(set int64 1 cpu_number 0)
     (set int64 1 fcpus 0)
     (set int64 1 delay_sec 1000)
     (set int64 1 delay_thr 100)
     (set int64 1 thr_sync 0)
-	(zero maxsockets :net_init !)
+    (set string 256 arg_ipstr "")
+    (set string 256 arg_portstr "")
+    (set int64 1 argnum 0)
+    (set int64 1 args 2)
+    (zero :math_init !)
+
+    shell_args (argnum)
+    (((argnum args !=) f =) f if)
+	    print_s (args_errstr)
+        print_n
+		exit (one)
+    (endif)
+    // get cli args
+    get_shell_arg (zero, arg_ipstr)
+	get_shell_arg (one, arg_portstr)
+	(arg_portstr portnum :string_to_int !)
+
+	(one maxsockets :net_init !)
 	(ret stpopi)
 	(((ret zero !=) f =) f if)
 		// ERROR can't allocate memory
@@ -44,15 +63,15 @@
         print_n
 	    exit (one)
 	(endif)
-	(one :string_init !)
+	(two :string_init !)
 	(loadreg)
-	(ipaddr bufaddr :get_hostbyname !)
+	(arg_ipstr bufaddr :get_hostbyname !)
 	(ret stpopi)
 	((ret zero !=) f =)
 	(f :try_hostbyaddr jmpi)
 	(:open_socket jmp)
 	(:try_hostbyaddr)
-	(ipaddr bufaddr :get_hostbyaddr !)
+	(arg_ipstr :get_hostbyaddr !)
 	(ret stpopi)
 	((ret zero !=) f =)
 	(f :end jmpi)
@@ -234,5 +253,6 @@
 	data_global
 	threadexit (zero~)
 (funcend)
+#include <math-lib.l1h>
 #include <net-lib.l1h>
 #include <string.l1h>
