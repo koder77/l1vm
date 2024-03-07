@@ -1,0 +1,45 @@
+// hello-pure.l1com - Brackets
+//
+// This shows how "pure" functions with no global state or side effects can be defined.
+// You can only call other "pure" functions from a "pure" function!
+// Pure functions end with an uppercase "P" in the name.
+//
+#include <intr.l1h>
+#include <misc-macros.l1h>
+
+(main func)
+    (set int64 1 zero 0)
+    (set int64 1 one 1)
+    (set double 1 num 4.0)
+    (set double 1 ret 0.0)
+    (set int64 1 f 0)
+
+    (num :squareP !)
+    (ret stpopd)
+    print_d (ret)
+    print_n
+    (num :do_squareP !)
+    (ret stpopd)
+    print_d (ret)
+    print_n
+    exit (zero)
+(funcend)
+
+(variable-local-only-on)
+
+(squareP func)
+    #var ~ squareP
+    (set double 1 num~ 0.0)
+    (set double 1 ret~ 0.0)
+    (num~ stpopd)
+    {ret~ = num~ * num~}
+    (ret~ stpushd)
+(funcend)
+(do_squareP func)
+    #var ~ do_squareP
+    (set double 1 num~ 0.0)
+    (num~ stpopd)
+    (num~ :squareP !)
+    (num~ stpopd)
+    (num~ stpushd)
+(funcend)

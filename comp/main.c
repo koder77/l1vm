@@ -104,6 +104,10 @@ U1 object_name[MAXSTRLEN];
 // set immutable variables flag
 U1 var_immutable = 0;
 
+// set pure function flag
+// if set only pure functions with no side effects allowed to call!
+U1 pure_function = 0;
+
 void init_ast (void)
 {
 	S4 i, j;
@@ -174,6 +178,29 @@ S2 check_brackets_match (U1 *line)
 	else
 	{
 		return (0); 	// all ok
+	}
+}
+
+S2 check_pure_function (U1 *function_name)
+{
+	S2 slen;
+	S2 i;
+
+	slen = strlen_safe ((const char *) function_name, MAXLINELEN);
+	if (slen <= 2)
+	{
+		// no pure function possible name
+		return (1);
+	}
+
+	if (function_name[slen - 1] == 'P')
+	{
+		// got something like: foobarP -> function marked as pure
+		return (0);
+	}
+	{
+		// function not marked as pure
+		return (1);
 	}
 }
 
@@ -3022,6 +3049,17 @@ S2 parse_line (U1 *line)
 										// not main function, initialize the registers
 
 										init_registers ();
+
+										// check if pure function
+										if (check_pure_function (ast[level].expr[j][last_arg - 1]) == 0)
+										{
+											if (check_varname_end_local_only == 0)
+											{
+												printf ("error: line %lli: function marked as pure, but no (variable-local-only-on) flag set: '%s'\n", linenum, line);
+												return (1);
+											}
+											pure_function = 1;
+										}
 									}
 
 									if (search_label (ast[level].expr[j][last_arg - 1]) == 1)
@@ -3076,6 +3114,8 @@ S2 parse_line (U1 *line)
 								{
 									// end of a function
 
+									pure_function = 0; // reset flag!
+
 									code_line++;
 									if (code_line >= line_len)
 									{
@@ -3119,7 +3159,7 @@ S2 parse_line (U1 *line)
 										{
 											reg = get_regi (ast[level].expr[j][e]);
 											if (reg == -1)
-											{
+ 											{
 												// variable is not in register, load it
 												// create new scope
 												{
@@ -5163,6 +5203,15 @@ S2 parse_line (U1 *line)
 
 										printf ("error: line %lli: private object function called outside object!\n", linenum);
 										return (1);
+									}
+
+									if (pure_function == 1)
+									{
+										if (check_pure_function (ast[level].expr[j][last_arg - 1]) != 0)
+										{
+											printf ("error line %lli: called function is not marked as pure: '%s'\n", linenum, line);
+											return (1);
+										}
 									}
 
 									// first of all use save register code

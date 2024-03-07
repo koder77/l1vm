@@ -1,3 +1,24 @@
+L1VM (3.0.5)
+	NEW: functions with no side effects can be marked as "pure".
+	A pure function can only call other "pure" functions.
+	See prog/hello-pure.l1com.
+
+	Here is an example function:
+
+	(squareP func)
+	    #var ~ squareP
+	    (set double 1 num~ 0.0)
+	    (set double 1 ret~ 0.0)
+	    (num~ stpopd)
+	    {ret~ = num~ * num~}
+	    (ret~ stpushd)
+	(funcend)
+
+	This function depends only on the given argument number and returns the square of the number.
+	So it is "pure"!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Thu 07 Mar 2024 06:57  +010
+
 L1VM (3.0.4)
 	Should work:
 	addi, subi, muli, divi
