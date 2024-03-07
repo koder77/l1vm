@@ -8,19 +8,20 @@
 #include <misc-macros.l1h>
 
 (main func)
+    #var ~ main
     (set int64 1 zero 0)
-    (set int64 1 one 1)
-    (set double 1 num 4.0)
-    (set double 1 ret 0.0)
-    (set int64 1 f 0)
+    (set int64 1 one~ 1)
+    (set double 1 num~ 4.0)
+    (set double 1 ret~ 0.0)
+    (set int64 1 f~ 0)
 
-    (num :squareP !)
-    (ret stpopd)
-    print_d (ret)
+    (num~ :squareP !)
+    (ret~ stpopd)
+    print_d (ret~)
     print_n
-    (num :do_squareP !)
-    (ret stpopd)
-    print_d (ret)
+    (num~ :do_squareP !)
+    (ret~ stpopd)
+    print_d (ret~)
     print_n
     exit (zero)
 (funcend)
@@ -29,6 +30,7 @@
 
 (squareP func)
     #var ~ squareP
+
     (set double 1 num~ 0.0)
     (set double 1 ret~ 0.0)
     (num~ stpopd)
@@ -37,6 +39,7 @@
 (funcend)
 (do_squareP func)
     #var ~ do_squareP
+
     (set double 1 num~ 0.0)
     (num~ stpopd)
     (num~ :squareP !)
