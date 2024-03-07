@@ -24,7 +24,8 @@
     <item>variable-local-only-on</item>
     <item>variable-local-off</item>
     <item>variable-local-on</item>
-    </list>
+	<item>pure-off</item>
+	</list>
     <list name="keywords">
     <item>funcend</item>
     <item>func</item>

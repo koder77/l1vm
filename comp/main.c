@@ -108,6 +108,9 @@ U1 var_immutable = 0;
 // if set only pure functions with no side effects allowed to call!
 U1 pure_function = 0;
 
+// if set to 1: switch pure_function off
+U1 pure_function_override = 0;
+
 void init_ast (void)
 {
 	S4 i, j;
@@ -3068,7 +3071,10 @@ S2 parse_line (U1 *line)
 												printf ("error: line %lli: function marked as pure, but no (variable-local-only-on) flag set: '%s'\n", linenum, line);
 												return (1);
 											}
-											pure_function = 1;
+											if (pure_function_override == 0)
+											{
+												pure_function = 1;
+											}
 										}
 									}
 
@@ -3124,7 +3130,8 @@ S2 parse_line (U1 *line)
 								{
 									// end of a function
 
-									pure_function = 0; // reset flag!
+									pure_function = 0; // reset flags!
+									pure_function_override = 0;
 
 									code_line++;
 									if (code_line >= line_len)
@@ -4860,6 +4867,13 @@ S2 parse_line (U1 *line)
 									continue;
 								}
 
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "pure-off") == 0)
+								{
+									// set exception on pure function calls only!
+									pure_function_override = 1;
+									continue;
+								}
+
 								// pointer: store data address int int64 variable
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "pointer") == 0)
 								{
@@ -5215,7 +5229,7 @@ S2 parse_line (U1 *line)
 										return (1);
 									}
 
-									if (pure_function == 1)
+									if (pure_function == 1 && pure_function_override == 0)
 									{
 										if (check_pure_function (ast[level].expr[j][last_arg - 1]) != 0)
 										{
