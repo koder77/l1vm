@@ -185,6 +185,7 @@ S2 check_pure_function (U1 *function_name)
 {
 	S2 slen;
 	S2 i;
+	S2 obj_start_pos;
 
 	slen = strlen_safe ((const char *) function_name, MAXLINELEN);
 	if (slen <= 2)
@@ -198,10 +199,19 @@ S2 check_pure_function (U1 *function_name)
 		// got something like: foobarP -> function marked as pure
 		return (0);
 	}
+
+	obj_start_pos = searchstr (function_name, (U1 *) "->", 0, 0, TRUE);
+	if (obj_start_pos >= 2)
 	{
-		// function not marked as pure
-		return (1);
+	    if (function_name[obj_start_pos - 1] == 'P')
+		{
+			// got something like: fooP->bar -> object function marked as pure
+			return (0);
+		}
 	}
+
+	// function not marked as pure
+	return (1);
 }
 
 S2 get_ast (U1 *line, U1 *parse_cont)
