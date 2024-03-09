@@ -23,10 +23,10 @@
 	// print string
 	// for
 	(zero loop =)
-    for (loop, maxloop, <)
+    dofor (loop, maxloop, <)
 		print_lns (hello)
 		(zero loop_foo =)
-        for (loop_foo, maxloop, <)
+        dofor (loop_foo, maxloop, <)
 			print_lns (foo)
 			((loop_foo one +) loop_foo =)
 		(next)
