@@ -1,3 +1,8 @@
+L1VM (3.0.6)
+	AsmJit library si now included in the L1VM sources.
+	I did clean up the JIT-compilers directories.
+-- Stefan Pietzonke <info@midnight-coding.de> Tue 12 Mar 2024 17:27  +010
+
 L1VM (3.0.5)
 	NEW: functions with no side effects can be marked as "pure".
 	A pure function can only call other "pure" functions.
