@@ -41,7 +41,7 @@
 	(set int64 1 y_port 350)
 	(set int64 1 portlen 25)
 	(set int64 1 gadget_port 406)
-	(set string s port_nametstr "Port: ")
+	(Set string s port_nametstr "Port: ")
 	(set string 26 port_valuestr "/dev/ttyUSB0")
 	(set int64 1 x_flash 770)
 	(set int64 1 y_flash 350)

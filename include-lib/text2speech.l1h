@@ -1,0 +1,30 @@
+// text to speech
+//
+// needs "process-lib.l1h" and "string.l1h" included.
+// Espeak and the "mbrola" voice packages installed.
+//
+//
+(text2speech func)
+    #var ~ text2speech
+    (set int64 1 textstr~ 0)
+    (set int64 1 voicestr~ 0)
+    (set string 512 runstr~ "")
+    (set string s espeakstr~ "espeak -v")
+    (set string s spacestr~ " ")
+    (set string s quotestr~ "@@q")
+    (set int64 1 ret~ 0)
+    // get voice: "mb-de5" for example:
+    (voicestr~ stpopi)
+    // get text to speak:
+    (textstr~ stpopi)
+	// call system process
+    (runstr~ espeakstr~ :string_copy !)
+    (runstr~ voicestr~ :string_cat !)
+    (runstr~ spacestr~ :string_cat !)
+    (runstr~ quotestr~ :string_cat !)
+    (runstr~ textstr~ :string_cat !)
+    (runstr~ quotestr~ :string_cat !)
+	(runstr~ :run_shell !)
+	(ret~ stpopi)
+    (ret~ stpushi)
+(funcend)
