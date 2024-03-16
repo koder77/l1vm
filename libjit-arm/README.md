@@ -3,7 +3,7 @@ L1VM jit-library ARM AARCH64 README
 In this directory is the L1VM JIT-compiler library for ARM AARCH64.
 
 
-n the L1VM JIT-compiler version are the following opcodes included:
+In the L1VM JIT-compiler version are the following opcodes included:
 
 addi, subi, muli, divi <br>
 addd, subd, muld, divd <br>
