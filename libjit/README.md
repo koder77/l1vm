@@ -1,6 +1,6 @@
 L1VM jit-library README
 =======================
-In this directory is the L1VM JIT-compiler library.
+In this directory is the L1VM JIT-compiler library for X86-64.
 
 In the L1VM JIT-compiler version are the following opcodes included:
 
