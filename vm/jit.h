@@ -21,7 +21,7 @@
 //
 //
 
-// set to 1 to enable JIT-compler build
+// set to 1 to enable JIT-compi ler build
 #define JIT_COMPILER           0
 
 #define MAXJUMPLEN             40960
