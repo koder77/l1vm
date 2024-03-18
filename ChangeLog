@@ -1,4 +1,17 @@
 L1VM (3.0.6)
+	I did add a new interrupt to set strings as immutable:
+
+	(set string s worldstr " world!")
+
+	// set string as immutable:
+	str_immutable (worldstr2addr)
+
+	See "intr.l1h"!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Mon 18 Mar 2024 04:32  +010
+
+
+L1VM (3.0.6)
 	AsmJit library si now included in the L1VM sources.
 	I did clean up the JIT-compilers directories.
 -- Stefan Pietzonke <info@midnight-coding.de> Tue 12 Mar 2024 17:27  +010

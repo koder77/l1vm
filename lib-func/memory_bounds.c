@@ -82,6 +82,13 @@ S2 memory_bounds (S8 start, S8 offset_access)
 						}
 						return (0);
 						break;
+
+					case STRING_CONST:
+						// range already checked on top if
+					    // return ERROR on this access, as variable is marked as constant!
+					    printf ("memory_bounds: FATAL ERROR: string variable write access to constant, address: %lli, offset: %lli!\n", start, offset_access);
+						return (1);
+						break;
 				}
 			}
 		}
@@ -155,4 +162,33 @@ S2 pointer_type (S8 start)
 		}
 	}
 	return (0); // error pointer variable address not found!
+}
+
+// set string pointer as immutable
+S2 set_immutable_string (S8 string_pointer)
+{
+	S8 i ALIGN;
+
+	if (string_pointer < 0)
+	{
+		// access ERROR!
+		printf ("set_immutable_string: FATAL ERROR: address: %lli, below zero!\n", string_pointer);
+		return (1);
+	}
+
+	for (i = 0; i <= data_info_ind; i++)
+	{
+		if ((string_pointer >= data_info[i].offset) && (string_pointer <= data_info[i].end))
+		{
+			if (data_info[i].type == BYTE)
+			{
+				data_info[i].type = STRING_CONST;        // set string variable as constant
+	            return (0);
+			}
+		}
+	}
+
+	// error: variable type not string (byte)?
+	printf ("set_immutable_string: FATAL ERROR: address: %lli, not byte/string variable!\n", string_pointer);
+	return (1);
 }

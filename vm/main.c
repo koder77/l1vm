@@ -2357,6 +2357,20 @@ S2 run (void *arg)
 			eoffs = 5;
 			break;
 
+		case 34:
+			// set byte/string variable as immutable
+			arg2 = code[ep + 2]; // pointer to string var
+			if (set_immutable_string (regi[arg2]) != 0)
+			{
+				// ERROR: variable not string!
+				PRINT_EPOS();
+				free (jumpoffs);
+				loop_stop ();
+				pthread_exit ((void *) 1);
+			}
+			eoffs = 5;
+			break;
+
 		case 251:
 			// set overflow on double reg
 			arg2 = code[ep + 2];

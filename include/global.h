@@ -141,7 +141,7 @@
 
 // info strings:
 #define COPYRIGHT_STR " 2024 (C) 2017-2024 Stefan Pietzonke - software research"
-#define VM_VERSION_STR "3.0.6 "		// version number
+#define VM_VERSION_STR "3.0.7 "		// version number
 #define MOTTO_STR "The game has changed!"
 
 // no user defined definitions below this section! ============================
@@ -208,6 +208,7 @@ typedef double                  F8;     /* DOUBLE */
 #define STACK_UNSET			3
 
 #define STRING			13
+#define STRING_CONST    14
 
 // translate.h:
 #define INTEGER			14

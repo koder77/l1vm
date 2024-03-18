@@ -89,5 +89,6 @@ S2 memory_bounds (S8 start, S8 offset_access);
 S2 memory_size (S8 start);
 S2 pointer_check (S8 start, S8 pointer_type);
 S2 pointer_type (S8 start);
+S2 set_immutable_string (S8 string_pointer);
 
 #endif
