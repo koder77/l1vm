@@ -4,7 +4,7 @@ L1VM (3.0.7)
 	(set string s worldstr " world!")
 
 	// set string as immutable:
-	str_immutable (worldstr2addr)
+	str_immutable (worldstr)
 
 	See "intr.l1h"!
 
