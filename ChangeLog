@@ -1,4 +1,4 @@
-L1VM (3.0.6)
+L1VM (3.0.7)
 	I did add a new interrupt to set strings as immutable:
 
 	(set string s worldstr " world!")
