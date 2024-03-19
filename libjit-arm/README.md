@@ -17,6 +17,12 @@ movi, movd <br><br>
 
 BUILD README
 ============
+You have to build the asmjit library in "asmjit" directory first!
+
+Run the "build.sh" script in this directory. And copy the library to your "~/l1vm/bin" directory.
+It must be in a directory where the linker can find it. So it must be in the library search path.
+
+
 Linux
 -----
 In a shell use:
