@@ -1,4 +1,10 @@
-L1VM (3.0.7)
+L1VM (3.0.8)
+	I did add a linter for checking of function call arguments.
+	See prog/lint directory! The build script is: "l1vm-build-lint.sh".
+
+-- Stefan Pietzonke <info@midnight-coding.de> Fri 22 Mar 2024 12:54  +010
+
+1VM (3.0.7)
 	I did add a new interrupt to set strings as immutable:
 
 	(set string s worldstr " world!")

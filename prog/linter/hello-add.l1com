@@ -1,4 +1,4 @@
-// hello-add.l1com - Brackets - Hello world!
+// hello-add.l1com - with the new linter args
 #include <intr.l1h>
 // this is the function declaration for the l1vm-linter:
 // it has two int64 numbers as arguments:
