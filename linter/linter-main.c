@@ -41,7 +41,7 @@ size_t strlen_safe (const char * str, int maxlen);
 S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
 void convtabs (U1 *str);
 
-
+// for function call arguments
 struct function_args
 {
     U1 name[MAXSTRLEN + 1];
@@ -52,6 +52,18 @@ struct function_args
 struct function_args *function_args;
 S8 function_args_ind ALIGN = -1;
 
+// for function return variables
+struct return_args
+{
+    U1 name[MAXSTRLEN + 1];
+    S2 arg_type[MAXFUNCARGS];
+    S2 args;
+};
+
+struct return_args *return_args;
+S8 return_args_ind ALIGN = -1;
+
+// for all variables
 struct vars
 {
     U1 name[MAXSTRLEN + 1];
@@ -61,12 +73,24 @@ struct vars
 struct vars *vars;
 S8 vars_ind ALIGN = -1;
 
+
 S2 init_function_args (void)
 {
 	function_args = (struct function_args*) calloc (MAXFUNC, sizeof (struct function_args));
 	if (function_args == NULL)
 	{
 		printf ("error: can't allocate function call argumnents list!\n");
+		return (1);
+	}
+	return (0);
+}
+
+S2 init_return_args (void)
+{
+	return_args = (struct return_args*) calloc (MAXFUNC, sizeof (struct return_args));
+	if (return_args == NULL)
+	{
+		printf ("error: can't allocate function return argumnents list!\n");
 		return (1);
 	}
 	return (0);
@@ -115,7 +139,7 @@ S2 get_function_index (U1 *name)
     name_len = strlen_safe ((const char *) name, MAXSTRLEN);
     if (name_len > MAXSTRLEN)
     {
-        printf ("set_function_name: error: function name overflow!\n");
+        printf ("get_function_index: error: function name overflow!\n");
         return (1);
     }
 
@@ -128,6 +152,37 @@ S2 get_function_index (U1 *name)
     }
 
     return (-1);  // function name not found
+}
+
+S2 get_return_index (U1 *name)
+{
+    S8 name_len ALIGN;
+    S8 i ALIGN = -1;
+
+    #if DEBUG
+    printf ("get_return_index...\n");
+    #endif
+
+    name_len = strlen_safe ((const char *) name, MAXSTRLEN);
+    if (name_len > MAXSTRLEN)
+    {
+        printf ("get_return_index: error: function name overflow!\n");
+        return (1);
+    }
+
+    for (i = 0; i <= return_args_ind; i++)
+    {
+        #if DEBUG
+        printf ("get_return_index: %lli: name: '%s'\n", i, return_args[return_args_ind].name);
+        #endif
+
+        if (strcmp ((const char  *) return_args[return_args_ind].name, (const char *)  name) == 0)
+        {
+            return (i);  // function return name matches! return index
+        }
+    }
+
+    return (-1);  // function return name not found
 }
 
 S2 get_varname_type (U1 *name)
@@ -248,11 +303,12 @@ void cleanup (void)
 {
     if (vars != NULL) free (vars);
     if (function_args != NULL) free (function_args);
+    if (return_args != NULL) free (return_args);
 }
 
 S2 parse_line (U1 *line)
 {
-    S2 pos, type_pos, type_ind = 0, i;
+    S2 pos, type_pos, type_ind = 0, i, ret_start;
     S2 name_pos, name_ind = 0;
     S2 line_len = 0;
     U1 get_type = 1;
@@ -419,7 +475,7 @@ S2 parse_line (U1 *line)
         }
     }
 
-    // check if args found
+    // check if function args found
     pos = searchstr (line, (U1 *) "// (func args ", 0, 0, TRUE);
     if (pos != -1)
     {
@@ -561,9 +617,166 @@ S2 parse_line (U1 *line)
         }
     }
 
+    // set function return values
+    pos = searchstr (line, (U1 *) "// (return args ", 0, 0, TRUE);
+    if (pos != -1)
+    {
+        // check for function name
+        name_pos = pos + 16;
+        get_name = 1;
+        i = name_pos;
+        args_ind = -1;
+        func_args = 0;
+        name_ind = 0;
+
+        #if DEBUG
+        printf ("found return args!\n");
+        printf ("line: '%s'\n", line);
+        #endif
+
+        while (get_name == 1)
+        {
+            if (line[i] != ' ')
+            {
+                if (name_ind >= MAXSTRLEN)
+                {
+                    printf ("parse_line: set name overflow!\n");
+                    return (1);
+                }
+                name[name_ind] = line[i];
+                name_ind++;
+            }
+            else
+            {
+                // got end of name
+                name[name_ind] = '\0';
+                get_name = 0;
+            }
+
+            if (i < line_len - 1)
+            {
+                i++;
+            }
+            else
+            {
+                 // got end of name
+                name[name_ind] = '\0';
+                get_name = 0;
+            }
+        }
+
+        #if DEBUG
+        printf ("return args got name: '%s'\n", name);
+        #endif
+
+        // return
+        if (return_args_ind < MAXFUNC - 1)
+        {
+            return_args_ind++;
+            strcpy ((char *) return_args[return_args_ind].name, (char *) name);
+
+            #if DEBUG
+            printf ("function: return index: %lli, name: '%s'\n", return_args_ind, return_args[return_args_ind].name);
+            #endif
+        }
+        else
+        {
+            printf ("parse_line: set return overflow!\n");
+            return (1);
+        }
+
+        #if DEBUG
+        printf ("parse_line: set return function name: '%s'\n", name);
+        #endif
+
+        name_len = strlen_safe ((const char *) name, MAXSTRLEN);
+        type_pos = name_pos + name_len + 1;
+        do_parse_vars = 1;
+
+        while (do_parse_vars == 1)
+        {
+            i = type_pos;
+            get_type = 1;
+            type_ind = 0;
+
+            #if DEBUG
+            printf ("parse_line: i (parse_start): %i\n", i);
+            #endif
+
+            while (get_type == 1)
+            {
+                #if DEBUG
+                printf ("parse_line: i: %i, char: %c\n", i, line[i]);
+                #endif
+
+                if (line[i] != ' ' && line[i] != ')')
+                {
+                    if (type_ind >= MAXSTRLEN)
+                    {
+                        printf ("parse_line: set return function overflow!\n");
+                        return (1);
+                    }
+                    type[type_ind] = line[i];
+                    type_ind++;
+                }
+                else
+                {
+                    // got end of type
+                    type[type_ind] = '\0';
+                    get_type = 0;
+                    func_args++;
+                }
+                if (i < line_len - 1)
+                {
+                    i++;
+                }
+                else
+                {
+                    get_type = 0;
+                }
+            }
+
+            // get vartype
+            #if DEBUG
+            printf ("parse-line: set return function type: '%s'\n", type);
+            #endif
+
+            vartype = getvartype (type);
+            if (vartype == 0)
+            {
+                // error no valid vartype
+                printf ("parse-line: set return function: invalid variable type: '%s' ! \n", type);
+                return (1);
+            }
+
+            if (args_ind < MAXFUNCARGS - 1)
+            {
+                args_ind++;
+                return_args[return_args_ind].arg_type[args_ind] = vartype;
+                return_args[return_args_ind].args = func_args;
+            }
+
+            #if DEBUG
+            printf ("parse-line: set return function return type %i: %i\n", args_ind, vartype);
+            #endif
+
+            type_len = strlen_safe ((const char *) type, MAXSTRLEN);
+            type_pos = type_pos + type_len + 1 ;
+
+            if (i == line_len - 1)
+            {
+                do_parse_vars = 0;
+            }
+        }
+    }
+
+
     // check if function call
     function_call = 0;
     pos = 0;
+
+    // reset name
+    strcpy ((char *) name, "");
 
     function_call = searchstr (line, (U1 *) "call", 0, 0, TRUE);
     if (function_call != -1)
@@ -760,9 +973,158 @@ S2 parse_line (U1 *line)
             printf ("parse-line: call function: args num mismatch! got %i args, need %i args!\n", args_ind + 1, function_args[function_args_ind].args);
             return (1);
         }
+
+        // check if "stpop" is in the same line after the function call
+        pos = searchstr (line, (U1 *) "stpop)", 0, 0, TRUE);
+        if (pos != -1)
+        {
+            #if DEBUG
+            printf ("found 'stpop)' after function call:\n,'%s'\n", line);
+            #endif
+
+            if (strcmp ((const char *) name, "") == 0)
+            {
+                printf ("parse_line: set return values not after function call: '%s'!\n", name);
+                return (1);
+            }
+
+            return_args_ind = get_return_index (name);
+            if (return_args_ind == -1)
+            {
+                printf ("parse_line: return variables, set return function not set: '%s'!\n", name);
+                return (1);
+            }
+
+            #if DEBUG
+            printf ("parse_line: stpop pos: %i\n", pos);
+            #endif
+
+            ret_start = 0;
+            // sane check for "(x y stpop)" argument
+            for (i = 0; i < line_len; i++)
+            {
+                if (line[i] == '(') {
+                    ret_start++;
+                }
+                if (ret_start == 2)
+                {
+                    break;
+                }
+            }
+            if (ret_start == 0)
+            {
+                // error on stpop no start ( found!
+                printf ("parse_line: stpop syntax error!\n");
+                return (1);
+            }
+
+            #if DEBUG
+            printf ("parse_line: ret_start: %i\n", ret_start);
+            #endif
+
+            do_parse_vars = 1;
+            i++;
+            args_ind = -1;
+
+            while (do_parse_vars == 1)
+            {
+                get_type = 1;
+                type_ind = 0;
+
+                #if DEBUG
+                printf ("parse_line: i (parse_start): %i\n", i);
+                #endif
+
+                while (get_type == 1)
+                {
+                    #if DEBUG
+                    printf ("parse_line: i: %i, char: %c\n", i, line[i]);
+                    #endif
+
+                    if (line[i] == ' ')
+                    {
+                        do_parse_vars = 0;
+                        break;
+                    }
+
+                    if (line[i] != ' ' && line[i] != ')' && line[i] != ':')
+                    {
+                        if (type_ind >= MAXSTRLEN)
+                        {
+                            printf ("parse_line: set call overflow!\n");
+                            return (1);
+                        }
+                        type[type_ind] = line[i];
+                        type_ind++;
+                    }
+                    else
+                    {
+                        // got end of type
+                        type[type_ind] = '\0';
+                        get_type = 0;
+                    }
+                    if (i < line_len - 1)
+                    {
+                        i++;
+                    }
+                    else
+                    {
+                        get_type = 0;
+                    }
+                }
+
+                // get vartype
+                #if DEBUG
+                printf ("parse-line: return function type: '%s'\n", type);
+                #endif
+
+                vartype = get_varname_type (type);
+                if (vartype == -1)
+                {
+                    // error no valid vartype
+                    printf ("parse-line: return function: invalid variable: '%s' ! \n", type);
+                    return (1);
+                }
+
+                if (args_ind <= return_args[return_args_ind].args)
+                {
+                    args_ind++;
+
+                    if (return_args[return_args_ind].arg_type[args_ind] != vartype)
+                    {
+                        // error no valid vartype
+                        printf ("parse-line: return function: type mismatch: '%s' ! \n", type);
+                        return (1);
+                    }
+                }
+
+                #if DEBUG
+                printf ("parse-line: set return function type %i: %i\n", args_ind, vartype);
+                #endif
+
+                type_len = strlen_safe ((const char *) type, MAXSTRLEN);
+                type_pos = type_pos + type_len + 1 ;
+
+                if (i == line_len - 1)
+                {
+                    do_parse_vars = 0;
+                }
+            }
+
+            #if DEBUG
+            printf ("parse-line: args_ind: %i, return_args[return_args_ind].args: %i\n", args_ind, return_args[return_args_ind].args);
+            #endif
+
+            if (args_ind != return_args[return_args_ind].args - 1)
+            {
+                // error args number doesn't match
+                printf ("parse-line: return function: args num mismatch! got %i args, need %i args!\n", args_ind + 1, return_args[return_args_ind].args);
+                return (1);
+            }
+        }
     }
     return (0);
- }
+}
 
 int main (int ac, char *av[])
 {
@@ -774,7 +1136,7 @@ int main (int ac, char *av[])
     S2 ret = 0;
     U1 rbuf[MAXSTRLEN + 1];                        /* read-buffer for one line */
 	U1 buf[MAXSTRLEN + 1];
-    S2 pos;
+    S2 pos ,pos2;
 
      if (ac < 2)
      {
@@ -794,6 +1156,12 @@ int main (int ac, char *av[])
 	}
 
      if (init_function_args () != 0)
+     {
+         cleanup ();
+         exit (1);
+     }
+
+     if (init_return_args () != 0)
      {
          cleanup ();
          exit (1);
@@ -840,7 +1208,9 @@ int main (int ac, char *av[])
             if (pos != -1)
             {
                  pos = searchstr (buf, (U1 *) "// (func args ", 0, 0, TRUE);
-                 if (pos == -1)
+                 pos2 = searchstr (buf, (U1 *) "// (return args ", 0, 0, TRUE);
+
+                 if (pos == -1 && pos2 == -1)
                  {
                      linenum++;
                      continue;

@@ -4,6 +4,7 @@
 // it has two int64 numbers as arguments:
 //
 // (func args add int64 int64)
+// (return args add int64)
 (main func)
     #var ~ main
 
@@ -12,9 +13,7 @@
 	(set int64 1 y~ 7)
     (set int64 1 ret~ 0)
 
-    (x~ y~ :add !)
-    (ret~ stpopi)
-
+    (x~ y~ :add !) (ret~ stpop)
     print_i (ret~)
     print_n
 
