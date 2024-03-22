@@ -31,8 +31,10 @@
 #define MAXVARS 4096
 
 #define BOOL 13
+#define VARTYPE_NONE 14
 
 #define DEBUG 0
+
 
 // string functions ===============================================================================
 // protos
@@ -292,6 +294,11 @@ U1 getvartype (U1 *type)
     if (strcmp ((const char *) type, "mut-bool") == 0)
     {
         vartype = BOOL;
+    }
+
+    if (strcmp ((const char *) type, "none") == 0)
+    {
+        vartype = VARTYPE_NONE;
     }
 
     return (vartype);
@@ -745,8 +752,17 @@ S2 parse_line (U1 *line)
             if (vartype == 0)
             {
                 // error no valid vartype
-                printf ("parse-line: set return function: invalid variable type: '%s' ! \n", type);
+                printf ("parse-line: set return function: invalid variable type: '%s' !\n", type);
                 return (1);
+            }
+
+            if (vartype == VARTYPE_NONE)
+            {
+                // no function return value
+                return_args[return_args_ind].args = 0;
+                get_type = 0;
+                do_parse_vars = 0;
+                continue;
             }
 
             if (args_ind < MAXFUNCARGS - 1)
