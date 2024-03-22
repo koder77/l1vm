@@ -4,6 +4,8 @@
 // it has two int64 numbers as arguments:
 //
 // (func args add int64 int64)
+//
+// set the return variable type:
 // (return args add int64)
 (main func)
     #var ~ main

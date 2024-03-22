@@ -1136,7 +1136,8 @@ int main (int ac, char *av[])
     S2 ret = 0;
     U1 rbuf[MAXSTRLEN + 1];                        /* read-buffer for one line */
 	U1 buf[MAXSTRLEN + 1];
-    S2 pos ,pos2;
+    S2 pos ,pos2, linton, lintoff;
+    U1 do_lint = 1; // switch linting on and off
 
      if (ac < 2)
      {
@@ -1210,6 +1211,28 @@ int main (int ac, char *av[])
                  pos = searchstr (buf, (U1 *) "// (func args ", 0, 0, TRUE);
                  pos2 = searchstr (buf, (U1 *) "// (return args ", 0, 0, TRUE);
 
+                 linton = searchstr (buf, (U1 *) "// lint-on", 0, 0, TRUE);
+                 lintoff = searchstr (buf, (U1 *) "// lint-off", 0, 0, TRUE);
+
+                 if (linton != -1)
+                 {
+                     do_lint = 1;
+
+                     printf ("linting: ON: line: %lli\n", linenum);
+
+                     linenum++;
+                     continue;
+                 }
+                 if (lintoff != -1)
+                 {
+                     do_lint = 0;
+
+                     printf ("linting: OFF : line: %lli\n", linenum);
+
+                     linenum++;
+                     continue;
+                 }
+
                  if (pos == -1 && pos2 == -1)
                  {
                      linenum++;
@@ -1217,12 +1240,19 @@ int main (int ac, char *av[])
                  }
             }
 
-            if (parse_line (buf) != 0)
+            if (do_lint == 1)
             {
-                printf ("linter error: line: %lli, '%s'\n", linenum, buf);
-                ret = 1; // error
+                if (parse_line (buf) != 0)
+                {
+                    printf ("linter error: line: %lli, '%s'\n", linenum, buf);
+                    ret = 1; // error
+                }
+                linenum++;
             }
-            linenum++;
+            else
+            {
+                linenum++;
+            }
         }
         else
 		{
