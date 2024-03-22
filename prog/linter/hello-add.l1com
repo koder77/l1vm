@@ -1,0 +1,33 @@
+// hello-add.l1com - Brackets - Hello world!
+#include <intr.l1h>
+// this is the function declaration for the l1vm-linter:
+// it has two int64 numbers as arguments:
+//
+// (func args add int64 int64)
+(main func)
+    #var ~ main
+
+	(set int64 1 zero 0)
+	(set int64 1 x~ 23)
+	(set int64 1 y~ 7)
+    (set int64 1 ret~ 0)
+
+    (x~ y~ :add !)
+    (ret~ stpopi)
+
+    print_i (ret~)
+    print_n
+
+    exit (zero)
+(funcend)
+(add func)
+   #var ~ add
+
+   (set int64 1 x~ 0)
+   (set int64 1 y~ 0)
+   (set int64 1 ret~ 0)
+
+   (y~ x~ stpop)
+   {ret~ = x~ + y~}
+   (ret~ stpushi)
+(funcend)
