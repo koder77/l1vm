@@ -757,7 +757,7 @@ S2 parse_line (U1 *line)
         if (args_ind != function_args[function_args_ind].args - 1)
         {
             // error args number doesn't match
-            printf ("parse-line: call function: args num mismatch! got %i args, need %i args!\n", args_ind, function_args[function_args_ind].args);
+            printf ("parse-line: call function: args num mismatch! got %i args, need %i args!\n", args_ind + 1, function_args[function_args_ind].args);
             return (1);
         }
     }
