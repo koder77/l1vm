@@ -1,3 +1,8 @@
+L1VM (3.0.9)
+	NEW: Added thread local data memory erasing before free the data.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 23 Mar 2024 18:56  +010
+
 L1VM (3.0.8)
 	I did add a linter for checking of function call arguments.
 	See prog/lint directory! The build script is: "l1vm-build-lint.sh".

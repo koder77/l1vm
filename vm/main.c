@@ -354,6 +354,22 @@ void clean_data (void)
 	free (data_global);
 }
 
+void clean_threaddata_data (S8 cpu)
+{
+	S8 i ALIGN;
+	S8 data_local_size ALIGN = data_mem_size - (stack_size * max_cpu);
+
+	if (threaddata[cpu].data != NULL)
+	{
+		for (i = 0; i < data_local_size; i++)
+		{
+			threaddata[cpu].data[i] = 0;
+		}
+
+		free (threaddata[cpu].data);
+	}
+}
+
 void cleanup (void)
 {
 	S8 i ALIGN;
@@ -375,7 +391,7 @@ void cleanup (void)
 	{
 		for (i = 0; i < max_cpu; i++)
 		{
-			if (threaddata[i].data != NULL) free (threaddata[i].data);
+			clean_threaddata_data (i);
 		}
 
 		if (threaddata) free (threaddata);
