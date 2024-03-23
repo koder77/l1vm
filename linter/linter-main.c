@@ -33,7 +33,7 @@
 #define BOOL 13
 #define VARTYPE_NONE 14
 
-#define DEBUG 0
+#define DEBUG 1
 
 
 // string functions ===============================================================================
@@ -330,6 +330,7 @@ S2 parse_line (U1 *line)
     S8 function_index ALIGN = 0;
     S2 func_pos = 0;
     S2 func_args = 0;
+    S2 stpop_pos = 0;
 
     U1 type[MAXSTRLEN + 1];
     U1 name[MAXSTRLEN + 1];
@@ -1003,6 +1004,8 @@ S2 parse_line (U1 *line)
         pos = searchstr (line, (U1 *) "stpop)", 0, 0, TRUE);
         if (pos != -1)
         {
+            stpop_pos = pos;
+
             #if DEBUG
             printf ("found 'stpop)' after function call:\n,'%s'\n", line);
             #endif
@@ -1066,12 +1069,6 @@ S2 parse_line (U1 *line)
                     printf ("parse_line: i: %i, char: %c\n", i, line[i]);
                     #endif
 
-                    if (line[i] == ' ')
-                    {
-                        do_parse_vars = 0;
-                        break;
-                    }
-
                     if (line[i] != ' ' && line[i] != ')' && line[i] != ':')
                     {
                         if (type_ind >= MAXSTRLEN)
@@ -1088,13 +1085,14 @@ S2 parse_line (U1 *line)
                         type[type_ind] = '\0';
                         get_type = 0;
                     }
-                    if (i < line_len - 1)
+                    if (i < stpop_pos - 1 )
                     {
                         i++;
                     }
                     else
                     {
                         get_type = 0;
+                        do_parse_vars = 0;
                     }
                 }
 
