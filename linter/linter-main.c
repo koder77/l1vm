@@ -1166,7 +1166,7 @@ int main (int ac, char *av[])
 
      if (ac < 2)
      {
-         printf("l1vm-linter V1.0\n");
+         printf("l1vm-linter %s\n", VM_VERSION_STR);
          printf ("l1vm-linter <program>\n");
          cleanup ();
          exit (1);
@@ -1288,7 +1288,7 @@ int main (int ac, char *av[])
 
     cleanup ();
 
-    if (ret == 0) printf ("\033[0ml1vm-linter V1.0, no errors found!\n");
+    if (ret == 0) printf ("\033[0ml1vm-linter %s, no errors found!\n", VM_VERSION_STR );
 
     exit (ret);
 }
