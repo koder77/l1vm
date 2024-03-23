@@ -1,7 +1,7 @@
 /*
- * This file main.c is part of L1vm.
+ * This file linter-main.c is part of L1vm.
  *
- * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2017
+ * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2024
  *
  * L1vm is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -601,6 +601,15 @@ S2 parse_line (U1 *line)
                 // error no valid vartype
                 printf ("parse-line: set function: invalid variable type: '%s' ! \n", type);
                 return (1);
+            }
+
+            if (vartype == VARTYPE_NONE)
+            {
+                // no function return value
+                return_args[return_args_ind].args = 0;
+                get_type = 0;
+                do_parse_vars = 0;
+                continue;
             }
 
             if (args_ind < MAXFUNCARGS - 1)
