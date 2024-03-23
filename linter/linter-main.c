@@ -33,7 +33,7 @@
 #define BOOL 13
 #define VARTYPE_NONE 14
 
-#define DEBUG 1
+#define DEBUG 0
 
 
 // string functions ===============================================================================
