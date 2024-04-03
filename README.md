@@ -1,4 +1,4 @@
-L1VM README  2023-07-06
+L1VM README  2024-04-03
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -30,7 +30,6 @@ The design goals are:
 Here is the [L1VM course](https://midnight-koder.net/blog/l1vm) on my blog.
 
 In pure console text I/O programs not linked with SDL library, the memory footprint is very low.
-About 10 MB RAM only as shown in the taskmanager by running a minimal test program!
 
 <b>
 The L1VM runs on Linux (x86_64, Arm), BSD OS: OpenBSD, FreeBSD, DragonFly BSD, Windows 10, 11 via WSL, Haiku and macOS.
@@ -46,6 +45,10 @@ NEW: Now you can define objects (OOP) in Brackets. You can write functions insid
 An example is here: [math-circle-oop](https://github.com/koder77/l1vm/blob/master/prog/math-circle-oop.l1com).
 </b>
 
+<b>
+NEW: I did develop a linter to check if the function call uses the right function arguments variables.
+You can write this in comments for the linter to check this. See the post on my blog!
+</b>
 
 Here is the output of my fractalix fractal program using the SDL module:<br>
 
