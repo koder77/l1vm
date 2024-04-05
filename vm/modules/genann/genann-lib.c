@@ -115,7 +115,7 @@ U1 *genann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
    FILE *input;
    S8 nameaddr ALIGN;
-	S8 handle ALIGN;
+   S8 handle ALIGN;
    
    U1 sandbox_filename[256];
    
@@ -298,7 +298,7 @@ U1 *genann_init_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     genanns[handle].ann = (genann *) genann_init (inputs, hidden_layers, hidden, outputs);
     if (genanns[handle].ann != NULL)
     {
-        sp = stpushb (handle, sp, sp_bottom);		// error OK code
+        sp = stpushi (handle, sp, sp_bottom);		// error OK code
 		if (sp == NULL)
 		{
 			// error
@@ -309,7 +309,7 @@ U1 *genann_init_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
     else
     {
-        sp = stpushb (-1, sp, sp_bottom);		// FAIL code
+        sp = stpushi (-1, sp, sp_bottom);		// FAIL code
 		if (sp == NULL)
 		{
 			// error

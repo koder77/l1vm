@@ -1,3 +1,8 @@
+L1VM (3.0.10)
+	NEW: preprocessor reuse alredy set defines bugfixes.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 06 Apr 2024 22:00  +020
+
 L1VM (3.0.9)
 	NEW: Added thread local data memory erasing before free the data.
 

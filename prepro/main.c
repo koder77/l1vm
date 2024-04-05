@@ -163,30 +163,71 @@ S2 set_define (U1 *line_str)
 S2 set_varname (U1 *line_str)
 {
 	U1 ok = 1;
+	U1 define_already_set = 0;
 	S4 i, pos, slen, j, k;
 
-	if (defines_ind < DEFINE_MAX - 1)
-	{
-		defines_ind++;
-	}
-	else
-	{
-		// error: max defines reached
-		printf ("ERROR: max defines reached: %i !\n", DEFINE_MAX);
-		return (1);
-	}
+	U1 new_define[MAXLINELEN];
 
 	// printf ("DEBUG: set_varname: index: %i, '%s'\n", defines_ind, line_str);
 
 	slen = strlen_safe ((const char*) line_str, MAXLINELEN);
 	pos = searchstr (line_str, (U1 *) FUNC_VAR_NAMES_SB, 0, 0, TRUE);
 
-	defines[defines_ind].type = 0;	// normal define
-
 	i = pos + 5; // next char after "#var"
 
 	// get define name:
 	j = 0;
+	while (ok == 1)
+	{
+		if (line_str[i] != ' ')
+		{
+		    new_define[j] = line_str[i];
+			j++;
+		}
+		else
+		{
+			new_define[j] = '\0';
+			ok = 0;
+		}
+		i++;
+	}
+
+	//printf ("set_varname: new define: def: '%s'\n", new_define);
+
+	if (defines_ind >= 1)
+	{
+		// check if already defined
+		for (k = 0; k <= defines_ind ; k++)
+		{
+			if (strcmp ((const char *) defines[k].def, (const char *) new_define) == 0)
+			{
+				// variable already defined -> reuse
+				defines_ind = k;
+				define_already_set = 1;
+				break;
+			}
+		}
+	}
+
+	//printf ("set_varname: define_already_set: %i\n", define_already_set);
+
+	if (define_already_set == 0)
+	{
+		if (defines_ind < DEFINE_MAX - 1)
+		{
+			defines_ind++;
+		}
+		else
+		{
+			// error: max defines reached
+			printf ("ERROR: max defines reached: %i !\n", DEFINE_MAX);
+			return (1);
+		}
+	}
+
+
+	i = pos + 5;
+	ok = 1; j = 0;
 	while (ok == 1)
 	{
 		if (line_str[i] != ' ')
@@ -202,6 +243,7 @@ S2 set_varname (U1 *line_str)
 		i++;
 	}
 
+
 	j = 0;
 	for (k = i; k < slen; k++)
 	{
@@ -213,7 +255,9 @@ S2 set_varname (U1 *line_str)
 	}
 	defines[defines_ind].out[j] = '\0';
 
-	// printf ("set_varname: def: '%s', out: '%s'\n", defines[defines_ind].def, defines[defines_ind].out);
+	defines[defines_ind].type = 0;	// normal define
+
+	// printf ("set_varname: def: %i: '%s', out: '%s'\n\n", defines_ind, defines[defines_ind].def, defines[defines_ind].out);
 	return (0);
 }
 

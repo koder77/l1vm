@@ -52,7 +52,7 @@
 	(reset-reg)
 	stack_check
     (two one two one :genann_init !)
-    (handle stpopb)
+    (handle stpopi)
     print_s (learning)
     print_n
     (:learn)
