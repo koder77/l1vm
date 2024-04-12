@@ -40,7 +40,7 @@
 #func overflow_d (NUM) :(251 NUM 0 0 intr0)
 #func get_overflow (FLAG) :(252 FLAG 0 0 intr0)
 >> JIT-compiler
-#func run_jit_comp (SLAB, ELAB) :(253 SLAB ELAB 0 intr0)
+#func run_jit_comp (SLAB, ELAB, CODE) :(253 SLAB ELAB CODE intr0)
 #func run_jit_code (CODE) :(254 CODE 0 0 intr0)
 >> variable range checks
 #func range_int (VAR, MIN, MAX) :(28 VAR MIN MAX intr0)

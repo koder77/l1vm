@@ -120,7 +120,6 @@ U1 *fann_create_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 inputs ALIGN;
     S8 outputs ALIGN;
     S8 neurons_hidden ALIGN;
-    S8 ret = 1;
 
     sp = stpopi ((U1 *) &outputs, sp, sp_top);
     if (sp == NULL)
