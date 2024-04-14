@@ -29,6 +29,7 @@
 
 /* For more info and how to use this library, visit: http://www.teuniz.net/RS-232/ */
 
+// DragonFly BSD, NetBSD and  Haiku support written by Stefan Pietzonke (info@midnight-coding.de)
 
 #ifndef rs232_INCLUDED
 #define rs232_INCLUDED

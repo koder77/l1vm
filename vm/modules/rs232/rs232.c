@@ -31,7 +31,7 @@
 /* For more info and how to use this library, visit: http://www.teuniz.net/RS-232/ */
 
 
-/* DragonFly BSD, Haiku, GetComportNumber() added by Stefan Pietzonke 2023 */
+// DragonFly BSD, Haiku, GetComportNumber() added by Stefan Pietzonke 2023 (info@midnight-coding.de)
 
 
 #include "rs232.h"
