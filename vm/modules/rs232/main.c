@@ -96,9 +96,8 @@ U1 *rs232_OpenComport (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	printf ("rs232_open_comport: port: %lli, baud: %lli, mode: '%s'\n", portnumber, baudrate, &data[modeaddr]);
 	#endif
 
-    ret = RS232_OpenComport (portnumber, baudrate, (const char *) &data[modeaddr]);
-
-	// ret = RS232_OpenComport (0, 38400, (const char *) mode);
+    // no flow control
+    ret = RS232_OpenComport (portnumber, baudrate, (const char *) &data[modeaddr], 0);
 
 	#if DEBUG
 	printf ("rs232_open_comport: return value: %lli\n", ret);
