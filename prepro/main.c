@@ -250,8 +250,8 @@ S2 set_varname (U1 *line_str)
 		if (line_str[k] != '\n')
 		{
 			defines[defines_ind].out[j] = line_str[k];
+			j++;
 		}
-		j++;
 	}
 	defines[defines_ind].out[j] = '\0';
 
