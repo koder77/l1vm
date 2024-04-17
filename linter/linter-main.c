@@ -75,6 +75,9 @@ struct vars
 struct vars *vars;
 S8 vars_ind ALIGN = -1;
 
+// current function name
+U1 function_name_current[MAXSTRLEN + 1];
+
 
 S2 init_function_args (void)
 {
@@ -313,6 +316,39 @@ void cleanup (void)
     if (return_args != NULL) free (return_args);
 }
 
+void get_current_function_name (U1 *line)
+{
+    S2 i = 0, n = 0;
+    U1 ok = 1;
+    U1 name_start = 0;
+    U1 name[MAXSTRLEN + 1];
+
+    while (ok)
+    {
+        if (line[i] == '(')
+        {
+            name_start = 1;
+            i++;
+        }
+        if (name_start == 1)
+        {
+            if (line[i] != ' ')
+            {
+                name[n] = line[i];
+                n++;
+            }
+            else
+            {
+                name[n] = '\0';
+                ok = 0;
+            }
+        }
+        i++;
+    }
+    // printf ("get_current_function_name: '%s'\n", name);
+    strcpy ((char *) function_name_current, (const char *) name);
+}
+
 S2 parse_line (U1 *line)
 {
     S2 pos, type_pos, type_ind = 0, i, ret_start;
@@ -331,6 +367,7 @@ S2 parse_line (U1 *line)
     S2 func_pos = 0;
     S2 func_args = 0;
     S2 stpop_pos = 0;
+    S2 return_pos = 0;
 
     U1 type[MAXSTRLEN + 1];
     U1 name[MAXSTRLEN + 1];
@@ -1146,6 +1183,94 @@ S2 parse_line (U1 *line)
             }
         }
     }
+
+    // check if function start
+    func_pos = searchstr (line, (U1 *) "func)", 0, 0, TRUE);
+    if (func_pos != -1)
+    {
+        get_current_function_name (line);
+    }
+
+    // check if return line
+    //printf ("parse-line: line: '%s'\n", line);
+
+    return_pos = searchstr (line, (U1 *) "(return)", 0, 0, TRUE);
+    if (return_pos != -1)
+    {
+        return_args_ind = get_return_index (function_name_current);
+        if (return_args_ind == -1)
+        {
+            // no return variables
+            return (0);
+        }
+
+        { // new scope
+        S2 n = 0;
+        S2 var_ind = return_args[return_args_ind].args -1 ;
+        S2 stpush_pos;
+        do_parse_vars = 1;
+
+        pos = searchstr (line, (U1 *) "(", 0, 0, TRUE);
+        if (pos >= return_pos)
+        {
+            printf ("parse-line: error: no return variables found!\n");
+            return (1);
+        }
+
+        stpush_pos = searchstr (line, (U1 *) "stpush)", 0, 0, TRUE);
+        if (stpush_pos == -1)
+        {
+            printf ("parse-line: error: no return variables found!\n");
+            return (1);
+        }
+
+        i = pos + 1;
+        while (do_parse_vars)
+        {
+            //printf ("parse-line: char %i: %c\n", i, line[i]);
+
+            if (i == stpush_pos)
+            {
+                break;
+            }
+
+            if (line[i] != ' ')
+            {
+                type[n] = line[i];
+                n++;
+            }
+            else
+            {
+                type[n] = '\0';
+
+                // printf ("parse-line: return type name '%s'\n", type);
+
+                vartype = get_varname_type (type);
+
+                // printf ("parse-line: return variable type: %i\n", vartype);
+                // printf ("parse-line: return variable defined type: %i\n", return_args[return_args_ind].arg_type[var_ind]);
+
+                if (vartype != return_args[return_args_ind].arg_type[var_ind])
+                {
+                    printf ("parse-line: error: return variable type mismatch!\n");
+                    return (1);
+                }
+
+                if (var_ind > 0)
+                {
+                    var_ind--;
+                }
+                else
+                {
+                    break;
+                }
+                n = 0;
+            }
+            i++;
+        }
+        }
+    }
+
     return (0);
 }
 
