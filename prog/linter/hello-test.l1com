@@ -31,7 +31,7 @@
    (set int64 1 ret~ 0)
    (set byte 1 b~ 42)
 
-   (y~ x~ stpop)
+   (y~ x~ |>)
    {ret~ = x~ + y~}
    (b~ ret~ >|) (return)
 (funcend)
