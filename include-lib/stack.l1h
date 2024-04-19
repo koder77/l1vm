@@ -7,3 +7,5 @@
 #define |>b stpopb
 #define |>i stpopi
 #define |>d stpopd
+#define >| stpush
+#define |> stpop
