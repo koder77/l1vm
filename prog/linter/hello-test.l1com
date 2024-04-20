@@ -23,6 +23,9 @@
 
     exit (zero)
 (funcend)
+
+(variable-local-only-on)
+
 (add func)
    #var ~ add
 
