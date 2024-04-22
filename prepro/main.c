@@ -477,7 +477,7 @@ S2 set_macro (U1 *line_str)
 	}
 
 	// search for ":" and get the macro
-	pos = searchstr (line_str, (U1 *) ":", 0, 0, TRUE);
+	pos = searchstr (line_str, (U1 *) ":(", 0, 0, TRUE);
 	if (pos < 0)
 	{
 		printf ("ERROR: set_macro: no macro start: ':' found!\n");

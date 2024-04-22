@@ -5,6 +5,8 @@
 //
 // uses new globallock/globalunlock for thread safe locks
 //
+// macros
+//
 (msg_init func)
 	#var ~ @msg
 	(set const-int64 1 zero~ 0)
