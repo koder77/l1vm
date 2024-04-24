@@ -77,7 +77,7 @@ S8 vars_ind ALIGN = -1;
 
 // current function name
 U1 function_name_current[MAXSTRLEN + 1];
-
+U1 function_check_stpop = 0;    // set to 1 by: // (func args stpop)
 
 S2 init_function_args (void)
 {
@@ -368,6 +368,7 @@ S2 parse_line (U1 *line)
     S2 func_args = 0;
     S2 stpop_pos = 0;
     S2 return_pos = 0;
+    S2 func_stpop_pos = 0;
 
     U1 type[MAXSTRLEN + 1];
     U1 name[MAXSTRLEN + 1];
@@ -933,7 +934,7 @@ S2 parse_line (U1 *line)
         i = searchstr (line, (U1 *) "(", 0, 0, TRUE);
         if (i == -1)
         {
-            printf ("parse_line: set call function syntax errro! no ( found!\n");
+            printf ("parse_line: set call function syntax error! no ( found!\n");
             return (1);
         }
 
@@ -1271,6 +1272,84 @@ S2 parse_line (U1 *line)
         }
     }
 
+    if (function_check_stpop == 1)
+    {
+        func_stpop_pos = searchstr (line, (U1 *) "stpop)", 0, 0, TRUE);
+        if (func_stpop_pos != -1)
+        {
+            function_args_ind = get_function_index (function_name_current);
+            if (function_args_ind == -1)
+            {
+                printf ("parse-line: error: no function args set!\n");
+                return (1);
+            }
+
+            i = searchstr (line, (U1 *) "(", 0, 0, TRUE);
+            if (i == -1)
+            {
+                // parse error
+                printf ("parse-line: error: no '(' in stpop!\n");
+                return (1);
+            }
+
+            if (i >= func_stpop_pos)
+            {
+                printf ("parse-line: error: '(' behind stpop!\n");
+                return (1);
+            }
+            i++;
+
+            // reset flag:
+            function_check_stpop = 0;
+
+            { // new scope
+                S2 n = 0;
+                S2 var_ind = function_args[function_args_ind].args -1 ;
+                do_parse_vars = 1;
+
+                while (do_parse_vars)
+                {
+                    if (i == func_stpop_pos)
+                    {
+                        break;
+                    }
+
+                    if (line[i] != ' ')
+                    {
+                        type[n] = line[i];
+                        n++;
+                    }
+                    else
+                    {
+                        type[n] = '\0';
+
+                        vartype = get_varname_type (type);
+
+                        // printf ("parse-line: return variable type: %i\n", vartype);
+                        // printf ("parse-line: return variable defined type: %i\n", return_args[return_args_ind].arg_type[var_ind]);
+
+                        if (vartype != function_args[function_args_ind].arg_type[var_ind])
+                        {
+                            printf ("parse-line: error: function arg variable type mismatch!\n");
+                            return (1);
+                        }
+
+                        if (var_ind > 0)
+                        {
+                            var_ind--;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                        n = 0;
+                    }
+                    i++;
+                }
+            } // scope close
+        }
+    }
+
     return (0);
 }
 
@@ -1284,7 +1363,7 @@ int main (int ac, char *av[])
     S2 ret = 0;
     U1 rbuf[MAXSTRLEN + 1];                        /* read-buffer for one line */
 	U1 buf[MAXSTRLEN + 1];
-    S2 pos ,pos2, linton, lintoff;
+    S2 pos ,pos2, linton, lintoff, function_args_check;
     U1 do_lint = 1; // switch linting on and off
 
      if (ac < 2)
@@ -1362,6 +1441,8 @@ int main (int ac, char *av[])
                  linton = searchstr (buf, (U1 *) "// lint-on", 0, 0, TRUE);
                  lintoff = searchstr (buf, (U1 *) "// lint-off", 0, 0, TRUE);
 
+                 function_args_check = searchstr (buf, (U1 *) "// (func args stpop)", 0, 0, TRUE);
+
                  if (linton != -1)
                  {
                      do_lint = 1;
@@ -1377,6 +1458,13 @@ int main (int ac, char *av[])
 
                      printf ("linting: OFF : line: %lli\n", linenum);
 
+                     linenum++;
+                     continue;
+                 }
+
+                 if (function_args_check != -1)
+                 {
+                     function_check_stpop = 1;
                      linenum++;
                      continue;
                  }

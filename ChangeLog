@@ -1,3 +1,8 @@
+L1VM (3.1.0)
+	NEW: linter now checks if function arguments are in right order at "stpop" call.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Wed 24 Apr 2024 21:14  +020
+
 L1VM (3.0.10)
 	NEW: preprocessor reuse alredy set defines bugfixes.
 

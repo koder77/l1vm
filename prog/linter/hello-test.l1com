@@ -3,11 +3,11 @@
 #include <stack.l1h>
 // this is the function declaration for the l1vm-linter:
 // it has two int64 numbers as arguments:
-//
 // (func args add int64 int64)
 //
 // set the return variable type:
 // (return args add int64 byte)
+//
 (main func)
     #var ~ main
 
@@ -34,6 +34,7 @@
    (set int64 1 ret~ 0)
    (set byte 1 b~ 42)
 
+// (func args stpop)
    (y~ x~ |>)
    {ret~ = x~ + y~}
    (b~ ret~ >|) (return)
