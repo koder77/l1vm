@@ -9,7 +9,7 @@ echo "building compiler, assembler and VM..."
 export CC=clang
 export CCPP=clang++
 
-sudo pkgin -y install SDl2
+sudo pkgin -y install SDL2
 sudo pkgin -y install SDL2_gfx
 sudo pkgin -y install SDL2_image
 sudo pkgin -y install SDL2_ttf
@@ -104,7 +104,7 @@ echo "VM binaries installed into ~/bin"
 cd modules
 echo "installing modules..."
 chmod +x *.sh
-./build-netbsd.sh
+sh ./build-netbsd.sh
 if sh ./install.sh; then
 	echo "modules build ok!"
 else

@@ -80,7 +80,7 @@
 #include <assert.h>
 #include <limits.h>
 
-#if __NeBSD__
+#if __NetBSD__
 #include <sys/wait.h>
 #include <sys/resource.h>
 
