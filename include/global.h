@@ -80,9 +80,12 @@
 #include <assert.h>
 #include <limits.h>
 
-// unicode support
-#include <wchar.h>
-#include <locale.h>
+#if __NeBSD__
+#include <sys/wait.h>
+#include <sys/resource.h>
+
+#define SDL_BYTEORDER LITTLE_ENDIAN
+#endif
 
 // include user settings file
 #include "settings.h"
