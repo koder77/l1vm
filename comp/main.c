@@ -6903,6 +6903,7 @@ S2 parse (U1 *name)
     U1 rbuf[MAXSTRLEN + 1];                        /* read-buffer for one line */
     char *read;
 	S8 ret ALIGN;
+	S2 function_call = 0;
 
 	S8 code_lines ALIGN = 0;
 
@@ -6961,6 +6962,42 @@ S2 parse (U1 *name)
 				{
 					inline_asm = 0;
 					continue;
+				}
+
+				function_call = -1;
+				pos = searchstr (rbuf, (U1 *) "call", 0, 0, TRUE);
+				if (pos != -1)
+				{
+					function_call = pos;
+				}
+				if (function_call == -1)
+				{
+					pos = searchstr (rbuf, (U1 *) "!", 0, 0, TRUE);
+					if (pos != -1)
+					{
+						if (pos < slen - 1)
+						{
+							if (rbuf[pos + 1] != '=')
+							{
+								// not a: !=
+								function_call = pos;
+							}
+						}
+					}
+				}
+
+				if (function_call != -1)
+				{
+					pos = searchstr (rbuf, (U1 *) "set", 0, 0, TRUE);
+					if (pos == -1)
+					{
+						if (rbuf[function_call - 1] != ' ')
+						{
+							printf ("error: function call syntax error!\n");
+							printf ("%s\n", rbuf);
+							return (1);
+						}
+					}
 				}
 
 				// search for "@," array variable assign in more than one line:
