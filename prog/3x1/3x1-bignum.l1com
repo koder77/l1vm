@@ -1,0 +1,109 @@
+// 3x1-bignum.l1com
+//
+// This is a check program for the 3x1 problem: https://en.wikipedia.org/wiki/Collatz_conjecture
+
+#include <intr.l1h>
+
+(main func)
+    #var ~ main
+
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 mathmod~ 0)
+    (set const-int64 1 numstart~ 0)
+    (set const-int64 1 numend~ 1)
+    (set string 4096 numstartstr~ "")
+    (set string 4096 numendstr~ "")
+    (set int64 1 args~ 0)
+    (set int64 1 args_num~ 2)
+    (set int64 1 f~ 0)
+    (set string s usagestr~ "l1vm 3x1-bignum -args <startnum> <endnum>")
+
+    shell_args (args~)
+    (((args~ args_num~ !=) f~ =) f~ if)
+       print_s (usagestr~)
+       print_n
+       exit (one)
+    (endif)
+
+    get_shell_arg (zero, numstartstr~)
+    get_shell_arg (one, numendstr~)
+
+    (mathmod~ :mp_math_init !)
+
+    (numstartstr~ numendstr~ :3n1_calc !)
+    exit (zero)
+(funcend)
+
+(3n1_calc func)
+    #var ~ 3n1_calc
+
+    (set const-int64 1 numstart~ 0)
+    (set const-int64 1 numend~ 1)
+    (set const-int64 1 num~ 2)
+    (set const-int64 1 two~ 3)
+    (set const-int64 1 one~ 4)
+    (set const-int64 1 three~ 5)
+    (set const-int64 1 rem~ 6)
+    (set const-int64 1 zeroi~ 7)
+    (set const-int64 1 onei~ 1)
+    (set int64 1 ret~ 0)
+    (set int64 1 f~ 0)
+    (set int64 1 numendstr~)
+    (set int64 1 numstartstr~)
+    (set string s twostr~ "2.0")
+    (set string s onestr~ "1.0")
+    (set string s threestr~ "3.0")
+    (set string s zerostr~ "0.0")
+	(set string s formatstr~ "%.200Ff")
+    (set int64 1 precision~ 0)
+    (set int64 1 base~ 10)
+    (set int64 1 precision_set~ 4096)
+    (set string s passstr~ " pass!")
+
+    (numendstr~ numstartstr~ stpop)
+
+    (numstartstr~ base~ precision_set~ numstart~ :mp_set_float_prec !)
+    (numendstr~ base~ precision_set~ numend~ :mp_set_float_prec !)
+    (twostr~ base~ precision_set~ two~ :mp_set_float_prec !)
+    (onestr~ base~ precision_set~ one~ :mp_set_float_prec !)
+    (threestr~ base~ precision_set~ three~ :mp_set_float_prec !)
+
+    (:loop_next)
+
+    (numstart~ numend~ :mp_greater !)
+    (ret~ stpop)
+    (((ret~ zero !=) f~ =) f~ if)
+        (return)
+    (endif)
+
+    (numstart~ formatstr~ precision~ :mp_print_float !)
+    (numstart~ zeroi~ num~ :mp_add_float !)
+
+    (:loop)
+
+    (num~ two~ rem~ :mp_fmod_float !)
+    (rem~ one~ :mp_equal !)
+    (ret~ stpop)
+
+    (((ret~ onei~ ==) f~ =) f~ if+)
+        (num~ three~ num~ :mp_mul_float !)
+        (num~ one~ num~ :mp_add_float !)
+    (else)
+        (num~ two~ num~ :mp_div_float !)
+    (endif)
+    (num~ one~ :mp_equal !)
+    (ret~ stpop)
+
+    (((ret~ onei~ ==) f~ =) f~ if+)
+         // set next number
+         print_s (passstr~)
+         print_n
+         (numstart~ one~ numstart~ :mp_add_float !)
+         (:loop_next jmp)
+    (else)
+         (:loop jmp)
+    (endif)
+(funcend)
+
+#include <mpfr-lib-auto.l1h>
