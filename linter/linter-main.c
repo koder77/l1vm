@@ -370,6 +370,7 @@ S2 parse_line (U1 *line)
     S2 return_pos = 0;
     S2 func_stpop_pos = 0;
 
+
     U1 type[MAXSTRLEN + 1];
     U1 name[MAXSTRLEN + 1];
 
@@ -869,6 +870,23 @@ S2 parse_line (U1 *line)
     {
        // parse function call
        // get fuction name
+       // sane check:
+       if (pos > 1)
+       {
+           if (line[pos - 1] != ' ')
+           {
+               printf ("parse-line: function call syntax error! No space before call!\n");
+               printf ("'%s'\n", line);
+               return (1);
+           }
+       }
+       else
+       {
+           printf ("parse-line: function call syntax error!\n");
+           printf ("'%s'\n", line);
+           return (1);
+       }
+
        name_pos = searchstr (line, (U1 *) ":", 0, 0, TRUE);
 
        // do sane check:

@@ -1,3 +1,8 @@
+L1VM (3.1.1)
+	NEW: linter now checks if function call: "call" or "!" have a space in front or not.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Thu 02 May 2024 20:11  +020
+
 L1VM (3.1.0)
 	NEW: linter now checks if function arguments are in right order at "stpop" call.
 
