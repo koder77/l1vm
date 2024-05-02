@@ -8,5 +8,5 @@
 #func pull_int64_var (VAR) :{VAR = VAR + zero}
 #func pull_double_var (VAR) :{VAR = VAR + zero_double}
 >> inc and dec integers
-#func inc (VAR) :((VAR one +) VAR =)
-#func dec (VAR) :((VAR one -) VAR =)
+#func inc (VAR) :{VAR = VAR + one}
+#func dec (VAR) :{VAR = VAR - one}
