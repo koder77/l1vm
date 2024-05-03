@@ -10,8 +10,6 @@
     (set const-int64 1 zero 0)
     (set const-int64 1 one 1)
     (set const-int64 1 mathmod~ 0)
-    (set const-int64 1 numstart~ 0)
-    (set const-int64 1 numend~ 1)
     (set string 4096 numstartstr~ "")
     (set string 4096 numendstr~ "")
     (set int64 1 args~ 0)
