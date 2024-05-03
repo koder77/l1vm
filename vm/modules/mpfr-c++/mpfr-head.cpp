@@ -134,6 +134,43 @@ size_t strlen_safe (const char * str, int maxlen)
 	}
 }
 
+S2 check_is_digit (const char *numberstr)
+{
+	S8 number_len ALIGN;
+	S8 i ALIGN = 0;
+	U1 check = 1;
+
+	number_len = strlen_safe (numberstr, MAXSTRLEN);
+	if (number_len == 0)
+	{
+		// error: empty string!
+		return (1);
+	}
+
+	while (check == 1)
+	{
+		if (isdigit (numberstr[i]) == 0)
+		{
+			// check if it is decimal point:
+			if (numberstr[i] != '.')
+			{
+				// error no valid number char
+				return (1);
+			}
+		}
+	    if (i < number_len - 1)
+		{
+			i++;
+		}
+		else
+		{
+			check = 0;
+		}
+	}
+	// all digits are numbers, is a number!
+	return (0);
+}
+
 extern "C" U1 *mp_set_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 float_index ALIGN;
@@ -166,7 +203,13 @@ extern "C" U1 *mp_set_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	if (float_index >= MAX_FLOAT_NUM || float_index < 0)
 	{
-		printf ("mp_set_float: ERROR float index out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
+		printf ("mp_set_float: ERROR: float index out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
+		return (NULL);
+	}
+
+	if (check_is_digit ((const char *) &data[numstring_address]) != 0)
+    {
+		printf ("mp_set_float: ERROR: float is not a number!\n%s\n", &data[numstring_address]);
 		return (NULL);
 	}
 
@@ -221,6 +264,12 @@ extern "C" U1 *mp_set_float_prec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	// printf ("DEBUG: mp_set_float: '%s'\n", (const char *) &data[numstring_address]);
+
+	if (check_is_digit ((const char *) &data[numstring_address]) != 0)
+    {
+		printf ("mp_set_float_prec: ERROR: float is not a number!\n%s\n", &data[numstring_address]);
+		return (NULL);
+	}
 
 	mpf_float[float_index] = mpfr::mpreal ((const char *) &data[numstring_address], precision, num_base, MPFR_RNDN);
 

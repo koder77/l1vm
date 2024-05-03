@@ -1,5 +1,6 @@
 L1VM (3.1.1)
 	NEW: linter now checks if function call: "call" or "!" have a space in front or not.
+	MPFR C++ math library added checks to set number functions: now they check if the new number string is a number!
 
 -- Stefan Pietzonke <info@midnight-coding.de> Thu 02 May 2024 20:11  +020
 
