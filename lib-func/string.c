@@ -19,9 +19,9 @@
 
 #include "../include/global.h"
 
-size_t strlen_safe (const char *str, int maxlen)
+size_t strlen_safe (const char *str, S8 maxlen)
 {
-	 long long int i = 0;
+	 S8 ALIGN i = 0;
 
 	 while (1)
 	 {
@@ -41,10 +41,13 @@ size_t strlen_safe (const char *str, int maxlen)
 	}
 }
 
-S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens)
+S8 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens)
 {
 	/* replaces the old buggy code */
-	S2 pos = -1, str_len, i = 0;
+	S8 ALIGN pos = -1;
+	S8 ALIGN str_len;
+	S8 ALIGN i = 0;
+
 	str_len = strlen_safe ((const char *) str, MAXLINELEN);
 
 	U1 *sptr;
@@ -75,7 +78,8 @@ S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens)
 
 void convtabs (U1 *str)
 {
-	S2 i, end;
+	S8 ALIGN i;
+	S8 ALIGN end;
 
 	end = strlen_safe ((const char *) str, MAXLINELEN) - 1;
 
@@ -90,7 +94,7 @@ void convtabs (U1 *str)
 
 S2 strip_end_commas (U1 *str)
 {
-	S2 end;
+	S8 ALIGN end;
 
 	end = strlen_safe ((const char *) str, MAXLINELEN) - 1;
 	// printf ("strip: '%s'", str);

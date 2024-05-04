@@ -51,13 +51,13 @@ S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
 	return (0);
 }
 
-size_t strlen_safe (const char * str, int maxlen)
+size_t strlen_safe (const char *str, S8 maxlen)
 {
-	 long long int i = 0;
+	 S8 ALIGN i = 0;
 
 	 while (1)
 	 {
-	 	if (str[i] != '\0')
+		if (str[i] != '\0')
 		{
 			i++;
 		}
@@ -65,7 +65,8 @@ size_t strlen_safe (const char * str, int maxlen)
 		{
 			return (i);
 		}
-		if (i > maxlen)
+
+		if (i >= maxlen)
 		{
 			return (0);
 		}
@@ -1284,10 +1285,11 @@ U1 *string_regex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 }
 
 // normal string search functions =============================================
-S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end)
+S2 searchstr (U1 *str, U1 *srchstr, S8 start, S8 end)
 {
 	/* replaces the old buggy code */
-	S2 pos = -1, str_len;
+	S8 pos ALIGN = -1;
+	S8 str_len ALIGN;
 	str_len = strlen_safe ((const char *) str, MAXSTRLEN);
 
 	U1 *sptr;
@@ -1530,7 +1532,6 @@ U1 *string_parse_json (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 // sort string array ===========================================================
 S2 swap_str (char *str1, char *str2)
 {
-
     char *temp;
 	S8 temp_len ALIGN;
 	S8 str1_len ALIGN;
@@ -1563,9 +1564,9 @@ S2 swap_str (char *str1, char *str2)
 	return (0);
 }
 
-S2 sort_strings (char *str, int len, int string_len, int order_type)
+S2 sort_strings (char *str, S8 len, S8 string_len, int order_type)
 {
-    int i = 0;
+    S8 i ALIGN = 0;
     while (i < len)
 	{
         int j = 0;
