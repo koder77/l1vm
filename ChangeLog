@@ -1,8 +1,9 @@
 L1VM (3.1.1)
 	NEW: linter now checks if function call: "call" or "!" have a space in front or not.
 	MPFR C++ math library added checks to set number functions: now they check if the new number string is a number!
+	String module: set string position variables to S8.
 
--- Stefan Pietzonke <info@midnight-coding.de> Thu 02 May 2024 20:11  +020
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 04 May 2024 21:21  +020
 
 L1VM (3.1.0)
 	NEW: linter now checks if function arguments are in right order at "stpop" call.
