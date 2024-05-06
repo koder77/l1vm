@@ -33,7 +33,7 @@ using std::cout;
 //using std::endl;
 
 
-#define MAX_FLOAT_NUM 256
+#define MAX_FLOAT_NUM 4096
 
 static mpreal mpf_float[MAX_FLOAT_NUM];
 
