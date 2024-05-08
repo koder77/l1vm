@@ -1,3 +1,14 @@
+L1VM (3.1.2)
+	NEW: now preprocessor macros can be called like function calls:
+
+	// print string
+	(hello :print_s !)
+	print_n
+
+	See "prog/hello-func.l1com" !
+
+-- Stefan Pietzonke <info@midnight-coding.de> Wed 08 May 2024 23:37  +020
+
 L1VM (3.1.1)
 	NEW: linter now checks if function call: "call" or "!" have a space in front or not.
 	MPFR C++ math library added checks to set number functions: now they check if the new number string is a number!
