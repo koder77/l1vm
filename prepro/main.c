@@ -500,6 +500,174 @@ S2 set_macro (U1 *line_str)
 	return (0);
 }
 
+S2 replace_macro_normal (U1 *line_str)
+{
+	U1 ok = 1;
+	S4 i, pos, slen, k;
+	S4 ind;
+	S4 name_pos;
+
+	U1 new_line[MAXSTRLEN + 1];
+	U1 arg[MAXSTRLEN + 1];
+
+	U1 call_found = 0;
+	S4 arg_ind = -1;
+
+	slen = strlen_safe ((const char*) line_str, MAXLINELEN);
+
+	// check for every definition, if it is in current line!
+
+	if (defines_ind < 0)
+	{
+		// nothing to replace, exit
+		return (0);
+	}
+
+	ok = 1; arg_ind = -1;
+	while (ok == 1)
+	{
+		// printf ("line_str: '%s'\n", line_str);
+
+		for (ind = 0; ind <= defines_ind; ind++)
+		{
+			if (defines[ind].type == 1)
+			{
+				// is macro
+				// copy macro to new_line
+				strcpy ((char *) new_line, (const char *) defines[ind].out);
+
+				//printf ("DEBUG: replace_macro: line_str: '%s'\n", line_str);
+				//printf ("DEBUG: replace_macro: macro: '%s'\n", new_line);
+
+				slen = strlen_safe ((const char *) line_str, MAXLINELEN);
+				//printf ("searching define: '%s'\n", defines[ind].def);
+				//printf ("'%s'\n\n", line_str);
+
+				name_pos = searchstr (line_str, defines[ind].def, 0, 0, TRUE);
+				if (name_pos >= 0)
+				{
+					call_found = 0;
+				    pos = searchstr (line_str, "call)", 0, 0, TRUE);
+					if (pos >= 0)
+					{
+						call_found = 1;
+					}
+
+					pos = searchstr (line_str, "!)", 0, 0, TRUE);
+					if (pos >= 0)
+					{
+						call_found = 1;
+					}
+
+					if (call_found == 0)
+					{
+						printf ("ERROR: function call: no 'call' or '!' found!\n");
+						return (1);
+					}
+
+					pos = searchstr (line_str, "(", 0, 0, TRUE);
+                    if (pos > name_pos)
+					{
+						printf ("ERROR: found ( after function name!\n");
+						return (1);
+					}
+
+					ok = 1; k = 0;
+					i = pos + 1;
+
+					//printf ("replace_macro_normal: startpos var: %i\n", i);
+
+					while (ok == 1)
+					{
+						// printf ("DEBUG: line_str ch: '%c'\n", line_str[i]);
+
+						if (line_str[i] != ' ' && line_str[i] != ':' && line_str[i] != '(' && line_str[i] != ')')
+						{
+							arg[k] = line_str[i];
+
+							// printf ("DEBUG: arg[k]: '%c'\n", arg[k]);
+
+							k++;
+							i++;
+						}
+						else
+						{
+							if (line_str[i] == ' ' || line_str[i] == ':')
+							{
+								if (arg_ind < defines[ind].args_num)
+								{
+									arg_ind++;
+								}
+								else
+								{
+									// printf ("ERROR: replace_macro: too much arguments!\n");
+									// printf ("> '%s'\n", line_str);
+									return (1);
+								}
+
+								// printf ("DEBUG: replace_macro: arg_ind: %i\n", arg_ind);
+
+								// set argument end
+								arg[k] = '\0';
+								k = 0;
+								// i++;
+
+								//printf ("DEBUG: replace_macro arg: '%s'\n", arg);
+
+								// replace arg in output line "new_line"
+
+								slen = strlen_safe ((const char*) new_line, MAXLINELEN);
+								// printf ("searching define: '%s'\n", defines[ind].def);
+								// printf ("'%s'\n\n", line_str);
+
+								replace_str (new_line, defines[ind].args[arg_ind], arg);
+								//printf ("DEBUG: new_line: '%s'\n", new_line);
+
+								//printf ("DEBUG: line_str[i]: '%c'\n", line_str[i]);
+								if (i == name_pos - 2)
+								{
+									//printf ("found macro end!\n");
+
+									if (arg_ind != defines[ind].args_num)
+									{
+										printf ("ERROR: arguments mismatch!\n");
+										printf ("> '%s'\n", line_str);
+										return (1);
+									}
+
+									// found end of macro args
+									strcpy ((char *) line_str, (const char *) new_line);
+									slen = strlen_safe ((const char *) line_str, MAXLINELEN);
+
+									line_str[slen] = '\n';
+									line_str[slen + 1] = '\0';
+									ok = 0;
+								}
+							}
+
+							if (i == name_pos - 2)
+							{
+								//printf ("FOUND END!\n");
+								ok = 0;
+							}
+							i++;
+						}
+					} // replace end
+				}
+				else
+				{
+					ok = 0;
+				}
+			}
+			else
+			{
+				ok = 0;
+			}
+		}
+	}
+	return (0);
+}
+
 S2 replace_macro (U1 *line_str)
 {
 	U1 ok = 1;
@@ -622,7 +790,7 @@ S2 replace_macro (U1 *line_str)
 							}
 							i++;
 						}
-					}
+					} // replace end
 				}
 				else
 				{
@@ -829,8 +997,16 @@ S2 include_file (U1 *line_str)
 					// check function name to variable name tackon
 					replace_varname (buf);
 
-					// check if macro is set
-					replace_macro (buf);
+					pos = searchstr (buf, (U1 *) ":", 0, 0, TRUE);
+					if (pos >= 0)
+					{
+						replace_macro_normal (buf);
+					}
+					else
+					{
+						// check if macro is set
+						replace_macro (buf);
+					}
 				}
 			}
 
@@ -1209,8 +1385,16 @@ int main (int ac, char *av[])
 					// check function name to variable name tackon
 					replace_varname (buf);
 
-					// check if macro is set
-					replace_macro (buf);
+					pos = searchstr (buf, (U1 *) ":", 0, 0, TRUE);
+					if (pos >= 0)
+					{
+						replace_macro_normal (buf);
+					}
+					else
+					{
+						// check if macro is set
+						replace_macro (buf);
+					}
 				}
 			}
 
