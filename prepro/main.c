@@ -463,6 +463,13 @@ S2 set_macro (U1 *line_str)
 					// printf ("DEBUG: arg: '%s'\n", defines[defines_ind].args[defines[defines_ind].args_num]);
 					k = 0;
 					arg_loop = 0;
+
+					// check if argument is: 'NONE':
+					if (strcmp (defines[defines_ind].args[defines[defines_ind].args_num], "NONE") == 0)
+					{
+						defines[defines_ind].args_num = -1;
+						ok = 1;  // exit upper loop too!
+					}
 				}
 				if (line_str[i] == ')')
 				{
@@ -534,7 +541,15 @@ S2 replace_macro_normal (U1 *line_str)
 			{
 				// is macro
 				// copy macro to new_line
-				strcpy ((char *) new_line, (const char *) defines[ind].out);
+				if (defines[ind].args_num != -1)
+				{
+					strcpy ((char *) new_line, (const char *) defines[ind].out);
+				}
+				else
+				{
+					// macro with no arguments
+					strcpy ((char *) new_line, (const char *) line_str);
+				}
 
 				//printf ("DEBUG: replace_macro: line_str: '%s'\n", line_str);
 				//printf ("DEBUG: replace_macro: macro: '%s'\n", new_line);
@@ -563,6 +578,71 @@ S2 replace_macro_normal (U1 *line_str)
 					{
 						printf ("ERROR: function call: no 'call' or '!' found!\n");
 						return (1);
+					}
+
+					//printf ("replace_macro_normal: macro: '%s'\n", defines[ind].def);
+					//printf ("replace_macro_normal: args num = %i\n\n", defines[ind].args_num);
+
+					if (defines[ind].args_num == -1)
+					{
+						//printf ("replace_macro_normal: macro: '%s' inside replace...\n", defines[ind].def);
+
+                        if (name_pos >= 2)
+						{
+							// remove: '(:' bracket and colon from output string
+							new_line[name_pos - 1] = ' ';
+							new_line[name_pos - 2] = ' ';
+
+							// remove '! )'
+							k = 1;
+							i = name_pos;
+							while (k == 1)
+						    {
+								if (new_line[i] == '!')
+							    {
+									if (new_line[i + 1] == ')')
+								    {
+                                        new_line[i] = ' ';
+										new_line[i + 1] = ' ';
+										k = 0;
+									}
+								}
+							    i++;
+							}
+						}
+						//printf ("replace_macro_normal: line prepared: '%s'\n", new_line);
+
+						replace_str (new_line, defines[ind].def, defines[ind].out);
+
+						// remove possible spaces after closing bracket
+						slen = strlen_safe ((const char*) new_line, MAXLINELEN);
+
+						if (new_line[slen - 2] != ')')
+						{
+							i = slen;
+							k = 1;
+							while (k == 1)
+							{
+								if (new_line[i] == ')')
+								{
+									if (i + 2 < slen - 1)
+									{
+										new_line[i + 1] = '\n'; // set line feed
+										new_line[i + 2] = '\0'; // set end mark
+
+										k = 0;
+									}
+								}
+								i--;
+								if (i < 0)
+								{
+									printf ("ERROR: no ) closing bracket found!\n");
+									return (1);
+								}
+							}
+						}
+						strcpy ((char *) line_str, (const char *) new_line);
+						return (0);
 					}
 
 					pos = searchstr (line_str, "(", 0, 0, TRUE);

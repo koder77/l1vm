@@ -11,9 +11,9 @@
 	(set string 13 hello "Hello world!")
 	// print string
 	(hello :print_s !)
-	print_n
+	(:print_n !)
 	((x y *) a =)
     (a :print_i !)
-	print_n
+	(:print_n !)
 	exit (zero)
 (funcend)
