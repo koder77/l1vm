@@ -15,5 +15,5 @@
 	((x y *) a =)
     (a :print_i !)
 	(:print_n !)
-	exit (zero)
+	(zero :exit !)
 (funcend)
