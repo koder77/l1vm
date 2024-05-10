@@ -125,8 +125,8 @@ S2 set_define (U1 *line_str)
 	slen = strlen_safe ((const char*) line_str, MAXLINELEN);
 	pos = searchstr (line_str, (U1 *) DEFINE_SB, 0, 0, TRUE);
 
-	defines[defines_ind].type = 0;	// normal define
-
+	defines[defines_ind].type = 0;	      // normal define
+	defines[defines_ind].args_num = -1;   // no arguments, just replace later
 	i = pos + 8; // next char after "#include"
 
 	// get define name:
@@ -533,11 +533,12 @@ S2 replace_macro_normal (U1 *line_str)
 	ok = 1; arg_ind = -1;
 	while (ok == 1)
 	{
-		// printf ("line_str: '%s'\n", line_str);
+		//printf ("line_str: '%s'\n", line_str);
 
 		for (ind = 0; ind <= defines_ind; ind++)
 		{
-			if (defines[ind].type == 1)
+			// check both types: 0 = normal defines, 1 = macro function defines
+			if (defines[ind].type == 1 || defines[ind].type == 0)
 			{
 				// is macro
 				// copy macro to new_line
@@ -612,7 +613,16 @@ S2 replace_macro_normal (U1 *line_str)
 						}
 						//printf ("replace_macro_normal: line prepared: '%s'\n", new_line);
 
-						replace_str (new_line, defines[ind].def, defines[ind].out);
+						if (defines[ind].type == 0)
+						{
+							// replace all found defines in new_line
+							replace_define (new_line);
+						}
+						else
+						{
+							// replace all found macros in new_line
+							replace_str (new_line, defines[ind].def, defines[ind].out);
+						}
 
 						// remove possible spaces after closing bracket
 						slen = strlen_safe ((const char*) new_line, MAXLINELEN);
@@ -1072,18 +1082,21 @@ S2 include_file (U1 *line_str)
 				// check if define is set
                 if (replace == 1)
 				{
-					replace_define (buf);
-
-					// check function name to variable name tackon
-					replace_varname (buf);
-
 					pos = searchstr (buf, (U1 *) ":", 0, 0, TRUE);
 					if (pos >= 0)
 					{
+						// check function name to variable name tackon
+					    replace_varname (buf);
+
 						replace_macro_normal (buf);
 					}
 					else
 					{
+						replace_define (buf);
+
+						// check function name to variable name tackon
+					    replace_varname (buf);
+
 						// check if macro is set
 						replace_macro (buf);
 					}
@@ -1460,18 +1473,21 @@ int main (int ac, char *av[])
 				// check if define is set
 				if (replace == 1)
 				{
-					replace_define (buf);
-
-					// check function name to variable name tackon
-					replace_varname (buf);
-
 					pos = searchstr (buf, (U1 *) ":", 0, 0, TRUE);
 					if (pos >= 0)
 					{
+						// check function name to variable name tackon
+					    replace_varname (buf);
+
 						replace_macro_normal (buf);
 					}
 					else
 					{
+						replace_define (buf);
+
+						// check function name to variable name tackon
+					    replace_varname (buf);
+
 						// check if macro is set
 						replace_macro (buf);
 					}
