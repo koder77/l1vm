@@ -89,6 +89,8 @@ FILE *foutptr;
 
 S8 linenum ALIGN = 1;
 
+// global flag set to 1 if errors found
+U1 return_error = 0;
 
 void clear_defines (void)
 {
@@ -1088,7 +1090,10 @@ S2 include_file (U1 *line_str)
 						// check function name to variable name tackon
 					    replace_varname (buf);
 
-						replace_macro_normal (buf);
+						if (replace_macro_normal (buf) != 0)
+					    {
+							return_error = 1;
+					    }
 					}
 					else
 					{
@@ -1098,7 +1103,10 @@ S2 include_file (U1 *line_str)
 					    replace_varname (buf);
 
 						// check if macro is set
-						replace_macro (buf);
+						if (replace_macro (buf) != 0)
+					    {
+							return_error = 1;
+					    }
 					}
 				}
 			}
@@ -1479,7 +1487,10 @@ int main (int ac, char *av[])
 						// check function name to variable name tackon
 					    replace_varname (buf);
 
-						replace_macro_normal (buf);
+						if (replace_macro_normal (buf) != 0)
+					    {
+							return_error = 1;
+					    }
 					}
 					else
 					{
@@ -1489,7 +1500,10 @@ int main (int ac, char *av[])
 					    replace_varname (buf);
 
 						// check if macro is set
-						replace_macro (buf);
+						if (replace_macro (buf) != 0)
+					    {
+							return_error = 1;
+					    }
 					}
 				}
 			}
@@ -1665,5 +1679,11 @@ int main (int ac, char *av[])
 		// no text written delete empty "out.md" file
 		remove ("out.md");
 	}
-	exit (0);
+
+	if (return_error != 0)
+	{
+		printf ("ERROR: found errors!\n");
+	}
+
+	exit (return_error);
 }
