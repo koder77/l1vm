@@ -144,7 +144,7 @@
 
 // info strings:
 #define COPYRIGHT_STR " 2024 (C) 2017-2024 Stefan Pietzonke - software research"
-#define VM_VERSION_STR "3.1.2  "
+#define VM_VERSION_STR "3.1.3  "
 #define MOTTO_STR "The game has changed!"
 
 // no user defined definitions below this section! ============================

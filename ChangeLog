@@ -1,3 +1,9 @@
+L1VM (3.1.3)
+	Added nanoid module for generating unique IDs.
+	See lib/nanoid.l1com.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sun 12 May 2024 07:36  +020
+
 L1VM (3.1.2)
 	NEW: now preprocessor macros can be called like function calls:
 

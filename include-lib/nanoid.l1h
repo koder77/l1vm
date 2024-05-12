@@ -1,0 +1,31 @@
+// nanoid library
+//
+//
+(nanoid_init func)
+    #var ~ nanoid
+
+    (set int64 1 mod~ 0)
+    (set string s modulestr~ "libl1vmnanoid")
+    (set string s create_nanoidstr~ "nanoid_create")
+    (set string s create_nanoid_customstr~ "nanoid_create_custom")
+
+    (set int64 1 create_nanoid~ 0)
+    (set int64 1 create_nanoid_custom~ 1)
+
+    // get argument from stack
+    (mod~ stpopi)
+    // load string module
+    (0 modulestr~ mod~ 0 intr0)
+    // set functions
+    (2 mod~ create_nanoid~ create_nanoidstr~ intr0)
+    (2 mod~ create_nanoid_custom~ create_nanoid_customstr~ intr0)
+(funcend)
+
+(nanoid_create func)
+    #var ~ nanoid
+    (3 mod~ create_nanoid~ 0 intr0)
+(funcend)
+(nanoid_create_custom func)
+    #var ~ nanoid
+    (3 mod~ create_nanoid_custom~ 0 intr0)
+(funcend)
