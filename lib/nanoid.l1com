@@ -11,12 +11,15 @@
 	(set string s custom_alphabetstr "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-*#.:@")
 	(set int64 1 custom_len 64)
 
+	// init nanoid module
 	(mod_nanoid :nanoid_init !)
+
+	// create 21 char ID
 	(idstr :nanoid_create !)
 	(idstr :print_s !)
 	(:print_n !)
 
-	// set custom id
+	// set custom ID
 	(idstr custom_alphabetstr custom_len :nanoid_create_custom !)
 	(idstr :print_s !)
 	(:print_n !)
