@@ -13,7 +13,7 @@
 	(set int64 1 sq 0)
 	(set int64 1 f 0)
 	(set string 65 idstr)
-	(set string s custom_alphabetstr "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567+-*#.:@")
+	(set string s custom_alphabetstr "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-*#.:@")
 	(set int64 1 custom_len 64)
 
 	(mod_nanoid :nanoid_init !)
