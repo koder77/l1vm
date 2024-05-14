@@ -3342,14 +3342,6 @@ int main (int ac, char *av[])
 	nice (run_priority);
 	#endif
 
-	threaddata = (struct threaddata *) calloc (max_cpu, sizeof (struct threaddata));
-	if (threaddata == NULL)
-	{
-		printf ("ERROR: can't allocate threaddata!\n");
-		cleanup ();
-		exit (1);
-	}
-
 	#if JIT_COMPILER
 		if (alloc_jit_code () != 0)
 		{
@@ -3368,6 +3360,14 @@ int main (int ac, char *av[])
 		cleanup ();
         exit (1);
     }
+
+	threaddata = (struct threaddata *) calloc (max_cpu, sizeof (struct threaddata));
+	if (threaddata == NULL)
+	{
+		printf ("ERROR: can't allocate threaddata!\n");
+		cleanup ();
+		exit (1);
+	}
 
     init_modules ();
 	signal (SIGINT, (void *) break_handler);
@@ -3406,15 +3406,21 @@ int main (int ac, char *av[])
 	// start main thread
 	run (0);
 	#else
+	#if ! __NetBSD__
 	if (pthread_create (&id, NULL, (void *) run, (void *) new_cpu) != 0)
 	{
 		printf ("ERROR: can't start main thread!\n");
 		cleanup ();
 		exit (1);
 	}
-	#endif
 
     pthread_join (id, NULL);
+	#else
+	printf ("\n\nNetBSD: NOTE: POSIX threading does not work!\nIf you know how to call 'pthread_create()' then contact me, please!\n\n");
+	run(0);
+	#endif
+	#endif
+
 	cleanup ();
 	exit (retcode);
 }
