@@ -3406,7 +3406,16 @@ int main (int ac, char *av[])
 	// start main thread
 	run (0);
 	#else
-	#if ! __NetBSD__
+	/* NOTE!!! */
+	/* if on NetBSD, then uncomment this code block, and make a comment on the next code block!! */
+	/*
+	printf ("\n\nNetBSD: NOTE: POSIX threading does not work!\nIf you know how to call 'pthread_create()' then contact me, please!\n\n");
+	run(0);
+	*/
+
+	/* if not on NetBSD then uncomment this block */
+	/* you should not uncomment both!! */
+	/* not NetBSD start */
 	if (pthread_create (&id, NULL, (void *) run, (void *) new_cpu) != 0)
 	{
 		printf ("ERROR: can't start main thread!\n");
@@ -3415,11 +3424,8 @@ int main (int ac, char *av[])
 	}
 
     pthread_join (id, NULL);
-	#else
-	printf ("\n\nNetBSD: NOTE: POSIX threading does not work!\nIf you know how to call 'pthread_create()' then contact me, please!\n\n");
-	run(0);
 	#endif
-	#endif
+	/* not NetBSD end!*/
 
 	cleanup ();
 	exit (retcode);
