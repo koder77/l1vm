@@ -485,6 +485,116 @@ void replace_symbols (U1 *linestr)
 	}
 }
 
+S2 convert_right_assign (U1 *linestr, U1 *out)
+{
+    // convert right assign expression:
+    // {a + (b * c) x =}
+    // to:
+    // {x = a + (b * c)}
+
+    S2 linestr_len;
+    S2 i;
+    S2 j;
+    S2 v;
+    S2 out_pos;
+    S2 equal_pos;
+    S2 start_bracket_pos;
+    S2 var_assign_start = -1;
+    S2 var_assign_end;
+    U1 found_var = 0;
+    U1 varname[MAXLINELEN];
+    U1 ok;
+
+    //printf ("convert_right_assign...\n");
+
+    linestr_len = strlen_safe (linestr, MAXLINELEN);
+    equal_pos = searchstr (linestr, (U1 *) "=}", 0, 0, 0);
+    if (equal_pos == -1)
+    {
+        // error!
+        return (1);
+    }
+
+    start_bracket_pos = searchstr (linestr, (U1 *) "{", 0, 0, 0);
+    if (start_bracket_pos == -1)
+    {
+        // error!
+        return (1);
+    }
+
+    v = 0;
+    if (equal_pos >= 4)
+    {
+        i = equal_pos - 1;
+        ok = 0;
+        while (ok == 0)
+        {
+            if (linestr[i] != ' ')
+            {
+                varname[v] = linestr[i];
+                //printf ("convert_right_assign: varname char: %c\n", varname[i]);
+                v++;
+            }
+            else
+            {
+                if (var_assign_start == -1)
+                {
+                    var_assign_start = i + 1;
+                }
+                else
+                {
+                    //printf ("convert_right_assign: found begin of target varname: %c!\n", linestr[i]);
+                    ok = 1;
+                }
+            }
+            i--;
+            if (i < 0)
+            {
+                ok = 1;
+            }
+        }
+
+        var_assign_start = var_assign_start - v - 1;
+        out[0] = '{';
+        out_pos = 1;
+        for (j = v - 1; j >= 0; j--)
+        {
+            out[out_pos] = varname[j];
+            //printf ("out_pos: %c\n", out[out_pos]);
+            out_pos++;
+        }
+
+        out[out_pos] = ' ';
+        out_pos++;
+        out[out_pos] = '=';
+        out_pos++;
+        out[out_pos] = ' ';
+        out_pos++;
+
+        //printf ("convert_right_assign: var_assign_start: %i\n", var_assign_start);
+
+        for (i = start_bracket_pos + 1; i < var_assign_start; i++)
+        {
+            out[out_pos] = linestr[i];
+            out_pos++;
+        }
+
+        out[out_pos] = '}';
+        out_pos++;
+        out[out_pos] = '\0';
+
+        //printf ("convert_right_assign: '%s'\n", out);
+
+        return (0);
+    }
+    else
+    {
+        // error: expression to short!
+        return (1);
+    }
+}
+
+
 //converts infix expression to postfix
 S2 convert (U1 infix[], U1 postfix[])
 {

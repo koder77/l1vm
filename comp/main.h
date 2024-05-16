@@ -78,5 +78,6 @@ S2 get_unused_var (void);
 
 // parse-rpolish.c
 S2 isOperator (char symbol);
+S2 convert_right_assign (U1 *linestr, U1 *out);
 
  #endif

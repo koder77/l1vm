@@ -269,7 +269,7 @@ S2 get_ast (U1 *line, U1 *parse_cont)
 				if (line[pos] == '{')
 				{
 					*parse_cont = 1;
-					// printf ("DEBUG get_ast: parse_cont return\n");
+					//printf ("DEBUG get_ast: parse_cont return\n");
 					return (0);
 				}
 
@@ -716,6 +716,7 @@ S2 parse_line (U1 *line)
 
 	// for convert brackets expression to RPN
 	U1 conv[MAXSTRLEN];
+	U1 conv_right_assign[MAXSTRLEN];
 
 	U1 str[MAXSTRLEN];
 	U1 code_temp[MAXSTRLEN];
@@ -755,6 +756,8 @@ S2 parse_line (U1 *line)
 	U1 boolean_var = 0;
 	S2 normal_brackets = 0;
 
+	S2 right_assign_pos;
+
     ret = check_for_brackets (line);
 	if (ret == 1)
 	{
@@ -785,9 +788,12 @@ S2 parse_line (U1 *line)
 
 	if (parse_cont)
 	{
-		// printf ("DEBUG parse_cont: '%s'\n", line);
+		//printf ("DEBUG parse_cont: '%s'\n", line);
 
 		normal_brackets = check_for_infix_math (line);
+		// DEBUG
+		//printf ("normal_brackets: %i\n", normal_brackets);
+
 		if (normal_brackets == 2)
 		{
 			// ERROR
@@ -796,11 +802,41 @@ S2 parse_line (U1 *line)
 		if (normal_brackets == 0)
 		{
 			// found brackets in math expression, convert to RPN
-			if (convert (line, conv) == 1)
+			//
+			// check if right assign:
+			// {a + b + c x =}
+
+			right_assign_pos = searchstr (line, (U1 *) "=}", 0, 0, TRUE);
+			// DEBUG
+			//printf ("right_assign_pos: %i\n", right_assign_pos);
+
+			if (right_assign_pos != -1)
 			{
-				printf ("error: line: %lli can't convert infix to RPN!\n", linenum);
-				return (1);
+				// convert string to left assign
+				// DEBUG
+				//printf ("found right assign expression!\n");
+
+				if (convert_right_assign (line, conv_right_assign) != 0)
+				{
+					printf ("error: line: %lli can't convert right assign to left assign!\n", linenum);
+					return (1);
+				}
+				strcpy ((char *) line, (const char *) conv_right_assign);
+
+				if (convert (line, conv) == 1)
+		     	{
+				    printf ("error: line: %lli can't convert infix to RPN!\n", linenum);
+				    return (1);
+			    }
 			}
+			else
+			{
+		  	    if (convert (line, conv) == 1)
+		     	{
+				    printf ("error: line: %lli can't convert infix to RPN!\n", linenum);
+				    return (1);
+			    }
+		    }
 
 			// printf ("DEBUG: parse line: exp: '%s'\n", line);
 			// printf ("DEBUG: parse line: RPN: '%s'\n", conv);
