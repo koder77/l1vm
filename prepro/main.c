@@ -490,6 +490,7 @@ S2 set_macro (U1 *line_str)
 	if (pos < 0)
 	{
 		printf ("ERROR: set_macro: no macro start: ':' found!\n");
+		printf ("'%s'\n", line_str);
 		return (1);
 	}
 
@@ -580,6 +581,7 @@ S2 replace_macro_normal (U1 *line_str)
 					if (call_found == 0)
 					{
 						printf ("ERROR: function call: no 'call' or '!' found!\n");
+						printf ("line: %lli: '%s'\n", linenum, line_str);
 						return (1);
 					}
 
@@ -649,6 +651,7 @@ S2 replace_macro_normal (U1 *line_str)
 								if (i < 0)
 								{
 									printf ("ERROR: no ) closing bracket found!\n");
+									printf ("line: %lli: '%s'\n", linenum, line_str);
 									return (1);
 								}
 							}
@@ -1404,6 +1407,8 @@ int main (int ac, char *av[])
 		read = fgets_uni ((char *) rbuf, MAXLINELEN, finptr);
         if (read != NULL)
         {
+			linenum++;
+
 			strcpy ((char *) buf, (const char *) rbuf);
 			convtabs (buf);
 			slen = strlen_safe ((const char *) buf, MAXLINELEN);
@@ -1517,7 +1522,7 @@ int main (int ac, char *av[])
 
 			pos = searchstr (buf, (U1 *) DEFINE_SB, 0, 0, TRUE);
             if (pos >= 0)
-			{
+		 	{
 				// printf ("DEBUG: got #define!\n");
 
 				if (set_define (buf) != 0)

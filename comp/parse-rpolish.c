@@ -489,14 +489,9 @@ void replace_symbols (U1 *linestr)
 
 S2 check_old_syntax_symbols (U1 *linestr)
 {
-	U1 run_loop = 1;
-	U1 op[33];
-
-	S2 i, pos;
-	S2 op_index;
+	S2 pos;
 	S2 linestr_len;
 
-	U1 found_op = 0;
 
 	linestr_len = strlen_safe ((const char *) linestr, MAXLINELEN);
 	pos = searchstr (linestr, ":=)", 0, 0, 0);
@@ -508,30 +503,10 @@ S2 check_old_syntax_symbols (U1 *linestr)
 		//printf ("check_old_syntax_symbols: return: normal parser expr\n");
 	    return (0);
     }
-
-	for (i = 0; i < MAXTRANSLATE; i++)
+	else
 	{
-		run_loop = 1;
-		while (run_loop)
-		{
-            // create expression opcode + ) closing bracket
-			strcpy ((char *) op, (const char *) translate[i].op);
-			strcat ((char *) op, ")");
-			pos = searchstr (linestr, op, 0, 0, 0);
-			if (pos >= 0)
-			{
-				// found normal parser expression
-				return (0);
-			}
-			else
-			{
-				// search symbol not found, set run_loop = 0;
-				run_loop = 0;
-			}
-		}
+		return (1);
 	}
-
-	return (1);
 }
 
 S2 convert_right_assign (U1 *linestr, U1 *out)
