@@ -25,18 +25,19 @@
 
 
 #include "../include/global.h"
-
 size_t strlen_safe (const char * str, int maxlen);
 
 // protos var.c
 S2 get_var_is_const (U1 *name);
 
 // translate.h
-#define MAXTRANSLATE 39
+#define MAXTRANSLATE 48
 
 //int stack
 #define MAX_STACK 256
 // #define MAXLINELEN 256
+
+extern struct translate translate[];
 
 U1 stack_ob[MAX_STACK][MAXSTRLEN];
 S2 stack_ob_int = -1;
@@ -485,10 +486,58 @@ void replace_symbols (U1 *linestr)
 	}
 }
 
+
+S2 check_old_syntax_symbols (U1 *linestr)
+{
+	U1 run_loop = 1;
+	U1 op[33];
+
+	S2 i, pos;
+	S2 op_index;
+	S2 linestr_len;
+
+	U1 found_op = 0;
+
+	linestr_len = strlen_safe ((const char *) linestr, MAXLINELEN);
+	pos = searchstr (linestr, ":=)", 0, 0, 0);
+	//printf ("check_old_syntax_symbols: linestr len: %i\n", linestr_len);
+	//printf ("check_old_syntax_symbols: pos of: =) %i\n", pos);
+
+	if (pos != linestr_len - 4)
+	{
+		//printf ("check_old_syntax_symbols: return: normal parser expr\n");
+	    return (0);
+    }
+
+	for (i = 0; i < MAXTRANSLATE; i++)
+	{
+		run_loop = 1;
+		while (run_loop)
+		{
+            // create expression opcode + ) closing bracket
+			strcpy ((char *) op, (const char *) translate[i].op);
+			strcat ((char *) op, ")");
+			pos = searchstr (linestr, op, 0, 0, 0);
+			if (pos >= 0)
+			{
+				// found normal parser expression
+				return (0);
+			}
+			else
+			{
+				// search symbol not found, set run_loop = 0;
+				run_loop = 0;
+			}
+		}
+	}
+
+	return (1);
+}
+
 S2 convert_right_assign (U1 *linestr, U1 *out)
 {
     // convert right assign expression:
-    // {a + (b * c) x =}
+    // (a + (b * c) x =)
     // to:
     // {x = a + (b * c)}
 
@@ -507,15 +556,15 @@ S2 convert_right_assign (U1 *linestr, U1 *out)
 
     //printf ("convert_right_assign...\n");
 
-    linestr_len = strlen_safe (linestr, MAXLINELEN);
-    equal_pos = searchstr (linestr, (U1 *) "=}", 0, 0, 0);
+    linestr_len = strlen_safe ((const char *) linestr, MAXLINELEN);
+    equal_pos = searchstr (linestr, (U1 *) ":=)", 0, 0, 0);
     if (equal_pos == -1)
     {
         // error!
         return (1);
     }
 
-    start_bracket_pos = searchstr (linestr, (U1 *) "{", 0, 0, 0);
+    start_bracket_pos = searchstr (linestr, (U1 *) "(", 0, 0, 0);
     if (start_bracket_pos == -1)
     {
         // error!

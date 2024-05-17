@@ -247,7 +247,16 @@ S2 get_ast (U1 *line, U1 *parse_cont)
 		return (2);
 	}
 
-	// printf ("> '%s'\n", line);
+	// DEBUG
+	//printf ("get_ast: > '%s'\n", line);
+
+	if (check_old_syntax_symbols (line) == 1)
+	{
+		// DEBUG
+		 //printf ("get_ast: found (a + b c =) expression!\n");
+		*parse_cont = 1;
+		return (0);
+	}
 
 	while (! ok)
 	{
@@ -806,7 +815,7 @@ S2 parse_line (U1 *line)
 			// check if right assign:
 			// {a + b + c x =}
 
-			right_assign_pos = searchstr (line, (U1 *) "=}", 0, 0, TRUE);
+			right_assign_pos = searchstr (line, (U1 *) "=)", 0, 0, TRUE);
 			// DEBUG
 			//printf ("right_assign_pos: %i\n", right_assign_pos);
 
