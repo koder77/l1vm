@@ -2,7 +2,7 @@
 //
 // SDL simple window/button demo
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 one 1)
