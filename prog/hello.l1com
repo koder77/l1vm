@@ -1,7 +1,7 @@
 // hello.l1com
 // Brackets - Hello world!
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 x 23)
@@ -9,10 +9,10 @@
 	(set int64 1 a 0)
 	(set string 13 hello "Hello world!")
 	// print string
-	print_s (hello)
-	print_n
+	(hello :print_s !)
+	(:print_n !)
 	((x y *) a =)
-	print_i (a)
-	print_n
-	exit (zero)
+	(a :print_i !)
+	(:print_n !)
+	(zero :exit !)
 (funcend)
