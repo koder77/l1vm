@@ -1,7 +1,7 @@
 // math-test-right-assign.l1com - Brackets - new math expression test
 //
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 (main func)
     (set int64 1 zero 0)
     (set int64 1 xd 23)

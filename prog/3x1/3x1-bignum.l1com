@@ -2,7 +2,7 @@
 //
 // This is a check program for the 3x1 problem: https://en.wikipedia.org/wiki/Collatz_conjecture
 
-#include <intr.l1h>
+#include <intr-func.l1h>
 
 (main func)
     #var ~ main
@@ -19,18 +19,18 @@
 
     shell_args (args~)
     (((args~ args_num~ !=) f~ =) f~ if)
-       print_s (usagestr~)
-       print_n
-       exit (one)
+       (usagestr~ :print_s !)
+       (:print_n !)
+       (one :exit !)
     (endif)
 
-    get_shell_arg (zero, numstartstr~)
-    get_shell_arg (one, numendstr~)
+    (zero numstartstr~ :get_shell_arg !)
+    (one numendstr~ :get_shell_arg !)
 
     (mathmod~ :mp_math_init !)
 
     (numstartstr~ numendstr~ :3n1_calc !)
-    exit (zero)
+    (zero :exit !)
 (funcend)
 
 (3n1_calc func)
@@ -95,8 +95,8 @@
 
     (((ret~ onei~ ==) f~ =) f~ if+)
          // set next number
-         print_s (passstr~)
-         print_n
+         (passstr~ :print_s !)
+         (:print_n !)
          (numstart~ one~ numstart~ :mp_add_float !)
          (:loop_next jmp)
     (else)
