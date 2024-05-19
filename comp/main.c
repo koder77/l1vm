@@ -1523,6 +1523,14 @@ S2 parse_line (U1 *line)
 									ok = 1;
 								}
 							}
+							if (ok == 1)
+							{
+								if (get_var_is_const (ast[level].expr[j][last_arg - 1]) == 1)
+								{
+									printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][last_arg - 1]);
+									return (1);
+								}
+							}
 							if (call_set == 1 && ok == 0)
 							{
 								if (loadreg () == 1)
@@ -6014,6 +6022,12 @@ S2 parse_line (U1 *line)
 								// exp: (num1 num2 stpull)
 								// (num1 num2 s<)
 
+								if (get_var_is_const (ast[level].expr[j][last_arg - 1]) == 1)
+								{
+									printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][last_arg - 1]);
+									return (1);
+								}
+
 								for (e = 0; e < last_arg; e++)
 								{
 									if (checkdef (ast[level].expr[j][e]) != 0)
@@ -6388,6 +6402,12 @@ S2 parse_line (U1 *line)
 										return (1);
 									}
 
+									if (get_var_is_const (ast[level].expr[j][last_arg - 1]) == 1)
+									{
+										printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][last_arg - 1]);
+										return (1);
+									}
+
 									target = get_regi (ast[level].expr[j][last_arg - 1]);
 									if (target == -1)
 									{
@@ -6490,6 +6510,12 @@ S2 parse_line (U1 *line)
 										return (1);
 									}
 
+									if (get_var_is_const (ast[level].expr[j][last_arg - 1]) == 1)
+									{
+										printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][last_arg - 1]);
+										return (1);
+									}
+
 									target = get_regi (ast[level].expr[j][last_arg - 1]);
 									if (target == -1)
 									{
@@ -6569,8 +6595,14 @@ S2 parse_line (U1 *line)
 									{
 										return (1);
 									}
-									
-									target = get_regd (ast[level].expr[j][last_arg - 1]);
+
+									if (get_var_is_const (ast[level].expr[j][last_arg - 1]) == 1)
+								    {
+									     printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][last_arg - 1]);
+									     return (1);
+							     	}
+
+ 									target = get_regd (ast[level].expr[j][last_arg - 1]);
 									if (target == -1)
 									{
 										// variable is not in register, load it

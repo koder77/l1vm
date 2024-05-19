@@ -14,7 +14,9 @@ L1VM (3.1.4)
 	This is needed to use the new "(:print_n !)" syntax.
 	The old "intr.l1h" is still there for the older syntax using programs.
 
--- Stefan Pietzonke <info@midnight-coding.de> Sat 18 May 2024 15:41  +020
+	I did add checks to avoid usign stpop on a constant variable.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sun 19 May 2024 15:35  +020
 
 L1VM (3.1.3)
 	Added nanoid module for generating unique IDs.
