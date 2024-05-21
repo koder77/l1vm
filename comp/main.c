@@ -1576,7 +1576,7 @@ S2 parse_line (U1 *line)
 
 								// check if = operator
 
-								if (strcmp ((const char *) ast[level].expr[j][last_arg], "=") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], "m=") == 0)
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "=") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], "m=") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], ":=") == 0)
 								{
 									// do variable assign
                                     // check if : "x y move =" expression
@@ -1754,7 +1754,7 @@ S2 parse_line (U1 *line)
 											printf ("last arg: '%s'\n", ast[level + 1].expr[j][last_arg]);
 										#endif
 
-										if (strcmp ((const char *) ast[level + 1].expr[j][last_arg], "=") == 0)
+										if (strcmp ((const char *) ast[level + 1].expr[j][last_arg], "=") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], ":="))
 										{
 												found_let_cont++;
 												#if DEBUG
@@ -1775,6 +1775,7 @@ S2 parse_line (U1 *line)
 									if (strcmp ((const char *) ast[level].expr[j][last_arg - 1], "]") == 0 && strcmp ((const char *) ast[level].expr[j][last_arg - 3], "[") == 0)
 									{
 										// assign to array variable
+										init_registers (); // set all registers to empty
 
 										if (checkdef (ast[level].expr[j][last_arg - 4]) != 0)
 										{

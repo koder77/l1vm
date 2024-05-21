@@ -505,7 +505,16 @@ S2 check_old_syntax_symbols (U1 *linestr)
     }
 	else
 	{
-		return (1);
+		pos = searchstr (linestr, "[", 0, 0, 0);
+		if (pos != -1)
+		{
+			// got array assign expression, return 0
+			return (0);
+		}
+		else
+		{
+			return (1);
+		}
 	}
 }
 

@@ -1,3 +1,11 @@
+L1VM (3.1.5)
+	Compiler: added := as assign operator for expressions too.
+	So you now should use := as the assign operator for new programs.
+	The old way of using = still works. This is backwards compatible
+	and older programs still compile.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Tue 21 May 2024 15:57  +020
+
 L1VM (3.1.4)
 	NetBSD: changed the order of allocations in main().
 	Added preprocessor blocks to run the "run(0)" function.
