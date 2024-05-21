@@ -20,7 +20,7 @@
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
-#if __linux__
+#if __linux__ || __HAIKU__
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
