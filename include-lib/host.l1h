@@ -44,3 +44,4 @@
 (set string s cpu_m68kstr "m68k")
 (set string s cpu_mipsstr "MIPS")
 (set string s cpu_shstr "SH")
+(set string s cpu_unknownstr "unknown")

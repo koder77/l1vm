@@ -62,6 +62,10 @@
     (host_cpu cpu_sh ?)
         (cpu_shstr :print_s !)
     (break)
+
+    (host_cpu cpu_unknown ?)
+        (cpu_unknownstr :print_s !)
+    (break)
     (switchend)
     (:print_n !)
 
@@ -79,29 +83,41 @@
     (host_os os_linux ?)
         (os_linuxstr :print_s !)
     (break)
+
     (host_os os_freebsd ?)
         (os_freebsdstr :print_s !)
     (break)
+
     (host_os os_openbsd ?)
         (os_openbsdstr :print_s !)
     (break)
+
     (host_os os_netbsd ?)
         (os_netbsdstr :print_s !)
     (break)
+
     (host_os os_dragonflybsd ?)
         (os_dragonflybsdstr :print_s !)
     (break)
+
     (host_os os_haiku ?)
         (os_haikustr :print_s !)
     (break)
+
     (host_os os_windows ?)
         (os_windowsstr :print_s !)
     (break)
+
     (host_os os_cygwin ?)
         (os_cygwinstr :print_s !)
     (break)
+
     (host_os os_mac ?)
         (os_macstr :print_s !)
+    (break)
+
+    (host_os os_unknown ?)
+        (os_unknownstr :print_s !)
     (break)
     (switchend)
     (:print_n !)
