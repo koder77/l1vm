@@ -2387,6 +2387,20 @@ S2 run (void *arg)
 			eoffs = 5;
 			break;
 
+		case 35:
+			// get host CPU type
+			arg2 = code[ep + 2];
+            regi[arg2] = MACHINE_CPU;
+            eoffs = 5;
+            break;
+
+		case 36:
+			// get host OS type
+			arg2 = code[ep + 2];
+            regi[arg2] = MACHINE_OS;
+            eoffs = 5;
+            break;
+
 		case 251:
 			// set overflow on double reg
 			arg2 = code[ep + 2];

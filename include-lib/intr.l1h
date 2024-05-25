@@ -50,6 +50,8 @@
 #func stack_type (STTYPE) :(32 STTYPE 0 0 intr0)
 #func get_size (PVAR, SIZE) :(33 PVAR SIZE 0 intr0)
 #func string_immutable (STRINGPOINTER) :(34 STRINGPOINTER 0 0 intr0)
+#func get_host_cpu (HOST_CPU) :(35 HOST_CPU 0 0 intr0)
+#func get_host_os (HOST_OS) :(36 HOST_OS 0 0 intr0)
 >>
 >>	intr1
 >>

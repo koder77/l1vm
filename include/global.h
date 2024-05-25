@@ -23,29 +23,64 @@
 #endif
 
 // OS type messsage
-#if __CYGWIN__
-#pragma message ("OS type: CYGWIN")
-#endif
-#if __MACH__
-#pragma message ("OS type: macOS")
-#endif
+// 0 means unknown
 #if __linux__
 #pragma message ("OS type: Linux")
-#endif
-#if __OpenBSD__
-#pragma message ("OS type: OpenBSD")
-#endif
-#if __FreeBSD__
+#define MACHINE_OS 1
+#elif __FreeBSD__
 #pragma message ("OS type: FreeBSD")
-#endif
-#if __HAIKU__
+#define MACHINE_OS 2
+#elif __OpenBSD__
+#pragma message ("OS type: OpenBSD")
+#define MACHINE_OS 3
+#elif __NetBSD__
+#pragma message ("OS type: NetBSD")
+#define MACHINE_OS 4
+#elif __DragonFly__
+#pragma message ("OS type :Dragonfly BSD")
+#define MACHINE_OS 5
+#elif __HAIKU__
 #pragma message ("OS type: Haiku")
+#define MACHINE_OS 6
+#elif _WIN32
+#pragma message ("OS type: Windows")
+#define MACHINE_OS 7
+#elif __CYGWIN__
+#pragma message ("OS type: CYGWIN")
+#define MACHINE_OS 8
+#elif __MACH__
+#pragma message ("OS type: macOS")
+#define MACHINE_OS 9
+#else
+#define MACHINE_OS 0
 #endif
 
+
 // set __linux__ on Cygwin, macOS, OpenBSD and FreeBSD
-#if __CYGWIN__ || __MACH__ || __OpenBSD__ || __FreeBSD__ || __NetBSD__ || ___HAIKU__
+#if __CYGWIN__ || __MACH__ || __OpenBSD__ || __FreeBSD__ || __NetBSD__ || __DragonFly__ || ___HAIKU__
 	#define __linux__	1
 #endif
+
+// get CPU type on compile time:
+// 0 means unknown
+#if defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
+#define MACHINE_CPU 1
+#elif defined(__x86_64__) || defined(_M_X64)
+#define MACHINE_CPU 2
+#elif defined(__aarch64__) || defined(_M_ARM64)
+#define MACHINE_CPU 3
+#elif defined(__powerpc) || defined(__powerpc__) || defined(__powerpc64__) || defined(__POWERPC__) || defined(__ppc__) || defined(__PPC__) || defined(_ARCH_PPC)
+#define MACHINE_CPU 4
+#elif defined(__PPC64__) || defined(__ppc64__) || defined(_ARCH_PPC64)
+#define MACHINE_CPU 5
+#elif defined(__sparc__) || defined(__sparc)
+#define MACHINE_CPU 6
+#elif defined(__m68k__)
+#define MACHINE_CPU 7
+#else
+#define MACHINE_CPU 0
+#endif
+
 
 // new for parse-infix.c compiler
 #include <sys/types.h>
@@ -144,7 +179,7 @@
 
 // info strings:
 #define COPYRIGHT_STR " 2024 (C) 2017-2024 Stefan Pietzonke - software research"
-#define VM_VERSION_STR "3.1.5 "
+#define VM_VERSION_STR "3.1.6 "
 #define MOTTO_STR "The game has changed!"
 
 // no user defined definitions below this section! ============================

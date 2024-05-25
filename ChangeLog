@@ -1,3 +1,8 @@
+L1VM (3.1.6)
+	VM: new interrupts 0: 35/36 to get host CPU and host OS type.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 25 May 2024 17:10  +020
+
 L1VM (3.1.5)
 	Compiler: added := as assign operator for expressions too.
 	So you now should use := as the assign operator for new programs.

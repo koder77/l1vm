@@ -1,0 +1,22 @@
+// hello-host.l1com
+// Brackets - get CPU anmd OS from host.
+//
+#include <intr-func.l1h>
+(main func)
+	(set int64 1 zero 0)
+    (set int64 1 host_cpu 0)
+    (set int64 1 host_os 0)
+    (set string s host_cpustr "host CPU: ")
+    (set string s host_osstr "host OS type: ")
+	(host_cpu :get_host_cpu !)
+    (host_os :get_host_os !)
+    (host_cpustr :print_s !)
+    (host_cpu :print_i !)
+    (:print_n !)
+
+    (host_osstr :print_s !)
+    (host_os :print_i !)
+    (:print_n !)
+
+	(zero :exit !)
+(funcend)
