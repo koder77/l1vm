@@ -78,6 +78,10 @@
 #define MACHINE_CPU 6
 #elif defined(__m68k__)
 #define MACHINE_CPU 7
+#elif defined(mips) || defined(__mips__) || defined(__mips)
+#define MACHINE_CPU 8
+#elif defined(__sh__)
+#define MACHINE_CPU 9
 #else
 #pragma message ("CPU type: unknown")
 #define MACHINE_CPU 0
