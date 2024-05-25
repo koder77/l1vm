@@ -37,7 +37,7 @@
 #pragma message ("OS type: NetBSD")
 #define MACHINE_OS 4
 #elif __DragonFly__
-#pragma message ("OS type :Dragonfly BSD")
+#pragma message ("OS type: Dragonfly BSD")
 #define MACHINE_OS 5
 #elif __HAIKU__
 #pragma message ("OS type: Haiku")
