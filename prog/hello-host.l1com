@@ -2,6 +2,7 @@
 // Brackets - get CPU and OS from host.
 //
 #include <intr-func.l1h>
+#inlude <host.l1h>
 (main func)
 	(set int64 1 zero 0)
     (set int64 1 host_cpu 0)
