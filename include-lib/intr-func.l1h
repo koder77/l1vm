@@ -23,7 +23,7 @@
 #func get_shell_arg (INDEX, X) :(13 INDEX X 0 intr0)
 #func show_st_p (NONE) :(14 0 0 0 intr0)
 #func cpu_core (X) :(15 X 0 0 intr0)
-#func endianess (X) :(16 X 0 0 intr0)
+#func get_host_endianess (X) :(16 X 0 0 intr0)
 #func get_time (THOUR, TMIN, TSEC) :(17 THOUR TMIN TSEC intr0)
 #func get_date (DYEAR, DMONTH, DDAY) :(18 DYEAR DMONTH DDAY intr0)
 #func weekday (X) :(19 X 0 0 intr0)
