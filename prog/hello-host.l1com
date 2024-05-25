@@ -2,29 +2,108 @@
 // Brackets - get CPU and OS from host.
 //
 #include <intr-func.l1h>
-#inlude <host.l1h>
+#include <host.l1h>
+#include <misc-macros.l1h>
 (main func)
 	(set int64 1 zero 0)
     (set int64 1 host_cpu 0)
     (set int64 1 host_cpu_endianess 0)
     (set int64 1 host_os 0)
+    (set int64 1 f 0)
     (set string s host_cpustr "host CPU: ")
-    (set string s host_cpu_endsstr "host CPU endianess: ")
+    (set string s host_cpu_endsstr "host CPU big endianess: ")
     (set string s host_osstr "host OS type: ")
+    (set string s spacestr " ")
+
 	(host_cpu :get_host_cpu !)
+    (host_cpu :pull_int64_var !)
     (host_cpu_endianess :get_host_endianess !)
+    (host_cpu_endianess :pull_int64_var !)
     (host_os :get_host_os !)
+    (host_os :pull_int64_var !)
 
     (host_cpustr :print_s !)
     (host_cpu :print_i !)
+    (spacestr :print_s !)
+
+    (switch)
+    (host_cpu cpu_i386 ?)
+        (cpu_i386str :print_s !)
+    (break)
+
+    (host_cpu cpu_x86_64 ?)
+        (cpu_x86_64str :print_s !)
+    (break)
+
+    (host_cpu cpu_aarch64 ?)
+        (cpu_aarch64str :print_s !)
+    (break)
+
+    (host_cpu cpu_powerpc ?)
+        (cpu_powerpcstr :print_s !)
+    (break)
+
+    (host_cpu cpu_ppc64 ?)
+        (cpu_ppc64str :print_s !)
+    (break)
+
+    (host_cpu cpu_sparc ?)
+        (cpu_sparcstr :print_s !)
+    (break)
+
+    (host_cpu cpu_m68k ?)
+        (cpu_m68kstr :print_s !)
+    (break)
+
+    (host_cpu cpu_mips ?)
+        (cpu_mipsstr :print_s !)
+    (break)
+
+    (host_cpu cpu_sh ?)
+        (cpu_shstr :print_s !)
+    (break)
+    (switchend)
     (:print_n !)
 
+    (host_cpu_endianess :get_host_endianess !)
     (host_cpu_endsstr :print_s !)
     (host_cpu_endianess :print_i !)
     (:print_n !)
 
+    (host_os :get_host_os !)
     (host_osstr :print_s !)
     (host_os :print_i !)
+    (spacestr :print_s !)
+
+    (switch)
+    (host_os os_linux ?)
+        (os_linuxstr :print_s !)
+    (break)
+    (host_os os_freebsd ?)
+        (os_freebsdstr :print_s !)
+    (break)
+    (host_os os_openbsd ?)
+        (os_openbsdstr :print_s !)
+    (break)
+    (host_os os_netbsd ?)
+        (os_netbsdstr :print_s !)
+    (break)
+    (host_os os_dragonflybsd ?)
+        (os_dragonflybsdstr :print_s !)
+    (break)
+    (host_os os_haiku ?)
+        (os_haikustr :print_s !)
+    (break)
+    (host_os os_windows ?)
+        (os_windowsstr :print_s !)
+    (break)
+    (host_os os_cygwin ?)
+        (os_cygwinstr :print_s !)
+    (break)
+    (host_os os_mac ?)
+        (os_macstr :print_s !)
+    (break)
+    (switchend)
     (:print_n !)
 
 	(zero :exit !)
