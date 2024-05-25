@@ -1,5 +1,5 @@
 // hello-host.l1com
-// Brackets - get CPU anmd OS from host.
+// Brackets - get CPU and OS from host.
 //
 #include <intr-func.l1h>
 (main func)
