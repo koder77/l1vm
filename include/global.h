@@ -57,7 +57,7 @@
 #endif
 
 
-// set __linux__ on Cygwin, macOS, OpenBSD and FreeBSD
+// set __linux__
 #if __CYGWIN__ || __MACH__ || __OpenBSD__ || __FreeBSD__ || __NetBSD__ || __DragonFly__ || ___HAIKU__
 	#define __linux__	1
 #endif
