@@ -52,6 +52,7 @@
 #pragma message ("OS type: macOS")
 #define MACHINE_OS 9
 #else
+#pragma message ("OS type: unknown")
 #define MACHINE_OS 0
 #endif
 
@@ -78,6 +79,7 @@
 #elif defined(__m68k__)
 #define MACHINE_CPU 7
 #else
+#pragma message ("CPU type: unknown")
 #define MACHINE_CPU 0
 #endif
 
