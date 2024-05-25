@@ -13,6 +13,7 @@
 	(host_cpu :get_host_cpu !)
     (host_cpu_endianess :get_host_endianess !)
     (host_os :get_host_os !)
+
     (host_cpustr :print_s !)
     (host_cpu :print_i !)
     (:print_n !)
