@@ -1,9 +1,18 @@
-L1VM BUILD README  2020-04-01
+L1VM BUILD README  2024-05-28
 =============================
-NEW: This is a experimental version of my L1VM using the SDL 2 libraries.
-The SDL 2 library is in the vm/modules/sdl-2.0/ directory.
+BUILD AS EMBEDDED LIBRARY
+-------------------------
+You can set the "L1VM_EMBEDDED" flag to "1" and build the L1VM as a embedded library. And use this zerobuild files to build it:
 
-I did test the SDL2 gfx/GUI library: the graphics part and the GUI are now working.
+<pre>
+zerobuild-nojit-embedded.txt
+zerobuild-nojit-embedded-macos.txt
+zerobuild-nojit-embedded-win.txt
+</pre>
+
+An example caller program is in the "test-embedded" directory.
+It just runs the "Hello world" program and dumps the global data memory.
+You have to extract the data from it. You can use the data offsets as shown in the assembly output for this! So you can get the data out of the L1VM RAM.
 
 Now there is a bash script to build L1VM without JIT-compiler: "make-nojit.sh" in vm directory. You have to set "JIT_COMPILER" to "0" in the source file vm/main.c to do that. In some cases programs execute faster if they don't need the JIT-compiler to run!
 

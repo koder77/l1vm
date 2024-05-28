@@ -422,6 +422,7 @@ void loop_stop (void)
 	// printf ("DEBUG: loop_stop!\n");
 }
 
+// L1VM normal run function
 S2 run (void *arg)
 {
 	S8 cpu_core ALIGN = (S8) arg;
@@ -3172,6 +3173,112 @@ void show_run_info (void)
 	#endif
 }
 
+// L1VM shared library functions
+// interface to calling program
+#if L1VM_EMBEDDED
+long long int get_global_data_size (void)
+{
+	return (data_size);
+}
+
+unsigned char *get_global_data (void)
+{
+	return (data_global);
+}
+
+int run_program (char *program_name)
+{
+	S8 i ALIGN;
+	pthread_t id;
+
+	S8 new_cpu ALIGN;
+
+	#if JIT_COMPILER
+		if (alloc_jit_code () != 0)
+		{
+			printf ("FATAL ERROR: JIT compiler: can't alloc memory!\n");
+		    cleanup ();
+			exit (1);
+		}
+	#endif
+
+    if (load_object ((U1 *) program_name))
+    {
+		cleanup ();
+        exit (1);
+    }
+
+	threaddata = (struct threaddata *) calloc (max_cpu, sizeof (struct threaddata));
+	if (threaddata == NULL)
+	{
+		printf ("ERROR: can't allocate threaddata!\n");
+		cleanup ();
+		exit (1);
+	}
+
+    init_modules ();
+	// signal (SIGINT, (void *) break_handler);
+
+	// set all higher threads as STOPPED = unused
+	for (i = 1; i < max_cpu; i++)
+	{
+		threaddata[i].status = STOP;
+		threaddata[i].data = NULL;
+	}
+	threaddata[0].status = RUNNING;		// main thread will run
+	threaddata[0].data = NULL;
+
+	new_cpu = 0;
+
+	threaddata[new_cpu].sp = (U1 *) &data_global + (data_mem_size - ((max_cpu - 1) * stack_size) - 1);
+	threaddata[new_cpu].sp_top = threaddata[new_cpu].sp;
+	threaddata[new_cpu].sp_bottom = threaddata[new_cpu].sp_top - stack_size + 1;
+
+	threaddata[new_cpu].sp_thread = threaddata[new_cpu].sp + (new_cpu * stack_size);
+	threaddata[new_cpu].sp_top_thread = threaddata[new_cpu].sp_top + (new_cpu * stack_size);
+	threaddata[new_cpu].sp_bottom_thread = threaddata[new_cpu].sp_bottom + (new_cpu * stack_size);
+	threaddata[new_cpu].ep_startpos = 16;
+
+	// on macOS use wait loop thread, because the SDL module must be run from main thread!!!
+	#if __MACH__ || __HAIKU__
+	new_cpu++;
+    if (pthread_create (&id, NULL, (void *) run_main_loop_thread, (void *) new_cpu) != 0)
+	{
+		printf ("ERROR: can't start main loop thread!\n");
+		cleanup ();
+		exit (1);
+	}
+	threaddata[1].status = RUNNING;
+
+	// start main thread
+	run (0);
+	#else
+	/* NOTE!!! */
+	/* if on NetBSD, then uncomment this code block, and make a comment on the next code block!! */
+	/*
+	printf ("\n\nNetBSD: NOTE: POSIX threading does not work!\nIf you know how to call 'pthread_create()' then contact me, please!\n\n");
+	run(0);
+	*/
+
+	/* if not on NetBSD then uncomment this block */
+	/* you should not uncomment both!! */
+	/* not NetBSD start */
+	if (pthread_create (&id, NULL, (void *) run, (void *) new_cpu) != 0)
+	{
+		printf ("ERROR: can't start main thread!\n");
+		cleanup ();
+		exit (1);
+	}
+
+    pthread_join (id, NULL);
+	#endif
+	/* not NetBSD end!*/
+
+	return (retcode);
+}
+#endif
+
+#if ! L1VM_EMBEDDED
 int main (int ac, char *av[])
 {
 	S8 i ALIGN;
@@ -3444,3 +3551,4 @@ int main (int ac, char *av[])
 	cleanup ();
 	exit (retcode);
 }
+#endif

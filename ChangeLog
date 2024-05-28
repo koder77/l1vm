@@ -1,3 +1,9 @@
+L1VM (3.1.7)
+	NEW: VM can be build as a shared library for embedding it in other programs.
+	See vm/README!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Tue 28 May 2024 22:30  +020
+
 L1VM (3.1.6)
 	VM: new interrupts 0: 35/36 to get host CPU and host OS type.
 
