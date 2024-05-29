@@ -34,7 +34,7 @@ int main (void) {
 
         if (strlen ((const char *) hexstr) < 3)
         {
-            printf (" ");
+            printf ("0");
         }
 
         printf ("%s", hexstr);
