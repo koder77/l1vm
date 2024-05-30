@@ -1,0 +1,33 @@
+// factorial.l1com
+// calculate factorial of number
+//
+#include <intr-func.l1h>
+(main func)
+    #var ~ main
+	(set int64 1 zero 0)
+	(set int64 1 number~ 8)
+    (set int64 1 factorial~ 0)
+    (number~ :factorial !)
+    (factorial~ stpop)
+    (factorial~ :print_i !)
+    (:print_n !)
+	(zero :exit !)
+(funcend)
+
+(factorial func)
+    #var ~ factorial
+    (set int64 1 number~ 0)
+    (set int64 1 one~ 1)
+    (set int64 1 i~ 1)
+    (set int64 1 factorial~)
+    (set int64 1 f~)
+    (number~ stpop)
+    (one~ i~ :=)
+    (one~ factorial~ :=)
+    (for-loop)
+    (((i~ number~ <=) f~ =) f~ for)
+        (factorial~ * i~ factorial~ :=)
+        (i~ + one~ i~ :=)
+    (next)
+    (factorial~ stpush)
+(funcend)
