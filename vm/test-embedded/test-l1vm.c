@@ -21,16 +21,16 @@ int main (void) {
 
     printf("starting L1VM hello world program...\n");
 
-    ret = run_program ("hello", ac, av);
+    ret = l1vm_run_program ("hello", ac, av);
     if (ret != 0)
     {
         printf ("error running program! exit!\n");
-        cleanup ();
+        l1vm_cleanup ();
         exit (1);
     }
 
-    data_size = get_global_data_size ();
-    data_ptr = get_global_data ();
+    data_size = l1vm_get_global_data_size ();
+    data_ptr = l1vm_get_global_data ();
 
     printf ("\n\nmemdump global data:\n");
     for (i = 0; i < data_size; i++)
@@ -54,6 +54,6 @@ int main (void) {
     printf ("\n\n");
 
     // call the L1VM memory cleanup function:
-    cleanup ();
+    l1vm_cleanup ();
     exit (0);
 }

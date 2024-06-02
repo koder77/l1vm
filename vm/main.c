@@ -3176,17 +3176,22 @@ void show_run_info (void)
 // L1VM shared library functions
 // interface to calling program
 #if L1VM_EMBEDDED
-long long int get_global_data_size (void)
+long long int l1vm_get_global_data_size (void)
 {
 	return (data_size);
 }
 
-unsigned char *get_global_data (void)
+unsigned char *l1vm_get_global_data (void)
 {
 	return (data_global);
 }
 
-int run_program (char *program_name, int ac, char *av[])
+void l1vm_cleanup (void)
+{
+	cleanup ();
+}
+
+int l1vm_run_program (char *program_name, int ac, char *av[])
 {
 	S8 i ALIGN;
 	pthread_t id;
