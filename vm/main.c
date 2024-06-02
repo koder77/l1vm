@@ -3186,12 +3186,181 @@ unsigned char *get_global_data (void)
 	return (data_global);
 }
 
-int run_program (char *program_name)
+int run_program (char *program_name, int ac, char *av[])
 {
 	S8 i ALIGN;
 	pthread_t id;
 
 	S8 new_cpu ALIGN;
+
+	S8 arglen ALIGN;
+	S8 strind ALIGN;
+	S8 avind ALIGN;
+	U1 cmd_args = 0;		// switched to one, if arguments follow
+
+	// process priority on Linux
+    S4 run_priority = 0;        // -20 = highest priority, 19 = lowest priority
+
+	if (ac > 1)
+    {
+        for (i = 1; i < ac; i++)
+        {
+            arglen = strlen_safe (av[i], MAXLINELEN);
+
+			// printf ("DEBUG: arg: '%s'\n", av[i]);
+
+			if (cmd_args == 1)
+			{
+				// printf ("got shellarg: '%s'\n", av[i]);
+
+					if (shell_args_ind < MAXSHELLARGS - 1)
+					{
+						shell_args_ind++;
+						if (strlen_safe (av[i], MAXSHELLARGLEN - 1) < MAXSHELLARGLEN -1)
+						{
+							strcpy ((char *) shell_args[shell_args_ind], av[i]);
+						}
+						else
+						{
+							printf ("ERROR: shell argument: '%s' too long!\n", av[i]);
+							cleanup ();
+							exit (1);
+						}
+
+						// printf ("arg: %i: '%s'\n", shell_args_ind, av[i]);
+					}
+			}
+			else
+			{
+				if (arglen >= 2)
+				{
+					// get VM specific args
+					if (av[i][0] == '-' || (av[i][0] == '-' && av[i][1] == '-'))
+					{
+						if (arglen == 2)
+						{
+							if (av[i][0] == '-' && av[i][1] == 'q')
+							{
+								silent_run = 1;
+							}
+
+							if (av[i][0] == '-' && av[i][1] == 'C')
+							{
+								if (i < ac - 1)
+				                {
+									// set max cpu cores flag...
+									max_cpu = atoi (av[i + 1]);
+									if (max_cpu == 0)
+									{
+										printf ("ERROR: max_cpu less than 1 core!\n");
+										cleanup ();
+										exit (1);
+									}
+									printf ("max_cpu: cores set to: %lli\n", max_cpu);
+								}
+							}
+
+							if (av[i][0] == '-' && av[i][1] == 'S')
+							{
+								if (i < ac - 1)
+				                {
+									// set max stack size flag...
+									stack_size = atoi (av[i + 1]);
+									if (stack_size == 0)
+									{
+										printf ("ERROR: stack size is 0!\n");
+										cleanup ();
+										exit (1);
+									}
+									printf ("stack_size: stack size set to %lli\n", stack_size);
+								}
+							}
+
+							if (av[i][0] == '-' && av[i][1] == '?')
+							{
+								// user needs help, show arguments info and exit
+								show_info ();
+								cleanup ();
+								exit (1);
+							}
+
+							if (av[i][0] == '-' && av[i][1] == 'p')
+							{
+								// set VM run priority
+								run_priority = atoi (av[i + 1]);
+								if (run_priority < -20 || run_priority > 19)
+								{
+									printf ("Run priority out of legal range! Set to default 0!\n");
+									run_priority = 0;
+								}
+							}
+						}
+            			if (arglen > 2)
+            			{
+                			if (av[i][0] == '-' && av[i][1] == 'M')
+							{
+								// try load module (shared library)
+								modules_ind++;
+                    			if (modules_ind < MODULES)
+                    			{
+                    				strind = 0; avind = 2;
+                    				for (avind = 2; avind < arglen; avind++)
+                    				{
+                        				modules[modules_ind].name[strind] = av[i][avind];
+                        				strind++;
+                    				}
+                        			modules[modules_ind].name[strind] = '\0';
+
+                    				if (load_module (modules[modules_ind].name, modules_ind) == 0)
+                    				{
+                        				printf ("module: %s loaded\n", modules[modules_ind].name);
+                    				}
+                    				else
+                    				{
+                        				printf ("EXIT!\n");
+										cleanup ();
+                        				exit (1);
+                    				}
+                				}
+                			}
+                			else
+							{
+								if (arglen >= 4)
+								{
+                    				if (arglen == 6)
+									{
+										if (strcmp (av[i], "--help") == 0)
+										{
+											// user needs help, show arguments info and exit
+											show_info ();
+											cleanup ();
+											exit (1);
+										}
+									}
+								}
+							}
+	            		}
+					}
+				}
+			}
+			// get normal shell arg
+			if (arglen > 0)
+			{
+				if (strcmp (av[i], "-args") == 0)
+				{
+					// printf ("args follow: %lli: '%s\n", av[i]);
+					cmd_args = 1;
+				}
+			}
+        }
+    }
+	else
+	{
+		show_info ();
+		show_run_info ();
+		cleanup ();
+		exit (1);
+	}
 
 	#if JIT_COMPILER
 		if (alloc_jit_code () != 0)

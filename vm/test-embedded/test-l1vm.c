@@ -14,9 +14,14 @@ int main (void) {
     int ret;
     unsigned char hexstr[3];
 
+    // this shows how to set command line arguments for the embedded L1VM
+    // setting the stack size to 10000 as an example.
+    int ac = 3;
+    char *av[3] = {"l1vm", "-S", "10000"};
+
     printf("starting L1VM hello world program...\n");
 
-    ret = run_program ("hello");
+    ret = run_program ("hello", ac, av);
     if (ret != 0)
     {
         printf ("error running program! exit!\n");
