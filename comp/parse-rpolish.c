@@ -23,6 +23,7 @@
 // parse reverse polish math expressions
 // based on a code by: https://www.tutorialspoint.com/data_structures_algorithms/expression_parsing_using_statck.htm
 
+// DEBUG CPPCHECK
 
 #include "../include/global.h"
 size_t strlen_safe (const char * str, int maxlen);
@@ -533,7 +534,7 @@ S2 convert_right_assign (U1 *linestr, U1 *out)
     S2 equal_pos;
     S2 start_bracket_pos;
     S2 var_assign_start = -1;
-    S2 var_assign_end;
+    // S2 var_assign_end;
     U1 found_var = 0;
     U1 varname[MAXLINELEN];
     U1 ok;
@@ -816,6 +817,7 @@ S2 check_rpn_expression (U1 *postfix)
 			}
 		}
 	}
+	// DEBUG CPPCHECK
 	if (found_equal == 0)
 	{
 		printf ("error: line %lli: no equal sign found in expression!\n", linenum);
@@ -826,7 +828,7 @@ S2 check_rpn_expression (U1 *postfix)
 		printf ("error: line %lli: no variable found in expression!\n", linenum);
 		ret = 1;
 	}
-	return (0);
+	return (ret);
 }
 
 // get range variable index
