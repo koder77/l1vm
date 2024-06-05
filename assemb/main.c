@@ -19,6 +19,7 @@
 
 //  l1asm RISC assembler
 //
+// DEBUG CPPCHECK
 
 #include "../include/global.h"
 #include "../include/opcodes.h"
@@ -1077,7 +1078,7 @@ S2 parse_line (U1 *line)
 					slen = strlen_safe ((const char *) args[0], MAXLINELEN);
 					if (slen < LABELLEN - 1)
 					{
-						if (label_ind < MAXLABELS)
+						if (label_ind < MAXLABELS - 1)
 						{
 							label_ind++;
 							strcpy ((char *) label[label_ind].name, (const char *) args[0]);
@@ -1201,7 +1202,7 @@ S2 parse_line (U1 *line)
 										slen = strlen_safe ((const char *) args[j], MAXLINELEN);
 										if (slen < LABELLEN - 1)
 										{
-											if (label_ind < MAXLABELS)
+											if (label_ind < MAXLABELS - 1)
 											{
 												label_ind++;
 												strcpy ((char *) label[label_ind].name, (const char *) args[j]);
