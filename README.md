@@ -1,4 +1,4 @@
-L1VM README  2024-04-03
+L1VM README  2024-06-05
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -43,7 +43,37 @@ Code written in inline assembly can be compiled by the JIT-compiler. Increasing 
 
 NEW: Now you can define objects (OOP) in Brackets. You can write functions inside the object which are using the object data.
 An example is here: [math-circle-oop](https://github.com/koder77/l1vm/blob/master/prog/math-circle-oop.l1com).
+
+The L1VM can be build as a shared library to embedd it too!
 </b>
+
+<h2>Build the L1VM as a shared library</h2>
+You need to make a change in "include/settings.h": Set the EMBEDDED flag to "1":
+
+<pre>
+#define L1VM_EMBEDDED 1
+</pre>
+
+Then build the library in "vm/" with one of the zerobuild embedded build scripts. On Linux you need this for example:
+
+<pre>
+$ CC=clang CCPP=clang++ zerobuild zerobuild-nojit-embedded.txt force
+</pre>
+
+Now copy the ".so" file to the  "~/l1vm/bin" directory. So it can be found by the system.
+
+As a next step you can build the test program in "vm/test-embedded".
+To build the example:
+
+<pre>
+$ CC=clang CCPP=clang++ zerobuild force
+</pre>
+
+To run the test program:
+
+<pre>
+$ ./test-l1vm
+</pre>
 
 <b>
 NEW: I did develop a linter to check if the function call uses the right function arguments variables.
