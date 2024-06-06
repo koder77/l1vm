@@ -92,7 +92,7 @@ U1 *nanoid_create (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     #endif
 
     strcpy ((char *) &data[id_address], id);
-
+    free (id);
     return (sp);
 }
 
@@ -153,6 +153,6 @@ U1 *nanoid_create_custom (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     #endif
 
     strcpy ((char *) &data[id_address], id);
-
+    free (id);
     return (sp);
 }
