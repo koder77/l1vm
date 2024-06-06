@@ -114,7 +114,7 @@ char* safe_custom(char alphs[], int size) {
         rand_buf[j] = alphs[random_num];
     }
 
-    free (rand_src);
+    fclose (rand_src);
     return (rand_buf);
 }
 
