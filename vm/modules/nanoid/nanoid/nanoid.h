@@ -37,6 +37,11 @@ char* safe_simple();
 char* custom(char alphs[], int size) {
     int alph_size = strlen(alphs) - 1;
     char *id = (char *) malloc(sizeof(char) * size);
+    if (id == NULL)
+    {
+        // error: no memory!
+        return (NULL);
+    }
 
     for( int i = 0; i < size; i++ ) {
         int random_num;
@@ -48,7 +53,7 @@ char* custom(char alphs[], int size) {
         id[i] = alphs[random_num];
     }
 
-    return id;
+    return (id);
 }
 
 char* generate(int size) {
@@ -67,14 +72,25 @@ char* safe_custom(char alphs[], int size) {
     FILE *rand_src;
 
     buffer = (char *) malloc(size);
+    if (buffer == NULL)
+    {
+        return (NULL);
+    }
+
     rand_buf = (char *) malloc(size);
+    if (rand_buf == NULL)
+    {
+        free (buffer);
+        return (NULL);
+    }
+
     rand_src = fopen("/dev/urandom", "rb");
 
     if (rand_src == NULL)
     {
         free (buffer);
         free (rand_buf);
-        return NULL;
+        return (NULL);
     }
 
     fread(buffer, size, 1, rand_src);
@@ -99,7 +115,7 @@ char* safe_custom(char alphs[], int size) {
     }
 
     free (rand_src);
-    return rand_buf;
+    return (rand_buf);
 }
 
 char* safe_generate(int size) {
