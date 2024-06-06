@@ -36,7 +36,7 @@ char* safe_simple();
 
 char* custom(char alphs[], int size) {
     int alph_size = strlen(alphs) - 1;
-    char *id = (char *) malloc(sizeof(char) * 3);
+    char *id = (char *) malloc(sizeof(char) * size);
 
     for( int i = 0; i < size; i++ ) {
         int random_num;
@@ -63,7 +63,7 @@ char* simple() {
 char* safe_custom(char alphs[], int size) {
     char *buffer;
     char *rand_buf;
-    unsigned int sum;
+    unsigned int sum = 0;
     FILE *rand_src;
 
     buffer = (char *) malloc(size);
@@ -71,6 +71,8 @@ char* safe_custom(char alphs[], int size) {
     rand_src = fopen("/dev/urandom", "rb");
 
     if (rand_src == NULL)
+        free (buffer);
+        free (rand_buf);
         return NULL;
 
     fread(buffer, size, 1, rand_src);
@@ -94,6 +96,7 @@ char* safe_custom(char alphs[], int size) {
         rand_buf[j] = alphs[random_num];
     }
 
+    free (rand_src);
     return rand_buf;
 }
 

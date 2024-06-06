@@ -2169,7 +2169,7 @@ U1 *socket_write_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     while (! end)
     {
 		i++;
-        if (i > SOCKBUFSIZE - 1)
+        if (i >= SOCKBUFSIZE - 1)
         {
              printf ("FATAL ERROR: socket_write_string: socket buffer overflow!\n");
         }

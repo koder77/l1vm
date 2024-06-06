@@ -1847,6 +1847,8 @@ U1 *sdl_save_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	U1 sandbox_filename[256];
 	S2 ret;
 
+	// DEBUG CPPCHECK
+	/*
 	#if __MACH__ 	// macOS little endianess
 		rmask = 0x000000ff; gmask = 0x0000ff00; bmask = 0x00ff0000; amask = 0xff000000;
 	#else
@@ -1856,6 +1858,7 @@ U1 *sdl_save_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		rmask = 0x000000ff; gmask = 0x0000ff00; bmask = 0x00ff0000; amask = 0xff000000;
 		#endif
 	#endif
+	*/
 
 	sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
 	if (sp == NULL)
