@@ -71,9 +71,11 @@ char* safe_custom(char alphs[], int size) {
     rand_src = fopen("/dev/urandom", "rb");
 
     if (rand_src == NULL)
+    {
         free (buffer);
         free (rand_buf);
         return NULL;
+    }
 
     fread(buffer, size, 1, rand_src);
 
