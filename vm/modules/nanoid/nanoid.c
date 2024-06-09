@@ -66,6 +66,7 @@ U1 *nanoid_create (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     S8 id_address ALIGN;
     S8 id_len ALIGN = 21;
+    S8 i ALIGN = 0;
     char *id;
 
     sp = stpopi ((U1 *) &id_address, sp, sp_top);
@@ -97,7 +98,12 @@ U1 *nanoid_create (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    strcpy ((char *) &data[id_address], id);
+    for (i = 0; i < id_len; i++)
+    {
+        data[id_address + i] = id[i];
+    }
+    data[id_address + i] = '\0';
+
     free (id);
     return (sp);
 }
@@ -108,6 +114,7 @@ U1 *nanoid_create_custom (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 id_set_len ALIGN;
     S8 alphabet_address ALIGN;
     S8 alphabet_len ALIGN;
+    S8 i ALIGN = 0;
 
     char *id;
 
@@ -164,7 +171,12 @@ U1 *nanoid_create_custom (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    strcpy ((char *) &data[id_address], id);
+    for (i = 0; i < id_set_len; i++)
+    {
+        data[id_address + i] = id[i];
+    }
+    data[id_address + i] = '\0';
+
     free (id);
     return (sp);
 }

@@ -1,3 +1,8 @@
+L1VM (3.1.8)
+	VM: nanoid module buffer overflow fixes.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sun 9 May 2024 12:44  +020
+
 L1VM (3.1.7)
 	NEW: VM can be build as a shared library for embedding it in other programs.
 	See vm/README!
