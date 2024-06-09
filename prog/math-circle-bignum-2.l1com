@@ -50,21 +50,12 @@
 	(endif)
 	(reset-reg)
 	(((input_menu~ one~ ==) f~ =) f~ if)
-		// reset used variables and set used registers to zero
-		// no context register saving here
-		(reset-reg)
 		(:do_calc_diam->circle !)
 	(endif)
 	(((input_menu~ two~ ==) f~ =) f~ if)
-		// reset used variables and set used registers to zero
-		// no context register saving here
-		(reset-reg)
 		(:do_calc_circ->circle !)
 	(endif)
 	(((input_menu~ three~ ==) f~ =) f~ if)
-		// reset used variables and set used registers to zero
-		// no context register saving here
-		(reset-reg)
 		(:do_calc_area->circle !)
 	(endif)
 	print_n
