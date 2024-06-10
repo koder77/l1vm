@@ -35,6 +35,10 @@
 
 #define DEBUG 0
 
+// set to one if the exit function call was found
+// will result in an error if it is not found in a program!
+U1 found_exit = 0;
+
 
 // string functions ===============================================================================
 // protos
@@ -835,6 +839,15 @@ S2 parse_line (U1 *line)
         }
     }
 
+    pos = searchstr (line, (U1 *) "intr0)", 0, 0, TRUE);
+    if (pos != -1)
+    {
+        pos = searchstr (line, (U1 *) "(255", 0, 0, TRUE);
+        if (pos != -1)
+        {
+            found_exit = 1;
+        }
+    }
 
     // check if function call
     function_call = 0;
@@ -1515,6 +1528,12 @@ int main (int ac, char *av[])
     }
     fclose (finptr);
 
+    // check if exit interrupt was found
+    if (found_exit == 0)
+    {
+        printf ("linter error: no exit call in program found!\n");
+        ret = 1; // error
+    }
     cleanup ();
 
     if (ret == 0) printf ("\033[0ml1vm-linter %s, no errors found!\n", VM_VERSION_STR );
