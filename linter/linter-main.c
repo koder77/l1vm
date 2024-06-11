@@ -376,6 +376,13 @@ S2 check_exit_call (U1 *line)
         return (1);
     }
 
+    // sane check:
+    if (end_pos <= start_pos)
+    {
+        printf ("error: exit interrupt syntax error!\n");
+        return (1);
+    }
+
     var_start = start_pos + 5;
     j = 0;
     for (i = var_start; i < end_pos; i++)
