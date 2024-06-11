@@ -1507,15 +1507,6 @@ int main (int ac, char *av[])
          exit (1);
      }
 
-    // open input file
-	finptr = fopen (av[1], "r");
-	if (finptr == NULL)
-	{
-		// error can't open input file
-		printf ("ERROR: can't open input file: '%s' !\n", av[1]);
-		exit (1);
-	}
-
      // dummys
      /*
      parse_line ("(set int64 1 zero 0)");
