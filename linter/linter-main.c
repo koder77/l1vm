@@ -1469,7 +1469,7 @@ int main (int ac, char *av[])
     S2 ret = 0;
     U1 rbuf[MAXSTRLEN + 1];                        /* read-buffer for one line */
 	U1 buf[MAXSTRLEN + 1];
-    S2 pos ,pos2, linton, lintoff, function_args_check;
+    S2 pos, pos2, linton, lintoff, function_args_check;
     U1 do_lint = 1; // switch linting on and off
 
      if (ac < 2)
