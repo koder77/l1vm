@@ -353,6 +353,71 @@ void get_current_function_name (U1 *line)
     strcpy ((char *) function_name_current, (const char *) name);
 }
 
+S2 check_exit_call (U1 *line)
+{
+    S2 i, j;
+    S2 start_pos;
+    S2 end_pos;
+    S2 var_start;
+    U1 varname[MAXSTRLEN];
+    S2 var_type;
+
+    start_pos = searchstr (line, (U1 *) "(255", 0, 0, TRUE);
+    if (start_pos == -1)
+    {
+        // error, no valid exit call interrupt start
+        return (1);
+    }
+
+    end_pos = searchstr (line, (U1 *) "intr0)", 0, 0, TRUE);
+    if (end_pos == -1)
+    {
+        // error, no valid exit call interrupt end
+        return (1);
+    }
+
+    var_start = start_pos + 5;
+    j = 0;
+    for (i = var_start; i < end_pos; i++)
+    {
+        if (line[i] != ' ')
+        {
+            varname[j] = line[i];
+            if (j < MAXSTRLEN - 1)
+            {
+                j++;
+            }
+            else
+            {
+                // error variable overflow
+                printf ("error: exit interrupt: variable name overflow!\n");
+                return (1);
+            }
+        }
+        else
+        {
+            varname[j] = '\0';
+            break;
+        }
+    }
+
+    // check vartype
+    var_type = get_varname_type (varname);
+    if (var_type == -1)
+    {
+        printf ("error: exit interrupt: variable '%s' not set!\n", varname);
+        return (1);
+    }
+
+    if (var_type == DOUBLEFLOAT)
+    {
+        printf ("error: exit interrupt: variable '%s' is not int type!\n", varname);
+        return (1);
+    }
+
+    return (0);
+}
+
 S2 parse_line (U1 *line)
 {
     S2 pos, type_pos, type_ind = 0, i, ret_start;
@@ -845,7 +910,10 @@ S2 parse_line (U1 *line)
         pos = searchstr (line, (U1 *) "(255", 0, 0, TRUE);
         if (pos != -1)
         {
-            found_exit = 1;
+            if (check_exit_call (line) == 0)
+            {
+                found_exit = 1;
+            }
         }
     }
 
