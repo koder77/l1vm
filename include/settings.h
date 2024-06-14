@@ -65,4 +65,7 @@
 #define MAXDATAINFO             40960	// variable data names: was 4096
 
 #define MAXRANGESVAR            4096   // variable ranges can be saved
+
+#define STRINGMOD_MAXSTRLEN     409600 // max string len in string module
+
 // user settings end ==========================================================
