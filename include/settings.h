@@ -66,6 +66,6 @@
 
 #define MAXRANGESVAR            4096   // variable ranges can be saved
 
-#define STRINGMOD_MAXSTRLEN     409600 // max string len in string module
+#define STRINGMOD_MAXSTRLEN     409600 // max string len in string module, -1 means don't check for overflow!
 
 // user settings end ==========================================================

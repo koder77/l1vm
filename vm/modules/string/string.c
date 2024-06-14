@@ -66,9 +66,13 @@ size_t strlen_safe (const char *str, S8 maxlen)
 			return (i);
 		}
 
-		if (i >= maxlen)
+		// if maxlen < 0, then don't check for length overflow!
+		if (maxlen > 0)
 		{
-			return (0);
+			if (i >= maxlen)
+			{
+				return (0);
+			}
 		}
 	}
 }
