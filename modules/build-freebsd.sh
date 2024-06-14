@@ -25,7 +25,7 @@ zerobuild force
 cd ../rs232-libserialport
 zerobuild zerobuild-freebsd.txt force
 cd ../sdl-2.0
-zerobuild force
+zerobuild zerobuild-freebsd.txt force
 cd ../string
 zerobuild force
 cd ../time
