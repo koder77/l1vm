@@ -127,9 +127,12 @@ size_t strlen_safe (const char * str, int maxlen)
 		{
 			return (i);
 		}
-		if (i > maxlen)
+		if (maxlen > 0)
 		{
-			return (0);
+			if (i > maxlen)
+			{
+				return (0);
+			}
 		}
 	}
 }
@@ -140,7 +143,10 @@ S2 check_is_digit (const char *numberstr)
 	S8 i ALIGN = 0;
 	U1 check = 1;
 
-	number_len = strlen_safe (numberstr, MAXSTRLEN);
+	number_len = strlen_safe (numberstr, STRINGMOD_MAXSTRLEN);
+
+	// printf ("DEBUG: check_is_digit pi len: %lli\n", number_len);
+
 	if (number_len == 0)
 	{
 		// error: empty string!
@@ -149,11 +155,19 @@ S2 check_is_digit (const char *numberstr)
 
 	while (check == 1)
 	{
+		if (numberstr[i] == ' ')
+		{
+			printf ("check_is_digit: number has spaces in string: error!\n");
+			return (1);
+		}
+
 		if (isdigit (numberstr[i]) == 0)
 		{
 			// check if it is decimal point:
 			if (numberstr[i] != '.')
 			{
+				printf ("check_is_digit: number is not digit: %i\n", numberstr[i]);
+
 				// error no valid number char
 				return (1);
 			}

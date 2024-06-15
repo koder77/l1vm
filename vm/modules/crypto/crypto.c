@@ -479,7 +479,7 @@ U1 *generate_key_hash (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
     #endif
 
-    password_len = strlen_safe ((const char *) &data[password_address], MAXSTRLEN);
+    password_len = strlen_safe ((const char *) &data[password_address], STRINGMOD_MAXSTRLEN);
     ret = crypto_pwhash_str ((char *) &data[hashed_password_address], (const char *) &data[password_address], password_len, crypto_pwhash_OPSLIMIT_SENSITIVE, crypto_pwhash_MEMLIMIT_SENSITIVE);
     if (ret != 0)
     {
@@ -530,7 +530,7 @@ U1 *check_key_hash (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    password_len = strlen_safe ((const char *) &data[password_address], MAXSTRLEN);
+    password_len = strlen_safe ((const char *) &data[password_address], STRINGMOD_MAXSTRLEN);
     ret = crypto_pwhash_str_verify ((const char *) &data[hashed_password_address], (const char *) &data[password_address], password_len);
     if (ret != 0)
     {
@@ -613,7 +613,7 @@ U1 *generate_key (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
     #endif
 
-    password_len = strlen_safe((const char *) &data[password_address], MAXSTRLEN);
+    password_len = strlen_safe((const char *) &data[password_address], STRINGMOD_MAXSTRLEN);
 
     // generate the salt, you have to store it somewhere and rememeber the password
     randombytes_buf(&data[salt_address], crypto_pwhash_SALTBYTES);

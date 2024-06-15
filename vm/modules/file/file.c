@@ -1320,7 +1320,7 @@ U1 *file_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
 		// check for "\n" and remove it if found
 
-		real_slen = strlen_safe ((const char *) &data[string_address], MAXLINELEN);
+		real_slen = strlen_safe ((const char *) &data[string_address], STRINGMOD_MAXSTRLEN);
 		if (data[string_address + real_slen - 1] == '\n')
 		{
 			data[string_address + real_slen - 1] = '\0';
