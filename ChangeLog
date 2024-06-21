@@ -1,7 +1,8 @@
 L1VM (3.1.8)
 	VM: nanoid module buffer overflow fixes.
+        Assembler: now checks for l1vm home directory for file loading in byte variable.
 
--- Stefan Pietzonke <info@midnight-coding.de> Sun 9 May 2024 12:44  +020
+-- Stefan Pietzonke <info@midnight-coding.de> Fri 21 Jun 2024 22:25  +020
 
 L1VM (3.1.7)
 	NEW: VM can be build as a shared library for embedding it in other programs.

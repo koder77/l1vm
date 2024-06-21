@@ -172,6 +172,7 @@ S2 check_is_digit (const char *numberstr)
 				return (1);
 			}
 		}
+		next_loop:
 	    if (i < number_len - 1)
 		{
 			i++;
@@ -277,8 +278,13 @@ extern "C" U1 *mp_set_float_prec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	// printf ("DEBUG: mp_set_float: '%s'\n", (const char *) &data[numstring_address]);
+	if (precision >= MPFR_PREC_MAX)
+	{
+		printf ("mp_set_float_prec: warning: precision %lli is too high! Limit is: %l\n", precision, MPFR_PREC_MAX);
+	}
 
+	// printf ("DEBUG: mp_set_float: '%s'\n", (const char *) &data[numstring_address]);
+	//
 	if (check_is_digit ((const char *) &data[numstring_address]) != 0)
     {
 		printf ("mp_set_float_prec: ERROR: float is not a number!\n%s\n", &data[numstring_address]);

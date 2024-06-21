@@ -23,6 +23,7 @@
 
 #include "../include/global.h"
 #include "../include/opcodes.h"
+#include "../include/home.h"
 #include "main.h"
 
 // 1MB = 1048576 bytes
@@ -787,9 +788,39 @@ S2 parse_line (U1 *line)
 						data_extern = fopen ((const char *) args[2], "r");
 						if (data_extern == NULL)
 						{
-							// return ERROR
-							printf ("error: line %lli: can't open data file: '%s'!\n", linenum, args[2]);
-							return (1);
+                            // try l1vm home directory
+							{
+                                char *home;
+                                U1 full_path[MAXLINELEN];
+                                S2 home_len = 0;
+                                S2 sandbox_root_len  = 0;
+                                S2 args2_len = 0;
+                                home = get_home ();
+
+                                // check length overflow
+                                home_len = strlen_safe ((char *) home, MAXLINELEN);
+                                sandbox_root_len = strlen_safe (SANDBOX_ROOT, MAXLINELEN);
+                                args2_len = strlen_safe ((char *) args[2], MAXLINELEN);
+
+                                if ((home_len + sandbox_root_len + args2_len) >= MAXLINELEN)
+                                {
+                                    	// return ERROR
+                                    printf ("error: line %lli: can't create data file path: '%s' string overflow!\n", linenum, args[2]);
+                                    return (1);
+                                }
+
+                                strcpy ((char *) full_path, (const char *) home);
+                                strcat ((char *) full_path, SANDBOX_ROOT);
+                                strcat ((char *) full_path, args[2]);
+
+						        data_extern = fopen ((const char *) full_path, "r");
+						        if (data_extern == NULL)
+						        {
+                                    // return ERROR
+                                    printf ("error: line %lli: can't open data file: '%s'!\n", linenum, args[2]);
+                                    return (1);
+                                }
+                            }
 						}
 
 						printf ("\033[0m> line %lli: loading file: '%s' as data...\n", linenum, args[2]);

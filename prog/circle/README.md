@@ -13,3 +13,12 @@ Usage
 -----
 To run it: "l1vm math-circle-bignum-4".
 
+NEW
+___
+math-circle-bignum-6: use Pi with 1 million digits.
+You need to download the file from:
+https://www.angio.net/pi/digits.html
+
+Copy the file https://assets.angio.net/pi1000000.txt into your l1vm home directory: "~/l1vm/pi/".
+
+The build of the program is done as for the older version above.
