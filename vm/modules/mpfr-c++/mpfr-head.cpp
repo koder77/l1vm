@@ -172,7 +172,6 @@ S2 check_is_digit (const char *numberstr)
 				return (1);
 			}
 		}
-		next_loop:
 	    if (i < number_len - 1)
 		{
 			i++;
