@@ -1597,7 +1597,7 @@ int main (int ac, char *av[])
 	U1 pack = 0;
 	U1 shell_pack[512];
 	U1 debug_file_name[512];
-
+    char *endp;
 
 	if (ac < 2)
     {
@@ -1626,8 +1626,8 @@ int main (int ac, char *av[])
 	{
 		if (strcmp (av[2], "-sizes") == 0)
 		{
-			code_max = (atoi (av[3]));
-			data_max = (atoi (av[4]));
+            code_max = strtoll ((const char *) av[3], &endp, 10);
+            data_max = strtoll ((const char *) av[4], &endp, 10);
 
 			printf ("\n>>> max codesize: %lli, max datasize: %lli\n\n", code_max, data_max);
 		}
