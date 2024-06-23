@@ -20,6 +20,8 @@
 #include "../../../include/global.h"
 #include <iostream>
 #include <fstream>
+#include <filesystem>
+#include <experimental/filesystem>
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpfr.h>
@@ -36,6 +38,8 @@ using std::cout;
 #define MAX_FLOAT_NUM 4096
 
 static mpreal mpf_float[MAX_FLOAT_NUM];
+
+extern "C" U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
 
 char *fgets_uni (char *str, int len, FILE *fptr)
 {
@@ -295,6 +299,109 @@ extern "C" U1 *mp_set_float_prec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+extern "C" U1 *mp_set_float_prec_from_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 float_index ALIGN;
+	S8 filename_address ALIGN;
+	S8 num_base ALIGN;
+	S8 precision ALIGN;
+	S8 file_size_bytes ALIGN;
+	U1 *numstr;
+    S8 i ALIGN;
+	FILE *numfile;
+    U1 filename[256];
+
+	std::string filenamestr;
+
+	sp = stpopi ((U1 *) &float_index, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_set_float_prec_from_file: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &precision, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_set_float_prec_from_file: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &num_base, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_set_float_prec_from_file: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &filename_address, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_set_float_prec_from_file: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	if (float_index >= MAX_FLOAT_NUM || float_index < 0)
+	{
+		printf ("mp_set_float_prec_from_file: ERROR float index out of range! Must be 0 < %i\n", MAX_FLOAT_NUM);
+		return (NULL);
+	}
+
+	if (precision >= MPFR_PREC_MAX)
+	{
+		printf ("mp_set_float_prec_from_file: warning: precision %lli is too high! Limit is: %l\n", precision, MPFR_PREC_MAX);
+	}
+
+	if (get_sandbox_filename (&data[filename_address], filename, 255) != 0)
+	{
+		printf ("mp_set_float_prec_from_file: illegal filename: %s\n", &data[filename_address]);
+		return (NULL);
+	}
+
+	// get file size
+	filenamestr.assign ((const char *) filename);
+	file_size_bytes = std::experimental::filesystem::v1::file_size (filenamestr);
+
+	// alloc array for number in file
+    numstr = (U1 *) calloc (file_size_bytes + 1, sizeof (U1));
+	if (numstr == NULL)
+	{
+		printf ("mp_set_float_prec_from_file: ERROR can't allocate %lli bytes for number string!\n", file_size_bytes + 1);
+		return (NULL);
+	}
+
+	if (get_sandbox_filename (&data[filename_address], filename, 255) != 0)
+	{
+		printf ("mp_set_float_prec_from_file: illegal filename: %s\n", &data[filename_address]);
+		free (numstr);
+		return (NULL);
+	}
+
+	numfile = fopen ((char *) filename, "r");
+	if (numfile == NULL)
+	{
+		printf ("mp_set_float_prec_from_file: ERROR can't open file: '%s' !\n", &data[filename_address]);
+		free (numstr);
+		return (NULL);
+	}
+
+	for (i = 0; i < file_size_bytes; i++)
+	{
+		numstr[i] = fgetc (numfile);
+	}
+	numstr[i] = '\0';
+
+    fclose (numfile);
+
+	mpf_float[float_index] = mpfr::mpreal ((const char *) numstr, precision, num_base, MPFR_RNDN);
+	free (numstr);
+
+	return (sp);
+}
 
 // get const ==================================================================
 

@@ -804,7 +804,7 @@ S2 parse_line (U1 *line)
 
                                 if ((home_len + sandbox_root_len + args2_len) >= MAXLINELEN)
                                 {
-                                    	// return ERROR
+                                    // return ERROR
                                     printf ("error: line %lli: can't create data file path: '%s' string overflow!\n", linenum, args[2]);
                                     return (1);
                                 }
