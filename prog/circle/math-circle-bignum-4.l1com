@@ -110,10 +110,6 @@
 	(math_mod~ :mp_math_init !)
     (:init->circle !)
 
-    print_s (m_picircle)
-    print_n
-    print_n
-
 	(:loop)
 	print_s (prog_name~)
 	print_n
@@ -195,7 +191,9 @@ Calculate the area of a circle.
 
 	(set int64 1 precision~ 14)
 	(set int64 1 base~ 10)
-	(set int64 1 precision_set~ 3276800)
+    (set int64 1 precision_digits~ 1000000)
+	(set int64 1 precision_set~ 0)
+
 	(set int64 1 diam_mp~ 0)
 	(set int64 1 circ_mp~ 1)
 	(set int64 1 pi_mp~ 2)
@@ -210,6 +208,11 @@ Calculate the area of a circle.
 
 (init->circle func)
 	#var ~ circle
+
+    (precision_digits~ :mp_get_precision_bits !)
+    (precision_set~ stpop)
+    print_i (precision_set~)
+    print_n
 
 	// set pi
 	(m_pi~ base~ precision_set~ pi_mp~ :mp_set_float_prec !)

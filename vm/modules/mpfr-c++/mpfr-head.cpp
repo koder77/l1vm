@@ -354,6 +354,7 @@ extern "C" U1 *mp_set_float_prec_from_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U
 	if (precision >= MPFR_PREC_MAX)
 	{
 		printf ("mp_set_float_prec_from_file: warning: precision %lli is too high! Limit is: %l\n", precision, MPFR_PREC_MAX);
+		return (NULL);
 	}
 
 	if (get_sandbox_filename (&data[filename_address], filename, 255) != 0)
@@ -394,11 +395,39 @@ extern "C" U1 *mp_set_float_prec_from_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U
 		numstr[i] = fgetc (numfile);
 	}
 	numstr[i] = '\0';
-
     fclose (numfile);
 
 	mpf_float[float_index] = mpfr::mpreal ((const char *) numstr, precision, num_base, MPFR_RNDN);
 	free (numstr);
+
+	return (sp);
+}
+
+extern "C" U1 *mp_get_precision_bits (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// gets the precision in digits
+	// returns the precision in bits for the other mpfr number set functions above!
+
+	S8 precision_bits ALIGN = 0;
+	S8 precision ALIGN;
+
+	sp = stpopi ((U1 *) &precision, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_get_precision_bits: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	precision_bits = mpfr::digits2bits (precision);
+
+	sp = stpushi (precision_bits, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mp_get_precision_bits: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
 	return (sp);
 }
