@@ -310,6 +310,7 @@ extern "C" U1 *mp_set_float_prec_from_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U
     S8 i ALIGN;
 	FILE *numfile;
     U1 filename[256];
+	S8 ret ALIGN;
 
 	std::string filenamestr;
 
@@ -390,11 +391,16 @@ extern "C" U1 *mp_set_float_prec_from_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U
 		return (NULL);
 	}
 
-	for (i = 0; i < file_size_bytes; i++)
+	// size_t fread(void * buffer, size_t size, size_t count, FILE * stream);
+	ret = fread (numstr, sizeof (U1), file_size_bytes, numfile);
+	if (ret != file_size_bytes)
 	{
-		numstr[i] = fgetc (numfile);
+		printf ("mp_set_float_prec_from_file: ERROR can't read file: '%s' !\n", &data[filename_address]);
+		free (numstr);
+		fclose (numfile);
+		return (NULL);
 	}
-	numstr[i] = '\0';
+
     fclose (numfile);
 
 	mpf_float[float_index] = mpfr::mpreal ((const char *) numstr, precision, num_base, MPFR_RNDN);
