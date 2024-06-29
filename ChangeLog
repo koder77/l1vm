@@ -2,7 +2,11 @@ L1VM (3.1.8)
 	VM: nanoid module buffer overflow fixes.
         Assembler: now checks for l1vm home directory for file loading in byte variable.
 
--- Stefan Pietzonke <info@midnight-coding.de> Fri 21 Jun 2024 22:25  +020
+	Compiler: now gives error if "call" or "!" is missing on a function call like this:
+
+	(x y :foobar)
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 29 Jun 2024 20:55  +020
 
 L1VM (3.1.7)
 	NEW: VM can be build as a shared library for embedding it in other programs.

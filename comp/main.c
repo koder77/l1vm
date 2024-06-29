@@ -3011,6 +3011,12 @@ S2 parse_line (U1 *line)
 								if (ast[level].expr[j][last_arg][0] == ':')
 								{
 									// operator is label name
+									if (last_arg != 0)
+									{
+										// label :foo for example is not the only argument: possible function call without "!" or "call"?
+										printf ("error: line %lli: label: %s not the only argument! Is this a function call without 'call' or '!' ?\n", linenum, ast[level].expr[j][last_arg]);
+										return (1);
+									}
 
 									if (search_label (ast[level].expr[j][last_arg]) == 1)
 									{
