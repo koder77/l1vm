@@ -21,14 +21,13 @@
 
 #include "../../../include/global.h"
 
-
-size_t strlen_safe (const U1 * str, int maxlen)
+size_t strlen_safe (const char *str, S8 maxlen)
 {
-	 long long int i = 0;
+	 S8 ALIGN i = 0;
 
 	 while (1)
 	 {
-	 	if (str[i] != '\0')
+		if (str[i] != '\0')
 		{
 			i++;
 		}
@@ -36,9 +35,14 @@ size_t strlen_safe (const U1 * str, int maxlen)
 		{
 			return (i);
 		}
-		if (i > maxlen)
+
+		// if maxlen < 0, then don't check for length overflow!
+		if (maxlen > 0)
 		{
-			return (0);
+			if (i >= maxlen)
+			{
+				return (0);
+			}
 		}
 	}
 }
@@ -47,7 +51,7 @@ int strright (U1 *dst, U1 *src, int chars)
 {
     int i, src_pos, src_len;
 
-    src_len = strlen_safe (src, MAXLINELEN);
+    src_len = strlen_safe (src, STRINGMOD_MAXSTRLEN);
     src_pos = src_len - chars;
 
     if (src_pos < 0)
@@ -69,7 +73,7 @@ int strleft (U1 *dst, U1 *src, int chars)
 {
     int i, src_len;
 
-    src_len = strlen_safe (src, MAXLINELEN);
+    src_len = strlen_safe (src, STRINGMOD_MAXSTRLEN);
 
     if (chars > src_len)
     {
@@ -90,7 +94,7 @@ int strremoveleft (U1 *dst, U1 *src, int pos)
 {
     int i, j, src_len;
 
-    src_len = strlen_safe (src, MAXLINELEN);
+    src_len = strlen_safe (src, STRINGMOD_MAXSTRLEN);
 
     if (pos < 1 || pos > src_len)
     {
@@ -130,7 +134,7 @@ int strremoveright (U1 *dst, U1 *src, int pos)
 {
     int i, j, src_len;
 
-    src_len = strlen_safe (src, MAXLINELEN);
+    src_len = strlen_safe (src, STRINGMOD_MAXSTRLEN);
 
     if (pos < 0 || pos > src_len)
     {
@@ -170,7 +174,7 @@ int strinsertchar (U1 *dst, U1 *src, U1 chr, int pos)
 {
     int i, j, src_len;
 
-    src_len = strlen_safe (src, MAXLINELEN);
+    src_len = strlen_safe (src, STRINGMOD_MAXSTRLEN);
 
     if (pos < 0 || pos > src_len)
     {

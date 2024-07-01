@@ -1387,7 +1387,7 @@ U1 *set_gadget_menu (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		   return (NULL);
 	   	}
 
-        text_len = strlen_safe ((const char *) &data[text_address], MAXLINELEN);
+        text_len = strlen_safe ((const char *) &data[text_address], STRINGMOD_MAXSTRLEN);
 
         menu->text[i] = (U1 *) malloc ((text_len + 1) * sizeof (U1));
         if (menu->text[i] == NULL)
@@ -1452,7 +1452,7 @@ U1 *set_gadget_menu (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	   return (NULL);
    }
 
-   text_len = strlen_safe ((const char *) &data[text_address], MAXLINELEN);
+   text_len = strlen_safe ((const char *) &data[text_address], STRINGMOD_MAXSTRLEN);
 
    menu->menutext = (U1 *) malloc ((text_len + 1) * sizeof (U1));
    if (menu->menutext == NULL)
@@ -1733,7 +1733,7 @@ U1 draw_gadget_string (S2 screennum, U2 gadget_index, U1 selected)
 
     /* draw value string (input) */
 
-    value_len = strlen_safe ((const char *) string->value, MAXLINELEN);
+    value_len = strlen_safe ((const char *) string->value, STRINGMOD_MAXSTRLEN);
     if (value_len > 0)
     {
         if (value_len <= string->visible_len)
@@ -1861,7 +1861,7 @@ U1 draw_gadget_string_multiline (S2 screennum, U2 gadget_index, U1 selected)
 
 			// printf ("DEBUG: str_show: '%s'\n\n", str_show);
 
-			if (strlen_safe ((const char *) str_show, MAXLINELEN) != 0)
+			if (strlen_safe ((const char *) str_show, STRINGMOD_MAXSTRLEN) != 0)
 			{
 				// display text lines if string has chars
 				if (! draw_text_ttf (surf, screennum, str_show, text_x, text_y, screen[screennum].gadget_color.text_light.r, screen[screennum].gadget_color.text_light.g, screen[screennum].gadget_color.text_light.b))
@@ -1971,7 +1971,7 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
        
         SDL_WaitEvent (&event);
 
-		value_len = strlen_safe ((const char *) string->value, MAXLINELEN);
+		value_len = strlen_safe ((const char *) string->value, STRINGMOD_MAXSTRLEN);
 
 		switch (event.type)
 		{
@@ -4847,7 +4847,7 @@ U1 *set_gadget_button (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	   return (NULL);
    }
 
-	text_len = strlen_safe ((const char *) &data[text_address], MAXLINELEN);
+	text_len = strlen_safe ((const char *) &data[text_address], STRINGMOD_MAXSTRLEN);
 
 	if (! screen[screennum].gadget)
 	{
@@ -4981,7 +4981,7 @@ U1 *set_gadget_progress_bar (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   return (NULL);
     }
 
-    text_len = strlen_safe ((const char *) &data[text_address], MAXLINELEN);
+    text_len = strlen_safe ((const char *) &data[text_address], STRINGMOD_MAXSTRLEN);
 
     if (! screen[screennum].gadget)
     {
@@ -5119,7 +5119,7 @@ U1 *set_gadget_checkbox (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   return (NULL);
     }
 
-    text_len = strlen_safe ((const char*) &data[text_address], MAXLINELEN);
+    text_len = strlen_safe ((const char*) &data[text_address], STRINGMOD_MAXSTRLEN);
 
     if (! screen[screennum].gadget)
     {
@@ -5278,7 +5278,7 @@ U1 *set_gadget_cycle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		   return (NULL);
 	   	}
 
-        text_len = strlen_safe ((const char *) &data[text_address], MAXLINELEN);
+        text_len = strlen_safe ((const char *) &data[text_address], STRINGMOD_MAXSTRLEN);
 
         cycle->text[i] = (U1 *) malloc ((text_len + 1) * sizeof (U1));
         if (cycle->text[i] == NULL)
@@ -5464,13 +5464,13 @@ U1 *set_gadget_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   return (NULL);
     }
 
-    if (strlen_safe ((const char *) &data[value_address], MAXLINELEN) > screen[screennum].gadget_string_string_len)
+    if (strlen_safe ((const char *) &data[value_address], STRINGMOD_MAXSTRLEN) > screen[screennum].gadget_string_string_len)
     {
         printf ("set_gadget_string: error string value overflow!\n");
         return (NULL);
     }
 
-    text_len = strlen_safe ((const char *) &data[text_address], MAXLINELEN);
+    text_len = strlen_safe ((const char *) &data[text_address], STRINGMOD_MAXSTRLEN);
 
     if (! screen[screennum].gadget)
     {
@@ -5670,14 +5670,14 @@ U1 *set_gadget_string_multiline (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
 /*
-    if (strlen_safe ((const char *) &data[value_address], MAXLINELEN) > screen[screennum].gadget_string_string_len)
+    if (strlen_safe ((const char *) &data[value_address], STRINGMOD_MAXSTRLEN) > screen[screennum].gadget_string_string_len)
     {
         printf ("set_gadget_string_multiline: error string value overflow!\n");
         return (NULL);
     }
 */
 
-    text_len = strlen_safe ((const char *) &data[text_address], MAXLINELEN);
+    text_len = strlen_safe ((const char *) &data[text_address], STRINGMOD_MAXSTRLEN);
 
     if (! screen[screennum].gadget)
     {
@@ -6142,7 +6142,7 @@ U1 *set_gadget_slider (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
  	   return (NULL);
     }
 
-    text_len = strlen_safe ((const char *) &data[text_address], MAXLINELEN);
+    text_len = strlen_safe ((const char *) &data[text_address], STRINGMOD_MAXSTRLEN);
 
     if (! screen[screennum].gadget)
     {
@@ -6567,7 +6567,7 @@ U1 *change_gadget_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     string = (struct gadget_string *) screen[screennum].gadget[gadget_index].gptr;
 
-    if (strlen_safe((const char *) &data[text_address], MAXLINELEN) > string->string_len)
+    if (strlen_safe((const char *) &data[text_address], STRINGMOD_MAXSTRLEN) > string->string_len)
     {
         printf ("change_gadget_string: error string value overflow!\n");
         return (NULL);
