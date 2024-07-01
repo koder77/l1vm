@@ -55,9 +55,13 @@ size_t strlen_safe (const char *str, S8 maxlen)
 			return (i);
 		}
 
-		if (i >= maxlen)
+		// if maxlen < 0, then don't check for length overflow!
+		if (maxlen > 0)
 		{
-			return (0);
+			if (i >= maxlen)
+			{
+				return (0);
+			}
 		}
 	}
 }
@@ -143,7 +147,7 @@ U1 *nanoid_create_custom (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
     // sane check of alphabet length
-    alphabet_len = strlen_safe ((const char *) &data[alphabet_address], MAXSTRLEN);
+    alphabet_len = strlen_safe ((const char *) &data[alphabet_address], STRINGMOD_MAXSTRLEN);
     if (alphabet_len > 256)
     {
         printf ("nanoid_create_custom: error: alphabet size greater as 256 chars!\n");
