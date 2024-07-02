@@ -11,5 +11,5 @@ c++compiler = $CCPP
 linker = ld
 aflags = "cru"
 
-cflags = "-O3 -fomit-frame-pointer -Wall"
+cflags = "-O3 -fomit-frame-pointer -Wall -DMPFR_USE_INTMAX_T -DMPFR_USE_NO_MACRO"
 lflags = "-shared -lmpfr -lgmp -lstdc++ -lstdc++fs"

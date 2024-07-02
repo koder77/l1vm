@@ -6,7 +6,9 @@ L1VM (3.1.8)
 
 	(x y :foobar)
 
--- Stefan Pietzonke <info@midnight-coding.de> Sat 29 Jun 2024 20:55  +020
+	VM: MPFR module: use latest version of the mpreal.h include from GitHub.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Tue 02 Jul 2024 20:47  +020
 
 L1VM (3.1.7)
 	NEW: VM can be build as a shared library for embedding it in other programs.
