@@ -6,7 +6,7 @@ L1VM (3.1.8)
 
 	(x y :foobar)
 
-	VM: MPFR module: use latest version of the mpreal.h include from GitHub.
+	VM: MPFR module: use latest version of the mpreal.h include from GitHub repo .
 
 -- Stefan Pietzonke <info@midnight-coding.de> Tue 02 Jul 2024 20:47  +020
 
