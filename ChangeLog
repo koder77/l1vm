@@ -6,9 +6,12 @@ L1VM (3.1.8)
 
 	(x y :foobar)
 
-	VM: MPFR module: use latest version of the mpreal.h include from GitHub repo .
+	VM: MPFR module: use latest version of the mpreal.h include from GitHub repo.
 
--- Stefan Pietzonke <info@midnight-coding.de> Tue 02 Jul 2024 20:47  +020
+	Assembler: load file into byte/string variable filename check for ../ added.
+	It is illegal! You can only access file in "~/l1vm" L1VM home directory.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Wed 03 Jul 2024 18:44  +020
 
 L1VM (3.1.7)
 	NEW: VM can be build as a shared library for embedding it in other programs.
