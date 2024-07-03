@@ -786,7 +786,7 @@ S2 parse_line (U1 *line)
 
 						get_data_extern_filename (args[2]);
 						{
-                            U1 file_full_path[MAXLINELEN];
+                            U1 file_full_path[MAXLINELEN + 1];
 
                             if (get_sandbox_filename (args[2], file_full_path, MAXLINELEN) == 1)
                             {
