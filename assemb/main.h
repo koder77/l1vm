@@ -35,4 +35,7 @@ S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
 void show_code_data_size (S8 codesize, S8 datasize);
 void show_filesize (S8 filesize);
 
+// file module
+U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
+
 #endif
