@@ -26,7 +26,7 @@
 // DEBUG CPPCHECK
 
 #include "../include/global.h"
-size_t strlen_safe (const char * str, int maxlen);
+size_t strlen_safe (const char * str, S8 maxlen);
 
 // protos var.c
 S2 get_var_is_const (U1 *name);
@@ -68,7 +68,7 @@ S8 get_variable_is_array (U1 *name);
 
 
 // string.c
-size_t strlen_safe (const char * str, int maxlen);
+size_t strlen_safe (const char * str, S8 maxlen);
 S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
 
 // assembly text output

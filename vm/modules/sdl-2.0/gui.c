@@ -35,7 +35,7 @@
 // protos
 U1 *stpopb (U1 *data, U1 *sp, U1 *sp_top);
 
-size_t strlen_safe (const char * str, int maxlen);
+size_t strlen_safe (const char * str, S8  maxlen);
 
 extern SDL_Surface *surf;
 extern SDL_Window *window;

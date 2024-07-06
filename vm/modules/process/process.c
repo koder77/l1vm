@@ -24,7 +24,7 @@
 
 // proto
 S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
-size_t strlen_safe (const char * str, int maxlen);
+size_t strlen_safe (const char * str, S8  maxlen);
 
 S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
 {

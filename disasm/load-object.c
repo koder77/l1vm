@@ -41,7 +41,7 @@ extern S8 max_cpu;
 
 extern U1 silent_run;
 
-size_t strlen_safe (const char * str, int maxlen);
+size_t strlen_safe (const char * str, S8 maxlen);
 
 S2 conv_word (S2 val)
 {

@@ -91,7 +91,7 @@ extern "C" S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info
 }
 
 
-size_t strlen_safe (const char * str, int maxlen)
+size_t strlen_safe (const char * str, S8 maxlen)
 {
 	 long long int i = 0;
 

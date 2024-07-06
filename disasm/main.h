@@ -69,7 +69,7 @@
  int free_jit_code (struct JIT_code *JIT_code);
  void get_jit_compiler_type (void);
  char *fgets_uni (char *str, int len, FILE *fptr);
- size_t strlen_safe (const char * str, int maxlen);
+ size_t strlen_safe (const char * str, S8 maxlen);
  #endif
 
 #define EXE_NEXT(); ep = ep + eoffs; goto *jumpt[code[ep]];
@@ -80,7 +80,7 @@
 // protos
 S2 load_object (U1 *name, U1 byte_char);
 void free_modules (void);
-size_t strlen_safe (const char * str, int maxlen);
+size_t strlen_safe (const char * str, S8 maxlen);
 
 // code_datasize.c
 void show_code_data_size (S8 codesize, S8 datasize);

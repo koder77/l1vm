@@ -61,7 +61,7 @@ struct socket
 static struct socket *sockets = NULL;
 static S8 socketmax ALIGN = 0;
 
-size_t strlen_safe (const char * str, int maxlen);
+size_t strlen_safe (const char * str, S8  maxlen);
 
 U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
 

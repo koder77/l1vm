@@ -33,7 +33,7 @@
 
 // protos
 S2 memory_bounds (S8 start, S8 offset_access);
-size_t strlen_safe (const char * str, int maxlen);
+size_t strlen_safe (const char * str, S8 maxlen);
 
 struct data_info data_info[MAXDATAINFO];
 S8 data_info_ind;

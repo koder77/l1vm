@@ -117,7 +117,7 @@ char *fgets_uni (char *str, int len, FILE *fptr)
 }
 
 
-size_t strlen_safe (const char * str, int maxlen)
+size_t strlen_safe (const char * str, S8 maxlen)
 {
 	 long long int i = 0;
 
@@ -307,7 +307,6 @@ extern "C" U1 *mp_set_float_prec_from_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U
 	S8 precision ALIGN;
 	S8 file_size_bytes ALIGN;
 	U1 *numstr;
-    S8 i ALIGN;
 	FILE *numfile;
     U1 filename[256];
 	S8 ret ALIGN;

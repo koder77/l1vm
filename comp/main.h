@@ -53,7 +53,7 @@
  S2 search_label (U1 *label);
 
  // string functions ===============================================================================
- size_t strlen_safe (const char * str, int maxlen);
+ size_t strlen_safe (const char * str, S8 maxlen);
  S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
  void convtabs (U1 *str);
 

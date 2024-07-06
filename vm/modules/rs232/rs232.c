@@ -37,7 +37,7 @@
 
 #define RS232_PORTNR 79
 
-size_t strlen_safe (const char * str, int maxlen);
+size_t strlen_safe (const char * str, S8 maxlen);
 
 int Cport[RS232_PORTNR];
 

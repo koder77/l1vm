@@ -20,7 +20,7 @@
 #include "../../../include/global.h"
 #include "../../../include/home.h"
 
-size_t strlen_safe (const char * str, int maxlen);
+size_t strlen_safe (const char * str, S8 maxlen);
 
 // for SANDBOX file access
 U1 check_file_access (U1 *path)

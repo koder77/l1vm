@@ -21,7 +21,7 @@
 
 extern struct t_var t_var;
 
-size_t strlen_safe (const char * str, int maxlen);
+size_t strlen_safe (const char * str, S8 maxlen);
 
 U1 checkdigit (U1 *str)
 {

@@ -38,7 +38,7 @@
 extern U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
 
 S2 memory_bounds (S8 start, S8 offset_access);
-size_t strlen_safe (const char * str, int maxlen);
+size_t strlen_safe (const char * str, S8 maxlen);
 
 unsigned char state[256], key[256];
 

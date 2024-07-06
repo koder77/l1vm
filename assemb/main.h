@@ -25,7 +25,7 @@ U1 checkdigit (U1 *str);
 S8 get_temp_int (void);
 F8 get_temp_double (void);
 char *fgets_uni (char *str, int len, FILE *fptr);
-size_t strlen_safe (const char * str, int maxlen);
+size_t strlen_safe (const char * str, S8  maxlen);
 
 void convtabs (U1 *str);
 S2 strip_end_commas (U1 *str);
