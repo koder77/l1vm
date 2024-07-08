@@ -3145,7 +3145,7 @@ void show_run_info (void)
 	show_file_root_path ();
 
 	#if JIT_COMPILER
-	    printf ("JIT-compiler: ready to load module.\n");
+	    printf ("JIT-compiler: ready!\n");
 	#endif
 
 	#if MATH_LIMITS

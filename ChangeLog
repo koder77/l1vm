@@ -1,3 +1,8 @@
+L1VM (3.1.9)
+	VM: now the AsmJit part is lunked direct to the VM, if it is build with JIT-compiler.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Mon 08 Jul 2024 16:09  +020
+
 L1VM (3.1.8)
 	VM: nanoid module buffer overflow fixes.
         Assembler: now checks for l1vm home directory for file loading in byte variable.
