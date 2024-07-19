@@ -110,6 +110,7 @@
 	(2 mod@math floordouble@math floordoublestr@mathaddr intr0)
 	(2 mod@math tandouble@math tandoublestr@mathaddr intr0)
     (2 mod@math byte2int@math byte2intstr@math intr0)
+    (2 mod@math fmoddouble@math fmoddoublestr@math intr0)
 (funcend)
 // wrapper functions
 (math_int2double func)
