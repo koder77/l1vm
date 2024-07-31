@@ -1,4 +1,4 @@
-L1VM README  2024-06-05
+L1VM README  2024-07-31
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -64,7 +64,6 @@ Now copy the ".so" file to the  "~/l1vm/bin" directory. So it can be found by th
 
 As a next step you can build the test program in "vm/test-embedded".
 To build the example:
-
 <pre>
 $ CC=clang CCPP=clang++ zerobuild force
 </pre>
@@ -164,6 +163,7 @@ mem - memory allocating for arrays and vectors
 mem-obj - memory functions to store different variables into one memory array
 mem-vect - C++ vector memory library
 mpfr-c++ - MPFR floating point big num library
+nanoid - nano ID, create unique IDs
 net - TCP/IP sockets module
 pigpio - Raspberry Pi GPIO module
 process - start a new shell process
@@ -190,7 +190,8 @@ The author of Wiring Pi, the Raspberry Pi GPIO library: drogon. <br>
 The author of libasmjit, JIT-compiler: Petr Kobalicek. <br>
 The authors of www.tutorialspoint.com, for their polish math notation parser example! <br>
 The author of the fp16 fixed floating point library: https://github.com/kmilo17pet/fp16 <br>
-The team of the libsodium library. I use for generating random numbers.
+The team of the libsodium library. I use for generating random numbers. <br>
+The author of the nanoid ID generating library. <br>
 <br><br>
 
 Without them this L1VM project would not be possible! Thank you! <br>

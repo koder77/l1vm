@@ -9,7 +9,7 @@
 	(set const-int64 1 mod_net 1)
 	(set int64 1 portnum 2000Q)
 	(set int64 1 socket_handle 0)
-    (set int64 1 max_num 1000)
+    (set int64 1 max_num 50000)
     (set int64 1 i 1)
 	(set string 256 ip "127.0.0.1")
     (set string 256 hoststr)
@@ -32,6 +32,8 @@
     (set string s ok_str "OK")
     (set string s error_str "ERROR")
     (set string s sending_str "sending: ")
+
+    (optimize-if)
 
 	(mod_string :string_init !)
 	(mod_net one :net_init !)
@@ -58,9 +60,9 @@
     // send key and value to server
     (for-loop)
     (((i max_num <=) f =) f for)
-        print_s (sending_str)
-        print_i (i)
-        print_n
+        //print_s (sending_str)
+        //print_i (i)
+        //print_n
 
         // generate the key and value strings
         // key
