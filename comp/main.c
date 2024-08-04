@@ -3024,6 +3024,8 @@ S2 parse_line (U1 *line)
 										return (1);
 									}
 
+									init_registers ();
+
 									strcpy ((char *) code_temp, (const char *) ast[level].expr[j][last_arg]);
 
 									code_line++;
