@@ -21,7 +21,8 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
-#include <experimental/filesystem>
+// #include <experimental/filesystem>
+#include <filesystem>
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpfr.h>
@@ -365,7 +366,7 @@ extern "C" U1 *mp_set_float_prec_from_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U
 
 	// get file size
 	filenamestr.assign ((const char *) filename);
-	file_size_bytes = std::experimental::filesystem::v1::file_size (filenamestr);
+	file_size_bytes = std::filesystem::file_size (filenamestr);
 
 	// alloc array for number in file
     numstr = (U1 *) calloc (file_size_bytes + 1, sizeof (U1));

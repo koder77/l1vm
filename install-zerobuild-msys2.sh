@@ -19,8 +19,8 @@ pacman -S mingw-w64-x86_64-libserialport --noconfirm
 
 echo "building compiler, assembler and VM..."
 
-export CC=clang
-export CCPP=clang++
+export CC=clang-16
+export CCPP=clang++-16
 
 # check if ~/l1vm/bin exists
 DIR="~/l1vm/bin"

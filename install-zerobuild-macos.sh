@@ -38,8 +38,8 @@ brew install git
 clang --version
 echo "building compiler, assembler and VM..."
 
-export CC=clang
-export CCPP=clang++
+export CC=clang-16
+export CCPP=clang++-16
 
 # check if ~/bin exists
 DIR="~/l1vm/bin"

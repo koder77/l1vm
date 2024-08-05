@@ -1,3 +1,12 @@
+L1VM (3.1.10)
+	I did change the clang version to 16. It is required now.
+	If the build script for your OS fails to install it, then do it by hand!
+
+	VM/mpfr module: removed the experimental file functions.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Mon 05 Aug 2024 18:42  +020
+
+
 L1VM (3.1.9)
 	VM: now the AsmJit part is lunked direct to the VM, if it is build with JIT-compiler.
 

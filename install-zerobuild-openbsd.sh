@@ -6,8 +6,8 @@ export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
 
 echo "building compiler, assembler and VM..."
 
-export CC=clang
-export CCPP=clang++
+export CC=clang-16
+export CCPP=clang++-16
 
 doas pkg_add sdl2
 doas pkg_add sdl2-gfx
