@@ -6,8 +6,8 @@ export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
 
 echo "building compiler, assembler and VM..."
 
-export CC=clang-16
-export CCPP=clang++-16
+export CC=clang
+export CCPP=clang++
 
 sudo pkgin -y install SDL2
 sudo pkgin -y install SDL2_gfx

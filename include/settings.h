@@ -1,4 +1,10 @@
 // user settings ==============================================================
+
+// Set this to 1 if you are using clang 15 or older.
+// If you are using clang 16 or later then set this to 0
+// This sets the type of the MPFR filesize function. If it is the experimental function or not.
+#define CPP_FILE_EXPERIMENTAL 1
+
 // NEW: if set to 1 the L1VM can be build as a shared library to be embedded in other programs
 #define L1VM_EMBEDDED 0
 

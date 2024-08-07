@@ -114,13 +114,13 @@ else
 	echo "See this installation script for more info..."
 fi
 
-export CC=clang-16
-export CCPP=clang++-16
+export CC=clang-15
+export CCPP=clang++-15
 
 # check if clang C compiler is installed
-if ! dpkg -s clang-16 &> /dev/null; then
+if ! dpkg -s clang-15 &> /dev/null; then
 	echo "try to install clang..."
-	if ! sudo apt-get install clang-16; then
+	if ! sudo apt-get install clang-15; then
 		echo "installation failed!"
 		exit 1
 	fi

@@ -6,8 +6,8 @@ export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
 
 echo "building compiler, assembler and VM..."
 
-export CC=clang-16
-export CCPP=clang++-16
+export CC=clang
+export CCPP=clang++
 
 sudo dnf install SDL2-devel.x86_64
 sudo dnf install SDL2_gfx-devel.x86_64
