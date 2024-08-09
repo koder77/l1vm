@@ -1096,6 +1096,7 @@ S2 include_file (U1 *line_str)
 						if (replace_macro_normal (buf) != 0)
 					    {
 							return_error = 1;
+							printf ("ERROR: line: %s\n", buf);
 					    }
 					}
 					else
@@ -1109,6 +1110,7 @@ S2 include_file (U1 *line_str)
 						if (replace_macro (buf) != 0)
 					    {
 							return_error = 1;
+							printf ("ERROR: line: %s\n", buf);
 					    }
 					}
 				}
@@ -1495,6 +1497,7 @@ int main (int ac, char *av[])
 						if (replace_macro_normal (buf) != 0)
 					    {
 							return_error = 1;
+							printf ("ERROR: line: %s\n", buf);
 					    }
 					}
 					else
@@ -1508,6 +1511,7 @@ int main (int ac, char *av[])
 						if (replace_macro (buf) != 0)
 					    {
 							return_error = 1;
+							printf ("ERROR: line: %s\n", buf);
 					    }
 					}
 				}

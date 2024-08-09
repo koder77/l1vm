@@ -3,7 +3,7 @@
 //
 // This is an exammple how to use "jsra" and "loadl".
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 #include <math-const.l1h>
 #include <misc-macros.l1h>
 (main func)
@@ -21,6 +21,7 @@
 	(set int64 1 ind 0)
 
 	(set int64 1 time_ms_i 0)
+	(set string s messagestr "starting...")
 
 	// (set int64 1 maxloop 10000000000)
 	(set int64 1 maxloop 10000000)
@@ -30,11 +31,11 @@
 	(one regi [ ind ] =)
 	((ind offset +) ind =)
 	(maxloop regi [ ind ] =)
-	(set string s messagestr "starting...")
-	print_s (messagestr)
-	print_n
+
+	(messagestr :print_s !)
+	(:print_n !)
 	(:start !)
-	exit (zero)
+	(zero :exit !)
 (funcend)
 (opcodes_per_sec func)
 	(set double 1 time_ms_d 0.0)
@@ -53,17 +54,17 @@
 	(maxloop :math_int2double !)
 	(maxloop_d stpopd)
 	{opcodes_sec_d = ((maxloop_d * opcodes_loop_d) * ticks_per_sec_d / time_ms_d)}
-	print_s (opcodes_str)
-	print_d (opcodes_sec_d)
-	print_n
+	(opcodes_str :print_s !)
+	(opcodes_sec_d :print_d !)
+	(:print_n !)
 	// calculate points
 	{points_d = (thousand_d / points_ref_d) * opcodes_sec_d}
 	(points_d :math_double2int !)
 	(points_i stpopi)
-	print_n
-	print_s (points_str)
-	print_i (points_i)
-	print_n
+	(:print_n !)
+	(points_str :print_s !)
+	(points_i :print_i !)
+	(:print_n !)
 (funcend)
 (addi func)
 	#var ~ @addi
@@ -174,8 +175,8 @@
 	// add offset 8 to registers
 	((arg1 offset~ *) arg1 =)
 	(regi [ arg1 ] r1~ =)
-	print_i (r1~)
-	print_n
+	(r1~ :print_i !)
+	(:print_n !)
 	((ep two~ +) ep =)
 	((bp bp_offset~ +) bp =)
 (funcend)
@@ -183,7 +184,7 @@
 	(25 time_ms_i 0 0 intr0)
 	{time_ms_i = (time_ms_i + zero)}
 	(:opcodes_per_sec !)
-	exit (zero)
+	(zero :exit !)
 (funcend)
 (start func)
 	(set int64 1 lsi_pos 32)
@@ -198,8 +199,6 @@
 	(set int64 14 jmp_array 0)
 	(set int64 1 i 0)
 	(set int64 1 op_label 0)
-    (set string s jump_errorstr "ERROR: internal jump table error! label: ")
-    (set int64 1 zeroaddr 16)
 	(reset-reg)
 	(:set_labels)
 	(:addi lab_addi loadl)
@@ -221,7 +220,7 @@
 	(lab_printi jmp_array [ printi_pos ] =)
 	(lab_end jmp_array [ end_pos ] =)
 	(zero bp =)
-	start_timer
+	(:start_timer !)
 	(:load_opcode)
 	(reset-reg)
 	(jmp_array [ bp ] op_label =)
