@@ -1,3 +1,19 @@
+L1VM (3.1.11)
+	NEW: the preprocessor can now check the variable types set in the macros.
+
+>> intr-func.l1h
+>> interrupt macros - new only functions - no macros
+>> intr0
+>> @# chars to print \n newline char
+>> new: types can be set by setting the variable types as the first char:
+>> i = integer / string pointer
+>> d = double
+>> s = string
+>> iFOO -> set iFOO as an integer variable
+>>
+
+-- Stefan Pietzonke <info@midnight-coding.de> Wed 14 Aug 2024 16:29  +020
+
 L1VM (3.1.10)
 	VM/mpfr module: I did set a new flag in settings.h to set the MPFR modules filesize function call:
 

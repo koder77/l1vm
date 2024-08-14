@@ -209,6 +209,7 @@ S2 get_varname_type (U1 *name)
     // variable not found
     return (-1);
 }
+
 U1 getvartype (U1 *type)
 {
     U1 vartype = 0;

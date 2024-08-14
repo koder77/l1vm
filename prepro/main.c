@@ -32,6 +32,13 @@
 #define DEFINE_SB			"#define"
 #define FUNC_SB				"#func"
 
+#define SET_SB              "(set"
+#define MAXVARS             4006
+
+#define BOOL 13
+#define VARTYPE_NONE 14
+#define VARTYPE_STRING 15
+
 // for @name tackon on functions
 #define FUNC_VAR_NAMES_SB	"#var"
 #define FUNC_END_SB			"funcend"
@@ -78,11 +85,23 @@ S8 replace_varname_index = 0;
 // for replace on/off
 U1 replace = 1;
 
+// for all variables
+struct vars
+{
+    U1 name[MAXSTRLEN + 1];
+    U1 type;
+};
+
+S8 vars_ind ALIGN = -1;
+struct vars vars[MAXVARS];
+
 // protos
 char *fgets_uni (char *str, int len, FILE *fptr);
 size_t strlen_safe (const char * str, S8 maxlen);
 S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
 void convtabs (U1 *str);
+S2 get_varname_type (U1 *name);
+S2 parse_set (U1 *line);
 
 FILE *finptr;
 FILE *foutptr;
@@ -467,7 +486,7 @@ S2 set_macro (U1 *line_str)
 					arg_loop = 0;
 
 					// check if argument is: 'NONE':
-					if (strcmp (defines[defines_ind].args[defines[defines_ind].args_num], "NONE") == 0)
+					if (strcmp ((const char *) defines[defines_ind].args[defines[defines_ind].args_num], "NONE") == 0)
 					{
 						defines[defines_ind].args_num = -1;
 						ok = 1;  // exit upper loop too!
@@ -508,6 +527,73 @@ S2 set_macro (U1 *line_str)
 	defines[defines_ind].out[j] = '\0';
 
 	return (0);
+}
+
+S2 check_define_type (U1 *define, U1* variable)
+{
+	S2 str_len = 0;
+	S2 vartype = 0;
+
+	str_len = strlen_safe ((const char *) define, MAXLINELEN);
+	if (str_len < 2)
+	{
+	    // error define too short
+       return (0);
+	}
+
+	vartype = get_varname_type (variable);
+	if (vartype == -1)
+	{
+         printf ("check_define_type: ERROR: variable: '%s' not defined!\n", variable);
+		 return (1);
+	}
+
+	// printf ("DEBUG: check_define_type: type: %i\n", vartype);
+
+	// check define variable type
+	if (define[0] == 'i')
+	{
+		// i = integer type
+		switch (vartype)
+		{
+			case BYTE:
+			case WORD:
+			case DOUBLEWORD:
+			case QUADWORD:
+				return (0);   // type ok!
+
+			default:
+				return (1);   // type ERROR!
+		}
+	}
+
+	if (define[0] == 'd')
+	{
+		// d = double variable type
+		if (vartype != DOUBLEFLOAT)
+		{
+			return (1); // type ERROR!
+		}
+		else
+		{
+			return (0);  // type ok!
+		}
+	}
+
+	if (define[0] == 's')
+	{
+		// d = double variable type
+		if (vartype != VARTYPE_STRING)
+		{
+			return (1); // type ERROR!
+		}
+		else
+		{
+			return (0);  // type ok!
+		}
+	}
+
+	return (0); // unknown var type, for backwards compatibility set return code 0
 }
 
 S2 replace_macro_normal (U1 *line_str)
@@ -565,14 +651,16 @@ S2 replace_macro_normal (U1 *line_str)
 				name_pos = searchstr (line_str, defines[ind].def, 0, 0, TRUE);
 				if (name_pos >= 0)
 				{
+					// printf ("replace_macro_normal: found define: '%s'\n", defines[ind].def);
+
 					call_found = 0;
-				    pos = searchstr (line_str, "call)", 0, 0, TRUE);
+				    pos = searchstr (line_str, (U1 *) "call)", 0, 0, TRUE);
 					if (pos >= 0)
 					{
 						call_found = 1;
 					}
 
-					pos = searchstr (line_str, "!)", 0, 0, TRUE);
+					pos = searchstr (line_str, (U1 *) "!)", 0, 0, TRUE);
 					if (pos >= 0)
 					{
 						call_found = 1;
@@ -660,7 +748,7 @@ S2 replace_macro_normal (U1 *line_str)
 						return (0);
 					}
 
-					pos = searchstr (line_str, "(", 0, 0, TRUE);
+					pos = searchstr (line_str, (U1 *) "(", 0, 0, TRUE);
                     if (pos > name_pos)
 					{
 						printf ("ERROR: found ( after function name!\n");
@@ -718,6 +806,14 @@ S2 replace_macro_normal (U1 *line_str)
 								replace_str (new_line, defines[ind].args[arg_ind], arg);
 								//printf ("DEBUG: new_line: '%s'\n", new_line);
 
+								// check variable types
+								if (check_define_type (defines[ind].args[arg_ind], arg) != 0)
+								{
+									printf ("ERROR: macro variable type mismatch: %s not of type: %s\n", arg, defines[ind].args[arg_ind]);
+									printf ("line: '%s'\n\n", new_line);
+									return (1);
+								}
+
 								//printf ("DEBUG: line_str[i]: '%c'\n", line_str[i]);
 								if (i == name_pos - 2)
 								{
@@ -774,6 +870,8 @@ S2 replace_macro (U1 *line_str)
 	U1 arg[MAXSTRLEN + 1];
 	S4 arg_ind = -1;
 
+	S2 vartype = 0;
+
 	slen = strlen_safe ((const char*) line_str, MAXLINELEN);
 
 	// check for every definition, if it is in current line!
@@ -808,7 +906,7 @@ S2 replace_macro (U1 *line_str)
 				pos = searchstr (line_str, defines[ind].def, 0, 0, TRUE);
 				if (pos >= 0)
 				{
-					// printf ("DEBUG: replace_macro: name: '%s'\n", defines[ind].def);
+					//printf ("DEBUG: replace_macro: name: '%s'\n", defines[ind].def);
 					// get arguments
 
 					ok = 1; k = 0;
@@ -857,7 +955,17 @@ S2 replace_macro (U1 *line_str)
 								// printf ("'%s'\n\n", line_str);
 
 								replace_str (new_line, defines[ind].args[arg_ind], arg);
-								// printf ("DEBUG: new_line: '%s'\n", new_line);
+								//printf ("DEBUG: define: '%s'\n", defines[ind].args[arg_ind]);
+								//printf ("DEBUG: replace arg: '%s'\n", arg);
+								//printf ("DEBUG: new_line: '%s'\n", new_line);
+
+								// check variable types
+								if (check_define_type (defines[ind].args[arg_ind], arg) != 0)
+								{
+									printf ("ERROR: macro variable type mismatch: %s not of type: %s\n", arg, defines[ind].args[arg_ind]);
+									printf ("line: '%s'\n\n", new_line);
+									return (1);
+								}
 
 								// printf ("DEBUG: line_str[i]: '%c'\n", line_str[i]);
 								if (line_str[i] == ')')
@@ -865,7 +973,7 @@ S2 replace_macro (U1 *line_str)
 									if (arg_ind != defines[ind].args_num)
 									{
 										printf ("ERROR: arguments mismatch!\n");
-										printf ("> '%s'\n", line_str);
+
 										return (1);
 									}
 
@@ -1096,7 +1204,6 @@ S2 include_file (U1 *line_str)
 						if (replace_macro_normal (buf) != 0)
 					    {
 							return_error = 1;
-							printf ("ERROR: line: %s\n", buf);
 					    }
 					}
 					else
@@ -1110,7 +1217,6 @@ S2 include_file (U1 *line_str)
 						if (replace_macro (buf) != 0)
 					    {
 							return_error = 1;
-							printf ("ERROR: line: %s\n", buf);
 					    }
 					}
 				}
@@ -1173,6 +1279,19 @@ S2 include_file (U1 *line_str)
 					var_tackon_set = 0;
 					// unset macro
 					defines[replace_varname_index].type = DEFINE_EMPTY;
+				}
+			}
+
+            // check for variable definition
+		    pos = searchstr (buf, (U1 *) SET_SB, 0, 0, TRUE);
+			if (pos >= 0)
+			{
+				if (parse_set (buf) != 0)
+				{
+					fclose (finptr);
+					fclose (foutptr);
+					fclose (docuptr);
+					exit (1);
 				}
 			}
 
@@ -1321,6 +1440,292 @@ S2 check_if_l1com_file (char *file)
 	fclose (fptr);
 	// no (main func) Brackets main found!!
 	return (1);
+}
+
+S2 get_varname_type (U1 *name)
+{
+    S8 i ALIGN = 0;
+
+    for (i = 0; i <= vars_ind; i++)
+    {
+        if (strcmp ((const char *) vars[i].name, (const char *) name) == 0)
+        {
+            // found variable, return variable type
+            return (vars[i].type);
+        }
+    }
+    // variable not found
+    return (-1);
+}
+
+U1 getvartype (U1 *type)
+{
+    U1 vartype = 0;
+
+    if (strcmp ((const char *) type, "byte") == 0)
+    {
+        vartype = BYTE;
+    }
+    if (strcmp ((const char *) type, "const-byte") == 0)
+    {
+        vartype = BYTE;
+    }
+    if (strcmp ((const char *) type, "mut-byte") == 0)
+    {
+        vartype = BYTE;
+    }
+    if (strcmp ((const char *) type, "string") == 0)
+    {
+        vartype = VARTYPE_STRING;
+    }
+    if (strcmp ((const char *) type, "const-string") == 0)
+    {
+        vartype = VARTYPE_STRING;
+    }
+    if (strcmp ((const char *) type, "mut-string") == 0)
+    {
+        vartype = VARTYPE_STRING;
+    }
+
+    if (strcmp ((const char *) type, "int16") == 0)
+    {
+        vartype = WORD;
+    }
+    if (strcmp ((const char *) type, "const-int16") == 0)
+    {
+        vartype = WORD;
+    }
+    if (strcmp ((const char *) type, "mut-int16") == 0)
+    {
+        vartype = WORD;
+    }
+
+    if (strcmp ((const char *) type, "int32") == 0)
+    {
+        vartype = DOUBLEWORD;
+    }
+    if (strcmp ((const char *) type, "const-int32") == 0)
+    {
+        vartype = DOUBLEWORD;
+    }
+    if (strcmp ((const char *) type, "mut-int32") == 0)
+    {
+        vartype = DOUBLEWORD;
+    }
+
+    if (strcmp ((const char *) type, "int64") == 0)
+    {
+        vartype = QUADWORD;
+    }
+    if (strcmp ((const char *) type, "const-int64") == 0)
+    {
+        vartype = QUADWORD;
+    }
+    if (strcmp ((const char *) type, "mut-int64") == 0)
+    {
+        vartype = QUADWORD;
+    }
+
+    if (strcmp ((const char *) type, "double") == 0)
+    {
+        vartype = DOUBLEFLOAT;
+    }
+    if (strcmp ((const char *) type, "const-double") == 0)
+    {
+        vartype = DOUBLEFLOAT;
+    }
+    if (strcmp ((const char *) type, "mut-double") == 0)
+    {
+        vartype = DOUBLEFLOAT;
+    }
+
+    if (strcmp ((const char *) type, "bool") == 0)
+    {
+        vartype = BOOL;
+    }
+    if (strcmp ((const char *) type, "const-bool") == 0)
+    {
+        vartype = BOOL;
+    }
+    if (strcmp ((const char *) type, "mut-bool") == 0)
+    {
+        vartype = BOOL;
+    }
+
+    if (strcmp ((const char *) type, "none") == 0)
+    {
+        vartype = VARTYPE_NONE;
+    }
+
+    return (vartype);
+}
+
+S2 parse_set (U1 *line)
+{
+	S2 pos, type_pos, type_ind = 0, i;
+    S2 name_pos, name_ind = 0;
+    S2 line_len = 0;
+    U1 get_type = 1;
+    U1 get_name = 1;
+    S2 vartype = 0;
+    S2 type_len = 0;
+    S2 spaces = 0;
+    S2 func_pos = 0;
+    U1 type[MAXSTRLEN + 1];
+    U1 name[MAXSTRLEN + 1];
+
+    line_len = strlen_safe ((const char *) line, MAXSTRLEN);
+
+    //printf ("parse_set: '%s'\n", line);
+
+    // check if set found
+    pos = searchstr (line, (U1 *) "(set", 0, 0, TRUE);
+    if (pos != -1)
+    {
+        func_pos = searchstr (line, (U1 *) "func)", 0, 0, TRUE);
+        if (func_pos != -1)
+        {
+            return (0);   // function define, return!
+        }
+
+        if (vars_ind >= MAXVARS)
+        {
+            printf ("parse_line: variables overflow!\n");
+            return (1);
+        }
+
+        type_pos = pos + 5;
+        i = type_pos;
+
+        #if DEBUG
+        printf ("parse_line: set: type pos: %i, char: '%c'\n", type_pos, line[i]);
+        #endif
+
+        while (get_type == 1)
+        {
+            if (line[i] != ' ')
+            {
+                if (type_ind >= MAXSTRLEN)
+                {
+                    printf ("parse_line: set type overflow!\n");
+                    return (1);
+                }
+                type[type_ind] = line[i];
+                type_ind++;
+            }
+            else
+            {
+                // got end of type
+                type[type_ind] = '\0';
+                get_type = 0;
+            }
+            if (i < line_len - 1)
+            {
+                i++;
+            }
+            else
+            {
+                printf ("parse_line: line overflow!\n");
+                return (1);
+            }
+        }
+
+        // get vartype
+        vartype = getvartype (type);
+        if (vartype == 0)
+        {
+            // error no valid vartype
+            printf ("parse-line: set: invalid variable type: %s ! \n", type);
+            return (1);
+        }
+
+        type_len = strlen_safe ((const char *) type, MAXSTRLEN);
+        name_pos = type_pos + type_len;
+
+        spaces = 0;
+        i = name_pos;
+        while (get_name == 1)
+        {
+            if (line[i] != ' ')
+            {
+                spaces++;
+            }
+
+            if (spaces == 2)
+            {
+                name_pos = i;
+                get_name = 0;
+            }
+
+            if (i < line_len - 1)
+            {
+                i++;
+            }
+            else
+            {
+                printf ("parse_line: line overflow!\n");
+                return (1);
+            }
+        }
+
+        get_name = 1;
+        i = name_pos;
+        name_ind = 0;
+
+        #if DEBUG
+        printf ("variable name start pos: %i\n", i);
+        #endif
+
+        while (get_name == 1)
+        {
+            if (line[i] != ' ' && line[i] != ')')
+            {
+                if (name_ind >= MAXSTRLEN)
+                {
+                    printf ("parse_line: set name overflow!\n");
+                    return (1);
+                }
+                name[name_ind] = line[i];
+                name_ind++;
+            }
+            else
+            {
+                // got end of name
+                name[name_ind] = '\0';
+                get_name = 0;
+            }
+
+            if (i < line_len - 1)
+            {
+                i++;
+            }
+            else
+            {
+                 // got end of name
+                name[name_ind] = '\0';
+                get_name = 0;
+            }
+        }
+
+        //printf ("saving variable...\n");
+
+        if (vars_ind < MAXVARS - 1)
+        {
+            vars_ind++;
+            strcpy ((char *) vars[vars_ind].name, (char *) name);
+            vars[vars_ind].type = vartype;
+
+            #if DEBUG
+            printf ("variable: index: %lli, name: '%s', type: %lli\n\n\n", vars_ind, vars[vars_ind].name, vars[vars_ind].type);
+            #endif
+        }
+        else
+        {
+            printf ("parse_line: set variable overflow!\n");
+            return (1);
+        }
+    }
+	return (0);
 }
 
 int main (int ac, char *av[])
@@ -1497,7 +1902,6 @@ int main (int ac, char *av[])
 						if (replace_macro_normal (buf) != 0)
 					    {
 							return_error = 1;
-							printf ("ERROR: line: %s\n", buf);
 					    }
 					}
 					else
@@ -1511,7 +1915,6 @@ int main (int ac, char *av[])
 						if (replace_macro (buf) != 0)
 					    {
 							return_error = 1;
-							printf ("ERROR: line: %s\n", buf);
 					    }
 					}
 				}
@@ -1581,6 +1984,19 @@ int main (int ac, char *av[])
 					var_tackon_set = 0;
 					// unset macro
 					defines[replace_varname_index].type = DEFINE_EMPTY;
+				}
+			}
+
+		    // check for variable definition
+		    pos = searchstr (buf, (U1 *) SET_SB, 0, 0, TRUE);
+			if (pos >= 0)
+			{
+				if (parse_set (buf) != 0)
+				{
+					fclose (finptr);
+					fclose (foutptr);
+					fclose (docuptr);
+					exit (1);
 				}
 			}
 
