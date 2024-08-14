@@ -34,8 +34,8 @@
 #func get_date (iDYEAR, iDMONTH, iDDAY) :(18 iDYEAR iDMONTH iDDAY intr0)
 #func weekday (iX) :(19 iX 0 0 intr0)
 >> print
-#func printf_i (iFORM, iNUM) :(20 iNUM iFORM 0 intr0)
-#func printf_d (iFORM, dNUM) :(21 dNUM iFORM 0 intr0)
+#func printf_i (sFORM, iNUM) :(20 iNUM sFORM 0 intr0)
+#func printf_d (sFORM, dNUM) :(21 dNUM sFORM 0 intr0)
 #func print_16 (iNUM) :(22 iNUM 0 0 intr0)
 #func print_32 (iNUM) :(23 iNUM 0 0 intr0)
 >> timer
