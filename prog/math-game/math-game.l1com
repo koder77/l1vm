@@ -1,0 +1,542 @@
+// math-game.l1com
+//
+#include <intr.l1h>
+#include <math-const.l1h>
+
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 one 1)
+	(set int64 1 two 2)
+    (set int64 1 three 3)
+    (set int64 1 four 4)
+	(set int64 1 f 0)
+	(set int64 1 width 800)
+	(set int64 1 height 600)
+	(set int64 1 width_m 799)
+	(set int64 1 height_m 599)
+	(set int64 1 bit 32)
+	(set int64 1 ret 0)
+	(set int64 1 x 0)
+	(set int64 1 y 0)
+	(set int64 1 delay 1000)
+    (set int64 1 event_delay 100)
+    (set int64 1 event_count 0)
+    (set int64 1 event_max 10)
+    (set int64 1 y_move 20)
+    (set int64 1 max_y 500)
+    (set int64 1 frame_delay 10)
+    (set byte 1 col_white 255)
+	(set byte 1 col_black 0)
+	(set byte 1 alpha 255)
+	(set const-int64 1 sdl_mod 0)
+	(set const-int64 1 math_mod 1)
+	(set const-int64 1 string_mod 2)
+
+    (set string s window_title_str "math game")
+
+	(set int64 1 calc_op_plus 0)
+	(set int64 1 calc_op_minus 1)
+	(set int64 1 calc_result 50)
+    (set int64 1 calc_max_result 100)
+	(set int64 1 calc_random_offset 10)
+	(set int64 1 calc_random_max 0)
+	(set int64 1 calc_rand_max 2)
+	(set int64 1 rand 0)
+
+    (set string 256 calc_result_str "")
+    (set int64 1 calc_result_str_len 255)
+    (set int64 1 calc_result_x 650)
+    (set int64 1 calc_result_y 550)
+
+	(set const-int64 1 calc1_start_x 20)
+	(set int64 1 calc1_start_y 30)
+	(set int64 1 calc1_x 20)
+	(set int64 1 calc1_y 30)
+	(set int64 1 calc1_result 50)
+	(set string 256 calc1_str "")
+
+	(set const-int64 1 calc2_start_x 230)
+	(set int64 1 calc2_start_y 30)
+	(set int64 1 calc2_x 230)
+	(set int64 1 calc2_y 30)
+	(set int64 1 calc2_result 50)
+	(set string 256 calc2_str "")
+
+	(set const-int64 1 calc3_start_x 440)
+	(set int64 1 calc3_start_y 30)
+	(set int64 1 calc3_x 440)
+	(set int64 1 calc3_y 30)
+	(set int64 1 calc3_result 50)
+	(set string 256 calc3_str "")
+
+	(set const-int64 1 calc4_start_x 650)
+	(set int64 1 calc4_start_y 30)
+	(set int64 1 calc4_x 650)
+	(set int64 1 calc4_y 30)
+	(set int64 1 calc4_result 50)
+	(set string 256 calc4_str "")
+
+    // mouse
+    (set int64 1 x_mouse 0)
+    (set int64 1 y_mouse 0)
+    (set int64 1 mouse_button_left 0)
+    (set int64 1 mouse_button_middle 0)
+    (set int64 1 mouse_button_right 0)
+
+    // draw calc
+    (set int64 1 draw_calc1 1)
+    (set int64 1 draw_calc2 1)
+    (set int64 1 draw_calc3 1)
+    (set int64 1 draw_calc4 1)
+
+    // player points
+    (set int64 1 player_points 0)
+    (set string 256 player_points_str "")
+    (set int64 1 player_points_str_len 255)
+    (set int64 1 player_points_x 30)
+    (set int64 1 player_points_y 550)
+    (set int64 1 calc_points 10)
+
+	// open screen
+    (sdl_mod width height bit zero :sdl_open_screen !)
+	(ret stpopi)
+
+	(math_mod :math_init !)
+	(string_mod :string_init !)
+
+	(zero :math_randinit !)
+
+    (window_title_str :sdl_set_window_title !)
+
+	// clear screen
+    (zero zero width_m height_m col_black col_black col_black alpha :sdl_rectangle_fill !)
+
+	(:load_font !)
+	// draw circle
+	//(circle_x circle_y radius col_white col_white col_white alpha :sdl_circle !)
+	// (:sdl_update !)
+
+    (:next_calc)
+    // set calc result random
+    (calc_max_result :math_rand !)
+    (calc_result stpop)
+
+	// set calculations
+	(calc_rand_max :math_rand !)
+	(rand stpop)
+    (((rand two ==) f =) f if+)
+	    (calc_result calc1_result :=)
+	(else)
+	    (calc_rand_max :math_rand !)
+	    (rand stpop)
+        (((rand two ==) f =) f if+)
+	        (calc_random_offset :math_rand !)
+	        (rand stpop)
+	        (calc_result + rand calc1_result :=)
+	    (else)
+	        (calc_random_offset :math_rand !)
+	        (rand stpop)
+	        (calc_result - rand calc1_result :=)
+        (endif)
+	(endif)
+
+	(calc_rand_max :math_rand !)
+	(rand stpop)
+    (((rand two ==) f =) f if+)
+	    (calc_result calc2_result :=)
+	(else)
+	    (calc_rand_max :math_rand !)
+	    (rand stpop)
+        (((rand two ==) f =) f if+)
+	        (calc_random_offset :math_rand !)
+	        (rand stpop)
+	        (calc_result + rand calc2_result :=)
+	    (else)
+	        (calc_random_offset :math_rand !)
+	        (rand stpop)
+	        (calc_result - rand calc2_result :=)
+        (endif)
+	(endif)
+
+	(calc_rand_max :math_rand !)
+	(rand stpop)
+    (((rand two ==) f =) f if+)
+	    (calc_result calc3_result :=)
+	(else)
+	    (calc_rand_max :math_rand !)
+	    (rand stpop)
+        (((rand two ==) f =) f if+)
+	        (calc_random_offset :math_rand !)
+	        (rand stpop)
+	        (calc_result + rand calc3_result :=)
+	    (else)
+	        (calc_random_offset :math_rand !)
+	        (rand stpop)
+	        (calc_result - rand calc3_result :=)
+        (endif)
+	(endif)
+
+	(calc_rand_max :math_rand !)
+	(rand stpop)
+    (((rand two ==) f =) f if+)
+	    (calc_result calc4_result :=)
+	(else)
+	   (calc_rand_max :math_rand !)
+	    (rand stpop)
+        (((rand two ==) f =) f if+)
+	        (calc_random_offset :math_rand !)
+	        (rand stpop)
+	        (calc_result + rand calc4_result :=)
+	    (else)
+	        (calc_random_offset :math_rand !)
+	        (rand stpop)
+	        (calc_result - rand calc4_result :=)
+        (endif)
+	(endif)
+
+    (calc1_start_y calc1_y :=)
+    (calc2_start_y calc2_y :=)
+    (calc3_start_y calc3_y :=)
+    (calc4_start_y calc4_y :=)
+
+    (one draw_calc1 :=)
+    (one draw_calc2 :=)
+    (one draw_calc3 :=)
+    (one draw_calc4 :=)
+
+    (calc1_result calc_op_plus calc1_str :create_calc !)
+	(calc1_x calc1_y calc1_str :draw_calc !)
+
+	(calc2_result calc_op_plus calc2_str :create_calc !)
+	(calc2_x calc2_y calc2_str :draw_calc !)
+
+	(calc3_result calc_op_plus calc3_str :create_calc !)
+	(calc3_x calc3_y calc3_str :draw_calc !)
+
+	(calc4_result calc_op_plus calc4_str :create_calc !)
+	(calc4_x calc4_y calc4_str :draw_calc !)
+
+	(:sdl_update !)
+
+    // calc_result calc_result_str
+    (calc_result calc_result_str calc_result_str_len :string_int64tostring !)
+
+	(:loop_update)
+        // clear screen
+        (zero zero width_m height_m col_black col_black col_black alpha :sdl_rectangle_fill !)
+
+        (calc_result_x calc_result_y col_white col_white col_white calc_result_str :sdl_text_ttf !)
+
+        (player_points player_points_str player_points_str_len :string_int64tostring !)
+        (player_points_x player_points_y col_white col_white col_white player_points_str :sdl_text_ttf !)
+
+        // calculate new y number positions
+        (calc1_y + y_move calc1_y :=)
+        (calc2_y + y_move calc2_y :=)
+        (calc3_y + y_move calc3_y :=)
+        (calc4_y + y_move calc4_y :=)
+
+        // draw calcualtions
+        (((draw_calc1 one ==) f :=) f if)
+            (calc1_x calc1_y calc1_str :draw_calc !)
+        (endif)
+
+        (((draw_calc2 one ==) f :=) f if)
+            (calc2_x calc2_y calc2_str :draw_calc !)
+        (endif)
+
+        (((draw_calc3 one ==) f :=) f if)
+            (calc3_x calc3_y calc3_str :draw_calc !)
+        (endif)
+
+        (((draw_calc4 one ==) f :=) f if)
+            (calc4_x calc4_y calc4_str :draw_calc !)
+        (endif)
+
+        (zero event_count :=)
+
+        (:event_loop)
+        (:sdl_get_mouse_state !)
+	    (x_mouse stpopi)
+	    (y_mouse stpopi)
+	    (mouse_button_left stpopi)
+	    (mouse_button_middle stpopi)
+	    (mouse_button_right stpopi)
+
+        (((mouse_button_middle zero ==) f :=) f if)
+            (:quit_game jmp)
+        (endif)
+
+        (((mouse_button_left zero ==) f :=) f if)
+            (calc1_x calc1_y x_mouse y_mouse one :check_click_calc !)
+            (calc2_x calc2_y x_mouse y_mouse two :check_click_calc !)
+            (calc3_x calc3_y x_mouse y_mouse three :check_click_calc !)
+            (calc4_x calc4_y x_mouse y_mouse four :check_click_calc !)
+        (endif)
+
+        (event_delay :detime !)
+        (event_count + one event_count :=)
+        (((event_count event_max <) f :=) f if)
+            (:event_loop jmp)
+        (endif)
+
+        (:event_finish)
+
+        (((calc1_y max_y >=) f :=) f if)
+            (delay :detime !)
+
+            // clear screen
+            (zero zero width_m height_m col_black col_black col_black alpha :sdl_rectangle_fill !)
+            (:sdl_update !)
+
+            (:next_calc !)
+        (endif)
+
+        (:sdl_update !)
+	(:loop_update jmp)
+
+    (:quit_game)
+	(zero :exit !)
+(funcend)
+
+(math_rand func)
+    #var ~ math_rand
+
+    (set int64 1 one~ 1)
+    (set int64 1 rand_max~ 0)
+    (set int64 1 rand~ 0)
+
+    (rand_max~ stpop)
+    (rand_max~ :math_randintmax !)
+    (rand~ stpop)
+    (rand~ + one~ rand~ :=)
+
+    (rand~ stpush)
+(funcend)
+
+(load_font func)
+	#var ~ load_font
+
+	(set string s fontstr~ "fonts/free/FreeMono.ttf")
+	(set int64 1 fontsize~ 28)
+
+	(fontstr~ fontsize~ :sdl_font_ttf !)
+(funcend)
+
+(draw_calc func)
+	#var ~draw_calc
+
+	(set int64 1 x~ 0)
+	(set int64 1 y~ 0)
+	(set int64 1 x2~ 0)
+	(set int64 1 y2~ 0)
+	(set int64 1 width~ 130)
+	(set int64 1 height~ 28)
+    (set int64 1 font_x~ 0)
+	(set int64 1 font_offset~ 5)
+	(set int64 1 calcstr~ 0)
+	(set byte 1 alpha~ 255)
+	(set byte 1 r~ 255)
+	(set byte 1 g~ 255)
+	(set byte 1 b~ 255)
+
+	(calcstr~ stpop)
+	(y~ x~ stpop)
+
+	(x~ + width~ x2~ :=)
+	(y~ + height~ y2~ :=)
+	(x~ + font_offset~ font_x~ :=)
+
+	(x~ y~ x2~ y2~ r~ g~ b~ alpha~ :sdl_rectangle !)
+	(font_x~ y~ r~ g~ b~ calcstr~ :sdl_text_ttf !)
+(funcend)
+
+(check_click_calc func)
+	#var ~ check_click_calc
+
+    (set int64 1 zero~ 0)
+    (set int64 1 one~ 1)
+    (set int64 1 two~ 2)
+    (set int64 1 three~ 3)
+    (set int64 1 four~ 4)
+    (set int64 1 ret~ 0)
+	(set int64 1 x~ 0)
+	(set int64 1 y~ 0)
+	(set int64 1 x2~ 0)
+	(set int64 1 y2~ 0)
+	(set int64 1 width~ 130)
+	(set int64 1 height~ 28)
+    (set int64 1 font_x~ 0)
+	(set int64 1 font_offset~ 5)
+	(set int64 1 mouse_x~ 0)
+    (set int64 1 mouse_y~ 0)
+    (set int64 1 calc_num~ 0)
+    (set int64 1 f~ 0)
+
+	(calc_num~ mouse_y~ mouse_x~ y~ x~ stpop)
+
+	(x~ + width~ x2~ :=)
+	(y~ + height~ y2~ :=)
+	(x~ + font_offset~ font_x~ :=)
+
+    (one~ ret~ =)
+
+    // check if mouse click is in calcualtion border
+    //(((((mouse_x~ x~ >)(mouse_x~ x2~ <) &&) ((mouse_y~ y~ >)(mouse_y~ y2~ <) &&) &&) f~ :=) f~ if)
+    ((((mouse_x~ x~ >)(mouse_x~ x2~ <) &&) f~ :=) f~ if)
+        (switch)
+            (calc_num~ one~ ?)
+                (reset-reg)
+                (((draw_calc1 one ==) f~ :=) f~ if)
+                (((calc_result calc1_result ==) f~ :=) f~ if+)
+                    (zero~ draw_calc1 :=)
+                    (player_points + calc_points player_points :=)
+                (else)
+                    // remove 10 points for wrong answer
+                    (zero~ draw_calc1 :=)
+                    (player_points - calc_points player_points :=)
+                (endif)
+                (endif)
+                (zero~ ret~ :=)
+                (break)
+
+            (calc_num~ two~ ?)
+                (reset-reg)
+                (((draw_calc2 one ==) f~ :=) f~ if)
+                (((calc_result calc2_result ==) f~ :=) f~ if+)
+                    (zero~ draw_calc2 :=)
+                    (player_points + calc_points player_points :=)
+                (else)
+                    // remove 10 points for wrong answer
+                    (zero~ draw_calc2 :=)
+                    (player_points - calc_points player_points :=)
+                (endif)
+                (endif)
+                (zero~ ret~ :=)
+                (break)
+
+            (calc_num~ three~ ?)
+                (reset-reg)
+                (((draw_calc3 one ==) f~ :=) f~ if)
+                (((calc_result calc3_result ==) f~ :=) f~ if+)
+                    (zero~ draw_calc3 :=)
+                    (player_points + calc_points player_points :=)
+                (else)
+                    // remove 10 points for wrong answer
+                    (zero~ draw_calc3 :=)
+                    (player_points - calc_points player_points :=)
+                (endif)
+                (endif)
+                (zero~ ret~ :=)
+                (break)
+
+            (calc_num~ four~ ?)
+                (reset-reg)
+                (((draw_calc4 one ==) f~ :=) f~ if)
+                (((calc_result calc4_result ==) f~ :=) f~ if+)
+                    (zero~ draw_calc4 :=)
+                    (player_points + calc_points player_points :=)
+                (else)
+                    // remove 10 points for wrong answer
+                    (zero~ draw_calc4 :=)
+                    (player_points - calc_points player_points :=)
+                (endif)
+                (endif)
+                (zero~ ret~ :=)
+                (break)
+         (switchend)
+    (endif)
+(funcend)
+
+(create_calc func)
+    #var ~ create_calc
+
+    (set int64 1 result~ 0)
+    (set int64 1 max_rand~ 0)
+    (set int64 1 two~ 2)
+    (set int64 1 a~ 0)
+    (set int64 1 b~ 0)
+    (set int64 1 c~ 0)
+    (set int64 1 d~ 0)
+
+    (set int64 1 numbers~ 2)
+    (set int64 1 type~ 0)
+    (set int64 1 f~ 0)
+
+    (set int64 1 operator_1~ 0)
+    (set int64 1 op_plus~ 0)
+    (set int64 1 op_minus~ 1)
+    (set int64 1 op_mul~ 2)
+    (set int64 1 op_div~ 3)
+
+    (set string s op_plusstr~ " + ")
+    (set string s op_minusstr~ " - ")
+    (set string s equalstr~ " = ")
+
+    (set string 256 numstr~ "")
+    (set int64 1 calcstr~ 0)
+    (set const-int64 1 numstr_len~ 255)
+
+    (calcstr~ operator_1~ result~ stpop)
+
+    //(result~ :print_i !)
+    //(equalstr~ :print_s !)
+    (result~ / two~ max_rand~ :=)
+    (max_rand~ :math_rand !)
+	(a~ stpop)
+
+    (((numbers~ two~ ==) f~ =) f~ if)
+        (switch)
+            (operator_1~ op_plus~ ?)
+                // = 10
+                // a = 5 -> b = 5
+                // 5 + 5 = 10
+
+                (result~ - a~ b~ :=)
+
+                //(b~ :print_i !)
+                //(op_plusstr~ :print_s !)
+                //(a~ :print_i !)
+	            //(:print_n !)
+
+                (b~ numstr~ numstr_len~ :string_int64tostring !)
+                (calcstr~ numstr~ :string_copy !)
+
+                (calcstr~ op_plusstr~ :string_cat !)
+
+                (a~ numstr~ numstr_len~ :string_int64tostring !)
+                (calcstr~ numstr~ :string_cat !)
+
+                //(calcstr~ :print_s !)
+                //(:print_n !)
+	        (break)
+	        (operator_1~ op_minus~ ?)
+	            // = 10
+	            // a = 6 -> b = 16
+	            // 16 - 6 = 10
+
+                (result~ + a~ b~ :=)
+
+                //(b~ :print_i !)
+                //(op_minusstr~ :print_s !)
+                //(a~ :print_i !)
+	            //(:print_n !)
+
+                (b~ numstr~ numstr_len~ :string_int64tostring !)
+                (calcstr~ numstr~ :string_copy !)
+
+                (calcstr~ op_minusstr~ :string_cat !)
+
+                (a~ numstr~ numstr_len~ :string_int64tostring !)
+                (calcstr~ numstr~ :string_cat !)
+
+                //(calcstr~ :print_s !)
+                //(:print_n !)
+	        (break)
+        (switchend)
+	(endif)
+(funcend)
+
+#include <sdl-lib.l1h>
+#include <string.l1h>
+#include <math-lib.l1h>

@@ -900,6 +900,14 @@ U1 *rand_int_max (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+    if (rand_max < 0)
+	{
+		// avoid division by zero error
+		rand_max = 1;
+	}
+
+    //printf ("DEBUG: rand_int_max: rand_max: %lli\n", rand_max);
+
 	rand_d = genrand64_int64 ();
 	rand_int = (S8) rand_d % (rand_max + 1);
 
@@ -912,6 +920,8 @@ U1 *rand_int_max (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	// rand() % (max_number + 1 - minimum_number) + minimum_number
 	// output = min + (rand() % static_cast<int>(max - min + 1))
+
+	//printf ("DEBUG: rand_int_max: rand: %lli\n\n", rand_int);
 
 	sp = stpushi (rand_int, sp, sp_bottom);
 	if (sp == NULL)
