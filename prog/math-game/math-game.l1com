@@ -97,6 +97,22 @@
     (set int64 1 player_points_y 550)
     (set int64 1 calc_points 10)
 
+    // colors ====================================================================
+    // background
+	(set byte 1 back_r 143)
+	(set byte 1 back_g 147)
+	(set byte 1 back_b 151)
+
+    // red
+    (set byte 1 red_r 175)
+	(set byte 1 red_g 15)
+	(set byte 1 red_b 15)
+
+    // blue
+    (set byte 1 blue_r 21)
+    (set byte 1 blue_g 39)
+    (set byte 1 blue_b 246)
+
 	// open screen
     (sdl_mod width height bit zero :sdl_open_screen !)
 	(ret stpopi)
@@ -109,7 +125,7 @@
     (window_title_str :sdl_set_window_title !)
 
 	// clear screen
-    (zero zero width_m height_m col_black col_black col_black alpha :sdl_rectangle_fill !)
+    (zero zero width_m height_m back_r back_g back_b alpha :sdl_rectangle_fill !)
 
 	(:load_font !)
 	// draw circle
@@ -223,12 +239,12 @@
 
 	(:loop_update)
         // clear screen
-        (zero zero width_m height_m col_black col_black col_black alpha :sdl_rectangle_fill !)
+        (zero zero width_m height_m back_r back_g back_b alpha :sdl_rectangle_fill !)
 
-        (calc_result_x calc_result_y col_white col_white col_white calc_result_str :sdl_text_ttf !)
+        (calc_result_x calc_result_y red_r red_g red_b calc_result_str :sdl_text_ttf !)
 
         (player_points player_points_str player_points_str_len :string_int64tostring !)
-        (player_points_x player_points_y col_white col_white col_white player_points_str :sdl_text_ttf !)
+        (player_points_x player_points_y blue_r blue_g blue_b player_points_str :sdl_text_ttf !)
 
         // calculate new y number positions
         (calc1_y + y_move calc1_y :=)
@@ -286,7 +302,8 @@
             (delay :detime !)
 
             // clear screen
-            (zero zero width_m height_m col_black col_black col_black alpha :sdl_rectangle_fill !)
+            (zero zero width_m height_m back_r back_g back_b alpha :sdl_rectangle_fill !)
+
             (:sdl_update !)
 
             (:next_calc !)
@@ -336,9 +353,9 @@
 	(set int64 1 font_offset~ 5)
 	(set int64 1 calcstr~ 0)
 	(set byte 1 alpha~ 255)
-	(set byte 1 r~ 255)
-	(set byte 1 g~ 255)
-	(set byte 1 b~ 255)
+	(set byte 1 r~ 0)
+	(set byte 1 g~ 0)
+	(set byte 1 b~ 0)
 
 	(calcstr~ stpop)
 	(y~ x~ stpop)
