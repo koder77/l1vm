@@ -26,6 +26,11 @@
  #endif
  #if _WIN32
  	#pragma message ("Windows host detected!")
+
+    #undef DIVISIONCHECK
+	#undef CPU_SET_AFFINITY
+	#define DIVISIONCHECK 0
+	#define CPU_SET_AFFINITY 0
  #endif
 
 #if __MACH__
