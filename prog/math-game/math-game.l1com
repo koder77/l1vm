@@ -36,12 +36,18 @@
 
 	(set int64 1 calc_op_plus 0)
 	(set int64 1 calc_op_minus 1)
+    (set int64 1 calc_op_mul 2)
+    (set int64 1 calc_op 0)
 	(set int64 1 calc_result 50)
     (set int64 1 calc_max_result 100)
 	(set int64 1 calc_random_offset 10)
 	(set int64 1 calc_random_max 0)
 	(set int64 1 calc_rand_max 2)
 	(set int64 1 rand 0)
+    (set int64 1 calc_op_minus_count 0)
+    (set int64 1 calc_op_minus_set 5)
+    (set int64 1 calc_op_mul_count 0)
+    (set int64 1 calc_op_mul_set 3)
 
     (set string 256 calc_result_str "")
     (set int64 1 calc_result_str_len 255)
@@ -220,16 +226,31 @@
     (one draw_calc3 :=)
     (one draw_calc4 :=)
 
-    (calc1_result calc_op_plus calc1_str :create_calc !)
+    (((calc_op_minus_count calc_op_minus_set ==) f :=) f if+)
+        (calc_op_minus calc_op :=)
+        (zero calc_op_minus_count :=)
+    (else)
+        (calc_op_plus calc_op :=)
+        (calc_op_minus_count + one calc_op_minus_count :=)
+    (endif)
+
+    (((calc_op_mul_count calc_op_mul_set ==) f :=) f if+)
+        (calc_op_mul calc_op :=)
+        (zero calc_op_mul_count :=)
+    (else)
+        (calc_op_mul_count + one calc_op_mul_count :=)
+    (endif)
+
+    (calc1_result calc_op calc1_str :create_calc !)
 	(calc1_x calc1_y calc1_str :draw_calc !)
 
-	(calc2_result calc_op_plus calc2_str :create_calc !)
+	(calc2_result calc_op calc2_str :create_calc !)
 	(calc2_x calc2_y calc2_str :draw_calc !)
 
-	(calc3_result calc_op_plus calc3_str :create_calc !)
+	(calc3_result calc_op calc3_str :create_calc !)
 	(calc3_x calc3_y calc3_str :draw_calc !)
 
-	(calc4_result calc_op_plus calc4_str :create_calc !)
+	(calc4_result calc_op calc4_str :create_calc !)
 	(calc4_x calc4_y calc4_str :draw_calc !)
 
 	(:sdl_update !)
@@ -488,6 +509,7 @@
 
     (set string s op_plusstr~ " + ")
     (set string s op_minusstr~ " - ")
+    (set string s op_mulstr~ " * ")
     (set string s equalstr~ " = ")
 
     (set string 256 numstr~ "")
@@ -550,6 +572,30 @@
                 //(calcstr~ :print_s !)
                 //(:print_n !)
 	        (break)
+            (operator_1~ op_mul~ ?)
+	            // = 10
+	            // a = 6 -> b = 16
+	            // 16 - 6 = 10
+
+                (result~ / a~ b~ :=)
+
+                //(b~ :print_i !)
+                //(op_minusstr~ :print_s !)
+                //(a~ :print_i !)
+	            //(:print_n !)
+
+                (b~ numstr~ numstr_len~ :string_int64tostring !)
+                (calcstr~ numstr~ :string_copy !)
+
+                (calcstr~ op_mulstr~ :string_cat !)
+
+                (a~ numstr~ numstr_len~ :string_int64tostring !)
+                (calcstr~ numstr~ :string_cat !)
+
+                //(calcstr~ :print_s !)
+                //(:print_n !)
+	        (break)
+
         (switchend)
 	(endif)
 (funcend)
