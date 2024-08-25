@@ -185,7 +185,7 @@
 
 // info strings:
 #define COPYRIGHT_STR " 2024 (C) 2017-2024 Stefan Pietzonke - software research"
-#define VM_VERSION_STR "3.1.11 "
+#define VM_VERSION_STR "3.1.12 "
 #define MOTTO_STR "supernova"
 
 // no user defined definitions below this section! ============================
@@ -273,9 +273,10 @@ typedef double                  F8;     /* DOUBLE */
 #define ERR_FILE_FPOS      -7
 
 
+#define MAX_LOCAL_DATA     1024
+
 // for time functions
 // struct tm *tm;
-
 
 struct threaddata
 {
@@ -289,6 +290,7 @@ struct threaddata
 	pthread_t id;			// thread ID
 	U1 status;				// thread status
     U1 *data;               // own thread data
+    U1 *local_data[MAX_LOCAL_DATA];   // local data for functions
 };
 
 struct t_var
@@ -313,6 +315,7 @@ struct data_info
 	U1 type_str[2];
 	U1 constant;				// set to one if variable is constant
 };
+
 
 // compiler, set variables as unused/used
 // to get defined but unused variables

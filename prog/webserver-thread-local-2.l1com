@@ -1,0 +1,259 @@
+// webserver-thread-local.l1com
+//
+// simple http webserver
+// example call:
+// l1vm prog/webserver-thread-local -args 127.0.0.1 2000
+// for loaclhost port 2000
+//
+// Use new thread for socket connection of client
+//
+#include <intr.l1h>
+#include <misc-macros.l1h>
+#include <math-const.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 one 1)
+	(set int64 1 two 2)
+	(set int64 1 ret 0)
+	(set int64 1 maxsockets 10)
+	(set int64 1 f 0)
+	(set int64 1 server 0)
+	(set int64 1 portnum 2000)
+	(set int64 1 server_open 0)
+	(set int64 1 server_accept 0)
+	(set int64 1 ip_len 10)
+	(set string s filenamestr "")
+	(set string 256 buf "")
+	(set int64 1 bufsize 255)
+	(set int64 1 buflen 0)
+	(set int64 1 socket_handle 0)
+	(set string s netinitstr "error: can't init networking sockets!")
+	(set string s erroropenstr "error: can't open accept server socket!")
+	(set string s errorserverstr "error: can't open server socket!")
+	(set string 11 waiting "waiting...")
+    (set string s args_errstr "args: <ip> <port>")
+	(set int64 1 lab_run 0)
+	(set int64 1 cpu_number 0)
+    (set int64 1 fcpus 0)
+    (set int64 1 delay_sec 1000)
+    (set int64 1 delay_thr 100)
+    (set int64 1 thr_sync 0)
+    (set string 256 arg_ipstr "")
+    (set string 256 arg_portstr "")
+    (set int64 1 argnum 0)
+    (set int64 1 args 2)
+    (zero :math_init !)
+
+    shell_args (argnum)
+    (((argnum args !=) f =) f if)
+	    print_s (args_errstr)
+        print_n
+		exit (one)
+    (endif)
+    // get cli args
+    get_shell_arg (zero, arg_ipstr)
+	get_shell_arg (one, arg_portstr)
+	(arg_portstr portnum :string_to_int !)
+
+	(one maxsockets :net_init !)
+	(ret stpopi)
+	(((ret zero !=) f =) f if)
+		// ERROR can't allocate memory
+		print_s (netinitstr)
+        print_n
+	    exit (one)
+	(endif)
+	(two :string_init !)
+	(loadreg)
+	(arg_ipstr bufaddr :get_hostbyname !)
+	(ret stpopi)
+	((ret zero !=) f =)
+	(f :try_hostbyaddr jmpi)
+	(:open_socket jmp)
+	(:try_hostbyaddr)
+	(arg_ipstr :get_hostbyaddr !)
+	(ret stpopi)
+	((ret zero !=) f =)
+	(f :end jmpi)
+	(:open_socket)
+	(bufaddr portnum :open_server_socket !)
+	(ret stpopi)
+	(socket_handle stpopi)
+	(((ret zero !=) f =) f if)
+	    print_s (errorserverstr)
+	    print_n
+		(:wait_conn jmp)
+	(endif)
+	// save run function label
+	(:run lab_run loadl)
+	((lab_run zero +) lab_run =)
+	(:wait_conn)
+	    print_s (waitingaddr)
+	    print_n
+		(socket_handle :open_accept_server !)
+		(ret stpopi)
+		(server_accept stpopi)
+		(loadreg)
+		(((ret zero !=) f =) f if)
+	        print_s (erroropenstr)
+	        print_n
+			(:wait_conn jmp)
+		(endif)
+		// (socket_handle server_accept :run !)
+		get_cpu (cpu_number)
+	    pull_int64_var (cpu_number)
+		(((cpu_number zero ==) f =) f if)
+	        (:wait_run)
+	        free_cpus (fcpus)
+	        pull_int64_var (fcpus)
+	        (((fcpus one >) f =) f if+)
+			    (socket_handle stpushi)
+		     	(server_accept stpushi)
+                // set sync flag to zero
+	            globallock (zero)
+	            (zero thr_sync =)
+	            globalunlock (zero)
+			    thread (lab_run)
+	            // wait till thread got the stack values and set sync flag to one!
+	            (:wait_thr)
+	            detime (delay_thr)
+	            globallock (zero)
+	            (((thr_sync one !=) f =) f if)
+				    globalunlock (zero)
+				    (:wait_thr jmp)
+				(endif)
+	            globalunlock (zero)
+	            // get values of current main thread stack
+	            (ret stpopi)
+	            (ret stpopi)
+		    (else)
+			     detime (delay_sec)
+	             (:wait_run jmp)
+		    (endif)
+		(endif)
+		//(((cpu_number zero !=) f =) f if)
+		//	join
+		// (endif)
+		// do loop
+		(:wait_conn jmp)
+	(:end)
+		(:socket_free_mem !)
+	    exit (zero)
+(funcend)
+(run func)
+	#var ~ run
+	(set int64 1 server~ 0)
+	(set int64 1 accept~ 0)
+	(set int64 1 zero~ 0)
+	(set int64 1 two~ 2)
+	(set int64 1 three~ 3)
+	(set int64 1 four~ 4)
+	(set int64 1 five~ 5)
+	(set int64 1 server_act_open~ 1)
+	(set int64 1 shutdown~ 0)
+	(set int64 1 err~ 0)
+	(set int64 1 err_ok~ 0)
+	(set int64 1 len~ 0)
+	(set int64 1 i~ 0)
+	(set int64 1 filehandle~ 0)
+	(set int64 1 filesize~ 255)
+	(set int64 1 n~ 0)
+	(set int64 1 ret~ 0)
+	(set int64 1 f~ 0)
+	(set int64 1 stringlen~ 255)
+	(set int64 1 slen~ 0)
+	(set string 256 comm~)
+	(set string s comm_get~ "GET")
+	(set string 2 ch~)
+	(set string 256 filename~ "")
+	(set string 256 filesend~)
+	(set string 256 header~)
+	(set string s space~ " ")
+	(set string 256 read~ "r")
+	(set string 256 mimetype~)
+	(set string s emptystr~ "")
+	(set int64 1 mimetype_len~ 255)
+	(set string 256 buf~ "")
+	(set string s error_clientaddr~ "webserver run ERROR: can't get client address!")
+	(set string s error_sread~ "webserver run ERROR: can't read request!")
+	(set string s file_req~ "Got file request: ")
+	(set string s error_mimetype~ "webserver: ERROR can't get file mimentype!")
+	(set string s error_send_file~ "webserver: ERROR can't send file!")
+	(set string s error_get_filename~ "webserver: ERROR can't get filename!")
+	(set string s file_send~ "try to send file: ")
+	(set string s error_close_accept~ "ERROR: close accept socket !!")
+	(set string s webserver_rootstr~ "web")
+	(set string 256 filename_realstr~ "")
+	// get values from stack
+	data_func_local_alloc
+	data_func_local
+	(accept~ stpopi)
+	(server~ stpopi)
+	data_func_global
+	// set sync flag to one
+	globallock (zero)
+	(one thr_sync =)
+	globalunlock (zero)
+    data_func_local
+	//
+	//
+	// parse loop =============================================================
+	//
+	//
+	(:run_parse)
+	(accept~ buf~ stringlen~ :socket_read_string !)
+	(ret~ stpopi)
+	(((ret~ zero~ !=) f~ =) f~ if)
+	     print_s (error_clientaddr~)
+	     print_n
+		(:parse_end jmp)
+	(endif)
+	// print request
+	print_s (buf~)
+	print_n
+	// get filename
+	(buf~ filename~ filesize~ :socket_handle_get !)
+	(ret~ stpopi)
+	(((ret~ zero~ !=) f~ =) f~ if)
+	    print_s (error_get_filename~)
+	    print_n
+		(:close_accept jmp)
+	(endif)
+	(filename_realstr~ webserver_rootstr~ :string_copy !)
+	(filename_realstr~ filename~ :string_cat !)
+	(filename~ filename_realstr~ :string_copy !)
+	(:parse_end)
+	//
+	//
+	// get mimetype and send file =============================================
+	//
+	//
+	print_s (filename~)
+	print_n
+	(filename~ mimetype~ mimetype_len~ :get_mimetype_from_filename !)
+	(ret~ stpopi)
+	(((ret~ zero~ !=) f~ =) f~ if)
+	    print_s (error_mimetype~)
+	    print_n
+	(endif)
+	(accept~ filename~ mimetype~ :socket_send_file !)
+	(ret~ stpopi)
+	(((ret~ zero~ !=) f~ =) f~ if)
+	    print_s (error_send_file~)
+	    print_n
+	(endif)
+	(:close_accept)
+	// close accept server
+	(accept~ :close_accept_server !)
+	(ret~ stpopi)
+	(((ret~ zero~ !=) f~ =) f~ if)
+	    print_s (error_close_accept~)
+		print_n
+	(endif)
+	data_func_global
+	data_func_free
+	threadexit (zero~)
+(funcend)
+#include <math-lib.l1h>
+#include <net-lib.l1h>
+#include <string.l1h>

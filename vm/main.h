@@ -34,6 +34,8 @@
  #endif
 
 #if __MACH__
+    #pragma message ("macOS host detected!")
+
 	#undef DIVISIONCHECK
 	#undef CPU_SET_AFFINITY
 	#define DIVISIONCHECK 0

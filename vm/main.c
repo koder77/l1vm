@@ -367,6 +367,14 @@ void clean_threaddata_data (S8 cpu)
 		}
 
 		free (threaddata[cpu].data);
+
+		for (i = 0; i < MAX_LOCAL_DATA; i++)
+		{
+		    if (threaddata[cpu].local_data[i])
+			{
+				free (threaddata[cpu].local_data[i]);
+			}
+	    }
 	}
 }
 
@@ -468,6 +476,9 @@ S2 run (void *arg)
 	// for time functions
 	time_t secs;
 
+	// for local data interrupt
+    S8 local_data_ind ALIGN = -1;
+
 	// jumpoffsets
 	S8 *jumpoffs ALIGN;
 	S8 offset ALIGN;
@@ -482,6 +493,14 @@ S2 run (void *arg)
 	sp_top = threaddata[cpu_core].sp_top_thread;
 	sp_bottom = threaddata[cpu_core].sp_bottom_thread;
 	sp = threaddata[cpu_core].sp_thread;
+
+	{
+		S8 i ALIGN;
+		for (i = 0; i < MAX_LOCAL_DATA; i++)
+		{
+			threaddata[cpu_core].local_data[i] = NULL;
+		}
+	}
 
 	if (silent_run == 0)
 	{
@@ -2741,6 +2760,103 @@ S2 run (void *arg)
 			eoffs = 5;
 			break;
 
+		case 11:
+			local_data_ind++;
+			if (local_data_ind >= MAX_LOCAL_DATA)
+			{
+				printf ("interrupt 1: allocate local function data: out of memory!\n");
+
+                // cleanup
+                S8 i;
+				for (i = 0; i < local_data_ind; i++)
+				{
+					if (threaddata[cpu_core].local_data[i])
+					{
+						free (threaddata[cpu_core].local_data[i]);
+					}
+				}
+
+				free (jumpoffs);
+				loop_stop ();
+				pthread_exit ((void *) 1);
+			}
+
+			S8 data_local_size ALIGN = data_mem_size - (stack_size * max_cpu);
+
+	        if (threaddata[cpu_core].local_data[local_data_ind] == NULL)
+			{
+				threaddata[cpu_core].local_data[local_data_ind] = (U1 *) calloc (data_local_size, sizeof (U1));
+				if (threaddata[cpu_core].local_data[local_data_ind] == NULL)
+				{
+					printf ("interrupt 1: allocate local function data: out of memory!\n");
+					free (jumpoffs);
+					loop_stop ();
+					pthread_exit ((void *) 1);
+				}
+			}
+
+			// copy data global to data local
+			if (memcpy (threaddata[cpu_core].local_data[local_data_ind], data_global, data_local_size) == NULL)
+			{
+				printf ("interrupt 1: allocate local function data: memory copy error!\n");
+				free (jumpoffs);
+				loop_stop ();
+				free (threaddata[cpu_core].data);
+				pthread_exit ((void *) 1);
+			}
+
+			eoffs = 5;
+			break;
+
+		case 12:
+			// sane check:
+		    if (threaddata[cpu_core].local_data[local_data_ind] == NULL)
+			{
+				// ERROR no data local allocated!
+				printf ("interrupt 1: switch to local function data: local data not allocated!\n");
+
+                // cleanup
+                S8 i;
+				for (i = 0; i < local_data_ind; i++)
+				{
+					if (threaddata[cpu_core].local_data[i])
+					{
+						free (threaddata[cpu_core].local_data[i]);
+					}
+				}
+
+				free (jumpoffs);
+				loop_stop ();
+				pthread_exit ((void *) 1);
+			}
+			// switch data access to data local
+			data = threaddata[cpu_core].local_data[local_data_ind];
+
+			eoffs = 5;
+			break;
+
+		case 13:
+			// switch data access to data global
+			data = data_global;
+
+			eoffs = 5;
+			break;
+
+		case 14:
+			// free local data
+            if (local_data_ind >= 0)
+			{
+				if (threaddata[cpu_core].local_data[local_data_ind])
+				{
+					free (threaddata[cpu_core].local_data[local_data_ind]);
+					threaddata[cpu_core].local_data[local_data_ind] = NULL;
+					// decrease index
+					local_data_ind--;
+				}
+			}
+
+			eoffs = 5;
+			break;
 
 		case 255:
 			printf ("thread EXIT\n");
