@@ -33,6 +33,8 @@ char *get_home (void);
 S8 data_size ALIGN;
 S8 code_size ALIGN;
 
+
+
 // see global.h user settings on top
 S8 max_code_size ALIGN = MAX_CODE_SIZE;
 S8 max_data_size ALIGN = MAX_DATA_SIZE;
@@ -46,6 +48,8 @@ U1 *code = NULL;
 // data
 U1 *data_global = NULL;
 
+// local data max
+S8 local_data_max ALIGN = LOCAL_DATA_MAX;
 
 S8 code_ind ALIGN;
 S8 data_ind ALIGN;
@@ -367,14 +371,18 @@ void clean_threaddata_data (S8 cpu)
 		}
 
 		free (threaddata[cpu].data);
+	}
 
-		for (i = 0; i < MAX_LOCAL_DATA; i++)
+	if (threaddata[cpu].local_data != NULL)
+	{
+		for (i = 0; i < local_data_max; i++)
 		{
 		    if (threaddata[cpu].local_data[i])
 			{
 				free (threaddata[cpu].local_data[i]);
 			}
 	    }
+		free (threaddata[cpu].local_data);
 	}
 }
 
@@ -395,6 +403,7 @@ void cleanup (void)
     if (code) clean_code ();
 
 	pthread_mutex_lock (&data_mutex);
+
 	if (threaddata)
 	{
 		for (i = 0; i < max_cpu; i++)
@@ -494,9 +503,18 @@ S2 run (void *arg)
 	sp_bottom = threaddata[cpu_core].sp_bottom_thread;
 	sp = threaddata[cpu_core].sp_thread;
 
+	threaddata[cpu_core].local_data = (U1 **) calloc (local_data_max, sizeof (U1*));
+	if (threaddata[cpu_core].local_data == NULL)
+	{
+		printf ("ERROR: can't allocate %lli elements for local function data!\n", local_data_max);
+		free (jumpoffs);
+		loop_stop ();
+		pthread_exit ((void *) 1);
+	}
+
 	{
 		S8 i ALIGN;
-		for (i = 0; i < MAX_LOCAL_DATA; i++)
+		for (i = 0; i < local_data_max; i++)
 		{
 			threaddata[cpu_core].local_data[i] = NULL;
 		}
@@ -2762,7 +2780,7 @@ S2 run (void *arg)
 
 		case 11:
 			local_data_ind++;
-			if (local_data_ind >= MAX_LOCAL_DATA)
+			if (local_data_ind >= local_data_max)
 			{
 				printf ("interrupt 1: allocate local function data: out of memory!\n");
 
@@ -3175,9 +3193,10 @@ void free_modules (void)
 
 void show_info (void)
 {
-	printf ("l1vm <program> [-C cpu_cores] [-S stacksize] [-q] [-p run priority (-20 - 19)] <-args> <cmd args>\n");
+	printf ("l1vm <program> [-C cpu_cores] [-S stacksize] [-D local_data_entries] [-q] [-p run priority (-20 - 19)] <-args> <cmd args>\n");
 	printf ("-C cores : set maximum of threads that can be run\n");
 	printf ("-S stacksize : set the stack size\n");
+	printf ("-D local data entries: for thread local data\n");
 	printf ("-q : quiet run, don't show welcome messages\n");
 	printf ("-p : set run priority, -20 = highest, 19 = lowest priority\n\n");
 	printf ("program arguments for the program must be set by '-args':\n");
@@ -3659,6 +3678,22 @@ int main (int ac, char *av[])
 										exit (1);
 									}
 									printf ("stack_size: stack size set to %lli\n", stack_size);
+								}
+							}
+
+							if (av[i][0] == '-' && av[i][1] == 'D')
+							{
+								if (i < ac - 1)
+				                {
+									// set max stack size flag...
+									local_data_max = atoi (av[i + 1]);
+									if (stack_size == 0)
+									{
+										printf ("ERROR: local data max is 0!\n");
+										cleanup ();
+										exit (1);
+									}
+									printf ("local_data_max: local data entries set to %lli\n", local_data_max);
 								}
 							}
 

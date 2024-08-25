@@ -273,7 +273,8 @@ typedef double                  F8;     /* DOUBLE */
 #define ERR_FILE_FPOS      -7
 
 
-#define MAX_LOCAL_DATA     1024
+// local_data_max
+#define LOCAL_DATA_MAX 1024
 
 // for time functions
 // struct tm *tm;
@@ -290,7 +291,7 @@ struct threaddata
 	pthread_t id;			// thread ID
 	U1 status;				// thread status
     U1 *data;               // own thread data
-    U1 *local_data[MAX_LOCAL_DATA];   // local data for functions
+    U1 **local_data;       // local data for functions
 };
 
 struct t_var
