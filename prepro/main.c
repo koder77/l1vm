@@ -101,7 +101,7 @@ size_t strlen_safe (const char * str, S8 maxlen);
 S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
 void convtabs (U1 *str);
 S2 get_varname_type (U1 *name);
-S2 parse_set (U1 *line);
+S2 parse_set (U1 *line, U1 *setret);
 
 FILE *finptr;
 FILE *foutptr;
@@ -583,7 +583,7 @@ S2 check_define_type (U1 *define, U1* variable)
 	if (define[0] == 's')
 	{
 		// d = double variable type
-		if (vartype != VARTYPE_STRING)
+		if (vartype != VARTYPE_STRING || vartype != STRING_CONST)
 		{
 			return (1); // type ERROR!
 		}
@@ -1013,6 +1013,8 @@ S2 include_file (U1 *line_str)
 {
 	U1 rbuf[MAXSTRLEN + 1];
 	U1 buf[MAXSTRLEN + 1];
+	U1 setret[MAXSTRLEN + 1];
+
 	U1 ok;
 	char *read;
 	U1 get_include_start;
@@ -1286,7 +1288,7 @@ S2 include_file (U1 *line_str)
 		    pos = searchstr (buf, (U1 *) SET_SB, 0, 0, TRUE);
 			if (pos >= 0)
 			{
-				if (parse_set (buf) != 0)
+				if (parse_set (buf, setret) != 0)
 				{
 					fclose (finptr);
 					fclose (foutptr);
@@ -1379,6 +1381,19 @@ S2 include_file (U1 *line_str)
 						fclose (foutptr);
 						fclose (docuptr);
 						exit (1);
+					}
+
+					// write string is immutable interrupt
+					if (strlen_safe ((const char *) setret, MAXLINELEN) != 0)
+				    {
+						if (fprintf (foutptr, "%s", setret) < 0)
+				        {
+							printf ("ERROR: can't write to output file!\n");
+							fclose (finptr);
+							fclose (foutptr);
+							fclose (docuptr);
+							exit (1);
+						}
 					}
 				}
 			}
@@ -1480,7 +1495,7 @@ U1 getvartype (U1 *type)
     }
     if (strcmp ((const char *) type, "const-string") == 0)
     {
-        vartype = VARTYPE_STRING;
+        vartype = STRING_CONST;
     }
     if (strcmp ((const char *) type, "mut-string") == 0)
     {
@@ -1560,7 +1575,7 @@ U1 getvartype (U1 *type)
     return (vartype);
 }
 
-S2 parse_set (U1 *line)
+S2 parse_set (U1 *line, U1 *setret)
 {
 	S2 pos, type_pos, type_ind = 0, i;
     S2 name_pos, name_ind = 0;
@@ -1590,7 +1605,7 @@ S2 parse_set (U1 *line)
 
         if (vars_ind >= MAXVARS)
         {
-            printf ("parse_line: variables overflow!\n");
+            printf ("parse_set: variables overflow!\n");
             return (1);
         }
 
@@ -1598,7 +1613,7 @@ S2 parse_set (U1 *line)
         i = type_pos;
 
         #if DEBUG
-        printf ("parse_line: set: type pos: %i, char: '%c'\n", type_pos, line[i]);
+        printf ("parse_set: set: type pos: %i, char: '%c'\n", type_pos, line[i]);
         #endif
 
         while (get_type == 1)
@@ -1607,7 +1622,7 @@ S2 parse_set (U1 *line)
             {
                 if (type_ind >= MAXSTRLEN)
                 {
-                    printf ("parse_line: set type overflow!\n");
+                    printf ("parse_set: set type overflow!\n");
                     return (1);
                 }
                 type[type_ind] = line[i];
@@ -1625,35 +1640,44 @@ S2 parse_set (U1 *line)
             }
             else
             {
-                printf ("parse_line: line overflow!\n");
+                printf ("parse_set: line overflow!\n");
                 return (1);
             }
         }
+
+		#if DEBUG
+        printf ("parse_set: set: vartype: %s\n", type);
+        #endif
 
         // get vartype
         vartype = getvartype (type);
         if (vartype == 0)
         {
             // error no valid vartype
-            printf ("parse-line: set: invalid variable type: %s ! \n", type);
+            printf ("parse_set: set: invalid variable type: %s ! \n", type);
             return (1);
         }
 
         type_len = strlen_safe ((const char *) type, MAXSTRLEN);
         name_pos = type_pos + type_len;
 
+
+        #if DEBUG
+        printf ("parse_set: name search start pos: %i\n", name_pos);
+        #endif
+
         spaces = 0;
         i = name_pos;
         while (get_name == 1)
         {
-            if (line[i] != ' ')
+            if (line[i] == ' ')
             {
                 spaces++;
             }
 
             if (spaces == 2)
             {
-                name_pos = i;
+                name_pos = i + 1;
                 get_name = 0;
             }
 
@@ -1663,7 +1687,7 @@ S2 parse_set (U1 *line)
             }
             else
             {
-                printf ("parse_line: line overflow!\n");
+                printf ("parse_set: line overflow!\n");
                 return (1);
             }
         }
@@ -1682,7 +1706,7 @@ S2 parse_set (U1 *line)
             {
                 if (name_ind >= MAXSTRLEN)
                 {
-                    printf ("parse_line: set name overflow!\n");
+                    printf ("parse_set: set name overflow!\n");
                     return (1);
                 }
                 name[name_ind] = line[i];
@@ -1707,6 +1731,21 @@ S2 parse_set (U1 *line)
             }
         }
 
+		// printf ("DEBUG: parse_set variable name: '%s'\n", name);
+
+		if (vartype == STRING_CONST)
+		{
+            strcpy ((char *) setret, "(34 ");
+			strcat ((char *) setret, (const char *) name);
+			strcat ((char *) setret, "addr 0 0 intr0)\n");
+
+			// printf ("DEBUG: parse_set: setret: '%s'\n", setret);
+		}
+		else
+		{
+			strcpy ((char *) setret, "");
+		}
+
         //printf ("saving variable...\n");
 
         if (vars_ind < MAXVARS - 1)
@@ -1721,7 +1760,7 @@ S2 parse_set (U1 *line)
         }
         else
         {
-            printf ("parse_line: set variable overflow!\n");
+            printf ("parse_set: set variable overflow!\n");
             return (1);
         }
     }
@@ -1732,6 +1771,7 @@ int main (int ac, char *av[])
 {
 	U1 rbuf[MAXSTRLEN + 1];                        /* read-buffer for one line */
 	U1 buf[MAXSTRLEN + 1];
+	U1 setret[MAXSTRLEN + 1];
 
 	char *read;
 	U1 ok;
@@ -1811,6 +1851,9 @@ int main (int ac, char *av[])
 	ok = TRUE;
 	while (ok)
 	{
+		// parse_set: string constant interrupt return
+		strcpy ((char *) setret, "");
+
 		read = fgets_uni ((char *) rbuf, MAXLINELEN, finptr);
         if (read != NULL)
         {
@@ -1991,7 +2034,7 @@ int main (int ac, char *av[])
 		    pos = searchstr (buf, (U1 *) SET_SB, 0, 0, TRUE);
 			if (pos >= 0)
 			{
-				if (parse_set (buf) != 0)
+				if (parse_set (buf, setret) != 0)
 				{
 					fclose (finptr);
 					fclose (foutptr);
@@ -2084,6 +2127,19 @@ int main (int ac, char *av[])
 						fclose (foutptr);
 						fclose (docuptr);
 						exit (1);
+					}
+
+					// write string is immutable interrupt
+					if (strlen_safe ((const char *) setret, MAXLINELEN) != 0)
+					{
+						if (fprintf (foutptr, "%s", setret) < 0)
+						{
+							printf ("ERROR: can't write to output file!\n");
+							fclose (finptr);
+							fclose (foutptr);
+							fclose (docuptr);
+							exit (1);
+						}
 					}
 				}
 			}
