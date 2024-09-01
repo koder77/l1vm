@@ -1,7 +1,7 @@
 // bool.l1com
 // set boolean variable checks by using "bool" command
 // only true or false allowed!
-#include <intr.l1h>
+#include <intr-func.l1h>
 #include <bool.l1h>
 (main func)
 	(set int64 1 zero 0)
@@ -21,8 +21,8 @@
 	(else)
 	    (false Bool =)
 	(endif)
-	print_s (boolstr)
-	print_i (Bool)
-    print_n
-    exit (zero)
+	(boolstr :print_s !)
+	(Bool :print_i !)
+    (:print_n !)
+    (zero :exit !)
 (funcend)

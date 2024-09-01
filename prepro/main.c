@@ -560,6 +560,7 @@ S2 check_define_type (U1 *define, U1* variable)
 			case WORD:
 			case DOUBLEWORD:
 			case QUADWORD:
+			case BOOL:
 				return (0);   // type ok!
 
 			default:
@@ -582,14 +583,16 @@ S2 check_define_type (U1 *define, U1* variable)
 
 	if (define[0] == 's')
 	{
-		// d = double variable type
-		if (vartype != VARTYPE_STRING || vartype != STRING_CONST)
+		// s = double variable type
+		switch (vartype)
 		{
-			return (1); // type ERROR!
-		}
-		else
-		{
-			return (0);  // type ok!
+			case VARTYPE_STRING:
+			case STRING_CONST:
+				return (0);   // is string type: ok!
+
+			default:
+				return (1);  // error!
+
 		}
 	}
 
@@ -1731,7 +1734,8 @@ S2 parse_set (U1 *line, U1 *setret)
             }
         }
 
-		// printf ("DEBUG: parse_set variable name: '%s'\n", name);
+		//printf ("DEBUG: parse_set variable name: '%s'\n", name);
+		//printf ("DEBUG: parse_set: set: vartype: %s\n", type);
 
 		if (vartype == STRING_CONST)
 		{
