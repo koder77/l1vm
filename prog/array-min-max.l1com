@@ -15,7 +15,7 @@
     (set double 1 xd 23.23)
     // set array data using spaces as elements separator
     (set int64 10 array 10 5 8 4 3 2 7 23 45 zero)
-    (set int64 10 array_new)
+    (set int64 10 array_new 0)
     (set int64 1 maxarray 10)
     (set int64 1 maxind 9)
     (set const-int64 1 Parray 0)
