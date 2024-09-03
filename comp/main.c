@@ -1215,6 +1215,19 @@ S2 parse_line (U1 *line)
 										U1 *ptr;
 										value = strtoll((const char *) ast[level].expr[j][4], (char **) &ptr, 10);
 
+										// check if variable value matches type
+										if (data_info[data_ind].type == DOUBLEFLOAT && t_var.digitstr_type != DOUBLEFLOAT)
+										{
+											printf ("error: line %lli: value not a double number and not a variable!\n", linenum);
+											return (1);
+										}
+
+										if (data_info[data_ind].type != DOUBLEFLOAT && t_var.digitstr_type == DOUBLEFLOAT)
+										{
+											printf ("error: line %lli: value not a integer number and not a variable!\n", linenum);
+											return (1);
+										}
+
 										switch (data_info[data_ind].type)
 										{
 											case BYTE:
@@ -1327,6 +1340,21 @@ S2 parse_line (U1 *line)
 										}
 										if (checkdigit (ast[level].expr[j][i]) != 1)
 										{
+											printf ("DEBUG: digitstr_type: %i, %s\n", t_var.digitstr_type, ast[level].expr[j][i]);
+
+											// check if variable value matches type
+											if (data_info[data_ind].type == DOUBLEFLOAT && t_var.digitstr_type != DOUBLEFLOAT)
+											{
+												printf ("error: line %lli: value not a double number and not a variable!\n", linenum);
+												return (1);
+											}
+
+											if (data_info[data_ind].type != DOUBLEFLOAT && t_var.digitstr_type == DOUBLEFLOAT)
+											{
+												printf ("error: line %lli: value not a integer number and not a variable!\n", linenum);
+												return (1);
+											}
+
 											if (get_variable_value (data_ind, ast[level].expr[j][i]) != 0)
 											{
 												strcpy ((char *) data_info[data_ind].value_str, (const char *) get_variable_value (data_ind, ast[level].expr[j][i]));
@@ -1339,6 +1367,21 @@ S2 parse_line (U1 *line)
 										}
 										else
 										{
+											printf ("DEBUG: digitstr_type: %i, %s\n", t_var.digitstr_type, ast[level].expr[j][i]);
+
+											// check if variable value matches type
+											if (data_info[data_ind].type == DOUBLEFLOAT && t_var.digitstr_type != DOUBLEFLOAT)
+											{
+												printf ("error: line %lli: value not a double number and not a variable!\n", linenum);
+												return (1);
+											}
+
+											if (data_info[data_ind].type != DOUBLEFLOAT && t_var.digitstr_type == DOUBLEFLOAT)
+											{
+												printf ("error: line %lli: value not a integer number and not a variable!\n", linenum);
+												return (1);
+											}
+
 											strcpy ((char *) data_info[data_ind].value_str, (const char *) ast[level].expr[j][i]);
 										}
 									}
@@ -1408,6 +1451,21 @@ S2 parse_line (U1 *line)
 										}
 										if (checkdigit (ast[level].expr[j][i]) != 1)
 										{
+											printf ("DEBUG: digitstr_type: %i, %s\n", t_var.digitstr_type, ast[level].expr[j][i]);
+
+											// check if variable value matches type
+											if (data_info[data_ind].type == DOUBLEFLOAT && t_var.digitstr_type != DOUBLEFLOAT)
+											{
+												printf ("error: line %lli: value not a double number and not a variable!\n", linenum);
+												return (1);
+											}
+
+											if (data_info[data_ind].type != DOUBLEFLOAT && t_var.digitstr_type == DOUBLEFLOAT)
+											{
+												printf ("error: line %lli: value not a integer number and not a variable!\n", linenum);
+												return (1);
+											}
+
 											if (get_variable_value (data_ind, ast[level].expr[j][i]) != 0)
 											{
 												strcpy ((char *) data_info[data_ind].value_str, (const char *) get_variable_value (data_ind, ast[level].expr[j][i]));
@@ -1420,6 +1478,21 @@ S2 parse_line (U1 *line)
 										}
 										else
 										{
+											printf ("DEBUG: digitstr_type: %i, %s\n", t_var.digitstr_type, ast[level].expr[j][i]);
+
+											// check if variable value matches type
+											if (data_info[data_ind].type == DOUBLEFLOAT && t_var.digitstr_type != DOUBLEFLOAT)
+											{
+												printf ("error: line %lli: value not a double number and not a variable!\n", linenum);
+												return (1);
+											}
+
+											if (data_info[data_ind].type != DOUBLEFLOAT && t_var.digitstr_type == DOUBLEFLOAT)
+											{
+												printf ("error: line %lli: value not a integer number and not a variable!\n", linenum);
+												return (1);
+											}
+
 											strcpy ((char *) data_info[data_ind].value_str, (const char *) ast[level].expr[j][i]);
 										}
 									}
