@@ -173,6 +173,8 @@ void cleanup (void)
                    free (mem[memind].objptr[i].memptr.straddr);
                    mem[memind].objptr[i].strlen = 0;
                }
+
+
            }
 
            free (mem[memind].objptr);

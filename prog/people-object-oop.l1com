@@ -61,6 +61,9 @@
         exit (one)
 	(endif)
     (memaddr~ :list_data->person !)
+    // free memory
+    (zero :free_obj_memobj !)
+    (:free_memobj !)
     free_mod (zero)
     exit (zero)
 (funcend)
