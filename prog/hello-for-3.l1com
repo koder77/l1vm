@@ -11,12 +11,12 @@
 	(set string s hello "Hello world!")
 	// print string
 	// for
-	(zero loop =)
-	(((loop maxloop <) f =) f for)
+	(zero loop :=)
+	(((loop maxloop <) f :=) f for)
         (hello :print_s !)
 		// print newline
         (:print_n !)
-		((loop one +) loop =)
+		((loop one +) loop :=)
 	(next)
 	(zero :exit !)
 (funcend)
