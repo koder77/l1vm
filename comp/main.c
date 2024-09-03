@@ -1340,7 +1340,7 @@ S2 parse_line (U1 *line)
 										}
 										if (checkdigit (ast[level].expr[j][i]) != 1)
 										{
-											printf ("DEBUG: digitstr_type: %i, %s\n", t_var.digitstr_type, ast[level].expr[j][i]);
+											//printf ("DEBUG: digitstr_type: %i, %s\n", t_var.digitstr_type, ast[level].expr[j][i]);
 
 											// check if variable value matches type
 											if (data_info[data_ind].type == DOUBLEFLOAT && t_var.digitstr_type != DOUBLEFLOAT)
@@ -1367,7 +1367,7 @@ S2 parse_line (U1 *line)
 										}
 										else
 										{
-											printf ("DEBUG: digitstr_type: %i, %s\n", t_var.digitstr_type, ast[level].expr[j][i]);
+											//printf ("DEBUG: digitstr_type: %i, %s\n", t_var.digitstr_type, ast[level].expr[j][i]);
 
 											// check if variable value matches type
 											if (data_info[data_ind].type == DOUBLEFLOAT && t_var.digitstr_type != DOUBLEFLOAT)
@@ -1451,7 +1451,7 @@ S2 parse_line (U1 *line)
 										}
 										if (checkdigit (ast[level].expr[j][i]) != 1)
 										{
-											printf ("DEBUG: digitstr_type: %i, %s\n", t_var.digitstr_type, ast[level].expr[j][i]);
+											//printf ("DEBUG: digitstr_type: %i, %s\n", t_var.digitstr_type, ast[level].expr[j][i]);
 
 											// check if variable value matches type
 											if (data_info[data_ind].type == DOUBLEFLOAT && t_var.digitstr_type != DOUBLEFLOAT)
@@ -1478,7 +1478,7 @@ S2 parse_line (U1 *line)
 										}
 										else
 										{
-											printf ("DEBUG: digitstr_type: %i, %s\n", t_var.digitstr_type, ast[level].expr[j][i]);
+											//printf ("DEBUG: digitstr_type: %i, %s\n", t_var.digitstr_type, ast[level].expr[j][i]);
 
 											// check if variable value matches type
 											if (data_info[data_ind].type == DOUBLEFLOAT && t_var.digitstr_type != DOUBLEFLOAT)
