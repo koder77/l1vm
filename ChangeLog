@@ -2,7 +2,10 @@ L1VM (3.2.0)
 	Preprocessor bugfixes. Now the preprocessor can insert the string_immutable interrupt on "const-string" variables.
 	So they can be checked then for overflows.
 
--- Stefan Pietzonke <info@midnight-coding.de> Sat 31 Aug 2024 23:36  +020
+	The preprocessor now can insert the "for" loop start line "(for-loop)" automaticaly.
+	See "prog/hello-for-3.l1com" example.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sun 02 Sep 2024 23:50  +020
 
 L1VM (3.1.12)
 	NEW: interrupts for allocating function local data by copy all data to local

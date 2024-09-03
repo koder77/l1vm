@@ -58,6 +58,10 @@
 #define DOCU_START_SB      "#docustart"
 #define DOCU_END_SB        "#docuend"
 
+
+#define FOR_LOOP_SET_SB    "(for-loop)"
+#define FOR_LOOP_SB        "for)"
+
 // for generating documentation file
 FILE *docuptr;
 U1 documentation_on = 0;     // if set to 1 then write the following lines into docu file
@@ -95,14 +99,6 @@ struct vars
 S8 vars_ind ALIGN = -1;
 struct vars vars[MAXVARS];
 
-// protos
-char *fgets_uni (char *str, int len, FILE *fptr);
-size_t strlen_safe (const char * str, S8 maxlen);
-S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
-void convtabs (U1 *str);
-S2 get_varname_type (U1 *name);
-S2 parse_set (U1 *line, U1 *setret);
-
 FILE *finptr;
 FILE *foutptr;
 
@@ -110,6 +106,18 @@ S8 linenum ALIGN = 1;
 
 // global flag set to 1 if errors found
 U1 return_error = 0;
+
+// set to true if "(for-loop)" line in program was found.
+// If not then it will be inserted by the preprocessor!
+U1 for_loop = 0;
+
+// protos
+char *fgets_uni (char *str, int len, FILE *fptr);
+size_t strlen_safe (const char * str, S8 maxlen);
+S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
+void convtabs (U1 *str);
+S2 get_varname_type (U1 *name);
+S2 parse_set (U1 *line, U1 *setret);
 
 void clear_defines (void)
 {
@@ -1300,6 +1308,32 @@ S2 include_file (U1 *line_str)
 				}
 			}
 
+            // check for "for)"
+            pos = searchstr (buf, (U1 *) FOR_LOOP_SB, 0, 0, TRUE);
+            if (pos >= 0)
+			{
+				if (for_loop == 0)
+				{
+					// insert "(for-loop)" into program
+					if (fprintf (foutptr, "%s", FOR_LOOP_SET_SB) < 0)
+					{
+						printf ("ERROR: can't write to output file!\n");
+						fclose (finptr);
+						fclose (foutptr);
+						fclose (docuptr);
+						exit (1);
+					}
+
+					for_loop = 0;  // reset flag
+				}
+			}
+
+			pos = searchstr (buf, (U1 *) FOR_LOOP_SET_SB, 0, 0, TRUE);
+            if (pos >= 0)
+			{
+				for_loop = 1;     // set flag to on
+			}
+
 			pos = searchstr (buf, (U1 *) INCLUDE_SB, 0, 0, TRUE);
             if (pos >= 0)
 			{
@@ -2045,6 +2079,32 @@ int main (int ac, char *av[])
 					fclose (docuptr);
 					exit (1);
 				}
+			}
+
+            // check for "for)"
+            pos = searchstr (buf, (U1 *) FOR_LOOP_SB, 0, 0, TRUE);
+            if (pos >= 0)
+			{
+				if (for_loop == 0)
+				{
+					// insert "(for-loop)" into program
+					if (fprintf (foutptr, "%s\n", FOR_LOOP_SET_SB) < 0)
+					{
+						printf ("ERROR: can't write to output file!\n");
+						fclose (finptr);
+						fclose (foutptr);
+						fclose (docuptr);
+						exit (1);
+					}
+
+					for_loop = 0;  // reset flag
+				}
+			}
+
+			pos = searchstr (buf, (U1 *) FOR_LOOP_SET_SB, 0, 0, TRUE);
+            if (pos >= 0)
+			{
+				for_loop = 1;     // set flag to on
 			}
 
             pos = searchstr (buf, (U1 *) INCLUDE_SB, 0, 0, TRUE);
