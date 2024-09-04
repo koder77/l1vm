@@ -1144,6 +1144,9 @@ S2 parse_line (U1 *line)
 							}
 						}
 
+						{
+						// check size of variable, new variable scope
+
 						// size
 						if (checkdigit (ast[level].expr[j][2]) != 1)
 						{
@@ -1153,6 +1156,24 @@ S2 parse_line (U1 *line)
 								return (1);
 							}
 						}
+
+						if (t_var.digitstr_type == DOUBLEFLOAT)
+						{
+							// wrong type: must be integer number
+							printf ("error: line %lli: variable %s size must be of integer type!\n", linenum, ast[level].expr[j][3]);
+							return (1);
+						}
+
+						S8 value ALIGN;
+						U1 *ptr;
+						value = strtoll((const char *) ast[level].expr[j][2], (char **) &ptr, 10);
+
+						if (value <= 0)
+						{
+							printf ("error: line %lli: variable %s size must be 1 or higher!\n", linenum, ast[level].expr[j][3]);
+							return (1);
+						}
+						}  // end of scope
 
 						data_info[data_ind].size = get_temp_int ();
 
