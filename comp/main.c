@@ -1166,12 +1166,29 @@ S2 parse_line (U1 *line)
 
 						S8 value ALIGN;
 						U1 *ptr;
-						value = strtoll((const char *) ast[level].expr[j][2], (char **) &ptr, 10);
-
-						if (value <= 0)
+						if (data_info[data_ind].type == STRING)
 						{
-							printf ("error: line %lli: variable %s size must be 1 or higher!\n", linenum, ast[level].expr[j][3]);
-							return (1);
+							if (strcmp ((const char *) ast[level].expr[j][2], "s") != 0)
+						    {
+								// string size is not "s", to set automatically
+								value = strtoll((const char *) ast[level].expr[j][2], (char **) &ptr, 10);
+
+								if (value <= 0)
+								{
+									printf ("error: line %lli: variable %s size must be 1 or higher!\n", linenum, ast[level].expr[j][3]);
+									return (1);
+								}
+							}
+                        }
+						else
+						{
+							value = strtoll((const char *) ast[level].expr[j][2], (char **) &ptr, 10);
+
+							if (value <= 0)
+							{
+								printf ("error: line %lli: variable %s size must be 1 or higher!\n", linenum, ast[level].expr[j][3]);
+								return (1);
+							}
 						}
 						}  // end of scope
 
@@ -1217,7 +1234,7 @@ S2 parse_line (U1 *line)
 										return (1);
 									}
 
-									if (data_info[data_ind].type != DOUBLEFLOAT && t_var.digitstr_type == DOUBLEFLOAT)
+									if (data_info[data_ind].type != DOUBLEFLOAT && (t_var.digitstr_type == DOUBLEFLOAT || t_var.digitstr_type == STRING))
 									{
 										printf ("error: line %lli: value not a integer number!\n", linenum);
 										return (1);
@@ -1256,7 +1273,7 @@ S2 parse_line (U1 *line)
 											return (1);
 										}
 
-										if (data_info[data_ind].type != DOUBLEFLOAT && t_var.digitstr_type == DOUBLEFLOAT)
+										if (data_info[data_ind].type != DOUBLEFLOAT && (t_var.digitstr_type == DOUBLEFLOAT || t_var.digitstr_type == STRING))
 										{
 											printf ("error: line %lli: value not a integer number and not a variable!\n", linenum);
 											return (1);
@@ -1383,7 +1400,7 @@ S2 parse_line (U1 *line)
 												return (1);
 											}
 
-											if (data_info[data_ind].type != DOUBLEFLOAT && getvartype (ast[level].expr[j][i]) == DOUBLE)
+											if (data_info[data_ind].type != DOUBLEFLOAT && (getvartype (ast[level].expr[j][i]) == DOUBLE || getvartype (ast[level].expr[j][i]) == STRING))
 											{
 												printf ("error: line %lli: value not an integer number!\n", linenum);
 												return (1);
@@ -1410,7 +1427,7 @@ S2 parse_line (U1 *line)
 												return (1);
 											}
 
-											if (data_info[data_ind].type != DOUBLEFLOAT && t_var.digitstr_type == DOUBLEFLOAT)
+											if (data_info[data_ind].type != DOUBLEFLOAT && (t_var.digitstr_type == DOUBLEFLOAT || t_var.digitstr_type == STRING))
 											{
 												printf ("error: line %lli: value not a integer number and not a variable!\n", linenum);
 												return (1);
@@ -1494,7 +1511,7 @@ S2 parse_line (U1 *line)
 												return (1);
 											}
 
-											if (data_info[data_ind].type != DOUBLEFLOAT && getvartype (ast[level].expr[j][i]) == DOUBLE)
+											if (data_info[data_ind].type != DOUBLEFLOAT && (getvartype (ast[level].expr[j][i]) == DOUBLE || getvartype (ast[level].expr[j][i]) == STRING))
 											{
 												printf ("error: line %lli: value not an integer number!\n", linenum);
 												return (1);
@@ -1521,7 +1538,7 @@ S2 parse_line (U1 *line)
 												return (1);
 											}
 
-											if (data_info[data_ind].type != DOUBLEFLOAT && t_var.digitstr_type == DOUBLEFLOAT)
+											if (data_info[data_ind].type != DOUBLEFLOAT && (t_var.digitstr_type == DOUBLEFLOAT || t_var.digitstr_type == STRING))
 											{
 												printf ("error: line %lli: value not an integer number and not a variable!\n", linenum);
 												return (1);

@@ -495,7 +495,7 @@ S2 check_old_syntax_symbols (U1 *linestr)
 
 
 	linestr_len = strlen_safe ((const char *) linestr, MAXLINELEN);
-	pos = searchstr (linestr, ":=)", 0, 0, 0);
+	pos = searchstr (linestr, (U1 *) ":=)", 0, 0, 0);
 	//printf ("check_old_syntax_symbols: linestr len: %i\n", linestr_len);
 	//printf ("check_old_syntax_symbols: pos of: =) %i\n", pos);
 
@@ -506,7 +506,7 @@ S2 check_old_syntax_symbols (U1 *linestr)
     }
 	else
 	{
-		pos = searchstr (linestr, "[", 0, 0, 0);
+		pos = searchstr (linestr, (U1 *) "[", 0, 0, 0);
 		if (pos != -1)
 		{
 			// got array assign expression, return 0
