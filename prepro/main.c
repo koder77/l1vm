@@ -1342,6 +1342,7 @@ S2 include_file (U1 *line_str)
 				for_loop = 1;     // set flag to on
 			}
 
+            /* No warning on include files?
 			if (flag_wdeprecated == 1)
 			{
 				pos = searchstr (buf, (U1 *) INTR0_SB, 0, 0, TRUE);
@@ -1360,6 +1361,7 @@ S2 include_file (U1 *line_str)
 					printf ("Use intr.l1h or intr-func.l1h include.\n");
 				}
 			}
+			*/
 
 			pos = searchstr (buf, (U1 *) INCLUDE_SB, 0, 0, TRUE);
             if (pos >= 0)
@@ -1955,6 +1957,25 @@ int main (int ac, char *av[])
 				continue;
 			}
 
+			if (flag_wdeprecated == 1)
+			{
+				pos = searchstr (buf, (U1 *) INTR0_SB, 0, 0, TRUE);
+				if (pos >= 0)
+				{
+					printf ("Warning: direct use of intr0 is deprecated!\n");
+					printf ("%s\n", buf);
+					printf ("Use intr.l1h or intr-func.l1h include.\n");
+				}
+
+			    pos = searchstr (buf, (U1 *) INTR1_SB, 0, 0, TRUE);
+				if (pos >= 0)
+				{
+					printf ("Warning: direct use of intr0 is deprecated!\n");
+					printf ("%s\n", buf);
+					printf ("Use intr.l1h or intr-func.l1h include.\n");
+				}
+			}
+
 			pos = searchstr (buf, (U1 *) REPLACE_SB, 0, 0, TRUE);
 			if (pos >= 0)
 			{
@@ -2140,25 +2161,6 @@ int main (int ac, char *av[])
             if (pos >= 0)
 			{
 				for_loop = 1;     // set flag to on
-			}
-
-			if (flag_wdeprecated == 1)
-			{
-				pos = searchstr (buf, (U1 *) INTR0_SB, 0, 0, TRUE);
-				if (pos >= 0)
-				{
-					printf ("Warning: direct use of intr0 is deprecated!\n");
-					printf ("%s\n", buf);
-					printf ("Use intr.l1h or intr-func.l1h include.\n");
-				}
-
-			    pos = searchstr (buf, (U1 *) INTR1_SB, 0, 0, TRUE);
-				if (pos >= 0)
-				{
-					printf ("Warning: direct use of intr0 is deprecated!\n");
-					printf ("%s\n", buf);
-					printf ("Use intr.l1h or intr-func.l1h include.\n");
-				}
 			}
 
             pos = searchstr (buf, (U1 *) INCLUDE_SB, 0, 0, TRUE);
