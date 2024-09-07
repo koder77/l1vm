@@ -3,7 +3,7 @@ echo -n "building: " && echo $1
 
 secondinclude=${PWD}
 secondinclude+='/'
-l1pre $1.l1com out.l1com ~/l1vm/include/ $secondinclude
+l1pre $1.l1com out.l1com ~/l1vm/include/ $secondinclude -wdeprecated
 RETVAL=$?
 [ $RETVAL -ne 0 ] && echo "preprocessor build failed: " && echo $i && exit 1
 l1com out $2 $3 $4 $5 $6
