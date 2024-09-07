@@ -5,7 +5,7 @@ L1VM (3.2.0)
 	The preprocessor now can insert the "for" loop start line "(for-loop)" automatically.
 	See "prog/hello-for-3.l1com" example.
 
-	The preprocessor now warns if the intr0 and intr1 interrupt flags are used direct in the program.
+	The preprocessor now warns if the intr0 and intr1 interrupts are used direct in the program.
 	They should be used with the macros in "intr.l1h" or "intr-func.l1h".
 
 -- Stefan Pietzonke <info@midnight-coding.de> Sat 07 Sep 2024 14.16  +020
