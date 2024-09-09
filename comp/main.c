@@ -1878,7 +1878,7 @@ S2 parse_line (U1 *line)
 											printf ("last arg: '%s'\n", ast[level + 1].expr[j][last_arg]);
 										#endif
 
-										if (strcmp ((const char *) ast[level + 1].expr[j][last_arg], "=") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], ":="))
+										if (strcmp ((const char *) ast[level + 1].expr[j][last_arg], "=") == 0 || strcmp ((const char *) ast[level + 1].expr[j][last_arg], ":=") == 0)
 										{
 												found_let_cont++;
 												#if DEBUG

@@ -1,3 +1,12 @@
+L1VM (3.2.1)
+	Compiler bugfixes: now a expression like:
+
+	 (((x y +) ret :=) ret2 :=)
+
+	Is parsed without error! It is assining ret and ret2 to the result.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Mon 09 Sep 2024 20:24  +020
+
 L1VM (3.2.0)
 	Preprocessor bugfixes. Now the preprocessor can insert the string_immutable interrupt on "const-string" variables.
 	So they can be checked then for overflows.
