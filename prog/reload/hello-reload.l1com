@@ -1,3 +1,4 @@
+// hello-reload.l1com
 // Brackets - bytecode hot reload demo
 // Only the new bytecode is loaded.
 // The program starts from the beginning of the new code.
