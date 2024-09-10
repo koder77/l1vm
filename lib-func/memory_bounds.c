@@ -185,6 +185,14 @@ S2 set_immutable_string (S8 string_pointer)
 				data_info[i].type = STRING_CONST;        // set string variable as constant
 	            return (0);
 			}
+			else
+			{
+				if (data_info[i].type == STRING_CONST)
+				{
+					// already a string constant!!
+					return (0);
+				}
+			}
 		}
 	}
 
