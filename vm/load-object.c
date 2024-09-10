@@ -135,7 +135,7 @@ S8 conv_quadword (S8 val)
 	return (ret);
 }
 
-S2 load_object (U1 *name)
+S2 load_object (U1 *name, S2 load_code_only)
 {
 	FILE *fptr;
 	U1 objname[512];
@@ -348,6 +348,13 @@ S2 load_object (U1 *name)
 		return (1);
 	}
 
+	if (code != NULL)
+	{
+		// seems to be code only update call of bytecode loader
+		// free old code:
+		free (code);
+	}
+
 	code = (U1 *) calloc (code_size, sizeof (U1));
 	if (code == NULL)
 	{
@@ -466,6 +473,14 @@ S2 load_object (U1 *name)
 			ok = 1;
 		}
 	}
+
+	if (load_code_only == 1)
+	{
+		// leave data as is
+		// load new code only
+		return (0);
+	}
+
 	/*
 	for (j = 0; j < i; j++)
 	{

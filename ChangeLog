@@ -5,7 +5,11 @@ L1VM (3.2.1)
 
 	Is parsed without error! It is assining ret and ret2 to the result.
 
--- Stefan Pietzonke <info@midnight-coding.de> Mon 09 Sep 2024 20:24  +020
+	NEW: Added bytecode hot reload feature. See "prog/reload" for a demo program.
+	The data is unchanged and must be all at the same addresses in the new loaded bytecode.
+	Only the code can be changed!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Tue 10 Sep 2024 17:39  +020
 
 L1VM (3.2.0)
 	Preprocessor bugfixes. Now the preprocessor can insert the string_immutable interrupt on "const-string" variables.

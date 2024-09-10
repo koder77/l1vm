@@ -72,5 +72,5 @@
 #define data_func_local (12 0 0 0 intr1)
 #define data_func_global (13 0 0 0 intr1)
 #define data_func_free (14 0 0 0 intr1)
-
+#func load_bytecode (BYTECODE) :(15 BYTECODE 0 0 intr1)
 #func exit (RETCODE) :(255 RETCODE 0 0 intr0)

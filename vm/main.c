@@ -61,6 +61,8 @@ S8 max_cpu ALIGN = MAXCPUCORES;    // number of threads that can be runned
 
 U1 silent_run = 0;				// switch startup and status messages of: "-q" flag on shell
 
+U1 bytecode_hot_reload = 0;     // used in run  bytecode main function, if set then the new rogram bytecode will be run!
+
 typedef S8 (*dll_func)(U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data);
 
 struct module
@@ -2876,6 +2878,30 @@ S2 run (void *arg)
 			eoffs = 5;
 			break;
 
+		case 15:
+			// do code hot reload from bytecode
+			arg2 = code[ep + 2];
+			if (load_object (&data[regi[arg2]], 1) != 0)
+			{
+				printf ("interrupt 1: 15: load code: error loading bytecode: %s !\n", &data[regi[arg2]]);
+
+				free (jumpoffs);
+				loop_stop ();
+				pthread_exit ((void *) 1);
+			}
+
+		    // global flag set to on:
+		    bytecode_hot_reload = 1;
+
+			pthread_mutex_lock (&data_mutex);
+			threaddata[cpu_core].status = STOP;
+			// if (threaddata[cpu_core].data != NULL) free (threaddata[cpu_core].data);
+			pthread_mutex_unlock (&data_mutex);
+			// loop_stop ();
+			pthread_exit ((void *) 0);
+
+			break;
+
 		case 255:
 			printf ("thread EXIT\n");
 			arg2 = code[ep + 2];
@@ -3511,7 +3537,7 @@ int l1vm_run_program (char *program_name, int ac, char *av[])
 		}
 	#endif
 
-    if (load_object ((U1 *) program_name))
+    if (load_object ((U1 *) program_name, 0))
     {
 		cleanup ();
         exit (1);
@@ -3801,7 +3827,7 @@ int main (int ac, char *av[])
 	{
 		show_run_info ();
 	}
-    if (load_object ((U1 *) av[1]))
+    if (load_object ((U1 *) av[1], 0))
     {
 		cleanup ();
         exit (1);
@@ -3815,6 +3841,7 @@ int main (int ac, char *av[])
 		exit (1);
 	}
 
+	run_begin:
     init_modules ();
 	signal (SIGINT, (void *) break_handler);
 
@@ -3872,6 +3899,12 @@ int main (int ac, char *av[])
     pthread_join (id, NULL);
 	#endif
 	/* not NetBSD end!*/
+
+	if (bytecode_hot_reload == 1)
+	{
+		bytecode_hot_reload = 0;
+		goto run_begin;
+	}
 
 	cleanup ();
 	exit (retcode);

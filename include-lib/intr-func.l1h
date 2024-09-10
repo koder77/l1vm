@@ -78,5 +78,5 @@
 #func data_func_local (NONE) :(12 0 0 0 intr1)
 #func data_func_global (NONE) :(13 0 0 0 intr1)
 #func data_func_free (NONE) :(14 0 0 0 intr1)
-
+#func load_bytecode (sBYTECODE) :(15 sBYTECODE 0 0 intr1)
 #func exit (iRETCODE) :(255 iRETCODE 0 0 intr0)
