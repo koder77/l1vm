@@ -2897,7 +2897,7 @@ S2 run (void *arg)
 			threaddata[cpu_core].status = STOP;
 			// if (threaddata[cpu_core].data != NULL) free (threaddata[cpu_core].data);
 			pthread_mutex_unlock (&data_mutex);
-			// loop_stop ();
+			loop_stop ();
 			pthread_exit ((void *) 0);
 
 			break;
