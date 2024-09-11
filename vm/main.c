@@ -418,6 +418,36 @@ void cleanup (void)
 	pthread_mutex_unlock (&data_mutex);
 }
 
+void cleanup_hold_data (void)
+{
+	// for hot code reload cleanup, don't free data!!!
+
+	S8 i ALIGN;
+
+	#if JIT_COMPILER
+	    if (JIT_code)
+		{
+			free_jit_code (JIT_code);
+			if (JIT_code) free (JIT_code);
+		}
+	#endif
+
+    free_modules ();
+
+	pthread_mutex_lock (&data_mutex);
+
+	if (threaddata)
+	{
+		for (i = 0; i < max_cpu; i++)
+		{
+			clean_threaddata_data (i);
+		}
+
+		if (threaddata) free (threaddata);
+	}
+	pthread_mutex_unlock (&data_mutex);
+}
+
 U1 double_state (F8 num)
 {
 	S2 state;
@@ -2881,6 +2911,11 @@ S2 run (void *arg)
 		case 15:
 			// do code hot reload from bytecode
 			arg2 = code[ep + 2];
+
+			// dealloc code
+			free (code);
+
+			// load new bytecode
 			if (load_object (&data[regi[arg2]], 1) != 0)
 			{
 				printf ("interrupt 1: 15: load code: error loading bytecode: %s !\n", &data[regi[arg2]]);
@@ -2892,7 +2927,7 @@ S2 run (void *arg)
 
 		    // global flag set to on:
 		    bytecode_hot_reload = 1;
-
+			free (jumpoffs);
 			pthread_mutex_lock (&data_mutex);
 			threaddata[cpu_core].status = STOP;
 			// if (threaddata[cpu_core].data != NULL) free (threaddata[cpu_core].data);
@@ -3814,15 +3849,6 @@ int main (int ac, char *av[])
 	nice (run_priority);
 	#endif
 
-	#if JIT_COMPILER
-		if (alloc_jit_code () != 0)
-		{
-			printf ("FATAL ERROR: JIT compiler: can't alloc memory!\n");
-		    cleanup ();
-			exit (1);
-		}
-	#endif
-
 	if (silent_run == 0)
 	{
 		show_run_info ();
@@ -3833,6 +3859,16 @@ int main (int ac, char *av[])
         exit (1);
     }
 
+    run_begin:
+	#if JIT_COMPILER
+		if (alloc_jit_code () != 0)
+		{
+			printf ("FATAL ERROR: JIT compiler: can't alloc memory!\n");
+		    cleanup ();
+			exit (1);
+		}
+	#endif
+
 	threaddata = (struct threaddata *) calloc (max_cpu, sizeof (struct threaddata));
 	if (threaddata == NULL)
 	{
@@ -3841,7 +3877,6 @@ int main (int ac, char *av[])
 		exit (1);
 	}
 
-	run_begin:
     init_modules ();
 	signal (SIGINT, (void *) break_handler);
 
@@ -3903,6 +3938,7 @@ int main (int ac, char *av[])
 	if (bytecode_hot_reload == 1)
 	{
 		bytecode_hot_reload = 0;
+		cleanup_hold_data ();
 		goto run_begin;
 	}
 

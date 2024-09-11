@@ -348,13 +348,6 @@ S2 load_object (U1 *name, S2 load_code_only)
 		return (1);
 	}
 
-	if (code != NULL)
-	{
-		// seems to be code only update call of bytecode loader
-		// free old code:
-		free (code);
-	}
-
 	code = (U1 *) calloc (code_size, sizeof (U1));
 	if (code == NULL)
 	{
