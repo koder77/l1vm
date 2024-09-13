@@ -2826,16 +2826,6 @@ S2 run (void *arg)
 			{
 				printf ("interrupt 1: allocate local function data: out of memory!\n");
 
-                // cleanup
-                S8 i;
-				for (i = 0; i < local_data_ind; i++)
-				{
-					if (threaddata[cpu_core].local_data[i])
-					{
-						free (threaddata[cpu_core].local_data[i]);
-					}
-				}
-
 				free (jumpoffs);
 				loop_stop ();
 				pthread_exit ((void *) 1);
@@ -2874,28 +2864,6 @@ S2 run (void *arg)
 			{
 				// ERROR no data local allocated!
 				printf ("interrupt 1: switch to local function data: local data not allocated!\n");
-
-                // cleanup
-                S8 i;
-				for (i = 0; i < local_data_ind; i++)
-				{
-					if (threaddata[cpu_core].local_data[i])
-					{
-						{
-							S8 j ALIGN;
-
-							// overwrite memory with zeroes
-							for (j = 0; j < data_local_size; j++)
-							{
-								threaddata[cpu_core].local_data[i][j] = 0;
-							}
-						}
-
-						free (threaddata[cpu_core].local_data[i]);
-						threaddata[cpu_core].local_data[i] = NULL;
-					}
-				}
-
 				free (jumpoffs);
 				loop_stop ();
 				pthread_exit ((void *) 1);
