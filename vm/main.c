@@ -2881,7 +2881,18 @@ S2 run (void *arg)
 				{
 					if (threaddata[cpu_core].local_data[i])
 					{
+						{
+							S8 j ALIGN;
+
+							// overwrite memory with zeroes
+							for (j = 0; j < data_local_size; j++)
+							{
+								threaddata[cpu_core].local_data[i][j] = 0;
+							}
+						}
+
 						free (threaddata[cpu_core].local_data[i]);
+						threaddata[cpu_core].local_data[i] = NULL;
 					}
 				}
 
