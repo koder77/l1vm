@@ -363,6 +363,7 @@ void clean_data (void)
 void clean_threaddata_data (S8 cpu)
 {
 	S8 i ALIGN;
+	S8 j ALIGN;
 	S8 data_local_size ALIGN = data_mem_size - (stack_size * max_cpu);
 
 	if (threaddata[cpu].data != NULL)
@@ -381,6 +382,12 @@ void clean_threaddata_data (S8 cpu)
 		{
 		    if (threaddata[cpu].local_data[i])
 			{
+				// overwrite memory with zeroes
+				for (j = 0; j < data_local_size; j++)
+				{
+					threaddata[cpu].local_data[i][j] = 0;
+				}
+
 				free (threaddata[cpu].local_data[i]);
 			}
 	    }
@@ -2811,7 +2818,10 @@ S2 run (void *arg)
 			break;
 
 		case 11:
+			pthread_mutex_lock (&data_mutex);
 			local_data_ind++;
+			pthread_mutex_unlock (&data_mutex);
+
 			if (local_data_ind >= local_data_max)
 			{
 				printf ("interrupt 1: allocate local function data: out of memory!\n");
@@ -2898,6 +2908,16 @@ S2 run (void *arg)
 			{
 				if (threaddata[cpu_core].local_data[local_data_ind])
 				{
+					{
+						S8 j ALIGN;
+
+						// overwrite memory with zeroes
+						for (j = 0; j < data_local_size; j++)
+						{
+							threaddata[cpu_core].local_data[local_data_ind][j] = 0;
+						}
+					}
+
 					free (threaddata[cpu_core].local_data[local_data_ind]);
 					threaddata[cpu_core].local_data[local_data_ind] = NULL;
 					// decrease index
