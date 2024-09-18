@@ -54,8 +54,6 @@
     (set const-int64 1 two~ 2)
     (set const-int64 1 one~ 1)
     (set const-int64 1 three~ 3)
-    (set const-double 1 oned~ 1.0)
-    (set const-double 1 twod~ 2.0)
 
     (set int64 1 num~ 0)
     (set int64 1 numstart~ 0)
@@ -63,9 +61,6 @@
     (set int64 1 rem~ 0)
     (set int64 1 ret~ 0)
     (set int64 1 f~ 0)
-
-    (set double 1 numd~ 0.0)
-    (set double 1 remd~ 0.0)
 
     (set string s passstr~ " pass!")
 
@@ -83,15 +78,10 @@
     (num~ :print_i !)
 
     (:loop)
-    // convert num~ to double
-    (num~ :math_int2double !)
-    (numd~ stpop)
-
     // check if number is even
-    (numd~ twod~ :math_fmoddouble !)
-    (remd~ stpop)
+    ((num~ two~ %) rem~ =)
 
-    (((remd~ oned~ ==d) f~ =) f~ if+)
+    (((rem~ one~ ==) f~ =) f~ if+)
         // number odd, multiply by 3 and add 1
         (num~ * three~ num~ :=)
         (num~ + one~ num~ :=)
