@@ -1,3 +1,9 @@
+L1VM (3.2.2)
+	VM: JIT compiler x86: added modi opcode.
+	AARCH64 modi code not tested yet. Code is a comment!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Thu 19 Sep 2024 16:26  +020
+
 L1VM (3.2.1)
 	Compiler bugfixes: now a expression like:
 

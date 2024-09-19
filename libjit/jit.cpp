@@ -60,6 +60,8 @@ typedef void (*Func)(void);
 		#define EAX 	x86::eax
 		#define EDX		x86::edx
         #define RAX     x86::rax
+        #define ECX     x86::ecx
+        #define RDX     x86::rdx
 		#define ST0     x86::fp7
 		#define ST1     x86::fp6
 	#endif
@@ -353,7 +355,7 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 
 						case MULI:
 							printf ("MULI\n\n");
-							break;
+							break; ssns
 
 						case DIVI:
 							printf ("DIVI\n\n");
@@ -801,6 +803,26 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				a.pxor (asmjit::x86::mm0, asmjit::x86::mm1);
 
 				a.movq (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), asmjit::x86::mm0);
+
+				run_jit = 1;
+				break;
+
+			case MODI:
+				#if DEBUG
+				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
+				printf ("MODI\n\n");
+				#endif
+				r1 = code[i + 1];
+				r2 = code[i + 2];
+				r3 = code[i + 3];
+
+				a.mov (RAX, asmjit::x86::qword_ptr (RSI, OFFSET(r1)));
+				a.mov (R9, asmjit::x86::qword_ptr (RSI, OFFSET(r2)));
+
+				a.cqo ();
+				a.idiv (R9);
+
+				a.mov (asmjit::x86::qword_ptr (RSI, OFFSET(r3)), RDX);
 
 				run_jit = 1;
 				break;
