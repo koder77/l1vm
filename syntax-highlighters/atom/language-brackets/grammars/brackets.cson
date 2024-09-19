@@ -156,7 +156,7 @@ repository:
              # (?<=(\\s|\\()) # preceded by space or (
               ( const-byte|const-string|const-int16|const-int32|const-int64|const-double|
                 byte|string|int16|int32|int64|double|bool|
-                return|funcend|func|ASM_END|ASM|optimize-if-off|optimize-if|no-var-pull-off|no-var-pull-on|reset-reg|pointer|nested-code-off|variable-local-off|variable-local-on|
+                return|funcend|func|ASM_END|ASM|optimize-if-off|optimize-if|no-var-pull-off|no-var-pull-on|reset-reg|pointer|nested-code-off|nested-code-on|variable-local-off|variable-local-on|
                 set|stpushb|stpopb|stpushi|stpopi|stpushd|stpopd|stpush|stpop
                 intr0|intr1|
                 pushb|pushw|pushdw|pushqw|pushd|pullb|pullw|pulldw|pullqw|pulld|

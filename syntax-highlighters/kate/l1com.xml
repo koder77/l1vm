@@ -16,6 +16,7 @@
     <item>no-var-pull-on</item>
 	  <item>reset-reg</item>
     <item>nested-code-off</item>
+    <item>nested-code-on</item>
     <item>objectend</item>
     <item>object</item>
     <item>variable-immutable</item>
