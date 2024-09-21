@@ -75,7 +75,7 @@
 
 #func load_bytecode (BYTECODE) :(15 BYTECODE 0 0 intr1)
 
-#func thread_set_exit_request :(16 NUMBER 0 0 intr1)
-#func tread_get_exit_request :(17 NUMBER 0 0 intr1)
+#func thread_set_exit_request (NUMBER) :(16 NUMBER 0 0 intr1)
+#func tread_get_exit_request (NUMBER) :(17 NUMBER 0 0 intr1)
 
 #func exit (RETCODE) :(255 RETCODE 0 0 intr0)
