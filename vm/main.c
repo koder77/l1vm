@@ -2622,6 +2622,7 @@ S2 run (void *arg)
 			threaddata[new_cpu].sp_bottom_thread = sp_bottom + (new_cpu * stack_size);
 			threaddata[new_cpu].sp_thread = threaddata[new_cpu].sp_top_thread - (sp_top - sp);
 			threaddata[new_cpu].ep_startpos = arg2;
+			threaddata[new_cpu].exit_request = 0;
 			pthread_mutex_unlock (&data_mutex);
 
             // create new POSIX thread
@@ -2933,8 +2934,33 @@ S2 run (void *arg)
 			pthread_mutex_unlock (&data_mutex);
 			loop_stop ();
 			pthread_exit ((void *) 0);
-
 			break;
+
+		case 16:
+			// set thread run exit request on given CPU
+			arg2 = code[ep + 2];
+
+            if (regi[arg2] < max_cpu)
+			{
+				threaddata[regi[arg2]].exit_request = 1;
+			}
+			else
+			{
+			     printf ("intr1: 16: set CPU exit request: thread number overflow!\n");
+			}
+
+			eoffs = 5;
+			break;
+
+		case 17:
+			// check thread run exit request
+			arg2 = code[ep + 2];
+
+		    regi[arg2] = threaddata[cpu_core].exit_request;
+
+			eoffs = 5;
+			break;
+
 
 		case 255:
 			printf ("thread EXIT\n");
@@ -3898,6 +3924,7 @@ int main (int ac, char *av[])
 	threaddata[new_cpu].sp_top_thread = threaddata[new_cpu].sp_top + (new_cpu * stack_size);
 	threaddata[new_cpu].sp_bottom_thread = threaddata[new_cpu].sp_bottom + (new_cpu * stack_size);
 	threaddata[new_cpu].ep_startpos = 16;
+	threaddata[new_cpu].exit_request = 0;
 
 	// on macOS use wait loop thread, because the SDL module must be run from main thread!!!
 	#if __MACH__ || __HAIKU__

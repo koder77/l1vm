@@ -292,6 +292,7 @@ struct threaddata
 	U1 status;				// thread status
     U1 *data;               // own thread data
     U1 **local_data;       // local data for functions
+    U1 exit_request;       // set by the caller thread, can be checked by the new called thread, 1 = exit requested, 0 = off
 };
 
 struct t_var
