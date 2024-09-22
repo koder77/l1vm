@@ -877,14 +877,14 @@ int do_area_copy (Sint16 x, Sint16 y, Sint16 width, Sint16 height)
 	if (copy_area_surface == NULL)
 	{
 		printf ("do_area_copy: error can't allocate copy surface!\n");
-		return (FALSE);
+		return (1);
 	}
 
     /* Use alpha blending */
 	if (SDL_SetSurfaceBlendMode (copy_area_surface, SDL_BLENDMODE_BLEND) < 0)
     {
 		printf ("do_area_copy: error can't set copy alpha channel surface!\n");
-		return (FALSE);
+		return (1);
 	}
 
 	copy_area_renderer = SDL_CreateSoftwareRenderer (copy_surface);
@@ -902,10 +902,11 @@ int do_area_copy (Sint16 x, Sint16 y, Sint16 width, Sint16 height)
 	if (do_copy_surface (copy_area_renderer, surf, &menu_rect, copy_area_surface, &copy_rect) < 0)
 	{
 		printf ("do_area_copy: error can't blit copy surface!\n");
-		return (FALSE);
+		return (1);
 	}
 
-    return (TRUE);
+    // all ok!
+    return (0);
 }
 
 int restore_area_copy (Sint16 x, Sint16 y, Sint16 width, Sint16 height)
@@ -920,13 +921,14 @@ int restore_area_copy (Sint16 x, Sint16 y, Sint16 width, Sint16 height)
 	if (do_copy_surface (copy_area_renderer, copy_area_surface, NULL, surf, &menu_rect) < 0)
 	{
 		printf ("restore_area_copy: error can't blit copy surface!\n");
-		return (FALSE);
+		return (1);
 	}
 
     update_rect (x, y, width, height);
 	SDL_UpdateWindowSurface (window);
 
-    return (TRUE);
+    // all ok!
+    return (0);
 }
 
 
