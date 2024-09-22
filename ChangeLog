@@ -1,3 +1,10 @@
+L1VM (3.2.3)
+	SDL module now has new functions copy_area and restore_area.
+	With this areas of the screen can be copied and restored.
+	Maybe this is usefull for creating popup custom GUI elements.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sun 22 Sep 2024 13:00  +020
+
 L1VM (3.2.2)
 	VM: JIT compiler x86: added modi opcode.
 	AARCH64 modi code not tested yet. Code is a comment!

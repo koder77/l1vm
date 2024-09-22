@@ -60,6 +60,9 @@ SDL_Renderer *copy_renderer = NULL;
 SDL_Surface *temp_surface = NULL;			/* new surface for menu */
 SDL_Renderer *temp_renderer = NULL;
 
+SDL_Surface *copy_area_surface = NULL;      /* for do_area_copy, the user GUI area copy */
+SDL_Renderer *copy_area_renderer = NULL;
+
 void free_gadgets (void);
 
 static struct screen screen[MAXSCREEN];
@@ -337,7 +340,6 @@ void free_gadgets (void)
         }
     }
 }
-
 
 U1 set_ttf_style (S2 screennum)
 {
@@ -833,6 +835,87 @@ int do_copy_surface (SDL_Renderer *dest_renderer, SDL_Surface *src, SDL_Rect *sr
 	}
 	return (0);
 }
+
+// for user area copy
+int do_area_copy (Sint16 x, Sint16 y, Sint16 width, Sint16 height)
+{
+    SDL_Rect menu_rect, copy_rect;
+
+    /* SDL interprets each pixel as a 32-bit number, so our masks must depend */
+    /* on the endianness (byte order) of the machine */
+
+    Uint32 rmask, gmask, bmask, amask;
+
+    #if SDL_BYTEORDER == SDL_BIG_ENDIAN
+        rmask = 0xff000000;
+        gmask = 0x00ff0000;
+        bmask = 0x0000ff00;
+        amask = 0x000000ff;
+    #else
+        rmask = 0x000000ff;
+        gmask = 0x0000ff00;
+        bmask = 0x00ff0000;
+        amask = 0xff000000;
+    #endif
+
+    /* allocate backup surface, to copy the area that will be covered by the menu */
+
+	copy_area_surface = SDL_CreateRGBSurface (SDL_SWSURFACE, width, height, video_bpp, rmask, gmask, bmask, amask);
+	if (copy_area_surface == NULL)
+	{
+		printf ("do_area_copy: error can't allocate copy surface!\n");
+		return (FALSE);
+	}
+
+    /* Use alpha blending */
+	if (SDL_SetSurfaceBlendMode (copy_area_surface, SDL_BLENDMODE_BLEND) < 0)
+    {
+		printf ("do_area_copy: error can't set copy alpha channel surface!\n");
+		return (FALSE);
+	}
+
+	copy_area_renderer = SDL_CreateSoftwareRenderer (copy_surface);
+
+    /* make copy of menu area */
+
+    menu_rect.x = x;
+    menu_rect.y = y;
+    menu_rect.w = width;
+    menu_rect.h = height;
+
+    copy_rect.x = 0;
+    copy_rect.y = 0;
+
+	if (do_copy_surface (copy_area_renderer, surf, &menu_rect, copy_area_surface, &copy_rect) < 0)
+	{
+		printf ("do_area_copy: error can't blit copy surface!\n");
+		return (FALSE);
+	}
+
+    return (TRUE);
+}
+
+int restore_area_copy (Sint16 x, Sint16 y, Sint16 width, Sint16 height)
+{
+    SDL_Rect menu_rect, copy_rect;
+
+    menu_rect.x = x;
+    menu_rect.y = y;
+    menu_rect.w = width;
+    menu_rect.h = height;
+
+	if (do_copy_surface (copy_area_renderer, copy_area_surface, NULL, surf, &menu_rect) < 0)
+	{
+		printf ("restore_area_copy: error can't blit copy surface!\n");
+		return (FALSE);
+	}
+
+    update_rect (x, y, width, height);
+	SDL_UpdateWindowSurface (window);
+
+    return (TRUE);
+}
+
 
 U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 {
@@ -7620,4 +7703,105 @@ U1 *unset_gadget (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     free_gadget (screennum, gadget_index);
 
     return (sp);
+}
+
+U1 *copy_area (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	Sint16 x, y, width, height;
+    S8 ret ALIGN = 0;
+
+    sp = stpopi ((U1 *) &height, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   printf ("copy_area: stack error!\n");
+       return (NULL);
+    }
+
+    sp = stpopi ((U1 *) &width, sp, sp_top);
+    if (sp == NULL)
+    {
+        printf ("copy_area: stack error!\n");
+       return (NULL);
+    }
+
+    sp = stpopi ((U1 *) &y, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   printf ("copy_area: stack error!\n");
+       return (NULL);
+    }
+
+	sp = stpopi ((U1 *) &x, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   printf ("copy_area: stack error!\n");
+       return (NULL);
+    }
+
+    ret = do_area_copy (x, y, width, height);
+
+    sp = stpushi (ret, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("copy_area: stack error!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *restore_area (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	Sint16 x, y, width, height;
+    S8 ret ALIGN = 0;
+
+    sp = stpopi ((U1 *) &height, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   printf ("restore_area: stack error!\n");
+       return (NULL);
+    }
+
+    sp = stpopi ((U1 *) &width, sp, sp_top);
+    if (sp == NULL)
+    {
+        printf ("restore_area: stack error!\n");
+       return (NULL);
+    }
+
+    sp = stpopi ((U1 *) &y, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   printf ("restore_area: stack error!\n");
+       return (NULL);
+    }
+
+	sp = stpopi ((U1 *) &x, sp, sp_top);
+    if (sp == NULL)
+    {
+ 	   printf ("restore_area: stack error!\n");
+       return (NULL);
+    }
+
+    ret = restore_area_copy (x, y, width, height);
+
+    // cleanup!!!
+    if (copy_area_surface)
+    {
+        free (copy_area_surface);
+    }
+
+    if (copy_area_renderer)
+    {
+        free (copy_area_renderer);
+    }
+
+    sp = stpushi (ret, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("restore_area: stack error!\n");
+		return (NULL);
+	}
+	return (sp);
 }
