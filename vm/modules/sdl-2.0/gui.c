@@ -7789,11 +7789,13 @@ U1 *restore_area (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (copy_area_surface)
     {
         free (copy_area_surface);
+        copy_area_surface = NULL;
     }
 
     if (copy_area_renderer)
     {
         free (copy_area_renderer);
+        copy_area_renderer = NULL;
     }
 
     sp = stpushi (ret, sp, sp_bottom);
