@@ -858,6 +858,19 @@ int do_area_copy (Sint16 x, Sint16 y, Sint16 width, Sint16 height)
         amask = 0xff000000;
     #endif
 
+    // check if surface and renderer are not deallocated before: cleanup!!!
+    if (copy_area_surface)
+    {
+        free (copy_area_surface);
+        copy_area_surface = NULL;
+    }
+
+    if (copy_area_renderer)
+    {
+        free (copy_area_renderer);
+        copy_area_renderer = NULL;
+    }
+
     /* allocate backup surface, to copy the area that will be covered by the menu */
 
 	copy_area_surface = SDL_CreateRGBSurface (SDL_SWSURFACE, width, height, video_bpp, rmask, gmask, bmask, amask);
