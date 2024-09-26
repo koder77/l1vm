@@ -33,12 +33,20 @@ S8 get_ranges_index (U1 *varname);
 S8 linenum ALIGN = 0;
 
 // for included files
-S8 file_linenum ALIGN = 0;
-U1 file_inside = 0;
-U1 file_name[MAXSTRLEN];
-
 #define FILENAME_START_SB   "FILE:"
 #define FILENAME_END_SB     "FILE END"
+
+#define FILES_MAX           1000
+
+struct file
+{
+	S8 linenum ALIGN;
+	U1 name[MAXSTRLEN];
+};
+
+struct file files[FILES_MAX];
+S8 file_index ALIGN = 0;
+U1 file_inside = 0;
 
 S8 label_ind ALIGN = -1;
 S8 call_label_ind ALIGN = -1;
@@ -7169,7 +7177,7 @@ S2 parse (U1 *name)
 			}
 			else
 			{
-				file_linenum++;
+				files[file_index].linenum++;
 			}
 
             slen = strlen_safe ((const char *) rbuf, MAXLINELEN);
@@ -7205,8 +7213,18 @@ S2 parse (U1 *name)
 				pos = searchstr (rbuf, (U1 *) FILENAME_START_SB, 0, 0, TRUE);
 				if (pos != -1)
 				{
-					file_linenum = 0 ;
-					strcpy (file_name, rbuf);
+					if (file_index < FILES_MAX - 1)
+					{
+						file_index++;
+					}
+					else
+					{
+						printf ("error: file index overflow!\n");
+						return (1);
+					}
+
+					files[file_index].linenum = 0;
+					strcpy ((char *) files[file_index].name, (const char *) rbuf);
 					file_inside = 1;
 					continue;
 				}
@@ -7214,7 +7232,14 @@ S2 parse (U1 *name)
 				pos = searchstr (rbuf, (U1 *) FILENAME_END_SB, 0, 0, TRUE);
 				if (pos != -1)
 				{
-                    file_inside = 0;
+					if (file_index > 0)
+					{
+						file_index--;
+					}
+                    if (file_index == 0)
+					{
+						file_inside = 0;
+					}
 					continue;
 				}
 
@@ -7290,7 +7315,7 @@ S2 parse (U1 *name)
 					{
 						if (file_inside == 1)
 						{
-							printf ("file: %s: line: %lli\n", file_name, file_linenum);
+							printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
 						}
 
 						printf ("> %s\n", rbuf);
