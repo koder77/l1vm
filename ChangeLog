@@ -1,3 +1,8 @@
+L1VM (3.2.4)
+	The preprocessor now runs two passes. This makes it possible to define macros with macros in it!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Thu 26 Sep 2024 16:29  +020
+
 L1VM (3.2.3)
 	SDL module now has new functions copy_area and restore_area.
 	With this areas of the screen can be copied and restored.

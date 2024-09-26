@@ -1849,6 +1849,9 @@ int main (int ac, char *av[])
 	S4 multi_pos;
 	U1 multi_len;
 
+	// use two passes for macros as macros
+	U1 pass = 1;
+
 	if (ac < 4)
 	{
 		show_info ();
@@ -1871,11 +1874,11 @@ int main (int ac, char *av[])
 		exit (1);
 	}
 
-	foutptr = fopen (av[2], "w");
+	foutptr = fopen ("pass-1.l1com", "w");
 	if (foutptr == NULL)
 	{
 		// error can't open input file
-		printf ("ERROR: can't open output file: '%s' !\n", av[2]);
+		printf ("ERROR: can't open output file: pass-1.l1com !\n");
 		fclose (finptr);
 		exit (1);
 	}
@@ -1922,6 +1925,7 @@ int main (int ac, char *av[])
 		}
 	}
 
+	run_loop:
 	// read input line loop
 	ok = TRUE;
 	while (ok)
@@ -2269,10 +2273,39 @@ int main (int ac, char *av[])
 			ok = FALSE;
 		}
 	}
-	// normal exit, all ok!
+
 	fclose (finptr);
 	fclose (foutptr);
-	fclose (docuptr);
+
+	if (pass == 1)
+	{
+		fclose (docuptr);
+	}
+	if (pass == 1)
+	{
+		pass = 2;
+
+		// open pass-1.l1com file
+		// open input file
+		finptr = fopen ("pass-1.l1com", "r");
+		if (finptr == NULL)
+		{
+			// error can't open input file
+			printf ("ERROR: can't open input file: pass-1.l1com !\n");
+			exit (1);
+		}
+
+		foutptr = fopen (av[2], "w");
+		if (foutptr == NULL)
+		{
+			// error can't open input file
+			printf ("ERROR: can't open output file: '%s' !\n", av[2]);
+			fclose (finptr);
+			exit (1);
+		}
+
+		goto run_loop;
+	}
 
 	// check if text was written into docu file
 	if (documentation_write == 0)
