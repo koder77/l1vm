@@ -2276,11 +2276,8 @@ int main (int ac, char *av[])
 
 	fclose (finptr);
 	fclose (foutptr);
+	fclose (docuptr);
 
-	if (pass == 1)
-	{
-		fclose (docuptr);
-	}
 	if (pass == 1)
 	{
 		pass = 2;
@@ -2301,6 +2298,16 @@ int main (int ac, char *av[])
 			// error can't open input file
 			printf ("ERROR: can't open output file: '%s' !\n", av[2]);
 			fclose (finptr);
+			exit (1);
+		}
+
+		// open documentation file for output
+		docuptr = fopen ("out.md", "w");
+		if (docuptr == NULL)
+		{
+			printf ("ERROR: can't open docmentation file 'out.md' !\n");
+			fclose (finptr);
+			fclose (foutptr);
 			exit (1);
 		}
 
