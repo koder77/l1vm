@@ -73,6 +73,8 @@ U1 documentation_write = 0;  // set to 1 if text was written in program.md docum
 U1 include_path[MAXSTRLEN + 1];
 U1 include_path_two[MAXSTRLEN + 1];
 
+U1 pass = 1; // preprocessor run pass
+
 struct define
 {
 	U1 type; 					// 0 = normal define, 1 = macro
@@ -1136,6 +1138,19 @@ S2 include_file (U1 *line_str)
 		}
 	}
 
+	if (pass == 1)
+	{
+		// save incude file name in output file
+		if (fprintf (foutptr, "FILE: %s\n", include_file_name) < 0)
+		{
+			printf ("ERROR: can't write to output file!\n");
+			fclose (finptr);
+			fclose (foutptr);
+			fclose (docuptr);
+			exit (1);
+		}
+	}
+
 	// read include file
 	ok = TRUE;
 	while (ok)
@@ -1469,6 +1484,17 @@ S2 include_file (U1 *line_str)
 			ok = FALSE;
 		}
 	}
+
+	// save incude file END in output file
+	if (fprintf (foutptr, "FILE END\n") < 0)
+	{
+		printf ("ERROR: can't write to output file!\n");
+		fclose (finptr);
+		fclose (foutptr);
+		fclose (docuptr);
+		exit (1);
+	}
+
 	fclose (fincludeptr);
 	return (0);
 }
@@ -1848,9 +1874,6 @@ int main (int ac, char *av[])
 	// multiline
 	S4 multi_pos;
 	U1 multi_len;
-
-	// use two passes for macros as macros
-	U1 pass = 1;
 
 	if (ac < 4)
 	{

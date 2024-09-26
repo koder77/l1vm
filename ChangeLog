@@ -1,5 +1,6 @@
 L1VM (3.2.4)
 	The preprocessor now runs two passes. This makes it possible to define macros with macros in it!
+	The compiler now prints the filename on an error.
 
 -- Stefan Pietzonke <info@midnight-coding.de> Thu 26 Sep 2024 16:29  +020
 

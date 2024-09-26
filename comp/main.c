@@ -30,7 +30,15 @@
 // protos
 S8 get_ranges_index (U1 *varname);
 
-S8 linenum ALIGN = 1;
+S8 linenum ALIGN = 0;
+
+// for included files
+S8 file_linenum ALIGN = 0;
+U1 file_inside = 0;
+U1 file_name[MAXSTRLEN];
+
+#define FILENAME_START_SB   "FILE:"
+#define FILENAME_END_SB     "FILE END"
 
 S8 label_ind ALIGN = -1;
 S8 call_label_ind ALIGN = -1;
@@ -7154,6 +7162,16 @@ S2 parse (U1 *name)
         read = fgets_uni ((char *) rbuf, MAXLINELEN, fptr);
         if (read != NULL)
         {
+			if (file_inside == 0)
+			{
+				// inside of main file add line:
+				linenum++;
+			}
+			else
+			{
+				file_linenum++;
+			}
+
             slen = strlen_safe ((const char *) rbuf, MAXLINELEN);
 			if (slen == 0)
 			{
@@ -7181,6 +7199,22 @@ S2 parse (U1 *name)
 				if (pos != -1)
 				{
 					inline_asm = 0;
+					continue;
+				}
+
+				pos = searchstr (rbuf, (U1 *) FILENAME_START_SB, 0, 0, TRUE);
+				if (pos != -1)
+				{
+					file_linenum = 0 ;
+					strcpy (file_name, rbuf);
+					file_inside = 1;
+					continue;
+				}
+
+				pos = searchstr (rbuf, (U1 *) FILENAME_END_SB, 0, 0, TRUE);
+				if (pos != -1)
+				{
+                    file_inside = 0;
 					continue;
 				}
 
@@ -7254,6 +7288,11 @@ S2 parse (U1 *name)
 					ret = parse_line (rbuf);
  					if (ret != 0)
 					{
+						if (file_inside == 1)
+						{
+							printf ("file: %s: line: %lli\n", file_name, file_linenum);
+						}
+
 						printf ("> %s\n", rbuf);
 						err = 1;
 
@@ -7266,7 +7305,6 @@ S2 parse (U1 *name)
 					}
 				}
             }
-            linenum++;
         }
         else
 		{
