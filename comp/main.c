@@ -30,7 +30,7 @@
 // protos
 S8 get_ranges_index (U1 *varname);
 
-S8 linenum ALIGN = 0;
+S8 linenum ALIGN = 1;
 
 // for included files
 #define FILENAME_START_SB   "FILE:"
