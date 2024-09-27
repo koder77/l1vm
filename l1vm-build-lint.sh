@@ -13,7 +13,7 @@ RETVAL=$?
 
 l1com out $2 $3 $4 $5 $6
 RETVAL=$?
-[ $RETVAL -ne 0 ] && echo "build failed: " && echo $i && exit 1
+[ $RETVAL -ne 0 ] && echo "build failed!"  && exit 1
 
 if [ "$2" = "-pack" ]; then
 	# remove .l1com from file name and replace it by .l1obj.bz2

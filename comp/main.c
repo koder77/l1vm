@@ -7321,7 +7321,8 @@ S2 parse (U1 *name)
 						printf ("> %s\n", rbuf);
 						err = 1;
 
-						if (ret == 2 || ret == 3)
+						//if (ret == 2 || ret == 3)
+						if (ret == 3)
 						{
 							// ERROR brackets don't match or code list full
 							fclose (fptr);
