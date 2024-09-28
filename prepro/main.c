@@ -75,6 +75,20 @@ U1 include_path_two[MAXSTRLEN + 1];
 
 U1 pass = 1; // preprocessor run pass
 
+// for included files
+#define FILES_MAX           1000
+
+struct file
+{
+	S8 linenum ALIGN;
+	U1 name[MAXSTRLEN];
+};
+
+struct file files[FILES_MAX];
+S8 file_index ALIGN = 0;
+U1 file_inside = 0;
+S8 linenum ALIGN = 0;
+
 struct define
 {
 	U1 type; 					// 0 = normal define, 1 = macro
@@ -106,8 +120,6 @@ struct vars vars[MAXVARS];
 
 FILE *finptr;
 FILE *foutptr;
-
-S8 linenum ALIGN = 1;
 
 // global flag set to 1 if errors found
 U1 return_error = 0;
@@ -1151,6 +1163,20 @@ S2 include_file (U1 *line_str)
 		}
 	}
 
+	if (file_index < FILES_MAX - 1)
+	{
+		file_index++;
+	}
+	else
+	{
+		printf ("error: file index overflow!\n");
+		return (1);
+	}
+
+	files[file_index].linenum = 0;
+	strcpy ((char *) files[file_index].name, (const char *) rbuf);
+	file_inside = 1;
+
 	// read include file
 	ok = TRUE;
 	while (ok)
@@ -1161,6 +1187,16 @@ S2 include_file (U1 *line_str)
 			strcpy ((char *) buf, (const char *) rbuf);
 			convtabs (buf);
 			slen = strlen_safe ((const char *) buf, MAXLINELEN);
+
+			if (file_inside == 0)
+			{
+				// inside of main file add line:
+				linenum++;
+			}
+			else
+			{
+				files[file_index].linenum++;
+			}
 
 			if (documentation_on == 1)
 			{
@@ -1493,6 +1529,15 @@ S2 include_file (U1 *line_str)
 		fclose (foutptr);
 		fclose (docuptr);
 		exit (1);
+	}
+
+    if (file_index > 0)
+	{
+		file_index--;
+	}
+    if (file_index == 0)
+	{
+		file_inside = 0;
 	}
 
 	fclose (fincludeptr);
@@ -1959,11 +2004,19 @@ int main (int ac, char *av[])
 		read = fgets_uni ((char *) rbuf, MAXLINELEN, finptr);
         if (read != NULL)
         {
-			linenum++;
-
 			strcpy ((char *) buf, (const char *) rbuf);
 			convtabs (buf);
 			slen = strlen_safe ((const char *) buf, MAXLINELEN);
+
+			if (file_inside == 0)
+			{
+				// inside of main file add line:
+				linenum++;
+			}
+			else
+			{
+				files[file_index].linenum++;
+			}
 
 			if (documentation_on == 1)
 			{
@@ -1984,22 +2037,41 @@ int main (int ac, char *av[])
 				continue;
 			}
 
-			if (flag_wdeprecated == 1)
+			if (flag_wdeprecated == 1 && pass == 1)
 			{
 				pos = searchstr (buf, (U1 *) INTR0_SB, 0, 0, TRUE);
 				if (pos >= 0)
 				{
 					printf ("Warning: direct use of intr0 is deprecated!\n");
-					printf ("%s\n", buf);
 					printf ("Use intr.l1h or intr-func.l1h include.\n");
+
+					if (file_inside == 0)
+					{
+						printf ("line: %lli\n", linenum);
+					}
+					else
+					{
+						printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
+					}
+					printf ("> %s\n\n", buf);
+
 				}
 
 			    pos = searchstr (buf, (U1 *) INTR1_SB, 0, 0, TRUE);
 				if (pos >= 0)
 				{
-					printf ("Warning: direct use of intr0 is deprecated!\n");
-					printf ("%s\n", buf);
+					printf ("Warning: direct use of intr1 is deprecated!\n");
 					printf ("Use intr.l1h or intr-func.l1h include.\n");
+
+					if (file_inside == 0)
+					{
+						printf ("line: %lli\n", linenum);
+					}
+					else
+					{
+						printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
+					}
+					printf ("> %s\n\n", buf);
 				}
 			}
 
@@ -2304,6 +2376,10 @@ int main (int ac, char *av[])
 	if (pass == 1)
 	{
 		pass = 2;
+
+		file_index = 0;
+		file_inside = 0;
+		linenum = 0;
 
 		// open pass-1.l1com file
 		// open input file

@@ -1,3 +1,8 @@
+L1VM (3.2.5)
+	The preprocessor now shows line numbers on error messages.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 28 Sep 2024 19:03  +020
+
 L1VM (3.2.4)
 	The preprocessor now runs two passes. This makes it possible to define macros with macros in it!
 	The compiler now prints the filename on an error.
