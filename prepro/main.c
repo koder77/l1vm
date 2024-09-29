@@ -1235,6 +1235,13 @@ S2 include_file (U1 *line_str)
 			if (pos >= 0)
 			{
 				// line is comment, skip it!
+				if (fprintf (foutptr, "\n") < 0)
+				{
+					printf ("ERROR: can't write to output file!\n");
+					fclose (fincludeptr);
+					return (1);
+				}
+
 				continue;
 			}
 
@@ -2126,6 +2133,15 @@ int main (int ac, char *av[])
 			if (pos >= 0)
 			{
 				// line is comment, skip it!
+				if (fprintf (foutptr, "\n") < 0)
+				{
+					printf ("ERROR: can't write to output file!\n");
+					fclose (finptr);
+					fclose (foutptr);
+					fclose (docuptr);
+					return (1);
+				}
+
 				continue;
 			}
 
