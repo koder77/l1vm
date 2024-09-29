@@ -83,6 +83,25 @@ S8 vars_ind ALIGN = -1;
 U1 function_name_current[MAXSTRLEN + 1];
 U1 function_check_stpop = 0;    // set to 1 by: // (func args stpop)
 
+S8 linenum ALIGN = 1;
+
+// for included files
+#define FILENAME_START_SB   "FILE:"
+#define FILENAME_END_SB     "FILE END"
+
+#define FILES_MAX           1000
+
+struct file
+{
+	S8 linenum ALIGN;
+	U1 name[MAXSTRLEN];
+};
+
+struct file files[FILES_MAX];
+S8 file_index ALIGN = 0;
+U1 file_inside = 0;
+
+
 S2 init_function_args (void)
 {
 	function_args = (struct function_args*) calloc (MAXFUNC, sizeof (struct function_args));
@@ -1466,7 +1485,6 @@ int main (int ac, char *av[])
     char *read;
     S4 slen;
     U1 ok;
-    S8 linenum ALIGN = 0;
     S2 ret = 0;
     U1 rbuf[MAXSTRLEN + 1];                        /* read-buffer for one line */
 	U1 buf[MAXSTRLEN + 1];
@@ -1526,6 +1544,16 @@ int main (int ac, char *av[])
 		read = fgets_uni ((char *) rbuf, MAXLINELEN, finptr);
         if (read != NULL)
         {
+            if (file_inside == 0)
+            {
+                // inside of main file add line:
+                linenum++;
+            }
+            else
+            {
+                files[file_index].linenum++;
+            }
+
 			strcpy ((char *) buf, (const char *) rbuf);
 			convtabs (buf);
 			slen = strlen_safe ((const char *) buf, MAXLINELEN);
@@ -1574,18 +1602,56 @@ int main (int ac, char *av[])
                  }
             }
 
+            pos = searchstr (buf, (U1 *) FILENAME_START_SB, 0, 0, TRUE);
+			if (pos != -1)
+			{
+				if (file_index < FILES_MAX - 1)
+				{
+					file_index++;
+				}
+				else
+				{
+					printf ("error: file index overflow!\n");
+					return (1);
+				}
+
+				files[file_index].linenum = 0;
+				strcpy ((char *) files[file_index].name, (const char *) rbuf);
+				file_inside = 1;
+                continue;
+			}
+
+			pos = searchstr (buf, (U1 *) FILENAME_END_SB, 0, 0, TRUE);
+			if (pos != -1)
+			{
+				if (file_index > 0)
+				{
+					file_index--;
+				}
+                if (file_index == 0)
+				{
+					file_inside = 0;
+				}
+                continue;
+			}
+
             if (do_lint == 1)
             {
                 if (parse_line (buf) != 0)
                 {
-                    printf ("linter error: line: %lli, '%s'\n", linenum, buf);
                     ret = 1; // error
+
+                    if (file_inside == 0)
+                    {
+                        printf ("linter error: line: %lli\n", linenum, buf);
+                    }
+                    else
+                    {
+						printf ("linter error file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
+                    }
+
+					printf ("> %s\n", buf);
                 }
-                linenum++;
-            }
-            else
-            {
-                linenum++;
             }
         }
         else
