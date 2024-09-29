@@ -83,7 +83,7 @@ S8 vars_ind ALIGN = -1;
 U1 function_name_current[MAXSTRLEN + 1];
 U1 function_check_stpop = 0;    // set to 1 by: // (func args stpop)
 
-S8 linenum ALIGN = 1;
+S8 linenum ALIGN = 0;
 
 // for included files
 #define FILENAME_START_SB   "FILE:"
