@@ -11,5 +11,5 @@ c++compiler = $CCPP
 linker = ld
 aflags = "cru"
 
-cflags = "-lcurl -O3 -fomit-frame-pointer -Wall"
-lflags = "-shared -lws2_32"
+cflags = "-O3 -fomit-frame-pointer -Wall"
+lflags = "-lcurl -shared -lws2_32"
