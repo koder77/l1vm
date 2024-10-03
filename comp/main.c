@@ -1359,22 +1359,49 @@ S2 parse_line (U1 *line)
 								}
 
 								{
-									S8 i ALIGN;
+									S8 i ALIGN = 0;
+									S8 o ALIGN = 0;
 									S8 strlen ALIGN;
+
+									U1 ok = 0;
 
 									strlen = strlen_safe ((const char *) ast[level].expr[j][4], MAXLINELEN) - 1 ;
 
-									for (i = 0; i < strlen; i++)
+									while (ok == 0)
 									{
-										// replace each _ in string by /
-										if (ast[level].expr[j][4][i] == '_')
+										// replace each @@/ in string by /
+										printf ("char: %c", ast[level].expr[j][4][i]);
+
+										if (i < strlen - 2)
 										{
-											ast[level].expr[j][4][i] = '/';
+											if (ast[level].expr[j][4][i] == '@' && ast[level].expr[j][4][i + 1] == '@' && ast[level].expr[j][4][i + 2] == '/')
+											{
+												data_info[data_ind].value_str[o] = '/';
+												i = i + 3;
+												o++;
+											}
+											else
+											{
+												data_info[data_ind].value_str[o] = ast[level].expr[j][4][i];
+												i++;
+												o++;
+											}
+										}
+										else
+										{
+											// less than three chars, copy!
+											data_info[data_ind].value_str[o] = ast[level].expr[j][4][i];
+											i++;
+											o++;
+										}
+										if (i == strlen)
+										{
+											data_info[data_ind].value_str[o] = '\0';
+											ok = 1;
 										}
 									}
 								}
-
-								strcpy ((char *) data_info[data_ind].value_str, (const char *) ast[level].expr[j][4]);
+								printf ("\n\n");
 							}
 						}
 
