@@ -67,6 +67,7 @@ U1 *ssl_auth_send (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 return_buffer_addr ALIGN;
     S8 buffer_size ALIGN;
     S8 ret_code ALIGN = 0;
+    S8 send_data_addr ALIGN;
 
     CURL *curl;
     CURLcode res;
@@ -81,6 +82,14 @@ U1 *ssl_auth_send (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     sp = stpopi ((U1 *) &return_buffer_addr, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+        printf ("ssl_auth_send: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+
+    sp = stpopi ((U1 *) &send_data_addr, sp, sp_top);
     if (sp == NULL)
     {
         // error
@@ -123,6 +132,7 @@ U1 *ssl_auth_send (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         curl_easy_setopt (curl, CURLOPT_WRITEFUNCTION, write_memory_callback);
         curl_easy_setopt (curl, CURLOPT_CAINFO, "../localhost.pem");
         curl_easy_setopt (curl, CURLOPT_WRITEDATA, &buffer);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, &data[send_data_addr]);
 
         curl_easy_setopt (curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
         curl_easy_setopt (curl, CURLOPT_SSL_CIPHER_LIST, "ECDHE+AESGCM:ECDHE+CHACHA20:DH+AESGCM:DH+CHACHA20");
