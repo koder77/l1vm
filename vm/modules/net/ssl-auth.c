@@ -43,7 +43,7 @@ size_t strlen_safe (const char *str, S8 maxlen);
 S2 memory_bounds (S8 start, S8 offset_access);
 
 static size_t write_memory_callback(void *ptr, size_t size, size_t nmemb, void *data)
- {
+{
     char **buffer = (char **)data;
     size_t buffer_size = *buffer ? strlen(*buffer) : 0;
     size_t new_size = buffer_size + size * nmemb + 1; // +1 for null terminator

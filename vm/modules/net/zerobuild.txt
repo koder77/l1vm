@@ -12,4 +12,4 @@ linker = ld
 aflags = "cru"
 
 cflags = "-lcurl -fPIC -O3 -fomit-frame-pointer -Wall"
-lflags = "-shared"
+lflags = "-shared -lcurl"
