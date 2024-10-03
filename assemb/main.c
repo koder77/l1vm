@@ -186,26 +186,31 @@ S2 get_args (U1 *line)
 							}
 						}
 
-                        if (line[pos] != '@')
-                        {
-                            if (line[pos] != '"')
+                        if (pos <= slen - 3)
+						{
+                            if (line[pos] == '@' && line[pos + 1] == '@' && (line[pos + 2] == 'q' || line[pos + 2] == 'c' || line[pos + 2] == 's'))
                             {
-                                args[arg_ind][arg_pos] = line[pos];
-                                arg_pos++;
+                                continue;
                             }
-                            if (arg_pos >= MAXLINELEN)
-                            {
-                                printf ("error: line %lli: argument too long!\n", linenum);
-                                return (1);
-                            }
-                            pos++;
                         }
+
+                        if (line[pos] != '"')
+						{
+							args[arg_ind][arg_pos] = line[pos];
+							arg_pos++;
+						}
+						if (arg_pos >= MAXLINELEN)
+						{
+							printf ("error: line %lli: argument too long!\n", linenum);
+							return (1);
+						}
+						pos++;
 
 						if (pos >= slen)
 						{
 							ok = 1;
 							break;
-						}
+                        }
 					}
 					args[arg_ind][arg_pos] = '\0';
 					arg = 1;
