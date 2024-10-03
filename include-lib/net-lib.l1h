@@ -40,7 +40,6 @@
 	(set string s socket_get_filestr@net "socket_get_file")
     (set string s socket_read_byte_arraystr@net "socket_read_byte_array")
     (set string s socket_write_byte_arraystr@net "socket_write_byte_array")
-    (set string s socket_ssl_auth_sendstr@net "ssl_auth_send")
     (set int64 1 init@net 0)
     (set int64 1 open_server_socket@net 1)
     (set int64 1 open_accept_server@net 2)
@@ -77,7 +76,6 @@
 	(set int64 1 socket_get_file@net 33)
     (set int64 1 socket_read_byte_array@net 34)
     (set int64 1 socket_write_byte_array@net 35)
-    (set int64 1 socket_ssl_auth_send@net 36)
 	(set int64 1 mod@net 0)
 	(set int64 1 maxind@net 0)
 	// get arguments from stack
@@ -122,7 +120,6 @@
 	(2 mod@net socket_get_file@net socket_get_filestr@netaddr intr0)
     (2 mod@net socket_read_byte_array@net socket_read_byte_arraystr@netaddr intr0)
     (2 mod@net socket_write_byte_array@net socket_write_byte_arraystr@netaddr intr0)
-    (2 mod@net socket_ssl_auth_send@net socket_ssl_auth_sendstr@netaddr intr0)
 	// init library
 	(maxind@net stpushi)
 	(3 mod@net init@net 0 intr0)
@@ -233,7 +230,4 @@
 (funcend)
 (socket_write_byte_array func)
     (3 mod@net socket_write_byte_array@net 0 intr0)
-(funcend)
-(socket_ssl_auth_send func)
-    (3 mod@net socket_ssl_auth_send@net 0 intr0)
 (funcend)

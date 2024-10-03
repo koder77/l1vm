@@ -26,7 +26,6 @@
 #include "../include/stack.h"
 #include "main.h"
 
-
 // include/home.h 
 char *get_home (void);
 
@@ -3688,7 +3687,6 @@ int main (int ac, char *av[])
 
 	// process priority on Linux
     S4 run_priority = 0;        // -20 = highest priority, 19 = lowest priority
-
 
 	// printf ("DEBUG: ac: %i\n", ac);
 
