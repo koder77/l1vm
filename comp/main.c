@@ -811,6 +811,12 @@ S2 parse_line (U1 *line)
 		}
 	}
 
+	if (strcmp ((const char *) ast[ast_level].expr[0][0], "set") == 0)
+	{
+		// found set definition: skip the math convert step
+		goto parse_opcode;
+	}
+
 	if (parse_cont)
 	{
 		//printf ("DEBUG parse_cont: '%s'\n", line);
@@ -884,7 +890,7 @@ S2 parse_line (U1 *line)
 		}
 	}
 
-
+	parse_opcode:
 
 	// walking the AST
 	for (level = ast_level; level >= 0; level--)
@@ -1350,6 +1356,22 @@ S2 parse_line (U1 *line)
 								{
 									printf ("error: line %lli: string variable: '%s' too small for string!\n", linenum, ast[level].expr[j][4]);
 									return (1);
+								}
+
+								{
+									S8 i ALIGN;
+									S8 strlen ALIGN;
+
+									strlen = strlen_safe ((const char *) ast[level].expr[j][4], MAXLINELEN) - 1 ;
+
+									for (i = 0; i < strlen; i++)
+									{
+										// replace each _ in string by /
+										if (ast[level].expr[j][4][i] == '_')
+										{
+											ast[level].expr[j][4][i] = '/';
+										}
+									}
 								}
 
 								strcpy ((char *) data_info[data_ind].value_str, (const char *) ast[level].expr[j][4]);

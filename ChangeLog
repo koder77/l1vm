@@ -5,7 +5,10 @@ L1VM (3.2.5)
 	And send a data string. And receive a data string from the server.
 	This uses the libcurl to send/receive data.
 
--- Stefan Pietzonke <info@midnight-coding.de> Thu 03 Oct 2024 16:40  +020
+	Now the underscore: _ in a string by "set" is replaced by a slash: /.
+	This was needed to set URLs in a string.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Thu 03 Oct 2024 17:59   +020
 
 L1VM (3.2.4)
 	The preprocessor now runs two passes. This makes it possible to define macros with macros in it!
