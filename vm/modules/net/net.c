@@ -89,7 +89,7 @@ char *get_ip_str (const struct sockaddr *sa, char *s, size_t maxlen)
             inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)sa)->sin6_addr), s, maxlen);
             break;
 
-        uefault:
+        default:
             strncpy(s, "Unknown AF", maxlen);
             return NULL;
     }
