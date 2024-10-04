@@ -2262,6 +2262,10 @@ S2 parse_line (U1 *line)
 
 											strcpy ((char *) code[code_line], (const char *) code_temp);
 										}
+
+										// init all registers after array assign code:
+										init_registers ();
+
 										continue;
 									}
 									} // lastarg if
@@ -2596,6 +2600,10 @@ S2 parse_line (U1 *line)
 
 											strcpy ((char *) code[code_line], (const char *) code_temp);
 										}
+
+										// init all registers after array assign code:
+										init_registers ();
+
 										continue;
 									}
 									} // lastarg if
