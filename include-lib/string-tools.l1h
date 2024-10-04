@@ -112,12 +112,3 @@
     // copy bufstr~ to stringretaddr~
     (stringretaddr~ bufstr~ :string_copy !)
 (funcend)
-
-(string_return_slash func)
-    // return a slash / in a string
-    #var ~ string_return_slash
-    (set const-int64 1 zero~ 0)
-    (set const-int64 1 one~ 1)
-    (set int64 1 stringretaddr~ 0)
-    (set const-int64 1 slash_code 47)
-    (stringretaddr~ stpop)
