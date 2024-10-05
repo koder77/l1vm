@@ -1,11 +1,7 @@
 L1VM (3.2.5)
 	The preprocessor now shows line numbers on error messages.
 
-	VM: network module: added socket_ssl_auth_send function to authenticate via user name and password.
-	And send a data string. And receive a data string from the server.
-	This uses the libcurl to send/receive data.
-
--- Stefan Pietzonke <info@midnight-coding.de> Thu 03 Oct 2024 17:59   +020
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 05 Oct 2024 17:38   +020
 
 L1VM (3.2.4)
 	The preprocessor now runs two passes. This makes it possible to define macros with macros in it!
