@@ -132,12 +132,9 @@
     //loop over string_num~ string args and cat them
     (one~ n~ :=)
     (do)
-        // (reset-reg)
         (stringcataddr~ stpop)
         (stringaddr~ stringcataddr~ :string_cat !)
 
-        //(reset-reg)
         (n~ + one~ n~ :=)
-        //(reset-reg)
     (((n~ string_num~ <) f~ =) f~ while)
 (funcend)
