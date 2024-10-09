@@ -40,6 +40,15 @@
 	(set string s socket_get_filestr@net "socket_get_file")
     (set string s socket_read_byte_arraystr@net "socket_read_byte_array")
     (set string s socket_write_byte_arraystr@net "socket_write_byte_array")
+
+    // SSL
+    (set string s open_server_socket_sslstr@net "open_server_socket_ssl")
+    (set string s open_accept_server_sslstr@net "open_accept_server_ssl")
+    (set string s open_client_socket_sslstr@net "open_client_socket_ssl")
+    (set string s close_server_socket_sslstr@net "close_server_socket_ssl")
+    (set string s close_accept_server_sslstr@net "close_accept_server_ssl")
+    (set string s close_client_socket_sslstr@net "close_client_socket_ssl")
+
     (set int64 1 init@net 0)
     (set int64 1 open_server_socket@net 1)
     (set int64 1 open_accept_server@net 2)
@@ -76,6 +85,15 @@
 	(set int64 1 socket_get_file@net 33)
     (set int64 1 socket_read_byte_array@net 34)
     (set int64 1 socket_write_byte_array@net 35)
+
+    // SSL
+    (set int64 1 open_server_socket_ssl@net 36)
+    (set int64 1 open_accept_server_ssl@net 37)
+    (set int64 1 open_client_socket_ssl@net 38)
+	(set int64 1 close_server_socket_ssl@net 39)
+	(set int64 1 close_accept_server_ssl@net 40)
+	(set int64 1 close_client_socket_ssl@net 41)
+
 	(set int64 1 mod@net 0)
 	(set int64 1 maxind@net 0)
 	// get arguments from stack
@@ -120,6 +138,15 @@
 	(2 mod@net socket_get_file@net socket_get_filestr@netaddr intr0)
     (2 mod@net socket_read_byte_array@net socket_read_byte_arraystr@netaddr intr0)
     (2 mod@net socket_write_byte_array@net socket_write_byte_arraystr@netaddr intr0)
+
+    // SSL
+	(2 mod@net open_server_socket_ssl@net open_server_socket_sslstr@netaddr intr0)
+	(2 mod@net open_accept_server_ssl@net open_accept_server_sslstr@netaddr intr0)
+	(2 mod@net open_client_socket_ssl@net open_client_socket_sslstr@netaddr intr0)
+	(2 mod@net close_server_socket_ssl@net close_server_socket_sslstr@netaddr intr0)
+	(2 mod@net close_accept_server_ssl@net close_accept_server_sslstr@netaddr intr0)
+	(2 mod@net close_client_socket_ssl@net close_client_socket_sslstr@netaddr intr0)
+
 	// init library
 	(maxind@net stpushi)
 	(3 mod@net init@net 0 intr0)
@@ -230,4 +257,25 @@
 (funcend)
 (socket_write_byte_array func)
     (3 mod@net socket_write_byte_array@net 0 intr0)
+(funcend)
+
+// SSL
+// wrapper functions
+(open_server_socket_ssl func)
+    (3 mod@net open_server_socket_ssl@net 0 intr0)
+(funcend)
+(open_accept_server_ssl func)
+    (3 mod@net open_accept_server_ssl@net 0 intr0)
+(funcend)
+(open_client_socket_ssl func)
+    (3 mod@net open_client_socket_ssl@net 0 intr0)
+(funcend)
+(close_server_socket_ssl func)
+    (3 mod@net close_server_socket_ssl@net 0 intr0)
+(funcend)
+(close_accept_server_ssl func)
+    (3 mod@net close_accept_server_ssl@net 0 intr0)
+(funcend)
+(close_client_socket_ssl func)
+    (3 mod@net close_client_socket_ssl@net 0 intr0)
 (funcend)
