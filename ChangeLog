@@ -1,3 +1,13 @@
+L1VM (3.3.0)
+	VM: net module now has experimental SSL support.
+	For a demo see "lib/ssl" directory examples.
+	There is a README to explain how to use it.
+	I found a SSL tutorial and modified it to make it fit with the other net module code.
+	On a SSL connection you can use the normal socket read/write functions.
+	It automatically selects the right functions.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Wed 09 Oct 2024 20:49   +020
+
 L1VM (3.2.5)
 	The preprocessor now shows line numbers on error messages.
 

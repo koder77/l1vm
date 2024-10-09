@@ -27,6 +27,10 @@
 #include <netdb.h>
 #endif
 
+#include <resolv.h>
+#include "openssl/ssl.h"
+#include "openssl/err.h"
+
 // protos
 
 extern S2 memory_bounds (S8 start, S8 offset_access);
@@ -54,12 +58,18 @@ struct socket
     struct addrinfo *servinfo;
     U1 type;                                /* server / client */
     U1 state;                              /* open, closed */
+    U1 ssl_conn;                                 /* 1 = SSL, 0 = normal */
     U1 client_ip[SOCKADDRESSLEN];           /* client ip */
-    U1 buf[SOCKBUFSIZE];                    /* socket data buffer */
+    U1 buf[SOCKBUFSIZE];                   /* socket data buffer */
+
+    // ssl stuff:
+    SSL_CTX *ctx;
+    SSL *ssl;
 };
 
-static struct socket *sockets = NULL;
-static S8 socketmax ALIGN = 0;
+// was declared as static before:
+struct socket *sockets = NULL;
+S8 socketmax ALIGN = 0;
 
 size_t strlen_safe (const char * str, S8  maxlen);
 
@@ -73,6 +83,7 @@ S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
 	memcpy (&data_info, &data_info_orig, sizeof (data_info_orig));
 	data_info_ind = data_info_ind_orig;
 
+    SSL_library_init();
 	return (0);
 }
 
@@ -402,6 +413,7 @@ U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     sockets[handle].type = SOCKSERVER;
     sockets[handle].state = SOCKETOPEN;
     strcpy ((char *) sockets[handle].client_ip, "");
+    sockets[handle].ssl_conn = 0;  // normal socket
     return (sp);
 }
 
@@ -741,6 +753,7 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     sockets[handle].socket = client;
     sockets[handle].type = SOCKCLIENT;
     sockets[handle].state = SOCKETOPEN;
+    sockets[handle].ssl_conn = 0;  // normal socket
 
     return (sp);
 }
@@ -1452,10 +1465,22 @@ U1 exe_sread (S4 slist_ind, S4 len)
 
     while (todo > 0)
     {
-        ret = recv (sockh, (char *) &(buf[buf_ind]), todo, MSG_NOSIGNAL);
-        if (ret == -1)
+        if (sockets[slist_ind].ssl_conn == 0)
         {
-            return (errno);
+            ret = recv (sockh, (char *) &(buf[buf_ind]), todo, MSG_NOSIGNAL);
+            if (ret == -1)
+            {
+                return (errno);
+            }
+        }
+        else
+        {
+            // SSL read
+            ret = SSL_read (sockets[slist_ind].ssl, (char *) &(buf[buf_ind]), todo);
+            if (ret == -1)
+            {
+                return (errno);
+            }
         }
 
         todo = todo - ret;
@@ -1502,10 +1527,23 @@ U1 exe_swrite (S4 slist_ind, S4 len)
 
     while (todo > 0)
     {
-        ret = send (sockh, (const char *) &(buf[buf_ind]), todo, MSG_NOSIGNAL);
-        if (ret == -1)
+
+        if (sockets[slist_ind].ssl_conn == 0)
         {
-            return (errno);
+            ret = send (sockh, (const char *) &(buf[buf_ind]), todo, MSG_NOSIGNAL);
+            if (ret == -1)
+            {
+                return (errno);
+            }
+        }
+        else
+        {
+            // SSL write
+            ret = SSL_write (sockets[slist_ind].ssl, (char *) &(buf[buf_ind]), todo);
+            if (ret == -1)
+            {
+                return (errno);
+            }
         }
 
         todo = todo - ret;
@@ -2415,7 +2453,6 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	U1 file_size_str[256];
 	S8 file_name_len ALIGN;
 	S8 file_size ALIGN;
-	U1 ch;
 
 	S8 header_len ALIGN;
 	S8 ret ALIGN;
