@@ -118,7 +118,7 @@ SSL_CTX* InitServerCTX(void)
     if ( ctx == NULL )
     {
         ERR_print_errors_fp(stderr);
-        abort();
+        return (NULL);
     }
     return ctx;
 }
@@ -207,7 +207,7 @@ SSL_CTX* InitCTX(void)
     if ( ctx == NULL )
     {
         ERR_print_errors_fp(stderr);
-        abort();
+        return (NULL);
     }
     return ctx;
 }
@@ -333,9 +333,16 @@ U1 *open_server_socket_ssl (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	#endif
 
     sockets[handle].ctx = InitServerCTX ();        /* initialize SSL */
-    if (LoadCertificates (sockets[handle].ctx, (char *) certificate_name, (char *) certificate_name) != 0)
+    if (sockets[handle].ctx == NULL)
     {
-         ret = 1;
+        ret = 1;
+    }
+    else
+    {
+        if (LoadCertificates (sockets[handle].ctx, (char *) certificate_name, (char *) certificate_name) != 0)
+        {
+            ret = 1;
+        }
     }
 
     server = OpenListener (port);    /* create server socket */
@@ -891,6 +898,27 @@ U1 *open_client_socket_ssl (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     ctx = InitCTX ();
+    if (ctx == NULL)
+    {
+        // error!
+        sp = stpushi (-1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("open_client_socket_ssl: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+
+        sp = stpushi (errno, sp, sp_bottom);
+    	if (sp == NULL)
+    	{
+    		// error
+    		printf ("open_client_socket_ssl: ERROR: stack corrupt!\n");
+    		return (NULL);
+    	}
+        return (sp);
+    }
+
     server = OpenConnection ((const char *) &data[hostname_addr], port);
     if (server < 0)
     {
