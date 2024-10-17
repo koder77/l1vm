@@ -69,7 +69,6 @@
             (buf_str :print_s !)
             (:print_n !)
         (endif)
-        (server_accept :close_accept_server_ssl !)
     (endif)
 
     (server_accept :close_accept_server_ssl !)
