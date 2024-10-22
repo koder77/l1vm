@@ -112,3 +112,29 @@
     // copy bufstr~ to stringretaddr~
     (stringretaddr~ bufstr~ :string_copy !)
 (funcend)
+
+(string_cat_multi func)
+    // cat multiple strings
+    #var ~ string_cat_multi
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 stringaddr~ 0)
+    (set int64 1 string_num~ 0)
+    (set int64 1 n~ 1)
+    (set int64 1 stringcataddr~ 0)
+    (set int64 1 f~ 0)
+    (string_num~ stpop)
+    (stringcataddr~ stpop)
+    (stringaddr~ stpop)
+
+    (stringaddr~ stringcataddr~ :string_copy !)
+
+    //loop over string_num~ string args and cat them
+    (one~ n~ :=)
+    (do)
+        (stringcataddr~ stpop)
+        (stringaddr~ stringcataddr~ :string_cat !)
+
+        (n~ + one~ n~ :=)
+    (((n~ string_num~ <) f~ =) f~ while)
+(funcend)
