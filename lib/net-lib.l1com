@@ -20,6 +20,7 @@
 	(set string 10 ip "127.0.0.1")
     (set int64 1 ip_len 10)
     (set int64 1 ret 0)
+    (set int64 1 f 0)
     (set string 30 buf "                             ")
     (set int64 1 bufsize 29)
     (set int64 1 socket_handle 0)

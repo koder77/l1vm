@@ -1,11 +1,4 @@
-The code is currently broken!
-I did mess up something in the new line number code in the compiler.
-I try to fix this soon. One program which fails is "pov-edit".
-The array read/write assembly code is not working.
-
--- Stefan Pietzonke <info@midnight-coding.de> Tue 22 Oct 2024 21:49   +020
-
-L1VM (3.3.0)
+L1VM (3.3.1)
 	VM: net module now has experimental SSL support.
 	For a demo see "lib/ssl" directory examples.
 	There is a README to explain how to use it.
@@ -13,12 +6,15 @@ L1VM (3.3.0)
 	On a SSL connection you can use the normal socket read/write functions.
 	It automatically selects the right functions.
 
--- Stefan Pietzonke <info@midnight-coding.de> Wed 09 Oct 2024 20:49   +020
+	This is a bugfix release. The line number output code was removed.
+	The pov-edit program now works again!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Tue 22 Oct 2024 22:21   +020
 
 L1VM (3.2.5)
 	The preprocessor now shows line numbers on error messages.
 
--- Stefan Pietzonke <info@midnight-coding.de> Sat 05 Oct 2024 17:38   +020
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 28 Sep 2024 19:03  +020
 
 L1VM (3.2.4)
 	The preprocessor now runs two passes. This makes it possible to define macros with macros in it!

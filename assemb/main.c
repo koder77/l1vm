@@ -103,7 +103,6 @@ S2 get_args (U1 *line)
 
     arg_ind = -1;
 	U1 string = 0;
-    U1 replaced = 0;
 
     while (! ok)
     {
@@ -138,9 +137,6 @@ S2 get_args (U1 *line)
 					pos++;
 					while (line[pos] != '"')
 					{
-                        // set to one if string replaced
-                        replaced = 0;
-
 						if (pos <= slen - 3)
 						{
 							if (line[pos] == '@' && line[pos + 1] == '@' && line[pos + 2] == 'q')
@@ -154,7 +150,6 @@ S2 get_args (U1 *line)
 									return (1);
 								}
 								pos = pos + 3;
-                                replaced = 1;
 							}
 
 							if (line[pos] == '@' && line[pos + 1] == '@' && line[pos + 2] == 'c')
@@ -168,33 +163,10 @@ S2 get_args (U1 *line)
 									return (1);
 								}
 								pos = pos + 3;
-                                replaced = 1;
-							}
-
-                            if (line[pos] == '@' && line[pos + 1] == '@' && line[pos + 2] == 's')
-							{
-								// found slash code, insert it into string
-								args[arg_ind][arg_pos] = '/';
-								arg_pos++;
-								if (arg_pos >= MAXLINELEN)
-								{
-									printf ("error: line %lli: argument too long!\n", linenum);
-									return (1);
-								}
-								pos = pos + 3;
-                                replaced = 1;
 							}
 						}
 
-                        if (pos <= slen - 3)
-						{
-                            if (line[pos] == '@' && line[pos + 1] == '@' && (line[pos + 2] == 'q' || line[pos + 2] == 'c' || line[pos + 2] == 's'))
-                            {
-                                continue;
-                            }
-                        }
-
-                        if (line[pos] != '"')
+						if (line[pos] != '"')
 						{
 							args[arg_ind][arg_pos] = line[pos];
 							arg_pos++;
@@ -210,7 +182,7 @@ S2 get_args (U1 *line)
 						{
 							ok = 1;
 							break;
-                        }
+						}
 					}
 					args[arg_ind][arg_pos] = '\0';
 					arg = 1;

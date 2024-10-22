@@ -44,15 +44,6 @@
     (set string s searchstr "cde")
     (set string 15 sortedastr "")
     (set string 15 sortedbstr "")
-
-    // string cat multi
-    (set string s cat1str "Hello")
-    (set string s cat2str " this ")
-    (set string s cat3str "is a ")
-    (set string s cat4str "test!")
-    (set string 256 catstr "")
-    (set int64 1 catnum 4)
-
     (set int64 1 pos -1)
     (set int64 1 index -1)
     (zero :string_init call)
@@ -146,11 +137,6 @@
     print_n
     print_i (pos)
     print_n
-
-    // string cat multi
-    (cat4str cat3str cat2str catstr cat1str catnum :string_cat_multi !)
-    (catstr :print_s !)
-    (:print_n !)
 
     free_mod (zero)
 

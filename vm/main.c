@@ -26,6 +26,7 @@
 #include "../include/stack.h"
 #include "main.h"
 
+
 // include/home.h 
 char *get_home (void);
 
@@ -211,7 +212,6 @@ S2 load_module (U1 *name, S8 ind)
     if (! modules[ind].lptr)
 	{
         printf ("error load module %s!\n", (const char *) libname);
-		printf("error: %s\n",  dlerror());
         return (1);
     }
 #endif
@@ -3688,6 +3688,7 @@ int main (int ac, char *av[])
 
 	// process priority on Linux
     S4 run_priority = 0;        // -20 = highest priority, 19 = lowest priority
+
 
 	// printf ("DEBUG: ac: %i\n", ac);
 

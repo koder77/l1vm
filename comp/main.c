@@ -30,7 +30,7 @@
 // protos
 S8 get_ranges_index (U1 *varname);
 
-S8 linenum ALIGN = 0;
+S8 linenum ALIGN = 1;
 
 // for included files
 #define FILENAME_START_SB   "FILE:"
@@ -2262,10 +2262,6 @@ S2 parse_line (U1 *line)
 
 											strcpy ((char *) code[code_line], (const char *) code_temp);
 										}
-
-										// init all registers after array assign code:
-										init_registers ();
-
 										continue;
 									}
 									} // lastarg if
@@ -2600,10 +2596,6 @@ S2 parse_line (U1 *line)
 
 											strcpy ((char *) code[code_line], (const char *) code_temp);
 										}
-
-										// init all registers after array assign code:
-										init_registers ();
-
 										continue;
 									}
 									} // lastarg if

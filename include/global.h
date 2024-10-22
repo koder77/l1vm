@@ -103,7 +103,6 @@
 #include <string.h>
 #if __linux__
 #include <dlfcn.h>
-#include <syslog.h>
 #endif
 #if _WIN32
 #include <winsock2.h>
@@ -186,7 +185,7 @@
 
 // info strings:
 #define COPYRIGHT_STR " 2024 (C) 2017-2024 Stefan Pietzonke - software research"
-#define VM_VERSION_STR "3.3.0 "
+#define VM_VERSION_STR "3.2.5 "
 #define MOTTO_STR "supernova"
 
 // no user defined definitions below this section! ============================
