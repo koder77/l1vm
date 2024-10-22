@@ -1,3 +1,10 @@
+The code is currently broken!
+I did mess up something in the new line number code in the compiler.
+I try to fix this soon. One program which fails is "pov-edit".
+The array read/write assembly code is not working.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Tue 22 Oct 2024 21:49   +020
+
 L1VM (3.3.0)
 	VM: net module now has experimental SSL support.
 	For a demo see "lib/ssl" directory examples.
