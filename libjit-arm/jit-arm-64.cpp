@@ -527,10 +527,6 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				run_jit = 1;
 				break;
 
-				/*
-				 * This code is not testet yet!
-				 * Leave commented out!!!
-				 *
 			case MODI:
 				#if DEBUG
 				printf ("JIT-compiler: opcode: %i: R1 = %lli, R2 = %lli, R3 = %lli\n", code[i], r1, r2, r3);
@@ -541,16 +537,15 @@ extern "C" int jit_compiler (U1 *code, U1 *data, S8 *jumpoffs ALIGN, S8 *regi AL
 				r3 = code[i + 3];
 
 				a.ldr (R8, ptr (RSI, OFFSET(r1)));
-	            a.ldr (R9, ptr (RSI, OFFSET(r2)));
+	            a.ldr (R10, ptr (RSI, OFFSET(r2)));
 
-				a.sdiv (R10, R8, R9);
-				a.mul (R10, R9, R9);
-				a.subs (R9, R8, R8);
+				a.sdiv (R9, R8, R10);
+				a.mul (R9, R9, R10);
+				a.subs (R8, R8, R9);
 
 				a.str (R8, ptr (RSI, OFFSET(r3)));
 				run_jit = 1;
 				break;
-				*/
 
             // COMPARE OPCODES INT =====================================================
 			case EQI:
