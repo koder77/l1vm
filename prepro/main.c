@@ -1235,6 +1235,13 @@ S2 include_file (U1 *line_str)
 			if (pos >= 0)
 			{
 				// line is comment, skip it!
+				if (fprintf (foutptr, "\n") < 0)
+				{
+					printf ("ERROR: can't write to output file!\n");
+					fclose (fincludeptr);
+					return (1);
+				}
+
 				continue;
 			}
 
@@ -1306,6 +1313,17 @@ S2 include_file (U1 *line_str)
 					fclose (docuptr);
 					exit (1);
 				}
+
+				// write empty line
+				if (fprintf (foutptr, "\n") < 0)
+				{
+					printf ("ERROR: can't write to output file!\n");
+					fclose (finptr);
+					fclose (foutptr);
+					fclose (docuptr);
+					exit (1);
+				}
+
 				continue;	// don't safe define line!
 			}
 
@@ -1321,6 +1339,17 @@ S2 include_file (U1 *line_str)
 					fclose (docuptr);
 					exit (1);
 				}
+
+				// write empty line
+				if (fprintf (foutptr, "\n") < 0)
+				{
+					printf ("ERROR: can't write to output file!\n");
+					fclose (finptr);
+					fclose (foutptr);
+					fclose (docuptr);
+					exit (1);
+				}
+
 				continue;	// don't safe define line!
 			}
 
@@ -1338,6 +1367,17 @@ S2 include_file (U1 *line_str)
 				}
 				// replace all @ with the variable end as defined in func var macro
 				var_tackon_set = 1;
+
+				// write empty line
+				if (fprintf (foutptr, "\n") < 0)
+				{
+					printf ("ERROR: can't write to output file!\n");
+					fclose (finptr);
+					fclose (foutptr);
+					fclose (docuptr);
+					exit (1);
+				}
+
 				continue;	// don't safe define line!
 			}
 
@@ -2093,6 +2133,15 @@ int main (int ac, char *av[])
 			if (pos >= 0)
 			{
 				// line is comment, skip it!
+				if (fprintf (foutptr, "\n") < 0)
+				{
+					printf ("ERROR: can't write to output file!\n");
+					fclose (finptr);
+					fclose (foutptr);
+					fclose (docuptr);
+					return (1);
+				}
+
 				continue;
 			}
 
@@ -2160,6 +2209,17 @@ int main (int ac, char *av[])
             if (pos >= 0)
 			{
 				clear_defines ();
+
+				// write empty line
+				if (fprintf (foutptr, "\n") < 0)
+				{
+					printf ("ERROR: can't write to output file!\n");
+					fclose (finptr);
+					fclose (foutptr);
+					fclose (docuptr);
+					exit (1);
+				}
+
 				continue;
 			}
 
@@ -2175,6 +2235,17 @@ int main (int ac, char *av[])
 					fclose (docuptr);
 					exit (1);
 				}
+
+				// write empty line
+				if (fprintf (foutptr, "\n") < 0)
+				{
+					printf ("ERROR: can't write to output file!\n");
+					fclose (finptr);
+					fclose (foutptr);
+					fclose (docuptr);
+					exit (1);
+				}
+
 				continue;	// don't safe define line!
 			}
 
@@ -2190,6 +2261,17 @@ int main (int ac, char *av[])
 					fclose (docuptr);
 					exit (1);
 				}
+
+				// write empty line
+				if (fprintf (foutptr, "\n") < 0)
+				{
+					printf ("ERROR: can't write to output file!\n");
+					fclose (finptr);
+					fclose (foutptr);
+					fclose (docuptr);
+					exit (1);
+				}
+
 				continue;	// don't safe define line!
 			}
 
@@ -2207,6 +2289,17 @@ int main (int ac, char *av[])
 				}
 				// replace all @ with the variable end as defined in func var macro
 				var_tackon_set = 1;
+
+				// write empty line
+				if (fprintf (foutptr, "\n") < 0)
+				{
+					printf ("ERROR: can't write to output file!\n");
+					fclose (finptr);
+					fclose (foutptr);
+					fclose (docuptr);
+					exit (1);
+				}
+
 				continue;	// don't safe define line!
 			}
 
