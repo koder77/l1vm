@@ -23,6 +23,8 @@ doas pkg_add libsodium
 doas pkg_add libserialport
 doas pkg_add pulseaudio
 doas pkg_add pavucontrol
+doas pkg_add libssl
+doas pkg_add libcrypto++
 
 # check if clang C compiler is installed
 FILE=/usr/bin/clang

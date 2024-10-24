@@ -23,6 +23,8 @@ sudo pkg install libsodium
 sudo pkg install libserialport
 sudo pkg install pulseaudio
 sudo pkg install pavucontrol
+sudo pkg install libssl
+sudo pkg install libcrypto++
 
 # check if clang C compiler is installed
 FILE=/usr/bin/clang

@@ -18,7 +18,8 @@ pkgman install cmake
 pkgman install make
 pkgman install git
 pkgman install libsodium_devel
-
+pkgman install libssl_devel
+pkgman install libcrypto++_devel
 
 # check if zerobuild installed into /boot/home/config/non-packaged/bin/
 FILE=/boot/home/config/non-packaged/bin/zerobuild

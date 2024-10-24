@@ -65,6 +65,16 @@ if uname -a | grep -q "DragonFly"; then
 		exit 1
 	fi
 
+	if ! sudo pkg install libssl; then
+		echo "installation of serialport library failed!"
+		exit 1
+	fi
+
+	if ! sudo pkg install libcrypto++; then
+		echo "installation of libcrypto library failed!"
+		exit 1
+	fi
+
 else
 	echo "ERROR: detected OS not DragonFly BSD!"
 	echo "EXITING WITH ERROR!"
