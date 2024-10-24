@@ -31,8 +31,7 @@ brew install fann
 brew install mpfr
 brew install libsodium
 brew install libserialport
-brew install libssl
-brew install libcrypto++
+brew install openssl
 brew install cmake
 brew install make
 brew install git
