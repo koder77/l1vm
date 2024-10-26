@@ -22,6 +22,11 @@
 #include <fstream>
 #include <filesystem>
 
+#if __MACH__
+#undef CPP_FILE_EXPERIMENTAL
+#define CPP_FILE_EXPERIMENTAL 0
+#endif
+
 #if CPP_FILE_EXPERIMENTAL
 #include <experimental/filesystem>
 #else
