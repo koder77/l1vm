@@ -3,7 +3,7 @@
 [executable, shared, name = libl1vmmpfr.so]
 sources = mpfr-combined.cpp, ../file/file-sandbox.c, ../../../lib-func/string.c
 
-includes = ../include, /usr/local/include
+includes = ../include, /usr/local/include, openbsd
 
 ccompiler = $CC
 c++compiler = $CCPP
