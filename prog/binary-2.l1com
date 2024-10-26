@@ -1,32 +1,32 @@
 // binary-2.l1com - Brackets - binary demo ;)
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 (main func)
-	(set int64 1 zero 0)
-	// HEX numbers
-	(set byte 1 bhex &FF)
-	(set int16 1 i16hex &FFFF)
-	(set int32 1 i32hex &FFFFFFFF)
-	(set int64 1 i64hex &FFFFFFFFFFFFFFFF)
-	// binary numbers
-	(set byte 1 bbin B$10000001)
-	(set int16 1 i16bin W$1000000000000001)
-	// normal number
-	(set int64 1 i64norm 1234567890123456)
-	print_i (bhex)
-    print_n
-    print_i (i16hex)
-    print_n
-    print_i (i32hex)
-    print_n
-    print_i (i64hex)
-    print_n
-    print_n
-    print_i (bbin)
-    print_n
-    print_i (i16bin)
-    print_n
-    print_i (i64norm)
-    print_n
-    exit (zero)
+    (set int64 1 zero 0)
+    // HEX numbers
+    (set byte 1 bhex &FF)
+    (set int16 1 i16hex &FFFF)
+    (set int32 1 i32hex &FFFFFFFF)
+    (set int64 1 i64hex &FFFFFFFFFFFFFFFF)
+    // binary numbers
+    (set byte 1 bbin B$10000001)
+    (set int16 1 i16bin W$1000000000000001)
+    // normal number
+    (set int64 1 i64norm 1234567890123456)
+    (bhex :print_i !)
+    (:print_n !)
+    (i16hex :print_i !)
+    (:print_n !)
+    (i32hex :print_i !)
+    (:print_n !)
+    (i64hex :print_i !)
+    (:print_n !)
+    (:print_n !)
+    (bbin :print_i !)
+    (:print_n !)
+    (i16bin :print_i !)
+    (:print_n !)
+    (i64norm :print_i !)
+    (:print_n !)
+    (zero :exit !)
 (funcend)
