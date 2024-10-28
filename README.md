@@ -295,6 +295,10 @@ To do this just run this as root (on Linux for example):
 <pre>
 # /usr/sbin/usermod -aG sudo username
 </pre>
+
+Logout of your current session. And login again.
+Now you can run the installation scripts with the sudo command.
+
 <h3>Debian Linux</h3>
 Use: install-debian.sh or install-jit-debian.sh
 
