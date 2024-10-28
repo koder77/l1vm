@@ -1,4 +1,4 @@
-L1VM README  2024-07-31
+L1VM README  2024-10-28
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -289,6 +289,11 @@ Edit the "vm/jit.h" file, set:
 
 
 <h2>2. Installation</h2>
+Note: you must be in the sudoers list to run the installation scripts.
+To do this just run this as root (on Linux for example):
+
+# /usr/sbin/usermod -aG sudo username
+
 <h3>Debian Linux</h3>
 Use: install-debian.sh or install-jit-debian.sh
 
