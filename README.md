@@ -292,8 +292,9 @@ Edit the "vm/jit.h" file, set:
 Note: you must be in the sudoers list to run the installation scripts.
 To do this just run this as root (on Linux for example):
 
-/usr/sbin/usermod -aG sudo username
-
+<pre>
+# /usr/sbin/usermod -aG sudo username
+</pre>
 <h3>Debian Linux</h3>
 Use: install-debian.sh or install-jit-debian.sh
 
