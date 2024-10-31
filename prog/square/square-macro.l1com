@@ -1,0 +1,21 @@
+// square-macro.l1com
+#include <intr-func.l1h>
+
+// define macro
+#func square_int (iNUM, iSQUARE) :(iNUM * iNUM iSQUARE :=)
+
+(main func)
+	(set const-int64 1 zero 0)
+	(set int64 1 num 32)
+	(set int64 1 square 0)
+	(set const-string s sqr_str "square of: ")
+	(set const-string s eq_str " = ")
+
+	(sqr_str :print_s !)
+	(num :print_i !)
+	(eq_str :print_s !)
+	(num square :square_int !)
+	(square :print_i !)
+	(:print_n !)
+	(zero :exit !)
+(funcend)
