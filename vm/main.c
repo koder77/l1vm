@@ -193,6 +193,7 @@ S2 load_module (U1 *name, S8 ind)
 {
 	U1 linux_lib_suffix[] = ".so";
 	U1 libname[MAXSTRLEN];
+	S8 i ALIGN = 0;
 
 	if (strlen_safe ((const char*) name, MAXLINELEN) > MAXLINELEN - 5)
 	{
@@ -207,12 +208,33 @@ S2 load_module (U1 *name, S8 ind)
 
 // strip_library_name((char *) libname);
 
+// check if modules index is in legal range
+if (ind >= MODULES)
+{
+	printf ("error load module: index out of range!\n");
+	return (1);
+}
+
 // check if this index already used
 if (modules[ind].used == 1)
 {
 	printf ("error load module %s!, index already in use by: %s.\n", libname, modules[ind].name);
 	return (1);
 }
+
+// check if module already load before
+for (i = 0; i < MODULES; i++)
+{
+	if (modules[i].used == 0)
+	{
+		if (strcmp ((const char *) libname, (char *) modules[i].name) == 0)
+		{
+			printf ("error load module %s!, module already load by: %lli: %s.\n", libname, i, modules[i].name);
+			return (1);
+		}
+	}
+ }
+
 
 #if __linux__
     modules[ind].lptr = dlopen ((const char *) libname, RTLD_LAZY);
@@ -273,6 +295,13 @@ if (modules[ind].used == 1)
 
 void free_module (S8 ind)
 {
+	// check if modules index is in legal range
+	if (ind >= MODULES)
+	{
+		printf ("error free module: index out of range!\n");
+		return;
+	}
+
 	if (modules[ind].used != 0)
 	{
 		#if __linux__
@@ -296,6 +325,13 @@ void free_module (S8 ind)
 
 S2 set_module_func (S8 ind, S8 func_ind, U1 *func_name)
 {
+// check if modules index is in legal range
+if (ind >= MODULES)
+{
+	printf ("error set module func: index out of range!\n");
+	return (1);
+}
+
 #if __linux__
 	dlerror ();
 
@@ -326,6 +362,13 @@ S2 set_module_func (S8 ind, S8 func_ind, U1 *func_name)
 
 U1 *call_module_func (S8 ind, S8 func_ind, U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
+	// check if modules index is in legal range
+	if (ind >= MODULES)
+	{
+		printf ("error call module func: index out of range!\n");
+		return (1);
+	}
+
 	// avoid call without loaded module
 	if (modules[ind].used == 0)
 	{
