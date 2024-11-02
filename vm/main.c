@@ -207,6 +207,13 @@ S2 load_module (U1 *name, S8 ind)
 
 // strip_library_name((char *) libname);
 
+// check if this index already used
+if (modules[ind].used == 1)
+{
+	printf ("error load module %s!, index already in use by: %s.\n", libname, modules[ind].name);
+	return (1);
+}
+
 #if __linux__
     modules[ind].lptr = dlopen ((const char *) libname, RTLD_LAZY);
     if (! modules[ind].lptr)
