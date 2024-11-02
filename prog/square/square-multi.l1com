@@ -1,0 +1,60 @@
+// square-multi.l1com
+// show how to get the variable type from stack argument
+#include <intr-func.l1h>
+#include <vars.l1h>
+
+(main func)
+	(set const-int64 1 zero 0)
+	(set int64 1 numi 32)
+	(set int64 1 squarei 0)
+	(set double 1 numd 16.0)
+	(set double 1 squared 0.0)
+	(set const-string s sqr_str "square of: ")
+	(set const-string s eq_str " = ")
+
+	// int64
+	(sqr_str :print_s !)
+	(numi :print_i !)
+	(eq_str :print_s !)
+	(numi :square !)
+	(squarei stpop)
+	(squarei :print_i !)
+	(:print_n !)
+
+	// double
+	(sqr_str :print_s !)
+	(numd :print_d !)
+	(eq_str :print_s !)
+	(numd :square !)
+	(squared stpop)
+	(squared :print_d !)
+	(:print_n !)
+
+	(zero :exit !)
+(funcend)
+
+(square func)
+    // calculate with int64 or double number: check argument type
+    #var ~ square
+
+    (set int64 1 numi~ 0)
+    (set int64 1 squarei~ 0)
+    (set double 1 numd~ 0.0)
+    (set double 1 squared~ 0.0)
+    (set int64 1 st_type~ 0)
+    (set int64 1 f~ 0)
+
+    // get type of stack variable
+    (st_type~ :stack_type !)
+    (((st_type~ int64_stack ==) f~ =) f~ if+)
+       // stack arg type = int64
+       (numi~ stpop)
+       (numi~ * numi~ squarei~ :=)
+       (squarei~ stpushi)
+    (else)
+       // stack arg type = double
+       (numd~ stpop)
+       (numd~ * numd~ squared~ :=)
+       (squared~ stpushd)
+    (endif)
+(funcend)
