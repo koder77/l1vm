@@ -366,7 +366,7 @@ U1 *call_module_func (S8 ind, S8 func_ind, U1 *sp, U1 *sp_top, U1 *sp_bottom, U1
 	if (ind >= MODULES)
 	{
 		printf ("error call module func: index out of range!\n");
-		return (1);
+		return (NULL);
 	}
 
 	// avoid call without loaded module
