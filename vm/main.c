@@ -1768,6 +1768,7 @@ S2 run (void *arg)
 	if (sp == NULL)
 	{
 		PRINT_EPOS();
+		printf ("stpushb: error can't push!\n");
 		free (jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
@@ -1786,6 +1787,7 @@ S2 run (void *arg)
 	if (sp == NULL)
 	{
 		PRINT_EPOS();
+		printf ("stpopb: error can't pop!\n");
 		free (jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
@@ -1805,6 +1807,7 @@ S2 run (void *arg)
 	if (sp == NULL)
 	{
 		PRINT_EPOS();
+		printf ("stpushi: error can't push!\n");
 		free (jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
@@ -1823,6 +1826,7 @@ S2 run (void *arg)
 	if (sp == NULL)
 	{
 		PRINT_EPOS();
+		printf ("stpopi: error can't pop!\n");
 		free (jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
@@ -1841,6 +1845,7 @@ S2 run (void *arg)
 	if (sp == NULL)
 	{
 		PRINT_EPOS();
+		printf ("stpushd: error can't push!\n");
 		free (jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
@@ -1859,6 +1864,7 @@ S2 run (void *arg)
 	if (sp == NULL)
 	{
 		PRINT_EPOS();
+		printf ("stpopd: error can't pop!\n");
 		free (jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
