@@ -40,6 +40,7 @@
 
 
 #include "../../../include/stack.h"
+#include "nanoid/nanoid.h"
 
 using mpfr::mpreal;
 using std::cout;
@@ -51,6 +52,7 @@ using std::cout;
 static mpreal mpf_float[MAX_FLOAT_NUM];
 
 extern "C" U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
+char* simple ();
 
 char *fgets_uni (char *str, int len, FILE *fptr)
 {
@@ -613,8 +615,11 @@ extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 float_format_address ALIGN;
 	S8 precision ALIGN;
 
+	char file_name_id[21];
+	strcpy (file_name_id, simple ());
+
 	std::fstream tempfile;
-    tempfile.open("temp.txt", std::ios::out);
+    tempfile.open(file_name_id, std::ios::out);
     std::string line;
 
 	sp = stpopi ((U1 *) &precision, sp, sp_top);
@@ -682,7 +687,7 @@ extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	// read string from file
 	FILE *tempfilec;
-	tempfilec = fopen ("temp.txt", "r");
+	tempfilec = fopen (file_name_id, "r");
 	if (tempfilec != NULL)
   	{
 		if (fgets_uni ((char *) &data[numstring_address_dest], numstring_len, tempfilec) == NULL)
@@ -697,6 +702,7 @@ extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("mp_prints_float: can't open temp file!\n");
 		return (NULL);
 	}
+	remove (file_name_id);
 	return (sp);
 }
 
