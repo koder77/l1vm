@@ -2668,7 +2668,11 @@ S2 run (void *arg)
             // run new CPU core
             // set threaddata
 
-			printf ("current CPU: %lli, starts new CPU: %lli\n", cpu_core, new_cpu);
+			if (silent_run == 0)
+			{
+				printf ("current CPU: %lli, starts new CPU: %lli\n", cpu_core, new_cpu);
+			}
+
 			pthread_mutex_lock (&data_mutex);
 			threaddata[new_cpu].sp = sp;
 			threaddata[new_cpu].sp_top = sp_top;
@@ -2714,7 +2718,11 @@ S2 run (void *arg)
 
 		case 1:
 			// join threads
-			printf ("JOINING THREADS...\n");
+			if (silent_run == 0)
+			{
+				printf ("JOINING THREADS...\n");
+			}
+
 			U1 wait = 1, running;
 			while (wait == 1)
 			{
@@ -3019,7 +3027,10 @@ S2 run (void *arg)
 
 
 		case 255:
-			printf ("thread EXIT\n");
+			if (silent_run == 0)
+			{
+				printf ("thread EXIT\n");
+			}
 			arg2 = code[ep + 2];
 			retcode = regi[arg2];
 			pthread_mutex_lock (&data_mutex);

@@ -24,9 +24,6 @@
 	(:hello_a lab_hello_one loadl)
 	(:hello_b lab_hello_two loadl)
 
-	pull_int64_var (lab_hello_one)
-    pull_int64_var (lab_hello_two)
-
 	(lab_hello_one :pull_int64_var !)
 	(lab_hello_two :pull_int64_var !)
 
@@ -39,7 +36,7 @@
 	    (lab_hello_two :thread !)
 	    (:join !)
 	(endif)
-	exit (zero)
+	(zero :exit !)
 
     (:hello_a)
     (((i maxloop <) f :=) f for)
