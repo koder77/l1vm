@@ -1,6 +1,6 @@
 L1VM (3.3.2)
 	VM: MPFR module now uses nano ID for temp file name".
-	VM: -q flag also silences the threading interrupt functions.
+	VM: -q flag also silences the threading interrupt functions!
 
 -- Stefan Pietzonke <info@midnight-coding.de> Sun 10 Nov 2024 21:26  +010
 
