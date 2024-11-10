@@ -3,7 +3,7 @@
 //
 // This is an exammple how to launch threads using the new compiler opcode "loadl".
 // In this example I used the "intr-func.l1h" include to use the new interrupt macros.
-// This demo show show to run two threads inside the main function.
+// This demo shows how to run two threads inside the main function.
 #include <intr-func.l1h>
 #include <misc-macros.l1h>
 (main func)
