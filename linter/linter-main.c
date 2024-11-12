@@ -1352,6 +1352,11 @@ S2 parse_line (U1 *line)
         }
 
         i = pos + 1;
+        if (i >= stpush_pos)
+        {
+            printf ("parse-line: error: no return variables found!\n");
+            return (1);
+        }
         while (do_parse_vars)
         {
             //printf ("parse-line: char %i: %c\n", i, line[i]);
@@ -1372,7 +1377,7 @@ S2 parse_line (U1 *line)
                 {
                     type[n] = '\0';
 
-                    // printf ("parse-line: return type name '%s'\n", type);
+                    //printf ("parse-line: return type name '%s'\n", type);
 
                     vartype = get_varname_type (type);
 
