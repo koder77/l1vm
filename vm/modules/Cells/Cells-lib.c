@@ -214,7 +214,7 @@ U1 *cells_fann_do_update_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 i ALIGN;
 	S8 j ALIGN;
 	S8 offset ALIGN;
-	F8 dataf ALIGN;
+	F8 dataf ALIGN = 0;
 	S8 inputs ALIGN;
 
 	sp = stpopi ((U1 *) &inputs_node_addr, sp, sp_top);
@@ -316,7 +316,7 @@ U1 *cells_fann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 i ALIGN;
 	S8 j ALIGN;
 	S8 offset ALIGN;
-	F8 dataf ALIGN;
+	F8 dataf ALIGN = 0;
 
 	// sandbox filename
 	U1 sandbox_filename[256];

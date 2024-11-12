@@ -95,7 +95,7 @@ F8 htond (F8 hostd)
     U1 *netdptr;
     U1 *hostdptr;
     S2 i;
-    F8 netd ALIGN;
+    F8 netd ALIGN = 0.0;
 
     netdptr = (U1 *) &netd;
 
@@ -119,7 +119,7 @@ F8 ntohd (F8 netd)
     U1 *netdptr;
     U1 *hostdptr;
     S2 i;
-    F8 hostd ALIGN;
+    F8 hostd ALIGN = 0.0 ;
 
     hostdptr = (U1 *) &hostd;
 

@@ -741,7 +741,7 @@ extern "C" U1 *array_to_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	S8 memind ALIGN = 0;
 	S8 arrayind ALIGN = 0;
-	S8 value ALIGN;
+	S8 value ALIGN = 0 ;
 
 	sp = stpopi ((U1 *) &arrayind, sp, sp_top);
 	if (sp == NULL)
@@ -1458,7 +1458,7 @@ extern "C" U1 *vect_to_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	S8 memind ALIGN = 0;
 	S8 arrayind ALIGN = 0;
- 	S8 value ALIGN;
+ 	S8 value ALIGN = 0 ;
 
 	sp = stpopi ((U1 *) &arrayind, sp, sp_top);
 	if (sp == NULL)

@@ -958,7 +958,7 @@ U1 *double_rounded_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 number_of_digits ALIGN;
 	F8 number ALIGN;
 	S8 deststraddr ALIGN;
-	S8 ret ALIGN;
+	S8 ret ALIGN = 0;
 	S8 offset ALIGN;
 
 	sp = stpopi ((U1 *) &deststr_len, sp, sp_top);

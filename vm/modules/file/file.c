@@ -142,7 +142,6 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 nameaddr ALIGN;
 
 	S8 file_name_len ALIGN;
-	S8 file_access_name_len ALIGN;
 
     sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
 	if (sp == NULL)
@@ -186,8 +185,6 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("ERROR: file_open: file name: '%s' too long!\n", (char *) &data[nameaddr]);
 		return (NULL);
 	}
-
-	file_access_name_len = file_name_len;
 
 	#if SANDBOX
 	if (get_sandbox_filename (&data[nameaddr], files[handle].name, 255) != 0)

@@ -324,7 +324,7 @@ U1 *fann_run_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	U1 *src_p;
 	U1 *dst_p;
-	F8 data_f ALIGN;
+	F8 data_f ALIGN = 0.0;
 
 	fann_type *input_f;
 
@@ -458,7 +458,7 @@ U1 *fann_train_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	U1 *src_p;
 	U1 *dst_p;
-	F8 data_f ALIGN;
+	F8 data_f ALIGN = 0.0;
 
 	fann_type *input_f = NULL;
     fann_type *output_f = NULL;
