@@ -1333,7 +1333,7 @@ S2 parse_line (U1 *line)
 
         { // new scope
         S2 n = 0;
-        S2 var_ind = return_args[return_args_ind].args -1 ;
+        S2 var_ind = return_args[return_args_ind].args -1;
         S2 stpush_pos;
         do_parse_vars = 1;
 
@@ -1368,28 +1368,32 @@ S2 parse_line (U1 *line)
             }
             else
             {
-                type[n] = '\0';
-
-                // printf ("parse-line: return type name '%s'\n", type);
-
-                vartype = get_varname_type (type);
-
-                // printf ("parse-line: return variable type: %i\n", vartype);
-                // printf ("parse-line: return variable defined type: %i\n", return_args[return_args_ind].arg_type[var_ind]);
-
-                if (vartype != return_args[return_args_ind].arg_type[var_ind])
+                if (var_ind >= 0)
                 {
-                    printf ("parse-line: error: return variable type mismatch!\n");
+                    type[n] = '\0';
+
+                    // printf ("parse-line: return type name '%s'\n", type);
+
+                    vartype = get_varname_type (type);
+
+                    //printf ("parse-line: return variable type: %i\n", vartype);
+                    //printf ("parse-line: return variable defined type: %i\n", return_args[return_args_ind].arg_type[var_ind]);
+
+                    //printf ("var_ind: %lli\n", var_ind);
+
+                    if (vartype != return_args[return_args_ind].arg_type[var_ind])
+                    {
+                        printf ("parse-line: error: return variable type mismatch!\n");
+                        return (1);
+                    }
+                }
+
+                var_ind--;
+
+                if (var_ind < -1)
+                {
+                    printf ("parse-line: error: to many return variables!\n");
                     return (1);
-                }
-
-                if (var_ind > 0)
-                {
-                    var_ind--;
-                }
-                else
-                {
-                    break;
                 }
                 n = 0;
             }
