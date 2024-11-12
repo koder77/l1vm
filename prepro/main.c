@@ -315,7 +315,7 @@ S2 set_varname (U1 *line_str)
 
 S2 replace_str (U1 *line_str, U1 *search_str, U1 *replace_str)
 {
-	S4 i, pos, slen, define_len, define_out_len, j, end, n, real_end;
+	S4 i, pos, slen, define_len, define_out_len, j, end, n, real_end = 0 ;
 	U1 ok;
 	U1 new_line[MAXSTRLEN + 1];
 
