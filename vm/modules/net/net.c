@@ -1382,7 +1382,7 @@ F8 htond (F8 hostd)
     U1 *netdptr;
     U1 *hostdptr;
     S2 i;
-    F8 netd ALIGN;
+    F8 netd ALIGN = 0;
 
     netdptr = (U1 *) &netd;
 
@@ -1406,7 +1406,7 @@ F8 ntohd (F8 netd)
     U1 *netdptr;
     U1 *hostdptr;
     S2 i;
-    F8 hostd ALIGN;
+    F8 hostd ALIGN = 0;
 
     hostdptr = (U1 *) &hostd;
 
@@ -1705,7 +1705,7 @@ U1 *socket_read_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     S8 ret ALIGN;
     S2 handle;
-    S8 n ALIGN;
+    S8 n ALIGN = 0;
     U1 *ptr;
     S8 value ALIGN;
     S8 i ALIGN;
@@ -1778,7 +1778,7 @@ U1 *socket_read_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     S8 ret ALIGN;
     S2 handle;
-    F8 n ALIGN;
+    F8 n ALIGN = 0;
     U1 *ptr;
     F8 value ALIGN;
     S8 i ALIGN;
