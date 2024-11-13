@@ -232,6 +232,7 @@
 		(endif)
 		(:loop jmp)
 	(endif)
+
 	(((gadget_sel gadget_erase ==) f =) f if)
 		// 1 = do erase in pattern array
 		(value gadget_erase_state =)
