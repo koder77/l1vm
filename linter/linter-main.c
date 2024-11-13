@@ -226,6 +226,7 @@ S2 get_varname_type (U1 *name)
         }
     }
     // variable not found
+    printf ("error: variable '%s' not defined!\n", name);
     return (-1);
 }
 
