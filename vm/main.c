@@ -2535,7 +2535,7 @@ S2 run (void *arg)
             break;
 
 		case 37:
-			if (debugger (&regi, &regd, ep) == 0)
+			if (debugger ((S8 *) &regi, (F8 *) &regd, ep, sp, sp_bottom, sp_top) == 0)
 			{
 				if (silent_run == 0)
 				{

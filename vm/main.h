@@ -99,6 +99,7 @@ S2 pointer_type (S8 start);
 S2 set_immutable_string (S8 string_pointer);
 
 // debugger
-S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos);
+S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp_top);
+
 
 #endif
