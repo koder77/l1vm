@@ -2534,6 +2534,23 @@ S2 run (void *arg)
             eoffs = 5;
             break;
 
+		case 37:
+			if (debugger (&regi, &regd, ep) == 0)
+			{
+				if (silent_run == 0)
+				{
+					printf ("EXIT\n");
+				}
+				retcode = 0;
+				free (jumpoffs);
+				pthread_mutex_lock (&data_mutex);
+				threaddata[cpu_core].status = STOP;
+				pthread_mutex_unlock (&data_mutex);
+				loop_stop ();
+				pthread_exit ((void *) retcode);
+			}
+			break;
+
 		case 251:
 			// set overflow on double reg
 			arg2 = code[ep + 2];
