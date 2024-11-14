@@ -1,5 +1,5 @@
 /*
- * This file main.c is part of L1vm.
+ * This file debugger.c is part of L1vm.
  *
  * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2017
  *
