@@ -1,4 +1,10 @@
 L1VM (3.3.2)
+	VM: debugger now available via interrupt 0: 37.
+	See include: intr.l1h and intr-func.l1h.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Thu 14 Nov 2024 21:30  +010
+
+L1VM (3.3.2)
 	VM: MPFR module now uses nano ID for temp file name".
 	VM: -q flag also silences the threading interrupt functions!
 
