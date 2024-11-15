@@ -185,6 +185,33 @@ void debugger_help (S2 cpu_core, S8 epos)
     printf ("'regi ed': edit int register, 'regd ed': edit double register\nexit': exit program, 'continue': continue program\n\'help': show this help\n");
 }
 
+void read_string (U1 *str, S8 len)
+{
+    S2 ch;
+	S8 i ALIGN = 0;
+
+	while (1)
+	{
+        ch = getc (stdin);
+        if (ch == 10)
+        {
+            if (i == 0)
+            {
+				str[0] = '\0';
+			}
+            break;
+        }
+
+		if (i < len - 1)
+		{
+			str[i] = ch;
+			i++;
+		}
+	}
+    str[i] = '\0';
+}
+
+
 S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp_top, S2 cpu_core)
 {
     U1 run_loop = 1;
@@ -192,7 +219,7 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
     U1 command[80];
     S2 command_maxlen = 79;
     U1 reg_inp[4];
-    S2 reg_maxlen = 3;
+    S2 reg_maxlen = 4;
     S2 reg_num = 0;
 
     S2 numi_inputlen = 4095;
@@ -206,8 +233,8 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
     U1 stack_loop = 1;
     U1 stack_debug = 0;
 
-    S8 regi = 0;
-    F8 regd = 0.0;
+    S8 regi ALIGN = 0;
+    F8 regd ALIGN = 0.0;
     U1 stack_type = 0;
 
     debugger_help (cpu_core, epos);
@@ -218,30 +245,14 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
         printf ("> ");
 
         // get input
-        if (fgets ((char *) command, command_maxlen, stdin) == NULL)
-		{
-            // error
-            printf ("error: can't read input!\n");
-            return (ret);
-        }
-
-        slen = strlen_safe ((const char *) command, command_maxlen);
-        command[slen - 1] = '\0';
+        read_string (command, command_maxlen);
 
         if (strcmp (REGI_SB, (const char *) command) == 0)
         {
             printf ("register number? ");
 
             // get input
-            if (fgets ((char *) reg_inp, reg_maxlen, stdin) == NULL)
-            {
-                // error
-                printf ("error: can't read input!\n");
-                return (ret);
-            }
-
-            slen = strlen_safe ((const char *) reg_inp, reg_maxlen);
-            reg_inp[slen - 1] = '\0';
+            read_string (reg_inp, reg_maxlen);
 
             reg_num = strtol ((char *) reg_inp, NULL, 10);
             if (reg_num < 0 || reg_num > 255)
@@ -259,15 +270,7 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
             printf ("register number? ");
 
             // get input
-            if (fgets ((char *) reg_inp, reg_maxlen, stdin) == NULL)
-            {
-                // error
-                printf ("error: can't read input!\n");
-                return (ret);
-            }
-
-            slen = strlen_safe ((const char *) reg_inp, reg_maxlen);
-            reg_inp[slen - 1] = '\0';
+            read_string (reg_inp, reg_maxlen);
 
             reg_num = strtol ((char *) reg_inp, NULL, 10);
             if (reg_num < 0 || reg_num > 255)
@@ -370,15 +373,7 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
             printf ("register number? ");
 
             // get input
-            if (fgets ((char *) reg_inp, reg_maxlen, stdin) == NULL)
-            {
-                // error
-                printf ("error: can't read input!\n");
-                return (ret);
-            }
-
-            slen = strlen_safe ((const char *) reg_inp, reg_maxlen);
-            reg_inp[slen - 1] = '\0';
+            read_string (reg_inp, reg_maxlen);
 
             reg_num = strtol ((char *) reg_inp, NULL, 10);
             if (reg_num < 0 || reg_num > 255)
@@ -389,19 +384,14 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
             {
                 // get input
                 printf ("value? ");
-                if (fgets ((char *) numi, numi_inputlen, stdin) == NULL)
-                {
-                    // error
-                    printf ("error: can't read input!\n");
-                    return (ret);
-                }
+                read_string (numi, numi_inputlen);
 
-                 slen = strlen_safe ((const char *) numi, numi_inputlen);
-                 numi[slen - 1] = '\0';
-                 sscanf ((const char *) numi, "%lli", &regi);
+                slen = strlen_safe ((const char *) numi, numi_inputlen);
+                numi[slen - 1] = '\0';
+                sscanf ((const char *) numi, "%lli", &regi);
 
-                 reg_int[reg_num] = regi;
-                 printf ("regi %i: %lli\n", reg_num, reg_int[reg_num]);
+                reg_int[reg_num] = regi;
+                printf ("regi %i: %lli\n", reg_num, reg_int[reg_num]);
             }
         }
 
@@ -410,15 +400,7 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
             printf ("register number? ");
 
             // get input
-            if (fgets ((char *) reg_inp, reg_maxlen, stdin) == NULL)
-            {
-                // error
-                printf ("error: can't read input!\n");
-                return (ret);
-            }
-
-            slen = strlen_safe ((const char *) reg_inp, reg_maxlen);
-            reg_inp[slen - 1] = '\0';
+            read_string (reg_inp, reg_maxlen);
 
             reg_num = strtol ((char *) reg_inp, NULL, 10);
             if (reg_num < 0 || reg_num > 255)
@@ -429,19 +411,11 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
             {
                 // get input
                 printf ("value? ");
-                if (fgets ((char *) numd, numd_inputlen, stdin) == NULL)
-                {
-                    // error
-                    printf ("error: can't read input!\n");
-                    return (ret);
-                }
+                read_string (numd, numd_inputlen);
+                sscanf ((const char *) numd, "%lf", &regd);
 
-                 slen = strlen_safe ((const char *) numd, numd_inputlen);
-                 numd[slen - 1] = '\0';
-                 sscanf ((const char *) numd, "%lf", &regd);
-
-                 reg_double[reg_num] = regd;
-                 printf ("regd %i: %.10lf\n", reg_num, reg_double[reg_num]);
+                reg_double[reg_num] = regd;
+                printf ("regd %i: %.10lf\n", reg_num, reg_double[reg_num]);
             }
         }
     }

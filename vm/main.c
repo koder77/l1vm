@@ -2549,6 +2549,7 @@ S2 run (void *arg)
 				loop_stop ();
 				pthread_exit ((void *) retcode);
 			}
+			eoffs = 5;
 			break;
 
 		case 251:
