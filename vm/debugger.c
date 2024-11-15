@@ -214,6 +214,9 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
 
     while (run_loop == 1)
     {
+        // print prompt
+        printf ("> ");
+
         // get input
         if (fgets ((char *) command, command_maxlen, stdin) == NULL)
 		{
