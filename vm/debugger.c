@@ -25,14 +25,17 @@
 
 #define REGI_SB "regi"
 #define REGD_SB "regd"
+#define REGI_EDIT_SB "regi ed"
+#define REGD_EDIT_SB "regd ed"
 #define EXIT_SB "exit"
 #define CONT_SB "continue"
 #define STACK_SB "stack"
+#define HELP_SB "help"
 
 // protos
 size_t strlen_safe (const char *str, S8 maxlen);
 
-U1 *db_stpopb (U1 *data, U1 *sp, U1 *sp_top)
+U1 *db_stpopb (U1 *data, U1 *sp, const U1 *sp_top)
 {
 	#if STACK_CHECK
 	if (sp + 1 > sp_top)
@@ -67,7 +70,7 @@ U1 *db_stpopb (U1 *data, U1 *sp, U1 *sp_top)
 	#endif
 }
 
-U1 *db_stpopi (U1 *data, U1 *sp, U1 *sp_top)
+U1 *db_stpopi (U1 *data, U1 *sp, const U1 *sp_top)
 {
 	#if STACK_CHECK
 	if (sp >= sp_top - 8)
@@ -115,7 +118,7 @@ U1 *db_stpopi (U1 *data, U1 *sp, U1 *sp_top)
 	#endif
 }
 
-U1 *db_stpopd (U1 *data, U1 *sp, U1 *sp_top)
+U1 *db_stpopd (U1 *data, U1 *sp, const U1 *sp_top)
 {
 	#if STACK_CHECK
 	if (sp >= sp_top - 8)
@@ -162,7 +165,7 @@ U1 *db_stpopd (U1 *data, U1 *sp, U1 *sp_top)
 	#endif
 }
 
-U1 *db_stack_type (U1 *data, U1 *sp, U1 *sp_top)
+U1 *db_stack_type (U1 *data, U1 *sp, const U1 *sp_top)
 {
 	if (sp + 1 > sp_top)
 	{
@@ -175,7 +178,14 @@ U1 *db_stack_type (U1 *data, U1 *sp, U1 *sp_top)
 	return (sp);
 }
 
-S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp_top)
+void debugger_help (S2 cpu_core, S8 epos)
+{
+    printf ("\n\ncpu: %i, epos: %lli\n", cpu_core, epos);
+    printf ("debugger\ncommands: 'regi': show int register, 'regd': show double register\n'stack': show stack\n");
+    printf ("'regi ed': edit int register, 'regd ed': edit double register\nexit': exit program, 'continue': continue program\n\'help': show this help\n");
+}
+
+S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp_top, S2 cpu_core)
 {
     U1 run_loop = 1;
     S2 ret = 0;
@@ -184,9 +194,15 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
     U1 reg_inp[4];
     S2 reg_maxlen = 3;
     S2 reg_num = 0;
+
+    S2 numi_inputlen = 4095;
+    S2 numd_inputlen = 4095;
+    U1 numi[4096];
+    U1 numd[4096];
+
     S2 slen = 0;
     U1 *dsp = sp;
-    U1 *dsp_top = sp_top;
+    const U1 *dsp_top = sp_top;
     U1 stack_loop = 1;
     U1 stack_debug = 0;
 
@@ -194,10 +210,10 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
     F8 regd = 0.0;
     U1 stack_type = 0;
 
+    debugger_help (cpu_core, epos);
+
     while (run_loop == 1)
     {
-        printf ("\n\nepos: %lli\n", epos);
-        printf ("debugger\ncommands: 'regi': show int register, 'regd': show double register\n'stack': show stack, exit': exit program, 'continue': continue program\n");
         // get input
         if (fgets ((char *) command, command_maxlen, stdin) == NULL)
 		{
@@ -290,7 +306,7 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
                 // check if something is on stack
                 if (dsp == dsp_top)
                 {
-                    printf ("stack is empty!\n");
+                    printf ("stack at end!\n");
                     stack_loop = 0;
                     continue;
                 }
@@ -339,6 +355,91 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
                 }
             }
             stack_debug = 1; // set flag, can't continue if set!!!
+        }
+
+        if (strcmp (HELP_SB, (const char *) command) == 0)
+        {
+            debugger_help (cpu_core, epos);
+        }
+
+        if (strcmp (REGI_EDIT_SB, (const char *) command) == 0)
+        {
+            printf ("register number? ");
+
+            // get input
+            if (fgets ((char *) reg_inp, command_maxlen, stdin) == NULL)
+            {
+                // error
+                printf ("error: can't read input!\n");
+                return (ret);
+            }
+
+            slen = strlen_safe ((const char *) reg_inp, reg_maxlen);
+            reg_inp[slen - 1] = '\0';
+
+            reg_num = strtol ((char *) reg_inp, NULL, 10);
+            if (reg_num < 0 || reg_num > 255)
+            {
+                printf ("error: register must be in range 0 - 255 !\n");
+            }
+            else
+            {
+                // get input
+                printf ("value? ");
+                if (fgets ((char *) numi, numi_inputlen, stdin) == NULL)
+                {
+                    // error
+                    printf ("error: can't read input!\n");
+                    return (ret);
+                }
+
+                 slen = strlen_safe ((const char *) numi, numi_inputlen);
+                 numi[slen - 1] = '\0';
+                 sscanf ((const char *) numi, "%lli", &regi);
+
+                 reg_int[reg_num] = regi;
+                 printf ("regi %i: %lli\n", reg_num, reg_int[reg_num]);
+            }
+        }
+
+        if (strcmp (REGD_EDIT_SB, (const char *) command) == 0)
+        {
+            printf ("register number? ");
+
+            // get input
+            if (fgets ((char *) reg_inp, command_maxlen, stdin) == NULL)
+            {
+                // error
+                printf ("error: can't read input!\n");
+                return (ret);
+            }
+
+            slen = strlen_safe ((const char *) reg_inp, reg_maxlen);
+            reg_inp[slen - 1] = '\0';
+
+            reg_num = strtol ((char *) reg_inp, NULL, 10);
+            if (reg_num < 0 || reg_num > 255)
+            {
+                printf ("error: register must be in range 0 - 255 !\n");
+            }
+            else
+            {
+                // get input
+                printf ("value? ");
+                if (fgets ((char *) numd, numd_inputlen, stdin) == NULL)
+                {
+                    // error
+                    printf ("error: can't read input!\n");
+                    return (ret);
+                }
+
+                 slen = strlen_safe ((const char *) numd, numd_inputlen);
+                 numd[slen - 1] = '\0';
+                 sscanf ((const char *) numd, "%lf", &regd);
+
+                 reg_double[reg_num] = regd;
+                 printf ("regd %i: %.10lf\n", reg_num, reg_double[reg_num]);
+            }
         }
     }
     return (ret);
