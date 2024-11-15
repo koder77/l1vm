@@ -233,7 +233,7 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
             printf ("register number? ");
 
             // get input
-            if (fgets ((char *) reg_inp, command_maxlen, stdin) == NULL)
+            if (fgets ((char *) reg_inp, reg_maxlen, stdin) == NULL)
             {
                 // error
                 printf ("error: can't read input!\n");
@@ -259,7 +259,7 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
             printf ("register number? ");
 
             // get input
-            if (fgets ((char *) reg_inp, command_maxlen, stdin) == NULL)
+            if (fgets ((char *) reg_inp, reg_maxlen, stdin) == NULL)
             {
                 // error
                 printf ("error: can't read input!\n");
@@ -283,7 +283,7 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
         if (strcmp (EXIT_SB, (const char *) command) == 0)
         {
             ret = 0;
-            run_loop = 0;
+            return (ret);
         }
 
         if (strcmp (CONT_SB, (const char *) command) == 0)
@@ -295,7 +295,7 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
             else
             {
                 ret = 1;
-                run_loop = 0;
+                return (ret);
             }
         }
 
@@ -370,7 +370,7 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
             printf ("register number? ");
 
             // get input
-            if (fgets ((char *) reg_inp, command_maxlen, stdin) == NULL)
+            if (fgets ((char *) reg_inp, reg_maxlen, stdin) == NULL)
             {
                 // error
                 printf ("error: can't read input!\n");
@@ -410,7 +410,7 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
             printf ("register number? ");
 
             // get input
-            if (fgets ((char *) reg_inp, command_maxlen, stdin) == NULL)
+            if (fgets ((char *) reg_inp, reg_maxlen, stdin) == NULL)
             {
                 // error
                 printf ("error: can't read input!\n");
