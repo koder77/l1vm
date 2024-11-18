@@ -1,7 +1,7 @@
 /*
  * This file debugger.c is part of L1vm.
  *
- * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2017
+ * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2024
  *
  * L1vm is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,149 +34,14 @@
 
 // protos
 size_t strlen_safe (const char *str, S8 maxlen);
-
-U1 *db_stpopb (U1 *data, U1 *sp, const U1 *sp_top)
-{
-	#if STACK_CHECK
-	if (sp + 1 > sp_top)
-	{
-		printf ("ERROR: nothing on stack!!!\n");
-		// nothing on stack!! can't pop!!
-		return (NULL);		// FAIL
-	}
-
-	if (*sp != STACK_BYTE)
-	{
-		printf ("stpopb: FATAL ERROR! stack element not byte!\n");
-		return (NULL);
-	}
-	sp++;
-
-	*data = *sp;
-
-	sp++;
-	return (sp);			// success
-	#else
-	if (sp == sp_top)
-	{
-		// nothing on stack!! can't pop!!
-		return (NULL);		// FAIL
-	}
-
-	*data = *sp;
-
-	sp++;
-	return (sp);			// success
-	#endif
-}
-
-U1 *db_stpopi (U1 *data, U1 *sp, const U1 *sp_top)
-{
-	#if STACK_CHECK
-	if (sp >= sp_top - 8)
-	{
-		// nothing on stack!! can't pop!!
-		printf ("ERROR: nothing on stack!!!\n");
-		return (NULL);			// FAIL
-	}
-
-	if (*sp != STACK_QUADWORD)
-	{
-		printf ("stpopi: FATAL ERROR! stack element not int64!\n");
-		printf ("FOUND: %i\n", *sp);
-		return (NULL);
-	}
-	sp++;
-
-	data[7] = *sp++;
-	data[6] = *sp++;
-	data[5] = *sp++;
-	data[4] = *sp++;
-	data[3] = *sp++;
-	data[2] = *sp++;
-	data[1] = *sp++;
-	data[0] = *sp++;
-
-	return (sp);			// success
-	#else
-	if (sp >= sp_top - 7)
-	{
-		// nothing on stack!! can't pop!!
-		return (NULL);			// FAIL
-	}
-
-	data[7] = *sp++;
-	data[6] = *sp++;
-	data[5] = *sp++;
-	data[4] = *sp++;
-	data[3] = *sp++;
-	data[2] = *sp++;
-	data[1] = *sp++;
-	data[0] = *sp++;
-
-	return (sp);			// success
-	#endif
-}
-
-U1 *db_stpopd (U1 *data, U1 *sp, const U1 *sp_top)
-{
-	#if STACK_CHECK
-	if (sp >= sp_top - 8)
-	{
-		printf ("ERROR: nothing on stack!!!\n");
-		// nothing on stack!! can't pop!!
-		return (NULL);			// FAIL
-	}
-
-	if (*sp != STACK_DOUBLEFLOAT)
-	{
-		printf ("stpopd: FATAL ERROR! stack element not double!\n");
-		return (NULL);
-	}
-	sp++;
-
-	data[7] = *sp++;
-	data[6] = *sp++;
-	data[5] = *sp++;
-	data[4] = *sp++;
-	data[3] = *sp++;
-	data[2] = *sp++;
-	data[1] = *sp++;
-	data[0] = *sp++;
-
-	return (sp);			// success
-	#else
-	if (sp >= sp_top - 7)
-	{
-		// nothing on stack!! can't pop!!
-		return (NULL);			// FAIL
-	}
-
-	data[7] = *sp++;
-	data[6] = *sp++;
-	data[5] = *sp++;
-	data[4] = *sp++;
-	data[3] = *sp++;
-	data[2] = *sp++;
-	data[1] = *sp++;
-	data[0] = *sp++;
-
-	return (sp);			// success
-	#endif
-}
-
-U1 *db_stack_type (U1 *data, U1 *sp, const U1 *sp_top)
-{
-	if (sp + 1 > sp_top)
-	{
-		printf ("ERROR: stack_type: nothing on stack!!!\n");
-		// nothing on stack!! can't pop!!
-		return (NULL);		// FAIL
-	}
-
-	*data = *sp;
-	return (sp);
-}
+// stack
+U1 *stpushb (U1 data, U1 *sp, U1 *sp_bottom);
+U1 *stpopb (U1 *data, U1 *sp, U1 *sp_top);
+U1 *stpushi (S8 data, U1 *sp, U1 *sp_bottom);
+U1 *stpopi (U1 *data, U1 *sp, U1 *sp_top);
+U1 *stpushd (F8 data, U1 *sp, U1 *sp_bottom);
+U1 *stpopd (U1 *data, U1 *sp, U1 *sp_top);
+U1 *stack_type (U1 *data, U1 *sp, U1 *sp_top);
 
 void debugger_help (S2 cpu_core, S8 epos)
 {
@@ -229,18 +94,21 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
 
     S2 slen = 0;
     U1 *dsp = sp;
+    U1 *sp_save = sp;
     const U1 *dsp_top = sp_top;
     U1 stack_loop = 1;
-    U1 stack_debug = 0;
+    U1 command_ok = 0;
 
     S8 regi ALIGN = 0;
     F8 regd ALIGN = 0.0;
-    U1 stack_type = 0;
+    U1 st_type = 0;
 
     debugger_help (cpu_core, epos);
 
     while (run_loop == 1)
     {
+        command_ok = 0;   // set to 1 if user input matches a command
+
         // print prompt
         printf ("> ");
 
@@ -263,6 +131,8 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
             {
                 printf ("regi %i: %lli\n", reg_num, reg_int[reg_num]);
             }
+
+            command_ok = 1;
         }
 
         if (strcmp (REGD_SB, (const char *) command) == 0)
@@ -281,6 +151,8 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
             {
                 printf ("regd %i: %.10lf\n", reg_num, reg_double[reg_num]);
             }
+
+            command_ok = 1;
         }
 
         if (strcmp (EXIT_SB, (const char *) command) == 0)
@@ -291,20 +163,15 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
 
         if (strcmp (CONT_SB, (const char *) command) == 0)
         {
-            if (stack_debug == 1)
-            {
-                printf ("error: stack debugged: can't continue program!\n");
-            }
-            else
-            {
-                ret = 1;
-                return (ret);
-            }
+            ret = 1;
+            return (ret);
         }
 
         if (strcmp (STACK_SB, (const char *) command) == 0)
         {
             printf ("stack top:\n");
+            dsp = sp_save;
+
             stack_loop = 1;
 
             while (stack_loop == 1)
@@ -317,17 +184,17 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
                     continue;
                 }
 
-                dsp = db_stack_type ((U1 *) &stack_type, dsp, dsp_top);
+                dsp = stack_type ((U1 *) &st_type, dsp, dsp_top);
                 if (dsp == NULL)
                 {
                     printf ("ERROR: stack pointer error!\n");
                     stack_loop = 0;
                 }
 
-                switch (stack_type)
+                switch (st_type)
                 {
                     case STACK_BYTE:
-                        dsp = db_stpopb ((U1 *) &regi, dsp, dsp_top);
+                        dsp = stpopb ((U1 *) &regi, dsp, dsp_top);
                         if (dsp == NULL)
                         {
                             printf ("ERROR: stack pointer error!\n");
@@ -338,7 +205,7 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
                         break;
 
                     case STACK_QUADWORD:
-                        dsp = db_stpopi ((U1 *) &regi, dsp, dsp_top);
+                        dsp = stpopi ((U1 *) &regi, dsp, dsp_top);
                         if (dsp == NULL)
                         {
                             printf ("ERROR: stack pointer error!\n");
@@ -349,7 +216,7 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
                         break;
 
                    case STACK_DOUBLEFLOAT:
-                        dsp = db_stpopd ((U1 *) &regd, dsp, dsp_top);
+                        dsp = stpopd ((U1 *) &regd, dsp, dsp_top);
                         if (dsp == NULL)
                         {
                             printf ("ERROR: stack pointer error!\n");
@@ -360,12 +227,13 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
                         break;
                 }
             }
-            stack_debug = 1; // set flag, can't continue if set!!!
+            command_ok = 1;
         }
 
         if (strcmp (HELP_SB, (const char *) command) == 0)
         {
             debugger_help (cpu_core, epos);
+            command_ok = 1;
         }
 
         if (strcmp (REGI_EDIT_SB, (const char *) command) == 0)
@@ -393,6 +261,8 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
                 reg_int[reg_num] = regi;
                 printf ("regi %i: %lli\n", reg_num, reg_int[reg_num]);
             }
+
+            command_ok = 1;
         }
 
         if (strcmp (REGD_EDIT_SB, (const char *) command) == 0)
@@ -417,7 +287,15 @@ S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp
                 reg_double[reg_num] = regd;
                 printf ("regd %i: %.10lf\n", reg_num, reg_double[reg_num]);
             }
+
+            command_ok = 1;
+        }
+
+        if (command_ok == 0)
+        {
+            printf ("error: unknown command!\n");
         }
     }
+    sp = sp_save;
     return (ret);
 }
