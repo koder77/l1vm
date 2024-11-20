@@ -1,5 +1,7 @@
 // multiply.l1com
 //
+// (func args multiply int64 int64)
+// (return args multiply int64)
 //
 #include <intr.l1h>
 (main func)
@@ -7,8 +9,7 @@
     (set int64 1 x 5)
     (set int64 1 y 3)
     (set int64 1 ret 0)
-    (x y :multiply !)
-    (ret stpop)
+    (x y :multiply !) (ret stpop)
     print_i (ret)
     print_n
     exit (zero)

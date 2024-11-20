@@ -6,5 +6,5 @@
     (set int64 1 ret~ 0)
     (y~ x~ stpop)
     {ret~ = (x~ * y~)}
-    (ret~ stpush)
+    (ret~ stpush) (return)
 (funcend)
