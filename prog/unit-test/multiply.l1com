@@ -10,8 +10,8 @@
     (set int64 1 y 3)
     (set int64 1 ret 0)
     (x y :multiply !) (ret stpop)
-    print_i (ret)
-    print_n
+    (ret :print_i !)
+    (:print_n !)
     exit (zero)
 (funcend)
 #include <multiply.l1h>
