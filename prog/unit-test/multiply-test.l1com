@@ -1,7 +1,7 @@
 // multiply-test.l1com
 //
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 (main func)
     (set int64 1 zero 0)
     (set int64 1 one 1)
@@ -20,15 +20,15 @@
     (x1 y1 :multiply !)
     (ret stpop)
 
-    print_i (ret)
-    print_n
+    (ret :print_i !)
+    (:print_n !)
 
     // test 2
     (x2 y2 :multiply !)
     (ret stpop)
 
-    print_i (ret)
-    print_n
+    (ret :print_i !)
+    (:print_n !)
 
     exit (retcode)
 (funcend)
