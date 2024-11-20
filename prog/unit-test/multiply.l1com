@@ -12,6 +12,6 @@
     (x y :multiply !) (ret stpop)
     (ret :print_i !)
     (:print_n !)
-    exit (zero)
+    (zero :exit !)
 (funcend)
 #include <multiply.l1h>

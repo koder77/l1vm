@@ -30,6 +30,6 @@
     (ret :print_i !)
     (:print_n !)
 
-    exit (retcode)
+    (retcode :exit!)
 (funcend)
 #include <multiply.l1h>
