@@ -1794,6 +1794,8 @@ U1 *string_array_search (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *string_verify (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
+	#define NEWSTRING_LEN 4096
+
 	S8 stringaddr ALIGN;
 	S8 strvalidaddr ALIGN;
 	S8 string_len ALIGN;
@@ -1808,7 +1810,7 @@ U1 *string_verify (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	U1 create_newstr = 0;
 	S8 newstr_ind ALIGN = 0;
 
-	U1 newstr[4096];
+	U1 newstr[NEWSTRING_LEN];
 	S8 pos_save ALIGN = 0;
 	S8 pos_search ALIGN = 0;
 
@@ -1828,8 +1830,8 @@ U1 *string_verify (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	string_len = strlen_safe ((char *) &data[stringaddr], 4095);
-	strvalid_len = strlen_safe ((char *) &data[strvalidaddr], 4095);
+	string_len = strlen_safe ((char *) &data[stringaddr], NEWSTRING_LEN - 1);
+	strvalid_len = strlen_safe ((char *) &data[strvalidaddr], NEWSTRING_LEN - 1);
 
 	// ret = searchstr (&data[strsourceaddr], &data[strsearchaddr], 0, 0);
 	// check if range: is set
@@ -1879,7 +1881,7 @@ U1 *string_verify (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 			for (i = start; i <= end; i++)
 			{
-				if (newstr_ind < 4095 - 1)
+				if (newstr_ind < NEWSTRING_LEN - 2)
 				{
 					newstr[newstr_ind] = i;
 					newstr_ind++;
@@ -1918,7 +1920,7 @@ U1 *string_verify (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			newstr[newstr_ind] = data[strvalidaddr + i];
 			// printf ("added: '%c'\n", newstr[newstr_ind]);
 
-			if (newstr_ind < 4095 - 1)
+			if (newstr_ind < NEWSTRING_LEN - 2)
 			{
 				newstr_ind++;
 			}
@@ -1928,7 +1930,7 @@ U1 *string_verify (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (newstr_ind > 0)
 	{
 		newstr[newstr_ind] = '\0';
-	    strvalid_len = strlen_safe ((char *) newstr, 4095);
+	    strvalid_len = strlen_safe ((char *) newstr, NEWSTRING_LEN - 1);
 
 		// check if all chars in stringaddr are valid chars of newstr
 		for (i = 0; i < string_len; i++)
