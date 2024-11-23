@@ -1,3 +1,9 @@
+L1VM (3.3.4)
+	VM: string module: added string_verify function to check if a string contains valid chars.
+	See "lib/string.l1com".
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 23 Nov 2024 15:14  +010
+
 L1VM (3.3.3)
 	VM: debugger now available via interrupt 0: 37.
 	See include: intr.l1h and intr-func.l1h.

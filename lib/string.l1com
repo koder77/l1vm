@@ -46,6 +46,12 @@
     (set string 15 sortedbstr "")
     (set int64 1 pos -1)
     (set int64 1 index -1)
+
+    (set string s verify_charstr "range: 0-9 range: A-F-+/&*")
+    (set string s verifystr "01234567890FEA+")
+    (set string s verify_okstr "string verify ok!")
+    (set string s verify_failstr "string verify failed!")
+
     (zero :string_init call)
 	// copy hellostr to array
 	(hellostraddr arraystraddr zero string_len array_size :string_to_array call)
@@ -136,6 +142,15 @@
     print_i (index)
     print_n
     print_i (pos)
+    print_n
+
+    (verifystr verify_charstr :string_verify !)
+    (ret stpop)
+    (((ret zero ==) f =) f if+)
+         print_s (verify_okstr)
+    (else)
+        print_s (verify_failstr)
+    (endif)
     print_n
 
     free_mod (zero)

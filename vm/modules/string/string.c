@@ -935,7 +935,7 @@ U1 *string_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
-U1 *string_compare (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+U1 *string_compare (U1 *sp, U1 *sp_top, U1 *sp_bottom, const U1 *data)
 {
 	S8 strsourceaddr ALIGN;
 	S8 str2addr ALIGN;
@@ -1289,7 +1289,7 @@ U1 *string_regex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 }
 
 // normal string search functions =============================================
-S2 searchstr (U1 *str, U1 *srchstr, S8 start, S8 end)
+S2 searchstr (U1 *str, const U1 *srchstr, S8 start, S8 end)
 {
 	/* replaces the old buggy code */
 	S8 pos ALIGN = -1;
@@ -1786,6 +1786,197 @@ U1 *string_array_search (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		printf ("string_array_search: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	return (sp);
+}
+
+U1 *string_verify (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 stringaddr ALIGN;
+	S8 strvalidaddr ALIGN;
+	S8 string_len ALIGN;
+	S8 strvalid_len ALIGN;
+	S8 i ALIGN;
+	S8 v ALIGN;
+	U1 match = 0;
+	S8 ret ALIGN = 0;
+	S8 pos ALIGN = 0;
+	U1 start = 0;
+	U1 end = 0;
+	U1 create_newstr = 0;
+	S8 newstr_ind ALIGN = 0;
+
+	U1 newstr[4096];
+	S8 pos_save ALIGN = 0;
+	S8 pos_search ALIGN = 0;
+
+	sp = stpopi ((U1 *) &strvalidaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_verify: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &stringaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_verify: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	string_len = strlen_safe ((char *) &data[stringaddr], 4095);
+	strvalid_len = strlen_safe ((char *) &data[strvalidaddr], 4095);
+
+	// ret = searchstr (&data[strsourceaddr], &data[strsearchaddr], 0, 0);
+	// check if range: is set
+	while (create_newstr == 0)
+	{
+		pos_search = searchstr (&data[strvalidaddr], (U1 *) "range: ", pos, 0);
+		if (pos_search == -1)
+		{
+			// range: not found, break loop
+			create_newstr = 1;
+			continue;
+		}
+
+		pos = pos_search + 7;
+		if (pos + 3 <= strvalid_len)
+		{
+			// parse part after range:
+			if (data[strvalidaddr + pos + 1] != '-')
+			{
+				printf ("string_verify: error on pos: %lli, no - char!\n", pos);
+
+				sp = stpushi (1, sp, sp_bottom);
+				if (sp == NULL)
+				{
+					printf ("string_verify: ERROR: stack corrupt!\n");
+					return (NULL);
+				}
+
+				return (sp);
+			}
+			start = data[strvalidaddr + pos];
+			end = data[strvalidaddr + pos + 2];
+
+			if (end <= start)
+			{
+				printf ("string_verify: error on pos: %lli, start char must be lower than end char!\n", pos);
+
+				sp = stpushi (1, sp, sp_bottom);
+				if (sp == NULL)
+				{
+					printf ("string_verify: ERROR: stack corrupt!\n");
+					return (NULL);
+				}
+
+				return (sp);
+			}
+
+			for (i = start; i <= end; i++)
+			{
+				if (newstr_ind < 4095 - 1)
+				{
+					newstr[newstr_ind] = i;
+					newstr_ind++;
+				}
+			}
+
+			// set new string search pos
+			pos = pos + 3;
+			pos_save = pos;
+			if (pos >= strvalid_len)
+			{
+				create_newstr = 1;
+				continue;
+			}
+		}
+		else
+		{
+			printf ("string_verify: error on pos: %lli, no valid range found!\n", pos);
+
+			sp = stpushi (1, sp, sp_bottom);
+			if (sp == NULL)
+			{
+				printf ("string_verify: ERROR: stack corrupt!\n");
+				return (NULL);
+			}
+
+			return (sp);
+		}
+	}
+
+	// check for other chars
+	if (pos_save < strvalid_len)
+	{
+		for (i = pos; i < strvalid_len; i++)
+		{
+			newstr[newstr_ind] = data[strvalidaddr + i];
+			// printf ("added: '%c'\n", newstr[newstr_ind]);
+
+			if (newstr_ind < 4095 - 1)
+			{
+				newstr_ind++;
+			}
+		}
+	}
+
+    if (newstr_ind > 0)
+	{
+		newstr[newstr_ind] = '\0';
+	    strvalid_len = strlen_safe ((char *) newstr, 4095);
+
+		// check if all chars in stringaddr are valid chars of newstr
+		for (i = 0; i < string_len; i++)
+		{
+			match = 0;
+			for (v = 0; v < strvalid_len; v++)
+			{
+				if (data[stringaddr + i] == newstr[v])
+				{
+					match = 1;
+					break;
+				}
+			}
+			if (match == 0)
+			{
+				// char not found in strvalidaddr, set error return value 1
+				ret = 1;
+				break;
+			}
+		}
+	}
+	else
+	{
+		// check if all chars in stringaddr are valid chars of strvalidaddr
+		for (i = 0; i < string_len; i++)
+		{
+			match = 0;
+			for (v = 0; v < strvalid_len; v++)
+			{
+				if (data[stringaddr + i] == data[strvalidaddr + v])
+				{
+					match = 1;
+					break;
+				}
+			}
+			if (match == 0)
+			{
+				// char not found in strvalidaddr, set error return value 1
+				ret = 1;
+				break;
+			}
+		}
+	}
+
+	sp = stpushi (ret, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		printf ("string_verify: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
