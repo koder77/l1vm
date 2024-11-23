@@ -1944,7 +1944,7 @@ U1 *string_verify (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			}
 			if (match == 0)
 			{
-				// char not found in strvalidaddr, set error return value 1
+				// char not found in newstr , set error return value 1
 				ret = 1;
 				break;
 			}
