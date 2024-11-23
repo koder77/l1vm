@@ -25,6 +25,7 @@
     (set string s string_array_searchstr@string "string_array_search")
     (set string s string_mid_to_bytestr@string "string_mid_to_byte")
     (set string s bytenumbytetostringstr@string "string_byte_to_string")
+    (set string s stringverifystr@string "string_verify")
 
 	(set string s get_envstr@string "get_env")
 	(set string s set_envstr@string "set_env")
@@ -56,6 +57,7 @@
     (set int64 1 string_array_search@string 22)
     (set int64 1 string_mid_to_byte@string 23)
     (set int64 1 bytenumbytetostring@string 24)
+    (set int64 1 stringverify@string 25)
     (set int64 1 mod@string 0)
     // get argument from stack
     (mod@string stpopi)
@@ -87,6 +89,7 @@
     (2 mod@string string_array_search@string string_array_searchstr@stringaddr intr0)
     (2 mod@string string_mid_to_byte@string string_mid_to_bytestr@stringaddr intr0)
     (2 mod@string bytenumbytetostring@string bytenumbytetostringstr@stringaddr intr0)
+    (2 mod@string stringverify@string stringverifystr@stringaddr intr0)
 (funcend)
 (string_len func)
 // argument: int64 string address
@@ -182,4 +185,7 @@
 (funcend)
 (string_bytetostring func)
 	(3 mod@string bytenumbytetostring@string 0 intr0)
+(funcend)
+(string_verify func)
+    (3 mod@string stringverify@string 0 intr0)
 (funcend)
