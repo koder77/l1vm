@@ -3455,7 +3455,11 @@ void show_run_info (void)
 	#endif
 
 	#if MATH_LIMITS
-		printf (">> math overflow check << ");
+		printf (">> math double overflow check << ");
+	#endif
+
+	#if MATH_LIMITS_INT
+		printf (">> math int overflow check << ");
 	#endif
 
 	#if BOUNDSCHECK
