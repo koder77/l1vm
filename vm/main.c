@@ -1193,7 +1193,7 @@ S2 run (void *arg)
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	#if MATH_LIMITS
+	#if MATH_LIMITS_INT
 		if (__builtin_saddll_overflow (regi[arg1], regi[arg2], &regi[arg3]))
 		{
 			overflow = 1;
@@ -1219,7 +1219,7 @@ S2 run (void *arg)
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	#if MATH_LIMITS
+	#if MATH_LIMITS_INT
 		if (__builtin_ssubll_overflow (regi[arg1], regi[arg2], &regi[arg3]))
 		{
 			overflow = 1;
@@ -1245,7 +1245,7 @@ S2 run (void *arg)
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	#if MATH_LIMITS
+	#if MATH_LIMITS_INT
 		if (__builtin_smulll_overflow (regi[arg1], regi[arg2], &regi[arg3]))
 		{
 			overflow = 1;
