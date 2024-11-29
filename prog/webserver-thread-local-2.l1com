@@ -7,7 +7,7 @@
 //
 // Use new thread for socket connection of client
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 #include <misc-macros.l1h>
 #include <math-const.l1h>
 (main func)
@@ -46,22 +46,22 @@
 
     shell_args (argnum)
     (((argnum args !=) f =) f if)
-	    print_s (args_errstr)
-        print_n
-		exit (one)
+	    (args_errstr :print_s !)
+        (:print_n !)
+		(one :exit !)
     (endif)
     // get cli args
-    get_shell_arg (zero, arg_ipstr)
-	get_shell_arg (one, arg_portstr)
+    (zero arg_ipstr :get_shell_arg !)
+	(one arg_portstr :get_shell_arg !)
 	(arg_portstr portnum :string_to_int !)
 
 	(one maxsockets :net_init !)
 	(ret stpopi)
 	(((ret zero !=) f =) f if)
 		// ERROR can't allocate memory
-		print_s (netinitstr)
-        print_n
-	    exit (one)
+		(netinitstr :print_s !)
+        (:print_n !)
+	    (one :exit !)
 	(endif)
 	(two :string_init !)
 	(loadreg)
@@ -80,54 +80,54 @@
 	(ret stpopi)
 	(socket_handle stpopi)
 	(((ret zero !=) f =) f if)
-	    print_s (errorserverstr)
-	    print_n
+	    (errorserverstr :print_s !)
+	    (:print_n !)
 		(:wait_conn jmp)
 	(endif)
 	// save run function label
 	(:run lab_run loadl)
 	((lab_run zero +) lab_run =)
 	(:wait_conn)
-	    print_s (waitingaddr)
-	    print_n
+	    (waiting :print_s !)
+	    (:print_n !)
 		(socket_handle :open_accept_server !)
 		(ret stpopi)
 		(server_accept stpopi)
 		(loadreg)
 		(((ret zero !=) f =) f if)
-	        print_s (erroropenstr)
-	        print_n
+	        (erroropenstr :print_s !)
+	        (:print_n !)
 			(:wait_conn jmp)
 		(endif)
 		// (socket_handle server_accept :run !)
-		get_cpu (cpu_number)
+		(cpu_number :get_cpu !)
 	    pull_int64_var (cpu_number)
 		(((cpu_number zero ==) f =) f if)
 	        (:wait_run)
-	        free_cpus (fcpus)
-	        pull_int64_var (fcpus)
+	        (fcpus :free_cpus !)
+	        (fcpus :pull_int64_var !)
 	        (((fcpus one >) f =) f if+)
 			    (socket_handle stpushi)
 		     	(server_accept stpushi)
                 // set sync flag to zero
-	            globallock (zero)
+	            (zero :globallock !)
 	            (zero thr_sync =)
-	            globalunlock (zero)
-			    thread (lab_run)
+	            (zero :globalunlock !)
+			    (lab_run :thread !)
 	            // wait till thread got the stack values and set sync flag to one!
 	            (:wait_thr)
-	            detime (delay_thr)
-	            globallock (zero)
+	            (delay_thr :detime !)
+	            (zero :globallock !)
 	            (((thr_sync one !=) f =) f if)
-				    globalunlock (zero)
+				    (zero :globalunlock !)
 				    (:wait_thr jmp)
 				(endif)
-	            globalunlock (zero)
+	            (zero :globalunlock !)
 	            // get values of current main thread stack
 	            (ret stpopi)
 	            (ret stpopi)
 		    (else)
-			     detime (delay_sec)
+			     (delay_sec :detime !)
 	             (:wait_run jmp)
 		    (endif)
 		(endif)
@@ -138,7 +138,7 @@
 		(:wait_conn jmp)
 	(:end)
 		(:socket_free_mem !)
-	    exit (zero)
+	    (zero :exit !)
 (funcend)
 (run func)
 	#var ~ run
@@ -185,16 +185,16 @@
 	(set string s webserver_rootstr~ "web")
 	(set string 256 filename_realstr~ "")
 	// get values from stack
-	data_func_local_alloc
-	data_func_local
+	(:data_func_local_alloc !)
+	(:data_func_local !)
 	(accept~ stpopi)
 	(server~ stpopi)
-	data_func_global
+	(:data_func_global !)
 	// set sync flag to one
-	globallock (zero)
+	(zero :globallock !)
 	(one thr_sync =)
-	globalunlock (zero)
-    data_func_local
+	(zero :globalunlock !)
+    (:data_func_local !)
 	//
 	//
 	// parse loop =============================================================
@@ -204,19 +204,19 @@
 	(accept~ buf~ stringlen~ :socket_read_string !)
 	(ret~ stpopi)
 	(((ret~ zero~ !=) f~ =) f~ if)
-	     print_s (error_clientaddr~)
-	     print_n
+	    (error_clientaddr~ :print_s !)
+	    (:print_n !)
 		(:parse_end jmp)
 	(endif)
 	// print request
-	print_s (buf~)
-	print_n
+	(buf~ :print_s !)
+	(:print_n !)
 	// get filename
 	(buf~ filename~ filesize~ :socket_handle_get !)
 	(ret~ stpopi)
 	(((ret~ zero~ !=) f~ =) f~ if)
-	    print_s (error_get_filename~)
-	    print_n
+	    (error_get_filename~ :print_s !)
+	    (:print_n !)
 		(:close_accept jmp)
 	(endif)
 	(filename_realstr~ webserver_rootstr~ :string_copy !)
@@ -228,31 +228,31 @@
 	// get mimetype and send file =============================================
 	//
 	//
-	print_s (filename~)
-	print_n
+	(filename~ :print_s !)
+	(:print_n !)
 	(filename~ mimetype~ mimetype_len~ :get_mimetype_from_filename !)
 	(ret~ stpopi)
 	(((ret~ zero~ !=) f~ =) f~ if)
-	    print_s (error_mimetype~)
-	    print_n
+	    (error_mimetype~ :print_s !)
+	    (:print_n !)
 	(endif)
 	(accept~ filename~ mimetype~ :socket_send_file !)
 	(ret~ stpopi)
 	(((ret~ zero~ !=) f~ =) f~ if)
-	    print_s (error_send_file~)
-	    print_n
+	    (error_send_file~ :print_s !)
+	    (:print_n !)
 	(endif)
 	(:close_accept)
 	// close accept server
 	(accept~ :close_accept_server !)
 	(ret~ stpopi)
 	(((ret~ zero~ !=) f~ =) f~ if)
-	    print_s (error_close_accept~)
-		print_n
+	    (error_close_accept~ :print_s !)
+		(:print_n !)
 	(endif)
-	data_func_global
-	data_func_free
-	threadexit (zero~)
+	(:data_func_global !)
+	(:data_func_free !)
+	(zero~ :threadexit !)
 (funcend)
 #include <math-lib.l1h>
 #include <net-lib.l1h>
