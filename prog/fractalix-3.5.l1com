@@ -1,12 +1,12 @@
-// fractalix-3.4.l1com
+// fractalix-3.5.l1com
 // SDL fractal demo
 // now zoom and move can be set by shell argument:
 //
 // CLI arguments: maxiterations, movex (double), movey (double), zoom (double), picture-name, delay (1 = delay | 0 = exit), threads 1 / 8"
 //
-// l1vm prog/fractalix-3.4 -args 1000 -1.0 0.0 2.5 fractal.bmp 1 8
+// l1vm prog/fractalix-3.5 -args 1000 -1.0 0.0 2.5 fractal.bmp 1 8
 // normal fractal:
-// l1vm prog/fractalix-3.4 -args 1000 -0.5 0.0 1.0 fractal.bmp 1 1
+// l1vm prog/fractalix-3.5 -args 1000 -0.5 0.0 1.0 fractal.bmp 1 1
 //
 //
 //
