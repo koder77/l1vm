@@ -33,7 +33,7 @@
 #define FUNC_SB				"#func"
 
 #define SET_SB              "(set"
-#define MAXVARS             4006
+#define MAXVARS             4096
 
 #define BOOL 13
 #define VARTYPE_NONE 14
