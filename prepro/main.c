@@ -65,6 +65,11 @@
 #define INTR0_SB            "intr0)"
 #define INTR1_SB            "intr1)"
 
+#define CALL_SB             "call)"
+#define CALL_SHORT_SB       "!)"
+
+#define LABEL_SB      ":"
+
 // for generating documentation file
 FILE *docuptr;
 U1 documentation_on = 0;     // if set to 1 then write the following lines into docu file
@@ -1945,6 +1950,49 @@ S2 parse_set (U1 *line, U1 *setret)
 	return (0);
 }
 
+S2 check_call (U1 *line, S4 pos_call)
+{
+	S4 start_label = 0;
+	S4 pos = 0;
+	U1 check = 0;
+	U1 label_name_def = 0;
+
+	start_label = searchstr (line, (U1 *) LABEL_SB, 0, 0, TRUE);
+	if (start_label < 0)
+	{
+		// error no colon as label start found!
+		return (1);
+	}
+
+	// check if label name is before ! or call
+	pos = start_label + 1;
+	while (check == 0)
+	{
+		if (pos < pos_call)
+		{
+			if (line[pos] != ' ')
+			{
+				label_name_def = 1;
+			}
+			pos++;
+		}
+		else
+		{
+			check = 1;
+		}
+	}
+
+	if (label_name_def == 0)
+	{
+		// return error, no label name set!
+		return (1);
+	}
+	else
+	{
+		return (0);
+	}
+}
+
 int main (int ac, char *av[])
 {
 	U1 rbuf[MAXSTRLEN + 1];                        /* read-buffer for one line */
@@ -2353,6 +2401,38 @@ int main (int ac, char *av[])
             if (pos >= 0)
 			{
 				for_loop = 1;     // set flag to on
+			}
+
+			{
+				U1 call_set = 0;
+				S4 pos_call = 0;
+				S2 ret = 0;
+			    pos = searchstr (buf, (U1 *) CALL_SHORT_SB, 0, 0, TRUE);
+                if (pos >= 0)
+				{
+					call_set = 1;
+					pos_call = pos;
+				}
+				if (call_set == 0)
+				{
+					pos = searchstr (buf, (U1 *) CALL_SB, 0, 0, TRUE);
+					if (pos >= 0)
+					{
+						call_set = 1;
+						pos_call = pos;
+					}
+				}
+				if (call_set == 1)
+				{
+					// call or ! set in current line
+					// check if : is set as label name start
+					ret = check_call (buf, pos_call);
+					if (ret == 1)
+					{
+						// error!!!
+						printf ("line: %lli: '%s' error: no label name set!\n", linenum, buf);
+					}
+				}
 			}
 
             pos = searchstr (buf, (U1 *) INCLUDE_SB, 0, 0, TRUE);

@@ -9,7 +9,7 @@
 //
 // new: load pi from text file
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 #include <file-def.l1h>
 (main func)
 	#var ~ main
@@ -41,19 +41,19 @@
     (:init->circle !)
 
 	(:loop)
-	print_s (prog_name~)
-	print_n
-    print_s (pi_len_str)
-    print_n
-	print_s (menu_diamstr~)
-	print_n
-	print_s (menu_circstr~)
-	print_n
-	print_s (menu_areastr~)
-	print_n
-	print_s (menu_quitstr~)
-	print_n
-	print_s (menu_chstr~)
+	(prog_name~ :print_s !)
+	(:print_n !)
+    (pi_len_str :print_s !)
+    (:print_n !)
+	(menu_diamstr~ :print_s !)
+	(:print_n !)
+	(menu_circstr~ :print_s !)
+	(:print_n !)
+	(menu_areastr~ :print_s !)
+	(:print_n !)
+	(menu_quitstr~ :print_s !)
+	(:print_n !)
+	(menu_chstr~ :print_s !)
 	// read input
 	input_i (input_menu~)
 	((input_menu~ zero~ +) input_menu~ =)
@@ -70,8 +70,8 @@
 	(((input_menu~ three~ ==) f~ =) f~ if)
 		(:do_calc_area->circle !)
 	(endif)
-	print_n
-	print_n
+	(:print_n !)
+	(:print_n !)
 	(:loop jmp)
 
     (:end)
@@ -79,8 +79,8 @@
     (:mp_cleanup !)
     free_mod (math_mod~)
     free_mod (string_mod~)
-	print_s (quitstr)
-    print_n
+	(quitstr :print_s !)
+    (:print_n !)
 	exit (zero~)
 (funcend)
 
@@ -139,8 +139,8 @@ Calculate the area of a circle.
 
     (precision_digits~ :mp_get_precision_bits !)
     (precision_set~ stpop)
-    print_i (precision_set~)
-    print_n
+    (precision_set~ :print_i !)
+    (:print_n !)
 
 	// set pi
 	(m_pi~ base~ precision_set~ pi_mp~ :mp_set_float_prec_file !)
@@ -157,15 +157,15 @@ Calculate the area of a circle.
 (Pcalc_diam_input->circle func)
 	#var ~ circle
 
-	print_s (circstr~)
+	(circstr~ :print_s !)
 	// input string circ
-	input_s (input_len~, circ~)
+	(input_len~ circ~ :input_s !)
 (funcend)
 (Pprint_calc_diam->circle func)
     #var ~ circle
 
-    print_n
-	print_s (diamstr~)
+    (:print_n !)
+	(diamstr~ :print_s !)
 	(diam_mp~ formatstr~ precision~ :mp_print_float !)
 (funcend)
 (calc_diam->circle func)
@@ -187,15 +187,15 @@ Calculate the area of a circle.
 (Pcalc_circ_input->circle func)
 	#var ~ circle
 
-	print_s (diamstr~)
+	(diamstr~ :print_s !)
 	// input string diam
-	input_s (input_len~, diam~)
+	(input_len~ diam~ :input_s !)
 (funcend)
 (Pprint_calc_circ->circle func)
     #var ~ circle
 
-    print_n
-	print_s (circstr~)
+    (:print_n !)
+	(circstr~ :print_s !)
 	(circ_mp~ formatstr~ precision~ :mp_print_float !)
 (funcend)
 (calc_circ->circle func)
@@ -217,15 +217,15 @@ Calculate the area of a circle.
 (Pcalc_area_input->circle func)
 	#var ~ circle
 
-	print_s (radiusstr~)
+	(radiusstr~ :print_s !)
 	// input string diam
-	input_s (input_len~, radius~)
+	(input_len~ radius~ :input_s !)
 (funcend)
 (Pprint_calc_area->circle func)
     #var ~ circle
 
-    print_n
-	print_s (areastr~)
+    (:print_n !)
+	(areastr~ :print_s !)
 	(area_mp~ formatstr~ precision~ :mp_print_float !)
 (funcend)
 (calc_area->circle func)
