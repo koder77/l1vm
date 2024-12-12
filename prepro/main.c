@@ -692,13 +692,13 @@ S2 replace_macro_normal (U1 *line_str)
 					// printf ("replace_macro_normal: found define: '%s'\n", defines[ind].def);
 
 					call_found = 0;
-				    pos = searchstr (line_str, (U1 *) "call)", 0, 0, TRUE);
+				    pos = searchstr (line_str, (U1 *) CALL_SB, 0, 0, TRUE);
 					if (pos >= 0)
 					{
 						call_found = 1;
 					}
 
-					pos = searchstr (line_str, (U1 *) "!)", 0, 0, TRUE);
+					pos = searchstr (line_str, (U1 *) CALL_SHORT_SB, 0, 0, TRUE);
 					if (pos >= 0)
 					{
 						call_found = 1;
