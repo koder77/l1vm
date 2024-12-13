@@ -40,7 +40,7 @@
 
 
 #include "../../../include/stack.h"
-#include "nanoid/nanoid.h"
+#include "../nanoid/nanoid/nanoid.h"
 
 using mpfr::mpreal;
 using std::cout;

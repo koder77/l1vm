@@ -27,11 +27,14 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <resolv.h>
 #endif
 
-#include <resolv.h>
 #include "openssl/ssl.h"
 #include "openssl/err.h"
+
+// protos
+void bzero (void *s, size_t n);
 
 #define SOCKADDRESSLEN      16      /* max dotted ip len */
 #define SOCKBUFSIZE         10240    /* socket data buffer len */
