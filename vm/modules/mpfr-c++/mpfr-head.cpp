@@ -46,6 +46,11 @@ using mpfr::mpreal;
 using std::cout;
 //using std::endl;
 
+struct data_info data_info[MAXDATAINFO];
+S8 data_info_ind;
+
+// protos
+extern "C" S2 memory_bounds (S8 start, S8 offset_access);
 
 #define MAX_FLOAT_NUM 4096
 
@@ -622,6 +627,8 @@ extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     tempfile.open(file_name_id, std::ios::out);
     std::string line;
 
+	U1 string_read = 0;
+
 	sp = stpopi ((U1 *) &precision, sp, sp_top);
 	if (sp == NULL)
 	{
@@ -668,6 +675,15 @@ extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	// check if destination string is big enough
+	#if BOUNDSCHECK
+	if (memory_bounds (numstring_address_dest, numstring_len) != 0)
+	{
+		printf ("mp_prints_float: ERROR: dest string overflow!\n");
+		return (NULL);
+	}
+	#endif
+
     // Backup streambuffers of  cout
     std::streambuf* stream_buffer_cout = std::cout.rdbuf();
     // std::streambuf* stream_buffer_cin = std::cin.rdbuf();
@@ -685,23 +701,24 @@ extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     cout.rdbuf(stream_buffer_cout);
     tempfile.close();
 
-	// read string from file
+	usleep (999999);
+
 	FILE *tempfilec;
-	tempfilec = fopen (file_name_id, "r");
-	if (tempfilec != NULL)
-  	{
-		if (fgets_uni ((char *) &data[numstring_address_dest], numstring_len, tempfilec) == NULL)
-		{
-			printf ("mp_prints_float: ERROR output string overflow!\n");
-			return (NULL);
-		}
-		fclose (tempfilec);
-	}
-	else
+
+	while (string_read == 0)
 	{
-		printf ("mp_prints_float: can't open temp file!\n");
-		return (NULL);
+		tempfilec = fopen (file_name_id, "r");
+		if (tempfilec != NULL)
+		{
+			if (fgets_uni ((char *) &data[numstring_address_dest], numstring_len, tempfilec) != NULL)
+			{
+				string_read = 1;
+			}
+			fclose (tempfilec);
+		}
+		usleep (200000);
 	}
+
 	remove (file_name_id);
 	return (sp);
 }

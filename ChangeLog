@@ -1,3 +1,8 @@
+L1VM (3.3.5)
+	VM: MPFR module: print number string fixes. Now the function checks if string is big enough before saving it into the temp file.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 14 Dec 2024 17:49  +010
+
 L1VM (3.3.4)
 	VM: string module: added string_verify function to check if a string contains valid chars.
 	See "lib/string.l1com".
