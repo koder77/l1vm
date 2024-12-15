@@ -22,6 +22,10 @@
 #include <fstream>
 #include <filesystem>
 
+#include <string>
+#include <iostream>
+#include <sstream>
+
 #if __MACH__
 #undef CPP_FILE_EXPERIMENTAL
 #define CPP_FILE_EXPERIMENTAL 0
@@ -623,11 +627,13 @@ extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	char file_name_id[21];
 	strcpy (file_name_id, simple ());
 
-	std::fstream tempfile;
-    tempfile.open(file_name_id, std::ios::out);
-    std::string line;
+	//std::fstream tempfile;
+    //tempfile.open(file_name_id, std::ios::out);
+    //std::string line;
 
-	U1 string_read = 0;
+	// string_read = 0;
+	std::stringstream number_outstr;
+	std::string number_outsavestr = "";
 
 	sp = stpopi ((U1 *) &precision, sp, sp_top);
 	if (sp == NULL)
@@ -685,41 +691,25 @@ extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	#endif
 
     // Backup streambuffers of  cout
-    std::streambuf* stream_buffer_cout = std::cout.rdbuf();
+    //std::streambuf* stream_buffer_cout = std::cout.rdbuf();
     // std::streambuf* stream_buffer_cin = std::cin.rdbuf();
 
     // Get the streambuffer of the file
-    std::streambuf* stream_buffer_file = tempfile.rdbuf();
+    //std::streambuf* stream_buffer_file = tempfile.rdbuf();
 
     // Redirect cout to file
-    cout.rdbuf(stream_buffer_file);
-	cout.precision (precision);
-	cout << std::fixed;
-    cout << mpf_float[float_index];
+    // number_outstr.rdbuf(stream_buffer_file);
+	number_outstr.precision (precision);
+	number_outstr << std::fixed;
+    number_outstr << mpf_float[float_index];
 
     // Redirect cout back to screen
-    cout.rdbuf(stream_buffer_cout);
-    tempfile.close();
+    //cout.rdbuf(stream_buffer_cout);
+    //tempfile.close();
 
-	usleep (999999);
+	number_outstr >> number_outsavestr;
+	strcpy ((char *) &data[numstring_address_dest], number_outsavestr.c_str());
 
-	FILE *tempfilec;
-
-	while (string_read == 0)
-	{
-		tempfilec = fopen (file_name_id, "r");
-		if (tempfilec != NULL)
-		{
-			if (fgets_uni ((char *) &data[numstring_address_dest], numstring_len, tempfilec) != NULL)
-			{
-				string_read = 1;
-			}
-			fclose (tempfilec);
-		}
-		usleep (200000);
-	}
-
-	remove (file_name_id);
 	return (sp);
 }
 
