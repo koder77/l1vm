@@ -48,7 +48,6 @@
 
 using mpfr::mpreal;
 using std::cout;
-//using std::endl;
 
 struct data_info data_info[MAXDATAINFO];
 S8 data_info_ind;
@@ -627,11 +626,6 @@ extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	char file_name_id[21];
 	strcpy (file_name_id, simple ());
 
-	//std::fstream tempfile;
-    //tempfile.open(file_name_id, std::ios::out);
-    //std::string line;
-
-	// string_read = 0;
 	std::stringstream number_outstr;
 	std::string number_outsavestr = "";
 
@@ -690,22 +684,9 @@ extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	#endif
 
-    // Backup streambuffers of  cout
-    //std::streambuf* stream_buffer_cout = std::cout.rdbuf();
-    // std::streambuf* stream_buffer_cin = std::cin.rdbuf();
-
-    // Get the streambuffer of the file
-    //std::streambuf* stream_buffer_file = tempfile.rdbuf();
-
-    // Redirect cout to file
-    // number_outstr.rdbuf(stream_buffer_file);
 	number_outstr.precision (precision);
 	number_outstr << std::fixed;
     number_outstr << mpf_float[float_index];
-
-    // Redirect cout back to screen
-    //cout.rdbuf(stream_buffer_cout);
-    //tempfile.close();
 
 	number_outstr >> number_outsavestr;
 	strcpy ((char *) &data[numstring_address_dest], number_outsavestr.c_str());
