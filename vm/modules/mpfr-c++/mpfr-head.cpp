@@ -689,7 +689,7 @@ extern "C" U1 *mp_prints_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     number_outstr << mpf_float[float_index];
 
 	number_outstr >> number_outsavestr;
-	if (number_outsavestr.size () > numstring_len)
+	if (number_outsavestr.size () >= numstring_len)
 	{
 		printf ("mp_prints_float: ERROR: dest string overflow!\n");
 		return (NULL);
