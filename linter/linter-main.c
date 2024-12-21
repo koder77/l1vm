@@ -33,6 +33,7 @@
 #define BOOL 13
 #define VARTYPE_NONE 14
 #define VARTYPE_ANY 15
+#define VARTYPE_VARIABLE 16
 
 #define DEBUG 0
 
@@ -333,6 +334,12 @@ U1 getvartype (U1 *type)
     if (strcmp ((const char *) type, "any") == 0)
     {
         vartype = VARTYPE_ANY;
+    }
+
+    if (strcmp ((const char *) type, "variable") == 0)
+    {
+        // number of variables variable, not checked if set
+        vartype = VARTYPE_VARIABLE;
     }
 
     return (vartype);
@@ -1143,6 +1150,14 @@ S2 parse_line (U1 *line)
             {
                 args_ind++;
 
+                if (function_args[function_args_ind].arg_type[args_ind] == VARTYPE_VARIABLE)
+                {
+                    // number of variables can change
+                    // break
+                    do_parse_vars = 0;
+                    continue;
+                }
+
                 if (function_args[function_args_ind].arg_type[args_ind] != VARTYPE_ANY)
                 {
                     // not an any var type, check:
@@ -1288,6 +1303,14 @@ S2 parse_line (U1 *line)
                 {
                     args_ind++;
 
+                    if (function_args[function_args_ind].arg_type[args_ind] == VARTYPE_VARIABLE)
+                    {
+                        // number of variables can change
+                        // break
+                        do_parse_vars = 0;
+                        continue;
+                    }
+
                     if (return_args[return_args_ind].arg_type[args_ind] != VARTYPE_ANY)
                     {
                         if (return_args[return_args_ind].arg_type[args_ind] != vartype)
@@ -1429,6 +1452,16 @@ S2 parse_line (U1 *line)
                     //printf ("parse-line: return variable defined type: %i\n", return_args[return_args_ind].arg_type[var_ind]);
 
                     //printf ("var_ind: %lli\n", var_ind);
+                    //
+                    //
+                    if (function_args[function_args_ind].arg_type[var_ind] == VARTYPE_VARIABLE)
+                    {
+                        // number of variables can change
+                        // break
+                        do_parse_vars = 0;
+                        continue;
+                    }
+
                     if (return_args[return_args_ind].arg_type[var_ind] != VARTYPE_ANY)
                     {
                         // not an any type variable, check type:
@@ -1509,6 +1542,14 @@ S2 parse_line (U1 *line)
 
                         // printf ("parse-line: return variable type: %i\n", vartype);
                         // printf ("parse-line: return variable defined type: %i\n", return_args[return_args_ind].arg_type[var_ind]);
+
+                        if (function_args[function_args_ind].arg_type[args_ind] == VARTYPE_VARIABLE)
+                        {
+                            // number of variables can change
+                            // break
+                            do_parse_vars = 0;
+                            continue;
+                        }
 
                         if (vartype != function_args[function_args_ind].arg_type[var_ind])
                         {

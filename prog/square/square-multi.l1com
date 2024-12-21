@@ -19,7 +19,7 @@
 	(sqr_str :print_s !)
 	(numi :print_i !)
 	(eq_str :print_s !)
-    (numi :square !) (squarei stpop)
+    (numi :square !) (squarei stpopi)
 	(squarei :print_i !)
 	(:print_n !)
 
@@ -27,7 +27,7 @@
 	(sqr_str :print_s !)
 	(numd :print_d !)
 	(eq_str :print_s !)
-	(numd :square !) (squared stpop)
+	(numd :square !) (squared stpopd)
 	(squared :print_d !)
 	(:print_n !)
 
