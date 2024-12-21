@@ -1391,8 +1391,6 @@ S2 parse_line (U1 *line)
 
         if (stpush_found == 0)
         {
-
-
             printf ("parse-line: error: no return variables found!\n");
             return (1);
         }
