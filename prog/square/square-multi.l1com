@@ -34,7 +34,7 @@
 (funcend)
 
 (square func)
-    // calculate with int64 or double number: check argument type
+    // calculate with int64 double or byte number: check argument type
     #var ~ square
 
     (set int64 1 numi~ 0)
