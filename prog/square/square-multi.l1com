@@ -5,7 +5,7 @@
 
 (main func)
 	(set const-int64 1 zero 0)
-	(set int64 1 numi 32)
+	(set int64  1 numi 32)
 	(set int64 1 squarei 0)
 	(set double 1 numd 16.0)
 	(set double 1 squared 0.0)
@@ -39,6 +39,7 @@
 
     (set int64 1 numi~ 0)
     (set int64 1 squarei~ 0)
+    (set byte 1 numb~ 0)
     (set double 1 numd~ 0.0)
     (set double 1 squared~ 0.0)
     (set int64 1 st_type~ 0)
@@ -46,15 +47,31 @@
 
     // get type of stack variable
     (st_type~ :stack_type !)
-    (((st_type~ int64_stack ==) f~ =) f~ if+)
+    (st_type~ :pull_int64_var !)
+
+    (((st_type~ int64_stack ==) f~ =) f~ if)
        // stack arg type = int64
        (numi~ stpop)
        (numi~ * numi~ squarei~ :=)
        (squarei~ stpushi)
-    (else)
+       (return)
+    (endif)
+
+    (((st_type~ double_stack ==) f~ =) f~ if)
        // stack arg type = double
        (numd~ stpop)
        (numd~ * numd~ squared~ :=)
        (squared~ stpushd)
+       (return)
+    (endif)
+
+    (((st_type~ byte_stack ==) f~ =) f~ if)
+       // stack arg type = byte
+       (numb~ stpop)
+       (numb~ * numb~ squarei~ :=)
+       (squarei~ stpushi)
+       (return)
     (endif)
 (funcend)
+
+#include <misc-macros.l1h>
