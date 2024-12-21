@@ -1349,6 +1349,7 @@ S2 parse_line (U1 *line)
         S2 n = 0;
         S2 var_ind = return_args[return_args_ind].args -1;
         S2 stpush_pos;
+        S2 stpush_found = 0;
         do_parse_vars = 1;
 
         pos = searchstr (line, (U1 *) "(", 0, 0, TRUE);
@@ -1361,6 +1362,37 @@ S2 parse_line (U1 *line)
         stpush_pos = searchstr (line, (U1 *) "stpush)", 0, 0, TRUE);
         if (stpush_pos == -1)
         {
+            stpush_pos = searchstr (line, (U1 *) "stpushi)", 0, 0, TRUE);
+            if (stpush_pos == -1)
+            {
+                stpush_pos = searchstr (line, (U1 *) "stpushd)", 0, 0, TRUE);
+                if (stpush_pos == -1)
+                {
+                    stpush_pos = searchstr (line, (U1 *) "stpushb)", 0, 0, TRUE);
+                    if (stpush_pos != -1)
+                    {
+                        stpush_found = 1;
+                    }
+                }
+                else
+                {
+                    stpush_found = 1;
+                }
+            }
+            else
+            {
+                stpush_found = 1;
+            }
+        }
+        else
+        {
+            stpush_found = 1;
+        }
+
+        if (stpush_found == 0)
+        {
+
+
             printf ("parse-line: error: no return variables found!\n");
             return (1);
         }
