@@ -3,6 +3,9 @@
 #include <intr-func.l1h>
 #include <vars.l1h>
 
+// (func args square any)
+// (return args square any)
+//
 (main func)
 	(set const-int64 1 zero 0)
 	(set int64 1 numi 32)
@@ -16,8 +19,7 @@
 	(sqr_str :print_s !)
 	(numi :print_i !)
 	(eq_str :print_s !)
-	(numi :square !)
-	(squarei stpop)
+    (numi :square !) (squarei stpop)
 	(squarei :print_i !)
 	(:print_n !)
 
@@ -25,8 +27,7 @@
 	(sqr_str :print_s !)
 	(numd :print_d !)
 	(eq_str :print_s !)
-	(numd :square !)
-	(squared stpop)
+	(numd :square !) (squared stpop)
 	(squared :print_d !)
 	(:print_n !)
 
@@ -53,24 +54,21 @@
        // stack arg type = int64
        (numi~ stpop)
        (numi~ * numi~ squarei~ :=)
-       (squarei~ stpushi)
-       (return)
+       (squarei~ stpush) (return)
     (endif)
 
     (((st_type~ double_stack ==) f~ =) f~ if)
        // stack arg type = double
        (numd~ stpop)
        (numd~ * numd~ squared~ :=)
-       (squared~ stpushd)
-       (return)
+       (squared~ stpush) (return)
     (endif)
 
     (((st_type~ byte_stack ==) f~ =) f~ if)
        // stack arg type = byte
        (numb~ stpop)
        (numb~ * numb~ squarei~ :=)
-       (squarei~ stpushi)
-       (return)
+       (squarei~ stpush) (return)
     (endif)
 (funcend)
 

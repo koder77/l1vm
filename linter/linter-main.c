@@ -32,6 +32,7 @@
 
 #define BOOL 13
 #define VARTYPE_NONE 14
+#define VARTYPE_ANY 15
 
 #define DEBUG 0
 
@@ -327,6 +328,11 @@ U1 getvartype (U1 *type)
     if (strcmp ((const char *) type, "none") == 0)
     {
         vartype = VARTYPE_NONE;
+    }
+
+    if (strcmp ((const char *) type, "any") == 0)
+    {
+        vartype = VARTYPE_ANY;
     }
 
     return (vartype);
@@ -1137,11 +1143,15 @@ S2 parse_line (U1 *line)
             {
                 args_ind++;
 
-                if (function_args[function_args_ind].arg_type[args_ind] != vartype)
+                if (function_args[function_args_ind].arg_type[args_ind] != VARTYPE_ANY)
                 {
-                    // error no valid vartype
-                    printf ("parse-line: call function: type mismatch: '%s' ! \n", type);
-                    return (1);
+                    // not an any var type, check:
+                    if (function_args[function_args_ind].arg_type[args_ind] != vartype)
+                    {
+                        // error no valid vartype
+                        printf ("parse-line: call function: type mismatch: '%s' ! \n", type);
+                        return (1);
+                    }
                 }
             }
 
@@ -1278,11 +1288,14 @@ S2 parse_line (U1 *line)
                 {
                     args_ind++;
 
-                    if (return_args[return_args_ind].arg_type[args_ind] != vartype)
+                    if (return_args[return_args_ind].arg_type[args_ind] != VARTYPE_ANY)
                     {
-                        // error no valid vartype
-                        printf ("parse-line: return function: type mismatch: '%s' ! \n", type);
-                        return (1);
+                        if (return_args[return_args_ind].arg_type[args_ind] != vartype)
+                        {
+                            // error no valid vartype
+                            printf ("parse-line: return function: type mismatch: '%s' ! \n", type);
+                            return (1);
+                        }
                     }
                 }
 
@@ -1386,11 +1399,14 @@ S2 parse_line (U1 *line)
                     //printf ("parse-line: return variable defined type: %i\n", return_args[return_args_ind].arg_type[var_ind]);
 
                     //printf ("var_ind: %lli\n", var_ind);
-
-                    if (vartype != return_args[return_args_ind].arg_type[var_ind])
+                    if (return_args[return_args_ind].arg_type[var_ind] != VARTYPE_ANY)
                     {
-                        printf ("parse-line: error: return variable type mismatch!\n");
-                        return (1);
+                        // not an any type variable, check type:
+                        if (vartype != return_args[return_args_ind].arg_type[var_ind])
+                        {
+                            printf ("parse-line: error: return variable type mismatch!\n");
+                            return (1);
+                        }
                     }
                 }
 
