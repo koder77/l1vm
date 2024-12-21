@@ -5,7 +5,7 @@
 
 (main func)
 	(set const-int64 1 zero 0)
-	(set int64  1 numi 32)
+	(set int64 1 numi 32)
 	(set int64 1 squarei 0)
 	(set double 1 numd 16.0)
 	(set double 1 squared 0.0)
