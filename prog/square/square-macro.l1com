@@ -3,7 +3,7 @@
 
 // define macro
 // works on all number types
-#func SQR (NUM, SQUARE) :(NUM * NUM SQUARE :=)
+#func Square (NUM, SQUARE) :(NUM * NUM SQUARE :=)
 
 (main func)
 	(set const-int64 1 zero 0)
@@ -16,14 +16,14 @@
 	(sqr_str :print_s !)
 	(numi :print_i !)
 	(eq_str :print_s !)
-	(numi squarei :SQR!)
+	(numi squarei :Square!)
 	(squarei :print_i !)
 	(:print_n !)
 
 	(sqr_str :print_s !)
 	(numd :print_d !)
 	(eq_str :print_s !)
-	(numd squared :SQR !)
+	(numd squared :Square !)
 	(squared :print_d !)
 	(:print_n !)
 
