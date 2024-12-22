@@ -2057,7 +2057,7 @@ int main (int ac, char *av[])
 	docuptr = fopen ("out.md", "w");
 	if (docuptr == NULL)
 	{
-		printf ("ERROR: can't open docmentation file 'out.md' !\n");
+		printf ("ERROR: can't open documentation file 'out.md' !\n");
 		fclose (finptr);
 		fclose (foutptr);
 		exit (1);
