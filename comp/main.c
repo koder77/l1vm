@@ -115,6 +115,8 @@ U1 nested_code = 1;
 // set to 1 if warning for defined but unused variables should be set
 U1 warn_unused_variables = 0;
 
+U1 error_multi_spaces = 0;
+
 // set to 1 if inside object functions
 U1 inside_object = 0;
 // current object name
@@ -7313,15 +7315,18 @@ S2 parse (U1 *name)
 				}
 				else
 				{
-					if (check_spaces (rbuf) != 0)
+					if (error_multi_spaces == 1)
 					{
-						if (file_inside == 1)
+						if (check_spaces (rbuf) != 0)
 						{
-							printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
+							if (file_inside == 1)
+							{
+								printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
+							}
+							printf ("error: found double spaces!\n");
+							printf ("> %s\n", rbuf);
+							err = 1;
 						}
-						printf ("error: found double spaces!\n");
-						printf ("> %s\n", rbuf);
-						err = 1;
 					}
 					ret = parse_line (rbuf);
  					if (ret != 0)
@@ -7559,6 +7564,14 @@ int main (int ac, char *av[])
 				if (strcmp (av[i], "-wvarunused") == 0)
 				{
 					warn_unused_variables = 1;
+				}
+			}
+
+			if (arglen == 8)
+			{
+				if (strcmp (av[i], "-wspaces") == 0)
+				{
+					error_multi_spaces = 1;
 				}
 			}
 

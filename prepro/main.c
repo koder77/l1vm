@@ -138,6 +138,7 @@ U1 for_loop = 0;
 // not unsing the "intr.l1h" or "intr-func.l1h" includes.
 U1 flag_wdeprecated = 0;
 
+U1 error_multi_spaces = 0;
 // protos
 char *fgets_uni (char *str, int len, FILE *fptr);
 size_t strlen_safe (const char * str, S8 maxlen);
@@ -2082,6 +2083,19 @@ int main (int ac, char *av[])
 		{
 			flag_wdeprecated = 1;
 		}
+
+		if (strcmp ((const char *) av[5], "-wspaces") == 0)
+		{
+			error_multi_spaces = 1;
+		}
+	}
+
+	if (ac == 7)
+	{
+		if (strcmp ((const char *) av[5], "-wspaces") == 0)
+		{
+			error_multi_spaces = 1;
+		}
 	}
 
 	run_loop:
@@ -2109,19 +2123,22 @@ int main (int ac, char *av[])
 				files[file_index].linenum++;
 			}
 
-            if (check_spaces (buf) != 0)
+			if (error_multi_spaces == 1)
 			{
-				printf ("error: found double spaces!\n");
+				if (check_spaces (buf) != 0)
+				{
+					printf ("error: found double spaces!\n");
 
-				if (file_inside == 0)
-				{
-					printf ("line: %lli\n", linenum);
+					if (file_inside == 0)
+					{
+						printf ("line: %lli\n", linenum);
+					}
+					else
+					{
+						printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
+					}
+					printf ("> %s\n\n", buf);
 				}
-				else
-				{
-					printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
-				}
-				printf ("> %s\n\n", buf);
 			}
 
 			if (documentation_on == 1)
