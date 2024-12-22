@@ -478,7 +478,7 @@
 			{pattern_index~ = (pattern_current~ * pattern_total_pixels~) + pixel_number~}
 			(pattern [ pattern_index~ ] pixel_set~ =)
 			((pixel_set~ zero~ +) pixel_set~ =)
-			(((pixel_set~ one~  ==) f~ =) f~ if)
+			(((pixel_set~ one~ ==) f~ =) f~ if)
 				// found red pixel
 				// set pattern length
 				(x~ pattern_x~ =)
@@ -514,7 +514,7 @@
 			(pixel_number~ stpopi)
 			{pattern_index~ = (pattern_current~ * pattern_total_pixels~) + pixel_number~}
 			(pattern [ pattern_index~ ] pixel_set~ =)
-			(((pixel_set~ one~  ==) f~ =) f~ if)
+			(((pixel_set~ one~ ==) f~ =) f~ if)
 				// found red pixel
 				((one~ y~ <<) pixelshift~ =)
 				(cast pixelshift~ num~ =)
