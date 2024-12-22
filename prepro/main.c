@@ -2092,7 +2092,7 @@ int main (int ac, char *av[])
 
 	if (ac == 7)
 	{
-		if (strcmp ((const char *) av[5], "-wspaces") == 0)
+		if (strcmp ((const char *) av[6], "-wspaces") == 0)
 		{
 			error_multi_spaces = 1;
 		}
