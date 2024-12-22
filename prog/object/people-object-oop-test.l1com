@@ -1,0 +1,75 @@
+// people-object-oop.l1com
+// use . variable names to build something like a pseudo data structure like in other
+// programming languages
+//
+// NEW: using:
+// #var ~ main to be more safe!
+// using object for data and functions
+//
+#include <intr-func.l1h>
+#include <vars.l1h>
+(main func)
+    #var ~ main
+
+	(set int64 1 zero 0)
+    (set int64 1 one 1)
+    // person data with person. names
+    (set string 256 person.first_name~ "Jane")
+    (set string 256 person.last_name~ "Doe")
+    (set string 256 person.gender~ "female")
+    (set int64 1 person.age~ 30)
+    (set double 1 person.height~ 1.80)
+    (set string 256 person.eye_color~ "brown")
+    (set string s meminitstr~ "ERROR can't init memory!")
+	(set string s memerrstr~ "ERROR can't allocate memory!")
+	(set string s saveerrstr~ "ERROR can't save to memory object!")
+    (set int64 1 memaddr~ 0)
+    (set int64 1 memind~ 0)
+    (set int64 1 memsize~ 1)
+	(set int64 1 variables~ 6)
+    (set int64 1 ret~ 0)
+    (set int64 1 f~ 0)
+    // include memory object variable types
+    #include <mem-obj-lib-types.l1h>
+    (zero one :mem_obj_init !)
+	(ret~ stpopi)
+    (((ret~ zero !=) f~ =) f~ if)
+		// ERROR can't allocate memory
+		(meminitstr~ :print_s !)
+		(:print_n !)
+		(one :exit !)
+	(endif)
+    // allocate memory for the 6 variables
+	(variables~ memsize~ :alloc_obj_memobj !)
+	(memaddr~ stpopi)
+	(loadreg)
+	(((memaddr~ zero <) f~ =) f~ if)
+		// ERROR can't allocate memory
+        (memerrstr~ :print_s !)
+		(:print_n !)
+		(one :exit !)
+	(endif)
+
+	// store person data in mem object using memory variable types: s_type, i_type and d_type
+    // going from right to left with variable types first before variable
+    (person.eye_color~ s_type person.height~ d_type person.age~ i_type person.gender~ s_type person.last_name~ s_type person.first_name~ s_type variables~ zero memaddr~ :save_obj_memobj !)
+    (ret~ stpopi)
+	(((ret~ zero !=) f~ =) f~ if)
+		// ERROR can't allocate memory
+        (saveerrstr~ :print_s !)
+		(:print_n !)
+        (one :exit !)
+	(endif)
+    (memaddr~ :list_data->person !)
+    // free memory
+    (zero :free_obj_memobj !)
+    (:free_memobj !)
+    (zero :free_mod !)
+    (zero :exit !)
+(funcend)
+
+// set variable ending check on: only local variables ending with "person" or globals ending with "main" allowed!
+(variable-local-on)
+
+
+#include <mem-obj-lib.l1h>

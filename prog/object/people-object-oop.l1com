@@ -6,13 +6,13 @@
 // #var ~ main to be more safe!
 // using object for data and functions
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 #include <vars.l1h>
 (main func)
     #var ~ main
 
 	(set int64 1 zero 0)
-    (set int64 1 one  1)
+    (set int64 1 one 1)
     // person data with person. names
     (set string 256 person.first_name~ "Jane")
     (set string 256 person.last_name~ "Doe")
@@ -35,9 +35,9 @@
 	(ret~ stpopi)
     (((ret~ zero !=) f~ =) f~ if)
 		// ERROR can't allocate memory
-		print_s (meminitstr~)
-		print_n
-		exit (one)
+		(meminitstr~ :print_s !)
+		(:print_n !)
+		(one :exit !)
 	(endif)
     // allocate memory for the 6 variables
 	(variables~ memsize~ :alloc_obj_memobj !)
@@ -45,9 +45,9 @@
 	(loadreg)
 	(((memaddr~ zero <) f~ =) f~ if)
 		// ERROR can't allocate memory
-        print_s (memerrstr~)
-		print_n
-		exit (one)
+        (memerrstr~ :print_s !)
+		(:print_n !)
+		(one :exit !)
 	(endif)
 
 	// store person data in mem object using memory variable types: s_type, i_type and d_type
@@ -56,16 +56,16 @@
     (ret~ stpopi)
 	(((ret~ zero !=) f~ =) f~ if)
 		// ERROR can't allocate memory
-        print_s (saveerrstr~)
-		print_n
-        exit (one)
+        (saveerrstr~ :print_s !)
+		(:print_n !)
+        (one :exit !)
 	(endif)
     (memaddr~ :list_data->person !)
     // free memory
     (zero :free_obj_memobj !)
     (:free_memobj !)
-    free_mod (zero)
-    exit (zero)
+    (zero :free_mod !)
+    (zero :exit !)
 (funcend)
 
 // set variable ending check on: only local variables ending with "person" or globals ending with "main" allowed!
@@ -102,21 +102,21 @@
     (Peye_color~ Pheight~ Page~ Pgender~ Plast_name~ Pfirst_name~ variables~ zero~ memaddr~ :load_obj_array_memobj !)
     (ret~ stpopi)
     (((ret~ zero~ !=) f~ =) f~ if+)
-        print_s (memobj_err_str~)
-        print_n
+        (memobj_err_str~ :print_s !)
+        (:print_n !)
     (else)
-        print_s (first_name~)
-        print_n
-        print_s (last_name~)
-        print_n
-        print_s (gender~)
-        print_n
-        print_i (age~)
-        print_n
-        printf_d (height_format~, height~)
-        print_n
-        print_s (eye_color~)
-        print_n
+        (first_name~ :print_s !)
+        (:print_n !)
+        (last_name~ :print_s !)
+        (:print_n !)
+        (gender~ :print_s !)
+        (:print_n !)
+        (age~ :print_i !)
+        (:print_n !)
+        (height_format~ height~ :printf_d !)
+        (:print_n !)
+        (eye_color~ :print_s !)
+        (:print_n !)
     (endif)
 (funcend)
 
@@ -130,22 +130,22 @@
 
      // set pointers, use new check_pointer interrupt for pointer type checks
     (first_name~ Pfirst_name~ pointer)
-    check_pointer (Pfirst_name~, byte_ptr)
+    (Pfirst_name~ byte_ptr :check_pointer !)
 
     (last_name~ Plast_name~ pointer)
-    check_pointer (Plast_name~, byte_ptr)
+    (Plast_name~ byte_ptr :check_pointer !)
 
     (gender~ Pgender~ pointer)
-    check_pointer (Pgender~, byte_ptr)
+    (Pgender~ byte_ptr :check_pointer !)
 
     (age~ Page~ pointer)
-    check_pointer (Page~, int64_ptr)
+    (Page~ int64_ptr :check_pointer !)
 
     (height~ Pheight~ pointer)
-    check_pointer (Pheight~, double_ptr)
+    (Pheight~ double_ptr :check_pointer !)
 
     (eye_color~ Peye_color~ pointer)
-    check_pointer (Peye_color~, byte_ptr)
+    (Peye_color~ byte_ptr :check_pointer !)
 
     (:Pshow_data->person !)
 (funcend)
