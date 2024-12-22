@@ -2,20 +2,30 @@
 #include <intr-func.l1h>
 
 // define macro
-#func square_int (iNUM, iSQUARE) :(iNUM * iNUM iSQUARE :=)
+// works on all number types
+#func SQR (NUM, SQUARE) :(NUM * NUM SQUARE :=)
 
 (main func)
 	(set const-int64 1 zero 0)
-	(set int64 1 num 32)
-	(set int64 1 square 0)
+	(set const-int64 1 numi 32)
+	(set int64 1 squarei 0)
+	(set const-double 1 numd 16.0)
+	(set double 1 squared 0.0)
 	(set const-string s sqr_str "square of: ")
 	(set const-string s eq_str " = ")
+	(sqr_str :print_s !)
+	(numi :print_i !)
+	(eq_str :print_s !)
+	(numi squarei :SQR!)
+	(squarei :print_i !)
+	(:print_n !)
 
 	(sqr_str :print_s !)
-	(num :print_i !)
+	(numd :print_d !)
 	(eq_str :print_s !)
-	(num square :square_int !)
-	(square :print_i !)
+	(numd squared :SQR !)
+	(squared :print_d !)
 	(:print_n !)
+
 	(zero :exit !)
 (funcend)
