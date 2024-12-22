@@ -1,7 +1,10 @@
 L1VM (3.3.5)
 	VM: MPFR module: print number string fixes. Now the function checks if string is big enough before saving it into the temp file.
 
--- Stefan Pietzonke <info@midnight-coding.de> Sat 14 Dec 2024 17:49  +010
+	New build scripts with "wspace" in the name. They warn if there are more than one space between tokens.
+	Use them to find such errors where the preprocressor just gives an error message without line number!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sun 22 Dec 2024 23:46  +010
 
 L1VM (3.3.4)
 	VM: string module: added string_verify function to check if a string contains valid chars.
