@@ -110,3 +110,42 @@ S2 strip_end_commas (U1 *str)
 	}
 	return (1);
 }
+
+S2 check_spaces (U1 *line)
+{
+	S4 line_len = 0;
+	S4 i = 0;
+	S4 pos = 0;
+
+	line_len = strlen_safe ((const char *) line, MAXLINELEN);
+
+	// check if (set ) line:
+	pos = searchstr (line, (U1 *) "(set", 0, 0, 0);
+	if (pos != -1)
+	{
+		// found set line, exit with ok code
+		return (0);
+	}
+
+	pos = searchstr (line, (U1 *) "(", 0, 0, 0);
+	if (pos == -1)
+	{
+		// empty line
+		return (0);
+	}
+
+	for (i = pos + 1; i < line_len - 1; i++)
+	{
+		if (line[i] == ' ')
+		{
+			if (line[i + 1] == ' ')
+			{
+				// found double spaces: error
+				return (1);
+			}
+		}
+	}
+
+	// all ok!
+	return (0);
+}

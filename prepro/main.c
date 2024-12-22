@@ -146,6 +146,9 @@ void convtabs (U1 *str);
 S2 get_varname_type (U1 *name);
 S2 parse_set (U1 *line, U1 *setret);
 
+//string.c
+S2 check_spaces (U1 *line);
+
 void clear_defines (void)
 {
 	// clear ALL defines
@@ -2104,6 +2107,21 @@ int main (int ac, char *av[])
 			else
 			{
 				files[file_index].linenum++;
+			}
+
+            if (check_spaces (buf) != 0)
+			{
+				printf ("error: found double spaces!\n");
+
+				if (file_inside == 0)
+				{
+					printf ("line: %lli\n", linenum);
+				}
+				else
+				{
+					printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
+				}
+				printf ("> %s\n\n", buf);
 			}
 
 			if (documentation_on == 1)

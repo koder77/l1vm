@@ -30,6 +30,9 @@
 // protos
 S8 get_ranges_index (U1 *varname);
 
+//string.c
+S2 check_spaces (U1 *line);
+
 S8 linenum ALIGN = 0;
 
 // for included files
@@ -7310,6 +7313,16 @@ S2 parse (U1 *name)
 				}
 				else
 				{
+					if (check_spaces (rbuf) != 0)
+					{
+						if (file_inside == 1)
+						{
+							printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
+						}
+						printf ("error: found double spaces!\n");
+						printf ("> %s\n", rbuf);
+						err = 1;
+					}
 					ret = parse_line (rbuf);
  					if (ret != 0)
 					{
