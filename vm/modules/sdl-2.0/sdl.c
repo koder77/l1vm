@@ -17,6 +17,9 @@
  * along with L1vm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if __OpenBSD__
+#undef __linux__
+#endif
 
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
@@ -1693,7 +1696,7 @@ Uint32 getpixel (SDL_Surface *surface, Sint16 x, Sint16 y)
 			#if __MACH__ 	// macOS little endianess
 				return p[0] | p[1] << 8 | p[2] << 16;
 			#else
-				if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+				if (MACHINE_BIG_ENDIAN)
 				{
 					return p[0] << 16 | p[1] << 8 | p[2];
 				}
@@ -1852,7 +1855,7 @@ U1 *sdl_save_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	#if __MACH__ 	// macOS little endianess
 		rmask = 0x000000ff; gmask = 0x0000ff00; bmask = 0x00ff0000; amask = 0xff000000;
 	#else
-		#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+		#if MACHINE_BIG_ENDIAN
 		rmask = 0xff000000; gmask = 0x00ff0000; bmask = 0x0000ff00; amask = 0x000000ff;
 		#else
 		rmask = 0x000000ff; gmask = 0x0000ff00; bmask = 0x00ff0000; amask = 0xff000000;
