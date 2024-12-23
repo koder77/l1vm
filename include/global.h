@@ -216,6 +216,7 @@ typedef double                  F8;     /* DOUBLE */
 
 
 /* set alignment for Android ARM */
+#undef ALIGN
 #if DO_ALIGNMENT
 #define ALIGN		__attribute__ ((aligned(8)))
 // #pragma message ("ALIGNMENT FOR 64 bit ON")
