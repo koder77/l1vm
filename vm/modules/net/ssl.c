@@ -36,6 +36,15 @@
 // protos
 void bzero (void *s, size_t n);
 
+/* set alignment for Android ARM */
+#if DO_ALIGNMENT
+#undef ALIGN
+#define ALIGN		__attribute__ ((aligned(8)))
+// #pragma message ("ALIGNMENT FOR 64 bit ON")
+#else
+#define ALIGN
+#endif
+
 #define SOCKADDRESSLEN      16      /* max dotted ip len */
 #define SOCKBUFSIZE         10240    /* socket data buffer len */
 

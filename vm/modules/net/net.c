@@ -35,6 +35,15 @@
 
 extern S2 memory_bounds (S8 start, S8 offset_access);
 
+/* set alignment for Android ARM */
+#if DO_ALIGNMENT
+#undef ALIGN
+#define ALIGN		__attribute__ ((aligned(8)))
+// #pragma message ("ALIGNMENT FOR 64 bit ON")
+#else
+#define ALIGN
+#endif
+
 #define SOCKADDRESSLEN      16      /* max dotted ip len */
 #define SOCKBUFSIZE         10240    /* socket data buffer len */
 
