@@ -1,0 +1,12 @@
+// number-limits.l1h
+(set const-int641 1 byte_limit_min 0)
+(set const-int64 1 byte_limit_max 255)
+
+(set const-int64 1 int16_limit_min -32768)
+(set const-int64 1 int16_limit_max 32767)
+
+(set const-int64 1 int32_limit_min -2147483646)
+(set const-int64 1 int32_limit_max 2147483647)
+
+(set const-int64 1 int64_limit_min -9223372036854775806)
+(set const-int64 1 int64_limit_max 9223372036854775807)
