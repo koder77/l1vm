@@ -27,7 +27,7 @@
 // 251 sets overflow flag for double floating point number
 // 252 returns value of overflow flag
 #define MATH_LIMITS_INT				1 // integer math limits
-#define MATH_LIMITS                 0 // double math limits
+#define MATH_LIMITS                 0  // double math limits
 
 // set if only double numbers calculation results are checked (0), or
 // arguments and results get checked for full check (1)

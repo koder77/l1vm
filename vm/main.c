@@ -510,11 +510,22 @@ U1 double_state (F8 num)
 	S2 state;
 	U1 flag = 0;
 	state = fpclassify (num);
-	if (state == FP_INFINITE || state == FP_NAN || state == FP_SUBNORMAL)
+
+	switch (state)
 	{
-		// ERROR!!
-		flag = 1;
+		case FP_INFINITE:
+			printf ("\nERROR: number infinite!\n");
+			flag = 1;
+
+		case FP_NAN:
+			printf ("\nERROR: number not a number!\n");
+			flag = 1;
+
+		case FP_SUBNORMAL:
+			printf ("\nERROR: number underflow!\n");
+			flag = 1;
 	}
+
 	return (flag);
 }
 
