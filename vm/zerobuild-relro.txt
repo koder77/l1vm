@@ -10,5 +10,5 @@ c++compiler = $CCPP
 
 archiver = ar
 
-cflags = "-O2 -fomit-frame-pointer -Wall -Wextra -fPIE"
+cflags = "-O2 -fomit-frame-pointer -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wall -Wextra -fPIE"
 lflags = "-lm -ldl -lpthread -L../libjit -ll1vm-jit -lstdc++ -Wl,--export-dynamic,-z,relro,-z,now"
