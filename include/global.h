@@ -256,8 +256,8 @@ typedef double                  F8;     /* DOUBLE */
 #define STRING_CONST    14
 
 // translate.h:
-#define INTEGER			14
-#define DOUBLE			15
+#define INTEGER			15
+#define DOUBLE			16
 
 #define RUNNING			1
 #define STOP			0
