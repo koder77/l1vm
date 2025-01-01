@@ -184,7 +184,7 @@
 // internal settings end ======================================================
 
 // info strings:
-#define COPYRIGHT_STR " 2025 (C) 2017-2024 Stefan Pietzonke - software research"
+#define COPYRIGHT_STR " 2025 (C) 2017-2025 Stefan Pietzonke - software research"
 #define VM_VERSION_STR "3.3.5 "
 #define MOTTO_STR "Level 1 VM"
 
