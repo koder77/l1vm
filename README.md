@@ -1,4 +1,4 @@
-L1VM README  2024-10-28
+L1VM README  2025-01-01
 =======================
 ![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -8,41 +8,23 @@ Running my blog and keep my hardware going costs money! So you can support me on
 
 [![C/C++ CI](https://github.com/koder77/l1vm/actions/workflows/github-ci.yaml/badge.svg)](https://github.com/koder77/l1vm/actions/workflows/github-ci.yaml)
 
-This project started on 9. November 2017 as an experimental fast VM.
-I had some knowledge already from my Nano VM project. But I started from scratch.
+The Brackets language is a modern, general-purpose programming language. The focus is on reliability and speed. <br>
+The language can be used for CLI and also full GUI programs. Use multiple CPU cores with multithreading. <br>
+The Brackets bytecode can run on any supported OS without changes. This makes it truly platform independent. <br><br>
 
-L1VM is an incredible tiny virtual machine with RISC (or comparable style) CPU, about 61 opcodes and about 49 KB binary size on X86_64 Linux!
-The VM has a 64 bit core (256 registers for integer and double float) and can run object code
-written in Brackets (a high level programming language) or l1asm assembly language.
+<b>Computing at a scale. Use the <a href="https://github.com/advanpix/mpreal">MPFR</a> module for arbitrary number precision math. Scale from SBCs to desktop PCs and beyond. 
+Powerful modules are available at your fingertips. You can develop your own modules to fit your needs. </b> <br><br>
 
-Code and data are in separated memories for a secure execution. Like in Harvard type CPUs (found now in DSPs or microcontrollers).
-The opcode set with 61 opcodes is my own opinion how things should work. It does not "copy" other instruction sets known in
-other "real" CPUs.
+The L1VM is available for: Linux (x86_64, AARCH64), OpenBSD, FreeBSD, DragonFly BSD, Windows (10, 11) via WSL or native MSYS2, macOS and Haiku OS. <br>
+On the Raspberry Pi the GPIO pins and the serial port can be used via the modules. <br><br>
 
-The design goals are:
-<pre>
-	- be small
-	- be fast
-	- be simple
-	- be modular
-</pre>
+Use network functions with TCP/IP and <a href="https://midnight-coding.de/blog/software/l1vm/2024/10/09/L1VM-net-module-ssl.html">TLS/SSL sockets</a>. <br><br>
+
+<b>The L1VM is memory safe. Array overflows and string overflows are catched at runtime. The execution will break on an error. <br>
+There can be legal limits set for a number variable. Resulting in a runtime error on overflow. </b> <br>
+The VM has no garbage collector. All variables declared by "set" are in memory at program start. No memory management must be done on them. <br><br>
 
 Here is the [L1VM course](https://midnight-koder.net/blog/l1vm) on my blog.
-
-In pure console text I/O programs not linked with SDL library, the memory footprint is very low.
-
-<b>
-The L1VM runs on Linux (x86_64, Arm), BSD OS: OpenBSD, FreeBSD, DragonFly BSD, Windows 10, 11 via WSL, Haiku and macOS.
-It has an preprocessor, assembler and compiler for my own language Brackets.
-On the Raspberry Pi the GPIO pins can be used with my GPIO module.
-Also the serial port can be used.
-
-My language Brackets is a statically typed language. Now with variable type safety!
-The VM has even a JIT-compiler using "libasmjit" for x86_64 CPUs!
-Code written in inline assembly can be compiled by the JIT-compiler. Increasing run speed!
-
-NEW: Now you can define objects (OOP) in Brackets. You can write functions inside the object which are using the object data.
-An example is here: [math-circle-oop](https://github.com/koder77/l1vm/blob/master/prog/math-circle-oop.l1com).
 
 The L1VM can be build as a shared library to embedd it too!
 </b>
