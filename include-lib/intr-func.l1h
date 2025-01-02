@@ -59,6 +59,7 @@
 #func get_host_cpu (iHOST_CPU) :(35 iHOST_CPU 0 0 intr0)
 #func get_host_os (iHOST_OS) :(36 iHOST_OS 0 0 intr0)
 #func dbgr (NONE) :(37 0 0 0 intr0)
+#func stack_clear (NONE) :(38 0 0 0 intr0)
 >>
 >>	intr1
 >>

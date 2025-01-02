@@ -2563,6 +2563,12 @@ S2 run (void *arg)
 			eoffs = 5;
 			break;
 
+		case 38:
+			// clear stack: stclear
+			sp = sp_top;
+			eoffs = 5;
+			break;
+
 		case 251:
 			// set overflow on double reg
 			arg2 = code[ep + 2];
