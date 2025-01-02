@@ -2564,7 +2564,7 @@ S2 run (void *arg)
 			break;
 
 		case 38:
-			// clear stack: stclear
+			// clear stack: stack_clear
 			sp = sp_top;
 			eoffs = 5;
 			break;
