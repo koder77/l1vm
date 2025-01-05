@@ -1,8 +1,9 @@
+// hello-mut.l1com
 // Brackets - Hello world!
 // set variables default as immutable
 // change setting by: (variable-mutable)
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 (main func)
     // all default variables are immutable after this is set!
     (variable-immutable)
@@ -12,13 +13,12 @@
 	(set int64 1 y 42)
 	// mutable:
 	(set mut-int64 1 a 0)
-	// string always mutable!
-	(set string 13 hello "Hello world!")
+	(set string s hello "Hello world!")
 	// print string
-	print_s (hello)
-	print_n
+	(hello :print_s !)
+	(:print_n !)
 	((x y *) a =)
-	print_i (a)
-	print_n
-	exit (zero)
+	(a :print_i !)
+	(:print_n !)
+	(zero :exit !)
 (funcend)

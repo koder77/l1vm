@@ -3,7 +3,7 @@
 // shows how to set up an array
 // and how to access the elements
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 (main func)
 	(set int64 1 zero 0)
     (set int64 1 one 1)
@@ -15,14 +15,13 @@
 	// set array data using spaces as elements separator
 	(set int64 10 array 10 5 8 4 3 2 7 23 45 30)
     (set int64 1 maxarray 10)
-    // print array 
-    (for-loop)
+    // print array
     (((ind maxarray <) f =) f for)
         ((ind offset *) realind =)
         (array [ realind ] num =)
-        print_i (num)
-        print_n
+        (num :print_i !)
+        (:print_n !)
         ((ind one +) ind =)
     (next)
-	exit (zero)
+	(zero :exit !)
 (funcend)
