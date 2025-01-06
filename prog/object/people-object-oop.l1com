@@ -11,7 +11,7 @@
 (main func)
     #var ~ main
 
-	(set int64 1 zero 0)
+    (set int64 1 zero 0)
     (set int64 1 one 1)
     // person data with person. names
     (set string 256 person.first_name~ "Jane")
@@ -21,45 +21,45 @@
     (set double 1 person.height~ 1.80)
     (set string 256 person.eye_color~ "brown")
     (set string s meminitstr~ "ERROR can't init memory!")
-	(set string s memerrstr~ "ERROR can't allocate memory!")
-	(set string s saveerrstr~ "ERROR can't save to memory object!")
+    (set string s memerrstr~ "ERROR can't allocate memory!")
+    (set string s saveerrstr~ "ERROR can't save to memory object!")
     (set int64 1 memaddr~ 0)
     (set int64 1 memind~ 0)
     (set int64 1 memsize~ 1)
-	(set int64 1 variables~ 6)
+    (set int64 1 variables~ 6)
     (set int64 1 ret~ 0)
     (set int64 1 f~ 0)
     // include memory object variable types
     #include <mem-obj-lib-types.l1h>
     (zero one :mem_obj_init !)
-	(ret~ stpopi)
+    (ret~ stpopi)
     (((ret~ zero !=) f~ =) f~ if)
-		// ERROR can't allocate memory
-		(meminitstr~ :print_s !)
-		(:print_n !)
-		(one :exit !)
-	(endif)
+        // ERROR can't allocate memory
+        (meminitstr~ :print_s !)
+        (:print_n !)
+        (one :exit !)
+    (endif)
     // allocate memory for the 6 variables
-	(variables~ memsize~ :alloc_obj_memobj !)
-	(memaddr~ stpopi)
-	(loadreg)
-	(((memaddr~ zero <) f~ =) f~ if)
-		// ERROR can't allocate memory
+    (variables~ memsize~ :alloc_obj_memobj !)
+    (memaddr~ stpopi)
+    (loadreg)
+    (((memaddr~ zero <) f~ =) f~ if)
+        // ERROR can't allocate memory
         (memerrstr~ :print_s !)
-		(:print_n !)
-		(one :exit !)
-	(endif)
+        (:print_n !)
+        (one :exit !)
+     (endif)
 
-	// store person data in mem object using memory variable types: s_type, i_type and d_type
+    // store person data in mem object using memory variable types: s_type, i_type and d_type
     // going from right to left with variable types first before variable
     (person.eye_color~ s_type person.height~ d_type person.age~ i_type person.gender~ s_type person.last_name~ s_type person.first_name~ s_type variables~ zero memaddr~ :save_obj_memobj !)
     (ret~ stpopi)
-	(((ret~ zero !=) f~ =) f~ if)
-		// ERROR can't allocate memory
+    (((ret~ zero !=) f~ =) f~ if)
+        // ERROR can't allocate memory
         (saveerrstr~ :print_s !)
-		(:print_n !)
+        (:print_n !)
         (one :exit !)
-	(endif)
+    (endif)
     (memaddr~ :list_data->person !)
     // free memory
     (zero :free_obj_memobj !)

@@ -54,7 +54,7 @@ S2 check_varname_ending (U1 *varname, U1 *ending)
 	vartype = getvartype (varname);
 
 	if (vartype == STRING || vartype == STRING_CONST || vartype == INTEGER)
-	{
+    {
 		ending_len = strlen_safe ((char *) addr_str, MAXLINELEN);
 
 		pos = searchstr (varname, (U1 *) addr_str, 0, 0, 0);
@@ -73,14 +73,14 @@ S2 check_varname_ending (U1 *varname, U1 *ending)
 					pos = searchstr (varname, (U1 *) "main", 0, 0, 0);
 					if (pos < 0)
 					{
-						printf ("check_varname_ending: no variable ending 'main' or '%s' found!\n", ending);
+						printf ("check_varname_ending: '%s' no variable ending 'main' or '%s' found!\n", varname, ending);
 						return (1);
 					}
 
 					// check if ending is on end
 					if (varname_len - ending_len != pos)
 					{
-						printf ("check_varname_ending: no variable ending 'main' or '%s' found!\n", ending);
+						printf ("check_varname_ending: '%s' no variable ending 'main' or '%s' found!\n", varname, ending);
 						return (1);
 					}
 				}
@@ -93,8 +93,14 @@ S2 check_varname_ending (U1 *varname, U1 *ending)
 			pos = searchstr (varname, (U1 *) string_end, 0, 0, 0);
 			if (pos < 0)
 			{
-				printf ("check_varname_ending: no string variable ending '%s' found!\n", ending);
-				return (1);
+				ending_len = strlen_safe ((char *) ending, MAXLINELEN);
+
+				pos = searchstr (varname, (U1 *) ending, 0, 0, 0);
+				if (pos < 0)
+				{
+					printf ("check_varname_ending: '%s' no string variable ending '%s' found!\n", varname, ending);
+					return (1);
+				}
 			}
 		}
 	}
@@ -111,14 +117,14 @@ S2 check_varname_ending (U1 *varname, U1 *ending)
 				pos = searchstr (varname, (U1 *) "main", 0, 0, 0);
 				if (pos < 0)
 				{
-					printf ("check_varname_ending: no variable ending 'main' or '%s' found!\n", ending);
+					printf ("check_varname_ending: '%s' no variable ending 'main' or '%s' found!\n", varname, ending);
 					return (1);
 				}
 
 				// check if ending is on end
 				if (varname_len - ending_len != pos)
 				{
-					printf ("check_varname_ending: no variable ending 'main' or '%s' found!\n", ending);
+					printf ("check_varname_ending: '%s' no variable ending 'main' or '%s' found!\n", varname, ending);
 					return (1);
 				}
 			}
@@ -128,7 +134,7 @@ S2 check_varname_ending (U1 *varname, U1 *ending)
 	// check if ending is on end
 	if (varname_len - ending_len != pos)
 	{
-		printf ("check_varname_ending: no variable ending '%s' found!\n", ending);
+		printf ("check_varname_ending: '%s' no variable ending '%s' found!\n", varname, ending);
 		return (1);
 	}
 
