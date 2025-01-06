@@ -13,10 +13,10 @@
 	// while
 	(zero loop =)
 	(do)
-		print_s (hello)
+		(hello :print_s !)
 		// print newline
-		print_n
+		(:print_n !)
 		((loop one +) loop =)
 	(((loop maxloop <) f =) f while)
-	exit (zero)
+	(zero :exit !)
 (funcend)
