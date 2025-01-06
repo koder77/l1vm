@@ -573,7 +573,7 @@ S2 check_define_type (U1 *define, U1* variable)
 	S2 str_len = 0;
 	S2 vartype = 0;
 
-	S2 symbstr_max = 29;
+	S2 symbstr_max = 30;
 	S2 i = 0;
 	U1 symbstr[30][4] = { "+", "-", "*", "/", "+d", "-d", "*d", "/d", "<<", ">>", "&&", "||", "&", "|", "^", "%", "==", "!=", "<=", ">=", ">", "<", ">|", "<|", "==d", "!=d", ">d", "<d", ">=d", "<=d" };
 
