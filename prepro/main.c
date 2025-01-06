@@ -573,18 +573,25 @@ S2 check_define_type (U1 *define, U1* variable)
 	S2 str_len = 0;
 	S2 vartype = 0;
 
+	S2 symbstr_max = 29;
+	S2 i = 0;
+	U1 symbstr[30][4] = { "+", "-", "*", "/", "+d", "-d", "*d", "/d", "<<", ">>", "&&", "||", "&", "|", "^", "%", "==", "!=", "<=", ">=", ">", "<", ">|", "<|", "==d", "!=d", ">d", "<d", ">=d", "<=d" };
+
 	str_len = strlen_safe ((const char *) define, MAXLINELEN);
 	if (str_len < 2)
 	{
-	    // error define too short
+	   // error define too short
        return (0);
 	}
 
-	vartype = get_varname_type (variable);
-	if (vartype == -1)
+	if (define[0] != 'o')
 	{
-         printf ("check_define_type: ERROR: variable: '%s' not defined!\n", variable);
-		 return (1);
+		vartype = get_varname_type (variable);
+		if (vartype == -1)
+		{
+			printf ("check_define_type: ERROR: variable: '%s' not defined!\n", variable);
+			return (1);
+		}
 	}
 
 	// printf ("DEBUG: check_define_type: type: %i\n", vartype);
@@ -633,6 +640,19 @@ S2 check_define_type (U1 *define, U1* variable)
 				return (1);  // error!
 
 		}
+	}
+
+	if (define[0] == 'o')
+	{
+		// operator type: some like: = != > <
+		for (i = 0; i < symbstr_max; i++)
+		{
+			if (strcmp ((const char *) variable, (const char *) symbstr[i]) == 0)
+			{
+				return (0); // all ok, symbol found!
+			}
+		}
+		return (1); // symbol not found! error!
 	}
 
 	return (0); // unknown var type, for backwards compatibility set return code 0

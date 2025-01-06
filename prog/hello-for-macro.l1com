@@ -1,6 +1,6 @@
 // hello-for-macro.l1com - Hello world! for loop
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 #include <vars.l1h>
 #include <loops.l1h>
 (main func)
@@ -17,35 +17,35 @@
 	(set int64 1 a 0)
 	(set int64 1 asize 0)
 	// set string length automatic, by setting "s"
-	(set string s hello "Hello world!")
-	(set string s foo "foobar!")
+	(set string s hellostr "Hello world!")
+	(set string s foostr "foobar!")
 	(array Parray pointer)
 	// print string
 	// for
 	(zero loop =)
-    dofor (loop, maxloop, <)
-		print_lns (hello)
+	(loop maxloop < :dofor !)
+        (hellostr :print_lns !)
 		(zero loop_foo =)
-        dofor (loop_foo, maxloop, <)
-			print_lns (foo)
+        (loop_foo maxloop < :dofor !)
+            (foostr :print_lns !)
 			((loop_foo one +) loop_foo =)
 		(next)
 		((loop one +) loop =)
 	(next)
 
     // array print
-    for-each-in (Parray, realind, asize)
+	(Parray realind asize :for-each-in !)
 	    (Parray [ realind ] a =)
-	    print_lni (a)
-	next-in (ind, realind, int64_size)
+        (a :print_lni !)
+    (ind realind int64_size :next-in !)
 
-	print_n
+	(:print_n !)
 	(zero ind =)
 	(zero realind =)
-	thr-for-each-in (Parray, realind, asize, f)
+	(Parray realind asize f :thr-for-each-in !)
 	    (Parray [ realind ] a =)
-	    print_lni (a)
-	next-in (ind, realind, int64_size)
+        (a :print_lni !)
+    (ind realind int64_size :next-in !)
 
-	exit (zero)
+   (zero :exit !)
 (funcend)
