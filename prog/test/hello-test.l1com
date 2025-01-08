@@ -6,7 +6,7 @@
 	(set int64 1 zero 0)
 	(set string 13 hello "Hello world!")
 	// print string
-	(hello  :print_s !)
+	(hello :print_s !)
 	(:print_n !)
 	(zero :exit  !)
 (funcend)

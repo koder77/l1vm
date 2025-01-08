@@ -2359,6 +2359,16 @@ int main (int ac, char *av[])
 
 				if (set_macro (buf) != 0)
 				{
+					if (file_inside == 0)
+					{
+						printf ("line: %lli\n", linenum);
+					}
+					else
+					{
+						printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
+					}
+					printf ("> %s\n\n", buf);
+
 					fclose (finptr);
 					fclose (foutptr);
 					fclose (docuptr);
@@ -2385,6 +2395,16 @@ int main (int ac, char *av[])
 
 				if (set_varname (buf) != 0)
 				{
+					if (file_inside == 0)
+					{
+						printf ("line: %lli\n", linenum);
+					}
+					else
+					{
+						printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
+					}
+					printf ("> %s\n\n", buf);
+
 					fclose (finptr);
 					fclose (foutptr);
 					fclose (docuptr);
@@ -2425,6 +2445,16 @@ int main (int ac, char *av[])
 			{
 				if (parse_set (buf, setret) != 0)
 				{
+					if (file_inside == 0)
+					{
+						printf ("line: %lli\n", linenum);
+					}
+					else
+					{
+						printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
+					}
+					printf ("> %s\n\n", buf);
+
 					fclose (finptr);
 					fclose (foutptr);
 					fclose (docuptr);
@@ -2484,6 +2514,15 @@ int main (int ac, char *av[])
 					ret = check_call (buf, pos_call);
 					if (ret == 1)
 					{
+						if (file_inside == 0)
+						{
+							printf ("line: %lli\n", linenum);
+						}
+						else
+						{
+							printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
+						}
+
 						// error!!!
 						printf ("line: %lli: '%s' error: no label name set!\n", linenum, buf);
 					}
