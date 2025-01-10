@@ -1227,7 +1227,7 @@ S2 include_file (U1 *line_str)
 				files[file_index].linenum++;
 			}
 
-			if (documentation_on == 1)
+			if (documentation_on == 1 && pass == 1)
 			{
 				pos = searchstr (buf, (U1 *) DOCU_END_SB, 0, 0, TRUE);
 				if (pos >= 0)
@@ -2161,7 +2161,7 @@ int main (int ac, char *av[])
 				}
 			}
 
-			if (documentation_on == 1)
+			if (documentation_on == 1 && pass == 1)
 			{
 				pos = searchstr (buf, (U1 *) DOCU_END_SB, 0, 0, TRUE);
 				if (pos >= 0)
@@ -2668,7 +2668,7 @@ int main (int ac, char *av[])
 		}
 
 		// open documentation file for output
-		docuptr = fopen ("out.md", "w");
+		docuptr = fopen ("tmp.md", "w");
 		if (docuptr == NULL)
 		{
 			printf ("ERROR: can't open docmentation file 'out.md' !\n");
