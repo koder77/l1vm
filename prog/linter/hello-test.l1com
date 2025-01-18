@@ -36,6 +36,6 @@
 
 // (func args stpop)
    (y~ x~ |>)
-   {ret~ = x~ + y~}
+   (x~ + y~ ret~ :=)
    (b~ ret~ >|) (return)
 (funcend)
