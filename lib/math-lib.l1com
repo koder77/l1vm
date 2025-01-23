@@ -1,6 +1,5 @@
 // math-lib.l1com
 // math library demo
-// 
 #include <math-const.l1h>
 #include <intr-func.l1h>
 (main func)
