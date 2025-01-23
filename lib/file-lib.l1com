@@ -1,4 +1,4 @@
-// file library module
+// file-lib.l1com - file library module
 // test program
 #include <intr-func.l1h>
 (main func)
