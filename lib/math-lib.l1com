@@ -2,7 +2,7 @@
 // math library demo
 // 
 #include <math-const.l1h>
-#include <intr.l1h>
+#include <intr-func.l1h>
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 randstart 2003)
@@ -17,38 +17,43 @@
 	(set string 30 numstr "")
 	(set string s anglestr "angle sin: ")
 	(set string s anglestr_2 " = ")
-	(zero :math_init call)
-	(loadreg)
-	(randstart :math_randinit call)
-	(loadreg)
-	(:math_randint call)
+	(zero :math_init !)
+	(randstart :math_randinit !)
+	(:math_randint !)
 	(random stpopi)
-	(loadreg)
-	print_i (random)
-	print_n
-	print_d (m_pimath)
-	print_n
+	// print random number
+	(random :print_i !)
+	(:print_n !)
+
+	// print pi
+	(m_pimath :print_d !)
+	(:print_n !)
+
 	// round pi to "digits" (3) digits and store number in string
-	(m_pimath digits numstraddr numstr_len :double_rounded_string call)
-	(loadreg)
-	print_s (numstr)
-	print_n
-	(not_num :math_not call)
+	(m_pimath digits numstraddr numstr_len :double_rounded_string !)
+    (numstr :print_s !)
+	(:print_n !)
+
+    // get "not" of not_num (0)
+	(not_num :math_not !)
 	(not_ret stpopi)
-	(loadreg)
-	print_i (not_ret)
-	print_n
+	(not_ret :print_i !)
+	(:print_n !)
+
+    // convert degree to rad
 	(angle :math_degree_to_rad !)
 	(rad stpopd)
 	(rad :math_sindouble !)
 	(rad stpopd)
-	print_s (anglestr)
-	print_d (angle)
-	print_s (anglestr_2)
-	print_d (rad)
-	print_n
+	(anglestr :print_s !)
+	(angle :print_d !)
+	(anglestr_2 :print_s !)
+	(rad :print_d !)
+	(:print_n !)
+
 	// close module
-	free_mod (zero)
-	exit (zero)
+	(zero :free_mod !)
+	(zero :exit !)
 (funcend)
+
 #include <math-lib.l1h>
