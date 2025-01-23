@@ -1,23 +1,28 @@
-// file library module
+// file-tools.l1com - file library module
 // test program
-//
-//
 #include <intr.l1h>
 (main func)
     #include <file-def.l1h>
     (set int64 1 zero 0)
 	(set int64 1 one 1)
-    (set string s oldfilename "foobar.txt")
-    (set string s newfilename "hello.txt")
+    (set string s oldfilenamestr "foobar.txt")
+    (set string s newfilenamestr "hello.txt")
+    (set string s error_renamestr "error: can't rename file 'foobar.txt' to 'hello.txt'!")
     (set int64 1 ret 0)
+    (set int64 1 f 0)
 
     (zero :file_tools_init !)
 
     // rename file
-    (oldfilenameaddr newfilenameaddr :file_tools_rename !)
+    (oldfilenamestr newfilenamestr :file_tools_rename !)
     (ret stpop)
-    free_mod (zero)
-    exit (zero)
+    (((ret zero ==) f =) f if)
+        (error_renamestr :print_s !)
+        (:print_n !)
+    (endif)
+
+    (zero :free_mod !)
+    (zero :exit !)
 (funcend)
 
 #include <file-tools-lib.l1h>
