@@ -1,7 +1,5 @@
 // file library module
 // test program
-//
-//
 #include <intr-func.l1h>
 (main func)
     #include <file-def.l1h>
@@ -22,7 +20,7 @@
     (set int64 1 ret 0)
     (set int64 1 f 0)
     (set string s error_init_files "error: can't allocate file handles!")
-(set string s error_open_file "error: can't open file test-file!")
+    (set string s error_open_file "error: can't open file test-file!")
     (set string s write_error "error writing file!")
     (set string s read_error "error reading file!")
     //
