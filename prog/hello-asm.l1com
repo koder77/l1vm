@@ -1,6 +1,5 @@
-// hello.l1com
+// hello-asm.l1com
 // Brackets - Hello world!
-//
 #include <intr-func.l1h>
 (main func)
 	(set int64 1 zero 0)
