@@ -51,7 +51,7 @@ int strright (U1 *dst, U1 *src, int chars)
 {
     int i, src_pos, src_len;
 
-    src_len = strlen_safe (src, STRINGMOD_MAXSTRLEN);
+    src_len = strlen_safe ((const char *) src, STRINGMOD_MAXSTRLEN);
     src_pos = src_len - chars;
 
     if (src_pos < 0)
@@ -73,7 +73,7 @@ int strleft (U1 *dst, U1 *src, int chars)
 {
     int i, src_len;
 
-    src_len = strlen_safe (src, STRINGMOD_MAXSTRLEN);
+    src_len = strlen_safe ((const char *) src, STRINGMOD_MAXSTRLEN);
 
     if (chars > src_len)
     {
@@ -94,7 +94,7 @@ int strremoveleft (U1 *dst, U1 *src, int pos)
 {
     int i, j, src_len;
 
-    src_len = strlen_safe (src, STRINGMOD_MAXSTRLEN);
+    src_len = strlen_safe ((const char *) src, STRINGMOD_MAXSTRLEN);
 
     if (pos < 1 || pos > src_len)
     {
@@ -134,7 +134,7 @@ int strremoveright (U1 *dst, U1 *src, int pos)
 {
     int i, j, src_len;
 
-    src_len = strlen_safe (src, STRINGMOD_MAXSTRLEN);
+    src_len = strlen_safe ((const char *) src, STRINGMOD_MAXSTRLEN);
 
     if (pos < 0 || pos > src_len)
     {
@@ -174,7 +174,7 @@ int strinsertchar (U1 *dst, U1 *src, U1 chr, int pos)
 {
     int i, j, src_len;
 
-    src_len = strlen_safe (src, STRINGMOD_MAXSTRLEN);
+    src_len = strlen_safe ((const char *) src, STRINGMOD_MAXSTRLEN);
 
     if (pos < 0 || pos > src_len)
     {
