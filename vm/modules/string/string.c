@@ -198,7 +198,7 @@ U1 *string_len (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	slen = strlen_safe ((char *) &data[straddr], STRINGMOD_MAXSTRLEN);
+	slen = strlen_safe ((const char *) &data[straddr], STRINGMOD_MAXSTRLEN);
 
 	sp = stpushi (slen, sp, sp_bottom);
 	if (sp == NULL)
@@ -232,7 +232,7 @@ U1 *string_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	offset = strlen_safe ((char *) &data[strsourceaddr], STRINGMOD_MAXSTRLEN);
+	offset = strlen_safe ((const char *) &data[strsourceaddr], STRINGMOD_MAXSTRLEN);
 
 	#if BOUNDSCHECK 
 	if (memory_bounds (strdestaddr, offset) != 0)
@@ -269,8 +269,8 @@ U1 *string_cat (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	offset_src = strlen_safe ((char *) &data[strsourceaddr], STRINGMOD_MAXSTRLEN);
-	offset_dst = strlen_safe ((char *) &data[strdestaddr], STRINGMOD_MAXSTRLEN);
+	offset_src = strlen_safe ((const char *) &data[strsourceaddr], STRINGMOD_MAXSTRLEN);
+	offset_dst = strlen_safe ((const char *) &data[strdestaddr], STRINGMOD_MAXSTRLEN);
 
 	#if BOUNDSCHECK
 	if (memory_bounds (strdestaddr, offset_src + offset_dst) != 0)
@@ -1830,8 +1830,8 @@ U1 *string_verify (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	string_len = strlen_safe ((char *) &data[stringaddr], NEWSTRING_LEN - 1);
-	strvalid_len = strlen_safe ((char *) &data[strvalidaddr], NEWSTRING_LEN - 1);
+	string_len = strlen_safe ((const char *) &data[stringaddr], NEWSTRING_LEN - 1);
+	strvalid_len = strlen_safe ((const char *) &data[strvalidaddr], NEWSTRING_LEN - 1);
 
 	// ret = searchstr (&data[strsourceaddr], &data[strsearchaddr], 0, 0);
 	// check if range: is set
@@ -1930,7 +1930,7 @@ U1 *string_verify (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (newstr_ind > 0)
 	{
 		newstr[newstr_ind] = '\0';
-	    strvalid_len = strlen_safe ((char *) newstr, NEWSTRING_LEN - 1);
+	    strvalid_len = strlen_safe ((const char *) newstr, NEWSTRING_LEN - 1);
 
 		// check if all chars in stringaddr are valid chars of newstr
 		for (i = 0; i < string_len; i++)
