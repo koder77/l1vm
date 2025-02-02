@@ -8,5 +8,5 @@
 	// print string
 	(hello :print_s !)
 	(:print_n !)
-	(zero :exit  !)
+	(zero :exit !)
 (funcend)

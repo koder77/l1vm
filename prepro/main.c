@@ -147,8 +147,48 @@ void convtabs (U1 *str);
 S2 get_varname_type (U1 *name);
 S2 parse_set (U1 *line, U1 *setret);
 
-//string.c
-S2 check_spaces (U1 *line);
+S2 do_check_spaces (U1 *line)
+{
+	S4 line_len = 0;
+	S4 i = 0;
+	S4 pos = 0;
+
+	line_len = strlen_safe ((const char *) line, MAXLINELEN);
+
+	// check if (set ) line:
+	/*pos = searchstr (line, (U1 *) "(set", 0, 0, 0);
+	if (pos != -1)
+	{
+		// found set line, exit with ok code
+		return (0);
+	}
+	*/
+
+	//printf ("check_spaces: '%s'\n", line);
+
+	pos = searchstr (line, (U1 *) "(", 0, 0, 0);
+	if (pos == -1)
+	{
+		// empty line
+		return (0);
+	}
+
+	for (i = pos + 1; i < line_len - 1; i++)
+	{
+		if (line[i] == ' ')
+		{
+			if (line[i + 1] == ' ')
+			{
+				// found double spaces: error
+				//printf ("found multiple spaces!\n\n");
+				return (1);
+			}
+		}
+	}
+
+	// all ok!
+	return (0);
+}
 
 void clear_defines (void)
 {
@@ -2145,7 +2185,7 @@ int main (int ac, char *av[])
 
 			if (error_multi_spaces == 1)
 			{
-				if (check_spaces (buf) != 0)
+				if (do_check_spaces (buf) != 0)
 				{
 					printf ("error: found double spaces!\n");
 
