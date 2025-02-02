@@ -2999,8 +2999,11 @@ S2 run (void *arg)
 
 					free (threaddata[cpu_core].local_data[local_data_ind]);
 					threaddata[cpu_core].local_data[local_data_ind] = NULL;
+
 					// decrease index
+					pthread_mutex_lock (&data_mutex);
 					local_data_ind--;
+					pthread_mutex_unlock (&data_mutex);
 				}
 			}
 
