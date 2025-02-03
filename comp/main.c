@@ -238,6 +238,116 @@ S2 check_pure_function (U1 *function_name)
 	return (1);
 }
 
+void repair_multi_spaces (U1 *line)
+{
+	S4 line_len, line_ind = 0, outbuf_ind = 0;
+	U1 ok = 0;
+	U1 quote = 0;
+	U1 space = 0;
+	U1 ch;
+	U1 outbuf[MAXLINELEN];
+	line_len = strlen_safe ((const char *) line, MAXLINELEN);
+    if (line_len == 0)
+	{
+	    return;
+    }
+
+	//printf ("repair_multi_spaces: '%s'\n", line);
+
+    while (ok == 0)
+	{
+	    if (line[line_ind] == '"')
+		{
+			outbuf[outbuf_ind] = line[line_ind];
+			if (line_ind < line_len - 1)
+			{
+				line_ind++;
+			}
+			if (outbuf_ind < line_len - 1)
+			{
+				outbuf_ind++;
+			}
+			while (quote == 0)
+			{
+				if (line[line_ind] != '"')
+				{
+					outbuf[outbuf_ind] = line[line_ind];
+				}
+				else
+				{
+					// found end of set string:
+					outbuf[outbuf_ind] = line[line_ind];
+					if (outbuf_ind < line_len - 1)
+					{
+						outbuf_ind++;
+					}
+					outbuf[outbuf_ind] = ')';
+					if (outbuf_ind < line_len - 1)
+					{
+						outbuf_ind++;
+					}
+					outbuf[outbuf_ind] = '\0';
+					quote = 1;
+					ok = 1;
+					continue;
+				}
+				if (line_ind < line_len - 1)
+				{
+					line_ind++;
+				}
+				if (outbuf_ind < line_len - 1)
+				{
+					outbuf_ind++;
+				}
+			}
+		}
+		else
+		{
+			if (line[line_ind] != ' ')
+			{
+				outbuf[outbuf_ind] = line[line_ind];
+				if (line_ind < line_len - 1)
+				{
+					line_ind++;
+				}
+				if (outbuf_ind < line_len - 1)
+				{
+					outbuf_ind++;
+				}
+			}
+			else
+			{
+				space = 0;
+				outbuf[outbuf_ind] = line[line_ind];
+				if (outbuf_ind < line_len - 1)
+				{
+					outbuf_ind++;
+				}
+
+				while (space == 0)
+				{
+					if (line_ind < line_len - 1)
+					{
+						line_ind++;
+					}
+					if (line[line_ind] != ' ')
+					{
+						space = 1;
+					}
+				}
+			}
+		}
+		if (line_ind == line_len - 1)
+		{
+			ok = 1;
+		}
+	}
+	outbuf[outbuf_ind] = '\0';
+	strcpy (line, outbuf);
+
+	//printf ("repair_multi_spaces: out: '%s'\n", line);
+}
+
 S2 get_ast (U1 *line, U1 *parse_cont)
 {
 	S4 slen;
@@ -7195,6 +7305,7 @@ S2 parse (U1 *name)
 			convtabs (rbuf);  /* convert the funny tabs into spaces! */
 			// printf ("[ %s ]\n", rbuf);
 
+	        repair_multi_spaces (rbuf);
             pos = searchstr (rbuf, (U1 *) REM_SB, 0, 0, TRUE);
             if (pos == -1)
             {
