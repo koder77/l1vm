@@ -1,3 +1,15 @@
+L1VM (3.3.6)
+	Added "repair multi spaces" function to compiler.
+	It fixes the two or more spaces problem between tokens.
+
+        (set  string  13 hello   "Hello world!")
+
+	will be changed to:
+
+	(set string 13 hello "Hello world!")
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 08 Feb 2025 13:44  +010
+
 L1VM (3.3.5)
 	VM: MPFR module: print number string fixes. Now the function checks if string is big enough before saving it into the temp file.
 

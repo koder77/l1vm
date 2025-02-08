@@ -254,16 +254,19 @@ void repair_multi_spaces (U1 *line)
 
 	//printf ("repair_multi_spaces: '%s'\n", line);
 
+	//        länge 8 zeichen
+	//12345678
+	//01234567
     while (ok == 0)
 	{
 	    if (line[line_ind] == '"')
 		{
 			outbuf[outbuf_ind] = line[line_ind];
-			if (line_ind < line_len - 1)
+			if (line_ind < line_len)
 			{
 				line_ind++;
 			}
-			if (outbuf_ind < line_len - 1)
+			if (outbuf_ind < line_len)
 			{
 				outbuf_ind++;
 			}
@@ -277,12 +280,12 @@ void repair_multi_spaces (U1 *line)
 				{
 					// found end of set string:
 					outbuf[outbuf_ind] = line[line_ind];
-					if (outbuf_ind < line_len - 1)
+					if (outbuf_ind < line_len)
 					{
 						outbuf_ind++;
 					}
 					outbuf[outbuf_ind] = ')';
-					if (outbuf_ind < line_len - 1)
+					if (outbuf_ind < line_len)
 					{
 						outbuf_ind++;
 					}
@@ -291,11 +294,11 @@ void repair_multi_spaces (U1 *line)
 					ok = 1;
 					continue;
 				}
-				if (line_ind < line_len - 1)
+				if (line_ind < line_len)
 				{
 					line_ind++;
 				}
-				if (outbuf_ind < line_len - 1)
+				if (outbuf_ind < line_len)
 				{
 					outbuf_ind++;
 				}
@@ -306,11 +309,11 @@ void repair_multi_spaces (U1 *line)
 			if (line[line_ind] != ' ')
 			{
 				outbuf[outbuf_ind] = line[line_ind];
-				if (line_ind < line_len - 1)
+				if (line_ind < line_len)
 				{
 					line_ind++;
 				}
-				if (outbuf_ind < line_len - 1)
+				if (outbuf_ind < line_len)
 				{
 					outbuf_ind++;
 				}
@@ -319,14 +322,14 @@ void repair_multi_spaces (U1 *line)
 			{
 				space = 0;
 				outbuf[outbuf_ind] = line[line_ind];
-				if (outbuf_ind < line_len - 1)
+				if (outbuf_ind < line_len)
 				{
 					outbuf_ind++;
 				}
 
 				while (space == 0)
 				{
-					if (line_ind < line_len - 1)
+					if (line_ind < line_len)
 					{
 						line_ind++;
 					}
@@ -337,15 +340,13 @@ void repair_multi_spaces (U1 *line)
 				}
 			}
 		}
-		if (line_ind == line_len - 1)
+		if (line_ind == line_len)
 		{
 			ok = 1;
 		}
 	}
 	outbuf[outbuf_ind] = '\0';
-	strcpy (line, outbuf);
-
-	//printf ("repair_multi_spaces: out: '%s'\n", line);
+	strcpy ((char *) line, (const char *) outbuf);
 }
 
 S2 get_ast (U1 *line, U1 *parse_cont)
