@@ -615,9 +615,12 @@ S2 check_define_type (U1 *define, U1* variable)
 
 	S2 symbstr_max = 30;
 	S2 compstr_max = 12;
+	S2 mathstr_max = 14;
 	S2 i = 0;
 	const U1 symbstr[30][4] = { "+", "-", "*", "/", "+d", "-d", "*d", "/d", "<<", ">>", "&&", "||", "&", "|", "^", "%", "==", "!=", "<=", ">=", ">", "<", ">|", "<|", "==d", "!=d", ">d", "<d", ">=d", "<=d" };
     const U1 compstr[12][4] = { "==", "!=", "<=", ">=", ">", "<", "==d", "!=d", ">d", "<d", ">=d", "<=d" };
+	const U1 mathstr[14][4] = { "+", "-", "*", "/", "+d", "-d", "*d", "/d", "<<", ">>", "^", "%", "&", "|" };
+
 	str_len = strlen_safe ((const char *) define, MAXLINELEN);
 	if (str_len < 2)
 	{
@@ -709,6 +712,18 @@ S2 check_define_type (U1 *define, U1* variable)
 		return (1); // symbol not found! error!
 	}
 
+	if (define[0] == 'm')
+	{
+		// math type: some like: + - * /
+		for (i = 0; i < mathstr_max; i++)
+		{
+			if (strcmp ((const char *) variable, (const char *) mathstr[i]) == 0)
+			{
+				return (0); // all ok, symbol found!
+			}
+		}
+		return (1); // symbol not found! error!
+	}
 
 	return (0); // unknown var type, for backwards compatibility set return code 0
 }
