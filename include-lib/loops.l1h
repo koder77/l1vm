@@ -2,12 +2,13 @@
 >> loops definitions
 >> needs f and one to be defined by set
 >> oOP -> new variable type operator: something like = != < > + - * / etc!
+>> cOP -> variable compare operator: < > != == etc.
 >> thread safe macros, which set the f variable as argument:
 #func thr-for-each-in (PVAR, X, SIZE, F) :(33 PVAR SIZE 0 intr0)@#((SIZE zero +) SIZE =)@#(for-loop)@#(((X SIZE <) F =) F for)
-#func thr-for (X, M, oOP, F) :(for-loop)@#(((X M oOP) F =) F for)
-#func thr-while (X, M, oOP, F) :(((X M oOP) F =) F while)
+#func thr-for (X, M, cOP, F) :(for-loop)@#(((X M cOP) F =) F for)
+#func thr-while (X, M, cOP, F) :(((X M cOP) F =) F while)
 
 #func for-each-in (PVAR, X, SIZE) :(33 PVAR SIZE 0 intr0)@#((SIZE zero +) SIZE =)@#(for-loop)@#(((X SIZE <) f =) f for)
 #func next-in (I, X, TYPE) :((I one +) I =)@#{X = (I * TYPE)}@#(next)
-#func dofor (X, M, oOP) :(for-loop)@#(((X M oOP) f =) f for)
-#func dowhile (X, M, oOP) :(((X M oOP) f =) f while)
+#func dofor (X, M, cOP) :(for-loop)@#(((X M cOP) f =) f for)
+#func dowhile (X, M, cOP) :(((X M cOP) f =) f while)

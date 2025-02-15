@@ -614,9 +614,10 @@ S2 check_define_type (U1 *define, U1* variable)
 	S2 vartype = 0;
 
 	S2 symbstr_max = 30;
+	S2 compstr_max = 12;
 	S2 i = 0;
 	const U1 symbstr[30][4] = { "+", "-", "*", "/", "+d", "-d", "*d", "/d", "<<", ">>", "&&", "||", "&", "|", "^", "%", "==", "!=", "<=", ">=", ">", "<", ">|", "<|", "==d", "!=d", ">d", "<d", ">=d", "<=d" };
-
+    const U1 compstr[12][4] = { "==", "!=", "<=", ">=", ">", "<", "==d", "!=d", ">d", "<d", ">=d", "<=d" };
 	str_len = strlen_safe ((const char *) define, MAXLINELEN);
 	if (str_len < 2)
 	{
@@ -669,7 +670,7 @@ S2 check_define_type (U1 *define, U1* variable)
 
 	if (define[0] == 's')
 	{
-		// s = double variable type
+		// s = string variable type
 		switch (vartype)
 		{
 			case VARTYPE_STRING:
@@ -684,7 +685,7 @@ S2 check_define_type (U1 *define, U1* variable)
 
 	if (define[0] == 'o')
 	{
-		// operator type: some like: = != > <
+		// operator type: some like: = != > < + - * /
 		for (i = 0; i < symbstr_max; i++)
 		{
 			if (strcmp ((const char *) variable, (const char *) symbstr[i]) == 0)
@@ -694,6 +695,20 @@ S2 check_define_type (U1 *define, U1* variable)
 		}
 		return (1); // symbol not found! error!
 	}
+
+	if (define[0] == 'c')
+	{
+		// compare type: some like: = != > < <= >=
+		for (i = 0; i < compstr_max; i++)
+		{
+			if (strcmp ((const char *) variable, (const char *) compstr[i]) == 0)
+			{
+				return (0); // all ok, symbol found!
+			}
+		}
+		return (1); // symbol not found! error!
+	}
+
 
 	return (0); // unknown var type, for backwards compatibility set return code 0
 }
