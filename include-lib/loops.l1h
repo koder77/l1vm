@@ -3,6 +3,7 @@
 >> needs f and one to be defined by set
 >> oOP -> new variable type operator: something like = != < > + - * / etc!
 >> cOP -> variable compare operator: < > != == etc.
+>> mOP -> math operators like: + - * / % etc.
 >> thread safe macros, which set the f variable as argument:
 #func thr-for-each-in (PVAR, X, SIZE, F) :(33 PVAR SIZE 0 intr0)@#((SIZE zero +) SIZE =)@#(for-loop)@#(((X SIZE <) F =) F for)
 #func thr-for (X, M, cOP, F) :(for-loop)@#(((X M cOP) F =) F for)
