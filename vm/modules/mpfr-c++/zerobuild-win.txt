@@ -1,7 +1,7 @@
 # zerobuild makefile
 
 [executable, shared, name = libl1vmmpfr.so]
-sources = mpfr-combined.cpp, ../file/file-sandbox.c, ../../../lib-func/string.c
+sources = mpfr-combined.cpp, ../file/file-sandbox.c, ../../../lib-func/string.c, ../lib/memory_bounds.c
 
 includes = ../include, /usr/local/include
 

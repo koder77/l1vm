@@ -1,3 +1,8 @@
+L1VM (3.3.7)
+	VM/MPFR module Windows and macOS build scripts: memory bounds added.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Fri 21 Feb 2025 32:00  +010
+
 L1VM (3.3.6)
 	Added "repair multi spaces" function to compiler.
 	It fixes the two or more spaces problem between tokens.
