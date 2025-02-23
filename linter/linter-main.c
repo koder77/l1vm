@@ -1,7 +1,7 @@
 /*
  * This file linter-main.c is part of L1vm.
  *
- * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2024
+ * (c) Copyright Stefan Pietzonke (info@midnight-coding.de), 2024
  *
  * L1vm is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

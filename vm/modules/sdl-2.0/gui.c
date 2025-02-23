@@ -1,7 +1,7 @@
 /*
  * This file gui.c is part of L1vm.
  *
- * (c) Copyright Stefan Pietzonke (jay-t@gmx.net), 2019
+ * (c) Copyright Stefan Pietzonke (info@midnight-coding.de), 2019
  *
  * L1vm is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
