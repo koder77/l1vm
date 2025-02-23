@@ -1,6 +1,6 @@
 L1VM README  2025-01-01
 =======================
-![alt text](https://midnight-koder.net/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
+![alt text](https://midnight-coding.de/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/P5P2Y3KP)
 
@@ -24,7 +24,7 @@ Use network functions with TCP/IP and <a href="https://midnight-coding.de/blog/s
 There can be legal limits set for a number variable. Resulting in a runtime error on overflow. </b> <br>
 The VM has no garbage collector. All variables declared by "set" are in memory at program start. No memory management must be done on them. <br><br>
 
-Here is the [L1VM course](https://midnight-koder.net/blog/l1vm) on my blog.
+Here is the [L1VM course](https://midnight-coding.de/blog/l1vm) on my blog.
 
 The L1VM can be build as a shared library to embedd it too!
 </b>
