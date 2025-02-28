@@ -1,3 +1,8 @@
+L1VM (3.3.8)
+	Preprocesso: show line number in macro errors.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Fri 28 Feb 2025 21:18  +010
+
 L1VM (3.3.7)
 	VM/MPFR module Windows and macOS build scripts: memory bounds added.
 

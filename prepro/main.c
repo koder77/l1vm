@@ -1382,6 +1382,17 @@ S2 include_file (U1 *line_str)
 						if (replace_macro_normal (buf) != 0)
 					    {
 							return_error = 1;
+
+							printf ("error: replace macro normal:\n");
+							if (file_inside == 0)
+							{
+								printf ("line: %lli\n", linenum);
+							}
+							else
+							{
+								printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
+							}
+							printf ("> %s\n\n", buf);
 					    }
 					}
 					else
@@ -1395,6 +1406,17 @@ S2 include_file (U1 *line_str)
 						if (replace_macro (buf) != 0)
 					    {
 							return_error = 1;
+
+							printf ("error: replace macro:\n");
+							if (file_inside == 0)
+							{
+								printf ("line: %lli\n", linenum);
+							}
+							else
+							{
+								printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
+							}
+							printf ("> %s\n\n", buf);
 					    }
 					}
 				}
@@ -2357,10 +2379,22 @@ int main (int ac, char *av[])
 						// check function name to variable name tackon
 					    replace_varname (buf);
 
+						// check if macro is set
 						if (replace_macro_normal (buf) != 0)
 					    {
 							return_error = 1;
-					    }
+
+							printf ("error: replace macro normal:\n");
+							if (file_inside == 0)
+							{
+								printf ("line: %lli\n", linenum);
+							}
+							else
+							{
+								printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
+							}
+							printf ("> %s\n\n", buf);
+						}
 					}
 					else
 					{
@@ -2373,6 +2407,17 @@ int main (int ac, char *av[])
 						if (replace_macro (buf) != 0)
 					    {
 							return_error = 1;
+
+							printf ("error: replace macro:\n");
+							if (file_inside == 0)
+							{
+								printf ("line: %lli\n", linenum);
+							}
+							else
+							{
+								printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
+							}
+							printf ("> %s\n\n", buf);
 					    }
 					}
 				}

@@ -1,10 +1,12 @@
+// genann-lib.l1com
 // genann library demo
 // train XOR function and run trained neural network
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 (main func)
     (set const-int64 1 zero 0)
     (set const-int64 1 one 1)
+    (set const-int64 1 genann_mod 0)
     (set int64 1 i 1000)
     (set int64 1 f 0)
     (set int64 1 ret 0)
@@ -29,7 +31,7 @@
     (set string 10 txt_3 "1 xor 0: ")
     (set string 10 txt_4 "1 xor 1: ")
     (set string 11 run "running...")
-	(set int64 1 handle 0)
+    (set int64 1 handle 0)
     (set int64 1 three 3)
     (input1 Pinput1_addr pointer)
     (input2 Pinput2_addr pointer)
@@ -38,23 +40,25 @@
     (des_output_null Pdes_output_null_addr pointer)
     (des_output_one Pdes_output_one_addr pointer)
     (output Poutput_addr pointer)
-    print_i (Pinput1_addr)
-    print_n
-    print_n
+    (Pinput1_addr :print_i !)
+    (:print_n !)
+    (:print_n !)
     // init genann library
-	(reset-reg)
-    (zero one :genann_init_lib !)
-	(ret stpopi)
-	(((ret zero !=) f =) f if)
-        free_mod (zero)
-        exit (one)
-	(endif)
-	(reset-reg)
-	stack_check
+    (reset-reg)
+    (genann_mod one :genann_init_lib !)
+    (ret stpopi)
+    (((ret zero !=) f =) f if)
+        (zero :free_mod !)
+        (one :exit !)
+    (endif)
+    (reset-reg)
+    (:stack_check !)
     (two one two one :genann_init !)
     (handle stpopi)
-    print_s (learning)
-    print_n
+    (learning :print_s !)
+    (:print_n !)
+
+    // train ann with the inputs and set outputs
     (:learn)
     (handle Pinput2_addr Pdes_output_one_addr three :genann_train !)
     (handle Pinput3_addr Pdes_output_one_addr three :genann_train !)
@@ -63,33 +67,34 @@
     ((i one -) i =)
     ((i zero >) f =)
     (f :learn jmpi)
+
     // run ann
-    print_s (run)
-    print_n
+    (run :print_s !)
+    (:print_n !)
     // run genann with one output variable
     (handle Pinput1_addr Poutput_addr one :genann_run !)
-    print_s (txt_1)
-    print_d (output)
-    print_n
+    (txt_1 :print_s !)
+    (output :print_d !)
+    (:print_n !)
 
     (handle Pinput2_addr Poutput_addr one :genann_run !)
-    print_s (txt_2)
-    print_d (output)
-    print_n
+    (txt_2 :print_s !)
+    (output :print_d !)
+    (:print_n !)
 
     (handle Pinput3_addr Poutput_addr one :genann_run !)
-    print_s (txt_3)
-    print_d (output)
-    print_n
+    (txt_3 :print_s !)
+    (output :print_d !)
+    (:print_n !)
 
     (handle Pinput4_addr Poutput_addr one :genann_run !)
-    print_s (txt_4)
-    print_d (output)
-    print_n
+    (txt_4 :print_s !)
+    (output :print_d !)
+    (:print_n !)
 
     (handle :genann_free !)
-	(:free_genanns !)
-    free_mod (zero)
+    (:free_genanns !)
+    (genann_mod :free_mod !)
     exit (zero)
 (funcend)
 #include <genann-lib.l1h>
