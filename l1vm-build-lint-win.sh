@@ -55,4 +55,3 @@ rm out.l1com
 rm out.l1obj
 rm out.md
 rm tmp.md
-rm pass-1.l1com
