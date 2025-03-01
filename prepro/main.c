@@ -2146,7 +2146,7 @@ int main (int ac, char *av[])
 		exit (1);
 	}
 
-	foutptr = fopen ("pass-1.l1com", "w");
+	foutptr = fopen (av[2], "w");
 	if (foutptr == NULL)
 	{
 		// error can't open input file
@@ -2755,45 +2755,7 @@ int main (int ac, char *av[])
 	fclose (foutptr);
 	fclose (docuptr);
 
-	if (pass == 1)
-	{
-		pass = 2;
-
-		file_index = 0;
-		file_inside = 0;
-		linenum = 0;
-
-		// open pass-1.l1com file
-		// open input file
-		finptr = fopen ("pass-1.l1com", "r");
-		if (finptr == NULL)
-		{
-			// error can't open input file
-			printf ("ERROR: can't open input file: pass-1.l1com !\n");
-			exit (1);
-		}
-
-		foutptr = fopen (av[2], "w");
-		if (foutptr == NULL)
-		{
-			// error can't open input file
-			printf ("ERROR: can't open output file: '%s' !\n", av[2]);
-			fclose (finptr);
-			exit (1);
-		}
-
-		// open documentation file for output
-		docuptr = fopen ("tmp.md", "w");
-		if (docuptr == NULL)
-		{
-			printf ("ERROR: can't open docmentation file 'out.md' !\n");
-			fclose (finptr);
-			fclose (foutptr);
-			exit (1);
-		}
-
-		goto run_loop;
-	}
+	// second pass code removed!
 
 	// check if text was written into docu file
 	if (documentation_write == 0)
