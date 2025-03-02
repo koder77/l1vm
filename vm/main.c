@@ -1964,12 +1964,15 @@ S2 run (void *arg)
 	//printf ("arg2: %li\n", arg2);
 
 	#if BOUNDSCHECK
+	if (do_memory_bounds_check == 1)
+	{
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
+	}
 	}
 	#endif
 
@@ -2039,12 +2042,15 @@ S2 run (void *arg)
 	*bptr = code[ep + 16];
 
 	#if BOUNDSCHECK
+	if (do_memory_bounds_check == 1)
+	{
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
+	}
 	}
 	#endif
 
