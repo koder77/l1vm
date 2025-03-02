@@ -54,6 +54,8 @@
 #func get_host_os (HOST_OS) :(36 HOST_OS 0 0 intr0)
 #define dbger (37 0 0 0 intr0)
 #define stack_clear (38 0 0 0 intr0)
+#define memory_bounds_on (39 0 0 0 intr0)
+#define memory_bounds_off (40 0 0 0 intr0)
 >>
 >>	intr1
 >>

@@ -2,7 +2,15 @@ L1VM (3.3.8)
 	Preprocesso: show line number in macro errors.
 	Preprocessor: second pass removed. Now error messages show the right line numbers!
 
--- Stefan Pietzonke <info@midnight-coding.de> Sat 1 Mar 2025 21:18  +010
+	VM: added two new interrupts to switch memory bounds check on push/pull opcodes:
+
+	(:memory_bounds_off !)
+	(:memory_bounds_on !)
+
+	If it is switched off then the execution speed can increase a lot.
+	But the overflow checking is disabled for push/pull opcodes!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sun 2 Mar 2025 19:31  +010
 
 L1VM (3.3.7)
 	VM/MPFR module Windows and macOS build scripts: memory bounds added.

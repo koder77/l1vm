@@ -58,7 +58,7 @@ S2 memory_bounds (S8 start, S8 offset_access)
 					case WORD:
 						if (offset_access % sizeof (S2) != 0)
 						{
-						printf ("memory_bounds: FATAL ERROR: variable access not on word bound, address: %lli, offset: %lli!\n", start, offset_access);
+						    printf ("memory_bounds: FATAL ERROR: variable access not on word bound, address: %lli, offset: %lli!\n", start, offset_access);
 							return (1);
 						}
 						return (0);

@@ -588,6 +588,8 @@ S2 run (void *arg)
 	// for local data interrupt
     S8 local_data_ind ALIGN = -1;
 
+	U1 do_memory_bounds_check = 1;
+
 	// jumpoffsets
 	S8 *jumpoffs ALIGN;
 	S8 offset ALIGN;
@@ -882,12 +884,15 @@ S2 run (void *arg)
 	arg3 = code[ep + 3];
 
 	#if BOUNDSCHECK
+	if (do_memory_bounds_check == 1)
+	{
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
+	}
 	}
 	#endif
 
@@ -906,12 +911,15 @@ S2 run (void *arg)
 	arg3 = code[ep + 3];
 
 	#if BOUNDSCHECK
+	if (do_memory_bounds_check == 1)
+	{
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
+	}
 	}
 	#endif
 
@@ -934,12 +942,15 @@ S2 run (void *arg)
 	arg3 = code[ep + 3];
 
 	#if BOUNDSCHECK
+	if (do_memory_bounds_check == 1)
+	{
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
+	}
 	}
 	#endif
 
@@ -966,12 +977,15 @@ S2 run (void *arg)
 	arg3 = code[ep + 3];
 
 	#if BOUNDSCHECK
+	if (do_memory_bounds_check == 1)
+	{
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
+	}
 	}
 	#endif
 
@@ -1005,12 +1019,15 @@ S2 run (void *arg)
 	arg3 = code[ep + 3];
 
 	#if BOUNDSCHECK
+	if (do_memory_bounds_check == 1)
+	{
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
+	}
 	}
 	#endif
 
@@ -1045,12 +1062,15 @@ S2 run (void *arg)
 	arg3 = regi[code[ep + 3]];
 
 	#if BOUNDSCHECK
+	if (do_memory_bounds_check == 1)
+	{
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
+	}
 	}
 	#endif
 
@@ -1068,12 +1088,15 @@ S2 run (void *arg)
 	arg3 = regi[code[ep + 3]];
 
 	#if BOUNDSCHECK
+	if (do_memory_bounds_check == 1)
+	{
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
+	}
 	}
 	#endif
 
@@ -1095,12 +1118,15 @@ S2 run (void *arg)
 	arg3 = regi[code[ep + 3]];
 
 	#if BOUNDSCHECK
+	if (do_memory_bounds_check == 1)
+	{
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
+	}
 	}
 	#endif
 
@@ -1126,12 +1152,15 @@ S2 run (void *arg)
 	arg3 = regi[code[ep + 3]];
 
 	#if BOUNDSCHECK
+	if (do_memory_bounds_check == 1)
+	{
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
+	}
 	}
 	#endif
 
@@ -1165,12 +1194,15 @@ S2 run (void *arg)
 	arg3 = regi[code[ep + 3]];
 
 	#if BOUNDSCHECK
+	if (do_memory_bounds_check == 1)
+	{
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
+	}
 	}
 	#endif
 
@@ -2566,6 +2598,20 @@ S2 run (void *arg)
 		case 38:
 			// clear stack: stack_clear
 			sp = sp_top;
+			eoffs = 5;
+			break;
+
+		case 39:
+			// set memory bounds check for variable push/pull on
+			do_memory_bounds_check = 1;
+
+			eoffs = 5;
+			break;
+
+		case 40:
+			// set memory bounds check for variables push/pul off
+			do_memory_bounds_check = 0;
+
 			eoffs = 5;
 			break;
 

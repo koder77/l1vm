@@ -24,6 +24,7 @@
 	(set string s messagestr "starting...")
 
 	// (set int64 1 maxloop 10000000000)
+	(:memory_bounds_off !)
 	(set int64 1 maxloop 10000000)
 	(zero :math_init !)
 	(zero regi [ ind ] =)
