@@ -26,6 +26,9 @@
     <item>variable-local-off</item>
     <item>variable-local-on</item>
 	<item>pure-off</item>
+    <item>unsafe</item>
+    <item>unsafe-end</item>
+
 	</list>
     <list name="keywords">
     <item>funcend</item>
