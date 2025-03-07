@@ -10,7 +10,11 @@ L1VM (3.3.8)
 	If it is switched off then the execution speed can increase a lot.
 	But the overflow checking is disabled for push/pull opcodes!
 
--- Stefan Pietzonke <info@midnight-coding.de> Sun 2 Mar 2025 19:31  +010
+	Added "unsafe" and "unsafe-end" code blocks.
+	Inside a unsafe block the memory bounds checking can set on/off.
+	See example "prog/little-vm.l1com".
+
+-- Stefan Pietzonke <info@midnight-coding.de> Fri 07 Mar 2025 16:33  +010
 
 L1VM (3.3.7)
 	VM/MPFR module Windows and macOS build scripts: memory bounds added.

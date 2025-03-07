@@ -132,6 +132,13 @@ U1 pure_function = 0;
 // if set to 1: switch pure_function off
 U1 pure_function_override = 0;
 
+// unsafe block
+U1 inside_unsafe = 0;
+
+// memory boúnds on/off
+U1 memory_bounds = 1;
+
+
 void init_ast (void)
 {
 	S4 i, j;
@@ -3461,6 +3468,12 @@ S2 parse_line (U1 *line)
 									pure_function = 0; // reset flags!
 									pure_function_override = 0;
 
+									if (inside_unsafe == 1)
+									{
+										printf ("error: line %lli: unsafe-end not set before function end!\n", linenum);
+										return (1);
+									}
+
 									code_line++;
 									if (code_line >= line_len)
 									{
@@ -3493,6 +3506,34 @@ S2 parse_line (U1 *line)
 								{
 									strcpy ((char *) code_temp, (const char *) ast[level].expr[j][last_arg]);
 									strcat ((char *) code_temp, " ");
+
+									if (strcmp ((const char *) ast[level].expr[j][last_arg], "intr0") == 0)
+									{
+										if (last_arg >= 4)
+										{
+											if (strcmp (ast[level].expr[j][last_arg - 4], "39") == 0)
+											{
+												// memory bounds on
+												memory_bounds = 1;
+											}
+
+											if (strcmp (ast[level].expr[j][last_arg - 4], "40") == 0)
+											{
+												// memory bounds off
+												// check if inside unsafe code block
+
+												if (inside_unsafe == 0)
+												{
+													printf ("error: line %lli: memory_bounds_off called outside of unsafe code block!\n", linenum);
+													return (1);
+												}
+
+												memory_bounds = 0;
+											}
+										}
+									}
+
+
 
 									for (e = 0; e <= last_arg - 1; e++)
 									{
@@ -5202,6 +5243,26 @@ S2 parse_line (U1 *line)
 									continue;
 								}
 
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "unsafe") == 0)
+								{
+									// inside unsafe block
+									inside_unsafe = 1;
+									continue;
+								}
+
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "unsafe-end") == 0)
+								{
+									if (memory_bounds == 0)
+									{
+										printf ("error: line %lli: memory_bounds_on not called inside of unsafe code block!\n", linenum);
+										return (1);
+									}
+
+									// unsafe block end
+									inside_unsafe = 0;
+									continue;
+								}
+
 								// pointer: store data address int int64 variable
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "pointer") == 0)
 								{
@@ -5567,7 +5628,6 @@ S2 parse_line (U1 *line)
 									}
 
 									// first of all use save register code
-
 									// save integer registers
 									for (e = 0; e < MAXREG; e++)
 									{

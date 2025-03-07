@@ -24,7 +24,6 @@
 	(set string s messagestr "starting...")
 
 	// (set int64 1 maxloop 10000000000)
-	(:memory_bounds_off !)
 	(set int64 1 maxloop 10000000)
 	(zero :math_init !)
 	(zero regi [ ind ] =)
@@ -200,6 +199,8 @@
 	(set int64 14 jmp_array 0)
 	(set int64 1 i 0)
 	(set int64 1 op_label 0)
+    (unsafe)
+	(:memory_bounds_off !)
 	(reset-reg)
 	(:set_labels)
 	(:addi lab_addi loadl)
@@ -227,5 +228,7 @@
 	(jmp_array [ bp ] op_label =)
 	(op_label jsra)
 	(:load_opcode jmp)
+	(:memory_bounds_on !)
+	(unsafe-end)
 (funcend)
 #include <math-lib.l1h>
