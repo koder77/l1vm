@@ -29,6 +29,8 @@
  	U1 expr_type[MAXEXPRESSION];						// type of register (INTEGER or DOUBLE)
  };
 
+// for variable assigns: = := only variables with the same prefix can be assigned or calculated
+U1 variable_prefix[MAXSTRLEN];
 
  // forward declarations
  U1 checkdigit (U1 *str);

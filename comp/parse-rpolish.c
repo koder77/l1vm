@@ -30,6 +30,7 @@ size_t strlen_safe (const char * str, S8 maxlen);
 
 // protos var.c
 S2 get_var_is_const (U1 *name);
+S2 set_variable_prefix (U1 *variable);
 
 // translate.h
 #define MAXTRANSLATE 48
@@ -902,6 +903,11 @@ S2 parse_rpolish (U1 *postfix)
 		return (1);
 	}
 
+	if (set_variable_prefix (target_var) == 1)
+	{
+		printf ("error: line %lli: variable '%s' prefix not set with \\prefix\\ !\n", linenum, target_var);
+		return (1);
+	}
 
 	target_var_type = getvartype_real (target_var);
 
@@ -1597,5 +1603,11 @@ S2 parse_rpolish (U1 *postfix)
 		return (1);
 	}
 
-   return (0);
+	if (set_variable_prefix ("") == 1)
+	{
+		printf ("error: line %lli: variable '%s' prefix not set with \\prefix\\ !\n", linenum, target_var);
+		return (1);
+	}
+
+    return (0);
 }

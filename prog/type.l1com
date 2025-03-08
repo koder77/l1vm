@@ -1,0 +1,15 @@
+// type.l1com
+// Brackets - number prefixes \prefix\
+// only variables with the target var prefix allowed in math expressions
+//
+#include <intr-func.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 \num\x 2)
+	(set int64 1 \num\y 10)
+	(set int64 1 \num\z 0)
+	(\num\x * \num\y \num\z :=)
+	(\num\z :print_i !)
+	(:print_n !)
+	(zero :exit !)
+(funcend)

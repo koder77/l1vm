@@ -14,7 +14,16 @@ L1VM (3.3.8)
 	Inside a unsafe block the memory bounds checking can set on/off.
 	See example "prog/little-vm.l1com".
 
--- Stefan Pietzonke <info@midnight-coding.de> Fri 07 Mar 2025 16:33  +010
+	Added variable prefixes:
+
+	(\num\x * \num\y \num\z :=)
+
+	So here is the prefix: \num\
+	All variables must have the same prefix like the target variable \num\z.
+	So here \num\ is a special type all variables in the math expression must have.
+	See "prog/type.l1com".
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 08 Mar 2025 12:57  +010
 
 L1VM (3.3.7)
 	VM/MPFR module Windows and macOS build scripts: memory bounds added.

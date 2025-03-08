@@ -29,6 +29,7 @@ extern S8 linenum;
 extern U1 check_varname_end;
 extern U1 check_varname_end_local_only;
 extern U1 varname_end[MAXLINELEN];
+extern U1 variable_prefix[MAXSTRLEN];
 
 // protos
 U1 checkdigit (U1 *str);
@@ -36,11 +37,78 @@ size_t strlen_safe (const char *str, int maxlen);
 S2 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens);
 S2 getvartype (U1 *name);
 
+S2 set_variable_prefix (U1 *variable)
+{
+	S4 i, pos = 1;
+	S4 str_len = 0;
+	U1 prefix_found = 0;
+
+	str_len = strlen_safe ((const char *) variable, MAXLINELEN);
+	if (str_len <= 3)
+	{
+		// too short for suffix
+		strcpy ((char *) variable_prefix, "");
+		return (0);
+	}
+
+	if (variable[0] != '\\')
+	{
+		// no suffix start
+		strcpy ((char *) variable_prefix, "");
+		return (0);
+	}
+
+	strcpy ((char *) variable_prefix, "");
+	variable_prefix[0] = '\\';
+
+	for (i = 1; i < str_len; i++)
+	{
+		variable_prefix[pos] = variable[i];
+		pos++;
+
+		if (variable[i] == '\\')
+		{
+			prefix_found = 1;
+			variable_prefix[pos] = '\0';
+			break;
+		}
+	}
+
+	// printf ("set_variable_prefix: '%s'\n", variable_prefix);
+
+	if (prefix_found == 0)
+	{
+		return (1);
+	}
+
+	// all ok found prefix
+	return (0);
+}
+
+S2 check_variable_prefix (U1 *variable)
+{
+	S4 str_len;
+
+	str_len = strlen_safe ((const char *) variable_prefix, MAXLINELEN);
+	if (str_len == 0)
+	{
+		// no prefix set all ok
+		return (0);
+	}
+
+	if (strstr ((const char *) variable, (const char *) variable_prefix) == NULL)
+	{
+		return (1);
+	}
+
+	return (0);
+}
+
 S2 check_varname_ending (U1 *varname, U1 *ending)
 {
 	// check if variable has ending set local function name or 'main' for global variables
 
-	S2 pos, varname_len, ending_len;
+	S4 pos, varname_len, ending_len;
 	const U1 addr_str[] = "addr";
 	U1 string_end[MAXLINELEN];
 	S2 vartype;
@@ -134,7 +202,7 @@ S2 check_varname_ending (U1 *varname, U1 *ending)
 	// check if ending is on end
 	if (varname_len - ending_len != pos)
 	{
-		printf ("check_varname_ending: '%s' no variable ending '%s' found!\n", varname, ending);
+		printf ("error: check_varname_ending: '%s' no variable ending '%s' found!\n", varname, ending);
 		return (1);
 	}
 
@@ -164,6 +232,12 @@ S2 checkdef (U1 *name)
 		{
 			return (1);
 		}
+	}
+
+	if (check_variable_prefix (name) == 1)
+	{
+		printf ("error: check_variable_prefix: prefix must be: '%s' on: '%s'!\n", variable_prefix, name);
+		return (1);
 	}
 
 	for (i = 0; i <= data_ind; i++)
@@ -359,8 +433,8 @@ S2 get_unused_var (void)
 	S4 i;
 	S2 ret = 0;
 	U1 is_string_addr = 0;
-	S2 pos;
-	S2 slen;
+	S4 pos;
+	S4 slen;
 
 	for (i = 0; i <= data_ind; i++)
 	{

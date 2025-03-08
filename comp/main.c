@@ -1848,6 +1848,12 @@ S2 parse_line (U1 *line)
 
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "=") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], "m=") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], ":=") == 0)
 								{
+									if (set_variable_prefix (ast[level].expr[j][last_arg - 1]) == 1)
+									{
+										printf ("error: line %lli: variable '%s' prefix not set with \\prefix\\ !\n", linenum, ast[level].expr[j][last_arg - 1]);
+										return (1);
+									}
+
 									// do variable assign
                                     // check if : "x y move =" expression
 									if (last_arg >= 2 && strcmp ((const char *) ast[level].expr[j][last_arg], "m=") == 0)
@@ -3266,6 +3272,12 @@ S2 parse_line (U1 *line)
 									}
 
 									ok = 1;
+
+									if (set_variable_prefix ("") == 1)
+									{
+										printf ("error: line %lli: variable '%s' prefix not set with \\prefix\\ !\n", linenum, ast[level].expr[j][last_arg - 1]);
+										return (1);
+									}
 								}
 								else
 								{
@@ -3511,13 +3523,13 @@ S2 parse_line (U1 *line)
 									{
 										if (last_arg >= 4)
 										{
-											if (strcmp (ast[level].expr[j][last_arg - 4], "39") == 0)
+											if (strcmp ((const char *) ast[level].expr[j][last_arg - 4], "39") == 0)
 											{
 												// memory bounds on
 												memory_bounds = 1;
 											}
 
-											if (strcmp (ast[level].expr[j][last_arg - 4], "40") == 0)
+											if (strcmp ((const char *) ast[level].expr[j][last_arg - 4], "40") == 0)
 											{
 												// memory bounds off
 												// check if inside unsafe code block
@@ -3528,7 +3540,6 @@ S2 parse_line (U1 *line)
 													return (1);
 												}
 
-												memory_bounds = 0;
 											}
 										}
 									}
