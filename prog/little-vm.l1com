@@ -53,12 +53,17 @@
 	(time_ms_d stpopd)
 	(maxloop :math_int2double !)
 	(maxloop_d stpopd)
-	{opcodes_sec_d = ((maxloop_d * opcodes_loop_d) * ticks_per_sec_d / time_ms_d)}
+	//{opcodes_sec_d = ((maxloop_d * opcodes_loop_d) * ticks_per_sec_d / time_ms_d)}
+	((maxloop_d * opcodes_loop_d) * ticks_per_sec_d / time_ms_d opcodes_sec_d :=)
+
 	(opcodes_str :print_s !)
 	(opcodes_sec_d :print_d !)
 	(:print_n !)
+
 	// calculate points
-	{points_d = (thousand_d / points_ref_d) * opcodes_sec_d}
+	// {points_d = (thousand_d / points_ref_d) * opcodes_sec_d}
+	((thousand_d / points_ref_d) * opcodes_sec_d points_d :=)
+
 	(points_d :math_double2int !)
 	(points_i stpopi)
 	(:print_n !)
