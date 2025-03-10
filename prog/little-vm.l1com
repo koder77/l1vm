@@ -1,8 +1,8 @@
 // little-vm.l1com
 // Brackets - a little VM running an add numbers loop
 //
-// This is an exammple how to use "jsra" and "loadl".
-//
+// This is an example how to use "jsra" and "loadl".
+// This shows how to use "unsafe" and the memory bounds flag.
 #include <intr-func.l1h>
 #include <math-const.l1h>
 #include <misc-macros.l1h>
