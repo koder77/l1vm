@@ -78,6 +78,7 @@ S2 set_variable_prefix (U1 *variable)
 
 	if (prefix_found == 0)
 	{
+		strcpy ((char *) variable_prefix, "");  // return empty string, no prefix found
 		return (1);
 	}
 
