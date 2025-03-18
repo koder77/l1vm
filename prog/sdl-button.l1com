@@ -2,15 +2,15 @@
 //
 // set a button gadget and get the status
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 (main func)
 	(set const-int64 1 zero 0)
 	(set const-int64 1 one 1)
 	// screen width and height
-	(set const-int64 1 width 800)
-	(set const-int64 1 height 600)
-	(set const-int64 1 width_b 799)
-	(set const-int64 1 height_b 599)
+	(set const-int64 1 width 170)
+	(set const-int64 1 height 80)
+	(set const-int64 1 width_b 169)
+	(set const-int64 1 height_b 79)
 	(set const-int64 1 bit 32)
 	(set const-int64 1 gadgets 1)
 	// font and background color
@@ -36,33 +36,33 @@
 	(set string s screenopenerrstr "ERROR: can't open screen!")
 	// open screen
 	(reset-reg)
-    (zero width height bit zero :sdl_open_screen call)
+    (zero width height bit zero :sdl_open_screen !)
 	(ret stpopi)
 	// check if screen was opened
 	(((ret zero !=) f =) f if)
-		print_s (screenopenerrstr)
-		print_n
-		exit (one);
+	    (screenopenerrstr :print_s !)
+		(:print_n !)
+		(one :exit !)
 	(endif)
 	// load font
-    (fontnameaddr fontsize :sdl_font_ttf call)
+    (fontnameaddr fontsize :sdl_font_ttf !)
 	// screen is opened, draw background color
-	(zero zero width_b height_b back_r back_g back_b alpha :sdl_rectangle_fill call)
+	(zero zero width_b height_b back_r back_g back_b alpha :sdl_rectangle_fill !)
 	// allocate space for one gadget
-	(gadgets :init_gui call)
+	(gadgets :init_gui !)
 	// set button gadget
-	(zero x y buttonstr status :set_gadget_button call)
+	(zero x y buttonstr status :set_gadget_button !)
 	(:loop)
 	// wait till button gets clicked
-	(retstr :gadget_event call)
+	(retstr :gadget_event !)
 	// get return values
 	(ret stpopi)
 	(value stpopi)
 	(gadget_sel stpopi)
 	(((gadget_sel zero ==) f =) f if)
 		// user clicked button, clean up and exit
-		(:sdl_free_all_gadgets call)
-		exit (zero)
+		(:sdl_free_all_gadgets !)
+		(zero :exit !)
 	(endif)
 	(:loop jmp)
 (funcend)
