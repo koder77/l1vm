@@ -1732,7 +1732,7 @@ int main (int ac, char *av[])
 	if (pack)
 	{
 		// create .l1obj.bz2 packed object file
-		strcpy ((char *) shell_pack , "bzip2 -f ");
+		strcpy ((char *) shell_pack , "bzip3 -f ");
 		strcat ((char *) shell_pack, av[1]);
 		strcat ((char *) shell_pack, ".l1obj");
 		if (system ((char *) shell_pack) != 0)

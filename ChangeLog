@@ -1,3 +1,8 @@
+L1VM (3.4.0)
+	Changed the -pack bzip2 bytecode compression to bzip3, which generates more compact files.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 22 Mar 2025 21:38  +010
+
 L1VM (3.3.8)
 	Preprocesso: show line number in macro errors.
 	Preprocessor: second pass removed. Now error messages show the right line numbers!

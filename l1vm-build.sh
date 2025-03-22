@@ -13,8 +13,8 @@ RETVAL=$?
 if [ "$2" = "-pack" ]; then
 	# remove .l1com from file name and replace it by .l1obj.bz2
 	outname=${1%.l1com}
-	outname="${outname}.l1obj.bz2"
-	cp out.l1obj.bz2 $outname
+	outname="${outname}.l1obj.bz3"
+	cp out.l1obj.bz3 $outname
 else
 	# remove .l1com from file name and replace it by .l1obj
 	outname=${1%.l1com}

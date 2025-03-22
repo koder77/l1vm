@@ -250,7 +250,7 @@ S2 load_object (U1 *name, S2 load_code_only)
 
 			// bzip2 -d -k -f primes.l1obj.bz2  -c >/tmp/primes.l1obj
 
-			strcpy ((char *) run_shell, "bzip2 -d -k -f ");
+			strcpy ((char *) run_shell, "bzip3 -d -k -f ");
 			if (object_root == 0)
 			{
 				strcat ((char *) run_shell, (const char *) objname);
