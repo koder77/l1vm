@@ -1,8 +1,6 @@
 // sdl-math.l1com
 // GUI math demo
-//
-// set a button gadget and get the status
-//
+// Add two numbers
 #include <intr-func.l1h>
 #include <math-const.l1h>
 (main func)
@@ -10,6 +8,7 @@
 	(set const-int64 1 one 1)
 	(set const-int64 1 two 2)
 	(set const-int64 1 three 3)
+
 	// screen width and height
 	(set const-int64 1 width 500)
 	(set const-int64 1 height 100)
@@ -17,27 +16,24 @@
 	(set const-int64 1 height_b 99)
 	(set const-int64 1 bit 32)
 	(set const-int64 1 gadgets 4)
+
 	// font and background color
 	(set const-int64 1 fontsize 20)
-	(set string s fontname "fonts/free/FreeMono.ttf")
-	(set byte 1 back_r 143)
-	(set byte 1 back_g 147)
-	(set byte 1 back_b 151)
-	(set byte 1 alpha 255)
-	(set byte 1 black 0)
+	(set const-string s fontname "fonts/free/FreeMono.ttf")
+	(set const-byte 1 back_r 143)
+	(set const-byte 1 back_g 147)
+	(set const-byte 1 back_b 151)
+	(set const-byte 1 alpha 255)
+	(set const-byte 1 black 0)
 	(set int64 1 ret 0)
 	(set int64 1 f 0)
-	// button gadget text
-	(set string s buttonstr "click me!")
-	// gadget position
-	(set const-int64 1 x 10)
-	(set const-int64 1 y 10)
+
 	// set status of button gadget: 1 = gadget selectable, 0 = gadget not active
 	(set int64 1 status 1)
 	(set string 256 retstr "")
 	(set int64 1 value 0)
 	(set int64 1 gadget_sel 0)
-	(set string s screenopenerrstr "ERROR: can't open screen!")
+	(set const-string s screenopenerrstr "ERROR: can't open screen!")
 
     // set first number gadget
 	(set const-int64 1 x_num_one 10)
@@ -45,16 +41,19 @@
 	(set const-string s num_one_str "num1")
 	(set const-string 11 num_one_valuestr "")
 	(set const-int64 1 num_one_visible 10)
+
     // set second number gadget
 	(set const-int64 1 x_num_two 260)
 	(set const-int64 1 y_num_two 10)
 	(set const-string s num_two_str "num2")
 	(set const-string 11 num_two_valuestr "")
 	(set const-int64 1 num_two_visible 10)
+
     // set add button gadget
 	(set const-int64 1 x_add 10)
 	(set const-int64 1 y_add 60)
 	(set const-string s addstr "add")
+
 	// set quit button gadget
 	(set const-int64 1 x_quit 395)
 	(set const-int64 1 y_quit 60)
@@ -83,13 +82,16 @@
 		(one :exit !)
 	(endif)
 
+	// init the modules
 	(one :math_init !)
 	(two :string_init !)
 
 	// load font
     (fontnameaddr fontsize :sdl_font_ttf !)
+
 	// screen is opened, draw background color
 	(zero zero width_b height_b back_r back_g back_b alpha :sdl_rectangle_fill !)
+
 	// allocate space for one gadget
 	(gadgets :init_gui !)
 
@@ -118,6 +120,7 @@
 	    (retstr dotstr :string_search !)
 	    (ret stpop)
 	    (((ret zero <) f =) f if)
+	        // no "." decimal dot found. Add ".0"
 	        (retstr zerostr :string_cat !)
 	    (endif)
 	    (retstr :string_to_double !)
@@ -129,6 +132,7 @@
 	    (retstr dotstr :string_search !)
 	    (ret stpop)
 	    (((ret zero <) f =) f if)
+	        // no "." decimal dot found. Add ".0"
 	        (retstr zerostr :string_cat !)
 	    (endif)
 	    (retstr :string_to_double !)
@@ -142,13 +146,17 @@
 	    (:print_n !)
 	    (:print_n !)
 
+	    // convert double number to string
 	    (resd resstr reslen :string_doubletostring !)
+
+	    // clear background in the result text area
 		(x_res y_res width_res height_res back_r back_g back_b alpha :sdl_rectangle_fill !)
 
+	    // show result text
         (x_res y_res black black black resstr :sdl_text_ttf !)
 	(endif)
 	(((gadget_sel three ==) f =) f if)
-		// user clicked button, clean up and exit
+		// user clicked quit button, clean up and exit
 		(:sdl_free_all_gadgets !)
 		(zero :exit !)
 	(endif)
