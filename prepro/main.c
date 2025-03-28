@@ -53,7 +53,7 @@
 #define NO_REPLACE_SB      "#noreplace"
 #define REPLACE_SB         "#replace"
 
-// doucumentaiion blocks start and end
+// doucumentaion blocks start and end
 // will be written in out.md Markdown file
 #define DOCU_START_SB      "#docustart"
 #define DOCU_END_SB        "#docuend"

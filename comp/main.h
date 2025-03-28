@@ -77,6 +77,7 @@ U1 variable_prefix[MAXSTRLEN];
  S2 get_var_is_const (U1 *name);
 void init_data_info_var (void);
 S2 get_unused_var (void);
+S2 set_variable_prefix (U1 *variable);
 
 // parse-rpolish.c
 S2 isOperator (char symbol);
