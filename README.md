@@ -1,4 +1,4 @@
-L1VM README  2025-01-01
+L1VM README  2025-04-06
 =======================
 ![alt text](https://midnight-coding.de/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -153,6 +153,7 @@ rs232-libserialport - RS232 serial port using libserialport
 rs232 - RS232 serial port module
 sdl 2.0 - graphics primitves module, like pixels, lines..., and GUI with buttons, lists, etc.
 string - some string functions
+string-unicode - unicode support, convert unicode to string
 time - get time and date
 </pre>
 
