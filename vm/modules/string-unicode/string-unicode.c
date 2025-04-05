@@ -101,7 +101,7 @@ U1 *codepoint_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	charptr = (U1 *) &str_utf8;
     data[strdestaddr] = *charptr;
 
-	if (code >= 127)
+	if (code >= 128)
 	{
 		// two char string
 		charptr++;
