@@ -42,15 +42,28 @@ S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
 	return (0);
 }
 
+int my_strlen_utf8_c (char *s) {
+   S2 i = 0, j = 0;
+   while (s[i]) {
+     if ((s[i] & 0xc0) != 0x80) j++;
+     i++;
+   }
+   return j;
+}
+
 U1 *codepoint_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 strdestaddr ALIGN;
 	S8 code ALIGN;
 
 	utf8proc_int32_t code_utf8;
-	utf8proc_uint8_t str_utf8[2];
+	utf8proc_uint8_t str_utf8[5];
 
 	U1 *charptr;
+	U1 *cptr;
+
+	S2 unicode_length = 0;
+	S2 i = 0;
 
 	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
 	if (sp == NULL)
@@ -69,12 +82,18 @@ U1 *codepoint_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	#if BOUNDSCHECK
-	if (memory_bounds (strdestaddr, 2) != 0)
+	if (memory_bounds (strdestaddr, 4) != 0)
 	{
 		printf ("codepoint_to_string: ERROR: dest string overflow!\n");
 		return (NULL);
 	}
 	#endif
+
+	// clear utf8 string
+	for (i = 0; i < 4; i++)
+	{
+		 str_utf8[i] = '\0';
+	}
 
 	code_utf8 = code;
 	utf8proc_encode_char (code_utf8, str_utf8);
@@ -87,14 +106,19 @@ U1 *codepoint_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		// two char string
 		charptr++;
 		data[strdestaddr + 1] = *charptr;
-		data[strdestaddr + 2] = '\0';
-	}
-	else
-	{
-		// one char string
-		data[strdestaddr + 1] = '\0';
 	}
 
+	if (code >= 14721152)
+	{
+		// three char string
+		data[strdestaddr + 2] = *charptr;
+	}
+
+    if (code >= 4036001920)
+	{
+		// four char string
+		data[strdestaddr + 3] = *charptr;
+	}
 	return (sp);
 }
 
