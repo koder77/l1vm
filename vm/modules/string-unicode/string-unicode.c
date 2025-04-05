@@ -111,12 +111,14 @@ U1 *codepoint_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (code >= 14721152)
 	{
 		// three char string
+		charptr++;
 		data[strdestaddr + 2] = *charptr;
 	}
 
     if (code >= 4036001920)
 	{
 		// four char string
+		charptr++;
 		data[strdestaddr + 3] = *charptr;
 	}
 	return (sp);
