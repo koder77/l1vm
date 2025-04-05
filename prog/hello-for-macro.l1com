@@ -1,4 +1,4 @@
-// hello-for-macro.l1com - Hello world! for loop
+/ hello-for-macro.l1com - Hello world! for loop
 //
 #include <intr-func.l1h>
 #include <vars.l1h>

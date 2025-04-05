@@ -1,3 +1,9 @@
+L1VM (3.4.1)
+	Added new string-unicode module for unicode support.
+	See lib/string-unicode.l1com example.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 05 Apr 2025 23:42  +010
+
 L1VM (3.4.0)
 	Changed the -pack bzip2 bytecode compression to bzip3, which generates more compact files.
 

@@ -1,0 +1,25 @@
+// unicode string library
+//
+//
+(string_unicode_init func)
+    (set string s modulestr@string_unicode "libl1vmstring-unicode")
+    (set string s codepoint_to_stringstr@string_unicode "codepoint_to_string")
+    (set string s string_to_codepointstr@string_unicode "string_to_codepoint")
+    (set int64 1 codepoint_to_string@string_unicode 0)
+    (set int64 1 string_to_codepoint@string_unicode 1)
+    (set int64 1 mod@string_unicode 0)
+    // get argument from stack
+    (mod@string_unicode stpopi)
+    // load string module
+    (0 modulestr@string_unicodeaddr mod@string_unicode 0 intr0)
+    // set functions
+    (2 mod@string_unicode codepoint_to_string@string_unicode codepoint_to_stringstr@string_unicodeaddr intr0)
+    (2 mod@string_unicode string_to_codepoint@string_unicode string_to_codepointstr@string_unicodeaddr intr0)
+(funcend)
+
+(unicode_codepoint_to_string func)
+    (3 mod@string_unicode codepoint_to_string@string_unicode 0 intr0)
+(funcend)
+(unicode_string_to_codepoint func)
+    (3 mod@string_unicode string_to_codepoint@string_unicode 0 intr0)
+(funcend)

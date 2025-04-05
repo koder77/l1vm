@@ -13,6 +13,7 @@
 	(set double 1 squared 0.0)
 	(set const-string s sqr_str "square of: ")
 	(set const-string s eq_str " = ")
+
 	(sqr_str :print_s !)
 	(numi :print_i !)
 	(eq_str :print_s !)
