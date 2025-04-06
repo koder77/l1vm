@@ -87,7 +87,7 @@ U1 *codepoint_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	#endif
 
 	// clear utf8 string
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < 5; i++)
 	{
 		 str_utf8[i] = '\0';
 	}
