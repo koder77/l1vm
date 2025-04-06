@@ -55,6 +55,45 @@ S8 my_strlen_utf8_c (char *s) {
     return j;
 }
 
+S2 get_part_of_utf8_string (char *s, S8 pos, char *part)
+{
+	S8 i = 0, j = 0;
+	S8 part_pos = 0;
+
+	while (s[i])
+	{
+		//printf ("i: %lli\n", i);
+
+		if ((s[i] & 0xc0) != 0x80)
+		{
+			j++;
+		}
+		//printf ("j: %lli\n", j);
+
+		if (j  - 1 == pos)
+		{
+			//printf ("part_pos: %lli\n", part_pos);
+
+			part[part_pos] = s[i];
+			part_pos++;
+		}
+		i++;
+	}
+
+	if (part_pos > 0)
+	{
+		// all ok!
+		part[part_pos] = '\0';
+		return (0);
+	}
+	else
+	{
+		// char at pos not found
+		part[part_pos] = '\0';
+		return (1);
+	}
+}
+
 U1 *codepoint_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	S8 strdestaddr ALIGN;
@@ -174,6 +213,61 @@ U1 *utf8_strlen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	{
 		// ERROR:
 		printf ("utf8_strlen: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	return (sp);
+}
+
+U1 *utf8_strpart (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// return utf8 chars length of a utf8 string
+    // multi byte chars count as 1!
+
+	S8 straddr ALIGN;
+	S8 partstraddr ALIGN;
+	S8 strpos ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &partstraddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("utf8_strpart: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strpos, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("utf8_strpart: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &straddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("utf8_strpart: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    #if BOUNDSCHECK
+	if (memory_bounds (partstraddr, 4) != 0)
+	{
+		printf ("utf8_strpart: ERROR: dest string overflow!\n");
+		return (NULL);
+	}
+	#endif
+
+	ret = get_part_of_utf8_string ((char *) &data[straddr], strpos, (char *) &data[partstraddr]);
+
+    sp = stpushi (ret, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("utf8_strpart: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
