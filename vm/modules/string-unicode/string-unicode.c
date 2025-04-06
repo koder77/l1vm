@@ -42,9 +42,13 @@ S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
 	return (0);
 }
 
-int my_strlen_utf8_c (char *s) {
+S2 my_strlen_utf8_c (char *s) {
+   // return the char length of a utf8 string
+
    S2 i = 0, j = 0;
-   while (s[i]) {
+
+   while (s[i])
+   {
      if ((s[i] & 0xc0) != 0x80) j++;
      i++;
    }
@@ -141,6 +145,35 @@ U1 *string_to_codepoint (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	{
 		// ERROR:
 		printf ("string_to_codepoint: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	return (sp);
+}
+
+U1 *utf8_strlen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// return utf8 chars length of a utf8 string
+    // multi byte chars count as 1!
+
+	S8 straddr ALIGN;
+	S8 strlen ALIGN;
+
+	sp = stpopi ((U1 *) &straddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("utf8_strlen: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	strlen =  my_strlen_utf8_c ((char *) &data[straddr]);
+
+	sp = stpushi (strlen, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("utf8_strlen: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 

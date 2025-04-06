@@ -7,8 +7,10 @@
     (set int64 1 str_unicode_mod 0)
     (set string 5 unicode_str "")
     (set int64 1 unicode_copyright 169)
+    (set string s unicode_len_str "unicode char length: ")
 
     (set int64 1 ret 0)
+    (set int64 1 strlen 0)
 
     (str_unicode_mod :string_unicode_init !)
 
@@ -19,6 +21,13 @@
     (unicode_str :unicode_string_to_codepoint !)
     (ret stpopi)
     (ret :print_i !)
+    (:print_n !)
+
+    // Get utf8 char length, multi byte chars count as one!
+    (unicode_str :unicode_strlen !)
+    (strlen stpopi)
+    (unicode_len_str :print_s !)
+    (strlen :print_i !)
     (:print_n !)
 
     (str_unicode_mod :free_mod !)
