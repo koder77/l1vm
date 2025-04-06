@@ -175,6 +175,7 @@ The authors of www.tutorialspoint.com, for their polish math notation parser exa
 The author of the fp16 fixed floating point library: https://github.com/kmilo17pet/fp16 <br>
 The team of the libsodium library. I use for generating random numbers. <br>
 The author of the nanoid ID generating library. <br>
+The JuliaStrings team for the utf8proc library for unicode support. <br>
 <br><br>
 
 Without them this L1VM project would not be possible! Thank you! <br>
