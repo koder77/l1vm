@@ -60,9 +60,6 @@ U1 *codepoint_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	utf8proc_uint8_t str_utf8[5];
 
 	U1 *charptr;
-	U1 *cptr;
-
-	S2 unicode_length = 0;
 	S2 i = 0;
 
 	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);

@@ -6,7 +6,7 @@
     (set int64 1 one 1)
     (set int64 1 str_unicode_mod 0)
     (set string 5 unicode_str "")
-    (set int64 1 unicode_copyright 169)
+    (set int64 1 unicode_copyright 14724006)
 
     (set int64 1 ret 0)
 
