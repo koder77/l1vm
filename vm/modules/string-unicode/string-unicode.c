@@ -43,16 +43,16 @@ S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
 }
 
 S8 my_strlen_utf8_c (char *s) {
-   // return the char length of a utf8 string
+    // return the char length of a utf8 string
 
-   S8 i = 0, j = 0;
+    S8 i = 0, j = 0;
 
-   while (s[i])
-   {
-       if ((s[i] & 0xc0) != 0x80) j++;
-       i++;
-   }
-   return j;
+    while (s[i])
+    {
+        if ((s[i] & 0xc0) != 0x80) j++;
+        i++;
+    }
+    return j;
 }
 
 U1 *codepoint_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
