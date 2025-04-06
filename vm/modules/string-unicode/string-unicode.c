@@ -42,10 +42,10 @@ S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
 	return (0);
 }
 
-S2 my_strlen_utf8_c (char *s) {
+S8 my_strlen_utf8_c (char *s) {
    // return the char length of a utf8 string
 
-   S2 i = 0, j = 0;
+   S8 i = 0, j = 0;
 
    while (s[i])
    {
