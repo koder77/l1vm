@@ -49,8 +49,8 @@ S8 my_strlen_utf8_c (char *s) {
 
    while (s[i])
    {
-     if ((s[i] & 0xc0) != 0x80) j++;
-     i++;
+       if ((s[i] & 0xc0) != 0x80) j++;
+       i++;
    }
    return j;
 }
