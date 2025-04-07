@@ -102,8 +102,7 @@ U1 *codepoint_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	utf8proc_int32_t code_utf8;
 	utf8proc_uint8_t str_utf8[5];
 
-	U1 *charptr;
-	S2 i = 0;
+	S8 i ALIGN = 0;
 
 	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
 	if (sp == NULL)
@@ -138,29 +137,13 @@ U1 *codepoint_to_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	code_utf8 = code;
 	utf8proc_encode_char (code_utf8, str_utf8);
 
-	charptr = (U1 *) &str_utf8;
-    data[strdestaddr] = *charptr;
-
-	if (code >= 128)
+	i = 0;
+	while (str_utf8[i])
 	{
-		// two char string
-		charptr++;
-		data[strdestaddr + 1] = *charptr;
+		data[strdestaddr + i] = str_utf8[i];
+		i++;
 	}
 
-	if (code >= 14721152)
-	{
-		// three char string
-		charptr++;
-		data[strdestaddr + 2] = *charptr;
-	}
-
-    if (code >= 4036001920)
-	{
-		// four char string
-		charptr++;
-		data[strdestaddr + 3] = *charptr;
-	}
 	return (sp);
 }
 
