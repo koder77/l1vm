@@ -1,0 +1,923 @@
+../../../include/global.h:92:0: information: Include file: <sys/types.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <sys/types.h>
+^
+../../../include/global.h:93:0: information: Include file: <regex.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <regex.h>
+^
+../../../include/global.h:95:0: information: Include file: <stdio.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <stdio.h>
+^
+../../../include/global.h:96:0: information: Include file: <stdlib.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <stdlib.h>
+^
+../../../include/global.h:98:0: information: Include file: <stdarg.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <stdarg.h>
+^
+../../../include/global.h:99:0: information: Include file: <signal.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <signal.h>
+^
+../../../include/global.h:100:0: information: Include file: <stdint.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <stdint.h>
+^
+../../../include/global.h:101:0: information: Include file: <ctype.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <ctype.h>
+^
+../../../include/global.h:102:0: information: Include file: <errno.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <errno.h>
+^
+../../../include/global.h:103:0: information: Include file: <string.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <string.h>
+^
+../../../include/global.h:112:0: information: Include file: <inttypes.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <inttypes.h>
+^
+../../../include/global.h:113:0: information: Include file: <unistd.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <unistd.h>
+^
+../../../include/global.h:114:0: information: Include file: <sys/time.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <sys/time.h>
+^
+../../../include/global.h:116:0: information: Include file: <pthread.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <pthread.h>
+^
+../../../include/global.h:117:0: information: Include file: <sched.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <sched.h>
+^
+../../../include/global.h:119:0: information: Include file: <math.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <math.h>
+^
+../../../include/global.h:120:0: information: Include file: <time.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <time.h>
+^
+../../../include/global.h:121:0: information: Include file: <assert.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <assert.h>
+^
+../../../include/global.h:122:0: information: Include file: <limits.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <limits.h>
+^
+sdl.c:24:0: information: Include file: <stdbool.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <stdbool.h>
+^
+sdl.c:26:0: information: Include file: <SDL3/SDL.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL3/SDL.h>
+^
+sdl.c:28:0: information: Include file: <SDL2/SDL2_gfxPrimitives.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL2/SDL2_gfxPrimitives.h>
+^
+sdl.c:29:0: information: Include file: <SDL3_ttf/SDL_ttf.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL3_ttf/SDL_ttf.h>
+^
+sdl.c:30:0: information: Include file: <SDL3_image/SDL_image.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL3_image/SDL_image.h>
+^
+sdl.c:31:0: information: Include file: <SDL3_mixer/SDL_mixer.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL3_mixer/SDL_mixer.h>
+^
+sdl.c:32:0: information: Include file: <SDL3/SDL_endian.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL3/SDL_endian.h>
+^
+../../../include/stack.h:61:9: warning: Either the condition 'sp==NULL' is redundant or there is pointer arithmetic with NULL pointer. [nullPointerArithmeticRedundantCheck]
+ if (sp + 1 > sp_top)
+        ^
+sdl.c:1594:9: note: Assuming that condition 'sp==NULL' is not redundant
+ if (sp == NULL)
+        ^
+sdl.c:1600:19: note: Calling function 'stpopb', 2nd argument 'sp' value is 0
+ sp = stpopb (&b, sp, sp_top);
+                  ^
+../../../include/stack.h:61:9: note: Null pointer addition
+ if (sp + 1 > sp_top)
+        ^
+sdl.c:59:42: style: Parameter 'data_info_orig' can be declared as pointer to const [constParameterPointer]
+S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+                                         ^
+../../../include/stack.h:24:35: style: Parameter 'sp_bottom' can be declared as pointer to const [constParameterPointer]
+U1 *stpushb (U1 data, U1 *sp, U1 *sp_bottom)
+                                  ^
+../../../include/stack.h:58:35: style: Parameter 'sp_top' can be declared as pointer to const [constParameterPointer]
+U1 *stpopb (U1 *data, U1 *sp, U1 *sp_top)
+                                  ^
+../../../include/stack.h:166:35: style: Parameter 'sp_top' can be declared as pointer to const [constParameterPointer]
+U1 *stpopi (U1 *data, U1 *sp, U1 *sp_top)
+                                  ^
+../../../include/stack.h:284:35: style: Parameter 'sp_top' can be declared as pointer to const [constParameterPointer]
+U1 *stpopd (U1 *data, U1 *sp, U1 *sp_top)
+                                  ^
+../../../include/stack.h:331:39: style: Parameter 'sp_top' can be declared as pointer to const [constParameterPointer]
+U1 *stack_type (U1 *data, U1 *sp, U1 *sp_top)
+                                      ^
+sdl.c:1854:9: style: Variable 'rmask' is assigned a value that is never used. [unreadVariable]
+  rmask = 0xff000000; gmask = 0x00ff0000; bmask = 0x0000ff00; amask = 0x000000ff;
+        ^
+sdl.c:1854:29: style: Variable 'gmask' is assigned a value that is never used. [unreadVariable]
+  rmask = 0xff000000; gmask = 0x00ff0000; bmask = 0x0000ff00; amask = 0x000000ff;
+                            ^
+sdl.c:1854:49: style: Variable 'bmask' is assigned a value that is never used. [unreadVariable]
+  rmask = 0xff000000; gmask = 0x00ff0000; bmask = 0x0000ff00; amask = 0x000000ff;
+                                                ^
+sdl.c:1854:69: style: Variable 'amask' is assigned a value that is never used. [unreadVariable]
+  rmask = 0xff000000; gmask = 0x00ff0000; bmask = 0x0000ff00; amask = 0x000000ff;
+                                                                    ^
+../../../include/global.h:108:0: information: Include file: <winsock2.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <winsock2.h>
+^
+../../../include/global.h:109:0: information: Include file: <ws2tcpip.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <ws2tcpip.h>
+^
+../../../include/global.h:110:0: information: Include file: <Windows.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <Windows.h>
+^
+../../../include/global.h:105:0: information: Include file: <dlfcn.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <dlfcn.h>
+^
+sdl.c:1851:9: style: Variable 'rmask' is assigned a value that is never used. [unreadVariable]
+  rmask = 0x000000ff; gmask = 0x0000ff00; bmask = 0x00ff0000; amask = 0xff000000;
+        ^
+sdl.c:1851:29: style: Variable 'gmask' is assigned a value that is never used. [unreadVariable]
+  rmask = 0x000000ff; gmask = 0x0000ff00; bmask = 0x00ff0000; amask = 0xff000000;
+                            ^
+sdl.c:1851:49: style: Variable 'bmask' is assigned a value that is never used. [unreadVariable]
+  rmask = 0x000000ff; gmask = 0x0000ff00; bmask = 0x00ff0000; amask = 0xff000000;
+                                                ^
+sdl.c:1851:69: style: Variable 'amask' is assigned a value that is never used. [unreadVariable]
+  rmask = 0x000000ff; gmask = 0x0000ff00; bmask = 0x00ff0000; amask = 0xff000000;
+                                                                    ^
+../../../include/global.h:125:0: information: Include file: <sys/wait.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <sys/wait.h>
+^
+../../../include/global.h:126:0: information: Include file: <sys/resource.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <sys/resource.h>
+^
+gui.c:26:0: information: Include file: <SDL3/SDL.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL3/SDL.h>
+^
+gui.c:28:0: information: Include file: <SDL2/SDL2_gfxPrimitives.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL2/SDL2_gfxPrimitives.h>
+^
+gui.c:29:0: information: Include file: <SDL3/SDL_joystick.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL3/SDL_joystick.h>
+^
+gui.c:30:0: information: Include file: <SDL3_ttf/SDL_ttf.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL3_ttf/SDL_ttf.h>
+^
+gui.c:31:0: information: Include file: <SDL3_image/SDL_image.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL3_image/SDL_image.h>
+^
+gui.c:3077:15: style: Same expression on both sides of '=='. [duplicateExpression]
+     while (1 == 1)
+              ^
+gui.c:3304:15: style: Same expression on both sides of '=='. [duplicateExpression]
+     while (1 == 1)
+              ^
+gui.c:3514:14: style: Same expression on both sides of '=='. [duplicateExpression]
+    while (1 == 1)
+             ^
+gui.c:77:8: style: The scope of the variable 'i' can be reduced. [variableScope]
+    S4 i, alloc;
+       ^
+gui.c:77:11: style: The scope of the variable 'alloc' can be reduced. [variableScope]
+    S4 i, alloc;
+          ^
+gui.c:79:8: style: The scope of the variable 'err' can be reduced. [variableScope]
+    U1 err = FALSE;
+       ^
+gui.c:208:27: style: The scope of the variable 'button' can be reduced. [variableScope]
+    struct gadget_button *button;
+                          ^
+gui.c:209:29: style: The scope of the variable 'checkbox' can be reduced. [variableScope]
+    struct gadget_checkbox *checkbox;
+                            ^
+gui.c:210:26: style: The scope of the variable 'cycle' can be reduced. [variableScope]
+    struct gadget_cycle *cycle;
+                         ^
+gui.c:211:27: style: The scope of the variable 'string' can be reduced. [variableScope]
+    struct gadget_string *string;
+                          ^
+gui.c:212:34: style: The scope of the variable 'string_multi' can be reduced. [variableScope]
+ struct gadget_string_multiline *string_multi;
+                                 ^
+gui.c:213:25: style: The scope of the variable 'menu' can be reduced. [variableScope]
+    struct gadget_menu *menu;
+                        ^
+gui.c:1718:5: style: The scope of the variable 'stars' can be reduced. [variableScope]
+ U1 stars[GADGET_STRING_PASSWD_STARS];
+    ^
+gui.c:1719:5: style: The scope of the variable 'i' can be reduced. [variableScope]
+ S2 i;
+    ^
+gui.c:1826:6: style: The scope of the variable 'string_x' can be reduced. [variableScope]
+  S8 string_x ALIGN;
+     ^
+gui.c:1827:6: style: The scope of the variable 'string_x_end' can be reduced. [variableScope]
+  S8 string_x_end ALIGN;
+     ^
+gui.c:1829:6: style: The scope of the variable 'j' can be reduced. [variableScope]
+  S8 j ALIGN;
+     ^
+gui.c:1928:8: style: The scope of the variable 'value_len' can be reduced. [variableScope]
+    S2 value_len;
+       ^
+gui.c:1931:5: style: The scope of the variable 'char_code' can be reduced. [variableScope]
+ S2 char_code;
+    ^
+gui.c:1933:5: style: The scope of the variable 'shift' can be reduced. [variableScope]
+ S2 shift = 0; // set to 1 if shift is pressed down
+    ^
+gui.c:2317:8: style: The scope of the variable 'value_len' can be reduced. [variableScope]
+    S2 value_len;
+       ^
+gui.c:2320:5: style: The scope of the variable 'char_code' can be reduced. [variableScope]
+ S2 char_code;
+    ^
+gui.c:2324:5: style: The scope of the variable 'shift' can be reduced. [variableScope]
+ S2 shift = 0; // set to 1 if shift is pressed down
+    ^
+gui.c:2503:28: style: The scope of the variable 'input_row' can be reduced. [variableScope]
+                        S2 input_row;
+                           ^
+gui.c:2504:28: style: The scope of the variable 'max_cursor_x' can be reduced. [variableScope]
+                        S2 max_cursor_x;
+                           ^
+gui.c:2549:28: style: The scope of the variable 'chars_to_line_end' can be reduced. [variableScope]
+                        S2 chars_to_line_end;
+                           ^
+gui.c:2550:28: style: The scope of the variable 'input_row' can be reduced. [variableScope]
+                        S2 input_row;
+                           ^
+gui.c:2551:28: style: The scope of the variable 'max_cursor_x' can be reduced. [variableScope]
+                        S2 max_cursor_x;
+                           ^
+gui.c:2552:28: style: The scope of the variable 'i' can be reduced. [variableScope]
+                        S2 i;
+                           ^
+gui.c:5203:8: style: The scope of the variable 'text_len' can be reduced. [variableScope]
+    S2 text_len;
+       ^
+gui.c:5919:5: style: The scope of the variable 'x' can be reduced. [variableScope]
+ S8 x ALIGN;
+    ^
+gui.c:6673:8: style: The scope of the variable 'string_x' can be reduced. [variableScope]
+    S8 string_x ALIGN;
+       ^
+gui.c:6674:8: style: The scope of the variable 'string_x_end' can be reduced. [variableScope]
+    S8 string_x_end ALIGN;
+       ^
+gui.c:7491:5: style: The scope of the variable 'name_real_len' can be reduced. [variableScope]
+ S8 name_real_len ALIGN;
+    ^
+gui.c:2552:28: style: Local variable 'i' shadows outer variable [shadowVariable]
+                        S2 i;
+                           ^
+gui.c:2319:5: note: Shadowed declaration
+ S2 i, insert_pos;
+    ^
+gui.c:2552:28: note: Shadow variable
+                        S2 i;
+                           ^
+gui.c:775:79: style: Parameter 'srcrect' can be declared as pointer to const [constParameterPointer]
+int do_copy_surface (SDL_Renderer *dest_renderer, SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect)
+                                                                              ^
+gui.c:775:116: style: Parameter 'dstrect' can be declared as pointer to const [constParameterPointer]
+int do_copy_surface (SDL_Renderer *dest_renderer, SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect)
+                                                                                                                   ^
+gui.c:3492:27: style: Variable 'button' can be declared as pointer to const [constVariablePointer]
+    struct gadget_button *button;
+                          ^
+gui.c:3495:27: style: Variable 'string' can be declared as pointer to const [constVariablePointer]
+    struct gadget_string *string;
+                          ^
+gui.c:3496:34: style: Variable 'string_multiline' can be declared as pointer to const [constVariablePointer]
+ struct gadget_string_multiline *string_multiline;
+                                 ^
+gui.c:3498:27: style: Variable 'slider' can be declared as pointer to const [constVariablePointer]
+    struct gadget_slider *slider;
+                          ^
+gui.c:6941:21: style: Variable 'box' can be declared as pointer to const [constVariablePointer]
+ struct gadget_box *box;
+                    ^
+gui.c:7125:27: style: Variable 'button' can be declared as pointer to const [constVariablePointer]
+    struct gadget_button *button;
+                          ^
+gui.c:7126:29: style: Variable 'checkbox' can be declared as pointer to const [constVariablePointer]
+    struct gadget_checkbox *checkbox;
+                            ^
+gui.c:7127:26: style: Variable 'cycle' can be declared as pointer to const [constVariablePointer]
+    struct gadget_cycle *cycle;
+                         ^
+gui.c:7128:27: style: Variable 'string' can be declared as pointer to const [constVariablePointer]
+    struct gadget_string *string;
+                          ^
+gui.c:7129:24: style: Variable 'box' can be declared as pointer to const [constVariablePointer]
+    struct gadget_box *box;
+                       ^
+gui.c:7130:30: style: Variable 'progress' can be declared as pointer to const [constVariablePointer]
+ struct gadget_progress_bar *progress;
+                             ^
+gui.c:7131:35: style: Variable 'string_multi' can be declared as pointer to const [constVariablePointer]
+ struct gadget_string_multiline  *string_multi;
+                                  ^
+gui.c:7581:35: style: Parameter 'sp_top' can be declared as pointer to const [constParameterPointer]
+U1 *free_all_gadgets (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+                                  ^
+gui.c:7581:47: style: Parameter 'sp_bottom' can be declared as pointer to const [constParameterPointer]
+U1 *free_all_gadgets (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+                                              ^
+gui.c:7581:62: style: Parameter 'data' can be declared as pointer to const [constParameterPointer]
+U1 *free_all_gadgets (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+                                                             ^
+gui.c:2559:39: style: Variable 'input_row' is assigned a value that is never used. [unreadVariable]
+                            input_row = string_len / string->visible_len;
+                                      ^
+gui.c:3820:68: style: Variable 'double_click' is assigned a value that is never used. [unreadVariable]
+                                    mouse_button = 0; double_click = 0; select = 0;
+                                                                   ^
+gui.c:3820:80: style: Variable 'select' is assigned a value that is never used. [unreadVariable]
+                                    mouse_button = 0; double_click = 0; select = 0;
+                                                                               ^
+gui.c:3821:20: style: Variable 'old_value' is assigned a value that is never used. [unreadVariable]
+         old_value = -1;
+                   ^
+gui.c:4618:68: style: Variable 'double_click' is assigned a value that is never used. [unreadVariable]
+                                    mouse_button = 0; double_click = 0; select = 0;
+                                                                   ^
+gui.c:4618:80: style: Variable 'select' is assigned a value that is never used. [unreadVariable]
+                                    mouse_button = 0; double_click = 0; select = 0;
+                                                                               ^
+gui.c:4619:20: style: Variable 'old_value' is assigned a value that is never used. [unreadVariable]
+         old_value = -1;
+                   ^
+string.c:91:12: style: The scope of the variable 'j' can be reduced. [variableScope]
+    int i, j, src_len;
+           ^
+string.c:131:12: style: The scope of the variable 'j' can be reduced. [variableScope]
+    int i, j, src_len;
+           ^
+string.c:171:12: style: The scope of the variable 'j' can be reduced. [variableScope]
+    int i, j, src_len;
+           ^
+string.c:46:28: style: Parameter 'src' can be declared as pointer to const [constParameterPointer]
+int strright (U1 *dst, U1 *src, int chars)
+                           ^
+string.c:68:27: style: Parameter 'src' can be declared as pointer to const [constParameterPointer]
+int strleft (U1 *dst, U1 *src, int chars)
+                          ^
+string.c:89:33: style: Parameter 'src' can be declared as pointer to const [constParameterPointer]
+int strremoveleft (U1 *dst, U1 *src, int pos)
+                                ^
+string.c:129:34: style: Parameter 'src' can be declared as pointer to const [constParameterPointer]
+int strremoveright (U1 *dst, U1 *src, int pos)
+                                 ^
+string.c:169:33: style: Parameter 'src' can be declared as pointer to const [constParameterPointer]
+int strinsertchar (U1 *dst, U1 *src, U1 chr, int pos)
+                                ^
+gui.h:149:10: style: struct member 'font_bitmap::buf' is never used. [unusedStructMember]
+     U1 *buf;                            /* buffer for font data */
+         ^
+gui.h:154:16: style: struct member 'font_ttf::font' is never used. [unusedStructMember]
+     TTF_Font *font;
+               ^
+gui.h:166:10: style: struct member 'gadget_button::text' is never used. [unusedStructMember]
+     U1 *text;
+         ^
+gui.h:179:10: style: struct member 'gadget_progress_bar::text' is never used. [unusedStructMember]
+     U1 *text;
+         ^
+gui.h:193:10: style: struct member 'gadget_checkbox::text' is never used. [unusedStructMember]
+     U1 *text;
+         ^
+gui.h:210:11: style: struct member 'gadget_cycle::text' is never used. [unusedStructMember]
+     U1 **text;
+          ^
+gui.h:233:11: style: struct member 'gadget_menu::text' is never used. [unusedStructMember]
+     U1 **text;
+          ^
+gui.h:238:10: style: struct member 'gadget_menu::menutext' is never used. [unusedStructMember]
+     U1 *menutext;
+         ^
+gui.h:257:10: style: struct member 'gadget_string::text' is never used. [unusedStructMember]
+     U1 *text;                           /* info text */
+         ^
+gui.h:259:10: style: struct member 'gadget_string::value' is never used. [unusedStructMember]
+     U1 *value;                          /* input string */
+         ^
+gui.h:260:10: style: struct member 'gadget_string::display' is never used. [unusedStructMember]
+     U1 *display;                        /* display-buffer string */
+         ^
+gui.h:284:7: style: struct member 'gadget_string_multiline::text' is never used. [unusedStructMember]
+  U1 *text;                           /* info text */
+      ^
+gui.h:286:7: style: struct member 'gadget_string_multiline::value' is never used. [unusedStructMember]
+  U1 *value;                          /* input string */
+      ^
+gui.h:287:7: style: struct member 'gadget_string_multiline::display' is never used. [unusedStructMember]
+  U1 *display;                        /* display-buffer string */
+      ^
+gui.h:326:10: style: struct member 'gadget_slider::text' is never used. [unusedStructMember]
+     U1 *text;
+         ^
+gui.h:342:12: style: struct member 'gadget::gptr' is never used. [unusedStructMember]
+     void *gptr;                         /* pointer to gadget structure */
+           ^
+gui.h:374:8: style: struct member 'sound::music' is never used. [unusedStructMember]
+  int *music;
+       ^
+gui.h:380:19: style: struct member 'screen::bmap' is never used. [unusedStructMember]
+     SDL_Surface *bmap;
+                  ^
+gui.h:389:14: style: struct member 'screen::vx' is never used. [unusedStructMember]
+     Sint16 *vx;                         /* for polygon x coord */
+             ^
+gui.h:390:14: style: struct member 'screen::vy' is never used. [unusedStructMember]
+     Sint16 *vy;                         /* for polygon y coord */
+             ^
+gui.h:420:21: style: struct member 'screen::gadget' is never used. [unusedStructMember]
+     struct gadget *gadget;              /* gadget list */
+                    ^
+gui.h:427:11: style: struct member 'screen::gadget_cycle_text' is never used. [unusedStructMember]
+     U1 **gadget_cycle_text;             /* menu text */
+          ^
+gui.h:372:17: style: struct member 'sound::music' is never used. [unusedStructMember]
+     Mix_Music *music;
+                ^
+global_d.h:24:0: information: Include file: <stdio.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <stdio.h>
+^
+global_d.h:25:0: information: Include file: <stdlib.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <stdlib.h>
+^
+global_d.h:26:0: information: Include file: <sys/types.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <sys/types.h>
+^
+global_d.h:47:0: information: Include file: <SDL3/SDL.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL3/SDL.h>
+^
+global_d.h:48:0: information: Include file: <SDL3/SDL_endian.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL3/SDL_endian.h>
+^
+global_d.h:49:0: information: Include file: <SDL2/video.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL2/video.h>
+^
+global_d.h:50:0: information: Include file: <SDL3/SDL_render.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL3/SDL_render.h>
+^
+global_d.h:52:0: information: Include file: <SDL2/SDL2_gfxPrimitives.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL2/SDL2_gfxPrimitives.h>
+^
+global_d.h:53:0: information: Include file: <SDL3_ttf/SDL_ttf.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL3_ttf/SDL_ttf.h>
+^
+global_d.h:54:0: information: Include file: <SDL3_image/SDL_image.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL3_image/SDL_image.h>
+^
+global_d.h:55:0: information: Include file: <SDL3/SDL_events.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <SDL3/SDL_events.h>
+^
+global_d.h:60:0: information: Include file: <SDL3_mixer/SDL_mixer.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+ #include <SDL3_mixer/SDL_mixer.h>
+^
+global_d.h:64:0: information: Include file: <errno.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <errno.h>
+^
+global_d.h:65:0: information: Include file: <string.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+#include <string.h>
+^
+global_d.h:126:9: style: struct member 'font_bitmap::buf' is never used. [unusedStructMember]
+    U1 *buf;                            /* buffer for font data */
+        ^
+global_d.h:131:15: style: struct member 'font_ttf::font' is never used. [unusedStructMember]
+    TTF_Font *font;
+              ^
+global_d.h:132:8: style: struct member 'font_ttf::size' is never used. [unusedStructMember]
+    U2 size;
+       ^
+global_d.h:133:8: style: struct member 'font_ttf::style_normal' is never used. [unusedStructMember]
+    U1 style_normal;
+       ^
+global_d.h:134:8: style: struct member 'font_ttf::style_bold' is never used. [unusedStructMember]
+    U1 style_bold;
+       ^
+global_d.h:135:8: style: struct member 'font_ttf::style_italic' is never used. [unusedStructMember]
+    U1 style_italic;
+       ^
+global_d.h:136:8: style: struct member 'font_ttf::style_underline' is never used. [unusedStructMember]
+    U1 style_underline;
+       ^
+global_d.h:143:9: style: struct member 'gadget_button::text' is never used. [unusedStructMember]
+    U1 *text;
+        ^
+global_d.h:145:8: style: struct member 'gadget_button::status' is never used. [unusedStructMember]
+    U1 status;
+       ^
+global_d.h:156:9: style: struct member 'gadget_progress_bar::text' is never used. [unusedStructMember]
+    U1 *text;
+        ^
+global_d.h:158:8: style: struct member 'gadget_progress_bar::status' is never used. [unusedStructMember]
+    U1 status;
+       ^
+global_d.h:165:5: style: struct member 'gadget_progress_bar::value' is never used. [unusedStructMember]
+ U2 value;
+    ^
+global_d.h:170:9: style: struct member 'gadget_checkbox::text' is never used. [unusedStructMember]
+    U1 *text;
+        ^
+global_d.h:172:8: style: struct member 'gadget_checkbox::status' is never used. [unusedStructMember]
+    U1 status;
+       ^
+global_d.h:173:8: style: struct member 'gadget_checkbox::value' is never used. [unusedStructMember]
+    U1 value;
+       ^
+global_d.h:186:8: style: struct member 'gadget_cycle::menu' is never used. [unusedStructMember]
+    U1 menu;
+       ^
+global_d.h:187:10: style: struct member 'gadget_cycle::text' is never used. [unusedStructMember]
+    U1 **text;
+         ^
+global_d.h:189:8: style: struct member 'gadget_cycle::status' is never used. [unusedStructMember]
+    U1 status;
+       ^
+global_d.h:190:8: style: struct member 'gadget_cycle::value' is never used. [unusedStructMember]
+    U1 value;
+       ^
+global_d.h:191:8: style: struct member 'gadget_cycle::menu_entries' is never used. [unusedStructMember]
+    U2 menu_entries;
+       ^
+global_d.h:209:9: style: struct member 'gadget_string::text' is never used. [unusedStructMember]
+    U1 *text;                           /* info text */
+        ^
+global_d.h:211:9: style: struct member 'gadget_string::value' is never used. [unusedStructMember]
+    U1 *value;                          /* input string */
+        ^
+global_d.h:212:9: style: struct member 'gadget_string::display' is never used. [unusedStructMember]
+    U1 *display;                        /* display-buffer string */
+        ^
+global_d.h:213:8: style: struct member 'gadget_string::status' is never used. [unusedStructMember]
+    U1 status;
+       ^
+global_d.h:214:8: style: struct member 'gadget_string::string_len' is never used. [unusedStructMember]
+    U2 string_len;                      /* max input string length */
+       ^
+global_d.h:215:8: style: struct member 'gadget_string::visible_len' is never used. [unusedStructMember]
+    U2 visible_len;                     /* visible chars of input string */
+       ^
+global_d.h:228:8: style: struct member 'gadget_string::cursor_pos' is never used. [unusedStructMember]
+    S2 cursor_pos;                      /* cursor position */
+       ^
+global_d.h:229:8: style: struct member 'gadget_string::insert_pos' is never used. [unusedStructMember]
+    S2 insert_pos;                      /* text insert position */
+       ^
+global_d.h:234:8: style: struct member 'gadget_box::status' is never used. [unusedStructMember]
+    U1 status;
+       ^
+global_d.h:243:11: style: struct member 'gadget::gptr' is never used. [unusedStructMember]
+    void *gptr;                         /* pointer to gadget structure */
+          ^
+global_d.h:244:8: style: struct member 'gadget::type' is never used. [unusedStructMember]
+    U1 type;                            /* gadget type */
+       ^
+global_d.h:267:8: style: struct member 'sound::wav_filename' is never used. [unusedStructMember]
+    U1 wav_filename[512];
+       ^
+global_d.h:268:8: style: struct member 'sound::music_filename' is never used. [unusedStructMember]
+    U1 music_filename[512];
+       ^
+global_d.h:269:8: style: struct member 'sound::channel' is never used. [unusedStructMember]
+    S2 channel;
+       ^
+global_d.h:270:8: style: struct member 'sound::loops' is never used. [unusedStructMember]
+    S2 loops;
+       ^
+global_d.h:273:16: style: struct member 'sound::music' is never used. [unusedStructMember]
+    Mix_Music *music;
+               ^
+global_d.h:283:18: style: struct member 'screen::bmap' is never used. [unusedStructMember]
+    SDL_Surface *bmap;
+                 ^
+global_d.h:292:13: style: struct member 'screen::vx' is never used. [unusedStructMember]
+    Sint16 *vx;                         /* for polygon x coord */
+            ^
+global_d.h:293:13: style: struct member 'screen::vy' is never used. [unusedStructMember]
+    Sint16 *vy;                         /* for polygon y coord */
+            ^
+global_d.h:294:8: style: struct member 'screen::vectors' is never used. [unusedStructMember]
+    U2 vectors;                         /* number of vectors (vx/vy pairs) */
+       ^
+global_d.h:295:8: style: struct member 'screen::vx_index' is never used. [unusedStructMember]
+    U2 vx_index;                        /* vector x index */
+       ^
+global_d.h:296:8: style: struct member 'screen::vy_index' is never used. [unusedStructMember]
+    U2 vy_index;                        /* vector y index */
+       ^
+global_d.h:297:8: style: struct member 'screen::steps' is never used. [unusedStructMember]
+    U2 steps;
+       ^
+global_d.h:311:8: style: struct member 'screen::status' is never used. [unusedStructMember]
+    U1 status;
+       ^
+global_d.h:312:8: style: struct member 'screen::title' is never used. [unusedStructMember]
+    U1 title[256];                      /* window title */
+       ^
+global_d.h:313:8: style: struct member 'screen::icon' is never used. [unusedStructMember]
+    U1 icon[256];                       /* icon name */
+       ^
+global_d.h:314:8: style: struct member 'screen::text' is never used. [unusedStructMember]
+    U1 text[256];                       /* text to output */
+       ^
+global_d.h:315:8: style: struct member 'screen::fontname' is never used. [unusedStructMember]
+    U1 fontname[512];                   /* font to load */
+       ^
+global_d.h:316:8: style: struct member 'screen::picture_name' is never used. [unusedStructMember]
+    U1 picture_name[512];               /* picture to load */
+       ^
+global_d.h:323:20: style: struct member 'screen::gadget' is never used. [unusedStructMember]
+    struct gadget *gadget;              /* gadget list */
+                   ^
+global_d.h:325:8: style: struct member 'screen::gadgets' is never used. [unusedStructMember]
+    U2 gadgets;                         /* number of gadgets */
+       ^
+global_d.h:326:8: style: struct member 'screen::gadget_index' is never used. [unusedStructMember]
+    U2 gadget_index;                    /* gadget index for setting gadget */
+       ^
+global_d.h:327:8: style: struct member 'screen::gadget_status' is never used. [unusedStructMember]
+    U1 gadget_status;                   /* gadget status for new gadget */
+       ^
+global_d.h:328:8: style: struct member 'screen::gadget_string_value' is never used. [unusedStructMember]
+    U1 gadget_string_value[256];        /* gadget string value */
+       ^
+global_d.h:329:8: style: struct member 'screen::gadget_int_value' is never used. [unusedStructMember]
+    S4 gadget_int_value;                /* gadget integer value */
+       ^
+global_d.h:330:10: style: struct member 'screen::gadget_cycle_text' is never used. [unusedStructMember]
+    U1 **gadget_cycle_text;             /* menu text */
+         ^
+global_d.h:331:8: style: struct member 'screen::gadget_cycle_menu_entries' is never used. [unusedStructMember]
+    U2 gadget_cycle_menu_entries;       /* number of menu entries */
+       ^
+global_d.h:332:8: style: struct member 'screen::gadget_cycle_text_index' is never used. [unusedStructMember]
+    U2 gadget_cycle_text_index;
+       ^
+global_d.h:333:8: style: struct member 'screen::gadget_string_string_len' is never used. [unusedStructMember]
+    U2 gadget_string_string_len;        /* max input string length */
+       ^
+global_d.h:334:8: style: struct member 'screen::gadget_string_visible_len' is never used. [unusedStructMember]
+    U2 gadget_string_visible_len;       /* visible chars of input string */
+       ^
+global_d.h:336:5: style: struct member 'screen::gadget_progress_value' is never used. [unusedStructMember]
+ U2 gadget_progress_value;
+    ^
+global_d.h:341:5: style: struct member 'rs232::comport' is never used. [unusedStructMember]
+ S4 comport;
+    ^
+global_d.h:342:5: style: struct member 'rs232::baudrate' is never used. [unusedStructMember]
+ S4 baudrate;
+    ^
+global_d.h:343:5: style: struct member 'rs232::buf' is never used. [unusedStructMember]
+ U1 buf[4096];
+    ^
+global_d.h:344:5: style: struct member 'rs232::bufsize' is never used. [unusedStructMember]
+ S4 bufsize;
+    ^
+global_d.h:349:5: style: struct member 'rpi::mode' is never used. [unusedStructMember]
+ S4 mode;
+    ^
+global_d.h:350:5: style: struct member 'rpi::value' is never used. [unusedStructMember]
+ S4 value;
+    ^
+global_d.h:351:5: style: struct member 'rpi::pin' is never used. [unusedStructMember]
+ S4 pin;
+    ^
+global_d.h:38:0: information: Include file: <winsock2.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+ #include <winsock2.h>
+^
+global_d.h:39:0: information: Include file: <ws2tcpip.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]
+    #include <ws2tcpip.h>
+^
+../../../include/stack.h:24:0: style: The function 'stpushb' is never used. [unusedFunction]
+U1 *stpushb (U1 data, U1 *sp, U1 *sp_bottom)
+^
+../../../include/stack.h:214:0: style: The function 'stpushd' is never used. [unusedFunction]
+U1 *stpushd (F8 data, U1 *sp, U1 *sp_bottom)
+^
+../../../include/stack.h:284:0: style: The function 'stpopd' is never used. [unusedFunction]
+U1 *stpopd (U1 *data, U1 *sp, U1 *sp_top)
+^
+../../../include/stack.h:331:0: style: The function 'stack_type' is never used. [unusedFunction]
+U1 *stack_type (U1 *data, U1 *sp, U1 *sp_top)
+^
+gui.c:75:0: style: The function 'alloc_array_U1' is never used. [unusedFunction]
+U1 **alloc_array_U1 (S4 x, S4 y)
+^
+gui.c:163:0: style: The function 'init_gadgets' is never used. [unusedFunction]
+U1 *init_gadgets (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:427:0: style: The function 'set_gadget_color_border_light' is never used. [unusedFunction]
+void set_gadget_color_border_light (S2 screennum)
+^
+gui.c:434:0: style: The function 'set_gadget_color_border_shadow' is never used. [unusedFunction]
+void set_gadget_color_border_shadow (S2 screennum)
+^
+gui.c:443:0: style: The function 'set_gadget_color_backgr_light' is never used. [unusedFunction]
+void set_gadget_color_backgr_light (S2 screennum)
+^
+gui.c:450:0: style: The function 'set_gadget_color_backgr_shadow' is never used. [unusedFunction]
+void set_gadget_color_backgr_shadow (S2 screennum)
+^
+gui.c:459:0: style: The function 'set_gadget_color_text_light' is never used. [unusedFunction]
+void set_gadget_color_text_light (S2 screennum)
+^
+gui.c:466:0: style: The function 'set_gadget_color_text_shadow' is never used. [unusedFunction]
+void set_gadget_color_text_shadow (S2 screennum)
+^
+gui.c:1310:0: style: The function 'set_gadget_menu' is never used. [unusedFunction]
+U1 *set_gadget_menu (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:3481:0: style: The function 'gadget_event' is never used. [unusedFunction]
+U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:4798:0: style: The function 'set_gadget_button' is never used. [unusedFunction]
+U1 *set_gadget_button (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:4926:0: style: The function 'set_gadget_progress_bar' is never used. [unusedFunction]
+U1 *set_gadget_progress_bar (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:5064:0: style: The function 'set_gadget_checkbox' is never used. [unusedFunction]
+U1 *set_gadget_checkbox (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:5201:0: style: The function 'set_gadget_cycle' is never used. [unusedFunction]
+U1 *set_gadget_cycle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:5402:0: style: The function 'set_gadget_string' is never used. [unusedFunction]
+U1 *set_gadget_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:5599:0: style: The function 'set_gadget_string_multiline' is never used. [unusedFunction]
+U1 *set_gadget_string_multiline (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:5823:0: style: The function 'set_gadget_box' is never used. [unusedFunction]
+U1 *set_gadget_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:5913:0: style: The function 'set_gadget_box_grid' is never used. [unusedFunction]
+U1 *set_gadget_box_grid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:6073:0: style: The function 'set_gadget_slider' is never used. [unusedFunction]
+U1 *set_gadget_slider (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:6233:0: style: The function 'set_gadget_slider_vert' is never used. [unusedFunction]
+U1 *set_gadget_slider_vert (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:6377:0: style: The function 'change_gadget_checkbox' is never used. [unusedFunction]
+U1 *change_gadget_checkbox (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:6446:0: style: The function 'change_gadget_cycle' is never used. [unusedFunction]
+U1 *change_gadget_cycle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:6515:0: style: The function 'change_gadget_string' is never used. [unusedFunction]
+U1 *change_gadget_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:6590:0: style: The function 'change_gadget_string_multiline' is never used. [unusedFunction]
+U1 *change_gadget_string_multiline (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:6665:0: style: The function 'get_gadget_string_multiline' is never used. [unusedFunction]
+U1 *get_gadget_string_multiline (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:6745:0: style: The function 'set_gadget_string_passwd' is never used. [unusedFunction]
+U1 *set_gadget_string_passwd (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:6798:0: style: The function 'change_gadget_box' is never used. [unusedFunction]
+U1 *change_gadget_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:6850:0: style: The function 'change_gadget_box_grid' is never used. [unusedFunction]
+U1 *change_gadget_box_grid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:6936:0: style: The function 'get_gadget_box_grid' is never used. [unusedFunction]
+U1 *get_gadget_box_grid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:6964:0: style: The function 'change_gadget_progress_bar' is never used. [unusedFunction]
+U1 *change_gadget_progress_bar (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:7033:0: style: The function 'change_gadget_slider' is never used. [unusedFunction]
+U1 *change_gadget_slider (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:7117:0: style: The function 'get_gadget_x2y2' is never used. [unusedFunction]
+U1 *get_gadget_x2y2 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:7220:0: style: The function 'get_mouse_state' is never used. [unusedFunction]
+U1 *get_mouse_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:7305:0: style: The function 'close_joystick' is never used. [unusedFunction]
+U1 *close_joystick (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:7311:0: style: The function 'get_joystick_x_axis' is never used. [unusedFunction]
+U1 *get_joystick_x_axis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:7330:0: style: The function 'get_joystick_y_axis' is never used. [unusedFunction]
+U1 *get_joystick_y_axis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:7350:0: style: The function 'get_joystick_x2_axis' is never used. [unusedFunction]
+U1 *get_joystick_x2_axis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:7375:0: style: The function 'get_joystick_y2_axis' is never used. [unusedFunction]
+U1 *get_joystick_y2_axis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:7400:0: style: The function 'get_joystick_buttons' is never used. [unusedFunction]
+U1 *get_joystick_buttons (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:7423:0: style: The function 'get_joystick_button' is never used. [unusedFunction]
+U1 *get_joystick_button (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:7485:0: style: The function 'get_joystick_info' is never used. [unusedFunction]
+U1 *get_joystick_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:7553:0: style: The function 'get_key' is never used. [unusedFunction]
+U1 *get_key (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:7581:0: style: The function 'free_all_gadgets' is never used. [unusedFunction]
+U1 *free_all_gadgets (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+gui.c:7588:0: style: The function 'unset_gadget' is never used. [unusedFunction]
+U1 *unset_gadget (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:59:0: style: The function 'init_memory_bounds' is never used. [unusedFunction]
+S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+^
+sdl.c:65:0: style: The function 'sdl_open_screen' is never used. [unusedFunction]
+U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:243:0: style: The function 'sdl_open_screen_full' is never used. [unusedFunction]
+U1 *sdl_open_screen_full (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:415:0: style: The function 'sdl_set_window_title' is never used. [unusedFunction]
+U1 *sdl_set_window_title (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:434:0: style: The function 'sdl_toggle_mouse_pointer' is never used. [unusedFunction]
+U1 *sdl_toggle_mouse_pointer (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:469:0: style: The function 'sdl_delay' is never used. [unusedFunction]
+U1 *sdl_delay (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:484:0: style: The function 'sdl_quit' is never used. [unusedFunction]
+U1 *sdl_quit (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:508:0: style: The function 'sdl_update' is never used. [unusedFunction]
+U1 *sdl_update (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:521:0: style: The function 'sdl_font_ttf' is never used. [unusedFunction]
+U1 *sdl_font_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:580:0: style: The function 'sdl_text_ttf' is never used. [unusedFunction]
+U1 *sdl_text_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:671:0: style: The function 'sdl_pixel_alpha' is never used. [unusedFunction]
+U1 *sdl_pixel_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:739:0: style: The function 'sdl_line_alpha' is never used. [unusedFunction]
+U1 *sdl_line_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:821:0: style: The function 'sdl_rectangle_alpha' is never used. [unusedFunction]
+U1 *sdl_rectangle_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:903:0: style: The function 'sdl_rectangle_fill_alpha' is never used. [unusedFunction]
+U1 *sdl_rectangle_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:985:0: style: The function 'sdl_circle_alpha' is never used. [unusedFunction]
+U1 *sdl_circle_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:1059:0: style: The function 'sdl_circle_fill_alpha' is never used. [unusedFunction]
+U1 *sdl_circle_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:1133:0: style: The function 'sdl_ellipse_alpha' is never used. [unusedFunction]
+U1 *sdl_ellipse_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:1215:0: style: The function 'sdl_ellipse_fill_alpha' is never used. [unusedFunction]
+U1 *sdl_ellipse_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:1297:0: style: The function 'sdl_pie_alpha' is never used. [unusedFunction]
+U1 *sdl_pie_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:1387:0: style: The function 'sdl_pie_fill_alpha' is never used. [unusedFunction]
+U1 *sdl_pie_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:1477:0: style: The function 'sdl_trigon_alpha' is never used. [unusedFunction]
+U1 *sdl_trigon_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:1575:0: style: The function 'sdl_trigon_fill_alpha' is never used. [unusedFunction]
+U1 *sdl_trigon_fill_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:1714:0: style: The function 'sdl_get_pixelcolor' is never used. [unusedFunction]
+U1 *sdl_get_pixelcolor (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:1766:0: style: The function 'sdl_load_picture' is never used. [unusedFunction]
+U1 *sdl_load_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:1836:0: style: The function 'sdl_save_picture' is never used. [unusedFunction]
+U1 *sdl_save_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+sdl.c:1897:0: style: The function 'sdl_play_sound' is never used. [unusedFunction]
+U1 *sdl_play_sound (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+^
+string.c:46:0: style: The function 'strright' is never used. [unusedFunction]
+int strright (U1 *dst, U1 *src, int chars)
+^
+string.c:68:0: style: The function 'strleft' is never used. [unusedFunction]
+int strleft (U1 *dst, U1 *src, int chars)
+^
+nofile:0:0: information: Active checkers: 107/802 (use --checkers-report=<filename> to see details) [checkersReport]
+

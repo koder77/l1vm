@@ -1,0 +1,755 @@
+In file included from sdl.c:24:
+../../../include/global.h:28:9: note: ‘#pragma message: OS type: Linux’
+   28 | #pragma message ("OS type: Linux")
+      |         ^~~~~~~
+sdl.c: In function ‘sdl_open_screen’:
+sdl.c:137:13: error: too few arguments to function ‘SDL_GetJoysticks’
+  137 |         if (SDL_GetJoysticks() > 0) {
+      |             ^~~~~~~~~~~~~~~~
+In file included from /usr/local/include/SDL3/SDL_gamepad.h:81,
+                 from /usr/local/include/SDL3/SDL_events.h:59,
+                 from /usr/local/include/SDL3/SDL.h:47,
+                 from sdl.c:29:
+/usr/local/include/SDL3/SDL_joystick.h:209:46: note: declared here
+  209 | extern SDL_DECLSPEC SDL_JoystickID * SDLCALL SDL_GetJoysticks(int *count);
+      |                                              ^~~~~~~~~~~~~~~~
+sdl.c:140:17: error: implicit declaration of function ‘SDL_JoystickEventState’; did you mean ‘SDL_JoystickEventsEnabled’? [-Wimplicit-function-declaration]
+  140 |                 SDL_JoystickEventState (SDL_ENABLE);
+      |                 ^~~~~~~~~~~~~~~~~~~~~~
+      |                 SDL_JoystickEventsEnabled
+sdl.c:140:41: error: ‘SDL_ENABLE’ undeclared (first use in this function); did you mean ‘SDL_FILE’?
+  140 |                 SDL_JoystickEventState (SDL_ENABLE);
+      |                                         ^~~~~~~~~~
+      |                                         SDL_FILE
+sdl.c:140:41: note: each undeclared identifier is reported only once for each function it appears in
+sdl.c:147:39: error: implicit declaration of function ‘SDL_JoystickNameForIndex’; did you mean ‘SDL_GetJoystickNameForID’? [-Wimplicit-function-declaration]
+  147 |                 printf ("Name: %s\n", SDL_JoystickNameForIndex (0));
+      |                                       ^~~~~~~~~~~~~~~~~~~~~~~~
+      |                                       SDL_GetJoystickNameForID
+sdl.c:147:33: warning: format ‘%s’ expects argument of type ‘char *’, but argument 2 has type ‘int’ [-Wformat=]
+  147 |                 printf ("Name: %s\n", SDL_JoystickNameForIndex (0));
+      |                                ~^     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                 |     |
+      |                                 |     int
+      |                                 char *
+      |                                %d
+sdl.c:194:18: error: too many arguments to function ‘SDL_CreateWindow’
+  194 |         window = SDL_CreateWindow ("L1VM", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL);
+      |                  ^~~~~~~~~~~~~~~~
+In file included from /usr/local/include/SDL3/SDL_dialog.h:43,
+                 from /usr/local/include/SDL3/SDL.h:44:
+/usr/local/include/SDL3/SDL_video.h:1125:42: note: declared here
+ 1125 | extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindow(const char *title, int w, int h, SDL_WindowFlags flags);
+      |                                          ^~~~~~~~~~~~~~~~
+sdl.c: In function ‘sdl_open_screen_full’:
+sdl.c:312:13: error: implicit declaration of function ‘SDL_NumJoysticks’; did you mean ‘SDL_GetJoysticks’? [-Wimplicit-function-declaration]
+  312 |         if (SDL_NumJoysticks() > 0) {
+      |             ^~~~~~~~~~~~~~~~
+      |             SDL_GetJoysticks
+sdl.c:315:41: error: ‘SDL_ENABLE’ undeclared (first use in this function); did you mean ‘SDL_FILE’?
+  315 |                 SDL_JoystickEventState (SDL_ENABLE);
+      |                                         ^~~~~~~~~~
+      |                                         SDL_FILE
+sdl.c:322:33: warning: format ‘%s’ expects argument of type ‘char *’, but argument 2 has type ‘int’ [-Wformat=]
+  322 |                 printf ("Name: %s\n", SDL_JoystickNameForIndex (0));
+      |                                ~^     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                 |     |
+      |                                 |     int
+      |                                 char *
+      |                                %d
+sdl.c:338:42: error: passing argument 2 of ‘Mix_OpenAudio’ makes pointer from integer without a cast [-Wint-conversion]
+  338 |         if (! Mix_OpenAudio (audio_rate, audio_format, audio_channels, audio_buffers))
+      |                                          ^~~~~~~~~~~~
+      |                                          |
+      |                                          Uint16 {aka short unsigned int}
+In file included from sdl.c:34:
+/usr/local/include/SDL3_mixer/SDL_mixer.h:289:94: note: expected ‘const SDL_AudioSpec *’ but argument is of type ‘Uint16’ {aka ‘short unsigned int’}
+  289 | extern SDL_DECLSPEC bool SDLCALL Mix_OpenAudio(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec);
+      |                                                                         ~~~~~~~~~~~~~~~~~~~~~^~~~
+sdl.c:338:15: error: too many arguments to function ‘Mix_OpenAudio’
+  338 |         if (! Mix_OpenAudio (audio_rate, audio_format, audio_channels, audio_buffers))
+      |               ^~~~~~~~~~~~~
+/usr/local/include/SDL3_mixer/SDL_mixer.h:289:34: note: declared here
+  289 | extern SDL_DECLSPEC bool SDLCALL Mix_OpenAudio(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec);
+      |                                  ^~~~~~~~~~~~~
+sdl.c:340:85: error: implicit declaration of function ‘Mix_GetError’; did you mean ‘SDL_GetError’? [-Wimplicit-function-declaration]
+  340 |                 printf ("sdl_open_screen: ERROR: unable to initialize audio: %s\n", Mix_GetError());
+      |                                                                                     ^~~~~~~~~~~~
+      |                                                                                     SDL_GetError
+sdl.c:340:79: warning: format ‘%s’ expects argument of type ‘char *’, but argument 2 has type ‘int’ [-Wformat=]
+  340 |                 printf ("sdl_open_screen: ERROR: unable to initialize audio: %s\n", Mix_GetError());
+      |                                                                              ~^     ~~~~~~~~~~~~~~
+      |                                                                               |     |
+      |                                                                               |     int
+      |                                                                               char *
+      |                                                                              %d
+sdl.c:366:18: error: too many arguments to function ‘SDL_CreateWindow’
+  366 |         window = SDL_CreateWindow ("L1VM", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN);
+      |                  ^~~~~~~~~~~~~~~~
+/usr/local/include/SDL3/SDL_video.h:1125:42: note: declared here
+ 1125 | extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindow(const char *title, int w, int h, SDL_WindowFlags flags);
+      |                                          ^~~~~~~~~~~~~~~~
+sdl.c: In function ‘sdl_toggle_mouse_pointer’:
+sdl.c:451:33: error: ‘SDL_DISABLE’ undeclared (first use in this function); did you mean ‘SS_DISABLE’?
+  451 |                 SDL_ShowCursor (SDL_DISABLE);
+      |                                 ^~~~~~~~~~~
+      |                                 SS_DISABLE
+sdl.c:451:17: error: too many arguments to function ‘SDL_ShowCursor’
+  451 |                 SDL_ShowCursor (SDL_DISABLE);
+      |                 ^~~~~~~~~~~~~~
+In file included from /usr/local/include/SDL3/SDL_events.h:63:
+/usr/local/include/SDL3/SDL_mouse.h:651:34: note: declared here
+  651 | extern SDL_DECLSPEC bool SDLCALL SDL_ShowCursor(void);
+      |                                  ^~~~~~~~~~~~~~
+sdl.c:455:33: error: ‘SDL_ENABLE’ undeclared (first use in this function); did you mean ‘SDL_FILE’?
+  455 |                 SDL_ShowCursor (SDL_ENABLE);
+      |                                 ^~~~~~~~~~
+      |                                 SDL_FILE
+sdl.c:455:17: error: too many arguments to function ‘SDL_ShowCursor’
+  455 |                 SDL_ShowCursor (SDL_ENABLE);
+      |                 ^~~~~~~~~~~~~~
+/usr/local/include/SDL3/SDL_mouse.h:651:34: note: declared here
+  651 | extern SDL_DECLSPEC bool SDLCALL SDL_ShowCursor(void);
+      |                                  ^~~~~~~~~~~~~~
+sdl.c: In function ‘sdl_text_ttf’:
+sdl.c:654:82: error: incompatible type for argument 3 of ‘TTF_RenderText_Blended’
+  654 |         textsurf = TTF_RenderText_Blended (font, (const char *) &data[nameaddr], color);
+      |                                                                                  ^~~~~
+      |                                                                                  |
+      |                                                                                  SDL_Color
+In file included from sdl.c:32:
+/usr/local/include/SDL3_ttf/SDL_ttf.h:1332:107: note: expected ‘size_t’ {aka ‘long unsigned int’} but argument is of type ‘SDL_Color’
+ 1332 | extern SDL_DECLSPEC SDL_Surface * SDLCALL TTF_RenderText_Blended(TTF_Font *font, const char *text, size_t length, SDL_Color fg);
+      |                                                                                                    ~~~~~~~^~~~~~
+sdl.c:654:20: error: too few arguments to function ‘TTF_RenderText_Blended’
+  654 |         textsurf = TTF_RenderText_Blended (font, (const char *) &data[nameaddr], color);
+      |                    ^~~~~~~~~~~~~~~~~~~~~~
+/usr/local/include/SDL3_ttf/SDL_ttf.h:1332:43: note: declared here
+ 1332 | extern SDL_DECLSPEC SDL_Surface * SDLCALL TTF_RenderText_Blended(TTF_Font *font, const char *text, size_t length, SDL_Color fg);
+      |                                           ^~~~~~~~~~~~~~~~~~~~~~
+sdl.c: In function ‘getpixel’:
+sdl.c:1684:36: error: invalid type argument of ‘->’ (have ‘unsigned int’)
+ 1684 |         Uint8 bpp = surface->format->BytesPerPixel;
+      |                                    ^~
+sdl.c: In function ‘sdl_get_pixelcolor’:
+sdl.c:1747:36: warning: comparison of constant ‘0’ with boolean expression is always false [-Wbool-compare]
+ 1747 |         if (SDL_LockSurface (surf) < 0)
+      |                                    ^
+sdl.c:1761:32: error: incompatible type for argument 2 of ‘SDL_GetRGB’
+ 1761 |         SDL_GetRGB (pixel, surf->format, &r, &g, &b);
+      |                            ~~~~^~~~~~~~
+      |                                |
+      |                                SDL_PixelFormat
+In file included from /usr/local/include/SDL3/SDL_camera.h:73,
+                 from /usr/local/include/SDL3/SDL.h:41:
+/usr/local/include/SDL3/SDL_pixels.h:1397:89: note: expected ‘const SDL_PixelFormatDetails *’ but argument is of type ‘SDL_PixelFormat’
+ 1397 | extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b);
+      |                                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~
+sdl.c:1761:42: error: passing argument 3 of ‘SDL_GetRGB’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 1761 |         SDL_GetRGB (pixel, surf->format, &r, &g, &b);
+      |                                          ^~
+      |                                          |
+      |                                          Uint8 * {aka unsigned char *}
+/usr/local/include/SDL3/SDL_pixels.h:1397:116: note: expected ‘const SDL_Palette *’ but argument is of type ‘Uint8 *’ {aka ‘unsigned char *’}
+ 1397 | extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b);
+      |                                                                                                 ~~~~~~~~~~~~~~~~~~~^~~~~~~
+sdl.c:1761:9: error: too few arguments to function ‘SDL_GetRGB’
+ 1761 |         SDL_GetRGB (pixel, surf->format, &r, &g, &b);
+      |         ^~~~~~~~~~
+/usr/local/include/SDL3/SDL_pixels.h:1397:34: note: declared here
+ 1397 | extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b);
+      |                                  ^~~~~~~~~~
+sdl.c: In function ‘sdl_save_picture’:
+sdl.c:1847:37: warning: unused variable ‘amask’ [-Wunused-variable]
+ 1847 |         Uint32 rmask, gmask, bmask, amask;
+      |                                     ^~~~~
+sdl.c:1847:30: warning: unused variable ‘bmask’ [-Wunused-variable]
+ 1847 |         Uint32 rmask, gmask, bmask, amask;
+      |                              ^~~~~
+sdl.c:1847:23: warning: unused variable ‘gmask’ [-Wunused-variable]
+ 1847 |         Uint32 rmask, gmask, bmask, amask;
+      |                       ^~~~~
+sdl.c:1847:16: warning: unused variable ‘rmask’ [-Wunused-variable]
+ 1847 |         Uint32 rmask, gmask, bmask, amask;
+      |                ^~~~~
+sdl.c: In function ‘sdl_play_sound’:
+sdl.c:1930:84: warning: format ‘%s’ expects argument of type ‘char *’, but argument 2 has type ‘int’ [-Wformat=]
+ 1930 |                          printf ("sdl_play_sound: ERROR: Unable to load WAV file: %s\n", Mix_GetError());
+      |                                                                                   ~^     ~~~~~~~~~~~~~~
+      |                                                                                    |     |
+      |                                                                                    |     int
+      |                                                                                    char *
+      |                                                                                   %d
+sdl.c:1945:74: warning: format ‘%s’ expects argument of type ‘char *’, but argument 2 has type ‘int’ [-Wformat=]
+ 1945 |                 printf("sdl_play_sound: ERROR: Unable to play WAV file: %s\n", Mix_GetError());
+      |                                                                         ~^     ~~~~~~~~~~~~~~
+      |                                                                          |     |
+      |                                                                          |     int
+      |                                                                          char *
+      |                                                                         %d
+In file included from gui.c:23:
+../../../include/global.h:28:9: note: ‘#pragma message: OS type: Linux’
+   28 | #pragma message ("OS type: Linux")
+      |         ^~~~~~~
+gui.c: In function ‘draw_text_ttf’:
+gui.c:405:69: error: incompatible type for argument 3 of ‘TTF_RenderText_Blended’
+  405 |         text = TTF_RenderText_Blended (font, (const char*) textstr, color);
+      |                                                                     ^~~~~
+      |                                                                     |
+      |                                                                     SDL_Color
+In file included from gui.c:30:
+/usr/local/include/SDL3_ttf/SDL_ttf.h:1332:107: note: expected ‘size_t’ {aka ‘long unsigned int’} but argument is of type ‘SDL_Color’
+ 1332 | extern SDL_DECLSPEC SDL_Surface * SDLCALL TTF_RenderText_Blended(TTF_Font *font, const char *text, size_t length, SDL_Color fg);
+      |                                                                                                    ~~~~~~~^~~~~~
+gui.c:405:16: error: too few arguments to function ‘TTF_RenderText_Blended’
+  405 |         text = TTF_RenderText_Blended (font, (const char*) textstr, color);
+      |                ^~~~~~~~~~~~~~~~~~~~~~
+/usr/local/include/SDL3_ttf/SDL_ttf.h:1332:43: note: declared here
+ 1332 | extern SDL_DECLSPEC SDL_Surface * SDLCALL TTF_RenderText_Blended(TTF_Font *font, const char *text, size_t length, SDL_Color fg);
+      |                                           ^~~~~~~~~~~~~~~~~~~~~~
+gui.c:414:9: error: implicit declaration of function ‘SDL_QueryTexture’; did you mean ‘SDL_DestroyTexture’? [-Wimplicit-function-declaration]
+  414 |         SDL_QueryTexture (texture, NULL, NULL, &texture_width, &texture_height);
+      |         ^~~~~~~~~~~~~~~~
+      |         SDL_DestroyTexture
+gui.c:421:53: error: passing argument 4 of ‘SDL_RenderTexture’ from incompatible pointer type [-Wincompatible-pointer-types]
+  421 |         SDL_RenderTexture (renderer, texture, NULL, &dstrect);
+      |                                                     ^~~~~~~~
+      |                                                     |
+      |                                                     SDL_Rect *
+In file included from /usr/local/include/SDL3/SDL.h:75,
+                 from gui.c:26:
+/usr/local/include/SDL3/SDL_render.h:2061:141: note: expected ‘const SDL_FRect *’ but argument is of type ‘SDL_Rect *’
+ 2061 | extern SDL_DECLSPEC bool SDLCALL SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, const SDL_FRect *dstrect);
+      |                                                                                                                            ~~~~~~~~~~~~~~~~~^~~~~~~
+gui.c: In function ‘do_copy_surface’:
+gui.c:819:51: warning: comparison of constant ‘0’ with boolean expression is always false [-Wbool-compare]
+  819 |                         if (SDL_LockSurface (src) < 0)
+      |                                                   ^
+gui.c:827:47: error: incompatible type for argument 2 of ‘SDL_GetRGB’
+  827 |                         SDL_GetRGB (pixel, src->format, &r, &g, &b);
+      |                                            ~~~^~~~~~~~
+      |                                               |
+      |                                               SDL_PixelFormat
+In file included from /usr/local/include/SDL3/SDL_camera.h:73,
+                 from /usr/local/include/SDL3/SDL.h:41:
+/usr/local/include/SDL3/SDL_pixels.h:1397:89: note: expected ‘const SDL_PixelFormatDetails *’ but argument is of type ‘SDL_PixelFormat’
+ 1397 | extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b);
+      |                                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~
+gui.c:827:57: error: passing argument 3 of ‘SDL_GetRGB’ from incompatible pointer type [-Wincompatible-pointer-types]
+  827 |                         SDL_GetRGB (pixel, src->format, &r, &g, &b);
+      |                                                         ^~
+      |                                                         |
+      |                                                         Uint8 * {aka unsigned char *}
+/usr/local/include/SDL3/SDL_pixels.h:1397:116: note: expected ‘const SDL_Palette *’ but argument is of type ‘Uint8 *’ {aka ‘unsigned char *’}
+ 1397 | extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b);
+      |                                                                                                 ~~~~~~~~~~~~~~~~~~~^~~~~~~
+gui.c:827:25: error: too few arguments to function ‘SDL_GetRGB’
+  827 |                         SDL_GetRGB (pixel, src->format, &r, &g, &b);
+      |                         ^~~~~~~~~~
+/usr/local/include/SDL3/SDL_pixels.h:1397:34: note: declared here
+ 1397 | extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b);
+      |                                  ^~~~~~~~~~
+gui.c: In function ‘do_area_copy’:
+gui.c:876:29: error: implicit declaration of function ‘SDL_CreateRGBSurface’; did you mean ‘SDL_CreateSurface’? [-Wimplicit-function-declaration]
+  876 |         copy_area_surface = SDL_CreateRGBSurface (SDL_SWSURFACE, width, height, video_bpp, rmask, gmask, bmask, amask);
+      |                             ^~~~~~~~~~~~~~~~~~~~
+      |                             SDL_CreateSurface
+gui.c:876:51: error: ‘SDL_SWSURFACE’ undeclared (first use in this function); did you mean ‘SDL_Surface’?
+  876 |         copy_area_surface = SDL_CreateRGBSurface (SDL_SWSURFACE, width, height, video_bpp, rmask, gmask, bmask, amask);
+      |                                                   ^~~~~~~~~~~~~
+      |                                                   SDL_Surface
+gui.c:876:51: note: each undeclared identifier is reported only once for each function it appears in
+gui.c:884:78: warning: comparison of constant ‘0’ with boolean expression is always false [-Wbool-compare]
+  884 |         if (SDL_SetSurfaceBlendMode (copy_area_surface, SDL_BLENDMODE_BLEND) < 0)
+      |                                                                              ^
+gui.c: In function ‘restore_area_copy’:
+gui.c:914:25: warning: unused variable ‘copy_rect’ [-Wunused-variable]
+  914 |     SDL_Rect menu_rect, copy_rect;
+      |                         ^~~~~~~~~
+gui.c: In function ‘draw_gadget_cycle’:
+gui.c:989:70: error: ‘SDL_SWSURFACE’ undeclared (first use in this function); did you mean ‘SDL_Surface’?
+  989 |                                 copy_surface = SDL_CreateRGBSurface (SDL_SWSURFACE, cycle->menu_x2 - cycle->menu_x + 1, cycle->menu_y2 - cycle->menu_y + 1, video_bpp, rmask, gmask, bmask, amask);
+      |                                                                      ^~~~~~~~~~~~~
+      |                                                                      SDL_Surface
+gui.c:997:97: warning: comparison of constant ‘0’ with boolean expression is always false [-Wbool-compare]
+  997 |                                 if (SDL_SetSurfaceBlendMode (copy_surface, SDL_BLENDMODE_BLEND) < 0)
+      |                                                                                                 ^
+gui.c:1037:97: warning: comparison of constant ‘0’ with boolean expression is always false [-Wbool-compare]
+ 1037 |                                 if (SDL_SetSurfaceBlendMode (temp_surface, SDL_BLENDMODE_BLEND) < 0)
+      |                                                                                                 ^
+gui.c: In function ‘draw_gadget_menu’:
+gui.c:1222:70: error: ‘SDL_SWSURFACE’ undeclared (first use in this function); did you mean ‘SDL_Surface’?
+ 1222 |                                 copy_surface = SDL_CreateRGBSurface (SDL_SWSURFACE, menu->menu_x2 - menu->menu_x + 1, menu->menu_y2 - menu->menu_y + 1, video_bpp, rmask, gmask, bmask, amask);
+      |                                                                      ^~~~~~~~~~~~~
+      |                                                                      SDL_Surface
+gui.c:1230:97: warning: comparison of constant ‘0’ with boolean expression is always false [-Wbool-compare]
+ 1230 |                                 if (SDL_SetSurfaceBlendMode (copy_surface, SDL_BLENDMODE_BLEND) < 0)
+      |                                                                                                 ^
+gui.c:1270:97: warning: comparison of constant ‘0’ with boolean expression is always false [-Wbool-compare]
+ 1270 |                                 if (SDL_SetSurfaceBlendMode (temp_surface, SDL_BLENDMODE_BLEND) < 0)
+      |                                                                                                 ^
+gui.c: In function ‘set_gadget_menu’:
+gui.c:1499:13: error: implicit declaration of function ‘TTF_SizeText’; did you mean ‘TTF_UpdateText’? [-Wimplicit-function-declaration]
+ 1499 |         if (TTF_SizeText (screen[screennum].font_ttf.font, (const char *) menu->text[i], &text_width, &dummy) != 0)
+      |             ^~~~~~~~~~~~
+      |             TTF_UpdateText
+gui.c:1511:19: error: implicit declaration of function ‘TTF_FontHeight’; did you mean ‘TTF_GetFontHeight’? [-Wimplicit-function-declaration]
+ 1511 |     text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
+      |                   ^~~~~~~~~~~~~~
+      |                   TTF_GetFontHeight
+gui.c: In function ‘event_gadget_string’:
+gui.c:2054:9: error: too few arguments to function ‘SDL_StartTextInput’
+ 2054 |         SDL_StartTextInput ();
+      |         ^~~~~~~~~~~~~~~~~~
+In file included from /usr/local/include/SDL3/SDL_events.h:61,
+                 from /usr/local/include/SDL3/SDL.h:47:
+/usr/local/include/SDL3/SDL_keyboard.h:379:34: note: declared here
+  379 | extern SDL_DECLSPEC bool SDLCALL SDL_StartTextInput(SDL_Window *window);
+      |                                  ^~~~~~~~~~~~~~~~~~
+gui.c:2077:48: error: ‘SDL_KeyboardEvent’ has no member named ‘keysym’
+ 2077 |                                 key = event.key.keysym.sym;
+      |                                                ^
+gui.c:2379:48: error: ‘SDL_KeyboardEvent’ has no member named ‘keysym’
+ 2379 |                                 key = event.key.keysym.sym;
+      |                                                ^
+gui.c:2395:9: error: too few arguments to function ‘SDL_StopTextInput’
+ 2395 |         SDL_StopTextInput();
+      |         ^~~~~~~~~~~~~~~~~
+/usr/local/include/SDL3/SDL_keyboard.h:512:34: note: declared here
+  512 | extern SDL_DECLSPEC bool SDLCALL SDL_StopTextInput(SDL_Window *window);
+      |                                  ^~~~~~~~~~~~~~~~~
+gui.c:2031:12: warning: variable ‘shift’ set but not used [-Wunused-but-set-variable]
+ 2031 |         S2 shift = 0; // set to 1 if shift is pressed down
+      |            ^~~~~
+gui.c:2029:12: warning: variable ‘char_code’ set but not used [-Wunused-but-set-variable]
+ 2029 |         S2 char_code;
+      |            ^~~~~~~~~
+gui.c: In function ‘event_gadget_string_multiline’:
+gui.c:2445:9: error: too few arguments to function ‘SDL_StartTextInput’
+ 2445 |         SDL_StartTextInput ();
+      |         ^~~~~~~~~~~~~~~~~~
+/usr/local/include/SDL3/SDL_keyboard.h:379:34: note: declared here
+  379 | extern SDL_DECLSPEC bool SDLCALL SDL_StartTextInput(SDL_Window *window);
+      |                                  ^~~~~~~~~~~~~~~~~~
+gui.c:2467:48: error: ‘SDL_KeyboardEvent’ has no member named ‘keysym’
+ 2467 |                                 key = event.key.keysym.sym;
+      |                                                ^
+gui.c:2648:28: warning: variable ‘input_row’ set but not used [-Wunused-but-set-variable]
+ 2648 |                         S2 input_row;
+      |                            ^~~~~~~~~
+gui.c:3107:48: error: ‘SDL_KeyboardEvent’ has no member named ‘keysym’
+ 3107 |                                 key = event.key.keysym.sym;
+      |                                                ^
+gui.c:3123:9: error: too few arguments to function ‘SDL_StopTextInput’
+ 3123 |         SDL_StopTextInput();
+      |         ^~~~~~~~~~~~~~~~~
+/usr/local/include/SDL3/SDL_keyboard.h:512:34: note: declared here
+  512 | extern SDL_DECLSPEC bool SDLCALL SDL_StopTextInput(SDL_Window *window);
+      |                                  ^~~~~~~~~~~~~~~~~
+gui.c:2422:12: warning: variable ‘shift’ set but not used [-Wunused-but-set-variable]
+ 2422 |         S2 shift = 0; // set to 1 if shift is pressed down
+      |            ^~~~~
+gui.c:2418:12: warning: variable ‘char_code’ set but not used [-Wunused-but-set-variable]
+ 2418 |         S2 char_code;
+      |            ^~~~~~~~~
+gui.c: In function ‘event_gadget_slider’:
+gui.c:3238:54: error: passing argument 1 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 3238 |                      buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                      ^~
+      |                                                      |
+      |                                                      int *
+In file included from /usr/local/include/SDL3/SDL_events.h:63:
+/usr/local/include/SDL3/SDL_mouse.h:261:75: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                    ~~~~~~~^
+gui.c:3238:58: error: passing argument 2 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 3238 |                      buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                          ^~
+      |                                                          |
+      |                                                          int *
+/usr/local/include/SDL3/SDL_mouse.h:261:85: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                              ~~~~~~~^
+gui.c:3285:57: error: passing argument 1 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 3285 |                         buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                         ^~
+      |                                                         |
+      |                                                         int *
+/usr/local/include/SDL3/SDL_mouse.h:261:75: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                    ~~~~~~~^
+gui.c:3285:61: error: passing argument 2 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 3285 |                         buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                             ^~
+      |                                                             |
+      |                                                             int *
+/usr/local/include/SDL3/SDL_mouse.h:261:85: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                              ~~~~~~~^
+gui.c: In function ‘event_gadget_slider_vert’:
+gui.c:3465:54: error: passing argument 1 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 3465 |                      buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                      ^~
+      |                                                      |
+      |                                                      int *
+/usr/local/include/SDL3/SDL_mouse.h:261:75: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                    ~~~~~~~^
+gui.c:3465:58: error: passing argument 2 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 3465 |                      buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                          ^~
+      |                                                          |
+      |                                                          int *
+/usr/local/include/SDL3/SDL_mouse.h:261:85: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                              ~~~~~~~^
+gui.c:3512:57: error: passing argument 1 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 3512 |                         buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                         ^~
+      |                                                         |
+      |                                                         int *
+/usr/local/include/SDL3/SDL_mouse.h:261:75: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                    ~~~~~~~^
+gui.c:3512:61: error: passing argument 2 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 3512 |                         buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                             ^~
+      |                                                             |
+      |                                                             int *
+/usr/local/include/SDL3/SDL_mouse.h:261:85: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                              ~~~~~~~^
+gui.c:3368:13: warning: variable ‘slider_x2’ set but not used [-Wunused-but-set-variable]
+ 3368 |      Sint16 slider_x2;
+      |             ^~~~~~~~~
+gui.c: In function ‘gadget_event’:
+gui.c:3690:65: error: passing argument 1 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 3690 |                                 buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                 ^~
+      |                                                                 |
+      |                                                                 int *
+/usr/local/include/SDL3/SDL_mouse.h:261:75: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                    ~~~~~~~^
+gui.c:3690:69: error: passing argument 2 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 3690 |                                 buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                     ^~
+      |                                                                     |
+      |                                                                     int *
+/usr/local/include/SDL3/SDL_mouse.h:261:85: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                              ~~~~~~~^
+gui.c:3773:65: error: passing argument 1 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 3773 |                                 buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                 ^~
+      |                                                                 |
+      |                                                                 int *
+/usr/local/include/SDL3/SDL_mouse.h:261:75: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                    ~~~~~~~^
+gui.c:3773:69: error: passing argument 2 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 3773 |                                 buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                     ^~
+      |                                                                     |
+      |                                                                     int *
+/usr/local/include/SDL3/SDL_mouse.h:261:85: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                              ~~~~~~~^
+gui.c:3870:65: error: passing argument 1 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 3870 |                                 buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                 ^~
+      |                                                                 |
+      |                                                                 int *
+/usr/local/include/SDL3/SDL_mouse.h:261:75: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                    ~~~~~~~^
+gui.c:3870:69: error: passing argument 2 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 3870 |                                 buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                     ^~
+      |                                                                     |
+      |                                                                     int *
+/usr/local/include/SDL3/SDL_mouse.h:261:85: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                              ~~~~~~~^
+gui.c:4004:73: error: passing argument 1 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 4004 |                                         buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                         ^~
+      |                                                                         |
+      |                                                                         int *
+/usr/local/include/SDL3/SDL_mouse.h:261:75: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                    ~~~~~~~^
+gui.c:4004:77: error: passing argument 2 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 4004 |                                         buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                             ^~
+      |                                                                             |
+      |                                                                             int *
+/usr/local/include/SDL3/SDL_mouse.h:261:85: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                              ~~~~~~~^
+gui.c:4046:100: error: ‘SDL_MouseButtonEvent’ has no member named ‘state’
+ 4046 |                                         if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.state == SDL_RELEASED)
+      |                                                                                                    ^
+gui.c:4046:110: error: ‘SDL_RELEASED’ undeclared (first use in this function); did you mean ‘SDL_RELEASE’?
+ 4046 |                                         if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.state == SDL_RELEASED)
+      |                                                                                                              ^~~~~~~~~~~~
+      |                                                                                                              SDL_RELEASE
+gui.c:4103:65: error: passing argument 1 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 4103 |                                 buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                 ^~
+      |                                                                 |
+      |                                                                 int *
+/usr/local/include/SDL3/SDL_mouse.h:261:75: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                    ~~~~~~~^
+gui.c:4103:69: error: passing argument 2 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 4103 |                                 buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                     ^~
+      |                                                                     |
+      |                                                                     int *
+/usr/local/include/SDL3/SDL_mouse.h:261:85: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                              ~~~~~~~^
+gui.c:4230:93: error: passing argument 1 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 4230 |                                                             buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                                             ^~
+      |                                                                                             |
+      |                                                                                             int *
+/usr/local/include/SDL3/SDL_mouse.h:261:75: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                    ~~~~~~~^
+gui.c:4230:97: error: passing argument 2 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 4230 |                                                             buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                                                 ^~
+      |                                                                                                 |
+      |                                                                                                 int *
+/usr/local/include/SDL3/SDL_mouse.h:261:85: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                              ~~~~~~~^
+gui.c:4357:65: error: passing argument 1 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 4357 |                                 buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                 ^~
+      |                                                                 |
+      |                                                                 int *
+/usr/local/include/SDL3/SDL_mouse.h:261:75: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                    ~~~~~~~^
+gui.c:4357:69: error: passing argument 2 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 4357 |                                 buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                     ^~
+      |                                                                     |
+      |                                                                     int *
+/usr/local/include/SDL3/SDL_mouse.h:261:85: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                              ~~~~~~~^
+gui.c:4424:65: error: passing argument 1 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 4424 |                                 buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                 ^~
+      |                                                                 |
+      |                                                                 int *
+/usr/local/include/SDL3/SDL_mouse.h:261:75: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                    ~~~~~~~^
+gui.c:4424:69: error: passing argument 2 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 4424 |                                 buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                     ^~
+      |                                                                     |
+      |                                                                     int *
+/usr/local/include/SDL3/SDL_mouse.h:261:85: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                              ~~~~~~~^
+gui.c:4546:65: error: passing argument 1 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 4546 |                                 buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                 ^~
+      |                                                                 |
+      |                                                                 int *
+/usr/local/include/SDL3/SDL_mouse.h:261:75: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                    ~~~~~~~^
+gui.c:4546:69: error: passing argument 2 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 4546 |                                 buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                     ^~
+      |                                                                     |
+      |                                                                     int *
+/usr/local/include/SDL3/SDL_mouse.h:261:85: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                              ~~~~~~~^
+gui.c:4668:65: error: passing argument 1 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 4668 |                                 buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                 ^~
+      |                                                                 |
+      |                                                                 int *
+/usr/local/include/SDL3/SDL_mouse.h:261:75: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                    ~~~~~~~^
+gui.c:4668:69: error: passing argument 2 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 4668 |                                 buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                     ^~
+      |                                                                     |
+      |                                                                     int *
+/usr/local/include/SDL3/SDL_mouse.h:261:85: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                              ~~~~~~~^
+gui.c:4802:73: error: passing argument 1 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 4802 |                                         buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                         ^~
+      |                                                                         |
+      |                                                                         int *
+/usr/local/include/SDL3/SDL_mouse.h:261:75: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                    ~~~~~~~^
+gui.c:4802:77: error: passing argument 2 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 4802 |                                         buttonmask = SDL_GetMouseState (&x, &y);
+      |                                                                             ^~
+      |                                                                             |
+      |                                                                             int *
+/usr/local/include/SDL3/SDL_mouse.h:261:85: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                              ~~~~~~~^
+gui.c:4844:100: error: ‘SDL_MouseButtonEvent’ has no member named ‘state’
+ 4844 |                                         if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.state == SDL_RELEASED)
+      |                                                                                                    ^
+gui.c:3585:15: warning: variable ‘old_value’ set but not used [-Wunused-but-set-variable]
+ 3585 |     S4 value, old_value;
+      |               ^~~~~~~~~
+gui.c:3583:51: warning: variable ‘select’ set but not used [-Wunused-but-set-variable]
+ 3583 |     Uint8 buttonmask, mouse_button, double_click, select;
+      |                                                   ^~~~~~
+gui.c:3583:37: warning: variable ‘double_click’ set but not used [-Wunused-but-set-variable]
+ 3583 |     Uint8 buttonmask, mouse_button, double_click, select;
+      |                                     ^~~~~~~~~~~~
+gui.c: In function ‘get_mouse_state’:
+gui.c:7335:41: error: passing argument 1 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 7335 |         buttonmask = SDL_GetMouseState ((int *) &xi, (int *) &yi);
+      |                                         ^~~~~~~~~~~
+      |                                         |
+      |                                         int *
+/usr/local/include/SDL3/SDL_mouse.h:261:75: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                    ~~~~~~~^
+gui.c:7335:54: error: passing argument 2 of ‘SDL_GetMouseState’ from incompatible pointer type [-Wincompatible-pointer-types]
+ 7335 |         buttonmask = SDL_GetMouseState ((int *) &xi, (int *) &yi);
+      |                                                      ^~~~~~~~~~~
+      |                                                      |
+      |                                                      int *
+/usr/local/include/SDL3/SDL_mouse.h:261:85: note: expected ‘float *’ but argument is of type ‘int *’
+  261 | extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, float *y);
+      |                                                                              ~~~~~~~^
+gui.c: In function ‘get_joystick_info’:
+gui.c:7608:13: error: implicit declaration of function ‘SDL_NumJoysticks’; did you mean ‘SDL_GetJoysticks’? [-Wimplicit-function-declaration]
+ 7608 |         if (SDL_NumJoysticks () > 0)
+      |             ^~~~~~~~~~~~~~~~
+      |             SDL_GetJoysticks
+gui.c:7610:46: error: implicit declaration of function ‘SDL_JoystickNameForIndex’; did you mean ‘SDL_GetJoystickNameForID’? [-Wimplicit-function-declaration]
+ 7610 |                 name_real_len = strlen_safe (SDL_JoystickNameForIndex (0), name_len);
+      |                                              ^~~~~~~~~~~~~~~~~~~~~~~~
+      |                                              SDL_GetJoystickNameForID
+gui.c:7610:46: error: passing argument 1 of ‘strlen_safe’ makes pointer from integer without a cast [-Wint-conversion]
+ 7610 |                 name_real_len = strlen_safe (SDL_JoystickNameForIndex (0), name_len);
+      |                                              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                              |
+      |                                              int
+gui.c:38:34: note: expected ‘const char *’ but argument is of type ‘int’
+   38 | size_t strlen_safe (const char * str, S8  maxlen);
+      |                     ~~~~~~~~~~~~~^~~
+gui.c:7618:55: error: passing argument 2 of ‘strcpy’ makes pointer from integer without a cast [-Wint-conversion]
+ 7618 |                 strcpy ((char *) &data[name_address], SDL_JoystickNameForIndex (0));
+      |                                                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                                       |
+      |                                                       int
+In file included from ../../../include/global.h:103:
+/usr/include/string.h:141:70: note: expected ‘const char * restrict’ but argument is of type ‘int’
+  141 | extern char *strcpy (char *__restrict __dest, const char *__restrict __src)
+      |                                               ~~~~~~~~~~~~~~~~~~~~~~~^~~~~
+gui.c: In function ‘get_key’:
+gui.c:7664:40: error: ‘SDL_KeyboardEvent’ has no member named ‘keysym’
+ 7664 |                         key = event.key.keysym.sym;
+      |                                        ^
+In file included from string.c:22:
+../../../include/global.h:28:9: note: ‘#pragma message: OS type: Linux’
+   28 | #pragma message ("OS type: Linux")
+      |         ^~~~~~~
+string.c: In function ‘strright’:
+string.c:54:28: warning: pointer targets in passing argument 1 of ‘strlen_safe’ differ in signedness [-Wpointer-sign]
+   54 |     src_len = strlen_safe (src, STRINGMOD_MAXSTRLEN);
+      |                            ^~~
+      |                            |
+      |                            U1 * {aka unsigned char *}
+string.c:24:33: note: expected ‘const char *’ but argument is of type ‘U1 *’ {aka ‘unsigned char *’}
+   24 | size_t strlen_safe (const char *str, S8 maxlen)
+      |                     ~~~~~~~~~~~~^~~
+string.c: In function ‘strleft’:
+string.c:76:28: warning: pointer targets in passing argument 1 of ‘strlen_safe’ differ in signedness [-Wpointer-sign]
+   76 |     src_len = strlen_safe (src, STRINGMOD_MAXSTRLEN);
+      |                            ^~~
+      |                            |
+      |                            U1 * {aka unsigned char *}
+string.c:24:33: note: expected ‘const char *’ but argument is of type ‘U1 *’ {aka ‘unsigned char *’}
+   24 | size_t strlen_safe (const char *str, S8 maxlen)
+      |                     ~~~~~~~~~~~~^~~
+string.c: In function ‘strremoveleft’:
+string.c:97:28: warning: pointer targets in passing argument 1 of ‘strlen_safe’ differ in signedness [-Wpointer-sign]
+   97 |     src_len = strlen_safe (src, STRINGMOD_MAXSTRLEN);
+      |                            ^~~
+      |                            |
+      |                            U1 * {aka unsigned char *}
+string.c:24:33: note: expected ‘const char *’ but argument is of type ‘U1 *’ {aka ‘unsigned char *’}
+   24 | size_t strlen_safe (const char *str, S8 maxlen)
+      |                     ~~~~~~~~~~~~^~~
+string.c: In function ‘strremoveright’:
+string.c:137:28: warning: pointer targets in passing argument 1 of ‘strlen_safe’ differ in signedness [-Wpointer-sign]
+  137 |     src_len = strlen_safe (src, STRINGMOD_MAXSTRLEN);
+      |                            ^~~
+      |                            |
+      |                            U1 * {aka unsigned char *}
+string.c:24:33: note: expected ‘const char *’ but argument is of type ‘U1 *’ {aka ‘unsigned char *’}
+   24 | size_t strlen_safe (const char *str, S8 maxlen)
+      |                     ~~~~~~~~~~~~^~~
+string.c: In function ‘strinsertchar’:
+string.c:177:28: warning: pointer targets in passing argument 1 of ‘strlen_safe’ differ in signedness [-Wpointer-sign]
+  177 |     src_len = strlen_safe (src, STRINGMOD_MAXSTRLEN);
+      |                            ^~~
+      |                            |
+      |                            U1 * {aka unsigned char *}
+string.c:24:33: note: expected ‘const char *’ but argument is of type ‘U1 *’ {aka ‘unsigned char *’}
+   24 | size_t strlen_safe (const char *str, S8 maxlen)
+      |                     ~~~~~~~~~~~~^~~
+In file included from ../file/file-sandbox.c:20:
+../file/../../../include/global.h:28:9: note: ‘#pragma message: OS type: Linux’
+   28 | #pragma message ("OS type: Linux")
+      |         ^~~~~~~
+/usr/bin/ld: cannot find -lSDL3_gfx: Datei oder Verzeichnis nicht gefunden
+collect2: error: ld returned 1 exit status
+
+
+zerobuild V1.2.1
+DEBUG: ac: 2
+DEBUG: av[1]: 'force'
+FORCE FULL BUILD!
+name = 'libl1vmsdl.so'
+sources parser running...
+source: 'sdl.c'
+source: 'gui.c'
+source: 'string.c'
+source: '../file/file-sandbox.c'
+sources parser running...
+includes parser running...
+include: '../include'
+include: '/usr/local/include'
+include: '/usr/include/SDL3'
+includes parser running...
+ccompiler = 'gcc'
+c++compiler = 'g++'
+aflags = 'cru'
+cflags = ' -fPIC -O3 -fomit-frame-pointer -Wall'
+lflags = ' -shared -lSDL3 -lSDL3_gfx -lSDL3_image -lSDL3_ttf -lSDL3_mixer'
+'gcc -I../include  -I/usr/local/include  -I/usr/include/SDL3  -fPIC -O3 -fomit-frame-pointer -Wall -c -o sdl.o sdl.c'
+build ERROR! 1
+'gcc -I../include  -I/usr/local/include  -I/usr/include/SDL3  -fPIC -O3 -fomit-frame-pointer -Wall -c -o gui.o gui.c'
+build ERROR! 1
+'gcc -I../include  -I/usr/local/include  -I/usr/include/SDL3  -fPIC -O3 -fomit-frame-pointer -Wall -c -o string.o string.c'
+check_filename: found '../' in filename, can't use timestamp: '../file/file-sandbox.c' force build!
+'gcc -I../include  -I/usr/local/include  -I/usr/include/SDL3  -fPIC -O3 -fomit-frame-pointer -Wall -c -o ../file/file-sandbox.o ../file/file-sandbox.c'
+'gcc -o libl1vmsdl.so sdl.o gui.o string.o ../file/file-sandbox.o  -shared -lSDL3 -lSDL3_gfx -lSDL3_image -lSDL3_ttf -lSDL3_mixer'
+build ERROR! 1
+build: failed ERROR!
