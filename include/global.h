@@ -156,12 +156,12 @@
 	#define MAXSUBJUMPS			256   // 256 on low RAM
 
 	// max number of code labels, and their name length:
-	#define MAXLABELS			1024	// 1024 on low RAM
+	#define MAXLABELS			512	// 1024 on low RAM
 										//
     // max number of Brackets objects
-    #define MAXOBJECTS          1024
+    #define MAXOBJECTS          512
 
-    #define MAXLINELEN      256		// MAX LENGTH for strlen_safe string length
+    #define MAXLINELEN      100 	// MAX LENGTH for strlen_safe string length
     #define MAXSTRLEN		256		// MAX LENGTH for maximum string size for static allocation
 #else
 	#define MODULES				1024
@@ -185,7 +185,7 @@
 
 // info strings:
 #define COPYRIGHT_STR " 2025 (C) 2017-2025 Stefan Pietzonke - software research"
-#define VM_VERSION_STR "3.4.1 "
+#define VM_VERSION_STR "3.4.2 "
 #define MOTTO_STR "Level 1 VM"
 
 // no user defined definitions below this section! ============================

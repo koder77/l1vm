@@ -1,3 +1,9 @@
+L1VM (3.4.2)
+	In settings header LOW RAM limits changed.
+	The compiler needs then only 11 MiB to compile.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Thu 27 Apr 2025 16:46  +020
+
 L1VM (3.4.1)
 	Added new string-unicode module for unicode support.
 	See lib/string-unicode.l1com example.
