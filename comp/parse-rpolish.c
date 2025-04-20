@@ -1603,7 +1603,7 @@ S2 parse_rpolish (U1 *postfix)
 		return (1);
 	}
 
-	if (set_variable_prefix ("") == 1)
+	if (set_variable_prefix ((U1 *) "") == 1)
 	{
 		printf ("error: line %lli: variable '%s' prefix not set with \\prefix\\ !\n", linenum, target_var);
 		return (1);

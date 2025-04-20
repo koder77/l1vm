@@ -746,10 +746,7 @@ S2 check_for_brackets (U1 *line)
 			return (1);
 		}
 	}
-	else
-	{
-		return (0);
-	}
+	return (0);
 }
 
 S2 check_for_normal_brackets (U1 *line)
@@ -3272,7 +3269,7 @@ S2 parse_line (U1 *line)
 
 									ok = 1;
 
-									if (set_variable_prefix ("") == 1)
+									if (set_variable_prefix ((U1 *) "") == 1)
 									{
 										printf ("error: can't set empty variable prefix!\n");
 										return (1);
@@ -7532,7 +7529,7 @@ S2 parse (U1 *name)
 							return (err);
 						}
 
-						if (set_variable_prefix ("") == 1)
+						if (set_variable_prefix ((U1 *) "") == 1)
 						{
 							printf ("error: can't set empty variable prefix!\n");
 							return (1);
