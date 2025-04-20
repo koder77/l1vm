@@ -135,6 +135,9 @@ U1 pure_function_override = 0;
 // unsafe block
 U1 inside_unsafe = 0;
 
+// forbid unsafe flag
+U1 forbid_unsafe = 0;
+
 // memory boúnds on/off
 U1 memory_bounds = 1;
 
@@ -746,7 +749,10 @@ S2 check_for_brackets (U1 *line)
 			return (1);
 		}
 	}
-	return (0);
+	else
+	{
+		return (0);
+	}
 }
 
 S2 check_for_normal_brackets (U1 *line)
@@ -862,6 +868,7 @@ S2 parse_line (U1 *line)
 	// for convert brackets expression to RPN
 	U1 conv[MAXSTRLEN];
 	U1 conv_right_assign[MAXSTRLEN];
+
 	U1 str[MAXSTRLEN];
 	U1 code_temp[MAXSTRLEN];
 
@@ -987,7 +994,7 @@ S2 parse_line (U1 *line)
 
 			if (parse_rpolish (conv) != 0)
 			{
-				printf ("error: line: %lli can't parse part in:\n", linenum);
+				printf ("error: line: %lli can't parse part in { }\n", linenum);
 				return (1);
 			}
 			return (0);
@@ -996,7 +1003,7 @@ S2 parse_line (U1 *line)
 		{
 			if (parse_rpolish (line) != 0)
 			{
-				printf ("error: line: %lli can't parse part in:\n", linenum);
+				printf ("error: line: %lli can't parse part in { }\n", linenum);
 				return (1);
 			}
 			return (0);
@@ -3269,9 +3276,9 @@ S2 parse_line (U1 *line)
 
 									ok = 1;
 
-									if (set_variable_prefix ((U1 *) "") == 1)
+									if (set_variable_prefix ("") == 1)
 									{
-										printf ("error: can't set empty variable prefix!\n");
+										printf ("error: line %lli: variable '%s' prefix not set with \\prefix\\ !\n", linenum, ast[level].expr[j][last_arg - 1]);
 										return (1);
 									}
 								}
@@ -5250,8 +5257,20 @@ S2 parse_line (U1 *line)
 									continue;
 								}
 
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "forbid-unsafe") == 0)
+								{
+									forbid_unsafe = 1;
+									continue;
+								}
+
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "unsafe") == 0)
 								{
+									if (forbid_unsafe == 1)
+									{
+										printf ("error: line %lli: unsafe forbidden!\n", linenum);
+										return (1);
+									}
+
 									// inside unsafe block
 									inside_unsafe = 1;
 									continue;
@@ -7320,7 +7339,6 @@ S2 parse (U1 *name)
     U1 asmname[512];
     S4 slen, pos;
     U1 rbuf[MAXSTRLEN + 1];                        /* read-buffer for one line */
-	U1 orig_line[MAXSTRLEN + 1];
     char *read;
 	S8 ret ALIGN;
 	S2 function_call = 0;
@@ -7354,8 +7372,6 @@ S2 parse (U1 *name)
         read = fgets_uni ((char *) rbuf, MAXLINELEN, fptr);
         if (read != NULL)
         {
-			strcpy ((char *) orig_line, (const char *) rbuf);
-
 			if (file_inside == 0)
 			{
 				// inside of main file add line:
@@ -7518,7 +7534,7 @@ S2 parse (U1 *name)
 							printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
 						}
 
-						printf ("> %s\n", orig_line);
+						printf ("> %s\n", rbuf);
 						err = 1;
 
 						//if (ret == 2 || ret == 3)
@@ -7527,12 +7543,6 @@ S2 parse (U1 *name)
 							// ERROR brackets don't match or code list full
 							fclose (fptr);
 							return (err);
-						}
-
-						if (set_variable_prefix ((U1 *) "") == 1)
-						{
-							printf ("error: can't set empty variable prefix!\n");
-							return (1);
 						}
 					}
 				}
