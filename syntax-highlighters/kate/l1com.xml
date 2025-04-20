@@ -26,6 +26,7 @@
     <item>variable-local-off</item>
     <item>variable-local-on</item>
 	<item>pure-off</item>
+    <item>forbid-unsafe</item>
     <item>unsafe</item>
     <item>unsafe-end</item>
 

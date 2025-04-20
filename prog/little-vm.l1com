@@ -6,6 +6,7 @@
 #include <intr-func.l1h>
 #include <math-const.l1h>
 #include <misc-macros.l1h>
+
 (main func)
 	(set int64 1 zero 0)
 	(set int64 1 one 1)
