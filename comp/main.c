@@ -55,7 +55,7 @@ S8 label_ind ALIGN = -1;
 S8 call_label_ind ALIGN = -1;
 
 struct ast ast[MAXBRACKETLEVEL];
-S8 ast_level ALIGN;
+S8 ast_level ALIGN = 0;
 
 S8 data_ind ALIGN = -1;
 
@@ -861,29 +861,29 @@ S2 check_for_infix_math (U1 *line)
 
 S2 parse_line (U1 *line)
 {
-    S4 level, j, last_arg, last_arg_2, t, v, reg, reg2, reg3, reg4, target, e, exp;
-	U1 ok;
-	S8 i ALIGN;
+    S4 level = 0, j = 0, last_arg = 0, last_arg_2 = 0, t = 0, v = 0, reg = 0, reg2 = 0, reg3 = 0, reg4 = 0, target = 0, e = 0, exp = 0;
+	U1 ok = 0;
+	S8 i ALIGN = 0;
 
 	// for convert brackets expression to RPN
-	U1 conv[MAXSTRLEN];
-	U1 conv_right_assign[MAXSTRLEN];
+	U1 conv[MAXSTRLEN] = "" ;
+	U1 conv_right_assign[MAXSTRLEN] = "";
 
-	U1 str[MAXSTRLEN];
-	U1 code_temp[MAXSTRLEN];
+	U1 str[MAXSTRLEN] = "";
+	U1 code_temp[MAXSTRLEN] = "";
 
-	S8 if_pos ALIGN;
-	U1 if_label[MAXSTRLEN];
-	U1 else_label[MAXSTRLEN];
-	U1 endif_label[MAXSTRLEN];
+	S8 if_pos ALIGN = 0;
+	U1 if_label[MAXSTRLEN] = "";
+	U1 else_label[MAXSTRLEN] = "";
+	U1 endif_label[MAXSTRLEN] = "";
 
-	S8 while_pos ALIGN;
-	U1 while_label[MAXSTRLEN];
+	S8 while_pos ALIGN = 0;
+	U1 while_label[MAXSTRLEN] = "";
 
-	S8 for_pos ALIGN;
-	U1 for_label[MAXSTRLEN];
+	S8 for_pos ALIGN = 0;
+	U1 for_label[MAXSTRLEN] = "";
 
-	S8 switch_pos ALIGN;
+	S8 switch_pos ALIGN = 0;
 
 	U1 set_loadreg = 0;
 
@@ -894,7 +894,7 @@ S2 parse_line (U1 *line)
 	// returned by get_ast ()
 	// to parse: {a = x + y * z} like code stuff!
 	U1 parse_cont = 0;
-	S2 ret;
+	S2 ret = 0;
 
 	// multi line array assign
 	U1 array_multi = 0;
@@ -907,7 +907,7 @@ S2 parse_line (U1 *line)
 	U1 boolean_var = 0;
 	S2 normal_brackets = 0;
 
-	S2 right_assign_pos;
+	S2 right_assign_pos = 0 ;
 
     ret = check_for_brackets (line);
 	if (ret == 1)
@@ -7335,18 +7335,18 @@ S2 check_file_ending (U1 *name)
 
 S2 parse (U1 *name)
 {
-    FILE *fptr;
-    U1 asmname[512];
-    S4 slen, pos;
-    U1 rbuf[MAXSTRLEN + 1];                        /* read-buffer for one line */
-    char *read;
-	S8 ret ALIGN;
+    FILE *fptr = NULL;
+    U1 asmname[512] = "";
+    S4 slen = 0, pos = 0;
+    U1 rbuf[MAXSTRLEN + 1] = "";                        /* read-buffer for one line */
+    char *read = 0;
+	S8 ret ALIGN = 0;
 	S2 function_call = 0;
 
 	S8 code_lines ALIGN = 0;
 
     slen = strlen_safe ((const char *) name, MAXLINES);
-    U1 ok, err = 0;
+    U1 ok = 0, err = 0;
 
     if (slen > 506)
     {
@@ -7661,18 +7661,18 @@ int main (int ac, char *av[])
 
 	U1 syscallstr[256] = "l1asm ";		// system syscall for assembler
 	S8 ret ALIGN = 0;					// return value of assembler
-	S8 arglen ALIGN;
-	S8 i ALIGN;
-	S8 str_len_arg ALIGN;
-	S8 str_len_assembler_args ALIGN;
+	S8 arglen ALIGN = 0;
+	S8 i ALIGN = 0;
+	S8 str_len_arg ALIGN = 0;
+	S8 str_len_assembler_args ALIGN = 0;
 
-	U1 assembler_args[MAXSTRLEN];
+	U1 assembler_args[MAXSTRLEN] = "";
 
 	S2 warn_unused_vars = 0;
 
 	// compile time vars
- 	struct timeval  timer_start, timer_end;
- 	F8 timer_double ALIGN;
+ 	struct timeval timer_start, timer_end;
+ 	F8 timer_double ALIGN = 0.0;
 
     if (ac < 2)
     {
