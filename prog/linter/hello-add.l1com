@@ -30,6 +30,6 @@
    (set int64 1 ret~ 0)
 
    (y~ x~ stpop)
-   {ret~ = x~ + y~}
+   (x~ + y~ ret~ :=)
    (ret~ stpush) (return)
 (funcend)
