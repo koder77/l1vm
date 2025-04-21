@@ -41,25 +41,25 @@ S8 code_max ALIGN = MAXDATA; // 32 MB
 S8 data_max ALIGN = MAXDATA; // 32 MB
 
 // code
-U1 *code;
+U1 *code = NULL;
 
 // data
-U1 *data;
+U1 *data = NULL;
 
 U1 data_block = 0, code_block = 0;
 
-U1 data_type;
-S8 data_size ALIGN;
+U1 data_type = 0;
+S8 data_size ALIGN = 0;
 
-S2 arg_ind, arg_pos;
+S2 arg_ind = 0, arg_pos = 0;
 
 S8 label_ind ALIGN = -1;
 
 // data lists
 U1 data_list = 0;
 S8 data_offset ALIGN = 0;
-S8 data_offset_back ALIGN;
-S8 data_save_offset ALIGN;
+S8 data_offset_back ALIGN = 0;
+S8 data_save_offset ALIGN = 0;
 
 struct t_var t_var;
 struct data_info data_info[MAXDATAINFO];
@@ -94,7 +94,7 @@ void free_code_data (void)
 
 S2 get_args (U1 *line)
 {
-    S4 slen;
+    S4 slen = 0;
     S4 pos = 0, argstart;
 
     U1 ok = 0;
@@ -278,9 +278,9 @@ S2 write_data_byte (S8 offset, S8 val, S8 size)
 
 S2 write_data_string (S8 offset, U1 *str)
 {
-	S8 slen ALIGN;
-	S8 i ALIGN;
-	S8 j ALIGN;
+	S8 slen ALIGN = 0;
+	S8 i ALIGN = 0;
+	S8 j ALIGN = 0;
 
 	j = offset;
 	slen = strlen_safe ((const char *) str, MAXLINELEN);
@@ -302,7 +302,7 @@ S2 write_data_string (S8 offset, U1 *str)
 
 S2 write_data_word (S8 offset, S2 val, S8 size)
 {
-	S8 i ALIGN;
+	S8 i ALIGN = 0;
     U1 *bptr = (U1 *) &val;
 
     if ((S8) (offset + (sizeof (S2) * size)) < data_max)
@@ -330,7 +330,7 @@ S2 write_data_word (S8 offset, S2 val, S8 size)
 
 S2 write_data_doubleword (S8 offset, S4 val, S8 size)
 {
-	S8 i ALIGN;
+	S8 i ALIGN = 0;
     U1 *bptr = (U1 *) &val;
 
     if ((S8) (offset + (sizeof (S4) * size)) < data_max)
@@ -369,7 +369,7 @@ S2 write_data_doubleword (S8 offset, S4 val, S8 size)
 S2 write_data_quadword (S8 offset, S8 val, S8 size)
 {
     U1 *bptr = (U1 *) &val;
-    S8 i ALIGN;
+    S8 i ALIGN = 0;
 
     if ((S8) (offset + (sizeof (S8) * size)) < data_max)
     {
@@ -422,7 +422,7 @@ S2 write_data_quadword (S8 offset, S8 val, S8 size)
 
 S2 write_data_doublefloat (S8 offset, F8 val, S8 size)
 {
-	S8 i ALIGN;
+	S8 i ALIGN = 0;
     U1 *bptr = (U1 *) &val;
 
     if ((S8) (offset + (sizeof (F8) * size)) < data_max)
@@ -582,7 +582,7 @@ S8 read_code_quadword (U1 *ptr)
 
 S8 get_label_pos (U1 *labelname)
 {
-	S8 i ALIGN;
+	S8 i ALIGN = 0;
 	S8 label_index ALIGN = -1;
 
 	for (i = 0; i < MAXLABELS; i++)
@@ -598,10 +598,10 @@ S8 get_label_pos (U1 *labelname)
 
 S2 write_code_labels (void)
 {
-	S8 i ALIGN;
-	S8 j ALIGN;
-	S8 label_index ALIGN;
-	S8 offset ALIGN;
+	S8 i ALIGN = 0;
+	S8 j ALIGN = 0;
+	S8 label_index ALIGN = 0;
+	S8 offset ALIGN = 0;
 
 	U1 err = 0;
 
@@ -699,9 +699,9 @@ S2 write_code_labels (void)
 
 void get_data_extern_filename (U1 *name)
 {
-	S8 i ALIGN;
-	S8 j ALIGN;
-	S8 str_len ALIGN;
+	S8 i ALIGN = 0;
+	S8 j ALIGN = 0;
+	S8 str_len ALIGN = 0;
 
 	// strip away leading '$' sign, moving
 	str_len = strlen_safe ((const char *) name, MAXLINELEN);
@@ -719,23 +719,23 @@ void get_data_extern_filename (U1 *name)
 
 S2 parse_line (U1 *line)
 {
-    S8 offset ALIGN;
-	S8 byte_data_offset ALIGN;
-    S8 datai ALIGN;
-    F8 datad ALIGN;
+    S8 offset ALIGN = 0;
+	S8 byte_data_offset ALIGN = 0;
+    S8 datai ALIGN = 0;
+    F8 datad ALIGN = 0;
 
-	S8 label_pos ALIGN;
-    S8 slen ALIGN;
-	S8 i ALIGN;
-	S8 j ALIGN;
-	S8 d ALIGN;
+	S8 label_pos ALIGN = 0;
+    S8 slen ALIGN = 0;
+	S8 i ALIGN = 0;
+	S8 j ALIGN = 0;
+	S8 d ALIGN = 0;
 
-	U1 opcode_found, data_found;
+	U1 opcode_found = 0, data_found = 0;
 
-	FILE *data_extern;
-	U1 ch;
+	FILE *data_extern = NULL;
+	U1 ch = 0;
 	S8 data_extern_index ALIGN = 0;
-	S8 line_len ALIGN;					// input line length
+	S8 line_len ALIGN = 0;					// input line length
 
 	line_len = strlen_safe ((const char *) line, MAXLINELEN);
 	if (line_len == 0)
@@ -1299,7 +1299,8 @@ S2 parse_line (U1 *line)
 
 S2 check_file_ending (U1 *name)
 {
-	S4 slen, i, j;
+	S4 slen = 0, i = 0, j = 0;
+
 	slen = strlen_safe ((const char *) name, MAXLINES);
 
 	for (i = 0; i < slen; i++)
@@ -1322,11 +1323,11 @@ S2 check_file_ending (U1 *name)
 
 S2 parse (U1 *name)
 {
-    FILE *fptr;
-    U1 asmname[512];
-    S4 slen, pos;
-    U1 rbuf[MAXSTRLEN + 1];                        /* read-buffer for one line */
-    char *read;
+    FILE *fptr = NULL;
+    U1 asmname[512] = "";
+    S4 slen = 0, pos = 0;
+    U1 rbuf[MAXSTRLEN + 1] = "";                        /* read-buffer for one line */
+    char *read = NULL;
 
     slen = strlen_safe ((const char *) name, MAXLINELEN);
     U1 ok, err = 0;
@@ -1437,18 +1438,18 @@ S2 parse (U1 *name)
 
 S2 dump_object (U1 *name)
 {
-	FILE *fptr;
-	U1 objname[512];
-	S8 data_size ALIGN;
-	S8 code_size ALIGN;
-	S8 writesize ALIGN;
-	S4 slen;
+	FILE *fptr = NULL;
+	U1 objname[512] = "";
+	S8 data_size ALIGN = 0;
+	S8 code_size ALIGN = 0;
+	S8 writesize ALIGN = 0;
+	S4 slen = 0;
 
-	S8 header ALIGN;
-	S8 i ALIGN;
-	S8 d ALIGN;
+	S8 header ALIGN = 0;
+	S8 i ALIGN = 0;
+	S8 d ALIGN = 0;
 
-	S8 file_size ALIGN;
+	S8 file_size ALIGN = 0 ;
 
 	slen = strlen_safe ((const char *) name, MAXLINELEN);
 
@@ -1603,9 +1604,9 @@ int main (int ac, char *av[])
 {
 	// make bzip2 object code file flag
 	U1 pack = 0;
-	U1 shell_pack[512];
-	U1 debug_file_name[512];
-    char *endp;
+	U1 shell_pack[512] = "";
+	U1 debug_file_name[512] = "";
+    char *endp = NULL;
 
 	if (ac < 2)
     {

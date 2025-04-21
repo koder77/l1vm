@@ -123,8 +123,8 @@ struct vars
 S8 vars_ind ALIGN = -1;
 struct vars vars[MAXVARS];
 
-FILE *finptr;
-FILE *foutptr;
+FILE *finptr = NULL;
+FILE *foutptr = NULL;
 
 // global flag set to 1 if errors found
 U1 return_error = 0;
@@ -193,7 +193,7 @@ S2 do_check_spaces (U1 *line)
 void clear_defines (void)
 {
 	// clear ALL defines
-	S4 i;
+	S4 i = 0;
 
 	for (i = 0; i <= defines_ind; i++)
 	{
@@ -209,7 +209,7 @@ void clear_defines (void)
 S2 set_define (U1 *line_str)
 {
 	U1 ok = 1;
-	S4 i, pos, slen, j, k;
+	S4 i = 0, pos = 0, slen = 0, j = 0, k = 0;
 
 	if (defines_ind < DEFINE_MAX - 1)
 	{
@@ -264,7 +264,7 @@ S2 set_varname (U1 *line_str)
 {
 	U1 ok = 1;
 	U1 define_already_set = 0;
-	S4 i, pos, slen, j, k;
+	S4 i = 0, pos = 0, slen = 0, j = 0, k = 0;
 
 	U1 new_define[MAXLINELEN];
 
@@ -364,9 +364,9 @@ S2 set_varname (U1 *line_str)
 
 S2 replace_str (U1 *line_str, U1 *search_str, U1 *replace_str)
 {
-	S4 i, pos, slen, define_len, define_out_len, j, end, n, real_end = 0 ;
-	U1 ok;
-	U1 new_line[MAXSTRLEN + 1];
+	S4 i = 0, pos = 0, slen = 0, define_len = 0, define_out_len = 0, j = 0, end = 0, n = 0, real_end = 0 ;
+	U1 ok = 0;
+	U1 new_line[MAXSTRLEN + 1] = "";
 
 	slen = strlen_safe ((const char*) line_str, MAXLINELEN);
 
@@ -435,9 +435,9 @@ S2 replace_str (U1 *line_str, U1 *search_str, U1 *replace_str)
 
 S2 replace_define (U1 *line_str)
 {
-	S4 ind;
+	S4 ind = 0;
 
-	U1 new_line[MAXSTRLEN + 1];
+	U1 new_line[MAXSTRLEN + 1] = "";
 
 	// printf ("DEBUG: replace_define: start...\n");
 
@@ -459,9 +459,9 @@ S2 replace_define (U1 *line_str)
 
 S2 replace_varname (U1 *line_str)
 {
-	S4 ind;
+	S4 ind = 0;
 
-	U1 new_line[MAXSTRLEN + 1];
+	U1 new_line[MAXSTRLEN + 1] = "";
 
 	// printf ("DEBUG: replace_define: start...\n");
 
@@ -487,8 +487,8 @@ S2 replace_varname (U1 *line_str)
 
 S2 set_macro (U1 *line_str)
 {
-	U1 ok = 1, arg_loop;
-	S4 i, pos, slen, j, k;
+	U1 ok = 1, arg_loop = 0;
+	S4 i = 0, pos = 0, slen = 0, j = 0, k = 0;
 
 	if (defines_ind < DEFINE_MAX - 1)
 	{
@@ -994,9 +994,9 @@ S2 replace_macro_normal (U1 *line_str)
 S2 replace_macro (U1 *line_str)
 {
 	U1 ok = 1;
-	S4 i, pos, slen, k;
-	S4 ind;
-	S4 defines_len;
+	S4 i = 0, pos = 0, slen = 0, k = 0;
+	S4 ind = 0;
+	S4 defines_len = 0;
 
 	U1 new_line[MAXSTRLEN + 1];
 	U1 arg[MAXSTRLEN + 1];
@@ -1143,26 +1143,26 @@ S2 replace_macro (U1 *line_str)
 
 S2 include_file (U1 *line_str)
 {
-	U1 rbuf[MAXSTRLEN + 1];
-	U1 buf[MAXSTRLEN + 1];
-	U1 setret[MAXSTRLEN + 1];
+	U1 rbuf[MAXSTRLEN + 1] = "";
+	U1 buf[MAXSTRLEN + 1] = "";
+	U1 setret[MAXSTRLEN + 1] = "";
 
-	U1 ok;
-	char *read;
-	U1 get_include_start;
-	U1 get_include_name;
-	S4 pos, slen, quote_pos;
-	S4 i, j;
+	U1 ok = 0;
+	char *read = NULL;
+	U1 get_include_start = 0;
+	U1 get_include_name = 0;
+	S4 pos = 0, slen = 0, quote_pos = 0;
+	S4 i = 0, j = 0;
 
-	S4 include_path_len, include_name_len;
+	S4 include_path_len = 0, include_name_len = 0;
 
 	// multiline
-	S4 multi_pos;
-	U1 multi_len;
+	S4 multi_pos = 0;
+	U1 multi_len = 0;
 
-	FILE *fincludeptr;
-	U1 include_file_name[MAXSTRLEN + 1];
-	U1 include_full_path[MAXSTRLEN + 1];
+	FILE *fincludeptr = NULL;
+	U1 include_file_name[MAXSTRLEN + 1] = "";
+	U1 include_full_path[MAXSTRLEN + 1] = "";
 
 	slen = strlen_safe ((const char *) line_str, MAXLINELEN);
 	pos = searchstr (line_str, (U1 *) INCLUDE_SB, 0, 0, TRUE);
@@ -1715,11 +1715,11 @@ void show_info (void)
 
 S2 check_if_l1com_file (char *file)
 {
-	FILE *fptr;
-	U1 rbuf[MAXSTRLEN + 1];
+	FILE *fptr = NULL;
+	U1 rbuf[MAXSTRLEN + 1] = "";
     U1 ok = TRUE;
-	char *read;
-	S4 pos;
+	char *read = NULL;
+	S4 pos = 0;
 
 	fptr = fopen (file, "r");
 	if (fptr == NULL)
@@ -1875,7 +1875,7 @@ U1 getvartype (U1 *type)
 
 S2 parse_set (U1 *line, U1 *setret)
 {
-	S2 pos, type_pos, type_ind = 0, i;
+	S2 pos, type_pos, type_ind = 0, i = 0;
     S2 name_pos, name_ind = 0;
     S2 line_len = 0;
     U1 get_type = 1;
@@ -1884,8 +1884,8 @@ S2 parse_set (U1 *line, U1 *setret)
     S2 type_len = 0;
     S2 spaces = 0;
     S2 func_pos = 0;
-    U1 type[MAXSTRLEN + 1];
-    U1 name[MAXSTRLEN + 1];
+    U1 type[MAXSTRLEN + 1] = "";
+    U1 name[MAXSTRLEN + 1] = "";
 
     line_len = strlen_safe ((const char *) line, MAXSTRLEN);
 
@@ -2111,18 +2111,18 @@ S2 check_call (U1 *line, S4 pos_call)
 
 int main (int ac, char *av[])
 {
-	U1 rbuf[MAXSTRLEN + 1];                        /* read-buffer for one line */
-	U1 buf[MAXSTRLEN + 1];
-	U1 setret[MAXSTRLEN + 1];
+	U1 rbuf[MAXSTRLEN + 1] = "";                        /* read-buffer for one line */
+	U1 buf[MAXSTRLEN + 1] = "";
+	U1 setret[MAXSTRLEN + 1] = "";
 
-	char *read;
-	U1 ok;
-	S4 pos;
-    S4 slen;
+	char *read = NULL;
+	U1 ok = 0;
+	S4 pos = 0;
+    S4 slen = 0;
 
 	// multiline
-	S4 multi_pos;
-	U1 multi_len;
+	S4 multi_pos = 0;
+	U1 multi_len = 0;
 
 	if (ac < 4)
 	{

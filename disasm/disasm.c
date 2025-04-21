@@ -25,14 +25,14 @@
 #include "../include/stack.h"
 #include "main.h"
 
-S8 data_size ALIGN;
-S8 code_size ALIGN;
+S8 data_size ALIGN = 0;
+S8 code_size ALIGN = 0;
 
 // see global.h user settings on top
 S8 max_code_size ALIGN = MAX_CODE_SIZE;
 S8 max_data_size ALIGN = MAX_DATA_SIZE;
 
-S8 data_mem_size ALIGN;
+S8 data_mem_size ALIGN = 0;
 S8 stack_size ALIGN = STACKSIZE;		// stack size added to data size when dumped to object file
 
 // code
@@ -43,8 +43,8 @@ U1 *data_global = NULL;
 
 U1 silent_run = 1;
 
-S8 code_ind ALIGN;
-S8 data_ind ALIGN;
+S8 code_ind ALIGN = 0;
+S8 data_ind ALIGN = 0;
 S8 modules_ind ALIGN = -1;    // no module loaded = -1
 
 S8 cpu_ind ALIGN = 0;

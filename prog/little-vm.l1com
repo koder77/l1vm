@@ -14,7 +14,7 @@
 	(set int64 256 regi)
 	(set double 256 regd)
 	(set int64 1 arg1 0)
-	(set int64 1 arg2 0)
+	(set int64 1 arg2 0
 	(set int64 1 arg3 0)
 	(set int64 1 ep 0)
 	(set int64 1 bp 0)

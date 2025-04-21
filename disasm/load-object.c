@@ -181,37 +181,37 @@ F8 conv_double (S8 val)
 
 S2 load_object (U1 *name, U1 byte_char)
 {
-	FILE *fptr;
-	U1 objname[512];
-	U1 full_path[512];
-	U1 run_shell[512];
-	char *home;
+	FILE *fptr = NULL;
+	U1 objname[512] = "";
+	U1 full_path[512] = "";
+	U1 run_shell[512] = "";
+	char *home = NULL;
 
-	S4 slen;
+	S4 slen = 0;
 	S4 sandbox_root_len;
 	U1 object_packed = 0;
 	U1 object_root = 0;
 
-	S8 header ALIGN;
+	S8 header ALIGN = 0;
 
-	S8 readsize ALIGN;
+	S8 readsize ALIGN = 0;
 
-	U1 op;
-	U1 byte;
-	S2 word;
-	S4 doubleword;
-	S8 quadword ALIGN;
+	U1 op = 0;
+	U1 byte = 0;
+	S2 word = 0;
+	S4 doubleword = 0;
+	S8 quadword ALIGN = 0;
 
 	// S8 offset ALIGN;
 
-	U1 ok;
-	S8 i ALIGN;
-	S8 j ALIGN;
-	S8 k ALIGN;
+	U1 ok = 0;
+	S8 i ALIGN = 0;
+	S8 j ALIGN = 0;
+	S8 k ALIGN = 0;
 
-	U1 *data;   // local data pointer, points to data_global later
+	U1 *data = NULL;   // local data pointer, points to data_global later
 
-	U1 *bptr;
+	U1 *bptr = NULL;
 
 	// bzip compressed file flag
 	U1 bzip2 = 0;
