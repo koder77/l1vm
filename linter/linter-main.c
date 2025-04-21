@@ -1601,7 +1601,7 @@ int main (int ac, char *av[])
     }
 
     file_name_len = strlen_safe (av[1], MAXSTRLEN);
-    if (file_name_len >= MAXSTRLEN - 8 )
+    if (file_name_len >= MAXSTRLEN - 14)
     {
        // error can't open input file
 		printf ("ERROR: input file name overflow: '%s' !\n", av[1]);
