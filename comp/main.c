@@ -39,10 +39,6 @@ S8 linenum ALIGN = 0;
 #define FILENAME_START_SB   "FILE:"
 #define FILENAME_END_SB     "FILE END"
 
-// linter required flag
-#define LINTER_REQUIRED_SB  "// LINTER"
-#define LINTER_NAME_SB      ".l1lint"
-
 #define FILES_MAX           1000
 
 struct file
