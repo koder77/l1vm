@@ -39,6 +39,10 @@ S8 linenum ALIGN = 0;
 #define FILENAME_START_SB   "FILE:"
 #define FILENAME_END_SB     "FILE END"
 
+// linter required flag
+#define LINTER_REQUIRED_SB  "// LINTER"
+#define LINTER_NAME_SB      ".l1lint"
+
 #define FILES_MAX           1000
 
 struct file
@@ -141,6 +145,10 @@ U1 forbid_unsafe = 0;
 // memory boúnds on/off
 U1 memory_bounds = 1;
 
+// set if linter is needed by
+// LINTER
+// in Brackets code!
+U1 do_check_linter = 0;
 
 void init_ast (void)
 {
@@ -5289,6 +5297,13 @@ S2 parse_line (U1 *line)
 									continue;
 								}
 
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "linter") == 0)
+								{
+									printf ("build needs linter!\n");
+									do_check_linter = 1;
+									continue;
+								}
+
 								// pointer: store data address int int64 variable
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "pointer") == 0)
 								{
@@ -7674,6 +7689,13 @@ int main (int ac, char *av[])
  	struct timeval timer_start, timer_end;
  	F8 timer_double ALIGN = 0.0;
 
+	FILE *finptr = NULL;
+    FILE *flint_status = NULL;
+    U1 flint_status_file[MAXSTRLEN + 1];
+    S4 file_name_len = 0;
+	U1 linter_status_str[MAXLINELEN + 1];
+    char *linter = NULL;
+
     if (ac < 2)
     {
 		show_info ();
@@ -7785,6 +7807,14 @@ int main (int ac, char *av[])
 		}
 	}
 
+	file_name_len = strlen_safe (av[1], MAXSTRLEN);
+    if (file_name_len >= MAXSTRLEN - 14)
+    {
+       // error can't open input file
+		printf ("ERROR: input file name overflow: '%s' !\n", av[1]);
+		exit (1);
+	}
+
 	gettimeofday (&timer_start, NULL);
 
 	data = alloc_array_U1 (line_len, MAXLINELEN);
@@ -7844,6 +7874,48 @@ int main (int ac, char *av[])
 			cleanup ();
 			exit (1);
 		}
+	}
+
+	if (do_check_linter == 1)
+	{
+		printf ("checking linter output...\n");
+
+		// flint status file
+		strcpy ((char *) flint_status_file, av[1]);
+		strcat ((char *) flint_status_file, ".l1com.l1lint");
+
+		flint_status = fopen ((const char *) flint_status_file, "r");
+		if (flint_status == NULL)
+		{
+			// error can't open lint status file
+			printf ("ERROR: can't open linter status file: '%s' !\n", flint_status_file);
+		    cleanup ();
+			exit (1);
+		}
+
+		linter = fgets_uni ((char *) linter_status_str, MAXLINELEN, flint_status);
+		if (linter != NULL)
+		{
+			if (strcmp ((const char *) linter_status_str, "linter OK!\n") != 0)
+			{
+				printf ("\033[31merror: linter check not OK!\n");
+				printf ("[!] %s\033[0m\n\n", av[1]);
+
+				fclose (flint_status);
+				cleanup ();
+				exit (1);
+			}
+		}
+		else
+		{
+			printf ("\033[31merror: can't open linter check file!\n");
+			printf ("[!] %s\033[0m\n\n", av[1]);
+
+			fclose (flint_status);
+			cleanup ();
+			exit (1);
+		}
+		fclose (flint_status);
 	}
 
 	if (write_asm ((U1 *) av[1]) == 1)

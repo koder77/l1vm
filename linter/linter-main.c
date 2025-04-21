@@ -1346,7 +1346,7 @@ S2 parse_line (U1 *line)
                 return (1);
             }
         }
-    }
+     }
 
     // check if function start
     func_pos = searchstr (line, (U1 *) "func)", 0, 0, TRUE);
@@ -1578,23 +1578,55 @@ S2 parse_line (U1 *line)
 
 int main (int ac, char *av[])
 {
-    FILE *finptr;
-    char *read;
-    S4 slen;
-    U1 ok;
+    FILE *finptr = NULL;
+    FILE *flint_status = NULL;
+    U1 flint_status_file[MAXSTRLEN + 1];
+    S4 file_name_len = 0;
+
+    char *read = NULL;
+    S4 slen = 0;
+    U1 ok = 0;
     S2 ret = 0;
-    U1 rbuf[MAXSTRLEN + 1];                        /* read-buffer for one line */
-	U1 buf[MAXSTRLEN + 1];
-    S2 pos, pos2, linton, lintoff, function_args_check;
+    U1 rbuf[MAXSTRLEN + 1] = "";                        /* read-buffer for one line */
+	U1 buf[MAXSTRLEN + 1] = "";
+    S2 pos = 0, pos2 = 0, linton = 0, lintoff = 0, function_args_check = 0;
     U1 do_lint = 1; // switch linting on and off
 
-     if (ac < 2)
-     {
+    if (ac < 2)
+    {
          printf("l1vm-linter %s\n", VM_VERSION_STR);
          printf ("l1vm-linter <program>\n");
          cleanup ();
          exit (1);
-     }
+    }
+
+    file_name_len = strlen_safe (av[1], MAXSTRLEN);
+    if (file_name_len >= MAXSTRLEN - 8 )
+    {
+       // error can't open input file
+		printf ("ERROR: input file name overflow: '%s' !\n", av[1]);
+		exit (1);
+	}
+
+    // flint status file
+    strcpy ((char *) flint_status_file, av[1]);
+    strcat ((char *) flint_status_file, ".l1lint");
+
+    flint_status = fopen ((const char *) flint_status_file, "w");
+    if (flint_status == NULL)
+    {
+        // error can't open lint status file
+		printf ("ERROR: can't open lint status file: '%s' !\n", flint_status_file);
+		exit (1);
+	}
+
+    if (fputs("linter run\n", flint_status) < 0)
+    {
+        // error can't open lint status file
+		printf ("ERROR: can't create lint status file: '%s' !\n", flint_status_file);
+		exit (1);
+    }
+    fclose (flint_status);
 
     // open input file
 	finptr = fopen (av[1], "r");
@@ -1607,18 +1639,24 @@ int main (int ac, char *av[])
 
      if (init_function_args () != 0)
      {
+         fclose (finptr);
+
          cleanup ();
          exit (1);
      }
 
      if (init_return_args () != 0)
      {
+         fclose (finptr);
+
          cleanup ();
          exit (1);
      }
 
      if (init_vars () != 0)
      {
+         fclose (finptr);
+
          cleanup ();
          exit (1);
      }
@@ -1740,7 +1778,7 @@ int main (int ac, char *av[])
 
                     if (file_inside == 0)
                     {
-                        printf ("linter error: line: %lli\n", linenum, buf);
+                        printf ("linter error: line: %lli\n", linenum);
                     }
                     else
                     {
@@ -1756,6 +1794,23 @@ int main (int ac, char *av[])
 			ok = FALSE;
 		}
     }
+
+    flint_status = fopen ((const char *) flint_status_file, "w");
+    if (flint_status == NULL)
+    {
+        // error can't open lint status file
+		printf ("ERROR: can't open lint status file: '%s' !\n", flint_status_file);
+		exit (1);
+	}
+
+    if (fputs("linter OK!\n", flint_status) < 0)
+    {
+        // error can't open lint status file
+		printf ("ERROR: can't create lint status file: '%s' !\n", flint_status_file);
+		exit (1);
+    }
+    fclose (flint_status);
+
     fclose (finptr);
 
     // check if exit interrupt was found

@@ -8,6 +8,7 @@
 // set the return variable type:
 // (return args add int64)
 (main func)
+    (linter)
     #var ~ main
 
     (set int64 1 zero 0)

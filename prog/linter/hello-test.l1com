@@ -9,6 +9,7 @@
 // (return args add int64 byte)
 //
 (main func)
+    (linter)
     #var ~ main
 
     (set int64 1 zero 0)

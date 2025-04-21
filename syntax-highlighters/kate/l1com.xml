@@ -29,6 +29,7 @@
     <item>forbid-unsafe</item>
     <item>unsafe</item>
     <item>unsafe-end</item>
+    <item>linter</item>
 
 	</list>
     <list name="keywords">

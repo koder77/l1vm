@@ -3,7 +3,9 @@ L1VM (3.4.2)
 	The compiler needs then only 11 MiB to compile.
 	Compiler fixes.
 
--- Stefan Pietzonke <info@midnight-coding.de> Sun 20 Apr 2025 14:36  +020
+	NEW: now in Brackets code a new flag "(linter)" can be set to make sure the code was "linted"!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Mon 21 Apr 2025 22:39  +020
 
 L1VM (3.4.1)
 	Added new string-unicode module for unicode support.
