@@ -5,7 +5,8 @@
 
 // (func args square any)
 // (return args square any)
-//
+
+(linter)
 (main func)
 	(set const-int64 1 zero 0)
 	(set const-int64 1 numi 32)
@@ -48,7 +49,7 @@
 
     // get type of stack variable
     (st_type~ :stack_type !)
-    (st_type~ :pull_int64_var !)
+    (st_type~ + zero st_type~ :=)
 
     (((st_type~ int64_stack ==) f~ =) f~ if)
        // stack arg type = int64
@@ -71,5 +72,3 @@
        (squarei~ stpushb) (return)
     (endif)
 (funcend)
-
-#include <misc-macros.l1h>

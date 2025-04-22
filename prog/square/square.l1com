@@ -1,6 +1,10 @@
 // square.l1com
 #include <intr-func.l1h>
 
+// (func args square_int int64)
+// (return args square_int int64)
+
+(linter)
 (main func)
 	(set const-int64 1 zero 0)
 	(set int64 1 num 32)
@@ -11,8 +15,7 @@
 	(sqr_str :print_s !)
 	(num :print_i !)
 	(eq_str :print_s !)
-	(num :square_int !)
-	(square stpop)
+	(num :square_int !) (square stpop)
 	(square :print_i !)
 	(:print_n !)
 	(zero :exit !)
@@ -25,5 +28,5 @@
 
 	(num~ stpop)
 	(num~ * num~ square~ :=)
-	(square~ stpush)
+	(square~ stpush) (return)
 (funcend)
