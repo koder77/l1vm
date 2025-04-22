@@ -1,0 +1,10 @@
+// limits.l1h
+// number variable limits
+(set int64 1 byte-limit 255)
+(set int64 1 int16-limit 32767)
+(set int64 1 int32-limit 2147483647)
+(set int64 1 int64-limit 9223372036854775807)
+
+(set int64 1 int16-min -32768)
+(set int64 1 int32-min -2147483648)
+(set int64 1 int64-min -9223372036854775808)
