@@ -13,7 +13,7 @@
 (main func)
     #var ~ main
 
-    (set int64 1 zero 0)
+    (set const-int64 1 zero 0)
     (set int64 1 x~ 23)
     (set int64 1 y~ 7)
     (set int64 1 ret~ 0)
