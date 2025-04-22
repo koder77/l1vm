@@ -44,3 +44,10 @@ outname=${1%.md}
 outname="${outname}.md"
 cp out.md $outname
 fi
+
+if test -e "out.md"; then
+rm out.md
+fi
+if test -e "tmp.md"; then
+rm tmp.md
+fi

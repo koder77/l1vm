@@ -52,6 +52,13 @@ fi
 #cleanup
 rm out.l1com
 rm out.l1obj
+
+if test -e "out.md"; then
 rm out.md
+fi
+if test -e "tmp.md"; then
 rm tmp.md
+fi
+if test -e "out.l1com.l1lint"; then
 rm out.l1com.l1lint
+fi
