@@ -1,5 +1,5 @@
 // hello-test.l1com - with the new linter args
-#include <intr.l1h>
+#include <intr-func.l1h>
 #include <stack.l1h>
 // this is the function declaration for the l1vm-linter:
 // it has two int64 numbers as arguments:
@@ -20,10 +20,10 @@
     (set byte 1 b~ 0)
 
     (x~ y~ :add !) (ret~ b~ |>)
-    print_i (ret~)
-    print_n
+    (ret~ :print_i !)
+    (:print_n !)
 
-    exit (zero)
+    (zero :exit !)
 (funcend)
 
 (variable-local-only-on)
