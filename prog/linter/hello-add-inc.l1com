@@ -9,8 +9,9 @@
 //
 // set the return variable type:
 // (return args add_incP int64 int64)
+(linter)
+
 (main func)
-    (linter)
     #var ~ main
 
     (set const-int64 1 zero 0)
