@@ -164,6 +164,24 @@
     #define MAXLINELEN      100 	// MAX LENGTH for strlen_safe string length
     #define MAXSTRLEN		256		// MAX LENGTH for maximum string size for static allocation
 #else
+    #if MEDIUM_RAM
+    #define MODULES				512
+	#define MODULES_MAXFUNC	    2048
+
+	// Jump call stack, for jsr, jsra: how many jsr and jsra MAXSUBJUMPS can be done without a rts (return) call.
+	// If you want to save RAM you can set this value to 256!
+	#define MAXSUBJUMPS			10000
+
+	// max number of code labels:
+	#define MAXLABELS			20000
+
+	// max number of Brackets objects
+    #define MAXOBJECTS
+
+    #define MAXLINELEN      512    	// MAX LENGTH for strlen_safe string length, was 4096
+    #define MAXSTRLEN		4096	// MAX LENGTH for maximum string size for static allocation
+
+    #else
 	#define MODULES				1024
 	#define MODULES_MAXFUNC		4096
 
@@ -179,6 +197,7 @@
 
     #define MAXLINELEN      512    	// MAX LENGTH for strlen_safe string length, was 4096
     #define MAXSTRLEN		4096	// MAX LENGTH for maximum string size for static allocation
+    #endif
 #endif
 
 // internal settings end ======================================================
