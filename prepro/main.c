@@ -2308,6 +2308,23 @@ int main (int ac, char *av[])
 					}
 					printf ("> %s\n\n", buf);
 				}
+
+				pos = searchstr (buf, (U1 *) "{", 0, 0, TRUE);
+				if (pos >= 0)
+				{
+					printf ("Warning: direct use of { } brackets expression is deprecated!\n");
+					printf ("Use normal brackets (  ) expression.\n");
+
+					if (file_inside == 0)
+					{
+						printf ("line: %lli\n", linenum);
+					}
+					else
+					{
+						printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
+					}
+					printf ("> %s\n\n", buf);
+				}
 			}
 
 			pos = searchstr (buf, (U1 *) REPLACE_SB, 0, 0, TRUE);
