@@ -998,7 +998,6 @@ S2 parse_line (U1 *line)
 
 			if (parse_rpolish (conv) != 0)
 			{
-				printf ("error: line: %lli can't parse part in { }\n", linenum);
 				return (1);
 			}
 			return (0);
@@ -1007,7 +1006,6 @@ S2 parse_line (U1 *line)
 		{
 			if (parse_rpolish (line) != 0)
 			{
-				printf ("error: line: %lli can't parse part in { }\n", linenum);
 				return (1);
 			}
 			return (0);
@@ -7350,6 +7348,7 @@ S2 parse (U1 *name)
     U1 asmname[512] = "";
     S4 slen = 0, pos = 0;
     U1 rbuf[MAXSTRLEN + 1] = "";                        /* read-buffer for one line */
+	U1 rbuf_orig[MAXSTRLEN + 1] = "";                        /* read-buffer for one line */
     char *read = 0;
 	S8 ret ALIGN = 0;
 	S2 function_call = 0;
@@ -7537,6 +7536,7 @@ S2 parse (U1 *name)
 							err = 1;
 						}
 					}
+					strcpy (rbuf_orig, rbuf);  // save original line!
 					ret = parse_line (rbuf);
  					if (ret != 0)
 					{
@@ -7545,7 +7545,7 @@ S2 parse (U1 *name)
 							printf ("file: %s: line: %lli\n", files[file_index].name, files[file_index].linenum);
 						}
 
-						printf ("> %s\n", rbuf);
+						printf ("> %s\n", rbuf_orig);
 						err = 1;
 
 						//if (ret == 2 || ret == 3)
