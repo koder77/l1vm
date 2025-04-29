@@ -36,7 +36,7 @@ S2 set_variable_prefix (U1 *variable);
 #define MAXTRANSLATE 48
 
 //int stack
-#define MAX_STACK 256
+#define MAX_STACK 512
 // #define MAXLINELEN 256
 
 extern struct translate translate[];
