@@ -875,7 +875,7 @@ S2 run (void *arg)
 	#endif
 
 	regi[arg3] = 0;		// set to zero, before loading data
-	regi[arg3] = data[arg1 + arg2];
+	regi[arg3] = (S8) data[arg1 + arg2];
 
 	eoffs = 4;
 	EXE_NEXT();
