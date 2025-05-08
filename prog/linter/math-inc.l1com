@@ -1,0 +1,55 @@
+// math-inc.l1com
+//
+// (func args inc int64)
+// (return args inc int64)
+(linter)
+
+#include <intr-func.l1h>
+#include <limits.l1h>
+
+(main func)
+	(set int64 1 zero 0)
+    (set int64 1 x 42)
+    (set int64 1 incx 0)
+    (set int64 1 f 0)
+
+    (x :inc !)
+    (incx stpop)
+    (incx :print_i !)
+    (:print_n !)
+
+    (zero :exit !)
+(funcend)
+
+(inc func)
+    #var ~ inc
+    (set int64 1 num~ 0)
+    (set int64 1 ret~ 0)
+    (set int64 1 check~ 0)
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 f~ 0)
+    (set const-string s overflow_str~ "inc: error number overflow!")
+    (set const-string s error_int_str~ "inc: error internal!")
+
+    (num~ stpop)
+
+    // precondition
+    (((num~ int64-max ==) f~ :=) f~ if)
+        (overflow_str~ :print_s !)
+        (:print_n !)
+        (zero~ stpush) (return)
+    (endif)
+
+    (num~ + one~ ret~ :=)
+
+    // postconditon
+    (ret~ - one~ check~ :=)
+    (((check~ num~ !=) f :=) f if)
+        (error_int_str~ :print_s !)
+        (:print_n !)
+        (zero~ stpush) (return)
+    (endif)
+
+    (ret~ stpush) (return)
+(funcend)
