@@ -5,7 +5,10 @@ L1VM (3.4.2)
 
 	NEW: now in Brackets code a new flag "(linter)" can be set to make sure the code was "linted"!
 
--- Stefan Pietzonke <info@midnight-coding.de> Mon 21 Apr 2025 22:39  +020
+	NEW: added contracts into the compiler. Now "preconditions" and "postconditions" can be set in a function.
+	See example "prog/lint/math-inc.l1com"!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Thu 08 May 2025 18:12  +020
 
 L1VM (3.4.1)
 	Added new string-unicode module for unicode support.

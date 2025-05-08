@@ -1,24 +1,37 @@
 // math-inc.l1com
 //
+// contracts: precondition/postcondition demo
+//
 // (func args inc int64)
-// (return args inc int64)
+// (return args inc int64 int64)
 (linter)
 
 #include <intr-func.l1h>
 #include <limits.l1h>
 
 (main func)
-	(set int64 1 zero 0)
+	(set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
     (set int64 1 x 42)
     (set int64 1 incx 0)
     (set int64 1 f 0)
+    (set int64 1 ret 0)
+    (set const-string s error_inc_str "inc: error!")
 
-    (x :inc !) (incx stpop)
+    (x :inc !) (ret incx stpop)
+    (((ret zero !=) f :=) f if)
+        (error_inc_str :print_s !)
+        (:print_n !)
+        (one :exit !)
+    (endif)
+
     (incx :print_i !)
     (:print_n !)
 
     (zero :exit !)
 (funcend)
+
+(contracts-on)
 
 (inc func)
     #var ~ inc
@@ -33,22 +46,24 @@
 
     (num~ stpop)
 
-    // precondition
+    (precondition)
     (((num~ int64-max ==) f~ :=) f~ if)
         (overflow_str~ :print_s !)
         (:print_n !)
-        (zero~ stpush) (return)
+        (zero~ one~ stpush) (return)
     (endif)
+    (precondition-end)
 
     (num~ + one~ ret~ :=)
 
-    // postconditon
+    (postcondition)
     (ret~ - one~ check~ :=)
     (((check~ num~ !=) f :=) f if)
         (error_int_str~ :print_s !)
         (:print_n !)
-        (zero~ stpush) (return)
+        (zero~ one~ stpush) (return)
     (endif)
+    (postcondition-end)
 
-    (ret~ stpush) (return)
+    (ret~ zero~ stpush) (return)
 (funcend)

@@ -30,7 +30,12 @@
     <item>unsafe</item>
     <item>unsafe-end</item>
     <item>linter</item>
-
+    <item>contracts-on</item>
+    <item>contracts-off</item>
+    <item>precondition-end</item>
+    <item>precondition</item>
+    <item>postcondition-end</item>
+    <item>postcondition</item>
 	</list>
     <list name="keywords">
     <item>funcend</item>

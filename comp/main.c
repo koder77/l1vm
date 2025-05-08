@@ -141,6 +141,16 @@ U1 forbid_unsafe = 0;
 // memory boúnds on/off
 U1 memory_bounds = 1;
 
+// contracts
+U1 contracts = 0;
+U1 precondition = 0;
+U1 precondition_code = 0;
+U1 precondition_end = 0;
+U1 postcondition = 0;
+U1 postcondition_code = 0;
+U1 postcondition_end = 0;
+
+
 // set if linter is needed by
 // LINTER
 // in Brackets code!
@@ -938,6 +948,18 @@ S2 parse_line (U1 *line)
 		{
 			// printf ("line %lli: blank line, ignored!\n", linenum);
 			return (0);
+		}
+	}
+
+	if (contracts == 1)
+	{
+		if (precondition == 1 && precondition_end == 0)
+		{
+			precondition_code++;
+		}
+		if (postcondition == 1 && postcondition_end == 0)
+		{
+			postcondition_code++;
 		}
 	}
 
@@ -3354,6 +3376,14 @@ S2 parse_line (U1 *line)
 										return (1);
 									}
 
+									// contracts flags reset
+									precondition = 0;
+									precondition_code = 0;
+									precondition_end = 0;
+									postcondition = 0;
+									postcondition_code = 0;
+									postcondition_end = 0;
+
 									if (inside_object == 0)
 									{
 										// is standalone function not inside object!!
@@ -3489,6 +3519,41 @@ S2 parse_line (U1 *line)
 									{
 										printf ("error: line %lli: unsafe-end not set before function end!\n", linenum);
 										return (1);
+									}
+
+									if (contracts == 1)
+									{
+										if (precondition == 0)
+										{
+											printf ("error: line %lli: no precondition start set!\n", linenum);
+											return (1);
+										}
+										if (precondition_end == 0)
+										{
+											printf ("error: line %lli: no precondition end set!\n", linenum);
+											return (1);
+										}
+										if (postcondition == 0)
+										{
+											printf ("error: line %lli: no postcondition start set!\n", linenum);
+											return (1);
+										}
+										if (postcondition_end == 0)
+										{
+											printf ("error: line %lli: no postcondition end set!\n", linenum);
+											return (1);
+										}
+
+										if (precondition_code == 2)
+										{
+											printf ("error: line %lli: no precondition code set!\n", linenum);
+											return (1);
+										}
+										if (postcondition_code == 2)
+										{
+											printf ("error: line %lli: no postcondition code set!\n", linenum);
+											return (1);
+										}
 									}
 
 									code_line++;
@@ -5295,6 +5360,44 @@ S2 parse_line (U1 *line)
 								{
 									printf ("build needs linter!\n");
 									do_check_linter = 1;
+									continue;
+								}
+
+								// contracts
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "contracts-on") == 0)
+								{
+									contracts = 1;
+									continue;
+								}
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "contracts-off") == 0)
+								{
+									contracts = 0;
+									continue;
+								}
+
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "precondition") == 0)
+								{
+									precondition = 1;
+									continue;
+								}
+
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "precondition-end") == 0)
+								{
+									precondition_end = 1;
+									precondition_code++;
+									continue;
+								}
+
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "postcondition") == 0)
+								{
+									postcondition = 1;
+									continue;
+								}
+
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "postcondition-end") == 0)
+								{
+									postcondition_end = 1;
+									postcondition_code++;
 									continue;
 								}
 
