@@ -144,10 +144,10 @@ U1 memory_bounds = 1;
 // contracts
 U1 contracts = 0;
 U1 precondition = 0;
-U1 precondition_code = 0;
+S8 precondition_code ALIGN = 0;
 U1 precondition_end = 0;
 U1 postcondition = 0;
-U1 postcondition_code = 0;
+S8 postcondition_code ALIGN = 0;
 U1 postcondition_end = 0;
 
 
