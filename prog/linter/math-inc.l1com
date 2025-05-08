@@ -13,8 +13,7 @@
     (set int64 1 incx 0)
     (set int64 1 f 0)
 
-    (x :inc !)
-    (incx stpop)
+    (x :inc !) (incx stpop)
     (incx :print_i !)
     (:print_n !)
 
