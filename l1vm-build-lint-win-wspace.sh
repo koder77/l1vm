@@ -48,7 +48,7 @@ outname=""
 outname=${1%.md}
 outname="${outname}.md"
 cp out.md $outname
-p $outname "$L1VM_ROOT/man/"
+cp $outname "$L1VM_ROOT/man/"
 rm $outname
 fi
 
