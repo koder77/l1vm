@@ -42,7 +42,13 @@ outname=""
 outname=${1%.md}
 outname="${outname}.md"
 cp out.md $outname
+cp $outname "$L1VM_ROOT/man/"
+echo "documentation found!"
+echo $outname
+#rm $outname
 fi
+
+
 
 #cleanup
 rm out.l1com

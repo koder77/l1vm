@@ -1,0 +1,19 @@
+INSTALLATION
+============
+1. Set the needed paths and ENV variables in your ".bashrc" file:
+
+export PATH="$HOME/l1vm/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
+export L1VM_ROOT="$HOME/l1vm/"
+
+This sets the "~/l1vm" directory in your "/home" directory as the home for L1VM. Which is the default.
+
+2. Choose one of the build scripts for your OS.
+On Debian Linux for example use:
+
+$ install-debian.sh
+
+The installer scripts need "sudo" to install the needed libraries.
+You have to make sure that sudo works on your system!
+
+Have fun!
