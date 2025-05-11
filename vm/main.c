@@ -3463,6 +3463,54 @@ void show_file_root_path (void)
 	#endif
 }
 
+void print_host_os (void)
+{
+	U1 os = MACHINE_OS;
+
+	switch (os)
+	{
+		case 0:
+			printf ("Host OS: unknown\n");
+			break;
+
+		case 1:
+			printf ("Host OS: Linux\n");
+			break;
+
+		case 2:
+			printf ("Host OS: FreeBSD\n");
+			break;
+
+		case 3:
+			printf ("Host OS: OpenBSD\n");
+			break;
+
+		case 4:
+			printf ("Host OS: NetBSD\n");
+			break;
+
+		case 5:
+			printf ("Host OS: DragonFly BSD\n");
+			break;
+
+		case 6:
+			printf ("Host OS: Haiku\n");
+			break;
+
+		case 7:
+			printf ("Host OS: Windows\n");
+			break;
+
+		case 8:
+			printf ("Host OS: CYGWIN\n");
+			break;
+
+		case 9:
+			printf ("Host OS: macOS\n");
+			break;
+	}
+}
+
 void show_run_info (void)
 {
 	// do compilation time sense check on integer 64 bit and double 64 bit type!!
@@ -3489,6 +3537,7 @@ void show_run_info (void)
 	printf ("CPU cores: %lli (STATIC)\n", max_cpu);
 
 	printf ("internal type check: S8 = %lli bytes, F8 = %lli bytes. All OK!\n", size_int64, size_double64);
+	print_host_os ();
 
 	#if defined(__clang__)
 		printf ("C compiler: clang version %s\n", __clang_version__);
