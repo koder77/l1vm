@@ -4,9 +4,9 @@
 //
 (main func)
 	(set int64 1 zero 0)
-	(set byte 10000000 primes)
+	(set byte 1000000000 primes)
 	// (set byte 1000000 primes)
-	(set int64 1 limit 10000000)
+	(set int64 1 limit 1000000000)
 	// (set int64 1 limit 1000000)
 	(set int64 1 one 1)
 	(set int64 1 two 2)

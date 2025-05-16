@@ -6,6 +6,8 @@
 // 2,662360000 seconds user
 // 0,003336000 seconds sys
 //
+#include <intr-func.l1h>
+
 (main func)
 	(set int64 1 zero 0)
 	(set byte 10000000 primes)
@@ -24,6 +26,9 @@
 	//
 	// search primes
 	//
+	(optimize-if)
+	(unsafe)
+	(:memory_bounds_off !)
 	(two i =)
 	(:search_primes)
 	((i i *) n =)
@@ -49,11 +54,13 @@
 	(((i limit <) f =) f if)
 		(primes [ i ] a =)
 		(((a zero ==) f =) f if)
-			(4 i 0 0 intr0)
-			(7 0 0 0 intr0)
+            (i :print_i !)
+            (:print_n !)
 		(endif)
 		((i one +) i =)
 		(:print_primes jmp)
 	(endif)
-	(255 0 0 0 intr0)
+	(zero :exit !)
+    (:memory_bounds_on !)
+    (unsafe-end)
 (funcend)
