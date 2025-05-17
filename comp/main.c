@@ -763,10 +763,7 @@ S2 check_for_brackets (U1 *line)
 			return (1);
 		}
 	}
-	else
-	{
-		return (0);
-	}
+	return (0);
 }
 
 S2 check_for_normal_brackets (U1 *line)
@@ -3300,7 +3297,7 @@ S2 parse_line (U1 *line)
 
 									ok = 1;
 
-									if (set_variable_prefix ("") == 1)
+									if (set_variable_prefix ((U1 *) "") == 1)
 									{
 										printf ("error: line %lli: variable '%s' prefix not set with \\prefix\\ !\n", linenum, ast[level].expr[j][last_arg - 1]);
 										return (1);
@@ -7639,7 +7636,7 @@ S2 parse (U1 *name)
 							err = 1;
 						}
 					}
-					strcpy (rbuf_orig, rbuf);  // save original line!
+					strcpy ((char *) rbuf_orig, (const  char *) rbuf);  // save original line!
 					ret = parse_line (rbuf);
  					if (ret != 0)
 					{

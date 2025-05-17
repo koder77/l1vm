@@ -16,8 +16,8 @@ pacman -S mingw-w64-x86_64-SDL2_mixer --noconfirm
 pacman -S mingw-w64-x86_64-mpfr --noconfirm
 pacman -S mingw-w64-x86_64-libsodium --noconfirm
 pacman -S mingw-w64-x86_64-libserialport --noconfirm
-pacman -S mingw-w64-x86_64-libssl --noconfirm
-pacman -S mingw-w64-x86_64-libcrypto++ --noconfirm
+pacman -S mingw-w64-x86_64-openssl --noconfirm
+pacman -S mingw-w64-x86_64-crypto++ --noconfirm
 
 echo "building compiler, assembler and VM..."
 
