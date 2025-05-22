@@ -1301,7 +1301,7 @@ S2 check_file_ending (U1 *name)
 {
 	S4 slen = 0, i = 0, j = 0;
 
-	slen = strlen_safe ((const char *) name, MAXLINES);
+	slen = strlen_safe ((const char *) name, MAXLINELEN );
 
 	for (i = 0; i < slen; i++)
 	{

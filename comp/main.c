@@ -67,7 +67,7 @@ S8 ranges_ind ALIGN = -1;
 U1 **data = NULL;
 U1 **code = NULL;
 
-S8 line_len ALIGN = MAXLINES;
+S8 line_len ALIGN = MAXLINELEN;
 
 S8 data_line ALIGN = 0;
 S8 code_line ALIGN = 0;
@@ -7422,7 +7422,7 @@ S2 parse_line (U1 *line)
 S2 check_file_ending (U1 *name)
 {
 	S4 slen, i, j;
-	slen = strlen_safe ((const char *) name, MAXLINES);
+	slen = strlen_safe ((const char *) name, MAXLINELEN);
 
 	for (i = 0; i < slen; i++)
 	{
@@ -7455,7 +7455,7 @@ S2 parse (U1 *name)
 
 	S8 code_lines ALIGN = 0;
 
-    slen = strlen_safe ((const char *) name, MAXLINES);
+    slen = strlen_safe ((const char *) name, MAXLINELEN);
     U1 ok = 0, err = 0;
 
     if (slen > 506)
