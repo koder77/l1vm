@@ -1,4 +1,7 @@
 L1VM (3.4.3)
+	Compiler, assembler MAXLINELEN fixes.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Fri 23 May 2025 20:02   +020
 
 L1VM (3.4.2)
 	In settings header LOW RAM limits changed.
