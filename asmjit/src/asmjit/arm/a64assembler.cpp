@@ -24,8 +24,8 @@ ASMJIT_BEGIN_SUB_NAMESPACE(a64)
 // a64::Assembler - Utils
 // ======================
 
-static ASMJIT_FORCE_INLINE constexpr uint32_t diff(RegType a, RegType b) noexcept { return uint32_t(a) - uint32_t(b); }
-static ASMJIT_FORCE_INLINE constexpr uint32_t diff(VecElementType elementType, VecElementType baseType) noexcept { return uint32_t(elementType) - uint32_t(baseType); }
+static ASMJIT_INLINE_CONSTEXPR uint32_t diff(RegType a, RegType b) noexcept { return uint32_t(a) - uint32_t(b); }
+static ASMJIT_INLINE_CONSTEXPR uint32_t diff(VecElementType elementType, VecElementType baseType) noexcept { return uint32_t(elementType) - uint32_t(baseType); }
 
 // a64::Assembler - Cond
 // =====================
@@ -53,44 +53,70 @@ static constexpr uint32_t kWX = InstDB::kWX;
 static const uint8_t armShiftOpToLdStOptMap[] = { ASMJIT_LOOKUP_TABLE_16(VALUE, 0) };
 #undef VALUE
 
+// a64::Assembler - ExtendOpToRegType
+// ==================================
+
+static inline RegType extendOptionToRegType(uint32_t option) noexcept {
+  uint32_t pred = (uint32_t(RegType::kARM_GpW) << (0x0 * 4)) | // 0b000 - UXTB.
+                  (uint32_t(RegType::kARM_GpW) << (0x1 * 4)) | // 0b001 - UXTH.
+                  (uint32_t(RegType::kARM_GpW) << (0x2 * 4)) | // 0b010 - UXTW.
+                  (uint32_t(RegType::kARM_GpX) << (0x3 * 4)) | // 0b011 - UXTX|LSL.
+                  (uint32_t(RegType::kARM_GpW) << (0x4 * 4)) | // 0b100 - SXTB.
+                  (uint32_t(RegType::kARM_GpW) << (0x5 * 4)) | // 0b101 - SXTH.
+                  (uint32_t(RegType::kARM_GpW) << (0x6 * 4)) | // 0b110 - SXTW.
+                  (uint32_t(RegType::kARM_GpX) << (0x7 * 4)) ; // 0b111 - SXTX.
+  return RegType((pred >> (option * 4u)) & 0xFu);
+}
+
 // asmjit::a64::Assembler - SizeOp
 // ===============================
 
 //! Struct that contains Size (2 bits), Q flag, and S (scalar) flag. These values
 //! are used to encode Q, Size, and Scalar fields in an opcode.
 struct SizeOp {
-  enum : uint8_t {
-    k128BitShift = 0,
-    kScalarShift = 1,
-    kSizeShift = 2,
+  //! \name Constants
+  //! \{
 
-    kQ = uint8_t(1u << k128BitShift),
-    kS = uint8_t(1u << kScalarShift),
+  static inline constexpr uint8_t k128BitShift = 0;
+  static inline constexpr uint8_t kScalarShift = 1;
+  static inline constexpr uint8_t kSizeShift = 2;
 
-    k00 = uint8_t(0 << kSizeShift),
-    k01 = uint8_t(1 << kSizeShift),
-    k10 = uint8_t(2 << kSizeShift),
-    k11 = uint8_t(3 << kSizeShift),
+  static inline constexpr uint8_t kQ = uint8_t(1u << k128BitShift);
+  static inline constexpr uint8_t kS = uint8_t(1u << kScalarShift);
 
-    k00Q = k00 | kQ,
-    k01Q = k01 | kQ,
-    k10Q = k10 | kQ,
-    k11Q = k11 | kQ,
+  static inline constexpr uint8_t k00 = uint8_t(0 << kSizeShift);
+  static inline constexpr uint8_t k01 = uint8_t(1 << kSizeShift);
+  static inline constexpr uint8_t k10 = uint8_t(2 << kSizeShift);
+  static inline constexpr uint8_t k11 = uint8_t(3 << kSizeShift);
 
-    k00S = k00 | kS,
-    k01S = k01 | kS,
-    k10S = k10 | kS,
-    k11S = k11 | kS,
+  static inline constexpr uint8_t k00Q = k00 | kQ;
+  static inline constexpr uint8_t k01Q = k01 | kQ;
+  static inline constexpr uint8_t k10Q = k10 | kQ;
+  static inline constexpr uint8_t k11Q = k11 | kQ;
 
-    kInvalid = 0xFFu,
+  static inline constexpr uint8_t k00S = k00 | kS;
+  static inline constexpr uint8_t k01S = k01 | kS;
+  static inline constexpr uint8_t k10S = k10 | kS;
+  static inline constexpr uint8_t k11S = k11 | kS;
 
-    // Masks used by SizeOpMap.
-    kSzQ = (0x3u << kSizeShift) | kQ,
-    kSzS = (0x3u << kSizeShift) | kS,
-    kSzQS = (0x3u << kSizeShift) | kQ | kS
-  };
+  static inline constexpr uint8_t kInvalid = 0xFFu;
+
+  // Masks used by SizeOpMap.
+  static inline constexpr uint8_t kSzQ = (0x3u << kSizeShift) | kQ;
+  static inline constexpr uint8_t kSzS = (0x3u << kSizeShift) | kS;
+  static inline constexpr uint8_t kSzQS = (0x3u << kSizeShift) | kQ | kS;
+
+  //! \}
+
+  //! \name Members
+  //! \{
 
   uint8_t value;
+
+  //! \}
+
+  //! \name Accessors
+  //! \{
 
   inline bool isValid() const noexcept { return value != kInvalid; }
   inline void makeInvalid() noexcept { value = kInvalid; }
@@ -104,6 +130,8 @@ struct SizeOp {
     ASMJIT_ASSERT(size() > 0);
     value = uint8_t(value - (1u << kSizeShift));
   }
+
+  //! \}
 };
 
 struct SizeOpTable {
@@ -267,8 +295,9 @@ static inline SizeOp armElementTypeToSizeOp(uint32_t vecOpType, RegType regType,
   SizeOp op = table.array[index];
   SizeOp modifiedOp { uint8_t(op.value & map.sizeOpMask) };
 
-  if (!Support::bitTest(map.acceptMask, op.value))
+  if (!Support::bitTest(map.acceptMask, op.value)) {
     modifiedOp.makeInvalid();
+  }
 
   return modifiedOp;
 }
@@ -348,8 +377,9 @@ static uint32_t encodeMovSequence64(uint32_t out[4], uint64_t imm, uint32_t rd, 
 
     for (uint32_t hwIndex = 0; hwIndex < 4; hwIndex++, imm >>= 16) {
       uint32_t hwImm = uint32_t(imm & 0xFFFFu);
-      if (hwImm == 0)
+      if (hwImm == 0) {
         continue;
+      }
 
       out[count++] = op | (hwIndex << 21) | (hwImm << 5) | rd;
       op = kMovK;
@@ -367,8 +397,9 @@ static uint32_t encodeMovSequence64(uint32_t out[4], uint64_t imm, uint32_t rd, 
 
     for (uint32_t hwIndex = 0; hwIndex < 4; hwIndex++, imm >>= 16) {
       uint32_t hwImm = uint32_t(imm & 0xFFFFu);
-      if (hwImm == 0xFFFFu)
+      if (hwImm == 0xFFFFu) {
         continue;
+      }
 
       out[count++] = op | (hwIndex << 21) | ((hwImm ^ negMask) << 5) | rd;
       op = kMovK;
@@ -488,18 +519,22 @@ static inline bool armCheckMemBaseIndexRel(const Mem& mem) noexcept {
   RegType baseType = mem.baseType();
   RegType indexType = mem.indexType();
 
-  if (!Support::bitTest(kBaseMask, baseType))
+  if (!Support::bitTest(kBaseMask, baseType)) {
     return false;
+  }
 
   if (baseType > RegType::kLabelTag) {
     // Index allows either GpW or GpX.
-    if (!Support::bitTest(kIndexMask, indexType))
+    if (!Support::bitTest(kIndexMask, indexType)) {
       return false;
+    }
 
-    if (indexType == RegType::kNone)
+    if (indexType == RegType::kNone) {
       return true;
-    else
+    }
+    else {
       return !mem.hasOffset();
+    }
   }
   else {
     // No index register allowed if this is a PC relative address (literal).
@@ -527,8 +562,9 @@ static inline bool pickFpOpcode(const Vec& reg, uint32_t sOp, uint32_t sHf, uint
   if (!reg.hasElementType()) {
     // Scalar operation [HSD].
     uint32_t sz = diff(reg.type(), RegType::kARM_VecH);
-    if (sz > 2u || !Support::bitTest(szBits[sHf].sizeMask, sz))
+    if (sz > 2u || !Support::bitTest(szBits[sHf].sizeMask, sz)) {
       return false;
+    }
 
     opcode->reset(szBits[sHf].mask[sz] ^ sOp);
     *szOut = sz;
@@ -539,8 +575,9 @@ static inline bool pickFpOpcode(const Vec& reg, uint32_t sOp, uint32_t sHf, uint
     uint32_t q = diff(reg.type(), RegType::kARM_VecD);
     uint32_t sz = diff(reg.elementType(), VecElementType::kH);
 
-    if (q > 1u || sz > 2u || !Support::bitTest(szBits[vHf].sizeMask, sz))
+    if (q > 1u || sz > 2u || !Support::bitTest(szBits[vHf].sizeMask, sz)) {
       return false;
+    }
 
     opcode->reset(szBits[vHf].mask[sz] ^ (vOp | (q << kQBitIndex)));
     *szOut = sz;
@@ -758,8 +795,9 @@ Error Assembler::_emit(InstId instId, const Operand_& o0, const Operand_& o1, co
   CondCode instCC = BaseInst::extractARMCondCode(instId);
   instId = instId & uint32_t(InstIdParts::kRealId);
 
-  if (instId >= Inst::_kIdCount)
+  if (instId >= Inst::_kIdCount) {
     instId = 0;
+  }
 
   const InstDB::InstInfo* instInfo = &InstDB::_instInfoTable[instId];
   uint32_t encodingIndex = instInfo->_encodingDataIndex;
@@ -779,21 +817,25 @@ Error Assembler::_emit(InstId instId, const Operand_& o0, const Operand_& o1, co
   uint64_t offsetValue;          // Offset value (if known).
 
   if (ASMJIT_UNLIKELY(Support::test(options, kRequiresSpecialHandling))) {
-    if (ASMJIT_UNLIKELY(!_code))
+    if (ASMJIT_UNLIKELY(!_code)) {
       return reportError(DebugUtils::errored(kErrorNotInitialized));
+    }
 
     // Unknown instruction.
-    if (ASMJIT_UNLIKELY(instId == 0))
+    if (ASMJIT_UNLIKELY(instId == 0)) {
       goto InvalidInstruction;
+    }
 
     // Condition code can only be used with 'B' instruction.
-    if (ASMJIT_UNLIKELY(instCC != CondCode::kAL && instId != Inst::kIdB))
+    if (ASMJIT_UNLIKELY(instCC != CondCode::kAL && instId != Inst::kIdB)) {
       goto InvalidInstruction;
+    }
 
     // Grow request, happens rarely.
     err = writer.ensureSpace(this, 4);
-    if (ASMJIT_UNLIKELY(err))
+    if (ASMJIT_UNLIKELY(err)) {
       goto Failed;
+    }
 
 #ifndef ASMJIT_NO_VALIDATION
     // Strict validation.
@@ -802,8 +844,9 @@ Error Assembler::_emit(InstId instId, const Operand_& o0, const Operand_& o1, co
       EmitterUtils::opArrayFromEmitArgs(opArray, o0, o1, o2, opExt);
 
       err = _funcs.validate(BaseInst(instId, options, _extraReg), opArray, Globals::kMaxOpCount, ValidationFlags::kNone);
-      if (ASMJIT_UNLIKELY(err))
+      if (ASMJIT_UNLIKELY(err)) {
         goto Failed;
+      }
     }
 #endif
   }
@@ -1228,9 +1271,6 @@ Error Assembler::_emit(InstId instId, const Operand_& o0, const Operand_& o1, co
       }
 
       if (isign4 == ENC_OPS3(Reg, Reg, Reg) || isign4 == ENC_OPS4(Reg, Reg, Reg, Imm)) {
-        if (!checkSignature(o1, o2))
-          goto InvalidInstruction;
-
         uint32_t opSize = x ? 64 : 32;
         uint64_t shift = 0;
         uint32_t sType = uint32_t(ShiftOp::kLSL);
@@ -1247,11 +1287,17 @@ Error Assembler::_emit(InstId instId, const Operand_& o0, const Operand_& o1, co
         if (sType <= uint32_t(ShiftOp::kASR)) {
           bool hasSP = o0.as<Gp>().isSP() || o1.as<Gp>().isSP();
           if (!hasSP) {
-            if (!checkGpId(o0, o1, kZR))
-              goto InvalidPhysId;
+            if (!checkSignature(o1, o2)) {
+              goto InvalidInstruction;
+            }
 
-            if (shift >= opSize)
+            if (!checkGpId(o0, o1, kZR)) {
+              goto InvalidPhysId;
+            }
+
+            if (shift >= opSize) {
               goto InvalidImmediate;
+            }
 
             opcode.reset(uint32_t(opData.shiftedOp) << 21);
             opcode.addImm(x, 31);
@@ -1264,8 +1310,10 @@ Error Assembler::_emit(InstId instId, const Operand_& o0, const Operand_& o1, co
           }
 
           // SP register can only be used with LSL or Extend.
-          if (sType != uint32_t(ShiftOp::kLSL))
+          if (sType != uint32_t(ShiftOp::kLSL)) {
             goto InvalidImmediate;
+          }
+
           sType = x ? uint32_t(ShiftOp::kUXTX) : uint32_t(ShiftOp::kUXTW);
         }
 
@@ -1273,8 +1321,9 @@ Error Assembler::_emit(InstId instId, const Operand_& o0, const Operand_& o1, co
         opcode.reset(uint32_t(opData.extendedOp) << 21);
         sType -= uint32_t(ShiftOp::kUXTB);
 
-        if (sType > 7 || shift > 4)
+        if (sType > 7 || shift > 4) {
           goto InvalidImmediate;
+        }
 
         if (!(opcode.get() & B(29))) {
           // ADD|SUB (extend) - ZR is not allowed.
@@ -1285,6 +1334,11 @@ Error Assembler::_emit(InstId instId, const Operand_& o0, const Operand_& o1, co
           // ADDS|SUBS (extend) - ZR allowed in Rd, SP allowed in Rn.
           if (!checkGpId(o0, kZR) || !checkGpId(o1, kSP))
             goto InvalidPhysId;
+        }
+
+        // Validate whether the register operands match extend option.
+        if (o2.as<Reg>().type() != extendOptionToRegType(sType) || o1.as<Reg>().type() < o2.as<Reg>().type()) {
+          goto InvalidInstruction;
         }
 
         opcode.addImm(x, 31);
@@ -1412,9 +1466,6 @@ Error Assembler::_emit(InstId instId, const Operand_& o0, const Operand_& o1, co
       }
 
       if (isign4 == ENC_OPS2(Reg, Reg) || isign4 == ENC_OPS3(Reg, Reg, Imm)) {
-        if (!checkSignature(o0, o1))
-          goto InvalidInstruction;
-
         uint32_t opSize = x ? 64 : 32;
         uint32_t sType = 0;
         uint64_t shift = 0;
@@ -1429,8 +1480,13 @@ Error Assembler::_emit(InstId instId, const Operand_& o0, const Operand_& o1, co
         // Shift operation - LSL, LSR, ASR.
         if (sType <= uint32_t(ShiftOp::kASR)) {
           if (!hasSP) {
-            if (shift >= opSize)
+            if (!checkSignature(o0, o1)) {
+              goto InvalidInstruction;
+            }
+
+            if (shift >= opSize) {
               goto InvalidImmediate;
+            }
 
             opcode.reset(uint32_t(opData.shiftedOp) << 21);
             opcode.addImm(x, 31);
@@ -1451,8 +1507,14 @@ Error Assembler::_emit(InstId instId, const Operand_& o0, const Operand_& o1, co
 
         // Extend operation - UXTB, UXTH, UXTW, UXTX, SXTB, SXTH, SXTW, SXTX.
         sType -= uint32_t(ShiftOp::kUXTB);
-        if (sType > 7 || shift > 4)
+        if (sType > 7 || shift > 4) {
           goto InvalidImmediate;
+        }
+
+        // Validate whether the register operands match extend option.
+        if (o1.as<Reg>().type() != extendOptionToRegType(sType) || o0.as<Reg>().type() < o1.as<Reg>().type()) {
+          goto InvalidInstruction;
+        }
 
         opcode.reset(uint32_t(opData.extendedOp) << 21);
         opcode.addImm(x, 31);
@@ -4898,11 +4960,13 @@ EmitOp_Multiple:
   {
     ASMJIT_ASSERT(multipleOpCount > 0);
     err = writer.ensureSpace(this, multipleOpCount * 4u);
-    if (ASMJIT_UNLIKELY(err))
+    if (ASMJIT_UNLIKELY(err)) {
       goto Failed;
+    }
 
-    for (uint32_t i = 0; i < multipleOpCount; i++)
+    for (uint32_t i = 0; i < multipleOpCount; i++) {
       writer.emit32uLE(multipleOpData[i]);
+    }
 
     goto EmitDone;
   }
@@ -4912,28 +4976,33 @@ EmitOp_Multiple:
   // --------------------------------------------------------------------------
 
 EmitOp_MemBase_Rn5:
-  if (!checkMemBase(rmRel->as<Mem>()))
+  if (!checkMemBase(rmRel->as<Mem>())) {
     goto InvalidAddress;
+  }
 
   opcode.addReg(rmRel->as<Mem>().baseId(), 5);
   goto EmitOp;
 
 EmitOp_MemBaseNoImm_Rn5:
-  if (!checkMemBase(rmRel->as<Mem>()) || rmRel->as<Mem>().hasIndex())
+  if (!checkMemBase(rmRel->as<Mem>()) || rmRel->as<Mem>().hasIndex()) {
     goto InvalidAddress;
+  }
 
-  if (rmRel->as<Mem>().hasOffset())
+  if (rmRel->as<Mem>().hasOffset()) {
     goto InvalidDisplacement;
+  }
 
   opcode.addReg(rmRel->as<Mem>().baseId(), 5);
   goto EmitOp;
 
 EmitOp_MemBaseIndex_Rn5_Rm16:
-  if (!rmRel->as<Mem>().hasBaseReg())
+  if (!rmRel->as<Mem>().hasBaseReg()) {
     goto InvalidAddress;
+  }
 
-  if (rmRel->as<Mem>().indexId() > 30 && rmRel->as<Mem>().indexId() != Gp::kIdZr)
+  if (rmRel->as<Mem>().indexId() > 30 && rmRel->as<Mem>().indexId() != Gp::kIdZr) {
     goto InvalidPhysId;
+  }
 
   opcode.addReg(rmRel->as<Mem>().indexId(), 16);
   opcode.addReg(rmRel->as<Mem>().baseId(), 5);
@@ -4958,8 +5027,9 @@ EmitOp_Rel:
       }
 
       LabelEntry* label = _code->labelEntry(labelId);
-      if (ASMJIT_UNLIKELY(!label))
+      if (ASMJIT_UNLIKELY(!label)) {
         goto InvalidLabel;
+      }
 
       if (offsetFormat.type() == OffsetType::kAArch64_ADRP) {
         // TODO: [ARM] Always create relocation entry.
@@ -4975,8 +5045,9 @@ EmitOp_Rel:
         size_t codeOffset = writer.offsetFrom(_bufferData);
         LabelLink* link = _code->newLabelLink(label, _section->id(), codeOffset, intptr_t(labelOffset), offsetFormat);
 
-        if (ASMJIT_UNLIKELY(!link))
+        if (ASMJIT_UNLIKELY(!link)) {
           goto OutOfMemory;
+        }
 
         goto EmitOp;
       }
@@ -4993,8 +5064,9 @@ EmitOp_Rel:
       // Create a new RelocEntry as we cannot calculate the offset right now.
       RelocEntry* re;
       err = _code->newRelocEntry(&re, RelocType::kAbsToRel);
-      if (err)
+      if (err) {
         goto Failed;
+      }
 
       re->_sourceSectionId = _section->id();
       re->_sourceOffset = codeOffset;
@@ -5005,8 +5077,9 @@ EmitOp_Rel:
     else {
       uint64_t pc = baseAddress + codeOffset;
 
-      if (offsetFormat.type() == OffsetType::kAArch64_ADRP)
+      if (offsetFormat.type() == OffsetType::kAArch64_ADRP) {
         pc &= ~uint64_t(4096 - 1);
+      }
 
       offsetValue = targetOffset - pc;
       goto EmitOp_DispImm;
@@ -5017,12 +5090,14 @@ EmitOp_Rel:
 
 EmitOp_DispImm:
   {
-    if ((offsetValue & Support::lsbMask<uint32_t>(offsetFormat.immDiscardLsb())) != 0)
+    if ((offsetValue & Support::lsbMask<uint32_t>(offsetFormat.immDiscardLsb())) != 0) {
       goto InvalidDisplacement;
+    }
 
     int64_t dispImm64 = int64_t(offsetValue) >> offsetFormat.immDiscardLsb();
-    if (!Support::isEncodableOffset64(dispImm64, offsetFormat.immBitCount()))
+    if (!Support::isEncodableOffset64(dispImm64, offsetFormat.immBitCount())) {
       goto InvalidDisplacement;
+    }
 
     uint32_t dispImm32 = uint32_t(dispImm64 & Support::lsbMask<uint32_t>(offsetFormat.immBitCount()));
     switch (offsetFormat.type()) {
@@ -5060,8 +5135,9 @@ EmitOp:
 EmitDone:
   if (Support::test(options, InstOptions::kReserved)) {
 #ifndef ASMJIT_NO_LOGGING
-    if (_logger)
+    if (_logger) {
       EmitterUtils::logInstructionEmitted(this, BaseInst::composeARMInstId(instId, instCC), options, o0, o1, o2, opExt, 0, 0, writer.cursor());
+    }
 #endif
   }
 
@@ -5107,21 +5183,26 @@ Failed:
 Error Assembler::align(AlignMode alignMode, uint32_t alignment) {
   constexpr uint32_t kNopA64 = 0xD503201Fu; // [11010101|00000011|00100000|00011111].
 
-  if (ASMJIT_UNLIKELY(!_code))
+  if (ASMJIT_UNLIKELY(!_code)) {
     return reportError(DebugUtils::errored(kErrorNotInitialized));
+  }
 
-  if (ASMJIT_UNLIKELY(uint32_t(alignMode) > uint32_t(AlignMode::kMaxValue)))
+  if (ASMJIT_UNLIKELY(uint32_t(alignMode) > uint32_t(AlignMode::kMaxValue))) {
     return reportError(DebugUtils::errored(kErrorInvalidArgument));
+  }
 
-  if (alignment <= 1)
+  if (alignment <= 1) {
     return kErrorOk;
+  }
 
-  if (ASMJIT_UNLIKELY(alignment > Globals::kMaxAlignment || !Support::isPowerOf2(alignment)))
+  if (ASMJIT_UNLIKELY(alignment > Globals::kMaxAlignment || !Support::isPowerOf2(alignment))) {
     return reportError(DebugUtils::errored(kErrorInvalidArgument));
+  }
 
   uint32_t i = uint32_t(Support::alignUpDiff<size_t>(offset(), alignment));
-  if (i == 0)
+  if (i == 0) {
     return kErrorOk;
+  }
 
   CodeWriter writer(this);
   ASMJIT_PROPAGATE(writer.ensureSpace(this, i));
@@ -5130,8 +5211,9 @@ Error Assembler::align(AlignMode alignMode, uint32_t alignment) {
     case AlignMode::kCode: {
       uint32_t pattern = kNopA64;
 
-      if (ASMJIT_UNLIKELY(offset() & 0x3u))
+      if (ASMJIT_UNLIKELY(offset() & 0x3u)) {
         return DebugUtils::errored(kErrorInvalidState);
+      }
 
       while (i >= 4) {
         writer.emit32uLE(pattern);
