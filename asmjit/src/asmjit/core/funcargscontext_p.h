@@ -28,26 +28,29 @@ static inline OperandSignature getSuitableRegForMemToMemMove(Arch arch, TypeId d
   uint32_t regSize = Environment::registerSizeFromArch(arch);
 
   OperandSignature signature{0};
-  if (maxSize <= regSize || (TypeUtils::isInt(dstTypeId) && TypeUtils::isInt(srcTypeId)))
+  if (maxSize <= regSize || (TypeUtils::isInt(dstTypeId) && TypeUtils::isInt(srcTypeId))) {
     signature = maxSize <= 4 ? archTraits.regTypeToSignature(RegType::kGp32)
                              : archTraits.regTypeToSignature(RegType::kGp64);
-  else if (maxSize <= 8 && archTraits.hasRegType(RegType::kVec64))
+  }
+  else if (maxSize <= 8 && archTraits.hasRegType(RegType::kVec64)) {
     signature = archTraits.regTypeToSignature(RegType::kVec64);
-  else if (maxSize <= 16 && archTraits.hasRegType(RegType::kVec128))
+  }
+  else if (maxSize <= 16 && archTraits.hasRegType(RegType::kVec128)) {
     signature = archTraits.regTypeToSignature(RegType::kVec128);
-  else if (maxSize <= 32 && archTraits.hasRegType(RegType::kVec256))
+  }
+  else if (maxSize <= 32 && archTraits.hasRegType(RegType::kVec256)) {
     signature = archTraits.regTypeToSignature(RegType::kVec256);
-  else if (maxSize <= 64 && archTraits.hasRegType(RegType::kVec512))
+  }
+  else if (maxSize <= 64 && archTraits.hasRegType(RegType::kVec512)) {
     signature = archTraits.regTypeToSignature(RegType::kVec512);
+  }
 
   return signature;
 }
 
 class FuncArgsContext {
 public:
-  enum VarId : uint32_t {
-    kVarIdNone = 0xFF
-  };
+  static inline constexpr uint32_t kVarIdNone = 0xFF;
 
   //! Contains information about a single argument or SA register that may need shuffling.
   struct Var {
@@ -65,8 +68,8 @@ public:
       out.reset();
     }
 
-    inline bool isDone() const noexcept { return cur.isDone(); }
-    inline void markDone() noexcept { cur.addFlags(FuncValue::kFlagIsDone); }
+    ASMJIT_INLINE_NODEBUG bool isDone() const noexcept { return cur.isDone(); }
+    ASMJIT_INLINE_NODEBUG void markDone() noexcept { cur.addFlags(FuncValue::kFlagIsDone); }
   };
 
   struct WorkData {
@@ -86,8 +89,10 @@ public:
     uint8_t _numSwaps;
     //! Number of stack loads.
     uint8_t _numStackArgs;
+    //! Whether this work data would need reassignment.
+    uint8_t _needsScratch;
     //! Reserved (only used as padding).
-    uint8_t _reserved[6];
+    uint8_t _reserved[5];
     //! Physical ID to variable ID mapping.
     uint8_t _physToVarId[32];
 
@@ -100,10 +105,12 @@ public:
       _dstShuf = 0;
       _numSwaps = 0;
       _numStackArgs = 0;
+      _needsScratch = 0;
       memset(_reserved, 0, sizeof(_reserved));
       memset(_physToVarId, kVarIdNone, 32);
     }
 
+    [[nodiscard]]
     inline bool isAssigned(uint32_t regId) const noexcept {
       ASMJIT_ASSERT(regId < 32);
       return Support::bitTest(_assignedRegs, regId);
@@ -147,12 +154,23 @@ public:
       _assignedRegs ^= Support::bitMask(regId);
     }
 
-    inline RegMask archRegs() const noexcept { return _archRegs; }
-    inline RegMask workRegs() const noexcept { return _workRegs; }
-    inline RegMask usedRegs() const noexcept { return _usedRegs; }
-    inline RegMask assignedRegs() const noexcept { return _assignedRegs; }
-    inline RegMask dstRegs() const noexcept { return _dstRegs; }
-    inline RegMask availableRegs() const noexcept { return _workRegs & ~_assignedRegs; }
+    [[nodiscard]]
+    ASMJIT_INLINE_NODEBUG RegMask archRegs() const noexcept { return _archRegs; }
+
+    [[nodiscard]]
+    ASMJIT_INLINE_NODEBUG RegMask workRegs() const noexcept { return _workRegs; }
+
+    [[nodiscard]]
+    ASMJIT_INLINE_NODEBUG RegMask usedRegs() const noexcept { return _usedRegs; }
+
+    [[nodiscard]]
+    ASMJIT_INLINE_NODEBUG RegMask assignedRegs() const noexcept { return _assignedRegs; }
+
+    [[nodiscard]]
+    ASMJIT_INLINE_NODEBUG RegMask dstRegs() const noexcept { return _dstRegs; }
+
+    [[nodiscard]]
+    ASMJIT_INLINE_NODEBUG RegMask availableRegs() const noexcept { return _workRegs & ~_assignedRegs; }
   };
 
   //! Architecture traits.
@@ -176,13 +194,22 @@ public:
 
   FuncArgsContext() noexcept;
 
+  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG const ArchTraits& archTraits() const noexcept { return *_archTraits; }
+
+  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG Arch arch() const noexcept { return _arch; }
 
+  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG uint32_t varCount() const noexcept { return _varCount; }
+
+  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG size_t indexOf(const Var* var) const noexcept { return (size_t)(var - _vars); }
 
+  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG Var& var(size_t varId) noexcept { return _vars[varId]; }
+
+  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG const Var& var(size_t varId) const noexcept { return _vars[varId]; }
 
   Error initWorkData(const FuncFrame& frame, const FuncArgsAssignment& args, const RAConstraints* constraints) noexcept;

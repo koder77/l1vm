@@ -21,15 +21,18 @@ ASMJIT_BEGIN_NAMESPACE
 template<typename This>
 class RACFGBuilderT {
 public:
-  enum : uint32_t {
-    kRootIndentation = 2,
-    kCodeIndentation = 4,
+  //! \name Constants
+  //! \{
 
-    // NOTE: This is a bit hacky. There are some nodes which are processed twice (see `onBeforeInvoke()` and
-    // `onBeforeRet()`) as they can insert some nodes around them. Since we don't have any flags to mark these
-    // we just use their position that is [at that time] unassigned.
-    kNodePositionDidOnBefore = 0xFFFFFFFFu
-  };
+  static inline constexpr uint32_t kRootIndentation = 2;
+  static inline constexpr uint32_t kCodeIndentation = 4;
+
+  // NOTE: This is a bit hacky. There are some nodes which are processed twice (see `onBeforeInvoke()` and
+  // `onBeforeRet()`) as they can insert some nodes around them. Since we don't have any flags to mark these
+  // we just use their position that is [at that time] unassigned.
+  static inline constexpr uint32_t kNodePositionDidOnBefore = 0xFFFFFFFFu;
+
+  //! \}
 
   //! \name Members
   //! \{
@@ -60,17 +63,20 @@ public:
       _cc(pass->cc()) {
 #ifndef ASMJIT_NO_LOGGING
     _logger = _pass->hasDiagnosticOption(DiagnosticOptions::kRADebugCFG) ? _pass->logger() : nullptr;
-    if (_logger)
+    if (_logger) {
       _formatOptions = _logger->options();
+    }
 #endif
   }
 
-  inline BaseCompiler* cc() const noexcept { return _cc; }
+  [[nodiscard]]
+  ASMJIT_INLINE_NODEBUG BaseCompiler* cc() const noexcept { return _cc; }
 
   //! \name Run
   //! \{
 
   //! Called per function by an architecture-specific CFG builder.
+  [[nodiscard]]
   Error run() noexcept {
     log("[BuildCFG]\n");
     ASMJIT_PROPAGATE(prepare());
@@ -80,8 +86,10 @@ public:
 
     RABlock* entryBlock = _curBlock;
     BaseNode* node = _funcNode->next();
-    if (ASMJIT_UNLIKELY(!node))
+
+    if (ASMJIT_UNLIKELY(!node)) {
       return DebugUtils::errored(kErrorInvalidState);
+    }
 
     _curBlock->setFirst(_funcNode);
     _curBlock->setLast(_funcNode);
@@ -117,16 +125,19 @@ public:
             // the first possible inserted node by `onBeforeInvoke()` or `onBeforeRet()`.
             BaseNode* prev = node->prev();
 
-            if (node->type() == NodeType::kInvoke)
+            if (node->type() == NodeType::kInvoke) {
               ASMJIT_PROPAGATE(static_cast<This*>(this)->onBeforeInvoke(node->as<InvokeNode>()));
-            else
+            }
+            else {
               ASMJIT_PROPAGATE(static_cast<This*>(this)->onBeforeRet(node->as<FuncRetNode>()));
+            }
 
             if (prev != node->prev()) {
               // If this was the first node in the block and something was
               // inserted before it then we have to update the first block.
-              if (_curBlock->first() == node)
+              if (_curBlock->first() == node) {
                 _curBlock->setFirst(prev->next());
+              }
 
               node->setPosition(kNodePositionDidOnBefore);
               node = prev->next();
@@ -148,7 +159,7 @@ public:
         logNode(inst, kCodeIndentation);
 
         InstControlFlow cf = InstControlFlow::kRegular;
-        ib.reset();
+        ib.reset(_curBlock->blockId());
         ASMJIT_PROPAGATE(static_cast<This*>(this)->onInst(inst, cf, ib));
 
         if (node->isInvoke()) {
@@ -191,8 +202,9 @@ public:
               const Operand* opArray = inst->operands();
 
               // Cannot jump anywhere without operands.
-              if (ASMJIT_UNLIKELY(!opCount))
+              if (ASMJIT_UNLIKELY(!opCount)) {
                 return DebugUtils::errored(kErrorInvalidState);
+              }
 
               if (opArray[opCount - 1].isLabel()) {
                 // Labels are easy for constructing the control flow.
@@ -200,8 +212,9 @@ public:
                 ASMJIT_PROPAGATE(cc()->labelNodeOf(&labelNode, opArray[opCount - 1].as<Label>()));
 
                 RABlock* targetBlock = _pass->newBlockOrExistingAt(labelNode);
-                if (ASMJIT_UNLIKELY(!targetBlock))
+                if (ASMJIT_UNLIKELY(!targetBlock)) {
                   return DebugUtils::errored(kErrorOutOfMemory);
+                }
 
                 targetBlock->makeTargetable();
                 ASMJIT_PROPAGATE(_curBlock->appendSuccessor(targetBlock));
@@ -213,8 +226,9 @@ public:
                 JumpAnnotation* jumpAnnotation = nullptr;
                 _curBlock->addFlags(RABlockFlags::kHasJumpTable);
 
-                if (inst->type() == NodeType::kJump)
+                if (inst->type() == NodeType::kJump) {
                   jumpAnnotation = inst->as<JumpNode>()->annotation();
+                }
 
                 if (jumpAnnotation) {
                   uint64_t timestamp = _pass->nextTimestamp();
@@ -223,8 +237,9 @@ public:
                     ASMJIT_PROPAGATE(cc()->labelNodeOf(&labelNode, id));
 
                     RABlock* targetBlock = _pass->newBlockOrExistingAt(labelNode);
-                    if (ASMJIT_UNLIKELY(!targetBlock))
+                    if (ASMJIT_UNLIKELY(!targetBlock)) {
                       return DebugUtils::errored(kErrorOutOfMemory);
+                    }
 
                     // Prevents adding basic-block successors multiple times.
                     if (!targetBlock->hasTimestamp(timestamp)) {
@@ -260,15 +275,17 @@ public:
                 }
                 else {
                   consecutiveBlock = _pass->newBlock(node);
-                  if (ASMJIT_UNLIKELY(!consecutiveBlock))
+                  if (ASMJIT_UNLIKELY(!consecutiveBlock)) {
                     return DebugUtils::errored(kErrorOutOfMemory);
+                  }
                   node->setPassData<RABlock>(consecutiveBlock);
                 }
               }
               else {
                 consecutiveBlock = _pass->newBlock(node);
-                if (ASMJIT_UNLIKELY(!consecutiveBlock))
+                if (ASMJIT_UNLIKELY(!consecutiveBlock)) {
                   return DebugUtils::errored(kErrorOutOfMemory);
+                }
               }
 
               _curBlock->addFlags(RABlockFlags::kHasConsecutive);
@@ -278,8 +295,9 @@ public:
               _hasCode = false;
               _blockRegStats.reset();
 
-              if (_curBlock->isConstructed())
+              if (_curBlock->isConstructed()) {
                 break;
+              }
               ASMJIT_PROPAGATE(_pass->addBlock(consecutiveBlock));
 
               logBlock(_curBlock, kRootIndentation);
@@ -308,14 +326,16 @@ public:
           if (_curBlock) {
             // If the label has a block assigned we can either continue with it or skip it if the block has been
             // constructed already.
-            if (_curBlock->isConstructed())
+            if (_curBlock->isConstructed()) {
               break;
+            }
           }
           else {
             // No block assigned - create a new one and assign it.
             _curBlock = _pass->newBlock(node);
-            if (ASMJIT_UNLIKELY(!_curBlock))
+            if (ASMJIT_UNLIKELY(!_curBlock)) {
               return DebugUtils::errored(kErrorOutOfMemory);
+            }
             node->setPassData<RABlock>(_curBlock);
           }
 
@@ -333,8 +353,9 @@ public:
               // The label currently processed is part of the current block. This is only possible for multiple labels
               // that are right next to each other or labels that are separated by non-code nodes like directives and
               // comments.
-              if (ASMJIT_UNLIKELY(_hasCode))
+              if (ASMJIT_UNLIKELY(_hasCode)) {
                 return DebugUtils::errored(kErrorInvalidState);
+              }
             }
             else {
               // Label makes the current block constructed. There is a chance that the Label is not used, but we don't
@@ -363,8 +384,9 @@ public:
               _curBlock->makeConstructed(_blockRegStats);
 
               RABlock* consecutive = _pass->newBlock(node);
-              if (ASMJIT_UNLIKELY(!consecutive))
+              if (ASMJIT_UNLIKELY(!consecutive)) {
                 return DebugUtils::errored(kErrorOutOfMemory);
+              }
               consecutive->makeTargetable();
 
               ASMJIT_PROPAGATE(_curBlock->appendSuccessor(consecutive));
@@ -379,8 +401,9 @@ public:
           }
         }
 
-        if (_curBlock && _curBlock != _lastLoggedBlock)
+        if (_curBlock && _curBlock != _lastLoggedBlock) {
           logBlock(_curBlock, kRootIndentation);
+        }
         logNode(node, kRootIndentation);
 
         // Unlikely: Assume that the exit label is reached only once per function.
@@ -401,16 +424,18 @@ public:
         if (node->type() == NodeType::kSentinel) {
           if (node == _funcNode->endNode()) {
             // Make sure we didn't flow here if this is the end of the function sentinel.
-            if (ASMJIT_UNLIKELY(_curBlock && _hasCode))
+            if (ASMJIT_UNLIKELY(_curBlock && _hasCode)) {
               return DebugUtils::errored(kErrorInvalidState);
+            }
             break;
           }
         }
         else if (node->type() == NodeType::kFunc) {
           // RAPass can only compile a single function at a time. If we
           // encountered a function it must be the current one, bail if not.
-          if (ASMJIT_UNLIKELY(node != _funcNode))
+          if (ASMJIT_UNLIKELY(node != _funcNode)) {
             return DebugUtils::errored(kErrorInvalidState);
+          }
           // PASS if this is the first node.
         }
         else {
@@ -424,15 +449,18 @@ public:
       // NOTE: We cannot encounter a NULL node, because every function must be terminated by a sentinel (`stop`)
       // node. If we encountered a NULL node it means that something went wrong and this node list is corrupted;
       // bail in such case.
-      if (ASMJIT_UNLIKELY(!node))
+      if (ASMJIT_UNLIKELY(!node)) {
         return DebugUtils::errored(kErrorInvalidState);
+      }
     }
 
-    if (_pass->hasDanglingBlocks())
+    if (_pass->hasDanglingBlocks()) {
       return DebugUtils::errored(kErrorInvalidState);
+    }
 
-    for (RABlock* block : blocksWithUnknownJumps)
-      handleBlockWithUnknownJump(block);
+    for (RABlock* block : blocksWithUnknownJumps) {
+      ASMJIT_PROPAGATE(handleBlockWithUnknownJump(block));
+    }
 
     return _pass->initSharedAssignments(_sharedAssignmentsMap);
   }
@@ -443,6 +471,7 @@ public:
   //! \{
 
   //! Prepares the CFG builder of the current function.
+  [[nodiscard]]
   Error prepare() noexcept {
     FuncNode* func = _pass->func();
     BaseNode* node = nullptr;
@@ -492,6 +521,7 @@ public:
   //!
   //! If we encounter such block we basically insert all existing blocks as successors except the function entry
   //! block and a natural successor, if such block exists.
+  [[nodiscard]]
   Error handleBlockWithUnknownJump(RABlock* block) noexcept {
     RABlocks& blocks = _pass->blocks();
     size_t blockCount = blocks.size();
@@ -501,40 +531,48 @@ public:
     RABlock* consecutive = block->consecutive();
     for (size_t i = 1; i < blockCount; i++) {
       RABlock* candidate = blocks[i];
-      if (candidate == consecutive || !candidate->isTargetable())
+      if (candidate == consecutive || !candidate->isTargetable()) {
         continue;
-      block->appendSuccessor(candidate);
+      }
+      ASMJIT_PROPAGATE(block->appendSuccessor(candidate));
     }
 
     return shareAssignmentAcrossSuccessors(block);
   }
 
+  [[nodiscard]]
   Error shareAssignmentAcrossSuccessors(RABlock* block) noexcept {
-    if (block->successors().size() <= 1)
+    if (block->successors().size() <= 1) {
       return kErrorOk;
+    }
 
     RABlock* consecutive = block->consecutive();
     uint32_t sharedAssignmentId = Globals::kInvalidId;
 
     for (RABlock* successor : block->successors()) {
-      if (successor == consecutive)
+      if (successor == consecutive) {
         continue;
+      }
 
       if (successor->hasSharedAssignmentId()) {
-        if (sharedAssignmentId == Globals::kInvalidId)
+        if (sharedAssignmentId == Globals::kInvalidId) {
           sharedAssignmentId = successor->sharedAssignmentId();
-        else
+        }
+        else {
           _sharedAssignmentsMap[successor->sharedAssignmentId()] = sharedAssignmentId;
+        }
       }
       else {
-        if (sharedAssignmentId == Globals::kInvalidId)
+        if (sharedAssignmentId == Globals::kInvalidId) {
           ASMJIT_PROPAGATE(newSharedAssignmentId(&sharedAssignmentId));
+        }
         successor->setSharedAssignmentId(sharedAssignmentId);
       }
     }
     return kErrorOk;
   }
 
+  [[nodiscard]]
   Error newSharedAssignmentId(uint32_t* out) noexcept {
     uint32_t id = _sharedAssignmentsMap.size();
     ASMJIT_PROPAGATE(_sharedAssignmentsMap.append(_pass->allocator(), id));
@@ -551,18 +589,21 @@ public:
 #ifndef ASMJIT_NO_LOGGING
   template<typename... Args>
   inline void log(const char* fmt, Args&&... args) noexcept {
-    if (_logger)
+    if (_logger) {
       _logger->logf(fmt, std::forward<Args>(args)...);
+    }
   }
 
   inline void logBlock(RABlock* block, uint32_t indentation = 0) noexcept {
-    if (_logger)
+    if (_logger) {
       _logBlock(block, indentation);
+    }
   }
 
   inline void logNode(BaseNode* node, uint32_t indentation = 0, const char* action = nullptr) noexcept {
-    if (_logger)
+    if (_logger) {
       _logNode(node, indentation, action);
+    }
   }
 
   void _logBlock(RABlock* block, uint32_t indentation) noexcept {

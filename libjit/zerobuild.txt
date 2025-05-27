@@ -11,5 +11,5 @@ c++compiler = clang++-15
 linker = ld
 aflags = "cru"
 
-cflags = "-fPIC -O2 -fomit-frame-pointer -Wall"
+cflags = "-fPIC -O2 -fomit-frame-pointer -Wall -std=c++17"
 lflags = "-shared -L../asmjit/build -lasmjit-l1vm -Wl,-z,relro,-z,now"

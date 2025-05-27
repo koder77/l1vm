@@ -1,9 +1,8 @@
 L1VM (3.4.3)
 	Compiler, assembler MAXLINELEN fixes.
-	AsmJIT compiler updated to the current GitHub version -> FAILED to build.
-	So I did set everything back to the older working version.
+	AsmJIT compiler finally updated to the current GitHub version.
 
--- Stefan Pietzonke <info@midnight-coding.de> Tue 27 May 2025 17:56   +020
+-- Stefan Pietzonke <info@midnight-coding.de> Wed 28 May 2025 00:24   +020
 
 L1VM (3.4.2)
 	In settings header LOW RAM limits changed.
