@@ -145,7 +145,7 @@ int main() {
   });
 
   // Execute the function and test whether it works.
-  using Func = size_t (*)(size_t idx);
+  typedef size_t (*Func)(size_t idx);
   Func fn = (Func)span.rx();
 
   printf("\n");

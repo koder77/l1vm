@@ -31,9 +31,10 @@ ASMJIT_BEGIN_SUB_NAMESPACE(x86)
 //!
 //! using namespace asmjit;
 //!
-//! int main() {
-//!   using Func = int (*)(void);              // Signature of the generated function.
+//! // Signature of the generated function.
+//! typedef int (*Func)(void);
 //!
+//! int main() {
 //!   JitRuntime rt;                           // Runtime specialized for JIT code execution.
 //!   CodeHolder code;                         // Holds code and relocation information.
 //!
@@ -75,10 +76,10 @@ ASMJIT_BEGIN_SUB_NAMESPACE(x86)
 //!
 //! using namespace asmjit;
 //!
-//! int main() {
-//!   // Signature of the generated function.
-//!   using MemCpy32 = void (*)(uint32_t* dst, const uint32_t* src, size_t count);
+//! // Signature of the generated function.
+//! typedef void (*MemCpy32)(uint32_t* dst, const uint32_t* src, size_t count);
 //!
+//! int main() {
 //!   JitRuntime rt;                           // Runtime specialized for JIT code execution.
 //!   CodeHolder code;                         // Holds code and relocation information.
 //!
@@ -122,7 +123,6 @@ ASMJIT_BEGIN_SUB_NAMESPACE(x86)
 //!   cc.endFunc();                            // End of the function body.
 //!
 //!   cc.finalize();                           // Translate and assemble the whole 'cc' content.
-//!
 //!   // ----> x86::Compiler is no longer needed from here and can be destroyed <----
 //!
 //!   // Add the generated code to the runtime.
@@ -130,10 +130,8 @@ ASMJIT_BEGIN_SUB_NAMESPACE(x86)
 //!   Error err = rt.add(&memcpy32, &code);
 //!
 //!   // Handle a possible error returned by AsmJit.
-//!   if (err) {
+//!   if (err)
 //!     return 1;
-//!   }
-//!
 //!   // ----> CodeHolder is no longer needed from here and can be destroyed <----
 //!
 //!   // Test the generated code.
@@ -141,9 +139,8 @@ ASMJIT_BEGIN_SUB_NAMESPACE(x86)
 //!   uint32_t output[6];
 //!   memcpy32(output, input, 6);
 //!
-//!   for (uint32_t i = 0; i < 6; i++) {
+//!   for (uint32_t i = 0; i < 6; i++)
 //!     printf("%d\n", output[i]);
-//!   }
 //!
 //!   rt.release(memcpy32);
 //!   return 0;
@@ -162,9 +159,10 @@ ASMJIT_BEGIN_SUB_NAMESPACE(x86)
 //!
 //! using namespace asmjit;
 //!
-//! int main() {
-//!   using Func = void (*)(void*);            // Signature of the generated function.
+//! // Signature of the generated function.
+//! typedef void (*Func)(void*);
 //!
+//! int main() {
 //!   JitRuntime rt;                           // Runtime specialized for JIT code execution.
 //!   CodeHolder code;                         // Holds code and relocation information.
 //!
@@ -220,9 +218,10 @@ ASMJIT_BEGIN_SUB_NAMESPACE(x86)
 //!
 //! using namespace asmjit;
 //!
-//! int main() {
-//!   using FibFn = uint32_t (*)(uint32_t x);  // Signature of the generated function.
+//! // Signature of the generated function.
+//! typedef uint32_t (*Fibonacci)(uint32_t x);
 //!
+//! int main() {
 //!   JitRuntime rt;                           // Runtime specialized for JIT code execution.
 //!   CodeHolder code;                         // Holds code and relocation information.
 //!
@@ -262,7 +261,7 @@ ASMJIT_BEGIN_SUB_NAMESPACE(x86)
 //!   cc.finalize();                           // Translate and assemble the whole 'cc' content.
 //!   // ----> x86::Compiler is no longer needed from here and can be destroyed <----
 //!
-//!   FibFn fib;
+//!   Fibonacci fib;
 //!   Error err = rt.add(&fib, &code);         // Add the generated code to the runtime.
 //!   if (err) return 1;                       // Handle a possible error returned by AsmJit.
 //!   // ----> CodeHolder is no longer needed from here and can be destroyed <----
@@ -288,9 +287,10 @@ ASMJIT_BEGIN_SUB_NAMESPACE(x86)
 //!
 //! using namespace asmjit;
 //!
-//! int main() {
-//!   using Func = int (*)(void);              // Signature of the generated function.
+//! // Signature of the generated function.
+//! typedef int (*Func)(void);
 //!
+//! int main() {
 //!   JitRuntime rt;                           // Runtime specialized for JIT code execution.
 //!   CodeHolder code;                         // Holds code and relocation information.
 //!
@@ -488,7 +488,7 @@ class ASMJIT_VIRTAPI Compiler
     public EmitterExplicitT<Compiler> {
 public:
   ASMJIT_NONCOPYABLE(Compiler)
-  using Base = BaseCompiler;
+  typedef BaseCompiler Base;
 
   //! \name Construction & Destruction
   //! \{

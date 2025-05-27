@@ -24,23 +24,17 @@ ASMJIT_BEGIN_SUB_NAMESPACE(a64)
 
 ASMJIT_FAVOR_SIZE Error FormatterInternal::formatInstruction(
   String& sb,
-  FormatFlags formatFlags,
+  FormatFlags flags,
   const BaseEmitter* emitter,
   Arch arch,
   const BaseInst& inst, const Operand_* operands, size_t opCount) noexcept {
 
   // Format instruction options and instruction mnemonic.
   InstId instId = inst.realId();
-  if (instId != Inst::kIdNone && instId < Inst::_kIdCount) {
-    InstStringifyOptions stringifyOptions =
-      Support::test(formatFlags, FormatFlags::kShowAliases)
-        ? InstStringifyOptions::kAliases
-        : InstStringifyOptions::kNone;
-    ASMJIT_PROPAGATE(InstInternal::instIdToString(instId, stringifyOptions, sb));
-  }
-  else {
+  if (instId != Inst::kIdNone && instId < Inst::_kIdCount)
+    ASMJIT_PROPAGATE(InstInternal::instIdToString(instId, sb));
+  else
     ASMJIT_PROPAGATE(sb.appendFormat("[InstId=#%u]", unsigned(instId)));
-  }
 
   CondCode cc = inst.armCondCode();
   if (cc != CondCode::kAL) {
@@ -50,12 +44,11 @@ ASMJIT_FAVOR_SIZE Error FormatterInternal::formatInstruction(
 
   for (uint32_t i = 0; i < opCount; i++) {
     const Operand_& op = operands[i];
-    if (op.isNone()) {
+    if (op.isNone())
       break;
-    }
 
     ASMJIT_PROPAGATE(sb.append(i == 0 ? " " : ", "));
-    ASMJIT_PROPAGATE(formatOperand(sb, formatFlags, emitter, arch, op));
+    ASMJIT_PROPAGATE(formatOperand(sb, flags, emitter, arch, op));
   }
 
   return kErrorOk;

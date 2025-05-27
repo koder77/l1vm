@@ -28,14 +28,9 @@ ASMJIT_BEGIN_SUB_NAMESPACE(x86)
 class X86RAPass : public BaseRAPass {
 public:
   ASMJIT_NONCOPYABLE(X86RAPass)
-  using Base = BaseRAPass;
-
-  //! \name Members
-  //! \{
+  typedef BaseRAPass Base;
 
   EmitHelper _emitHelper;
-
-  //! \}
 
   //! \name Construction & Destruction
   //! \{
@@ -49,17 +44,12 @@ public:
   //! \{
 
   //! Returns the compiler casted to `x86::Compiler`.
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG Compiler* cc() const noexcept { return static_cast<Compiler*>(_cb); }
 
   //! Returns emit helper.
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG EmitHelper* emitHelper() noexcept { return &_emitHelper; }
 
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG bool avxEnabled() const noexcept { return _emitHelper._avxEnabled; }
-
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG bool avx512Enabled() const noexcept { return _emitHelper._avx512Enabled; }
 
   //! \}
@@ -67,7 +57,6 @@ public:
   //! \name Utilities
   //! \{
 
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG InstId choose(InstId sseInstId, InstId avxInstId) noexcept {
     return avxEnabled() ? avxInstId : sseInstId;
   }

@@ -1,27 +1,23 @@
 // This file is part of AsmJit project <https://asmjit.com>
 //
 // See asmjit.h or LICENSE.md for license and copyright information
-// SPDX-License-Identifier: Zlib
+// SPDX-License-Identifier: (Zlib or Unlicense)
 
 (function($scope, $as) {
 "use strict";
 
 function FAIL(msg) { throw new Error("[BASE] " + msg); }
 
+// Import.
+const hasOwn = Object.prototype.hasOwnProperty;
+
 const exp = $scope.exp ? $scope.exp : require("./exp.js");
+
 
 // Export.
 const base = $scope[$as] = Object.create(null);
 
 base.exp = exp;
-
-// Import.
-const hasOwnProperty = Object.prototype.hasOwnProperty;
-
-function hasOwn(object, key) {
-  return hasOwnProperty.call(object, key);
-}
-base.hasOwn = hasOwn;
 
 function dict(src) {
   const dst = Object.create(null);
@@ -135,27 +131,13 @@ base.Parsing = Parsing;
 // asmdb.base.MapUtils
 // ===================
 
-class MapUtils {
-  static cloneExcept(map, except) {
-    if (typeof except === "string") {
-      const key = except;
-      except = Object.create(null);
-      except[key] = true;
-    }
-
+const MapUtils = {
+  cloneExcept(map, except) {
     const out = Object.create(null);
     for (let k in map) {
       if (k in except)
         continue
       out[k] = map[k];
-    }
-    return out;
-  }
-
-  static mapFromArray(array) {
-    const out = Object.create(null);
-    for (let k of array) {
-      out[k] = true;
     }
     return out;
   }
@@ -176,9 +158,9 @@ const OperandFlags = Object.freeze({
 base.OperandFlags = OperandFlags;
 
 class Operand {
-  constructor() {
+  constructor(data) {
     this.type = "";              // Type of the operand ("reg", "reg-list", "mem", "reg/mem", "imm", "rel").
-    this.data = "";              // The operand's data (possibly processed).
+    this.data = data;            // The operand's data (possibly processed).
     this.flags = 0;
 
     this.reg = "";               // Register operand's definition.
@@ -264,7 +246,7 @@ class Instruction {
 
     this.specialRegs = dict(); // Information about read/write to special registers.
 
-    this.alt = false;          // This is an alternative form, not needed to create a signature.
+    this.altForm = false;      // This is an alternative form, not needed to create a signature.
     this.volatile = false;     // Instruction is volatile and should not be reordered.
     this.control = "none";     // Control flow type (none by default).
     this.privilege = "";       // Privilege-level required to execute the instruction.
@@ -391,8 +373,8 @@ class InstructionGroup extends Array {
   unionCpuFeatures(name) {
     const result = dict();
     for (let i = 0; i < this.length; i++) {
-      const instruction = this[i];
-      const features = instruction.ext;
+      const inst = this[i];
+      const features = inst.ext;
       for (let k in features)
         result[k] = features[k];
     }
@@ -419,14 +401,13 @@ class ISA {
     this._instructionNames = null;       // Instruction names (sorted), regenerated when needed.
     this._instructionMap = dict();       // Instruction name to `Instruction[]` mapping.
     this._aliases = dict();              // Instruction aliases.
-    this._aliasMap = dict();             // Instruction aliases.
     this._cpuLevels = dict();            // Architecture versions.
     this._extensions = dict();           // Architecture extensions.
     this._attributes = dict();           // Instruction attributes.
     this._specialRegs = dict();          // Special registers.
     this._shortcuts = dict();            // Shortcuts used by instructions metadata.
     this.stats = {
-      instructions : 0,                  // Number of all instructions.
+      insts : 0,                         // Number of all instructions.
       groups: 0                          // Number of grouped instructions (having unique name).
     };
   }
@@ -455,7 +436,7 @@ class ISA {
   }
 
   get instructionMap() { return this._instructionMap; }
-  get aliases() { return this._aliasMap; }
+  get aliases() { return this._aliases; }
   get cpuLevels() { return this._cpuLevels; }
   get extensions() { return this._extensions; }
   get attributes() { return this._attributes; }
@@ -477,31 +458,27 @@ class ISA {
     return result;
   }
 
-  aliasData(name) {
-    return this._aliases[name] || null;
-  }
-
   _queryByName(name, copy) {
     let result = EmptyInstructionGroup;
     const map = this._instructionMap;
 
     if (typeof name === "string") {
-      const instructions = map[name];
-      if (instructions) result = instructions;
+      const insts = map[name];
+      if (insts) result = insts;
       return copy ? result.slice() : result;
     }
 
     if (Array.isArray(name)) {
       const names = name;
       for (let i = 0; i < names.length; i++) {
-        const instructions = map[names[i]];
-        if (!instructions) continue;
+        const insts = map[names[i]];
+        if (!insts) continue;
 
         if (result === EmptyInstructionGroup)
           result = new InstructionGroup();
 
-        for (let j = 0; j < instructions.length; j++)
-          result.push(instructions[j]);
+        for (let j = 0; j < insts.length; j++)
+          result.push(insts[j]);
       }
       return result;
     }
@@ -530,24 +507,23 @@ class ISA {
     if (data.specialRegs) this._addSpecialRegs(data.specialRegs);
     if (data.shortcuts) this._addShortcuts(data.shortcuts);
     if (data.instructions) this._addInstructions(data.instructions);
-    if (data.aliases) this._addAliases(data.aliases);
     if (data.postproc) this._postProc(data.postproc);
   }
 
   _postProc(groups) {
     for (let group of groups) {
       for (let iRule of group.instructions) {
-        const names = iRule.name.split(" ");
+        const names = iRule.inst.split(" ");
         for (let name of names) {
-          const instructions = this._instructionMap[name];
-          if (!instructions)
+          const insts = this._instructionMap[name];
+          if (!insts)
             FAIL(`Instruction ${name} referenced by '${group.group}' group doesn't exist`);
 
           for (let k in iRule) {
-            if (k === "name" || k === "data")
+            if (k === "inst" || k === "data")
               continue;
-            for (let instruction of instructions) {
-              instruction._assignAttribute(k, iRule[k]);
+            for (let inst of insts) {
+              inst._assignAttribute(k, iRule[k]);
             }
           }
         }
@@ -654,59 +630,27 @@ class ISA {
     FAIL("ISA._addInstructions() must be reimplemented");
   }
 
-  _addInstruction(instruction) {
+  _addInstruction(inst) {
     let group;
 
-    if (hasOwn(this._instructionMap, instruction.name)) {
-      group = this._instructionMap[instruction.name];
+    if (hasOwn.call(this._instructionMap, inst.name)) {
+      group = this._instructionMap[inst.name];
     }
     else {
       group = new InstructionGroup();
       this._instructionNames = null;
-      this._instructionMap[instruction.name] = group;
+      this._instructionMap[inst.name] = group;
       this.stats.groups++;
     }
 
-    if (instruction.aliasOf) {
-      this._addAlias(instruction.name, instruction.aliasOf);
-    }
+    if (inst.aliasOf)
+      this._aliases[inst.name] = inst.aliasOf;
 
-    group.push(instruction);
-    this.stats.instructions++;
+    group.push(inst);
+    this.stats.insts++;
     this._instructions = null;
 
     return this;
-  }
-
-  // Add aliases from instruction database - aliases must be an object where each key is a non-aliased instruction.
-  _addAliases(aliases) {
-    for (let instructionName in aliases) {
-      const data = aliases[instructionName];
-      for (let aliasName of data.aliases) {
-        this._addAlias(instructionName, aliasName, data.format || "");
-      }
-    }
-  }
-
-  _addAlias(instructionName, aliasName, aliasFormat) {
-    const group = this._instructionMap[instructionName];
-    if (!group) {
-      FAIL(`Instruction ${instructionName} doesn't exist when processing alias (${aliasName})`);
-    }
-
-    let alias = this._aliases[instructionName];
-    if (!alias) {
-      alias = dict({
-        primaryName: instructionName,
-        aliasNames: [],
-        format: ""
-      });
-      this._aliases[instructionName] = alias;
-    }
-
-    this._aliasMap[aliasName] = instructionName;
-    alias.aliasNames.push(aliasName);
-    alias.format = aliasFormat || "";
   }
 }
 base.ISA = ISA;

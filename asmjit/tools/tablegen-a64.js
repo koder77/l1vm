@@ -132,8 +132,8 @@ class ArmTableGen extends core.TableGen {
 
     var m;
     while ((m = re.exec(stringData)) !== null) {
-      var enumName = m[1];
-      var name = enumName === "None" ? "" : enumName.toLowerCase();
+      var enum_ = m[1];
+      var name = enum_ === "None" ? "" : enum_.toLowerCase();
       var encoding = m[2].trim();
       var opcodeData = m[3].trim();
       var rwInfo = m[4].trim();
@@ -149,11 +149,11 @@ class ArmTableGen extends core.TableGen {
           encodingDataIndex === "encodingDataIndex")
         continue;
 
-      this.addInstruction({
+      this.addInst({
         id                : 0,               // Instruction id (numeric value).
         name              : name,            // Instruction name.
         displayName       : displayName,     // Instruction name to display.
-        enum              : enumName,        // Instruction enum without `kId` prefix.
+        enum              : enum_,           // Instruction enum without `kId` prefix.
         encoding          : encoding,        // Opcode encoding.
         opcodeData        : opcodeData,      // Opcode data.
         opcodeDataIndex   : -1,              // Opcode data index.

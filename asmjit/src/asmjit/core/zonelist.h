@@ -22,8 +22,10 @@ public:
   //! \name Constants
   //! \{
 
-  static inline constexpr size_t kNodeIndexPrev = 0;
-  static inline constexpr size_t kNodeIndexNext = 1;
+  enum : size_t {
+    kNodeIndexPrev = 0,
+    kNodeIndexNext = 1
+  };
 
   //! \}
 
@@ -48,16 +50,10 @@ public:
   //! \name Accessors
   //! \{
 
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG bool hasPrev() const noexcept { return _listNodes[kNodeIndexPrev] != nullptr; }
-
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG bool hasNext() const noexcept { return _listNodes[kNodeIndexNext] != nullptr; }
 
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG NodeT* prev() const noexcept { return _listNodes[kNodeIndexPrev]; }
-
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG NodeT* next() const noexcept { return _listNodes[kNodeIndexNext]; }
 
   //! \}
@@ -72,8 +68,10 @@ public:
   //! \name Constants
   //! \{
 
-  static inline constexpr size_t kNodeIndexFirst = 0;
-  static inline constexpr size_t kNodeIndexLast = 1;
+  enum : size_t {
+    kNodeIndexFirst = 0,
+    kNodeIndexLast = 1
+  };
 
   //! \}
 
@@ -102,13 +100,8 @@ public:
   //! \name Accessors
   //! \{
 
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG bool empty() const noexcept { return _nodes[0] == nullptr; }
-
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG NodeT* first() const noexcept { return _nodes[kNodeIndexFirst]; }
-
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG NodeT* last() const noexcept { return _nodes[kNodeIndexLast]; }
 
   //! \}
@@ -127,12 +120,10 @@ public:
 
     node->_listNodes[!dir] = prev;
     _nodes[dir] = node;
-    if (prev) {
+    if (prev)
       prev->_listNodes[dir] = node;
-    }
-    else {
+    else
       _nodes[!dir] = node;
-    }
   }
 
   // Can be used to both append and prepend.
@@ -143,12 +134,10 @@ public:
     NodeT* next = ref->_listNodes[dir];
 
     prev->_listNodes[dir] = node;
-    if (next) {
+    if (next)
       next->_listNodes[!dir] = node;
-    }
-    else {
+    else
       _nodes[dir] = node;
-    }
 
     node->_listNodes[!dir] = prev;
     node->_listNodes[ dir] = next;
@@ -173,7 +162,6 @@ public:
     return node;
   }
 
-  [[nodiscard]]
   inline NodeT* popFirst() noexcept {
     NodeT* node = _nodes[0];
     ASMJIT_ASSERT(node != nullptr);
@@ -192,7 +180,6 @@ public:
     return node;
   }
 
-  [[nodiscard]]
   inline NodeT* pop() noexcept {
     NodeT* node = _nodes[1];
     ASMJIT_ASSERT(node != nullptr);

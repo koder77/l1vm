@@ -31,7 +31,7 @@ static void printInfo() noexcept {
 using namespace asmjit;
 
 // Signature of the generated function.
-using EmptyFunc = void (*)(void);
+typedef void (*EmptyFunc)(void);
 
 // Generate Empty Function
 // -----------------------

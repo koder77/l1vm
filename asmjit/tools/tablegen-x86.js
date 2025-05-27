@@ -50,7 +50,7 @@ class Filter {
     const result = [];
     const known = {};
 
-    for (let i = 0; i < instArray.length; i++) {
+    for (var i = 0; i < instArray.length; i++) {
       const inst = instArray[i];
       if (inst.altForm)
         continue;
@@ -68,9 +68,9 @@ class Filter {
 
   static noAltForm(instArray) {
     const result = [];
-    for (let i = 0; i < instArray.length; i++) {
+    for (var i = 0; i < instArray.length; i++) {
       const inst = instArray[i];
-      if (inst.alt)
+      if (inst.altForm)
         continue;
       result.push(inst);
     }
@@ -109,11 +109,11 @@ const VexToEvexMap = {
 
 class GenUtils {
   static cpuArchOf(dbInsts) {
-    let anyArch = false;
-    let x86Arch = false;
-    let x64Arch = false;
+    var anyArch = false;
+    var x86Arch = false;
+    var x64Arch = false;
 
-    for (let i = 0; i < dbInsts.length; i++) {
+    for (var i = 0; i < dbInsts.length; i++) {
       const dbInst = dbInsts[i];
       if (dbInst.arch === "ANY") anyArch = true;
       if (dbInst.arch === "X86") x86Arch = true;
@@ -203,15 +203,16 @@ class GenUtils {
 
   static flagsOf(dbInsts) {
     const f = Object.create(null);
+    var i, j;
 
-    let mib = dbInsts.length > 0 && /^(?:bndldx|bndstx)$/.test(dbInsts[0].name);
+    var mib = dbInsts.length > 0 && /^(?:bndldx|bndstx)$/.test(dbInsts[0].name);
     if (mib)
       f.Mib = true;
 
-    let mmx = false;
-    let vec = false;
+    var mmx = false;
+    var vec = false;
 
-    for (let i = 0; i < dbInsts.length; i++) {
+    for (i = 0; i < dbInsts.length; i++) {
       const dbInst = dbInsts[i];
       const operands = dbInst.operands;
 
@@ -221,7 +222,7 @@ class GenUtils {
       if (dbInst.name === "vzeroall" || dbInst.name === "vzeroupper")
         vec = true;
 
-      for (let j = 0; j < operands.length; j++) {
+      for (j = 0; j < operands.length; j++) {
         const op = operands[j];
         if (op.reg === "mm")
           mmx = true;
@@ -234,7 +235,7 @@ class GenUtils {
     if (mmx) f.Mmx = true;
     if (vec) f.Vec = true;
 
-    for (let i = 0; i < dbInsts.length; i++) {
+    for (i = 0; i < dbInsts.length; i++) {
       const dbInst = dbInsts[i];
       const operands = dbInst.operands;
 
@@ -248,7 +249,7 @@ class GenUtils {
       if (dbInst.k === "zeroing"         ) f.Avx512ImplicitZ = true;
 
       if (dbInst.category.FPU) {
-        for (let j = 0; j < operands.length; j++) {
+        for (var j = 0; j < operands.length; j++) {
           const op = operands[j];
           if (op.memSize === 16) f.FpuM16 = true;
           if (op.memSize === 32) f.FpuM32 = true;
@@ -295,7 +296,7 @@ class GenUtils {
   }
 
   static eqOps(aOps, aFrom, bOps, bFrom) {
-    let x = 0;
+    var x = 0;
     for (;;) {
       const aIndex = x + aFrom;
       const bIndex = x + bFrom;
@@ -461,9 +462,7 @@ class X86TableGen extends core.TableGen {
 
   // Get instructions (dbInsts) having the same name as understood by AsmJit.
   query(name) {
-    return x86isa.query({ name: name, filter: function(inst) {
-      return !inst.ext.APX_F && !inst.ext.AVX10_1 && !inst.ext.AVX10_2;
-    }});
+    return x86isa.query(name);
   }
 
   // --------------------------------------------------------------------------
@@ -485,13 +484,13 @@ class X86TableGen extends core.TableGen {
         "([^\\)]+)"                        + "\\)", // [08] OperationDataIndex.
       "g");
 
-    let m;
+    var m;
     while ((m = re.exec(data)) !== null) {
-      let enum_       = m[1];
-      let name        = enum_ === "None" ? "" : enum_.toLowerCase();
-      let encoding    = m[2].trim();
-      let opcode0     = m[3].trim();
-      let opcode1     = m[4].trim();
+      var enum_       = m[1];
+      var name        = enum_ === "None" ? "" : enum_.toLowerCase();
+      var encoding    = m[2].trim();
+      var opcode0     = m[3].trim();
+      var opcode1     = m[4].trim();
 
       const dbInsts = this.query(name);
       if (name && !dbInsts.length)
@@ -501,9 +500,7 @@ class X86TableGen extends core.TableGen {
       const controlFlow   = GenUtils.controlFlow(dbInsts);
       const singleRegCase = GenUtils.singleRegCase(name);
 
-      const aliasData = x86isa.aliasData(name);
-
-      this.addInstruction({
+      this.addInst({
         id                 : 0,             // Instruction id (numeric value).
         name               : name,          // Instruction name.
         displayName        : name,          // Instruction name to display.
@@ -516,8 +513,6 @@ class X86TableGen extends core.TableGen {
         signatures         : null,          // Instruction signatures.
         controlFlow        : controlFlow,
         singleRegCase      : singleRegCase,
-
-        aliases            : aliasData,
 
         mainOpcodeValue    : -1,            // Main opcode value (0.255 hex).
         mainOpcodeIndex    : -1,            // Index to InstDB::_mainOpcodeTable.
@@ -538,7 +533,7 @@ class X86TableGen extends core.TableGen {
   }
 
   merge() {
-    let s = StringUtils.format(this.insts, "", true, function(inst) {
+    var s = StringUtils.format(this.insts, "", true, function(inst) {
       return "INST(" +
         String(inst.enum               ).padEnd(17) + ", " +
         String(inst.encoding           ).padEnd(19) + ", " +
@@ -568,12 +563,12 @@ class X86TableGen extends core.TableGen {
       "wait" // Maps to `fwait`, which AsmJit uses instead.
     ]);
 
-    let out = "";
+    var out = "";
     x86isa.instructionNames.forEach(function(name) {
-      let dbInsts = x86isa.query(name);
+      var dbInsts = x86isa.query(name);
       if (!this.instMap[name] && ignored[name] !== true) {
         console.log(`MISSING INSTRUCTION '${name}'`);
-        let inst = this.newInstFromGroup(dbInsts);
+        var inst = this.newInstFromGroup(dbInsts);
         if (inst) {
           out += "  INST(" +
             String(inst.enum      ).padEnd(17) + ", " +
@@ -598,10 +593,10 @@ class X86TableGen extends core.TableGen {
     }
 
     function GetAccess(dbInst) {
-      let operands = dbInst.operands;
+      var operands = dbInst.operands;
       if (!operands.length) return "";
 
-      let op = operands[0];
+      var op = operands[0];
       if (op.read && op.write)
         return "RW";
       else if (op.read)
@@ -623,8 +618,8 @@ class X86TableGen extends core.TableGen {
         for (let j = 0; j < dbi.operands.length; j++) {
           s += ", ";
           const op = dbi.operands[j];
-          let reg = op.reg;
-          let mem = op.mem;
+          var reg = op.reg;
+          var mem = op.mem;
 
           if (op.isReg() && op.isMem()) {
             if (choice == 0) mem = null;
@@ -658,27 +653,27 @@ class X86TableGen extends core.TableGen {
       return results;
     }
 
-    let dbi = dbInsts[0];
+    var dbi = dbInsts[0];
 
-    let id = this.insts.length;
-    let name = dbi.name;
-    let enum_ = name[0].toUpperCase() + name.substr(1);
+    var id = this.insts.length;
+    var name = dbi.name;
+    var enum_ = name[0].toUpperCase() + name.substr(1);
 
-    let opcode = dbi.opcode.byte;
-    let modR = dbi.opcode.modr;
-    let mm = dbi.opcode.mm;
-    let pp = dbi.opcode.pp;
-    let encoding = dbi.encoding;
-    let isVec = isVecPrefix(dbi.prefix);
-    let evexCount = 0;
+    var opcode = dbi.opcodeHex;
+    var modR = dbi.modR;
+    var mm = dbi.mm;
+    var pp = dbi.pp;
+    var encoding = dbi.encoding;
+    var isVec = isVecPrefix(dbi.prefix);
+    var evexCount = 0;
 
-    let access = GetAccess(dbi);
+    var access = GetAccess(dbi);
 
-    let vexL = undefined;
-    let vexW = undefined;
-    let evexW = undefined;
-    let cdshl = "_";
-    let tupleType = "_";
+    var vexL = undefined;
+    var vexW = undefined;
+    var evexW = undefined;
+    var cdshl = "_";
+    var tupleType = "_";
 
     const tupleTypeToCDSHL = {
       "FVM": "4",
@@ -692,12 +687,12 @@ class X86TableGen extends core.TableGen {
 
     const emitMap = {};
 
-    for (let i = 0; i < dbInsts.length; i++) {
+    for (var i = 0; i < dbInsts.length; i++) {
       dbi = dbInsts[i];
 
       if (dbi.prefix === "VEX" || dbi.prefix === "XOP") {
-        let newVexL = String(dbi.opcode.l === "128" ? 0 : dbi.opcode.l === "256" ? 1 : dbi.opcode.l === "512" ? 2 : "_");
-        let newVexW = String(dbi.opcode.w === "W0" ? 0 : dbi.opcode.w === "W1" ? 1 : "_");
+        var newVexL = String(dbi.l === "128" ? 0 : dbi.l === "256" ? 1 : dbi.l === "512" ? 2 : "_");
+        var newVexW = String(dbi.w === "W0" ? 0 : dbi.w === "W1" ? 1 : "_");
 
         if (vexL !== undefined && vexL !== newVexL)
           vexL = "x";
@@ -711,7 +706,7 @@ class X86TableGen extends core.TableGen {
 
       if (dbi.prefix === "EVEX") {
         evexCount++;
-        let newEvexW = String(dbi.opcode.w === "W0" ? 0 : dbi.opcode.w === "W1" ? 1 : "_");
+        var newEvexW = String(dbi.w === "W0" ? 0 : dbi.w === "W1" ? 1 : "_");
         if (evexW !== undefined && evexW !== newEvexW)
           evexW = "x";
         else
@@ -726,12 +721,12 @@ class X86TableGen extends core.TableGen {
         }
       }
 
-      if (opcode   !== dbi.opcode.byte) { console.log(`${dbi.name}: ISSUE: Opcode ${opcode} != ${dbi.opcode.byte}`); return null; }
-      if (modR     !== dbi.opcode.modr) { console.log(`${dbi.name}: ISSUE: ModR ${modR} != ${dbi.opcode.modr}`); return null; }
-      if (mm       !== dbi.opcode.mm  ) { console.log(`${dbi.name}: ISSUE: MM ${mm} != ${dbi.opcode.mm}`); return null; }
-      if (pp       !== dbi.opcode.pp  ) { console.log(`${dbi.name}: ISSUE: PP ${pp} != ${dbi.opcode.pp}`); return null; }
-      if (encoding !== dbi.encoding   ) { console.log(`${dbi.name}: ISSUE: Enc ${encoding} != ${dbi.encoding}`); return null; }
-      if (access   !== GetAccess(dbi) ) { console.log(`${dbi.name}: ISSUE: Access ${access} != ${GetAccess(dbi)}`); return null; }
+      if (opcode   !== dbi.opcodeHex ) { console.log(`${dbi.name}: ISSUE: Opcode ${opcode} != ${dbi.opcodeHex}`); return null; }
+      if (modR     !== dbi.modR      ) { console.log(`${dbi.name}: ISSUE: ModR ${modR} != ${dbi.modR}`); return null; }
+      if (mm       !== dbi.mm        ) { console.log(`${dbi.name}: ISSUE: MM ${mm} != ${dbi.mm}`); return null; }
+      if (pp       !== dbi.pp        ) { console.log(`${dbi.name}: ISSUE: PP ${pp} != ${dbi.pp}`); return null; }
+      if (encoding !== dbi.encoding  ) { console.log(`${dbi.name}: ISSUE: Enc ${encoding} != ${dbi.encoding}`); return null; }
+      if (access   !== GetAccess(dbi)) { console.log(`${dbi.name}: ISSUE: Access ${access} != ${GetAccess(dbi)}`); return null; }
       if (isVec    != isVecPrefix(dbi.prefix)) { console.log(`${dbi.name}: ISSUE: Vex/Non-Vex mismatch`); return null; }
 
       formatEmit(dbi).forEach((emit) => {
@@ -745,10 +740,10 @@ class X86TableGen extends core.TableGen {
     if (tupleType !== "_")
       cdshl = tupleTypeToCDSHL[tupleType] || "?";
 
-    let ppmm = pp.padEnd(2).replace(/ /g, "0") +
+    var ppmm = pp.padEnd(2).replace(/ /g, "0") +
                mm.padEnd(4).replace(/ /g, "0") ;
 
-    let composed = composeOpCode({
+    var composed = composeOpCode({
       type  : evexCount == dbInsts.length ? "E" : isVec ? "V" : "O",
       prefix: ppmm,
       opcode: opcode,
@@ -809,11 +804,11 @@ class IdEnum extends core.IdEnum {
       return features.filter(function(item) { return /^(AVX|FMA)/.test(item) === avx; });
     }
 
-    let dbInsts = inst.dbInsts;
+    var dbInsts = inst.dbInsts;
     if (!dbInsts.length) return "Invalid instruction id.";
 
-    let text = "";
-    let features = GenUtils.cpuFeaturesOf(dbInsts);
+    var text = "";
+    var features = GenUtils.cpuFeaturesOf(dbInsts);
 
     const priorityFeatures = ["AVX_VNNI", "AVX_VNNI_INT8", "AVX_IFMA", "AVX_NE_CONVERT"];
 
@@ -845,7 +840,7 @@ class IdEnum extends core.IdEnum {
       text += "}";
     }
 
-    let arch = GenUtils.cpuArchOf(dbInsts);
+    var arch = GenUtils.cpuArchOf(dbInsts);
     if (arch)
       text += (text ? " " : "") + arch;
 
@@ -859,7 +854,7 @@ class IdEnum extends core.IdEnum {
 
 class NameTable extends core.NameTable {
   constructor() {
-    super("NameTable", null, true);
+    super("NameTable");
   }
 }
 
@@ -939,7 +934,7 @@ class AltOpcodeTable extends core.Task {
       if (opcode === "0")
         return ["00", 0];
 
-      let opcodeByte = "";
+      var opcodeByte = "";
       const components = normalizeOpcodeComponents(splitOpcodeToComponents(opcode));
 
       if (components[0] === "O_FPU") {
@@ -1011,10 +1006,10 @@ const cmpOp = StringUtils.makePriorityCompare([
 ]);
 
 function StringifyOpArray(a, map) {
-  let s = "";
-  for (let i = 0; i < a.length; i++) {
+  var s = "";
+  for (var i = 0; i < a.length; i++) {
     const op = a[i];
-    let mapped = null;
+    var mapped = null;
     if (typeof map === "function")
       mapped = map(op);
     else if (hasOwn.call(map, op))
@@ -1044,10 +1039,11 @@ class OSignature {
     const af = this.flags;
     const bf = other.flags;
 
-    let hasReg = false;
-    let indexKind = "";
+    var k;
+    var indexKind = "";
+    var hasReg = false;
 
-    for (let k in af) {
+    for (k in af) {
       const index = asmdb.x86.Utils.regIndexOf(k);
       const kind = asmdb.x86.Utils.regKindOf(k);
 
@@ -1059,7 +1055,7 @@ class OSignature {
     }
 
     if (hasReg) {
-      for (let k in bf) {
+      for (k in bf) {
         const index = asmdb.x86.Utils.regIndexOf(k);
         if (index !== null && index !== -1) {
           const kind = asmdb.x86.Utils.regKindOf(k);
@@ -1070,20 +1066,20 @@ class OSignature {
     }
 
     // Can merge...
-    for (let k in bf)
+    for (k in bf)
       af[k] = true;
     return true;
   }
 
   toString() {
-    let s = "";
-    let flags = this.flags;
+    var s = "";
+    var flags = this.flags;
 
-    for (let k in flags) {
+    for (var k in flags) {
       if (k === "read" || k === "write" || k === "implicit" || k === "memDS" || k === "memES")
         continue;
 
-      let x = k;
+      var x = k;
       if (x === "memZAX") x = "zax";
       if (x === "memZDI") x = "zdi";
       if (x === "memZSI") x = "zsi";
@@ -1100,10 +1096,10 @@ class OSignature {
   }
 
   toAsmJitOpData() {
-    let opFlags = Object.create(null);
-    let regMask = 0;
+    var opFlags = Object.create(null);
+    var regMask = 0;
 
-    for (let k in this.flags) {
+    for (var k in this.flags) {
       switch (k) {
         case "r8lo"    : opFlags.RegGpbLo = true; break;
         case "r8hi"    : opFlags.RegGpbHi = true; break;
@@ -1227,7 +1223,7 @@ class ISignature extends Array {
     const len = this.length;
     if (len !== other.length) return false;
 
-    for (let i = 0; i < len; i++)
+    for (var i = 0; i < len; i++)
       if (!this[i].equals(other[i]))
         return false;
 
@@ -1243,9 +1239,8 @@ class ISignature extends Array {
     //   ok = true;
 
     // It's not ok if both signatures have different number of implicit operands.
-    if (!sameArch || this.implicit !== other.implicit) {
+    if (!sameArch || this.implicit !== other.implicit)
       return false;
-    }
 
     // It's not ok if both signatures have different number of operands.
     const len = this.length;
@@ -1255,8 +1250,7 @@ class ISignature extends Array {
     let xorIndex = -1;
     for (let i = 0; i < len; i++) {
       const xor = this[i].xor(other[i]);
-      if (xor === null)
-        continue;
+      if (xor === null) continue;
 
       if (xorIndex === -1)
         xorIndex = i;
@@ -1264,7 +1258,7 @@ class ISignature extends Array {
         return false;
     }
 
-    // Bail if mergeWith at operand-level failed.
+    // Bail if mergeWidth at operand-level failed.
     if (xorIndex === -1 || !this[xorIndex].mergeWith(other[xorIndex]))
       return false;
 
@@ -1277,16 +1271,12 @@ class ISignature extends Array {
 }
 
 class SignatureArray extends Array {
-  constructor(instructionName) {
-    super();
-    this.instructionName = instructionName;
-  }
   // Iterate over all signatures and check which operands don't need explicit memory size.
   calcImplicitMemSize(instName) {
     // Calculates a hash-value (aka key) of all register operands specified by `regOps` in `inst`.
     function keyOf(inst, regOps) {
-      let s = "";
-      for (let i = 0; i < inst.length; i++) {
+      var s = "";
+      for (var i = 0; i < inst.length; i++) {
         const op = inst[i];
         if (regOps & (1 << i))
           s += "{" + ArrayUtils.sorted(ObjectUtils.and(op.flags, RegOp)).join("|") + "}";
@@ -1294,16 +1284,19 @@ class SignatureArray extends Array {
       return s || "?";
     }
 
-    for (let aIndex = 0; aIndex < this.length; aIndex++) {
+    var i;
+    var aIndex, bIndex;
+
+    for (aIndex = 0; aIndex < this.length; aIndex++) {
       const aInst = this[aIndex];
       const len = aInst.length;
 
-      let memOp = "";
-      let memPos = -1;
-      let regOps = 0;
+      var memOp = "";
+      var memPos = -1;
+      var regOps = 0;
 
       // Check if this instruction signature has a memory operand of explicit size.
-      for (let i = 0; i < len; i++) {
+      for (i = 0; i < len; i++) {
         const aOp = aInst[i];
         const mem = ObjectUtils.findKey(aOp.flags, MemOp);
 
@@ -1335,12 +1328,12 @@ class SignatureArray extends Array {
       const diffSizeSet = [];
       const diffSizeHash = Object.create(null);
 
-      for (let bIndex = 0; bIndex < this.length; bIndex++) {
+      for (bIndex = 0; bIndex < this.length; bIndex++) {
         const bInst = this[bIndex];
         if (aIndex === bIndex || len !== bInst.length) continue;
 
-        let hasMatch = 1;
-        for (let i = 0; i < len; i++) {
+        var hasMatch = 1;
+        for (i = 0; i < len; i++) {
           if (i === memPos) continue;
 
           const reg = ObjectUtils.hasAny(bInst[i].flags, RegOp);
@@ -1375,14 +1368,14 @@ class SignatureArray extends Array {
       //
       //   B) The memory operand has implicit-size if `diffSizeSet` contains different
       //      register signatures than `sameSizeSet`.
-      let implicit = true;
+      var implicit = true;
 
       if (!diffSizeSet.length) {
         // Case A:
       }
       else {
         // Case B: Find collisions in `sameSizeSet` and `diffSizeSet`.
-        for (let bIndex = 0; bIndex < sameSizeSet.length; bIndex++) {
+        for (bIndex = 0; bIndex < sameSizeSet.length; bIndex++) {
           const bInst = sameSizeSet[bIndex];
           const key = keyOf(bInst, regOps);
 
@@ -1406,26 +1399,25 @@ class SignatureArray extends Array {
       }
 
       // Patch all instructions to accept implicit-size memory operand.
-      for (let bIndex = 0; bIndex < sameSizeSet.length; bIndex++) {
+      for (bIndex = 0; bIndex < sameSizeSet.length; bIndex++) {
         const bInst = sameSizeSet[bIndex];
         if (implicit) {
           bInst[memPos].flags.mem = true;
         }
 
-        if (!implicit) {
+        if (!implicit)
           DEBUG(`${this.name}: Explicit: ${bInst}`);
-        }
       }
     }
   }
 
   compact() {
-    let didSomething = true;
+    var didSomething = true;
     while (didSomething) {
       didSomething = false;
-      for (let i = 0; i < this.length; i++) {
-        let row = this[i];
-        let j = i + 1;
+      for (var i = 0; i < this.length; i++) {
+        var row = this[i];
+        var j = i + 1;
         while (j < this.length) {
           if (row.mergeWith(this[j])) {
             this.splice(j, 1);
@@ -1439,7 +1431,7 @@ class SignatureArray extends Array {
   }
 
   toString() {
-    return `[${this.join(",\n")}]`;
+    return `[${this.join(", ")}]`;
   }
 }
 
@@ -1475,12 +1467,12 @@ class InstSignatureTable extends core.Task {
       const indexes = iSignatureMap[rows[0].data];
       if (indexes === undefined) return -1;
 
-      for (let i = 0; i < indexes.length; i++) {
+      for (var i = 0; i < indexes.length; i++) {
         const index = indexes[i];
         if (index + len > iSignatureArr.length) continue;
 
-        let ok = true;
-        for (let j = 0; j < len; j++) {
+        var ok = true;
+        for (var j = 0; j < len; j++) {
           if (iSignatureArr[index + j].data !== rows[j].data) {
             ok = false;
             break;
@@ -1497,7 +1489,7 @@ class InstSignatureTable extends core.Task {
     function indexSignatures(signatures) {
       const result = iSignatureArr.length;
 
-      for (let i = 0; i < signatures.length; i++) {
+      for (var i = 0; i < signatures.length; i++) {
         const signature = signatures[i];
         const idx = iSignatureArr.length;
 
@@ -1511,21 +1503,21 @@ class InstSignatureTable extends core.Task {
       return result;
     }
 
-    for (let len = this.maxOpRows; len >= 0; len--) {
+    for (var len = this.maxOpRows; len >= 0; len--) {
       insts.forEach((inst) => {
         const signatures = inst.signatures;
         if (signatures.length === len) {
           const signatureEntries = [];
-          for (let j = 0; j < len; j++) {
+          for (var j = 0; j < len; j++) {
             const signature = signatures[j];
 
-            let signatureEntry = `ROW(${signature.length}, ${signature.x86 ? 1 : 0}, ${signature.x64 ? 1 : 0}, ${signature.implicit}`;
-            let signatureComment = signature.toString();
+            var signatureEntry = `ROW(${signature.length}, ${signature.x86 ? 1 : 0}, ${signature.x64 ? 1 : 0}, ${signature.implicit}`;
+            var signatureComment = signature.toString();
 
-            let x = 0;
+            var x = 0;
             while (x < signature.length) {
               const h = signature[x].toAsmJitOpData();
-              let index = -1;
+              var index = -1;
               if (!hasOwn.call(oSignatureMap, h)) {
                 index = oSignatureArr.length;
                 oSignatureMap[h] = index;
@@ -1548,8 +1540,8 @@ class InstSignatureTable extends core.Task {
             signatureEntries.push({ data: signatureEntry, comment: signatureComment, refs: 0 });
           }
 
-          let count = signatureEntries.length;
-          let index = findSignaturesIndex(signatureEntries);
+          var count = signatureEntries.length;
+          var index = findSignaturesIndex(signatureEntries);
 
           if (index === -1)
             index = indexSignatures(signatureEntries);
@@ -1561,7 +1553,7 @@ class InstSignatureTable extends core.Task {
       });
     }
 
-    let s = `#define ROW(count, x86, x64, implicit, o0, o1, o2, o3, o4, o5)       \\\n` +
+    var s = `#define ROW(count, x86, x64, implicit, o0, o1, o2, o3, o4, o5)       \\\n` +
             `  { count, uint8_t(x86 ? uint8_t(InstDB::Mode::kX86) : uint8_t(0)) | \\\n` +
             `                  (x64 ? uint8_t(InstDB::Mode::kX64) : uint8_t(0)) , \\\n` +
             `    implicit,                                                        \\\n` +
@@ -1581,9 +1573,9 @@ class InstSignatureTable extends core.Task {
 
   makeSignatures(dbInsts) {
     const instName = dbInsts.length ? dbInsts[0].name : "";
-    const signatures = new SignatureArray(instName);
+    const signatures = new SignatureArray();
 
-    for (let i = 0; i < dbInsts.length; i++) {
+    for (var i = 0; i < dbInsts.length; i++) {
       const inst = dbInsts[i];
       const ops = inst.operands;
 
@@ -1606,21 +1598,19 @@ class InstSignatureTable extends core.Task {
       //   1a. mov reg, reg
       //   1b. mov reg, mem
       //   2b. mov mem, reg
-      let modrmCount = 1;
-      for (let modrm = 0; modrm < modrmCount; modrm++) {
-        let row = new ISignature(inst.name);
-
+      var modrmCount = 1;
+      for (var modrm = 0; modrm < modrmCount; modrm++) {
+        var row = new ISignature(inst.name);
         row.x86 = (inst.arch === "ANY" || inst.arch === "X86");
         row.x64 = (inst.arch === "ANY" || inst.arch === "X64");
 
-        let j;
-        for (j = 0; j < ops.length; j++) {
-          let iop = ops[j];
+        for (var j = 0; j < ops.length; j++) {
+          var iop = ops[j];
 
-          let reg = iop.reg;
-          let mem = iop.mem;
-          let imm = iop.imm;
-          let rel = iop.rel;
+          var reg = iop.reg;
+          var mem = iop.mem;
+          var imm = iop.imm;
+          var rel = iop.rel;
 
           // Skip all instructions having implicit `imm` operand of `1`.
           if (iop.immValue !== null)
@@ -1741,9 +1731,8 @@ class InstSignatureTable extends core.Task {
         }
 
         // Not equal if we terminated the loop.
-        if (j === ops.length) {
+        if (j === ops.length)
           signatures.push(row);
-        }
       }
     }
 
@@ -1776,10 +1765,10 @@ class AdditionalInfoTable extends core.Task {
     insts.forEach((inst) => {
       const dbInsts = inst.dbInsts;
 
-      let features = GenUtils.cpuFeaturesOf(dbInsts).map(function(f) { return `EXT(${f})`; }).join(", ");
+      var features = GenUtils.cpuFeaturesOf(dbInsts).map(function(f) { return `EXT(${f})`; }).join(", ");
       if (!features) features = "0";
 
-      let [r, w] = this.rwFlagsOf(dbInsts);
+      var [r, w] = this.rwFlagsOf(dbInsts);
       const rData = r.map(function(flag) { return `FLAG(${flag})`; }).join(" | ") || "0";
       const wData = w.map(function(flag) { return `FLAG(${flag})`; }).join(" | ") || "0";
       const instFlags = Object.create(null);
@@ -1826,7 +1815,7 @@ class AdditionalInfoTable extends core.Task {
       inst.additionalInfoIndex = additionaInfoTable.addIndexed(`{ ${instFlagsIndex}, ${rwInfoIndex}, { ${features} } }`);
     });
 
-    let s = `#define EXT(VAL) uint32_t(CpuFeatures::X86::k##VAL)\n` +
+    var s = `#define EXT(VAL) uint32_t(CpuFeatures::X86::k##VAL)\n` +
             `const InstDB::AdditionalInfo InstDB::_additionalInfoTable[] = {\n${StringUtils.format(additionaInfoTable, kIndent, true)}\n};\n` +
             `#undef EXT\n` +
             `\n` +
@@ -1844,7 +1833,7 @@ class AdditionalInfoTable extends core.Task {
     const r = Object.create(null);
     const w = Object.create(null);
 
-    for (let i = 0; i < dbInsts.length; i++) {
+    for (var i = 0; i < dbInsts.length; i++) {
       const dbInst = dbInsts[i];
 
       // Omit special cases, this is handled well in C++ code.
@@ -1859,8 +1848,8 @@ class AdditionalInfoTable extends core.Task {
       if (dbInst.name === "mov")
         continue;
 
-      for (let reg in regs) {
-        let flag = "";
+      for (var reg in regs) {
+        var flag = "";
         switch (reg) {
           case "CF": flag = "CF"; break;
           case "OF": flag = "OF"; break;
@@ -2011,13 +2000,13 @@ class InstRWInfoTable extends core.Task {
       const rwInfoArray = [this.rwInfo(inst, o2Insts), this.rwInfo(inst, oxInsts)];
       const rmInfoArray = [this.rmInfo(inst, o2Insts), this.rmInfo(inst, oxInsts)];
 
-      for (let i = 0; i < 2; i++) {
+      for (var i = 0; i < 2; i++) {
         const rwInfo = rwInfoArray[i];
         const rmInfo = rmInfoArray[i];
 
         const rwOps = rwInfo.rwOps;
         const rwOpsIndex = [];
-        for (let j = 0; j < rwOps.length; j++) {
+        for (var j = 0; j < rwOps.length; j++) {
           const op = rwOps[j];
           if (!op) {
             rwOpsIndex.push(this.opInfoTable.addIndexed(noOpInfo));
@@ -2077,7 +2066,7 @@ class InstRWInfoTable extends core.Task {
       }
     });
 
-    let s = "";
+    var s = "";
     s += "const uint8_t InstDB::rwInfoIndexA[Inst::_kIdCount] = {\n" + StringUtils.format(this.rwInfoIndexA, kIndent, -1) + "\n};\n";
     s += "\n";
     s += "const uint8_t InstDB::rwInfoIndexB[Inst::_kIdCount] = {\n" + StringUtils.format(this.rwInfoIndexB, kIndent, -1) + "\n};\n";
@@ -2102,17 +2091,17 @@ class InstRWInfoTable extends core.Task {
 
   byteMaskFromBitRanges(ranges) {
     const arr = [];
-    for (let i = 0; i < 64; i++)
+    for (var i = 0; i < 64; i++)
       arr.push(0);
 
-    for (let i = 0; i < ranges.length; i++) {
+    for (var i = 0; i < ranges.length; i++) {
       const start = ranges[i].start;
       const end = ranges[i].end;
 
       if (start < 0)
         continue;
 
-      for (let j = start; j <= end; j++) {
+      for (var j = start; j <= end; j++) {
         const bytePos = j >> 3;
         if (bytePos < 0 || bytePos >= arr.length)
           FATAL(`Range ${start}:${end} cannot be used to create a byte-mask`);
@@ -2120,8 +2109,8 @@ class InstRWInfoTable extends core.Task {
       }
     }
 
-    let s = "0x";
-    for (let i = arr.length - 4; i >= 0; i -= 4) {
+    var s = "0x";
+    for (var i = arr.length - 4; i >= 0; i -= 4) {
       const value = (arr[i + 3] << 3) | (arr[i + 2] << 2) | (arr[i + 1] << 1) | arr[i];
       s += value.toString(16).toUpperCase();
     }
@@ -2153,18 +2142,18 @@ class InstRWInfoTable extends core.Task {
     }
 
     function queryRwGeneric(dbInsts, step) {
-      let rwOps = nullOps();
-      for (let i = 0; i < dbInsts.length; i++) {
+      var rwOps = nullOps();
+      for (var i = 0; i < dbInsts.length; i++) {
         const dbInst = dbInsts[i];
         const operands = dbInst.operands;
 
-        for (let j = 0; j < operands.length; j++) {
+        for (var j = 0; j < operands.length; j++) {
           const op = operands[j];
           if (!op.isRegOrMem())
             continue;
 
           const opSize = op.isReg() ? op.regSize : op.memSize;
-          let d = {
+          var d = {
             access: op.read && op.write ? "X" : op.read ? "R" : op.write ? "W" : "?",
             clc: 0,
             flags: {},
@@ -2203,7 +2192,7 @@ class InstRWInfoTable extends core.Task {
           if (op.regIndexRel)
             d.flags.Consecutive = true;
 
-          for (let k in self.rwOpFlagsForInstruction(asmInst.name, j))
+          for (var k in self.rwOpFlagsForInstruction(asmInst.name, j))
             d.flags[k] = true;
 
           if ((step === -1 || step === j) || op.rwxIndex !== 0 || op.rwxWidth !== opSize) {
@@ -2245,17 +2234,17 @@ class InstRWInfoTable extends core.Task {
     }
 
     function queryRwByData(dbInsts, rwOpsArray) {
-      for (let i = 0; i < dbInsts.length; i++) {
+      for (var i = 0; i < dbInsts.length; i++) {
         const dbInst = dbInsts[i];
         const operands = dbInst.operands;
         const rwOps = nullOps();
 
-        for (let j = 0; j < operands.length; j++) {
+        for (var j = 0; j < operands.length; j++) {
           rwOps[j] = makeRwFromOp(operands[j])
         }
 
-        let match = 0;
-        for (let j = 0; j < rwOpsArray.length; j++)
+        var match = 0;
+        for (var j = 0; j < rwOpsArray.length; j++)
           match |= ObjectUtils.equals(rwOps, rwOpsArray[j]);
 
         if (!match)
@@ -2267,12 +2256,12 @@ class InstRWInfoTable extends core.Task {
 
     function dumpRwToData(dbInsts) {
       const out = [];
-      for (let i = 0; i < dbInsts.length; i++) {
+      for (var i = 0; i < dbInsts.length; i++) {
         const dbInst = dbInsts[i];
         const operands = dbInst.operands;
         const rwOps = nullOps();
 
-        for (let j = 0; j < operands.length; j++)
+        for (var j = 0; j < operands.length; j++)
           rwOps[j] = makeRwFromOp(operands[j])
 
         if (ArrayUtils.deepIndexOf(out, rwOps) !== -1)
@@ -2289,18 +2278,18 @@ class InstRWInfoTable extends core.Task {
       return { category: this.rwCategoryByName[name], rwOps: nullOps() };
 
     // Generic rules.
-    for (let i = -1; i <= 6; i++) {
+    for (var i = -1; i <= 6; i++) {
       const rwInfo = queryRwGeneric(dbInsts, i);
       if (rwInfo)
         return rwInfo;
     }
 
     // Specific rules.
-    for (let k in this.rwCategoryByData)
+    for (var k in this.rwCategoryByData)
       if (queryRwByData(dbInsts, this.rwCategoryByData[k]))
         return { category: k, rwOps: nullOps() };
 
-    // FATAL: Missing data to categorize this instruction.
+    // FATALURE: Missing data to categorize this instruction.
     if (name) {
       const items = dumpRwToData(dbInsts)
       console.log(`RW: ${dbInsts.length ? dbInsts[0].name : ""}:`);
@@ -2356,16 +2345,16 @@ class InstRWInfoTable extends core.Task {
   }
 
   rmReplaceableCategory(dbInsts) {
-    let category = null;
+    var category = null;
 
-    for (let i = 0; i < dbInsts.length; i++) {
+    for (var i = 0; i < dbInsts.length; i++) {
       const dbInst = dbInsts[i];
       const operands = dbInst.operands;
 
-      let rs = -1;
-      let ms = -1;
+      var rs = -1;
+      var ms = -1;
 
-      for (let j = 0; j < operands.length; j++) {
+      for (var j = 0; j < operands.length; j++) {
         const op = operands[j];
         if (op.isMem())
           ms = op.memSize;
@@ -2373,7 +2362,7 @@ class InstRWInfoTable extends core.Task {
           rs = Math.max(rs, op.regSize);
       }
 
-      let c = (rs === -1    ) ? "None"    :
+      var c = (rs === -1    ) ? "None"    :
               (ms === -1    ) ? "None"    :
               (ms === rs    ) ? "Fixed"   :
               (ms === rs / 2) ? "Half"    :
@@ -2402,9 +2391,9 @@ class InstRWInfoTable extends core.Task {
 
   rmReplaceableIndexes(dbInsts) {
     function maskOf(inst, fn) {
-      let m = 0;
-      let operands = inst.operands;
-      for (let i = 0; i < operands.length; i++)
+      var m = 0;
+      var operands = inst.operands;
+      for (var i = 0; i < operands.length; i++)
         if (fn(operands[i]))
           m |= (1 << i);
       return m;
@@ -2413,19 +2402,19 @@ class InstRWInfoTable extends core.Task {
     function getRegIndexes(inst) { return maskOf(inst, function(op) { return op.isReg(); }); };
     function getMemIndexes(inst) { return maskOf(inst, function(op) { return op.isMem(); }); };
 
-    let mask = 0;
+    var mask = 0;
 
-    for (let i = 0; i < dbInsts.length; i++) {
+    for (var i = 0; i < dbInsts.length; i++) {
       const dbInst = dbInsts[i];
 
-      let mi = getMemIndexes(dbInst);
-      let ri = getRegIndexes(dbInst) & ~mi;
+      var mi = getMemIndexes(dbInst);
+      var ri = getRegIndexes(dbInst) & ~mi;
 
       if (!mi)
         continue;
 
       const match = dbInsts.some((inst) => {
-        let ti = getRegIndexes(inst);
+        var ti = getRegIndexes(inst);
         return ((ri & ti) === ri && (mi & ti) === mi);
       });
 
@@ -2438,13 +2427,13 @@ class InstRWInfoTable extends core.Task {
   }
 
   rmFixedSize(insts) {
-    let savedOp = null;
+    var savedOp = null;
 
-    for (let i = 0; i < insts.length; i++) {
+    for (var i = 0; i < insts.length; i++) {
       const inst = insts[i];
       const operands = inst.operands;
 
-      for (let j = 0; j < operands.length; j++) {
+      for (var j = 0; j < operands.length; j++) {
         const op = operands[j];
         if (op.mem) {
           if (savedOp && savedOp.mem !== op.mem)
@@ -2458,11 +2447,11 @@ class InstRWInfoTable extends core.Task {
   }
 
   rmIsConsistent(insts) {
-    let hasMem = 0;
-    for (let i = 0; i < insts.length; i++) {
+    var hasMem = 0;
+    for (var i = 0; i < insts.length; i++) {
       const inst = insts[i];
       const operands = inst.operands;
-      for (let j = 0; j < operands.length; j++) {
+      for (var j = 0; j < operands.length; j++) {
         const op = operands[j];
         if (op.mem) {
           hasMem = 1;
@@ -2481,16 +2470,16 @@ class InstRWInfoTable extends core.Task {
       const memMap = {};
       const immMap = {};
 
-      for (let i = 0; i < dbInsts.length; i++) {
+      for (var i = 0; i < dbInsts.length; i++) {
         const dbInst = dbInsts[i];
         const operands = dbInst.operands;
 
-        let memStr = "";
-        let immStr = "";
-        let hasMem = false;
-        let hasImm = false;
+        var memStr = "";
+        var immStr = "";
+        var hasMem = false;
+        var hasImm = false;
 
-        for (let j = 0; j < operands.length; j++) {
+        for (var j = 0; j < operands.length; j++) {
           const op = operands[j];
           if (j) {
             memStr += ", ";
@@ -2618,7 +2607,7 @@ class InstCommonTable extends core.Task {
       inst.commonInfoIndex = table.addIndexed(row);
     });
 
-    let s = `#define F(VAL) uint32_t(InstDB::InstFlags::k##VAL)\n` +
+    var s = `#define F(VAL) uint32_t(InstDB::InstFlags::k##VAL)\n` +
             `#define X(VAL) uint32_t(InstDB::Avx512Flags::k##VAL)\n` +
             `#define CONTROL_FLOW(VAL) uint8_t(InstControlFlow::k##VAL)\n` +
             `#define SAME_REG_HINT(VAL) uint8_t(InstSameRegHint::k##VAL)\n` +

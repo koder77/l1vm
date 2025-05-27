@@ -9,20 +9,51 @@
 #include <asmjit/x86.h>
 #endif
 
-#if !defined(ASMJIT_NO_AARCH64)
-#include <asmjit/a64.h>
-#endif
-
 #include "asmjitutils.h"
 #include "broken.h"
 
 using namespace asmjit;
 
-#define DUMP_TYPE(...) \
-  printf("  %-26s: %u\n", #__VA_ARGS__, uint32_t(sizeof(__VA_ARGS__)))
+static void dumpCpu(void) noexcept {
+  const CpuInfo& cpu = CpuInfo::host();
 
-static void printTypeSizes(void) noexcept {
-  printf("Size of C++ types:\n");
+  // CPU Information
+  // ---------------
+
+  INFO("CPU Info:");
+  INFO("  Vendor                  : %s", cpu.vendor());
+  INFO("  Brand                   : %s", cpu.brand());
+  INFO("  Model ID                : %u", cpu.modelId());
+  INFO("  Brand ID                : %u", cpu.brandId());
+  INFO("  Family ID               : %u", cpu.familyId());
+  INFO("  Stepping                : %u", cpu.stepping());
+  INFO("  Processor Type          : %u", cpu.processorType());
+  INFO("  Max logical Processors  : %u", cpu.maxLogicalProcessors());
+  INFO("  Cache-Line Size         : %u", cpu.cacheLineSize());
+  INFO("  HW-Thread Count         : %u", cpu.hwThreadCount());
+  INFO("");
+
+  // CPU Features
+  // ------------
+
+#ifndef ASMJIT_NO_LOGGING
+  INFO("CPU Features:");
+  CpuFeatures::Iterator it(cpu.features().iterator());
+  while (it.hasNext()) {
+    uint32_t featureId = uint32_t(it.next());
+    StringTmp<64> featureString;
+    Formatter::formatFeature(featureString, cpu.arch(), featureId);
+    INFO("  %s\n", featureString.data());
+  };
+  INFO("");
+#endif // !ASMJIT_NO_LOGGING
+}
+
+#define DUMP_TYPE(...) \
+  INFO("  %-26s: %u", #__VA_ARGS__, uint32_t(sizeof(__VA_ARGS__)))
+
+static void dumpSizeOf(void) noexcept {
+  INFO("Size of C++ types:");
     DUMP_TYPE(int8_t);
     DUMP_TYPE(int16_t);
     DUMP_TYPE(int32_t);
@@ -34,9 +65,9 @@ static void printTypeSizes(void) noexcept {
     DUMP_TYPE(float);
     DUMP_TYPE(double);
     DUMP_TYPE(void*);
-  printf("\n");
+  INFO("");
 
-  printf("Size of base classes:\n");
+  INFO("Size of base classes:");
     DUMP_TYPE(BaseAssembler);
     DUMP_TYPE(BaseEmitter);
     DUMP_TYPE(CodeBuffer);
@@ -54,27 +85,27 @@ static void printTypeSizes(void) noexcept {
     DUMP_TYPE(ZoneHash<ZoneHashNode>);
     DUMP_TYPE(ZoneList<int>);
     DUMP_TYPE(ZoneVector<int>);
-  printf("\n");
+  INFO("");
 
-  printf("Size of operand classes:\n");
+  INFO("Size of operand classes:");
     DUMP_TYPE(Operand);
     DUMP_TYPE(BaseReg);
     DUMP_TYPE(BaseMem);
     DUMP_TYPE(Imm);
     DUMP_TYPE(Label);
-  printf("\n");
+  INFO("");
 
-  printf("Size of function classes:\n");
+  INFO("Size of function classes:");
     DUMP_TYPE(CallConv);
     DUMP_TYPE(FuncFrame);
     DUMP_TYPE(FuncValue);
     DUMP_TYPE(FuncDetail);
     DUMP_TYPE(FuncSignature);
     DUMP_TYPE(FuncArgsAssignment);
-  printf("\n");
+  INFO("");
 
 #if !defined(ASMJIT_NO_BUILDER)
-  printf("Size of builder classes:\n");
+  INFO("Size of builder classes:");
     DUMP_TYPE(BaseBuilder);
     DUMP_TYPE(BaseNode);
     DUMP_TYPE(InstNode);
@@ -87,20 +118,20 @@ static void printTypeSizes(void) noexcept {
     DUMP_TYPE(ConstPoolNode);
     DUMP_TYPE(CommentNode);
     DUMP_TYPE(SentinelNode);
-  printf("\n");
+  INFO("");
 #endif
 
 #if !defined(ASMJIT_NO_COMPILER)
-  printf("Size of compiler classes:\n");
+  INFO("Size of compiler classes:");
     DUMP_TYPE(BaseCompiler);
     DUMP_TYPE(FuncNode);
     DUMP_TYPE(FuncRetNode);
     DUMP_TYPE(InvokeNode);
-  printf("\n");
+  INFO("");
 #endif
 
 #if !defined(ASMJIT_NO_X86)
-  printf("Size of x86-specific classes:\n");
+  INFO("Size of x86-specific classes:");
     DUMP_TYPE(x86::Assembler);
     #if !defined(ASMJIT_NO_BUILDER)
     DUMP_TYPE(x86::Builder);
@@ -112,28 +143,15 @@ static void printTypeSizes(void) noexcept {
     DUMP_TYPE(x86::InstDB::CommonInfo);
     DUMP_TYPE(x86::InstDB::OpSignature);
     DUMP_TYPE(x86::InstDB::InstSignature);
-  printf("\n");
-#endif
-
-#if !defined(ASMJIT_NO_AARCH64)
-  printf("Size of aarch64-specific classes:\n");
-    DUMP_TYPE(a64::Assembler);
-    #if !defined(ASMJIT_NO_BUILDER)
-    DUMP_TYPE(a64::Builder);
-    #endif
-    #if !defined(ASMJIT_NO_COMPILER)
-    DUMP_TYPE(a64::Compiler);
-    #endif
-  printf("\n");
+  INFO("");
 #endif
 }
 
 #undef DUMP_TYPE
 
 static void onBeforeRun(void) noexcept {
-  printBuildOptions();
-  printCpuInfo();
-  printTypeSizes();
+  dumpCpu();
+  dumpSizeOf();
 }
 
 int main(int argc, const char* argv[]) {
@@ -143,7 +161,7 @@ int main(int argc, const char* argv[]) {
   const char buildType[] = "Release";
 #endif
 
-  printf("AsmJit Unit-Test v%u.%u.%u [Arch=%s] [Mode=%s]\n\n",
+  INFO("AsmJit Unit-Test v%u.%u.%u [Arch=%s] [Mode=%s]\n\n",
     unsigned((ASMJIT_LIBRARY_VERSION >> 16)       ),
     unsigned((ASMJIT_LIBRARY_VERSION >>  8) & 0xFF),
     unsigned((ASMJIT_LIBRARY_VERSION      ) & 0xFF),

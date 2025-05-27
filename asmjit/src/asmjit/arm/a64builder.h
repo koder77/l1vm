@@ -23,7 +23,7 @@ class ASMJIT_VIRTAPI Builder
     public EmitterExplicitT<Builder> {
 public:
   ASMJIT_NONCOPYABLE(Builder)
-  using Base = BaseBuilder;
+  typedef BaseBuilder Base;
 
   //! \name Construction & Destruction
   //! \{

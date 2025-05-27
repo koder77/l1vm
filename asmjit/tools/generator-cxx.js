@@ -9,7 +9,7 @@ const FATAL = commons.FATAL;
 
 // Utilities to convert primitives to C++ code.
 class Utils {
-  static toHexRaw(val, pad) {
+  static toHex(val, pad) {
     if (val < 0)
       val = 0xFFFFFFFF + val + 1;
 
@@ -17,11 +17,7 @@ class Utils {
     if (pad != null && s.length < pad)
       s = "0".repeat(pad - s.length) + s;
 
-    return s.toUpperCase();
-  }
-
-  static toHex(val, pad) {
-    return "0x" + Utils.toHexRaw(val, pad);
+    return "0x" + s.toUpperCase();
   }
 
   static capitalize(s) {

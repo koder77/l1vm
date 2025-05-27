@@ -66,7 +66,6 @@ public:
     //! PhysReg to WorkReg mapping.
     uint32_t workIds[1 /* ... */];
 
-    [[nodiscard]]
     static ASMJIT_INLINE_NODEBUG size_t sizeOf(size_t count) noexcept {
       return sizeof(PhysToWorkMap) - sizeof(uint32_t) + count * sizeof(uint32_t);
     }
@@ -75,9 +74,8 @@ public:
       assigned.reset();
       dirty.reset();
 
-      for (size_t i = 0; i < count; i++) {
+      for (size_t i = 0; i < count; i++)
         workIds[i] = kWorkNone;
-      }
     }
 
     inline void copyFrom(const PhysToWorkMap* other, size_t count) noexcept {
@@ -96,22 +94,19 @@ public:
     //! WorkReg to PhysReg mapping
     uint8_t physIds[1 /* ... */];
 
-    [[nodiscard]]
     static inline size_t sizeOf(size_t count) noexcept {
       return size_t(count) * sizeof(uint8_t);
     }
 
     inline void reset(size_t count) noexcept {
-      for (size_t i = 0; i < count; i++) {
+      for (size_t i = 0; i < count; i++)
         physIds[i] = kPhysNone;
-      }
     }
 
     inline void copyFrom(const WorkToPhysMap* other, size_t count) noexcept {
       size_t size = sizeOf(count);
-      if (ASMJIT_LIKELY(size)) {
+      if (ASMJIT_LIKELY(size))
         memcpy(this, other, size);
-      }
     }
   };
 
@@ -137,7 +132,7 @@ public:
     resetMaps();
   }
 
-  ASMJIT_INLINE void initLayout(const RARegCount& physCount, const RAWorkRegs& workRegs) noexcept {
+  ASMJIT_FORCE_INLINE void initLayout(const RARegCount& physCount, const RAWorkRegs& workRegs) noexcept {
     // Layout must be initialized before data.
     ASMJIT_ASSERT(_physToWorkMap == nullptr);
     ASMJIT_ASSERT(_workToPhysMap == nullptr);
@@ -150,15 +145,14 @@ public:
     _layout.workRegs = &workRegs;
   }
 
-  ASMJIT_INLINE void initMaps(PhysToWorkMap* physToWorkMap, WorkToPhysMap* workToPhysMap) noexcept {
+  ASMJIT_FORCE_INLINE void initMaps(PhysToWorkMap* physToWorkMap, WorkToPhysMap* workToPhysMap) noexcept {
     _physToWorkMap = physToWorkMap;
     _workToPhysMap = workToPhysMap;
-    for (RegGroup group : RegGroupVirtValues{}) {
+    for (RegGroup group : RegGroupVirtValues{})
       _physToWorkIds[group] = physToWorkMap->workIds + _layout.physIndex.get(group);
-    }
   }
 
-  ASMJIT_INLINE void resetMaps() noexcept {
+  ASMJIT_FORCE_INLINE void resetMaps() noexcept {
     _physToWorkMap = nullptr;
     _workToPhysMap = nullptr;
     _physToWorkIds.fill(nullptr);
@@ -169,31 +163,17 @@ public:
   //! \name Accessors
   //! \{
 
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG PhysToWorkMap* physToWorkMap() const noexcept { return _physToWorkMap; }
-
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG WorkToPhysMap* workToPhysMap() const noexcept { return _workToPhysMap; }
 
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG RARegMask& assigned() noexcept { return _physToWorkMap->assigned; }
-
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG const RARegMask& assigned() const noexcept { return _physToWorkMap->assigned; }
-
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG uint32_t assigned(RegGroup group) const noexcept { return _physToWorkMap->assigned[group]; }
 
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG RARegMask& dirty() noexcept { return _physToWorkMap->dirty; }
-
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG const RARegMask& dirty() const noexcept { return _physToWorkMap->dirty; }
-
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG RegMask dirty(RegGroup group) const noexcept { return _physToWorkMap->dirty[group]; }
 
-  [[nodiscard]]
   inline uint32_t workToPhysId(RegGroup group, uint32_t workId) const noexcept {
     DebugUtils::unused(group);
     ASMJIT_ASSERT(workId != kWorkNone);
@@ -201,19 +181,16 @@ public:
     return _workToPhysMap->physIds[workId];
   }
 
-  [[nodiscard]]
   inline uint32_t physToWorkId(RegGroup group, uint32_t physId) const noexcept {
     ASMJIT_ASSERT(physId < Globals::kMaxPhysRegs);
     return _physToWorkIds[group][physId];
   }
 
-  [[nodiscard]]
   inline bool isPhysAssigned(RegGroup group, uint32_t physId) const noexcept {
     ASMJIT_ASSERT(physId < Globals::kMaxPhysRegs);
     return Support::bitTest(_physToWorkMap->assigned[group], physId);
   }
 
-  [[nodiscard]]
   inline bool isPhysDirty(RegGroup group, uint32_t physId) const noexcept {
     ASMJIT_ASSERT(physId < Globals::kMaxPhysRegs);
     return Support::bitTest(_physToWorkMap->dirty[group], physId);
@@ -327,7 +304,7 @@ public:
   //! \name Utilities
   //! \{
 
-  ASMJIT_INLINE void swap(RAAssignment& other) noexcept {
+  ASMJIT_FORCE_INLINE void swap(RAAssignment& other) noexcept {
     std::swap(_workToPhysMap, other._workToPhysMap);
     std::swap(_physToWorkMap, other._physToWorkMap);
     _physToWorkIds.swap(other._physToWorkIds);
@@ -365,7 +342,6 @@ public:
   }
 
   // Not really useful outside of debugging.
-  [[nodiscard]]
   bool equals(const RAAssignment& other) const noexcept {
     // Layout should always match.
     if (_layout.physIndex != other._layout.physIndex ||
@@ -381,17 +357,15 @@ public:
     for (uint32_t physId = 0; physId < physTotal; physId++) {
       uint32_t thisWorkId = _physToWorkMap->workIds[physId];
       uint32_t otherWorkId = other._physToWorkMap->workIds[physId];
-      if (thisWorkId != otherWorkId) {
+      if (thisWorkId != otherWorkId)
         return false;
-      }
     }
 
     for (uint32_t workId = 0; workId < workCount; workId++) {
       uint32_t thisPhysId = _workToPhysMap->physIds[workId];
       uint32_t otherPhysId = other._workToPhysMap->physIds[workId];
-      if (thisPhysId != otherPhysId) {
+      if (thisPhysId != otherPhysId)
         return false;
-      }
     }
 
     if (_physToWorkMap->assigned != other._physToWorkMap->assigned ||

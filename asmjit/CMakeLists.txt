@@ -1,15 +1,37 @@
-cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
-# Don't create a project if it was already created by another CMakeLists.txt. This makes
-# it possible to support both add_subdirectory() and include() ways of using AsmJit as a
-# dependency.
+cmake_policy(PUSH)
+
+if (POLICY CMP0063)
+  cmake_policy(SET CMP0063 NEW) # Honor visibility properties.
+endif()
+
+if (POLICY CMP0092)
+  cmake_policy(SET CMP0092 NEW) # Don't add -W3 warning level by default.
+endif()
+
+# Don't create a project if it was already created by another CMakeLists.txt.
+# This allows one library to embed another library without making a collision.
 if (NOT CMAKE_PROJECT_NAME OR "${CMAKE_PROJECT_NAME}" STREQUAL "asmjit")
   project(asmjit CXX)
 endif()
 
 include(CheckCXXCompilerFlag)
-include(CheckCXXSourceCompiles)
+INCLUDE(CheckCXXSourceCompiles)
 include(GNUInstallDirs)
+
+# AsmJit - Deprecated
+# ===================
+
+if (DEFINED ASMJIT_BUILD_EMBED)
+  message(DEPRECATION "ASMJIT_BUILD_EMBED is deprecated, use ASMJIT_EMBED")
+  set(ASMJIT_EMBED "${ASMJIT_BUILD_EMBED}")
+endif()
+
+if (DEFINED ASMJIT_BUILD_STATIC)
+  message(DEPRECATION "ASMJIT_BUILD_STATIC is deprecated, use ASMJIT_STATIC")
+  set(ASMJIT_STATIC "${ASMJIT_BUILD_STATIC}")
+endif()
 
 # AsmJit - Configuration - Build
 # ==============================
@@ -190,14 +212,18 @@ function(asmjit_add_target target target_type)
     add_library(${target} ${target_type} ${X_SOURCES})
   endif()
 
-  set_target_properties(${target}
-    PROPERTIES
-      DEFINE_SYMBOL ""
-      CXX_VISIBILITY_PRESET hidden)
-  target_compile_options(${target} PRIVATE ${X_CFLAGS} ${ASMJIT_SANITIZE_CFLAGS} $<$<CONFIG:Debug>:${X_CFLAGS_DBG}> $<$<NOT:$<CONFIG:Debug>>:${X_CFLAGS_REL}>)
-  target_compile_features(${target} PUBLIC cxx_std_17)
-  target_link_options(${target} PRIVATE ${ASMJIT_PRIVATE_LFLAGS})
+  set_target_properties(${target} PROPERTIES DEFINE_SYMBOL "")
   target_link_libraries(${target} PRIVATE ${X_LIBRARIES})
+
+  # target_link_options was added in cmake v3.13, don't use it for now...
+  foreach(link_flag ${ASMJIT_PRIVATE_LFLAGS})
+    set_property(TARGET ${target} APPEND_STRING PROPERTY LINK_FLAGS " ${link_flag}")
+  endforeach()
+
+  target_compile_features(${target} PUBLIC cxx_std_11)
+  set_property(TARGET ${target} PROPERTY CXX_EXTENSIONS NO)
+  set_property(TARGET ${target} PROPERTY CXX_VISIBILITY_PRESET hidden)
+  target_compile_options(${target} PRIVATE ${X_CFLAGS} ${ASMJIT_SANITIZE_CFLAGS} $<$<CONFIG:Debug>:${X_CFLAGS_DBG}> $<$<NOT:$<CONFIG:Debug>>:${X_CFLAGS_REL}>)
 
   if ("${target_type}" STREQUAL "TEST")
     add_test(NAME ${target} COMMAND ${target})
@@ -564,8 +590,10 @@ if (NOT ASMJIT_EMBED)
                              $<BUILD_INTERFACE:${ASMJIT_INCLUDE_DIRS}>
                              $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
-  # Create an asmjit::asmjit alias.
+  # Add asmjit::asmjit alias.
   add_library(asmjit::asmjit ALIAS asmjit)
+  # TODO: [CMAKE] Deprecated alias - we use projectname::libraryname convention now.
+  add_library(AsmJit::AsmJit ALIAS asmjit)
 
   # Add AsmJit install instructions (library and public headers).
   if (NOT ASMJIT_NO_INSTALL)
@@ -628,8 +656,7 @@ if (NOT ASMJIT_EMBED)
 
     foreach(_target asmjit_test_emitters
                     asmjit_test_execute
-                    asmjit_test_x86_sections
-                    asmjit_environment_info)
+                    asmjit_test_x86_sections)
       asmjit_add_target(${_target} TEST
                         SOURCES    test/${_target}.cpp
                         LIBRARIES  asmjit::asmjit
@@ -686,3 +713,5 @@ if (NOT ASMJIT_EMBED)
 
   endif()
 endif()
+
+cmake_policy(POP)

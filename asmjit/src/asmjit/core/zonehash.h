@@ -73,9 +73,7 @@ public:
     _primeIndex = other._primeIndex;
     _embedded[0] = other._embedded[0];
 
-    if (_data == other._embedded) {
-      _data = _embedded;
-    }
+    if (_data == other._embedded) _data = _embedded;
   }
 
   inline void reset() noexcept {
@@ -91,9 +89,8 @@ public:
 
   inline void release(ZoneAllocator* allocator) noexcept {
     ZoneHashNode** oldData = _data;
-    if (oldData != _embedded) {
+    if (oldData != _embedded)
       allocator->release(oldData, _bucketsCount * sizeof(ZoneHashNode*));
-    }
     reset();
   }
 
@@ -102,10 +99,7 @@ public:
   //! \name Accessors
   //! \{
 
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG bool empty() const noexcept { return _size == 0; }
-
-  [[nodiscard]]
   ASMJIT_INLINE_NODEBUG size_t size() const noexcept { return _size; }
 
   //! \}
@@ -123,13 +117,8 @@ public:
     std::swap(_primeIndex, other._primeIndex);
     std::swap(_embedded[0], other._embedded[0]);
 
-    if (_data == other._embedded) {
-      _data = _embedded;
-    }
-
-    if (other._data == _embedded) {
-      other._data = other._embedded;
-    }
+    if (_data == other._embedded) _data = _embedded;
+    if (other._data == _embedded) other._data = other._embedded;
   }
 
   //! \cond INTERNAL
@@ -156,7 +145,7 @@ class ZoneHash : public ZoneHashBase {
 public:
   ASMJIT_NONCOPYABLE(ZoneHash)
 
-  using Node = NodeT;
+  typedef NodeT Node;
 
   //! \name Construction & Destruction
   //! \{
@@ -175,14 +164,12 @@ public:
   ASMJIT_INLINE_NODEBUG void swap(ZoneHash& other) noexcept { ZoneHashBase::_swap(other); }
 
   template<typename KeyT>
-  [[nodiscard]]
   inline NodeT* get(const KeyT& key) const noexcept {
     uint32_t hashMod = _calcMod(key.hashCode());
     NodeT* node = static_cast<NodeT*>(_data[hashMod]);
 
-    while (node && !key.matches(node)) {
+    while (node && !key.matches(node))
       node = static_cast<NodeT*>(node->_hashNext);
-    }
     return node;
   }
 
