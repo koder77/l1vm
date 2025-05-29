@@ -124,6 +124,11 @@ void dealloc_array_U1 (U1 **array, S4 x)
     free (array);
 }
 
+SDL_Surface *SDL_CreateRGBSurface(Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
+{
+	return SDL_CreateSurface(width, height, SDL_GetPixelFormatForMasks(depth, Rmask, Gmask, Bmask, Amask));
+}
+
 void update_rect (Sint16 x, Sint16 y, Sint16 w, Sint16 h)
 {
 	SDL_Rect rect;
@@ -379,7 +384,7 @@ U1 draw_text_ttf (SDL_Surface *surface, S2 screennum, U1 *textstr, Sint16 x, Sin
 	SDL_Surface *textsurf;
 	SDL_Color color;
 
-	SDL_FRect dstRect;
+	SDL_Rect dstRect;
 
 	color.r = r;
 	color.g = g;
@@ -823,7 +828,7 @@ int do_copy_surface (SDL_Renderer *dest_renderer, SDL_Surface *src, SDL_Rect *sr
 
 		for (src_x = srcrect_x; src_x < srcrect_x + srcrect_w; src_x++)
 		{
-			if (SDL_LockSurface (src) < 0)
+			if (SDL_LockSurface (src) != true)
 			{
 				printf ("do_copy_surface: can't lock source surface!\n");
 				return (-1);
@@ -881,7 +886,7 @@ int do_area_copy (Sint16 x, Sint16 y, Sint16 width, Sint16 height)
 	}
 
     /* Use alpha blending */
-	if (SDL_SetSurfaceBlendMode (copy_area_surface, SDL_BLENDMODE_BLEND) < 0)
+	if (SDL_SetSurfaceBlendMode (copy_area_surface, SDL_BLENDMODE_BLEND) != true)
     {
 		printf ("do_area_copy: error can't set copy alpha channel surface!\n");
 		return (1);
@@ -986,7 +991,7 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
             {
 				/* allocate backup surface, to copy the area that will be covered by the menu */
 
-				copy_surface = SDL_CreateRGBSurface (SDL_SWSURFACE, cycle->menu_x2 - cycle->menu_x + 1, cycle->menu_y2 - cycle->menu_y + 1, video_bpp, rmask, gmask, bmask, amask);
+				copy_surface = SDL_CreateRGBSurface (0, cycle->menu_x2 - cycle->menu_x + 1, cycle->menu_y2 - cycle->menu_y + 1, video_bpp, rmask, gmask, bmask, amask);
 				if (copy_surface == NULL)
 				{
 					printf ("draw_gadget_cycle: error can't allocate copy %i surface!\n", gadget_index);
@@ -994,7 +999,7 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 				}
 
                 /* Use alpha blending */
-				if (SDL_SetSurfaceBlendMode (copy_surface, SDL_BLENDMODE_BLEND) < 0)
+				if (SDL_SetSurfaceBlendMode (copy_surface, SDL_BLENDMODE_BLEND) != true)
 				{
 					printf ("draw_gadget_cycle: error can't set copy alpha channel %i surface!\n", gadget_index);
 					return (FALSE);
@@ -1026,7 +1031,7 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 
 				/* allocate menu surface */
 
-				temp_surface = SDL_CreateRGBSurface (SDL_SWSURFACE, cycle->menu_x2 - cycle->menu_x + 1, cycle->menu_y2 - cycle->menu_y + 1, video_bpp, rmask, gmask, bmask, amask);
+				temp_surface = SDL_CreateRGBSurface (0, cycle->menu_x2 - cycle->menu_x + 1, cycle->menu_y2 - cycle->menu_y + 1, video_bpp, rmask, gmask, bmask, amask);
 				if (temp_surface == NULL)
 				{
 					printf ("draw_gadget_cycle: error can't allocate menu %i surface!\n", gadget_index);
@@ -1034,7 +1039,7 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 				}
 
 				/* Use alpha blending */
-				if (SDL_SetSurfaceBlendMode (temp_surface, SDL_BLENDMODE_BLEND) < 0)
+				if (SDL_SetSurfaceBlendMode (temp_surface, SDL_BLENDMODE_BLEND) != true)
 				{
 					printf ("draw_gadget_cycle: error can't set menu alpha channel %i surface!\n", gadget_index);
 					return (FALSE);
@@ -1219,7 +1224,7 @@ U1 draw_gadget_menu (S2 screennum, U2 gadget_index, U1 selected, S4 value)
             {
 				/* allocate backup surface, to copy the area that will be covered by the menu */
 
-				copy_surface = SDL_CreateRGBSurface (SDL_SWSURFACE, menu->menu_x2 - menu->menu_x + 1, menu->menu_y2 - menu->menu_y + 1, video_bpp, rmask, gmask, bmask, amask);
+				copy_surface = SDL_CreateRGBSurface (0, menu->menu_x2 - menu->menu_x + 1, menu->menu_y2 - menu->menu_y + 1, video_bpp, rmask, gmask, bmask, amask);
 				if (copy_surface == NULL)
 				{
 					printf ("draw_gadget_menu: error can't allocate copy %i surface!\n", gadget_index);
@@ -1227,7 +1232,7 @@ U1 draw_gadget_menu (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 				}
 
                 /* Use alpha blending */
-				if (SDL_SetSurfaceBlendMode (copy_surface, SDL_BLENDMODE_BLEND) < 0)
+				if (SDL_SetSurfaceBlendMode (copy_surface, SDL_BLENDMODE_BLEND) != true)
 				{
 					printf ("draw_gadget_menu: error can't set copy alpha channel %i surface!\n", gadget_index);
 					return (FALSE);
@@ -1259,7 +1264,7 @@ U1 draw_gadget_menu (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 
 				/* allocate menu surface */
 
-				temp_surface = SDL_CreateRGBSurface (SDL_SWSURFACE, menu->menu_x2 - menu->menu_x + 1, menu->menu_y2 - menu->menu_y + 1, video_bpp, rmask, gmask, bmask, amask);
+				temp_surface = SDL_CreateRGBSurface (0, menu->menu_x2 - menu->menu_x + 1, menu->menu_y2 - menu->menu_y + 1, video_bpp, rmask, gmask, bmask, amask);
 				if (temp_surface == NULL)
 				{
 					printf ("draw_gadget_menu: error can't allocate menu %i surface!\n", gadget_index);
@@ -1267,7 +1272,7 @@ U1 draw_gadget_menu (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 				}
 
 				/* Use alpha blending */
-				if (SDL_SetSurfaceBlendMode (temp_surface, SDL_BLENDMODE_BLEND) < 0)
+				if (SDL_SetSurfaceBlendMode (temp_surface, SDL_BLENDMODE_BLEND) != true)
 				{
 					printf ("draw_gadget_menu: error can't set menu alpha channel %i surface!\n", gadget_index);
 					return (FALSE);
@@ -1496,7 +1501,7 @@ U1 *set_gadget_menu (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
         strcpy ((char *) menu->text[i], (const char *) &data[text_address]);
 
-        if (TTF_SizeText (screen[screennum].font_ttf.font, (const char *) menu->text[i], &text_width, &dummy) != 0)
+		if (TTF_GetStringSize (screen[screennum].font_ttf.font, (const char *) menu->text[i], 0, &text_width, &text_height) != true)
         {
             printf ("set_gadet_menu: error can't get text width!\n");
             return (NULL);
@@ -1508,7 +1513,7 @@ U1 *set_gadget_menu (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         }
     }
 
-    text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
+    //text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
 
 	// -------------------------------------------------------
 
@@ -1561,7 +1566,7 @@ U1 *set_gadget_menu (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     strcpy ((char *) menu->menutext, (const char *) &data[text_address]);
 
-    if (TTF_SizeText (screen[screennum].font_ttf.font, (const char *) &data[text_address], &text_width, &dummy) != 0)
+    if (TTF_GetStringSize (screen[screennum].font_ttf.font, (const char *) &data[text_address],0, &text_width, &dummy) != true)
     {
         printf ("set_gadet_menu: error can't get text width!\n");
         return (NULL);
@@ -2051,7 +2056,7 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 
     /* wait for event */
 
-	SDL_StartTextInput ();
+	SDL_StartTextInput (window);
 
 	wait = TRUE;
 
@@ -2074,7 +2079,7 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 		switch (event.type)
 		{
 			case SDL_EVENT_KEY_DOWN:
-				key = event.key.keysym.sym;
+				key = event.key.key;
 				switch (key)
 				{
 					case SDLK_BACKSPACE:
@@ -2376,7 +2381,7 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 					break;
 
 			case SDL_EVENT_KEY_UP:
-				key = event.key.keysym.sym;
+				key = event.key.key;
 				switch (key)
 				{
 					case SDLK_LSHIFT:
@@ -2392,7 +2397,7 @@ U1 event_gadget_string (S2 screennum, U2 gadget_index)
 
 	}
 
-	SDL_StopTextInput();
+	SDL_StopTextInput(window);
 
 	free (string_buf);
 	return (TRUE);
@@ -2442,7 +2447,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 
     /* wait for event */
 
-	SDL_StartTextInput ();
+	SDL_StartTextInput (window);
 
 	wait = TRUE;
 
@@ -2464,7 +2469,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 		switch (event.type)
 		{
 			case SDL_EVENT_KEY_DOWN:
-				key = event.key.keysym.sym;
+				key = event.key.key;
 				switch (key)
 				{
 					case SDLK_BACKSPACE:
@@ -3104,7 +3109,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 					break;
 
 			case SDL_EVENT_KEY_UP:
-				key = event.key.keysym.sym;
+				key = event.key.key;
 				switch (key)
 				{
 					case SDLK_LSHIFT:
@@ -3120,7 +3125,7 @@ U1 event_gadget_string_multiline (S2 screennum, U2 gadget_index)
 
 	}
 
-	SDL_StopTextInput();
+	SDL_StopTextInput(window);
 
 	free (string_buf);
 	return (TRUE);
@@ -3141,7 +3146,9 @@ U1 *event_gadget_slider (S2 screennum, U2 gadget_index)
      S8 value_percent ALIGN;
      Sint16 slider_x1;
      Sint16 slider_x2;
-     int x, y;
+     float xf, yf;
+	 S8 x ALIGN;
+	 S8 y ALIGN;
      U1 wait;
 
      struct gadget_slider *slider;
@@ -3235,7 +3242,9 @@ U1 *event_gadget_slider (S2 screennum, U2 gadget_index)
                      SDL_Delay (100);
 
                      SDL_PumpEvents ();
-                     buttonmask = SDL_GetMouseState (&x, &y);
+                     buttonmask = SDL_GetMouseState (&xf, &yf);
+					 x = (S8) xf;
+					 y = (S8) yf;
 
                      if (! (buttonmask & SDL_BUTTON_MASK (1)))
                      {
@@ -3282,7 +3291,9 @@ U1 *event_gadget_slider (S2 screennum, U2 gadget_index)
                         SDL_Delay (100);
 
                         SDL_PumpEvents ();
-                        buttonmask = SDL_GetMouseState (&x, &y);
+                        buttonmask = SDL_GetMouseState (&xf, &yf);
+						x = (S8) xf;
+						y = (S8) yf;
 
                         if (! (buttonmask & SDL_BUTTON_MASK (1)))
                         {
@@ -3367,6 +3378,7 @@ U1 *event_gadget_slider_vert (S2 screennum, U2 gadget_index)
      Sint16 slider_x1;
      Sint16 slider_x2;
      int x, y;
+	 float xf, yf;
      U1 wait;
 
      struct gadget_slider *slider;
@@ -3462,7 +3474,9 @@ U1 *event_gadget_slider_vert (S2 screennum, U2 gadget_index)
                      SDL_Delay (100);
 
                      SDL_PumpEvents ();
-                     buttonmask = SDL_GetMouseState (&x, &y);
+                     buttonmask = SDL_GetMouseState (&xf, &yf);
+					 x = (S8) xf;
+					 y = (S8) yf;
 
                      if (! (buttonmask & SDL_BUTTON_MASK (1)))
                      {
@@ -3509,7 +3523,9 @@ U1 *event_gadget_slider_vert (S2 screennum, U2 gadget_index)
                         SDL_Delay (100);
 
                         SDL_PumpEvents ();
-                        buttonmask = SDL_GetMouseState (&x, &y);
+                        buttonmask = SDL_GetMouseState (&xf, &yf);
+						x = (S8) xf;
+						y = (S8) yf;
 
                         if (! (buttonmask & SDL_BUTTON_MASK (1)))
                         {
@@ -3584,6 +3600,7 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     U2 i;
     S4 value, old_value;
     int x, y;
+	float xf, yf;
 	S8 text_address ALIGN;
 	// U1 resized = 0;
 
@@ -3687,7 +3704,9 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                                 SDL_Delay (100);
 
                                 SDL_PumpEvents ();
-                                buttonmask = SDL_GetMouseState (&x, &y);
+                                buttonmask = SDL_GetMouseState (&xf, &yf);
+								x = (S8) xf;
+								y = (S8) yf;
 
                                 if (! (buttonmask & SDL_BUTTON_MASK (1)))
                                 {
@@ -3770,7 +3789,9 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                                 SDL_Delay (100);
 
                                 SDL_PumpEvents ();
-                                buttonmask = SDL_GetMouseState (&x, &y);
+                                buttonmask = SDL_GetMouseState (&xf, &yf);
+								x = (S8) xf;
+								y = (S8) yf;
 
                                 if (! (buttonmask & SDL_BUTTON_MASK (1)))
                                 {
@@ -3867,7 +3888,9 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                                 SDL_Delay (100);
 
                                 SDL_PumpEvents ();
-                                buttonmask = SDL_GetMouseState (&x, &y);
+                                buttonmask = SDL_GetMouseState (&xf, &yf);
+								x = (S8) xf;
+								y = (S8) yf;
 
                                 if (! (buttonmask & SDL_BUTTON_MASK (1)))
                                 {
@@ -3933,7 +3956,9 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 										SDL_Delay (100);
 
                                         SDL_PumpEvents ();
-                                        buttonmask = SDL_GetMouseState (&x, &y);
+                                        buttonmask = SDL_GetMouseState (&xf, &yf);
+										x = (S8) xf;
+										y = (S8) yf;
 
                                         if (buttonmask & SDL_BUTTON_MASK (1))
                                         {
@@ -3961,7 +3986,9 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 																SDL_Delay (100);
 
 																SDL_PumpEvents ();
-																buttonmask = SDL_GetMouseState (&x, &y);
+																buttonmask = SDL_GetMouseState (&xf, &yf);
+																x = (S8) xf;
+																y = (S8) yf;
 
 																if (! (buttonmask & SDL_BUTTON_MASK (1)))
 																{
@@ -4001,7 +4028,9 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                                         SDL_Delay (100);
 
                                         SDL_PumpEvents ();
-                                        buttonmask = SDL_GetMouseState (&x, &y);
+                                        buttonmask = SDL_GetMouseState (&xf, &yf);
+										x = (S8) xf;
+										y = (S8) yf;
 
                                         if (buttonmask & SDL_BUTTON_MASK (1))
                                         {
@@ -4043,7 +4072,7 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                                 {
                                     while (SDL_PollEvent (&event))
                                     {
-                                        if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.state == SDL_RELEASED)
+                                        if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.down == false)
                                         {
                                             wait = FALSE;
                                         }
@@ -4100,7 +4129,9 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                                 SDL_Delay (100);
 
                                 SDL_PumpEvents ();
-                                buttonmask = SDL_GetMouseState (&x, &y);
+                                buttonmask = SDL_GetMouseState (&xf, &yf);
+								x = (S8) xf;
+								y = (S8) yf;
 
                                 if (! (buttonmask & SDL_BUTTON_MASK (1)))
                                 {
@@ -4227,7 +4258,9 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 						            SDL_Delay (100);
 
 						            SDL_PumpEvents ();
-						            buttonmask = SDL_GetMouseState (&x, &y);
+						            buttonmask = SDL_GetMouseState (&xf, &yf);
+									x = (S8) xf;
+									y = (S8) yf;
 
 						            if (! (buttonmask & SDL_BUTTON_MASK (1)))
 						            {
@@ -4354,7 +4387,9 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                                 SDL_Delay (100);
 
                                 SDL_PumpEvents ();
-                                buttonmask = SDL_GetMouseState (&x, &y);
+                                buttonmask = SDL_GetMouseState (&xf, &yf);
+								x = (S8) xf;
+								y = (S8) yf;
 
                                 if (! (buttonmask & SDL_BUTTON_MASK (1)))
                                 {
@@ -4421,7 +4456,9 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                                 SDL_Delay (100);
 
                                 SDL_PumpEvents ();
-                                buttonmask = SDL_GetMouseState (&x, &y);
+                                buttonmask = SDL_GetMouseState (&xf, &yf);
+								x = (S8) xf;
+								y = (S8) yf;
 
                                 if (! (buttonmask & SDL_BUTTON_MASK (1)))
                                 {
@@ -4543,7 +4580,9 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                                 SDL_Delay (100);
 
                                 SDL_PumpEvents ();
-                                buttonmask = SDL_GetMouseState (&x, &y);
+                                buttonmask = SDL_GetMouseState (&xf, &yf);
+								x = (S8) xf;
+								y = (S8) yf;
 
                                 if (! (buttonmask & SDL_BUTTON_MASK (1)))
                                 {
@@ -4665,7 +4704,9 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                                 SDL_Delay (100);
 
                                 SDL_PumpEvents ();
-                                buttonmask = SDL_GetMouseState (&x, &y);
+                                buttonmask = SDL_GetMouseState (&xf, &yf);
+								x = (S8) xf;
+								y = (S8) yf;
 
                                 if (! (buttonmask & SDL_BUTTON_MASK (1)))
                                 {
@@ -4731,7 +4772,9 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 										SDL_Delay (100);
 
                                         SDL_PumpEvents ();
-                                        buttonmask = SDL_GetMouseState (&x, &y);
+                                        buttonmask = SDL_GetMouseState (&xf, &yf);
+										x = (S8) xf;
+										y = (S8) yf;
 
                                         if (buttonmask & SDL_BUTTON_MASK (1))
                                         {
@@ -4759,7 +4802,9 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 																SDL_Delay (100);
 
 																SDL_PumpEvents ();
-																buttonmask = SDL_GetMouseState (&x, &y);
+																buttonmask = SDL_GetMouseState (&xf, &yf);
+																x = (S8) xf;
+																y = (S8) yf;
 
 																if (! (buttonmask & SDL_BUTTON_MASK (1)))
 																{
@@ -4799,7 +4844,9 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                                         SDL_Delay (100);
 
                                         SDL_PumpEvents ();
-                                        buttonmask = SDL_GetMouseState (&x, &y);
+                                        buttonmask = SDL_GetMouseState (&xf, &yf);
+										x = (S8) xf;
+										y = (S8) yf;
 
                                         if (buttonmask & SDL_BUTTON_MASK (1))
                                         {
@@ -4841,7 +4888,7 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                                 {
                                     while (SDL_PollEvent (&event))
                                     {
-                                        if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.state == SDL_RELEASED)
+                                        if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && event.button.down == false)
                                         {
                                             wait = FALSE;
                                         }
@@ -4985,8 +5032,9 @@ U1 *set_gadget_button (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     /* get text width and height */
 
-    text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
-    if (TTF_SizeText (screen[screennum].font_ttf.font, (const char *) &data[text_address], &text_width, &dummy) != 0)
+	// bool TTF_GetStringSize(TTF_Font *font, const char *text, size_t length, int *w, int *h);
+    // text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
+    if (TTF_GetStringSize (screen[screennum].font_ttf.font, (const char *) &data[text_address], 0, &text_width, &text_height) != true)
     {
         printf ("set_gadget_button: error can't get text width!\n");
         return (NULL);
@@ -5118,9 +5166,9 @@ U1 *set_gadget_progress_bar (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     /* get text width and height */
-
-    text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
-    if (TTF_SizeText (screen[screennum].font_ttf.font, (const char *) &data[text_address], &text_width, &dummy) != 0)
+    // bool TTF_GetStringSize(TTF_Font *font, const char *text, size_t length, int *w, int *h);
+    // text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
+    if (TTF_GetStringSize (screen[screennum].font_ttf.font, (const char *) &data[text_address], 0, &text_width, &text_height) != true)
     {
         printf ("set_gadget_progress_bar: error can't get text width!\n");
         return (NULL);
@@ -5256,9 +5304,9 @@ U1 *set_gadget_checkbox (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     /* get text width and height */
-
-    text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
-    if (TTF_SizeText (screen[screennum].font_ttf.font, (const char *) &data[text_address], &text_width, &dummy) != 0)
+	// bool TTF_GetStringSize(TTF_Font *font, const char *text, size_t length, int *w, int *h);
+    // text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
+    if (TTF_GetStringSize (screen[screennum].font_ttf.font, (const char *) &data[text_address], 0, &text_width, &text_height) != true)
     {
         printf ("set_gadget_checkbox: error can't get text width!\n");
         return (NULL);
@@ -5387,7 +5435,8 @@ U1 *set_gadget_cycle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
         strcpy ((char *) cycle->text[i], (const char *) &data[text_address]);
 
-        if (TTF_SizeText (screen[screennum].font_ttf.font, (const char *) cycle->text[i], &text_width, &dummy) != 0)
+		// bool TTF_GetStringSize(TTF_Font *font, const char *text, size_t length, int *w, int *h);
+        if (TTF_GetStringSize (screen[screennum].font_ttf.font, (const char *) cycle->text[i], 0,  &text_width, &text_height) != true)
         {
             printf ("set_gadget_cycle: error can't get text width!\n");
             return (NULL);
@@ -5399,7 +5448,7 @@ U1 *set_gadget_cycle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         }
     }
 
-    text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
+    //text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
 
 	// -------------------------------------------------------
 
@@ -5628,9 +5677,9 @@ U1 *set_gadget_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 
     /* get text width and height */
-
-    text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
-    if (TTF_SizeText (screen[screennum].font_ttf.font, (const char *) &data[text_address], &text_width, &dummy) != 0)
+    // bool TTF_GetStringSize(TTF_Font *font, const char *text, size_t length, int *w, int *h);
+    //text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
+    if (TTF_GetStringSize (screen[screennum].font_ttf.font, (const char *) &data[text_address], 0,  &text_width, &text_height) != true)
     {
         printf ("set_gadget_string: error can't get text width!\n");
         return (NULL);
@@ -5638,7 +5687,7 @@ U1 *set_gadget_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     /* get width of one char */
 
-    if (TTF_SizeText (screen[screennum].font_ttf.font, "W", &char_width, &dummy) != 0)
+    if (TTF_GetStringSize (screen[screennum].font_ttf.font, "W", 0, &char_width, &dummy) != true)
     {
         printf ("set_gadget_string: error can't get char width!\n");
         return (NULL);
@@ -5848,9 +5897,9 @@ U1 *set_gadget_string_multiline (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 
     /* get text width and height */
-
-    text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
-    if (TTF_SizeText (screen[screennum].font_ttf.font, (const char *) &data[text_address], &text_width, &dummy) != 0)
+	// bool TTF_GetStringSize(TTF_Font *font, const char *text, size_t length, int *w, int *h);
+    // text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
+    if (TTF_GetStringSize (screen[screennum].font_ttf.font, (const char *) &data[text_address], 0, &text_width, &text_height) != true)
     {
         printf ("set_gadget_string_multiline: error can't get text width!\n");
         return (NULL);
@@ -5858,7 +5907,7 @@ U1 *set_gadget_string_multiline (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     /* get width of one char */
 
-    if (TTF_SizeText (screen[screennum].font_ttf.font, "W", &char_width, &dummy) != 0)
+    if (TTF_GetStringSize (screen[screennum].font_ttf.font, "W", 0, &char_width, &dummy) != 0)
     {
         printf ("set_gadget_string_multiline: error can't get char width!\n");
         return (NULL);
@@ -6279,9 +6328,9 @@ U1 *set_gadget_slider (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     /* get text width and height */
-
-    text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
-    if (TTF_SizeText (screen[screennum].font_ttf.font, (const char *) &data[text_address], &text_width, &dummy) != 0)
+	// bool TTF_GetStringSize(TTF_Font *font, const char *text, size_t length, int *w, int *h);
+    // text_height = TTF_FontHeight (screen[screennum].font_ttf.font);
+    if (TTF_GetStringSize (screen[screennum].font_ttf.font, (const char *) &data[text_address], 0,  &text_width, &text_height) != true)
     {
         printf ("set_gadget_slider: error can't get text width!\n");
         return (NULL);
@@ -7321,8 +7370,7 @@ U1 *get_mouse_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	S8 x ALIGN;
 	S8 y ALIGN;
-    int xi;
-    int yi;
+	float xf, yf;
 	S8 mouse_button_left ALIGN = 0;
 	S8 mouse_button_middle ALIGN = 0;
 	S8 mouse_button_right ALIGN = 0;
@@ -7332,10 +7380,10 @@ U1 *get_mouse_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	SDL_PumpEvents ();
 
 	// get mouse data
-	buttonmask = SDL_GetMouseState ((int *) &xi, (int *) &yi);
+	buttonmask = SDL_GetMouseState (&xf, &yf);
 
-    x = xi;
-    y = yi;
+    x = (S8) xf;
+    y = (S8) yf;
 
 	// set the buttons as pressed
 	if (! (buttonmask & SDL_BUTTON_MASK (SDL_BUTTON_LEFT)))
@@ -7583,6 +7631,7 @@ U1 *get_joystick_button (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *get_joystick_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// get joystick infos
+    /* not ready yet!
 
 	S8 name_len ALIGN;
 	S8 name_address ALIGN;
@@ -7645,6 +7694,7 @@ U1 *get_joystick_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("get_joystick_info: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
+	*/
 	return (sp);
 }
 
@@ -7661,7 +7711,7 @@ U1 *get_key (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		// got event, check if it is key down
 		if (event.type == SDL_EVENT_KEY_DOWN)
 		{
-			key = event.key.keysym.sym;
+			key = event.key.key;
 			ret_key = key;	// set return variable
 		}
 	}

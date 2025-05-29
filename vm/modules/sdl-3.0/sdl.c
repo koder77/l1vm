@@ -1669,7 +1669,7 @@ U1 *sdl_get_pixelcolor (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (SDL_LockSurface (surf) < 0)
+	if (SDL_LockSurface (surf) != true)
 	{
 		printf ("sdl_get_pixelcolor: can't lock surface!\n");
 
