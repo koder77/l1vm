@@ -527,9 +527,9 @@ U1 *sdl_font_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("sdl_font_ttf: ERROR filename illegal: %s", &data[nameaddr]);
 		return (NULL);
 	}
-	font = TTF_OpenFont ((const char *) sandbox_filename, size);
+	font = TTF_OpenFont ((const char *) sandbox_filename, (float) size);
 #else
-	font = TTF_OpenFont ((const char *) &data[nameaddr], size);
+	font = TTF_OpenFont ((const char *) &data[nameaddr], (float) size);
 #endif
 
 	if (font == NULL)
@@ -556,7 +556,8 @@ U1 *sdl_text_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 nameaddr;
 
 	SDL_Surface *textsurf;
-	SDL_Rect dstrect;
+	SDL_Texture *texture;
+	SDL_FRect dstrect;
 	SDL_Color color;
 
 	sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
@@ -618,14 +619,20 @@ U1 *sdl_text_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	dstrect.x = x;
-	dstrect.y = y;
-	dstrect.w = textsurf->w;
-	dstrect.h = textsurf->h;
+	// Convert surface to texture for rendering
+	texture = SDL_CreateTextureFromSurface (renderer, textsurf);
 
-	SDL_BlitSurface (textsurf, NULL, surf, &dstrect);
+	dstrect.x = (float) x;
+	dstrect.y = (float) y;
+	dstrect.w = (float) textsurf->w;
+	dstrect.h = (float) textsurf->h;
+
+	SDL_RenderTexture (renderer, texture, NULL, &dstrect);
+
 	SDL_DestroySurface (textsurf);
 
+	SDL_RenderPresent (renderer);
+	SDL_UpdateWindowSurface (window);
 	return (sp);
 }
 

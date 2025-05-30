@@ -385,6 +385,8 @@ U1 draw_text_ttf (SDL_Surface *surface, S2 screennum, U1 *textstr, Sint16 x, Sin
 	SDL_Color color;
 
 	SDL_Rect dstRect;
+	SDL_Texture *texture;
+	SDL_FRect dstrect;
 
 	color.r = r;
 	color.g = g;
@@ -405,17 +407,23 @@ U1 draw_text_ttf (SDL_Surface *surface, S2 screennum, U1 *textstr, Sint16 x, Sin
 	if (textsurf == NULL)
 	{
 		printf ("sdl_text_ttf: can't render text! %s\n", SDL_GetError ());
-		return (0);
+		return (FALSE);
 	}
 
-	dstRect.x = x;
-	dstRect.y = y;
-	dstRect.w = textsurf->w;
-	dstRect.h = textsurf->h;
+	// Convert surface to texture for rendering
+	texture = SDL_CreateTextureFromSurface (renderer, textsurf);
 
-	SDL_BlitSurface (textsurf, NULL, surface, &dstRect);
+	dstrect.x = (float) x;
+	dstrect.y = (float) y;
+	dstrect.w = (float) textsurf->w;
+	dstrect.h = (float) textsurf->h;
+
+	SDL_RenderTexture (renderer, texture, NULL, &dstrect);
+
 	SDL_DestroySurface (textsurf);
 
+	SDL_RenderPresent (renderer);
+	SDL_UpdateWindowSurface (window);
 
 	/*
 	text = TTF_RenderText_Blended (font, (const char*) textstr, 0, color);
@@ -989,9 +997,7 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
         case GADGET_MENU_DOWN:
             if (! cycle->menu)
             {
-				/* allocate backup surface, to copy the area that will be covered by the menu */
-
-				copy_surface = SDL_CreateRGBSurface (0, cycle->menu_x2 - cycle->menu_x + 1, cycle->menu_y2 - cycle->menu_y + 1, video_bpp, rmask, gmask, bmask, amask);
+				copy_surface = SDL_CreateSurface (screen[screennum].width, screen[screennum].height, SDL_PIXELFORMAT_RGBA32);
 				if (copy_surface == NULL)
 				{
 					printf ("draw_gadget_cycle: error can't allocate copy %i surface!\n", gadget_index);
@@ -1021,11 +1027,10 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 				// DEBUG
 				printf ("draw_gadget_cycle: menu_rect.x: %i, menu_rect.y: %i\n", menu_rect.x, menu_rect.y);
 
-				// int copy_surface (SDL_Renderer *dest_renderer, SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect)
-
-				if (do_copy_surface (copy_renderer, surf, &menu_rect, copy_surface, &copy_rect) < 0)
+				// bool SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
+				if (SDL_BlitSurface (surf, NULL, copy_surface, NULL) != true)
 				{
-					printf ("draw_gadget_cycle: error can't blit copy %i surface!\n", gadget_index);
+					printf ("draw_gadget_cycle: error can't copy screen backup %i surface!\n", gadget_index);
 					return (FALSE);
 				}
 
@@ -1053,12 +1058,16 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 
 
             /* draw menu */
+           //  boxRGBA (renderer, x + 1, y + 1, x2 - 1, y2 - 1, screen[screennum].gadget_color.backgr_light.r, screen[screennum].gadget_color.backgr_light.g, screen[screennum].gadget_color.backgr_light.b, 255);
 
+			boxRGBA (renderer, cycle->menu_x, cycle->menu_y, cycle->menu_x2, cycle->menu_y2, screen[screennum].gadget_color.backgr_light.r, screen[screennum].gadget_color.backgr_light.g, screen[screennum].gadget_color.backgr_light.b, 255);
             draw_gadget_light (temp_renderer, 0, 0, cycle->menu_x2 - cycle->menu_x, cycle->menu_y2 - cycle->menu_y);
 
             text_x = cycle->text_x - cycle->menu_x;
             text_y = cycle->text_y - cycle->y;
 
+			SDL_RenderPresent (temp_renderer);
+			SDL_UpdateWindowSurface (window);
 			// Neu
 
 			// DEBUG
@@ -1074,7 +1083,6 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
                     {
                         return (FALSE);
                     }
-                    // SDL_UpdateWindowSurface (window);
                 }
                 else
                 {
@@ -1082,17 +1090,13 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
                     {
                         return (FALSE);
                     }
-                    //SDL_UpdateWindowSurface (window);
                 }
 
                 text_y += cycle->text_height + (cycle->text_height / 2);
             }
 
-            sdl_do_delay (200);
+            sdl_do_delay (50);
             // SDL_UpdateWindowSurface (window);
-
-            menu_rect.x = cycle->menu_x;
-            menu_rect.y = cycle->menu_y;
 
 			if (do_copy_surface (renderer, temp_surface, NULL, surf, &menu_rect) < 0)
 			{
@@ -1100,31 +1104,50 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 				return (FALSE);
 			}
 
+			menu_rect.x = cycle->menu_x;
+			menu_rect.y = cycle->menu_y;
+
 			update_rect (cycle->menu_x, cycle->menu_y, cycle->menu_x2 - cycle->menu_x + 1, cycle->menu_y2 - cycle->menu_y + 1);
+			SDL_RenderPresent (renderer);
 			SDL_UpdateWindowSurface (window);
 
 			// DEBUG
-			/*
+/*
 			while (1)
 			{
 				usleep (10000);
-			} */
+			}
+			*/
             break;
 
         case GADGET_MENU_UP:
             /* close menu: copy backup surface */
 
-
 			menu_rect.x = cycle->menu_x;
 			menu_rect.y = cycle->menu_y;
 
-			if (do_copy_surface (renderer, copy_surface, NULL, surf, &menu_rect) < 0)
+			boxRGBA (renderer, cycle->menu_x, cycle->menu_y, cycle->menu_x2, cycle->menu_y2, screen[screennum].gadget_color.backgr_light.r, screen[screennum].gadget_color.backgr_light.g, screen[screennum].gadget_color.backgr_light.b, 255);
+
+			update_rect (cycle->menu_x, cycle->menu_y, cycle->menu_x2 - cycle->menu_x + 1, cycle->menu_y2 - cycle->menu_y + 1);
+			SDL_RenderPresent (renderer);
+			SDL_UpdateWindowSurface (window);
+
+			/*
+			while (1)
 			{
-				printf ("draw_gadget_cycle: error can't blit copy %i surface!\n", gadget_index);
+				usleep (10000);
+			}
+			*/
+
+
+			if (SDL_BlitSurface (copy_surface, NULL, surf, NULL) != true)
+			{
+				printf ("draw_gadget_cycle: error can't restore screen backup %i surface!\n", gadget_index);
 				return (FALSE);
 			}
 
 			update_rect (cycle->menu_x, cycle->menu_y, cycle->menu_x2 - cycle->menu_x + 1, cycle->menu_y2 - cycle->menu_y + 1);
+			SDL_RenderPresent (renderer);
 			SDL_UpdateWindowSurface (window);
 
 			/* redraw cycle gadget */
@@ -1153,9 +1176,9 @@ U1 draw_gadget_cycle (S2 screennum, U2 gadget_index, U1 selected, S4 value)
 
 			cycle->menu = FALSE;
 
+			SDL_RenderPresent (renderer);
 			SDL_UpdateWindowSurface (window);
 			break;
-
     }
 
     if (cycle->status == GADGET_NOT_ACTIVE)
