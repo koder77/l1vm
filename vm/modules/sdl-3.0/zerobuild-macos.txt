@@ -1,6 +1,6 @@
 # zerobuild makefile
 
-[executable, shared, name = libl1vmsdl.so]
+[executable, shared, name = libl1vmsdl3.so]
 sources =  sdl.c, gui.c, string.c, ../file/file-sandbox.c
 
 includes = ../include, /usr/local/include, /usr/include/machine
@@ -12,4 +12,4 @@ linker = ld
 aflags = "cru"
 
 cflags = "-O3 -fomit-frame-pointer -Wall"
-lflags = "-bundle -undefined dynamic_lookup -lSDL2 -lSDL2_gfx -lSDL2_image -lSDL2_ttf -lSDL2_mixer"
+lflags = "-bundle -undefined dynamic_lookup -lSDL3 -lSDL3_gfx_Shared -lSDL3_image -lSDL3_ttf -lSDL3_mixer"
