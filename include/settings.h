@@ -5,6 +5,9 @@
 // This sets the type of the MPFR filesize function. If it is the experimental function or not.
 #define CPP_FILE_EXPERIMENTAL 0
 
+// SDL 3 camera module enable
+#define SDL_ENABLE_CAMERA     0
+
 // NEW: if set to 1 the L1VM can be build as a shared library to be embedded in other programs
 #define L1VM_EMBEDDED 0
 
