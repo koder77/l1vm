@@ -1,8 +1,11 @@
-L1VM (3.4.3)
+L1VM (3.5.0)
 	Compiler, assembler MAXLINELEN fixes.
 	AsmJIT compiler finally updated to the current GitHub version.
 
--- Stefan Pietzonke <info@midnight-coding.de> Wed 28 May 2025 00:24   +020
+	NEW: SDL 3.0 module: gfx primitives like lines, pixel and GUI are working.
+	I added camera support. See in "prog/sdl" example.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 31 May 2025 17:54  +020
 
 L1VM (3.4.2)
 	In settings header LOW RAM limits changed.
