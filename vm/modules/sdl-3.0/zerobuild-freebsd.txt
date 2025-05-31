@@ -1,7 +1,7 @@
 # zerobuild makefile
 
 [executable, shared, name = libl1vmsdl3.so]
-sources =  sdl.c, gui.c, string.c, ../file/file-sandbox.c
+sources =  sdl.c, gui.c, camera.c, string.c, ../file/file-sandbox.c
 
 includes = ../include, /usr/local/include, /usr/include/SDL2
 

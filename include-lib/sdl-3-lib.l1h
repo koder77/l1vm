@@ -72,6 +72,11 @@
     (set string s unset_gadgetstr@sdl "unset_gadget")
     (set string s copy_areastr@sdl "copy_area")
     (set string s restore_areastr@sdl "restore_area")
+
+	(set string s open_camerastr@sdl "sdl_open_camera")
+	(set string s get_camera_framestr@sdl "sdl_get_camera_frame")
+	(set string s close_camerastr@sdl "sdl_close_camera")
+
     (set int64 1 open@sdl 0)
     (set int64 1 quit@sdl 1)
     (set int64 1 update@sdl 2)
@@ -136,6 +141,11 @@
     (set int64 1 unset_gadget@sdl 62)
     (set int64 1 copy_area@sdl 63)
     (set int64 1 restore_area@sdl 64)
+
+	(set int64 1 open_camera@sdl 65)
+	(set int64 1 get_camera_frame@sdl 66)
+	(set int64 1 close_camera@sdl 67)
+
     // call arguments
     (set int64 1 width@sdl 0)
     (set int64 1 height@sdl 0)
@@ -215,7 +225,12 @@
     (2 mod@sdl unset_gadget@sdl unset_gadgetstr@sdladdr intr0)
     (2 mod@sdl copy_area@sdl copy_areastr@sdladdr intr0)
     (2 mod@sdl restore_area@sdl restore_areastr@sdladdr intr0)
-    (width@sdl stpushi)
+
+	(2 mod@sdl open_camera@sdl open_camerastr@sdladdr intr0)
+	(2 mod@sdl get_camera_frame@sdl get_camera_framestr@sdladdr intr0)
+	(2 mod@sdl close_camera@sdl close_camerastr@sdladdr intr0)
+
+	(width@sdl stpushi)
     (height@sdl stpushi)
     (bit@sdl stpushi)
     (((fullscreen@sdl one@sdl ==) f@sdl =) f@sdl if+)
@@ -434,4 +449,14 @@
 (funcend)
 (restore_area func)
     (3 mod@sdl restore_area@sdl 0 intr0)
+(funcend)
+// camera ----------------------------------------------------
+(sdl_open_camera func)
+	(3 mod@sdl open_camera@sdl 0 intr0)
+(funcend)
+(sdl_get_camera_frame func)
+	(3 mod@sdl get_camera_frame@sdl 0 intr0)
+(funcend)
+(sdl_close_camera func)
+	(3 mod@sdl close_camera@sdl 0 intr0)
 (funcend)

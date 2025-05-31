@@ -111,6 +111,20 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	printf ("open_screen: %lli x %lli, %lli bit\n", width, height, bit);
 
+#if SDL_ENABLE_CAMERA
+
+	#if WINDOWS_10_WSL
+	if (! SDL_Init (SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_CAMERA))
+	#else
+		#if WITH_SOUND
+		if (! SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_CAMERA))
+		#else
+		if (! SDL_Init (SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_CAMERA))
+		#endif
+	#endif
+
+#else
+
 	#if WINDOWS_10_WSL
 	if (! SDL_Init (SDL_INIT_VIDEO | SDL_INIT_JOYSTICK))
 	#else
@@ -120,6 +134,7 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		if (! SDL_Init (SDL_INIT_VIDEO | SDL_INIT_JOYSTICK))
         #endif
 	#endif
+#endif
 	{
 		printf ("ERROR SDL_Init!!!\n");
 
@@ -271,11 +286,30 @@ U1 *sdl_open_screen_full (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	printf ("open_screen: %lli x %lli, %lli bit\n", width, height, bit);
 
+#if SDL_ENABLE_CAMERA
+
+	#if WINDOWS_10_WSL
+	if (! SDL_Init (SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_CAMERA))
+	#else
+		#if WITH_SOUND
+		if (! SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_CAMERA))
+		#else
+		if (! SDL_Init (SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_CAMERA))
+		#endif
+    #endif
+
+#else
+
 	#if WINDOWS_10_WSL
 	if (! SDL_Init (SDL_INIT_VIDEO | SDL_INIT_JOYSTICK))
 	#else
-	if (! SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK))
+		#if WITH_SOUND
+		if (! SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK))
+		#else
+		if (! SDL_Init (SDL_INIT_VIDEO | SDL_INIT_JOYSTICK))
+		#endif
 	#endif
+#endif
 	{
 		printf ("ERROR SDL_Init!!!\n");
 
