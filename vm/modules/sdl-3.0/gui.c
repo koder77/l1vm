@@ -45,6 +45,7 @@ extern S8 video_bpp;
 
 // SDL joystick input
 extern SDL_Joystick *joystick;
+extern SDL_JoystickID *joystick_id;
 
 // SDL_Surface *bmap_copy;
 // SDL_Surface *blitscreen;
@@ -7654,14 +7655,14 @@ U1 *get_joystick_button (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *get_joystick_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// get joystick infos
-    /* not ready yet!
 
-	S8 name_len ALIGN;
-	S8 name_address ALIGN;
-	S8 name_real_len ALIGN;
+	S8 name_len ALIGN = 0;
+	S8 name_address ALIGN = 0;
+	S8 name_real_len ALIGN = 0;
 
-	S8 joystick_axis_max ALIGN;
-	S8 joystick_buttons_max ALIGN;
+	S8 joystick_axis_max ALIGN = 0;
+	S8 joystick_buttons_max ALIGN = 0;
+	S8 joysticks ALIGN = 0;
 
 	sp = stpopi ((U1 *) &name_len, sp, sp_top);
 	if (sp == NULL)
@@ -7677,9 +7678,19 @@ U1 *get_joystick_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-	if (SDL_NumJoysticks () > 0)
+	joystick_id = SDL_GetJoysticks (&joysticks);
+	if (joysticks == 0)
 	{
-		name_real_len = strlen_safe (SDL_JoystickNameForIndex (0), name_len);
+		// no joystick connected
+		// no joystick found set empty name and zero data
+		strcpy ((char *) &data[name_address], "");
+
+		joystick_axis_max = 0;
+		joystick_buttons_max = 0;
+	}
+	else
+	{
+		name_real_len = strlen_safe (SDL_GetJoystickNameForID (0), name_len);
 		if (name_real_len > name_len)
 		{
 			printf ("get_joystick_info: ERROR name string overflow!\n");
@@ -7687,18 +7698,10 @@ U1 *get_joystick_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		}
 
 		// save joystick name in string variable
-		strcpy ((char *) &data[name_address], SDL_JoystickNameForIndex (0));
+		strcpy ((char *) &data[name_address], SDL_GetJoystickNameForID (0));
 
 		joystick_axis_max = SDL_GetNumJoystickAxes (joystick);
 		joystick_buttons_max = SDL_GetNumJoystickButtons (joystick);
-	}
-	else
-	{
-		// no joystick found set empty name and zero data
-		strcpy ((char *) &data[name_address], "");
-
-		joystick_axis_max = 0;
-		joystick_buttons_max = 0;
 	}
 
 	// return values
@@ -7717,7 +7720,7 @@ U1 *get_joystick_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("get_joystick_info: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
-	*/
+
 	return (sp);
 }
 

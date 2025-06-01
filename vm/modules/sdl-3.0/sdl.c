@@ -48,7 +48,7 @@ S8 video_bpp ALIGN;
 
 // SDL joystick input
 SDL_Joystick *joystick;
-
+SDL_JoystickID *joystick_id;
 
 // gui
 extern SDL_Surface *copy_surface;			/* backup surface for example menues pixel overdraw */
