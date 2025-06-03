@@ -1,13 +1,14 @@
 // train-fann-file.l1com
 // fann train library demo
 // train XOR function and run trained neural network
-#include <intr.l1h>
+#include <intr-func.l1h>
 (main func)
-    (set int64 1 zero 0)
-    (set int64 1 one 1)
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
     (set int64 1 i 50000)
     (set int64 1 f 0)
     (set int64 1 ret 0)
+    (set const-int64 1 fann_mod 0)
     (set double 2 input1 -1.0 -1.0)
     (set double 2 input2 -1.0 1.0)
     (set double 2 input3 1.0 -1.0)
@@ -22,14 +23,13 @@
     (set const-int64 1 Pdes_output_null_addr 0)
     (set const-int64 1 Pdes_output_one_addr 0)
     (set const-int64 1 Poutput_addr 0)
-    (set int64 1 two 2)
-    (set string 16 learning "learning xor...")
-    (set string 10 txt_1 "0 xor 0: ")
-    (set string 10 txt_2 "0 xor 1: ")
-    (set string 10 txt_3 "1 xor 0: ")
-    (set string 10 txt_4 "1 xor 1: ")
-    (set string 11 run "running...")
-	(set int64 1 handle 0)
+    (set string 16 learning_str "learning xor...")
+    (set string 10 txt_1_str "0 xor 0: ")
+    (set string 10 txt_2_str "0 xor 1: ")
+    (set string 10 txt_3_str "1 xor 0: ")
+    (set string 10 txt_4_str "1 xor 1: ")
+    (set string 11 run_str "running...")
+    (set int64 1 handle 0)
     (set int64 1 three 3)
     (set int64 1 two 2)
     (set int64 1 layers 3)
@@ -52,19 +52,17 @@
     (output Poutput_addr pointer)
 
     // init fann library
-	(reset-reg)
-    (zero one :fann_init_lib !)
-	(ret stpopi)
-	(((ret zero !=) f =) f if)
-        free_mod (zero)
-        exit (one)
-	(endif)
-	(reset-reg)
-	stack_check
+    (reset-reg)
+    (fann_mod one :fann_init_lib !)
+    (ret stpopi)
+    (((ret zero !=) f =) f if)
+        (one :exit !)
+    (endif)
+    (reset-reg)
 
     // create fann
-    print_s (create_str)
-    print_n
+    (create_str :print_s !)
+    (:print_n !)
     (layers inputs hidden_neurons outputs :fann_create !)
     (handle stpop)
 
@@ -72,28 +70,32 @@
     (handle fann_data_file_str max_epochs epochs_between_reports desired_error :fann_train_ann_file !)
 
     // run ann
-    print_s (runaddr)
-    print_n
+    (run_str :print_s !)
+    (:print_n !)
     // run fann with one output variable
     (handle Pinput1_addr Poutput_addr two one :fann_run !)
-    print_s (txt_1addr)
-    print_d (output)
-    print_n
+    (txt_1_str :print_s !)
+    (output :print_d !)
+    (:print_n !)
+
     (handle Pinput2_addr Poutput_addr two one :fann_run !)
-    print_s (txt_2addr)
-    print_d (output)
-    print_n
+    (txt_2_str :print_s !)
+    (output :print_d !)
+    (:print_n !)
+
     (handle Pinput3_addr Poutput_addr two one :fann_run !)
-    print_s (txt_3addr)
-    print_d (output)
-    print_n
+    (txt_3_str :print_s !)
+    (output :print_d !)
+    (:print_n !)
+
     (handle Pinput4_addr Poutput_addr two one :fann_run !)
-    print_s (txt_4addr)
-    print_d (output)
-    print_n
+    (txt_4_str :print_s !)
+    (output :print_d !)
+    (:print_n !)
+
     (handle :fann_free !)
-	(:free_fanns !)
-    free_mod (zero)
-    exit (zero)
+    (:free_fanns !)
+    (fann_mod :free_mod !)
+    (zero :exit !)
 (funcend)
 #include <fann-lib.l1h>
