@@ -34,7 +34,7 @@
 	(ret stpopi)
 	(loadreg)
 	// get joystick info
-	(joy_namestraddr joy_name_len :sdl_get_joystick_info !)
+	(joy_namestraddr :sdl_get_joystick_info !)
 	(joy_axis_max stpopi)
 	(joy_buttons_max stpopi)
 	(loadreg)
