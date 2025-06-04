@@ -35,6 +35,9 @@
 // protos
 U1 *stpopb (U1 *data, U1 *sp, U1 *sp_top);
 
+// protos
+S2 memory_bounds (S8 start, S8 offset_access);
+
 size_t strlen_safe (const char * str, S8  maxlen);
 
 extern SDL_Surface *surf;
@@ -3585,6 +3588,8 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S4 value, old_value;
     int x, y;
 	S8 text_address ALIGN;
+    S8 text_len ALIGN;
+
 	// U1 resized = 0;
 
     struct gadget_button *button;
@@ -4136,6 +4141,17 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 											return (NULL);
 										}
 
+                                        // EDIT
+                                        text_len = strlen_safe ((const char *) string->value, STRINGMOD_MAXSTRLEN);
+
+                                        #if BOUNDSCHECK
+                                        if (memory_bounds (text_address, text_len) != 0)
+                                        {
+                                            printf ("gadget_event: ERROR: dest string overflow!\n");
+                                            return (NULL);
+                                        }
+                                        #endif
+
 										strcpy ((char *) &data[text_address], (const char *) string->value);
 
 										// value = dummy
@@ -4190,6 +4206,17 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 									printf ("gadget_event: ERROR: stack corrupt!\n");
 									return (NULL);
 								}
+
+                                // EDIT
+                                text_len = strlen_safe ((const char *) string->value, STRINGMOD_MAXSTRLEN);
+
+                                #if BOUNDSCHECK
+                                if (memory_bounds (text_address, text_len) != 0)
+                                {
+                                     printf ("gadget_event: ERROR: dest string overflow!\n");
+                                     return (NULL);
+                                 }
+                                #endif
 
 								strcpy ((char *) &data[text_address], (const char *) string->value);
 
@@ -4263,7 +4290,18 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 						                        return (NULL);
 						                    }
 
-						                    strcpy ((char *) &data[text_address], (const char *) string_multiline->value);
+                                            // EDIT
+                                            text_len = strlen_safe ((const char *) string_multiline->value, STRINGMOD_MAXSTRLEN);
+
+                                            #if BOUNDSCHECK
+                                            if (memory_bounds (text_address, text_len) != 0)
+                                            {
+                                                printf ("gadget_event: ERROR: dest string overflow!\n");
+                                                return (NULL);
+                                            }
+                                            #endif
+
+                                            strcpy ((char *) &data[text_address], (const char *) string_multiline->value);
 
 						                    // value = dummy
 						                    sp = stpushi (0, sp, sp_bottom);
@@ -4317,6 +4355,17 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 						                printf ("gadget_event: ERROR: stack corrupt!\n");
 						                return (NULL);
 						            }
+
+                                    // EDIT
+                                    text_len = strlen_safe ((const char *) string_multiline->value, STRINGMOD_MAXSTRLEN);
+
+                                    #if BOUNDSCHECK
+                                    if (memory_bounds (text_address, text_len) != 0)
+                                    {
+                                        printf ("gadget_event: ERROR: dest string overflow!\n");
+                                        return (NULL);
+                                    }
+                                    #endif
 
 						            strcpy ((char *) &data[text_address], (const char *) string_multiline->value);
 
@@ -7583,20 +7632,11 @@ U1 *get_joystick_button (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *get_joystick_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// get joystick infos
-
-	S8 name_len ALIGN;
 	S8 name_address ALIGN;
 	S8 name_real_len ALIGN;
 
 	S8 joystick_axis_max ALIGN;
 	S8 joystick_buttons_max ALIGN;
-
-	sp = stpopi ((U1 *) &name_len, sp, sp_top);
-	if (sp == NULL)
-	{
-		printf ("get_joystick_info: ERROR stack corrupt!\n");
-		return (NULL);
-	}
 
 	sp = stpopi ((U1 *) &name_address, sp, sp_top);
 	if (sp == NULL)
@@ -7607,12 +7647,15 @@ U1 *get_joystick_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	if (SDL_NumJoysticks () > 0)
 	{
-		name_real_len = strlen_safe (SDL_JoystickNameForIndex (0), name_len);
-		if (name_real_len > name_len)
+		name_real_len = strlen_safe (SDL_JoystickNameForIndex (0), STRINGMOD_MAXSTRLEN);
+
+        #if BOUNDSCHECK
+		if (memory_bounds (name_address, name_real_len) != 0)
 		{
 			printf ("get_joystick_info: ERROR name string overflow!\n");
 			return (NULL);
 		}
+		#endif
 
 		// save joystick name in string variable
 		strcpy ((char *) &data[name_address], SDL_JoystickNameForIndex (0));

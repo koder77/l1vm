@@ -59,8 +59,17 @@ extern SDL_Renderer *temp_renderer;
 // sandbox file access
 U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
 
+// protos
+S2 memory_bounds (S8 start, S8 offset_access);
+
+struct data_info data_info[MAXDATAINFO];
+S8 data_info_ind;
+
 S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
 {
+	memcpy (&data_info, &data_info_orig, sizeof (data_info_orig));
+	data_info_ind = data_info_ind_orig;
+
 	return (0);
 }
 
@@ -592,13 +601,13 @@ U1 *sdl_text_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 x ALIGN, y ALIGN;
 	U1 r, g, b;
 	U1 err = 0;
-	S8 nameaddr;
+	S8 textaddr;
 
 	SDL_Surface *textsurf;
 	SDL_Rect dstrect;
 	SDL_Color color;
 
-	sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
+	sp = stpopi ((U1 *) &textaddr, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
@@ -650,7 +659,7 @@ U1 *sdl_text_ttf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	color.g = g;
 	color.b = b;
 
-	textsurf = TTF_RenderText_Blended (font, (const char *) &data[nameaddr], color);
+	textsurf = TTF_RenderText_Blended (font, (const char *) &data[textaddr], color);
 	if (textsurf == NULL)
 	{
 		printf ("sdl_text_ttf: can't render text! %s\n", SDL_GetError ());
