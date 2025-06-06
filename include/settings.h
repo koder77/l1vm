@@ -61,6 +61,8 @@
 // VM: max size of data
 #define MAX_DATA_SIZE			4294967296L		// 4GB
 
+#define CODEMAXLINES            5000                // max code lines (standard)
+
 // VM: set timer interrupt
 #define TIMER_USE				1 				// 1 = set timer measurement interrupt
 
