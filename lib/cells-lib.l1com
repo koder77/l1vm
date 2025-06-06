@@ -2,7 +2,7 @@
 //
 // New: added return value checks on alloc Cells calls
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 (main func)
 	(set const-int64 1 zero 0)
 	(set const-int64 1 one 1)
@@ -39,15 +39,15 @@
 	(zero max_cells :cells_init_lib !)
 	(ret stpop)
 	(((ret zero !=) f =) f if)
-		exit (one)
+		(one :exit !)
 	(endif)
 	// allocate memory for cell neurons
 	(max_cells cell_neurons :cells_alloc_neurons_equal !)
 	(ret stpop)
 	(((ret zero !=) f =) f if)
-		(:cells_dealloc !)
+	    (:cells_dealloc !)
 		(loadreg)
-		exit (one)
+		(one :exit !)
 	(endif)
 	// read FANN from file
 	(cell node_xor node_xor_filestraddr inputs outputs Pnode_xor_inputsfaddr Pnode_xor_outputsfaddr layer_zero one :cells_fann_read_ann !)
@@ -57,14 +57,15 @@
 		(max_cells :cells_dealloc_neurons !)
 		(ret stpop)
 		(:cells_dealloc !)
-		exit (one)
+	    (one :exit !)
 	(endif)
 	(cell node_xor :cells_fann_run_ann !)
 	(ret stpop)
 	(cell node_xor zero Poutputfaddr :cells_fann_get_output !)
 	(ret stpop)
-	print_d (outputf)
-	print_n
+	(outputf :print_d !)
+	(:print_n !)
+
 	// update ANN
 	(zerof node_xor_inputsf [ zero ] =)
 	(zerof node_xor_inputsf [ offset ] =)
@@ -75,17 +76,18 @@
 	(ret stpop)
 	(cell node_xor zero Poutputfaddr :cells_fann_get_output !)
 	(ret stpop)
-	print_d (outputf)
-	print_n
+	(outputf :print_d !)
+	(:print_n !)
 	(reset-reg)
 	(zero zero Pmax_layer_readoutaddr :cells_fann_get_max_layer !)
 	(ret stpop)
-	print_i (max_layer_readout)
-	print_n
+	(max_layer_readout :print_i !)
+	(:print_n !)
+
 	// dealloc neurons
 	(max_cells :cells_dealloc_neurons !)
 	(ret stpop)
 	(:cells_dealloc !)
-	exit (zero)
+	(zero :exit !)
 (funcend)
 #include <cells-lib.l1h>

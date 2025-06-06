@@ -102,7 +102,7 @@
 	(3 mod@cells alloc_node_links@cells 0 intr0)
 (funcend)
 (cells_dealloc_node_links func)
-	(3 mod@cells alloc_node_links@cells 0 intr0)
+	(3 mod@cells dealloc_node_links@cells 0 intr0)
 (funcend)
 (cells_set_node_link func)
 	(3 mod@cells set_node_link@cells 0 intr0)

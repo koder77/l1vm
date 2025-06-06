@@ -1,0 +1,196 @@
+// cells-lib-2.l1com
+// Cells FANN wrapper library for L1VM
+//
+// "xor", "or", "and"  networks demo
+//
+#include <intr-func.l1h>
+(main func)
+	(set const-int64 1 zero 0)
+	(set const-int64 1 one 1)
+	(set const-int64 1 two 2)
+	(set int64 1 ret 0)
+	(set const-int64 1 max_cells 1)
+	(set int64 1 cell 0)
+	(set const-int64 1 node_xor 0)
+    (set const-int64 1 node_or 1)
+	(set const-int64 1 node_and 2)
+	(set const-int64 1 inputs 2)
+	(set const-int64 1 outputs 1)
+	(set const-int64 1 max_layers 1)
+	(set const-int64 1 cell_neurons 3)
+	(set const-int64 1 links 1)
+
+	// xor
+	(set double 2 node_xor_inputsf 1.0 0.0)
+	(set double 1 node_xor_outputsf 0.0)
+	(set const-int64 1 Pnode_xor_inputsfaddr 0)
+	(set const-int64 1 Pnode_xor_outputsfaddr 0)
+
+	// or
+	(set double 2 node_or_inputsf 1.0 0.0)
+	(set double 1 node_or_outputsf 0.0)
+    (set const-int64 1 Pnode_or_inputsfaddr 0)
+	(set const-int64 1 Pnode_or_outputsfaddr 0)
+
+    // and
+    (set double 2 node_and_inputsf 0.0 0.0)
+	(set double 1 node_and_outputsf 0.0)
+    (set const-int64 1 Pnode_and_inputsfaddr 0)
+	(set const-int64 1 Pnode_and_outputsfaddr 0)
+
+	(set double 1 outputf 0.0)
+	(set const-int64 1 Poutputfaddr 120)
+	(set const-int64 1 layer_zero 0)
+	(set const-int64 1 layer_one 1)
+	(set double 1 zerof 0.0)
+	(set double 1 onef 1.0)
+	(set int64 1 offset 8)
+	(set int64 1 f 0)
+	(set int64 1 max_layer_readout 0)
+	(set const-int64 1 Pmax_layer_readoutaddr 0)
+	// set path to "xor_float.net" file of Cells C library:
+	(set string s node_xor_filestr "fann/xor_float.net")
+	(set string s node_or_filestr "fann/or_float.net")
+	(set string s node_and_filestr "fann/and_float.net")
+
+	(set string s and_outputstr "AND layer output: ")
+	(set int64 1 ret_code 0)
+
+    // set pointers
+    // xor
+	(node_xor_inputsf Pnode_xor_inputsfaddr pointer)
+    (node_xor_outputsf Pnode_xor_outputsfaddr pointer)
+
+    // or
+	(node_or_inputsf Pnode_or_inputsfaddr pointer)
+    (node_or_outputsf Pnode_or_outputsfaddr pointer)
+
+	// and
+	(node_and_inputsf Pnode_and_inputsfaddr pointer)
+    (node_and_outputsf Pnode_and_outputsfaddr pointer)
+
+    (max_layer_readout Pmax_layer_readoutaddr pointer)
+    (outputf Poutputfaddr pointer)
+
+	(zero max_cells :cells_init_lib !)
+	(ret stpop)
+	(((ret zero !=) f =) f if)
+		(one :exit !)
+	(endif)
+
+	// allocate memory for cell neurons
+	(max_cells cell_neurons :cells_alloc_neurons_equal !)
+	(ret stpop)
+	(((ret zero !=) f =) f if)
+	    (:cells_dealloc !)
+		(loadreg)
+		(one :exit !)
+	(endif)
+
+	// layer 0 of Cell: xor and or
+	// read xor FANN from file
+	(cell node_xor node_xor_filestraddr inputs outputs Pnode_xor_inputsfaddr Pnode_xor_outputsfaddr layer_zero one :cells_fann_read_ann !)
+	(ret stpop)
+	(((ret zero !=) f =) f if)
+		// dealloc neurons
+		(max_cells :cells_dealloc_neurons !)
+		(ret stpop)
+		(:cells_dealloc !)
+	    (one :exit !)
+	(endif)
+
+	// read or FANN file
+	(cell node_or node_or_filestraddr inputs outputs Pnode_or_inputsfaddr Pnode_or_outputsfaddr layer_zero one :cells_fann_read_ann !)
+	(ret stpop)
+	(((ret zero !=) f =) f if)
+		// dealloc neurons
+		(max_cells :cells_dealloc_neurons !)
+		(ret stpop)
+		(:cells_dealloc !)
+	    (one :exit !)
+	(endif)
+
+	// layer 1 of Cell: and
+	//read and FANN file
+	(cell node_and node_and_filestraddr inputs outputs Pnode_and_inputsfaddr Pnode_and_outputsfaddr layer_one one :cells_fann_read_ann !)
+	(ret stpop)
+	(((ret zero !=) f =) f if)
+		// dealloc neurons
+		(max_cells :cells_dealloc_neurons !)
+		(ret stpop)
+		(:cells_dealloc !)
+	    (one :exit !)
+	(endif)
+
+    // allocate memory for links
+	(cell node_xor links :cells_alloc_node_links !)
+	(ret stpop)
+	(((ret zero !=) f =) f if)
+		// dealloc neurons
+		(max_cells :cells_dealloc_neurons !)
+		(ret stpop)
+		(:cells_dealloc !)
+	    (one :exit !)
+	(endif)
+
+	(cell node_or links :cells_alloc_node_links !)
+    (ret stpop)
+	(((ret zero !=) f =) f if)
+		// dealloc neurons
+		(max_cells :cells_dealloc_neurons !)
+		(ret stpop)
+		(:cells_dealloc !)
+	    (one :exit !)
+	(endif)
+
+	// set links
+	// connect output of "xor" and "or" with the inputs of "and"
+	(cell node_xor zero node_and zero zero :cells_set_node_link !)
+	(ret stpop)
+	(((ret zero !=) f =) f if)
+	    (one ret_code :=)
+	    (:end jmp)
+	(endif)
+
+	(cell node_or zero node_and one zero :cells_set_node_link !)
+	(ret stpop)
+	(((ret zero !=) f =) f if)
+	    (one ret_code :=)
+	    (:end jmp)
+	(endif)
+
+	// run the Cell FANNs
+	(cell zero zero zero max_layers :cells_fann_run_ann_go_links !)
+	(ret stpop)
+	(((ret zero !=) f =) f if)
+        (one ret_code :=)
+	    (:end jmp)
+    (endif)
+
+	// get output
+	(cell node_and zero Pnode_and_outputsfaddr :cells_fann_get_output !)
+	(ret stpop)
+	(((ret zero !=) f =) f if)
+        (one ret_code :=)
+	    (:end jmp)
+    (endif)
+
+	// print output
+	(and_outputstr :print_s !)
+    (node_and_outputsf :print_d !)
+	(:print_n !)
+
+    (:end)
+	// cleanup
+	// dealloc links
+	(cell node_xor :cells_dealloc_node_links !)
+	(ret stpop)
+	(cell node_or :cells_dealloc_node_links !)
+	(ret stpop)
+	// dealloc neurons
+	(max_cells :cells_dealloc_neurons !)
+	(ret stpop)
+	(:cells_dealloc !)
+	(ret_code :exit !)
+(funcend)
+#include <cells-lib.l1h>
