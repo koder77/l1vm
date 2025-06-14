@@ -40,7 +40,7 @@
 #define BOUNDSCHECK             1
 
 // switch on on Linux
-#define CPU_SET_AFFINITY		1
+#define CPU_SET_AFFINITY		0
 
 // set to defined for DEBUGGING
 #define DEBUG				0
