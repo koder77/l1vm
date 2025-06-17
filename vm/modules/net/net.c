@@ -1902,6 +1902,15 @@ U1 *socket_read_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
+    // check if len is in legal range
+    #if BOUNDSCHECK
+    if (memory_bounds (ret_addr, slen - 1) != 0)
+    {
+        printf ("socket_read_string: ERROR: read array buffer oveflow!\n");
+        return (NULL);
+    }
+    #endif
+
     while (! end)
     {
         ret = exe_sread (handle, sizeof (U1));
