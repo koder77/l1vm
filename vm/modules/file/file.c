@@ -1299,6 +1299,14 @@ U1 *file_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
+    #if BOUNDSCHECK
+	if (memory_bounds (string_address, slen - 1) != 0)
+	{
+        printf ("ERROR: file_get_string: ERROR: array overflow!\n");
+        return (NULL);
+	}
+    #endif
+
     // char *fgets_uni (char *str, int len, FILE *fptr)
     if (fgets_uni ((char *) &data[string_address], slen, files[handle].fptr) == NULL)
     {
