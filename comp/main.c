@@ -142,6 +142,9 @@ U1 forbid_unsafe = 0;
 // memory boúnds on/off
 U1 memory_bounds = 1;
 
+// emit compiler code into assembly file as comments
+U1 save_compiler_line = 0;
+
 // contracts
 U1 contracts = 0;
 U1 precondition = 0;
@@ -919,7 +922,7 @@ S2 parse_line (U1 *line)
 	U1 boolean_var = 0;
 	S2 normal_brackets = 0;
 
-	S2 right_assign_pos = 0 ;
+	S2 right_assign_pos = 0;
 
     ret = check_for_brackets (line);
 	if (ret == 1)
@@ -7506,6 +7509,29 @@ S2 parse (U1 *name)
 			// printf ("[ %s ]\n", rbuf);
 
 	        repair_multi_spaces (rbuf);
+
+			// EDIT
+			if (save_compiler_line == 1)
+			{
+				if (slen > MAXLINELEN - 5)
+				{
+					printf ("error: can't save Brackets code in comment line!\n");
+				}
+				else
+				{
+					code_line++;
+					if (code_line >= code_max_lines)
+					{
+						printf ("error: line %lli: code list full!\n", linenum);
+						return (1);
+					}
+
+					strcpy ((char *) code[code_line], "\n// ");
+					strcat ((char *) code[code_line], (const char *) rbuf);
+					strcat ((char *) code[code_line], "\n") ;
+				}
+			}
+
             pos = searchstr (rbuf, (U1 *) REM_SB, 0, 0, TRUE);
             if (pos == -1)
             {
@@ -7891,6 +7917,14 @@ int main (int ac, char *av[])
 				if (strcmp (av[i], "-wspaces") == 0)
 				{
 					error_multi_spaces = 1;
+				}
+			}
+
+			if (arglen == 9)
+			{
+				if (strcmp (av[i], "-savecode") == 0)
+				{
+					save_compiler_line = 1;
 				}
 			}
 

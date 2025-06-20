@@ -743,6 +743,11 @@ S2 parse_line (U1 *line)
 		return (0);
 	}
 
+    if (line_len == 1)
+    {
+        return (0);
+    }
+
     if (line[0] == '.' && line_len >= 4)
     {
         if (line[1] == 'd' && line[2] == 'a' && line[3] == 't' && line[4] == 'a')
