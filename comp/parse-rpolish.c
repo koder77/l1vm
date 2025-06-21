@@ -81,11 +81,13 @@ extern struct opcode opcode[];
 extern struct translate translate[];
 
 extern S8 code_line ALIGN;
-extern S8 line_len ALIGN;
+extern S8 code_max_lines ALIGN;
 extern S8 linenum ALIGN;
 
 extern S8 label_ind ALIGN;
 extern S8 call_label_ind ALIGN;
+
+extern S8 code_max_lines ALIGN;
 
 // variable ranges min/max
 extern struct range ranges[];
@@ -120,7 +122,7 @@ S4 load_variable_int (U1 *var)
 			// write code loada
 
 			code_line++;
-			if (code_line >= line_len)
+			if (code_line >= code_max_lines)
 			{
 				printf ("error: line %lli: code list full!\n", linenum);
 				return (-1);
@@ -153,7 +155,7 @@ S4 load_variable_int (U1 *var)
 		// printf ("%s\n", code_temp);
 
 		code_line++;
-		if (code_line >= line_len)
+		if (code_line >= code_max_lines)
 		{
 			printf ("error: line %lli: code list full!\n", linenum);
 			return (1);
@@ -198,7 +200,7 @@ S4 load_variable_int (U1 *var)
 		strcat ((char *) code_temp, "\n");
 
 		code_line++;
-		if (code_line >= line_len)
+		if (code_line >= code_max_lines)
 		{
 			printf ("error: line %lli: code list full!\n", linenum);
 			return (1);
@@ -228,7 +230,7 @@ S4 load_variable_double (U1 *var)
 			// write code loada
 
 			code_line++;
-			if (code_line >= line_len)
+			if (code_line >= code_max_lines)
 			{
 				printf ("error: line %lli: code list full!\n", linenum);
 				return (-1);
@@ -1287,7 +1289,7 @@ S2 parse_rpolish (U1 *postfix)
 
 				// write code
 				code_line++;
-				if (code_line >= line_len)
+				if (code_line >= code_max_lines)
 				{
 					printf ("error: line %lli: code list full!\n", linenum);
 					return (1);
@@ -1393,7 +1395,7 @@ S2 parse_rpolish (U1 *postfix)
 		target = reg;
 
 		code_line++;
-		if (code_line >= line_len)
+		if (code_line >= code_max_lines)
 		{
 			printf ("error: line %lli: code list full!\n", linenum);
 			return (1);
@@ -1410,7 +1412,7 @@ S2 parse_rpolish (U1 *postfix)
 		strcat ((char *) code_temp, ", 0\n");
 
 		code_line++;
-		if (code_line >= line_len)
+		if (code_line >= code_max_lines)
 		{
 			printf ("error: line %lli: code list full!\n", linenum);
 			return (1);
@@ -1459,7 +1461,7 @@ S2 parse_rpolish (U1 *postfix)
 			 strcat ((char *) code_temp, "\n");
 
 			 code_line++;
-			 if (code_line >= line_len)
+			 if (code_line >= code_max_lines)
 			 {
 				 printf ("error: line %lli: code list full!\n", linenum);
 				 return (1);
@@ -1491,7 +1493,7 @@ S2 parse_rpolish (U1 *postfix)
 		target = reg;
 
 		code_line++;
-		if (code_line >= line_len)
+		if (code_line >= code_max_lines)
 		{
 			printf ("error: line %lli: code list full!\n", linenum);
 			return (1);
@@ -1537,7 +1539,7 @@ S2 parse_rpolish (U1 *postfix)
 		strcat ((char *) code_temp, ", 0\n");
 
 		code_line++;
-		if (code_line >= line_len)
+		if (code_line >= code_max_lines)
 		{
 			printf ("error: line %lli: code list full!\n", linenum);
 			return (1);
@@ -1586,7 +1588,7 @@ S2 parse_rpolish (U1 *postfix)
 			 strcat ((char *) code_temp, "\n");
 
 			 code_line++;
-			 if (code_line >= line_len)
+			 if (code_line >= code_max_lines)
 			 {
 				 printf ("error: line %lli: code list full!\n", linenum);
 				 return (1);

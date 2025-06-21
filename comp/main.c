@@ -7859,7 +7859,7 @@ int main (int ac, char *av[])
 				{
 					if (i < ac - 1)
 	                {
-			            code_max_lines = atoi (av[i + 1]);
+			            code_max_lines = atoll (av[i + 1]);
 						printf ("max line len set to: %lli lines\n", code_max_lines);
 					}
 				}
@@ -7967,6 +7967,8 @@ int main (int ac, char *av[])
 		cleanup ();
 		exit (1);
 	}
+
+	printf ("Allocated %lli lines for code and for data.\n", code_max_lines);
 
 	// switch to red text
 	printf ("\033[31m");
