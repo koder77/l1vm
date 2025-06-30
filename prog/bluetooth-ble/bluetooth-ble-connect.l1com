@@ -1,0 +1,103 @@
+// bluetooth-ble-list.l1com
+//
+//
+#include <intr-func.l1h>
+(main func)
+	(set const-int64 1 zero 0)
+	(set const-int64 1 one 1)
+	(set const-int64 1 bluetooth_ble_mod 0)
+    (set const-int64 1 string_mod 1)
+	(set const-int64 1 bluetooth_ble_sock 10)
+	(set int64 1 adapter 0)
+	(set const-string s bltadaptersstr "bluetooth adapters: ")
+    (set const-string s periph_errorstr "error: can't get first bluetooth device info!")
+    (set const-string s periph_devstr "peripheral: ")
+    (set const-string s periph_maxstr "peripherals: ")
+    (set const-string s connstr "connected!")
+    (set const-string s spacestr " ")
+
+    // device:
+    (set const-string s my_devicestr "your device name!")
+
+    (set int64 1 f 0)
+	(set int64 1 ret 0)
+	(set int64 1 periph 0)
+    (set string 256 periph_namestr "")
+    (set string 256 periph_macstr "")
+    (set int64 1 periph_handle 0)
+    (set int64 1 character_max 0)
+    (set int64 1 periph_max 0)
+    (set int64 1 periph_myphone 0)
+
+	// open modules
+    (bluetooth_ble_mod :bluetoothble_init !)
+    (string_mod :string_init !)
+
+	// get number of adapters
+	(bluetooth_ble_sock :bluetoothble_get_adapter !)
+	(adapter stpop)
+
+	(bltadaptersstr :print_s !)
+	(adapter :print_i !)
+	(:print_n !)
+
+	(((adapter zero ==) f :=) f if)
+	   (one :exit !)
+	(endif)
+
+	// set adapter zero
+	(zero :bluetoothble_set_adapter !)
+    (ret stpop)
+    (((ret one ==) f :=) f if)
+       (one :exit !)
+    (endif)
+
+    (:bluetoothble_open_adapter !)
+    (periph_max stpop)
+    (((periph zero <) f :=) f if)
+       (one :exit !)
+    (endif)
+
+    (periph_maxstr: print_s !)
+    (spacestr :print_s !)
+    (periph_max :print_i !)
+    (:print_n !)
+
+    (zero periph =)
+    (((periph periph_max <) f :=) f for)
+        (periph periph_namestr periph_macstr :bluetoothble_get_peripheral !)
+        (ret stpop)
+        (((ret zero !=) f :=) f if+)
+            (periph_errorstr :print_s !)
+            (:print_n !)
+        (else)
+            // search device handle
+            (periph_namestr my_devicestr :string_compare !)
+            (ret stpop)
+            (((ret zero ==) f :=) f if)
+                (periph_devstr :print_s !)
+                (periph_namestr :print_s !)
+                (spacestr :print_s !)
+                (periph_macstr :print_s !)
+                (:print_n !)
+                (periph periph_handle :=)
+                (:found_device jmp)
+            (endif)
+        (endif)
+        (periph + one periph :=)
+    (next)
+    (:found_device)
+    (periph_handle :bluetoothble_connect !)
+    (character_max stpop)
+    (((character_max zero >=) f :=) f if)
+        (connstr :print_s !)
+        (:print_n !)
+    (endif)
+
+    // bluetoothble_get_characteristic
+
+	(zero :exit !)
+(funcend)
+
+#include <bluetooth-ble.l1h>
+#include <string.l1h>
