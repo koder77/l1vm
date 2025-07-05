@@ -129,6 +129,7 @@ Here is the full standard modules list: <br>
 
 <h2>Modules</h2>
 <pre>
+bluetooth - SimpleBLE to connect to bluetooth BLE devices
 Cells - linked neural networks with FANN library
 ciphersaber - encrypt/decrypt functions
 crypto - libsodium encrypt/decrypt functions
