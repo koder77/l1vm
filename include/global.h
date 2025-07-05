@@ -182,6 +182,7 @@
     #define MAXSTRLEN		4096	// MAX LENGTH for maximum string size for static allocation
 
     #else
+
 	#define MODULES				1024
 	#define MODULES_MAXFUNC		4096
 

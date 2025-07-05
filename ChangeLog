@@ -1,7 +1,10 @@
 L1VM (3.5.1)
 	Compiler: NEW flag  -savecode to put the Brackets code line into the assembly output.
 
--- Stefan Pietzonke <info@midnight-coding.de> Sat 21 June 2025 00:35  +020
+	VM: modules: I added support for Bluetooth BLE with the SimpleBLE library.
+	Note: If you use the SimpleBLE library commercially, then you have to pay a license!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 05 Juli 2025 10:57  +020
 
 L1VM (3.5.0)
 	Compiler, assembler MAXLINELEN fixes.
