@@ -8,7 +8,7 @@
     (set string s open_adapterstr~ "bluetooth_open_adapter")
     (set string s get_peripheralstr~ "bluetooth_get_peripheral")
     (set string s connectstr~ "bluetooth_connect")
-    (set string s get_characteristicstr~ "bluetooth_get_adapter")
+    (set string s get_characteristicstr~ "bluetooth_get_characteristic")
     (set string s writestr~ "bluetooth_write")
     (set string s readstr~ "bluetooth_read")
     (set string s disconnectstr~ "bluetooth_disconnect")
