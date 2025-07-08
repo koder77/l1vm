@@ -746,6 +746,15 @@ U1 *bluetooth_write (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 char_index ALIGN;
     S8 string_addr ALIGN;
     S8 peripheral ALIGN;
+    S8 data_len ALIGN;
+
+    sp = stpopi ((U1 *) &data_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bluetooth_write: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
     sp = stpopi ((U1 *) &string_addr, sp, sp_top);
 	if (sp == NULL)
@@ -798,10 +807,18 @@ U1 *bluetooth_write (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
+    #if BOUNDSCHECK
+    if (memory_bounds (string_addr, (S8) data_len - 1) != 0)
+	{
+        printf ("bluetooth_write: ERROR: address string overflow!\n");
+        return (NULL);
+	}
+    #endif
+
     // Prepare data for writing
     struct simpleble_data_t data_to_send;
     data_to_send.data = (uint8_t*) &data[string_addr];
-    data_to_send.data_len = (size_t*) strlen_safe ((const char *) &data[string_addr], STRINGMOD_MAXSTRLEN);
+    data_to_send.data_len = (size_t*) &data_len;
 
     simpleble_peripheral_t peripheral_conn = peripheral_list[peripheral];
 
@@ -909,21 +926,22 @@ U1 *bluetooth_read (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     // Prepare data for reading
-    struct simpleble_data_t data_to_read;
+    //struct simpleble_data_t data_to_read;
+    uint8_t* received_data = NULL; // Pointer to store the allocated data
+    size_t received_data_len = 0;   // Variable to store the length
 
     simpleble_peripheral_t peripheral_conn = peripheral_list[peripheral];
 
-    printf("Attempting to recieve '%s' to Service: %s, Characteristic: %s\n",
-           &data[string_addr],
+    printf("Attempting to recieve from Service: %s, Characteristic: %s\n",
            characteristic_entries[char_index].service_uuid.value,
            characteristic_entries[char_index].characteristic_uuid.value);
 
-    // Perform the write operation (using write_command for unacknowledged write)
+    // Perform the read operation
     err_code = simpleble_peripheral_read (
         peripheral_conn,
         characteristic_entries[char_index].service_uuid,
         characteristic_entries[char_index].characteristic_uuid,
-        &data_to_read.data, data_to_read.data_len
+        &received_data, &received_data_len
     );
 
     if (err_code != SIMPLEBLE_SUCCESS)
@@ -941,11 +959,11 @@ U1 *bluetooth_read (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     #if BOUNDSCHECK
-    if (memory_bounds (string_addr, (S8) data_to_read.data_len - 1) != 0)
+    if (memory_bounds (string_addr, (S8) received_data_len - 1) != 0)
 		{
 			printf ("bluetooth_read: ERROR: address string overflow!\n");
 
-            free (data_to_read.data);
+            free (received_data);
 
             sp = stpushi (1, sp, sp_bottom); // return number of characteristic entries for bluetooth_get_characteristic()
             if (sp == NULL)
@@ -959,17 +977,17 @@ U1 *bluetooth_read (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     #endif
 
     // copy data
-    if (data_to_read.data_len > 0)
+    if (received_data_len > 0)
     {
-        for (i = 0; i < (S8) data_to_read.data_len; i++)
+        for (i = 0; i < (S8) received_data_len; i++)
         {
-            read_byte = data_to_read.data[i];
+            read_byte = received_data[i];
             read_data = read_byte;
             data[string_addr + i] = read_data;
         }
     }
 
-    free (data_to_read.data);
+    free (received_data);
 
     if (err_code == SIMPLEBLE_SUCCESS)
     {
