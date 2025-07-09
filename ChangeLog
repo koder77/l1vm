@@ -4,7 +4,9 @@ L1VM (3.5.1)
 	VM: modules: I added support for Bluetooth BLE with the SimpleBLE library.
 	Note: If you use the SimpleBLE library commercially, then you have to pay a license!
 
--- Stefan Pietzonke <info@midnight-coding.de> Sat 05 Juli 2025 10:57  +020
+	I did check the Bluetooth BLE read and write functions. They both are working!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Wed 09 Juli 2025 14:38 +020
 
 L1VM (3.5.0)
 	Compiler, assembler MAXLINELEN fixes.

@@ -313,7 +313,7 @@ U1 *bluetooth_open_adapter (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     simpleble_adapter_set_callback_on_scan_found (adapter, adapter_on_scan_found, NULL);
 
     // Start scanning for 5 seconds
-    simpleble_adapter_scan_for (adapter, 5000);
+    simpleble_adapter_scan_for (adapter, 60000);
 
     printf ("peripheral list entries: %li\n", peripheral_list_len);
 
@@ -820,7 +820,7 @@ U1 *bluetooth_write (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     data_to_send.data = (uint8_t*) &data[string_addr];
     data_to_send.data_len = (size_t*) &data_len;
 
-    simpleble_peripheral_t peripheral_conn = peripheral_list[peripheral];
+    simpleble_peripheral_t *peripheral_conn = peripheral_list[peripheral];
 
     printf("Attempting to write '%s' to Service: %s, Characteristic: %s\n",
            &data[string_addr],
@@ -930,7 +930,7 @@ U1 *bluetooth_read (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     uint8_t* received_data = NULL; // Pointer to store the allocated data
     size_t received_data_len = 0;   // Variable to store the length
 
-    simpleble_peripheral_t peripheral_conn = peripheral_list[peripheral];
+    simpleble_peripheral_t *peripheral_conn = peripheral_list[peripheral];
 
     printf("Attempting to recieve from Service: %s, Characteristic: %s\n",
            characteristic_entries[char_index].service_uuid.value,
@@ -946,7 +946,7 @@ U1 *bluetooth_read (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     if (err_code != SIMPLEBLE_SUCCESS)
     {
-        printf ("bluetooth_read: error can't read data!\n");
+        printf ("bluetooth_read: error can't read data! error code: %i\n", err_code);
 
         sp = stpushi (1, sp, sp_bottom); // return number of characteristic entries for bluetooth_get_characteristic()
         if (sp == NULL)
