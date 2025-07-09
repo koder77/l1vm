@@ -948,6 +948,8 @@ U1 *bluetooth_read (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         printf ("bluetooth_read: error can't read data! error code: %i\n", err_code);
 
+        free (received_data);
+
         sp = stpushi (1, sp, sp_bottom); // return number of characteristic entries for bluetooth_get_characteristic()
         if (sp == NULL)
         {
