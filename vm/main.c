@@ -3959,7 +3959,7 @@ int main (int ac, char *av[])
 							{
 								if (i < ac - 1)
 				                {
-									// set max stack size flag...
+									// set max local data flag...
 									local_data_max = atoi (av[i + 1]);
 									if (stack_size == 0)
 									{
