@@ -1,7 +1,7 @@
 // hello-print.l1com
 // This shows how to use the pointer_type interrupt to get the pointer array variable type.
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 #include <vars.l1h>
 #include <misc-macros.l1h>
 (main func)
@@ -16,18 +16,18 @@
     // get string pointer
     (hello Pvar pointer)
     (Pvar :print_var !)
-    print_n
+    (:print_n !)
 
-    ((x y *) a =)
+    ((x y *) a :=)
     // get int64 pointer
     (a Pvar pointer)
     (Pvar :print_var !)
-    print_n
+    (:print_n !)
 
     // get double pointer
     (d Pvar pointer)
     (Pvar :print_var !)
-    print_n
+    (:print_n !)
 
     exit (zero)
 (funcend)
@@ -41,26 +41,29 @@
     (set int64 1 f~ 0)
     (set int64 1 int_var~)
     (set double 1 double_var~)
+    (set string s stringvar~ "")
     (Pvar~ stpop)
+
     // get pointer type
-    pointer_type (Pvar~, vartype~)
+    (Pvar~ vartype~ :pointer_type !)
     // pull vartype~ to variable
-    pull_int64_var (vartype~)
+    (vartype~ :pull_int64_var !)
 
     // Check pointer type and print the variable.
     (switch)
         (vartype~ byte_ptr ?)
-            print_s (Pvar~)
+            (Pvar~ stringvar~addr :=)
+            (stringvar~ :print_s !)
             (break)
 
         (vartype~ int64_ptr ?)
-            (Pvar~ [ zero~ ] int_var~ =)
-            print_i (int_var~)
+            (Pvar~ [ zero~ ] int_var~ :=)
+            (int_var~ :print_i !)
             (break)
 
         (vartype~ double_ptr ?)
-            (Pvar~ [ zero~ ] double_var~ =)
-            print_d (double_var~)
+            (Pvar~ [ zero~ ] double_var~ :=)
+            (double_var~ :print_d !)
             (break)
     (switchend)
 (funcend)
