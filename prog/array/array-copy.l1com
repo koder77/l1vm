@@ -1,0 +1,48 @@
+// array-copy.l1com
+
+#include <intr-func.l1h>
+#include <misc-macros.l1h>
+#include <zero.l1h>
+
+(main func)
+	(set int64 1 zero 0)
+    (set int64 1 one 1)
+    (set int64 1 four 4)
+	(set int64 5 a 23 4 10 50 100)
+	(set int64 5 b 0 10 11 23 55)
+	(set int64 10 c)
+	(set int64 1 Pa 0)
+	(set int64 1 Pb 0)
+	(set int64 1 Pc 0)
+    (set int64 1 i 0)
+    (set int64 1 offset 8)
+    (set int64 1 f 0)
+    (set int64 1 maxarray 10)
+    (set int64 1 realindex 0)
+    (set int64 1 var 0)
+
+	// set pointers
+	(a Pa pointer)
+    (Pa :pull_int64_var !)
+
+	(b Pb pointer)
+    (Pb :pull_int64_var !)
+
+	(c Pc pointer)
+    (Pc :pull_int64_var !)
+
+	(Pa Pb Pc zero four zero four :array_int64_cat_range !)
+
+    (((i maxarray <) f :=) f for)
+       (c [ realindex ] var :=)
+       (var :print_i !)
+       (:print_n !)
+
+       (realindex + offset realindex :=)
+       (i + one i :=)
+    (next)
+
+	(zero :exit !)
+(funcend)
+
+#include <array-cat.l1h>
