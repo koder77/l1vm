@@ -14,7 +14,7 @@
 	(set int64 1 arrayb_size~ 0)
 	(set int64 1 index~ 0)
 	(set int64 1 cindex~ 0)
-    (set int64 1 offset~ 8)
+    (set const-int64 1 offset~ 8)
     (set int64 1 f~ 0)
     (set int64 1 var~ 0)
 
@@ -76,7 +76,7 @@
 	(set int64 1 index~ 0)
 	(set int64 1 cindex~ 0)
     (set int64 1 ind_count~ 0)
-    (set int64 1 offset~ 8)
+    (set const-int64 1 offset~ 8)
     (set int64 1 f~ 0)
     (set int64 1 var~ 0)
 
@@ -157,7 +157,7 @@
 	(set int64 1 arrayb_size~ 0)
 	(set int64 1 index~ 0)
 	(set int64 1 cindex~ 0)
-    (set int64 1 offset~ 8)
+    (set const-int64 1 offset~ 8)
     (set int64 1 f~ 0)
     (set double 1 var~ 0.0)
 
@@ -219,7 +219,7 @@
 	(set int64 1 index~ 0)
 	(set int64 1 cindex~ 0)
     (set int64 1 ind_count~ 0)
-    (set int64 1 offset~ 8)
+    (set const-int64 1 offset~ 8)
     (set int64 1 f~ 0)
     (set double 1 var~ 0.0)
 
@@ -326,7 +326,7 @@
     (set int64 1 Parraya~)
     (set int64 1 Parrayb~)
     (set int64 1 array_size~ 0)
-    (set int64 1 offset~ 8)
+    (set const-int64 1 offset~ 8)
 
     (Parrayb~ stpop)
     (Parraya~ stpop)
@@ -348,7 +348,7 @@
     (set int64 1 Parraya~)
     (set int64 1 Parrayb~)
     (set int64 1 array_size~ 0)
-    (set int64 1 offset~ 8)
+    (set const-int64 1 offset~ 8)
 
     (Parrayb~ stpop)
     (Parraya~ stpop)
