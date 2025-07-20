@@ -1,6 +1,5 @@
 // array-cat.l1h
 // cat two arrays a and b to array c
-// int64 array cat functions
 // get first array element
 // get rest of array: index 1 - end of array
 (array_int64_cat func)
