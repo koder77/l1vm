@@ -116,6 +116,11 @@
             (:copy_a_array_int64_cat_range jmp)
         (endif)
 
+    (((arrayb_min~ zero~ <) f~ =) f~ if)
+       // skip array b copy
+       (return)
+    (endif)
+
     // copy array b to c
     (zero~ index~ :=)
     (arrayb_min~ ind_count~ :=)
@@ -254,6 +259,11 @@
             (:copy_a_array_double_cat_range jmp)
         (endif)
 
+    (((arrayb_min~ zero~ <) f~ =) f~ if)
+       // skip array b copy
+       (return)
+    (endif)
+
     // copy array b to c
     (zero~ index~ :=)
     (arrayb_min~ ind_count~ :=)
@@ -274,4 +284,78 @@
         (f~ if)
             (:copy_b_array_double_cat_range jmp)
         (endif)
+(funcend)
+
+// return first element
+(array_int64_first func)
+    #var ~ array_int64_first
+
+    (set const-int64 1 zero~ 0)
+    (set int64 1 Parray~ 0)
+    (set int64 1 var~ 0)
+
+    (Parray~ stpop)
+    (Parray~ [ zero~ ] var~ :=)
+    (var~ :pull_int64_var !)
+
+    (var~ stpush)
+(funcend)
+
+(array_double_first func)
+    #var ~ array_double_first
+
+    (set const-int64 1 zero~ 0)
+    (set int64 1 Parray~ 0)
+    (set double 1 var~ 0.0)
+
+    (Parray~ stpop)
+    (Parray~ [ zero~ ] var~ :=)
+    (var~ :pull_double_var !)
+
+    (var~ stpush)
+(funcend)
+
+// return rest = index 1 - to array size
+(array_int64_rest func)
+    #var ~ array_int64_rest
+
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set const-int64 1 neg_one~ -1)
+    (set int64 1 Parraya~)
+    (set int64 1 Parrayb~)
+    (set int64 1 array_size~ 0)
+    (set int64 1 offset~ 8)
+
+    (Parrayb~ stpop)
+    (Parraya~ stpop)
+
+    (Parraya~ array_size~ :get_size !)
+    (array_size~ :pull_int64_var !)
+    (array_size~ / offset~ array_size~ :=)
+    (array_size~ - one~ array_size~ :=)
+
+    (Parraya~ Parraya~ Parrayb~ one~ array_size~ neg_one~ zero~ :array_int64_cat_range !)
+(funcend)
+
+(array_double_rest func)
+    #var ~ array_double_rest
+
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set const-int64 1 neg_one~ -1)
+    (set int64 1 Parraya~)
+    (set int64 1 Parrayb~)
+    (set int64 1 array_size~ 0)
+    (set int64 1 offset~ 8)
+
+    (Parrayb~ stpop)
+    (Parraya~ stpop)
+
+    (Parraya~ array_size~ :get_size !)
+    (array_size~ :pull_int64_var !)
+    (array_size~ / offset~ array_size~ :=)
+    (array_size~ - one~ array_size~ :=)
+
+    (Parraya~ Parraya~ Parrayb~ one~ array_size~ neg_one~ zero~ :array_double_cat_range !)
 (funcend)
