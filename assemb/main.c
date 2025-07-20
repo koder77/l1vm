@@ -1743,7 +1743,7 @@ int main (int ac, char *av[])
 		strcat ((char *) shell_pack, ".l1obj");
 		if (system ((char *) shell_pack) != 0)
 		{
-			printf ("\033[31mERROR: can't compress object: '%s' with bzip2!\n", av[1]);
+			printf ("\033[31mERROR: can't compress object: '%s' with bzip3!\n", av[1]);
 			printf ("[!] %s\033[0m\n\n", av[1]);
 			printf ("\033[0m\n");	// switch to normal text color
 			exit (1);
