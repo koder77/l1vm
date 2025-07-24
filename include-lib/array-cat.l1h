@@ -360,3 +360,53 @@
 
     (Parraya~ Parraya~ Parrayb~ one~ array_size~ neg_one~ zero~ :array_double_cat_range !)
 (funcend)
+
+// cons array
+// put first element of Parraya~ and the full array of Parrayb~ to Parrayc~
+(array_int64_cons func)
+    #var ~ array_int64_cons
+
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 Parraya~)
+    (set int64 1 Parrayb~)
+    (set int64 1 Parrayc~)
+    (set int64 1 var~)
+    (set int64 1 array_size~ 0)
+    (set const-int64 1 offset~ 8)
+
+    (Parrayc~ stpop)
+    (Parrayb~ stpop)
+    (Parraya~ stpop)
+
+    (Parrayb~ array_size~ :get_size !)
+    (array_size~ :pull_int64_var !)
+    (array_size~ / offset~ array_size~ :=)
+    (array_size~ - one~ array_size~ :=)
+
+    (Parraya~ Parrayb~ Parrayc~ zero~ zero~ zero~ array_size~ :array_int64_cat_range !)
+(funcend)
+
+(array_double_cons func)
+    #var ~ array_double_cons
+
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 Parraya~)
+    (set int64 1 Parrayb~)
+    (set int64 1 Parrayc~)
+    (set int64 1 var~)
+    (set int64 1 array_size~ 0)
+    (set const-int64 1 offset~ 8)
+
+    (Parrayc~ stpop)
+    (Parrayb~ stpop)
+    (Parraya~ stpop)
+
+    (Parrayb~ array_size~ :get_size !)
+    (array_size~ :pull_int64_var !)
+    (array_size~ / offset~ array_size~ :=)
+    (array_size~ - one~ array_size~ :=)
+
+    (Parraya~ Parrayb~ Parrayc~ zero~ zero~ zero~ array_size~ :array_double_cat_range !)
+(funcend)

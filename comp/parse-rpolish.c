@@ -36,19 +36,19 @@ S2 set_variable_prefix (U1 *variable);
 #define MAXTRANSLATE 48
 
 //int stack
-#define MAX_STACK 512
-// #define MAXLINELEN 256
+#define MAX_STACK 4096
+#define STMAXSTRLEN 40960
 
 extern struct translate translate[];
 
-U1 stack_ob[MAX_STACK][MAXSTRLEN];
+U1 stack_ob[MAX_STACK][STMAXSTRLEN];
 S2 stack_ob_int = -1;
 
 S2 stack_reg[MAX_STACK];
 int stack_reg_int = -1;
 
 //int stack
-int stack[MAXSTRLEN];
+int stack[];
 int top_int = -1;
 
 // register tracking functions
@@ -101,8 +101,8 @@ S4 load_variable_int (U1 *var)
 {
 	S4 target;
 	S4 reg2, reg3;
-	U1 str[MAXSTRLEN];
-	U1 code_temp[MAXSTRLEN];
+	U1 str[STMAXSTRLEN];
+	U1 code_temp[STMAXSTRLEN];
 
 	if (checkdef (var) != 0)
 	{
@@ -216,7 +216,7 @@ S4 load_variable_double (U1 *var)
 {
 	S4 target;
 	S4 reg2;
-	U1 str[MAXSTRLEN];
+	U1 str[STMAXSTRLEN];
 
 	if (getvartype_real (var) == DOUBLE)
 	{
@@ -858,17 +858,17 @@ S2 parse_rpolish (U1 *postfix)
 	S2 pos = 0;
 	S2 get_var = 0;
 	S2 parse = 1;
-	U1 buf[MAXSTRLEN];
+	U1 buf[STMAXSTRLEN];
 
    	S2 reg = 0;
 	S2 reg_int = 0;
 
 	S2 target, target_reg;
 	S2 reg1, reg2;
-	U1 str[MAXSTRLEN];
-	U1 code_temp[MAXSTRLEN];
+	U1 str[STMAXSTRLEN];
+	U1 code_temp[STMAXSTRLEN];
 
-	U1 target_var[MAXSTRLEN];
+	U1 target_var[STMAXSTRLEN];
 	S2 target_var_len = MAXLINELEN - 1;
 	U1 target_var_type = UNKNOWN;
 	U1 expression_var_type_max = UNKNOWN;
@@ -880,9 +880,9 @@ S2 parse_rpolish (U1 *postfix)
 	S8 var_range_ind ALIGN;
 	S2 min_reg;
 	S2 max_reg;
-	U1 min_reg_str[MAXSTRLEN];
-	U1 max_reg_str[MAXSTRLEN];
-	U1 target_reg_str[MAXSTRLEN];
+	U1 min_reg_str[STMAXSTRLEN];
+	U1 max_reg_str[STMAXSTRLEN];
+	U1 target_reg_str[STMAXSTRLEN];
 
 	// get target var name
 	math_exp_begin = get_target_var (postfix, target_var, target_var_len);

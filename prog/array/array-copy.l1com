@@ -23,6 +23,8 @@
     (set int64 1 maxdarray 4)
     (set int64 1 realindex 0)
     (set int64 1 var 0)
+    (set int64 1 cons_var 77)
+    (set int64 1 Pcons_var 0)
 
 	// set pointers
 	(a Pa pointer)
@@ -36,6 +38,9 @@
 
     (d Pd pointer)
     (Pd :pull_int64_var !)
+
+    (cons_var Pcons_var pointer)
+    (Pcons_var :pull_int64_var !)
 
 	(Pa Pb Pc zero four zero four :array_int64_cat_range !)
 
@@ -62,6 +67,23 @@
 
     (((i maxdarray <) f :=) f for)
        (d [ realindex ] var :=)
+       (var :print_i !)
+       (:print_n !)
+
+       (realindex + offset realindex :=)
+       (i + one i :=)
+    (next)
+
+    (:print_n !)
+    (:print_n !)
+
+    (Pcons_var Pa Pc :array_int64_cons !)
+
+    (zero i :=)
+    (zero realindex :=)
+
+    (((i maxarray <) f :=) f for)
+       (c [ realindex ] var :=)
        (var :print_i !)
        (:print_n !)
 
