@@ -620,3 +620,181 @@
 
     (Parraya~ Parrayb~ Parrayc~ zero~ zero~ zero~ array_size~ :array_int32_cat_range !)
 (funcend)
+
+ // member: check if variable is in list, if it is then get copy of array
+(array_byte_member func)
+	#var ~ array_byte_member
+
+	(set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set const-int64 1 neg_one~ -1)
+
+	(set int64 1 Parraya~ 0)
+	(set int64 1 Parrayb~ 0)
+	(set int64 1 Parrayc~ 0)
+
+	(set int64 1 arraya_size~ 0)
+    (set int64 1 array_size~ 0)
+	(set int64 1 index~ 0)
+    (set const-int64 1 offset~ 1)
+    (set int64 1 f~ 0)
+    (set byte 1 var~ 0)
+    (set int64 1 found_var~ 0)
+    (set byte 1 match~ 0)
+
+	(Parrayc~ stpop)
+	(match~ stpop)
+    (Parraya~ stpop)
+
+    (zero~ index~ :=)
+    (zero~ found_var~ :=)
+
+    // search array Parraya~ for Parrayb~
+    (Parraya~ arraya_size~ :get_size !)
+    (arraya_size~ :pull_int64_var !)
+
+    (arraya_size~ / offset~ array_size~ :=)
+    (array_size~ - one~ array_size~ :=)
+
+    (:check_a_array_byte_member)
+        (Parraya~ [ index~ ] var~ :=)
+        (var~ :pull_byte_var !)
+
+        (((var~ match~ ==) f~ :=) f~ if)
+           (one~ found_var~ :=)
+           (:check_a_array_end_byte_member jmp)
+        (endif)
+
+        (index~ + offset~ index~ :=)
+        (index~ < arraya_size~ f~ :=)
+        (f~ if)
+            (:check_a_array_byte_member jmp)
+        (endif)
+
+    (:check_a_array_end_byte_member)
+    (((found_var~ one~ ==) f~ :=) f~ if+)
+        // member found in array copy array to Parrayc~
+        (Parraya~ Parraya~ Parrayc~ zero~ array_size~ neg_one~ zero~ :array_byte_cat_range !)
+        (zero~ stpush)
+    (else)
+         (one~ stpush)
+    (endif)
+(funcend)
+
+(array_int16_member func)
+	#var ~ array_int16_member
+
+	(set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set const-int64 1 neg_one~ -1)
+
+	(set int64 1 Parraya~ 0)
+	(set int64 1 Parrayb~ 0)
+	(set int64 1 Parrayc~ 0)
+
+	(set int64 1 arraya_size~ 0)
+    (set int64 1 array_size~ 0)
+	(set int64 1 index~ 0)
+    (set const-int64 1 offset~ 2)
+    (set int64 1 f~ 0)
+    (set int16 1 var~ 0)
+    (set int64 1 found_var~ 0)
+    (set int16 1 match~ 0)
+
+	(Parrayc~ stpop)
+	(match~ stpop)
+    (Parraya~ stpop)
+
+    (zero~ index~ :=)
+    (zero~ found_var~ :=)
+
+    // search array Parraya~ for Parrayb~
+    (Parraya~ arraya_size~ :get_size !)
+    (arraya_size~ :pull_int64_var !)
+
+    (arraya_size~ / offset~ array_size~ :=)
+    (array_size~ - one~ array_size~ :=)
+
+    (:check_a_array_int16_member)
+        (Parraya~ [ index~ ] var~ :=)
+        (var~ :pull_int16_var !)
+
+        (((var~ match~ ==) f~ :=) f~ if)
+           (one~ found_var~ :=)
+           (:check_a_array_end_int16_member jmp)
+        (endif)
+
+        (index~ + offset~ index~ :=)
+        (index~ < arraya_size~ f~ :=)
+        (f~ if)
+            (:check_a_array_int16_member jmp)
+        (endif)
+
+    (:check_a_array_end_int16_member)
+    (((found_var~ one~ ==) f~ :=) f~ if+)
+        // member found in array copy array to Parrayc~
+        (Parraya~ Parraya~ Parrayc~ zero~ array_size~ neg_one~ zero~ :array_int16_cat_range !)
+        (zero~ stpush)
+    (else)
+         (one~ stpush)
+    (endif)
+(funcend)
+
+(array_int32_member func)
+	#var ~ array_int32_member
+
+	(set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set const-int64 1 neg_one~ -1)
+
+	(set int64 1 Parraya~ 0)
+	(set int64 1 Parrayb~ 0)
+	(set int64 1 Parrayc~ 0)
+
+	(set int64 1 arraya_size~ 0)
+    (set int64 1 array_size~ 0)
+	(set int64 1 index~ 0)
+    (set const-int64 1 offset~ 4)
+    (set int64 1 f~ 0)
+    (set int32 1 var~ 0)
+    (set int64 1 found_var~ 0)
+    (set int32 1 match~ 0)
+
+	(Parrayc~ stpop)
+	(match~ stpop)
+    (Parraya~ stpop)
+
+    (zero~ index~ :=)
+    (zero~ found_var~ :=)
+
+    // search array Parraya~ for Parrayb~
+    (Parraya~ arraya_size~ :get_size !)
+    (arraya_size~ :pull_int64_var !)
+
+    (arraya_size~ / offset~ array_size~ :=)
+    (array_size~ - one~ array_size~ :=)
+
+    (:check_a_array_int32_member)
+        (Parraya~ [ index~ ] var~ :=)
+        (var~ :pull_int32_var !)
+
+        (((var~ match~ ==) f~ :=) f~ if)
+           (one~ found_var~ :=)
+           (:check_a_array_end_int32_member jmp)
+        (endif)
+
+        (index~ + offset~ index~ :=)
+        (index~ < arraya_size~ f~ :=)
+        (f~ if)
+            (:check_a_array_int32_member jmp)
+        (endif)
+
+    (:check_a_array_end_int32_member)
+    (((found_var~ one~ ==) f~ :=) f~ if+)
+        // member found in array copy array to Parrayc~
+        (Parraya~ Parraya~ Parrayc~ zero~ array_size~ neg_one~ zero~ :array_int32_cat_range !)
+        (zero~ stpush)
+    (else)
+         (one~ stpush)
+    (endif)
+(funcend)
