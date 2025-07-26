@@ -2,6 +2,13 @@
 // cat two arrays a and b to array c
 // get first array element
 // get rest of array: index 1 - end of array
+//
+// map function, gets label and pushes arguments, then executes FUNC_LABEL (function pointer) function
+#func map (FUNC_LABEL, PA, PB, PC) :(PA PB PC stpush)@#(FUNC_LABEL jsr)
+
+// reduce function, gets array range and the arrays
+#func reduce (FUNC_LABEL, START, END, PA, PB, PC) :(START END PA PB PC stpush)@#(FUNC_LABEL jsr)
+
 (array_int64_cat func)
 	#var ~ array_int64_cat
 

@@ -5,16 +5,16 @@
 #include <zero.l1h>
 
 (main func)
-	(set int64 1 zero 0)
+    (set int64 1 zero 0)
     (set int64 1 one 1)
     (set int64 1 four 4)
-	(set int64 5 a 23 4 10 50 100)
-	(set int64 5 b 0 10 11 23 55)
-	(set int64 10 c)
+    (set int64 5 a 23 4 10 50 100)
+    (set int64 5 b 0 10 11 23 55)
+    (set int64 10 c)
     (set int64 4 d)
-	(set int64 1 Pa 0)
-	(set int64 1 Pb 0)
-	(set int64 1 Pc 0)
+    (set int64 1 Pa 0)
+    (set int64 1 Pb 0)
+    (set int64 1 Pc 0)
     (set int64 1 Pd 0)
     (set int64 1 i 0)
     (set int64 1 offset 8)
@@ -26,14 +26,14 @@
     (set int64 1 cons_var 77)
     (set int64 1 Pcons_var 0)
 
-	// set pointers
-	(a Pa pointer)
+    // set pointers
+    (a Pa pointer)
     (Pa :pull_int64_var !)
 
-	(b Pb pointer)
+    (b Pb pointer)
     (Pb :pull_int64_var !)
 
-	(c Pc pointer)
+    (c Pc pointer)
     (Pc :pull_int64_var !)
 
     (d Pd pointer)
@@ -42,7 +42,7 @@
     (cons_var Pcons_var pointer)
     (Pcons_var :pull_int64_var !)
 
-	(Pa Pb Pc zero four zero four :array_int64_cat_range !)
+    (Pa Pb Pc zero four zero four :array_int64_cat_range !)
 
     (((i maxarray <) f :=) f for)
        (c [ realindex ] var :=)
@@ -91,7 +91,7 @@
        (i + one i :=)
     (next)
 
-	(zero :exit !)
+    (zero :exit !)
 (funcend)
 
 #include <array-cat.l1h>
