@@ -3,19 +3,59 @@
 #include <intr-func.l1h>
 #include <misc-macros.l1h>
 #include <zero.l1h>
+#include <array-func.l1h>
+
+(:main jmp)
+
+(add_one_int64 func)
+    (set int64 1 zero 0)
+
+    #var ~ add_one_int64
+
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 Pa~ 0)
+    (set int64 1 Pret~ 0)
+    (set int64 1 x~ 0)
+    (set int64 1 offset~ 8)
+    (set int64 1 realindex~ 0)
+    (set int64 1 asize~ 0)
+    (set int64 1 var~ 0)
+    (set int64 1 f~ 0)
+
+    (Pret~ stpop)
+    (x~ stpop)
+    (Pa~ stpop)
+
+    (Pa~ asize~ :get_size !)
+    (asize~ :pull_int64_var !)
+
+    (zero~ realindex~ :=)
+
+    (((realindex~ asize~ <) f~ :=) f~  for)
+        (Pa~ [ realindex~ ] var~ :=)
+
+        ((var~ one~ +) var~ :=)
+
+        (var~ Pret~ [ realindex~ ] :=)
+        (realindex~ + offset~ realindex~ :=)
+   (next)
+(funcend)
 
 (main func)
-    (set int64 1 zero 0)
+    // (set int64 1 zero 0)
     (set int64 1 one 1)
     (set int64 1 four 4)
     (set int64 5 a 23 4 10 50 100)
     (set int64 5 b 0 10 11 23 55)
     (set int64 10 c)
-    (set int64 4 d)
+    (set int64 5 d)
+    (set int64 5 e)
     (set int64 1 Pa 0)
     (set int64 1 Pb 0)
     (set int64 1 Pc 0)
     (set int64 1 Pd 0)
+    (set int64 1 Pe 0)
     (set int64 1 i 0)
     (set int64 1 offset 8)
     (set int64 1 f 0)
@@ -25,6 +65,8 @@
     (set int64 1 var 0)
     (set int64 1 cons_var 77)
     (set int64 1 Pcons_var 0)
+    (set int64 1 add_one_func 0)
+    (set string s Mapcarstr "Mapcar")
 
     // set pointers
     (a Pa pointer)
@@ -39,8 +81,14 @@
     (d Pd pointer)
     (Pd :pull_int64_var !)
 
+    (e Pe pointer)
+    (Pe :pull_int64_var !)
+
     (cons_var Pcons_var pointer)
     (Pcons_var :pull_int64_var !)
+
+    (:add_one_int64 add_one_func loadl)
+    (add_one_func :pull_int64_var !)
 
     (Pa Pb Pc zero four zero four :array_int64_cat_range !)
 
@@ -84,6 +132,26 @@
 
     (((i maxarray <) f :=) f for)
        (c [ realindex ] var :=)
+       (var :print_i !)
+       (:print_n !)
+
+       (realindex + offset realindex :=)
+       (i + one i :=)
+    (next)
+
+    (:print_n !)
+    (:print_n !)
+
+    (Mapcarstr :print_s !)
+    (:print_n !)
+
+    (add_one_func Pa Pa Pe :mapcar !)
+
+    (zero i :=)
+    (zero realindex :=)
+
+    (((i maxdarray <=) f :=) f for)
+       (e [ realindex ] var :=)
        (var :print_i !)
        (:print_n !)
 
