@@ -20,7 +20,7 @@
 #include "../../../include/global.h"
 
 // to make it build on FreeBSD:
-#if __FreeBSD__
+#ifdef __FreeBSD__
 #undef __GLIBC__
 #endif
 
