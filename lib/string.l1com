@@ -1,6 +1,6 @@
 // string.l1com
 // now with string array demo
-#include <intr.l1h>
+#include <intr-func.l1h>
 #include <vars.l1h>
 (main func)
     (set int64 1 zero 0)
@@ -53,110 +53,106 @@
     (set string s verify_okstr "string verify ok!")
     (set string s verify_failstr "string verify failed!")
 
-    (zero :string_init call)
+    (zero :string_init !)
     // copy hellostr to array
-    (hellostraddr arraystraddr zero string_len array_size :string_to_array call)
+    (hellostraddr arraystraddr zero string_len array_size :string_to_array !)
     // copy worldstr to array
-    (worldstraddr arraystraddr one string_len array_size :string_to_array call)
+    (worldstraddr arraystraddr one string_len array_size :string_to_array !)
     // get strings from array
-    (arraystraddr hellostr2addr zero string_len array_size :array_to_string call)
-    (arraystraddr worldstr2addr one string_len array_size :array_to_string call)
-    print_s (hellostr2)
-    print_n
-    print_s (worldstr2)
-    print_n
-    print_n
-    (hellostraddr worldstraddr :string_cat call)
-    print_s (hellostr)
-    print_n
-    (hellostraddr :string_len call)
+    (arraystraddr hellostr2addr zero string_len array_size :array_to_string !)
+    (arraystraddr worldstr2addr one string_len array_size :array_to_string !)
+    (hellostr2 :print_s !)
+    (:print_n !)
+    (worldstr2 :print_s !)
+    (:print_n !)
+    (:print_n !)
+    (hellostraddr worldstraddr :string_cat !)
+    (hellostr :print_s !)
+    (:print_n !)
+    (hellostraddr :string_len !)
     (slen stpopi)
-    print_i (slen)
-    print_n
-    (hellostraddr hellostr2addr hello_len :string_left call)
-    print_s (hellostr2)
-    print_n
-    (hellostraddr worldstr2addr world_len :string_right call)
-    print_s (worldstr2)
-    print_n
-    (slen bufstr buflen :string_int64tostring call)
-    print_s (bufstr)
-    print_n
-    (bytenum bufstr buflen :string_bytetohexstring call)
-    print_s (bufstr)
-    print_n
+    (slen :print_i !)
+    (:print_n !)
+    (hellostraddr hellostr2addr hello_len :string_left !)
+    (hellostr2 :print_s !)
+    (:print_n !)
+    (hellostraddr worldstr2addr world_len :string_right !)
+    (worldstr2 :print_s !)
+    (:print_n !)
+    (slen bufstr buflen :string_int64tostring !)
+    (bufstr :print_s !)
+    (:print_n !)
+    (bytenum bufstr buflen :string_bytetohexstring !)
+    (bufstr :print_s !)
+    (:print_n !)
     // get char at positon mid_pos in hellostr
-    (hellostraddr bufstr mid_pos :string_mid call)
-    print_s (bufstr)
-    print_n
-    (dotstraddr hellostraddr dot_pos :string_to_string call)
-    print_s (hellostr)
-    print_n
+    (hellostraddr bufstr mid_pos :string_mid !)
+    (bufstr :print_s !)
+    (:print_n !)
+    (dotstraddr hellostraddr dot_pos :string_to_string !)
+    (hellostr :print_s !)
+    (:print_n !)
     // check regex function:
-    (regexsrcstraddr regexstr :string_regex call)
+    (regexsrcstraddr regexstr :string_regex !)
     (ret stpopi)
     (((ret zero ==) f =) f if+)
-        print_s (regex_foundstr)
-        print_n
+        (regex_foundstr :print_s !)
+        (:print_n !)
     (else)
-        print_s (regex_notfoundstr)
-        print_n
+        (regex_notfoundstr :print_s !)
+        (:print_n !)
 	(endif)
 
     // JSON parse function
-    print_s (json_infostr)
-    print_n
-    print_s (jsonstr)
-    print_n
+    (json_infostr :print_s !)
+    (:print_n !)
+    (jsonstr :print_s !)
+    (:print_n !)
     (jsonstr keystr valuestr maxlen :string_parse_json !)
     (ret stpop)
-    print_i (ret)
-    print_n
-    print_s (keystr)
-    print_n
-    print_s (valuestr)
-    print_n
-
+    (ret :print_i !)
+    (:print_n !)
+    (keystr :print_s !)
+    (:print_n !)
+    (valuestr :print_s !)
+    (:print_n !)
     // replace string
     (rep_in_str search_rep_str rep_str rep_out_str :string_replace !)
-    print_s (rep_out_str)
-    print_n
-
+    (rep_out_str :print_s !)
+    (:print_n !)
     // copy hellostr to array
-    (sortastraddr arraystraddr zero string_len array_size :string_to_array call)
+    (sortastraddr arraystraddr zero string_len array_size :string_to_array !)
     // copy worldstr to array
-    (sortbstraddr arraystraddr one string_len array_size :string_to_array call)
+    (sortbstraddr arraystraddr one string_len array_size :string_to_array !)
     // sort string array
     (arraystr zero string_len array_size sort_string_asc :string_array_sort !)
     (ret stpop)
     // print sorted array
-    (arraystraddr sortedastraddr zero string_len array_size :array_to_string call)
-    (arraystraddr sortedbstraddr one string_len array_size :array_to_string call)
-    print_s (sortedastr)
-    print_n
-    print_s (sortedbstr)
-    print_n
-
+    (arraystraddr sortedastraddr zero string_len array_size :array_to_string !)
+    (arraystraddr sortedbstraddr one string_len array_size :array_to_string !)
+    (sortedastr :print_s !)
+    (:print_n !)
+    (sortedbstr :print_s !)
+    (:print_n !)
     // search for string in array
-    (arraystraddr searchstraddr zero string_len array_size :string_array_search call)
+    (arraystraddr searchstraddr zero string_len array_size :string_array_search !)
     (index pos stpop)
-    print_i (index)
-    print_n
-    print_i (pos)
-    print_n
+    (index :print_i !)
+    (:print_n !)
+    (pos :print_i !)
+    (:print_n !)
 
     (verifystr verify_charstr :string_verify !)
     (ret stpop)
     (((ret zero ==) f =) f if+)
-         print_s (verify_okstr)
+         (verify_okstr :print_s !)
     (else)
-        print_s (verify_failstr)
+        (verify_failstr :print_s !)
     (endif)
-    print_n
+    (:print_n !)
 
-    free_mod (zero)
-
-    exit (zero)
+    (zero :free_mod !)
+    (zero :exit !)
 (funcend)
 #include <string.l1h>
 #include <string-tools.l1h>
