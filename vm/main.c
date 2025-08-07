@@ -9,7 +9,6 @@
 char *get_home (void);
 
 S8 data_size ALIGN;
-S8 code_size ALIGN;
 
 
 
