@@ -5,8 +5,9 @@ L1VM (3.5.1)
 	Note: If you use the SimpleBLE library commercially, then you have to pay a license!
 
 	I did check the Bluetooth BLE read and write functions. They both are working!
+	NEW: support for NetBSD and also MidnightBSD.
 
--- Stefan Pietzonke <info@midnight-coding.de> Wed 09 Juli 2025 14:38 +020
+-- Stefan Pietzonke <info@midnight-coding.de> Thu 07 August 2025 20:37 +020
 
 L1VM (3.5.0)
 	Compiler, assembler MAXLINELEN fixes.
