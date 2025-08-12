@@ -69,9 +69,9 @@
 #define DO_ALIGNMENT			1 				// set 64 bit var alignment
 
 // switch one of these to "1":
-#define TINY_RAM                1
+#define TINY_RAM                0
 #define LOW_RAM			    0					// set to 1 on a machine with LOW RAM, like I do on the Psion 5MX Linux build! :)
-#define MEDIUM_RAM              0
+#define MEDIUM_RAM              1
 #define NORMAL_RAM              0
 
 #define MAX_MUTEXES				256				// for interrupt 1
