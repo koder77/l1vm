@@ -147,6 +147,23 @@
 // code labels name len
 #define LABELLEN				64
 
+#if TINY_RAM
+	#define MODULES				16
+	#define MODULES_MAXFUNC		128
+
+	// Jump call stack, for jsr, jsra: how many jsr and jsra MAXSUBJUMPS can be done without a rts (return) call.
+	// If you want to save RAM you can set this value to 256!
+	#define MAXSUBJUMPS			128
+
+	// max number of code labels, and their name length:
+	#define MAXLABELS			256
+
+    // max number of Brackets objects
+    #define MAXOBJECTS          256
+
+    #define MAXLINELEN      100 	// MAX LENGTH for strlen_safe string length
+    #define MAXSTRLEN		256		// MAX LENGTH for maximum string size for static allocation
+#endif
 #if LOW_RAM
 	#define MODULES				32
 	#define MODULES_MAXFUNC		256
@@ -163,8 +180,8 @@
 
     #define MAXLINELEN      100 	// MAX LENGTH for strlen_safe string length
     #define MAXSTRLEN		256		// MAX LENGTH for maximum string size for static allocation
-#else
-    #if MEDIUM_RAM
+#endif
+#if MEDIUM_RAM
     #define MODULES				128
 	#define MODULES_MAXFUNC	    2048
 
@@ -180,9 +197,8 @@
 
     #define MAXLINELEN      512    	// MAX LENGTH for strlen_safe string length, was 4096
     #define MAXSTRLEN		4096	// MAX LENGTH for maximum string size for static allocation
-
-    #else
-
+#endif
+#if NORMAL_RAM
 	#define MODULES				1024
 	#define MODULES_MAXFUNC		4096
 
@@ -198,7 +214,6 @@
 
     #define MAXLINELEN      512    	// MAX LENGTH for strlen_safe string length, was 4096
     #define MAXSTRLEN		4096	// MAX LENGTH for maximum string size for static allocation
-    #endif
 #endif
 
 // internal settings end ======================================================

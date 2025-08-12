@@ -28,7 +28,7 @@ U1 *data_global = NULL;
 // local data max
 S8 local_data_max ALIGN = LOCAL_DATA_MAX;
 
-S8 code_ind ALIGN;
+S8 code_size ALIGN;
 S8 data_ind ALIGN;
 S8 modules_ind ALIGN = -1;    // no module loaded = -1
 
