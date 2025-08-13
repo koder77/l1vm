@@ -1,5 +1,5 @@
 // mem-lib.l1com
-#include <intr.l1h>
+#include <intr-func.l1h>
 (main func)
     (set int64 1 zero 0)
 	(set int64 1 one 1)
@@ -20,54 +20,52 @@
 	(loadreg)
 	(((ret zero !=) f =) f if)
 		// ERROR can't allocate memory
-		print_s (meminitstr)
-        print_n
-        exit (one)
+		(meminitstr :print_s !)
+		(:print_n !)
+        (one :exit !)
 	(endif)
-	// allocate
+	// allocate int64 array
 	(memsize :alloc_int64 call)
+    // get memory handle memaddr:
 	(memaddr stpopi)
-	(loadreg)
 	(((memaddr zero <) f =) f if)
 		// ERROR can't allocate memory
-		print_s (memerrstr)
-        print_n
-		exit (one)
+		(memerrstr :print_s !)
+        (:print_n !)
+        (one :exit !)
 	(endif)
-	// write to array
+
+	// write to array: 0 to memsize - 1
 	(:write_loop)
-	print_s (writing)
-    print_i (i)
-    print_n
-	(memaddr i i :int_to_array call)
-	(loadreg)
+    (writing :print_s !)
+    (i :print_i !)
+    (:print_n !)
+	(memaddr i i :int_to_array !)
 	((i one +) i =)
 	(((i memsize <) f =) f if)
 		(:write_loop jmp)
 	(endif)
-	print_n
-	print_n
-	// read from array
+	(:print_n !)
+	(:print_n !)
+
+	// read from array: 0 to memsize - 1
 	(zero j =)
 	(:read_loop)
 	(memaddr j :array_to_int call)
 	(read stpopi)
-	(loadreg)
-	print_s (reading)
-    print_i (read)
-    print_n
+    (reading :print_s !)
+    (read :print_i !)
+	(:print_n !)
 	((j one +) j =)
 	(((j memsize <) f =) f if)
 		(:read_loop jmp)
 	(endif)
-	// dealloc mem
-	// (memaddr :dealloc call)
-	(loadreg)
-	(:free_mem call)
-	(loadreg)
+
+	// dealloc memory
+	(:free_mem !)
 	// close mem module
-	free_mod (zero)
+	(zero :free_mod !)
 	// exit OK
-	exit (zero)
+	(zero :exit !)
 (funcend)
 #include <mem-lib.l1h>
