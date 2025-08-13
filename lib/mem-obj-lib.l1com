@@ -2,12 +2,12 @@
 //
 //	memory object demo
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 (main func)
-    (set int64 1 zero 0)
-	(set int64 1 one 1)
-	(set int64 1 two 2)
-	(set int64 1 three 3)
+    (set const-int64 1 zero 0)
+	(set const-int64 1 one 1)
+	(set const-int64 1 two 2)
+	(set const-int64 1 three 3)
 	(set int64 1 memaddr 0)
 	(set int64 1 memind 0)
 	(set int64 1 memsize 1)
@@ -22,22 +22,24 @@
 	(set int64 1 write 0)
 	(set int64 1 ret 0)
 	(set int64 1 f 0)
-	(set string s meminitstr "ERROR can't init memory")
-	(set string s memerrstr "ERROR can't allocate memory!")
-	(set string s saveerrstr "ERROR can't save to memory object!")
-	(set string s writing "writing: ")
-	(set string s reading "reading: ")
-	(set string s hellostr "Hello world!")
+	(set const-string s meminitstr "ERROR can't init memory")
+	(set const-string s memerrstr "ERROR can't allocate memory!")
+	(set const-string s saveerrstr "ERROR can't save to memory object!")
+	(set const-string s writing "writing: ")
+	(set const-string s reading "reading: ")
+	(set const-string s hellostr "Hello world!")
 	(set string 256 getstr "")
+
 	#include <mem-obj-lib-types.l1h>
+
 	(zero one :mem_obj_init !)
 	(ret stpopi)
 	(loadreg)
 	(((ret zero !=) f =) f if)
 		// ERROR can't allocate memory
-		print_s (meminitstr)
-        print_n
-		exit (one)
+		(meminitstr :print_s !)
+        (:print_n !)
+	    (one :exit !)
 	(endif)
 	// allocate memory for the 4 variables
 	(variables memsize :alloc_obj_memobj !)
@@ -45,27 +47,26 @@
 	(loadreg)
 	(((memaddr zero <) f =) f if)
 		// ERROR can't allocate memory
-		print_s (memerrstr)
-        print_n
-		exit (one)
+		(memerrstr :print_s !)
+		(:print_n !)
+	    (one :exit !)
 	(endif)
 	// write to memory obj array
 	// store variables a, b, c and hellostr in memory object
 	// note the variable types are set by "i_type", "d_type" and "s_type" !!!
-	(reset-reg)
 	(c d_type b i_type a i_type hellostr s_type variables zero memaddr :save_obj_memobj !)
 	(ret stpopi)
 	(((ret zero !=) f =) f if)
 		// ERROR can't allocate memory
-		print_s (saveerrstr)
-	    print_n
-	    exit (one)
+		(saveerrstr :print_s !)
+		(:print_n !)
+	    (one :exit !)
 	(endif)
 	// get string from mem obj
 	(zero memaddr getstr :load_obj_string_memobj !)
 	(ret stpopi)
-	print_s (getstr)
-	print_n
+	(getstr :print_s !)
+	(:print_n !)
 	(three one memaddr :load_obj_memobj !)
 	// pop variables from stack
 	(ret stpopi)
@@ -73,18 +74,21 @@
 	(bread stpopi)
 	(aread stpopi)
 	// print variables
-	print_i (aread)
-	print_n
-	print_i (bread)
-	print_n
-	print_i (cread)
-	print_n
+	(aread :print_i !)
+	(:print_n !)
+
+	(bread :print_i !)
+	(:print_n !)
+
+	(cread :print_d !)
+	(:print_n !)
+
 	// free mem object
 	(memaddr :free_obj_memobj !)
-	(:free_memobj call)
+	(:free_memobj !)
 	// close mem module
-	free_mod (zero)
+	(zero :free_mod !)
 	// exit OK
-	exit (zero)
+    (zero :exit !)
 (funcend)
 #include <mem-obj-lib.l1h>
