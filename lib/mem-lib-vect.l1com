@@ -4,7 +4,7 @@
     (set const-int64 1 zero 0)
 	(set const-int64 1 one 1)
 	(set int64 1 memaddr 0)
-	(set const-int64 1 memsize 10000)
+	(set const-int64 1 memsize 5)
 	(set int64 1 i 0)
 	(set int64 1 j 0)
 	(set int64 1 f 0)
@@ -59,7 +59,7 @@
 
 	(reading :print_s !)
     (:print_n !)
-    (i :print_i !)
+    (j :print_i !)
     (:print_n !)
 
 	((j one +) j =)
@@ -68,9 +68,7 @@
 	(endif)
 	// dealloc mem
 	(memaddr :dealloc_vect !)
-	(loadreg)
 	(:free_mem !)
-	(loadreg)
 	// close mem module
 	(zero :free_mod !)
 	// exit ok
