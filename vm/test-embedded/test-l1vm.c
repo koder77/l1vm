@@ -1,3 +1,22 @@
+/*
+ * This file test-l1vm .c is part of L1vm.
+ *
+ * (c) Copyright Stefan Pietzonke (info@midnight-coding.de), 2021
+ *
+ * L1vm is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * L1vm is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with L1vm.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 // test-l1vm.c
 //
 // This is a demo program of how to use the L1VM as a shared library program
@@ -6,13 +25,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../../include/global.h"
 #include "l1vm-embedded.h"
 
 int main (void) {
-    long long int data_size, i, pwrap = 0;
-    unsigned char *data_ptr = NULL;
+    S8 data_size, i, pwrap = 0;
+    U1 *data_ptr = NULL;
     int ret;
-    unsigned char hexstr[3];
+    U1 hexstr[3];
+    U1 byte;
 
     // this shows how to set command line arguments for the embedded L1VM
     // setting the stack size to 10000 as an example.
