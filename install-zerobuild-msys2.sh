@@ -82,7 +82,6 @@ else
 	echo "l1vm build error!"
 	exit 1
 fi
-cp l1vm l1vm-nojit
 cd ..
 cp assemb/l1asm.exe ~/l1vm/bin/l1asm
 cp comp/l1com.exe ~/l1vm/bin/l1com
@@ -134,7 +133,8 @@ cp lib/ ~/l1vm -r
 echo "installing fonts to ~/l1vm"
 cp fonts/ ~/l1vm -r
 
-cp include-lib/ ~/l1vm/include -r
+mkdir ~/l1vm/include
+cp include-lib/* ~/l1vm/include/
 
 mkdir ~/l1vm/man
 
