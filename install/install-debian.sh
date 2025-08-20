@@ -1,12 +1,12 @@
 #!/bin/bash
-# changed: install to /home/pi/bin instead to /usr/local/bin!
+# changed: install to /home/foo/bin instead to /usr/local/bin
+
+cd ..
+
+sudo apt-get update
 
 export PATH="$HOME/l1vm/bin:$PATH"
 export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
-
-if uname -a | grep -q "raspberrypi"; then
-echo "Raspberry Pi Debian detected..."
-echo "checking for needed libraries..."
 
 if ! dpkg -s libsdl2-dev &> /dev/null; then
 	echo "try to install libsdl2-dev..."
@@ -122,19 +122,13 @@ fi
 
 echo "libraries installed! building compiler, assembler and VM..."
 
-else
-	echo "ERROR: detected OS not Raspberry Pi Debian GNU Linux!"
-	echo "You have to install the dependency libraries by hand..."
-	echo "See this installation script for more info..."
-fi
-
-export CC=clang
-export CCPP=clang++
+export CC=clang-15
+export CCPP=clang++-15
 
 # check if clang C compiler is installed
-if ! dpkg -s clang &> /dev/null; then
+if ! dpkg -s clang-15 &> /dev/null; then
 	echo "try to install clang..."
-	if ! sudo apt-get install clang; then
+	if ! sudo apt-get install clang-15; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -161,7 +155,7 @@ else
 	echo "cloning and building it now..."
 	git clone https://github.com/koder77/zerobuild.git
 	cd zerobuild
-	./make.sh
+	./make-clang-15.sh
 	cp zerobuild ~/l1vm/bin/
 	cd ..
 fi
@@ -202,7 +196,7 @@ else
 	echo "l1vm JIT build error!"
 	exit 1
 fi
-cp l1vm-nojit l1vm
+cp l1vm l1vm-nojit
 cd ..
 cp assemb/l1asm ~/l1vm/bin
 cp comp/l1com ~/l1vm/bin

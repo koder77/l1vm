@@ -1,5 +1,7 @@
 #!/bin/bash
-# This is experimental amd may not work right!
+# changed: install to /home/foo/bin instead to /usr/local/bin!
+
+cd ..
 
 export PATH="$HOME/l1vm/bin:$PATH"
 export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
@@ -9,29 +11,27 @@ echo "building compiler, assembler and VM..."
 export CC=clang
 export CCPP=clang++
 
-sudo pkgin -y install SDL2
-sudo pkgin -y install SDL2_gfx
-sudo pkgin -y install SDL2_image
-sudo pkgin -y install SDL2_ttf
-sudo pkgin -y install SDL2_mixer
-sudo pkgin -y install fann
-sudo pkgin -y install mpfr
-sudo pkgin -y install cmake
-sudo pkgin -y install gmake
-sudo pkgin -y install git
-sudo pkgin -y install libsodium
-sudo pkgin -y install libserialport
-sudo pkgin -y install pulseaudio
-sudo pkgin -y install pavucontrol
-sudo pkgin -y install libssl
-sudo pkgin -y install libcrypto++
+sudo dnf install SDL2-devel.x86_64
+sudo dnf install SDL2_gfx-devel.x86_64
+sudo dnf install SDL2_image-devel.x86_64
+sudo dnf install SDL2_ttf-devel.x86_64
+sudo dnf install SDL2_mixer-devel.x86_64
+sudo dnf install fann-devel.x86_64
+sudo dnf install mpfr-devel.x86_64
+sudo dnf install cmake.x86_64
+sudo dnf install make.x86_64
+sudo dnf install git.x86_64
+sudo dnf install libsodium-devel.x86_64
+sudo dnf install libserialport-devel.x86_64
+sudo dnf install libssl-devel.x86_64
+sudo dnf install libcrypto++-devel.x86_64
 
 # check if clang C compiler is installed
 FILE=/usr/bin/clang
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
-	sudo pkgin -y install clang
+	sudo dnf install clang
 fi
 
 # check if ~/bin exists
@@ -47,7 +47,7 @@ else
 fi
 
 # check if zerobuild installed into ~/bin
-FILE=~/l1vm/bin/zerobuild
+FILE=~/bin/zerobuild
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
@@ -56,14 +56,33 @@ else
 	git clone https://github.com/koder77/zerobuild.git
 	cd zerobuild
 	./make.sh
-	cp zerobuild ~/l1vm/bin/
+	cp zerobuild ~/bin/
 	cd ..
 fi
 
 # install mpreal.h include
 	echo "installing mpreal.h include file now..."
-	GIT_SSL_NO_VERIFY=true git clone https://github.com/advanpix/mpreal.git
+	git clone https://github.com/advanpix/mpreal.git
 	sudo cp vm/modules/mpfr-c++/mpreal.h /usr/include
+
+# check if libasmjit is installed
+FILE=/usr/local/lib/libasmjit.so
+if test -f "$FILE"; then
+    echo "$FILE exists!"
+else
+	echo "libasmjit not installed into $FILE!"
+	echo "cloning and building it now..."
+	git clone https://github.com/asmjit/asmjit
+	cd asmjit
+	mkdir build
+	cd build
+	cmake ../
+	make
+	sudo make install
+	sudo cp libasmjit.so /usr/local/lib
+	cd ..
+	cd ..
+fi
 
 cd assemb
 if zerobuild force; then
@@ -90,10 +109,10 @@ else
 fi
 
 cd ../vm
-if zerobuild zerobuild-nojit-netbsd.txt force; then
-	echo "l1vm build ok!"
+if zerobuild zerobuild.txt force; then
+	echo "l1vm JIT build ok!"
 else
-	echo "l1vm build error!"
+	echo "l1vm JIT build error!"
 	exit 1
 fi
 cd ..
@@ -106,8 +125,8 @@ echo "VM binaries installed into ~/bin"
 cd modules
 echo "installing modules..."
 chmod +x *.sh
-sh ./build-netbsd.sh
-if sh ./install.sh; then
+./build.sh
+if ./install.sh; then
 	echo "modules build ok!"
 else
 	echo "modules build FAILED!"
@@ -118,7 +137,7 @@ cd ../
 
 echo "all modules installed. building programs..."
 chmod +x *.sh
-if sh ./build-all.sh; then
+if ./build-all.sh; then
 	echo "building programs successfully!"
 else
 	echo "building programs FAILED!"
@@ -138,14 +157,14 @@ else
 fi
 
 echo "installing programs to ~/l1vm"
-cp -R prog/ ~/l1vm
+cp prog/ ~/l1vm -r
 cp lib/sdl-lib* ~/l1vm/prog
 
 echo "installing lib to ~/lib"
-cp -R lib/ ~/l1vm
+cp lib/ ~/l1vm -r
 
 echo "installing fonts to ~/l1vm"
-cp -R fonts/ ~/l1vm
+cp fonts/ ~/l1vm -r
 
 mkdir ~/l1vm/include
 cp include-lib/* ~/l1vm/include/

@@ -1,6 +1,8 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 
+cd ..
+
 echo "building compiler, assembler and VM..."
 
 # use GCC, because clang can't build some modules!

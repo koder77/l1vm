@@ -1,38 +1,32 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 
+cd ..
+
 export PATH="$HOME/l1vm/bin:$PATH"
 export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
+
+pacman -S mingw-w64-x86_64-clang --noconfirm
+pacman -S cmake --noconfirm
+
+pacman -S mingw-w64-x86_64-SDL2 --noconfirm
+pacman -S mingw-w64-x86_64-SDL2_gfx --noconfirm
+pacman -S mingw-w64-x86_64-SDL2_ttf --noconfirm
+pacman -S mingw-w64-x86_64-SDL2_image --noconfirm
+pacman -S mingw-w64-x86_64-SDL2_mixer --noconfirm
+
+pacman -S mingw-w64-x86_64-mpfr --noconfirm
+pacman -S mingw-w64-x86_64-libsodium --noconfirm
+pacman -S mingw-w64-x86_64-libserialport --noconfirm
+pacman -S mingw-w64-x86_64-openssl --noconfirm
+pacman -S mingw-w64-x86_64-crypto++ --noconfirm
 
 echo "building compiler, assembler and VM..."
 
 export CC=clang
 export CCPP=clang++
 
-sudo dnf install SDL2-devel.x86_64
-sudo dnf install SDL2_gfx-devel.x86_64
-sudo dnf install SDL2_image-devel.x86_64
-sudo dnf install SDL2_ttf-devel.x86_64
-sudo dnf install SDL2_mixer-devel.x86_64
-sudo dnf install fann-devel.x86_64
-sudo dnf install mpfr-devel.x86_64
-sudo dnf install cmake.x86_64
-sudo dnf install make.x86_64
-sudo dnf install git.x86_64
-sudo dnf install libsodium-devel.x86_64
-sudo dnf install libserialport-devel.x86_64
-sudo dnf install libssl-devel.x86_64
-sudo dnf install libcrypto++-devel.x86_64
-
-# check if clang C compiler is installed
-FILE=/usr/bin/clang
-if test -f "$FILE"; then
-    echo "$FILE exists!"
-else
-	sudo dnf install clang
-fi
-
-# check if ~/bin exists
+# check if ~/l1vm/bin exists
 DIR="~/l1vm/bin"
 if [ -d "$DIR" ]; then
   ### Take action if $DIR exists ###
@@ -54,14 +48,9 @@ else
 	git clone https://github.com/koder77/zerobuild.git
 	cd zerobuild
 	./make.sh
-	cp zerobuild ~/l1vm/bin/
+	cp zerobuild.exe ~/l1vm/bin/zerobuild
 	cd ..
 fi
-
-# install mpreal.h include
-	echo "installing mpreal.h include file now..."
-	git clone https://github.com/advanpix/mpreal.git
-	sudo cp vm/modules/mpfr-c++/mpreal.h /usr/include
 
 cd assemb
 if zerobuild force; then
@@ -88,25 +77,25 @@ else
 fi
 
 cd ../vm
-if zerobuild zerobuild-nojit.txt force; then
-	echo "l1vm JIT build ok!"
+# if zerobuild zerobuild-nojit.txt force; then
+if ./make-win.sh; then
+	echo "l1vm build ok!"
 else
-	echo "l1vm JIT build error!"
+	echo "l1vm build error!"
 	exit 1
 fi
-cp l1vm l1vm-nojit
 cd ..
-cp assemb/l1asm ~/l1vm/bin
-cp comp/l1com ~/l1vm/bin
-cp prepro/l1pre ~/l1vm/bin
-cp vm/l1v* ~/l1vm/bin
-echo "VM binaries installed into ~/bin"
+cp assemb/l1asm.exe ~/l1vm/bin/l1asm
+cp comp/l1com.exe ~/l1vm/bin/l1com
+cp prepro/l1pre.exe ~/l1vm/bin/l1pre
+cp vm/l1v* ~/l1vm/bin/l1vm
+echo "VM binaries installed into ~/l1vm/bin"
 
 cd modules
 echo "installing modules..."
 chmod +x *.sh
-./build.sh
-if ./install.sh; then
+./build-win.sh
+if ./install-win.sh; then
 	echo "modules build ok!"
 else
 	echo "modules build FAILED!"

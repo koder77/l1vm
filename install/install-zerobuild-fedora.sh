@@ -1,6 +1,8 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 
+cd ..
+
 export PATH="$HOME/l1vm/bin:$PATH"
 export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
 
@@ -9,33 +11,31 @@ echo "building compiler, assembler and VM..."
 export CC=clang
 export CCPP=clang++
 
-doas pkg_add sdl2
-doas pkg_add sdl2-gfx
-doas pkg_add sdl2-image
-doas pkg_add sdl2-ttf
-doas pkg_add sdl2-mixer
-doas pkg_add fann
-doas pkg_add mpfr
-doas pkg_add cmake
-doas pkg_add gmake
-doas pkg_add git
-doas pkg_add libsodium
-doas pkg_add libserialport
-doas pkg_add pulseaudio
-doas pkg_add pavucontrol
-doas pkg_add libssl
-doas pkg_add libcrypto++
+sudo dnf install SDL2-devel.x86_64
+sudo dnf install SDL2_gfx-devel.x86_64
+sudo dnf install SDL2_image-devel.x86_64
+sudo dnf install SDL2_ttf-devel.x86_64
+sudo dnf install SDL2_mixer-devel.x86_64
+sudo dnf install fann-devel.x86_64
+sudo dnf install mpfr-devel.x86_64
+sudo dnf install cmake.x86_64
+sudo dnf install make.x86_64
+sudo dnf install git.x86_64
+sudo dnf install libsodium-devel.x86_64
+sudo dnf install libserialport-devel.x86_64
+sudo dnf install libssl-devel.x86_64
+sudo dnf install libcrypto++-devel.x86_64
 
 # check if clang C compiler is installed
 FILE=/usr/bin/clang
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
-	doas dnf install clang
+	sudo dnf install clang
 fi
 
 # check if ~/bin exists
-DIR="~l1vm/bin"
+DIR="~/l1vm/bin"
 if [ -d "$DIR" ]; then
   ### Take action if $DIR exists ###
   echo "${DIR} already exists!"
@@ -63,7 +63,7 @@ fi
 # install mpreal.h include
 	echo "installing mpreal.h include file now..."
 	git clone https://github.com/advanpix/mpreal.git
-	doas cp vm/modules/mpfr-c++/mpreal.h /usr/include
+	sudo cp vm/modules/mpfr-c++/mpreal.h /usr/include
 
 cd assemb
 if zerobuild force; then
@@ -91,11 +91,12 @@ fi
 
 cd ../vm
 if zerobuild zerobuild-nojit.txt force; then
-	echo "l1vm build ok!"
+	echo "l1vm JIT build ok!"
 else
-	echo "l1vm build error!"
+	echo "l1vm JIT build error!"
 	exit 1
 fi
+cp l1vm l1vm-nojit
 cd ..
 cp assemb/l1asm ~/l1vm/bin
 cp comp/l1com ~/l1vm/bin
@@ -106,8 +107,8 @@ echo "VM binaries installed into ~/bin"
 cd modules
 echo "installing modules..."
 chmod +x *.sh
-sh ./build-openbsd.sh
-if sh ./install-openbsd.sh; then
+./build.sh
+if ./install.sh; then
 	echo "modules build ok!"
 else
 	echo "modules build FAILED!"
@@ -118,7 +119,7 @@ cd ../
 
 echo "all modules installed. building programs..."
 chmod +x *.sh
-if sh ./build-all.sh; then
+if ./build-all.sh; then
 	echo "building programs successfully!"
 else
 	echo "building programs FAILED!"
@@ -138,14 +139,14 @@ else
 fi
 
 echo "installing programs to ~/l1vm"
-cp -R prog/ ~/l1vm
+cp prog/ ~/l1vm -r
 cp lib/sdl-lib* ~/l1vm/prog
 
 echo "installing lib to ~/lib"
-cp -R lib/ ~/l1vm
+cp lib/ ~/l1vm -r
 
 echo "installing fonts to ~/l1vm"
-cp -R fonts/ ~/l1vm
+cp fonts/ ~/l1vm -r
 
 mkdir ~/l1vm/include
 cp include-lib/* ~/l1vm/include/

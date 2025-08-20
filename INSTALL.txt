@@ -8,10 +8,10 @@ export L1VM_ROOT="$HOME/l1vm/"
 
 This sets the "~/l1vm" directory in your "/home" directory as the home for L1VM. Which is the default.
 
-2. Choose one of the build scripts for your OS.
+2. Choose one of the build scripts in "install" directory for your OS.
 On Debian Linux for example use:
 
-$ install-debian.sh
+$ ./install-debian.sh
 
 The installer scripts need "sudo" to install the needed libraries.
 You have to make sure that sudo works on your system!

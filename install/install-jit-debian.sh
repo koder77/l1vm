@@ -1,13 +1,10 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin!
-# Install script for Windows 10 WSL Debian
+
+cd ..
 
 export PATH="$HOME/l1vm/bin:$PATH"
 export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
-
-if uname -a | grep -q "microsoft"; then
-echo "Windows 10 WSL Debian detected?"
-echo "checking for needed libraries..."
 
 if ! dpkg -s libsdl2-dev &> /dev/null; then
 	echo "try to install libsdl2-dev..."
@@ -74,8 +71,8 @@ if ! dpkg -s libsodium-dev &> /dev/null; then
 fi
 
 if ! dpkg -s libserialport-dev &> /dev/null; then
-	echo "try to install libserialport-dev..."
-	if ! sudo apt-get install libserialport-dev; then
+	echo "try to install libsodium-dev..."
+	if ! sudo apt-get install libsodium-dev; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -123,12 +120,6 @@ fi
 
 echo "libraries installed! building compiler, assembler and VM..."
 
-else
-	echo "ERROR: detected OS not Debian GNU Linux!"
-	echo "You have to install the dependency libraries by hand..."
-	echo "See this installation script for more info..."
-fi
-
 export CC=clang-15
 export CCPP=clang++-15
 
@@ -172,6 +163,26 @@ fi
 	git clone https://github.com/advanpix/mpreal.git
 	sudo cp vm/modules/mpfr-c++/mpreal.h /usr/include
 
+
+# check if libasmjit is installed
+FILE=/usr/local/lib/libasmjit.so
+if test -f "$FILE"; then
+    echo "$FILE exists!"
+else
+	echo "libasmjit not installed into $FILE!"
+	echo "cloning and building it now..."
+	git clone https://github.com/asmjit/asmjit
+	cd asmjit
+	mkdir build
+	cd build
+	cmake ../
+	make
+	sudo make install
+	sudo cp libasmjit.so /usr/local/lib
+	cd ..
+	cd ..
+fi
+
 cd assemb
 if zerobuild force; then
 	echo "l1asm build ok!"
@@ -197,13 +208,12 @@ else
 fi
 
 cd ../vm
-if zerobuild zerobuild-nojit.txt force; then
+if zerobuild force; then
 	echo "l1vm JIT build ok!"
 else
 	echo "l1vm JIT build error!"
 	exit 1
 fi
-cp l1vm-nojit l1vm
 cd ..
 cp assemb/l1asm ~/l1vm/bin
 cp comp/l1com ~/l1vm/bin

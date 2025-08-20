@@ -1,10 +1,15 @@
 #!/bin/bash
-# changed: install to /home/foo/bin instead to /usr/local/bin
+# changed: install to /home/foo/bin instead to /usr/local/bin!
+# Install script for Windows 10 WSL Debian
 
-sudo apt-get update
+cd ..
 
 export PATH="$HOME/l1vm/bin:$PATH"
 export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
+
+if uname -a | grep -q "microsoft"; then
+echo "Windows 10 WSL Debian detected?"
+echo "checking for needed libraries..."
 
 if ! dpkg -s libsdl2-dev &> /dev/null; then
 	echo "try to install libsdl2-dev..."
@@ -120,6 +125,12 @@ fi
 
 echo "libraries installed! building compiler, assembler and VM..."
 
+else
+	echo "ERROR: detected OS not Debian GNU Linux!"
+	echo "You have to install the dependency libraries by hand..."
+	echo "See this installation script for more info..."
+fi
+
 export CC=clang-15
 export CCPP=clang++-15
 
@@ -194,7 +205,7 @@ else
 	echo "l1vm JIT build error!"
 	exit 1
 fi
-cp l1vm l1vm-nojit
+cp l1vm-nojit l1vm
 cd ..
 cp assemb/l1asm ~/l1vm/bin
 cp comp/l1com ~/l1vm/bin

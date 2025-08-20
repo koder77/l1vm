@@ -1,6 +1,8 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 
+cd ..
+
 export PATH="$HOME/l1vm/bin:$PATH"
 export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
 
@@ -9,31 +11,33 @@ echo "building compiler, assembler and VM..."
 export CC=clang
 export CCPP=clang++
 
-sudo dnf install SDL2-devel.x86_64
-sudo dnf install SDL2_gfx-devel.x86_64
-sudo dnf install SDL2_image-devel.x86_64
-sudo dnf install SDL2_ttf-devel.x86_64
-sudo dnf install SDL2_mixer-devel.x86_64
-sudo dnf install fann-devel.x86_64
-sudo dnf install mpfr-devel.x86_64
-sudo dnf install cmake.x86_64
-sudo dnf install make.x86_64
-sudo dnf install git.x86_64
-sudo dnf install libsodium-devel.x86_64
-sudo dnf install libserialport-devel.x86_64
-sudo dnf install libssl-devel.x86_64
-sudo dnf install libcrypto++-devel.x86_64
+doas pkg_add sdl2
+doas pkg_add sdl2-gfx
+doas pkg_add sdl2-image
+doas pkg_add sdl2-ttf
+doas pkg_add sdl2-mixer
+doas pkg_add fann
+doas pkg_add mpfr
+doas pkg_add cmake
+doas pkg_add gmake
+doas pkg_add git
+doas pkg_add libsodium
+doas pkg_add libserialport
+doas pkg_add pulseaudio
+doas pkg_add pavucontrol
+doas pkg_add libssl
+doas pkg_add libcrypto++
 
 # check if clang C compiler is installed
 FILE=/usr/bin/clang
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
-	sudo dnf install clang
+	doas dnf install clang
 fi
 
 # check if ~/bin exists
-DIR="~/l1vm/bin"
+DIR="~l1vm/bin"
 if [ -d "$DIR" ]; then
   ### Take action if $DIR exists ###
   echo "${DIR} already exists!"
@@ -45,7 +49,7 @@ else
 fi
 
 # check if zerobuild installed into ~/bin
-FILE=~/bin/zerobuild
+FILE=~/l1vm/bin/zerobuild
 if test -f "$FILE"; then
     echo "$FILE exists!"
 else
@@ -54,33 +58,14 @@ else
 	git clone https://github.com/koder77/zerobuild.git
 	cd zerobuild
 	./make.sh
-	cp zerobuild ~/bin/
+	cp zerobuild ~/l1vm/bin/
 	cd ..
 fi
 
 # install mpreal.h include
 	echo "installing mpreal.h include file now..."
 	git clone https://github.com/advanpix/mpreal.git
-	sudo cp vm/modules/mpfr-c++/mpreal.h /usr/include
-
-# check if libasmjit is installed
-FILE=/usr/local/lib/libasmjit.so
-if test -f "$FILE"; then
-    echo "$FILE exists!"
-else
-	echo "libasmjit not installed into $FILE!"
-	echo "cloning and building it now..."
-	git clone https://github.com/asmjit/asmjit
-	cd asmjit
-	mkdir build
-	cd build
-	cmake ../
-	make
-	sudo make install
-	sudo cp libasmjit.so /usr/local/lib
-	cd ..
-	cd ..
-fi
+	doas cp vm/modules/mpfr-c++/mpreal.h /usr/include
 
 cd assemb
 if zerobuild force; then
@@ -107,10 +92,10 @@ else
 fi
 
 cd ../vm
-if zerobuild zerobuild.txt force; then
-	echo "l1vm JIT build ok!"
+if zerobuild zerobuild-nojit.txt force; then
+	echo "l1vm build ok!"
 else
-	echo "l1vm JIT build error!"
+	echo "l1vm build error!"
 	exit 1
 fi
 cd ..
@@ -123,8 +108,8 @@ echo "VM binaries installed into ~/bin"
 cd modules
 echo "installing modules..."
 chmod +x *.sh
-./build.sh
-if ./install.sh; then
+sh ./build-openbsd.sh
+if sh ./install-openbsd.sh; then
 	echo "modules build ok!"
 else
 	echo "modules build FAILED!"
@@ -135,7 +120,7 @@ cd ../
 
 echo "all modules installed. building programs..."
 chmod +x *.sh
-if ./build-all.sh; then
+if sh ./build-all.sh; then
 	echo "building programs successfully!"
 else
 	echo "building programs FAILED!"
@@ -155,14 +140,14 @@ else
 fi
 
 echo "installing programs to ~/l1vm"
-cp prog/ ~/l1vm -r
+cp -R prog/ ~/l1vm
 cp lib/sdl-lib* ~/l1vm/prog
 
 echo "installing lib to ~/lib"
-cp lib/ ~/l1vm -r
+cp -R lib/ ~/l1vm
 
 echo "installing fonts to ~/l1vm"
-cp fonts/ ~/l1vm -r
+cp -R fonts/ ~/l1vm
 
 mkdir ~/l1vm/include
 cp include-lib/* ~/l1vm/include/

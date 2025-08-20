@@ -1,6 +1,8 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 
+cd ..
+
 if uname -a | grep -q "DragonFly"; then
 	echo "DragonFly BSD detected..."
 	echo "checking for needed libraries..."

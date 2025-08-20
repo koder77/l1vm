@@ -2,6 +2,8 @@
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 # Install script for Windows 10 WSL Debian
 
+cd ..
+
 export PATH="$HOME/l1vm/bin:$PATH"
 export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
 

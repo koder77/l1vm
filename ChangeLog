@@ -2,7 +2,9 @@ L1VM (3.5.3)
 	VM: added L1VM embedded functions to read/write to global data array.
 	VM: rs232 library: added Windows build script.
 
--- Stefan Pietzonke <info@midnight-coding.de> Mon 18 August 2025 23:12 +020
+	The installer scripts are now in "install" directory. I did clean this up.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Wed 20 August 2025 22:34 +020
 
 L1VM (3.5.2)
 	Example programs updates.

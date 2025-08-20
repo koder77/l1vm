@@ -1,6 +1,8 @@
 #!/bin/bash
 # changed: install to /home/foo/bin instead to /usr/local/bin!
 
+cd ..
+
 echo "building compiler, assembler and VM..."
 
 export CC=~/l1vm-clang-12.0.0/bin/clang
