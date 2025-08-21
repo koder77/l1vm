@@ -4,7 +4,7 @@
 //
 // demo waits for a telnet connection on port 3000
 //
-#include <intr.l1h>
+#include <intr-func.l1h>
 (main func)
     (set int64 1 zero 0)
     (set int64 1 one 1)
@@ -53,7 +53,7 @@
     (socket_handle stpopi)
     (bufaddr :print_s !)
     (:print_n !)
-    (waitingaddr :print_s !)
+    (waiting :print_s !)
     (:print_n !)
     (socket_handle :open_accept_server !)
     (ret stpopi)
