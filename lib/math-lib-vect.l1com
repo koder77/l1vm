@@ -1,22 +1,22 @@
 // math-lib-vect.l1com
 #include <intr-func.l1h>
 (main func)
-	(set const-int64 1 zero 0)
-	(set const-int64 1 max 9)
-	(set int64 10 av 1 2 3 4 5 6 7 8 9 10)
-	(set int64 10 bv 2 4 6 8 10 12 14 16 18 20)
-	(set int64 10 cv)
-	(set int64 1 Pav 0)
-	(set int64 1 Pbv 0)
-	(set int64 1 Pcv 0)
-	(set int64 1 i 0)
-	(set const-int64 1 offset 8)
-	(set int64 1 real_ind 0)
-	(set int64 1 f 0)
-	(set int64 1 x 0)
-	(set int64 1 one 1)
+    (set const-int64 1 zero 0)
+    (set const-int64 1 max 9)
+    (set int64 10 av 1 2 3 4 5 6 7 8 9 10)
+    (set int64 10 bv 2 4 6 8 10 12 14 16 18 20)
+    (set int64 10 cv)
+    (set int64 1 Pav 0)
+    (set int64 1 Pbv 0)
+    (set int64 1 Pcv 0)
+    (set int64 1 i 0)
+    (set const-int64 1 offset 8)
+    (set int64 1 real_ind 0)
+    (set int64 1 f 0)
+    (set int64 1 x 0)
+    (set int64 1 one 1)
 
-	(zero :math_vect_init !)
+    (zero :math_vect_init !)
 
     (av Pav pointer)
     (Pav + zero Pav :=)
@@ -27,19 +27,21 @@
     (cv Pcv pointer)
     (Pcv + zero Pcv :=)
 
-	(Pav Pbv zero max Pcv :vmath_mul_int_array !)
-	// print cv array
-	(:loop)
-	(cv [ real_ind ] x =)
+    (Pav Pbv zero max Pcv :vmath_mul_int_array !)
+
+    // print cv array
+    (:loop)
+    (cv [ real_ind ] x =)
     (x :print_i !)
     (:print_n !)
-	((real_ind offset +) real_ind :=)
-	((i one +) i :=)
-	(((i max <=) f :=) f if)
-		(:loop jmp)
-	(endif)
-	// close module
-	(zero :free_mod !)
-	(zero :exit !)
+    ((real_ind offset +) real_ind :=)
+    ((i one +) i :=)
+    (((i max <=) f :=) f if)
+        (:loop jmp)
+    (endif)
+
+    // close module
+    (zero :free_mod !)
+    (zero :exit !)
 (funcend)
 #include <math-lib-vect.l1h>

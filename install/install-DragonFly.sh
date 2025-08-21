@@ -164,20 +164,5 @@ else
   mkdir ~/l1vm
 fi
 
-echo "installing programs to ~/l1vm"
-cp prog/ ~/l1vm -r
-cp lib/sdl-lib* ~/l1vm/prog
-
-echo "installing lib to ~/lib"
-cp lib/ ~/l1vm -r
-
-echo "installing fonts to ~/l1vm"
-cp fonts/ ~/l1vm -r
-
-mkdir ~/l1vm/include
-cp include-lib/* ~/l1vm/include/
-
-mkdir ~/l1vm/man
-
 echo "installation finished!"
 exit 0

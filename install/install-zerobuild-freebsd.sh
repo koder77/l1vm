@@ -139,23 +139,5 @@ else
   mkdir ~/l1vm
 fi
 
-echo "installing programs to ~/l1vm"
-cp -R prog/ ~/l1vm
-cp lib/sdl-lib* ~/l1vm/prog
-
-echo "installing lib to ~/lib"
-cp -R lib/ ~/l1vm
-
-echo "installing fonts to ~/l1vm"
-cp -R fonts/ ~/l1vm
-
-mkdir ~/l1vm/include
-cp include-lib/* ~/l1vm/include/
-
-mkdir ~/l1vm/man
-
-echo "copy fann demo neural networks"
-cp -R fann ~/l1vm
-
 echo "installation finished!"
 exit 0

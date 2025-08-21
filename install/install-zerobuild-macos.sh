@@ -148,34 +148,4 @@ else
   mkdir ~/l1vm
 fi
 
-echo "installing programs to ~/l1vm"
-cp -R prog ~/l1vm
-cp lib/sdl-lib* ~/l1vm/prog
-
-echo "installing lib to ~/lib"
-cp -R lib ~/l1vm
-
-echo "installing fonts to ~/l1vm"
-cp -R fonts ~/l1vm
-
-mkdir ~/l1vm/include
-cp include-lib/* ~/l1vm/include/
-
-mkdir ~/l1vm/man
-
-echo "copy fann demo neural networks"
-cp -R fann ~/l1vm
-
-echo "installation finished!"
-echo "listing modules..."
-ls -lh modules
-sudo update_dyld_shared_cache
-echo "building fann library demo..."
-./l1vm-build.sh lib/fann-lib
-echo "running fann library demo..."
-l1vm lib/fann-lib
-#echo "building lines SDL demo..."
-#./l1vm-build.sh prog/lines
-#echo "running lines SDL demo..."
-#l1vm prog/lines
 exit 0

@@ -1,7 +1,11 @@
 #!/bin/bash
 # build demo programs
 
+<<<<<<< HEAD
 cd ~/l1vm
+=======
+cd ..
+>>>>>>> f441381d19b3e7f4cfcfbc6d6b00520dd63d357e
 
 for i in prog/*.l1asm
 do
