@@ -1,11 +1,7 @@
 #!/bin/bash
-# install includes
+# build demo programs
 
-cd ..
-
-mkdir ~/l1vm
-mkdir ~/l1vm/include
-cp include-lib/* ~/l1vm/include/
+cd ~/l1vm
 
 for i in prog/*.l1asm
 do

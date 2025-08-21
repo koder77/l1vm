@@ -16,4 +16,13 @@ $ ./install-debian.sh
 The installer scripts need "sudo" to install the needed libraries.
 You have to make sure that sudo works on your system!
 
+
+BASE PKG INSTALLATION
+=====================
+Run the download script in "scripts":
+$ ./download-pkg.sh https://midnight-coding.de/blog/assets/l1vm/l1vm-base-pkg.tar.bz2 l1vm-base-pkg.tar.bz2
+
+And then:
+$ ./build-all.sh
+
 Have fun!
