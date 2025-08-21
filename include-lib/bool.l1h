@@ -1,4 +1,0 @@
-// bool.l1h
-// true and false
-(set const-byte 1 false 0)
-(set const-byte 1 true 1)

@@ -1,7 +1,0 @@
-// mem-obj-lib-types.l1h
-//
-// set mem objects defines for the variable types
-//
-(set const-int64 1 i_type 1)
-(set const-int64 1 d_type 2)
-(set const-int64 1 s_type 3)
