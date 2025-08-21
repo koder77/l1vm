@@ -45,6 +45,7 @@ if [ $? -eq 0 ]; then
   # Use `ls` with the -h (human-readable) and -l (long listing) flags to show the file size.
   ls -lh "$OUTPUT_FILE"
 
+  mkdir ~/l1vm
   tar xjf $OUTPUT_FILE -C ~/l1vm/
   echo "Package installed!"
 
