@@ -1,6 +1,8 @@
 #!/bin/bash
 # install includes
 
+cd ..
+
 mkdir ~/l1vm
 mkdir ~/l1vm/include
 cp include-lib/* ~/l1vm/include/

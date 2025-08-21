@@ -1,4 +1,6 @@
 #!/bin/bash
+cd ..
+
 cd modules
 rm libl1vm*
 cd ../assemb

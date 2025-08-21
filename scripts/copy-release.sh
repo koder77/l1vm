@@ -1,4 +1,6 @@
 #!/bin/bash
+cd ..
+
 mkdir bin-release
 cp modules/*.so bin-release
 cp assemb/l1asm* bin-release
