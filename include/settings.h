@@ -9,7 +9,7 @@
 #define SDL_ENABLE_CAMERA     0
 
 // NEW: if set to 1 the L1VM can be build as a shared library to be embedded in other programs
-#define L1VM_EMBEDDED 0
+#define L1VM_EMBEDDED 1
 
 
 #define WINDOWS_10_WSL			0		// set to one if building on Windws 10 WSL! It switches audio support in the SDL module off!
