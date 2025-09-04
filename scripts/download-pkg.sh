@@ -14,7 +14,7 @@
 # The script expects exactly two arguments: the URL and the desired output filename.
 if [ "$#" -ne 2 ]; then
   echo "Usage: $0 <URL_to_download> <output_filename>"
-  echo "Example: $0 https://example.com/file.zip my_file.zip"
+  echo "Example for base pkg: $0 https://midnight-coding.de/blog/assets/l1vm/l1vm-base-pkg.tar.bz2 l1vm-base-pkg.tar.bz2"
   exit 1
 fi
 
