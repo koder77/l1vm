@@ -12,16 +12,19 @@
 # ------------------------------------------------------------------------------------
 # Check if the correct number of arguments is provided.
 # The script expects exactly two arguments: the URL and the desired output filename.
+if [ "$#" -eq 3 ]; then
+   INSTALL_FORCE="$3"
+else
 if [ "$#" -ne 2 ]; then
-  echo "Usage: $0 <URL_to_download> <output_filename>"
+  echo "Usage: $0 <URL_to_download> <output_filename> [-y] force install"
   echo "Example for base pkg: $0 https://midnight-coding.de/blog/assets/l1vm/l1vm-base-pkg.tar.bz2 l1vm-base-pkg.tar.bz2"
   exit 1
+fi
 fi
 
 # Assign the input arguments to descriptive variables.
 URL="$1"
 OUTPUT_FILE="$2"
-
 # ------------------------------------------------------------------------------------
 # 2. FILE DOWNLOAD
 # ------------------------------------------------------------------------------------
@@ -45,9 +48,19 @@ if [ $? -eq 0 ]; then
   # Use `ls` with the -h (human-readable) and -l (long listing) flags to show the file size.
   ls -lh "$OUTPUT_FILE"
 
+  if [[ $INSTALL_FORCE == "-y" ]]; then
   mkdir ~/l1vm
   tar xjf $OUTPUT_FILE -C ~/l1vm/
   echo "Package installed!"
+  else
+  read -p "Are you sure you want to install this package? (y/n) " install_req
+
+  if [[ $install_req == "y" || $install_req == "Y" ]]; then
+  mkdir ~/l1vm
+  tar xjf $OUTPUT_FILE -C ~/l1vm/
+  echo "Package installed!"
+  fi
+  fi
 
   exit 0
 else
