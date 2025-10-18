@@ -12,4 +12,5 @@ linker = ld
 aflags = "cru"
 
 cflags = "-fPIC -O3 -fomit-frame-pointer -Wall -g"
-lflags = "-lsimplecble -shared"
+#lflags = "-lstdc++ -lsimpleble -lsimplecble -shared" 
+lflags = "-lsimplecble -lsimpleble -lstdc++ -ldbus-1 -shared"
