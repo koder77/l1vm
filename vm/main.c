@@ -2598,6 +2598,26 @@ S2 run (void *arg)
 			eoffs = 5;
 			break;
 
+        case 41:
+            // get time in ms after epoch
+            {
+			   arg2 = code[ep + 2];
+              
+               struct timeval tv;
+
+               S8 epoch_ms = 0;
+  
+               gettimeofday(&tv, NULL);
+
+               unsigned long long millisecondsSinceEpoch = (unsigned long long)(tv.tv_sec) * 1000 + (unsigned long long)(tv.tv_usec) / 1000;
+               epoch_ms = (S8) millisecondsSinceEpoch;
+
+               regi[arg2] = (S8) epoch_ms;
+            }
+            
+            eoffs = 5;
+			break;
+
 		case 251:
 			// set overflow on double reg
 			arg2 = code[ep + 2];
