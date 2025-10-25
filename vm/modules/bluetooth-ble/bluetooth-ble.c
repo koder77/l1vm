@@ -162,6 +162,33 @@ S2 bluetooth_check_socket (S8 ind)
     return (1);
 }
 
+simpleble_adapter_t find_adapter_by_mac (const char *target_mac) {
+    simpleble_adapter_t selected_adapter = NULL;
+    size_t adapter_count = simpleble_adapter_get_count();
+
+    for (size_t i = 0; i < adapter_count; i++)
+    {
+        simpleble_adapter_t current_adapter = simpleble_adapter_get_handle(i);
+        char *adapter_mac = simpleble_adapter_address(current_adapter);
+
+        if (adapter_mac != NULL)
+        {
+            if (strcmp(adapter_mac, target_mac) == 0)
+            {
+                selected_adapter = current_adapter;
+            }
+            free(adapter_mac);
+        }
+
+        if (selected_adapter != current_adapter)
+        {
+            simpleble_adapter_release_handle(current_adapter);
+        }
+    }
+
+    return selected_adapter;
+}
+
 // bluetooth socket API
 U1 *bluetooth_get_adapter (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
@@ -287,6 +314,47 @@ U1 *bluetooth_set_adapter (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         // error
         printf ("bluetooth_get_adapter: ERROR: stack corrupt!\n");
         return (NULL);
+    }
+    return (sp);
+}
+
+U1 *bluetooth_set_adapter_by_mac (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    simpleble_adapter_t mac_addr_adapter = NULL;
+    S8 adapter_macaddr ALIGN;
+
+    sp = stpopi ((U1 *) &adapter_macaddr, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+        printf ("bluetooth_set_adapter_by_mac: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+
+    mac_addr_adapter = find_adapter_by_mac (&data[adapter_macaddr]);
+    if (mac_addr_adapter == NULL)
+    {
+        // ERROR!
+        sp = stpushi (1, sp, sp_bottom);
+        if (sp == NULL)
+        {
+            // error
+            printf ("bluetooth_set_adapter_by_mac: ERROR: stack corrupt!\n");
+            return (NULL);
+        }
+    }
+    else
+    {
+        adapter = mac_addr_adapter;
+
+        // OK!
+        sp = stpushi (0, sp, sp_bottom);
+        if (sp == NULL)
+        {
+            // error
+            printf ("bluetooth_set_adapter_by_mac: ERROR: stack corrupt!\n");
+            return (NULL);
+        }
     }
     return (sp);
 }
