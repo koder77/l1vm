@@ -35,14 +35,6 @@ size_t strlen_safe (const char * str, S8  maxlen);
 struct data_info data_info[MAXDATAINFO];
 S8 data_info_ind;
 
-S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
-{
-	memcpy (&data_info, &data_info_orig, sizeof (data_info_orig));
-	data_info_ind = data_info_ind_orig;
-
-	return (0);
-}
-
 // Define maximum sizes for lists
 #define PERIPHERAL_LIST_SIZE (size_t)64
 #define CHARACTERISTIC_ENTRIES_SIZE (size_t)64  // Max characteristics to store
@@ -81,12 +73,116 @@ S8 max_bluetooth_adapter ALIGN = 0;
 struct peripherals *peripherals;
 S8 max_peripherals ALIGN = 0;
 
-// Global variables
+#define MAX_CALLBACKDATA 256
+
+struct CallbackData
+{
+    U1 *data;
+    S8 data_address;
+    S8 data_size;
+};
+
+struct CallbackData cb_data[MAX_CALLBACKDATA];
+pthread_mutex_t cb_mutex = PTHREAD_MUTEX_INITIALIZER;  // for callback function
+
+// protos
 static void clean_on_exit(void);
 
 static void adapter_on_scan_start(simpleble_adapter_t adapter, void* userdata);
 static void adapter_on_scan_stop(simpleble_adapter_t adapter, void* userdata);
 static void adapter_on_scan_found(simpleble_adapter_t adapter, simpleble_peripheral_t peripheral, void* userdata);
+
+S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
+{
+    S8 i ALIGN;
+	memcpy (&data_info, &data_info_orig, sizeof (data_info_orig));
+	data_info_ind = data_info_ind_orig;
+
+    for (i = 0; i < MAX_CALLBACKDATA; i++)
+    {
+        cb_data[i].data = NULL;
+    }
+
+	return (0);
+}
+
+S8 get_free_callback_handle (void)
+{
+    S8 i ALIGN;
+
+    for (i = 0; i < MAX_CALLBACKDATA; i++)
+    {
+        if (cb_data[i].data == NULL)
+        {
+            // return free handle index
+            return (i);
+        }
+    }
+
+    // no free handle found!
+    return (-1);
+}
+
+void free_callback_handle (S8 ind)
+{
+    if (ind < 0 || ind >= MAX_CALLBACKDATA)
+    {
+        return;
+    }
+
+    if (cb_data[ind].data != NULL)
+    {
+        cb_data[ind].data = NULL;  // set handle as free
+    }
+}
+
+S2 set_callback (S8 ind, U1 *data, S8 data_address, S8 data_size)
+{
+    if (ind < 0 || ind >= MAX_CALLBACKDATA)
+    {
+        return (1);
+    }
+
+    if (cb_data[ind].data != NULL)
+    {
+        return (1); // error
+    }
+
+    cb_data[ind].data = data;
+    cb_data[ind].data_address = data_address;
+    cb_data[ind].data_size = data_size;
+
+    return (0); // ok!
+}
+
+void *get_callback_ptr (S8 ind)
+{
+    struct CallbackData *cb_data_ptr;
+
+    if (ind < 0 || ind >= MAX_CALLBACKDATA)
+    {
+        return (NULL);
+    }
+
+    if (cb_data[ind].data != NULL)
+    {
+        cb_data_ptr = (struct CallbackData*) &cb_data[ind];
+        return (cb_data_ptr);
+    }
+    else
+    {
+        return (NULL);
+    }
+}
+
+static void notification_callback (
+    simpleble_peripheral_t handle,
+    simpleble_uuid_t service,
+    simpleble_uuid_t characteristic,
+    const uint8_t* data_ptr,
+    size_t data_length,
+    void* userdata
+);
 
 static simpleble_peripheral_t peripheral_list[PERIPHERAL_LIST_SIZE] = {0};
 static size_t peripheral_list_len = 0;
@@ -331,7 +427,7 @@ U1 *bluetooth_set_adapter_by_mac (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    mac_addr_adapter = find_adapter_by_mac (&data[adapter_macaddr]);
+    mac_addr_adapter = find_adapter_by_mac ((const char *) &data[adapter_macaddr]);
     if (mac_addr_adapter == NULL)
     {
         // ERROR!
@@ -1063,7 +1159,7 @@ U1 *bluetooth_read (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         printf("Data successfully read (read command)!\n");
 
-        sp = stpushi (0, sp, sp_bottom); // return number of characteristic entries for bluetooth_get_characteristic()
+        sp = stpushi (received_data_len, sp, sp_bottom); // return number of characteristic entries for bluetooth_get_characteristic()
         if (sp == NULL)
         {
             // error
@@ -1076,7 +1172,7 @@ U1 *bluetooth_read (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         printf("Failed to read data (Error code: %d).\n", err_code);
 
-        sp = stpushi (err_code, sp, sp_bottom); // return number of characteristic entries for bluetooth_get_characteristic()
+        sp = stpushi (-1, sp, sp_bottom); // return number of characteristic entries for bluetooth_get_characteristic()
         if (sp == NULL)
         {
             // error
@@ -1163,8 +1259,217 @@ U1 *bluetooth_disconnect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     return (sp);
 }
 
+U1 *bluetooth_set_callback (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S8 socket ALIGN;
+    S8 char_index ALIGN;
+    S8 string_addr ALIGN;
+    S8 peripheral ALIGN;
+    S8 data_len ALIGN;
+
+    S8 callback_handle ALIGN;
+
+    struct CallbackData *cb_data_ptr;
+
+    sp = stpopi ((U1 *) &data_len, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bluetooth_set_callback: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &string_addr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bluetooth_set_callback: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &char_index, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bluetooth_set_callback: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &peripheral, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bluetooth_set_callback: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &socket, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bluetooth_set_callback: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    if (bluetooth_check_socket (socket) != 0)
+    {
+        printf ("bluetooth_set_callback: error: socket %lli is closed!\n", socket);
+        return (NULL);
+    }
+
+    if (char_index < 0 || char_index >= (S8) characteristic_entries_len)
+    {
+        printf ("bluetooth_set_callback: error: characteristic index out of range!");
+        printf ("Must be in range of: 0 - %li\n", characteristic_entries_len - 1);
+        return (NULL);
+    }
+    if (peripheral < 0 || peripheral >= (S8) peripheral_list_len)
+    {
+        printf ("bluetooth_set_callback: error: peripheral index out of range!");
+        printf ("Must be in range of: 0 - %li\n", peripheral_list_len - 1);
+        return (NULL);
+    }
+
+    #if BOUNDSCHECK
+		if (memory_bounds (string_addr, data_len - 1) != 0)
+		{
+			printf ("bluetooth_set_callback: ERROR: read string overflow!\n");
+			return (NULL);
+		}
+    #endif
+
+    callback_handle = get_free_callback_handle ();
+    if (callback_handle < 0)
+    {
+        printf ("bluetooth_set_callback: ERROR: no free callback handle!\n");
+		return (NULL);
+    }
+
+    // EDIT
+    if (set_callback (callback_handle, data, string_addr, data_len) != 0)
+    {
+        printf ("bluetooth_set_callback: ERROR: can't set callback data!\n");
+		return (NULL);
+    }
+
+    cb_data_ptr = (struct CallbackData*) get_callback_ptr (callback_handle);
+    if (cb_data_ptr == NULL)
+    {
+        printf ("bluetooth_set_callback: ERROR: can't set callback data pointer!\n");
+		return (NULL);
+    }
+
+    simpleble_err_t err = simpleble_peripheral_notify (
+            peripheral_list[peripheral],
+            characteristic_entries[char_index].service_uuid,
+            characteristic_entries[char_index].characteristic_uuid,
+            notification_callback,
+            (void*)cb_data_ptr // set data for callback function
+    );
+
+    if (err != SIMPLEBLE_SUCCESS) {
+        printf ("bluetooth_set_callback: error: can't set callback!\n");
+        free (cb_data_ptr);
+        return (NULL);
+    }
+
+    // EDIT
+    sp = stpushi (callback_handle, sp, sp_bottom); // return number of characteristic entries for bluetooth_get_characteristic()
+    if (sp == NULL)
+    {
+         // error
+         printf ("bluetooth_set_callback: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+
+    return (sp);
+}
+
+U1 *bluetooth_remove_callback (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S8 socket ALIGN;
+    S8 char_index ALIGN;
+    S8 peripheral ALIGN;
+
+    sp = stpopi ((U1 *) &char_index, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bluetooth_remove_callback: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &peripheral, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bluetooth_remove_callback: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &socket, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bluetooth_remove_callback: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    if (bluetooth_check_socket (socket) != 0)
+    {
+        printf ("bluetooth_remove_callback: error: socket %lli is closed!\n", socket);
+        return (NULL);
+    }
+
+    if (char_index < 0 || char_index >= (S8) characteristic_entries_len)
+    {
+        printf ("bluetooth_remove_callback: error: characteristic index out of range!");
+        printf ("Must be in range of: 0 - %li\n", characteristic_entries_len - 1);
+        return (NULL);
+    }
+    if (peripheral < 0 || peripheral >= (S8) peripheral_list_len)
+    {
+        printf ("bluetooth_remove_callback: error: peripheral index out of range!");
+        printf ("Must be in range of: 0 - %li\n", peripheral_list_len - 1);
+        return (NULL);
+    }
+
+    simpleble_err_t err = simpleble_peripheral_unsubscribe (peripheral_list[peripheral], characteristic_entries[char_index].service_uuid, characteristic_entries[char_index].characteristic_uuid);
+
+    if (err != SIMPLEBLE_SUCCESS) {
+        printf ("bluetooth_remove_callback: error: can't remove callback!\n");
+        return (NULL);
+    }
+
+    return (sp);
+}
+
+U1 *bluetooth_remove_callback_ptr (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S8 callback_handle ALIGN;
+
+    sp = stpopi ((U1 *) &callback_handle, sp, sp_top);
+    if (sp == NULL)
+    {
+		// error
+		printf ("bluetooth_remove_callback_ptr: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    free_callback_handle (callback_handle);
+
+    return (sp);
+}
+
 U1 *bluetooth_end (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
+    S8 i ALIGN;
+
+    for (i = 0; i < MAX_CALLBACKDATA; i++)
+    {
+       free_callback_handle (i);
+    }
+
     clean_on_exit ();
     if (bluetooth_socket != NULL)
     {
@@ -1172,6 +1477,8 @@ U1 *bluetooth_end (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         bluetooth_socket = NULL;
     }
 
+    // free cb mutex
+    pthread_mutex_destroy (&cb_mutex);
     return (sp);
 }
 
@@ -1231,4 +1538,55 @@ static void adapter_on_scan_found(simpleble_adapter_t adapter, simpleble_periphe
     // Let's not forget to release all allocated memory.
     simpleble_free(peripheral_identifier);
     simpleble_free(peripheral_address);
+}
+
+// Callback function set by read notification
+static void notification_callback(
+    simpleble_peripheral_t handle,
+    simpleble_uuid_t service,
+    simpleble_uuid_t characteristic,
+    const uint8_t* data_ptr,
+    size_t data_length,
+    void* userdata
+) {
+
+   pthread_mutex_lock (&cb_mutex);
+   struct CallbackData* cb_data = (struct CallbackData*) userdata;
+
+   /*struct CallbackData
+    {
+        U1 *data;
+        S8 data_address;
+        S8 data_size;
+    };
+   */
+   /*
+   printf ("read_callback...\n");
+   printf ("read data size: %lli\n", (S8) data_length);
+   printf ("set data size: %lli\n", (S8) cb_data->data_size);
+   */
+
+   if (data_length <= 0)
+   {
+       // no valid data packet received
+       pthread_mutex_unlock (&cb_mutex);
+       return;
+   }
+
+   // check if data variable length is ok
+   #if BOUNDSCHECK
+   if (memory_bounds (cb_data->data_address, data_length - 1) != 0)
+   {
+       printf ("notification_callback: ERROR: address string overflow!\n");
+       pthread_mutex_unlock (&cb_mutex);
+       return;
+   }
+   #endif
+
+   // copy the received data into the data variable start address
+   memcpy ((U1 *) &cb_data->data[cb_data->data_address], data_ptr, data_length);
+   pthread_mutex_unlock (&cb_mutex);
+
+   //printf ("read_callback done!\n");
+   return;
 }
