@@ -295,3 +295,352 @@ U1 *n_to_hostqw (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	return (sp);
 }
+
+// build number variables from separate bytes
+U1 *bytes_to_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    U1 b0 = 42;
+    U1 b1 = 23;
+
+    S2 num ALIGN = 0;
+	U1 *num_ptr = (U1 *) &num;
+    S8 ret ALIGN = 0;
+    U1 check = 0; // set to one if byte number out of range
+
+    sp = stpopi ((U1 *) &b1, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_int16: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b0, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_int16: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    // sense check:
+    if (b1 < 0 || b1 > 255) check = 1;
+    if (b0 < 0 || b0 > 255) check = 1;
+    if (check == 1)
+    {
+        printf ("bytes_to_int16: error: byte value out of range!\n");
+        return (NULL);
+    }
+
+    num_ptr[0] = b0;
+    num_ptr[1] = b1;
+
+    ret = num;
+
+    sp = stpushi (ret, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_int16: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *bytes_to_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    U1 b0;
+    U1 b1;
+    U1 b2;
+    U1 b3;
+
+    S4 num ALIGN = 0;
+	U1 *num_ptr = (U1 *) &num;
+    S8 ret ALIGN = 0;
+    U1 check = 0; // set to one if byte number out of range
+
+    sp = stpopi ((U1 *) &b3, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_int32: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b2, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_int32: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b1, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_int32: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b0, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_int32: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    // sense check:
+    if (b3 < 0 || b3 > 255) check = 1;
+    if (b2 < 0 || b2 > 255) check = 1;
+    if (b1 < 0 || b1 > 255) check = 1;
+    if (b0 < 0 || b0 > 255) check = 1;
+    if (check == 1)
+    {
+        printf ("bytes_to_int32: error: byte value out of range!\n");
+        return (NULL);
+    }
+
+    num_ptr[0] = b0;
+    num_ptr[1] = b1;
+    num_ptr[2] = b2;
+    num_ptr[3] = b3;
+
+    ret = num;
+
+    sp = stpushi (ret, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_int32: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *bytes_to_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    U1 b0;
+    U1 b1;
+    U1 b2;
+    U1 b3;
+    U1 b4;
+    U1 b5;
+    U1 b6;
+    U1 b7;
+
+    S8 num ALIGN = 0;
+	U1 *num_ptr = (U1 *) &num;
+    U1 check = 0; // set to one if byte number out of range
+
+    sp = stpopi ((U1 *) &b7, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_int64: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b6, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_int64: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b5, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_int64: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b4, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_int64: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b3, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_int64: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b2, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_int64: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b1, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_int64: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b0, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_int64: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    // sense check:
+    if (b7 < 0 || b7 > 255) check = 1;
+    if (b6 < 0 || b6 > 255) check = 1;
+    if (b5 < 0 || b5 > 255) check = 1;
+    if (b4 < 0 || b4 > 255) check = 1;
+    if (b3 < 0 || b3 > 255) check = 1;
+    if (b2 < 0 || b2 > 255) check = 1;
+    if (b1 < 0 || b1 > 255) check = 1;
+    if (b0 < 0 || b0 > 255) check = 1;
+    if (check == 1)
+    {
+        printf ("bytes_to_int64: error: byte value out of range!\n");
+        return (NULL);
+    }
+
+    num_ptr[0] = b0;
+    num_ptr[1] = b1;
+    num_ptr[2] = b2;
+    num_ptr[3] = b3;
+    num_ptr[4] = b4;
+    num_ptr[5] = b5;
+    num_ptr[6] = b6;
+    num_ptr[7] = b7;
+
+    sp = stpushi (num, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_int64: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}
+
+U1 *bytes_to_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    U1 b0;
+    U1 b1;
+    U1 b2;
+    U1 b3;
+    U1 b4;
+    U1 b5;
+    U1 b6;
+    U1 b7;
+
+    F8 num ALIGN = 0.0;
+	U1 *num_ptr = (U1 *) &num;
+    U1 check = 0; // set to one if byte number out of range
+
+    sp = stpopb ((U1 *) &b7, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_double: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b6, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_double: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b5, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_double: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b4, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_double: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b3, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_double: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b2, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_double: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b1, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_double: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &b0, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_double: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+     // sense check:
+    if (b7 < 0 || b7 > 255) check = 1;
+    if (b6 < 0 || b6 > 255) check = 1;
+    if (b5 < 0 || b5 > 255) check = 1;
+    if (b4 < 0 || b4 > 255) check = 1;
+    if (b3 < 0 || b3 > 255) check = 1;
+    if (b2 < 0 || b2 > 255) check = 1;
+    if (b1 < 0 || b1 > 255) check = 1;
+    if (b0 < 0 || b0 > 255) check = 1;
+    if (check == 1)
+    {
+        printf ("bytes_to_double: error: byte value out of range!\n");
+        return (NULL);
+    }
+
+    num_ptr[0] = b0;
+    num_ptr[1] = b1;
+    num_ptr[2] = b2;
+    num_ptr[3] = b3;
+    num_ptr[4] = b4;
+    num_ptr[5] = b5;
+    num_ptr[6] = b6;
+    num_ptr[7] = b7;
+
+    sp = stpushd (num, sp, sp_bottom);
+	if (sp == NULL)
+	{
+		// error
+		printf ("bytes_to_double: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+	return (sp);
+}

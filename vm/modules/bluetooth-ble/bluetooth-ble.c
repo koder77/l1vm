@@ -1482,6 +1482,20 @@ U1 *bluetooth_end (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     return (sp);
 }
 
+U1 *bluetooth_lock_read (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    pthread_mutex_lock (&cb_mutex);
+
+    return (sp);
+}
+
+U1 *bluetooth_unlock_read (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    pthread_mutex_unlock (&cb_mutex);
+
+    return (sp);
+}
+
 // Function to clean up allocated SimpleBLE resources on program exit
 static void clean_on_exit(void) {
     // printf("Releasing allocated resources.\n");
