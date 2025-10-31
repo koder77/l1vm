@@ -428,6 +428,7 @@ U1 *bluetooth_set_adapter_by_mac (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     mac_addr_adapter = find_adapter_by_mac ((const char *) &data[adapter_macaddr]);
+
     if (mac_addr_adapter == NULL)
     {
         // ERROR!
@@ -457,18 +458,22 @@ U1 *bluetooth_set_adapter_by_mac (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *bluetooth_open_adapter (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-    adapter = simpleble_adapter_get_handle (bluetooth_adapter);
-    if (adapter == NULL) {
-        printf("bluetooth_open_adapter: failed to get adapter handle.\n");
-
-        sp = stpushi (1, sp, sp_bottom);
-        if (sp == NULL)
+    if (adapter == NULL)
+    {
+        adapter = simpleble_adapter_get_handle (bluetooth_adapter);
+        if (adapter == NULL)
         {
-            // error
-            printf ("bluetooth_open_adapter: ERROR: stack corrupt!\n");
-            return (NULL);
+            printf("bluetooth_open_adapter: failed to get adapter handle.\n");
+
+            sp = stpushi (1, sp, sp_bottom);
+            if (sp == NULL)
+            {
+                // error
+                printf ("bluetooth_open_adapter: ERROR: stack corrupt!\n");
+                return (NULL);
+            }
+            return (sp);
         }
-        return (sp);
     }
 
     // Set up callbacks for scanning events
@@ -1345,7 +1350,6 @@ U1 *bluetooth_set_callback (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
     }
 
-    // EDIT
     if (set_callback (callback_handle, data, string_addr, data_len) != 0)
     {
         printf ("bluetooth_set_callback: ERROR: can't set callback data!\n");
@@ -1373,7 +1377,6 @@ U1 *bluetooth_set_callback (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
-    // EDIT
     sp = stpushi (callback_handle, sp, sp_bottom); // return number of characteristic entries for bluetooth_get_characteristic()
     if (sp == NULL)
     {
