@@ -547,7 +547,7 @@ U1 *bytes_to_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	U1 *num_ptr = (U1 *) &num;
     U1 check = 0; // set to one if byte number out of range
 
-    sp = stpopb ((U1 *) &b7, sp, sp_top);
+    sp = stpopi ((U1 *) &b7, sp, sp_top);
 	if (sp == NULL)
 	{
 		// error
