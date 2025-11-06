@@ -3304,6 +3304,15 @@ S2 run (void *arg)
 	printf ("%lli RTS\n", cpu_core);
 	#endif
 
+	if (jumpstack_ind <= 0)
+    {
+        printf ("ERROR: RTS on an empty jumpstack (underflow)!\n");
+        PRINT_EPOS();
+        free (jumpoffs);
+        loop_stop ();
+        pthread_exit ((void *) 1);
+    }
+
 	ep = jumpstack[jumpstack_ind];
 	eoffs = 0;
 	jumpstack_ind--;
