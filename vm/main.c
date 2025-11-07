@@ -3304,7 +3304,7 @@ S2 run (void *arg)
 	printf ("%lli RTS\n", cpu_core);
 	#endif
 
-	if (jumpstack_ind <= 0)
+	if (jumpstack_ind == -1)
     {
         printf ("ERROR: RTS on an empty jumpstack (underflow)!\n");
         PRINT_EPOS();
