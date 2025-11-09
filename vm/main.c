@@ -3284,19 +3284,29 @@ S2 run (void *arg)
 
 	if (jumpstack_ind == MAXSUBJUMPS - 1)
 	{
-		printf ("ERROR: jumpstack full, no more jsr!\n");
+		printf ("ERROR: jumpstack full, no more jsra!\n");
 		PRINT_EPOS();
 		free (jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
 
-	jumpstack_ind++;
-	jumpstack[jumpstack_ind] = ep + 2;
+	if (regi[arg1] >= 0 && regi[arg1] < code_size)
+	{
+		jumpstack_ind++;
+		jumpstack[jumpstack_ind] = ep + 2;
 
-	eoffs = 0;
-	ep = regi[arg1];
-
+		eoffs = 0;
+		ep = regi[arg1];
+	}
+	else
+	{
+		printf ("ERROR: jsra illegal label!\n");
+		PRINT_EPOS();
+		free (jumpoffs);
+		loop_stop ();
+		pthread_exit ((void *) 1);
+	}
 	EXE_NEXT();
 
 	rts:
