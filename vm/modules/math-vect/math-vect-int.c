@@ -1347,3 +1347,150 @@ U1 *mvect_div_int_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	return (sp);
 }
+
+// array init by set intervals
+U1 *mvect_array_init_byte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 array_data_src_ptr ALIGN;
+	S8 start ALIGN;
+	S8 end ALIGN;
+	S8 step ALIGN;
+	S8 value ALIGN;
+	S8 i ALIGN;
+	// S8 offset ALIGN = 8;
+
+	// get args from stack
+	sp = stpopi ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_array_init_byte: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &step, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_array_init_byte: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &end, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_array_init_byte: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &start, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_array_init_byte: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &array_data_src_ptr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_aray_init_byte: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    #if BOUNDSCHECK
+	if (memory_bounds (array_data_src_ptr, start) != 0)
+	{
+		printf ("mvect_array_init_byte: ERROR: src overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_src_ptr, end) != 0)
+	{
+		printf ("mvect_array_init_byte: ERROR: src overflow!\n");
+		return (NULL);
+	}
+    #endif
+
+	for (i = start; i <= end; i = i + step)
+	{
+		 data[array_data_src_ptr + i] = (U1) value;
+	}
+
+	return (sp);
+}
+
+U1 *mvect_array_init_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 array_data_src_ptr ALIGN;
+	S8 start ALIGN;
+	S8 end ALIGN;
+	S8 step ALIGN;
+	S8 value ALIGN;
+	S8 i ALIGN;
+	S8 offset ALIGN = 8;
+	S8 *src_ptr;
+
+	// get args from stack
+	sp = stpopi ((U1 *) &value, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_array_init_int64: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &step, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_array_init_int64: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &end, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_array_init_int64: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &start, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_array_init_int64: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &array_data_src_ptr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("mvect_aray_init_int64: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    #if BOUNDSCHECK
+	if (memory_bounds (array_data_src_ptr, start * offset) != 0)
+	{
+		printf ("mvect_array_init_int64: ERROR: src overflow!\n");
+		return (NULL);
+	}
+	if (memory_bounds (array_data_src_ptr, end * offset) != 0)
+	{
+		printf ("mvect_array_init_int64: ERROR: src overflow!\n");
+		return (NULL);
+	}
+    #endif
+
+	for (i = start; i <= end; i = i + step)
+	{
+		src_ptr = (S8 *) &data[array_data_src_ptr + (i * offset)];
+		*src_ptr = value;
+	}
+
+	return (sp);
+}
