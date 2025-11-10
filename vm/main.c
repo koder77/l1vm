@@ -3241,11 +3241,22 @@ S2 run (void *arg)
 	#endif
 	arg1 = code[ep + 1];
 
-	eoffs = 0;
-	ep = regi[arg1];
-	#if DEBUG
-	printf ("%lli JUMP TO %lli\n", cpu_core, ep);
-	#endif
+	if (regi[arg1] >= 16 && regi[arg1] < code_size)
+	{
+		eoffs = 0;
+		ep = regi[arg1];
+        #if DEBUG
+	    printf ("%lli JUMP TO %lli\n", cpu_core, ep);
+	    #endif
+	}
+	else
+	{
+		printf ("ERROR: jmpa illegal label!\n");
+		PRINT_EPOS();
+		free (jumpoffs);
+		loop_stop ();
+		pthread_exit ((void *) 1);
+	}
 	EXE_NEXT();
 
 	jsr:
@@ -3291,7 +3302,7 @@ S2 run (void *arg)
 		pthread_exit ((void *) 1);
 	}
 
-	if (regi[arg1] >= 0 && regi[arg1] < code_size)
+	if (regi[arg1] >= 16 && regi[arg1] < code_size)
 	{
 		jumpstack_ind++;
 		jumpstack[jumpstack_ind] = ep + 2;
