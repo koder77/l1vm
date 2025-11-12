@@ -376,6 +376,17 @@ S2 load_object (U1 *name, S2 load_code_only)
 			return (1);
 		}
 
+		if (op >= MAXOPCODES)
+		{
+			printf ("error: illegal opcode!\n");
+			fclose (fptr);
+			if (bzip2)
+			{
+				remove ((const char *) objname);
+			}
+			return (1);
+		}
+
 		code[i] = op;
 		//printf ("offset: %lli OPCODE: %i\n", i, op);
 		i++;
