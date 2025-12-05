@@ -1394,17 +1394,21 @@ S2 parse_line (U1 *line)
 							{
 								if (checkdigit (ast[level].expr[j][4]) != 1)
 								{
-									// check if variable value matches type
-									if (data_info[data_ind].type == DOUBLEFLOAT && t_var.digitstr_type != DOUBLEFLOAT)
+									if (ast[level].expr[j][4][0] != '$')
 									{
-										printf ("error: line %lli: value not a double number!\n", linenum);
-										return (1);
-									}
+										// expression not filename with starting $
+										// check if variable value matches type
+										if (data_info[data_ind].type == DOUBLEFLOAT && t_var.digitstr_type != DOUBLEFLOAT)
+										{
+											printf ("error: line %lli: value not a double number!\n", linenum);
+											return (1);
+										}
 
-									if (data_info[data_ind].type != DOUBLEFLOAT && (t_var.digitstr_type == DOUBLEFLOAT || t_var.digitstr_type == STRING))
-									{
-										printf ("error: line %lli: value not a integer number!\n", linenum);
-										return (1);
+										if (data_info[data_ind].type != DOUBLEFLOAT && (t_var.digitstr_type == DOUBLEFLOAT || t_var.digitstr_type == STRING))
+										{
+											printf ("error: line %lli: value not a integer number!\n", linenum);
+											return (1);
+										}
 									}
 
 									if (get_variable_value (data_ind, ast[level].expr[j][4]) != 0)
