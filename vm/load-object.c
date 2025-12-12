@@ -350,10 +350,6 @@ S2 load_object (U1 *name, S2 load_code_only)
 			return (1);
 		}
 	}
-	else
-	{
-		printf ("Max code size: no hard limit.\n");
-	}
 
 	code = (U1 *) calloc (code_size, sizeof (U1));
 	if (code == NULL)
@@ -731,10 +727,6 @@ S2 load_object (U1 *name, S2 load_code_only)
 			}
 			return (1);
 		}
-	}
-	else
-	{
-		printf ("Max data size: no hard limit.\n");
 	}
 
 	data_global = (U1 *) calloc (data_mem_size, sizeof (U1));
