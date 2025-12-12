@@ -1,7 +1,10 @@
 L1VM (3.5.4)
 	VM: Added function epoch ms interrupt: get the time after UNIX epoch in ms.
-	
--- Stefan Pietzonke <info@midnight-coding.de> Wed 22 October 2025 17:18 +020
+
+	VM: Added gps module to read GPS from the gpsd server.
+	See "lib/gps.l1com" example.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Fri 12 December 2025 08:52 +020
 
 L1VM (3.5.3)
 	VM: added L1VM embedded functions to read/write to global data array.
