@@ -55,11 +55,13 @@
 // See "process" module!
 #define PROCESS_L1VM_USER         0 // switch to one if user: l1vm is on your system!
 
-// VM: max sizes of code
-#define MAX_CODE_SIZE 			4294967296L		// 4GB
+// VM: max sizes of code, 0 = no limit
+//#define MAX_CODE_SIZE 			4294967296L		// 4GB
+#define MAX_CODE_SIZE 0
 
-// VM: max size of data
-#define MAX_DATA_SIZE			4294967296L		// 4GB
+// VM: max size of data, 0 = no limit
+//#define MAX_DATA_SIZE			4294967296L		// 4GB
+#define MAX_DATA_SIZE 0
 
 #define CODEMAXLINES            5000                // max code lines (standard)
 

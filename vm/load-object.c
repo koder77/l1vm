@@ -337,15 +337,22 @@ S2 load_object (U1 *name, S2 load_code_only)
 
 	// printf ("codesize: %lli\n", code_size);
 	// check if codesize in legal range
-	if (code_size > max_code_size)
+	if (max_code_size > 0)
 	{
-		printf ("ERROR: code_size to big: %lli, must be less than: %lli!\n", code_size, max_code_size);
-		fclose (fptr);
-		if (bzip2)
+		if (code_size > max_code_size)
 		{
-			remove ((const char *) objname);
+			printf ("ERROR: code_size to big: %lli, must be less than: %lli!\n", code_size, max_code_size);
+			fclose (fptr);
+			if (bzip2)
+			{
+				remove ((const char *) objname);
+			}
+			return (1);
 		}
-		return (1);
+	}
+	else
+	{
+		printf ("Max code size: no hard limit.\n");
 	}
 
 	code = (U1 *) calloc (code_size, sizeof (U1));
@@ -712,15 +719,22 @@ S2 load_object (U1 *name, S2 load_code_only)
 	data_mem_size = data_mem_size + (stack_size * max_cpu);
 
 	// check if datasize in legal range
-	if (data_mem_size > max_data_size)
+	if (max_data_size > 0)
 	{
-		printf ("ERROR: data_mem_size to big: %lli, must be less than: %lli!\n", data_mem_size, max_data_size);
-		fclose (fptr);
-		if (bzip2)
+		if (data_mem_size > max_data_size)
 		{
-			remove ((const char *) objname);
+			printf ("ERROR: data_mem_size to big: %lli, must be less than: %lli!\n", data_mem_size, max_data_size);
+			fclose (fptr);
+			if (bzip2)
+			{
+				remove ((const char *) objname);
+			}
+			return (1);
 		}
-		return (1);
+	}
+	else
+	{
+		printf ("Max data size: no hard limit.\n");
 	}
 
 	data_global = (U1 *) calloc (data_mem_size, sizeof (U1));
