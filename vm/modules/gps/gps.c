@@ -280,3 +280,147 @@ U1 *gps_read_data (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     return (sp);
 }
+
+// functions to handle algorithms
+
+// distance between two points on earth
+#define R 6371.0 // Radius of the Earth in kilometers
+
+// Function to convert degrees to radians
+double toRadians (double degree)
+{
+    return (degree * (M_PI / 180.0));
+}
+
+double toDegrees (double radians)
+{
+    return (radians * 180.0 / M_PI);
+}
+
+// Function to calculate distance using Haversine formula
+double haversine (double lat1, double lon1, double lat2, double lon2)
+{
+    double dLat = toRadians(lat2 - lat1);
+    double dLon = toRadians(lon2 - lon1);
+
+    lat1 = toRadians(lat1);
+    lat2 = toRadians(lat2);
+
+    double a = sin(dLat/2) * sin(dLat/2) +
+               cos(lat1) * cos(lat2) *
+               sin(dLon/2) * sin(dLon/2);
+    double c = 2 * atan2(sqrt(a), sqrt(1-a));
+
+    return R * c; // Distance in kilometers
+}
+
+U1 *gps_haversine_distance (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    F8 lat1, lon1, lat2, lon2;
+    F8 distance_km;
+
+    sp = stpopd ((U1 *) &lon2, sp, sp_top);
+    if (sp == NULL)
+    {
+        printf ("gps_haversine_distance: ERROR: stack corrupt on input!\n");
+        return (NULL);
+    }
+
+    sp = stpopd ((U1 *) &lat2, sp, sp_top);
+    if (sp == NULL)
+    {
+        printf ("gps_haversine_distance: ERROR: stack corrupt on input!\n");
+        return (NULL);
+    }
+
+    sp = stpopd ((U1 *) &lon1, sp, sp_top);
+    if (sp == NULL)
+    {
+        printf ("gps_haversine_distance: ERROR: stack corrupt on input!\n");
+        return (NULL);
+    }
+
+    sp = stpopd ((U1 *) &lat1, sp, sp_top);
+    if (sp == NULL)
+    {
+        printf ("gps_haversine_distance: ERROR: stack corrupt on input!\n");
+        return (NULL);
+    }
+
+    distance_km = haversine (lat1, lon1, lat2, lon2);
+
+    sp = stpushd (distance_km, sp, sp_bottom);
+    if (sp == NULL)
+    {
+        // error
+        printf ("gps_haversine_distance: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+
+    return (sp);
+}
+
+// bearing to a destination point
+double bearing (double lat, double lon, double lat2, double lon2)
+{
+    double teta1 = toRadians (lat);
+    double teta2 = toRadians (lat2);
+    // double delta1 = toRadians (lat2-lat);
+    double delta2 = toRadians (lon2-lon);
+
+    //==================Heading Formula Calculation================//
+
+    double y = sin(delta2) * cos(teta2);
+    double x = cos(teta1)*sin(teta2) - sin(teta1)*cos(teta2)*cos(delta2);
+    double brng = atan2(y,x);
+    brng = toDegrees(brng);// radians to degrees
+    brng = (((int)brng + 360) % 360 );
+
+    return brng;
+}
+
+U1 *gps_bearing (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    F8 lat1, lon1, lat2, lon2;
+    F8 bearing_deg;
+
+    sp = stpopd ((U1 *) &lon2, sp, sp_top);
+    if (sp == NULL)
+    {
+        printf ("gps_bearing: ERROR: stack corrupt on input!\n");
+        return (NULL);
+    }
+
+    sp = stpopd ((U1 *) &lat2, sp, sp_top);
+    if (sp == NULL)
+    {
+        printf ("gps_bearing: ERROR: stack corrupt on input!\n");
+        return (NULL);
+    }
+
+    sp = stpopd ((U1 *) &lon1, sp, sp_top);
+    if (sp == NULL)
+    {
+        printf ("gps_bearing: ERROR: stack corrupt on input!\n");
+        return (NULL);
+    }
+
+    sp = stpopd ((U1 *) &lat1, sp, sp_top);
+    if (sp == NULL)
+    {
+        printf ("gps_bearing: ERROR: stack corrupt on input!\n");
+        return (NULL);
+    }
+
+    bearing_deg = bearing (lat1, lon1, lat2, lon2);
+
+    sp = stpushd (bearing_deg, sp, sp_bottom);
+    if (sp == NULL)
+    {
+        // error
+        printf ("gps_bearing: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+
+    return (sp);
+}
