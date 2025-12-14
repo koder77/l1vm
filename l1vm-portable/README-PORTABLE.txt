@@ -1,13 +1,14 @@
 L1VM PORTABLE
 =============
-The "run-prog.sh" script can be called with a program name.
-It sets the L1VM paths to the directory it is in.
-So the portable L1VM in it can be run.
+Copy the scripts into the root directory of a "l1vm" directory.
+You can put both binaries for Linux and Windows on a USB stick for example:
 
-To make this work copy the following directories in it:
+bin-linux and bin-windows
 
-bin, include, lib and prog
+And then on Linux for example go into the root directory of L1VM.
+Now run "set-path-linux.sh" in the shell.
+Then you can run the l1vm:
 
-The needed binaries and the modules must be in "bin".
+$ l1vm hello
 
-Then run the program with the "run-prog.sh" script.
+This way you can put both Linux and Windows ports onto one USB stick.

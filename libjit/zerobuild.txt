@@ -5,8 +5,8 @@ sources = jit.cpp
 
 includes = ../include, /usr/local/include
 
-ccompiler = clang-15
-c++compiler = clang++-15
+ccompiler = clang-19
+c++compiler = clang++-19
 
 linker = ld
 aflags = "cru"
