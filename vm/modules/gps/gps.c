@@ -92,9 +92,13 @@ U1 *gps_quit (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 U1 *gps_read_data (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-    double latitude = 0.0, longitude = 0.0, altitude = 0.0, speed_kmh = 0.0, track = 0.0;
-    S8 satellites_used = 0;
-    S8 timestrptr;
+    F8 latitude ALIGN = 0.0;
+    F8 longitude ALIGN = 0.0;
+    F8 altitude ALIGN = 0.0;
+    F8 speed_kmh ALIGN = 0.0;
+    F8 track ALIGN = 0.0;
+    S8 satellites_used ALIGN = 0;
+    S8 timestrptr ALIGN;
     S2 result = 0;
 
     sp = stpopi ((U1 *) &timestrptr, sp, sp_top);
@@ -300,24 +304,27 @@ double toDegrees (double radians)
 // Function to calculate distance using Haversine formula
 double haversine (double lat1, double lon1, double lat2, double lon2)
 {
-    double dLat = toRadians(lat2 - lat1);
-    double dLon = toRadians(lon2 - lon1);
+    double dLat ALIGN = toRadians(lat2 - lat1);
+    double dLon ALIGN = toRadians(lon2 - lon1);
 
     lat1 = toRadians(lat1);
     lat2 = toRadians(lat2);
 
-    double a = sin(dLat/2) * sin(dLat/2) +
+    double a ALIGN = sin(dLat/2) * sin(dLat/2) +
                cos(lat1) * cos(lat2) *
                sin(dLon/2) * sin(dLon/2);
-    double c = 2 * atan2(sqrt(a), sqrt(1-a));
+    double c ALIGN = 2 * atan2(sqrt(a), sqrt(1-a));
 
     return R * c; // Distance in kilometers
 }
 
 U1 *gps_haversine_distance (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-    F8 lat1, lon1, lat2, lon2;
-    F8 distance_km;
+    F8 lat1 ALIGN;
+    F8 lon1 ALIGN;
+    F8 lat2 ALIGN;
+    F8 lon2 ALIGN;
+    F8 distance_km ALIGN;
 
     sp = stpopd ((U1 *) &lon2, sp, sp_top);
     if (sp == NULL)
@@ -363,16 +370,16 @@ U1 *gps_haversine_distance (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 // bearing to a destination point
 double bearing (double lat, double lon, double lat2, double lon2)
 {
-    double teta1 = toRadians (lat);
-    double teta2 = toRadians (lat2);
+    double teta1 ALIGN = toRadians (lat);
+    double teta2 ALIGN = toRadians (lat2);
     // double delta1 = toRadians (lat2-lat);
-    double delta2 = toRadians (lon2-lon);
+    double delta2 ALIGN = toRadians (lon2-lon);
 
     //==================Heading Formula Calculation================//
 
-    double y = sin(delta2) * cos(teta2);
-    double x = cos(teta1)*sin(teta2) - sin(teta1)*cos(teta2)*cos(delta2);
-    double brng = atan2(y,x);
+    double y ALIGN = sin(delta2) * cos(teta2);
+    double x ALIGN = cos(teta1)*sin(teta2) - sin(teta1)*cos(teta2)*cos(delta2);
+    double brng ALIGN = atan2(y,x);
     brng = toDegrees(brng);// radians to degrees
     brng = (((int)brng + 360) % 360 );
 
@@ -381,8 +388,11 @@ double bearing (double lat, double lon, double lat2, double lon2)
 
 U1 *gps_bearing (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
-    F8 lat1, lon1, lat2, lon2;
-    F8 bearing_deg;
+    F8 lat1 ALIGN = 0.0;
+    F8 lon1 ALIGN = 0.0;
+    F8 lat2 ALIGN = 0.0;
+    F8 lon2 ALIGN = 0.0;
+    F8 bearing_deg ALIGN = 0.0;
 
     sp = stpopd ((U1 *) &lon2, sp, sp_top);
     if (sp == NULL)
