@@ -1322,6 +1322,13 @@ S2 parse_line (U1 *line)
 
                         if (function_args[function_index].strict == 1)
                         {
+                            if (type_ind == 1)
+                            {
+                                // variable name is single char. No 'R' end possible!
+                                printf ("parse-line: variable '%s' is not return type variable!\n", type);
+                                return (1);
+                            }
+
                             if (type_ind >= 2)
                             {
                                 if (type[type_ind - 1] != 'R')
