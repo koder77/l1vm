@@ -55,6 +55,7 @@ struct function_args
     U1 name[MAXSTRLEN + 1];
     S2 arg_type[MAXFUNCARGS];
     S2 args;
+    U1 strict;
 };
 
 struct function_args *function_args;
@@ -461,7 +462,7 @@ S2 check_exit_call (U1 *line)
 
 S2 parse_line (U1 *line)
 {
-    S2 pos, type_pos, type_ind = 0, i, ret_start;
+    S2 pos, type_pos, type_ind = 0, i, ret_start, strict_pos;
     S2 name_pos, name_ind = 0;
     S2 line_len = 0;
     U1 get_type = 1;
@@ -632,12 +633,25 @@ S2 parse_line (U1 *line)
         }
     }
 
+    // EDIT neu
     // check if function args found
     pos = searchstr (line, (U1 *) "// (func args ", 0, 0, TRUE);
     if (pos != -1)
     {
+        strict_pos = searchstr (line, (U1 *) "// (func args S ", 0, 0, TRUE);
+        if (strict_pos != -1)
+        {
+            // handle function as strict. Use variables with R at the ending for return values
+            function_args[function_index].strict = 1;
+            name_pos = pos + 16;
+        }
+        else
+        {
+            function_args[function_index].strict = 0;
+            name_pos = pos + 14;
+        }
+
         // check for function name
-        name_pos = pos + 14;
         get_name = 1;
         i = name_pos;
         args_ind = -1;
@@ -730,6 +744,7 @@ S2 parse_line (U1 *line)
                     get_type = 0;
                     func_args++;
                 }
+
                 if (i < line_len - 1)
                 {
                     i++;
@@ -1117,6 +1132,18 @@ S2 parse_line (U1 *line)
                     // got end of type
                     type[type_ind] = '\0';
                     get_type = 0;
+
+                    if (function_args[function_index].strict == 1)
+                    {
+                        if (type_ind >= 2)
+                        {
+                            if (type[type_ind - 1] == 'R')
+                            {
+                                printf ("parse-line: variable '%s' is return type variable!\n", type);
+                                return (1);
+                            }
+                        }
+                    }
                 }
                 if (i < line_len - 1)
                 {
@@ -1137,6 +1164,24 @@ S2 parse_line (U1 *line)
             #if DEBUG
             printf ("parse-line: call function type: '%s'\n", type);
             #endif
+
+            if (function_args[function_args_ind].strict == 1)
+            {
+                {
+                    // EDIT neu2
+                    S2 type_len;
+
+                    type_len = strlen_safe ((const char *) type, MAXSTRLEN);
+                    if (type_len > 1)
+                    {
+                        if (type[type_len - 1] != 'R')
+                        {
+                            printf ("parse_line: call function: variable ends with 'R'! It is a return value!\n");
+                            return (1);
+                        }
+                    }
+                }
+            }
 
             vartype = get_varname_type (type);
             if (vartype == -1)
@@ -1274,6 +1319,18 @@ S2 parse_line (U1 *line)
                         // got end of type
                         type[type_ind] = '\0';
                         get_type = 0;
+
+                        if (function_args[function_index].strict == 1)
+                        {
+                            if (type_ind >= 2)
+                            {
+                                if (type[type_ind - 1] != 'R')
+                                {
+                                    printf ("parse-line: variable '%s' is not return type variable!\n", type);
+                                    return (1);
+                                }
+                            }
+                        }
                     }
                     if (i < stpop_pos - 1 )
                     {

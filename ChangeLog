@@ -4,7 +4,10 @@ L1VM (3.5.4)
 	VM: Added gps module to read GPS from the gpsd server.
 	See "lib/gps.l1com" example.
 
--- Stefan Pietzonke <info@midnight-coding.de> Fri 12 December 2025 08:52 +020
+	NEW: The linter has now a "strict" flag. With it set the result variables must end by a uppercase "R" ending.
+	They are not alowed as function arguments. See "linter/math-inc-strict.l1com".
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sun 21 December 2025 05:33 +010
 
 L1VM (3.5.3)
 	VM: added L1VM embedded functions to read/write to global data array.
