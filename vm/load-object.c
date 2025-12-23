@@ -189,9 +189,9 @@ S2 load_object (U1 *name, S2 load_code_only)
 	fptr = fopen ((const char *) objname, "rb");
 	if (fptr == NULL)
 	{
-		// check if .bz2 compressed object archive?
+		// check if .bz3 compressed object archive?
 		strcpy ((char *) objname, (const char *) name);
-		strcat ((char *) objname, ".l1obj.bz2");
+		strcat ((char *) objname, ".l1obj.bz3");
 
 		fptr = fopen ((const char *) objname, "rb");
 		if (fptr == NULL)
@@ -214,7 +214,7 @@ S2 load_object (U1 *name, S2 load_code_only)
 			if (fptr == NULL)
 			{
 				// check if .bz2 compressed object archive?
-				strcat ((char *) full_path, ".bz2");
+				strcat ((char *) full_path, ".bz3");
 
 				fptr = fopen ((const char *) full_path, "rb");
 				if (fptr == NULL)
@@ -265,7 +265,7 @@ S2 load_object (U1 *name, S2 load_code_only)
 
 			if (system ((char *) run_shell) != 0)
 			{
-				printf ("load_object: ERROR: can't run bzip2 to unpack object code: '%s'!\n", objname);
+				printf ("load_object: ERROR: can't run bzip3 to unpack object code: '%s'!\n", objname);
 				return (1);
 			}
 
