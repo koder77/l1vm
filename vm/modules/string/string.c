@@ -1984,3 +1984,85 @@ U1 *string_verify (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	return (sp);
 }
+
+char* format_string_with_commas (const char* input) {
+    if (!input) return NULL;
+
+    // 1. search decimal point
+    char *dot = strchr(input, '.');
+    int int_part_len = dot ? (int)(dot - input) : (int)strlen(input);
+
+    // 2. calculate number of commas
+    int num_commas = (int_part_len - 1) / 3;
+    if (int_part_len <= 0) num_commas = 0; // case: ".123"
+
+    // 3. calculate total string length
+    size_t input_len = strlen(input);
+    size_t new_len = input_len + num_commas;
+
+    // 4. malloc string
+    char* result = (char*)malloc(new_len + 1);
+    if (!result) return NULL;
+
+    int res_ptr = 0;
+    int src_ptr = 0;
+
+    // 5. copy part
+    for (int i = 0; i < int_part_len; i++) {
+        // insert commas
+        if (i > 0 && (int_part_len - i) % 3 == 0) {
+            result[res_ptr++] = ',';
+        }
+        result[res_ptr++] = input[src_ptr++];
+    }
+
+    // 6. copy rest
+    while (input[src_ptr] != '\0') {
+        result[res_ptr++] = input[src_ptr++];
+    }
+    result[res_ptr] = '\0';
+
+    return result;
+}
+
+U1 *string_format_num (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 strsourceaddr ALIGN;
+	S8 strdestaddr ALIGN;
+	S8 offset ALIGN;
+
+	U1 *result_str = NULL;
+
+	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_format_num: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_format_num: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	result_str = (U1 *) format_string_with_commas ((const char *) &data[strsourceaddr]);
+
+	offset = strlen_safe ((const char *) result_str, STRINGMOD_MAXSTRLEN);
+
+	#if BOUNDSCHECK
+	if (memory_bounds (strdestaddr, offset) != 0)
+	{
+		printf ("string_format_num: ERROR: dest string overflow!\n");
+		return (NULL);
+	}
+	#endif
+
+	strcpy ((char *) &data[strdestaddr], (const char *) result_str);
+
+	if (result_str != NULL) free (result_str);
+	return (sp);
+}

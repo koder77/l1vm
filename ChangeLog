@@ -7,7 +7,9 @@ L1VM (3.5.4)
 	NEW: The linter has now a "strict" flag. With it set the result variables must end by a uppercase "R" ending.
 	They are not alowed as function arguments. See "linter/math-inc-strict.l1com".
 
--- Stefan Pietzonke <info@midnight-coding.de> Sun 21 December 2025 05:33 +010
+	Added VM/string: "string_format_num" function to print strings formatted: 1,000,000.12345.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sun 27 December 2025 18:26 +010
 
 L1VM (3.5.3)
 	VM: added L1VM embedded functions to read/write to global data array.
