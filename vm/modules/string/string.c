@@ -2002,7 +2002,7 @@ char* format_string_with_commas (const char* input) {
     S8 num_commas ALIGN = (int_part_len > 0) ? (int_part_len - 1) / 3 : 0;
 
     // Calculate new total length: original string + additional commas
-    size_t input_len = strlen(input);
+    size_t input_len = strlen_safe (input, STRINGMOD_MAXSTRLEN);
     size_t new_len = input_len + num_commas;
 
     // Allocate memory through your VM's allocation system (using malloc as placeholder)
