@@ -1985,6 +1985,8 @@ U1 *string_verify (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
+// format string to: 100,000,000,123456
+
 char* format_string_with_commas (const char* input) {
     if (!input) return NULL;
 
@@ -2069,6 +2071,98 @@ U1 *string_format_num (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (memory_bounds (strdestaddr, offset) != 0)
 	{
 		printf ("string_format_num: ERROR: dest string overflow!\n");
+		return (NULL);
+	}
+	#endif
+
+	strcpy ((char *) &data[strdestaddr], (const char *) result_str);
+
+	if (result_str != NULL) free (result_str);
+	return (sp);
+}
+
+// insert padding char into string
+
+char* pad_left_flexible(const char* input, S8 width, char pad_char) {
+    if (!input) return NULL;
+    S8 len ALIGN = (S8) strlen_safe (input, STRINGMOD_MAXSTRLEN);
+
+    if (len >= width) {
+        char* res = (char*)malloc(len + 1);
+        if (res) strcpy(res, input);
+        return res;
+    }
+
+    char* result = (char*)malloc(width + 1);
+    if (!result) return NULL;
+
+    int padding_count = width - len;
+    memset(result, pad_char, padding_count);
+    memcpy(result + padding_count, input, len);
+    result[width] = '\0';
+    return result;
+}
+
+U1 *string_padd (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 strsourceaddr ALIGN;
+	S8 strdestaddr ALIGN;
+	S8 strpaddaddr ALIGN;
+	S8 width ALIGN;
+	S8 offset ALIGN;
+	S8 paddlen ALIGN;
+
+	U1 *result_str = NULL;
+
+	sp = stpopi ((U1 *) &strpaddaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_padd: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_padd: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_padd: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	sp = stpopi ((U1 *) &strdestaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_padd: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	// check if paddlen of paddchar is one:
+    paddlen = strlen_safe ((const char *) &data[strpaddaddr], STRINGMOD_MAXSTRLEN);
+	if (paddlen > 1 || paddlen == 0)
+	{
+		printf ("string_padd: error padding char not one char!\n");
+		return (NULL);
+	}
+
+	//char* pad_left_flexible(const char* input, S8 width, char pad_char)
+
+	result_str = (U1 *) pad_left_flexible ((const char *) &data[strsourceaddr], width, (char) data[strpaddaddr]);
+	offset = strlen_safe ((const char *) result_str, STRINGMOD_MAXSTRLEN);
+
+    #if BOUNDSCHECK
+	if (memory_bounds (strdestaddr, offset) != 0)
+	{
+		printf ("string_padd: ERROR: dest string overflow!\n");
 		return (NULL);
 	}
 	#endif
