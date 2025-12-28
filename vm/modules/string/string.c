@@ -1985,15 +1985,15 @@ U1 *string_verify (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
-char* format_string_with_commas (const char* input) {
+char *format_string_with_commas (const char* input) {
     if (!input) return NULL;
 
     // 1. search decimal point
-    char *dot = strchr(input, '.');
-    int int_part_len = dot ? (int)(dot - input) : (int)strlen(input);
+    char *dot = strchr (input, '.');
+    S8 int_part_len ALIGN = dot ? (S8)(dot - input) : (S8)strlen_safe (input, STRINGMOD_MAXSTRLEN);
 
     // 2. calculate number of commas
-    int num_commas = (int_part_len - 1) / 3;
+    S8 num_commas ALIGN = (int_part_len - 1) / 3;
     if (int_part_len <= 0) num_commas = 0; // case: ".123"
 
     // 3. calculate total string length
@@ -2001,14 +2001,14 @@ char* format_string_with_commas (const char* input) {
     size_t new_len = input_len + num_commas;
 
     // 4. malloc string
-    char* result = (char*)malloc(new_len + 1);
+    char* result = (char*) malloc(new_len + 1);
     if (!result) return NULL;
 
-    int res_ptr = 0;
-    int src_ptr = 0;
+    S8 res_ptr ALIGN = 0;
+    S8 src_ptr ALIGN = 0;
 
     // 5. copy part
-    for (int i = 0; i < int_part_len; i++) {
+    for (S8 ALIGN i = 0; i < int_part_len; i++) {
         // insert commas
         if (i > 0 && (int_part_len - i) % 3 == 0) {
             result[res_ptr++] = ',';
