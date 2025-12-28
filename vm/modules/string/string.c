@@ -1985,41 +1985,53 @@ U1 *string_verify (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	return (sp);
 }
 
-char *format_string_with_commas (const char* input) {
+char* format_string_with_commas (const char* input) {
     if (!input) return NULL;
 
-    // 1. search decimal point
-    char *dot = strchr (input, '.');
-    S8 int_part_len ALIGN = dot ? (S8)(dot - input) : (S8)strlen_safe (input, STRINGMOD_MAXSTRLEN);
+    // Check for negative sign to avoid miscounting digits
+    S8 is_negative ALIGN = (input[0] == '-') ? 1 : 0;
 
-    // 2. calculate number of commas
-    S8 num_commas ALIGN = (int_part_len - 1) / 3;
-    if (int_part_len <= 0) num_commas = 0; // case: ".123"
+    // Start numeric analysis after the optional sign
+    const char *start_of_digits = input + is_negative;
+    char *dot = strchr(start_of_digits, '.');
 
-    // 3. calculate total string length
+    // Calculate length of the integer part (before decimal point or end of string)
+    S8 int_part_len ALIGN = dot ? (int)(dot - start_of_digits) : (int)strlen(start_of_digits);
+
+    // Calculate required commas: one for every three digits (except at the very start)
+    S8 num_commas ALIGN = (int_part_len > 0) ? (int_part_len - 1) / 3 : 0;
+
+    // Calculate new total length: original string + additional commas
     size_t input_len = strlen(input);
     size_t new_len = input_len + num_commas;
 
-    // 4. malloc string
-    char* result = (char*) malloc(new_len + 1);
+    // Allocate memory through your VM's allocation system (using malloc as placeholder)
+    char* result = (char*)malloc(new_len + 1);
     if (!result) return NULL;
 
     S8 res_ptr ALIGN = 0;
     S8 src_ptr ALIGN = 0;
 
-    // 5. copy part
-    for (S8 ALIGN i = 0; i < int_part_len; i++) {
-        // insert commas
+    // 1. Copy negative sign if present
+    if (is_negative) {
+        result[res_ptr++] = input[src_ptr++];
+    }
+
+    // 2. Process integer part and insert thousand separators
+    for (S8 i ALIGN = 0; i < int_part_len; i++) {
+        // Insert comma if we are at a thousand position (counting from right to left)
         if (i > 0 && (int_part_len - i) % 3 == 0) {
             result[res_ptr++] = ',';
         }
         result[res_ptr++] = input[src_ptr++];
     }
 
-    // 6. copy rest
+    // 3. Copy remaining part (decimal point and fractional digits) 1:1
     while (input[src_ptr] != '\0') {
         result[res_ptr++] = input[src_ptr++];
     }
+
+    // Null-terminate the resulting string
     result[res_ptr] = '\0';
 
     return result;
