@@ -1,3 +1,12 @@
+L1VM (3.5.5)
+	The linter has now a "strict" flag. With it set the result variables must end by a uppercase "R" ending.
+	They are not alowed as function arguments. See "linter/math-inc-strict.l1com".
+
+	Now the function call variables are also checked and can't be used after the function call.
+	And pointers to the variables can't be used too.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Thu 1 January 2026 20:37 +010
+
 L1VM (3.5.4)
 	VM: Added function epoch ms interrupt: get the time after UNIX epoch in ms.
 

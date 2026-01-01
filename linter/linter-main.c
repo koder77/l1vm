@@ -412,12 +412,16 @@ S2 check_line_strict (U1 *line)
     // This is not alowed!
 
     S8 i ALIGN = 0;
+    S8 j ALIGN = 0;
+    S8 k ALIGN = 0;
     S8 line_len ALIGN;
     U1 var[MAXSTRLEN + 1] = "";
     S8 varind ALIGN = -1;
     U1 parse = 1;
     S8 comm_pos = 0;
     // EDIT WRITE
+
+    U1 pointer_var[MAXSTRLEN + 1] = "";
 
     line_len = strlen_safe ((const char *) line, MAXLINELEN);
     if (line_len == 0)
@@ -464,10 +468,37 @@ S2 check_line_strict (U1 *line)
             }
             var[varind] = '\0';
 
-            // reset varind:
-            varind = -1;
+            // EDIT POINTER
+            if (varind >= 2)
+            {
+                //printf ("check_line_strict: POINTER: '%c'\n", var[0]);
+
+                if (var[0] == 'P')
+                {
+                  //  printf ("check_line_strict: POINTER START\n");
+
+                    k = 0;
+                    for (j = 1; j <= varind; j++)
+                    {
+                        pointer_var[k] = var[j];
+                        k++;
+                    }
+
+                    if (get_var_strict (pointer_var) == 2)
+                    {
+                        // variable is strict variable, not allowed to use any more!
+                        return (1);
+                    }
+                }
+            }
 
             if (get_var_strict (var) == 2)
+            {
+                // variable is strict variable, not allowed to use any more!
+                return (1);
+            }
+
+            if (get_var_strict (pointer_var) == 2)
             {
                 // variable is strict variable, not allowed to use any more!
                 return (1);
@@ -484,6 +515,9 @@ S2 check_line_strict (U1 *line)
                     }
                 }
             }
+
+            // reset varind:
+            varind = -1;
         }
         if (i < line_len - 1)
         {
@@ -629,7 +663,7 @@ S2 parse_line (U1 *line)
     S2 stpop_pos = 0;
     S2 return_pos = 0;
     S2 func_stpop_pos = 0;
-
+    S2 pointer_pos = 0;
 
     U1 type[MAXSTRLEN + 1];
     U1 name[MAXSTRLEN + 1];
@@ -1704,6 +1738,107 @@ S2 parse_line (U1 *line)
             }
             i++;
         }
+        }
+    }
+
+    // EDIT POINTER
+    pointer_pos = searchstr (line, (U1 *) "pointer)", 0, 0, TRUE);
+    if (pointer_pos != -1)
+    {
+        pos = searchstr (line, (U1 *) "(", 0, 0, TRUE);
+        if (pos >= pointer_pos)
+        {
+            printf ("parse-line: error: no variables found!\n");
+            return (1);
+        }
+
+        {
+            S2 li = pos + 1;
+            S2 pi = 0;
+            U1 parse_var = 1;
+            U1 pointer_var[MAXSTRLEN + 1];
+            U1 pointer_name[MAXSTRLEN + 1];
+
+            S2 line_len = strlen_safe ((const char *) line, MAXLINELEN);
+            S2 name_pos = 0;
+
+            while (parse_var == 1)
+            {
+                //printf ("EDIT POINTER: i: %i '%c'\n", li, line[li]);
+
+                if (line[li] != ' ')
+                {
+                    pointer_var[pi] = line[li];
+                    if (pi < MAXSTRLEN)
+                    {
+                        pi++;
+                    }
+                    else
+                    {
+                         printf ("parse-line: error: pointer variable name overflow!\n");
+                         return (1);
+                    }
+                }
+                else
+                {
+                    pointer_var[pi] = '\0';
+                    parse_var = 0;
+                }
+                if (li < line_len - 1)
+                {
+                    li++;
+                }
+            }
+
+            if (pi == 0)
+            {
+                printf ("parse-line: error: pointer variable '%s' not valid!\n", pointer_var);
+                return (1);
+            }
+
+            parse_var = 1;
+            pi = 0;
+            while (parse_var == 1)
+            {
+                if (line[li] != ' ')
+                {
+                    pointer_name[pi] = line[li];
+                    if (pi < MAXSTRLEN)
+                    {
+                        pi++;
+                    }
+                    else
+                    {
+                         printf ("parse-line: error: pointer name overflow!\n");
+                         return (1);
+                    }
+                }
+                else
+                {
+                    pointer_name[pi] = '\0';
+                    parse_var = 0;
+                }
+                if (li < line_len - 1)
+                {
+                    li++;
+                }
+            }
+
+            // check names: x must be Px!
+            if (pi >= 2)
+            {
+                name_pos = searchstr (pointer_name, (U1 *) pointer_var, 0, 0, TRUE);
+                if (name_pos != 1)
+                {
+                    printf ("parse-line: error: pointer name not 'P%s'!\n", pointer_var);
+                    return (1);
+                }
+            }
+            else
+            {
+                printf ("parse-line: error: pointer name '%s' not valid!\n", pointer_name);
+                return (1);
+            }
         }
     }
 
