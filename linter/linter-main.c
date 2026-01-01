@@ -77,6 +77,7 @@ struct vars
 {
     U1 name[MAXSTRLEN + 1];
     U1 type;
+    U1 strict_arg;
 };
 
 struct vars *vars;
@@ -224,8 +225,16 @@ S2 get_varname_type (U1 *name)
     {
         if (strcmp ((const char *) vars[i].name, (const char *) name) == 0)
         {
-            // found variable, return variable type
-            return (vars[i].type);
+            if (vars[i].strict_arg == 1)
+            {
+                printf ("error: variable was used in strict function call.\nAnd is not valid in the later code!\n");
+                return (-1);
+            }
+            else
+            {
+                // found variable, return variable type
+                return (vars[i].type);
+            }
         }
     }
     // variable not found
@@ -346,7 +355,147 @@ U1 getvartype (U1 *type)
     return (vartype);
 }
 
+S2 get_var_strict (U1 *name)
+{
+    S8 i ALIGN = 0;
 
+    for (i = 0; i <= vars_ind; i++)
+    {
+        if (strcmp ((const char *) vars[i].name, (const char *) name) == 0)
+        {
+            // found variable, return variable type
+            if (vars[i].strict_arg > 0)
+            {
+                if (vars[i].strict_arg == 1)
+                {
+                    vars[i].strict_arg = 2;
+                    return (1);
+                }
+                else
+                {
+                    if (vars[i].strict_arg == 2)
+                    {
+                        printf ("> error: variable %s, which was used in 'strict' function call is not valid!\n", name);
+                        return (vars[i].strict_arg);
+                    }
+                }
+            }
+            return (vars[i].strict_arg);
+        }
+    }
+
+    return (0);
+}
+
+S2 set_var_strict (U1 *name)
+{
+    S8 i ALIGN = 0;
+
+    for (i = 0; i <= vars_ind; i++)
+    {
+        if (strcmp ((const char *) vars[i].name, (const char *) name) == 0)
+        {
+            // found variable, return variable type
+            vars[i].strict_arg = 1;
+            return (0);
+        }
+    }
+
+    // variable not found
+    printf ("set_var_strict: error: variable '%s' not defined!\n", name);
+    return (-1);
+}
+
+S2 check_line_strict (U1 *line)
+{
+    // check if strict variable, wich was used in function call is used later
+    // This is not alowed!
+
+    S8 i ALIGN = 0;
+    S8 line_len ALIGN;
+    U1 var[MAXSTRLEN + 1] = "";
+    S8 varind ALIGN = -1;
+    U1 parse = 1;
+    S8 comm_pos = 0;
+    // EDIT WRITE
+
+    line_len = strlen_safe ((const char *) line, MAXLINELEN);
+    if (line_len == 0)
+    {
+        // empty line: return all ok!
+        return (0);
+    }
+
+    if (line_len >= 2)
+    {
+        comm_pos = searchstr (line, (U1 *) "//", 0, 0, TRUE);
+        if (comm_pos != -1)
+        {
+            return (0);   // comment line
+        }
+    }
+
+    while (parse == 1)
+    {
+        if (line[i] != ' ' && line[i] != '(' && line[i] != ')' && line[i] != '=' && line[i] != ':')
+        {
+            if (varind < MAXSTRLEN)
+            {
+                varind++;
+            }
+            else
+            {
+                printf ("check_line_strict: variable name overflow!\n");
+                return (1);
+            }
+            var[varind] = line[i];
+        }
+
+        if (line[i] == '(' || line[i] == ' ' || line[i] == ')' || line [i] == ':')
+        {
+            if (varind < MAXSTRLEN)
+            {
+                varind++;
+            }
+            else
+            {
+                printf ("check_line_strict: variable name overflow!\n");
+                return (1);
+            }
+            var[varind] = '\0';
+
+            // reset varind:
+            varind = -1;
+
+            if (get_var_strict (var) == 2)
+            {
+                // variable is strict variable, not allowed to use any more!
+                return (1);
+            }
+
+            // check if :=) line end:
+            if (line[i] == ':')
+            {
+                if (i < line_len - 2)
+                {
+                    if (line[i + 1] == '=')
+                    {
+                        i++;
+                    }
+                }
+            }
+        }
+        if (i < line_len - 1)
+        {
+            i++;
+        }
+        else
+        {
+            parse = 0;
+        }
+    }
+    return (0);
+}
 
 void cleanup (void)
 {
@@ -621,6 +770,7 @@ S2 parse_line (U1 *line)
             vars_ind++;
             strcpy ((char *) vars[vars_ind].name, (char *) name);
             vars[vars_ind].type = vartype;
+            vars[vars_ind].strict_arg = 0;
 
             #if DEBUG
             printf ("variable: index: %lli, name: '%s', type: %lli\n", vars_ind, vars[vars_ind].name, vars[vars_ind].type);
@@ -1165,6 +1315,14 @@ S2 parse_line (U1 *line)
             printf ("parse-line: call function type: '%s'\n", type);
             #endif
 
+            vartype = get_varname_type (type);
+            if (vartype == -1)
+            {
+                // error no valid vartype
+                printf ("parse-line: call function: invalid variable: '%s' ! \n", type);
+                return (1);
+            }
+
             if (function_args[function_args_ind].strict == 1)
             {
                 {
@@ -1181,14 +1339,6 @@ S2 parse_line (U1 *line)
                         }
                     }
                 }
-            }
-
-            vartype = get_varname_type (type);
-            if (vartype == -1)
-            {
-                // error no valid vartype
-                printf ("parse-line: call function: invalid variable: '%s' ! \n", type);
-                return (1);
             }
 
             if (args_ind <= function_args[function_args_ind].args)
@@ -1225,6 +1375,12 @@ S2 parse_line (U1 *line)
             if (i == line_len - 1)
             {
                 do_parse_vars = 0;
+            }
+
+            if (function_args[function_args_ind].strict == 1)
+            {
+                // EDIT neu
+                set_var_strict (type);
             }
         }
 
@@ -1635,6 +1791,12 @@ S2 parse_line (U1 *line)
                 }
             } // scope close
         }
+    }
+
+    // check if strict variable is reused after function call.
+    if (check_line_strict (line) != 0)
+    {
+        return (1);
     }
 
     return (0);
