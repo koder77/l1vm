@@ -375,7 +375,7 @@ S2 get_var_strict (U1 *name)
                 {
                     if (vars[i].strict_arg == 2)
                     {
-                        printf ("> error: variable %s, which was used in 'strict' function call is not valid!\n", name);
+                        printf ("> error: variable '%s', which was used in 'strict' function call is not valid!\n", name);
                         return (vars[i].strict_arg);
                     }
                 }
