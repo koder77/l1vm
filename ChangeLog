@@ -5,7 +5,12 @@ L1VM (3.5.5)
 	Now the function call variables are also checked and can't be used after the function call.
 	And pointers to the variables can't be used too.
 
--- Stefan Pietzonke <info@midnight-coding.de> Thu 1 January 2026 20:37 +010
+	NEW in linter:
+	// (remove foo)
+
+        Marks variable foo as invalid. It can't be used again after this line!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 3 January 2026 21:37 +010
 
 L1VM (3.5.4)
 	VM: Added function epoch ms interrupt: get the time after UNIX epoch in ms.
