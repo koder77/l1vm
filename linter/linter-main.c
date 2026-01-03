@@ -375,7 +375,7 @@ S2 get_var_strict (U1 *name)
                 {
                     if (vars[i].strict_arg == 2)
                     {
-                        printf ("> error: variable '%s', which was used in 'strict' function call is not valid!\n", name);
+                        printf ("> error: variable '%s', which was used in 'strict' function call or removed, is not valid!\n", name);
                         return (vars[i].strict_arg);
                     }
                 }
@@ -403,6 +403,25 @@ S2 set_var_strict (U1 *name)
 
     // variable not found
     printf ("set_var_strict: error: variable '%s' not defined!\n", name);
+    return (-1);
+}
+
+S2 set_var_strict_two (U1 *name)
+{
+    S8 i ALIGN = 0;
+
+    for (i = 0; i <= vars_ind; i++)
+    {
+        if (strcmp ((const char *) vars[i].name, (const char *) name) == 0)
+        {
+            // found variable, return variable type
+            vars[i].strict_arg = 2;
+            return (0);
+        }
+    }
+
+    // variable not found
+    printf ("set_var_strict_two: error: variable '%s' not defined!\n", name);
     return (-1);
 }
 
@@ -1144,7 +1163,7 @@ S2 parse_line (U1 *line)
         }
     }
 
-    printf ("line: '%s'\n", line);
+    //printf ("line: '%s'\n", line);
 
     // manual set strict variable remove, mark variable as invalid
     pos = searchstr (line, (U1 *) "// (remove ", 0, 0, TRUE);
@@ -1152,15 +1171,13 @@ S2 parse_line (U1 *line)
     {
         // new scope
         {
-            // EDIT REMOVE
-            printf ("remove start...\n");
-
            S2 line_len = strlen_safe ((const char *) line, MAXSTRLEN);
            // EDIT REMOVE
            S2 i, j = 0;
-           U1 varname[MAXSTRLEN];
+           U1 varname[MAXSTRLEN + 1];
 
-           i = pos + 11;
+           pos = pos + 11;
+
            for (i = pos; i < line_len; i++)
            {
                if (line[i] != ')')
@@ -1175,8 +1192,7 @@ S2 parse_line (U1 *line)
                }
            }
 
-           printf ("remove variable: '%s'\n", varname);
-           if (set_var_strict (varname) != 0)
+           if (set_var_strict_two (varname) != 0)
            {
                printf ("parse-line: can't set variable as removed!\n");
                printf ("'%s'\n", line);
