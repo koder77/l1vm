@@ -1144,6 +1144,47 @@ S2 parse_line (U1 *line)
         }
     }
 
+    printf ("line: '%s'\n", line);
+
+    // manual set strict variable remove, mark variable as invalid
+    pos = searchstr (line, (U1 *) "// (remove ", 0, 0, TRUE);
+    if (pos != -1)
+    {
+        // new scope
+        {
+            // EDIT REMOVE
+            printf ("remove start...\n");
+
+           S2 line_len = strlen_safe ((const char *) line, MAXSTRLEN);
+           // EDIT REMOVE
+           S2 i, j = 0;
+           U1 varname[MAXSTRLEN];
+
+           i = pos + 11;
+           for (i = pos; i < line_len; i++)
+           {
+               if (line[i] != ')')
+               {
+                   varname[j] = line[i];
+                   j++;
+               }
+               else
+               {
+                   varname[j] = '\0';
+                   break;
+               }
+           }
+
+           printf ("remove variable: '%s'\n", varname);
+           if (set_var_strict (varname) != 0)
+           {
+               printf ("parse-line: can't set variable as removed!\n");
+               printf ("'%s'\n", line);
+               return (1);
+           }
+        }
+    }
+
     pos = searchstr (line, (U1 *) "intr0)", 0, 0, TRUE);
     if (pos != -1)
     {
@@ -1981,7 +2022,7 @@ int main (int ac, char *av[])
     S2 ret = 0;
     U1 rbuf[MAXSTRLEN + 1] = "";                        /* read-buffer for one line */
 	U1 buf[MAXSTRLEN + 1] = "";
-    S2 pos = 0, pos2 = 0, linton = 0, lintoff = 0, function_args_check = 0;
+    S2 pos = 0, pos2 = 0, pos3 = 0, linton = 0, lintoff = 0, function_args_check = 0;
     U1 do_lint = 1; // switch linting on and off
 
     if (ac < 2)
@@ -2091,6 +2132,8 @@ int main (int ac, char *av[])
                  pos = searchstr (buf, (U1 *) "// (func args ", 0, 0, TRUE);
                  pos2 = searchstr (buf, (U1 *) "// (return args ", 0, 0, TRUE);
 
+                 pos3 = searchstr (buf, (U1 *) "// (remove ", 0, 0, TRUE);
+
                  linton = searchstr (buf, (U1 *) "// lint-on", 0, 0, TRUE);
                  lintoff = searchstr (buf, (U1 *) "// lint-off", 0, 0, TRUE);
 
@@ -2122,7 +2165,7 @@ int main (int ac, char *av[])
                      continue;
                  }
 
-                 if (pos == -1 && pos2 == -1)
+                 if (pos == -1 && pos2 == -1 && pos3 == -1)
                  {
                      linenum++;
                      continue;
