@@ -1756,11 +1756,15 @@ S2 parse_line (U1 *line)
             S2 li = pos + 1;
             S2 pi = 0;
             U1 parse_var = 1;
+
             U1 pointer_var[MAXSTRLEN + 1];
+            S2 pointer_var_len = 0;
+
             U1 pointer_name[MAXSTRLEN + 1];
+            S2 pointer_name_len = 0;
 
             S2 line_len = strlen_safe ((const char *) line, MAXLINELEN);
-            S2 name_pos = 0;
+            S2 i, j;
 
             while (parse_var == 1)
             {
@@ -1827,11 +1831,38 @@ S2 parse_line (U1 *line)
             // check names: x must be Px!
             if (pi >= 2)
             {
-                name_pos = searchstr (pointer_name, (U1 *) pointer_var, 0, 0, TRUE);
-                if (name_pos != 1)
+                pointer_var_len = strlen_safe ((const char *) pointer_var, MAXLINELEN);
+                pointer_name_len = strlen_safe ((const char *) pointer_name, MAXLINELEN);
+
+                // check lengths
+                if (pointer_var_len + 1 != pointer_name_len)
                 {
-                    printf ("parse-line: error: pointer name not 'P%s'!\n", pointer_var);
+                    printf ("parse-line: error: pointer name '%s' not valid!\n", pointer_name);
                     return (1);
+                }
+
+                if (pointer_name[0] != 'P')
+                {
+                    printf ("parse-line: error: pointer name '%s' not valid! It must begin with an uppercase 'P'!\n", pointer_name);
+                    return (1);
+                }
+
+                j = 1; // begin with the next char after "P" start
+                for (i = 0; i < pointer_var_len; i++)
+                {
+                    if (pointer_var[i] != pointer_name[j])
+                    {
+                        printf ("parse-line: error: pointer name not 'P%s'!\n", pointer_var);
+                        return (1);
+                    }
+                    if (j < pointer_name_len)
+                    {
+                        j++;
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
             else
@@ -2078,7 +2109,7 @@ int main (int ac, char *av[])
                  {
                      do_lint = 0;
 
-                     printf ("linting: OFF : line: %lli\n", linenum);
+                     printf ("linting: OFF: line: %lli\n", linenum);
 
                      linenum++;
                      continue;
