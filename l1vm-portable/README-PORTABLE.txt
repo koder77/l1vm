@@ -6,7 +6,7 @@ You can put both binaries for Linux and Windows on a USB stick for example:
 bin-linux and bin-windows
 
 And then on Linux for example go into the root directory of L1VM.
-Now run "set-path-linux.sh" in the shell.
+Now run "source ./set-path-linux.sh" in the shell.
 Then you can run the l1vm:
 
 $ l1vm hello
