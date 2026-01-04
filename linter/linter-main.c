@@ -662,6 +662,66 @@ S2 check_exit_call (U1 *line)
     return (0);
 }
 
+S2 check_brackets_match (U1 *line)
+{
+	S4 slen;
+	S4 i;
+	S4 open_brackets = 0, close_brackets = 0;
+	U1 is_space = 0;
+
+	slen = strlen_safe ((const char *) line, MAXLINELEN);
+
+	for (i = 0; i < slen; i++)
+	{
+		if (line[i] == '{')
+		{
+			// RPN expression start: return OK
+			return (0);
+		}
+		if (line[i] == '(')
+		{
+			open_brackets++;
+		}
+		if (line[i] == ')')
+		{
+			close_brackets++;
+			// check if empty bracket
+			if (i > 0)
+			{
+				if (line[i - 1] == '(')
+				{
+					// empty bracket found: FATAL ERROR!!!
+					return (1);
+				}
+			}
+			if (is_space == 1)
+			{
+				// empty bracket found: FATAL ERROR!!!
+				return (1);
+			}
+		}
+		if (line[i] == ' ')
+		{
+			is_space = 1;
+		}
+		else
+		{
+			if (line[i] != '(' && line[i] != ')' && line[i] != ' ')
+			{
+				is_space = 0;
+			}
+		}
+	}
+	if (open_brackets != close_brackets)
+	{
+		return (1);		// ERROR
+	}
+	else
+	{
+		return (0); 	// all ok
+	}
+}
+
 S2 parse_line (U1 *line)
 {
     S2 pos, type_pos, type_ind = 0, i, ret_start, strict_pos;
@@ -688,6 +748,12 @@ S2 parse_line (U1 *line)
     U1 name[MAXSTRLEN + 1];
 
     line_len = strlen_safe ((const char *) line, MAXSTRLEN);
+
+    if (check_brackets_match (line) != 0)
+    {
+        printf ("parse_line: error: brackets don't match!\n");
+        return (1);
+    }
 
     // check if set found
     pos = searchstr (line, (U1 *) "(set", 0, 0, TRUE);
