@@ -10,7 +10,11 @@ L1VM (3.5.5)
 
         Marks variable foo as invalid. It can't be used again after this line!
 
--- Stefan Pietzonke <info@midnight-coding.de> Sat 3 January 2026 21:37 +010
+        NEW Linter flags to check if pointer variable is of type "const-int64":
+	// (pointer strict on)
+        // (pointer_strict_off)
+
+-- Stefan Pietzonke <info@midnight-coding.de> Fri 09 January 2026 21:55 +010
 
 L1VM (3.5.4)
 	VM: Added function epoch ms interrupt: get the time after UNIX epoch in ms.
