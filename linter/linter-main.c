@@ -87,6 +87,9 @@ S8 vars_ind ALIGN = -1;
 U1 function_name_current[MAXSTRLEN + 1];
 U1 function_check_stpop = 0;    // set to 1 by: // (func args stpop)
 
+// pointer only const type and not as a target to vallue copy
+U1 pointer_strict = 0;
+
 S8 linenum ALIGN = 0;
 
 // for included files
@@ -240,6 +243,20 @@ S2 get_varname_type (U1 *name)
     // variable not found
     printf ("error: variable '%s' not defined!\n", name);
     return (-1);
+}
+
+U1 checkpointer (U1 *type)
+{
+    if (strcmp ((const char *) type, "const-int64") == 0)
+    {
+        // is pointer const
+        return (0);
+    }
+    else
+    {
+        // is not const int64
+        return (1);
+    }
 }
 
 U1 getvartype (U1 *type)
@@ -886,6 +903,19 @@ S2 parse_line (U1 *line)
 
         if (vars_ind < MAXVARS - 1)
         {
+            if (pointer_strict == 1)
+            {
+                // EDIT CHECK POINTER
+                if (name[0] == 'P')
+                {
+                    if (checkpointer (type) != 0)
+                    {
+                        printf ("parse_line: pointer: '%s' not const-int64 type!\n", name);
+                        return (1);
+                    }
+                }
+            }
+
             vars_ind++;
             strcpy ((char *) vars[vars_ind].name, (char *) name);
             vars[vars_ind].type = vartype;
@@ -2104,7 +2134,7 @@ int main (int ac, char *av[])
     S2 ret = 0;
     U1 rbuf[MAXSTRLEN + 1] = "";                        /* read-buffer for one line */
 	U1 buf[MAXSTRLEN + 1] = "";
-    S2 pos = 0, pos2 = 0, pos3 = 0, linton = 0, lintoff = 0, function_args_check = 0;
+    S2 pos = 0, pos2 = 0, pos3 = 0, linton = 0, lintoff = 0, function_args_check = 0, pointer_strict_on = 0, pointer_strict_off = 0;
     U1 do_lint = 1; // switch linting on and off
 
     if (ac < 2)
@@ -2208,6 +2238,8 @@ int main (int ac, char *av[])
 			convtabs (buf);
 			slen = strlen_safe ((const char *) buf, MAXLINELEN);
 
+            // EDIT MAIN FLAGS
+
             pos = searchstr (buf, (U1 *) "//", 0, 0, TRUE);
             if (pos != -1)
             {
@@ -2220,6 +2252,9 @@ int main (int ac, char *av[])
                  lintoff = searchstr (buf, (U1 *) "// lint-off", 0, 0, TRUE);
 
                  function_args_check = searchstr (buf, (U1 *) "// (func args stpop)", 0, 0, TRUE);
+
+                 pointer_strict_on = searchstr (buf, (U1 *) "// (pointer strict on)", 0, 0, TRUE);
+                 pointer_strict_off = searchstr (buf, (U1 *) "// (pointer strict off)", 0, 0, TRUE);
 
                  if (linton != -1)
                  {
@@ -2243,6 +2278,21 @@ int main (int ac, char *av[])
                  if (function_args_check != -1)
                  {
                      function_check_stpop = 1;
+                     linenum++;
+                     continue;
+                 }
+
+                 // pointer strict check, to allow only const type pointers and no pointer copy to another!
+                 if (pointer_strict_on != -1)
+                 {
+                     pointer_strict = 1;
+                     linenum++;
+                     continue;
+                 }
+
+                 if (pointer_strict_off != -1)
+                 {
+                     pointer_strict = 0;
                      linenum++;
                      continue;
                  }

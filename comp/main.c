@@ -3,7 +3,7 @@
  *
  * (c) Copyright Stefan Pietzonke (info@midnight-coding.de), 2017
  *
- * L1vm is free software: you can redistribute it and/or modify
+ * L1vm is free software: you can redistribute it and modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
