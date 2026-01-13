@@ -23,22 +23,18 @@ size_t strlen_safe (const char *str, S8 maxlen)
 {
 	 S8 ALIGN i = 0;
 
-	 while (1)
-	 {
-		if (str[i] != '\0')
-		{
-			i++;
-		}
-		else
-		{
-			return (i);
-		}
-
-		if (i >= maxlen)
-		{
-			return (0);
-		}
+	if (str == NULL) return 0;
+	if (maxlen <= 0 || maxlen == 1)
+	{
+		return 0;
 	}
+
+	while (i < maxlen - 1) // Direktes Limit in der Schleife
+	{
+		if (str[i] == '\0') return i;
+		i++;
+	}
+	return 0;
 }
 
 S8 searchstr (U1 *str, U1 *srchstr, S2 start, S2 end, U1 case_sens)
