@@ -29,7 +29,7 @@ size_t strlen_safe (const char *str, S8 maxlen)
 		return 0;
 	}
 
-	while (i < maxlen - 1) // Direktes Limit in der Schleife
+	while (i < maxlen - 1)
 	{
 		if (str[i] == '\0') return i;
 		i++;
