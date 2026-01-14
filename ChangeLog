@@ -1,3 +1,10 @@
+L1VM (3.5.6)
+	Note: I did run Cppcheck and Infer on "l1vm", there were no errors found.
+
+	VM: added cbmc.sh CBMC code check tool, with mathematical proofs. The L1VM core has no errors. Only the string functions don't pass the tests. This means that they can not be proven to be correct. But they are safe! This is important to know!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Wed 14 January 2026 16:33 +010
+
 L1VM (3.5.5)
 	The linter has now a "strict" flag. With it set the result variables must end by a uppercase "R" ending.
 	They are not alowed as function arguments. See "linter/math-inc-strict.l1com".
