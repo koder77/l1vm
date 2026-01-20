@@ -41,9 +41,19 @@
             (,x-constants-regexp . 'font-lock-constant-face)
             (,x-types-regexp . 'font-lock-type-face)
           (,x-keywords-regexp . 'font-lock-keyword-face)
+
+          ("\\b[a-zA-Z0-9_]+R\\b" . 'font-lock-warning-face)
+          ("\\b[a-zA-Z0-9_]+~" . 'font-lock-variable-name-face)
           ;; note: order above matters, because once colored, that part won't change.
           ;; in general, put longer words first
           )))
+
+(defvar l1vm-mode-syntax-table
+  (let ((st (make-syntax-table)))
+    (modify-syntax-entry ?~ "w" st)
+    (modify-syntax-entry ?_ "w" st)
+    st)
+  "Syntax table for l1vm-mode.")
 
 ;;;###autoload
 (define-derived-mode l1vm-mode c-mode "l1vm mode"
