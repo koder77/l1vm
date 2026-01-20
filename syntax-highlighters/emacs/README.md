@@ -41,3 +41,9 @@ Alt + x
 ```
 
 To select the "l1vm-mode".
+
+
+Snippets
+========
+copy the "snippets" directory into your "doom" directory.
+It contains snippets to create a normal function and contract functions.

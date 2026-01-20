@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: L1VM Function
+# key: func
+# --
+($1 func)
+    #var ~ $1
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 ret~ 0)
+
+
+(funcend)
