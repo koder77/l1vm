@@ -1,0 +1,64 @@
+;; paste this code to the end of your Doom "config.el" file!
+;; --- L1VM Toolchain Configuration ---
+
+;; 1. Function to run the linter script
+(defun l1vm/run-linter ()
+  "Run the L1VM linter for the current buffer's file."
+  (interactive)
+  (let ((file-base (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))))
+    (compile (format "l1vm-build-lint.sh %s" file-base))))
+
+;; 2. Assign the keybinding: SPC c l
+(map! :leader
+      (:prefix-map ("c" . "code")
+       :desc "Run L1VM Linter" "l" #'l1vm/run-linter))
+
+;; 3. Teach Emacs to recognize your linter's "line:" output
+(with-eval-after-load 'compile
+  (add-to-list 'compilation-error-regexp-alist 'l1vm-linter)
+  (add-to-list 'compilation-error-regexp-alist-alist
+               '(l1vm-linter
+                 "linter error: line: \\([0-9]+\\)"
+                 nil ;; File is the one currently open
+                 1   ;; Line number is in the first capture group
+                 )))
+
+;; 4. Optional: Auto-close the compilation window if no errors found
+(setq compilation-finish-functions
+      (lambda (buf str)
+        (if (null (string-match "abnormally" str))
+            (run-at-time 2 nil
+                         (lambda (buf)
+                           (let ((win (get-buffer-window buf)))
+                             (when win (delete-window win))))
+                         buf))))
+
+;; --- L1VM Build Toolchain Configuration ---
+
+(defun l1vm/run-build ()
+  "Führt l1vm-build.sh für die aktuelle Datei aus."
+  (interactive)
+  (let ((file-base (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))))
+    (compile (format "l1vm-build.sh %s" file-base))))
+
+(map! :leader
+      (:prefix-map ("c" . "code")
+       :desc "Run L1VM Build" "c" #'l1vm/run-build))
+
+(with-eval-after-load 'compile
+  (add-to-list 'compilation-error-regexp-alist 'l1vm-build-error)
+  (add-to-list 'compilation-error-regexp-alist-alist
+               '(l1vm-build-error
+                 "line: \\([0-9]+\\)"
+                 nil
+                 1
+                 )))
+
+(setq compilation-finish-functions
+      (lambda (buf str)
+        (if (null (string-match "abnormally" str))
+            (run-at-time 2 nil
+                         (lambda (buf)
+                           (let ((win (get-buffer-window buf)))
+                             (when win (delete-window win))))
+                         buf))))
