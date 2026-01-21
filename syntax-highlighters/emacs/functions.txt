@@ -36,7 +36,6 @@
 ;; --- L1VM Build Toolchain Configuration ---
 
 (defun l1vm/run-build ()
-  "Führt l1vm-build.sh für die aktuelle Datei aus."
   (interactive)
   (let ((file-base (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))))
     (compile (format "l1vm-build.sh %s" file-base))))
