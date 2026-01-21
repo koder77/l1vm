@@ -1,63 +1,38 @@
 ;; paste this code to the end of your Doom "config.el" file!
-;; --- L1VM Toolchain Configuration ---
+;; --- L1VM Build & Lint Toolchain Configuration ---
 
-;; 1. Function to run the linter script
-(defun l1vm/run-linter ()
-  "Run the L1VM linter for the current buffer's file."
-  (interactive)
-  (let ((file-base (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))))
-    (compile (format "l1vm-build-lint.sh %s" file-base))))
+(defvar l1vm-last-compiled-file nil
+  "Stores the path of the file that was last passed to the compiler or linter.")
 
-;; 2. Assign the keybinding: SPC c l
-(map! :leader
-      (:prefix-map ("c" . "code")
-       :desc "Run L1VM Linter" "l" #'l1vm/run-linter))
-
-;; 3. Teach Emacs to recognize your linter's "line:" output
-(with-eval-after-load 'compile
-  (add-to-list 'compilation-error-regexp-alist 'l1vm-linter)
-  (add-to-list 'compilation-error-regexp-alist-alist
-               '(l1vm-linter
-                 "linter error: line: \\([0-9]+\\)"
-                 nil ;; File is the one currently open
-                 1   ;; Line number is in the first capture group
-                 )))
-
-;; 4. Optional: Auto-close the compilation window if no errors found
-(setq compilation-finish-functions
-      (lambda (buf str)
-        (if (null (string-match "abnormally" str))
-            (run-at-time 2 nil
-                         (lambda (buf)
-                           (let ((win (get-buffer-window buf)))
-                             (when win (delete-window win))))
-                         buf))))
-
-;; --- L1VM Build Toolchain Configuration ---
-
+;; 1. The Build Function (SPC c c)
 (defun l1vm/run-build ()
+  "Runs the L1VM build script."
   (interactive)
-  (let ((file-base (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))))
+  (let ((file-path (buffer-file-name))
+        (file-base (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))))
+    (setq l1vm-last-compiled-file file-path)
     (compile (format "l1vm-build.sh %s" file-base))))
 
+;; 2. The Lint Function (SPC c l)
+(defun l1vm/run-lint ()
+  "Runs the L1VM linter script."
+  (interactive)
+  (let ((file-path (buffer-file-name))
+        (file-base (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))))
+    (setq l1vm-last-compiled-file file-path)
+    (compile (format "l1vm-build-lint.sh %s" file-base))))
+
+;; 3. Register Keybindings
 (map! :leader
       (:prefix-map ("c" . "code")
-       :desc "Run L1VM Build" "c" #'l1vm/run-build))
+       :desc "Run L1VM Build" "c" #'l1vm/run-build
+       :desc "Run L1VM Linter" "l" #'l1vm/run-lint))
 
+;; 4. Error Matcher for both (Build & Lint)
 (with-eval-after-load 'compile
-  (add-to-list 'compilation-error-regexp-alist 'l1vm-build-error)
+  (add-to-list 'compilation-error-regexp-alist 'l1vm-error-matcher)
   (add-to-list 'compilation-error-regexp-alist-alist
-               '(l1vm-build-error
-                 "line: \\([0-9]+\\)"
-                 nil
-                 1
-                 )))
-
-(setq compilation-finish-functions
-      (lambda (buf str)
-        (if (null (string-match "abnormally" str))
-            (run-at-time 2 nil
-                         (lambda (buf)
-                           (let ((win (get-buffer-window buf)))
-                             (when win (delete-window win))))
-                         buf))))
+               `(l1vm-error-matcher
+                 "\\(?:line:? \\|:\\|^\\|at \\)\\([0-9]+\\)"
+                 ,(lambda () l1vm-last-compiled-file)
+                 1)))
