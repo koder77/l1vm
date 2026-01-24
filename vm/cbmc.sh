@@ -1,5 +1,5 @@
 #!/bin/sh
-cbmc main.c load-object.c debugger.c ../lib-func/string.c \
+cbmc main.c load-object.c debugger.c ../lib-func/memory_bounds.c ../lib-func/string.c \
 --pointer-check --bounds-check --signed-overflow-check \
   --pointer-overflow-check --div-by-zero-check \
   --unwind 2 --object-bits 16 --slice-formula \
