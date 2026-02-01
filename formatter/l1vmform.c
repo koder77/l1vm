@@ -21,7 +21,7 @@
 
 #include "../include/global.h"
 
-#define KEYWORDS 13
+#define KEYWORDS 15
 
 // protos
 char *fgets_uni (char *str, int len, FILE *fptr);
@@ -39,6 +39,8 @@ struct keywords keywords[KEYWORDS] =
 {
     { "func)", 4 },
     { "(funcend)", -4 },
+    { "object)", 4 },
+    { "(objectend)", -4},
     { "if", 4 },
     { "(else)", -4},
     { "(endif)", -4},
