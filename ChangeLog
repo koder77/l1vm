@@ -3,7 +3,9 @@ L1VM (3.5.6)
 
 	VM: added cbmc.sh CBMC code check tool, with mathematical proofs. The L1VM core has no errors. Only the string functions don't pass the tests. This means that they can not be proven to be correct. But they are safe! This is important to know!
 
--- Stefan Pietzonke <info@midnight-coding.de> Wed 14 January 2026 16:33 +010
+	Added Brackets code formatter in "formatter" directory.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sun 01 Februray 2026 13:15 +010
 
 L1VM (3.5.5)
 	The linter has now a "strict" flag. With it set the result variables must end by a uppercase "R" ending.
