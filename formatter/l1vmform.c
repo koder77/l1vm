@@ -190,7 +190,7 @@ int main (int ac, char const *av[])
 
     if (ac < 3)
     {
-        printf ("l1vmform <input code> <output code>\n");
+        printf ("l1vm-form <input code> <output code>\n");
         exit (1);
     }
 
