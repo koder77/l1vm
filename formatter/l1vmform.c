@@ -194,6 +194,13 @@ int main (int ac, char const *av[])
         exit (1);
     }
 
+    if (strcmp (av[1], av[2]) == 0)
+    {
+        // both input and output are the same file! ERROR!
+        printf ("error: input and output are the same file: '%s'\n", av[1]);
+        exit (1);
+    }
+
     // open fles
     // open input file
 	finptr = fopen (av[1], "r");
