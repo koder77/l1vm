@@ -8,6 +8,8 @@ Running my blog and keep my hardware going costs money! So you can support me on
 
 [![C/C++ CI](https://github.com/koder77/l1vm/actions/workflows/github-ci.yaml/badge.svg)](https://github.com/koder77/l1vm/actions/workflows/github-ci.yaml)
 
+NOTE: You can join me at my [Discord server](https://discord.gg/R584N4KWMQ). 
+
 The Brackets language is a modern, general-purpose programming language. The focus is on reliability and speed. <br>
 The language can be used for CLI and also full GUI programs. Use multiple CPU cores with multithreading. <br>
 The Brackets bytecode can run on any supported OS without changes. This makes it truly platform independent. <br><br>
