@@ -36,7 +36,8 @@
     <item>precondition</item>
     <item>postcondition-end</item>
     <item>postcondition</item>
-	</list>
+    <item>varname-ascii</item>
+    </list>
     <list name="keywords">
     <item>funcend</item>
     <item>func</item>

@@ -28,6 +28,7 @@ extern S8 linenum;
 // globals for local variable ending check only allow local and global (main) ending if set!
 extern U1 check_varname_end;
 extern U1 check_varname_end_local_only;
+extern U1 check_ascii; // if set to 1, disallow unicode chars in variable name!
 extern U1 varname_end[MAXLINELEN];
 extern U1 variable_prefix[MAXSTRLEN];
 
@@ -209,6 +210,23 @@ S2 check_varname_ending (U1 *varname, U1 *ending)
 	return (0);
 }
 
+// EDIT
+S2 check_ascii_only (const char *str)
+{
+    if (str == NULL || *str == '\0')
+	{
+        return (1);
+    }
+
+    for (const unsigned char *p = (const unsigned char *)str; *p != '\0'; p++)
+	{
+        if (!isalnum(*p) && *p != '_' && *p != '@') {
+            return (1);
+        }
+    }
+
+    return (0);
+}
 
 S2 checkdef (U1 *name)
 {
@@ -238,6 +256,16 @@ S2 checkdef (U1 *name)
 	{
 		printf ("error: check_variable_prefix: prefix must be: '%s' on: '%s'!\n", variable_prefix, name);
 		return (1);
+	}
+
+	if (check_ascii == 1)
+	{
+		if (check_ascii_only (name) == 1)
+		{
+			printf ("error: check ASCII only variable name: not pure ASCII: '%s' !\n", name);
+			return (1);
+		}
+
 	}
 
 	for (i = 0; i <= data_ind; i++)

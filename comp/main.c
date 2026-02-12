@@ -90,6 +90,7 @@ U1 check_varname_end = 0;
 
 // globals for local variable ending check only allow local variable if set!
 U1 check_varname_end_local_only = 0;
+U1 check_ascii = 0; // if set to 1, disallow unicode chars in variable name!
 
 U1 varname_end[MAXLINELEN];
 
@@ -5405,6 +5406,13 @@ S2 parse_line (U1 *line)
 								{
 									postcondition_end = 1;
 									postcondition_code++;
+									continue;
+								}
+
+								// if set, variable name can't be with unicode chars!
+								if (strcmp ((const char *) ast[level].expr[j][last_arg], "varname-ascii") == 0)
+								{
+									check_ascii = 1;
 									continue;
 								}
 
