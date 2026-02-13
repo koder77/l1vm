@@ -56,29 +56,32 @@ S2 memory_bounds (S8 start, S8 offset_access)
 						break;
 
 					case WORD:
-						if (offset_access % sizeof (S2) != 0)
+						if (offset_access & 1)
 						{
 						    printf ("memory_bounds: FATAL ERROR: variable access not on word bound, address: %lli, offset: %lli!\n", start, offset_access);
-							return (1);
+							//return (1);
+							goto error_return;
 						}
 						return (0);
 						break;
 
 					case DOUBLEWORD:
-						if (offset_access % sizeof (S4) != 0)
+						if (offset_access & 3)
 						{
 							printf ("memory_bounds: FATAL ERROR: variable access not on double word bound, address: %lli, offset: %lli!\n", start, offset_access);
-							return (1);
+							//return (1);
+							goto error_return;
 						}
 						return (0);
 						break;
 
 					case QUADWORD:
 					case DOUBLEFLOAT:
-						if (offset_access % sizeof (S8) != 0)
+						if (offset_access & 7)
 						{
 							printf ("memory_bounds: FATAL ERROR: variable access not on quad word/double float bound, address: %lli, offset: %lli!\n", start, offset_access);
-							return (1);
+							//return (1);
+							goto error_return;
 						}
 						return (0);
 						break;
@@ -87,13 +90,16 @@ S2 memory_bounds (S8 start, S8 offset_access)
 						// range already checked on top if
 					    // return ERROR on this access, as variable is marked as constant!
 					    printf ("memory_bounds: FATAL ERROR: string variable write access to constant, address: %lli, offset: %lli!\n", start, offset_access);
-						return (1);
+						//return (1);
+						goto error_return;
 						break;
 				}
 			}
 		}
 	}
 	printf ("memory_bounds: FATAL ERROR: variable not found overflow address: %lli, offset: %lli!\n", start, offset_access);
+
+    error_return:
 	return (1);
 }
 
