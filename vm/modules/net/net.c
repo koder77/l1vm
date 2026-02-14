@@ -2811,6 +2811,10 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             write_size = todo_size;
         }
 
+        usleep (10000);
+
+        //printf ("send file: todo_size: %lli, of: %lli\n", todo_size, file_size);
+
 	} while (write_size > 0);
 
 	fclose (file);
