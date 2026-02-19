@@ -21,6 +21,8 @@
 #include "../include/opcodes.h"
 #include "../include/home.h"
 
+#define BYTE_BUF 4096  // byte variable read buffer
+
 extern U1 *code;
 extern U1 *data_global;
 extern struct data_info data_info[MAXDATAINFO];
@@ -755,26 +757,46 @@ S2 load_object (U1 *name, S2 load_code_only)
 				data_info[j].offset = i;
 
 				// printf ("load_object: BYTE: size: %lli\n", data_info[j].size);
-
-				for (k = 1; k <= data_info[j].size; k++)
 				{
-					readsize = fread (&byte, sizeof (U1), 1, fptr);
-					if (readsize != 1)
+					U1 read_buf[BYTE_BUF];
+					S8 toread ALIGN = data_info[j].size;
+                    S8 todo ALIGN = 0;
+					S8 b ALIGN = 0;
+
+					while (toread > 0)
 					{
-						printf ("error: can't load data: BYTE!\n");
-						fclose (fptr);
-						if (bzip2)
+						if (toread > BYTE_BUF)
 						{
-							remove ((const char *) objname);
+							todo = BYTE_BUF;
 						}
-						return (1);
+						else
+						{
+							todo = toread;
+						}
+
+						readsize = fread (read_buf, sizeof (U1), todo, fptr);
+						if (readsize != todo)
+						{
+							printf ("error: can't load data: BYTE!\n");
+							fclose (fptr);
+							if (bzip2)
+							{
+								remove ((const char *) objname);
+							}
+							return (1);
+						}
+
+						for (b = 0; b < todo; b++)
+						{
+							data[i] = read_buf[b];
+							i++;
+						}
+						toread = toread - todo;
 					}
 
-					data[i] = byte;
-					i++;
+					data_info[j].end = i - 1;
+					data_info[j].type_size = sizeof (U1);
 				}
-				data_info[j].end = i - 1;
-				data_info[j].type_size = sizeof (U1);
 				break;
 
 			case WORD:
