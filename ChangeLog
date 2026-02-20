@@ -8,8 +8,9 @@ L1VM (3.5.6)
 	New flag: (varname-ascii) if set only alphanumerical chars and "_" in variable name allowed!
 
 	VM: Optimized memory bounds check. Now a lot faster using & instead of modulo.
+	VM: added msg module to send receive messages. See "messages-mod.l1com".
 
--- Stefan Pietzonke <info@midnight-coding.de> Thu 13 Februray 2026 19:20  +010
+-- Stefan Pietzonke <info@midnight-coding.de> Fri 20 Februray 2026 22:02 +010
 
 L1VM (3.5.5)
 	The linter has now a "strict" flag. With it set the result variables must end by a uppercase "R" ending.
