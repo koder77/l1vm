@@ -27,6 +27,7 @@
 #define MSG_STRING 1
 #define MSG_INT64 2
 #define MSG_DOUBLE 3
+#define MSG_USED 4
 
 static pthread_mutex_t msg_lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -78,8 +79,9 @@ S8 msg_get_free_handle (void)
     pthread_mutex_lock (&msg_lock);
     for (i = 0; i <  MSG_MAX; i++)
     {
-        if (msg [i].type == MSG_EMPTY)
+        if (msg[i].type == MSG_EMPTY)
         {
+            msg[i].type = MSG_USED;
             pthread_mutex_unlock (&msg_lock);
             return (i);
         }
@@ -136,6 +138,8 @@ U1 *msg_set_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             printf ("msg_set_int64: ERROR: stack corrupt!\n");
             return (NULL);
         }
+
+        return (sp);
     }
 
     pthread_mutex_lock (&msg_lock);
@@ -186,6 +190,8 @@ U1 *msg_set_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             printf ("msg_set_double: ERROR: stack corrupt!\n");
             return (NULL);
         }
+
+        return (sp);
     }
 
     pthread_mutex_lock (&msg_lock);
@@ -236,6 +242,8 @@ U1 *msg_set_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             printf ("msg_set_string: ERROR: stack corrupt!\n");
             return (NULL);
         }
+
+        return (sp);
     }
 
     if (strlen_safe ((const char *) data[messageaddr], MSG_STRING_LEN) >= MSG_STRING_LEN)
@@ -247,6 +255,8 @@ U1 *msg_set_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             printf ("msg_set_string: ERROR: stack corrupt!\n");
             return (NULL);
         }
+
+        return (sp);
     }
 
     pthread_mutex_lock (&msg_lock);
