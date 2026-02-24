@@ -20,7 +20,7 @@
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
-#define MSG_MAX 4096
+#define MSG_MAX 512
 #define MSG_STRING_LEN 4096
 
 #define MSG_EMPTY 0
