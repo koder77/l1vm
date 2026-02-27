@@ -1,4 +1,4 @@
-/*
+*
  * This file message.c is part of L1vm.
  *
  * (c) Copyright Stefan Pietzonke (info@midnight-coding.de), 2026
@@ -573,7 +573,7 @@ U1 *msg_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     // return msg
     pthread_mutex_lock (&msg_lock);
-    string_len = strlen_safe ((const char *) msg[handle].string, MSG_STRING_LEN);
+    string_len = strlen_safe ((const char *) msg[handle].string, STRINGMOD_MAXSTRLEN);
 
     #if BOUNDSCHECK
     if (memory_bounds (stringaddr, string_len) != 0)
