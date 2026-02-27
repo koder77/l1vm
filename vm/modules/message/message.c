@@ -20,7 +20,7 @@
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
-#define MSG_MAX 512
+//#define MSG_MAX 512
 #define MSG_STRING_LEN 4096
 
 #define MSG_EMPTY 0
@@ -43,19 +43,20 @@ struct message
 {
     S8 id ALIGN;
     U1 type;
-    U1 string[MSG_STRING_LEN];
+    U1 *string;
     S8 int64 ALIGN;
     F8 doublef ALIGN;
 };
 
-struct message msg[MSG_MAX];
+struct message *msg;
+S8 msg_max;
 
-void msg_init (void)
+void msg_init_mem (void)
 {
     S8 i ALIGN = 0;
 
     pthread_mutex_lock (&msg_lock);
-    for (i = 0; i < MSG_MAX; i++)
+    for (i = 0; i < msg_max; i++)
     {
         msg[i].type = MSG_EMPTY;
     }
@@ -67,8 +68,6 @@ S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
     memcpy (&data_info, &data_info_orig, sizeof (data_info_orig));
     data_info_ind = data_info_ind_orig;
 
-    msg_init ();
-
     return (0);
 }
 
@@ -77,7 +76,7 @@ S8 msg_get_free_handle (void)
     S8 i ALIGN = 0;
 
     pthread_mutex_lock (&msg_lock);
-    for (i = 0; i <  MSG_MAX; i++)
+    for (i = 0; i < msg_max; i++)
     {
         if (msg[i].type == MSG_EMPTY)
         {
@@ -93,7 +92,7 @@ S8 msg_get_free_handle (void)
 S8 msg_remove (S8 handle)
 {
     pthread_mutex_lock (&msg_lock);
-    if (handle >= 0 && handle < MSG_MAX)
+    if (handle >= 0 && handle < msg_max)
     {
         msg[handle].type = MSG_EMPTY;
         pthread_mutex_unlock (&msg_lock);
@@ -105,6 +104,42 @@ S8 msg_remove (S8 handle)
         return (-1); // error
     }
 }
+
+U1 *msg_init (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S8 max_handles ALIGN = 0;
+
+    sp = stpopi ((U1 *) &max_handles, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("msg_set_int64: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    msg = (struct message *) calloc (max_handles, sizeof (struct message));
+    if (msg == NULL)
+	{
+		printf ("msg_init: ERROR can't allocate %lli message indexes!\n", max_handles);
+
+		sp = stpushi (1, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("init_mem: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+		return (sp);
+	}
+
+    msg_max = max_handles; // save to global var
+
+    msg_init_mem ();
+
+    return (sp);
+}
+
+
 
 U1 *msg_set_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
@@ -214,6 +249,7 @@ U1 *msg_set_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
     S8 id ALIGN = 0;
     S8 messageaddr ALIGN = 0;
+    S8 message_len ALIGN = 0;
     S8 handle ALIGN = 0;
 
     sp = stpopi ((U1 *) &messageaddr, sp, sp_top);
@@ -246,7 +282,8 @@ U1 *msg_set_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (sp);
     }
 
-    if (strlen_safe ((const char *) data[messageaddr], MSG_STRING_LEN) >= MSG_STRING_LEN)
+    message_len = strlen_safe ((const char *) data[messageaddr], STRINGMOD_MAXSTRLEN);
+    if (message_len == 0)
     {
         sp = stpushi (-1, sp, sp_bottom);
         if (sp == NULL)
@@ -262,6 +299,24 @@ U1 *msg_set_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     pthread_mutex_lock (&msg_lock);
     msg[handle].type = MSG_STRING;
     msg[handle].id = id;
+
+    msg[handle].string = (U1 *) calloc (message_len + 1, sizeof (U1));
+    if (msg[handle].string == NULL)
+    {
+        printf ("msg_set_string: ERROR can't allocate %lli length for string!\n", message_len + 1);
+        pthread_mutex_unlock (&msg_lock);
+
+        sp = stpushi (-1, sp, sp_bottom);
+        if (sp == NULL)
+        {
+            // error
+            printf ("msg_set_string: ERROR: stack corrupt!\n");
+            return (NULL);
+        }
+
+        return (sp);
+    }
+
     strcpy ((char *) msg[handle].string, (const char *) data[messageaddr]);
     pthread_mutex_unlock (&msg_lock);
 
@@ -290,7 +345,7 @@ U1 *msg_search_id (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
     pthread_mutex_lock (&msg_lock);
-    for (i = 0; i < MSG_MAX; i++)
+    for (i = 0; i < msg_max; i++)
     {
         if (msg[i].id == id)
         {
@@ -330,7 +385,7 @@ U1 *msg_get_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    if (handle < 0 || handle >= MSG_MAX)
+    if (handle < 0 || handle >= msg_max)
     {
         sp = stpushi (0, sp, sp_bottom);
         if (sp == NULL)
@@ -402,7 +457,7 @@ U1 *msg_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    if (handle < 0 || handle >= MSG_MAX)
+    if (handle < 0 || handle >= msg_max)
     {
         sp = stpushd (0.0, sp, sp_bottom);
         if (sp == NULL)
@@ -483,7 +538,7 @@ U1 *msg_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
-    if (handle < 0 || handle >= MSG_MAX)
+    if (handle < 0 || handle >= msg_max)
     {
         sp = stpushi (-1, sp, sp_bottom);
         if (sp == NULL)
@@ -553,5 +608,21 @@ U1 *msg_delete (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
 
+    return (sp);
+}
+
+U1 *msg_free_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    S8 i ALIGN = 0;
+
+    pthread_mutex_lock (&msg_lock);
+    for (i = 0; i < msg_max; i++)
+    {
+        if (msg[i].string) free (msg[i].string);
+    }
+
+    free (msg);
+
+    pthread_mutex_unlock (&msg_lock);
     return (sp);
 }

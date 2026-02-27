@@ -10,7 +10,9 @@ L1VM (3.5.6)
 	VM: Optimized memory bounds check. Now a lot faster using & instead of modulo.
 	VM: added msg module to send receive messages. See "messages-mod.l1com".
 
--- Stefan Pietzonke <info@midnight-coding.de> Fri 20 Februray 2026 22:02 +010
+	VM: msg module: added allocating max messages and string messages via calloc().
+
+-- Stefan Pietzonke <info@midnight-coding.de> Fri 27 Februray 2026 18:31 +010
 
 L1VM (3.5.5)
 	The linter has now a "strict" flag. With it set the result variables must end by a uppercase "R" ending.
