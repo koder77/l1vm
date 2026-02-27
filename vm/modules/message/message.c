@@ -59,6 +59,7 @@ void msg_init_mem (void)
     for (i = 0; i < msg_max; i++)
     {
         msg[i].type = MSG_EMPTY;
+        msg[i].string = NULL;
     }
     pthread_mutex_unlock (&msg_lock);
 }
@@ -95,6 +96,7 @@ S8 msg_remove (S8 handle)
     if (handle >= 0 && handle < msg_max)
     {
         msg[handle].type = MSG_EMPTY;
+        if (msg[handle].string) free (msg[handle].string);
         pthread_mutex_unlock (&msg_lock);
         return (0);
     }
@@ -299,6 +301,12 @@ U1 *msg_set_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     pthread_mutex_lock (&msg_lock);
     msg[handle].type = MSG_STRING;
     msg[handle].id = id;
+
+    // check if already a string was allocated at this handle:
+    if (msg[handle].string != NULL)
+    {
+        free (msg[handle].string);
+    }
 
     msg[handle].string = (U1 *) calloc (message_len + 1, sizeof (U1));
     if (msg[handle].string == NULL)
