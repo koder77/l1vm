@@ -115,7 +115,7 @@ U1 *msg_init (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (sp == NULL)
 	{
 		// error
-		printf ("msg_set_int64: ERROR: stack corrupt!\n");
+		printf ("msg_init: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
 
@@ -128,7 +128,7 @@ U1 *msg_init (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		if (sp == NULL)
 		{
 			// error
-			printf ("init_mem: ERROR: stack corrupt!\n");
+			printf ("msg_init: ERROR: stack corrupt!\n");
 			return (NULL);
 		}
 		return (sp);
@@ -613,6 +613,46 @@ U1 *msg_delete (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (sp == NULL)
     {// error
         printf ("msg_delete: ERROR: stack corrupt!\n");
+        return (NULL);
+    }
+
+    return (sp);
+}
+
+U1 *msg_get_type (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+    // return -1 on error or the message variable type
+    S8 handle ALIGN = 0;
+    S8 msg_type ALIGN = 0;
+
+    sp = stpopi ((U1 *) &handle, sp, sp_top);
+	if (sp == NULL)
+	{
+		// error
+		printf ("msg_get_type: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    if (handle < 0 || handle >= msg_max)
+    {
+        sp = stpushi (-1, sp, sp_bottom);
+        if (sp == NULL)
+        {  // error
+            printf ("msg_get_type: ERROR: stack corrupt!\n");
+            return (NULL);
+        }
+
+        return (sp);
+    }
+
+    pthread_mutex_lock (&msg_lock);
+    msg_type = msg[handle].type;
+    pthread_mutex_unlock (&msg_lock);
+
+    sp = stpushi (msg_type, sp, sp_bottom);
+    if (sp == NULL)
+    {// error
+        printf ("msg_get_type: ERROR: stack corrupt!\n");
         return (NULL);
     }
 
