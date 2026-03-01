@@ -1,4 +1,4 @@
-*
+/*
  * This file message.c is part of L1vm.
  *
  * (c) Copyright Stefan Pietzonke (info@midnight-coding.de), 2026
