@@ -99,6 +99,8 @@ S2 check_variable_prefix (U1 *variable)
 
 	if (strstr ((const char *) variable, (const char *) variable_prefix) == NULL)
 	{
+		// clear prefix
+		strcpy ((char *) variable_prefix, "");
 		return (1);
 	}
 
