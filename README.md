@@ -10,7 +10,7 @@ Running my blog and keep my hardware going costs money! So you can support me on
 
 NOTE: You can join me at my [![Discord](https://img.shields.io/badge/Discord-L1VM%20Community-7289da?style=for-the-badge&logo=discord)](https://discord.gg/R584N4KWMQ) 
 
-NOTE: <a href="https://midnight-coding.de/blog/software/l1vm/2025/11/30/L1VM-install-guide.html">The programs and includes installation guide is here.</a>
+NOTE: <a href="https://midnight-coding.de/blog/software/l1vm/2025/11/30/L1VM-install-guide.html">The programs and includes installation guide is here. You need the base package to use L1VM.</a>
 
 The Brackets language is a modern, general-purpose programming language. The focus is on reliability and speed. <br>
 The language can be used for CLI and also full GUI programs. Use multiple CPU cores with multithreading. <br>
