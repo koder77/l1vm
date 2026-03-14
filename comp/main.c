@@ -34,6 +34,9 @@ S8 get_ranges_index (U1 *varname);
 S2 check_spaces (U1 *line);
 
 S8 linenum ALIGN = 0;
+U1 rbuf[MAXSTRLEN + 1] = "";                        /* read-buffer for one line */
+U1 rbuf_orig[MAXSTRLEN + 1] = "";                        /* read-buffer for one line */
+
 
 // for included files
 #define FILENAME_START_SB   "FILE:"
@@ -7465,8 +7468,6 @@ S2 parse (U1 *name)
     FILE *fptr = NULL;
     U1 asmname[512] = "";
     S4 slen = 0, pos = 0;
-    U1 rbuf[MAXSTRLEN + 1] = "";                        /* read-buffer for one line */
-	U1 rbuf_orig[MAXSTRLEN + 1] = "";                        /* read-buffer for one line */
     char *read = 0;
 	S8 ret ALIGN = 0;
 	S2 function_call = 0;

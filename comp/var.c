@@ -24,11 +24,12 @@ extern struct data_info data_info[MAXDATAINFO];
 extern struct data_info_var data_info_var[MAXDATAINFO];
 extern S8 data_ind;
 extern S8 linenum;
+extern U1 rbuf_orig[MAXSTRLEN + 1];                        /* read-buffer for one line */
 
 // globals for local variable ending check only allow local and global (main) ending if set!
 extern U1 check_varname_end;
 extern U1 check_varname_end_local_only;
-extern U1 check_ascii; // if set to 1, disallow unicode chars in variable name!
+extern U1 check_ascii; // if set 1, disallow unicode chars in variable name!
 extern U1 varname_end[MAXLINELEN];
 extern U1 variable_prefix[MAXSTRLEN];
 
@@ -254,7 +255,9 @@ S2 checkdef (U1 *name)
 
 	if (check_variable_prefix (name) == 1)
 	{
+		printf ("error: line: %lli: ''%s'\n", linenum, rbuf_orig);
 		printf ("error: check_variable_prefix: prefix must be: '%s' on: '%s'!\n", variable_prefix, name);
+		strcpy ((char *) variable_prefix, "");
 		return (1);
 	}
 
