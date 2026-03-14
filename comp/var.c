@@ -255,7 +255,7 @@ S2 checkdef (U1 *name)
 
 	if (check_variable_prefix (name) == 1)
 	{
-		printf ("error: line: %lli: ''%s'\n", linenum, rbuf_orig);
+		printf ("error: line: %lli: '%s'\n", linenum, rbuf_orig);
 		printf ("error: check_variable_prefix: prefix must be: '%s' on: '%s'!\n", variable_prefix, name);
 		strcpy ((char *) variable_prefix, "");
 		return (1);
