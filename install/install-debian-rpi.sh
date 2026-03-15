@@ -1,6 +1,9 @@
 #!/bin/bash
 # changed: install to /home/pi/bin instead to /usr/local/bin!
 
+echo "Install base package with includes and programs..."
+../scripts/download-pkg.sh https://midnight-coding.de/blog/assets/l1vm/l1vm-base-pkg.tar.bz2 l1vm-base-pkg.tar.bz2
+
 cd ..
 
 export PATH="$HOME/l1vm/bin:$PATH"
@@ -247,4 +250,7 @@ else
 fi
 
 echo "installation finished!"
+
+echo "The installation guide is here: https://midnight-coding.de/blog/software/l1vm/2025/11/30/L1VM-install-guide.html"
+echo "You need to set ENV variables to make L1VM working!"
 exit 0
