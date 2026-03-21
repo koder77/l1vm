@@ -109,6 +109,10 @@ S8 file_index ALIGN = 0;
 U1 file_inside = 0;
 
 
+// for functions, to check if (return) was used in function
+U1 function_inside = 0;
+U1 function_return = 0;
+
 S2 init_function_args (void)
 {
 	function_args = (struct function_args*) calloc (MAXFUNC, sizeof (struct function_args));
@@ -755,6 +759,7 @@ S2 parse_line (U1 *line)
     S2 function_call = 0;
     S8 function_index ALIGN = 0;
     S2 func_pos = 0;
+    S2 funcend_pos = 0;
     S2 func_args = 0;
     S2 stpop_pos = 0;
     S2 return_pos = 0;
@@ -1760,6 +1765,32 @@ S2 parse_line (U1 *line)
     if (func_pos != -1)
     {
         get_current_function_name (line);
+        function_inside = 1;  // start of functiuon
+        function_return = 0;  // reset
+    }
+
+    // EDIT funcend
+    funcend_pos = searchstr (line, (U1 *) "(funcend)", 0, 0, TRUE);
+    if (funcend_pos != -1)
+    {
+        if (function_inside == 1)
+        {
+            function_inside = 0;
+            if (function_return == 0)
+            {
+                if (strcmp ((const char *) function_name_current, "main") != 0)
+                {
+                    if (get_return_index (function_name_current) != -1)
+                    {
+                        // return arguments in function
+                        // ńo return found at function end, show message
+                        printf ("parse-line function: %s, no return found!\n", function_name_current);
+                        return (1);
+                    }
+                }
+            }
+            function_return = 0;  // reset
+        }
     }
 
     // check if return line
@@ -1768,6 +1799,7 @@ S2 parse_line (U1 *line)
     return_pos = searchstr (line, (U1 *) "(return)", 0, 0, TRUE);
     if (return_pos != -1)
     {
+        function_return = 1;
         return_args_ind = get_return_index (function_name_current);
         if (return_args_ind == -1)
         {

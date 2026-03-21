@@ -13,8 +13,9 @@ L1VM (3.5.6)
 	VM: msg module: added allocating max messages and string messages via calloc().
 
 	Compiler: now rbuf and rbuf_orig are global to show line and linenumber in var.c error messages.
+	Linter: checks now if in a function with return arguments, (return) was used.
 
--- Stefan Pietzonke <info@midnight-coding.de> Sat 14 March 2026 18:44 +020
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 21 March 2026 20:55 +020
 
 L1VM (3.5.5)
 	The linter has now a "strict" flag. With it set the result variables must end by a uppercase "R" ending.
