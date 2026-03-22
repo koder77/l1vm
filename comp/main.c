@@ -6525,6 +6525,13 @@ S2 parse_line (U1 *line)
 									{
 										return (1);
 									}
+
+									if (get_var_is_const (ast[level].expr[j][e]) == 1)
+									{
+										printf ("error: line %lli: variable '%s' is constant!\n", linenum, ast[level].expr[j][e]);
+										return (1);
+									}
+
 									if (getvartype (ast[level].expr[j][e]) == INTEGER)
                                     {
 										target = get_regi (ast[level].expr[j][e]);
