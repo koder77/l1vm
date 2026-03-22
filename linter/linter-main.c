@@ -114,6 +114,10 @@ U1 function_inside = 0;
 U1 function_return = 0;
 
 U1 if_inside = 0;
+U1 switch_inside = 0;
+U1 for_inside = 0;
+U1 do_inside = 0;
+
 
 S2 init_function_args (void)
 {
@@ -769,6 +773,12 @@ S2 parse_line (U1 *line)
     S2 pointer_pos = 0;
     S2 if_pos = 0;
     S2 endif_pos = 0;
+    S2 switch_pos = 0;
+    S2 switchend_pos = 0;
+    S2 for_pos  = 0;
+    S2 forend_pos = 0;
+    S2 do_pos = 0;
+    S2 doend_pos = 0;
 
     U1 type[MAXSTRLEN + 1];
     U1 name[MAXSTRLEN + 1];
@@ -793,6 +803,51 @@ S2 parse_line (U1 *line)
         if (if_inside > 0)
         {
             if_inside--;
+        }
+    }
+
+    switch_pos = searchstr (line, (U1 *) "(switch)", 0, 0, TRUE);
+    if (switch_pos != -1)
+    {
+        switch_inside++;
+    }
+
+    switchend_pos = searchstr (line, (U1 *) "(switchend)", 0, 0, TRUE);
+    if (switchend_pos != -1)
+    {
+        if (switch_pos > 0)
+        {
+            switch_inside--;
+        }
+    }
+
+    for_pos = searchstr (line, (U1 *) " for)", 0, 0, TRUE);
+    if (for_pos != -1)
+    {
+        for_inside++;
+    }
+
+    forend_pos = searchstr (line, (U1 *) "(next)", 0, 0, TRUE);
+    if (forend_pos != -1)
+    {
+        if (for_inside > 0)
+        {
+            for_inside--;
+        }
+    }
+
+    do_pos = searchstr (line, (U1 *) "(do)", 0, 0, TRUE);
+    if (do_pos != -1)
+    {
+        do_inside++;
+    }
+
+    doend_pos = searchstr (line, (U1 *) "(while)", 0, 0, TRUE);
+    if (for_pos != -1)
+    {
+        if (do_inside > 0)
+        {
+            do_inside--;
         }
     }
 
@@ -1787,6 +1842,9 @@ S2 parse_line (U1 *line)
         function_inside = 1;  // start of functiuon
         function_return = 0;  // reset
         if_inside = 0;
+        switch_inside = 0;
+        for_inside = 0;
+        do_inside = 0;
     }
 
     // EDIT funcend
@@ -1819,10 +1877,11 @@ S2 parse_line (U1 *line)
     return_pos = searchstr (line, (U1 *) "(return)", 0, 0, TRUE);
     if (return_pos != -1)
     {
-        if (if_inside == 0)
+        if (if_inside == 0 && switch_inside == 0 && for_inside == 0 && do_inside == 0)
         {
             function_return = 1;
         }
+
         return_args_ind = get_return_index (function_name_current);
         if (return_args_ind == -1)
         {
