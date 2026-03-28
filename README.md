@@ -17,7 +17,7 @@ I AM WORKING ON THE GITHUB CI/CD PIPELINE.
 The current status is "broken".
 NOTE: I did check the Debian install script on my machine: it worked fine! So don't be confused about the CI/CD error messages here! The install scripts should work. 
 </b>
-<br>
+<br><br>
 The Brackets language is a modern, general-purpose programming language. The focus is on reliability and speed. <br>
 The language can be used for CLI and also full GUI programs. Use multiple CPU cores with multithreading. <br>
 The Brackets bytecode can run on any supported OS without changes. This makes it truly platform independent. <br><br>
