@@ -16,7 +16,7 @@ jobs:
 
     - name: build
       shell: bash
-      run: cd install && install-debian.sh
+      run: cd install && ./install-debian.sh
 
   build-macos:
     runs-on: macos-13
@@ -26,4 +26,4 @@ jobs:
 
     - name: build
       shell: bash
-      run: chmod +x install-zerobuild-macos.sh && ./install-zerobuild-macos.sh
+      run: cd install && chmod +x install-zerobuild-macos.sh && ./install-zerobuild-macos.sh
