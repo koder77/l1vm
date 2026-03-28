@@ -19,7 +19,7 @@ jobs:
       run: cd install && ./install-debian.sh
 
   build-macos:
-    runs-on: macos-13
+    runs-on: macos-latest
     steps:
     - name: checkout
       uses: actions/checkout@v3
