@@ -13,7 +13,7 @@ export LD_LIBRARY_PATH="$HOME/l1vm/bin:$LD_LIBRARY_PATH"
 
 if ! dpkg -s libsdl2-dev &> /dev/null; then
 	echo "try to install libsdl2-dev..."
-	if ! sudo apt-get install libsdl2-dev; then
+	if ! sudo apt-get install libsdl2-dev -y; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -21,7 +21,7 @@ fi
 
 if ! dpkg -s libsdl2-gfx-dev &> /dev/null; then
 	echo "try to install libsdl2-gfx-dev..."
-	if ! sudo apt-get install libsdl2-gfx-dev; then
+	if ! sudo apt-get install libsdl2-gfx-dev -y; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -29,7 +29,7 @@ fi
 
 if ! dpkg -s libsdl2-image-dev &> /dev/null; then
 	echo "try to install libsdl2-image-dev..."
-	if ! sudo apt-get install libsdl2-image-dev; then
+	if ! sudo apt-get install libsdl2-image-dev -y; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -37,7 +37,7 @@ fi
 
 if ! dpkg -s libsdl2-ttf-dev &> /dev/null; then
 	echo "try to install libsdl2-ttf-dev..."
-	if ! sudo apt-get install libsdl2-ttf-dev; then
+	if ! sudo apt-get install libsdl2-ttf-dev -y; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -45,7 +45,7 @@ fi
 
 if ! dpkg -s libsdl2-mixer-dev &> /dev/null; then
 	echo "try to install libsdl2-mixer-dev..."
-	if ! sudo apt-get install libsdl2-mixer-dev; then
+	if ! sudo apt-get install libsdl2-mixer-dev -y; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -53,7 +53,7 @@ fi
 
 if ! dpkg -s libfann-dev &> /dev/null; then
 	echo "try to install libfann-dev..."
-	if ! sudo apt-get install libfann-dev; then
+	if ! sudo apt-get install libfann-dev -y; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -61,7 +61,7 @@ fi
 
 if ! dpkg -s libmpfrc++-dev &> /dev/null; then
 	echo "try to install libmpfrc++-dev..."
-	if ! sudo apt-get install libmpfrc++-dev; then
+	if ! sudo apt-get install libmpfrc++-dev -y; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -69,7 +69,7 @@ fi
 
 if ! dpkg -s libsodium-dev &> /dev/null; then
 	echo "try to install libsodium-dev..."
-	if ! sudo apt-get install libsodium-dev; then
+	if ! sudo apt-get install libsodium-dev -y; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -77,7 +77,7 @@ fi
 
 if ! dpkg -s libserialport-dev &> /dev/null; then
 	echo "try to install libserialport-dev..."
-	if ! sudo apt-get install libserialport-dev; then
+	if ! sudo apt-get install libserialport-dev -y; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -85,7 +85,7 @@ fi
 
 if ! dpkg -s libssl-dev &> /dev/null; then
 	echo "try to install libssl-dev..."
-	if ! sudo apt-get install libssl-dev; then
+	if ! sudo apt-get install libssl-dev -y; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -93,7 +93,7 @@ fi
 
 if ! dpkg -s libcrypto++-dev &> /dev/null; then
 	echo "try to install licbcrypto++-dev..."
-	if ! sudo apt-get install libcrypto++-dev; then
+	if ! sudo apt-get install libcrypto++-dev -y; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -101,7 +101,7 @@ fi
 
 if ! dpkg -s cmake &> /dev/null; then
 	echo "try to install cmake..."
-	if ! sudo apt-get install cmake; then
+	if ! sudo apt-get install cmake -y; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -109,7 +109,7 @@ fi
 
 if ! dpkg -s make &> /dev/null; then
 	echo "try to install make..."
-	if ! sudo apt-get install make; then
+	if ! sudo apt-get install make -y; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -117,7 +117,7 @@ fi
 
 if ! dpkg -s git &> /dev/null; then
 	echo "try to install git..."
-	if ! sudo apt-get install git; then
+	if ! sudo apt-get install git -y; then
 		echo "installation failed!"
 		exit 1
 	fi
@@ -131,7 +131,7 @@ export CCPP=clang++-19
 # check if clang C compiler is installed
 if ! dpkg -s clang-19 &> /dev/null; then
 	echo "try to install clang..."
-	if ! sudo apt-get install clang-15; then
+	if ! sudo apt-get install clang-15 -y; then
 		echo "installation failed!"
 		exit 1
 	fi
