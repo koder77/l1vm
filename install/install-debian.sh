@@ -165,6 +165,7 @@ fi
 
 # install mpreal.h include
 	echo "installing mpreal.h include file now..."
+	pwd
 	git clone https://github.com/advanpix/mpreal.git
 	sudo cp vm/modules/mpfr-c++/mpreal.h /usr/include
 
