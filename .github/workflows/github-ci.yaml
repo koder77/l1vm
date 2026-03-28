@@ -16,7 +16,7 @@ jobs:
 
     - name: build
       shell: bash
-      run: ./install/install-debian.sh
+      run: cd install && install-debian.sh
 
   build-macos:
     runs-on: macos-13
