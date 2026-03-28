@@ -131,7 +131,7 @@ export CCPP=clang++-19
 # check if clang C compiler is installed
 if ! dpkg -s clang-19 &> /dev/null; then
 	echo "try to install clang..."
-	if ! sudo apt-get install clang-15 -y; then
+	if ! sudo apt-get install clang-19 -y; then
 		echo "installation failed!"
 		exit 1
 	fi
