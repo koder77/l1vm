@@ -1,5 +1,25 @@
-L1VM README  2026-03-28
+L1VM README  2026-03-29
 =======================
+L1VM - The End?
+
+The L1VM project has reached a turning point. While the statistics show hundreds of clones on GitHub and thousands of monthly readers here on the blog, the reality behind the scenes is devastating:
+
+Since 2017, I have received ZERO Pull Requests. near ZERO Feedback. near ZERO Donations.
+
+It feels like I am shouting into a void. I have invested years of my life into optimized ANSI C code, providing a high-end tool for free. But while everyone takes, no one gives back. Not even a simple "thank you" or a small fix for the macOS build — despite 44% of my readers being on macOS.
+
+This ends now.
+
+If I don't see any real engagement (Feedback, PRs, or Support) by April 30, 2026, I will take the logical step:
+
+    The L1VM repository will be set to PRIVATE.
+
+    The project will no longer be Open Source.
+
+    Public development will stop immediately.
+
+I am sorry to the few silent observers who might care, but I cannot continue to be exploited by a "community" that doesn't exist. You have been warned. It’s time for me to take a step back and protect my work.
+
 ![alt text](https://midnight-coding.de/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/P5P2Y3KP)

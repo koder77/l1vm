@@ -32,4 +32,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: l1vm-macos
-        path: ~/l1vm/bin
+        path: /Users/runner/l1vm/bin
