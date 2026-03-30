@@ -80,7 +80,10 @@
 #define EXE_NEXT(); ep = ep + eoffs; goto *jumpt[code[ep]];
 #define PRINT_EPOS(); printf ("epos: %lli\n\n", ep);
 
-//#define EXE_NEXT(); ep = ep + eoffs; printf ("next opcode: %i\n", code[ep]); goto *jumpt[code[ep]];
+#define SCHEXE_NEXT(); cpu[cpuc].ep = cpu[cpuc].ep + cpu[cpuc].eoffs; cpu[cpuc].scheduler--; goto task_scheduler;
+#define SCHPRINT_EPOS(); printf ("epos: %lli\n\n", cpu[cpuc].ep);
+
+//#define EXE_NEXT(); ep = ep + eoffs; printf ("next opcode: %i\n", code[ep]); goto *jumpt[code[]];
 
 // protos
 S2 load_object (U1 *name, S2 load_code_only);
