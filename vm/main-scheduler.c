@@ -610,11 +610,21 @@ void loop_stop (void)
 	// printf ("DEBUG: loop_stop!\n");
 }
 
+void free_jumpoffs (S8 ind)
+{
+	if (cpu[ind].jumpoffs)
+	{
+		free (cpu[ind].jumpoffs);
+		cpu[ind].jumpoffs = NULL;
+	}
+}
+
 // L1VM normal run function
+// EDIT RUN
 S2 run (void *arg)
 {
 	S8 cpuc ALIGN = (S8) arg;
-
+    S8 cpu_core ALIGN = cpuc; // POSIX THREAD CPU core ID, for the POSIX stuff!
 	S8 i ALIGN;
 	S8 offset ALIGN;
 	U1 *bptr;
@@ -712,7 +722,7 @@ S2 run (void *arg)
 	if (threaddata[cpuc].local_data == NULL)
 	{
 		printf ("ERROR: can't allocate %lli elements for local function data!\n", local_data_max);
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -938,7 +948,7 @@ S2 run (void *arg)
 		if (offset == 0)
 		{
 			printf ("FATAL error: setting jump offset failed! opcode: %i\n", code[i]);
-			free (cpu[cpuc].jumpoffs);
+			free_jumpoffs (cpuc);
 			loop_stop ();
 		    pthread_exit ((void *) 1);
 		}
@@ -995,7 +1005,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1023,7 +1033,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1055,7 +1065,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1091,7 +1101,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1134,7 +1144,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1178,7 +1188,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1205,7 +1215,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1236,7 +1246,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1271,7 +1281,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1314,7 +1324,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1438,7 +1448,7 @@ S2 run (void *arg)
     {
         printf ("FATAL ERROR: division by zero!\n");
 		PRINT_EPOS();
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
 		pthread_exit ((void *) 1);
     }
@@ -1589,7 +1599,7 @@ S2 run (void *arg)
     {
         printf ("FATAL ERROR: division by zero!\n");
 		PRINT_EPOS();
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
 		pthread_exit ((void *) 1);
     }
@@ -1957,7 +1967,7 @@ S2 run (void *arg)
 	{
 		PRINT_EPOS();
 		printf ("stpushb: error can't push!\n");
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -1977,7 +1987,7 @@ S2 run (void *arg)
 	{
 		PRINT_EPOS();
 		printf ("stpopb: error can't pop!\n");
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -1997,7 +2007,7 @@ S2 run (void *arg)
 	{
 		PRINT_EPOS();
 		printf ("stpushi: error can't push!\n");
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -2017,7 +2027,7 @@ S2 run (void *arg)
 	{
 		PRINT_EPOS();
 		printf ("stpopi: error can't pop!\n");
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -2037,7 +2047,7 @@ S2 run (void *arg)
 	{
 		PRINT_EPOS();
 		printf ("stpushd: error can't push!\n");
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -2057,7 +2067,7 @@ S2 run (void *arg)
 	{
 		PRINT_EPOS();
 		printf ("stpopd: error can't pop!\n");
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -2119,7 +2129,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -2198,7 +2208,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free (cpu[cpuc].jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -2241,22 +2251,22 @@ S2 run (void *arg)
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
 
-			if (load_module ((U1 *) &data[regi[arg2]], regi[arg3]) != 0)
+			if (load_module ((U1 *) &cpu[cpuc].data[cpu[cpuc].regi[arg2]], cpu[cpuc].regi[arg3]) != 0)
 			{
 				printf ("EXIT!\n");
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 1:
 			//printf ("FREEMODULE\n");
 			arg2 = code[ep + 2];
 
-			free_module (regi[arg2]);
-			eoffs = 5;
+			free_module (cpu[cpuc].regi[arg2]);
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 2:
@@ -2265,14 +2275,14 @@ S2 run (void *arg)
 			arg3 = code[ep + 3];
 			arg4 = code[ep + 4];
 
-			if (set_module_func (regi[arg2], regi[arg3], (U1 *) &data[regi[arg4]]) != 0)
+			if (set_module_func (cpu[cpuc].regi[arg2], cpu[cpuc].regi[arg3], (U1 *) &cpu[cpuc].data[cpu[cpuc].regi[arg4]]) != 0)
 			{
 				printf ("EXIT!\n");
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 3:
@@ -2280,13 +2290,14 @@ S2 run (void *arg)
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
 
-			sp = call_module_func (regi[arg2], regi[arg3], (U1 *) sp, sp_top, sp_bottom, (U1 *) data);
-			eoffs = 5;
-			if (sp == NULL)
+			cpu[cpuc].sp = call_module_func (cpu[cpuc].regi[arg2], cpu[cpuc].regi[arg3], (U1 *) cpu[cpuc].sp, cpu[cpuc].sp_top, cpu[cpuc].sp_bottom, (U1 *) cpu[cpuc].data);
+			cpu[cpuc].eoffs = 5;
+			if (cpu[cpuc].sp == NULL)
 			{
 				// ERROR -> EXIT
+				// EDIT THREAD
 				retcode = 1;
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				pthread_mutex_lock (&data_mutex);
 				threaddata[cpu_core].status = STOP;
 				pthread_mutex_unlock (&data_mutex);
@@ -2298,28 +2309,28 @@ S2 run (void *arg)
 		case 4:
 			//printf ("PRINTI\n");
 			arg2 = code[ep + 2];
-			printf ("%lli", regi[arg2]);
-			eoffs = 5;
+			printf ("%lli", cpu[cpuc].regi[arg2]);
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 5:
 			//printf ("PRINTD\n");
 			arg2 = code[ep + 2];
-			printf ("%.10lf", regd[arg2]);
-			eoffs = 5;
+			printf ("%.10lf", cpu[cpuc].regd[arg2]);
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 6:
 			//printf ("PRINTSTR\n");
 			arg2 = code[ep + 2];
-			printf ("%s", (char *) &data[regi[arg2]]);
-			eoffs = 5;
+			printf ("%s", (char *) &cpu[cpuc].data[regi[arg2]]);
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 7:
 			//printf ("PRINTNEWLINE\n");
 			printf ("\n");
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 8:
@@ -2328,45 +2339,45 @@ S2 run (void *arg)
 				printf ("DELAY\n");
 			}
 			arg2 = code[ep + 2];
-			usleep (regi[arg2] * 1000);
+			usleep (cpu[cpuc].regi[arg2] * 1000);
 			#if DEBUG
-				printf ("delay: %lli\n", regi[arg2]);
+				printf ("delay: %lli\n", cpu[cpuc].regi[arg2]);
 			#endif
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 9:
 			//printf ("INPUTI\n");
 			arg2 = code[ep + 2];
-			input_str[0] = '\0';
-			if (fgets ((char *) input_str, MAXINPUT - 1, stdin) != NULL)
+			cpu[cpuc].input_str[0] = '\0';
+			if (fgets ((char *) cpu[cpuc].input_str, MAXINPUT - 1, stdin) != NULL)
 			{
-				regi[arg2] = 0;
-				sscanf ((const char *) input_str, "%lli", &regi[arg2]);
+				cpu[cpuc].regi[arg2] = 0;
+				sscanf ((const char *) cpu[cpuc].input_str, "%lli", &cpu[cpuc].regi[arg2]);
 			}
 			else
 			{
 				printf ("input integer: can't read!\n");
 				PRINT_EPOS();
 			}
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 10:
 			//printf ("INPUTD\n");
 			arg2 = code[ep + 2];
-			input_str[0] = '\0';
-			if (fgets ((char *) input_str, MAXINPUT - 1, stdin) != NULL)
+			cpu[cpuc].input_str[0] = '\0';
+			if (fgets ((char *) cpu[cpuc].input_str, MAXINPUT - 1, stdin) != NULL)
 			{
-				regd[arg2] = 0.0;
-				sscanf ((const char *) input_str, "%lf", &regd[arg2]);
+				cpu[cpuc].regd[arg2] = 0.0;
+				sscanf ((const char *) cpu[cpuc].input_str, "%lf", &cpu[cpuc].regd[arg2]);
 			}
 			else
 			{
 				printf ("input double: can't read!\n");
 				PRINT_EPOS();
 			}
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 11:
@@ -2380,29 +2391,29 @@ S2 run (void *arg)
 
 				while (1)
 				{
-					if (i < regi[arg2] - 1)
+					if (i < cpu[cpuc].regi[arg2] - 1)
 					{
 						ch = getchar ();
-						if (memory_bounds (regi[arg3], i) != 0)
+						if (memory_bounds (cpu[cpu].regi[arg3], i) != 0)
 						{
 							// ERROR string variable overflow!
 							printf ("ERROR: input: string variable overflow!\n");
 							PRINT_EPOS();
-							free (jumpoffs);
+							free_jumpoffs (cpuc);
 							loop_stop ();
 							pthread_exit ((void *) 1);
 						}
-						data[regi[arg3] + i] = ch;
+						cpu[cpuc].data[cpu[cpuc].regi[arg3] + i] = ch;
 						if (ch == 10)
 						{
 							if (i == 0)
 							{
-								data[regi[arg3]] = '\0';
+								cpu[cpuc].data[cpu[cpuc].regi[arg3]] = '\0';
 								break;
 							}
 							else
 							{
-								data[regi[arg3] + i] = '\0';
+								cpu[cpuc].data[cpu[cpuc ].regi[arg3] + i] = '\0';
 								break;
 							}
 						}
@@ -2414,14 +2425,14 @@ S2 run (void *arg)
 					}
 				}
 			}
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 12:
 			//printf ("SHELLARGSNUM\n");
 			arg2 = code[ep + 2];
-			regi[arg2] = shell_args_ind + 1;
-			eoffs = 5;
+			cpu[cpuc].regi[arg2] = shell_args_ind + 1;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 13:
@@ -2430,36 +2441,36 @@ S2 run (void *arg)
 			S8 shell_arg_len ALIGN = 0;
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
-			if (regi[arg2] > shell_args_ind)
+			if (cpu[cpuc].regi[arg2] > shell_args_ind)
 			{
 				printf ("ERROR: shell argument index out of range!\n");
 				PRINT_EPOS();
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
 
 			// check target string size
-			shell_arg_len = strlen_safe ((const char *) shell_args[regi[arg2]], MAXLINELEN) + 1;
+			shell_arg_len = strlen_safe ((const char *) shell_args[cpu[cpuc].regi[arg2]], MAXLINELEN) + 1;
 
-			if (memory_bounds (regi[arg3], shell_arg_len) != 0)
+			if (memory_bounds (cpu[cpuc].regi[arg3], shell_arg_len) != 0)
 			{
-				printf ("ERROR: string overflow: shell argument %lli can't be saved in variable!\n", regi[arg2]);
+				printf ("ERROR: string overflow: shell argument %lli can't be saved in variable!\n", cpu[cpuc].regi[arg2]);
 				PRINT_EPOS();
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
         		pthread_exit ((void *) 1);
 			}
 
-			snprintf ((char *) &data[regi[arg3]], shell_arg_len, "%s", (const char *) shell_args[regi[arg2]]);
-			eoffs = 5;
+			snprintf ((char *) &cpu[cpu].data[regi[arg3]], shell_arg_len, "%s", (const char *) shell_args[cpu[cpuc].regi[arg2]]);
+			cpu[cpuc].eoffs = 5;
 			}
 			break;
 
 		case 14:
 			//printf("SHOWSTACKPOINTER\n");
-			printf ("stack pointer sp: %lli\n", (S8) sp);
-			if (sp == sp_top)
+			printf ("stack pointer sp: %lli\n", (S8) cpu[cpuc].sp);
+			if (cpu[cpuc].sp == cpu[cpuc].sp_top)
 			{
 				printf ("stack is empty!\n\n");
 			}
@@ -2467,14 +2478,14 @@ S2 run (void *arg)
 			{
 				printf ("stack has data!\n\n");
 			}
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
         case 15:
             // return number of CPU cores available
             arg2 = code[ep + 2];
-            regi[arg2] = max_cpu;
-            eoffs = 5;
+            cpu[cpuc].regi[arg2] = max_cpu;
+            cpu[cpuc].eoffs = 5;
             break;
 
         case 16:
@@ -2483,9 +2494,9 @@ S2 run (void *arg)
 #if MACHINE_BIG_ENDIAN
             regi[arg2] = 1;
 #else
-            regi[arg2] = 0;
+            cpu[cpuc].regi[arg2] = 0;
 #endif
-            eoffs = 5;
+            cpu[cpuc].eoffs = 5;
             break;
 
 		case 17:
@@ -2494,12 +2505,13 @@ S2 run (void *arg)
 			arg3 = code[ep + 3];
 			arg4 = code[ep + 4];
 
-			time (&secs);
-			tm = localtime (&secs);
-			regi[arg2] = tm->tm_hour;
-			regi[arg3] = tm->tm_min;
-			regi[arg4] = tm->tm_sec;
-			eoffs = 5;
+			// EDIT TIME
+			time (&cpu[cpuc].secs);
+			tm = localtime (&cpu[cpuc].secs);
+			cpu[cpuc].regi[arg2] = tm->tm_hour;
+			cpu[cpuc].regi[arg3] = tm->tm_min;
+			cpu[cpuc].regi[arg4] = tm->tm_sec;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 18:
@@ -2508,12 +2520,12 @@ S2 run (void *arg)
 			arg3 = code[ep + 3];
 			arg4 = code[ep + 4];
 
-			time (&secs);
-			tm = localtime (&secs);
-			regi[arg2] = tm->tm_year + 1900;
-			regi[arg3] = tm->tm_mon + 1;
-			regi[arg4] = tm->tm_mday;
-			eoffs = 5;
+			time (&cpu[cpuc].secs);
+			tm = localtime (&cpu[cpuc].secs);
+			cpu[cpuc].regi[arg2] = tm->tm_year + 1900;
+			cpu[cpuc].regi[arg3] = tm->tm_mon + 1;
+			cpu[cpuc].regi[arg4] = tm->tm_mday;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 19:
@@ -2521,10 +2533,10 @@ S2 run (void *arg)
 			// Sunday = 0
 			arg2 = code[ep + 2];
 
-			time (&secs);
-			tm = localtime (&secs);
-			regi[arg2] = tm->tm_wday;
-			eoffs = 5;
+			time (&cpu[cpuc].secs);
+			tm = localtime (&cpu[cpuc].secs);
+			cpu[cpuc].regi[arg2] = tm->tm_wday;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 20:
@@ -2532,8 +2544,8 @@ S2 run (void *arg)
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
 
-			printf ((char *) &data[regi[arg3]], regi[arg2]);
-			eoffs = 5;
+			printf ((char *) &cpu[cpuc].data[cpu[cpuc].regi[arg3]], cpu[cpuc].regi[arg2]);
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 21:
@@ -2541,30 +2553,30 @@ S2 run (void *arg)
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
 
-			printf ((char *) &data[regi[arg3]], regd[arg2]);
-			eoffs = 5;
+			printf ((char *) &cpu[cpuc].data[regi[arg3]], cpu[cpuc].regd[arg2]);
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 22:
 			//printf ("PRINTI as int16\n");
 			arg2 = code[ep + 2];
 
-			printf ("%d", (S2) regi[arg2]);
-			eoffs = 5;
+			printf ("%d", (S2) cpu[cpuc].regi[arg2]);
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 23:
 			//printf ("PRINTI as int32\n");
 			arg2 = code[ep + 2];
 
-			printf ("%i", (S4) regi[arg2]);
-			eoffs = 5;
+			printf ("%i", (S4) cpu[cpuc].regi[arg2]);
+			cpu[cpuc].eoffs = 5;
 			break;
 
 #if TIMER_USE
 		case 24:
 			gettimeofday (&timer_start, NULL);
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 25:
@@ -2575,14 +2587,14 @@ S2 run (void *arg)
 			timer_double = timer_double * 1000.0; 	// get ms
 			printf ("TIMER ms: %.10lf\n", timer_double);
 			timer_int = ceil (timer_double);
-			regi[arg2] = timer_int;
-			eoffs = 5;
+			cpu[cpuc].regi[arg2] = timer_int;
+			cpu[cpuc].eoffs = 5;
 			break;
 #else
 		case 24:
 			printf ("FATAL ERROR: no start timer!\n");
 			PRINT_EPOS();
-			free (jumpoffs);
+			free_jumpoffs (cpuc);
 			loop_stop ();
 			pthread_exit ((void *) 1);
 			break;
@@ -2590,7 +2602,7 @@ S2 run (void *arg)
 		case 25:
 			printf ("FATAL ERROR: no end timer!\n");
 			PRINT_EPOS();
-			free (jumpoffs);
+			free_jumpoffs (cpuc);
 			loop_stop ();
 			pthread_exit ((void *) 1);
 			break;
@@ -2598,22 +2610,22 @@ S2 run (void *arg)
 
 		case 26:
 			// check if stack is empty, if not then give an error message and exit!!!
-			if (sp != sp_top)
+			if (cpu[cpuc].sp != cpu[cpuc].sp_top)
 			{
 				printf ("ERROR: stack has data! Stack should be empty!\n");
 				PRINT_EPOS();
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 27:
 			// print out debug note
 			printf ("INTR0: 27 DEBUG marking\n")
 			PRINT_EPOS();
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 28:
