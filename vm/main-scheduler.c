@@ -40,8 +40,6 @@ char *get_home (void);
 
 S8 data_size ALIGN;
 
-
-
 // see global.h user settings on top
 S8 max_code_size ALIGN = MAX_CODE_SIZE;
 S8 max_data_size ALIGN = MAX_DATA_SIZE;
@@ -122,6 +120,9 @@ pthread_mutex_t global_mutex[MAX_MUTEXES];
 // wait loop mutex 
 pthread_mutex_t wait_loop;
 U1 run_loop = 1;
+
+// cpu mutex
+pthread_mutex_t cpu_mutex;
 
 // return code of main thread
 S8 retcode ALIGN = 0;
@@ -640,7 +641,7 @@ S2 run (void *arg)
 	{
 		printf ("ERROR: can't allocate %lli bytes for jumpoffsets!\n", code_size);
 		loop_stop ();
-		return (1);
+		pthread_exit ((void *) 1);
 	}
 
 	/*
@@ -713,7 +714,7 @@ S2 run (void *arg)
 		printf ("ERROR: can't allocate %lli elements for local function data!\n", local_data_max);
 		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
-		return (1);
+		pthread_exit ((void *) 1);
 	}
 
 	{
@@ -939,7 +940,7 @@ S2 run (void *arg)
 			printf ("FATAL error: setting jump offset failed! opcode: %i\n", code[i]);
 			free (cpu[cpuc].jumpoffs);
 			loop_stop ();
-			return (1);
+		    pthread_exit ((void *) 1);
 		}
 
 		if (i >= code_size) break;
@@ -996,1038 +997,1080 @@ S2 run (void *arg)
 		PRINT_EPOS();
 		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
-        cpu[cpuc].running = 0;
+        pthread_exit ((void *) 1);
 	}
 	}
 	#endif
-
-// EDIT NEU
 
 	cpu[cpuc].regi[arg3] = 0;		// set to zero, before loading data
 	cpu[cpuc].regi[arg3] = (S8) cpu[cpuc].data[arg1 + arg2];
 
 	cpu[cpuc].eoffs = 4;
-	EXE_NEXT();
+	SCHEXE_NEXT();
 
 	pushw:
 	#if DEBUG
 	printf ("%lli PUSHW\n", cpu_core);
 	#endif
-	arg1 = regi[code[ep + 1]];
-	arg2 = regi[code[ep + 2]];
+	ep = cpu[cpuc].ep;
+	arg1 = cpu[cpuc].regi[code[ep + 1]];
+	arg2 = cpu[cpuc].regi[code[ep + 2]];
 	arg3 = code[ep + 3];
 
 	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
+	if (cpu[cpuc].do_memory_bounds_check == 1)
 	{
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
 	}
 	#endif
 
-	regi[arg3] = 0;		// set to zero, before loading data
-	bptr = (U1 *) &regi[arg3];
+	cpu[cpuc].regi[arg3] = 0;		// set to zero, before loading data
+	bptr = (U1 *) &cpu[cpuc].regi[arg3];
 
-	*bptr = data[arg1 + arg2];
+	*bptr = cpu[cpuc].data[arg1 + arg2];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 1];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 1];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	pushdw:
 	#if DEBUG
 	printf ("%lli PUSHDW\n", cpu_core);
 	#endif
-	arg1 = regi[code[ep + 1]];
-	arg2 = regi[code[ep + 2]];
+	ep = cpu[cpuc].ep;
+	arg1 = cpu[cpuc].regi[code[ep + 1]];
+	arg2 = cpu[cpuc].regi[code[ep + 2]];
 	arg3 = code[ep + 3];
 
 	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
+	if (cpu[cpuc].do_memory_bounds_check == 1)
 	{
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
 	}
 	#endif
 
-	regi[arg3] = 0;		// set to zero, before loading data
-	bptr = (U1 *) &regi[arg3];
+	cpu[cpuc].regi[arg3] = 0;		// set to zero, before loading data
+	bptr = (U1 *) &cpu[cpuc].regi[arg3];
 
-	*bptr = data[arg1 + arg2];
+	*bptr = cpu[cpuc].data[arg1 + arg2];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 1];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 1];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 2];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 2];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 3];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 3];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	pushqw:
 	#if DEBUG
 	printf ("%lli PUSHQW\n", cpu_core);
 	#endif
-	arg1 = regi[code[ep + 1]];
-	arg2 = regi[code[ep + 2]];
+	ep = cpu[cpuc].ep;
+	arg1 = cpu[cpuc].regi[code[ep + 1]];
+	arg2 = cpu[cpuc].regi[code[ep + 2]];
 	arg3 = code[ep + 3];
 
 	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
+	if (cpu[cpuc].do_memory_bounds_check == 1)
 	{
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
 	}
 	#endif
 
-	bptr = (U1 *) &regi[arg3];
+	bptr = (U1 *) &cpu[cpuc].regi[arg3];
 
-	*bptr = data[arg1 + arg2];
+	*bptr = cpu[cpuc].data[arg1 + arg2];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 1];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 1];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 2];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 2];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 3];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 3];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 4];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 4];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 5];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 5];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 6];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 6];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 7];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 7];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	pushd:
 	#if DEBUG
 	printf ("%lli PUSHD\n", cpu_core);
 	#endif
-	arg1 = regi[code[ep + 1]];
-	arg2 = regi[code[ep + 2]];
+	ep = cpu[cpuc].ep;
+	arg1 = cpu[cpuc].regi[code[ep + 1]];
+	arg2 = cpu[cpuc].regi[code[ep + 2]];
 	arg3 = code[ep + 3];
 
 	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
+	if (cpu[cpuc].do_memory_bounds_check == 1)
 	{
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
 	}
 	#endif
 
-	bptr = (U1 *) &regd[arg3];
+	bptr = (U1 *) &cpu[cpuc].regd[arg3];
 
-	*bptr = data[arg1 + arg2];
+	*bptr = cpu[cpuc].data[arg1 + arg2];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 1];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 1];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 2];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 2];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 3];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 3];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 4];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 4];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 5];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 5];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 6];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 6];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 7];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 7];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 
 	pullb:
 	#if DEBUG
 	printf ("%lli PULLB\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
-	arg2 = regi[code[ep + 2]];
-	arg3 = regi[code[ep + 3]];
+	arg2 = cpu[cpuc].regi[code[ep + 2]];
+	arg3 = cpu[cpuc].regi[code[ep + 3]];
 
 	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
+	if (cpu[cpuc].do_memory_bounds_check == 1)
 	{
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
 	}
 	#endif
 
-	data[arg2 + arg3] = regi[arg1];
+	cpu[cpuc].data[arg2 + arg3] = cpu[cpuc].regi[arg1];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	pullw:
 	#if DEBUG
 	printf ("%lli PULLW\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
-	arg2 = regi[code[ep + 2]];
-	arg3 = regi[code[ep + 3]];
+	arg2 = cpu[cpuc].regi[code[ep + 2]];
+	arg3 = cpu[cpuc].regi[code[ep + 3]];
 
 	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
+	if (cpu[cpuc].do_memory_bounds_check == 1)
 	{
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
 	}
 	#endif
 
-	bptr = (U1 *) &regi[arg1];
+	bptr = (U1 *) &cpu[cpuc].regi[arg1];
 
-	data[arg2 + arg3] = *bptr;
+	cpu[cpuc].data[arg2 + arg3] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 1] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 1] = *bptr;
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	pulldw:
 	#if DEBUG
 	printf ("%lli PULLDW\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
-	arg2 = regi[code[ep + 2]];
-	arg3 = regi[code[ep + 3]];
+	arg2 = cpu[cpuc].regi[code[ep + 2]];
+	arg3 = cpu[cpuc].regi[code[ep + 3]];
 
 	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
+	if (cpu[cpuc].do_memory_bounds_check == 1)
 	{
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
 	}
 	#endif
 
-	bptr = (U1 *) &regi[arg1];
+	bptr = (U1 *) &cpu[cpuc].regi[arg1];
 
-	data[arg2 + arg3] = *bptr;
+	cpu[cpuc].data[arg2 + arg3] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 1] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 1] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 2] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 2] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 3] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 3] = *bptr;
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	pullqw:
 	#if DEBUG
 	printf ("%lli PULLQW\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
-	arg2 = regi[code[ep + 2]];
-	arg3 = regi[code[ep + 3]];
+	arg2 = cpu[cpuc].regi[code[ep + 2]];
+	arg3 = cpu[cpuc].regi[code[ep + 3]];
 
 	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
+	if (cpu[cpuc].do_memory_bounds_check == 1)
 	{
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
 	}
 	#endif
 
-	bptr = (U1 *) &regi[arg1];
+	bptr = (U1 *) &cpu[cpuc].regi[arg1];
 
-	data[arg2 + arg3] = *bptr;
+	cpu[cpuc].data[arg2 + arg3] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 1] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 1] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 2] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 2] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 3] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 3] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 4] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 4] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 5] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 5] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 6] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 6] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 7] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 7] = *bptr;
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	pulld:
 	#if DEBUG
 	printf ("%lli PULLD\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
-	arg2 = regi[code[ep + 2]];
-	arg3 = regi[code[ep + 3]];
+	arg2 = cpu[cpuc].regi[code[ep + 2]];
+	arg3 = cpu[cpuc].regi[code[ep + 3]];
 
 	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
+	if (cpu[cpuc].do_memory_bounds_check == 1)
 	{
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
 	}
 	#endif
 
-	bptr = (U1 *) &regd[arg1];
+	bptr = (U1 *) &cpu[cpuc].regd[arg1];
 
-	data[arg2 + arg3] = *bptr;
+	cpu[cpuc].data[arg2 + arg3] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 1] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 1] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 2] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 2] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 3] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 3] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 4] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 4] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 5] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 5] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 6] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 6] = *bptr;
 	bptr++;
-	data[arg2 + arg3 + 7] = *bptr;
+	cpu[cpuc].data[arg2 + arg3 + 7] = *bptr;
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
-
+// EDIT ADDI
 	addi:
 	#if DEBUG
 	printf ("%lli ADDI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
 	#if MATH_LIMITS_INT
-		if (__builtin_saddll_overflow (regi[arg1], regi[arg2], &regi[arg3]))
+		if (__builtin_saddll_overflow (cpu[cpuc].regi[arg1], cpu[cpuc].regi[arg2], &cpu[cpuc].regi[arg3]))
 		{
-			overflow = 1;
+			cpu[cpuc].overflow = 1;
  			printf ("ERROR: overflow at addi!\n");
 			PRINT_EPOS();
 		}
 		else
 		{
-			 overflow = 0;
+			 cpu[cpuc].overflow = 0;
 		}
 	#else
-		regi[arg3] = regi[arg1] + regi[arg2];
+		cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] + cpu[cpuc].regi[arg2];
 	#endif
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	subi:
 	#if DEBUG
 	printf ("%lli SUBI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
 	#if MATH_LIMITS_INT
-		if (__builtin_ssubll_overflow (regi[arg1], regi[arg2], &regi[arg3]))
+		if (__builtin_ssubll_overflow (cpu[cpuc].regi[arg1], cpu[cpuc].regi[arg2], &cpu[cpuc].regi[arg3]))
 		{
-			overflow = 1;
+			cpu[cpuc].overflow = 1;
  			printf ("ERROR: overflow at subi!\n");
 			PRINT_EPOS();
 		}
 		else
 		{
-			 overflow = 0;
+			 cpu[cpuc].overflow = 0;
 		}
 	#else
 		regi[arg3] = regi[arg1] - regi[arg2];
 	#endif
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	muli:
 	#if DEBUG
 	printf ("%lli MULI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
 	#if MATH_LIMITS_INT
-		if (__builtin_smulll_overflow (regi[arg1], regi[arg2], &regi[arg3]))
+		if (__builtin_smulll_overflow (cpu[cpuc].regi[arg1], cpu[cpuc].regi[arg2], &cpu[cpuc].regi[arg3]))
 		{
-			overflow = 1;
+			cpu[cpuc].overflow = 1;
  			printf ("ERROR: overflow at muli!\n");
 			PRINT_EPOS();
 		}
 		else
 		{
-			 overflow = 0;
+			 cpu[cpuc].overflow = 0;
 		}
 	#else
 		regi[arg3] = regi[arg1] * regi[arg2];
 	#endif
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	divi:
 	#if DEBUG
 	printf ("%lli DIVI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
     #if DIVISIONCHECK
-    if (iszero (regi[arg2]))
+    if (iszero (cpu[cpuc].regi[arg2]))
     {
         printf ("FATAL ERROR: division by zero!\n");
 		PRINT_EPOS();
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
     }
     #endif
 
-	regi[arg3] = regi[arg1] / regi[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] / cpu[cpuc].regi[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	addd:
 	#if DEBUG
 	printf ("%lli ADDD\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
 	#if MATH_LIMITS
-		overflow = 0;
+		cpu[cpuc].overflow = 0;
 	#endif
 	#if MATH_LIMITS_DOUBLE_FULL
-		if (double_state (regd[arg1]) == 1)
+		if (double_state (cpu[cpuc].regd[arg1]) == 1)
 		{
-			overflow = 1;
+			cpu[cpuc].overflow = 1;
 			printf ("ERROR: overflow at addd!\n");
 			PRINT_EPOS();
 		}
 
-		if (double_state (regd[arg2]) == 1)
+		if (double_state (cpu[cpuc].regd[arg2]) == 1)
 		{
-			overflow = 1;
+			cpu[cpuc].overflow = 1;
 			printf ("ERROR: overflow at addd!\n");
 			PRINT_EPOS();
 		}
 	#endif
 
-	regd[arg3] = regd[arg1] + regd[arg2];
+	cpu[cpuc].regd[arg3] = cpu[cpuc].regd[arg1] + cpu[cpuc].regd[arg2];
 
 	#if MATH_LIMITS
-		if (double_state (regd[arg3]) == 1)
+		if (double_state (cpu[cpuc].regd[arg3]) == 1)
 		{
-			overflow = 1;
+			cpu[cpuc].overflow = 1;
 			printf ("ERROR: overflow at addd!\n");
 			PRINT_EPOS();
 		}
 	#endif
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	subd:
 	#if DEBUG
 	printf ("%lli SUBD\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
 	#if MATH_LIMITS
-		overflow = 0;
+		cpu[cpuc].overflow = 0;
 	#endif
 	#if MATH_LIMITS_DOUBLE_FULL
-		if (double_state (regd[arg1]) == 1)
+		if (double_state (cpu[cpuc].regd[arg1]) == 1)
 		{
-			overflow = 1;
+			cpu[cpuc].overflow = 1;
 			printf ("ERROR: overflow at subd!\n");
 			PRINT_EPOS();
 		}
 
-		if (double_state (regd[arg2]) == 1)
+		if (double_state (cpu[cpuc].regd[arg2]) == 1)
 		{
-			overflow = 1;
+			cpu[cpuc].overflow = 1;
 			printf ("ERROR: overflow at subd!\n");
 			PRINT_EPOS();
 		}
 	#endif
 
-	regd[arg3] = regd[arg1] - regd[arg2];
+	cpu[cpuc].regd[arg3] = cpu[cpuc].regd[arg1] - cpu[cpuc].regd[arg2];
 
 	#if MATH_LIMITS
-		if (double_state (regd[arg3]) == 1)
+		if (double_state (cpu[cpuc].regd[arg3]) == 1)
 		{
-			overflow = 1;
+			cpu[cpuc].overflow = 1;
 			printf ("ERROR: overflow at subd!\n");
 			PRINT_EPOS();
 		}
 	#endif
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	muld:
 	#if DEBUG
 	printf ("%lli MULD\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
 	#if MATH_LIMITS
-		overflow = 0;
+		cpu[cpuc].overflow = 0;
 	#endif
 	#if MATH_LIMITS_DOUBLE_FULL
-		if (double_state (regd[arg1]) == 1)
+		if (double_state (cpu[cpuc].regd[arg1]) == 1)
 		{
-			overflow = 1;
+			cpu[cpuc].overflow = 1;
 			printf ("ERROR: overflow at muld!\n");
 			PRINT_EPOS();
 		}
 
-		if (double_state (regd[arg2]) == 1)
+		if (double_state (cpu[cpuc].regd[arg2]) == 1)
 		{
-			overflow = 1;
+			cpu[cpuc].overflow = 1;
 			printf ("ERROR: overflow at muld!\n");
 			PRINT_EPOS();
 		}
 	#endif
 
-	regd[arg3] = regd[arg1] * regd[arg2];
+	cpu[cpuc].regd[arg3] = cpu[cpuc].regd[arg1] * cpu[cpuc].regd[arg2];
 
 	#if MATH_LIMITS
-		if (double_state (regd[arg3]) == 1)
+		if (double_state (cpu[cpuc].regd[arg3]) == 1)
 		{
-			overflow = 1;
+			cpu[cpuc].overflow = 1;
 			printf ("ERROR: overflow at muld!\n");
 			PRINT_EPOS();
 		}
 	#endif
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	divd:
 	#if DEBUG
 	printf ("%lli DIVD\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
     #if DIVISIONCHECK
-    if (iszero (regd[arg2]))
+    if (iszero (cpu[cpuc].regd[arg2]))
     {
         printf ("FATAL ERROR: division by zero!\n");
 		PRINT_EPOS();
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
     }
     #endif
 
 	#if MATH_LIMITS
-		overflow = 0;
+		cpu[cpuc].overflow = 0;
 	#endif
 	#if MATH_LIMITS_DOUBLE_FULL
-		if (double_state (regd[arg1]) == 1)
+		if (double_state (cpu[cpuc].regd[arg1]) == 1)
 		{
-			overflow = 1;
+			cpu[cpuc].overflow = 1;
 			printf ("ERROR: overflow at divd!\n");
 			PRINT_EPOS();
 		}
 
-		if (double_state (regd[arg2]) == 1)
+		if (double_state (cpu[cpuc].regd[arg2]) == 1)
 		{
-			overflow = 1;
+			cpu[cpuc].overflow = 1;
 			printf ("ERROR: overflow at divd!\n");
 			PRINT_EPOS();
 		}
 	#endif
 
-	regd[arg3] = regd[arg1] / regd[arg2];
+	cpu[cpuc].regd[arg3] = cpu[cpuc].regd[arg1] / cpu[cpuc].regd[arg2];
 
 	#if MATH_LIMITS
-	if (double_state (regd[arg3]) == 1)
+	if (double_state (cpu[cpuc].regd[arg3]) == 1)
 		{
-			overflow = 1;
+			cpu[cpuc].overflow = 1;
 			printf ("ERROR: overflow at divd!\n");
 			PRINT_EPOS();
 		}
 	#endif
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	smuli:
 	#if DEBUG
 	printf ("%lli SMULI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regi[arg1] << regi[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] << cpu[cpuc].regi[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	sdivi:
 	#if DEBUG
 	printf ("%lli SDIVI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regi[arg1] >> regi[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] >> cpu[cpuc].regi[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	andi:
 	#if DEBUG
 	printf ("%lli ANDI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regi[arg1] && regi[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] && cpu[cpuc].regi[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	ori:
 	#if DEBUG
 	printf ("%lli ORI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regi[arg1] || regi[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] || cpu[cpuc].regi[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 
 	bandi:
 	#if DEBUG
 	printf ("%lli BANDI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regi[arg1] & regi[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] & cpu[cpuc].regi[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	bori:
 	#if DEBUG
 	printf ("%lli BORI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regi[arg1] | regi[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] | cpu[cpuc].regi[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	bxori:
 	#if DEBUG
 	printf ("%lli BXORI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regi[arg1] ^ regi[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] ^ cpu[cpuc].regi[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	modi:
 	#if DEBUG
 	printf ("%lli MODI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regi[arg1] % regi[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] % cpu[cpuc].regi[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 
 	eqi:
 	#if DEBUG
 	printf ("%lli EQI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regi[arg1] == regi[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] == cpu[cpuc].regi[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	neqi:
 	#if DEBUG
 	printf ("%lli NEQI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regi[arg1] != regi[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] != cpu[cpuc].regi[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	gri:
 	#if DEBUG
 	printf ("%lli GRI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regi[arg1] > regi[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] > cpu[cpuc].regi[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	lsi:
 	#if DEBUG
 	printf ("%lli LSI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regi[arg1] < regi[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] < cpu[cpuc].regi[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	greqi:
 	#if DEBUG
 	printf ("%lli GREQI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regi[arg1] >= regi[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] >= cpu[cpuc].regi[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	lseqi:
 	#if DEBUG
 	printf ("%lli LSEQI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regi[arg1] <= regi[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] <= cpu[cpuc].regi[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 
 	eqd:
 	#if DEBUG
 	printf ("%lli EQD\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regd[arg1] == regd[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regd[arg1] == cpu[cpuc].regd[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	neqd:
 	#if DEBUG
 	printf ("%lli NEQD\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regd[arg1] != regd[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regd[arg1] != cpu[cpuc].regd[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	grd:
 	#if DEBUG
 	printf ("%lli GRD\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regd[arg1] > regd[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regd[arg1] > cpu[cpuc].regd[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	lsd:
 	#if DEBUG
 	printf ("%lli LSD\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regd[arg1] < regd[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regd[arg1] < cpu[cpuc].regd[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	greqd:
 	#if DEBUG
 	printf ("%lli GREQD\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regd[arg1] >= regd[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regd[arg1] >= cpu[cpuc].regd[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 	lseqd:
 	#if DEBUG
 	printf ("%lli LSEQD\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 	arg3 = code[ep + 3];
 
-	regi[arg3] = regd[arg1] <= regd[arg2];
+	cpu[cpuc].regi[arg3] = cpu[cpuc].regd[arg1] <= cpu[cpuc].regd[arg2];
 
-	eoffs = 4;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 4;
+	SCHEXE_NEXT();
 
 
 	jmp:
 	#if DEBUG
 	printf ("%lli JMP\n", cpu_core);
 	#endif
-	ep = jumpoffs[ep];
-	eoffs = 0;
+	ep = cpu[cpuc].jumpoffs[ep];
+	cpu[cpuc].eoffs = 0;
 
-	EXE_NEXT();
+	SCHEXE_NEXT();
 
 	jmpi:
 	#if DEBUG
 	printf ("%lli JMPI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 
-	arg2 = jumpoffs[ep];
+	arg2 = cpu[cpuc].jumpoffs[ep];
 
-	if (regi[arg1] != 0)
+	if (cpu[cpuc].regi[arg1] != 0)
 	{
-		eoffs = 0;
-		ep = arg2;
+		cpu[cpuc].eoffs = 0;
+		cpu[cpuc].ep = arg2;
 		#if DEBUG
-		printf ("%lli JUMP TO %lli\n", cpu_core, ep);
+		printf ("%lli JUMP TO %lli\n", cpu_core, cpu[cpuc].ep);
 		#endif
-		EXE_NEXT();
+		SCHEXE_NEXT();
 	}
 
-	eoffs = 10;
+	cpu[cpuc].eoffs = 10;
 
-	EXE_NEXT();
+	SCHEXE_NEXT();
 
 
 	stpushb:
 	#if DEBUG
 	printf("%lli STPUSHB\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 
-	sp = stpushb (regi[arg1], sp, sp_bottom);
-	if (sp == NULL)
+	cpu[cpuc].sp = stpushb (cpu[cpuc].regi[arg1], cpu[cpuc].sp, cpu[cpuc].sp_bottom);
+	if (cpu[cpuc].sp == NULL)
 	{
 		PRINT_EPOS();
 		printf ("stpushb: error can't push!\n");
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
-	eoffs = 2;
+	cpu[cpuc].eoffs = 2;
 
-	EXE_NEXT();
+	SCHEXE_NEXT();
 
 	stpopb:
 	#if DEBUG
 	printf("%lli STPOPB\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 
-	sp = stpopb ((U1 *) &regi[arg1], sp, sp_top);
-	if (sp == NULL)
+	cpu[cpuc].sp = stpopb ((U1 *) &cpu[cpuc].regi[arg1], cpu[cpuc].sp, cpu[cpuc].sp_top);
+	if (cpu[cpuc].sp == NULL)
 	{
 		PRINT_EPOS();
 		printf ("stpopb: error can't pop!\n");
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
-	eoffs = 2;
+	cpu[cpuc].eoffs = 2;
 
-	EXE_NEXT();
+	SCHEXE_NEXT();
 
 	stpushi:
 	#if DEBUG
 	printf("%lli STPUSHI\n", cpu_core);
 	#endif
-
+    ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 
-	sp = stpushi (regi[arg1], sp, sp_bottom);
-	if (sp == NULL)
+	cpu[cpuc].sp = stpushi (cpu[cpuc].regi[arg1], cpu[cpuc].sp, cpu[cpuc].sp_bottom);
+	if (cpu[cpuc].sp == NULL)
 	{
 		PRINT_EPOS();
 		printf ("stpushi: error can't push!\n");
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
-	eoffs = 2;
+	cpu[cpuc].eoffs = 2;
 
-	EXE_NEXT();
+	SCHEXE_NEXT();
 
 	stpopi:
 	#if DEBUG
 	printf("%lli STPOPI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 
-	sp = stpopi ((U1 *) &regi[arg1], sp, sp_top);
-	if (sp == NULL)
+	cpu[cpuc].sp = stpopi ((U1 *) &cpu[cpuc].regi[arg1], cpu[cpuc].sp, cpu[cpuc].sp_top);
+	if (cpu[cpuc].sp == NULL)
 	{
 		PRINT_EPOS();
 		printf ("stpopi: error can't pop!\n");
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
-	eoffs = 2;
+	cpu[cpuc].eoffs = 2;
 
-	EXE_NEXT();
+	SCHEXE_NEXT();
 
 	stpushd:
 	#if DEBUG
 	printf("%lli STPUSHD\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 
-	sp = stpushd (regd[arg1], sp, sp_bottom);
-	if (sp == NULL)
+	cpu[cpuc].sp = stpushd (cpu[cpuc].regd[arg1], cpu[cpuc].sp, cpu[cpuc].sp_bottom);
+	if (cpu[cpuc].sp == NULL)
 	{
 		PRINT_EPOS();
 		printf ("stpushd: error can't push!\n");
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
-	eoffs = 2;
+	cpu[cpuc].eoffs = 2;
 
-	EXE_NEXT();
+	SCHEXE_NEXT();
 
 	stpopd:
 	#if DEBUG
 	printf("%lli STPOPD\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 
-	sp = stpopd ((U1 *) &regd[arg1], sp, sp_top);
-	if (sp == NULL)
+	cpu[cpuc].sp = stpopd ((U1 *) &cpu[cpuc].regd[arg1], cpu[cpuc].sp, cpu[cpuc].sp_top);
+	if (cpu[cpuc].sp == NULL)
 	{
 		PRINT_EPOS();
 		printf ("stpopd: error can't pop!\n");
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
-	eoffs = 2;
+	cpu[cpuc].eoffs = 2;
 
-	EXE_NEXT();
+	SCHEXE_NEXT();
 
 	loada:
 	#if DEBUG
 	printf ("%lli LOADA\n", cpu_core);
 	#endif
 	// data
+    ep = cpu[cpuc].ep;
 	bptr = (U1 *) &arg1;
 
 	*bptr = code[ep + 1];
@@ -2071,12 +2114,12 @@ S2 run (void *arg)
 	//printf ("arg2: %li\n", arg2);
 
 	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
+	if (cpu[cpuc].do_memory_bounds_check == 1)
 	{
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -2085,32 +2128,33 @@ S2 run (void *arg)
 
 	arg3 = code[ep + 17];
 
-	bptr = (U1 *) &regi[arg3];
+	bptr = (U1 *) &cpu[cpuc].regi[arg3];
 
-	*bptr = data[arg1 + arg2];
+	*bptr = cpu[cpuc].data[arg1 + arg2];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 1];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 1];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 2];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 2];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 3];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 3];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 4];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 4];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 5];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 5];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 6];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 6];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 7];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 7];
 
-	eoffs = 18;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 18;
+	SCHEXE_NEXT();
 
 	loadd:
 	#if DEBUG
 	printf ("%lli LOADD\n", cpu_core);
 	#endif
 	// data
+	ep = cpu[cpuc].ep;
 	bptr = (U1 *) &arg1;
 
 	*bptr = code[ep + 1];
@@ -2149,12 +2193,12 @@ S2 run (void *arg)
 	*bptr = code[ep + 16];
 
 	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
+	if (cpu[cpuc].do_memory_bounds_check == 1)
 	{
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free (jumpoffs);
+		free (cpu[cpuc].jumpoffs);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -2163,29 +2207,29 @@ S2 run (void *arg)
 
 	arg3 = code[ep + 17];
 
-	bptr = (U1 *) &regd[arg3];
+	bptr = (U1 *) &cpu[cpuc].regd[arg3];
 
-	*bptr = data[arg1 + arg2];
+	*bptr = cpu[cpuc].data[arg1 + arg2];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 1];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 1];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 2];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 2];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 3];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 3];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 4];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 4];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 5];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 5];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 6];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 6];
 	bptr++;
-	*bptr = data[arg1 + arg2 + 7];
+	*bptr = cpu[cpuc].data[arg1 + arg2 + 7];
 
-	eoffs = 18;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 18;
+	SCHEXE_NEXT();
 
 	intr0:
-
+    ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	#if DEBUG
 	printf ("%lli INTR0: %lli\n", cpu_core, arg1);
