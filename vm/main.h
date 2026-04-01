@@ -80,7 +80,7 @@
 #define EXE_NEXT(); ep = ep + eoffs; goto *jumpt[code[ep]];
 #define PRINT_EPOS(); printf ("epos: %lli\n\n", ep);
 
-#define SCHEXE_NEXT(); goto task_scheduler;
+#define SCHEXE_NEXT();  goto task_scheduler;
 #define SCHPRINT_EPOS(); printf ("epos: %lli\n\n", cpu[cpuc].ep);
 
 //#define EXE_NEXT(); ep = ep + eoffs; printf ("next opcode: %i\n", code[ep]); goto *jumpt[code[]];
