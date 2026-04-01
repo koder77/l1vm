@@ -3653,7 +3653,7 @@ task_scheduler:
                  * Search for the next available CPU core with status 'RUNNING'.
                  */
                 S8 start_cpuc = cpuc;
-                for (i = 1; i <= max_virtcpu; i++)
+                for (i = 1; i < max_virtcpu; i++)
                 {
                     S8 next_cpu = (start_cpuc + i) % max_virtcpu;
 
