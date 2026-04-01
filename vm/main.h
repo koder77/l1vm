@@ -80,7 +80,7 @@
 #define EXE_NEXT(); ep = ep + eoffs; goto *jumpt[code[ep]];
 #define PRINT_EPOS(); printf ("epos: %lli\n\n", ep);
 
-#define SCHEXE_NEXT(); cpu[cpuc].ep = cpu[cpuc].ep + cpu[cpuc].eoffs; cpu[cpuc].scheduler--; goto task_scheduler;
+#define SCHEXE_NEXT(); goto task_scheduler;
 #define SCHPRINT_EPOS(); printf ("epos: %lli\n\n", cpu[cpuc].ep);
 
 //#define EXE_NEXT(); ep = ep + eoffs; printf ("next opcode: %i\n", code[ep]); goto *jumpt[code[]];
@@ -103,5 +103,7 @@ S2 set_immutable_string (S8 string_pointer);
 
 // debugger
 S2 debugger (S8 *reg_int, F8 *reg_double, S8 epos, U1 *sp, U1 *sp_bottom, U1 *sp_top, S2 cpu_core);
+
+void free_jumpoffs (S8 ind);
 
 #endif

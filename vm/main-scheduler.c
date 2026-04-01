@@ -22,9 +22,6 @@
 // The run function start is now ok.
 // I will now change the opcodes to use the "cpu[cpuc]..." CPU variables
 // And then write the scheduler.
-// The scheduler will be called like this: "main.h":
-// #define #define SCHEXE_NEXT(); cpu[cpuc].ep = cpu[cpuc].ep + cpu[cpuc].eoffs; cpu[cpuc].scheduler--; goto task_scheduler;
-
 
 #include "jit.h"
 #include "../include/global.h"
@@ -34,6 +31,7 @@
 
 // steps to run in current CPU core
 #define SCHEDULER_MAX 10
+#define SCHEDULER_OFF -1
 
 // include/home.h 
 char *get_home (void);
@@ -63,7 +61,7 @@ S8 modules_ind ALIGN = -1;    // no module loaded = -1
 S8 cpu_ind ALIGN = 0;
 
 S8 max_cpu ALIGN = MAXCPUCORES;    // number of threads that can be runned
-
+S8 max_virtcpu ALIGN = MAXVIRTCPU;  // number of virtual CPUs threads
 U1 silent_run = 0;				// switch startup and status messages of: "-q" flag on shell
 
 U1 bytecode_hot_reload = 0;     // used in run  bytecode main function, if set then the new rogram bytecode will be run!
@@ -135,7 +133,7 @@ struct threaddata *threaddata;
 
 struct cpu
 {
-	U1 running;        // set to 1 if core has code to execute
+	U1 status;        // set to RUNNING if core has code to execute or STOP
 	S8 scheduler;      // counter to set the task switching by the scheduler, if it is 0 then switch to other running CPU core.
 	S8 cpu_core ALIGN;
 	S8 i ALIGN;
@@ -541,7 +539,15 @@ void cleanup (void)
 
 		if (threaddata) free (threaddata);
 	}
-	if (cpu) free (cpu);
+
+	if (cpu)
+	{
+		for (i = 0; i < max_virtcpu; i++)
+		{
+			free_jumpoffs (i);
+		}
+	    free (cpu);
+	}
 
 	pthread_mutex_unlock (&data_mutex);
 }
@@ -636,8 +642,8 @@ S2 run (void *arg)
 	S8 arg4 ALIGN;
 
 	// EDIT NEU
-	cpu[cpuc].running = 1;
-	cpu[cpuc].scheduler = SCHEDULER_MAX;
+	cpu[cpuc].status = RUNNING;
+	cpu[cpuc].scheduler = SCHEDULER_OFF;  // run in single thread mode if new funcion call
 	cpu[cpuc].ep = 0;
 	cpu[cpuc].startpos = 0;
 	cpu[cpuc].overflow = 0;
@@ -740,7 +746,7 @@ S2 run (void *arg)
 		printf ("%lli stack size: %lli\n", cpuc, stack_size);
 		printf ("%lli sp top: %lli\n", cpuc, (S8) cpu[cpuc].sp_top);
 		printf ("%lli sp bottom: %lli\n", cpuc, (S8) cpu[cpuc].sp_bottom);
-		printf ("%lli sp: %lli\n", cpuc, (S8) sp);
+		printf ("%lli sp: %lli\n", cpuc, (S8) cpu[cpuc].sp);
 
 		printf ("%lli sp caller top: %lli\n", cpuc, (S8) threaddata[cpuc].sp_top);
 		printf ("%lli sp caller bottom: %lli\n", cpuc, (S8) threaddata[cpuc].sp_bottom);
@@ -2323,7 +2329,7 @@ S2 run (void *arg)
 		case 6:
 			//printf ("PRINTSTR\n");
 			arg2 = code[ep + 2];
-			printf ("%s", (char *) &cpu[cpuc].data[regi[arg2]]);
+			printf ("%s", (char *) &cpu[cpuc].data[cpu[cpuc].regi[arg2]]);
 			cpu[cpuc].eoffs = 5;
 			break;
 
@@ -2394,7 +2400,7 @@ S2 run (void *arg)
 					if (i < cpu[cpuc].regi[arg2] - 1)
 					{
 						ch = getchar ();
-						if (memory_bounds (cpu[cpu].regi[arg3], i) != 0)
+						if (memory_bounds (cpu[cpuc].regi[arg3], i) != 0)
 						{
 							// ERROR string variable overflow!
 							printf ("ERROR: input: string variable overflow!\n");
@@ -2462,7 +2468,7 @@ S2 run (void *arg)
         		pthread_exit ((void *) 1);
 			}
 
-			snprintf ((char *) &cpu[cpu].data[regi[arg3]], shell_arg_len, "%s", (const char *) shell_args[cpu[cpuc].regi[arg2]]);
+			snprintf ((char *) &cpu[cpuc].data[cpu[cpuc].regi[arg3]], shell_arg_len, "%s", (const char *) shell_args[cpu[cpuc].regi[arg2]]);
 			cpu[cpuc].eoffs = 5;
 			}
 			break;
@@ -2553,7 +2559,7 @@ S2 run (void *arg)
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
 
-			printf ((char *) &cpu[cpuc].data[regi[arg3]], cpu[cpuc].regd[arg2]);
+			printf ((char *) &cpu[cpuc].data[cpu[cpuc].regi[arg3]], cpu[cpuc].regd[arg2]);
 			cpu[cpuc].eoffs = 5;
 			break;
 
@@ -2634,15 +2640,15 @@ S2 run (void *arg)
 			arg3 = code[ep + 3];	// min range
 			arg4 = code[ep + 4];	// max range
 
-			if (regi[arg2] < regi[arg3] || regi[arg2] > regi[arg4])
+			if (cpu[cpuc].regi[arg2] < cpu[cpuc].regi[arg3] || cpu[cpuc].regi[arg2] > cpu[cpuc].regi[arg4])
 			{
-				printf ("ERROR: int variable value in illegal range!\nvar: %lli : min: %lli, max: %lli\n\n", regi[arg2], regi[arg3], regi[arg4]);
+				printf ("ERROR: int variable value in illegal range!\nvar: %lli : min: %lli, max: %lli\n\n", cpu[cpuc].regi[arg2], cpu[cpuc].regi[arg3], cpu[cpuc].regi[arg4]);
 				PRINT_EPOS();
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 29:
@@ -2651,15 +2657,15 @@ S2 run (void *arg)
 			arg3 = code[ep + 3];	// min range
 			arg4 = code[ep + 4];	// max range
 
-			if (regd[arg2] < regd[arg3] || regd[arg2] > regd[arg4])
+			if (cpu[cpuc].regd[arg2] < cpu[cpuc].regd[arg3] || cpu[cpuc].regd[arg2] > cpu[cpuc].regd[arg4])
 			{
-				printf ("ERROR: double variable value in illegal range!\nvar: %.10lf : min: %.10lf, max: %.10lf\n\n", regd[arg2], regd[arg3], regd[arg4]);
+				printf ("ERROR: double variable value in illegal range!\nvar: %.10lf : min: %.10lf, max: %.10lf\n\n", cpu[cpuc].regd[arg2], cpu[cpuc].regd[arg3], cpu[cpuc].regd[arg4]);
 				PRINT_EPOS();
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
-			eoffs = 5;
+	    	cpu[cpuc].eoffs = 5;
 			break;
 
 		case 30:
@@ -2667,14 +2673,14 @@ S2 run (void *arg)
 			arg2 = code[ep + 2];    // pointer var
 			arg3 = code[ep + 3];	// pointer type var
 
-			if (pointer_check (regi[arg2], regi[arg3]) != 0)
+			if (pointer_check (cpu[cpuc].regi[arg2], cpu[cpuc].regi[arg3]) != 0)
 			{
 				PRINT_EPOS();
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 31:
@@ -2682,23 +2688,23 @@ S2 run (void *arg)
 			arg2 = code[ep + 2];    // pointer var
 			arg3 = code[ep + 3];	// pointer type var return
 
-			regi[arg3] = pointer_type (regi[arg2]);
-			eoffs = 5;
+			cpu[cpuc].regi[arg3] = pointer_type (cpu[cpuc].regi[arg2]);
+			cpu[cpuc].eoffs = 5;
 			break;
 
         case 32:
 			// get type of stack object
 			arg2 = code[ep + 2];
 
-			sp = stack_type ((U1 *) &regi[arg2], sp, sp_top);
-			if (sp == NULL)
+			cpu[cpuc].sp = stack_type ((U1 *) &cpu[cpuc].regi[arg2], cpu[cpuc].sp, cpu[cpuc].sp_top);
+			if (cpu[cpuc].sp == NULL)
 			{
 				PRINT_EPOS();
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				pthread_exit ((void *) 1);
 	       }
-		   eoffs = 5;
+		   cpu[cpuc].eoffs = 5;
 		   break;
 
 		case 33:
@@ -2706,82 +2712,82 @@ S2 run (void *arg)
 			arg2 = code[ep + 2];    // pointer var
 			arg3 = code[ep + 3];	// pointer type var return
 
-			regi[arg3] = memory_size (regi[arg2]);
-			if (regi[arg3] == 0)
+			cpu[cpuc].regi[arg3] = memory_size (cpu[cpuc].regi[arg2]);
+			if (cpu[cpuc].regi[arg3] == 0)
 			{
 				// ERROR: variable pointer not found in vars!
 				PRINT_EPOS();
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 34:
 			// set byte/string variable as immutable
 			arg2 = code[ep + 2]; // pointer to string var
-			if (set_immutable_string (regi[arg2]) != 0)
+			if (set_immutable_string (cpu[cpuc].regi[arg2]) != 0)
 			{
 				// ERROR: variable not string!
 				PRINT_EPOS();
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 35:
 			// get host CPU type
 			arg2 = code[ep + 2];
-            regi[arg2] = MACHINE_CPU;
-            eoffs = 5;
+            cpu[cpuc].regi[arg2] = MACHINE_CPU;
+            cpu[cpuc].eoffs = 5;
             break;
 
 		case 36:
 			// get host OS type
 			arg2 = code[ep + 2];
-            regi[arg2] = MACHINE_OS;
-            eoffs = 5;
+            cpu[cpuc].regi[arg2] = MACHINE_OS;
+            cpu[cpuc].eoffs = 5;
             break;
 
 		case 37:
-			if (debugger ((S8 *) &regi, (F8 *) &regd, ep, sp, sp_bottom, sp_top, cpu_core) == 0)
+			if (debugger ((S8 *) &cpu[cpuc].regi, (F8 *) &cpu[cpuc].regd, ep, cpu[cpuc].sp, cpu[cpuc].sp_bottom, cpu[cpuc].sp_top, cpu_core) == 0)
 			{
 				if (silent_run == 0)
 				{
 					printf ("EXIT\n");
 				}
 				retcode = 0;
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				pthread_mutex_lock (&data_mutex);
 				threaddata[cpu_core].status = STOP;
 				pthread_mutex_unlock (&data_mutex);
 				loop_stop ();
 				pthread_exit ((void *) retcode);
 			}
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 38:
 			// clear stack: stack_clear
-			sp = sp_top;
-			eoffs = 5;
+			cpu[cpuc].sp = cpu[cpuc].sp_top;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 39:
 			// set memory bounds check for variable push/pull on
-			do_memory_bounds_check = 1;
+			cpu[cpuc].do_memory_bounds_check = 1;
 
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 40:
 			// set memory bounds check for variables push/pul off
-			do_memory_bounds_check = 0;
+			cpu[cpuc].do_memory_bounds_check = 0;
 
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
         case 41:
@@ -2798,28 +2804,28 @@ S2 run (void *arg)
                unsigned long long millisecondsSinceEpoch = (unsigned long long)(tv.tv_sec) * 1000 + (unsigned long long)(tv.tv_usec) / 1000;
                epoch_ms = (S8) millisecondsSinceEpoch;
 
-               regi[arg2] = (S8) epoch_ms;
+               cpu[cpuc].regi[arg2] = (S8) epoch_ms;
             }
             
-            eoffs = 5;
+            cpu[cpuc].eoffs = 5;
 			break;
 
 		case 251:
 			// set overflow on double reg
 			arg2 = code[ep + 2];
-			overflow = 0;
-			if (double_state (regd[arg2]) == 1)
+			cpu[cpuc].overflow = 0;
+			if (double_state (cpu[cpuc].regd[arg2]) == 1)
 			{
-				overflow = 1;
+				cpu[cpuc].overflow = 1;
 			}
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 252:
 			// get overflow flag
 			arg2 = code[ep + 2];
-			regi[arg2] = overflow;
-			eoffs = 5;
+			cpu[cpuc].regi[arg2] = cpu[cpuc].overflow;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 #if JIT_COMPILER
@@ -2828,37 +2834,37 @@ S2 run (void *arg)
             arg2 = code[ep + 2];
             arg3 = code[ep + 3];
             arg4 = code[ep + 4];
-			if (jit_compiler ((U1 *) code, (U1 *) data, (S8 *) jumpoffs, (S8 *) &regi, (F8 *) &regd, (U1 *) sp, sp_top, sp_bottom, regi[arg2], regi[arg3], JIT_code, regi[arg4], code_size) != 0)
+			if (jit_compiler ((U1 *) code, (U1 *) cpu[cpuc].data, (S8 *) cpu[cpuc].jumpoffs, (S8 *) &cpu[cpuc].regi, (F8 *) &cpu[cpuc].regd, (U1 *) cpu[cpuc].sp, cpu[cpuc].sp_top, cpu[cpuc].sp_bottom, cpu[cpuc].regi[arg2], cpu[cpuc].regi[arg3], JIT_code, cpu[cpuc].regi[arg4], code_size) != 0)
             {
                 printf ("FATAL ERROR: JIT compiler: can't compile!\n");
 				PRINT_EPOS();
-                free (jumpoffs);
+                free_jumpoffs (cpuc);
 				loop_stop ();
             	pthread_exit ((void *) 1);
             }
 
-            eoffs = 5;
+            cpu[cpuc].eoffs = 5;
             break;
 
         case 254:
             arg2 = code[ep + 2];
             // printf ("intr0: 254: RUN JIT CODE: %i\n", arg2);
-			if (run_jit (regi[arg2], JIT_code) == 1)
+			if (run_jit (cpu[cpuc].regi[arg2], JIT_code) == 1)
 			{
 				// ERROR can't run JIT-code 
 				PRINT_EPOS();
-                free (jumpoffs);
+                free_jumpoffs (cpuc);
 				loop_stop ();
             	pthread_exit ((void *) 1);
 			}
 
-            eoffs = 5;
+            cpu[cpuc].eoffs = 5;
             break;
 #else
 		case 253:
 			printf ("FATAL ERROR: no JIT compiler: can't compile!\n");
 			PRINT_EPOS();
-			free (jumpoffs);
+			free_jumpoffs (cpuc);
 			loop_stop ();
 			pthread_exit ((void *) 1);
 			break;
@@ -2866,7 +2872,7 @@ S2 run (void *arg)
 		case 254:
 			printf ("FATAL ERROR: no JIT compiler: can't execute!\n");
 			PRINT_EPOS();
-			free (jumpoffs);
+			free_jumpoffs (cpuc);
 			loop_stop ();
 			pthread_exit ((void *) 1);
 			break;
@@ -2879,8 +2885,8 @@ S2 run (void *arg)
 				printf ("EXIT\n");
 			}
 			arg2 = code[ep + 2];
-			retcode = regi[arg2];
-			free (jumpoffs);
+			retcode = cpu[cpuc].regi[arg2];
+			free_jumpoffs (cpuc);
 			pthread_mutex_lock (&data_mutex);
 			threaddata[cpu_core].status = STOP;
 			pthread_mutex_unlock (&data_mutex);
@@ -2891,17 +2897,18 @@ S2 run (void *arg)
 		default:
 			printf ("FATAL ERROR: INTR0: %lli does not exist!\n", arg1);
 			PRINT_EPOS();
-			free (jumpoffs);
+			free_jumpoffs (cpuc);
 			loop_stop ();
 			pthread_exit ((void *) 1);
 	}
-	EXE_NEXT();
+	SCHEXE_NEXT();
 
 	intr1:
 	#if DEBUG
 	printf("%lli INTR1\n", cpu_core);
 	#endif
 	// special interrupt
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 
 	switch (arg1)
@@ -2909,28 +2916,28 @@ S2 run (void *arg)
 		case 0:
 			// run new CPU instance
 			arg2 = code[ep + 2];
-			arg2 = regi[arg2];
+			arg2 = cpu[cpuc].regi[arg2];
 
             // search for a free CPU core
             // if none free found set new_cpu to -1, to indicate all CPU cores are used!!
-            new_cpu = -1;
+            cpu[cpuc].new_cpu = -1;
             pthread_mutex_lock (&data_mutex);
             for (i = 0; i < max_cpu; i++)
             {
                 if (threaddata[i].status == STOP)
                 {
-                    new_cpu = i;
+                    cpu[cpuc].new_cpu = i;
                     break;
                 }
             }
 	        pthread_mutex_unlock (&data_mutex);
-			if (new_cpu == -1)
+			if (cpu[cpuc].new_cpu == -1)
 			{
 				// maximum of CPU cores used, no new core possible
 
 				printf ("ERROR: can't start new CPU core!\n");
 				PRINT_EPOS();
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -2940,28 +2947,28 @@ S2 run (void *arg)
 
 			if (silent_run == 0)
 			{
-				printf ("current CPU: %lli, starts new CPU: %lli\n", cpu_core, new_cpu);
+				printf ("current CPU: %lli, starts new CPU: %lli\n", cpu_core, cpu[cpuc].new_cpu);
 			}
 
 			pthread_mutex_lock (&data_mutex);
-			threaddata[new_cpu].sp = sp;
-			threaddata[new_cpu].sp_top = sp_top;
-			threaddata[new_cpu].sp_bottom = sp_bottom;
+			threaddata[cpu[cpuc].new_cpu].sp = cpu[cpuc].sp;
+			threaddata[cpu[cpuc].new_cpu].sp_top = cpu[cpuc].sp_top;
+			threaddata[cpu[cpuc].new_cpu].sp_bottom = cpu[cpuc].sp_bottom;
 
-			threaddata[new_cpu].sp_top_thread = sp_top + (new_cpu * stack_size);
-			threaddata[new_cpu].sp_bottom_thread = sp_bottom + (new_cpu * stack_size);
-			threaddata[new_cpu].sp_thread = threaddata[new_cpu].sp_top_thread - (sp_top - sp);
-			threaddata[new_cpu].ep_startpos = arg2;
-			threaddata[new_cpu].exit_request = 0;
+			threaddata[cpu[cpuc].new_cpu].sp_top_thread = cpu[cpuc].sp_top + (cpu[cpuc].new_cpu * stack_size);
+			threaddata[cpu[cpuc].new_cpu].sp_bottom_thread = cpu[cpuc].sp_bottom + (cpu[cpuc].new_cpu * stack_size);
+			threaddata[cpu[cpuc].new_cpu].sp_thread = threaddata[cpu[cpuc].new_cpu].sp_top_thread - (cpu[cpuc].sp_top - cpu[cpuc].sp);
+			threaddata[cpu[cpuc].new_cpu].ep_startpos = arg2;
+			threaddata[cpu[cpuc].new_cpu].exit_request = 0;
 			pthread_mutex_unlock (&data_mutex);
 
             // create new POSIX thread
 
-			if (pthread_create (&threaddata[new_cpu].id, NULL, (void *) run, (void*) new_cpu) != 0)
+			if (pthread_create (&threaddata[cpu[cpuc].new_cpu].id, NULL, (void *) run, (void*) cpu[cpuc].new_cpu) != 0)
 			{
 				printf ("ERROR: can't start new thread!\n");
 				PRINT_EPOS();
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -2981,9 +2988,9 @@ S2 run (void *arg)
             #endif
 
 			pthread_mutex_lock (&data_mutex);
-			threaddata[new_cpu].status = RUNNING;
+			threaddata[cpu[cpuc].new_cpu].status = RUNNING;
 			pthread_mutex_unlock (&data_mutex);
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 1:
@@ -3016,27 +3023,27 @@ S2 run (void *arg)
 				usleep (200);
 			}
 
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 2:
 			// lock data_mutex
 			pthread_mutex_lock (&data_mutex);
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 3:
 			// unlock data_mutex
 			pthread_mutex_unlock (&data_mutex);
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 4:
 			// return number of current CPU core
 			arg2 = code[ep + 2];
-			regi[arg2] = cpu_core;
+			cpu[cpuc].regi[arg2] = cpu_core;
 
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 5:
@@ -3044,59 +3051,59 @@ S2 run (void *arg)
 			// search for a free CPU core
 			// if none free found set cpus_free to 0, to indicate all CPU cores are used!!
 
-			cpus_free = 0;
+			cpu[cpuc].cpus_free = 0;
 			pthread_mutex_lock (&data_mutex);
 			for (i = 0; i < max_cpu; i++)
 			{
 				if (threaddata[i].status == STOP)
 				{
-					cpus_free++;
+					cpu[cpuc].cpus_free++;
 				}
 			}
 			pthread_mutex_unlock (&data_mutex);
 
 			arg2 = code[ep + 2];
-			regi[arg2] = cpus_free;
+			cpu[cpuc].regi[arg2] = cpu[cpuc].cpus_free;
 
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 6:
 			// set global mutex 
 			arg2 = code[ep + 2];
-			if (regi[arg2] >= 0 && regi[arg2] < MAX_MUTEXES)
+			if (cpu[cpuc].regi[arg2] >= 0 && cpu[cpuc].regi[arg2] < MAX_MUTEXES)
 			{
-				pthread_mutex_lock (&global_mutex[regi[arg2]]);
+				pthread_mutex_lock (&global_mutex[cpu[cpuc].regi[arg2]]);
 			}
 			else 
 			{
 				printf ("interrupt 1: set global mutex index overflow!\n");
 				PRINT_EPOS();
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
 
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 			
 		case 7:
 			// unset global mutex 
 			arg2 = code[ep + 2];
-			if (regi[arg2] >= 0 && regi[arg2] < MAX_MUTEXES)
+			if (cpu[cpuc].regi[arg2] >= 0 && cpu[cpuc].regi[arg2] < MAX_MUTEXES)
 			{
-				pthread_mutex_unlock (&global_mutex[regi[arg2]]);
+				pthread_mutex_unlock (&global_mutex[cpu[cpuc].regi[arg2]]);
 			}
 			else 
 			{
 				printf ("interrupt 1: unset global mutex index overflow!\n");
 				PRINT_EPOS();
-				free (jumpoffs);
+				free_jumpoffs (cpuc);;
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
 
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 8:
@@ -3109,7 +3116,7 @@ S2 run (void *arg)
 				if (threaddata[cpu_core].data == NULL)
 				{
 					printf ("interrupt 1: allocate local data: out of memory!\n");
-					free (jumpoffs);
+					free_jumpoffs (cpuc);
 					loop_stop ();
 					pthread_exit ((void *) 1);
 				}
@@ -3119,14 +3126,14 @@ S2 run (void *arg)
 			if (memcpy (threaddata[cpu_core].data, data_global, data_local_size) == NULL)
 			{
 				printf ("interrupt 1: allocate local data: memory copy error!\n");
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				free (threaddata[cpu_core].data);
 				pthread_exit ((void *) 1);
 			}
 		}
 
-		eoffs = 5;
+		cpu[cpuc].eoffs = 5;
 		break;
 
 		case 9:
@@ -3135,92 +3142,92 @@ S2 run (void *arg)
 			{
 				// ERROR no data local allocated!
 				printf ("interrupt 1: switch to local data: local data not allocated!\n");
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
 			// switch data access to data local
-			data = 	threaddata[cpu_core].data;
+			cpu[cpuc].data = 	threaddata[cpu_core].data;
 
-			eoffs =  5;
+			cpu[cpuc].eoffs =  5;
 			break;
 
 		case 10:
 			// switch data access to data global
-			data = data_global;
+			cpu[cpuc].data = data_global;
 
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 11:
 			pthread_mutex_lock (&data_mutex);
-			local_data_ind++;
+			cpu[cpuc].local_data_ind++;
 			pthread_mutex_unlock (&data_mutex);
 
-			if (local_data_ind >= local_data_max)
+			if (cpu[cpuc].local_data_ind >= local_data_max)
 			{
 				printf ("interrupt 1: allocate local function data: out of memory!\n");
 
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
 
 			S8 data_local_size ALIGN = data_mem_size - (stack_size * max_cpu);
 
-	        if (threaddata[cpu_core].local_data[local_data_ind] == NULL)
+	        if (threaddata[cpu_core].local_data[cpu[cpuc].local_data_ind] == NULL)
 			{
-				threaddata[cpu_core].local_data[local_data_ind] = (U1 *) calloc (data_local_size, sizeof (U1));
-				if (threaddata[cpu_core].local_data[local_data_ind] == NULL)
+				threaddata[cpu_core].local_data[cpu[cpuc].local_data_ind] = (U1 *) calloc (data_local_size, sizeof (U1));
+				if (threaddata[cpu_core].local_data[cpu[cpuc].local_data_ind] == NULL)
 				{
 					printf ("interrupt 1: allocate local function data: out of memory!\n");
-					free (jumpoffs);
+					free_jumpoffs (cpuc);
 					loop_stop ();
 					pthread_exit ((void *) 1);
 				}
 			}
 
 			// copy data global to data local
-			if (memcpy (threaddata[cpu_core].local_data[local_data_ind], data_global, data_local_size) == NULL)
+			if (memcpy (threaddata[cpu_core].local_data[cpu[cpuc].local_data_ind], data_global, data_local_size) == NULL)
 			{
 				printf ("interrupt 1: allocate local function data: memory copy error!\n");
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				free (threaddata[cpu_core].data);
 				pthread_exit ((void *) 1);
 			}
 
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 12:
 			// sane check:
-		    if (threaddata[cpu_core].local_data[local_data_ind] == NULL)
+		    if (threaddata[cpu_core].local_data[cpu[cpuc].local_data_ind] == NULL)
 			{
 				// ERROR no data local allocated!
 				printf ("interrupt 1: switch to local function data: local data not allocated!\n");
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
 			// switch data access to data local
-			data = threaddata[cpu_core].local_data[local_data_ind];
+			cpu[cpuc].data = threaddata[cpu_core].local_data[cpu[cpuc].local_data_ind];
 
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 13:
 			// switch data access to data global
-			data = data_global;
+			cpu[cpuc].data = data_global;
 
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 14:
 			// free local data
-            if (local_data_ind >= 0)
+            if (cpu[cpuc].local_data_ind >= 0)
 			{
-				if (threaddata[cpu_core].local_data[local_data_ind])
+				if (threaddata[cpu_core].local_data[cpu[cpuc].local_data_ind])
 				{
 					{
 						S8 j ALIGN;
@@ -3228,21 +3235,21 @@ S2 run (void *arg)
 						// overwrite memory with zeroes
 						for (j = 0; j < data_local_size; j++)
 						{
-							threaddata[cpu_core].local_data[local_data_ind][j] = 0;
+							threaddata[cpu_core].local_data[cpu[cpuc].local_data_ind][j] = 0;
 						}
 					}
 
-					free (threaddata[cpu_core].local_data[local_data_ind]);
-					threaddata[cpu_core].local_data[local_data_ind] = NULL;
+					free (threaddata[cpu_core].local_data[cpu[cpuc].local_data_ind]);
+					threaddata[cpu_core].local_data[cpu[cpuc].local_data_ind] = NULL;
 
 					// decrease index
 					pthread_mutex_lock (&data_mutex);
-					local_data_ind--;
+					cpu[cpuc].local_data_ind--;
 					pthread_mutex_unlock (&data_mutex);
 				}
 			}
 
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 15:
@@ -3253,18 +3260,18 @@ S2 run (void *arg)
 			free (code);
 
 			// load new bytecode
-			if (load_object (&data[regi[arg2]], 1) != 0)
+			if (load_object (&cpu[cpuc].data[cpu[cpuc].regi[arg2]], 1) != 0)
 			{
-				printf ("interrupt 1: 15: load code: error loading bytecode: %s !\n", &data[regi[arg2]]);
+				printf ("interrupt 1: 15: load code: error loading bytecode: %s !\n", &cpu[cpuc].data[cpu[cpuc].regi[arg2]]);
 
-				free (jumpoffs);
+				free_jumpoffs (cpuc);
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
 
 		    // global flag set to on:
 		    bytecode_hot_reload = 1;
-			free (jumpoffs);
+			free_jumpoffs (cpuc);
 			pthread_mutex_lock (&data_mutex);
 			threaddata[cpu_core].status = STOP;
 			// if (threaddata[cpu_core].data != NULL) free (threaddata[cpu_core].data);
@@ -3277,25 +3284,25 @@ S2 run (void *arg)
 			// set thread run exit request on given CPU
 			arg2 = code[ep + 2];
 
-            if (regi[arg2] < max_cpu)
+            if (cpu[cpuc].regi[arg2] < max_cpu)
 			{
-				threaddata[regi[arg2]].exit_request = 1;
+				threaddata[cpu[cpuc].regi[arg2]].exit_request = 1;
 			}
 			else
 			{
 			     printf ("intr1: 16: set CPU exit request: thread number overflow!\n");
 			}
 
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 17:
 			// check thread run exit request
 			arg2 = code[ep + 2];
 
-		    regi[arg2] = threaddata[cpu_core].exit_request;
+		    cpu[cpuc].regi[arg2] = threaddata[cpu_core].exit_request;
 
-			eoffs = 5;
+			cpu[cpuc].eoffs = 5;
 			break;
 
 
@@ -3305,7 +3312,7 @@ S2 run (void *arg)
 				printf ("thread EXIT\n");
 			}
 			arg2 = code[ep + 2];
-			retcode = regi[arg2];
+			retcode = cpu[cpuc].regi[arg2];
 			pthread_mutex_lock (&data_mutex);
 			threaddata[cpu_core].status = STOP;
 			// if (threaddata[cpu_core].data != NULL) free (threaddata[cpu_core].data);
@@ -3317,86 +3324,91 @@ S2 run (void *arg)
 		default:
 			printf ("FATAL ERROR: INTR1: %lli does not exist!\n", arg1);
 			PRINT_EPOS();
-			free (jumpoffs);
+			free_jumpoffs (cpuc);
 			loop_stop ();
 			pthread_exit ((void *) 1);
 	}
-	EXE_NEXT();
+	SCHEXE_NEXT();
 
 	//  superopcodes for counter loops
 	inclsijmpi:
 	#if DEBUG
 	printf ("%lli INCLSIJMPI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 
-	arg3 = jumpoffs[ep];
+	arg3 = cpu[cpuc].jumpoffs[ep];
 
 	//printf ("jump to: %li\n", arg3);
 
-	regi[arg1]++;
-	if (regi[arg1] < regi[arg2])
+	cpu[cpuc].regi[arg1]++;
+	if (cpu[cpuc].regi[arg1] < cpu[cpuc].regi[arg2])
 	{
-		eoffs = 0;
+		cpu[cpuc].eoffs = 0;
 		ep = arg3;
-		EXE_NEXT();
+		SCHEXE_NEXT();
 	}
 
-	eoffs = 11;
+	cpu[cpuc].eoffs = 11;
 
-	EXE_NEXT();
+	SCHEXE_NEXT();
 
 	decgrijmpi:
 	#if DEBUG
 	printf ("%lli DECGRIJMPI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 
-	arg3 = jumpoffs[ep];
+	arg3 = cpu[cpuc].jumpoffs[ep];
 
-	regi[arg1]--;
-	if (regi[arg1] > regi[arg2])
+	cpu[cpuc].regi[arg1]--;
+	if (cpu[cpuc].regi[arg1] > cpu[cpuc].regi[arg2])
 	{
-		eoffs = 0;
+		cpu[cpuc].eoffs = 0;
 		ep = arg3;
-		EXE_NEXT();
+		SCHEXE_NEXT();
 	}
 
-	eoffs = 11;
+	cpu[cpuc].eoffs = 11;
 
-	EXE_NEXT();
+	SCHEXE_NEXT();
 
 	movi:
 	#if DEBUG
 	printf ("%lli MOVI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 
-	regi[arg2] = regi[arg1];
+	cpu[cpuc].regi[arg2] = cpu[cpuc].regi[arg1];
 
-	eoffs = 3;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 3;
+	SCHEXE_NEXT();
 
 	movd:
 	#if DEBUG
 	printf ("%lli MOVD\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 
-	regd[arg2] = regd[arg1];
+	cpu[cpuc].regd[arg2] = cpu[cpuc].regd[arg1];
 
-	eoffs = 3;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 3;
+	SCHEXE_NEXT();
 
 	loadl:
 	#if DEBUG
 	printf ("%lli LOADL\n", cpu_core);
 	#endif
 	// data
+	ep = cpu[cpuc].ep;
 	bptr = (U1 *) &arg1;
 	arg2 = code[ep + 9];
 
@@ -3416,21 +3428,22 @@ S2 run (void *arg)
 	bptr++;
 	*bptr = code[ep + 8];
 
-	regi[arg2] = arg1;
+	cpu[cpuc].regi[arg2] = arg1;
 
-	eoffs = 10;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 10;
+	SCHEXE_NEXT();
 
 	jmpa:
 	#if DEBUG
 	printf ("%lli JMPA\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 
-	if (regi[arg1] >= 16 && regi[arg1] < code_size)
+	if (cpu[cpuc].regi[arg1] >= 16 && cpu[cpuc].regi[arg1] < code_size)
 	{
-		eoffs = 0;
-		ep = regi[arg1];
+		cpu[cpuc].eoffs = 0;
+		ep = cpu[cpuc].regi[arg1];
         #if DEBUG
 	    printf ("%lli JUMP TO %lli\n", cpu_core, ep);
 	    #endif
@@ -3439,92 +3452,99 @@ S2 run (void *arg)
 	{
 		printf ("ERROR: jmpa illegal label!\n");
 		PRINT_EPOS();
-		free (jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
-	EXE_NEXT();
+	SCHEXE_NEXT();
 
 	jsr:
 	#if DEBUG
 	printf ("%lli JSR\n", cpu_core);
 	#endif
-	arg1 = jumpoffs[ep];
+	ep = cpu[cpuc].ep;
+	arg1 = cpu[cpuc].jumpoffs[ep];
 
-	if (jumpstack_ind == MAXSUBJUMPS - 1)
+	if (cpu[cpuc].jumpstack_ind == MAXSUBJUMPS - 1)
 	{
 		printf ("ERROR: jumpstack full, no more jsr!\n");
 		PRINT_EPOS();
-		free (jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
 
-	jumpstack_ind++;
-	jumpstack[jumpstack_ind] = ep + 9;
+	cpu[cpuc].jumpstack_ind++;
+	cpu[cpuc].jumpstack[cpu[cpuc].jumpstack_ind] = ep + 9;
 
-	eoffs = 0;
+	cpu[cpuc].eoffs = 0;
 	ep = arg1;
 
-	EXE_NEXT();
+	SCHEXE_NEXT();
 
 	jsra:
 	#if DEBUG
 	printf ("%lli JSRA\n", cpu_core);
 	#endif
 
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 
 	#if DEBUG
 	printf ("%lli JUMP TO %lli\n", cpu_core, ep);
 	#endif
 
-	if (jumpstack_ind == MAXSUBJUMPS - 1)
+	printf ("\njsra: jumpstack ind: %lli\n", cpu[cpuc].jumpstack_ind);
+	printf ("%lli JUMP TO %lli\n", cpu_core, ep);
+
+	if (cpu[cpuc].jumpstack_ind == MAXSUBJUMPS - 1)
 	{
 		printf ("ERROR: jumpstack full, no more jsra!\n");
 		PRINT_EPOS();
-		free (jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
 
-	if (regi[arg1] >= 16 && regi[arg1] < code_size)
+	if (cpu[cpuc].regi[arg1] >= 16 && cpu[cpuc].regi[arg1] < code_size)
 	{
-		jumpstack_ind++;
-		jumpstack[jumpstack_ind] = ep + 2;
+		cpu[cpuc].jumpstack_ind++;
+		cpu[cpuc].jumpstack[cpu[cpuc].jumpstack_ind] = ep + 2;
 
-		eoffs = 0;
-		ep = regi[arg1];
+		cpu[cpuc].eoffs = 0;
+		ep = cpu[cpuc].regi[arg1];
 	}
 	else
 	{
 		printf ("ERROR: jsra illegal label!\n");
 		PRINT_EPOS();
-		free (jumpoffs);
+		free_jumpoffs (cpuc);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
-	EXE_NEXT();
+	SCHEXE_NEXT();
 
 	rts:
 	#if DEBUG
 	printf ("%lli RTS\n", cpu_core);
 	#endif
 
-	if (jumpstack_ind == -1)
+	printf ("\nrts: %lli\n", cpu[cpuc].jumpstack_ind--);
+
+	if (cpu[cpuc].jumpstack_ind == -1)
     {
         printf ("ERROR: RTS on an empty jumpstack (underflow)!\n");
         PRINT_EPOS();
-        free (jumpoffs);
+        free_jumpoffs (cpuc);
         loop_stop ();
         pthread_exit ((void *) 1);
     }
 
-	ep = jumpstack[jumpstack_ind];
-	eoffs = 0;
-	jumpstack_ind--;
+	ep = cpu[cpuc].jumpstack[cpu[cpuc].jumpstack_ind];
+	cpu[cpuc].eoffs = 0;
+	cpu[cpuc].jumpstack_ind--;
 
-	EXE_NEXT();
+	SCHEXE_NEXT();
 
 	load:
 	#if DEBUG
@@ -3532,6 +3552,7 @@ S2 run (void *arg)
 	#endif
 
 	// data
+	ep = cpu[cpuc].ep;
 	bptr = (U1 *) &arg1;
 
 	*bptr = code[ep + 1];
@@ -3574,23 +3595,75 @@ S2 run (void *arg)
 
 	arg3 = code[ep + 17];
 
-	regi[arg3] = arg1 + arg2;
+	cpu[cpuc].regi[arg3] = arg1 + arg2;
 
-	eoffs = 18;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 18;
+	SCHEXE_NEXT();
 
 
     noti:
 	#if DEBUG
 	printf ("%lli NOTI\n", cpu_core);
 	#endif
+	ep = cpu[cpuc].ep;
 	arg1 = code[ep + 1];
 	arg2 = code[ep + 2];
 
-	regi[arg2] = ! regi[arg1];
+	cpu[cpuc].regi[arg2] = ! cpu[cpuc].regi[arg1];
 
-	eoffs = 3;
-	EXE_NEXT();
+	cpu[cpuc].eoffs = 3;
+	SCHEXE_NEXT();
+
+    task_scheduler:
+	{
+	S8 i ALIGN;
+	// EDIT SCHEDULER
+    if (cpu[cpuc].scheduler == SCHEDULER_OFF)
+	{
+		printf ("scheduler: CPU: %lli\n", cpuc);
+
+		cpu[cpuc].ep = cpu[cpuc].ep + cpu[cpuc].eoffs;
+
+		printf ("epos: %lli: opcode: %i\n\n", cpu[cpuc].ep, code[cpu[cpuc].ep]);
+
+	    goto *jumpt[code[cpu[cpuc].ep]];
+	}
+	else
+	{
+		cpu[cpuc].scheduler--;
+		if (cpu[cpuc].scheduler == 0)
+		{
+			cpu[cpuc].scheduler = SCHEDULER_MAX;
+
+			// search next CPU core with running code in it.
+			if (cpuc < max_virtcpu - 1)
+			{
+				for (i = cpuc + 1; i < max_virtcpu; i++)
+				{
+					if (cpu[i].status == RUNNING)
+					{
+						cpuc = i;
+						cpu[cpuc].ep = cpu[cpuc].ep + cpu[cpuc].eoffs;
+						goto *jumpt[code[cpu[cpuc].ep]];
+					}
+				}
+			}
+			else
+			{
+				cpuc = 0;
+				for (i = cpuc; i < max_virtcpu; i++)
+				{
+					if (cpu[i].status == RUNNING)
+					{
+						cpuc = i;
+						cpu[cpuc].ep = cpu[cpuc].ep + cpu[cpuc].eoffs;
+						goto *jumpt[code[cpu[cpuc].ep]];
+					}
+				}
+			}
+		}
+	}
+	}
 }
 
 void break_handler (void)
@@ -3649,8 +3722,9 @@ void free_modules (void)
 
 void show_info (void)
 {
-	printf ("l1vm <program> [-C cpu_cores] [-S stacksize] [-D local_data_entries] [-q] [-p run priority (-20 - 19)] <-args> <cmd args>\n");
+	printf ("l1vm <program> [-C cpu_cores] [-T virtual_cpu_cores] [-S stacksize] [-D local_data_entries] [-q] [-p run priority (-20 - 19)] <-args> <cmd args>\n");
 	printf ("-C cores : set maximum of threads that can be run\n");
+	printf ("-T cores : set maximum of virtual threads that can be run\n");
 	printf ("-S stacksize : set the stack size\n");
 	printf ("-D local data entries: for thread local data\n");
 	printf ("-q : quiet run, don't show welcome messages\n");
@@ -3910,6 +3984,23 @@ int l1vm_run_program (char *program_name, int ac, char *av[])
 								}
 							}
 
+							if (av[i][0] == '-' && av[i][1] == 'T')
+							{
+								if (i < ac - 1)
+				                {
+									// set max cpu cores flag...
+									// EDIT T
+								    max_virtcpu = atoi (av[i + 1]);
+									if (max_cpu == 0)
+									{
+										printf ("ERROR: max_virtcpu less than 1 core!\n");
+										cleanup ();
+										exit (1);
+									}
+									printf ("max_virtcpu: cores set to: %lli\n", max_cpu);
+								}
+							}
+
 							if (av[i][0] == '-' && av[i][1] == 'S')
 							{
 								if (i < ac - 1)
@@ -4034,8 +4125,8 @@ int l1vm_run_program (char *program_name, int ac, char *av[])
 		cleanup ();
 		exit (1);
 	}
-
-	cpu = (struct cpu *) calloc (max_cpu, sizeof (struct cpu));
+// EDIT 1
+	cpu = (struct cpu *) calloc (max_virtcpu, sizeof (struct cpu));
 	if (cpu == NULL)
 	{
 		printf ("ERROR: can't allocate CPU data!\n");
@@ -4330,6 +4421,14 @@ int main (int ac, char *av[])
 	if (threaddata == NULL)
 	{
 		printf ("ERROR: can't allocate threaddata!\n");
+		cleanup ();
+		exit (1);
+	}
+
+	cpu = (struct cpu *) calloc (max_virtcpu, sizeof (struct cpu));
+	if (cpu == NULL)
+	{
+		printf ("ERROR: can't allocate CPU data!\n");
 		cleanup ();
 		exit (1);
 	}
