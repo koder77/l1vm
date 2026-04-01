@@ -1932,7 +1932,7 @@ S2 run (void *arg)
 	#if DEBUG
 	printf ("%lli JMP\n", cpu_core);
 	#endif
-	ep = cpu[cpuc].jumpoffs[ep];
+	cpu[cpuc].ep = cpu[cpuc].jumpoffs[ep];
 	cpu[cpuc].eoffs = 0;
 
 	SCHEXE_NEXT();
@@ -3443,7 +3443,7 @@ S2 run (void *arg)
 	if (cpu[cpuc].regi[arg1] >= 16 && cpu[cpuc].regi[arg1] < code_size)
 	{
 		cpu[cpuc].eoffs = 0;
-		ep = cpu[cpuc].regi[arg1];
+		cpu[cpuc].ep = cpu[cpuc].regi[arg1];
         #if DEBUG
 	    printf ("%lli JUMP TO %lli\n", cpu_core, ep);
 	    #endif
@@ -3478,7 +3478,7 @@ S2 run (void *arg)
 	cpu[cpuc].jumpstack[cpu[cpuc].jumpstack_ind] = ep + 9;
 
 	cpu[cpuc].eoffs = 0;
-	ep = arg1;
+	cpu[cpuc].ep = arg1;
 
 	SCHEXE_NEXT();
 
@@ -3512,7 +3512,7 @@ S2 run (void *arg)
 		cpu[cpuc].jumpstack[cpu[cpuc].jumpstack_ind] = ep + 2;
 
 		cpu[cpuc].eoffs = 0;
-		ep = cpu[cpuc].regi[arg1];
+		cpu[cpuc].ep = cpu[cpuc].regi[arg1];
 	}
 	else
 	{
@@ -3525,13 +3525,13 @@ S2 run (void *arg)
 	SCHEXE_NEXT();
 
 	rts:
-	#if DEBUG
-	printf ("%lli RTS\n", cpu_core);
-	#endif
+    #if DEBUG
+    printf ("%lli RTS\n", cpu_core);
+    #endif
 
-	printf ("\nrts: %lli\n", cpu[cpuc].jumpstack_ind--);
+    printf ("\nrts index: %lli\n", cpu[cpuc].jumpstack_ind);
 
-	if (cpu[cpuc].jumpstack_ind == -1)
+    if (cpu[cpuc].jumpstack_ind < 0)
     {
         printf ("ERROR: RTS on an empty jumpstack (underflow)!\n");
         PRINT_EPOS();
@@ -3540,11 +3540,13 @@ S2 run (void *arg)
         pthread_exit ((void *) 1);
     }
 
-	ep = cpu[cpuc].jumpstack[cpu[cpuc].jumpstack_ind];
-	cpu[cpuc].eoffs = 0;
-	cpu[cpuc].jumpstack_ind--;
+    cpu[cpuc].ep = cpu[cpuc].jumpstack[cpu[cpuc].jumpstack_ind];
+    cpu[cpuc].eoffs = 0;
 
-	SCHEXE_NEXT();
+    cpu[cpuc].jumpstack_ind--;
+
+    SCHEXE_NEXT();
+
 
 	load:
 	#if DEBUG
