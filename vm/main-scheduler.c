@@ -2498,7 +2498,7 @@ S2 run (void *arg)
             // return endianess of host machine
             arg2 = code[ep + 2];
 #if MACHINE_BIG_ENDIAN
-            regi[arg2] = 1;
+            cpu[cpuc].regi[arg2] = 1;
 #else
             cpu[cpuc].regi[arg2] = 0;
 #endif
@@ -3494,9 +3494,6 @@ S2 run (void *arg)
 	printf ("%lli JUMP TO %lli\n", cpu_core, ep);
 	#endif
 
-	printf ("\njsra: jumpstack ind: %lli\n", cpu[cpuc].jumpstack_ind);
-	printf ("%lli JUMP TO %lli\n", cpu_core, ep);
-
 	if (cpu[cpuc].jumpstack_ind == MAXSUBJUMPS - 1)
 	{
 		printf ("ERROR: jumpstack full, no more jsra!\n");
@@ -3528,8 +3525,6 @@ S2 run (void *arg)
     #if DEBUG
     printf ("%lli RTS\n", cpu_core);
     #endif
-
-    printf ("\nrts index: %lli\n", cpu[cpuc].jumpstack_ind);
 
     if (cpu[cpuc].jumpstack_ind < 0)
     {
@@ -3616,56 +3611,82 @@ S2 run (void *arg)
 	cpu[cpuc].eoffs = 3;
 	SCHEXE_NEXT();
 
-    task_scheduler:
-	{
-	S8 i ALIGN;
-	// EDIT SCHEDULER
-    if (cpu[cpuc].scheduler == SCHEDULER_OFF)
-	{
-		printf ("scheduler: CPU: %lli\n", cpuc);
+	/* --- END OF OPCODES --- */
 
-		cpu[cpuc].ep = cpu[cpuc].ep + cpu[cpuc].eoffs;
+task_scheduler:
+    {
+        S8 i ALIGN;
 
-		printf ("epos: %lli: opcode: %i\n\n", cpu[cpuc].ep, code[cpu[cpuc].ep]);
+        /* * STEP 1: Update the Instruction Pointer (IP) for the current core.
+         * We apply the offset (eoffs) set by the previous opcode and reset it.
+         */
+        cpu[cpuc].ep = cpu[cpuc].ep + cpu[cpuc].eoffs;
+        cpu[cpuc].eoffs = 0;
 
-	    goto *jumpt[code[cpu[cpuc].ep]];
-	}
-	else
-	{
-		cpu[cpuc].scheduler--;
-		if (cpu[cpuc].scheduler == 0)
-		{
-			cpu[cpuc].scheduler = SCHEDULER_MAX;
+        /* * STEP 2: Synchronize the local 'ep' variable with the structure.
+         * This ensures the next opcode starts at the correct memory address.
+         */
+        ep = cpu[cpuc].ep;
 
-			// search next CPU core with running code in it.
-			if (cpuc < max_virtcpu - 1)
-			{
-				for (i = cpuc + 1; i < max_virtcpu; i++)
-				{
-					if (cpu[i].status == RUNNING)
-					{
-						cpuc = i;
-						cpu[cpuc].ep = cpu[cpuc].ep + cpu[cpuc].eoffs;
-						goto *jumpt[code[cpu[cpuc].ep]];
-					}
-				}
-			}
-			else
-			{
-				cpuc = 0;
-				for (i = cpuc; i < max_virtcpu; i++)
-				{
-					if (cpu[i].status == RUNNING)
-					{
-						cpuc = i;
-						cpu[cpuc].ep = cpu[cpuc].ep + cpu[cpuc].eoffs;
-						goto *jumpt[code[cpu[cpuc].ep]];
-					}
-				}
-			}
-		}
-	}
-	}
+        // Check if the scheduler is disabled for this core (Manual Override)
+        if (cpu[cpuc].scheduler == SCHEDULER_OFF)
+        {
+            #if DEBUG
+            printf("scheduler: CPU: %lli | epos: %lli | opcode: %i\n", cpuc, ep, code[ep]);
+            #endif
+
+            // Continue execution on the same core immediately
+            goto *jumpt[code[ep]];
+        }
+        else
+        {
+            /* * STEP 3: Quantum Management.
+             * Decrement the scheduler timer. If it reaches 0, find the next task.
+             */
+            cpu[cpuc].scheduler--;
+
+            if (cpu[cpuc].scheduler == 0)
+            {
+                cpu[cpuc].scheduler = SCHEDULER_MAX;
+
+                /* * STEP 4: Round-Robin Context Switching.
+                 * Search for the next available CPU core with status 'RUNNING'.
+                 */
+                S8 start_cpuc = cpuc;
+                for (i = 1; i <= max_virtcpu; i++)
+                {
+                    S8 next_cpu = (start_cpuc + i) % max_virtcpu;
+
+                    if (cpu[next_cpu].status == RUNNING)
+                    {
+                        cpuc = next_cpu; // Perform the context switch
+
+                        // Sync the local 'ep' to the NEW core's instruction pointer
+                        ep = cpu[cpuc].ep;
+
+                        #if DEBUG
+                        printf("Context Switch: New CPU %lli at epos %lli\n", cpuc, ep);
+                        #endif
+
+                        // Jump to the instruction of the new core
+                        goto *jumpt[code[ep]];
+                    }
+                }
+
+                /* * STEP 5: Fallback.
+                 * If no other running core is found, stay on the current one.
+                 */
+                goto *jumpt[code[ep]];
+            }
+            else
+            {
+                /* * Quantum still active:
+                 * Execute the next instruction on the current core.
+                 */
+                goto *jumpt[code[ep]];
+            }
+        }
+    }
 }
 
 void break_handler (void)
