@@ -30,7 +30,7 @@
 
 
 // steps to run in current CPU core
-#define SCHEDULER_MAX 10
+#define SCHEDULER_MAX 1
 #define SCHEDULER_OFF -1
 
 // include/home.h 
@@ -3560,7 +3560,7 @@ S2 run (void *arg)
 
 				cpu[new_vcpu].ep = cpu[cpuc].regi[arg2];
 
-				//printf ("INTR1: 19: start ep: %lli\n", cpu[new_vcpu].ep);
+				printf ("INTR1: 19: start ep: %lli\n", cpu[new_vcpu].ep);
 
 				cpu[new_vcpu].startpos = cpu[cpuc].regi[arg2];
 				// set scheduler
