@@ -33,7 +33,6 @@
 #define SCHEDULER_MAX 1000000
 #define SCHEDULER_OFF -1
 
-#define INSCOUNT_MAX 1000000
 // include/home.h 
 char *get_home (void);
 
