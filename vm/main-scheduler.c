@@ -675,7 +675,7 @@ S2 run (void *arg)
 	cpu[cpuc].jumpstack_ind = -1;
 	cpu[cpuc].local_data_ind = -1;
 	cpu[cpuc].do_memory_bounds_check = 1;
-	cpu[cpuc].ins_count = INSCOUNT_MAX;
+	// cpu[cpuc].ins_count = INSCOUNT_MAX;
 
 	cpu[cpuc].jumpoffs = (S8 *) calloc (code_size, sizeof (S8));
 	if (cpu[cpuc].jumpoffs == NULL)
@@ -3777,7 +3777,7 @@ S2 run (void *arg)
 
 				cpu[cpuc].regi[arg3] = new_vcpu;
 			}
-			cpu[cpuc].ins_count = 0;
+			// cpu[cpuc].ins_count = 0;
 			cpu[cpuc].eoffs = 5;
 			break;
 
