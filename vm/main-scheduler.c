@@ -675,7 +675,7 @@ S2 run (void *arg)
 	cpu[cpuc].jumpstack_ind = -1;
 	cpu[cpuc].local_data_ind = -1;
 	cpu[cpuc].do_memory_bounds_check = 1;
-	// cpu[cpuc].ins_count = INSCOUNT_MAX;
+	cpu[cpuc].ins_count = INSCOUNT_MAX;
 
 	cpu[cpuc].jumpoffs = (S8 *) calloc (code_size, sizeof (S8));
 	if (cpu[cpuc].jumpoffs == NULL)
@@ -3563,7 +3563,7 @@ S2 run (void *arg)
 				cpu[new_vcpu].local_data_ind = -1;
 				cpu[new_vcpu].do_memory_bounds_check = 1;
 
-				//cpu[new_vcpu].ins_count = INSCOUNT_MAX;
+				cpu[new_vcpu].ins_count = INSCOUNT_MAX;
 
 				if (cpu[cpuc].sp != cpu[cpuc].sp_top)
 				{
@@ -3585,7 +3585,6 @@ S2 run (void *arg)
 					pthread_exit ((void *) 1);
 				}
 
-		        /*
 				threaddata[new_vcpu].local_data = (U1 **) calloc (local_data_max, sizeof (U1*));
 				if (threaddata[new_vcpu].local_data == NULL)
 				{
@@ -3594,7 +3593,6 @@ S2 run (void *arg)
 					loop_stop ();
 					pthread_exit ((void *) 1);
 				}
-				*/
 
 				{
 					S8 i ALIGN;
@@ -3777,7 +3775,7 @@ S2 run (void *arg)
 
 				cpu[cpuc].regi[arg3] = new_vcpu;
 			}
-			// cpu[cpuc].ins_count = 0;
+			cpu[cpuc].ins_count = 0;
 			cpu[cpuc].eoffs = 5;
 			break;
 
