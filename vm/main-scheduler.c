@@ -188,6 +188,38 @@ struct cpu
 	S8 offset ALIGN;
 };
 
+#define SCHEXE_NEXT() \
+    do { \
+        /* IP aktualisieren (bei Sprüngen) */ \
+        pthread_mutex_lock (&cpu_mutex); \
+			cpu[cpuc].ep += cpu[cpuc].eoffs;	\
+			cpu[cpuc].eoffs = 0;				\
+			ep = cpu[cpuc].ep;  \
+			printf("CPU %lli at EP: %lli, Opcode: %d\n", cpuc, cpu[0].ep, code[cpu[0].ep]);  \
+			if (ep >= code_size) {			\
+            cpu[cpuc].status = STOP; \
+            goto task_scheduler; \
+        } \
+        if (cpu[cpuc].status == STOP) \
+        { \
+           pthread_mutex_unlock (&cpu_mutex); \
+           goto task_scheduler; \
+        } \
+        if (cpu[cpuc].scheduler == SCHEDULER_OFF) { \
+            /* WICHTIG: ep muss zum nächsten Befehl,  \
+               außer eoffs war ein Sprung! */ \
+            pthread_mutex_unlock (&cpu_mutex);  \
+            goto task_scheduler;                \
+            goto *jumpt[code[ep]]; \
+        } else { \
+           pthread_mutex_unlock (&cpu_mutex); \
+           goto task_scheduler; \
+        } \
+        pthread_mutex_unlock (&cpu_mutex); \
+		usleep (1000); \
+    } while (0)
+
+
 // CPU handle with the scheduler data
 struct cpu *cpu;
 
@@ -644,7 +676,8 @@ S2 run (void *arg)
 	// EDIT NEU
 	cpu[cpuc].status = RUNNING;
 	cpu[cpuc].scheduler = SCHEDULER_OFF;  // run in single thread mode if new funcion call
-	cpu[cpuc].ep = 0;
+	cpu[cpuc].ep = 16;
+	cpu[cpuc].eoffs = 0;
 	cpu[cpuc].startpos = 0;
 	cpu[cpuc].overflow = 0;
 	cpu[cpuc].data = data_global;
@@ -992,8 +1025,9 @@ S2 run (void *arg)
 
 	// EDIT OPCODES
 	cpu[cpuc].ep = cpu[cpuc].startpos; cpu[cpuc].eoffs = 0;
+    ep = cpu[cpuc].ep;
 
-	SCHEXE_NEXT();
+    SCHEXE_NEXT();
 
 	// arg2 = data offset
 	pushb:
@@ -2254,6 +2288,8 @@ S2 run (void *arg)
 	{
 		case 0:
 			//printf ("LOADMODULE\n");
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
 
@@ -2269,6 +2305,8 @@ S2 run (void *arg)
 
 		case 1:
 			//printf ("FREEMODULE\n");
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 
 			free_module (cpu[cpuc].regi[arg2]);
@@ -2277,6 +2315,8 @@ S2 run (void *arg)
 
 		case 2:
 			//printf ("SETMODULEFUNC\n");
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
 			arg4 = code[ep + 4];
@@ -2293,6 +2333,8 @@ S2 run (void *arg)
 
 		case 3:
 			//printf ("CALLMODULEFUNC\n");
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
 
@@ -2314,6 +2356,8 @@ S2 run (void *arg)
 
 		case 4:
 			//printf ("PRINTI\n");
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			printf ("%lli", cpu[cpuc].regi[arg2]);
 			cpu[cpuc].eoffs = 5;
@@ -2321,6 +2365,8 @@ S2 run (void *arg)
 
 		case 5:
 			//printf ("PRINTD\n");
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			printf ("%.10lf", cpu[cpuc].regd[arg2]);
 			cpu[cpuc].eoffs = 5;
@@ -2328,6 +2374,8 @@ S2 run (void *arg)
 
 		case 6:
 			//printf ("PRINTSTR\n");
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			printf ("%s", (char *) &cpu[cpuc].data[cpu[cpuc].regi[arg2]]);
 			cpu[cpuc].eoffs = 5;
@@ -2335,11 +2383,15 @@ S2 run (void *arg)
 
 		case 7:
 			//printf ("PRINTNEWLINE\n");
+			ep = cpu[cpuc].ep;
+
 			printf ("\n");
 			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 8:
+			ep = cpu[cpuc].ep;
+
 			if (silent_run == 0)
 			{
 				printf ("DELAY\n");
@@ -2354,6 +2406,8 @@ S2 run (void *arg)
 
 		case 9:
 			//printf ("INPUTI\n");
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			cpu[cpuc].input_str[0] = '\0';
 			if (fgets ((char *) cpu[cpuc].input_str, MAXINPUT - 1, stdin) != NULL)
@@ -2371,6 +2425,8 @@ S2 run (void *arg)
 
 		case 10:
 			//printf ("INPUTD\n");
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			cpu[cpuc].input_str[0] = '\0';
 			if (fgets ((char *) cpu[cpuc].input_str, MAXINPUT - 1, stdin) != NULL)
@@ -2388,6 +2444,8 @@ S2 run (void *arg)
 
 		case 11:
 			//printf ("INPUTS\n");
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
 
@@ -2436,6 +2494,8 @@ S2 run (void *arg)
 
 		case 12:
 			//printf ("SHELLARGSNUM\n");
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			cpu[cpuc].regi[arg2] = shell_args_ind + 1;
 			cpu[cpuc].eoffs = 5;
@@ -2444,6 +2504,8 @@ S2 run (void *arg)
 		case 13:
 			//printf ("GETSHELLARG\n");
 			{
+			ep = cpu[cpuc].ep;
+
 			S8 shell_arg_len ALIGN = 0;
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
@@ -2475,6 +2537,8 @@ S2 run (void *arg)
 
 		case 14:
 			//printf("SHOWSTACKPOINTER\n");
+			ep = cpu[cpuc].ep;
+
 			printf ("stack pointer sp: %lli\n", (S8) cpu[cpuc].sp);
 			if (cpu[cpuc].sp == cpu[cpuc].sp_top)
 			{
@@ -2489,6 +2553,8 @@ S2 run (void *arg)
 
         case 15:
             // return number of CPU cores available
+            ep = cpu[cpuc].ep;
+
             arg2 = code[ep + 2];
             cpu[cpuc].regi[arg2] = max_cpu;
             cpu[cpuc].eoffs = 5;
@@ -2496,6 +2562,8 @@ S2 run (void *arg)
 
         case 16:
             // return endianess of host machine
+            ep = cpu[cpuc].ep;
+
             arg2 = code[ep + 2];
 #if MACHINE_BIG_ENDIAN
             cpu[cpuc].regi[arg2] = 1;
@@ -2522,6 +2590,8 @@ S2 run (void *arg)
 
 		case 18:
 			// return date
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
 			arg4 = code[ep + 4];
@@ -2537,6 +2607,8 @@ S2 run (void *arg)
 		case 19:
 			// return weekday since Sunday
 			// Sunday = 0
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 
 			time (&cpu[cpuc].secs);
@@ -2547,6 +2619,8 @@ S2 run (void *arg)
 
 		case 20:
 			//printf ("PRINTI format\n");
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
 
@@ -2556,6 +2630,8 @@ S2 run (void *arg)
 
 		case 21:
 			//printf ("PRINTD format\n");
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
 
@@ -2565,6 +2641,8 @@ S2 run (void *arg)
 
 		case 22:
 			//printf ("PRINTI as int16\n");
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 
 			printf ("%d", (S2) cpu[cpuc].regi[arg2]);
@@ -2573,6 +2651,8 @@ S2 run (void *arg)
 
 		case 23:
 			//printf ("PRINTI as int32\n");
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 
 			printf ("%i", (S4) cpu[cpuc].regi[arg2]);
@@ -2581,11 +2661,15 @@ S2 run (void *arg)
 
 #if TIMER_USE
 		case 24:
+			ep = cpu[cpuc].ep;
+
 			gettimeofday (&timer_start, NULL);
 			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 25:
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			gettimeofday (&timer_end, NULL);
 
@@ -2598,6 +2682,8 @@ S2 run (void *arg)
 			break;
 #else
 		case 24:
+			ep = cpu[cpuc].ep;
+
 			printf ("FATAL ERROR: no start timer!\n");
 			PRINT_EPOS();
 			free_jumpoffs (cpuc);
@@ -2606,6 +2692,8 @@ S2 run (void *arg)
 			break;
 
 		case 25:
+			ep = cpu[cpuc].ep;
+
 			printf ("FATAL ERROR: no end timer!\n");
 			PRINT_EPOS();
 			free_jumpoffs (cpuc);
@@ -2616,6 +2704,8 @@ S2 run (void *arg)
 
 		case 26:
 			// check if stack is empty, if not then give an error message and exit!!!
+			ep = cpu[cpuc].ep;
+
 			if (cpu[cpuc].sp != cpu[cpuc].sp_top)
 			{
 				printf ("ERROR: stack has data! Stack should be empty!\n");
@@ -2629,6 +2719,8 @@ S2 run (void *arg)
 
 		case 27:
 			// print out debug note
+			ep = cpu[cpuc].ep;
+
 			printf ("INTR0: 27 DEBUG marking\n")
 			PRINT_EPOS();
 			cpu[cpuc].eoffs = 5;
@@ -2636,6 +2728,8 @@ S2 run (void *arg)
 
 		case 28:
 			// check if int variable value is in legal range
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];	// min range
 			arg4 = code[ep + 4];	// max range
@@ -2653,6 +2747,8 @@ S2 run (void *arg)
 
 		case 29:
 			// check if double variable value is in legal range
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];	// min range
 			arg4 = code[ep + 4];	// max range
@@ -2670,6 +2766,8 @@ S2 run (void *arg)
 
 		case 30:
 			// check if pointer variable is of check type
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];    // pointer var
 			arg3 = code[ep + 3];	// pointer type var
 
@@ -2685,6 +2783,8 @@ S2 run (void *arg)
 
 		case 31:
 			// get pointer variable type
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];    // pointer var
 			arg3 = code[ep + 3];	// pointer type var return
 
@@ -2694,6 +2794,8 @@ S2 run (void *arg)
 
         case 32:
 			// get type of stack object
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 
 			cpu[cpuc].sp = stack_type ((U1 *) &cpu[cpuc].regi[arg2], cpu[cpuc].sp, cpu[cpuc].sp_top);
@@ -2709,6 +2811,8 @@ S2 run (void *arg)
 
 		case 33:
 			// get variable pointer byte size
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];    // pointer var
 			arg3 = code[ep + 3];	// pointer type var return
 
@@ -2726,6 +2830,8 @@ S2 run (void *arg)
 
 		case 34:
 			// set byte/string variable as immutable
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2]; // pointer to string var
 			if (set_immutable_string (cpu[cpuc].regi[arg2]) != 0)
 			{
@@ -2740,6 +2846,8 @@ S2 run (void *arg)
 
 		case 35:
 			// get host CPU type
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
             cpu[cpuc].regi[arg2] = MACHINE_CPU;
             cpu[cpuc].eoffs = 5;
@@ -2747,12 +2855,16 @@ S2 run (void *arg)
 
 		case 36:
 			// get host OS type
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
             cpu[cpuc].regi[arg2] = MACHINE_OS;
             cpu[cpuc].eoffs = 5;
             break;
 
 		case 37:
+			ep = cpu[cpuc].ep;
+
 			if (debugger ((S8 *) &cpu[cpuc].regi, (F8 *) &cpu[cpuc].regd, ep, cpu[cpuc].sp, cpu[cpuc].sp_bottom, cpu[cpuc].sp_top, cpu_core) == 0)
 			{
 				if (silent_run == 0)
@@ -2772,12 +2884,16 @@ S2 run (void *arg)
 
 		case 38:
 			// clear stack: stack_clear
+			ep = cpu[cpuc].ep;
+
 			cpu[cpuc].sp = cpu[cpuc].sp_top;
 			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 39:
 			// set memory bounds check for variable push/pull on
+			ep = cpu[cpuc].ep;
+
 			cpu[cpuc].do_memory_bounds_check = 1;
 
 			cpu[cpuc].eoffs = 5;
@@ -2785,6 +2901,8 @@ S2 run (void *arg)
 
 		case 40:
 			// set memory bounds check for variables push/pul off
+			ep = cpu[cpuc].ep;
+
 			cpu[cpuc].do_memory_bounds_check = 0;
 
 			cpu[cpuc].eoffs = 5;
@@ -2793,6 +2911,8 @@ S2 run (void *arg)
         case 41:
             // get time in ms after epoch
             {
+			   ep = cpu[cpuc].ep;
+
 			   arg2 = code[ep + 2];
               
                struct timeval tv;
@@ -2812,6 +2932,8 @@ S2 run (void *arg)
 
 		case 251:
 			// set overflow on double reg
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			cpu[cpuc].overflow = 0;
 			if (double_state (cpu[cpuc].regd[arg2]) == 1)
@@ -2823,6 +2945,8 @@ S2 run (void *arg)
 
 		case 252:
 			// get overflow flag
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			cpu[cpuc].regi[arg2] = cpu[cpuc].overflow;
 			cpu[cpuc].eoffs = 5;
@@ -2831,6 +2955,8 @@ S2 run (void *arg)
 #if JIT_COMPILER
         case 253:
 			// run JIT compiler
+			ep = cpu[cpuc].ep;
+
             arg2 = code[ep + 2];
             arg3 = code[ep + 3];
             arg4 = code[ep + 4];
@@ -2847,6 +2973,8 @@ S2 run (void *arg)
             break;
 
         case 254:
+			ep = cpu[cpuc].ep;
+
             arg2 = code[ep + 2];
             // printf ("intr0: 254: RUN JIT CODE: %i\n", arg2);
 			if (run_jit (cpu[cpuc].regi[arg2], JIT_code) == 1)
@@ -2862,6 +2990,8 @@ S2 run (void *arg)
             break;
 #else
 		case 253:
+			ep = cpu[cpuc].ep;
+
 			printf ("FATAL ERROR: no JIT compiler: can't compile!\n");
 			PRINT_EPOS();
 			free_jumpoffs (cpuc);
@@ -2870,6 +3000,8 @@ S2 run (void *arg)
 			break;
 
 		case 254:
+			ep = cpu[cpuc].ep;
+
 			printf ("FATAL ERROR: no JIT compiler: can't execute!\n");
 			PRINT_EPOS();
 			free_jumpoffs (cpuc);
@@ -2880,6 +3012,8 @@ S2 run (void *arg)
 
 
 		case 255:
+			ep = cpu[cpuc].ep;
+
 			if (silent_run == 0)
 			{
 				printf ("EXIT\n");
@@ -2891,7 +3025,14 @@ S2 run (void *arg)
 			threaddata[cpu_core].status = STOP;
 			pthread_mutex_unlock (&data_mutex);
 			loop_stop ();
-			pthread_exit ((void *) retcode);
+			if (cpuc == 0)
+		    {
+				exit (retcode);
+			}
+			else
+			{
+				pthread_exit ((void *) retcode);
+			}
 			break;
 
 		default:
@@ -2915,6 +3056,8 @@ S2 run (void *arg)
 	{
 		case 0:
 			// run new CPU instance
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			arg2 = cpu[cpuc].regi[arg2];
 
@@ -2995,6 +3138,8 @@ S2 run (void *arg)
 
 		case 1:
 			// join threads
+			ep = cpu[cpuc].ep;
+
 			if (silent_run == 0)
 			{
 				printf ("JOINING THREADS...\n");
@@ -3028,18 +3173,24 @@ S2 run (void *arg)
 
 		case 2:
 			// lock data_mutex
+			ep = cpu[cpuc].ep;
+
 			pthread_mutex_lock (&data_mutex);
 			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 3:
 			// unlock data_mutex
+			ep = cpu[cpuc].ep;
+
 			pthread_mutex_unlock (&data_mutex);
 			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 4:
 			// return number of current CPU core
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			cpu[cpuc].regi[arg2] = cpu_core;
 
@@ -3050,6 +3201,7 @@ S2 run (void *arg)
 			// return number of free CPU cores
 			// search for a free CPU core
 			// if none free found set cpus_free to 0, to indicate all CPU cores are used!!
+			ep = cpu[cpuc].ep;
 
 			cpu[cpuc].cpus_free = 0;
 			pthread_mutex_lock (&data_mutex);
@@ -3069,7 +3221,9 @@ S2 run (void *arg)
 			break;
 
 		case 6:
-			// set global mutex 
+			// set global mutex
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			if (cpu[cpuc].regi[arg2] >= 0 && cpu[cpuc].regi[arg2] < MAX_MUTEXES)
 			{
@@ -3088,7 +3242,9 @@ S2 run (void *arg)
 			break;
 			
 		case 7:
-			// unset global mutex 
+			// unset global mutex
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			if (cpu[cpuc].regi[arg2] >= 0 && cpu[cpuc].regi[arg2] < MAX_MUTEXES)
 			{
@@ -3108,6 +3264,8 @@ S2 run (void *arg)
 
 		case 8:
 		{
+			ep = cpu[cpuc].ep;
+
 			S8 data_local_size ALIGN = data_mem_size - (stack_size * max_cpu);
 
 		    if (threaddata[cpu_core].data == NULL)
@@ -3138,6 +3296,8 @@ S2 run (void *arg)
 
 		case 9:
 			// sane check:
+			ep = cpu[cpuc].ep;
+
 		    if (threaddata[cpu_core].data == NULL)
 			{
 				// ERROR no data local allocated!
@@ -3154,12 +3314,16 @@ S2 run (void *arg)
 
 		case 10:
 			// switch data access to data global
+			ep = cpu[cpuc].ep;
+
 			cpu[cpuc].data = data_global;
 
 			cpu[cpuc].eoffs = 5;
 			break;
 
 		case 11:
+			ep = cpu[cpuc].ep;
+
 			pthread_mutex_lock (&data_mutex);
 			cpu[cpuc].local_data_ind++;
 			pthread_mutex_unlock (&data_mutex);
@@ -3202,6 +3366,8 @@ S2 run (void *arg)
 
 		case 12:
 			// sane check:
+			ep = cpu[cpuc].ep;
+
 		    if (threaddata[cpu_core].local_data[cpu[cpuc].local_data_ind] == NULL)
 			{
 				// ERROR no data local allocated!
@@ -3218,6 +3384,8 @@ S2 run (void *arg)
 
 		case 13:
 			// switch data access to data global
+			ep = cpu[cpuc].ep;
+
 			cpu[cpuc].data = data_global;
 
 			cpu[cpuc].eoffs = 5;
@@ -3225,6 +3393,8 @@ S2 run (void *arg)
 
 		case 14:
 			// free local data
+			ep = cpu[cpuc].ep;
+
             if (cpu[cpuc].local_data_ind >= 0)
 			{
 				if (threaddata[cpu_core].local_data[cpu[cpuc].local_data_ind])
@@ -3254,6 +3424,8 @@ S2 run (void *arg)
 
 		case 15:
 			// do code hot reload from bytecode
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 
 			// dealloc code
@@ -3282,6 +3454,8 @@ S2 run (void *arg)
 
 		case 16:
 			// set thread run exit request on given CPU
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 
             if (cpu[cpuc].regi[arg2] < max_cpu)
@@ -3298,6 +3472,8 @@ S2 run (void *arg)
 
 		case 17:
 			// check thread run exit request
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 
 		    cpu[cpuc].regi[arg2] = threaddata[cpu_core].exit_request;
@@ -3305,8 +3481,357 @@ S2 run (void *arg)
 			cpu[cpuc].eoffs = 5;
 			break;
 
+		case 18:
+			// virtual CPU, get number of free cores
+			ep = cpu[cpuc].ep;
+
+			arg2 = code[ep + 2];
+		    {
+				S8 i ALIGN;
+				S8 free_vcpu ALIGN = 0;
+
+				// EDIT INTR1
+			    pthread_mutex_lock (&cpu_mutex);
+				for (i = 0; i < max_virtcpu; i++)
+				{
+					if (cpu[i].status == STOP)
+					{
+						free_vcpu++;
+					}
+				}
+				pthread_mutex_unlock (&cpu_mutex);
+				cpu[cpuc].regi[arg2] = free_vcpu;
+		    }
+            cpu[cpuc].eoffs = 5;
+			break;
+
+		case 19:
+			// virtual CPU, run thread
+			ep = cpu[cpuc].ep;
+
+			arg2 = code[ep + 2];
+			arg3 = code[ep + 3];
+			{
+				S8 new_vcpu ALIGN = -1;
+
+				pthread_mutex_lock (&cpu_mutex);
+				for (i = 0; i < max_virtcpu; i++)
+				{
+					if (cpu[i].status == STOP)
+					{
+						new_vcpu = i;
+						break;
+					}
+				}
+				pthread_mutex_unlock (&cpu_mutex);
+
+				if (new_vcpu == -1)
+				{
+					// maximum of virtual CPU cores used, no new core possible
+
+					printf ("ERROR: can't start new virtual CPU core!\n");
+					PRINT_EPOS();
+					free_jumpoffs (cpuc);
+					loop_stop ();
+					pthread_exit ((void *) 1);
+				}
+
+				if (cpu[cpuc].regi[arg2] == 0)
+				{
+					printf ("ERROR: can't start new virtual CPU core! ep: 0!\n");
+					PRINT_EPOS();
+					free_jumpoffs (cpuc);
+					loop_stop ();
+					pthread_exit ((void *) 1);
+				}
+
+				// run new CPU core
+				// set threaddata
+
+				if (silent_run == 0)
+				{
+					printf ("current CPU: %lli, starts new virtual CPU: %lli\n", cpu_core, new_vcpu);
+				}
+
+				pthread_mutex_lock (&cpu_mutex);
+				cpu[new_vcpu].sp = cpu[cpuc].sp;
+			    cpu[new_vcpu].sp_top = cpu[cpuc].sp_top;
+				cpu[new_vcpu].sp_bottom = cpu[cpuc].sp_bottom;
+
+				cpu[new_vcpu].ep = cpu[cpuc].regi[arg2];
+
+				//printf ("INTR1: 19: start ep: %lli\n", cpu[new_vcpu].ep);
+
+				cpu[new_vcpu].startpos = cpu[cpuc].regi[arg2];
+				// set scheduler
+				cpu[new_vcpu].status = RUNNING;
+				cpu[cpuc].scheduler = 0;
+				cpu[new_vcpu].scheduler = SCHEDULER_MAX;
+
+				cpu[new_vcpu].overflow = 0;
+				cpu[new_vcpu].data = data_global;
+				cpu[new_vcpu].jumpstack_ind = -1;
+				cpu[new_vcpu].local_data_ind = -1;
+				cpu[new_vcpu].do_memory_bounds_check = 1;
+
+				if (cpu[cpuc].sp != cpu[cpuc].sp_top)
+				{
+					// something on mother thread stack, copy it
+					cpu[cpuc].srcptr = cpu[cpuc].sp_top;
+					cpu[cpuc].dstptr = cpu[new_vcpu].sp_top;
+
+					while (cpu[cpuc].srcptr >= cpu[cpuc].sp)
+					{
+						*cpu[cpuc].dstptr-- = *cpu[cpuc].srcptr--;
+					}
+				}
+
+				cpu[new_vcpu].jumpoffs = (S8 *) calloc (code_size, sizeof (S8));
+				if (cpu[new_vcpu].jumpoffs == NULL)
+				{
+					printf ("ERROR: can't allocate %lli bytes for jumpoffsets!\n", code_size);
+					loop_stop ();
+					pthread_exit ((void *) 1);
+				}
+
+				threaddata[new_vcpu].local_data = (U1 **) calloc (local_data_max, sizeof (U1*));
+				if (threaddata[new_vcpu].local_data == NULL)
+				{
+					printf ("ERROR: can't allocate %lli elements for local function data!\n", local_data_max);
+					free_jumpoffs (cpuc);
+					loop_stop ();
+					pthread_exit ((void *) 1);
+				}
+
+				{
+					S8 i ALIGN;
+					for (i = 0; i < local_data_max; i++)
+					{
+						threaddata[new_vcpu].local_data[i] = NULL;
+					}
+				}
+
+				// setup jump offset table
+				for (i = 16; i < code_size; i = i + offset)
+				{
+					//printf ("opcode: %i\n", code[i]);
+					offset = 0;
+					if (code[i] <= LSEQD)
+					{
+						offset = 4;
+					}
+					if (code[i] == JMP)
+					{
+						bptr = (U1 *) &arg1;
+
+						*bptr = code[i + 1];
+						bptr++;
+						*bptr = code[i + 2];
+						bptr++;
+						*bptr = code[i + 3];
+						bptr++;
+						*bptr = code[i + 4];
+						bptr++;
+						*bptr = code[i + 5];
+						bptr++;
+						*bptr = code[i + 6];
+						bptr++;
+						*bptr = code[i + 7];
+						bptr++;
+						*bptr = code[i + 8];
+
+						cpu[new_vcpu].jumpoffs[i] = arg1;
+						offset = 9;
+					}
+
+					if (code[i] == JMPI)
+					{
+						bptr = (U1 *) &arg1;
+
+						*bptr = code[i + 2];
+						bptr++;
+						*bptr = code[i + 3];
+						bptr++;
+						*bptr = code[i + 4];
+						bptr++;
+						*bptr = code[i + 5];
+						bptr++;
+						*bptr = code[i + 6];
+						bptr++;
+						*bptr = code[i + 7];
+						bptr++;
+						*bptr = code[i + 8];
+						bptr++;
+						*bptr = code[i + 9];
+
+						cpu[new_vcpu].jumpoffs[i] = arg1;
+						offset = 10;
+					}
+
+					if (code[i] == INCLSIJMPI || code[i] == DECGRIJMPI)
+					{
+						bptr = (U1 *) &arg1;
+
+						*bptr = code[i + 3];
+						bptr++;
+						*bptr = code[i + 4];
+						bptr++;
+						*bptr = code[i + 5];
+						bptr++;
+						*bptr = code[i + 6];
+						bptr++;
+						*bptr = code[i + 7];
+						bptr++;
+						*bptr = code[i + 8];
+						bptr++;
+						*bptr = code[i + 9];
+						bptr++;
+						*bptr = code[i + 10];
+
+						cpu[new_vcpu].jumpoffs[i] = arg1;
+						offset = 11;
+					}
+
+					if (code[i] == JSR)
+					{
+						bptr = (U1 *) &arg1;
+
+						*bptr = code[i + 1];
+						bptr++;
+						*bptr = code[i + 2];
+						bptr++;
+						*bptr = code[i + 3];
+						bptr++;
+						*bptr = code[i + 4];
+						bptr++;
+						*bptr = code[i + 5];
+						bptr++;
+						*bptr = code[i + 6];
+						bptr++;
+						*bptr = code[i + 7];
+						bptr++;
+						*bptr = code[i + 8];
+
+						cpu[new_vcpu].jumpoffs[i] = arg1;
+						offset = 9;
+					}
+
+					if (offset == 0)
+					{
+						// not set yet, do it!
+
+						switch (code[i])
+						{
+							case STPUSHB:
+							case STPOPB:
+							case STPUSHI:
+							case STPOPI:
+							case STPUSHD:
+							case STPOPD:
+								offset = 2;
+								break;
+
+							case LOADA:
+							case LOADD:
+								offset = 18;
+								break;
+
+							case INTR0:
+							case INTR1:
+								offset = 5;
+								break;
+
+							case MOVI:
+							case MOVD:
+								offset = 3;
+								break;
+
+							case LOADL:
+								offset = 10;
+								break;
+
+							case JMPA:
+								offset = 2;
+								break;
+
+							case JSRA:
+								offset = 2;
+								break;
+
+							case RTS:
+								offset = 1;
+								break;
+
+							case LOAD:
+								offset = 18;
+								break;
+
+							case NOTI:
+								offset = 3;
+								break;
+						}
+					}
+					if (offset == 0)
+					{
+						printf ("FATAL error: setting jump offset failed! opcode: %i\n", code[i]);
+						free_jumpoffs (cpuc);
+						loop_stop ();
+						pthread_exit ((void *) 1);
+					}
+
+					if (i >= code_size) break;
+				}
+
+				pthread_mutex_unlock (&cpu_mutex);
+
+				cpu[cpuc].regi[arg3] = new_vcpu;
+			}
+			cpu[cpuc].eoffs = 5;
+			break;
+
+		case 20:
+			// stop vcpu
+			ep = cpu[cpuc].ep;
+
+			arg2 = code[ep + 2];
+			arg2 = cpu[cpuc].regi[arg2];
+
+			if (cpu[cpuc].jumpoffs)
+			{
+				free (cpu[cpuc].jumpoffs);
+				cpu[cpuc].jumpoffs = NULL;
+			}
+
+			pthread_mutex_lock (&cpu_mutex);
+			cpu[arg2].status = STOP;
+			cpu[arg2].scheduler = SCHEDULER_OFF;
+			pthread_mutex_unlock (&cpu_mutex);
+			cpu[cpuc].eoffs = 5;
+			break;
+
+		case 21:
+			// stop vcpu self by running core
+			ep = cpu[cpuc].ep;
+
+			arg2 = code[ep + 2];
+			arg2 = cpu[cpuc].regi[arg2];
+
+			pthread_mutex_lock (&cpu_mutex);
+			cpu[arg2].status = STOP;
+			cpu[arg2].scheduler = SCHEDULER_OFF;
+			pthread_mutex_unlock (&cpu_mutex);
+			if (cpu[cpuc].jumpoffs)
+			{
+				free (cpu[cpuc].jumpoffs);
+				cpu[cpuc].jumpoffs = NULL;
+			}
+
+			cpu[cpuc].eoffs = 5;
+			break;
 
 		case 255:
+			ep = cpu[cpuc].ep;
+
 			if (silent_run == 0)
 			{
 				printf ("thread EXIT\n");
@@ -3526,6 +4051,24 @@ S2 run (void *arg)
     printf ("%lli RTS\n", cpu_core);
     #endif
 
+	//printf ("rts: cpu: %lli\n", cpuc);
+
+    if (cpuc > 0)
+	{
+		pthread_mutex_lock (&cpu_mutex);
+        cpu[cpuc].status = STOP;
+		cpu[cpuc].scheduler = SCHEDULER_OFF;
+	    pthread_mutex_unlock (&cpu_mutex);
+
+		if (cpu[cpuc].jumpoffs)
+		{
+			free (cpu[cpuc].jumpoffs);
+			cpu[cpuc].jumpoffs = NULL;
+		}
+		cpu[cpuc].eoffs = 1;
+	    SCHEXE_NEXT();
+	}
+
     if (cpu[cpuc].jumpstack_ind < 0)
     {
         printf ("ERROR: RTS on an empty jumpstack (underflow)!\n");
@@ -3614,79 +4157,64 @@ S2 run (void *arg)
 	/* --- END OF OPCODES --- */
 
 task_scheduler:
+{
+    /* STEP 1: Sync local IP to the structure before checking quantum. */
+	pthread_mutex_lock (&cpu_mutex);
+
+    if (cpu[cpuc].ep != 0)
+	{
+		cpu[cpuc].ep = ep;
+	}
+
+    /* STEP 2: Handle the Quantum (Time-slice).
+     * If the current CPU still has time left, continue execution immediately.
+     */
+	if (cpu[cpuc].status == RUNNING)
     {
-        S8 i ALIGN;
+		cpu[cpuc].scheduler--;
+		if (cpu[cpuc].scheduler > 0)
+		{
+			pthread_mutex_unlock (&cpu_mutex);
+			goto *jumpt[code[ep]];
+		}
+	}
 
-        /* * STEP 1: Update the Instruction Pointer (IP) for the current core.
-         * We apply the offset (eoffs) set by the previous opcode and reset it.
-         */
-        cpu[cpuc].ep = cpu[cpuc].ep + cpu[cpuc].eoffs;
-        cpu[cpuc].eoffs = 0;
+    /* STEP 3: Quantum expired or Switch requested.
+     * Reset the quantum for the current core for its next turn.
+     */
+    cpu[cpuc].scheduler = SCHEDULER_MAX;
+    S8 start_cpuc = cpuc;
 
-        /* * STEP 2: Synchronize the local 'ep' variable with the structure.
-         * This ensures the next opcode starts at the correct memory address.
-         */
-        ep = cpu[cpuc].ep;
+    /* STEP 4: Round-Robin Search.
+     * Look for the next core that is actually in RUNNING state.
+     */
+    for (S8 i = 1; i < max_virtcpu; i++)
+    {
+        S8 next_idx = (start_cpuc + i) % max_virtcpu;
 
-        // Check if the scheduler is disabled for this core (Manual Override)
-        if (cpu[cpuc].scheduler == SCHEDULER_OFF)
+        if (cpu[next_idx].status == RUNNING)
         {
-            #if DEBUG
-            printf("scheduler: CPU: %lli | epos: %lli | opcode: %i\n", cpuc, ep, code[ep]);
-            #endif
+            /* Found a ready core! Perform the Context Switch. */
+            cpuc = next_idx;
 
-            // Continue execution on the same core immediately
+            /* IMPORTANT: Load the NEW core's Instruction Pointer into the local register 'ep'. */
+            ep = cpu[cpuc].ep;
+
+            /* Debug Output to verify the switch in your log. */
+            // printf("task_scheduler: switched from %lli to %lli\n", start_cpuc, cpuc);
+            pthread_mutex_unlock (&cpu_mutex);
             goto *jumpt[code[ep]];
         }
-        else
-        {
-            /* * STEP 3: Quantum Management.
-             * Decrement the scheduler timer. If it reaches 0, find the next task.
-             */
-            cpu[cpuc].scheduler--;
-
-            if (cpu[cpuc].scheduler == 0)
-            {
-                cpu[cpuc].scheduler = SCHEDULER_MAX;
-
-                /* * STEP 4: Round-Robin Context Switching.
-                 * Search for the next available CPU core with status 'RUNNING'.
-                 */
-                S8 start_cpuc = cpuc;
-                for (i = 1; i < max_virtcpu; i++)
-                {
-                    S8 next_cpu = (start_cpuc + i) % max_virtcpu;
-
-                    if (cpu[next_cpu].status == RUNNING)
-                    {
-                        cpuc = next_cpu; // Perform the context switch
-
-                        // Sync the local 'ep' to the NEW core's instruction pointer
-                        ep = cpu[cpuc].ep;
-
-                        #if DEBUG
-                        printf("Context Switch: New CPU %lli at epos %lli\n", cpuc, ep);
-                        #endif
-
-                        // Jump to the instruction of the new core
-                        goto *jumpt[code[ep]];
-                    }
-                }
-
-                /* * STEP 5: Fallback.
-                 * If no other running core is found, stay on the current one.
-                 */
-                goto *jumpt[code[ep]];
-            }
-            else
-            {
-                /* * Quantum still active:
-                 * Execute the next instruction on the current core.
-                 */
-                goto *jumpt[code[ep]];
-            }
-        }
     }
+
+    /* STEP 5: Fallback.
+     * If no other RUNNING cores were found, stay on the current core.
+     * Refresh the local 'ep' just in case.
+     */
+    ep = cpu[cpuc].ep;
+	pthread_mutex_unlock (&cpu_mutex);
+    goto *jumpt[code[ep]];
+}
 }
 
 void break_handler (void)
