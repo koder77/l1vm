@@ -30,9 +30,10 @@
 
 
 // steps to run in current CPU core
-#define SCHEDULER_MAX 1
+#define SCHEDULER_MAX 1000000
 #define SCHEDULER_OFF -1
 
+#define INSCOUNT_MAX 1000000
 // include/home.h 
 char *get_home (void);
 
@@ -186,37 +187,28 @@ struct cpu
     // jumpoffsets
 	S8 *jumpoffs ALIGN;
 	S8 offset ALIGN;
+
+	S8 ins_count ALIGN;
 };
 
 #define SCHEXE_NEXT() \
     do { \
-        /* IP aktualisieren (bei Sprüngen) */ \
-        pthread_mutex_lock (&cpu_mutex); \
 			cpu[cpuc].ep += cpu[cpuc].eoffs;	\
 			cpu[cpuc].eoffs = 0;				\
 			ep = cpu[cpuc].ep;  \
-			printf("CPU %lli at EP: %lli, Opcode: %d\n", cpuc, cpu[0].ep, code[cpu[0].ep]);  \
 			if (ep >= code_size) {			\
             cpu[cpuc].status = STOP; \
             goto task_scheduler; \
         } \
         if (cpu[cpuc].status == STOP) \
         { \
-           pthread_mutex_unlock (&cpu_mutex); \
            goto task_scheduler; \
         } \
         if (cpu[cpuc].scheduler == SCHEDULER_OFF) { \
-            /* WICHTIG: ep muss zum nächsten Befehl,  \
-               außer eoffs war ein Sprung! */ \
-            pthread_mutex_unlock (&cpu_mutex);  \
             goto task_scheduler;                \
-            goto *jumpt[code[ep]]; \
         } else { \
-           pthread_mutex_unlock (&cpu_mutex); \
            goto task_scheduler; \
         } \
-        pthread_mutex_unlock (&cpu_mutex); \
-		usleep (1000); \
     } while (0)
 
 
@@ -684,6 +676,7 @@ S2 run (void *arg)
 	cpu[cpuc].jumpstack_ind = -1;
 	cpu[cpuc].local_data_ind = -1;
 	cpu[cpuc].do_memory_bounds_check = 1;
+	cpu[cpuc].ins_count = INSCOUNT_MAX;
 
 	cpu[cpuc].jumpoffs = (S8 *) calloc (code_size, sizeof (S8));
 	if (cpu[cpuc].jumpoffs == NULL)
@@ -3514,7 +3507,6 @@ S2 run (void *arg)
 			{
 				S8 new_vcpu ALIGN = -1;
 
-				pthread_mutex_lock (&cpu_mutex);
 				for (i = 0; i < max_virtcpu; i++)
 				{
 					if (cpu[i].status == STOP)
@@ -3523,7 +3515,6 @@ S2 run (void *arg)
 						break;
 					}
 				}
-				pthread_mutex_unlock (&cpu_mutex);
 
 				if (new_vcpu == -1)
 				{
@@ -3553,14 +3544,13 @@ S2 run (void *arg)
 					printf ("current CPU: %lli, starts new virtual CPU: %lli\n", cpu_core, new_vcpu);
 				}
 
-				pthread_mutex_lock (&cpu_mutex);
 				cpu[new_vcpu].sp = cpu[cpuc].sp;
 			    cpu[new_vcpu].sp_top = cpu[cpuc].sp_top;
 				cpu[new_vcpu].sp_bottom = cpu[cpuc].sp_bottom;
 
 				cpu[new_vcpu].ep = cpu[cpuc].regi[arg2];
 
-				printf ("INTR1: 19: start ep: %lli\n", cpu[new_vcpu].ep);
+				// printf ("INTR1: 19: start ep: %lli\n", cpu[new_vcpu].ep);
 
 				cpu[new_vcpu].startpos = cpu[cpuc].regi[arg2];
 				// set scheduler
@@ -3573,6 +3563,8 @@ S2 run (void *arg)
 				cpu[new_vcpu].jumpstack_ind = -1;
 				cpu[new_vcpu].local_data_ind = -1;
 				cpu[new_vcpu].do_memory_bounds_check = 1;
+
+				cpu[new_vcpu].ins_count = INSCOUNT_MAX;
 
 				if (cpu[cpuc].sp != cpu[cpuc].sp_top)
 				{
@@ -3782,10 +3774,9 @@ S2 run (void *arg)
 					if (i >= code_size) break;
 				}
 
-				pthread_mutex_unlock (&cpu_mutex);
-
 				cpu[cpuc].regi[arg3] = new_vcpu;
 			}
+			cpu[cpuc].ins_count = 0;
 			cpu[cpuc].eoffs = 5;
 			break;
 
@@ -3806,24 +3797,44 @@ S2 run (void *arg)
 			cpu[arg2].status = STOP;
 			cpu[arg2].scheduler = SCHEDULER_OFF;
 			pthread_mutex_unlock (&cpu_mutex);
-			cpu[cpuc].eoffs = 5;
+			cpu[cpuc].eoffs = 0;
 			break;
 
 		case 21:
 			// stop vcpu self by running core
 			ep = cpu[cpuc].ep;
 
-			arg2 = code[ep + 2];
-			arg2 = cpu[cpuc].regi[arg2];
-
 			pthread_mutex_lock (&cpu_mutex);
-			cpu[arg2].status = STOP;
-			cpu[arg2].scheduler = SCHEDULER_OFF;
+			cpu[cpuc].status = STOP;
+			cpu[cpuc].scheduler = SCHEDULER_OFF;
 			pthread_mutex_unlock (&cpu_mutex);
 			if (cpu[cpuc].jumpoffs)
 			{
 				free (cpu[cpuc].jumpoffs);
 				cpu[cpuc].jumpoffs = NULL;
+			}
+
+			cpu[cpuc].eoffs = 0;
+			break;
+
+		case 22:
+			// check if vcpus are stopped, like POSIX thread join
+			ep = cpu[cpuc].ep;
+
+			arg2 = code[ep + 2];
+            {
+				S8 i ALIGN;
+				U1 status = STOP;
+
+				for (i = 1; i < max_virtcpu; i++)
+				{
+					if (cpu[i].status == RUNNING)
+					{
+						status = RUNNING;
+					}
+				}
+
+				cpu[cpuc].regi[arg2] = status;
 			}
 
 			cpu[cpuc].eoffs = 5;
@@ -4156,11 +4167,9 @@ S2 run (void *arg)
 
 	/* --- END OF OPCODES --- */
 
-task_scheduler:
+	task_scheduler:
 {
-    /* STEP 1: Sync local IP to the structure before checking quantum. */
-	pthread_mutex_lock (&cpu_mutex);
-
+    /* STEP 1: Sync local IP to the structure before checking quantum.
     if (cpu[cpuc].ep != 0)
 	{
 		cpu[cpuc].ep = ep;
@@ -4174,7 +4183,6 @@ task_scheduler:
 		cpu[cpuc].scheduler--;
 		if (cpu[cpuc].scheduler > 0)
 		{
-			pthread_mutex_unlock (&cpu_mutex);
 			goto *jumpt[code[ep]];
 		}
 	}
@@ -4202,7 +4210,6 @@ task_scheduler:
 
             /* Debug Output to verify the switch in your log. */
             // printf("task_scheduler: switched from %lli to %lli\n", start_cpuc, cpuc);
-            pthread_mutex_unlock (&cpu_mutex);
             goto *jumpt[code[ep]];
         }
     }
@@ -4212,9 +4219,10 @@ task_scheduler:
      * Refresh the local 'ep' just in case.
      */
     ep = cpu[cpuc].ep;
-	pthread_mutex_unlock (&cpu_mutex);
     goto *jumpt[code[ep]];
 }
+
+
 }
 
 void break_handler (void)

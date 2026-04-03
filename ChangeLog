@@ -1,3 +1,9 @@
+L1VM (3.6.0)
+	VM: experimental "main-sched.c" virtual CPU task scheduler added.
+	See prog: "hello-sched.l1com".
+
+-- Stefan Pietzonke <info@midnight-coding.de> Fri 03 April 2026 21:55 +020
+
 L1VM (3.5.6)
 	Note: I did run Cppcheck and Infer on "l1vm", there were no errors found.
 
