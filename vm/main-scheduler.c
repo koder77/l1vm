@@ -105,7 +105,6 @@ struct module_init
 
 struct module_init module_init;
 
-
 struct data_info data_info[MAXDATAINFO];
 S8 data_info_ind ALIGN = -1;
 
@@ -120,7 +119,7 @@ pthread_mutex_t wait_loop;
 U1 run_loop = 1;
 
 // cpu mutex
-pthread_mutex_t cpu_mutex;
+//pthread_mutex_t cpu_mutex;
 
 // return code of main thread
 S8 retcode ALIGN = 0;
@@ -3480,7 +3479,6 @@ S2 run (void *arg)
 				S8 free_vcpu ALIGN = 0;
 
 				// EDIT INTR1
-			    pthread_mutex_lock (&cpu_mutex);
 				for (i = 0; i < max_virtcpu; i++)
 				{
 					if (cpu[i].status == STOP)
@@ -3488,7 +3486,6 @@ S2 run (void *arg)
 						free_vcpu++;
 					}
 				}
-				pthread_mutex_unlock (&cpu_mutex);
 				cpu[cpuc].regi[arg2] = free_vcpu;
 		    }
             cpu[cpuc].eoffs = 5;
@@ -3578,14 +3575,6 @@ S2 run (void *arg)
 					printf ("ERROR: can't allocate %lli bytes for jumpoffsets!\n", code_size);
 					loop_stop ();
 					pthread_exit ((void *) 1);
-				}
-
-				{
-					S8 i ALIGN;
-					for (i = 0; i < local_data_max; i++)
-					{
-						threaddata[new_vcpu].local_data[i] = NULL;
-					}
 				}
 
 				// setup jump offset table
@@ -3777,10 +3766,8 @@ S2 run (void *arg)
 				cpu[cpuc].jumpoffs = NULL;
 			}
 
-			pthread_mutex_lock (&cpu_mutex);
 			cpu[arg2].status = STOP;
 			cpu[arg2].scheduler = SCHEDULER_OFF;
-			pthread_mutex_unlock (&cpu_mutex);
 			cpu[cpuc].eoffs = 0;
 			break;
 
@@ -3788,15 +3775,14 @@ S2 run (void *arg)
 			// stop vcpu self by running core
 			ep = cpu[cpuc].ep;
 
-			pthread_mutex_lock (&cpu_mutex);
-			cpu[cpuc].status = STOP;
-			cpu[cpuc].scheduler = SCHEDULER_OFF;
-			pthread_mutex_unlock (&cpu_mutex);
 			if (cpu[cpuc].jumpoffs)
 			{
 				free (cpu[cpuc].jumpoffs);
 				cpu[cpuc].jumpoffs = NULL;
 			}
+
+			cpu[cpuc].status = STOP;
+			cpu[cpuc].scheduler = SCHEDULER_OFF;
 
 			cpu[cpuc].eoffs = 0;
 			break;
@@ -4047,23 +4033,6 @@ S2 run (void *arg)
     #endif
 
 	//printf ("rts: cpu: %lli\n", cpuc);
-
-    if (cpuc > 0)
-	{
-		pthread_mutex_lock (&cpu_mutex);
-        cpu[cpuc].status = STOP;
-		cpu[cpuc].scheduler = SCHEDULER_OFF;
-	    pthread_mutex_unlock (&cpu_mutex);
-
-		if (cpu[cpuc].jumpoffs)
-		{
-			free (cpu[cpuc].jumpoffs);
-			cpu[cpuc].jumpoffs = NULL;
-		}
-		cpu[cpuc].eoffs = 1;
-	    SCHEXE_NEXT();
-	}
-
     if (cpu[cpuc].jumpstack_ind < 0)
     {
         printf ("ERROR: RTS on an empty jumpstack (underflow)!\n");
