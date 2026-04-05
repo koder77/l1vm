@@ -30,7 +30,7 @@
 
 
 // steps to run in current CPU core
-#define SCHEDULER_MAX 1000000
+#define SCHEDULER_MAX 500
 #define SCHEDULER_OFF -1
 
 // include/home.h 
