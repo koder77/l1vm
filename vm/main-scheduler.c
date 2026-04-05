@@ -188,25 +188,13 @@ struct cpu
 };
 
 #define SCHEXE_NEXT() \
-    do { \
-			cpu[cpuc].ep += cpu[cpuc].eoffs;	\
-			cpu[cpuc].eoffs = 0;				\
-			ep = cpu[cpuc].ep;  \
-			if (ep >= code_size) {			\
-            cpu[cpuc].status = STOP; \
-            goto task_scheduler; \
-        } \
-        if (cpu[cpuc].status == STOP) \
-        { \
-           goto task_scheduler; \
-        } \
-        if (cpu[cpuc].scheduler == SCHEDULER_OFF) { \
-            goto task_scheduler;                \
-        } else { \
-           goto task_scheduler; \
-        } \
-    } while (0)
-
+    cpu[cpuc].ep += cpu[cpuc].eoffs; \
+    cpu[cpuc].eoffs = 0; \
+    ep = cpu[cpuc].ep; \
+    if (ep >= code_size || cpu[cpuc].status == STOP) { \
+        cpu[cpuc].status = STOP; \
+    } \
+    goto task_scheduler;
 
 // CPU handle with the scheduler data
 struct cpu *cpu;
@@ -4120,61 +4108,36 @@ S2 run (void *arg)
 
 	/* --- END OF OPCODES --- */
 
-	task_scheduler:
+task_scheduler:
 {
-    /* STEP 1: Sync local IP to the structure before checking quantum.
-    if (cpu[cpuc].ep != 0)
-	{
-		cpu[cpuc].ep = ep;
-	}
-
-    /* STEP 2: Handle the Quantum (Time-slice).
-     * If the current CPU still has time left, continue execution immediately.
-     */
-	if (cpu[cpuc].status == RUNNING)
+    if (cpu[cpuc].status == RUNNING)
     {
-		cpu[cpuc].scheduler--;
-		if (cpu[cpuc].scheduler > 0)
-		{
-			goto *jumpt[code[ep]];
-		}
-	}
-
-    /* STEP 3: Quantum expired or Switch requested.
-     * Reset the quantum for the current core for its next turn.
-     */
-    cpu[cpuc].scheduler = SCHEDULER_MAX;
-    S8 start_cpuc = cpuc;
-
-    /* STEP 4: Round-Robin Search.
-     * Look for the next core that is actually in RUNNING state.
-     */
-    for (S8 i = 1; i < max_virtcpu; i++)
-    {
-        S8 next_idx = (start_cpuc + i) % max_virtcpu;
-
-        if (cpu[next_idx].status == RUNNING)
+        if (--cpu[cpuc].scheduler > 0)
         {
-            /* Found a ready core! Perform the Context Switch. */
-            cpuc = next_idx;
-
-            /* IMPORTANT: Load the NEW core's Instruction Pointer into the local register 'ep'. */
-            ep = cpu[cpuc].ep;
-
-            /* Debug Output to verify the switch in your log. */
-            // printf("task_scheduler: switched from %lli to %lli\n", start_cpuc, cpuc);
             goto *jumpt[code[ep]];
         }
     }
 
-    /* STEP 5: Fallback.
-     * If no other RUNNING cores were found, stay on the current core.
-     * Refresh the local 'ep' just in case.
-     */
+    cpu[cpuc].ep = ep;
+    cpu[cpuc].scheduler = SCHEDULER_MAX;
+
+    S8 next_idx = cpuc;
+    for (S8 i = 1; i < max_virtcpu; i++)
+    {
+        // Modulo-Ersatz
+        if (++next_idx >= max_virtcpu) next_idx = 0;
+
+        if (cpu[next_idx].status == RUNNING)
+        {
+            cpuc = next_idx;
+            ep = cpu[cpuc].ep;
+            goto *jumpt[code[ep]];
+        }
+    }
+
     ep = cpu[cpuc].ep;
     goto *jumpt[code[ep]];
 }
-
 
 }
 
