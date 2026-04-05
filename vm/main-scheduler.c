@@ -4444,7 +4444,6 @@ int l1vm_run_program (char *program_name, int ac, char *av[])
             arglen = strlen_safe (av[i], MAXLINELEN);
 
 			// printf ("DEBUG: arg: '%s'\n", av[i]);
-
 			if (cmd_args == 1)
 			{
 				// printf ("got shellarg: '%s'\n", av[i]);
@@ -4503,13 +4502,13 @@ int l1vm_run_program (char *program_name, int ac, char *av[])
 									// set max cpu cores flag...
 									// EDIT T
 								    max_virtcpu = atoi (av[i + 1]);
-									if (max_cpu == 0)
+									if (max_virtcpu == 0)
 									{
 										printf ("ERROR: max_virtcpu less than 1 core!\n");
 										cleanup ();
 										exit (1);
 									}
-									printf ("max_virtcpu: cores set to: %lli\n", max_cpu);
+									printf ("max_virtcpu: cores set to: %lli\n", max_virtcpu);
 								}
 							}
 
@@ -4783,6 +4782,23 @@ int main (int ac, char *av[])
 										exit (1);
 									}
 									printf ("max_cpu: cores set to: %lli\n", max_cpu);
+								}
+							}
+
+							if (av[i][0] == '-' && av[i][1] == 'T')
+							{
+								if (i < ac - 1)
+				                {
+									// set max cpu cores flag...
+									// EDIT T
+								    max_virtcpu = atoi (av[i + 1]);
+									if (max_virtcpu == 0)
+									{
+										printf ("ERROR: max_virtcpu less than 1 core!\n");
+										cleanup ();
+										exit (1);
+									}
+									printf ("max_virtcpu: cores set to: %lli\n", max_virtcpu);
 								}
 							}
 
