@@ -3807,7 +3807,11 @@ S2 run (void *arg)
 			arg2 = code[ep + 2];
 			arg2 = cpu[cpuc].regi[arg2];
 
-		    scheduler_max = arg2;
+			if (arg2 >= 50)
+			{
+				// sane check!, don't go below 50!
+				scheduler_max = arg2;
+			}
 			cpu[cpuc].eoffs = 5;
 			break;
 
