@@ -649,6 +649,8 @@ S2 run (void *arg)
 	S8 arg3 ALIGN;
 	S8 arg4 ALIGN;
 
+	S8 scheduler_max ALIGN = SCHEDULER_MAX;
+
 	// EDIT NEU
 	cpu[cpuc].status = RUNNING;
 	cpu[cpuc].scheduler = SCHEDULER_OFF;  // run in single thread mode if new funcion call
@@ -3798,6 +3800,18 @@ S2 run (void *arg)
 			cpu[cpuc].eoffs = 5;
 			break;
 
+		case 23:
+			// set scheduler_max, scheduler counter
+			ep = cpu[cpuc].ep;
+
+			arg2 = code[ep + 2];
+			arg2 = cpu[cpuc].regi[arg2];
+
+		    scheduler_max = arg2;
+			cpu[cpuc].eoffs = 5;
+			break;
+
+
 		case 255:
 			ep = cpu[cpuc].ep;
 
@@ -4119,7 +4133,7 @@ task_scheduler:
     }
 
     cpu[cpuc].ep = ep;
-    cpu[cpuc].scheduler = SCHEDULER_MAX;
+    cpu[cpuc].scheduler = scheduler_max;
 
     S8 next_idx = cpuc;
     for (S8 i = 1; i < max_virtcpu; i++)
