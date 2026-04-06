@@ -1419,7 +1419,7 @@ S2 run (void *arg)
 			 cpu[cpuc].overflow = 0;
 		}
 	#else
-		regi[arg3] = regi[arg1] - regi[arg2];
+		cpu[pcuc].regi[arg3] = cpu[cpuc].regi[arg1] - cpu[cpuc].regi[arg2];
 	#endif
 
 	cpu[cpuc].eoffs = 4;
@@ -1446,7 +1446,7 @@ S2 run (void *arg)
 			 cpu[cpuc].overflow = 0;
 		}
 	#else
-		regi[arg3] = regi[arg1] * regi[arg2];
+		cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] * cpu[cpuc].regi[arg2];
 	#endif
 
 	cpu[cpuc].eoffs = 4;
