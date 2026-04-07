@@ -189,6 +189,9 @@ struct cpus
     cpu[cpuc].ep += cpu[cpuc].eoffs; \
     cpu[cpuc].eoffs = 0; \
     ep = cpu[cpuc].ep; \
+    if (cpu[cpuc].scheduler == SCHEDULER_OFF) {							\
+        goto *jumpt[code[ep]]; \
+    } \
     if (ep >= code_size || cpu[cpuc].status == STOP) { \
         cpu[cpuc].status = STOP; \
     } \
@@ -2973,6 +2976,14 @@ S2 run (void *arg)
 			arg2 = code[ep + 2];
 			arg2 = cpu[cpuc].regi[arg2];
 
+			// SANE CHECK
+            if (arg2 == 0)
+			{
+				printf ("ERROR: can't start new CPU core with epos: 0 !\n");
+				cpu[cpuc].eoffs = 5;
+				break;
+			}
+
             // search for a free CPU core
             // if none free found set new_cpu to -1, to indicate all CPU cores are used!!
             cpu[cpuc].new_cpu = -1;
@@ -3020,7 +3031,6 @@ S2 run (void *arg)
 			pthread_mutex_unlock (&data_mutex);
 
             // create new POSIX thread
-
 			if (pthread_create (&threaddata[cpu[cpuc].new_cpu].id, NULL, (void *) run, (void*) cpu[cpuc].new_cpu) != 0)
 			{
 				printf ("ERROR: can't start new thread!\n");
@@ -3442,7 +3452,7 @@ S2 run (void *arg)
 					pthread_exit ((void *) 1);
 				}
 
-				for (i = max_cpu; i < max_virtcpu; i++)
+				for (i = 0; i < max_virtcpu; i++)
 				{
 					if (cpu[i].status == STOP)
 					{
@@ -3714,7 +3724,6 @@ S2 run (void *arg)
 			}
 
 			cpu[arg2].status = STOP;
-			cpu[arg2].scheduler = SCHEDULER_OFF;
 			cpu[cpuc].eoffs = 0;
 			break;
 
@@ -3729,8 +3738,6 @@ S2 run (void *arg)
 			}
 
 			cpu[cpuc].status = STOP;
-			cpu[cpuc].scheduler = SCHEDULER_OFF;
-
 			cpu[cpuc].eoffs = 0;
 			break;
 
@@ -3787,6 +3794,7 @@ S2 run (void *arg)
 			// if (threaddata[cpu_core].data != NULL) free (threaddata[cpu_core].data);
 			pthread_mutex_unlock (&data_mutex);
 			// loop_stop ();
+			FREE_MEM();
 			pthread_exit ((void *) retcode);
 			break;
 
@@ -3999,6 +4007,8 @@ S2 run (void *arg)
     if (cpu[cpuc].jumpstack_ind < 0)
     {
         printf ("ERROR: RTS on an empty jumpstack (underflow)!\n");
+
+		printf("ERROR: RTS Underflow on Core %lli at EP %lli\n", cpu_core, cpu[cpuc].ep);
         PRINT_EPOS();
         FREE_MEM();
         loop_stop ();
