@@ -2,7 +2,11 @@ L1VM (3.6.0)
 	VM: experimental "main-sched.c" virtual CPU task scheduler added.
 	See prog: "hello-sched.l1com".
 
--- Stefan Pietzonke <info@midnight-coding.de> Fri 03 April 2026 21:55 +020
+	I fixed a bug in the L1VM scheduler POSIX threading code start position.
+	NOTE: you can't start new POSIX threads in the L1VM scheduler VM.
+	I try to fix this, but it can take some time.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Tue 07 April 2026 17:46 +020
 
 L1VM (3.5.6)
 	Note: I did run Cppcheck and Infer on "l1vm", there were no errors found.

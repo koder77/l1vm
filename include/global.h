@@ -296,7 +296,7 @@ typedef double                  F8;     /* DOUBLE */
 
 #define RUNNING			1
 #define STOP			0
-
+#define WAITING             2
 
 // ERROR codes returned by VM
 #define ERR_FILE_OK         0

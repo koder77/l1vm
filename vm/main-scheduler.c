@@ -58,8 +58,6 @@ S8 code_size ALIGN;
 S8 data_ind ALIGN;
 S8 modules_ind ALIGN = -1;    // no module loaded = -1
 
-S8 cpu_ind ALIGN = 0;
-
 S8 max_cpu ALIGN = MAXCPUCORES;    // number of threads that can be runned
 S8 max_virtcpu ALIGN = MAXVIRTCPU;  // number of virtual CPUs threads
 U1 silent_run = 0;				// switch startup and status messages of: "-q" flag on shell
@@ -130,7 +128,7 @@ S4 shell_args_ind = -1;
 
 struct threaddata *threaddata;
 
-struct cpu
+struct cpus
 {
 	U1 status;        // set to RUNNING if core has code to execute or STOP
 	S8 scheduler;      // counter to set the task switching by the scheduler, if it is 0 then switch to other running CPU core.
@@ -195,9 +193,6 @@ struct cpu
         cpu[cpuc].status = STOP; \
     } \
     goto task_scheduler;
-
-// CPU handle with the scheduler data
-struct cpu *cpu;
 
 #if JIT_COMPILER
 S2 alloc_jit_code ()
@@ -548,15 +543,6 @@ void cleanup (void)
 		if (threaddata) free (threaddata);
 	}
 
-	if (cpu)
-	{
-		for (i = 0; i < max_virtcpu; i++)
-		{
-			free_jumpoffs (i);
-		}
-	    free (cpu);
-	}
-
 	pthread_mutex_unlock (&data_mutex);
 }
 
@@ -624,21 +610,19 @@ void loop_stop (void)
 	// printf ("DEBUG: loop_stop!\n");
 }
 
-void free_jumpoffs (S8 ind)
-{
-	if (cpu[ind].jumpoffs)
-	{
-		free (cpu[ind].jumpoffs);
-		cpu[ind].jumpoffs = NULL;
-	}
-}
-
 // L1VM normal run function
 // EDIT RUN
+//
+	#define FREE_MEM()  free (cpu[cpuc].jumpoffs); free (cpu);
+//
 S2 run (void *arg)
 {
 	S8 cpuc ALIGN = (S8) arg;
     S8 cpu_core ALIGN = cpuc; // POSIX THREAD CPU core ID, for the POSIX stuff!
+
+	// CPU handle with the scheduler data
+	struct cpus *cpu;
+
 	S8 i ALIGN;
 	S8 offset ALIGN;
 	U1 *bptr;
@@ -652,9 +636,16 @@ S2 run (void *arg)
 	S8 scheduler_max ALIGN = SCHEDULER_MAX;
 
 	// EDIT NEU
+	cpu = (struct cpus *) calloc (max_virtcpu, sizeof (struct cpus));
+	if (cpu == NULL)
+	{
+		printf ("ERROR: can't allocate CPU data!\n");
+		loop_stop ();
+		pthread_exit ((void *) 1);
+	}
+
 	cpu[cpuc].status = RUNNING;
 	cpu[cpuc].scheduler = SCHEDULER_OFF;  // run in single thread mode if new funcion call
-	cpu[cpuc].ep = 16;
 	cpu[cpuc].eoffs = 0;
 	cpu[cpuc].startpos = 0;
 	cpu[cpuc].overflow = 0;
@@ -667,82 +658,27 @@ S2 run (void *arg)
 	if (cpu[cpuc].jumpoffs == NULL)
 	{
 		printf ("ERROR: can't allocate %lli bytes for jumpoffsets!\n", code_size);
+		free (cpu);
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
 
-	/*
-	S8 i ALIGN;
-	U1 eoffs;                  	// offset to next opcode
-	S8 regi[MAXREG];   		  	// integer registers
-	F8 regd[MAXREG];			// double registers
-	S8 arg1 ALIGN;
-	S8 arg2 ALIGN;
-	S8 arg3 ALIGN;
-	S8 arg4 ALIGN;				// opcode arguments
-
-	S8 ep ALIGN = 0; 			// execution pointer in code segment
-	S8 startpos ALIGN;
-
-	U1 overflow = 0;			// MATH_LIMITS calculation overflow flag
-
-	U1 *sp;  					// stack pointer
-	U1 *sp_top;    				// stack pointer start address
-	U1 *sp_bottom;				// stack bottom
-	U1 *srcptr, *dstptr;
-
-	U1 *bptr;
-
-	U1 *data = data_global;
-
-	// jump call stack for jsr, jsra
-	S8 jumpstack[MAXSUBJUMPS];
-	S8 jumpstack_ind ALIGN = -1;		// empty
-
-	// threads
-	S8 new_cpu ALIGN;
-	S8 cpus_free ALIGN;
-
-    // thread attach to CPU core
-	#if CPU_SET_AFFINITY
-	cpu_set_t cpuset;
-	#endif
-
-	// for data input
-	U1 input_str[MAXINPUT];
-
-	// for time functions
-	time_t secs;
-
-	// for local data interrupt
-    S8 local_data_ind ALIGN = -1;
-
-	U1 do_memory_bounds_check = 1;
-
-	// jumpoffsets
-	S8 *jumpoffs ALIGN;
-	S8 offset ALIGN;
-	jumpoffs = (S8 *) calloc (code_size, sizeof (S8));
-	if (jumpoffs == NULL)
-	{
-		printf ("ERROR: can't allocate %lli bytes for jumpoffsets!\n", code_size);
-		loop_stop ();
-		pthread_exit ((void *) 1);
-	}
-    */
-
+	pthread_mutex_lock (&data_mutex);
 	cpu[cpuc].sp_top = threaddata[cpuc].sp_top_thread;
 	cpu[cpuc].sp_bottom = threaddata[cpuc].sp_bottom_thread;
 	cpu[cpuc].sp = threaddata[cpuc].sp_thread;
+	cpu[cpuc].ep = threaddata[cpuc].ep_startpos;
 
 	threaddata[cpuc].local_data = (U1 **) calloc (local_data_max, sizeof (U1*));
 	if (threaddata[cpuc].local_data == NULL)
 	{
+		pthread_mutex_unlock (&data_mutex);
 		printf ("ERROR: can't allocate %lli elements for local function data!\n", local_data_max);
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
+	pthread_mutex_unlock (&data_mutex);
 
 	{
 		S8 i ALIGN;
@@ -777,8 +713,6 @@ S2 run (void *arg)
 			*cpu[cpuc].dstptr-- = *cpu[cpuc].srcptr--;
 		}
 	}
-
-	cpu_ind = cpuc;
 
 	// jumptable for indirect threading execution
 	static void *jumpt[] =
@@ -965,7 +899,7 @@ S2 run (void *arg)
 		if (offset == 0)
 		{
 			printf ("FATAL error: setting jump offset failed! opcode: %i\n", code[i]);
-			free_jumpoffs (cpuc);
+			FREE_MEM();
 			loop_stop ();
 		    pthread_exit ((void *) 1);
 		}
@@ -992,11 +926,11 @@ S2 run (void *arg)
 
 	if (silent_run == 0)
 	{
-		printf ("CPU %lli ready\n", cpu_ind);
+		printf ("CPU %lli ready\n", cpuc );
 		show_code_data_size (code_size, data_mem_size);
 		printf ("ep: %lli\n\n", cpu[cpuc].startpos);
 		printf ("Donate at: https://ko-fi.com/P5P2Y3KP\nThank you!\n\n");
-	}
+ 	}
 #if DEBUG
 	printf ("stack pointer sp: %lli\n", (S8) sp);
 #endif
@@ -1023,7 +957,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1051,7 +985,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1083,7 +1017,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1119,7 +1053,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1162,7 +1096,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1206,7 +1140,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1233,7 +1167,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1264,7 +1198,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1299,7 +1233,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+	    FREE_MEM();
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1342,7 +1276,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg2, arg3) != 0)
 	{
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+	    FREE_MEM();
 		loop_stop ();
         pthread_exit ((void *) 1);
 	}
@@ -1466,7 +1400,7 @@ S2 run (void *arg)
     {
         printf ("FATAL ERROR: division by zero!\n");
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
 		pthread_exit ((void *) 1);
     }
@@ -1617,7 +1551,7 @@ S2 run (void *arg)
     {
         printf ("FATAL ERROR: division by zero!\n");
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
 		pthread_exit ((void *) 1);
     }
@@ -1985,7 +1919,7 @@ S2 run (void *arg)
 	{
 		PRINT_EPOS();
 		printf ("stpushb: error can't push!\n");
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -2005,7 +1939,7 @@ S2 run (void *arg)
 	{
 		PRINT_EPOS();
 		printf ("stpopb: error can't pop!\n");
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -2025,7 +1959,7 @@ S2 run (void *arg)
 	{
 		PRINT_EPOS();
 		printf ("stpushi: error can't push!\n");
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -2045,7 +1979,7 @@ S2 run (void *arg)
 	{
 		PRINT_EPOS();
 		printf ("stpopi: error can't pop!\n");
-		free_jumpoffs (cpuc);
+	    FREE_MEM();
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -2065,7 +1999,7 @@ S2 run (void *arg)
 	{
 		PRINT_EPOS();
 		printf ("stpushd: error can't push!\n");
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -2085,7 +2019,7 @@ S2 run (void *arg)
 	{
 		PRINT_EPOS();
 		printf ("stpopd: error can't pop!\n");
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -2147,7 +2081,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -2226,7 +2160,7 @@ S2 run (void *arg)
 	if (memory_bounds (arg1, arg2) != 0)
 	{
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -2274,7 +2208,7 @@ S2 run (void *arg)
 			if (load_module ((U1 *) &cpu[cpuc].data[cpu[cpuc].regi[arg2]], cpu[cpuc].regi[arg3]) != 0)
 			{
 				printf ("EXIT!\n");
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -2302,7 +2236,7 @@ S2 run (void *arg)
 			if (set_module_func (cpu[cpuc].regi[arg2], cpu[cpuc].regi[arg3], (U1 *) &cpu[cpuc].data[cpu[cpuc].regi[arg4]]) != 0)
 			{
 				printf ("EXIT!\n");
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -2323,7 +2257,7 @@ S2 run (void *arg)
 				// ERROR -> EXIT
 				// EDIT THREAD
 				retcode = 1;
-				free_jumpoffs (cpuc);
+			    FREE_MEM();
 				pthread_mutex_lock (&data_mutex);
 				threaddata[cpu_core].status = STOP;
 				pthread_mutex_unlock (&data_mutex);
@@ -2441,7 +2375,7 @@ S2 run (void *arg)
 							// ERROR string variable overflow!
 							printf ("ERROR: input: string variable overflow!\n");
 							PRINT_EPOS();
-							free_jumpoffs (cpuc);
+							FREE_MEM();
 							loop_stop ();
 							pthread_exit ((void *) 1);
 						}
@@ -2491,7 +2425,7 @@ S2 run (void *arg)
 			{
 				printf ("ERROR: shell argument index out of range!\n");
 				PRINT_EPOS();
-				free_jumpoffs (cpuc);
+			    FREE_MEM();
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -2503,7 +2437,7 @@ S2 run (void *arg)
 			{
 				printf ("ERROR: string overflow: shell argument %lli can't be saved in variable!\n", cpu[cpuc].regi[arg2]);
 				PRINT_EPOS();
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
         		pthread_exit ((void *) 1);
 			}
@@ -2664,7 +2598,7 @@ S2 run (void *arg)
 
 			printf ("FATAL ERROR: no start timer!\n");
 			PRINT_EPOS();
-			free_jumpoffs (cpuc);
+			FREE_MEM();
 			loop_stop ();
 			pthread_exit ((void *) 1);
 			break;
@@ -2674,7 +2608,7 @@ S2 run (void *arg)
 
 			printf ("FATAL ERROR: no end timer!\n");
 			PRINT_EPOS();
-			free_jumpoffs (cpuc);
+			FREE_MEM();
 			loop_stop ();
 			pthread_exit ((void *) 1);
 			break;
@@ -2688,7 +2622,7 @@ S2 run (void *arg)
 			{
 				printf ("ERROR: stack has data! Stack should be empty!\n");
 				PRINT_EPOS();
-				free_jumpoffs (cpuc);
+			    FREE_MEM();
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -2716,7 +2650,7 @@ S2 run (void *arg)
 			{
 				printf ("ERROR: int variable value in illegal range!\nvar: %lli : min: %lli, max: %lli\n\n", cpu[cpuc].regi[arg2], cpu[cpuc].regi[arg3], cpu[cpuc].regi[arg4]);
 				PRINT_EPOS();
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -2735,7 +2669,7 @@ S2 run (void *arg)
 			{
 				printf ("ERROR: double variable value in illegal range!\nvar: %.10lf : min: %.10lf, max: %.10lf\n\n", cpu[cpuc].regd[arg2], cpu[cpuc].regd[arg3], cpu[cpuc].regd[arg4]);
 				PRINT_EPOS();
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -2752,7 +2686,7 @@ S2 run (void *arg)
 			if (pointer_check (cpu[cpuc].regi[arg2], cpu[cpuc].regi[arg3]) != 0)
 			{
 				PRINT_EPOS();
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -2780,7 +2714,7 @@ S2 run (void *arg)
 			if (cpu[cpuc].sp == NULL)
 			{
 				PRINT_EPOS();
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
 				pthread_exit ((void *) 1);
 	       }
@@ -2799,7 +2733,7 @@ S2 run (void *arg)
 			{
 				// ERROR: variable pointer not found in vars!
 				PRINT_EPOS();
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -2815,7 +2749,7 @@ S2 run (void *arg)
 			{
 				// ERROR: variable not string!
 				PRINT_EPOS();
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -2850,7 +2784,7 @@ S2 run (void *arg)
 					printf ("EXIT\n");
 				}
 				retcode = 0;
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				pthread_mutex_lock (&data_mutex);
 				threaddata[cpu_core].status = STOP;
 				pthread_mutex_unlock (&data_mutex);
@@ -2942,7 +2876,7 @@ S2 run (void *arg)
             {
                 printf ("FATAL ERROR: JIT compiler: can't compile!\n");
 				PRINT_EPOS();
-                free_jumpoffs (cpuc);
+                FREE_MEM();
 				loop_stop ();
             	pthread_exit ((void *) 1);
             }
@@ -2959,7 +2893,7 @@ S2 run (void *arg)
 			{
 				// ERROR can't run JIT-code 
 				PRINT_EPOS();
-                free_jumpoffs (cpuc);
+                FREE_MEM();
 				loop_stop ();
             	pthread_exit ((void *) 1);
 			}
@@ -2972,7 +2906,7 @@ S2 run (void *arg)
 
 			printf ("FATAL ERROR: no JIT compiler: can't compile!\n");
 			PRINT_EPOS();
-			free_jumpoffs (cpuc);
+			FREE_MEM();
 			loop_stop ();
 			pthread_exit ((void *) 1);
 			break;
@@ -2982,7 +2916,7 @@ S2 run (void *arg)
 
 			printf ("FATAL ERROR: no JIT compiler: can't execute!\n");
 			PRINT_EPOS();
-			free_jumpoffs (cpuc);
+			FREE_MEM();
 			loop_stop ();
 			pthread_exit ((void *) 1);
 			break;
@@ -2998,7 +2932,7 @@ S2 run (void *arg)
 			}
 			arg2 = code[ep + 2];
 			retcode = cpu[cpuc].regi[arg2];
-			free_jumpoffs (cpuc);
+			FREE_MEM();
 			pthread_mutex_lock (&data_mutex);
 			threaddata[cpu_core].status = STOP;
 			pthread_mutex_unlock (&data_mutex);
@@ -3016,7 +2950,7 @@ S2 run (void *arg)
 		default:
 			printf ("FATAL ERROR: INTR0: %lli does not exist!\n", arg1);
 			PRINT_EPOS();
-			free_jumpoffs (cpuc);
+			FREE_MEM();
 			loop_stop ();
 			pthread_exit ((void *) 1);
 	}
@@ -3058,7 +2992,7 @@ S2 run (void *arg)
 
 				printf ("ERROR: can't start new CPU core!\n");
 				PRINT_EPOS();
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -3081,6 +3015,8 @@ S2 run (void *arg)
 			threaddata[cpu[cpuc].new_cpu].sp_thread = threaddata[cpu[cpuc].new_cpu].sp_top_thread - (cpu[cpuc].sp_top - cpu[cpuc].sp);
 			threaddata[cpu[cpuc].new_cpu].ep_startpos = arg2;
 			threaddata[cpu[cpuc].new_cpu].exit_request = 0;
+
+			threaddata[cpu[cpuc].new_cpu].status = RUNNING;
 			pthread_mutex_unlock (&data_mutex);
 
             // create new POSIX thread
@@ -3089,7 +3025,7 @@ S2 run (void *arg)
 			{
 				printf ("ERROR: can't start new thread!\n");
 				PRINT_EPOS();
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -3108,9 +3044,12 @@ S2 run (void *arg)
             }
             #endif
 
+			/*
 			pthread_mutex_lock (&data_mutex);
 			threaddata[cpu[cpuc].new_cpu].status = RUNNING;
 			pthread_mutex_unlock (&data_mutex);
+			*/
+
 			cpu[cpuc].eoffs = 5;
 			break;
 
@@ -3122,6 +3061,8 @@ S2 run (void *arg)
 			{
 				printf ("JOINING THREADS...\n");
 			}
+
+			cpu[cpuc].status = WAITING;
 
 			U1 wait = 1, running;
 			while (wait == 1)
@@ -3145,6 +3086,8 @@ S2 run (void *arg)
 
 				usleep (200);
 			}
+
+			cpu[cpuc].status = RUNNING;
 
 			cpu[cpuc].eoffs = 5;
 			break;
@@ -3211,7 +3154,7 @@ S2 run (void *arg)
 			{
 				printf ("interrupt 1: set global mutex index overflow!\n");
 				PRINT_EPOS();
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -3232,7 +3175,7 @@ S2 run (void *arg)
 			{
 				printf ("interrupt 1: unset global mutex index overflow!\n");
 				PRINT_EPOS();
-				free_jumpoffs (cpuc);;
+				FREE_MEM();;
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -3252,7 +3195,7 @@ S2 run (void *arg)
 				if (threaddata[cpu_core].data == NULL)
 				{
 					printf ("interrupt 1: allocate local data: out of memory!\n");
-					free_jumpoffs (cpuc);
+					FREE_MEM();
 					loop_stop ();
 					pthread_exit ((void *) 1);
 				}
@@ -3262,7 +3205,7 @@ S2 run (void *arg)
 			if (memcpy (threaddata[cpu_core].data, data_global, data_local_size) == NULL)
 			{
 				printf ("interrupt 1: allocate local data: memory copy error!\n");
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
 				free (threaddata[cpu_core].data);
 				pthread_exit ((void *) 1);
@@ -3280,7 +3223,7 @@ S2 run (void *arg)
 			{
 				// ERROR no data local allocated!
 				printf ("interrupt 1: switch to local data: local data not allocated!\n");
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -3310,7 +3253,7 @@ S2 run (void *arg)
 			{
 				printf ("interrupt 1: allocate local function data: out of memory!\n");
 
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -3323,7 +3266,7 @@ S2 run (void *arg)
 				if (threaddata[cpu_core].local_data[cpu[cpuc].local_data_ind] == NULL)
 				{
 					printf ("interrupt 1: allocate local function data: out of memory!\n");
-					free_jumpoffs (cpuc);
+					FREE_MEM();
 					loop_stop ();
 					pthread_exit ((void *) 1);
 				}
@@ -3333,7 +3276,7 @@ S2 run (void *arg)
 			if (memcpy (threaddata[cpu_core].local_data[cpu[cpuc].local_data_ind], data_global, data_local_size) == NULL)
 			{
 				printf ("interrupt 1: allocate local function data: memory copy error!\n");
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
 				free (threaddata[cpu_core].data);
 				pthread_exit ((void *) 1);
@@ -3350,7 +3293,7 @@ S2 run (void *arg)
 			{
 				// ERROR no data local allocated!
 				printf ("interrupt 1: switch to local function data: local data not allocated!\n");
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
@@ -3414,14 +3357,14 @@ S2 run (void *arg)
 			{
 				printf ("interrupt 1: 15: load code: error loading bytecode: %s !\n", &cpu[cpuc].data[cpu[cpuc].regi[arg2]]);
 
-				free_jumpoffs (cpuc);
+				FREE_MEM();
 				loop_stop ();
 				pthread_exit ((void *) 1);
 			}
 
 		    // global flag set to on:
 		    bytecode_hot_reload = 1;
-			free_jumpoffs (cpuc);
+			FREE_MEM();
 			pthread_mutex_lock (&data_mutex);
 			threaddata[cpu_core].status = STOP;
 			// if (threaddata[cpu_core].data != NULL) free (threaddata[cpu_core].data);
@@ -3490,7 +3433,16 @@ S2 run (void *arg)
 			{
 				S8 new_vcpu ALIGN = -1;
 
-				for (i = 0; i < max_virtcpu; i++)
+				if (max_cpu >= max_virtcpu)
+				{
+					printf ("ERROR: can't start new virtual CPU core! max_virtcpu must be greater as: %lli\n", max_cpu);
+					PRINT_EPOS();
+					FREE_MEM();
+					loop_stop ();
+					pthread_exit ((void *) 1);
+				}
+
+				for (i = max_cpu; i < max_virtcpu; i++)
 				{
 					if (cpu[i].status == STOP)
 					{
@@ -3505,7 +3457,7 @@ S2 run (void *arg)
 
 					printf ("ERROR: can't start new virtual CPU core!\n");
 					PRINT_EPOS();
-					free_jumpoffs (cpuc);
+					FREE_MEM();
 					loop_stop ();
 					pthread_exit ((void *) 1);
 				}
@@ -3514,7 +3466,7 @@ S2 run (void *arg)
 				{
 					printf ("ERROR: can't start new virtual CPU core! ep: 0!\n");
 					PRINT_EPOS();
-					free_jumpoffs (cpuc);
+					FREE_MEM();
 					loop_stop ();
 					pthread_exit ((void *) 1);
 				}
@@ -3559,9 +3511,12 @@ S2 run (void *arg)
 					}
 				}
 
+				pthread_mutex_lock (&data_mutex);
 				cpu[new_vcpu].jumpoffs = (S8 *) calloc (code_size, sizeof (S8));
 				if (cpu[new_vcpu].jumpoffs == NULL)
 				{
+					pthread_mutex_unlock (&data_mutex);
+
 					printf ("ERROR: can't allocate %lli bytes for jumpoffsets!\n", code_size);
 					loop_stop ();
 					pthread_exit ((void *) 1);
@@ -3727,17 +3682,19 @@ S2 run (void *arg)
 								break;
 						}
 					}
+
 					if (offset == 0)
 					{
+						pthread_mutex_unlock (&data_mutex);
 						printf ("FATAL error: setting jump offset failed! opcode: %i\n", code[i]);
-						free_jumpoffs (cpuc);
+						FREE_MEM();
 						loop_stop ();
 						pthread_exit ((void *) 1);
 					}
 
 					if (i >= code_size) break;
 				}
-
+				pthread_mutex_unlock (&data_mutex);
 				cpu[cpuc].regi[arg3] = new_vcpu;
 			}
 			cpu[cpuc].eoffs = 5;
@@ -3836,7 +3793,7 @@ S2 run (void *arg)
 		default:
 			printf ("FATAL ERROR: INTR1: %lli does not exist!\n", arg1);
 			PRINT_EPOS();
-			free_jumpoffs (cpuc);
+			FREE_MEM();
 			loop_stop ();
 			pthread_exit ((void *) 1);
 	}
@@ -3964,7 +3921,7 @@ S2 run (void *arg)
 	{
 		printf ("ERROR: jmpa illegal label!\n");
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -3981,7 +3938,7 @@ S2 run (void *arg)
 	{
 		printf ("ERROR: jumpstack full, no more jsr!\n");
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -4010,7 +3967,7 @@ S2 run (void *arg)
 	{
 		printf ("ERROR: jumpstack full, no more jsra!\n");
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -4027,7 +3984,7 @@ S2 run (void *arg)
 	{
 		printf ("ERROR: jsra illegal label!\n");
 		PRINT_EPOS();
-		free_jumpoffs (cpuc);
+		FREE_MEM();
 		loop_stop ();
 		pthread_exit ((void *) 1);
 	}
@@ -4043,7 +4000,7 @@ S2 run (void *arg)
     {
         printf ("ERROR: RTS on an empty jumpstack (underflow)!\n");
         PRINT_EPOS();
-        free_jumpoffs (cpuc);
+        FREE_MEM();
         loop_stop ();
         pthread_exit ((void *) 1);
     }
@@ -4342,7 +4299,7 @@ void show_run_info (void)
 	printf ("internal type check: S8 = %lli bytes, F8 = %lli bytes. All OK!\n", size_int64, size_double64);
 	print_host_os ();
 
-	#if defined(__clang__)
+	#if defined(__clang__e)
 		printf ("C compiler: clang version %s\n", __clang_version__);
 	#elif defined(__GNUC__) || defined(__GNUG__)
 		printf ("C compiler: gcc version %s\n", __VERSION__);
@@ -4930,14 +4887,6 @@ int main (int ac, char *av[])
 	if (threaddata == NULL)
 	{
 		printf ("ERROR: can't allocate threaddata!\n");
-		cleanup ();
-		exit (1);
-	}
-
-	cpu = (struct cpu *) calloc (max_virtcpu, sizeof (struct cpu));
-	if (cpu == NULL)
-	{
-		printf ("ERROR: can't allocate CPU data!\n");
 		cleanup ();
 		exit (1);
 	}
