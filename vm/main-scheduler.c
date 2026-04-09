@@ -3443,15 +3443,6 @@ S2 run (void *arg)
 			{
 				S8 new_vcpu ALIGN = -1;
 
-				if (max_cpu >= max_virtcpu)
-				{
-					printf ("ERROR: can't start new virtual CPU core! max_virtcpu must be greater as: %lli\n", max_cpu);
-					PRINT_EPOS();
-					FREE_MEM();
-					loop_stop ();
-					pthread_exit ((void *) 1);
-				}
-
 				for (i = 0; i < max_virtcpu; i++)
 				{
 					if (cpu[i].status == STOP)
