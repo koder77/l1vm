@@ -637,9 +637,6 @@ S2 run (void *arg)
 
 	S8 scheduler_max ALIGN = SCHEDULER_MAX;
 
-	printf ("DEBUG: run CPU: %lli\n", cpu_core);
-
-
 	// EDIT NEU
 	cpu = (struct cpus *) calloc (max_virtcpu, sizeof (struct cpus));
 	if (cpu == NULL)
