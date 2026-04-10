@@ -2489,6 +2489,8 @@ S2 run (void *arg)
 
 		case 17:
 			// return current time
+			ep = cpu[cpuc].ep;
+
 			arg2 = code[ep + 2];
 			arg3 = code[ep + 3];
 			arg4 = code[ep + 4];
