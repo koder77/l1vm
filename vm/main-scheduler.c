@@ -669,7 +669,7 @@ S2 run (void *arg)
 	cpu[cpuc].sp_top = threaddata[cpuc].sp_top_thread;
 	cpu[cpuc].sp_bottom = threaddata[cpuc].sp_bottom_thread;
 	cpu[cpuc].sp = threaddata[cpuc].sp_thread;
-	cpu[cpuc].ep = threaddata[cpuc].ep_startpos;  // <- HIER!!!
+	cpu[cpuc].ep = threaddata[cpuc].ep_startpos;
 
 	threaddata[cpuc].local_data = (U1 **) calloc (local_data_max, sizeof (U1*));
 	if (threaddata[cpuc].local_data == NULL)
@@ -3044,7 +3044,7 @@ S2 run (void *arg)
 			threaddata[cpu[cpuc].new_cpu].ep_startpos = arg2;
 			threaddata[cpu[cpuc].new_cpu].exit_request = 0;
 
-			printf ("DEBUG: INTR1: new thread CPU: %lli, epos: %lli\n", cpu[cpuc].new_cpu, threaddata[cpu[cpuc].new_cpu].ep_startpos);
+			//printf ("DEBUG: INTR1: new thread CPU: %lli, epos: %lli\n", cpu[cpuc].new_cpu, threaddata[cpu[cpuc].new_cpu].ep_startpos);
 
 			threaddata[cpu[cpuc].new_cpu].status = RUNNING;
 			pthread_mutex_unlock (&data_mutex);
