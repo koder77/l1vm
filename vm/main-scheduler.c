@@ -649,7 +649,7 @@ S2 run (void *arg)
 	cpu[cpuc].status = RUNNING;
 	cpu[cpuc].scheduler = SCHEDULER_OFF;  // run in single thread mode if new funcion call
 	cpu[cpuc].eoffs = 0;
-	cpu[cpuc].startpos = 0;
+	//cpu[cpuc].startpos = 0;
 	cpu[cpuc].overflow = 0;
 	cpu[cpuc].data = data_global;
 	cpu[cpuc].jumpstack_ind = -1;
@@ -669,7 +669,7 @@ S2 run (void *arg)
 	cpu[cpuc].sp_top = threaddata[cpuc].sp_top_thread;
 	cpu[cpuc].sp_bottom = threaddata[cpuc].sp_bottom_thread;
 	cpu[cpuc].sp = threaddata[cpuc].sp_thread;
-	cpu[cpuc].ep = threaddata[cpuc].ep_startpos;
+	cpu[cpuc].ep = threaddata[cpuc].ep_startpos;  // <- HIER!!!
 
 	threaddata[cpuc].local_data = (U1 **) calloc (local_data_max, sizeof (U1*));
 	if (threaddata[cpuc].local_data == NULL)
@@ -700,7 +700,7 @@ S2 run (void *arg)
 		printf ("%lli sp caller top: %lli\n", cpuc, (S8) threaddata[cpuc].sp_top);
 		printf ("%lli sp caller bottom: %lli\n", cpuc, (S8) threaddata[cpuc].sp_bottom);
 	}
-
+/*
 	cpu[cpuc].startpos = threaddata[cpuc].ep_startpos;
 	if (threaddata[cpuc].sp != threaddata[cpuc].sp_top)
 	{
@@ -714,6 +714,17 @@ S2 run (void *arg)
 			// printf ("dstptr stack: %lli\n", (S8) dstptr);
 			*cpu[cpuc].dstptr-- = *cpu[cpuc].srcptr--;
 		}
+	}
+	*/
+
+	size_t stack_size_bytes = (uint8_t*)threaddata[cpuc].sp_top - (uint8_t*)threaddata[cpuc].sp;
+
+	if (stack_size_bytes > 0) {
+    // Wir kopieren von der echten Spitze (sp) bis zum Boden (sp_top)
+    // Ziel ist der neue sp_thread
+		memcpy((void*)threaddata[cpuc].sp_thread,
+           (void*)threaddata[cpuc].sp,
+           stack_size_bytes);
 	}
 
 	// jumptable for indirect threading execution
@@ -938,9 +949,13 @@ S2 run (void *arg)
 	printf ("stack pointer sp: %lli\n", (S8) cpu[cpuc].sp);
 #endif
 
-	// EDIT OPCODES
-	cpu[cpuc].ep = cpu[cpuc].startpos; cpu[cpuc].eoffs = 0;
-    ep = cpu[cpuc].ep;
+	cpu[cpuc].startpos = threaddata[cpuc].ep_startpos;
+
+	cpu[cpuc].ep = cpu[cpuc].startpos;
+	cpu[cpuc].eoffs = 0;
+	ep = cpu[cpuc].ep;
+
+	//printf("CRITICAL: CPU %lli starting interpretation at EP: %lli, Opcode: %i\n", cpuc, ep, code[ep]);
 
     SCHEXE_NEXT();
 
@@ -3028,6 +3043,8 @@ S2 run (void *arg)
 			threaddata[cpu[cpuc].new_cpu].sp_thread = threaddata[cpu[cpuc].new_cpu].sp_top_thread - (cpu[cpuc].sp_top - cpu[cpuc].sp);
 			threaddata[cpu[cpuc].new_cpu].ep_startpos = arg2;
 			threaddata[cpu[cpuc].new_cpu].exit_request = 0;
+
+			printf ("DEBUG: INTR1: new thread CPU: %lli, epos: %lli\n", cpu[cpuc].new_cpu, threaddata[cpu[cpuc].new_cpu].ep_startpos);
 
 			threaddata[cpu[cpuc].new_cpu].status = RUNNING;
 			pthread_mutex_unlock (&data_mutex);
