@@ -187,12 +187,11 @@ struct cpus
 
 #define SCHEXE_NEXT() \
     cpu[cpuc].ep += cpu[cpuc].eoffs; \
-    cpu[cpuc].eoffs = 0; \
     ep = cpu[cpuc].ep; \
     if (cpu[cpuc].scheduler == SCHEDULER_OFF) {							\
         goto *jumpt[code[ep]]; \
     } \
-    if (ep >= code_size || cpu[cpuc].status == STOP) { \
+    if (ep >= code_size) { \
         cpu[cpuc].status = STOP; \
     } \
     goto task_scheduler;
@@ -4100,7 +4099,6 @@ task_scheduler:
     S8 next_idx = cpuc;
     for (S8 i = 1; i < max_virtcpu; i++)
     {
-        // Modulo-Ersatz
         if (++next_idx >= max_virtcpu) next_idx = 0;
 
         if (cpu[next_idx].status == RUNNING)
