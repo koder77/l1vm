@@ -910,7 +910,7 @@ S2 run (void *arg)
 	}
 
 	// debug
-#if DEBUG
+	/* #if DEBUG
 	printf ("code DUMP:\n");
 	for (i = 0; i < code_size; i++)
 	{
@@ -918,6 +918,7 @@ S2 run (void *arg)
 	}
 	printf ("DUMP END\n");
 #endif
+	*/
 
 	// init registers
 	for (i = 0; i < 256; i++)
@@ -934,7 +935,7 @@ S2 run (void *arg)
 		printf ("Donate at: https://ko-fi.com/P5P2Y3KP\nThank you!\n\n");
  	}
 #if DEBUG
-	printf ("stack pointer sp: %lli\n", (S8) sp);
+	printf ("stack pointer sp: %lli\n", (S8) cpu[cpuc].sp);
 #endif
 
 	// EDIT OPCODES
