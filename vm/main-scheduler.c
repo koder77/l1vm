@@ -637,6 +637,9 @@ S2 run (void *arg)
 
 	S8 scheduler_max ALIGN = SCHEDULER_MAX;
 
+	printf ("DEBUG: run CPU: %lli\n", cpu_core);
+
+
 	// EDIT NEU
 	cpu = (struct cpus *) calloc (max_virtcpu, sizeof (struct cpus));
 	if (cpu == NULL)
@@ -938,7 +941,13 @@ S2 run (void *arg)
 		cpu[cpuc].regd[i] = 0.0;
 	}
 
-	if (silent_run == 0)
+	cpu[cpuc].startpos = threaddata[cpuc].ep_startpos;
+
+	cpu[cpuc].ep = cpu[cpuc].startpos;
+	cpu[cpuc].eoffs = 0;
+	ep = cpu[cpuc].ep;
+
+if (silent_run == 0)
 	{
 		printf ("CPU %lli ready\n", cpuc );
 		show_code_data_size (code_size, data_mem_size);
@@ -949,11 +958,6 @@ S2 run (void *arg)
 	printf ("stack pointer sp: %lli\n", (S8) cpu[cpuc].sp);
 #endif
 
-	cpu[cpuc].startpos = threaddata[cpuc].ep_startpos;
-
-	cpu[cpuc].ep = cpu[cpuc].startpos;
-	cpu[cpuc].eoffs = 0;
-	ep = cpu[cpuc].ep;
 
 	//printf("CRITICAL: CPU %lli starting interpretation at EP: %lli, Opcode: %i\n", cpuc, ep, code[ep]);
 
