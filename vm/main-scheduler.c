@@ -700,7 +700,7 @@ S2 run (void *arg)
 		printf ("%lli sp caller top: %lli\n", cpuc, (S8) threaddata[cpuc].sp_top);
 		printf ("%lli sp caller bottom: %lli\n", cpuc, (S8) threaddata[cpuc].sp_bottom);
 	}
-/*
+
 	cpu[cpuc].startpos = threaddata[cpuc].ep_startpos;
 	if (threaddata[cpuc].sp != threaddata[cpuc].sp_top)
 	{
@@ -715,7 +715,6 @@ S2 run (void *arg)
 			*cpu[cpuc].dstptr-- = *cpu[cpuc].srcptr--;
 		}
 	}
-	*/
 
 	size_t stack_size_bytes = (uint8_t*)threaddata[cpuc].sp_top - (uint8_t*)threaddata[cpuc].sp;
 
