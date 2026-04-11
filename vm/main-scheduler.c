@@ -716,16 +716,6 @@ S2 run (void *arg)
 		}
 	}
 
-	size_t stack_size_bytes = (uint8_t*)threaddata[cpuc].sp_top - (uint8_t*)threaddata[cpuc].sp;
-
-	if (stack_size_bytes > 0) {
-    // Wir kopieren von der echten Spitze (sp) bis zum Boden (sp_top)
-    // Ziel ist der neue sp_thread
-		memcpy((void*)threaddata[cpuc].sp_thread,
-           (void*)threaddata[cpuc].sp,
-           stack_size_bytes);
-	}
-
 	// jumptable for indirect threading execution
 	static void *jumpt[] =
 	{

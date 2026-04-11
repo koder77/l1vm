@@ -17,7 +17,7 @@
 // machine
 #define MAXCPUCORES	    		9		// threads that can be runned, set this to your logical CPU cores + 1
 										// for example to 5 on a 4 CPU core CPU!
-#define MAXVIRTCPU                  100 // for the scheduler CPU cores
+#define MAXVIRTCPU                  16 // for the scheduler CPU cores
 
 #define MACHINE_BIG_ENDIAN      0       // endianess of host machine, = 0 little endianess, 1 = big endianness
 
