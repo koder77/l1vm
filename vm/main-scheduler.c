@@ -940,7 +940,6 @@ S2 run (void *arg)
 
 	cpu[cpuc].startpos = threaddata[cpuc].ep_startpos;
 
-	cpu[cpuc].ep = cpu[cpuc].startpos;
 	cpu[cpuc].eoffs = 0;
 	ep = cpu[cpuc].ep;
 
@@ -3065,9 +3064,9 @@ if (silent_run == 0)
             // LOCK thread to CPU core
 
             CPU_ZERO (&cpuset);
-            CPU_SET (new_cpu, &cpuset);
+            CPU_SET (cpu[cpuc].new_cpu, &cpuset);
 
-            if (pthread_setaffinity_np (threaddata[new_cpu].id, sizeof(cpu_set_t), &cpuset) != 0)
+            if (pthread_setaffinity_np (threaddata[cpu[cpuc].new_cpu], sizeof(cpu_set_t), &cpuset) != 0)
             {
                     printf ("ERROR: setting pthread affinity of thread: %lli\n", new_cpu);
 					PRINT_EPOS();
