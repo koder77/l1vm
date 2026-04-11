@@ -3012,10 +3012,11 @@ if (silent_run == 0)
                     break;
                 }
             }
-	        pthread_mutex_unlock (&data_mutex);
+
 			if (cpu[cpuc].new_cpu == -1)
 			{
 				// maximum of CPU cores used, no new core possible
+				pthread_mutex_lock (&data_mutex);
 
 				printf ("ERROR: can't start new CPU core!\n");
 				PRINT_EPOS();
@@ -3032,7 +3033,6 @@ if (silent_run == 0)
 				printf ("current CPU: %lli, starts new CPU: %lli\n", cpu_core, cpu[cpuc].new_cpu);
 			}
 
-			pthread_mutex_lock (&data_mutex);
 			threaddata[cpu[cpuc].new_cpu].sp = cpu[cpuc].sp;
 			threaddata[cpu[cpuc].new_cpu].sp_top = cpu[cpuc].sp_top;
 			threaddata[cpu[cpuc].new_cpu].sp_bottom = cpu[cpuc].sp_bottom;
@@ -3051,6 +3051,8 @@ if (silent_run == 0)
             // create new POSIX thread
 			if (pthread_create (&threaddata[cpu[cpuc].new_cpu].id, NULL, (void *) run, (void*) cpu[cpuc].new_cpu) != 0)
 			{
+				pthread_mutex_unlock (&data_mutex);
+
 				printf ("ERROR: can't start new thread!\n");
 				PRINT_EPOS();
 				FREE_MEM();
@@ -3065,12 +3067,15 @@ if (silent_run == 0)
             CPU_ZERO (&cpuset);
             CPU_SET (cpu[cpuc].new_cpu, &cpuset);
 
-            if (pthread_setaffinity_np (threaddata[cpu[cpuc].new_cpu], sizeof(cpu_set_t), &cpuset) != 0)
+            if (pthread_setaffinity_np (threaddata[cpu[cpuc].new_cpu].id, sizeof(cpu_set_t), &cpuset) != 0)
             {
                     printf ("ERROR: setting pthread affinity of thread: %lli\n", new_cpu);
 					PRINT_EPOS();
             }
             #endif
+
+			pthread_mutex_unlock (&data_mutex);
+
 
 			/*
 			pthread_mutex_lock (&data_mutex);
