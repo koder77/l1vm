@@ -3456,7 +3456,7 @@ if (silent_run == 0)
 			{
 				S8 new_vcpu ALIGN = -1;
 
-				for (i = 0; i < max_virtcpu; i++)
+				for (i = 1; i < max_virtcpu; i++)
 				{
 					if (cpu[i].status == STOP)
 					{
@@ -3464,6 +3464,8 @@ if (silent_run == 0)
 						break;
 					}
 				}
+
+				// printf ("INTR1: 19: new CPU: %lli\n", new_vcpu);
 
 				if (new_vcpu == -1)
 				{
@@ -3756,6 +3758,8 @@ if (silent_run == 0)
 
 				for (i = 1; i < max_virtcpu; i++)
 				{
+					if (i == cpuc) continue;
+
 					if (cpu[i].status == RUNNING)
 					{
 						status = RUNNING;
