@@ -1,6 +1,6 @@
 # zerobuild makefile
 
-[executable, name = l1vm-sched-nojit]
+[executable, name = l1os]
 sources = main-scheduler.c, load-object.c, debugger.c, ../lib-func/string.c, ../lib-func/code_datasize.c, ../lib-func/memory_bounds.c
 
 includes = ../include, /usr/local/include
