@@ -4309,7 +4309,7 @@ void show_run_info (void)
 		exit (1);
 	}
 
-	printf ("l1vos - %s -%s\n", VM_VERSION_STR, COPYRIGHT_STR);
+	printf ("l1vms - %s -%s\n", VM_VERSION_STR, COPYRIGHT_STR);
 	printf (">>> %s <<<\n", MOTTO_STR);
 	printf ("CPU cores: %lli (STATIC)\n", max_cpu);
     printf ("task scheduler: %lli vcores\n", max_virtcpu);
