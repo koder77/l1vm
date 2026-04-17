@@ -1,4 +1,4 @@
-L1VM README  2026-03-29
+L1VM README  2026-04-17
 =======================
 ![alt text](https://midnight-coding.de/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -13,9 +13,8 @@ NOTE: You can join me at my [![Discord](https://img.shields.io/badge/Discord-L1V
 NOTE: <a href="https://midnight-coding.de/blog/software/l1vm/2025/11/30/L1VM-install-guide.html">The programs and includes installation guide is here. You need the base package to use L1VM.</a>
 
 <b>
-I AM WORKING ON THE GITHUB CI/CD PIPELINE.
-The current status is "broken".
-NOTE: I did check the Debian install script on my machine: it worked fine! So don't be confused about the CI/CD error messages here! The install scripts should work. 
+NEW: There is a new version of L1VM: L1VMS. It has a task scheduler for preemptive multitasking. In a POSIX thread there can be multiple virtual threads started.
+The zerobuild makefile is: "zerobuild-l1vms-relro-nojit.txt".
 </b>
 <br><br>
 The Brackets language is a modern, general-purpose programming language. The focus is on reliability and speed. <br>
