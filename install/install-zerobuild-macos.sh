@@ -12,8 +12,8 @@ export DYLD_LIBRARY_PATH="$HOME/l1vm/bin:$DYLD_LIBRARY_PATH"
 
 #install brew
 xcode-select --install
-find / -name floatfann.h
-exit 0
+#find / -name floatfann.h
+# fsexit 0
 
 # macOS 13 build
 cp /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/machine/endian.h /usr/local/include
@@ -40,6 +40,10 @@ brew install openssl
 brew install cmake
 brew install make
 brew install git
+
+
+find / -name floatfann.h
+exit 0
 
 
 clang --version
