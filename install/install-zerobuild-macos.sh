@@ -42,7 +42,9 @@ brew install make
 brew install git
 
 
-find / -name stdio.h
+#find / -name stdio.h
+echo "SDK INCLUDE PATH:"
+xcrun --show-sdk-path
 exit 0
 
 
