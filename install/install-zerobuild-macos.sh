@@ -43,6 +43,7 @@ brew install git
 
 
 #find / -name stdio.h
+
 echo "SDK INCLUDE PATH:"
 xcrun --show-sdk-path
 exit 0
