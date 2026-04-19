@@ -21,6 +21,11 @@ cp /usr/local/include/c++/11/parallel/features.h /usr/local/include
 
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
+echo "SDK INCLUDE PATH:"
+xcrun --show-sdk-path
+exit 0
+
+
 #install clang
 brew update
 brew upgrade
@@ -43,11 +48,6 @@ brew install git
 
 
 #find / -name stdio.h
-
-echo "SDK INCLUDE PATH:"
-xcrun --show-sdk-path
-exit 0
-
 
 clang --version
 echo "building compiler, assembler and VM..."
