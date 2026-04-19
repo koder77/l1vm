@@ -42,7 +42,7 @@ brew install make
 brew install git
 
 
-find / -name floatfann.h
+find / -name stdio.h
 exit 0
 
 
