@@ -3,7 +3,7 @@
 [executable, shared, name = libl1vmendianess.so]
 sources = endianess.c
 
-includes = ../include, /usr/local/include
+includes = ../include, /Applications/Xcode_16.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include
 
 ccompiler = $CC
 c++compiler = $CCPP
