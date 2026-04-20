@@ -48,8 +48,8 @@ brew install git
 
 #find / -name stdio.h
 #echo "SDL include search:"
-find / -name libfann*
-exit 0
+#find / -name libfann*
+#exit 0
 
 
 clang --version
