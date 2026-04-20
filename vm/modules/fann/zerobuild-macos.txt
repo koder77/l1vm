@@ -11,4 +11,4 @@ linker = ld
 aflags = "cru"
 
 cflags = "-O3 -fomit-frame-pointer -Wall"
-lflags = "-bundle -undefined dynamic_lookup -lm -lfann"
+lflags = "-bundle -undefined dynamic_lookup -lm  -L/System/Volumes/Data/opt/homebrew/lib -lfann"
