@@ -23,6 +23,9 @@ cp /usr/local/include/c++/11/parallel/features.h /usr/local/include
 
 echo "SDK INCLUDE PATH:"
 xcrun --show-sdk-path
+
+echo "SDL include search:"
+find / -name SDL2_gfxPrimitives.h
 exit 0
 
 
