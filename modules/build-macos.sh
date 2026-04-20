@@ -18,8 +18,8 @@ cd ../mem-obj
 zerobuild zerobuild-macos.txt force
 #cd ../mpfr-c++
 #zerobuild zerobuild-macos.txt force
-cd ../net
-zerobuild zerobuild-macos.txt force
+#cd ../net
+#zerobuild zerobuild-macos.txt force
 cd ../process
 zerobuild zerobuild-macos.txt force
 cd ../rs232-libserialport
