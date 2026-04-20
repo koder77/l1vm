@@ -3,7 +3,7 @@
 [executable, shared, name = libl1vmmath.so]
 sources =  math.c, mt19937-64.c, ../lib/memory_bounds.c
 
-includes = ../include, /usr/local/include
+includes = ../include, /usr/local/include, /System/Volumes/Data/opt/homebrew/include
 
 ccompiler = $CC
 c++compiler = $CCPP
@@ -12,4 +12,4 @@ linker = ld
 aflags = "cru"
 
 cflags = "-O3 -fomit-frame-pointer -Wall"
-lflags = "-bundle -undefined dynamic_lookup -lm -lsodium"
+lflags = "-bundle -undefined dynamic_lookup -lm  -L/System/Volumes/Data/opt/homebrew/lib -lsodium"

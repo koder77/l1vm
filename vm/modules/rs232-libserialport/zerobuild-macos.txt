@@ -3,7 +3,7 @@
 [executable, shared, name = libl1vmrs232.so]
 sources =  main.c, ../../../lib-func/string.c
 
-includes = ../include, /usr/local/include
+includes = ../include, /usr/local/include, /System/Volumes/Data/opt/homebrew/include
 
 ccompiler = $CC
 c++compiler = $CCPP
@@ -12,4 +12,4 @@ linker = ld
 aflags = "cru"
 
 cflags = "-O3 -fomit-frame-pointer -Wall"
-lflags = "-bundle -undefined dynamic_lookup -lserialport"
+lflags = "-bundle -undefined dynamic_lookup -L/System/Volumes/Data/opt/homebrew/lib -lserialport"

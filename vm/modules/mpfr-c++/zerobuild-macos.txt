@@ -3,7 +3,7 @@
 [executable, shared, name = libl1vmmpfr.so]
 sources = mpfr-combined.cpp, ../file/file-sandbox.c, ../../../lib-func/string.c, ../lib/memory_bounds.c
 
-includes = ../include, /usr/local/include, openbsd
+includes = ../include, /usr/local/include, openbsd, /System/Volumes/Data/opt/homebrew/include
 
 ccompiler = $CC
 c++compiler = $CCPP
@@ -12,4 +12,4 @@ linker = ld
 aflags = "cru"
 
 cflags = "-O3 -fomit-frame-pointer -Wall -DMPFR_USE_INTMAX_T -DMPFR_USE_NO_MACRO"
-lflags = "-bundle -undefined dynamic_lookup -lmpfr -lgmp -lstdc++fs"
+lflags = "-bundle -undefined dynamic_lookup -L/System/Volumes/Data/opt/homebrew/lib -lmpfr -lgmp -lstdc++fs"
