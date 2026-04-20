@@ -3,7 +3,7 @@
 [executable, shared, name = libl1vmsdl.so]
 sources =  sdl.c, gui.c, string.c, ../file/file-sandbox.c, ../lib/memory_bounds.c
 
-includes = ../include, /usr/local/include, /usr/include/machine, /System/Volumes/Data/opt/homebrew/include
+includes = ../include, /usr/local/include, /usr/include/machine, /System/Volumes/Data/opt/homebrew/include, /Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/machine
 
 ccompiler = $CC
 c++compiler = $CCPP
