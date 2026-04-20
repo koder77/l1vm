@@ -24,10 +24,6 @@ cp /usr/local/include/c++/11/parallel/features.h /usr/local/include
 echo "SDK INCLUDE PATH:"
 xcrun --show-sdk-path
 
-echo "SDL include search:"
-find / -name SDL2_gfxPrimitives.h
-exit 0
-
 
 #install clang
 brew update
@@ -51,6 +47,10 @@ brew install git
 
 
 #find / -name stdio.h
+echo "SDL include search:"
+find / -name SDL2_gfxPrimitives.h
+exit 0
+
 
 clang --version
 echo "building compiler, assembler and VM..."
