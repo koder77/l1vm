@@ -40,11 +40,11 @@ cp ../vm/modules/math/libl1vm* .
 cp ../vm/modules/math-vect/libl1vm* .
 #cp ../vm/modules/mem/libl1vm* .
 cp ../vm/modules/mem-obj/libl1vm* .
-cp ../vm/modules/mpfr-c++/libl1vm* .
-cp ../vm/modules/net/libl1vm* .
+#cp ../vm/modules/mpfr-c++/libl1vm* .
+#cp ../vm/modules/net/libl1vm* .
 cp ../vm/modules/process/libl1vm* .
-cp ../vm/modules/rs232-libserialport/libl1vm* .
-cp ../vm/modules/sdl-2.0/libl1vm* .
+#cp ../vm/modules/rs232-libserialport/libl1vm* .
+#cp ../vm/modules/sdl-2.0/libl1vm* .
 cp ../vm/modules/string/libl1vm* .
 cp ../vm/modules/time/libl1vm* .
 
