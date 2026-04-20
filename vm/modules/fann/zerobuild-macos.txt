@@ -3,8 +3,7 @@
 [executable, shared, name = libl1vmfann.so]
 sources = fann-lib.c, ../file/file-sandbox.c, ../../../lib-func/string.c
 
-includes = ../include, /Applications/Xcode_16.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include
-
+includes = ../include, /Applications/Xcode_16.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include, /System/Volumes/Data/opt/homebrew/include
 ccompiler = $CC
 c++compiler = $CCPP
 
