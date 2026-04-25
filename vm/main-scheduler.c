@@ -1360,7 +1360,7 @@ if (silent_run == 0)
 			 cpu[cpuc].overflow = 0;
 		}
 	#else
-		cpu[pcuc].regi[arg3] = cpu[cpuc].regi[arg1] - cpu[cpuc].regi[arg2];
+		cpu[cpuc].regi[arg3] = cpu[cpuc].regi[arg1] - cpu[cpuc].regi[arg2];
 	#endif
 
 	cpu[cpuc].eoffs = 4;
