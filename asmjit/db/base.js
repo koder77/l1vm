@@ -1,6 +1,6 @@
 // This file is part of AsmJit project <https://asmjit.com>
 //
-// See asmjit.h or LICENSE.md for license and copyright information
+// See <asmjit/core.h> or LICENSE.md for license and copyright information
 // SPDX-License-Identifier: Zlib
 
 (function($scope, $as) {
@@ -14,14 +14,6 @@ const exp = $scope.exp ? $scope.exp : require("./exp.js");
 const base = $scope[$as] = Object.create(null);
 
 base.exp = exp;
-
-// Import.
-const hasOwnProperty = Object.prototype.hasOwnProperty;
-
-function hasOwn(object, key) {
-  return hasOwnProperty.call(object, key);
-}
-base.hasOwn = hasOwn;
 
 function dict(src) {
   const dst = Object.create(null);
@@ -657,7 +649,7 @@ class ISA {
   _addInstruction(instruction) {
     let group;
 
-    if (hasOwn(this._instructionMap, instruction.name)) {
+    if (Object.hasOwn(this._instructionMap, instruction.name)) {
       group = this._instructionMap[instruction.name];
     }
     else {

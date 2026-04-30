@@ -1,6 +1,6 @@
 // This file is part of AsmJit project <https://asmjit.com>
 //
-// See asmjit.h or LICENSE.md for license and copyright information
+// See <asmjit/core.h> or LICENSE.md for license and copyright information
 // SPDX-License-Identifier: Zlib
 
 (function($scope, $as) {
@@ -14,7 +14,6 @@ function FAIL(msg) { throw new Error("[AArch64] " + msg); }
 const base = $scope.base ? $scope.base : require("./base.js");
 const exp = $scope.exp ? $scope.exp : require("./exp.js")
 
-const hasOwn = Object.prototype.hasOwnProperty;
 const dict = base.dict;
 const NONE = base.NONE;
 const Parsing = base.Parsing;
