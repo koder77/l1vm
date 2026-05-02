@@ -10,7 +10,7 @@ c++compiler = $CCPP
 
 archiver = ar
 
-#cflags = "-O3 -march=native -fomit-frame-pointer -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wall -Wextra -fPIE"
-cflags = "-O3 -march=native -flto -fno-plt -fomit-frame-pointer -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wall -Wextra -fPIE"
+#cflags = "-O3 -march=native -fomit-frame-pointer -Wall -Wextra -fPIE"
+cflags = "-O3 -march=native -flto -fno-plt -fomit-frame-pointer -Wall -Wextra -fPIE"
 
 lflags = "-flto -lm -ldl -lpthread -Wl,--export-dynamic,-z,relro,-z,now"
