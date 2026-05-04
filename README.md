@@ -1,4 +1,4 @@
-L1VM README  2026-04-17
+L1VM README  2026-05-04
 =======================
 ![alt text](https://midnight-coding.de/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -186,6 +186,7 @@ The author of the fp16 fixed floating point library: https://github.com/kmilo17p
 The team of the libsodium library. I use for generating random numbers. <br>
 The author of the nanoid ID generating library. <br>
 The JuliaStrings team for the utf8proc library for unicode support. <br>
+The bluetooth BLE team.
 <br><br>
 
 Without them this L1VM project would not be possible! Thank you! <br>
