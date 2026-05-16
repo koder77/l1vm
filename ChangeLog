@@ -1,3 +1,8 @@
+l1VM (3.6,1)
+	Compiler: memory leak fixed.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 16 May 2026 18:09 +020
+
 L1VM (3.6.0)
 	VM: experimental "main-sched.c" virtual CPU task scheduler added.
 	See prog: "hello-sched.l1com".

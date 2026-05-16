@@ -7785,12 +7785,12 @@ void cleanup (void)
 {
 	if (code)
 	{
-		dealloc_array_U1 (code, line_len);
+		dealloc_array_U1 (code, code_max_lines);
 	}
 
 	if (data)
 	{
-		dealloc_array_U1 (data, line_len);
+		dealloc_array_U1 (data, code_max_lines);
 	}
 }
 
