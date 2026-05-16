@@ -1,4 +1,4 @@
-l1VM (3.6,1)
+l1VM (3.6.1)
 	Compiler: memory leak fixed.
 
 -- Stefan Pietzonke <info@midnight-coding.de> Sat 16 May 2026 18:09 +020
