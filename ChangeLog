@@ -1,3 +1,17 @@
+l1VM (3.6.2)
+	Added "linter-autogen": l1vm-cfunc and l1vm-func.
+	With these tools a linter header file with the function definitions can be created.
+	Here is an example:
+
+	// (func args nanoid_create int64)
+	// (return args nanoid_create none)
+	// (func args nanoid_create_custom int64 int64 int64)
+	// (return args nanoid_create_custom none)
+
+	See the README file!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Mon 25 May 2026 02:53 +020
+
 l1VM (3.6.1)
 	Compiler: memory leak fixed.
 
