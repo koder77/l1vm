@@ -1,5 +1,5 @@
 ========================================================================
-L1VM Linter Autogen Tools - Documentation and Usage - Gemini 3.5 flash
+L1VM Linter Autogen Tools - Documentation and Usage - Antigravity
 ========================================================================
 
 This directory contains two complementary tools for the automated

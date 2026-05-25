@@ -17,7 +17,7 @@
  * along with L1vm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Gemini 3.5 flash created
+// Antigravity created
 
 #include <stdio.h>
 #include <stdlib.h>
