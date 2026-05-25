@@ -28,8 +28,7 @@ sudo pkgin -4 -y install libsodium
 sudo pkgin -4 -y install libserialport
 sudo pkgin -4 -y install pulseaudio
 sudo pkgin -4 -y install pavucontrol
-sudo pkgin -4 -y install libssl
-sudo pkgin -4 -y install libcrypto++
+sudo pkgin -4 -y install libopenssl
 
 # check if clang C compiler is installed
 FILE=/usr/bin/clang
