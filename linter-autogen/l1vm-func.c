@@ -24,6 +24,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "../include/global.h"
+
 #define MAX_CFUNCS 1000
 #define LINE_BUF_SIZE 2048
 
@@ -130,6 +132,8 @@ struct cfunc* find_cfunc(const char *name) {
 }
 
 int main(int argc, char *argv[]) {
+    printf ("%s %s\n", argv[0], VM_VERSION_STR);
+
     if (argc < 4) {
         fprintf(stderr, "Usage: %s <header.l1h> <cfunc_output.txt> <output_header.l1h>\n", argv[0]);
         return 1;

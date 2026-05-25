@@ -24,12 +24,16 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "../include/global.h"
+
 // Helper to check if a char is a valid C identifier character
 int is_ident_char(char c) {
     return isalnum((unsigned char)c) || c == '_';
 }
 
 int main(int argc, char *argv[]) {
+    printf ("%s %s\n", argv[0], VM_VERSION_STR);
+
     if (argc < 3) {
         fprintf(stderr, "Usage: %s <source_file> <output_file>\n", argv[0]);
         return 1;
