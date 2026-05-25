@@ -14,22 +14,22 @@ echo "building compiler, assembler and VM..."
 export CC=clang
 export CCPP=clang++
 
-sudo pkgin -y install SDL2
-sudo pkgin -y install SDL2_gfx
-sudo pkgin -y install SDL2_image
-sudo pkgin -y install SDL2_ttf
-sudo pkgin -y install SDL2_mixer
-sudo pkgin -y install fann
-sudo pkgin -y install mpfr
-sudo pkgin -y install cmake
-sudo pkgin -y install gmake
-sudo pkgin -y install git
-sudo pkgin -y install libsodium
-sudo pkgin -y install libserialport
-sudo pkgin -y install pulseaudio
-sudo pkgin -y install pavucontrol
-sudo pkgin -y install libssl
-sudo pkgin -y install libcrypto++
+sudo pkgin -4 -y install SDL2
+sudo pkgin -4 -y install SDL2_gfx
+sudo pkgin -4 -y install SDL2_image
+sudo pkgin -4 -y install SDL2_ttf
+sudo pkgin -4 -y install SDL2_mixer
+sudo pkgin -4 -y install fann
+sudo pkgin -4 -y install mpfr
+sudo pkgin -4 -y install cmake
+sudo pkgin -4 -y install gmake
+sudo pkgin -4 -y install git
+sudo pkgin -4 -y install libsodium
+sudo pkgin -4 -y install libserialport
+sudo pkgin -4 -y install pulseaudio
+sudo pkgin -4 -y install pavucontrol
+sudo pkgin -4 -y install libssl
+sudo pkgin -4 -y install libcrypto++
 
 # check if clang C compiler is installed
 FILE=/usr/bin/clang

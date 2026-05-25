@@ -10,7 +10,9 @@ l1VM (3.6.2)
 
 	See the README file!
 
--- Stefan Pietzonke <info@midnight-coding.de> Mon 25 May 2026 02:53 +020
+	NetBSD install scripts update to use pkgin with "-4" IP version 4 flag.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Mon 25 May 2026 20:48 +020
 
 l1VM (3.6.1)
 	Compiler: memory leak fixed.
