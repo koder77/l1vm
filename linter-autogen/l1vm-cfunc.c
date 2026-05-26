@@ -147,20 +147,22 @@ int main(int argc, char *argv[]) {
             const char *type = NULL;
             int len = 0;
             if (strncmp(p, "stpopi", 6) == 0) {
-                type = "int64";
+                type = "i";
                 len = 6;
             } else if (strncmp(p, "stpopd", 6) == 0) {
-                type = "double";
+                type = "d";
                 len = 6;
             } else if (strncmp(p, "stpopb", 6) == 0) {
-                type = "byte";
+                type = "b";
                 len = 6;
             }
             
             if (type) {
+                /*
                 if (pop_count > 0) {
                     strcat(pop_list, ", ");
                 }
+                */
                 strcat(pop_list, type);
                 pop_count++;
                 p += len;
@@ -169,7 +171,7 @@ int main(int argc, char *argv[]) {
             }
         }
         if (pop_count == 0) {
-            strcpy(pop_list, "none");
+            strcpy(pop_list, "n");
         }
 
         // Gather all pushes in order of occurrence
@@ -180,20 +182,22 @@ int main(int argc, char *argv[]) {
             const char *type = NULL;
             int len = 0;
             if (strncmp(p, "stpushi", 7) == 0) {
-                type = "int64";
+                type = "i";
                 len = 7;
             } else if (strncmp(p, "stpushd", 7) == 0) {
-                type = "double";
+                type = "d";
                 len = 7;
             } else if (strncmp(p, "stpushb", 7) == 0) {
-                type = "byte";
+                type = "b";
                 len = 7;
             }
             
             if (type) {
+                /*
                 if (push_count > 0) {
                     strcat(push_list, ", ");
                 }
+                */
                 strcat(push_list, type);
                 push_count++;
                 p += len;
@@ -202,11 +206,80 @@ int main(int argc, char *argv[]) {
             }
         }
         if (push_count == 0) {
-            strcpy(push_list, "none");
+            strcpy(push_list, "n");
+        }
+
+        {
+            int i = 0;
+            int len = 0;
+
+            fprintf(out, "%s (", func_name);
+
+            // save pop list in reverse order!
+            len = strlen (pop_list);
+            for (i = len - 1; i >= 0; i--)
+            {
+                if (pop_list[i] == 'i')
+                {
+                    fprintf (out, "int64");
+                }
+
+                if (pop_list[i] == 'd')
+                {
+                    fprintf (out, "double");
+                }
+
+                if (pop_list[i] == 'b')
+                {
+                    fprintf (out, "byte");
+                }
+
+                if (pop_list[i] == 'n')
+                {
+                    fprintf (out, "none");
+                }
+
+                if (i > 0)
+                {
+                    fprintf (out, ", ");
+                }
+            }
+            fprintf (out, ") (");
+
+            // save push list in reverse order!
+            len = strlen (push_list);
+            for (i = len - 1; i >= 0; i--)
+            {
+                if (push_list[i] == 'i')
+                {
+                    fprintf (out, "int64");
+                }
+
+                if (push_list[i] == 'd')
+                {
+                    fprintf (out, "double");
+                }
+
+                if (push_list[i] == 'b')
+                {
+                    fprintf (out, "byte");
+                }
+
+                if (push_list[i] == 'n')
+                {
+                    fprintf (out, "none");
+                }
+
+                if (i > 0)
+                {
+                    fprintf (out, ", ");
+                }
+            }
+            fprintf (out, ")\n");
         }
 
         // Output formatting to file
-        fprintf(out, "%s (%s) (%s)\n", func_name, pop_list, push_list);
+        // fprintf(out, "%s (%s) (%s)\n", func_name, pop_list, push_list);
         printf("Parsed: %s (%s) (%s)\n", func_name, pop_list, push_list);
 
         free(body);
