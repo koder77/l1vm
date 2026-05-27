@@ -200,7 +200,7 @@ int main(int argc, char *argv[]) {
                 if (cf) {
                     // Write only the annotations (without original lines and without leading indentation spaces)
                     fprintf(out, "// (func args %s %s)\n", cf->name, cf->pop_list);
-                    fprintf(out, "// (return args %s %s)\n", cf->name, cf->push_list);
+                    fprintf(out, "// (return args %s %s)\n\n", cf->name, cf->push_list);
                     printf("Generated comments for: %s -> args: %s, return: %s\n", cf->name, cf->pop_list, cf->push_list);
                 }
             }
