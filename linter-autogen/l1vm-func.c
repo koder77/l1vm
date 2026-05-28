@@ -199,6 +199,8 @@ int main(int argc, char *argv[]) {
                 struct cfunc *cf = find_cfunc(wrapper_name);
                 if (cf) {
                     // Write only the annotations (without original lines and without leading indentation spaces)
+                    fprintf(out, "// %s\n", cf->name);
+
                     fprintf(out, "// (func args %s %s)\n", cf->name, cf->pop_list);
                     fprintf(out, "// (return args %s %s)\n\n", cf->name, cf->push_list);
                     printf("Generated comments for: %s -> args: %s, return: %s\n", cf->name, cf->pop_list, cf->push_list);
