@@ -32,6 +32,14 @@ int is_ident_char(char c) {
 }
 
 int main(int argc, char *argv[]) {
+    // flags
+    int args_start = 0;
+    int args_end = 0;
+    int return_start = 0;
+    int return_end = 0;
+    int args_variable = 0;
+    int return_variable = 0;
+
     printf ("%s %s\n", argv[0], VM_VERSION_STR);
 
     if (argc < 3) {
@@ -139,6 +147,13 @@ int main(int argc, char *argv[]) {
         strncpy(body, body_start, body_len);
         body[body_len] = '\0';
 
+        args_start = 0;
+        args_end = 0;
+        return_start = 0;
+        return_end = 0;
+        args_variable = 0;
+        return_variable = 0;
+
         // Gather all pops in order of occurrence
         char pop_list[512] = "";
         char *p = body;
@@ -146,15 +161,50 @@ int main(int argc, char *argv[]) {
         while (*p) {
             const char *type = NULL;
             int len = 0;
-            if (strncmp(p, "stpopi", 6) == 0) {
-                type = "i";
-                len = 6;
-            } else if (strncmp(p, "stpopd", 6) == 0) {
-                type = "d";
-                len = 6;
-            } else if (strncmp(p, "stpopb", 6) == 0) {
-                type = "b";
-                len = 6;
+
+            if (strncmp (p, "// args-variable", 16) == 0)
+            {
+                args_variable = 1;
+                type = "v";
+                len = 16;
+                p += len;
+            }
+
+            if (strncmp (p, "// args-start", 13) == 0)
+            {
+                args_start = 1;
+                len = 13;
+                p += len;
+            }
+
+            if (strncmp (p, "// args-end", 11) == 0)
+            {
+                args_end = 1;
+                len = 11;
+                p += len;
+            }
+
+            if (args_variable == 0)
+            {
+                if (args_start == 1 && args_end == 0)
+                {
+                    strcpy (pop_list, "");
+                    args_start++;
+                }
+
+                if (args_end != 1)
+                {
+                    if (strncmp(p, "stpopi", 6) == 0) {
+                        type = "i";
+                        len = 6;
+                    } else if (strncmp(p, "stpopd", 6) == 0) {
+                        type = "d";
+                        len = 6;
+                    } else if (strncmp(p, "stpopb", 6) == 0) {
+                        type = "b";
+                        len = 6;
+                    }
+                }
             }
             
             if (type) {
@@ -181,15 +231,50 @@ int main(int argc, char *argv[]) {
         while (*p) {
             const char *type = NULL;
             int len = 0;
-            if (strncmp(p, "stpushi", 7) == 0) {
-                type = "i";
-                len = 7;
-            } else if (strncmp(p, "stpushd", 7) == 0) {
-                type = "d";
-                len = 7;
-            } else if (strncmp(p, "stpushb", 7) == 0) {
-                type = "b";
-                len = 7;
+
+            if (strncmp (p, "// return-variable", 18) == 0)
+            {
+                return_variable = 1;
+                type = "v";
+                len = 18;
+                p += len;
+            }
+
+            if (strncmp (p, "// return-start", 15) == 0)
+            {
+                return_start = 1;
+                len = 15;
+                p += len;
+            }
+
+            if (strncmp (p, "// return-end", 13) == 0)
+            {
+                return_end = 1;
+                len = 13;
+                p += len;
+            }
+
+            if (return_variable == 0)
+            {
+                if (return_start == 1 && return_end == 0)
+                {
+                    strcpy (push_list, "");
+                    return_start++;
+                }
+
+                if (return_end != 1)
+                {
+                    if (strncmp(p, "stpushi", 7) == 0) {
+                        type = "i";
+                        len = 7;
+                    } else if (strncmp(p, "stpushd", 7) == 0) {
+                        type = "d";
+                        len = 7;
+                    } else if (strncmp(p, "stpushb", 7) == 0) {
+                        type = "b";
+                        len = 7;
+                    }
+                }
             }
             
             if (type) {
@@ -217,7 +302,7 @@ int main(int argc, char *argv[]) {
 
             // save pop list in reverse order!
             len = strlen (pop_list);
-            for (i = len - 1; i >= 0; i--)
+            for (i = len -1 ; i >= 0; i-- )
             {
                 if (pop_list[i] == 'i')
                 {
@@ -237,6 +322,11 @@ int main(int argc, char *argv[]) {
                 if (pop_list[i] == 'n')
                 {
                     fprintf (out, "none");
+                }
+
+                if (pop_list[i] == 'v')
+                {
+                    fprintf (out, "variable");
                 }
 
                 if (i > 0)
@@ -268,6 +358,11 @@ int main(int argc, char *argv[]) {
                 if (push_list[i] == 'n')
                 {
                     fprintf (out, "none");
+                }
+
+                if (push_list[i] == 'v')
+                {
+                    fprintf (out, "variable");
                 }
 
                 if (i > 0)

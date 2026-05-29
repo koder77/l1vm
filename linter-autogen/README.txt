@@ -67,5 +67,23 @@ $ ./l1vm-cfunc nanoid.c nanoid-lint.txt
 $ ./l1vm-func nanoid.l1h nanoid-lint.txt nanoid_annotated.l1h
 
 ========================================================================
-NOTE: If a C function has more than one return block with stpush, then you need
-to edit the output header file. This can not be converted automatically.
+There are flags to set the begin and end of a "stpop" args block:
+
+// args-start
+
+// args-end
+
+And if the number of "stpop" is variable:
+
+// args-variable
+
+For the return "stpush":
+
+// return-start
+
+// return-end
+
+// return-variable
+
+This is needed in C functions which have more than one exit path "stpush".
+See "message-demo.c".
