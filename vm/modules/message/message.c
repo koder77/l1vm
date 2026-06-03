@@ -133,6 +133,18 @@ U1 *msg_init (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		}
 		return (sp);
 	}
+    else
+    {
+        // return-start
+        sp = stpushi (0, sp, sp_bottom);
+		if (sp == NULL)
+		{
+			// error
+			printf ("msg_init: ERROR: stack corrupt!\n");
+			return (NULL);
+		}
+        // return-end
+    }
 
     msg_max = max_handles; // save to global var
 
@@ -185,6 +197,7 @@ U1 *msg_set_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     msg[handle].int64 = message;
     pthread_mutex_unlock (&msg_lock);
 
+    // return-start
     sp = stpushi (0, sp, sp_bottom);
     if (sp == NULL)
     {                 // error
@@ -193,6 +206,7 @@ U1 *msg_set_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     return (sp);
+    // return-end
 }
 
 U1 *msg_set_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -237,6 +251,7 @@ U1 *msg_set_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     msg[handle].doublef = message;
     pthread_mutex_unlock (&msg_lock);
 
+    // return-start
     sp = stpushi (0, sp, sp_bottom);
     if (sp == NULL)
     {                 // error
@@ -245,6 +260,7 @@ U1 *msg_set_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     return (sp);
+    // return-end
 }
 
 U1 *msg_set_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -328,12 +344,14 @@ U1 *msg_set_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     strcpy ((char *) msg[handle].string, (const char *) data[messageaddr]);
     pthread_mutex_unlock (&msg_lock);
 
+    // return-start
     sp = stpushi (0, sp, sp_bottom);
     if (sp == NULL)
     {                 // error
         printf ("msg_set_string: ERROR: stack corrupt!\n");
         return (NULL);
     }
+    // return-end
 
     return (sp);
 }
@@ -358,12 +376,14 @@ U1 *msg_search_id (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         if (msg[i].id == id)
         {
            pthread_mutex_unlock (&msg_lock);
+           // return-start
            sp = stpushi (i, sp, sp_bottom);
            if (sp == NULL)
            {                 // error
                printf ("msg_search_id: ERROR: stack corrupt!\n");
                return (NULL);
            }
+           // return-end
 
            return (sp);
         }
@@ -434,6 +454,7 @@ U1 *msg_get_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     // return msg
     pthread_mutex_lock (&msg_lock);
+    // return-start
     sp = stpushi (msg[handle].int64, sp, sp_bottom);
     if (sp == NULL)
     {  // error
@@ -449,6 +470,7 @@ U1 *msg_get_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("msg_get_int64: ERROR: stack corrupt!\n");
         return (NULL);
     }
+    // return-end
 
     return (sp);
 }
@@ -505,6 +527,7 @@ U1 *msg_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     // return msg
     pthread_mutex_lock (&msg_lock);
+    // return-start
     sp = stpushd (msg[handle].doublef, sp, sp_bottom);
     if (sp == NULL)
     {  // error
@@ -520,6 +543,7 @@ U1 *msg_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
          printf ("msg_get_double: ERROR: stack corrupt!\n");
         return (NULL);
     }
+    // return-end
 
     return (sp);
 }
@@ -587,12 +611,14 @@ U1 *msg_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     strcpy ((char *) &data[stringaddr], (const char *) msg[handle].string);
     pthread_mutex_unlock (&msg_lock);
 
+    // return-start
     sp = stpushi (0, sp, sp_bottom);
     if (sp == NULL)
     {// error
         printf ("msg_get_string: ERROR: stack corrupt!\n");
         return (NULL);
     }
+    // return-end
 
     return (sp);
 }

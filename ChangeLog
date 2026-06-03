@@ -1,4 +1,12 @@
-l1VM (3.6.2)
+L1VM (3.6.3)
+	Bugfixes in some modules. Marked return stpush for the new linter function tool.
+
+	The bluetooth BLE module is broken. I tried to use the latest release of the bluetooth BLE library.
+	I don't know when it will be ready again!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Wed 3 June 2026 22:40 +020
+
+L1VM (3.6.2)
 	Added "linter-autogen": l1vm-cfunc and l1vm-func.
 	With these tools a linter header file with the function definitions can be created.
 	Here is an example:
@@ -14,7 +22,7 @@ l1VM (3.6.2)
 
 -- Stefan Pietzonke <info@midnight-coding.de> Mon 25 May 2026 20:48 +020
 
-l1VM (3.6.1)
+L1VM (3.6.1)
 	Compiler: memory leak fixed.
 
 -- Stefan Pietzonke <info@midnight-coding.de> Sat 16 May 2026 18:09 +020

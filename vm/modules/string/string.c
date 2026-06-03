@@ -1278,6 +1278,7 @@ U1 *string_regex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     regfree (&regex);
 
 	// return regex return code
+	// return-start
 	sp = stpushi (ret, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -1286,6 +1287,7 @@ U1 *string_regex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+	// return-end
 }
 
 // normal string search functions =============================================
@@ -1671,12 +1673,14 @@ U1 *string_array_sort (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	if (sort_strings ((char *) &data[strsrcaddr + index_real], entries, string_len, order) == 0)
 	{
+		// return-start
 		sp = stpushi (0, sp, sp_bottom); // all OK
 		if (sp == NULL)
 		{
 			printf ("string_array_sort: ERROR: stack corrupt!\n");
 			return (NULL);
 		}
+		// return-end
 	}
 	else
 	{

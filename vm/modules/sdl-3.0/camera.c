@@ -90,12 +90,15 @@ U1 *sdl_open_camera (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	camera_open = 1;
+
+	// return-start
 	sp = stpushi (0, sp, sp_bottom);
 	if (sp == NULL)
 	{
 		printf ("sdl_open_camera: ERROR: stack corrupt!\n");
 	}
 	return (sp);
+	// return-end
 }
 
 U1 *sdl_get_camera_frame (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -138,12 +141,14 @@ U1 *sdl_get_camera_frame (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		SDL_UpdateWindowSurface (window);
 
 		// frame grabbed from camera
+		// return-start
 		sp = stpushi (0, sp, sp_bottom);
 		if (sp == NULL)
 		{
 			printf ("sdl_get_camera_frame ERROR: stack corrupt!\n");
 		}
 		return (sp);
+		// return-end
 	}
 }
 

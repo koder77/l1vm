@@ -50,6 +50,7 @@ U1 *gpio_setup (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         // pigpio initialised okay.
 
+        // return-start
         sp = stpushi (0, sp, sp_bottom);
         if (sp == NULL)
         {
@@ -57,6 +58,7 @@ U1 *gpio_setup (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	        printf ("gpio_setup: ERROR: stack corrupt!\n");
 	        return (NULL);
         }
+        // return-end
     }
     return (sp);
 }

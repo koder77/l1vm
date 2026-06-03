@@ -240,12 +240,14 @@ U1 *sdl_open_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	set_screen_dimens (width, height);
 
 	// error OK code
+	// return-start
 	sp = stpushi (0, sp, sp_bottom);
 	if (sp == NULL)
 	{
 		printf ("sdl_open_screen: ERROR: stack corrupt!\n");
 	}
 	return (sp);
+	// return-end
 }
 
 U1 *sdl_open_screen_full (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -411,12 +413,14 @@ U1 *sdl_open_screen_full (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	set_screen_dimens (width, height);
 
 	// error OK code
+	// return-start
 	sp = stpushi (0, sp, sp_bottom);
 	if (sp == NULL)
 	{
 		printf ("sdl_open_screen: ERROR: stack corrupt!\n");
 	}
 	return (sp);
+	// return-end
 }
 
 U1 *sdl_set_window_title (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -1743,11 +1747,13 @@ U1 *sdl_get_pixelcolor (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	SDL_UnlockSurface (surf);
 
+	// return-start
 	sp = stpushi (b, sp, sp_bottom);
 	sp = stpushi (g, sp, sp_bottom);
 	sp = stpushi (r, sp, sp_bottom);
 	sp = stpushi (a, sp, sp_bottom); // alpha channel
 	return (sp);
+	// return-end
 }
 
 
@@ -1817,8 +1823,10 @@ U1 *sdl_load_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	SDL_BlitSurface (picture, NULL, surf, &dstrect);
 	SDL_DestroySurface (picture);
 
+	// return-start
 	sp = stpushi (0, sp, sp_bottom);		// error ok code
 	return (sp);
+	// return-end
 }
 
 U1 *sdl_save_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -1880,8 +1888,10 @@ U1 *sdl_save_picture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	{
 		// 	SDL_DestroySurface (output_surf);
 
+		// return-start
 		sp = stpushi (0, sp, sp_bottom);		// error ok code
 		return (sp);
+		// return-end
 	}
 }
 

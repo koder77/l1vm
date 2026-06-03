@@ -197,6 +197,7 @@ U1 *encrypt_sodium (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         }
     }
 
+    // return-start
     sp = stpushi (0, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -206,6 +207,7 @@ U1 *encrypt_sodium (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
     return (sp);
+    // return-end
 }
 
 // public/private key pair functions
@@ -343,6 +345,7 @@ U1 *encrypt_message (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // all OK!
+        // return-start
         sp = stpushi (0, sp, sp_bottom);
         if (sp == NULL)
 	    {
@@ -350,6 +353,7 @@ U1 *encrypt_message (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		    printf ("encrypt_message: ERROR: stack corrupt!\n");
 		    return (NULL);
 	    }
+        // return-end
     }
 
     return (sp);
@@ -436,6 +440,7 @@ U1 *decrypt_message (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // all OK!
+        // return-start
         sp = stpushi (0, sp, sp_bottom);
         if (sp == NULL)
 	    {
@@ -443,6 +448,7 @@ U1 *decrypt_message (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		    printf ("decrypt_message: ERROR: stack corrupt!\n");
 		    return (NULL);
 	    }
+        // return-end
     }
 
     return (sp);
@@ -495,6 +501,7 @@ U1 *generate_key_hash (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // all OK!
+        // return-start
         sp = stpushi (0, sp, sp_bottom);
         if (sp == NULL)
 	    {
@@ -502,6 +509,7 @@ U1 *generate_key_hash (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		    printf ("generate_key_hash: ERROR: stack corrupt!\n");
 		    return (NULL);
 	    }
+        // return-end
     }
 
     return (sp);
@@ -546,6 +554,7 @@ U1 *check_key_hash (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // all OK!
+        // return-start
         sp = stpushi (0, sp, sp_bottom);
         if (sp == NULL)
 	    {
@@ -553,6 +562,7 @@ U1 *check_key_hash (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		    printf ("check_key_hash: ERROR: stack corrupt!\n");
 		    return (NULL);
 	    }
+        // return-end
     }
 
     return (sp);
@@ -633,6 +643,7 @@ U1 *generate_key (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // all OK!
+        // return-start
         sp = stpushi (0, sp, sp_bottom);
         if (sp == NULL)
 	    {
@@ -640,6 +651,7 @@ U1 *generate_key (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		    printf ("generate_key: ERROR: stack corrupt!\n");
 		    return (NULL);
 	    }
+        // return-end
     }
 
     return (sp);

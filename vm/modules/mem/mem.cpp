@@ -155,6 +155,7 @@ extern "C" U1 *init_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// printf ("init_mem: allocated %lli memory spaces\n", maxind);
 
 	// error code ok
+	// return-start
 	sp = stpushi (0, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -163,6 +164,7 @@ extern "C" U1 *init_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+	// return-end
 }
 
 // cleanup memory
@@ -400,6 +402,7 @@ extern "C" U1 *alloc_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	mem[memind].memsize = memsize;
 
 	// push memory structure handle index
+	// return-start
 	sp = stpushi (memind, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -408,6 +411,7 @@ extern "C" U1 *alloc_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+    // return-end
 }
 
 extern "C" U1 *alloc_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -453,6 +457,7 @@ extern "C" U1 *alloc_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	mem[memind].memsize = memsize;
 
 	// push memory structure handle index
+	// return-start
 	sp = stpushi (memind, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -461,6 +466,7 @@ extern "C" U1 *alloc_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+    // return-end
 }
 
 extern "C" U1 *alloc_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -506,6 +512,7 @@ extern "C" U1 *alloc_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	mem[memind].memsize = memsize;
 
 	// push memory structure handle index
+	// return-start
 	sp = stpushi (memind, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -514,6 +521,7 @@ extern "C" U1 *alloc_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+	// return-end
 }
 
 extern "C" U1 *alloc_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -559,6 +567,7 @@ extern "C" U1 *alloc_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	mem[memind].memsize = memsize;
 
 	// push memory structure handle index
+	// return-start
 	sp = stpushi (memind, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -567,6 +576,7 @@ extern "C" U1 *alloc_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+	// return-end
 }
 
 // dealloc mem ----------------------------------------------------------------

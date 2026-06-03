@@ -97,6 +97,7 @@ U1 *file_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	// error code ok
+	// return-start
 	sp = stpushi (0, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -105,6 +106,7 @@ U1 *file_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+    // return-end
 }
 
 U1 *free_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -253,6 +255,7 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         files[handle].state = FILEOPEN;
 
         // push file handle
+        // return-start
         sp = stpushi (handle, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -260,6 +263,7 @@ U1 *file_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		printf ("file_fopen: ERROR: stack corrupt!\n");
     		return (NULL);
     	}
+        // return-end
     }
     return (sp);
 }
@@ -358,6 +362,7 @@ U1 *file_seek (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (fseek (files[handle].fptr, offset, origin) == 0)
     {
         // push ERROR code OK
+        // return-start
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -365,6 +370,7 @@ U1 *file_seek (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		printf ("file_fseek: ERROR: stack corrupt!\n");
     		return (NULL);
     	}
+        // return-end
     }
     else
     {
@@ -389,7 +395,8 @@ U1 *file_flush (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     ret = fflush (NULL);     // NULL pointer means flush all write file streams buffers to disk.
     if (ret == 0)
     {
-        // push ERROR code WRONG POS
+        // push ERROR code
+        // return-start
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -397,6 +404,7 @@ U1 *file_flush (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		printf ("file_flush: ERROR: stack corrupt!\n");
     		return (NULL);
     	}
+        // return-end
     }
     else
     {
@@ -468,6 +476,7 @@ U1 *file_put_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // push OK code WRITE
+        // return-start
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -475,6 +484,7 @@ U1 *file_put_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		printf ("file_put_int16 ERROR: stack corrupt!\n");
     		return (NULL);
     	}
+        // return-end
     }
     return (sp);
 }
@@ -532,6 +542,7 @@ U1 *file_get_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 	else
 	{
+        // return-start
     	sp = stpushi (num, sp, sp_bottom);
 		if (sp == NULL)
 		{
@@ -547,6 +558,7 @@ U1 *file_get_int16 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         	printf ("file_get_int16 ERROR: stack corrupt!\n");
         	return (NULL);
 		}
+        // return-end
 	}
 
 	return (sp);
@@ -607,6 +619,7 @@ U1 *file_put_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // push OK code WRITE
+        // return-start
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -614,6 +627,7 @@ U1 *file_put_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		printf ("file_put_int32 ERROR: stack corrupt!\n");
     		return (NULL);
     	}
+        // return-end
     }
     return (sp);
 }
@@ -671,6 +685,7 @@ U1 *file_get_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 	else
 	{
+        // return-start
     	sp = stpushi (num, sp, sp_bottom);
 		if (sp == NULL)
 		{
@@ -686,6 +701,7 @@ U1 *file_get_int32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	        printf ("file_get_int32 ERROR: stack corrupt!\n");
         	return (NULL);
 		}
+        // return-end
     }
 
 	return (sp);
@@ -746,6 +762,7 @@ U1 *file_put_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // push OK code WRITE
+        // return-start
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -753,6 +770,7 @@ U1 *file_put_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		printf ("file_put_int64 ERROR: stack corrupt!\n");
     		return (NULL);
     	}
+        // return-end
     }
     return (sp);
 }
@@ -810,6 +828,7 @@ U1 *file_get_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 	else
 	{
+        // return-start
     	sp = stpushi (num, sp, sp_bottom);
 		if (sp == NULL)
 		{
@@ -825,6 +844,7 @@ U1 *file_get_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         	printf ("file_get_int64 ERROR: stack corrupt!\n");
         	return (NULL);
 		}
+        // return-end
     }
 
 	return (sp);
@@ -885,6 +905,7 @@ U1 *file_put_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // push OK code WRITE
+        // return-start
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -892,6 +913,7 @@ U1 *file_put_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		printf ("file_put_double ERROR: stack corrupt!\n");
     		return (NULL);
     	}
+        // return-end
     }
     return (sp);
 }
@@ -949,6 +971,7 @@ U1 *file_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 	else
 	{
+        // return-start
     	sp = stpushd (num, sp, sp_bottom);
 		if (sp == NULL)
 		{
@@ -964,6 +987,7 @@ U1 *file_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         	printf ("file_get_double ERROR: stack corrupt!\n");
 	        return (NULL);
 		}
+        // return-end
     }
 
 	return (sp);
@@ -1024,6 +1048,7 @@ U1 *file_putc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // push ERROR code OK
+        // return-start
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -1031,6 +1056,7 @@ U1 *file_putc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		printf ("file_putc: ERROR: stack corrupt!\n");
     		return (NULL);
     	}
+        // return-end
     }
     return (sp);
 }
@@ -1067,6 +1093,7 @@ U1 *file_getc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
     if ((ch = getc (files[handle].fptr)) != EOF)
     {
+        // return-start
         sp = stpushi (ch, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -1083,6 +1110,7 @@ U1 *file_getc (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		printf ("file_getc: ERROR: stack corrupt!\n");
     		return (NULL);
     	}
+        // return-end
     }
     else
     {
@@ -1237,6 +1265,7 @@ U1 *file_put_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     else
     {
         // push ERROR code OK
+        // return-start
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -1244,6 +1273,7 @@ U1 *file_put_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		printf ("file_put_string: ERROR: stack corrupt!\n");
     		return (NULL);
     	}
+        // return-end
     }
     return (sp);
 }
@@ -1332,6 +1362,7 @@ U1 *file_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		}
 
         // push ERROR code OK
+        // return-start
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
         if (sp == NULL)
         {
@@ -1339,6 +1370,7 @@ U1 *file_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             printf ("file_get_string: ERROR: stack corrupt!\n");
             return (NULL);
         }
+        // return-end
     }
     return (sp);
 }
@@ -1559,6 +1591,7 @@ U1 *file_read_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	// push ERROR code OK
+	// return-start
     sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -1566,6 +1599,7 @@ U1 *file_read_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	printf ("file_read_array: ERROR: stack corrupt!\n");
     	return (NULL);
     }
+    // return-end
     return (sp);
 }
 
@@ -1782,6 +1816,7 @@ U1 *file_write_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	
 	// push ERROR code OK
+	// return-start
     sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -1789,5 +1824,6 @@ U1 *file_write_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     	printf ("file_write_array: ERROR: stack corrupt!\n");
     	return (NULL);
     }
+    // return-end
     return (sp);
 }

@@ -81,6 +81,7 @@ U1 *fann_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	// error code ok
+	// return-start
 	sp = stpushi (0, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -89,6 +90,7 @@ U1 *fann_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+    // return-end
 }
 
 U1 *free_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)

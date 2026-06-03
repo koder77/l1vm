@@ -155,6 +155,7 @@ U1 *init_sockets (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     // error code ok
+    // return-start
     sp = stpushi (0, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -163,6 +164,7 @@ U1 *init_sockets (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+    // return-end
 }
 
 U1 *free_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -401,6 +403,7 @@ U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (sp);
     }
 
+    // return-start
     sp = stpushi (handle, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -416,6 +419,7 @@ U1 *open_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("open_server_socket: ERROR: stack corrupt!\n");
         return (NULL);
     }
+    // return-end
 
     sockets[handle].socket = server;
     sockets[handle].servinfo = servinfo;
@@ -559,6 +563,7 @@ U1 *open_accept_server (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     sockets[new_handle].state = SOCKETOPEN;
     sockets[new_handle].type = SOCKSERVER;
 
+    // return-start
     sp = stpushi (new_handle, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -574,6 +579,7 @@ U1 *open_accept_server (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("open_accept_server: ERROR: stack corrupt!\n");
         return (NULL);
     }
+    // return-end
 
     return (sp);
 }
@@ -743,6 +749,7 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (sp);
     }
 
+    // return-start
     sp = stpushi (handle, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -758,6 +765,7 @@ U1 *open_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("open_client_socket: ERROR: stack corrupt!\n");
         return (NULL);
     }
+    // return-end
 
     sockets[handle].socket = client;
     sockets[handle].type = SOCKCLIENT;
@@ -842,6 +850,7 @@ U1 *close_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         // ... do everything until you don't need servinfo anymore ....
         freeaddrinfo (sockets[handle].servinfo); // free the linked-list
 
+        // return-start
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -850,6 +859,7 @@ U1 *close_server_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		return (NULL);
     	}
         return (sp);
+        // return-end
     }
 }
 
@@ -926,6 +936,7 @@ U1 *close_accept_server (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
         sockets[handle].state = SOCKETCLOSED;
 
+        // return-start
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -934,6 +945,7 @@ U1 *close_accept_server (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		return (NULL);
     	}
         return (sp);
+        // return-end
     }
 }
 
@@ -1008,6 +1020,7 @@ U1 *close_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         sockets[handle].state = SOCKETCLOSED;
 
+        // return-start
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -1016,6 +1029,7 @@ U1 *close_client_socket (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		return (NULL);
     	}
         return (sp);
+        // return-end
     }
 }
 
@@ -1081,6 +1095,7 @@ U1 *get_clientaddr (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         ret_data[ret_addr + i] = sockets[handle].client_ip[i];
     }
 
+    // return-start
     sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -1089,6 +1104,7 @@ U1 *get_clientaddr (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
     return (sp);
+    // return-end
 }
 
 U1 *get_hostname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -1134,6 +1150,7 @@ U1 *get_hostname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         ret_data[ret_addr + i] = hostname[i];
     }
 
+    // return-start
     sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -1142,6 +1159,7 @@ U1 *get_hostname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
     return (sp);
+    // return-end
 }
 
 U1 *get_hostbyname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -1210,6 +1228,7 @@ U1 *get_hostbyname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                 ret_data[ret_addr + i] = ret[i];
             }
 
+            // return-start
             sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
             if (sp == NULL)
             {
@@ -1218,6 +1237,7 @@ U1 *get_hostbyname (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                 return (NULL);
             }
             return (sp);
+            // return-end
         }
         else
         {
@@ -1309,6 +1329,7 @@ U1 *get_hostbyaddr (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             ret_data[ret_addr + i] = hostname[i];
         }
 
+        // return-start
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
         if (sp == NULL)
         {
@@ -1317,6 +1338,7 @@ U1 *get_hostbyaddr (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             return (NULL);
         }
         return (sp);
+        // return-end
     }
     else
     {
@@ -1609,6 +1631,7 @@ U1 *socket_read_byte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     // printf ("socket_read_byte: '%c'\n", sockets[handle].buf[0]);
 
+    // return-start
     sp = stpushi (sockets[handle].buf[0], sp, sp_bottom);
     if (sp == NULL)
     {
@@ -1625,6 +1648,7 @@ U1 *socket_read_byte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
     return (sp);
+    // return-end
 }
 
 U1 *socket_read_byte_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -1765,6 +1789,8 @@ U1 *socket_read_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     value = ntohq (n);
+
+    // return-start
     sp = stpushi (value, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -1781,7 +1807,10 @@ U1 *socket_read_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
     return (sp);
+    // return-end
 }
+
+// EDIT
 
 U1 *socket_read_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
@@ -1812,7 +1841,7 @@ U1 *socket_read_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (ret != ERR_FILE_OK)
     {
         // push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
+        sp = stpushd (0.0, sp, sp_bottom);
         if (sp == NULL)
         {
             // error
@@ -1839,6 +1868,7 @@ U1 *socket_read_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     value = ntohd (n);
 
+    // return-start
     sp = stpushd (value, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -1855,6 +1885,7 @@ U1 *socket_read_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
     return (sp);
+    // return-end
 }
 
 U1 *socket_read_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -1946,6 +1977,7 @@ U1 *socket_read_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     if (error == FALSE)
     {
+        // return-start
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
         if (sp == NULL)
         {
@@ -1953,6 +1985,7 @@ U1 *socket_read_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             printf ("socket_read_string: ERROR: stack corrupt!\n");
             return (NULL);
         }
+        // return-end
     }
     else
     {
@@ -2443,6 +2476,7 @@ U1 *get_mimetype_from_filename (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	else
 	{
+        // return-start
 		sp = stpushi (0, sp, sp_bottom);
 		if (sp == NULL)
 		{
@@ -2450,6 +2484,7 @@ U1 *get_mimetype_from_filename (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			printf ("get_mimetype_from_filename: ERROR: stack corrupt!\n");
 			return (NULL);
 		}
+        // return-end
 	}
 
 	// printf ("get_mimetype_from_filename: mimetype: '%s'\n", &data[mimetype_addr]);
@@ -2820,6 +2855,7 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	fclose (file);
 
 	// push ERROR code OK
+	// return-start
 	sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -2828,6 +2864,7 @@ U1 *socket_send_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+    // return-end
 }
 
 U1 *socket_handle_get (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -2956,6 +2993,7 @@ U1 *socket_handle_get (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		}
 	}
 
+    // return-start
 	sp = stpushi (0, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -2964,6 +3002,7 @@ U1 *socket_handle_get (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+    // return-end
 }
 
 // data client socket code for connection with l1vm-data server ===============
@@ -3257,6 +3296,7 @@ U1 *socket_get_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	fclose (file);
 
+    // return-start
 	sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -3265,6 +3305,7 @@ U1 *socket_get_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+    // return-end
 }
 
 
@@ -3397,6 +3438,7 @@ U1 *socket_store_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	else
 	{
+        // return-start
 		sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
 	    if (sp == NULL)
 	    {
@@ -3405,6 +3447,7 @@ U1 *socket_store_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	        return (NULL);
 	    }
 	    return (sp);
+        // return-end
 	}
 }
 
@@ -3535,6 +3578,7 @@ U1 *socket_store_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	else
 	{
+        // return-start
 		sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
 	    if (sp == NULL)
 	    {
@@ -3543,6 +3587,7 @@ U1 *socket_store_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	        return (NULL);
 	    }
 	    return (sp);
+        // return-end
 	}
 }
 
@@ -3661,6 +3706,7 @@ U1 *socket_store_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	else
 	{
+        // return-start
 		sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
 	    if (sp == NULL)
 	    {
@@ -3669,6 +3715,7 @@ U1 *socket_store_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	        return (NULL);
 	    }
 	    return (sp);
+        // return-end
 	}
 }
 
@@ -3805,6 +3852,7 @@ U1 *socket_get_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// printf ("socket_get_int64: string: '%s'\n", buf);
 	// printf ("socket_get_int64: value: %lli\n", value);
 
+    // return-start
     sp = stpushi (value, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -3821,6 +3869,7 @@ U1 *socket_get_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
     return (sp);
+    // return-end
 }
 
 U1 *socket_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -3864,7 +3913,7 @@ U1 *socket_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (ret != ERR_FILE_OK)
     {
         // push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
+        sp = stpushd (0.0, sp, sp_bottom);
         if (sp == NULL)
         {
             // error
@@ -3887,7 +3936,7 @@ U1 *socket_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (ret != ERR_FILE_OK)
     {
         // push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
+        sp = stpushd (0.0, sp, sp_bottom);
         if (sp == NULL)
         {
             // error
@@ -3910,7 +3959,7 @@ U1 *socket_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (ret != ERR_FILE_OK)
     {
         // push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
+        sp = stpushd (0.0, sp, sp_bottom);
         if (sp == NULL)
         {
             // error
@@ -3931,7 +3980,7 @@ U1 *socket_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (strcmp ((const char *) buf, "ERROR") == 0)
 	{
 		// push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
+        sp = stpushd (0.0, sp, sp_bottom);
         if (sp == NULL)
         {
             // error
@@ -3955,6 +4004,7 @@ U1 *socket_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// printf ("socket_get_double: string: '%s'\n", buf);
 	// printf ("socket_get_double: value: %lli\n", value);
 
+    // return-start
     sp = stpushd (value, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -3971,6 +4021,7 @@ U1 *socket_get_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
     return (sp);
+    // return-end
 }
 
 // string =====================================================================
@@ -4067,15 +4118,6 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	ret = socket_data_read_string (handle, buf, buf_len);
 	if (ret != ERR_FILE_OK)
     {
-        // push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
-        if (sp == NULL)
-        {
-            // error
-            printf ("socket_get_string: ERROR: stack corrupt!\n");
-            return (NULL);
-        }
-
         sp = stpushi (ret, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -4088,15 +4130,6 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	if (strcmp ((const char *) buf, "ERROR") == 0)
 	{
-		// push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
-        if (sp == NULL)
-        {
-            // error
-            printf ("socket_get_string: ERROR: stack corrupt!\n");
-            return (NULL);
-        }
-
         sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -4122,7 +4155,8 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
         strcpy ((char *) &data[return_str_addr], (const char *) buf);
     }
-    
+
+    // return-start
     sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -4131,6 +4165,7 @@ U1 *socket_get_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
     return (sp);
+    // return-end
 }
 
 
@@ -4268,6 +4303,7 @@ U1 *socket_remove_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// printf ("socket_remove_int64: string: '%s'\n", buf);
 	// printf ("socket_remove_int64: value: %lli\n", value);
 
+    // return-start
     sp = stpushi (value, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -4284,6 +4320,7 @@ U1 *socket_remove_int64 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
     return (sp);
+    // return-end
 }
 
 U1 *socket_remove_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -4327,7 +4364,7 @@ U1 *socket_remove_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (ret != ERR_FILE_OK)
     {
         // push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
+        sp = stpushd (0.0, sp, sp_bottom);
         if (sp == NULL)
         {
             // error
@@ -4350,7 +4387,7 @@ U1 *socket_remove_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (ret != ERR_FILE_OK)
     {
         // push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
+        sp = stpushd (0.0, sp, sp_bottom);
         if (sp == NULL)
         {
             // error
@@ -4373,7 +4410,7 @@ U1 *socket_remove_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (ret != ERR_FILE_OK)
     {
         // push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
+        sp = stpushd (0.0, sp, sp_bottom);
         if (sp == NULL)
         {
             // error
@@ -4394,7 +4431,7 @@ U1 *socket_remove_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (strcmp ((const char *) buf, "ERROR") == 0)
 	{
 		// push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
+        sp = stpushd (0.0, sp, sp_bottom);
         if (sp == NULL)
         {
             // error
@@ -4418,6 +4455,7 @@ U1 *socket_remove_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// printf ("socket_remove_double: string: '%s'\n", buf);
 	// printf ("socket_remove_double: value: %lli\n", value);
 
+    // return-start
     sp = stpushd (value, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -4434,6 +4472,7 @@ U1 *socket_remove_double (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
     return (sp);
+    // return-end
 }
 
 // string =====================================================================
@@ -4484,15 +4523,6 @@ U1 *socket_remove_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	ret = socket_data_write_string (handle, comm);
     if (ret != ERR_FILE_OK)
     {
-        // push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
-        if (sp == NULL)
-        {
-            // error
-            printf ("socket_remove_string: ERROR: stack corrupt!\n");
-            return (NULL);
-        }
-
         sp = stpushi (ret, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -4507,15 +4537,6 @@ U1 *socket_remove_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	ret = socket_data_write_string (handle, &data[name_addr]);
     if (ret != ERR_FILE_OK)
     {
-        // push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
-        if (sp == NULL)
-        {
-            // error
-            printf ("socket_remove_string: ERROR: stack corrupt!\n");
-            return (NULL);
-        }
-
         sp = stpushi (ret, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -4530,15 +4551,6 @@ U1 *socket_remove_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	ret = socket_data_read_string (handle, buf, buf_len);
 	if (ret != ERR_FILE_OK)
     {
-        // push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
-        if (sp == NULL)
-        {
-            // error
-            printf ("socket_remove_string: ERROR: stack corrupt!\n");
-            return (NULL);
-        }
-
         sp = stpushi (ret, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -4551,15 +4563,6 @@ U1 *socket_remove_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	if (strcmp ((const char *) buf, "ERROR") == 0)
 	{
-		// push ZERO to stack, as empty read
-        sp = stpushi (0, sp, sp_bottom);
-        if (sp == NULL)
-        {
-            // error
-            printf ("socket_remove_string: ERROR: stack corrupt!\n");
-            return (NULL);
-        }
-
         sp = stpushi (ERR_FILE_READ, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -4586,6 +4589,7 @@ U1 *socket_remove_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         strcpy ((char *) &data[return_str_addr], (const char *) buf);
     }
 
+    // return-start
     sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -4594,6 +4598,7 @@ U1 *socket_remove_string (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
     return (sp);
+    // return-end
 }
 
 // get data info ==============================================================
@@ -4775,6 +4780,7 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (sp);
 	}
 
+    // return-start
     sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -4783,4 +4789,5 @@ U1 *socket_get_info (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
     return (sp);
+    // return-end
 }

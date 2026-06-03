@@ -146,6 +146,7 @@ extern "C" U1 *init_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// printf ("init_mem: allocated %lli memory spaces\n", maxind);
 
 	// error code ok
+	// return-start
 	sp = stpushi (0, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -154,6 +155,7 @@ extern "C" U1 *init_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+	// return-end
 }
 
 // cleanup memory
@@ -266,6 +268,7 @@ extern "C" U1 *alloc_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	// return memory index
+	// return-start
 	sp = stpushi (memind, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -273,6 +276,7 @@ extern "C" U1 *alloc_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		printf ("alloc_obj_mem: ERROR: stack corrupt!\n");
 		return (NULL);
 	}
+	// return-end
 
 	return (sp);
 }
@@ -325,6 +329,8 @@ extern "C" U1 *save_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	F8 var_d ALIGN;
 	S8 var_saddr ALIGN;
 	S8 string_len ALIGN;
+
+	// args-variable
 
 	// get object array index to write the variables into
 	sp = stpopi ((U1 *) &memind, sp, sp_top);
@@ -494,6 +500,7 @@ extern "C" U1 *save_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	// all ok
+	// return-start
 	sp = stpushi (0, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -502,6 +509,7 @@ extern "C" U1 *save_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+	// return-end
 }
 
 extern "C" U1 *load_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -510,6 +518,8 @@ extern "C" U1 *load_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 ind ALIGN;
 	S8 variables ALIGN;
 	S8 i ALIGN;
+
+	// args-variable
 
 	// get object array index to write the variables into
 	sp = stpopi ((U1 *) &memind, sp, sp_top);
@@ -601,6 +611,7 @@ extern "C" U1 *load_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	// ok exit
+    // return-start
 	sp = stpushi (0, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -609,6 +620,7 @@ extern "C" U1 *load_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+	// return-end
 }
 
 // load string from memory ====================================================
@@ -680,6 +692,7 @@ extern "C" U1 *load_string_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		strcpy ((char *) &data[var_saddr], (const char *)  mem[memind].objptr[ind].memptr.straddr);
 
 		// ok exit
+		// return-start
 		sp = stpushi (0, sp, sp_bottom);
 		if (sp == NULL)
 		{
@@ -688,6 +701,7 @@ extern "C" U1 *load_string_obj_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			return (NULL);
 		}
 		return (sp);
+        // return-end
 	}
 	else
 	{
@@ -713,6 +727,8 @@ extern "C" U1 *load_obj_mem_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 offset ALIGN;
 	S8 *int_ptr;
 	F8 *double_ptr;
+
+	// args-variable
 
 	// get object array index to write the variables into
 	sp = stpopi ((U1 *) &memind, sp, sp_top);
@@ -830,6 +846,7 @@ extern "C" U1 *load_obj_mem_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		}
 	}
 	// ok exit
+	// return-start
 		sp = stpushi (0, sp, sp_bottom);
 		if (sp == NULL)
 		{
@@ -838,6 +855,7 @@ extern "C" U1 *load_obj_mem_array (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			return (NULL);
 		}
 		return (sp);
+    // return-end
 }
 
 extern "C" U1 *get_obj_mem_type (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)

@@ -79,6 +79,7 @@ U1 *genann_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	
 	// error code ok
+	// return-start
 	sp = stpushi (0, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -87,6 +88,7 @@ U1 *genann_init_state (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+    // return-end
 }
 
 U1 *free_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -158,12 +160,26 @@ U1 *genann_read_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         genanns[handle].ann = (genann *) genann_read (input);
         fclose (input);
 
+        // return-start
         sp = stpushb (handle, sp, sp_bottom);		// error ok code
+        if (sp == NULL)
+        {
+            // error
+            printf ("genann_read_ann: ERROR: stack corrupt!\n");
+            return (NULL);
+        }
         return (sp);
+        // return-end
     }
     else
     {
         sp = stpushb (-1, sp, sp_bottom);		// error FAIL code
+        if (sp == NULL)
+        {
+            // error
+            printf ("genann_read_ann: ERROR: stack corrupt!\n");
+            return (NULL);
+        }                          //
         return (sp);
     }
 }
@@ -214,6 +230,7 @@ U1 *genann_write_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         genann_write (genanns[handle].ann, output);
         fclose (output);
 
+        // return-start
         sp = stpushb (0, sp, sp_bottom);		// error ok code
 		if (sp == NULL)
 		{
@@ -222,6 +239,7 @@ U1 *genann_write_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			return (NULL);
 		}
         return (sp);
+        // return-end
     }
     else
     {
@@ -298,6 +316,7 @@ U1 *genann_init_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     genanns[handle].ann = (genann *) genann_init (inputs, hidden_layers, hidden, outputs);
     if (genanns[handle].ann != NULL)
     {
+        // return-start
         sp = stpushi (handle, sp, sp_bottom);		// error OK code
 		if (sp == NULL)
 		{
@@ -306,6 +325,7 @@ U1 *genann_init_ann (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			return (NULL);
 		}
         return (sp);
+        // return-end
     }
     else
     {

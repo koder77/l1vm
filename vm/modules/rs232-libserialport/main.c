@@ -130,6 +130,7 @@ U1 *rs232_OpenComport (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	// push ERROR code
+	// return-start
 	sp = stpushi (ret, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -138,6 +139,7 @@ U1 *rs232_OpenComport (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+	// return-end
 }
 
 U1 *rs232_CloseComport (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -213,6 +215,7 @@ U1 *rs232_PollComport (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	error = sp_nonblocking_read (rs232[handle].port, &data[bufaddr], bufsize);
 	// push ERROR code
+	// return-start
 	sp = stpushi (error, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -221,6 +224,7 @@ U1 *rs232_PollComport (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+	// return-end
 }
 
 U1 *rs232_PollComport_Wait (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -284,6 +288,7 @@ U1 *rs232_PollComport_Wait (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 
 	// push ERROR code
+	// return-start
 	sp = stpushi (error, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -292,6 +297,7 @@ U1 *rs232_PollComport_Wait (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+	// return-end
 }
 
 U1 *rs232_SendByte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -333,6 +339,7 @@ U1 *rs232_SendByte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	error = sp_nonblocking_write (rs232[handle].port, &data[bufaddr], 1);
 	// push ERROR code
+	// return-start
 	sp = stpushi (error, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -341,6 +348,7 @@ U1 *rs232_SendByte (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+	// return-end
 }
 
 U1 *rs232_SendBuf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -391,6 +399,7 @@ U1 *rs232_SendBuf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	error = sp_nonblocking_write (rs232[handle].port, &data[bufaddr], bufsize);
 	// push ERROR code
+	// return-start
 	sp = stpushi (error, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -399,4 +408,5 @@ U1 *rs232_SendBuf (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 	return (sp);
+	// return-end
 }

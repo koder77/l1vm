@@ -3733,6 +3733,7 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
                                 printf ("gadget_event: button gadget %i selected.\n", i);
 
+                                // return-start
 								sp = stpushi (i, sp, sp_bottom);
 								if (sp == NULL)
 								{
@@ -3758,6 +3759,7 @@ U1 *gadget_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 									printf ("gadget_event: ERROR: stack corrupt!\n");
 									return (NULL);
 								}
+                                // return-end
 
                                 return (sp);
                             }

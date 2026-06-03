@@ -66,6 +66,7 @@ U1 *gps_setup (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         gps_init = 1;
         gps_stream (&g_gpsdata, WATCH_ENABLE | WATCH_JSON | WATCH_TIMING, NULL);
 
+        // return-start
         sp = stpushi (0, sp, sp_bottom);
         if (sp == NULL)
         {
@@ -73,6 +74,7 @@ U1 *gps_setup (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             printf ("gps_setup: ERROR: stack corrupt!\n");
             return (NULL);
         }
+        // return-end
     }
     return (sp);
 }
@@ -225,6 +227,7 @@ U1 *gps_read_data (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     // return data
+    // return-start
     sp = stpushi (satellites_used, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -283,6 +286,7 @@ U1 *gps_read_data (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     return (sp);
+    // return-end
 }
 
 // functions to handle algorithms

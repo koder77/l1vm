@@ -23,7 +23,7 @@
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
-#include <simpleble_c/simpleble.h>
+#include <simplecble/simpleble.h>
 
 #define SOCKETOPEN 1              // state flags
 #define SOCKETCLOSED 0
@@ -444,6 +444,7 @@ U1 *bluetooth_set_adapter_by_mac (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         adapter = mac_addr_adapter;
 
+        // return-start
         // OK!
         sp = stpushi (0, sp, sp_bottom);
         if (sp == NULL)
@@ -452,6 +453,7 @@ U1 *bluetooth_set_adapter_by_mac (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             printf ("bluetooth_set_adapter_by_mac: ERROR: stack corrupt!\n");
             return (NULL);
         }
+        // return-end
     }
     return (sp);
 }
@@ -565,6 +567,7 @@ U1 *bluetooth_open_adapter (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     // bluetooth_adapter = (S8) adapter;
 
+    // return-start
     sp = stpushi (max_peripherals, sp, sp_bottom); // error
     if (sp == NULL)
     {
@@ -573,6 +576,7 @@ U1 *bluetooth_open_adapter (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
     return (sp);
+    // return-end
 }
 
 U1 *bluetooth_get_peripheral (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -668,6 +672,7 @@ U1 *bluetooth_get_peripheral (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     strcpy ((char *) &data[peripheral_identifier_addr], peripherals[peripheral].identifier);
 
     // all ok!
+    // return-start
     sp = stpushi (0, sp, sp_bottom); // error
     if (sp == NULL)
     {
@@ -676,6 +681,7 @@ U1 *bluetooth_get_peripheral (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
     return (sp);
+    // return-end
 }
 
 U1 *bluetooth_connect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -811,6 +817,7 @@ U1 *bluetooth_connect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         simpleble_peripheral_disconnect(selected_peripheral);
     }
 
+    // return-start
     sp = stpushi (characteristic_entries_len, sp, sp_bottom); // return number of characteristic entries for bluetooth_get_characteristic()
     if (sp == NULL)
     {
@@ -819,6 +826,7 @@ U1 *bluetooth_connect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
     return (sp);
+    // return-end
 }
 
 U1 *bluetooth_get_characteristic (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
@@ -898,6 +906,7 @@ U1 *bluetooth_get_characteristic (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     strcpy ((char *) &data[char_addr], (const char *) &characteristic_entries[char_index].characteristic_uuid.value);
     strcpy ((char *) &data[service_uuid_addr], (const char *) &characteristic_entries[char_index].service_uuid.value);
 
+    // return-start
     sp = stpushi (0, sp, sp_bottom); // all ok!
     if (sp == NULL)
     {
@@ -906,6 +915,7 @@ U1 *bluetooth_get_characteristic (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
     return (sp);
+    // return-end
 }
 
 // write
@@ -1008,6 +1018,7 @@ U1 *bluetooth_write (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         printf("Data successfully sent (write command)!\n");
 
+        // return-start
         sp = stpushi (0, sp, sp_bottom); // return number of characteristic entries for bluetooth_get_characteristic()
         if (sp == NULL)
         {
@@ -1016,6 +1027,7 @@ U1 *bluetooth_write (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             return (NULL);
         }
         return (sp);
+        // return-end
     }
     else
     {
@@ -1164,6 +1176,7 @@ U1 *bluetooth_read (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     {
         printf("Data successfully read (read command)!\n");
 
+        // return-start
         sp = stpushi (received_data_len, sp, sp_bottom); // return number of characteristic entries for bluetooth_get_characteristic()
         if (sp == NULL)
         {
@@ -1172,6 +1185,7 @@ U1 *bluetooth_read (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             return (NULL);
         }
         return (sp);
+        // return-end
     }
     else
     {
@@ -1254,6 +1268,7 @@ U1 *bluetooth_disconnect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     // all ok!
+    // return-start
     sp = stpushi (0, sp, sp_bottom); // return number of characteristic entries for bluetooth_get_characteristic()
     if (sp == NULL)
     {
@@ -1262,6 +1277,7 @@ U1 *bluetooth_disconnect (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (NULL);
     }
     return (sp);
+    // return-end
 }
 
 U1 *bluetooth_set_callback (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)

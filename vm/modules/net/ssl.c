@@ -367,6 +367,7 @@ U1 *open_server_socket_ssl (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     if (ret == 0)
     {
         // all ok!
+        // return-start
         sp = stpushi (handle, sp, sp_bottom);
         if (sp == NULL)
         {
@@ -382,6 +383,7 @@ U1 *open_server_socket_ssl (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
             printf ("open_server_socket_ssl: ERROR: stack corrupt!\n");
             return (NULL);
         }
+        // return-end
     }
     else
     {
@@ -603,6 +605,7 @@ U1 *open_accept_server_ssl (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     sockets[new_handle].ssl = ssl;
     sockets[new_handle].ssl_conn = 1;
 
+    // return-start
     sp = stpushi (new_handle, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -618,6 +621,7 @@ U1 *open_accept_server_ssl (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("open_accept_server_ssl: ERROR: stack corrupt!\n");
         return (NULL);
     }
+    // return-end
 
     return (sp);
 }
@@ -702,6 +706,7 @@ U1 *close_accept_server_ssl (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
         sockets[handle].state = SOCKETCLOSED;
 
+        // return-start
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -710,6 +715,7 @@ U1 *close_accept_server_ssl (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		return (NULL);
     	}
         return (sp);
+        // return-end
     }
 }
 
@@ -805,6 +811,7 @@ U1 *close_server_socket_ssl (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
         SSL_CTX_free (sockets[handle].ctx);
 
+        // return-start
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -813,6 +820,7 @@ U1 *close_server_socket_ssl (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		return (NULL);
     	}
         return (sp);
+        // return-end
     }
 }
 
@@ -981,6 +989,7 @@ U1 *open_client_socket_ssl (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     ShowCerts (ssl);
 
+    // return-start
     sp = stpushi (handle, sp, sp_bottom);
     if (sp == NULL)
     {
@@ -996,6 +1005,7 @@ U1 *open_client_socket_ssl (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         printf ("open_client_socket_ssl: ERROR: stack corrupt!\n");
         return (NULL);
     }
+    // return-end
 
     sockets[handle].socket = server;
     sockets[handle].ssl = ssl;
@@ -1083,6 +1093,7 @@ U1 *close_client_socket_ssl (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         sockets[handle].state = SOCKETCLOSED;
         SSL_CTX_free (sockets[handle].ctx);        /* release context */
 
+        // return-start
         sp = stpushi (ERR_FILE_OK, sp, sp_bottom);
     	if (sp == NULL)
     	{
@@ -1091,5 +1102,6 @@ U1 *close_client_socket_ssl (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     		return (NULL);
     	}
         return (sp);
+        // return-end
     }
 }

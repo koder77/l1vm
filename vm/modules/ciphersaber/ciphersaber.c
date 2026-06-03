@@ -410,6 +410,7 @@ U1 *ciphersaber (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     cleanup ();
 
     // all ok!
+    // return-start
     sp = stpushi (0, sp, sp_bottom);
 	if (sp == NULL)
 	{
@@ -418,4 +419,5 @@ U1 *ciphersaber (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
     return (sp);
+    // return-end
 }
