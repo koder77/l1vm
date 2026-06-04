@@ -35,7 +35,7 @@
 #define VARTYPE_ANY 15
 #define VARTYPE_VARIABLE 16
 
-#define DEBUG 0
+#define DEBUG 1
 
 // set to one if the exit function call was found
 // will result in an error if it is not found in a program!
@@ -190,7 +190,10 @@ S2 get_function_index (U1 *name)
 
     for (i = 0; i <= function_args_ind; i++)
     {
-        if (strcmp ((const char  *) function_args[function_args_ind].name, (const char *)  name) == 0)
+        // EDIT
+        printf ("get_function_index: %lli stored name: '%s', search name: '%s'\n", i, function_args[i].name, name);
+
+        if (strcmp ((const char  *) function_args[i].name, (const char *) name) == 0)
         {
             return (i);  // function name matches! return index
         }
@@ -218,10 +221,10 @@ S2 get_return_index (U1 *name)
     for (i = 0; i <= return_args_ind; i++)
     {
         #if DEBUG
-        printf ("get_return_index: %lli: name: '%s'\n", i, return_args[return_args_ind].name);
+        printf ("get_return_index: %lli: name: '%s'\n", i, return_args[i].name);
         #endif
 
-        if (strcmp ((const char  *) return_args[return_args_ind].name, (const char *)  name) == 0)
+        if (strcmp ((const char  *) return_args[i].name, (const char *)  name) == 0)
         {
             return (i);  // function return name matches! return index
         }
@@ -783,6 +786,8 @@ S2 parse_line (U1 *line)
     U1 type[MAXSTRLEN + 1];
     U1 name[MAXSTRLEN + 1];
 
+    S8 return_args_i = 0;
+
     line_len = strlen_safe ((const char *) line, MAXSTRLEN);
 
     if_pos = searchstr (line, (U1 *) " if)", 0, 0, TRUE);
@@ -1016,16 +1021,26 @@ S2 parse_line (U1 *line)
     pos = searchstr (line, (U1 *) "// (func args ", 0, 0, TRUE);
     if (pos != -1)
     {
+        if (function_args_ind < MAXFUNC - 1)
+        {
+            function_args_ind++;
+        }
+        else
+        {
+            printf ("parse_line: set function overflow!\n");
+            return (1);
+        }
+
         strict_pos = searchstr (line, (U1 *) "// (func args S ", 0, 0, TRUE);
         if (strict_pos != -1)
         {
             // handle function as strict. Use variables with R at the ending for return values
-            function_args[function_index].strict = 1;
+            function_args[function_args_ind].strict = 1;
             name_pos = pos + 16;
         }
         else
         {
-            function_args[function_index].strict = 0;
+            function_args[function_args_ind].strict = 0;
             name_pos = pos + 14;
         }
 
@@ -1066,20 +1081,11 @@ S2 parse_line (U1 *line)
             }
         }
 
-        if (function_args_ind < MAXFUNC - 1)
-        {
-            function_args_ind++;
-            strcpy ((char *) function_args[function_args_ind].name, (char *) name);
+        strcpy ((char *) function_args[function_args_ind].name, (char *) name);
 
-            #if DEBUG
-            printf ("function: index: %lli, name: '%s'\n", function_args_ind, function_args[function_args_ind].name);
-            #endif
-        }
-        else
-        {
-            printf ("parse_line: set function overflow!\n");
-            return (1);
-        }
+        #if DEBUG
+        printf ("function: index: %lli, name: '%s'\n", function_args_ind, function_args[function_args_ind].name);
+        #endif
 
         #if DEBUG
         printf ("parse_line: set function name: '%s'\n", name);
@@ -1673,8 +1679,9 @@ S2 parse_line (U1 *line)
                 return (1);
             }
 
-            return_args_ind = get_return_index (name);
-            if (return_args_ind == -1)
+            // EDIT FIX
+            return_args_i = get_return_index (name);
+            if (return_args_i == -1)
             {
                 printf ("parse_line: return variables, set return function not set: '%s'!\n", name);
                 return (1);
@@ -1785,7 +1792,7 @@ S2 parse_line (U1 *line)
                     return (1);
                 }
 
-                if (args_ind <= return_args[return_args_ind].args)
+                if (args_ind <= return_args[return_args_i].args)
                 {
                     args_ind++;
 
@@ -1797,9 +1804,9 @@ S2 parse_line (U1 *line)
                         continue;
                     }
 
-                    if (return_args[return_args_ind].arg_type[args_ind] != VARTYPE_ANY)
+                    if (return_args[return_args_i].arg_type[args_ind] != VARTYPE_ANY)
                     {
-                        if (return_args[return_args_ind].arg_type[args_ind] != vartype)
+                        if (return_args[return_args_i].arg_type[args_ind] != vartype)
                         {
                             // error no valid vartype
                             printf ("parse-line: return function: type mismatch: '%s' ! \n", type);
@@ -1822,13 +1829,13 @@ S2 parse_line (U1 *line)
             }
 
             #if DEBUG
-            printf ("parse-line: args_ind: %i, return_args[return_args_ind].args: %i\n", args_ind, return_args[return_args_ind].args);
+            printf ("parse-line: args_ind: %i, return_args[return_args_ind].args: %i\n", args_ind, return_args[return_args_i].args);
             #endif
 
-            if (args_ind != return_args[return_args_ind].args - 1)
+            if (args_ind != return_args[return_args_i].args - 1)
             {
                 // error args number doesn't match
-                printf ("parse-line: return function: args num mismatch! got %i args, need %i args!\n", args_ind + 1, return_args[return_args_ind].args);
+                printf ("parse-line: return function: args num mismatch! got %i args, need %i args!\n", args_ind + 1, return_args[return_args_i].args);
                 return (1);
             }
         }
@@ -1882,8 +1889,8 @@ S2 parse_line (U1 *line)
             function_return = 1;
         }
 
-        return_args_ind = get_return_index (function_name_current);
-        if (return_args_ind == -1)
+        return_args_i = get_return_index (function_name_current);
+        if (return_args_i == -1)
         {
             // no return variables
             return (0);
@@ -1891,7 +1898,7 @@ S2 parse_line (U1 *line)
 
         { // new scope
         S2 n = 0;
-        S2 var_ind = return_args[return_args_ind].args -1;
+        S2 var_ind = return_args[return_args_i].args -1;
         S2 stpush_pos;
         S2 stpush_found = 0;
         do_parse_vars = 1;
@@ -1983,10 +1990,10 @@ S2 parse_line (U1 *line)
                         continue;
                     }
 
-                    if (return_args[return_args_ind].arg_type[var_ind] != VARTYPE_ANY)
+                    if (return_args[return_args_i].arg_type[var_ind] != VARTYPE_ANY)
                     {
                         // not an any type variable, check type:
-                        if (vartype != return_args[return_args_ind].arg_type[var_ind])
+                        if (vartype != return_args[return_args_i].arg_type[var_ind])
                         {
                             printf ("parse-line: error: return variable type mismatch!\n");
                             return (1);
@@ -2145,8 +2152,8 @@ S2 parse_line (U1 *line)
         func_stpop_pos = searchstr (line, (U1 *) "stpop)", 0, 0, TRUE);
         if (func_stpop_pos != -1)
         {
-            function_args_ind = get_function_index (function_name_current);
-            if (function_args_ind == -1)
+            function_index = get_function_index (function_name_current);
+            if (function_index == -1)
             {
                 printf ("parse-line: error: no function args set!\n");
                 return (1);
