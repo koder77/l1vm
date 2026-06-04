@@ -35,7 +35,7 @@
 #define VARTYPE_ANY 15
 #define VARTYPE_VARIABLE 16
 
-#define DEBUG 1
+#define DEBUG 0
 
 // set to one if the exit function call was found
 // will result in an error if it is not found in a program!
@@ -191,7 +191,7 @@ S2 get_function_index (U1 *name)
     for (i = 0; i <= function_args_ind; i++)
     {
         // EDIT
-        printf ("get_function_index: %lli stored name: '%s', search name: '%s'\n", i, function_args[i].name, name);
+        //printf ("get_function_index: %lli stored name: '%s', search name: '%s'\n", i, function_args[i].name, name);
 
         if (strcmp ((const char  *) function_args[i].name, (const char *) name) == 0)
         {
