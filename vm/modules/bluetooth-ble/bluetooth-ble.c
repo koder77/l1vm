@@ -23,7 +23,7 @@
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
-#include <simplecble/simpleble.h>
+#include <simplecble/simplecble.h>
 
 #define SOCKETOPEN 1              // state flags
 #define SOCKETCLOSED 0

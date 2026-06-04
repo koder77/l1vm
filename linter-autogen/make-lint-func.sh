@@ -6,5 +6,5 @@ then
     exit 1
 fi
 
-./l1vm-cfunc $1 $2
-./l1vm-func $3 $2 $4
+l1vm-cfunc $1 $2
+l1vm-func $3 $2 $4

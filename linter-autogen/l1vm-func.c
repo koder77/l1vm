@@ -17,7 +17,7 @@
  * along with L1vm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Antigravity created
+// Antigravity created and heavy modified!
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,16 +27,299 @@
 #include "../include/global.h"
 
 #define MAX_CFUNCS 1000
-#define LINE_BUF_SIZE 2048
+#define LINE_BUF_SIZE 4096
+#define STRLEN 4096
+#define POPLEN 512
 
 struct cfunc {
-    char name[128];
-    char pop_list[256];
-    char push_list[256];
+    char name[STRLEN];
+    char pop_list[POPLEN];
+    char push_list[POPLEN];
 };
 
 struct cfunc cfuncs[MAX_CFUNCS];
 int cfunc_count = 0;
+
+// .l1h header store
+struct header {
+    char varname[STRLEN];
+    char funcname[STRLEN];
+    char numname[STRLEN];
+};
+
+struct header headers[MAX_CFUNCS];
+int header_count = 0;
+
+char wrapper_name_curr[STRLEN];
+char call_varname_curr[STRLEN];
+
+// get string variable name and C function name
+void parse_set (char *line)
+{
+    int set_len;
+    int j = 0;
+    int v = 0;
+    int loop = 1;
+    char varname[STRLEN];
+    char funcname[STRLEN];
+
+    char *set_ptr = strstr(line, "(set string s");
+    if (set_ptr)
+    {
+       set_ptr = set_ptr + 13;
+       set_len = strlen (set_ptr);
+       if (set_len > 2)
+       {
+           set_ptr++;
+
+           // get variable name
+           while (*set_ptr != ' ')
+           {
+               if (v < STRLEN)
+               {
+                   varname[v] = *set_ptr;
+                   v++; set_ptr++;
+               }
+           }
+           varname[v] = '\0';
+           set_ptr++;
+           // get C function name
+           while (loop == 1)
+           {
+               if (*set_ptr == '"')
+               {
+                   // function name start
+                   break;
+               }
+               if (*set_ptr == ')')
+               {
+                   break;
+               }
+               if (*set_ptr == '\0')
+               {
+                   break;
+               }
+               set_ptr++;
+           }
+           set_ptr++;
+
+
+           while (*set_ptr != '"')
+           {
+                funcname[j] = *set_ptr;
+
+                if (*set_ptr == '\0')
+                {
+                    break;
+                }
+
+                j++; set_ptr++;
+            }
+            funcname[j] ='\0';
+       }
+
+       if (header_count < MAX_CFUNCS)
+       {
+           strcpy (headers[header_count].varname, varname);
+           strcpy (headers[header_count].funcname, funcname);
+           header_count++;
+       }
+
+       printf ("set: varname: '%s', funcname: '%s'\n", varname, funcname);
+    }
+}
+
+// get function number
+void parse_mod (char *line)
+{
+    int mod_len;
+    int i = 0;
+    int v = 0;
+    int loop = 1;
+    int spaces_count = 0;
+    char numname[STRLEN];
+    char varname[STRLEN];
+
+    char *mod_ptr = strstr (line, "(2");
+    if (mod_ptr)
+    {
+        mod_ptr = mod_ptr + 2;
+        mod_len = strlen (mod_ptr);
+        if (mod_len > 2)
+        {
+            mod_ptr++;
+
+            // skip module variable
+            while (loop == 1)
+            {
+                if (*mod_ptr == ' ')
+                {
+                    spaces_count++;
+                }
+
+                if (spaces_count == 1 )
+                {
+                    break;
+                }
+
+                if (*mod_ptr == '\0')
+                {
+                    break;
+                }
+
+                mod_ptr++;
+            }
+
+            mod_ptr++;
+
+            while (loop == 1)
+            {
+                if (*mod_ptr != ' ')
+                {
+                    numname[i] = *mod_ptr;
+                }
+                else
+                {
+                    break;
+                }
+
+                if (*mod_ptr == '\0')
+                {
+                   break;
+                }
+
+                i++; mod_ptr++;
+            }
+
+            numname[i] = '\0';
+            mod_ptr++;
+
+            while (loop == 1)
+            {
+                if (*mod_ptr != ' ')
+                {
+                    varname[v] = *mod_ptr;
+                }
+                else
+                {
+                    break;
+                }
+
+                if (*mod_ptr == '\0')
+                {
+                   break;
+                }
+
+                v++; mod_ptr++;
+            }
+
+            varname[v] = '\0';
+
+            for (i = 0; i <= header_count; i++)
+            {
+                if (strcmp (headers[i].varname, varname) == 0)
+                {
+                    // found varname, set number
+                    strcpy (headers[i].numname, numname);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+
+// get function number
+int parse_call (char *line, char *funcname)
+{
+    int call_len;
+    int v = 0;
+    int i = 0;
+    int j = 0;
+    int loop = 1;
+    int spaces_count = 0;
+    char numname[STRLEN];
+
+    char *call_ptr = strstr (line, "(3 ");
+    if (call_ptr)
+    {
+        call_ptr = call_ptr + 2;
+        call_len = strlen (call_ptr);
+        if (call_len > 2)
+        {
+            call_ptr++;
+
+            // skip module variable
+            while (loop == 1)
+            {
+                if (*call_ptr == ' ')
+                {
+                    spaces_count++;
+                }
+
+                if (spaces_count == 1)
+                {
+                    break;
+                }
+
+                if (*call_ptr == '\0')
+                {
+                    break;
+                }
+
+                call_ptr++;
+            }
+
+            call_ptr++;
+
+            while (loop == 1)
+            {
+                if (*call_ptr != ' ')
+                {
+                    numname[v] = *call_ptr;
+                }
+                else
+                {
+                    break;
+                }
+
+                if (*call_ptr == '\0')
+                {
+                   break;
+                }
+
+                v++; call_ptr++;
+            }
+
+            numname[v] = '\0';
+            strcpy (call_varname_curr, numname);
+
+            for (i = 0; i <= header_count; i++)
+            {
+                if (strcmp (headers[i].numname, numname) == 0)
+                {
+                    for (j = 0; j <= cfunc_count; j++)
+                    {
+                        if (strcmp (headers[i].funcname, cfuncs[j].name) == 0)
+                        {
+                            strcpy (funcname, cfuncs[j].name);
+                            return (0);
+                        }
+                    }
+                }
+            }
+
+        }
+        printf ("call varname: '%s'\n", numname);
+    }
+    else
+    {
+        return (1); // no call line found
+    }
+    return (1);
+}
+
+
 
 // Helper to trim leading/trailing whitespace
 void trim(char *str) {
@@ -91,7 +374,7 @@ void parse_cfunc_line(const char *line) {
     // Extract name (everything before the first '(')
     const char *name_end = paren1;
     int name_len = name_end - line;
-    if (name_len >= 128) name_len = 127;
+    if (name_len >= STRLEN) name_len = STRLEN -1 ;
     strncpy(cfuncs[cfunc_count].name, line, name_len);
     cfuncs[cfunc_count].name[name_len] = '\0';
     trim(cfuncs[cfunc_count].name);
@@ -100,7 +383,7 @@ void parse_cfunc_line(const char *line) {
     const char *paren1_end = strchr(paren1, ')');
     if (!paren1_end) return;
     int pop_len = paren1_end - (paren1 + 1);
-    if (pop_len >= 256) pop_len = 255;
+    if (pop_len >= POPLEN) pop_len = POPLEN - 1;
     strncpy(cfuncs[cfunc_count].pop_list, paren1 + 1, pop_len);
     cfuncs[cfunc_count].pop_list[pop_len] = '\0';
     trim(cfuncs[cfunc_count].pop_list);
@@ -112,7 +395,7 @@ void parse_cfunc_line(const char *line) {
     const char *paren2_end = strchr(paren2, ')');
     if (!paren2_end) return;
     int push_len = paren2_end - (paren2 + 1);
-    if (push_len >= 256) push_len = 255;
+    if (push_len >= POPLEN) push_len = POPLEN - 1;
     strncpy(cfuncs[cfunc_count].push_list, paren2 + 1, push_len);
     cfuncs[cfunc_count].push_list[push_len] = '\0';
     trim(cfuncs[cfunc_count].push_list);
@@ -142,6 +425,8 @@ int main(int argc, char *argv[]) {
     const char *header_path = argv[1];
     const char *cfunc_path = argv[2];
     const char *output_path = argv[3];
+
+    char funcname[STRLEN];
 
     // 1. Read and parse C-functions lint file
     FILE *cf_file = fopen(cfunc_path, "r");
@@ -177,6 +462,11 @@ int main(int argc, char *argv[]) {
     }
 
     while (fgets(line_buf, sizeof(line_buf), in)) {
+        printf ("> %s", line_buf);
+
+        parse_set (line_buf);
+        parse_mod (line_buf);
+
         // Check if this line defines a wrapper function: (NAME func)
         char *func_ptr = strstr(line_buf, " func)");
         if (func_ptr) {
@@ -195,16 +485,22 @@ int main(int argc, char *argv[]) {
                 wrapper_name[name_len] = '\0';
                 trim(wrapper_name);
 
-                // Look up in C-functions
-                struct cfunc *cf = find_cfunc(wrapper_name);
-                if (cf) {
-                    // Write only the annotations (without original lines and without leading indentation spaces)
-                    fprintf(out, "// %s\n", cf->name);
+                strcpy (wrapper_name_curr, wrapper_name);
+                printf ("found function: %s\n", wrapper_name);
+            }
+        }
 
-                    fprintf(out, "// (func args %s %s)\n", cf->name, cf->pop_list);
-                    fprintf(out, "// (return args %s %s)\n\n", cf->name, cf->push_list);
-                    printf("Generated comments for: %s -> args: %s, return: %s\n", cf->name, cf->pop_list, cf->push_list);
-                }
+        if (parse_call (line_buf, funcname) == 0)
+        {
+            // Look up in C-functions
+            struct cfunc *cf = find_cfunc(funcname);
+            if (cf) {
+                // Write only the annotations (without original lines and without leading indentation spaces)
+                fprintf(out, "// %s\n", wrapper_name_curr);
+
+                fprintf(out, "// (func args %s %s)\n", wrapper_name_curr, cf->pop_list);
+                fprintf(out, "// (return args %s %s)\n\n", wrapper_name_curr, cf->push_list);
+                printf("Generated comments for: %s -> args: %s, return: %s\n", wrapper_name_curr, cf->pop_list, cf->push_list);
             }
         }
     }
