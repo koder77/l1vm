@@ -41,6 +41,9 @@
 // will result in an error if it is not found in a program!
 U1 found_exit = 0;
 
+// set to one if set by flag: to switch strict check for function protos!
+// and show an error if no protos are found
+U1 func_strict = 0;
 
 // string functions ===============================================================================
 // protos
@@ -1504,8 +1507,11 @@ S2 parse_line (U1 *line)
         function_index = get_function_index (name);
         if (function_index == -1)
         {
-            printf ("parse_line: set call function not set: '%s'!\n", name);
-            return (1);
+            if (func_strict == 1)
+            {
+                printf ("parse_line: set call function not set: '%s'!\n", name);
+                return (1);
+            }
         }
 
         i = searchstr (line, (U1 *) "(", 0, 0, TRUE);
@@ -1683,8 +1689,15 @@ S2 parse_line (U1 *line)
             return_args_i = get_return_index (name);
             if (return_args_i == -1)
             {
-                printf ("parse_line: return variables, set return function not set: '%s'!\n", name);
-                return (1);
+                if (func_strict == 1)
+                {
+                    printf ("parse_line: return variables, set return function not set: '%s'!\n", name);
+                    return (1);
+                }
+                else
+                {
+                    return (0);
+                }
             }
 
             #if DEBUG
@@ -2256,6 +2269,7 @@ int main (int ac, char *av[])
     U1 rbuf[MAXSTRLEN + 1] = "";                        /* read-buffer for one line */
 	U1 buf[MAXSTRLEN + 1] = "";
     S2 pos = 0, pos2 = 0, pos3 = 0, linton = 0, lintoff = 0, function_args_check = 0, pointer_strict_on = 0, pointer_strict_off = 0;
+    S2 func_stricton = 0;
     U1 do_lint = 1; // switch linting on and off
 
     if (ac < 2)
@@ -2379,6 +2393,8 @@ int main (int ac, char *av[])
                  pointer_strict_on = searchstr (buf, (U1 *) "// (pointer strict on)", 0, 0, TRUE);
                  pointer_strict_off = searchstr (buf, (U1 *) "// (pointer strict off)", 0, 0, TRUE);
 
+                 func_stricton = searchstr (buf, (U1 *) "// (func-strict)", 0, 0, TRUE);
+
                  if (linton != -1)
                  {
                      do_lint = 1;
@@ -2418,6 +2434,11 @@ int main (int ac, char *av[])
                      pointer_strict = 0;
                      linenum++;
                      continue;
+                 }
+
+                 if (func_stricton != -1)
+                 {
+                     func_strict = 1;
                  }
 
                  if (pos == -1 && pos2 == -1 && pos3 == -1)
