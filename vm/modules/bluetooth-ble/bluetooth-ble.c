@@ -23,6 +23,14 @@
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
+#ifndef SIMPLECBLE_EXPORT
+#define SIMPLECBLE_EXPORT
+#endif
+
+#ifndef SIMPLEBLE_EXPORT
+#define SIMPLEBLE_EXPORT
+#endif
+
 #include <simplecble/simplecble.h>
 
 #define SOCKETOPEN 1              // state flags
