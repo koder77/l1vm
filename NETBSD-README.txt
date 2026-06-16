@@ -26,13 +26,12 @@ In the "include/settings.h" file set this line:
 
 #define NETBSD_RAM 1
 
-And if you get missing library errors, that a library can not be load. Then use "ldd libraryname.so" to find out what is missing:
+And if you get missing library errors, that a library can not be load. Then use "ldd libraryname.so" to find out what is missing.
+You have to set the library path in the ".shrc" file:
 
-I had to copy the libsodium:
-
-$ sudo cp /usr/pkg/lib/libsodium.so /usr/lib/libsodium.so.26
-
-To make the math library "libl1vmmath.so" loading.
+export PATH="$HOME/l1vm/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/l1vm/bin:/usr/pkg/lib:/usr/lib:/usr/X11R7/lib:$LD_LIBRARY_PATH"
+export L1VM_ROOT="$HOME/l1vm/"
 
 Now reboot and the new values should be set.
 
