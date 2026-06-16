@@ -77,6 +77,7 @@
 #define LOW_RAM			    0					// set to 1 on a machine with LOW RAM, like I do on the Psion 5MX Linux build! :)
 #define MEDIUM_RAM              1
 #define NORMAL_RAM              0
+#define NETBSD_RAM              0
 
 #define MAX_MUTEXES				256				// for interrupt 1
 
