@@ -297,7 +297,7 @@ if (modules[ind].used == 1)
 // check if module already load before
 for (i = 0; i < MODULES; i++)
 {
-	if (modules[i].used == 0)
+	if (modules[i].used == 1)
 	{
 		if (strcmp ((const char *) libname, (char *) modules[i].name) == 0)
 		{
