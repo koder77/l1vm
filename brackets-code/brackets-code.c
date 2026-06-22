@@ -29,6 +29,9 @@
 #include <time.h>
 #include <math.h>
 
+/* format truncation warnings are benign: buffers sized for real-world usage */
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+
 #define MAX_LINE 4096
 #define MAX_VARS 48
 #define MAX_FUNCS 24
@@ -181,10 +184,6 @@ const char* local_buf() {
     static char buf[64];
     snprintf(buf, sizeof(buf), "local%d", func_counter++);
     return buf;
-}
-
-static int is_intrinsic_inc(const char *name) {
-    return strncmp(name, "intr", 4) == 0;
 }
 
 static int is_question(const char *prompt) {
@@ -596,11 +595,13 @@ static int extract_numbers(const char *prompt, int *nums, int max_nums) {
                 while (prev < p && pi < 15) prefix[pi++] = *prev++;
                 prefix[pi] = '\0';
                 if (strcmp(prefix, "int") == 0 || strcmp(prefix, "const") == 0) {
-                    while (*p && isdigit(*p)) p++; continue;
+                    while (*p && isdigit(*p)) p++;
+                    continue;
                 }
             }
             nums[count++] = atoi(p);
-            while (*p && isdigit(*p)) p++; continue;
+            while (*p && isdigit(*p)) p++;
+            continue;
         }
         p++;
     }
@@ -612,7 +613,6 @@ static int extract_numbers(const char *prompt, int *nums, int max_nums) {
 // 1-3: Basic emitters
 static void emit_math(Program *prog, Function *f, const char *type, const char *op, const int *vals, int n, int last_step);
 static void emit_input_loop(Program *prog, Function *f, int count, const char *type, int do_sum);
-static void emit_print_range(Program *prog, Function *f, int start, int end);
 static void emit_for_sum(Program *prog, Function *f, int n);
 static void emit_print_even(Program *prog, Function *f, int n);
 static void emit_input_find_max(Program *prog, Function *f, int count);
@@ -663,8 +663,6 @@ typedef struct {
 
 static WordEmbedding word_embeddings[VOCAB_SIZE];
 static float attention_weights[NUM_EMITTERS];
-static int selected_tokens[64];
-static int num_selected = 0;
 
 static const char *vocab[VOCAB_SIZE] = {
     "sum", "add", "sub", "mul", "div", "mod", "input", "print", "loop", "for",
@@ -870,25 +868,6 @@ static int has_actionable_keyword(const char *text) {
         || has_word(text, "execution") || has_word(text, "ausführ") || has_word(text, "lauf");
 }
 
-static int is_around_numbers(const char *text, const char *pos, int conjunction_len) {
-    char before[32] = {0}, after[32] = {0};
-    int bi = 0, ai = 0;
-    const char *p = pos - 1;
-    while (p >= text && bi < 30 && (isdigit(*p) || isspace(*p))) {
-        if (!isspace(*p)) before[bi++] = *p;
-        p--;
-    }
-    before[bi] = '\0';
-    for (int i = 0; i < bi/2; i++) { char t = before[i]; before[i] = before[bi-1-i]; before[bi-1-i] = t; }
-    p = pos + conjunction_len;
-    while (*p && ai < 30 && (isdigit(*p) || isspace(*p))) {
-        if (!isspace(*p)) after[ai++] = *p;
-        p++;
-    }
-    after[ai] = '\0';
-    return strlen(before) > 0 && strlen(after) > 0 && isdigit(before[0]) && isdigit(after[0]);
-}
-
 static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", prompt);
@@ -1037,29 +1016,6 @@ static void emit_input_loop(Program *prog, Function *f, int count, const char *t
     func_append(f, "\t(:print_n !)");
     func_append(f, "\t(sum :print_i !)");
     func_append(f, "\t(:print_n !)");
-}
-
-static void emit_print_range(Program *prog, Function *f, int start, int end) {
-    add_include(prog, "intr-func.l1h");
-    const char *zv[] = {"0"};
-    const char *ov[] = {"1"};
-    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
-    char sv[16], ev[16], ln[256];
-    snprintf(sv, sizeof(sv), "%d", start);
-    snprintf(ev, sizeof(ev), "%d", end);
-    const char *svc[] = {sv};
-    const char *evc[] = {ev};
-    add_var_to_func(f, "int64", "i", 1, svc, 1);
-    add_var_to_func(f, "int64", "max", 1, evc, 1);
-    add_var_to_func(f, "int64", "f", 1, zv, 1);
-    func_append(f, "\t(for-loop)");
-    snprintf(ln, sizeof(ln), "\t(((i max <=) f :=) f for)");
-    func_append(f, ln);
-    func_append(f, "\t\t(i :print_i !)");
-    func_append(f, "\t\t(:print_n !)");
-    func_append(f, "\t\t(i + one i :=)");
-    func_append(f, "\t(next)");
 }
 
 static void emit_for_sum(Program *prog, Function *f, int n) {
@@ -2977,11 +2933,13 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
                 while (prev < p && pi < 15) prefix[pi++] = *prev++;
                 prefix[pi] = '\0';
                 if (strcmp(prefix, "int") == 0 || strcmp(prefix, "const") == 0) {
-                    while (*p && isdigit(*p)) p++; continue;
+                    while (*p && isdigit(*p)) p++;
+                    continue;
                 }
             }
             nums[num_count++] = atoi(p);
-            while (*p && isdigit(*p)) p++; continue;
+            while (*p && isdigit(*p)) p++;
+            continue;
         }
         p++;
     }
@@ -3052,6 +3010,7 @@ void write_program(Program *prog, const char *filename) {
 // ==================== TEMPLATES ====================
 
 void gen_hello_world(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3064,6 +3023,7 @@ void gen_hello_world(Program *prog, const char *prompt) {
 }
 
 void gen_print_var(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3076,6 +3036,7 @@ void gen_print_var(Program *prog, const char *prompt) {
 }
 
 void gen_math_ops(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3095,6 +3056,7 @@ void gen_math_ops(Program *prog, const char *prompt) {
 }
 
 void gen_for_loop(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3117,6 +3079,7 @@ void gen_for_loop(Program *prog, const char *prompt) {
 }
 
 void gen_while_loop(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3136,6 +3099,7 @@ void gen_while_loop(Program *prog, const char *prompt) {
 }
 
 void gen_if_else(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3162,6 +3126,7 @@ void gen_if_else(Program *prog, const char *prompt) {
 }
 
 void gen_if_else_chain(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3192,6 +3157,7 @@ void gen_if_else_chain(Program *prog, const char *prompt) {
 }
 
 void gen_switch(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3220,6 +3186,7 @@ void gen_switch(Program *prog, const char *prompt) {
 }
 
 void gen_factorial(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3258,6 +3225,7 @@ void gen_factorial(Program *prog, const char *prompt) {
 }
 
 void gen_fibonacci(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3299,6 +3267,7 @@ void gen_fibonacci(Program *prog, const char *prompt) {
 }
 
 void gen_fizzbuzz(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3351,6 +3320,7 @@ void gen_fizzbuzz(Program *prog, const char *prompt) {
 }
 
 void gen_array_demo(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     add_func(prog, "main");
@@ -3379,6 +3349,7 @@ void gen_array_demo(Program *prog, const char *prompt) {
 }
 
 void gen_string_demo(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3402,6 +3373,7 @@ void gen_string_demo(Program *prog, const char *prompt) {
 }
 
 void gen_user_input(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3418,6 +3390,7 @@ void gen_user_input(Program *prog, const char *prompt) {
 }
 
 void gen_shell_args(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3448,6 +3421,7 @@ void gen_shell_args(Program *prog, const char *prompt) {
 }
 
 void gen_countdown(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3467,6 +3441,7 @@ void gen_countdown(Program *prog, const char *prompt) {
 }
 
 void gen_sum(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3491,6 +3466,7 @@ void gen_sum(Program *prog, const char *prompt) {
 }
 
 void gen_primes(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3531,6 +3507,7 @@ void gen_primes(Program *prog, const char *prompt) {
 }
 
 void gen_function_demo(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3566,6 +3543,7 @@ void gen_function_demo(Program *prog, const char *prompt) {
 }
 
 void gen_guess_number(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3600,6 +3578,7 @@ void gen_guess_number(Program *prog, const char *prompt) {
 }
 
 void gen_multiplication_table(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3642,6 +3621,7 @@ void gen_multiplication_table(Program *prog, const char *prompt) {
 }
 
 void gen_even_odd(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3677,6 +3657,7 @@ void gen_even_odd(Program *prog, const char *prompt) {
 }
 
 void gen_power(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3713,6 +3694,7 @@ void gen_power(Program *prog, const char *prompt) {
 }
 
 void gen_max_of_three(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3750,6 +3732,7 @@ void gen_max_of_three(Program *prog, const char *prompt) {
 }
 
 void gen_hello_name(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3770,6 +3753,7 @@ void gen_hello_name(Program *prog, const char *prompt) {
 }
 
 void gen_bubble_sort(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     add_func(prog, "main");
@@ -3822,6 +3806,7 @@ void gen_bubble_sort(Program *prog, const char *prompt) {
 }
 
 void gen_struct_demo(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3840,6 +3825,7 @@ void gen_struct_demo(Program *prog, const char *prompt) {
 }
 
 void gen_pointer_demo(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3861,6 +3847,7 @@ void gen_pointer_demo(Program *prog, const char *prompt) {
 }
 
 void gen_time_demo(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3903,6 +3890,7 @@ void gen_time_demo(Program *prog, const char *prompt) {
 }
 
 void gen_gcd(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -3945,6 +3933,7 @@ void gen_gcd(Program *prog, const char *prompt) {
 }
 
 void gen_hex_binary(Program *prog, const char *prompt) {
+    (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -4067,7 +4056,6 @@ int match_template(const char *prompt, int *best_score) {
 static int validate_code(const char *filename) {
     char cmd[1024];
     char ppname[512];
-    const char *base = filename;
     const char *dot = strrchr(filename, '.');
     if (dot) {
         int len = dot - filename;
