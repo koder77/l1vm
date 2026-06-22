@@ -1,0 +1,227 @@
+Brackets Code - Memory & Specification
+=============================================
+
+1. WHAT IT IS
+-------------
+Brackets Code is a CLI code generator for the Brackets (L1VM) assembly language.
+It converts natural-language prompts into working .l1com programs.
+Written in C, single-file (~3930 lines). Author: Stefan.
+
+2. ARCHITECTURE OVERVIEW
+------------------------
+The program has a two-tier generation pipeline:
+
+  Prompt -> is_question? -> answer_question() + generate_code()
+       |
+  smart_generate() --> multi-step split + per-step generation
+       | (fallback)
+  match_template() --> 31 template functions
+       | (fallback)
+  gen_hello_world() (default)
+
+Key principle: "planner-first ordering" -- the plan-based smart_generate()
+runs BEFORE template matching, so compound/novel prompts are handled
+by the planner rather than being captured by shorter template keywords.
+
+3. DATA STRUCTURES
+------------------
+Program:
+  - filename, funcs[] (up to 24), includes[] (up to 24), includes_post[] (up to 24), globals
+
+Function:
+  - name, is_local, has_vars, has_vardef, vardef_name
+  - vars[] (up to 48 Variable), body (string buffer, up to 64KB)
+
+Variable:
+  - name, type, count, values[], num_values
+
+TaskProfile (the plan struct):
+  - has_input, input_count, count_value
+  - has_literals, literals[], num_literals
+  - has_operation, op[] ("add"/"sub"/"mul"/"div"/"mod")
+  - has_algorithm, algorithm[], algo_param
+  - Enhanced flags: has_sum_range, has_print_even, has_find_max,
+    has_fib_seq, has_countdown_from, has_input_sort, has_median,
+    has_input_fact, has_string_cat, has_string_compare,
+    has_array_assign, has_array_reverse, has_array_find, has_average,
+    has_read_file, has_write_file, has_array_vmath,
+    has_string_to_num, has_timer,
+    has_array_min_max, has_bool_demo, has_bit_check
+  - has_loop, loop_start/end/step
+  - has_condition, has_output, has_output_str
+  - type[] ("int64", "double", "int32", "int16", "byte")
+  - title[]
+
+Template struct:
+  - keywords (space-separated), description, function pointer
+
+4. GENERATION FLOW (generate_code)
+-----------------------------------
+1. Check if input is a question -> answer via FAQ
+2. Try smart_generate() which:
+   a. Splits prompt on conjunctions (multi-step detection)
+   b. Validates/merges non-viable steps
+   c. Generates per-step code using emitter blocks
+   d. Falls through to single-step plan-based generation
+3. If plan fails, try match_template() -- scores all 31 templates
+4. If template fails, generate default "hello world"
+
+5. PLAN-BASED GENERATOR
+-----------------------
+5a. Task Parsing (parse_task):
+  - Detects type: byte/int8 -> int16/short -> int32 -> int64 -> double/float
+  - Extracts numbers (digit + written-out words: "eins"/"one"/...)
+  - Count filter: words before "numbers/werte/zahlen/values"
+  - Detects operations via ops[] map (add/sub/mul/div/mod in DE+EN)
+  - Detects ~45+ patterns (FAQ topics, algorithms, input/output, loops)
+  - Enhanced patterns override generic algorithm flags
+
+5b. Emitter Blocks (NUM_EMITTERS = 34):
+  Each emits L1VM code for a specific pattern:
+
+  Block                    Purpose
+  ------------------------ ------------------------------
+  emit_math                Pure math with 2-3 literals
+  emit_input_loop          Read N numbers, optionally sum
+  emit_print_range         Print numbers from start to end
+  emit_for_sum             Sum 1..N
+  emit_print_even          Print even numbers <= N
+  emit_input_find_max       Read N, find maximum
+  emit_countdown_from       Countdown N to 0
+  emit_fib_seq             Fibonacci sequence (first N)
+  emit_input_sort           Read N, bubble sort, print
+  emit_median               Read N, sort, print median
+  emit_string_cat           Input 2 strings, concatenate
+  emit_string_compare       Input 2 strings, compare
+  emit_array_assign         Input index+value, assign to array
+  emit_array_reverse        Read N, reverse array, print
+  emit_array_find           Read N + search key, linear search
+  emit_input_factorial      Read N, call factorial, print
+  emit_array_vmath          Array min/max/average using vmath
+  emit_read_file            Read int64 value from file
+  emit_write_file           Write int64 value to file
+  emit_string_to_num        Parse string input to integer
+  emit_timer                Measure execution time (intr0 24/25)
+  emit_factorial            Recursive factorial (no input)
+  emit_fizzbuzz             FizzBuzz 1..100
+  emit_primes               Prime finder up to N
+  emit_even_odd             Check if number is even or odd
+  emit_power                Power function (loop)
+  emit_multiplication_table 1..10 times table
+  emit_guess_number         Number guessing game
+  emit_gcd                  Recursive Euclid GCD
+  emit_random_number        Generate N random numbers
+  emit_hello_name           Ask name and greet
+  emit_array_min_max        Find min/max/average via vmath library
+  emit_bool_demo            Boolean variable demo (bool type, true/false)
+  emit_bit_check            Bit check with << and &, custom function
+
+5c. Multi-Step Composition (split_prompt_steps):
+  - Split patterns (ordered longest-first):
+    " und dann ", " und danach ", " anschliessend ",
+    " and then ", " . ", ". ", "; ", " then ",
+    " danach ", " and " (math-guarded), " und " (math-guarded)
+  - Math guard: if conjunction surrounded by digits, skip split
+  - Each split segment parsed as independent TaskProfile
+  - Pre-validation: non-viable steps auto-merge backward
+  - Each viable step generates via generate_from_task
+  - Variables re-initialized if values differ between steps
+
+6. TEMPLATE SYSTEM (31 templates)
+----------------------------------
+  Template              Description
+  --------------------  ---------------------------
+  hello world           Hello World program
+  factorial             Recursive factorial
+  fibonacci             Recursive fibonacci
+  fizzbuzz              FizzBuzz 1..100
+  for loop / loop       For-loop counting demo
+  while loop / while    While-loop counting down
+  countdown             Do-while countdown 10..1
+  if else / if / cond   If-else comparison
+  positive negative     If-else chain (pos/neg/zero)
+  switch / case         Switch/case matching
+  array                 Array index access demo
+  print var             Print a variable
+  math                  Math operations demo
+  string concat/string  String copy + concatenation
+  input / user input    Read integer from user
+  shell args / args     Command-line arguments
+  sum                   Sum from 1 to N
+  primes / prime        Sieve-like prime finder
+  function              Function call + square
+  guess / guess number  Number guessing game
+  multiplication table  1..10 times table
+  even odd / even       Even/odd classifier
+  power / exponent      Power function (loop)
+  max of three / max    Max function + call
+  what is your name     Ask name and greet
+  bubble sort / sort    Hardcoded bubble sort demo
+  struct / person       Struct (dotted vars) demo
+  pointer               Pointer access demo
+  time / clock          Current time + epoch ms
+  gcd                   Recursive Euclid GCD
+  hex / binary          Hex and binary literals
+
+  Matching: all keywords in template must appear as words in prompt.
+  Best score wins (more keyword matches = higher score).
+
+7. FAQ SYSTEM
+-------------
+  Detects questions (starts with was/wie/wer/what/how/why/where/when
+  or contains "?"). Answers are hardcoded strings organized by topic.
+
+8. TYPE DETECTION
+-----------------
+  Order: byte/int8 > int16/short > int32 > int64 > double/float
+  Default is int64.
+
+9. vars.l1h INCLUDE
+-------------------
+  vars.l1h is included only when code uses size constants.
+  is_intrinsic_inc() matches both "intr" and "vars" prefixes.
+
+10. INCLUDE ORDERING
+--------------------
+  - Intrinsic includes (#include <intr-func.l1h>, <vars.l1h>) at top
+  - string.l1h, math-lib-vect.l1h, bool.l1h must appear AFTER (funcend)
+  - add_include_post() supports deferred includes
+  - (funcend) appears before post-function includes
+
+11. CLI INTERFACE
+-----------------
+  One-shot:    brackets-code "<prompt>" [filename]
+  Interactive: brackets-code (no args)
+  Commands: /help, /list, /exit, /save <filename>
+  Flags: --help/-h, --list/-l, --validate/-v
+
+12. OP MAP (DE+EN support)
+--------------------------
+  +/plus/add/addiere/sum -> add
+  -/minus/subtract/subtrahiere/differenz -> sub
+  */mal/multiply/multipliziere/product -> mul
+  //geteilt/divide/dividiere/quotient -> div
+  %/modulo/mod/rest -> mod
+
+13. KEY DESIGN DECISIONS
+------------------------
+  - Planner-first ordering; enhanced patterns clear has_algorithm
+  - Multi-step variable conflicts resolved by re-initialization
+  - Literal values always use named variables (zero, one, two)
+  - vars.l1h added per-emitter rather than globally
+  - Complex nested expressions split into single-operation lines
+  - input_s requires variable (not literal) for length argument
+  - Const-string declared size must be >= strlen(content) + 1
+  - Labels use colon syntax: (:label) for definition, :label for reference
+  - l1pre needs trailing slash on include directory argument
+
+14. FILE LOCATION
+-----------------
+  /home/stefan/opencode/brackets-code/brackets-code.c (~3930 lines, 34 emitter blocks)
+
+15. TEST SUITE
+--------------
+  /home/stefan/opencode/brackets-code/tests/run_tests.sh
+  Modes: all, quick, list, save <dir>
+  53 tests (32 templates + 21 emitters)
+  Pipeline: l1pre -> l1com (no runtime execution yet)
