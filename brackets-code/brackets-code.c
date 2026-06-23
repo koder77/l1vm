@@ -28,6 +28,7 @@
 #include <ctype.h>
 #include <time.h>
 #include <math.h>
+#include <dirent.h>
 
 /* format truncation warnings are benign: buffers sized for real-world usage */
 #pragma GCC diagnostic ignored "-Wformat-truncation"
@@ -408,6 +409,23 @@ static const Synonym SYNONYM_TABLE[] = {
     {"runterzaehlen", "countdown"}, {"runterzählen", "countdown"}, {"runterz", "countdown"},
     {"timer", "countdown"}, {"zuweisen", "assign"}, {"zuweisung", "assign"}, {"schreiben", "write"},
     {"schreib", "write"},
+    {"primes", "prime"}, {"numbers", "num"}, {"values", "value"},
+    {"demo", "show"}, {"example", "show"},
+    {"benchmark", "time"}, {"clock", "time"}, {"performance", "time"},
+    {"network", "data"}, {"crypto", "data"}, {"encrypt", "data"},
+    {"json", "data"}, {"config", "data"},
+    {"graphics", "show"}, {"render", "show"},
+    {"game", "guess"}, {"play", "guess"},
+    {"float", "num"}, {"bignum", "num"}, {"big", "num"},
+    {"include", "file"}, {"header", "file"},
+    {"list", "array"}, {"vector", "array"}, {"collection", "array"},
+    {"search", "find"}, {"locate", "find"}, {"lookup", "find"},
+    {"copy", "assign"}, {"duplicate", "assign"}, {"clone", "assign"},
+    {"delete", "remove"}, {"clear", "remove"}, {"erase", "remove"},
+    {"insert", "add"}, {"append", "add"}, {"push", "add"},
+    {"pop", "remove"}, {"extract", "remove"},
+    {"call", "run"}, {"invoke", "run"}, {"execute", "run"},
+    {"text", "string"}, {"word", "string"},
 };
 static const int NUM_SYNONYMS = sizeof(SYNONYM_TABLE) / sizeof(SYNONYM_TABLE[0]);
 
@@ -663,6 +681,41 @@ typedef struct {
 
 static WordEmbedding word_embeddings[VOCAB_SIZE];
 static float attention_weights[NUM_EMITTERS];
+static int vs_boost_tokens[64];
+static int vs_boost_count = 0;
+
+// Vector search data structures
+#define MAX_EXAMPLES 512
+#define MAX_TOP_K 10
+#define EXAMPLE_DIR "l1vm-example-code"
+#define EXAMPLE_SUBDIRS 3
+static const char *example_subdirs[EXAMPLE_SUBDIRS] = {"prog", "include", "lib"};
+static const char *example_exts[] = {".l1com", ".l1h", ".l1asm"};
+#define EXAMPLE_EXTS 3
+
+typedef struct {
+    char filename[512];
+    char stem[256];
+    float embedding[EMBED_DIM];
+    float score;
+} ExampleDoc;
+
+static ExampleDoc example_docs[MAX_EXAMPLES];
+static int num_examples = 0;
+static int examples_indexed = 0;
+
+static void index_examples(void);
+static int search_examples(const char *query, int top_k, int *indices, float *scores);
+
+static unsigned long hash_word(const char *s) {
+    unsigned long hash = 5381;
+    int c;
+    while ((c = *s++))
+        hash = ((hash << 5) + hash) + c;
+    return hash;
+}
+
+static float idf_weights[VOCAB_SIZE];
 
 static const char *vocab[VOCAB_SIZE] = {
     "sum", "add", "sub", "mul", "div", "mod", "input", "print", "loop", "for",
@@ -676,8 +729,9 @@ static const char *vocab[VOCAB_SIZE] = {
 };
 
 static void init_embeddings(void) {
-    srand(42);
     for (int i = 0; i < VOCAB_SIZE; i++) {
+        unsigned long seed = hash_word(vocab[i]);
+        srand(seed);
         float sum = 0;
         for (int j = 0; j < EMBED_DIM; j++) {
             word_embeddings[i].embed[j] = ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
@@ -687,6 +741,7 @@ static void init_embeddings(void) {
         if (norm > 0)
             for (int j = 0; j < EMBED_DIM; j++) word_embeddings[i].embed[j] /= norm;
     }
+    for (int i = 0; i < VOCAB_SIZE; i++) idf_weights[i] = 1.0f;
 }
 
 static int tokenize(const char *text, int *tokens, int max_tokens) {
@@ -798,6 +853,36 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
         if (tok_id == 24) emitter_scores[28] += 0.8f;
         if (tok_id == 40) emitter_scores[29] += 0.8f;
         if (tok_id == 53) emitter_scores[30] += 0.5f;
+    }
+
+    // Phase 2b: Vector search boost tokens from matched examples
+    for (int ti = 0; ti < vs_boost_count && ti < 32; ti++) {
+        int tok_id = vs_boost_tokens[ti];
+        if (tok_id == 0 || tok_id == 4) emitter_scores[0] += 0.3f;
+        if (tok_id == 5 || tok_id == 1) emitter_scores[1] += 0.3f;
+        if (tok_id == 8 || tok_id == 9) emitter_scores[2] += 0.3f;
+        if (tok_id == 17) emitter_scores[9] += 0.4f;
+        if (tok_id == 19) emitter_scores[7] += 0.4f;
+        if (tok_id == 20) emitter_scores[15] += 0.4f;
+        if (tok_id == 13) emitter_scores[8] += 0.4f;
+        if (tok_id == 14) emitter_scores[5] += 0.4f;
+        if (tok_id == 15) emitter_scores[16] += 0.3f;
+        if (tok_id == 28) { emitter_scores[10] += 0.4f; emitter_scores[11] += 0.4f; }
+        if (tok_id == 32) emitter_scores[13] += 0.4f;
+        if (tok_id == 33) emitter_scores[14] += 0.4f;
+        if (tok_id == 36 || tok_id == 35) { emitter_scores[17] += 0.4f; emitter_scores[18] += 0.4f; }
+        if (tok_id == 37) emitter_scores[19] += 0.4f;
+        if (tok_id == 38) emitter_scores[20] += 0.4f;
+        if (tok_id == 27) emitter_scores[6] += 0.4f;
+        if (tok_id == 23) { emitter_scores[0] += 0.2f; emitter_scores[25] += 0.3f; }
+        if (tok_id == 22) emitter_scores[22] += 0.4f;
+        if (tok_id == 21) emitter_scores[23] += 0.4f;
+        if (tok_id == 42 || tok_id == 43) emitter_scores[24] += 0.4f;
+        if (tok_id == 44) emitter_scores[27] += 0.4f;
+        if (tok_id == 24) emitter_scores[28] += 0.4f;
+        if (tok_id == 40) emitter_scores[29] += 0.4f;
+        if (tok_id == 46) emitter_scores[26] += 0.4f;
+        if (tok_id == 53) emitter_scores[30] += 0.3f;
     }
 
     float temp = TEMPERATURE;
@@ -2853,6 +2938,7 @@ static int word_to_num(const char *word) {
 
 static int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size) {
     init_embeddings();
+    index_examples();
 
     // Multi-step support
     char steps[MAX_STEPS][MAX_PROMPT];
@@ -2886,6 +2972,17 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
     current_prompt = prompt;
     int parsed = parse_task(prompt, &task);
     if (!parsed) return 0;
+
+    // Vector search over example codebase
+    vs_boost_count = 0;
+    int vs_indices[3];
+    float vs_scores[3];
+    int vs_count = search_examples(prompt, 3, vs_indices, vs_scores);
+    if (vs_count > 0 && vs_scores[0] > 0.3f) {
+        printf("  Vector search: \"%s\" (similarity: %.2f)\n",
+               example_docs[vs_indices[0]].stem, vs_scores[0]);
+        vs_boost_count = tokenize(example_docs[vs_indices[0]].stem, vs_boost_tokens, 64);
+    }
 
     int emitter_idx = llm_select_emitter(prompt, &task);
     if (emitter_idx >= 0) {
@@ -4087,6 +4184,213 @@ static int validate_code(const char *filename) {
     return ret == 0;
 }
 
+static float cosine_sim(const float *a, const float *b) {
+    float dot = 0, na = 0, nb = 0;
+    for (int i = 0; i < EMBED_DIM; i++) {
+        dot += a[i] * b[i];
+        na += a[i] * a[i];
+        nb += b[i] * b[i];
+    }
+    float denom = sqrtf(na) * sqrtf(nb);
+    return (denom == 0) ? 0 : dot / denom;
+}
+
+static void embed_text(const char *text, float *out) {
+    memset(out, 0, sizeof(float) * EMBED_DIM);
+    char buf[MAX_PROMPT];
+    snprintf(buf, sizeof(buf), "%s", text);
+    to_lowercase(buf);
+
+    float total_weight = 0;
+    char *p = buf;
+    while (*p) {
+        while (*p && !isalpha(*p)) p++;
+        if (!*p) break;
+        char *start = p;
+        while (*p && isalpha(*p)) p++;
+        char saved = *p;
+        *p = '\0';
+
+        int tok_id = -1;
+        for (int i = 0; i < VOCAB_SIZE; i++) {
+            if (strcmp(start, vocab[i]) == 0) { tok_id = i; break; }
+        }
+        if (tok_id < 0) {
+            const char *syn = resolve_synonym(start);
+            if (syn) {
+                for (int i = 0; i < VOCAB_SIZE; i++) {
+                    if (strcmp(syn, vocab[i]) == 0) { tok_id = i; break; }
+                }
+            }
+        }
+
+        if (tok_id >= 0) {
+            float w = idf_weights[tok_id];
+            for (int j = 0; j < EMBED_DIM; j++)
+                out[j] += w * word_embeddings[tok_id].embed[j];
+            total_weight += w;
+        } else {
+            int len = strlen(start);
+            if (len >= 2) {
+                float ngram_embed[EMBED_DIM];
+                memset(ngram_embed, 0, sizeof(ngram_embed));
+                int ngram_count = 0;
+                for (int ci = 0; ci < len - 1; ci++) {
+                    char bigram[3] = {start[ci], start[ci+1], '\0'};
+                    unsigned long h = hash_word(bigram);
+                    srand(h);
+                    for (int j = 0; j < EMBED_DIM; j++)
+                        ngram_embed[j] += ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
+                    ngram_count++;
+                }
+                if (ngram_count > 0) {
+                    float inv = 1.0f / ngram_count;
+                    float norm = 0;
+                    for (int j = 0; j < EMBED_DIM; j++) {
+                        ngram_embed[j] *= inv;
+                        norm += ngram_embed[j] * ngram_embed[j];
+                    }
+                    norm = sqrtf(norm);
+                    if (norm > 0) {
+                        for (int j = 0; j < EMBED_DIM; j++)
+                            out[j] += ngram_embed[j] / norm;
+                        total_weight += 1.0f;
+                    }
+                }
+            }
+        }
+
+        *p = saved;
+    }
+
+    if (total_weight > 0) {
+        float inv = 1.0f / total_weight;
+        for (int j = 0; j < EMBED_DIM; j++) out[j] *= inv;
+    }
+}
+
+static void filename_stem(const char *path, char *stem) {
+    const char *p = strrchr(path, '/');
+    p = p ? p + 1 : path;
+    char buf[256];
+    snprintf(buf, sizeof(buf), "%s", p);
+    char *dot = strrchr(buf, '.');
+    if (dot) *dot = '\0';
+    for (char *q = buf; *q; q++)
+        if (*q == '-' || *q == '_') *q = ' ';
+    snprintf(stem, 256, "%s", buf);
+}
+
+static void index_examples(void) {
+    if (examples_indexed) return;
+    examples_indexed = 1;
+    num_examples = 0;
+
+    for (int s = 0; s < EXAMPLE_SUBDIRS; s++) {
+        char dirpath[512];
+        snprintf(dirpath, sizeof(dirpath), "%s/%s", EXAMPLE_DIR, example_subdirs[s]);
+        DIR *d = opendir(dirpath);
+        if (!d) continue;
+
+        struct dirent *entry;
+        while ((entry = readdir(d)) != NULL && num_examples < MAX_EXAMPLES) {
+            const char *ext = strrchr(entry->d_name, '.');
+            if (!ext) continue;
+            int valid_ext = 0;
+            for (int e = 0; e < EXAMPLE_EXTS; e++) {
+                if (strcmp(ext, example_exts[e]) == 0) { valid_ext = 1; break; }
+            }
+            if (!valid_ext) continue;
+
+            char fullpath[1024];
+            snprintf(fullpath, sizeof(fullpath), "%s/%s", dirpath, entry->d_name);
+            snprintf(example_docs[num_examples].filename, sizeof(example_docs[num_examples].filename), "%s", fullpath);
+
+            char raw_stem[256];
+            filename_stem(entry->d_name, raw_stem);
+            snprintf(example_docs[num_examples].stem, sizeof(example_docs[num_examples].stem), "%s/%s", example_subdirs[s], raw_stem);
+
+            char content[2048] = {0};
+            FILE *f = fopen(fullpath, "r");
+            if (f) {
+                char line[512];
+                int lines_read = 0;
+                while (fgets(line, sizeof(line), f) && lines_read < 5) {
+                    char *trimmed = line;
+                    while (*trimmed == ' ' || *trimmed == '\t') trimmed++;
+                    if (trimmed[0] == '/' && trimmed[1] == '/') continue;
+                    strncat(content, line, sizeof(content) - strlen(content) - 1);
+                    lines_read++;
+                }
+                fclose(f);
+            }
+            char combined[8192];
+            snprintf(combined, sizeof(combined), "%s %s %s %s",
+                     example_docs[num_examples].stem,
+                     example_docs[num_examples].stem,
+                     example_docs[num_examples].stem,
+                     content);
+            embed_text(combined, example_docs[num_examples].embedding);
+            num_examples++;
+        }
+        closedir(d);
+    }
+
+    if (num_examples > 0) {
+        int doc_freq[VOCAB_SIZE];
+        memset(doc_freq, 0, sizeof(doc_freq));
+        for (int i = 0; i < num_examples; i++) {
+            int seen[VOCAB_SIZE] = {0};
+            char buf[MAX_PROMPT];
+            snprintf(buf, sizeof(buf), "%s", example_docs[i].stem);
+            int tokens[128];
+            int n = tokenize(buf, tokens, 128);
+            for (int t = 0; t < n; t++) {
+                if (!seen[tokens[t]]) {
+                    seen[tokens[t]] = 1;
+                    doc_freq[tokens[t]]++;
+                }
+            }
+        }
+        for (int i = 0; i < VOCAB_SIZE; i++) {
+            if (doc_freq[i] > 0)
+                idf_weights[i] = logf((float)num_examples / doc_freq[i]) + 1.0f;
+            else
+                idf_weights[i] = 1.0f;
+        }
+    }
+}
+
+static int search_examples(const char *query, int top_k, int *indices, float *scores) {
+    if (num_examples == 0) return 0;
+
+    float q_embed[EMBED_DIM];
+    embed_text(query, q_embed);
+
+    for (int i = 0; i < num_examples; i++)
+        example_docs[i].score = cosine_sim(q_embed, example_docs[i].embedding);
+
+    int count = top_k < num_examples ? top_k : num_examples;
+    int *used = calloc(num_examples, sizeof(int));
+    int result = 0;
+    for (int k = 0; k < count; k++) {
+        int best = -1;
+        for (int i = 0; i < num_examples; i++) {
+            if (used[i]) continue;
+            if (best < 0 || example_docs[i].score > example_docs[best].score)
+                best = i;
+        }
+        if (best >= 0 && example_docs[best].score > 0) {
+            indices[k] = best;
+            scores[k] = example_docs[best].score;
+            used[best] = 1;
+            result++;
+        }
+    }
+    free(used);
+    return result;
+}
+
 int generate_code(const char *prompt, const char *filename) {
     int is_q = is_question(prompt);
     if (is_q)
@@ -4138,6 +4442,7 @@ void show_help() {
     printf("  Interactive mode:  brackets-code\n");
     printf("  One-shot mode:     brackets-code \"<prompt>\" [filename]\n");
     printf("  With validation:   brackets-code --validate \"<prompt>\" [filename]\n");
+    printf("  Vector search:     brackets-code --search \"<query>\"\n");
     printf("  List templates:    brackets-code --list\n\n");
     printf("Available templates:\n");
     for (int i = 0; i < num_templates; i++) {
@@ -4146,6 +4451,7 @@ void show_help() {
     printf("\nSpecial commands in interactive mode:\n");
     printf("  /help      - Show this help\n");
     printf("  /list      - List all templates\n");
+    printf("  /search <q>- Vector search example code\n");
     printf("  /exit      - Exit\n");
     printf("  /save <fn> - Save last generated code to file\n");
     printf("\n");
@@ -4196,6 +4502,30 @@ void interactive_mode() {
             continue;
         }
 
+        if (strncmp(prompt, "/search", 7) == 0) {
+            const char *query = prompt + 7;
+            while (*query == ' ') query++;
+            if (strlen(query) == 0) {
+                printf("Usage: /search <query>\n");
+            } else {
+                init_embeddings();
+                index_examples();
+                if (num_examples == 0) {
+                    printf("No examples indexed.\n");
+                } else {
+                    int indices[MAX_TOP_K];
+                    float scores[MAX_TOP_K];
+                    int n = search_examples(query, MAX_TOP_K, indices, scores);
+                    printf("Vector search results for: \"%s\"\n", query);
+                    printf("  Found %d matches in %d examples\n", n, num_examples);
+                    for (int i = 0; i < n; i++)
+                        printf("  %2d. %-45s (%.2f)\n", i+1, example_docs[indices[i]].stem, scores[i]);
+                }
+            }
+            printf("> ");
+            continue;
+        }
+
         char fname[256];
         prompt_to_filename(prompt, fname, sizeof(fname));
         generate_code(prompt, fname);
@@ -4221,6 +4551,27 @@ int main(int argc, char *argv[]) {
         printf("Available templates:\n");
         for (int i = 0; i < num_templates; i++)
             printf("  %-25s %s\n", templates[i].keywords, templates[i].desc);
+        return 0;
+    }
+
+    if (argc >= 2 && (strcmp(argv[1], "--search") == 0 || strcmp(argv[1], "-s") == 0)) {
+        if (argc < 3) {
+            fprintf(stderr, "Usage: %s --search <query>\n", argv[0]);
+            return 1;
+        }
+        init_embeddings();
+        index_examples();
+        if (num_examples == 0) {
+            printf("No examples indexed (directory '%s' not found).\n", EXAMPLE_DIR);
+            return 1;
+        }
+        int indices[MAX_TOP_K];
+        float scores[MAX_TOP_K];
+        int n = search_examples(argv[2], MAX_TOP_K, indices, scores);
+        printf("Vector search results for: \"%s\"\n", argv[2]);
+        printf("  Found %d matches in %d examples\n", n, num_examples);
+        for (int i = 0; i < n; i++)
+            printf("  %2d. %-40s (%.2f)\n", i+1, example_docs[indices[i]].stem, scores[i]);
         return 0;
     }
 
