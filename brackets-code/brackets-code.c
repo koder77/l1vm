@@ -20,7 +20,7 @@
 // brackets-code.c
 // Brackets Code Generator - CLI tool for generating Brackets (L1VM) code
 // Generated with opencode: Big Pickle
-//
+
 
 #include <stdio.h>
 #include <stdlib.h>
