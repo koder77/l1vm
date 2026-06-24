@@ -29,6 +29,7 @@
 #include <time.h>
 #include <math.h>
 #include <dirent.h>
+#include <unistd.h>
 
 /* format truncation warnings are benign: buffers sized for real-world usage */
 #pragma GCC diagnostic ignored "-Wformat-truncation"
@@ -42,7 +43,19 @@
 #define MAX_VALUES 16
 
 int validate_flag = 0;
+int retry_seed = 0;
+int verbose_flag = 0;
+char out_dir[512] = "";
 static const char *current_prompt = "";
+
+#define ANSI_RESET   "\033[0m"
+#define ANSI_RED     "\033[31m"
+#define ANSI_GREEN   "\033[32m"
+#define ANSI_YELLOW  "\033[33m"
+#define ANSI_CYAN    "\033[36m"
+#define ANSI_BOLD    "\033[1m"
+static int use_color = 1;
+#define c_printf(color, ...) do { if (use_color) { printf(color); printf(__VA_ARGS__); printf(ANSI_RESET); } else printf(__VA_ARGS__); } while(0)
 
 typedef struct {
     char name[256];
@@ -62,6 +75,14 @@ typedef struct {
     int num_vars;
     char body[MAX_CODE];
 } Function;
+
+#ifdef HAVE_READLINE
+/* readline defines its own incompatible Function typedef; undef ours after include */
+#define Function L1vmFunction
+#include <readline/readline.h>
+#include <readline/history.h>
+#undef Function
+#endif
 
 typedef struct {
     char filename[256];
@@ -206,8 +227,8 @@ static void answer_question(const char *prompt) {
     if (strstr(buf, "pointer") || strstr(buf, "zeiger") || strstr(buf, "speicher") || strstr(buf, "adresse")) {
         printf("Pointers in Brackets: Use the `pointer` keyword to get a variable's address.\n");
         printf("  (x Px pointer)   - get pointer to x -> Px\n");
-        printf("  (Px [ offset ] val :=) - read value at pointer+offset into val\n");
-        printf("  (val Px [ offset ] :=) - write val to pointer+offset\n");
+        printf("  (Px [ offset ] val =) - read value at pointer+offset into val\n");
+        printf("  (val Px [ offset ] =) - write val to pointer+offset\n");
     } else if (strstr(buf, "for") || strstr(buf, "loop") || strstr(buf, "schleife")) {
         printf("For-loop pattern in Brackets:\n");
         printf("  (for-loop)\n");
@@ -225,8 +246,8 @@ static void answer_question(const char *prompt) {
         printf("Array access in Brackets uses pointer arithmetic:\n");
         printf("  (set int64 5 arr 10 20 30 40 50)  - declare array\n");
         printf("  (i * int64_size realind :=)        - calculate offset\n");
-        printf("  (arr [ realind ] val :=)            - read element\n");
-        printf("  (val arr [ realind ] :=)            - write element\n");
+        printf("  (arr [ realind ] val =)            - read element\n");
+        printf("  (val arr [ realind ] =)            - write element\n");
     } else if (strstr(buf, "function") || strstr(buf, "funktion") || strstr(buf, "sub") || strstr(buf, "unter")) {
         printf("Function definition in Brackets:\n");
         printf("  (myfunc func)\n");
@@ -426,6 +447,13 @@ static const Synonym SYNONYM_TABLE[] = {
     {"pop", "remove"}, {"extract", "remove"},
     {"call", "run"}, {"invoke", "run"}, {"execute", "run"},
     {"text", "string"}, {"word", "string"},
+    {"fann", "fann"}, {"neural", "fann"}, {"netz", "fann"}, {"network", "fann"},
+    {"neuronal", "fann"}, {"neuron", "fann"}, {"ki", "fann"}, {"ai", "fann"},
+    {"machine learning", "fann"}, {"deep", "fann"}, {"training", "train"},
+    {"trainieren", "train"}, {"trainiere", "train"}, {"lernen", "train"},
+    {"learn", "train"}, {"inferenz", "run"}, {"inference", "run"},
+    {"vorhersage", "run"}, {"predict", "run"}, {"prediction", "run"},
+    {"vorhersagen", "run"}, {"klassifikation", "run"}, {"classification", "run"},
 };
 static const int NUM_SYNONYMS = sizeof(SYNONYM_TABLE) / sizeof(SYNONYM_TABLE[0]);
 
@@ -434,6 +462,28 @@ static const char* resolve_synonym(const char *word) {
         if (strcmp(word, SYNONYM_TABLE[i].word) == 0)
             return SYNONYM_TABLE[i].canonical;
     return NULL;
+}
+
+static void expand_query(const char *query, char *expanded, int max_len) {
+    snprintf(expanded, max_len, "%s", query);
+    char buf[MAX_PROMPT];
+    snprintf(buf, sizeof(buf), "%s", query);
+    to_lowercase(buf);
+    char *p = buf;
+    while (*p) {
+        while (*p && !isalpha(*p)) p++;
+        if (!*p) break;
+        char *start = p;
+        while (*p && isalpha(*p)) p++;
+        char saved = *p;
+        *p = '\0';
+        const char *canonical = resolve_synonym(start);
+        if (canonical && strcmp(start, canonical) != 0) {
+            strncat(expanded, " ", max_len - strlen(expanded) - 1);
+            strncat(expanded, canonical, max_len - strlen(expanded) - 1);
+        }
+        *p = saved;
+    }
 }
 
 static int has_word_fuzzy(const char *text, const char *keyword) {
@@ -578,7 +628,18 @@ typedef struct {
     int has_leap_year;
     int has_temp_convert;
     int has_circle_area;
+    int has_fann_create;
+    int has_fann_train;
+    int has_fann_run;
     int skip_input;
+    char inherit_var[64];
+    int inherit_count;
+    char inherit_var_names[64][64];
+    char inherit_var_types[64][32];
+    int inherit_var_counts[64];
+    int num_inherit_vars;
+    int extra_emitters[8];
+    int num_extra_emitters;
     char type[16];
     char title[256];
 } TaskProfile;
@@ -665,14 +726,19 @@ static void emit_bit_check(Program *prog, Function *f);
 static void emit_leap_year(Program *prog, Function *f);
 static void emit_temp_convert(Program *prog, Function *f);
 static void emit_circle_area(Program *prog, Function *f);
+static void emit_average(Program *prog, Function *f, int skip_input);
+static void emit_selection_sort(Program *prog, Function *f, int count, int skip_input);
+static void emit_fann_create(Program *prog, Function *f);
+static void emit_fann_train(Program *prog, Function *f);
+static void emit_fann_run(Program *prog, Function *f);
 
 // ==================== TINY LLM INFERENCE ENGINE ====================
 
 #define EMBED_DIM 32
-#define VOCAB_SIZE 64
+#define VOCAB_SIZE 72
 #define TEMPERATURE 0.8
 #define MAX_STEPS 8
-#define NUM_EMITTERS 34
+#define NUM_EMITTERS 39
 
 typedef struct {
     char word[32];
@@ -725,7 +791,8 @@ static const char *vocab[VOCAB_SIZE] = {
     "read", "write", "convert", "timer", "shell", "hello", "function", "even",
     "odd", "guess", "table", "hex", "binary", "range", "exit", "zero", "one",
     "two", "num", "value", "data", "code", "generate", "create", "make", "show",
-    "start", "stop", "run"
+    "start", "stop", "run",
+    "fann", "train", "neural", "network", "model", "layer", "learn", "predict"
 };
 
 static void init_embeddings(void) {
@@ -823,9 +890,17 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
     if (task->has_array_min_max) emitter_scores[31] = 2.0f;
     if (task->has_bool_demo) emitter_scores[32] = 2.0f;
     if (task->has_bit_check) emitter_scores[33] = 2.0f;
+    if (task->has_fann_create && task->has_fann_train) emitter_scores[35] = 2.5f;
+    if (task->has_fann_create && !task->has_fann_train) emitter_scores[34] = 2.0f;
+    if (task->has_fann_run) emitter_scores[36] = 2.0f;
+    if (task->has_average && task->has_input) emitter_scores[37] = 2.0f;
+    if (task->has_sort && !task->has_input) emitter_scores[38] = 2.0f;
 
     for (int ti = 0; ti < num_tokens && ti < 32; ti++) {
         int tok_id = tokens[ti];
+        if (tok_id == 64 || tok_id == 66 || tok_id == 67) { emitter_scores[34] += 1.0f; emitter_scores[35] += 1.5f; emitter_scores[36] += 1.0f; }
+        if (tok_id == 65 || tok_id == 70) { emitter_scores[34] += 0.5f; emitter_scores[35] += 1.5f; }
+        if (tok_id == 71) { emitter_scores[36] += 1.5f; }
         if (tok_id == 0 || tok_id == 4) emitter_scores[0] += 0.5f;
         if (tok_id == 5 || tok_id == 1) emitter_scores[1] += 0.5f;
         if (tok_id == 8 || tok_id == 9) emitter_scores[2] += 0.5f;
@@ -858,6 +933,9 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
     // Phase 2b: Vector search boost tokens from matched examples
     for (int ti = 0; ti < vs_boost_count && ti < 32; ti++) {
         int tok_id = vs_boost_tokens[ti];
+        if (tok_id == 64 || tok_id == 66 || tok_id == 67) { emitter_scores[34] += 0.5f; emitter_scores[35] += 0.7f; emitter_scores[36] += 0.5f; }
+        if (tok_id == 65 || tok_id == 70) { emitter_scores[34] += 0.3f; emitter_scores[35] += 0.7f; }
+        if (tok_id == 71) { emitter_scores[36] += 0.7f; }
         if (tok_id == 0 || tok_id == 4) emitter_scores[0] += 0.3f;
         if (tok_id == 5 || tok_id == 1) emitter_scores[1] += 0.3f;
         if (tok_id == 8 || tok_id == 9) emitter_scores[2] += 0.3f;
@@ -895,6 +973,38 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
     for (int i = 1; i < NUM_EMITTERS; i++) {
         if (emitter_scores[i] > best_p) { best_p = emitter_scores[i]; best = i; }
     }
+
+    if (verbose_flag) {
+        printf("\nEmitter scores:\n");
+        const char *names[] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort"};
+        for (int i = 0; i < NUM_EMITTERS && i < 39; i++)
+            printf("  %2d %-16s %.3f\n", i, names[i], emitter_scores[i]);
+        printf("  -> best: %s (%.3f)\n", names[best], best_p);
+    }
+
+    // Multi-emitter composition: add strongly-scored secondary emitters
+    // Dynamic threshold based on prompt length: longer prompts more likely multi-step
+    float pfactor = (float)strlen(prompt) / 80.0f;
+    if (pfactor > 2.0f) pfactor = 2.0f;
+    if (pfactor < 0.5f) pfactor = 0.5f;
+    task->num_extra_emitters = 0;
+    float threshold = best_p * (0.5f / pfactor);
+    float hard_min = 0.2f;
+    if (threshold < hard_min) threshold = hard_min;
+    for (int i = 0; i < NUM_EMITTERS && task->num_extra_emitters < 8; i++) {
+        if (i != best && emitter_scores[i] >= threshold && emitter_scores[i] >= 0.5f) {
+            task->extra_emitters[task->num_extra_emitters++] = i;
+        }
+    }
+
+    if (verbose_flag && task->num_extra_emitters > 0) {
+        const char *names[] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort"};
+        printf("  extra emitters:");
+        for (int ei = 0; ei < task->num_extra_emitters; ei++)
+            printf(" %s", names[task->extra_emitters[ei]]);
+        printf("\n");
+    }
+
     return best;
 }
 
@@ -950,7 +1060,10 @@ static int has_actionable_keyword(const char *text) {
         || has_word(text, "convert") || has_word(text, "parse") || has_word(text, "umwand")
         || has_word(text, "timer") || has_word(text, "benchmark")
         || has_word(text, "measure") || has_word(text, "mess") || has_word(text, "dauer")
-        || has_word(text, "execution") || has_word(text, "ausführ") || has_word(text, "lauf");
+        || has_word(text, "execution") || has_word(text, "ausführ") || has_word(text, "lauf")
+        || has_word(text, "fann") || has_word(text, "neural") || has_word(text, "network")
+        || has_word(text, "train") || has_word(text, "learn") || has_word(text, "predict")
+        || has_word(text, "infer") || has_word(text, "ai");
 }
 
 static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
@@ -964,6 +1077,7 @@ static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROM
         {" und dann ", 10}, {" und danach ", 12}, {" anschließend ", 14},
         {" and then ", 10}, {" . ", 3}, {". ", 2}, {"; ", 2},
         {" then ", 6}, {" danach ", 8},
+        {" und ", 5}, {" and ", 5}, {", ", 2},
     };
     int npats = sizeof(patterns) / sizeof(patterns[0]);
 
@@ -1270,7 +1384,8 @@ static void emit_input_sort(Program *prog, Function *f, int count, int skip_inpu
         func_append(f, "\t\t(input_prompt :print_s !)");
         func_append(f, "\t\t(i * int64_size realind :=)");
         func_append(f, "\t\t(a :input_i !)");
-        func_append(f, "\t\t(a arr [ realind ] :=)");
+        func_append(f, "\t\t(a temp :=)");
+        func_append(f, "\t\t(temp arr [ realind ] =)");
         func_append(f, "\t\t(i + one i :=)");
         func_append(f, "\t(next)");
     }
@@ -1281,15 +1396,18 @@ static void emit_input_sort(Program *prog, Function *f, int count, int skip_inpu
     func_append(f, ln);
     func_append(f, "\t\t(zero j :=)");
     func_append(f, "\t\t(for-loop)");
-    snprintf(ln, sizeof(ln), "\t(((j count one - <) f :=) f for)");
+    func_append(f, "\t\t\t(count one - temp :=)");
+    snprintf(ln, sizeof(ln), "\t\t(((j temp <) f :=) f for)");
     func_append(f, ln);
     func_append(f, "\t\t\t(j * int64_size realind :=)");
     func_append(f, "\t\t\t((j + one) * int64_size realind2 :=)");
-    func_append(f, "\t\t\t(arr [ realind ] a :=)");
-    func_append(f, "\t\t\t(arr [ realind2 ] b :=)");
+    func_append(f, "\t\t\t(arr [ realind ] a =)");
+    func_append(f, "\t\t\t(a + zero a :=)");
+    func_append(f, "\t\t\t(arr [ realind2 ] b =)");
+    func_append(f, "\t\t\t(b + zero b :=)");
     func_append(f, "\t\t\t(((a b >) f :=) f if)");
-    func_append(f, "\t\t\t\t(b arr [ realind ] :=)");
-    func_append(f, "\t\t\t\t(a arr [ realind2 ] :=)");
+    func_append(f, "\t\t\t\t(b arr [ realind ] =)");
+    func_append(f, "\t\t\t\t(a arr [ realind2 ] =)");
     func_append(f, "\t\t\t(endif)");
     func_append(f, "\t\t\t(j + one j :=)");
     func_append(f, "\t\t(next)");
@@ -1301,7 +1419,8 @@ static void emit_input_sort(Program *prog, Function *f, int count, int skip_inpu
     snprintf(ln, sizeof(ln), "\t(((i count <) f :=) f for)");
     func_append(f, ln);
     func_append(f, "\t\t(i * int64_size realind :=)");
-    func_append(f, "\t\t(arr [ realind ] a :=)");
+    func_append(f, "\t\t(arr [ realind ] a =)");
+    func_append(f, "\t\t(a + zero a :=)");
     func_append(f, "\t\t(a :print_i !)");
     func_append(f, "\t\t(:print_n !)");
     func_append(f, "\t\t(i + one i :=)");
@@ -1339,7 +1458,8 @@ static void emit_median(Program *prog, Function *f, int count, int skip_input) {
         func_append(f, "\t\t(input_prompt :print_s !)");
         func_append(f, "\t\t(i * int64_size realind :=)");
         func_append(f, "\t\t(a :input_i !)");
-        func_append(f, "\t\t(a arr [ realind ] :=)");
+        func_append(f, "\t\t(a temp :=)");
+        func_append(f, "\t\t(temp arr [ realind ] =)");
         func_append(f, "\t\t(i + one i :=)");
         func_append(f, "\t(next)");
     }
@@ -1350,15 +1470,18 @@ static void emit_median(Program *prog, Function *f, int count, int skip_input) {
     func_append(f, ln);
     func_append(f, "\t\t(zero j :=)");
     func_append(f, "\t\t(for-loop)");
-    snprintf(ln, sizeof(ln), "\t(((j count one - <) f :=) f for)");
+    func_append(f, "\t\t\t(count one - temp :=)");
+    snprintf(ln, sizeof(ln), "\t\t(((j temp <) f :=) f for)");
     func_append(f, ln);
     func_append(f, "\t\t\t(j * int64_size realind :=)");
     func_append(f, "\t\t\t((j + one) * int64_size realind2 :=)");
-    func_append(f, "\t\t\t(arr [ realind ] a :=)");
-    func_append(f, "\t\t\t(arr [ realind2 ] b :=)");
+    func_append(f, "\t\t\t(arr [ realind ] a =)");
+    func_append(f, "\t\t\t(a + zero a :=)");
+    func_append(f, "\t\t\t(arr [ realind2 ] b =)");
+    func_append(f, "\t\t\t(b + zero b :=)");
     func_append(f, "\t\t\t(((a b >) f :=) f if)");
-    func_append(f, "\t\t\t\t(b arr [ realind ] :=)");
-    func_append(f, "\t\t\t\t(a arr [ realind2 ] :=)");
+    func_append(f, "\t\t\t\t(b arr [ realind ] =)");
+    func_append(f, "\t\t\t\t(a arr [ realind2 ] =)");
     func_append(f, "\t\t\t(endif)");
     func_append(f, "\t\t\t(j + one j :=)");
     func_append(f, "\t\t(next)");
@@ -1368,7 +1491,8 @@ static void emit_median(Program *prog, Function *f, int count, int skip_input) {
     func_append(f, "\t(count / two mid :=)");
     snprintf(ln, sizeof(ln), "\t(mid * int64_size realind :=)");
     func_append(f, ln);
-    func_append(f, "\t(arr [ realind ] a :=)");
+    func_append(f, "\t(arr [ realind ] a =)");
+    func_append(f, "\t(a + zero a :=)");
     func_append(f, "\t(a :print_i !)");
     func_append(f, "\t(:print_n !)");
 }
@@ -1443,6 +1567,7 @@ static void emit_array_assign(Program *prog, Function *f) {
     add_var_to_func(f, "int64", "index", 1, zv, 1);
     add_var_to_func(f, "int64", "value", 1, zv, 1);
     add_var_to_func(f, "int64", "realind", 1, zv, 1);
+    add_var_to_func(f, "int64", "aux", 1, zv, 1);
     add_var_to_func(f, "int64", "f", 1, zv, 1);
     const char *pi[] = {"\"Enter index (0-4): \""};
     const char *pv[] = {"\"Enter value: \""};
@@ -1467,14 +1592,16 @@ static void emit_array_assign(Program *prog, Function *f) {
     func_append(f, "\t(endif)");
     func_append(f, "\t(prompt_val :print_s !)");
     func_append(f, "\t(value :input_i !)");
+    func_append(f, "\t(value aux :=)");
     func_append(f, "\t(index * int64_size realind :=)");
-    func_append(f, "\t(value arr [ realind ] :=)");
+    func_append(f, "\t(aux arr [ realind ] =)");
     func_append(f, "\t// print array");
     func_append(f, "\t(zero index :=)");
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((index 5 <) f :=) f for)");
     func_append(f, "\t\t(index * int64_size realind :=)");
-    func_append(f, "\t\t(arr [ realind ] value :=)");
+    func_append(f, "\t\t(arr [ realind ] value =)");
+    func_append(f, "\t\t(value + zero value :=)");
     func_append(f, "\t\t(value :print_i !)");
     func_append(f, "\t\t(:print_n !)");
     func_append(f, "\t\t(index + one index :=)");
@@ -1505,11 +1632,11 @@ static void emit_array_reverse(Program *prog, Function *f, int skip_input) {
         func_append(f, "\t(zero i :=)");
         func_append(f, "\t(for-loop)");
         func_append(f, "\t(((i count <) f :=) f for)");
-        func_append(f, "\t\t(input_prompt :print_s !)");
+    func_append(f, "\t\t(input_prompt :print_s !)");
         func_append(f, "\t\t(i * int64_size realind :=)");
         func_append(f, "\t\t(a :input_i !)");
-        func_append(f, "\t\t(a + zero a :=)");
-        func_append(f, "\t\t(a arr [ realind ] :=)");
+        func_append(f, "\t\t(a temp :=)");
+        func_append(f, "\t\t(temp arr [ realind ] =)");
         func_append(f, "\t\t(i + one i :=)");
         func_append(f, "\t(next)");
     }
@@ -1520,9 +1647,9 @@ static void emit_array_reverse(Program *prog, Function *f, int skip_input) {
     func_append(f, "\t\t(i * int64_size realind :=)");
     func_append(f, "\t\t(count - i - one j :=)");
     func_append(f, "\t\t(j * int64_size realind2 :=)");
-    func_append(f, "\t\t(arr [ realind2 ] a :=)");
+    func_append(f, "\t\t(arr [ realind2 ] a =)");
     func_append(f, "\t\t(a + zero a :=)");
-    func_append(f, "\t\t(a reverse [ realind ] :=)");
+    func_append(f, "\t\t(a reverse [ realind ] =)");
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
     func_append(f, "\t// copy array");
@@ -1530,9 +1657,9 @@ static void emit_array_reverse(Program *prog, Function *f, int skip_input) {
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i count <) f :=) f for)");
     func_append(f, "\t\t(i * int64_size realind :=)");
-    func_append(f, "\t\t(reverse [ realind ] a :=)");
+    func_append(f, "\t\t(reverse [ realind ] a =)");
     func_append(f, "\t\t(a + zero a :=)");
-    func_append(f, "\t\t(a arr [ realind ] :=)");
+    func_append(f, "\t\t(a arr [ realind ] =)");
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
     func_append(f, "\t// print reversed");
@@ -1540,7 +1667,8 @@ static void emit_array_reverse(Program *prog, Function *f, int skip_input) {
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i count <) f :=) f for)");
     func_append(f, "\t\t(i * int64_size realind :=)");
-    func_append(f, "\t\t(arr [ realind ] a :=)");
+    func_append(f, "\t\t(arr [ realind ] a =)");
+    func_append(f, "\t\t(a + zero a :=)");
     func_append(f, "\t\t(a :print_i !)");
     func_append(f, "\t\t(:print_n !)");
     func_append(f, "\t\t(i + one i :=)");
@@ -1562,6 +1690,7 @@ static void emit_array_find(Program *prog, Function *f, int skip_input) {
     add_var_to_func(f, "int64", "found", 1, zv, 1);
     add_var_to_func(f, "int64", "realind", 1, zv, 1);
     add_var_to_func(f, "int64", "a", 1, zv, 1);
+    add_var_to_func(f, "int64", "aux", 1, zv, 1);
     add_var_to_func(f, "int64", "f", 1, zv, 1);
     const char *ps[] = {"\"Enter a number: \""};
     const char *pk[] = {"\"Enter search key: \""};
@@ -1576,7 +1705,8 @@ static void emit_array_find(Program *prog, Function *f, int skip_input) {
         func_append(f, "\t\t(input_prompt :print_s !)");
         func_append(f, "\t\t(i * int64_size realind :=)");
         func_append(f, "\t\t(a :input_i !)");
-        func_append(f, "\t\t(a arr [ realind ] :=)");
+        func_append(f, "\t\t(a aux :=)");
+        func_append(f, "\t\t(aux arr [ realind ] =)");
         func_append(f, "\t\t(i + one i :=)");
         func_append(f, "\t(next)");
     }
@@ -1587,7 +1717,8 @@ static void emit_array_find(Program *prog, Function *f, int skip_input) {
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i count <) f :=) f for)");
     func_append(f, "\t\t(i * int64_size realind :=)");
-    func_append(f, "\t\t(arr [ realind ] a :=)");
+    func_append(f, "\t\t(arr [ realind ] a =)");
+    func_append(f, "\t\t(a + zero a :=)");
     func_append(f, "\t\t(((a key ==) f :=) f if)");
     func_append(f, "\t\t\t(one found :=)");
     func_append(f, "\t\t\t(:found_break jmp)");
@@ -1647,6 +1778,7 @@ static void emit_array_vmath(Program *prog, Function *f, int skip_input) {
     add_var_to_func(f, "int64", "avg", 1, zv, 1);
     add_var_to_func(f, "int64", "realind", 1, zv, 1);
     add_var_to_func(f, "int64", "val", 1, zv, 1);
+    add_var_to_func(f, "int64", "aux", 1, zv, 1);
     add_var_to_func(f, "int64", "f", 1, zv, 1);
     const char *ps[] = {"\"Enter a number: \""};
     add_var_to_func(f, "const-string", "input_prompt", 18, ps, 1);
@@ -1657,18 +1789,22 @@ static void emit_array_vmath(Program *prog, Function *f, int skip_input) {
         func_append(f, "\t\t(input_prompt :print_s !)");
         func_append(f, "\t\t(i * int64_size realind :=)");
         func_append(f, "\t\t(val :input_i !)");
-        func_append(f, "\t\t(val arr [ realind ] :=)");
+        func_append(f, "\t\t(val aux :=)");
+        func_append(f, "\t\t(aux arr [ realind ] =)");
         func_append(f, "\t\t(i + one i :=)");
         func_append(f, "\t(next)");
     }
     func_append(f, "\t// compute stats");
     func_append(f, "\t(zero i :=)");
-    func_append(f, "\t(arr [ 0 ] mn :=)");
-    func_append(f, "\t(arr [ 0 ] mx :=)");
+    func_append(f, "\t(arr [ i ] mn =)");
+    func_append(f, "\t(mn + zero mn :=)");
+    func_append(f, "\t(arr [ i ] mx =)");
+    func_append(f, "\t(mx + zero mx :=)");
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i count <) f :=) f for)");
     func_append(f, "\t\t(i * int64_size realind :=)");
-    func_append(f, "\t\t(arr [ realind ] val :=)");
+    func_append(f, "\t\t(arr [ realind ] val =)");
+    func_append(f, "\t\t(val + zero val :=)");
     func_append(f, "\t\t(sum + val sum :=)");
     func_append(f, "\t\t(((val mn <) f :=) f if)");
     func_append(f, "\t\t\t(val mn :=)");
@@ -2285,6 +2421,243 @@ static void emit_circle_area(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
+static void emit_fann_create(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "fann-lib.l1h");
+    const char *zv[] = {"0"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "max_ann", 1, (const char *[]){"2"}, 1);
+    add_var_to_func(f, "const-int64", "mod_handle", 1, zv, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    const char *fn[] = {"\"my_ann.net\""};
+    add_var_to_func(f, "const-string", "ann_file", 12, fn, 1);
+    const char *ps[] = {"\"Creating FANN neural network...\""};
+    add_var_to_func(f, "const-string", "msg_str", 33, ps, 1);
+    func_append(f, "\t(msg_str :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t// init FANN library");
+    func_append(f, "\t(max_ann stpushi)");
+    func_append(f, "\t(mod_handle stpushi)");
+    func_append(f, "\t(fann_init_lib call)");
+    func_append(f, "\t// create ANN from file");
+    func_append(f, "\t(ann_file addr stpushi)");
+    func_append(f, "\t(ret stpushi)");
+    func_append(f, "\t(fann_create call)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_fann_train(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "fann-lib.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1000"};
+    const char *tv[] = {"100"};
+    const char *thv[] = {"0001"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "max_ann", 1, (const char *[]){"2"}, 1);
+    add_var_to_func(f, "const-int64", "mod_handle", 1, zv, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "int64", "max_epochs", 1, ov, 1);
+    add_var_to_func(f, "int64", "epochs_between", 1, tv, 1);
+    add_var_to_func(f, "double", "desired_error", 1, thv, 1);
+    const char *fn[] = {"\"my_ann.net\""};
+    add_var_to_func(f, "const-string", "ann_file", 12, fn, 1);
+    const char *df[] = {"\"train_data.dat\""};
+    add_var_to_func(f, "const-string", "data_file", 16, df, 1);
+    const char *ps[] = {"\"Training FANN neural network...\""};
+    add_var_to_func(f, "const-string", "msg_str", 33, ps, 1);
+    func_append(f, "\t(msg_str :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t// init FANN library");
+    func_append(f, "\t(max_ann stpushi)");
+    func_append(f, "\t(mod_handle stpushi)");
+    func_append(f, "\t(fann_init_lib call)");
+    func_append(f, "\t// create ANN from file");
+    func_append(f, "\t(ann_file addr stpushi)");
+    func_append(f, "\t(ret stpushi)");
+    func_append(f, "\t(fann_create call)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t// train from data file");
+    func_append(f, "\t(data_file addr stpushi)");
+    func_append(f, "\t(max_epochs stpushi)");
+    func_append(f, "\t(epochs_between stpushi)");
+    func_append(f, "\t(desired_error stpushd)");
+    func_append(f, "\t(ret stpushi)");
+    func_append(f, "\t(fann_train_ann_file call)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t// save trained ANN");
+    func_append(f, "\t(ann_file addr stpushi)");
+    func_append(f, "\t(ret stpushi)");
+    func_append(f, "\t(fann_save call)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_fann_run(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "fann-lib.l1h");
+    const char *zv[] = {"0"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "max_ann", 1, (const char *[]){"2"}, 1);
+    add_var_to_func(f, "const-int64", "mod_handle", 1, zv, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "int64", "num_inputs", 1, (const char *[]){"3"}, 1);
+    add_var_to_func(f, "int64", "num_outputs", 1, (const char *[]){"1"}, 1);
+    add_var_to_func(f, "double", "inputs", 3, (const char *[]){"10", "05", "03"}, 3);
+    add_var_to_func(f, "double", "outputs", 1, zv, 1);
+    const char *fn[] = {"\"my_ann.net\""};
+    add_var_to_func(f, "const-string", "ann_file", 12, fn, 1);
+    const char *ps[] = {"\"Running FANN inference...\""};
+    add_var_to_func(f, "const-string", "msg_str", 28, ps, 1);
+    const char *rs[] = {"\"Output: \""};
+    add_var_to_func(f, "const-string", "out_str", 9, rs, 1);
+    func_append(f, "\t(msg_str :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t// init FANN library");
+    func_append(f, "\t(max_ann stpushi)");
+    func_append(f, "\t(mod_handle stpushi)");
+    func_append(f, "\t(fann_init_lib call)");
+    func_append(f, "\t// load ANN from file");
+    func_append(f, "\t(ann_file addr stpushi)");
+    func_append(f, "\t(ret stpushi)");
+    func_append(f, "\t(fann_read call)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t// run inference");
+    func_append(f, "\t(inputs addr stpushi)");
+    func_append(f, "\t(outputs addr stpushi)");
+    func_append(f, "\t(num_inputs stpushi)");
+    func_append(f, "\t(num_outputs stpushi)");
+    func_append(f, "\t(ret stpushi)");
+    func_append(f, "\t(fann_run call)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(out_str :print_s !)");
+    func_append(f, "\t(outputs :print_d !)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_average(Program *prog, Function *f, int skip_input) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "count", 1, (const char *[]){"5"}, 1);
+    add_var_to_func(f, "int64", "arr", 5, zv, 0);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "sum", 1, zv, 1);
+    add_var_to_func(f, "int64", "avg", 1, zv, 1);
+    add_var_to_func(f, "int64", "realind", 1, zv, 1);
+    add_var_to_func(f, "int64", "val", 1, zv, 1);
+    add_var_to_func(f, "int64", "aux", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ps[] = {"\"Enter a number: \""};
+    add_var_to_func(f, "const-string", "input_prompt", 18, ps, 1);
+    if (!skip_input) {
+        // input loop
+        func_append(f, "\t(zero i :=)");
+        func_append(f, "\t(for-loop)");
+        func_append(f, "\t(((i count <) f :=) f for)");
+        func_append(f, "\t\t(input_prompt :print_s !)");
+        func_append(f, "\t\t(i * int64_size realind :=)");
+        func_append(f, "\t\t(val :input_i !)");
+        func_append(f, "\t\t(val aux :=)");
+        func_append(f, "\t\t(aux arr [ realind ] =)");
+        func_append(f, "\t\t(i + one i :=)");
+        func_append(f, "\t(next)");
+    }
+    // compute average
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i count <) f :=) f for)");
+    func_append(f, "\t\t(i * int64_size realind :=)");
+    func_append(f, "\t\t(arr [ realind ] val =)");
+    func_append(f, "\t\t(val + zero val :=)");
+    func_append(f, "\t\t(sum + val sum :=)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(sum count / avg :=)");
+    func_append(f, "\t(avg :print_i !)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_selection_sort(Program *prog, Function *f, int count, int skip_input) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    char vs[16];
+    snprintf(vs, sizeof(vs), "%d", count);
+    const char *cv[] = {vs};
+    add_var_to_func(f, "int64", "count", 1, cv, 1);
+    add_var_to_func(f, "int64", "arr", count, cv, 0);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "j", 1, zv, 1);
+    add_var_to_func(f, "int64", "min_idx", 1, zv, 1);
+    add_var_to_func(f, "int64", "temp", 1, zv, 1);
+    add_var_to_func(f, "int64", "realind", 1, zv, 1);
+    add_var_to_func(f, "int64", "realind2", 1, zv, 1);
+    add_var_to_func(f, "int64", "a", 1, zv, 1);
+    add_var_to_func(f, "int64", "b", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ps[] = {"\"Enter a number: \""};
+    add_var_to_func(f, "const-string", "input_prompt", 18, ps, 1);
+    if (!skip_input) {
+        // input values
+        func_append(f, "\t(zero i :=)");
+        func_append(f, "\t(for-loop)");
+        func_append(f, "\t(((i count <) f :=) f for)");
+        func_append(f, "\t\t(input_prompt :print_s !)");
+        func_append(f, "\t\t(i * int64_size realind :=)");
+        func_append(f, "\t\t(a :input_i !)");
+        func_append(f, "\t\t(a temp :=)");
+        func_append(f, "\t\t(temp arr [ realind ] =)");
+        func_append(f, "\t\t(i + one i :=)");
+        func_append(f, "\t(next)");
+    }
+    // selection sort
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i count <) f :=) f for)");
+    func_append(f, "\t\t(i min_idx :=)");
+    func_append(f, "\t\t(i + one j :=)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t(((j count <) f :=) f for)");
+    func_append(f, "\t\t\t(j * int64_size realind :=)");
+    func_append(f, "\t\t\t(min_idx * int64_size realind2 :=)");
+    func_append(f, "\t\t\t(arr [ realind ] a =)");
+    func_append(f, "\t\t\t(a + zero a :=)");
+    func_append(f, "\t\t\t(arr [ realind2 ] b =)");
+    func_append(f, "\t\t\t(b + zero b :=)");
+    func_append(f, "\t\t\t(((a b <) f :=) f if)");
+    func_append(f, "\t\t\t\t(j min_idx :=)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t\t(j + one j :=)");
+    func_append(f, "\t\t(next)");
+    func_append(f, "\t\t(i * int64_size realind :=)");
+    func_append(f, "\t\t(min_idx * int64_size realind2 :=)");
+    func_append(f, "\t\t(arr [ realind ] b =)");
+    func_append(f, "\t\t(b temp :=)");
+    func_append(f, "\t\t(arr [ realind2 ] a =)");
+    func_append(f, "\t\t(a b :=)");
+    func_append(f, "\t\t(b arr [ realind ] =)");
+    func_append(f, "\t\t(temp arr [ realind2 ] =)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    // print sorted
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i count <) f :=) f for)");
+    func_append(f, "\t\t(i * int64_size realind :=)");
+    func_append(f, "\t\t(arr [ realind ] a =)");
+    func_append(f, "\t\t(a + zero a :=)");
+    func_append(f, "\t\t(a :print_i !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+}
+
 static int parse_task(const char *prompt, TaskProfile *task) {
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", prompt);
@@ -2569,6 +2942,25 @@ static int parse_task(const char *prompt, TaskProfile *task) {
         task->has_algorithm = 0;
     }
 
+    if (has_word(buf, "fann") || has_word(buf, "neural") || (has_word(buf, "network") && has_word(buf, "ai"))) {
+        if (has_word(buf, "train") || has_word(buf, "learn")) {
+            task->has_fann_create = 1;
+            task->has_fann_train = 1;
+            task->has_algorithm = 0;
+        } else if (has_word(buf, "run") || has_word(buf, "predict") || has_word(buf, "infer")) {
+            task->has_fann_run = 1;
+            task->has_algorithm = 0;
+        } else if (has_word(buf, "create") || has_word(buf, "make") || has_word(buf, "generate")) {
+            task->has_fann_create = 1;
+            task->has_algorithm = 0;
+        } else {
+            task->has_fann_create = 1;
+            task->has_fann_train = 1;
+            task->has_fann_run = 1;
+            task->has_algorithm = 0;
+        }
+    }
+
     // build title
     { snprintf(task->title, sizeof(task->title), "%s", prompt); }
 
@@ -2587,7 +2979,8 @@ static int parse_task(const char *prompt, TaskProfile *task) {
         || task->has_input_fact || task->has_read_file || task->has_write_file
         || task->has_array_vmath || task->has_string_to_num || task->has_timer
         || task->has_array_min_max || task->has_bool_demo || task->has_bit_check
-        || task->has_leap_year || task->has_temp_convert || task->has_circle_area;
+        || task->has_leap_year || task->has_temp_convert || task->has_circle_area
+        || task->has_fann_create || task->has_fann_train || task->has_fann_run;
 
     snprintf(task->title, sizeof(task->title), "%s", prompt);
     return has_any;
@@ -2595,8 +2988,14 @@ static int parse_task(const char *prompt, TaskProfile *task) {
 
 // ==================== PLAN-BASED GENERATOR ====================
 
+static void ensure_exit(Function *f, int last_step) {
+    if (!last_step) return;
+    const char *zv[] = {"0"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    func_append(f, "\t(zero :exit !)");
+}
+
 static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
-    (void)last_step;
     // check if main function already exists
     Function *f = NULL;
     int found = 0;
@@ -2610,237 +3009,205 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
 
     add_include(prog, "intr-func.l1h");
 
+    // Pre-declare inherited variables (dedup by name ensures emitter's own decls get skipped)
+    for (int vi = 0; vi < task->num_inherit_vars; vi++) {
+        int adj_count = task->inherit_var_counts[vi];
+        if (adj_count <= 1) adj_count = 5 + retry_seed;
+        char cvs[16];
+        snprintf(cvs, sizeof(cvs), "%d", adj_count);
+        const char *iv[1] = {cvs};
+        add_var_to_func(f, task->inherit_var_types[vi], task->inherit_var_names[vi],
+                        adj_count, iv, 1);
+    }
+    // Extra emitters: these run in sequence after the primary emitter
+    // They are called via generate_from_task on the same function
+
     // Dispatch to emitter based on task profile
     if (task->has_sum_range) {
         int n = task->sum_range_n > 0 ? task->sum_range_n : 100;
         emit_for_sum(prog, f, n);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_print_even) {
         int n = task->print_even_n > 0 ? task->print_even_n : 100;
         emit_print_even(prog, f, n);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_find_max) {
         int c = task->find_max_count > 0 ? task->find_max_count : 5;
         emit_input_find_max(prog, f, c);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_fib_seq) {
         int n = task->fib_seq_n > 0 ? task->fib_seq_n : 10;
         emit_fib_seq(prog, f, n);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_countdown_from) {
         int s = task->countdown_start > 0 ? task->countdown_start : 10;
         emit_countdown_from(prog, f, s);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_input_sort) {
         int c = task->input_sort_count > 0 ? task->input_sort_count : 5;
+        if (task->inherit_var[0]) c = task->inherit_count > 0 ? task->inherit_count : c;
         emit_input_sort(prog, f, c, task->skip_input);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_median) {
         int c = task->median_count > 0 ? task->median_count : 5;
         emit_median(prog, f, c, task->skip_input);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_input_fact) {
         emit_input_factorial(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_string_cat) {
         emit_string_cat(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_string_compare) {
         emit_string_compare(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_array_assign) {
         emit_array_assign(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_array_reverse) {
+        if (task->inherit_var[0]) {
+            char cvs[16];
+            snprintf(cvs, sizeof(cvs), "%d", task->inherit_count > 0 ? task->inherit_count : 5);
+            const char *icv[] = {cvs};
+            add_var_to_func(f, "int64", "count", 1, icv, 1);
+        }
         emit_array_reverse(prog, f, task->skip_input);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_array_find) {
+        if (task->inherit_var[0]) {
+            char cvs[16];
+            snprintf(cvs, sizeof(cvs), "%d", task->inherit_count > 0 ? task->inherit_count : 5);
+            const char *icv[] = {cvs};
+            add_var_to_func(f, "int64", "count", 1, icv, 1);
+        }
         emit_array_find(prog, f, task->skip_input);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_array_vmath) {
+        if (task->inherit_var[0]) {
+            char cvs[16];
+            snprintf(cvs, sizeof(cvs), "%d", task->inherit_count > 0 ? task->inherit_count : 5);
+            const char *icv[] = {cvs};
+            add_var_to_func(f, "int64", "count", 1, icv, 1);
+        }
         emit_array_vmath(prog, f, task->skip_input);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_read_file) {
         emit_read_file(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_write_file) {
         emit_write_file(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_string_to_num) {
         emit_string_to_num(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_timer) {
         emit_timer(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_factorial && !task->has_input) {
         emit_factorial(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_fizzbuzz) {
         emit_fizzbuzz(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_primes) {
         emit_primes(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_even_odd && !task->has_print_even) {
         emit_even_odd(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_power) {
         emit_power(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_mult_table) {
         emit_multiplication_table(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_guess) {
         emit_guess_number(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_gcd) {
         emit_gcd(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_hello_name) {
         emit_hello_name(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_random) {
         emit_random_number(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_array_min_max) {
         emit_array_min_max(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_bool_demo) {
         emit_bool_demo(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_bit_check) {
         emit_bit_check(prog, f);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_loop && task->has_literals && task->has_sum) {
         int n = task->num_literals > 0 ? task->literals[0] : 100;
         emit_for_sum(prog, f, n);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_operation && task->has_literals) {
@@ -2850,9 +3217,7 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         if (task->num_literals >= 2) vals[1] = task->literals[1];
         if (task->num_literals >= 3) vals[2] = task->literals[2];
         emit_math(prog, f, task->type, task->op, vals, n, 1);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_leap_year) {
@@ -2867,13 +3232,78 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         emit_circle_area(prog, f);
         return 1;
     }
+    if (task->has_average && task->has_input) {
+        emit_average(prog, f, task->skip_input);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_sort && !task->has_input) {
+        int c = 5;
+        emit_selection_sort(prog, f, c, task->skip_input);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_fann_create && task->has_fann_train) {
+        emit_fann_train(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_fann_create && !task->has_fann_train) {
+        emit_fann_create(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_fann_run) {
+        emit_fann_run(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
     if (task->has_input && !task->has_operation) {
         int c = task->input_count > 0 ? task->input_count : 5;
         emit_input_loop(prog, f, c, task->type, 0);
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        func_append(f, "\t(zero :exit !)");
+        ensure_exit(f, last_step);
         return 1;
+    }
+
+    // If no single emitter matched but extra emitters are specified, run them
+    // as a composite sequence. Each extra emitter runs on the same function.
+    if (task->num_extra_emitters > 0) {
+        int emitted = 0;
+        for (int ei = 0; ei < task->num_extra_emitters && ei < 8; ei++) {
+            int idx = task->extra_emitters[ei];
+            // Dispatch by index (matches the order in llm_select_emitter scoring)
+            // We reuse generate_from_task recursively on a fresh task for each extra
+            TaskProfile sub;
+            memset(&sub, 0, sizeof(sub));
+            sub.skip_input = 1;
+            // Run the extra emitter by appending to the same function
+            // We do this by calling specific emit_ functions based on index
+            // (same order as the scoring in llm_select_emitter)
+            switch (idx) {
+                case 0: if (task->has_operation && task->has_literals) { emit_math(prog, f, task->type, task->op, task->literals, task->num_literals > 2 ? 3 : 2, 1); emitted = 1; } break;
+                case 1: if (task->has_input && !task->has_operation) { emit_input_loop(prog, f, task->input_count > 0 ? task->input_count : 5, task->type, 0); emitted = 1; } break;
+                case 3: if (task->has_sum_range) { emit_for_sum(prog, f, task->sum_range_n > 0 ? task->sum_range_n : 100); emitted = 1; } break;
+                case 4: if (task->has_print_even) { emit_print_even(prog, f, task->print_even_n > 0 ? task->print_even_n : 100); emitted = 1; } break;
+                case 8: if (task->has_input_sort) { emit_input_sort(prog, f, task->input_sort_count > 0 ? task->input_sort_count : 5, task->skip_input); emitted = 1; } break;
+                case 10: if (task->has_string_cat) { emit_string_cat(prog, f); emitted = 1; } break;
+                case 13: if (task->has_array_reverse) { emit_array_reverse(prog, f, task->skip_input); emitted = 1; } break;
+                case 14: if (task->has_array_find) { emit_array_find(prog, f, task->skip_input); emitted = 1; } break;
+                case 16: if (task->has_array_vmath) { emit_array_vmath(prog, f, task->skip_input); emitted = 1; } break;
+                case 17: if (task->has_read_file) { emit_read_file(prog, f); emitted = 1; } break;
+                case 18: if (task->has_write_file) { emit_write_file(prog, f); emitted = 1; } break;
+                case 22: if (task->has_fizzbuzz) { emit_fizzbuzz(prog, f); emitted = 1; } break;
+                case 23: if (task->has_primes) { emit_primes(prog, f); emitted = 1; } break;
+                case 24: if (task->has_even_odd) { emit_even_odd(prog, f); emitted = 1; } break;
+                case 31: if (task->has_array_min_max) { emit_array_min_max(prog, f); emitted = 1; } break;
+                case 37: if (task->has_average && task->has_input) { emit_average(prog, f, task->skip_input); emitted = 1; } break;
+                case 38: if (task->has_sort && !task->has_input) { emit_selection_sort(prog, f, 5, task->skip_input); emitted = 1; } break;
+                default: break;
+            }
+        }
+        if (emitted) {
+            ensure_exit(f, last_step);
+            return 1;
+        }
     }
 
     return 0;
@@ -2945,23 +3375,59 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
     int num_steps = split_prompt_steps(prompt, steps);
 
     if (num_steps > 1) {
+        char inherited_names[64][64] = {{0}};
+        char inherited_types[64][32] = {{0}};
+        int inherited_counts[64] = {0};
+        int num_inherited = 0;
         for (int i = 0; i < num_steps; i++) {
             TaskProfile task;
             memset(&task, 0, sizeof(task));
             if (parse_task(steps[i], &task)) {
                 task.skip_input = (i > 0);
+                // populate inherited vars from previous steps
+                for (int iv = 0; iv < num_inherited; iv++) {
+                    snprintf(task.inherit_var_names[task.num_inherit_vars], 64, "%s", inherited_names[iv]);
+                    snprintf(task.inherit_var_types[task.num_inherit_vars], 32, "%s", inherited_types[iv]);
+                    task.inherit_var_counts[task.num_inherit_vars] = inherited_counts[iv];
+                    task.num_inherit_vars++;
+                }
+                // backward compat: first array var
+                if (i > 0) {
+                    for (int iv = 0; iv < num_inherited; iv++) {
+                        if (inherited_counts[iv] > 1 && !task.inherit_var[0]) {
+                            snprintf(task.inherit_var, sizeof(task.inherit_var), "%s", inherited_names[iv]);
+                            task.inherit_count = inherited_counts[iv];
+                        }
+                    }
+                }
                 generate_from_task(prog, &task, (i == num_steps - 1));
             }
+            // collect inherited variables from the main function for next steps
+            Function *fcur = NULL;
+            for (int fi = 0; fi < prog->num_funcs; fi++)
+                if (strcmp(prog->funcs[fi].name, "main") == 0) { fcur = &prog->funcs[fi]; break; }
+            if (fcur) {
+                for (int vi = 0; vi < fcur->num_vars && num_inherited < 64; vi++) {
+                    int is_scalar = (fcur->vars[vi].count <= 1);
+                    int is_const = (strstr(fcur->vars[vi].type, "const") != NULL);
+                    int is_standard = (strcmp(fcur->vars[vi].name, "zero") == 0 || strcmp(fcur->vars[vi].name, "one") == 0);
+                    if (!is_scalar && !is_const && !is_standard) {
+                        int already = 0;
+                        for (int ck = 0; ck < num_inherited; ck++) {
+                            if (strcmp(inherited_names[ck], fcur->vars[vi].name) == 0) already = 1;
+                        }
+                        if (!already) {
+                            snprintf(inherited_names[num_inherited], 64, "%s", fcur->vars[vi].name);
+                            snprintf(inherited_types[num_inherited], 32, "%s", fcur->vars[vi].type);
+                            inherited_counts[num_inherited] = fcur->vars[vi].count;
+                            num_inherited++;
+                        }
+                    }
+                }
+            }
         }
-        // ensure exit if not already added by last step
-        Function *f = NULL;
-        for (int i = 0; i < prog->num_funcs; i++)
-            if (strcmp(prog->funcs[i].name, "main") == 0) { f = &prog->funcs[i]; break; }
-        if (f && !strstr(f->body, ":exit !")) {
-            const char *zv[] = {"0"};
-            add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-            func_append(f, "\t(zero :exit !)");
-        }
+        // Exits are now handled by ensure_exit in generate_from_task, which only
+        // adds :exit ! for the last step. No post-processing needed.
         snprintf(desc, desc_size, "multi-step generation (%d steps)", num_steps);
         return 1;
     }
@@ -3437,7 +3903,8 @@ void gen_array_demo(Program *prog, const char *prompt) {
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i n <) f :=) f for)");
     func_append(f, "\t\t(i * int64_size realind :=)");
-    func_append(f, "\t\t(arr [ realind ] num :=)");
+    func_append(f, "\t\t(arr [ realind ] num =)");
+    func_append(f, "\t\t(num + zero num :=)");
     func_append(f, "\t\t(num :print_i !)");
     func_append(f, "\t\t(:print_n !)");
     func_append(f, "\t\t(i + one i :=)");
@@ -3879,11 +4346,13 @@ void gen_bubble_sort(Program *prog, const char *prompt) {
     func_append(f, "\t\t(((j n one - <) f :=) f for)");
     func_append(f, "\t\t\t(j * int64_size realind :=)");
     func_append(f, "\t\t\t((j + one) * int64_size realind2 :=)");
-    func_append(f, "\t\t\t(arr [ realind ] a :=)");
-    func_append(f, "\t\t\t(arr [ realind2 ] b :=)");
+    func_append(f, "\t\t\t(arr [ realind ] a =)");
+    func_append(f, "\t\t\t(a + zero a :=)");
+    func_append(f, "\t\t\t(arr [ realind2 ] b =)");
+    func_append(f, "\t\t\t(b + zero b :=)");
     func_append(f, "\t\t\t(((a b >) f :=) f if)");
-    func_append(f, "\t\t\t\t(b arr [ realind ] :=)");
-    func_append(f, "\t\t\t\t(a arr [ realind2 ] :=)");
+    func_append(f, "\t\t\t\t(b arr [ realind ] =)");
+    func_append(f, "\t\t\t\t(a arr [ realind2 ] =)");
     func_append(f, "\t\t\t(endif)");
     func_append(f, "\t\t\t(j + one j :=)");
     func_append(f, "\t\t(next)");
@@ -3894,7 +4363,8 @@ void gen_bubble_sort(Program *prog, const char *prompt) {
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i n <) f :=) f for)");
     func_append(f, "\t\t(i * int64_size realind :=)");
-    func_append(f, "\t\t(arr [ realind ] a :=)");
+    func_append(f, "\t\t(arr [ realind ] a =)");
+    func_append(f, "\t\t(a + zero a :=)");
     func_append(f, "\t\t(a :print_i !)");
     func_append(f, "\t\t(:print_n !)");
     func_append(f, "\t\t(i + one i :=)");
@@ -3933,11 +4403,11 @@ void gen_pointer_demo(Program *prog, const char *prompt) {
     add_var_to_func(f, "int64", "val", 1, vals, 1);
     func_append(f, "\t// get pointer to x");
     func_append(f, "\t(x Px pointer)");
-    func_append(f, "\t(Px [ zero ] val :=)");
+    func_append(f, "\t(Px [ zero ] val =)");
     func_append(f, "\t(val :print_i !)");
     func_append(f, "\t(:print_n !)");
     func_append(f, "\t// change value via pointer");
-    func_append(f, "\t(100 Px [ zero ] :=)");
+    func_append(f, "\t(100 Px [ zero ] =)");
     func_append(f, "\t(x :print_i !)");
     func_append(f, "\t(:print_n !)");
     func_append(f, "\t(zero :exit !)");
@@ -4150,6 +4620,8 @@ int match_template(const char *prompt, int *best_score) {
     return best_idx;
 }
 
+static void prepend_out_dir(const char *fname, char *buf, int bufsize);
+
 static int validate_code(const char *filename) {
     char cmd[1024];
     char ppname[512];
@@ -4166,7 +4638,7 @@ static int validate_code(const char *filename) {
     snprintf(cmd, sizeof(cmd), "l1pre \"%s\" \"%s\" \"%s\" 2>&1", filename, ppname, include_dir);
     int ret = system(cmd);
     if (ret != 0) {
-        printf("Validation: l1pre FAILED (exit code %d)\n", ret);
+        c_printf(ANSI_RED, "Validation: l1pre FAILED (exit code %d)\n", ret);
         remove(ppname);
         return 0;
     }
@@ -4176,9 +4648,9 @@ static int validate_code(const char *filename) {
     snprintf(cmd, sizeof(cmd), "l1com \"%s\" 2>&1", compname);
     ret = system(cmd);
     if (ret == 0) {
-        printf("Validation: OK\n");
+        c_printf(ANSI_GREEN, "Validation: OK\n");
     } else {
-        printf("Validation: FAILED (exit code %d)\n", ret);
+        c_printf(ANSI_RED, "Validation: FAILED (exit code %d)\n", ret);
     }
     remove(ppname);
     return ret == 0;
@@ -4310,12 +4782,12 @@ static void index_examples(void) {
             filename_stem(entry->d_name, raw_stem);
             snprintf(example_docs[num_examples].stem, sizeof(example_docs[num_examples].stem), "%s/%s", example_subdirs[s], raw_stem);
 
-            char content[2048] = {0};
+            char content[8192] = {0};
             FILE *f = fopen(fullpath, "r");
             if (f) {
                 char line[512];
                 int lines_read = 0;
-                while (fgets(line, sizeof(line), f) && lines_read < 5) {
+                while (fgets(line, sizeof(line), f) && lines_read < 100 && strlen(content) < 7000) {
                     char *trimmed = line;
                     while (*trimmed == ' ' || *trimmed == '\t') trimmed++;
                     if (trimmed[0] == '/' && trimmed[1] == '/') continue;
@@ -4364,8 +4836,11 @@ static void index_examples(void) {
 static int search_examples(const char *query, int top_k, int *indices, float *scores) {
     if (num_examples == 0) return 0;
 
+    char expanded[MAX_PROMPT];
+    expand_query(query, expanded, sizeof(expanded));
+
     float q_embed[EMBED_DIM];
-    embed_text(query, q_embed);
+    embed_text(expanded, q_embed);
 
     for (int i = 0; i < num_examples; i++)
         example_docs[i].score = cosine_sim(q_embed, example_docs[i].embedding);
@@ -4391,21 +4866,29 @@ static int search_examples(const char *query, int top_k, int *indices, float *sc
     return result;
 }
 
+static void prepend_out_dir(const char *fname, char *buf, int bufsize) {
+    if (out_dir[0]) {
+        snprintf(buf, bufsize, "%s/%s", out_dir, fname);
+    } else {
+        snprintf(buf, bufsize, "%s", fname);
+    }
+}
+
 int generate_code(const char *prompt, const char *filename) {
     int is_q = is_question(prompt);
     if (is_q)
         answer_question(prompt);
 
     Program *prog = calloc(1, sizeof(Program));
-    if (!prog) { fprintf(stderr, "Out of memory\n"); return 0; }
+    if (!prog) { c_printf(ANSI_RED, "Out of memory\n"); return 0; }
     snprintf(prog->filename, sizeof(prog->filename), "%s", filename);
     reset_temp();
     func_counter = 0;
 
     char desc[256] = {0};
     if (smart_generate(prog, prompt, desc, sizeof(desc))) {
-        if (is_q) printf("Code example written to: %s\n", filename);
-        else printf("Smart generated (plan): %s\n", desc);
+        if (is_q) c_printf(ANSI_CYAN, "Code example written to: %s\n", filename);
+        else c_printf(ANSI_GREEN, "Smart generated (plan): %s\n", desc);
         write_program(prog, filename);
         free(prog);
         return 1;
@@ -4415,8 +4898,8 @@ int generate_code(const char *prompt, const char *filename) {
     int idx = match_template(prompt, &score);
 
     if (idx >= 0) {
-        if (is_q) printf("Code example written to: %s\n", filename);
-        else printf("Matched template: %s (score: %d)\n", templates[idx].desc, score);
+        if (is_q) c_printf(ANSI_CYAN, "Code example written to: %s\n", filename);
+        else c_printf(ANSI_GREEN, "Matched template: %s (score: %d)\n", templates[idx].desc, score);
         templates[idx].gen(prog, prompt);
         write_program(prog, filename);
         free(prog);
@@ -4428,22 +4911,102 @@ int generate_code(const char *prompt, const char *filename) {
         return 1;
     }
 
-    printf("No template matched for: '%s'. Generating default hello world.\n", prompt);
+    // Nearest-neighbor fallback: use vector search to find closest example
+    init_embeddings();
+    index_examples();
+    int nn_indices[1];
+    float nn_scores[1];
+    int nn_count = search_examples(prompt, 1, nn_indices, nn_scores);
+    // Dynamic NN threshold: short prompts get lower threshold, long prompts higher
+    float nn_factor = (float)strlen(prompt) / 60.0f;
+    if (nn_factor > 2.0f) nn_factor = 2.0f;
+    if (nn_factor < 0.6f) nn_factor = 0.6f;
+    if (nn_count > 0 && nn_scores[0] > 0.25f * nn_factor) {
+        c_printf(ANSI_YELLOW, "  Nearest neighbor: \"%s\" (similarity: %.2f)\n",
+               example_docs[nn_indices[0]].stem, nn_scores[0]);
+        gen_hello_world(prog, prompt);
+        Function *f = NULL;
+        for (int i = 0; i < prog->num_funcs; i++)
+            if (strcmp(prog->funcs[i].name, "main") == 0) { f = &prog->funcs[i]; break; }
+        if (f) {
+            char nn_msg[256];
+            snprintf(nn_msg, sizeof(nn_msg), "\t// nearest example: %s", example_docs[nn_indices[0]].filename);
+            func_append(f, nn_msg);
+        }
+        c_printf(ANSI_YELLOW, "Nearest-neighbor generated: %s\n", example_docs[nn_indices[0]].stem);
+        write_program(prog, filename);
+        free(prog);
+        return 1;
+    }
+
+    c_printf(ANSI_YELLOW, "No template matched for: '%s'. Generating default hello world.\n", prompt);
     gen_hello_world(prog, prompt);
     write_program(prog, filename);
     free(prog);
     return 0;
 }
 
+static int self_test(void) {
+    const char *test_prompts[] = {
+        "hello world", "sum from 1 to 100", "print even numbers up to 10",
+        "count down from 5", "print numbers 1 to 5 in a loop", "calculate 10 plus 5",
+        "factorial of 5", "fizzbuzz", "prime numbers up to 20",
+        "check if 7 is even or odd", "2 to the power of 8", "multiplication table",
+        "guess number game", "gcd of 12 and 8", "random number",
+        "say hello to Alice", "reverse an array", "find a value in an array",
+        "concatenate two strings", "assign values to an array",
+        "find min max and average in array", "boolean variable demo",
+        "check bits of number 134", "check if leap year",
+        "convert celsius to fahrenheit", "area of a circle",
+        "average of 5 numbers", "sort numbers",
+    };
+    int np = sizeof(test_prompts) / sizeof(test_prompts[0]);
+    int passed = 0, failed = 0;
+    printf("Self-test: running %d prompts through full pipeline + validation\n\n", np);
+    for (int i = 0; i < np; i++) {
+        char fname[256];
+        prompt_to_filename(test_prompts[i], fname, sizeof(fname));
+        printf("[%3d/%3d] %-40s ", i + 1, np, test_prompts[i]);
+        fflush(stdout);
+        validate_flag = 1;
+        retry_seed = 0;
+        int ok = 0;
+        for (int r = 0; r < 3; r++) {
+            retry_seed = r;
+            if (generate_code(test_prompts[i], fname)) {
+                if (validate_code(fname)) { ok = 1; break; }
+            }
+        }
+        if (ok) { c_printf(ANSI_GREEN, "  PASS\n"); passed++; }
+        else    { c_printf(ANSI_RED,   "  FAIL\n"); failed++; }
+        char fullpath[512];
+        prepend_out_dir(fname, fullpath, sizeof(fullpath));
+        remove(fullpath);
+    }
+    printf("\n--- self-test: ");
+    c_printf(ANSI_GREEN, "%d passed", passed);
+    printf(", ");
+    c_printf(ANSI_RED, "%d failed", failed);
+    printf(", %d total ---\n", np);
+    return failed == 0;
+}
+
 void show_help() {
-    printf("\nBrackets Code Generator for Brackets (L1VM) Language\n");
+    printf("\nBrackets Code Generator 0.5 for Brackets (L1VM) Language\n");
     printf("============================================================\n");
     printf("Usage:\n");
-    printf("  Interactive mode:  brackets-code\n");
-    printf("  One-shot mode:     brackets-code \"<prompt>\" [filename]\n");
-    printf("  With validation:   brackets-code --validate \"<prompt>\" [filename]\n");
-    printf("  Vector search:     brackets-code --search \"<query>\"\n");
-    printf("  List templates:    brackets-code --list\n\n");
+    printf("  Interactive mode:       brackets-code\n");
+    printf("  One-shot mode:          brackets-code \"<prompt>\" [filename]\n");
+    printf("  Pipe mode:              echo \"<prompt>\" | brackets-code - [filename]\n");
+    printf("  With validation:        brackets-code --validate \"<prompt>\" [filename]\n");
+    printf("  Self-test:              brackets-code --self-test\n");
+    printf("  Batch mode:             brackets-code --batch prompts.txt\n");
+    printf("  Vector search:          brackets-code --search \"<query>\"\n");
+    printf("  List templates:         brackets-code --list\n\n");
+    printf("Flags:\n");
+    printf("  --verbose               Show emitter selection scores\n");
+    printf("  --out-dir <dir>         Output directory for generated files\n");
+    printf("  --bash-completion       Print bash completion script\n\n");
     printf("Available templates:\n");
     for (int i = 0; i < num_templates; i++) {
         printf("  - %s: %s\n", templates[i].keywords, templates[i].desc);
@@ -4454,27 +5017,61 @@ void show_help() {
     printf("  /search <q>- Vector search example code\n");
     printf("  /exit      - Exit\n");
     printf("  /save <fn> - Save last generated code to file\n");
+#ifdef HAVE_READLINE
+    printf("  [Tab]      - Command completion\n");
+#endif
     printf("\n");
 }
+
+#ifdef HAVE_READLINE
+static char *cmd_completion_generator(const char *text, int state) {
+    static int idx, len;
+    const char *cmds[] = {"/exit", "/quit", "/help", "/?", "/list", "/search ", "/save ", "/self-test", NULL};
+    if (!state) { idx = 0; len = strlen(text); }
+    while (cmds[idx]) {
+        if (strncmp(cmds[idx], text, len) == 0) return strdup(cmds[idx++]);
+        idx++;
+    }
+    return NULL;
+}
+static char **cmd_completion(const char *text, int start, int end) {
+    (void)end;
+    if (start == 0) return rl_completion_matches(text, cmd_completion_generator);
+    return NULL;
+}
+#endif
 
 void interactive_mode() {
     char prompt[MAX_PROMPT];
     char last_fname[256] = {0};
     int has_last = 0;
 
-    printf("Brackets Code Generator\n");
+    printf("Brackets Code Generator 0.5\n");
     printf("Type /help for help, /exit to quit.\n");
-    printf("> ");
 
+#ifdef HAVE_READLINE
+    rl_attempted_completion_function = cmd_completion;
+    using_history();
+    const char *histfile = getenv("HOME");
+    char histpath[512] = "";
+    if (histfile) { snprintf(histpath, sizeof(histpath), "%s/.brackets-code_history", histfile); read_history(histpath); }
+    char *rl_line;
+    while ((rl_line = readline("> ")) != NULL) {
+        snprintf(prompt, sizeof(prompt), "%s", rl_line);
+        free(rl_line);
+        if (*prompt) add_history(prompt);
+        trim(prompt);
+#else
+    printf("> ");
     while (fgets(prompt, sizeof(prompt), stdin)) {
         trim(prompt);
-        if (strlen(prompt) == 0) { printf("> "); continue; }
+#endif
+        if (strlen(prompt) == 0) continue;
 
         if (strcmp(prompt, "/exit") == 0 || strcmp(prompt, "/quit") == 0) break;
 
         if (strcmp(prompt, "/help") == 0 || strcmp(prompt, "/?") == 0) {
             show_help();
-            printf("> ");
             continue;
         }
 
@@ -4482,7 +5079,6 @@ void interactive_mode() {
             printf("Available templates:\n");
             for (int i = 0; i < num_templates; i++)
                 printf("  %-25s %s\n", templates[i].keywords, templates[i].desc);
-            printf("> ");
             continue;
         }
 
@@ -4498,7 +5094,6 @@ void interactive_mode() {
             } else {
                 printf("Use one-shot mode to generate specific code.\n");
             }
-            printf("> ");
             continue;
         }
 
@@ -4522,7 +5117,6 @@ void interactive_mode() {
                         printf("  %2d. %-45s (%.2f)\n", i+1, example_docs[indices[i]].stem, scores[i]);
                 }
             }
-            printf("> ");
             continue;
         }
 
@@ -4531,12 +5125,18 @@ void interactive_mode() {
         generate_code(prompt, fname);
         snprintf(last_fname, sizeof(last_fname), "%s", fname);
         has_last = 1;
-        printf("> ");
     }
     printf("\nBye!\n");
+#ifdef HAVE_READLINE
+    {
+        const char *hf = getenv("HOME");
+        if (hf) { char hp[512]; snprintf(hp, sizeof(hp), "%s/.brackets-code_history", hf); write_history(hp); }
+    }
+#endif
 }
 
 int main(int argc, char *argv[]) {
+    use_color = isatty(STDOUT_FILENO);
     if (argc == 1) {
         interactive_mode();
         return 0;
@@ -4576,16 +5176,74 @@ int main(int argc, char *argv[]) {
     }
 
     int arg_idx = 1;
-    if (strcmp(argv[arg_idx], "--validate") == 0 || strcmp(argv[arg_idx], "-v") == 0) {
+    if (argc >= 2 && (strcmp(argv[1], "--self-test") == 0 || strcmp(argv[1], "-t") == 0)) {
         validate_flag = 1;
-        arg_idx++;
-        if (arg_idx >= argc) {
-            fprintf(stderr, "Usage: %s [--validate] <prompt> [filename]\n", argv[0]);
-            return 1;
+        return self_test() ? 0 : 1;
+    }
+    if (argc >= 2 && (strcmp(argv[1], "--bash-completion") == 0 || strcmp(argv[1], "--completion") == 0)) {
+        printf("_brackets_code_completions() {\n");
+        printf("  local cur=\"${COMP_WORDS[COMP_CWORD]}\"\n");
+        printf("  opts=\"--help -h --list -l --search --validate -v --self-test -t --verbose --out-dir --batch --bash-completion\"\n");
+        printf("  COMPREPLY=($(compgen -W \"${opts}\" -- \"$cur\"))\n");
+        printf("}\n");
+        printf("complete -F _brackets_code_completions brackets-code\n");
+        return 0;
+    }
+
+    // Scan for global flags before positional args
+    while (arg_idx < argc) {
+        if (strcmp(argv[arg_idx], "--verbose") == 0) { verbose_flag = 1; arg_idx++; }
+        else if (strcmp(argv[arg_idx], "--out-dir") == 0) {
+            if (arg_idx + 1 < argc) { snprintf(out_dir, sizeof(out_dir), "%s", argv[arg_idx + 1]); arg_idx += 2; }
+            else { fprintf(stderr, "Usage: ... --out-dir <directory>\n"); return 1; }
         }
+        else if (strcmp(argv[arg_idx], "--validate") == 0 || strcmp(argv[arg_idx], "-v") == 0) { validate_flag = 1; arg_idx++; }
+        else break;
+    }
+
+    // Batch mode: consumes all remaining flags, expects batch-file right after --batch
+    if (argc >= arg_idx + 2 && (strcmp(argv[arg_idx], "--batch") == 0)) {
+        const char *batch_file = argv[arg_idx + 1];
+        FILE *bf = fopen(batch_file, "r");
+        if (!bf) { c_printf(ANSI_RED, "Cannot open batch file: %s\n", batch_file); return 1; }
+        char bline[MAX_PROMPT];
+        int total = 0, good = 0;
+        while (fgets(bline, sizeof(bline), bf)) {
+            trim(bline);
+            if (strlen(bline) == 0) continue;
+            total++;
+            char bfname[256];
+            prompt_to_filename(bline, bfname, sizeof(bfname));
+            char bfull[512];
+            prepend_out_dir(bfname, bfull, sizeof(bfull));
+            int bgen = generate_code(bline, bfull);
+            int bok = 0;
+            if (bgen && validate_flag) {
+                if (validate_code(bfull)) { bok = 1; }
+            } else if (bgen) { bok = 1; }
+            if (bok) { c_printf(ANSI_GREEN, "[batch] %s -> %s OK\n", bline, bfull); good++; }
+            else     { c_printf(ANSI_RED,   "[batch] %s -> %s FAIL\n", bline, bfull); }
+        }
+        fclose(bf);
+        printf("\n--- batch: %d/%d succeeded ---\n", good, total);
+        return (good == total) ? 0 : 1;
+    }
+    if (arg_idx >= argc) {
+        fprintf(stderr, "Usage: %s [--validate] <prompt> [filename]\n", argv[0]);
+        return 1;
     }
 
     const char *prompt = argv[arg_idx++];
+    // Pipe mode: prompt "-" reads from stdin
+    char pipe_buf[MAX_PROMPT];
+    if (strcmp(prompt, "-") == 0) {
+        size_t nread = 0;
+        int ch;
+        while ((ch = getchar()) != EOF && nread < MAX_PROMPT - 1)
+            pipe_buf[nread++] = (char)ch;
+        pipe_buf[nread] = '\0';
+        prompt = pipe_buf;
+    }
     char fname[256];
 
     if (arg_idx < argc) {
@@ -4594,8 +5252,33 @@ int main(int argc, char *argv[]) {
     } else {
         prompt_to_filename(prompt, fname, sizeof(fname));
     }
+    char fullpath[512];
+    prepend_out_dir(fname, fullpath, sizeof(fullpath));
 
-    generate_code(prompt, fname);
-    if (validate_flag) validate_code(fname);
-    return 0;
+    int validated = 0;
+    int exit_code = 1;
+    for (int retry = 0; retry < 3; retry++) {
+        retry_seed = retry;
+        int gen_ok = generate_code(prompt, fullpath);
+        if (gen_ok && validate_flag) {
+            if (validate_code(fullpath)) {
+                validated = 1;
+                exit_code = 0;
+                break;
+            } else {
+                c_printf(ANSI_YELLOW, "Validation failed, retrying (%d/3)...\n", retry + 1);
+            }
+        } else if (gen_ok) {
+            validated = 1;
+            exit_code = 0;
+            break;
+        }
+    }
+    if (!validated && validate_flag) {
+        c_printf(ANSI_RED, "Warning: code could not be validated after 3 attempts.\n");
+        exit_code = 2;
+    } else if (!validated) {
+        exit_code = 1;
+    }
+    return exit_code;
 }

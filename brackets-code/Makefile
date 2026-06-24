@@ -12,7 +12,16 @@ TEST_SH = tests/run_tests.sh
 all: $(BINARY)
 
 $(BINARY): $(SOURCE)
-	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+	@if pkg-config --exists readline 2>/dev/null; then \
+		echo "  readline found, enabling interactive history"; \
+		$(CC) $(CFLAGS) -DHAVE_READLINE -o $@ $< $(LDFLAGS) $$(pkg-config --libs readline); \
+	elif [ -f /usr/include/readline/readline.h ]; then \
+		echo "  readline headers found, enabling interactive history"; \
+		$(CC) $(CFLAGS) -DHAVE_READLINE -o $@ $< $(LDFLAGS) -lreadline; \
+	else \
+		echo "  readline not found, using plain fgets"; \
+		$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS); \
+	fi
 
 test: $(BINARY)
 	@if [ -x "$(TEST_SH)" ]; then \

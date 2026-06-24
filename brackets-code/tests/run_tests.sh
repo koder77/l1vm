@@ -153,6 +153,8 @@ EMITTER_TESTS[em_bit_check]="check bits of number 134"
 EMITTER_TESTS[em_leap_year]="check if leap year"
 EMITTER_TESTS[em_temp_convert]="convert celsius to fahrenheit"
 EMITTER_TESTS[em_circle_area]="area of a circle"
+EMITTER_TESTS[em_average]="average of 5 numbers"
+EMITTER_TESTS[em_selection_sort]="sort numbers"
 
 # ── multi-step tests ────────────────────────────────────────────────────
 declare -A MULTI_TESTS
@@ -194,6 +196,8 @@ if [ "$MODE" = "quick" ]; then
     EMITTER_TESTS[em_math]="calculate 2 plus 3"
     EMITTER_TESTS[em_leap_year]="check if leap year"
     EMITTER_TESTS[em_temp_convert]="convert celsius to fahrenheit"
+    EMITTER_TESTS[em_average]="average of 5 numbers"
+    EMITTER_TESTS[em_selection_sort]="sort numbers"
     unset MULTI_TESTS; declare -A MULTI_TESTS
     MULTI_TESTS[multi_sort_then_reverse]="sort 5 numbers und dann reverse the array"
 fi
