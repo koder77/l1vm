@@ -17,7 +17,7 @@ BRACKETS_CODE="${BRACKETS_CODE:-$PROJECT_DIR/brackets-code}"
 TMPDIR="$(mktemp -d)"
 SAVEDIR=""   # set by 'save' mode
 
-L1VM_ROOT="${L1VM_ROOT:-/home/stefan/l1vm/}"
+L1VM_ROOT="${L1VM_ROOT:-$HOME/l1vm/}"
 L1VM_BIN="${L1VM_ROOT}bin"
 INCLUDE_DIR="${L1VM_ROOT}include/"
 PATH="${L1VM_BIN}:${PATH}"

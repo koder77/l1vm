@@ -5,10 +5,10 @@ Converts natural-language prompts into working `.l1com` programs.
 
 ## How it works
 
-- **65 code generation blocks** — 31 templates (keyword-matched) + 34 emitters (plan-based via tiny word embedding scorer)
+- **70 code generation blocks** — 31 templates (keyword-matched) + 39 emitters (plan-based via tiny word embedding scorer)
 - **Two-tier pipeline**: smart planner runs first, template matching as fallback, default "hello world" last
 - **No LLM involved** — deterministic pattern extraction from `l1vm-example-code/`
-- **53/53 tests pass** through the full `l1pre → l1com` compilation pipeline
+- **55/55 tests pass** through the full `l1pre → l1com` compilation pipeline
 
 ## Requirements
 
@@ -50,14 +50,14 @@ Flags:
 
 Or:
 
-    ./tests/run_tests.sh          # run all 53 tests
+    ./tests/run_tests.sh          # run all 55 tests
     ./tests/run_tests.sh quick    # quick subset (9 tests)
     ./tests/run_tests.sh list     # list test names
     ./tests/run_tests.sh save <d> # save failing sources to <d>
 
 ## Project structure
 
-    brackets-code.c        Main source (~3930 lines)
+    brackets-code.c        Main source (~5300 lines)
     brackets-code          Compiled binary
     l1vm-example-code/     Reference L1VM programs (pattern source)
     tests/run_tests.sh     Test suite

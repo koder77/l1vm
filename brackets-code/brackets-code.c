@@ -20,7 +20,7 @@
 // brackets-code.c
 // Brackets Code Generator - CLI tool for generating Brackets (L1VM) code
 // Generated with opencode: Big Pickle
-
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,7 +31,7 @@
 #include <dirent.h>
 #include <unistd.h>
 
-/* format truncation warnings are benign: buffers sized for real-world usage */
+/* format-truncation warnings: snprintf output is safely truncated for real-world sizes */
 #pragma GCC diagnostic ignored "-Wformat-truncation"
 
 #define MAX_LINE 4096
@@ -46,6 +46,7 @@ int validate_flag = 0;
 int retry_seed = 0;
 int verbose_flag = 0;
 char out_dir[512] = "";
+char l1vm_root[512] = "";
 static const char *current_prompt = "";
 
 #define ANSI_RESET   "\033[0m"
@@ -280,11 +281,11 @@ static void answer_question(const char *prompt) {
         printf("  (zero :exit !)  - exit with status code in variable\n");
         printf("  zero should be (set const-int64 1 zero 0)\n");
     } else if (strstr(buf, "brackets") || strstr(buf, "l1vm") || strstr(buf, "l1com") || strstr(buf, "was ist")) {
-        printf("Brackets (L1VM) is a stack-based virtual machine and assembly language.\n");
+        printf("Brackets 0.6 (L1VM) is a stack-based virtual machine and assembly language.\n");
         printf("Code is written in .l1com files using S-expressions (parentheses).\n");
         printf("Key concepts: (func), (set), (if), (for-loop), pointer access, local scoping via #var ~\n");
     } else {
-        printf("I'm a Brackets (L1VM) code generator. Ask me about:\n");
+        printf("I'm a Brackets 0.6 (L1VM) code generator. Ask me about:\n");
         printf("- How to write loops, if/else, functions\n");
         printf("- Pointers, arrays, structs, strings\n");
         printf("- Stack operations, math, exit\n");
@@ -521,7 +522,7 @@ static int has_word(const char *prompt, const char *word) {
 }
 
 static const char* extract_var_name(const char *prompt, const char *fallback) {
-    static char buf[64];
+    static char buf[256];
     static const char *keywords[] = {
         "sum", "total", "number", "value", "result", "count", "index",
         "name", "max", "min", "average", "median", "temp", "size",
@@ -673,7 +674,11 @@ static int extract_numbers(const char *prompt, int *nums, int max_nums) {
                 char prefix[16]; int pi = 0;
                 while (prev < p && pi < 15) prefix[pi++] = *prev++;
                 prefix[pi] = '\0';
-                if (strcmp(prefix, "int") == 0 || strcmp(prefix, "const") == 0) {
+                if (prefix[0] == 'i' && prefix[1] == 'n' && prefix[2] == 't') {
+                    while (*p && isdigit(*p)) p++;
+                    continue;
+                }
+                if (strcmp(prefix, "const") == 0) {
                     while (*p && isdigit(*p)) p++;
                     continue;
                 }
@@ -747,6 +752,7 @@ typedef struct {
 
 static WordEmbedding word_embeddings[VOCAB_SIZE];
 static float attention_weights[NUM_EMITTERS];
+static const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort"};
 static int vs_boost_tokens[64];
 static int vs_boost_count = 0;
 
@@ -760,8 +766,8 @@ static const char *example_exts[] = {".l1com", ".l1h", ".l1asm"};
 #define EXAMPLE_EXTS 3
 
 typedef struct {
-    char filename[512];
-    char stem[256];
+    char filename[1024];
+    char stem[512];
     float embedding[EMBED_DIM];
     float score;
 } ExampleDoc;
@@ -795,7 +801,11 @@ static const char *vocab[VOCAB_SIZE] = {
     "fann", "train", "neural", "network", "model", "layer", "learn", "predict"
 };
 
+static int embeddings_initialized = 0;
+
 static void init_embeddings(void) {
+    if (embeddings_initialized) return;
+    embeddings_initialized = 1;
     for (int i = 0; i < VOCAB_SIZE; i++) {
         unsigned long seed = hash_word(vocab[i]);
         srand(seed);
@@ -976,10 +986,9 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
 
     if (verbose_flag) {
         printf("\nEmitter scores:\n");
-        const char *names[] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort"};
-        for (int i = 0; i < NUM_EMITTERS && i < 39; i++)
-            printf("  %2d %-16s %.3f\n", i, names[i], emitter_scores[i]);
-        printf("  -> best: %s (%.3f)\n", names[best], best_p);
+        for (int i = 0; i < NUM_EMITTERS; i++)
+            printf("  %2d %-16s %.3f\n", i, EMITTER_NAMES[i], emitter_scores[i]);
+        printf("  -> best: %s (%.3f)\n", EMITTER_NAMES[best], best_p);
     }
 
     // Multi-emitter composition: add strongly-scored secondary emitters
@@ -998,10 +1007,9 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
     }
 
     if (verbose_flag && task->num_extra_emitters > 0) {
-        const char *names[] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort"};
         printf("  extra emitters:");
         for (int ei = 0; ei < task->num_extra_emitters; ei++)
-            printf(" %s", names[task->extra_emitters[ei]]);
+            printf(" %s", EMITTER_NAMES[task->extra_emitters[ei]]);
         printf("\n");
     }
 
@@ -1107,15 +1115,15 @@ static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROM
             for (int i = 0; i < num_steps; i++) {
                 if (!has_actionable_keyword(steps[i])) {
                     if (i > 0) {
-                        char merged_step[MAX_PROMPT];
-                        snprintf(merged_step, MAX_PROMPT, "%s %s", steps[i-1], steps[i]);
+                    char merged_step[MAX_PROMPT * 2];
+                    snprintf(merged_step, sizeof(merged_step), "%s %s", steps[i-1], steps[i]);
                         trim(merged_step);
                         snprintf(steps[i-1], MAX_PROMPT, "%s", merged_step);
                         for (int j = i; j < num_steps - 1; j++) snprintf(steps[j], MAX_PROMPT, "%s", steps[j+1]);
                         num_steps--; merged = 1; break;
                     } else if (i == 0 && num_steps > 1) {
-                        char merged_step[MAX_PROMPT];
-                        snprintf(merged_step, MAX_PROMPT, "%s %s", steps[0], steps[1]);
+                        char merged_step[MAX_PROMPT * 2];
+                        snprintf(merged_step, sizeof(merged_step), "%s %s", steps[0], steps[1]);
                         trim(merged_step);
                         snprintf(steps[0], MAX_PROMPT, "%s", merged_step);
                         for (int j = 1; j < num_steps - 1; j++) snprintf(steps[j], MAX_PROMPT, "%s", steps[j+1]);
@@ -3222,14 +3230,17 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     }
     if (task->has_leap_year) {
         emit_leap_year(prog, f);
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_temp_convert) {
         emit_temp_convert(prog, f);
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_circle_area) {
         emit_circle_area(prog, f);
+        ensure_exit(f, last_step);
         return 1;
     }
     if (task->has_average && task->has_input) {
@@ -4623,7 +4634,7 @@ int match_template(const char *prompt, int *best_score) {
 static void prepend_out_dir(const char *fname, char *buf, int bufsize);
 
 static int validate_code(const char *filename) {
-    char cmd[1024];
+    char cmd[2048];
     char ppname[512];
     const char *dot = strrchr(filename, '.');
     if (dot) {
@@ -4633,9 +4644,30 @@ static int validate_code(const char *filename) {
         snprintf(ppname, sizeof(ppname), "%s_pp.l1com", filename);
     }
     const char *include_dir = getenv("L1VM_INCLUDE");
-    if (!include_dir) include_dir = "/home/stefan/l1vm/include/";
+    if (!include_dir) {
+        static char fallback[512];
+        if (l1vm_root[0]) {
+            snprintf(fallback, sizeof(fallback), "%s/include/", l1vm_root);
+        } else {
+            const char *home = getenv("HOME");
+            if (home) snprintf(fallback, sizeof(fallback), "%s/l1vm/include/", home);
+            else snprintf(fallback, sizeof(fallback), "/usr/local/l1vm/include/");
+        }
+        include_dir = fallback;
+    }
 
-    snprintf(cmd, sizeof(cmd), "l1pre \"%s\" \"%s\" \"%s\" 2>&1", filename, ppname, include_dir);
+    const char *l1pre_bin = "l1pre";
+    const char *l1com_bin = "l1com";
+    char l1pre_path[1024];
+    char l1com_path[1024];
+    if (l1vm_root[0]) {
+        snprintf(l1pre_path, sizeof(l1pre_path), "%s/bin/l1pre", l1vm_root);
+        l1pre_bin = l1pre_path;
+        snprintf(l1com_path, sizeof(l1com_path), "%s/bin/l1com", l1vm_root);
+        l1com_bin = l1com_path;
+    }
+
+    snprintf(cmd, sizeof(cmd), "%s \"%s\" \"%s\" \"%s\" 2>&1", l1pre_bin, filename, ppname, include_dir);
     int ret = system(cmd);
     if (ret != 0) {
         c_printf(ANSI_RED, "Validation: l1pre FAILED (exit code %d)\n", ret);
@@ -4645,7 +4677,7 @@ static int validate_code(const char *filename) {
 
     char compname[512];
     snprintf(compname, sizeof(compname), "%.*s_pp", (int)(dot ? dot - filename : (int)strlen(filename)), filename);
-    snprintf(cmd, sizeof(cmd), "l1com \"%s\" 2>&1", compname);
+    snprintf(cmd, sizeof(cmd), "%s \"%s\" 2>&1", l1com_bin, compname);
     ret = system(cmd);
     if (ret == 0) {
         c_printf(ANSI_GREEN, "Validation: OK\n");
@@ -4869,6 +4901,7 @@ static int search_examples(const char *query, int top_k, int *indices, float *sc
 static void prepend_out_dir(const char *fname, char *buf, int bufsize) {
     if (out_dir[0]) {
         snprintf(buf, bufsize, "%s/%s", out_dir, fname);
+        buf[bufsize - 1] = '\0';
     } else {
         snprintf(buf, bufsize, "%s", fname);
     }
@@ -5006,6 +5039,7 @@ void show_help() {
     printf("Flags:\n");
     printf("  --verbose               Show emitter selection scores\n");
     printf("  --out-dir <dir>         Output directory for generated files\n");
+    printf("  --l1vm-root <path>      L1VM installation root (for --validate)\n");
     printf("  --bash-completion       Print bash completion script\n\n");
     printf("Available templates:\n");
     for (int i = 0; i < num_templates; i++) {
@@ -5083,7 +5117,7 @@ void interactive_mode() {
         }
 
         if (strncmp(prompt, "/save", 5) == 0) {
-            char fname[256] = {0};
+            char fname[512] = {0};
             if (strlen(prompt) > 6) {
                 snprintf(fname, sizeof(fname), "%s", prompt + 6);
                 trim(fname);
@@ -5183,7 +5217,7 @@ int main(int argc, char *argv[]) {
     if (argc >= 2 && (strcmp(argv[1], "--bash-completion") == 0 || strcmp(argv[1], "--completion") == 0)) {
         printf("_brackets_code_completions() {\n");
         printf("  local cur=\"${COMP_WORDS[COMP_CWORD]}\"\n");
-        printf("  opts=\"--help -h --list -l --search --validate -v --self-test -t --verbose --out-dir --batch --bash-completion\"\n");
+        printf("  opts=\"--help -h --list -l --search --validate -v --self-test -t --verbose --out-dir --l1vm-root --batch --bash-completion\"\n");
         printf("  COMPREPLY=($(compgen -W \"${opts}\" -- \"$cur\"))\n");
         printf("}\n");
         printf("complete -F _brackets_code_completions brackets-code\n");
@@ -5196,6 +5230,10 @@ int main(int argc, char *argv[]) {
         else if (strcmp(argv[arg_idx], "--out-dir") == 0) {
             if (arg_idx + 1 < argc) { snprintf(out_dir, sizeof(out_dir), "%s", argv[arg_idx + 1]); arg_idx += 2; }
             else { fprintf(stderr, "Usage: ... --out-dir <directory>\n"); return 1; }
+        }
+        else if (strcmp(argv[arg_idx], "--l1vm-root") == 0) {
+            if (arg_idx + 1 < argc) { snprintf(l1vm_root, sizeof(l1vm_root), "%s", argv[arg_idx + 1]); arg_idx += 2; }
+            else { fprintf(stderr, "Usage: ... --l1vm-root <path>\n"); return 1; }
         }
         else if (strcmp(argv[arg_idx], "--validate") == 0 || strcmp(argv[arg_idx], "-v") == 0) { validate_flag = 1; arg_idx++; }
         else break;
@@ -5229,7 +5267,7 @@ int main(int argc, char *argv[]) {
         return (good == total) ? 0 : 1;
     }
     if (arg_idx >= argc) {
-        fprintf(stderr, "Usage: %s [--validate] <prompt> [filename]\n", argv[0]);
+        fprintf(stderr, "Usage: %s [--validate] [--l1vm-root <path>] <prompt> [filename]\n", argv[0]);
         return 1;
     }
 

@@ -5,7 +5,7 @@ Brackets Code - Memory & Specification
 -------------
 Brackets Code is a CLI code generator for the Brackets (L1VM) assembly language.
 It converts natural-language prompts into working .l1com programs.
-Written in C, single-file (~3930 lines). Author: Stefan.
+Written in C, single-file (~5300 lines). Author: Stefan.
 
 2. ARCHITECTURE OVERVIEW
 ------------------------
@@ -76,14 +76,13 @@ Template struct:
   - Detects ~45+ patterns (FAQ topics, algorithms, input/output, loops)
   - Enhanced patterns override generic algorithm flags
 
-5b. Emitter Blocks (NUM_EMITTERS = 34):
+5b. Emitter Blocks (NUM_EMITTERS = 39):
   Each emits L1VM code for a specific pattern:
 
   Block                    Purpose
   ------------------------ ------------------------------
   emit_math                Pure math with 2-3 literals
   emit_input_loop          Read N numbers, optionally sum
-  emit_print_range         Print numbers from start to end
   emit_for_sum             Sum 1..N
   emit_print_even          Print even numbers <= N
   emit_input_find_max       Read N, find maximum
@@ -115,6 +114,14 @@ Template struct:
   emit_array_min_max        Find min/max/average via vmath library
   emit_bool_demo            Boolean variable demo (bool type, true/false)
   emit_bit_check            Bit check with << and &, custom function
+  emit_leap_year            Leap year detection
+  emit_temp_convert         Celsius-to-Fahrenheit conversion
+  emit_circle_area          Circle area calculation
+  emit_average              Average of input numbers
+  emit_selection_sort       Selection sort
+  emit_fann_create          Create FANN neural network
+  emit_fann_train           Train FANN neural network
+  emit_fann_run             Run FANN neural network
 
 5c. Multi-Step Composition (split_prompt_steps):
   - Split patterns (ordered longest-first):
@@ -217,11 +224,11 @@ Template struct:
 
 14. FILE LOCATION
 -----------------
-  /home/stefan/opencode/brackets-code/brackets-code.c (~3930 lines, 34 emitter blocks)
+  /home/stefan/opencode/brackets-code/brackets-code.c (~5300 lines, 39 emitter blocks)
 
 15. TEST SUITE
 --------------
   /home/stefan/opencode/brackets-code/tests/run_tests.sh
   Modes: all, quick, list, save <dir>
-  53 tests (32 templates + 21 emitters)
+  55 tests (32 templates + 21 emitters + 2 multi-step)
   Pipeline: l1pre -> l1com (no runtime execution yet)
