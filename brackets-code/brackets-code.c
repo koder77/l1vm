@@ -302,11 +302,11 @@ static void answer_question(const char *prompt) {
         printf("  (zero :exit !)  - exit with status code in variable\n");
         printf("  zero should be (set const-int64 1 zero 0)\n");
     } else if (strstr(buf, "brackets") || strstr(buf, "l1vm") || strstr(buf, "l1com") || strstr(buf, "was ist")) {
-        printf("Brackets 0.6.2 (L1VM) is a stack-based virtual machine and assembly language.\n");
+        printf("Brackets 0.6.1 (L1VM) is a stack-based virtual machine and assembly language.\n");
         printf("Code is written in .l1com files using S-expressions (parentheses).\n");
         printf("Key concepts: (func), (set), (if), (for-loop), pointer access, local scoping via #var ~\n");
     } else {
-        printf("I'm a Brackets 0.6.2 (L1VM) code generator. Ask me about:\n");
+        printf("I'm a Brackets 0.6.1 (L1VM) code generator. Ask me about:\n");
         printf("- How to write loops, if/else, functions\n");
         printf("- Pointers, arrays, structs, strings\n");
         printf("- Stack operations, math, exit\n");
@@ -866,6 +866,7 @@ static int save_learned_pattern(LearnedPattern *lp);
 static void load_learned_patterns(void);
 static int match_learned_pattern(const char *prompt, int *best_score);
 static int emit_learned_pattern(Program *prog, int learned_idx);
+static int emit_learned_step(Program *prog, int learned_idx);
 static int has_learned_id(const char *id);
 static int forget_learned(const char *id);
 static void list_learned(void);
@@ -5050,6 +5051,21 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
     init_embeddings();
     index_examples();
 
+    // load learned patterns
+    load_learned_patterns();
+
+    // Full-prompt learned pattern match (takes priority)
+    {
+        int lscore;
+        int lidx = match_learned_pattern(prompt, &lscore);
+        if (lidx >= 0) {
+            if (emit_learned_pattern(prog, lidx)) {
+                snprintf(desc, desc_size, "learned pattern: %s (score: %d)", learned_patterns[lidx].id, lscore);
+                return 1;
+            }
+        }
+    }
+
     // Multi-step support
     char steps[MAX_STEPS][MAX_PROMPT];
     int num_steps = split_prompt_steps(prompt, steps);
@@ -5060,6 +5076,16 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
         int inherited_counts[64] = {0};
         int num_inherited = 0;
         for (int i = 0; i < num_steps; i++) {
+            // Try per-step learned pattern match
+            {
+                int lscore;
+                int lidx = match_learned_pattern(steps[i], &lscore);
+                if (lidx >= 0) {
+                    if (emit_learned_step(prog, lidx)) {
+                        goto collect_vars;
+                    }
+                }
+            }
             TaskProfile task;
             memset(&task, 0, sizeof(task));
             if (parse_task(steps[i], &task)) {
@@ -5084,6 +5110,7 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
                 }
                 generate_from_task(prog, &task, (i == num_steps - 1));
             }
+            collect_vars:
             // collect inherited variables from the main function for next steps
             Function *fcur = NULL;
             for (int fi = 0; fi < prog->num_funcs; fi++)
@@ -5113,6 +5140,18 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
         dataflow_quiet_mode = 0;
         snprintf(desc, desc_size, "multi-step generation (%d steps)", num_steps);
         return 1;
+    }
+
+    // Single-step: try learned pattern match first
+    {
+        int lscore;
+        int lidx = match_learned_pattern(prompt, &lscore);
+        if (lidx >= 0) {
+            if (emit_learned_pattern(prog, lidx)) {
+                snprintf(desc, desc_size, "learned pattern: %s (score: %d)", learned_patterns[lidx].id, lscore);
+                return 1;
+            }
+        }
     }
 
     // Single-step: parse task and use LLM to select emitter
@@ -7188,6 +7227,73 @@ static int emit_learned_pattern(Program *prog, int learned_idx) {
         snprintf(dst->body, sizeof(dst->body), "%s", src->body);
     }
 
+    return 1;
+}
+
+static int emit_learned_step(Program *prog, int learned_idx) {
+    if (learned_idx < 0 || learned_idx >= num_learned) return 0;
+    LearnedPattern *lp = &learned_patterns[learned_idx];
+    if (!lp->is_learned) return 0;
+
+    // Copy includes (add_include handles duplicates)
+    for (int i = 0; i < lp->num_includes; i++)
+        add_include(prog, lp->includes[i]);
+
+    // Append globals
+    if (strlen(lp->globals) > 0) {
+        size_t cur_len = strlen(prog->globals);
+        if (cur_len + strlen(lp->globals) < MAX_CODE)
+            strcat(prog->globals, lp->globals);
+    }
+
+    // Copy functions - for existing main, append body & vars
+    for (int fi = 0; fi < lp->num_funcs; fi++) {
+        Function *src = &lp->funcs[fi];
+
+        int existing = -1;
+        for (int i = 0; i < prog->num_funcs; i++)
+            if (strcmp(prog->funcs[i].name, src->name) == 0) { existing = i; break; }
+
+        if (existing >= 0) {
+            Function *dst = &prog->funcs[existing];
+            size_t cur_len = strlen(dst->body);
+            if (cur_len + strlen(src->body) < MAX_CODE)
+                strcat(dst->body, src->body);
+            for (int vi = 0; vi < src->num_vars && dst->num_vars < MAX_VARS; vi++) {
+                int found = 0;
+                for (int dv = 0; dv < dst->num_vars; dv++)
+                    if (strcmp(dst->vars[dv].name, src->vars[vi].name) == 0) { found = 1; break; }
+                if (!found) {
+                    Variable *sv = &src->vars[vi];
+                    Variable *dv = &dst->vars[dst->num_vars++];
+                    snprintf(dv->name, sizeof(dv->name), "%s", sv->name);
+                    snprintf(dv->type, sizeof(dv->type), "%s", sv->type);
+                    dv->count = sv->count;
+                    dv->num_values = sv->num_values;
+                    for (int vj = 0; vj < sv->num_values; vj++)
+                        snprintf(dv->values[vj], sizeof(dv->values[vj]), "%s", sv->values[vj]);
+                }
+            }
+        } else {
+            add_func(prog, src->name);
+            Function *dst = &prog->funcs[prog->num_funcs - 1];
+            dst->is_local = src->is_local;
+            dst->has_vars = src->has_vars;
+            dst->has_vardef = src->has_vardef;
+            snprintf(dst->vardef_name, sizeof(dst->vardef_name), "%s", src->vardef_name);
+            for (int vi = 0; vi < src->num_vars; vi++) {
+                Variable *sv = &src->vars[vi];
+                Variable *dv = &dst->vars[dst->num_vars++];
+                snprintf(dv->name, sizeof(dv->name), "%s", sv->name);
+                snprintf(dv->type, sizeof(dv->type), "%s", sv->type);
+                dv->count = sv->count;
+                dv->num_values = sv->num_values;
+                for (int vj = 0; vj < sv->num_values; vj++)
+                    snprintf(dv->values[vj], sizeof(dv->values[vj]), "%s", sv->values[vj]);
+            }
+            snprintf(dst->body, sizeof(dst->body), "%s", src->body);
+        }
+    }
     return 1;
 }
 
