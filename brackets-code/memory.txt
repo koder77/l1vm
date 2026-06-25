@@ -5,7 +5,7 @@ Brackets Code - Memory & Specification
 -------------
 Brackets Code is a CLI code generator for the Brackets (L1VM) assembly language.
 It converts natural-language prompts into working .l1com programs.
-Written in C, single-file (~5300 lines). Author: Stefan.
+Written in C, single-file (~6960 lines). Author: Stefan.
 
 2. ARCHITECTURE OVERVIEW
 ------------------------
@@ -76,7 +76,7 @@ Template struct:
   - Detects ~45+ patterns (FAQ topics, algorithms, input/output, loops)
   - Enhanced patterns override generic algorithm flags
 
-5b. Emitter Blocks (NUM_EMITTERS = 39):
+5b. Emitter Blocks (NUM_EMITTERS = 67):
   Each emits L1VM code for a specific pattern:
 
   Block                    Purpose
@@ -122,6 +122,13 @@ Template struct:
   emit_fann_create          Create FANN neural network
   emit_fann_train           Train FANN neural network
   emit_fann_run             Run FANN neural network
+  emit_double_math          Double-precision math (add/sub/mul/div)
+  emit_double_circle_area   Double-precision circle area
+  emit_double_average       Double-precision average of 5 numbers
+  emit_double_compound_interest Double-precision compound interest
+  emit_double_pythagoras    Double-precision Pythagoras (a^2 + b^2 = c^2)
+  emit_double_temp_convert  Double-precision Celsius to Fahrenheit
+  emit_double_sqrt          Double-precision Newton-Raphson square root
 
 5c. Multi-Step Composition (split_prompt_steps):
   - Split patterns (ordered longest-first):
@@ -224,11 +231,11 @@ Template struct:
 
 14. FILE LOCATION
 -----------------
-  /home/stefan/opencode/brackets-code/brackets-code.c (~5300 lines, 39 emitter blocks)
+  /home/stefan/opencode/brackets-code/brackets-code.c (~6960 lines, 67 emitter blocks)
 
 15. TEST SUITE
 --------------
   /home/stefan/opencode/brackets-code/tests/run_tests.sh
   Modes: all, quick, list, save <dir>
-  55 tests (32 templates + 21 emitters + 2 multi-step)
+  59 tests (32 templates + 25 emitters + 2 multi-step); self-test: 28
   Pipeline: l1pre -> l1com (no runtime execution yet)

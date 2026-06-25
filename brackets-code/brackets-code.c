@@ -281,11 +281,11 @@ static void answer_question(const char *prompt) {
         printf("  (zero :exit !)  - exit with status code in variable\n");
         printf("  zero should be (set const-int64 1 zero 0)\n");
     } else if (strstr(buf, "brackets") || strstr(buf, "l1vm") || strstr(buf, "l1com") || strstr(buf, "was ist")) {
-        printf("Brackets 0.6 (L1VM) is a stack-based virtual machine and assembly language.\n");
+        printf("Brackets 0.6.1 (L1VM) is a stack-based virtual machine and assembly language.\n");
         printf("Code is written in .l1com files using S-expressions (parentheses).\n");
         printf("Key concepts: (func), (set), (if), (for-loop), pointer access, local scoping via #var ~\n");
     } else {
-        printf("I'm a Brackets 0.6 (L1VM) code generator. Ask me about:\n");
+        printf("I'm a Brackets 0.6.1 (L1VM) code generator. Ask me about:\n");
         printf("- How to write loops, if/else, functions\n");
         printf("- Pointers, arrays, structs, strings\n");
         printf("- Stack operations, math, exit\n");
@@ -632,6 +632,36 @@ typedef struct {
     int has_fann_create;
     int has_fann_train;
     int has_fann_run;
+    int has_palindrome;
+    int has_lcm;
+    int has_collatz;
+    int has_sum_of_digits;
+    int has_reverse_string;
+    int has_armstrong;
+    int has_perfect_number;
+    int has_count_vowels;
+    int has_anagram_check;
+    int has_string_to_upper;
+    int has_string_to_lower;
+    int has_caesar_cipher;
+    int has_palindrome_string;
+    int has_bubble_sort;
+    int has_binary_search;
+    int has_square_root;
+    int has_prime_factorization;
+    int has_standard_deviation;
+    int has_compound_interest;
+    int has_decimal_to_binary;
+    int has_dice_roll;
+    int has_double_math;
+    int has_double_circle_area;
+    int has_double_average;
+    int has_double_compound_interest;
+    int has_double_pythagoras;
+    int has_double_temp_convert;
+    int has_double_sqrt;
+    int suppress_output;
+    char result_var[64];
     int skip_input;
     char inherit_var[64];
     int inherit_count;
@@ -736,6 +766,34 @@ static void emit_selection_sort(Program *prog, Function *f, int count, int skip_
 static void emit_fann_create(Program *prog, Function *f);
 static void emit_fann_train(Program *prog, Function *f);
 static void emit_fann_run(Program *prog, Function *f);
+static void emit_palindrome(Program *prog, Function *f);
+static void emit_lcm(Program *prog, Function *f);
+static void emit_collatz(Program *prog, Function *f);
+static void emit_sum_of_digits(Program *prog, Function *f);
+static void emit_reverse_string(Program *prog, Function *f);
+static void emit_armstrong(Program *prog, Function *f);
+static void emit_perfect_number(Program *prog, Function *f);
+static void emit_count_vowels(Program *prog, Function *f);
+static void emit_anagram_check(Program *prog, Function *f);
+static void emit_string_to_upper(Program *prog, Function *f);
+static void emit_string_to_lower(Program *prog, Function *f);
+static void emit_caesar_cipher(Program *prog, Function *f);
+static void emit_palindrome_string(Program *prog, Function *f);
+static void emit_bubble_sort(Program *prog, Function *f, int skip_input);
+static void emit_binary_search(Program *prog, Function *f);
+static void emit_square_root(Program *prog, Function *f);
+static void emit_prime_factorization(Program *prog, Function *f);
+static void emit_standard_deviation(Program *prog, Function *f, int skip_input);
+static void emit_compound_interest(Program *prog, Function *f);
+static void emit_decimal_to_binary(Program *prog, Function *f);
+static void emit_dice_roll(Program *prog, Function *f);
+static void emit_double_math(Program *prog, Function *f, const char *op);
+static void emit_double_circle_area(Program *prog, Function *f);
+static void emit_double_average(Program *prog, Function *f, int skip_input);
+static void emit_double_compound_interest(Program *prog, Function *f);
+static void emit_double_pythagoras(Program *prog, Function *f);
+static void emit_double_temp_convert(Program *prog, Function *f);
+static void emit_double_sqrt(Program *prog, Function *f);
 
 // ==================== TINY LLM INFERENCE ENGINE ====================
 
@@ -743,7 +801,7 @@ static void emit_fann_run(Program *prog, Function *f);
 #define VOCAB_SIZE 72
 #define TEMPERATURE 0.8
 #define MAX_STEPS 8
-#define NUM_EMITTERS 39
+#define NUM_EMITTERS 67
 
 typedef struct {
     char word[32];
@@ -752,7 +810,7 @@ typedef struct {
 
 static WordEmbedding word_embeddings[VOCAB_SIZE];
 static float attention_weights[NUM_EMITTERS];
-static const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort"};
+static const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt"};
 static int vs_boost_tokens[64];
 static int vs_boost_count = 0;
 
@@ -802,6 +860,7 @@ static const char *vocab[VOCAB_SIZE] = {
 };
 
 static int embeddings_initialized = 0;
+static int dataflow_quiet_mode = 0;
 
 static void init_embeddings(void) {
     if (embeddings_initialized) return;
@@ -905,6 +964,34 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
     if (task->has_fann_run) emitter_scores[36] = 2.0f;
     if (task->has_average && task->has_input) emitter_scores[37] = 2.0f;
     if (task->has_sort && !task->has_input) emitter_scores[38] = 2.0f;
+    if (task->has_palindrome) emitter_scores[39] = 2.0f;
+    if (task->has_lcm) emitter_scores[40] = 2.0f;
+    if (task->has_collatz) emitter_scores[41] = 2.0f;
+    if (task->has_sum_of_digits) emitter_scores[42] = 2.0f;
+    if (task->has_reverse_string) emitter_scores[43] = 2.0f;
+    if (task->has_armstrong) emitter_scores[44] = 2.0f;
+    if (task->has_perfect_number) emitter_scores[45] = 2.0f;
+    if (task->has_count_vowels) emitter_scores[46] = 2.0f;
+    if (task->has_anagram_check) emitter_scores[47] = 2.0f;
+    if (task->has_string_to_upper) emitter_scores[48] = 2.0f;
+    if (task->has_string_to_lower) emitter_scores[49] = 2.0f;
+    if (task->has_caesar_cipher) emitter_scores[50] = 2.0f;
+    if (task->has_palindrome_string) emitter_scores[51] = 2.0f;
+    if (task->has_bubble_sort) emitter_scores[52] = 2.0f;
+    if (task->has_binary_search) emitter_scores[53] = 2.0f;
+    if (task->has_square_root) emitter_scores[54] = 2.0f;
+    if (task->has_prime_factorization) emitter_scores[55] = 2.0f;
+    if (task->has_standard_deviation) emitter_scores[56] = 2.0f;
+    if (task->has_compound_interest) emitter_scores[57] = 2.0f;
+    if (task->has_decimal_to_binary) emitter_scores[58] = 2.0f;
+    if (task->has_dice_roll) emitter_scores[59] = 2.0f;
+    if (task->has_double_math) emitter_scores[60] = 2.0f;
+    if (task->has_double_circle_area) emitter_scores[61] = 2.0f;
+    if (task->has_double_average) emitter_scores[62] = 2.0f;
+    if (task->has_double_compound_interest) emitter_scores[63] = 2.0f;
+    if (task->has_double_pythagoras) emitter_scores[64] = 2.0f;
+    if (task->has_double_temp_convert) emitter_scores[65] = 2.0f;
+    if (task->has_double_sqrt) emitter_scores[66] = 2.0f;
 
     for (int ti = 0; ti < num_tokens && ti < 32; ti++) {
         int tok_id = tokens[ti];
@@ -1245,8 +1332,10 @@ static void emit_for_sum(Program *prog, Function *f, int n) {
     func_append(f, "\t\t(sum + i sum :=)");
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
-    func_append(f, "\t(sum :print_i !)");
-    func_append(f, "\t(:print_n !)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(sum :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
 }
 
 static void emit_print_even(Program *prog, Function *f, int n) {
@@ -1421,18 +1510,20 @@ static void emit_input_sort(Program *prog, Function *f, int count, int skip_inpu
     func_append(f, "\t\t(next)");
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
-    func_append(f, "\t// print sorted");
-    func_append(f, "\t(zero i :=)");
-    func_append(f, "\t(for-loop)");
-    snprintf(ln, sizeof(ln), "\t(((i count <) f :=) f for)");
-    func_append(f, ln);
-    func_append(f, "\t\t(i * int64_size realind :=)");
-    func_append(f, "\t\t(arr [ realind ] a =)");
-    func_append(f, "\t\t(a + zero a :=)");
-    func_append(f, "\t\t(a :print_i !)");
-    func_append(f, "\t\t(:print_n !)");
-    func_append(f, "\t\t(i + one i :=)");
-    func_append(f, "\t(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t// print sorted");
+        func_append(f, "\t(zero i :=)");
+        func_append(f, "\t(for-loop)");
+        snprintf(ln, sizeof(ln), "\t(((i count <) f :=) f for)");
+        func_append(f, ln);
+        func_append(f, "\t\t(i * int64_size realind :=)");
+        func_append(f, "\t\t(arr [ realind ] a =)");
+        func_append(f, "\t\t(a + zero a :=)");
+        func_append(f, "\t\t(a :print_i !)");
+        func_append(f, "\t\t(:print_n !)");
+        func_append(f, "\t\t(i + one i :=)");
+        func_append(f, "\t(next)");
+    }
 }
 
 static void emit_median(Program *prog, Function *f, int count, int skip_input) {
@@ -1501,8 +1592,10 @@ static void emit_median(Program *prog, Function *f, int count, int skip_input) {
     func_append(f, ln);
     func_append(f, "\t(arr [ realind ] a =)");
     func_append(f, "\t(a + zero a :=)");
-    func_append(f, "\t(a :print_i !)");
-    func_append(f, "\t(:print_n !)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(a :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
 }
 
 static void emit_string_cat(Program *prog, Function *f) {
@@ -1670,17 +1763,19 @@ static void emit_array_reverse(Program *prog, Function *f, int skip_input) {
     func_append(f, "\t\t(a arr [ realind ] =)");
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
-    func_append(f, "\t// print reversed");
-    func_append(f, "\t(zero i :=)");
-    func_append(f, "\t(for-loop)");
-    func_append(f, "\t(((i count <) f :=) f for)");
-    func_append(f, "\t\t(i * int64_size realind :=)");
-    func_append(f, "\t\t(arr [ realind ] a =)");
-    func_append(f, "\t\t(a + zero a :=)");
-    func_append(f, "\t\t(a :print_i !)");
-    func_append(f, "\t\t(:print_n !)");
-    func_append(f, "\t\t(i + one i :=)");
-    func_append(f, "\t(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t// print reversed");
+        func_append(f, "\t(zero i :=)");
+        func_append(f, "\t(for-loop)");
+        func_append(f, "\t(((i count <) f :=) f for)");
+        func_append(f, "\t\t(i * int64_size realind :=)");
+        func_append(f, "\t\t(arr [ realind ] a =)");
+        func_append(f, "\t\t(a + zero a :=)");
+        func_append(f, "\t\t(a :print_i !)");
+        func_append(f, "\t\t(:print_n !)");
+        func_append(f, "\t\t(i + one i :=)");
+        func_append(f, "\t(next)");
+    }
 }
 
 static void emit_array_find(Program *prog, Function *f, int skip_input) {
@@ -1734,13 +1829,15 @@ static void emit_array_find(Program *prog, Function *f, int skip_input) {
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
     func_append(f, "\t(:found_break)");
-    func_append(f, "\t(((found one ==) f :=) f if+)");
-    func_append(f, "\t\t(i :print_i !)");
-    func_append(f, "\t\t(:print_n !)");
-    func_append(f, "\t(else)");
-    func_append(f, "\t\t(not_str :print_s !)");
-    func_append(f, "\t\t(:print_n !)");
-    func_append(f, "\t(endif)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(((found one ==) f :=) f if+)");
+        func_append(f, "\t\t(i :print_i !)");
+        func_append(f, "\t\t(:print_n !)");
+        func_append(f, "\t(else)");
+        func_append(f, "\t\t(not_str :print_s !)");
+        func_append(f, "\t\t(:print_n !)");
+        func_append(f, "\t(endif)");
+    }
 }
 
 static void emit_input_factorial(Program *prog, Function *f) {
@@ -1765,8 +1862,10 @@ static void emit_input_factorial(Program *prog, Function *f) {
     func_append(f, "\t\t(fac i * fac :=)");
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
-    func_append(f, "\t(fac :print_i !)");
-    func_append(f, "\t(:print_n !)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(fac :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
 }
 
 static void emit_array_vmath(Program *prog, Function *f, int skip_input) {
@@ -1824,14 +1923,20 @@ static void emit_array_vmath(Program *prog, Function *f, int skip_input) {
     func_append(f, "\t(next)");
     func_append(f, "\t(sum count / avg :=)");
     func_append(f, "\t// min");
-    func_append(f, "\t(mn :print_i !)");
-    func_append(f, "\t(:print_n !)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(mn :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
     func_append(f, "\t// max");
-    func_append(f, "\t(mx :print_i !)");
-    func_append(f, "\t(:print_n !)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(mx :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
     func_append(f, "\t// avg");
-    func_append(f, "\t(avg :print_i !)");
-    func_append(f, "\t(:print_n !)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(avg :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
 }
 
 static void emit_read_file(Program *prog, Function *f) {
@@ -1935,8 +2040,10 @@ static void emit_factorial(Program *prog, Function *f) {
     func_append(f, "\t\t(fac i * fac :=)");
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
-    func_append(f, "\t(fac :print_i !)");
-    func_append(f, "\t(:print_n !)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(fac :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
 }
 
 static void emit_fizzbuzz(Program *prog, Function *f) {
@@ -2068,8 +2175,10 @@ static void emit_power(Program *prog, Function *f) {
     func_append(f, "\t\t(ret base * ret :=)");
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
-    func_append(f, "\t(ret :print_i !)");
-    func_append(f, "\t(:print_n !)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(ret :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
 }
 
 static void emit_multiplication_table(Program *prog, Function *f) {
@@ -2147,8 +2256,10 @@ static void emit_gcd(Program *prog, Function *f) {
     func_append(f, "\t\t(b a :=)");
     func_append(f, "\t\t(mod b :=)");
     func_append(f, "\t(((b zero >) f :=) f while)");
-    func_append(f, "\t(a :print_i !)");
-    func_append(f, "\t(:print_n !)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(a :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
 }
 
 static void emit_random_number(Program *prog, Function *f) {
@@ -2232,15 +2343,17 @@ static void emit_array_min_max(Program *prog, Function *f) {
     func_append(f, "\t(mx stpop)");
     func_append(f, "\t(Parray zero count vmath_average_int call)");
     func_append(f, "\t(avg stpop)");
-    func_append(f, "\t(min_str :print_s !)");
-    func_append(f, "\t(mn :print_i !)");
-    func_append(f, "\t(:print_n !)");
-    func_append(f, "\t(max_str :print_s !)");
-    func_append(f, "\t(mx :print_i !)");
-    func_append(f, "\t(:print_n !)");
-    func_append(f, "\t(avg_str :print_s !)");
-    func_append(f, "\t(avg :print_i !)");
-    func_append(f, "\t(:print_n !)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(min_str :print_s !)");
+        func_append(f, "\t(mn :print_i !)");
+        func_append(f, "\t(:print_n !)");
+        func_append(f, "\t(max_str :print_s !)");
+        func_append(f, "\t(mx :print_i !)");
+        func_append(f, "\t(:print_n !)");
+        func_append(f, "\t(avg_str :print_s !)");
+        func_append(f, "\t(avg :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
     add_include_post(prog, "math-lib-vect.l1h");
 }
 
@@ -2584,8 +2697,10 @@ static void emit_average(Program *prog, Function *f, int skip_input) {
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
     func_append(f, "\t(sum count / avg :=)");
-    func_append(f, "\t(avg :print_i !)");
-    func_append(f, "\t(:print_n !)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(avg :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
 }
 
 static void emit_selection_sort(Program *prog, Function *f, int count, int skip_input) {
@@ -2653,17 +2768,1276 @@ static void emit_selection_sort(Program *prog, Function *f, int count, int skip_
     func_append(f, "\t\t(temp arr [ realind2 ] =)");
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
-    // print sorted
+    if (!dataflow_quiet_mode) {
+        // print sorted
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(zero i :=)");
+        func_append(f, "\t(for-loop)");
+        func_append(f, "\t(((i count <) f :=) f for)");
+        func_append(f, "\t\t(i * int64_size realind :=)");
+        func_append(f, "\t\t(arr [ realind ] a =)");
+        func_append(f, "\t\t(a + zero a :=)");
+        func_append(f, "\t\t(a :print_i !)");
+        func_append(f, "\t\t(:print_n !)");
+        func_append(f, "\t\t(i + one i :=)");
+        func_append(f, "\t(next)");
+    }
+}
+
+}
+
+static void emit_palindrome(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"10"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "ten", 1, tv, 1);
+    add_var_to_func(f, "int64", "n", 1, zv, 1);
+    add_var_to_func(f, "int64", "temp", 1, zv, 1);
+    add_var_to_func(f, "int64", "rev", 1, zv, 1);
+    add_var_to_func(f, "int64", "digit", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ps[] = {"\"Enter a number: \""};
+    add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
+    const char *pp[] = {"\" is a palindrome\""};
+    const char *np[] = {"\" is not a palindrome\""};
+    add_var_to_func(f, "const-string", "yes_str", 18, pp, 1);
+    add_var_to_func(f, "const-string", "no_str", 22, np, 1);
+    func_append(f, "\t(prompt_str :print_s !)");
+    func_append(f, "\t(n :input_i !)");
+    func_append(f, "\t(n temp :=)");
+    func_append(f, "\t(zero rev :=)");
+    func_append(f, "\t(do)");
+    func_append(f, "\t\t(temp ten % digit :=)");
+    func_append(f, "\t\t(rev ten * rev :=)");
+    func_append(f, "\t\t(rev digit + rev :=)");
+    func_append(f, "\t\t(temp ten / temp :=)");
+    func_append(f, "\t(((temp zero >) f :=) f while)");
+    func_append(f, "\t(((n rev ==) f :=) f if+)");
+    func_append(f, "\t\t(n :print_i !)");
+    func_append(f, "\t\t(yes_str :print_s !)");
+    func_append(f, "\t(else)");
+    func_append(f, "\t\t(n :print_i !)");
+    func_append(f, "\t\t(no_str :print_s !)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_lcm(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "a", 1, zv, 1);
+    add_var_to_func(f, "int64", "b", 1, zv, 1);
+    add_var_to_func(f, "int64", "orig_a", 1, zv, 1);
+    add_var_to_func(f, "int64", "orig_b", 1, zv, 1);
+    add_var_to_func(f, "int64", "gcd", 1, zv, 1);
+    add_var_to_func(f, "int64", "lcm", 1, zv, 1);
+    add_var_to_func(f, "int64", "mod", 1, zv, 1);
+    add_var_to_func(f, "int64", "temp", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *pa[] = {"\"Enter first number: \""};
+    const char *pb[] = {"\"Enter second number: \""};
+    add_var_to_func(f, "const-string", "prompt_a", 21, pa, 1);
+    add_var_to_func(f, "const-string", "prompt_b", 22, pb, 1);
+    const char *rs[] = {"\"LCM: \""};
+    add_var_to_func(f, "const-string", "result_str", 7, rs, 1);
+    func_append(f, "\t(prompt_a :print_s !)");
+    func_append(f, "\t(a :input_i !)");
+    func_append(f, "\t(prompt_b :print_s !)");
+    func_append(f, "\t(b :input_i !)");
+    func_append(f, "\t(a orig_a :=)");
+    func_append(f, "\t(b orig_b :=)");
+    func_append(f, "\t(do)");
+    func_append(f, "\t\t(a b % mod :=)");
+    func_append(f, "\t\t(b a :=)");
+    func_append(f, "\t\t(mod b :=)");
+    func_append(f, "\t(((b zero >) f :=) f while)");
+    func_append(f, "\t(a gcd :=)");
+    func_append(f, "\t(orig_a orig_b * lcm :=)");
+    func_append(f, "\t(lcm gcd / lcm :=)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(result_str :print_s !)");
+        func_append(f, "\t(lcm :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_collatz(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *thv[] = {"3"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "three", 1, thv, 1);
+    add_var_to_func(f, "int64", "n", 1, zv, 1);
+    add_var_to_func(f, "int64", "rem", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ps[] = {"\"Enter a number: \""};
+    add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
+    func_append(f, "\t(prompt_str :print_s !)");
+    func_append(f, "\t(n :input_i !)");
+    func_append(f, "\t(do)");
+    func_append(f, "\t\t(n :print_i !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(n two % rem :=)");
+    func_append(f, "\t\t(((rem zero ==) f :=) f if+)");
+    func_append(f, "\t\t\t(n two / n :=)");
+    func_append(f, "\t\t(else)");
+    func_append(f, "\t\t\t(n three * n :=)");
+    func_append(f, "\t\t\t(n one + n :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t(((n one >) f :=) f while)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(one :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_sum_of_digits(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *tv[] = {"10"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "ten", 1, tv, 1);
+    add_var_to_func(f, "int64", "n", 1, zv, 1);
+    add_var_to_func(f, "int64", "sum", 1, zv, 1);
+    add_var_to_func(f, "int64", "digit", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ps[] = {"\"Enter a number: \""};
+    add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
+    const char *rs[] = {"\"Sum of digits: \""};
+    add_var_to_func(f, "const-string", "result_str", 17, rs, 1);
+    func_append(f, "\t(prompt_str :print_s !)");
+    func_append(f, "\t(n :input_i !)");
+    func_append(f, "\t(zero sum :=)");
+    func_append(f, "\t(do)");
+    func_append(f, "\t\t(n ten % digit :=)");
+    func_append(f, "\t\t(sum digit + sum :=)");
+    func_append(f, "\t\t(n ten / n :=)");
+    func_append(f, "\t(((n zero >) f :=) f while)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(result_str :print_s !)");
+        func_append(f, "\t(sum :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_reverse_string(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "string.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *maxlen_v[] = {"256"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "maxlen", 1, maxlen_v, 1);
+    add_var_to_func(f, "string", "str", 256, (const char *[]){"\"\""}, 1);
+    add_var_to_func(f, "int64", "len", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "j", 1, zv, 1);
+    add_var_to_func(f, "int64", "ci", 1, zv, 1);
+    add_var_to_func(f, "int64", "cj", 1, zv, 1);
+    add_var_to_func(f, "int64", "half", 1, zv, 1);
+    add_var_to_func(f, "int64", "strmod", 1, zv, 1);
+    const char *ps[] = {"\"Enter a string: \""};
+    add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
+    func_append(f, "\t(strmod :string_init !)");
+    func_append(f, "\t(prompt_str :print_s !)");
+    func_append(f, "\t(maxlen str :input_s !)");
+    func_append(f, "\t(str len :string_length !)");
+    func_append(f, "\t(len two / half :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i half <) f :=) f for)");
+    func_append(f, "\t\t(str i ci :string_getc !)");
+    func_append(f, "\t\t(len one - j :=)");
+    func_append(f, "\t\t(j i - j :=)");
+    func_append(f, "\t\t(str j cj :string_getc !)");
+    func_append(f, "\t\t(str i cj :string_setc !)");
+    func_append(f, "\t\t(str j ci :string_setc !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(str :print_s !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_armstrong(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *tv[] = {"10"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "ten", 1, tv, 1);
+    add_var_to_func(f, "int64", "n", 1, zv, 1);
+    add_var_to_func(f, "int64", "temp", 1, zv, 1);
+    add_var_to_func(f, "int64", "sum", 1, zv, 1);
+    add_var_to_func(f, "int64", "digit", 1, zv, 1);
+    add_var_to_func(f, "int64", "cube", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ps[] = {"\"Enter a number: \""};
+    add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
+    const char *py[] = {"\" is an Armstrong number\""};
+    const char *pn[] = {"\" is not an Armstrong number\""};
+    add_var_to_func(f, "const-string", "yes_str", 25, py, 1);
+    add_var_to_func(f, "const-string", "no_str", 29, pn, 1);
+    func_append(f, "\t(prompt_str :print_s !)");
+    func_append(f, "\t(n :input_i !)");
+    func_append(f, "\t(n temp :=)");
+    func_append(f, "\t(zero sum :=)");
+    func_append(f, "\t(do)");
+    func_append(f, "\t\t(temp ten % digit :=)");
+    func_append(f, "\t\t(digit digit * cube :=)");
+    func_append(f, "\t\t(cube digit * cube :=)");
+    func_append(f, "\t\t(sum cube + sum :=)");
+    func_append(f, "\t\t(temp ten / temp :=)");
+    func_append(f, "\t(((temp zero >) f :=) f while)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(((n sum ==) f :=) f if+)");
+        func_append(f, "\t\t(n :print_i !)");
+        func_append(f, "\t\t(yes_str :print_s !)");
+        func_append(f, "\t(else)");
+        func_append(f, "\t\t(n :print_i !)");
+        func_append(f, "\t\t(no_str :print_s !)");
+        func_append(f, "\t(endif)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_perfect_number(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "int64", "n", 1, zv, 1);
+    add_var_to_func(f, "int64", "half", 1, zv, 1);
+    add_var_to_func(f, "int64", "sum", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "rem", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ps[] = {"\"Enter a number: \""};
+    add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
+    const char *py[] = {"\" is a perfect number\""};
+    const char *pn[] = {"\" is not a perfect number\""};
+    add_var_to_func(f, "const-string", "yes_str", 22, py, 1);
+    add_var_to_func(f, "const-string", "no_str", 26, pn, 1);
+    func_append(f, "\t(prompt_str :print_s !)");
+    func_append(f, "\t(n :input_i !)");
+    func_append(f, "\t(zero sum :=)");
+    func_append(f, "\t(n two / half :=)");
+    func_append(f, "\t(one i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i half <=) f :=) f for)");
+    func_append(f, "\t\t(n i % rem :=)");
+    func_append(f, "\t\t(((rem zero ==) f :=) f if)");
+    func_append(f, "\t\t\t(sum i + sum :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(((n sum ==) f :=) f if+)");
+        func_append(f, "\t\t(n :print_i !)");
+        func_append(f, "\t\t(yes_str :print_s !)");
+        func_append(f, "\t(else)");
+        func_append(f, "\t\t(n :print_i !)");
+        func_append(f, "\t\t(no_str :print_s !)");
+        func_append(f, "\t(endif)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_count_vowels(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "string.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *maxlen_v[] = {"256"};
+    const char *va[] = {"97"};
+    const char *ve[] = {"101"};
+    const char *vi[] = {"105"};
+    const char *vo[] = {"111"};
+    const char *vu[] = {"117"};
+    const char *vau[] = {"65"};
+    const char *veu[] = {"69"};
+    const char *viu[] = {"73"};
+    const char *vou[] = {"79"};
+    const char *vuu[] = {"85"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "maxlen", 1, maxlen_v, 1);
+    add_var_to_func(f, "const-int64", "ch_a", 1, va, 1);
+    add_var_to_func(f, "const-int64", "ch_e", 1, ve, 1);
+    add_var_to_func(f, "const-int64", "ch_i", 1, vi, 1);
+    add_var_to_func(f, "const-int64", "ch_o", 1, vo, 1);
+    add_var_to_func(f, "const-int64", "ch_u", 1, vu, 1);
+    add_var_to_func(f, "const-int64", "ch_A", 1, vau, 1);
+    add_var_to_func(f, "const-int64", "ch_E", 1, veu, 1);
+    add_var_to_func(f, "const-int64", "ch_I", 1, viu, 1);
+    add_var_to_func(f, "const-int64", "ch_O", 1, vou, 1);
+    add_var_to_func(f, "const-int64", "ch_U", 1, vuu, 1);
+    add_var_to_func(f, "string", "str", 256, (const char *[]){"\"\""}, 1);
+    add_var_to_func(f, "int64", "len", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "ch", 1, zv, 1);
+    add_var_to_func(f, "int64", "count", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "strmod", 1, zv, 1);
+    const char *ps[] = {"\"Enter a string: \""};
+    add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
+    const char *rs[] = {"\"Vowel count: \""};
+    add_var_to_func(f, "const-string", "result_str", 15, rs, 1);
+    func_append(f, "\t(strmod :string_init !)");
+    func_append(f, "\t(prompt_str :print_s !)");
+    func_append(f, "\t(maxlen str :input_s !)");
+    func_append(f, "\t(str len :string_length !)");
+    func_append(f, "\t(zero count :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i len <) f :=) f for)");
+    func_append(f, "\t\t(str i ch :string_getc !)");
+    func_append(f, "\t\t(((ch ch_a ==) f :=) f if)");
+    func_append(f, "\t\t\t(count + one count :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((ch ch_e ==) f :=) f if)");
+    func_append(f, "\t\t\t(count + one count :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((ch ch_i ==) f :=) f if)");
+    func_append(f, "\t\t\t(count + one count :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((ch ch_o ==) f :=) f if)");
+    func_append(f, "\t\t\t(count + one count :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((ch ch_u ==) f :=) f if)");
+    func_append(f, "\t\t\t(count + one count :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((ch ch_A ==) f :=) f if)");
+    func_append(f, "\t\t\t(count + one count :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((ch ch_E ==) f :=) f if)");
+    func_append(f, "\t\t\t(count + one count :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((ch ch_I ==) f :=) f if)");
+    func_append(f, "\t\t\t(count + one count :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((ch ch_O ==) f :=) f if)");
+    func_append(f, "\t\t\t(count + one count :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((ch ch_U ==) f :=) f if)");
+    func_append(f, "\t\t\t(count + one count :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(result_str :print_s !)");
+        func_append(f, "\t(count :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_anagram_check(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "string.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *maxlen_v[] = {"256"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "maxlen", 1, maxlen_v, 1);
+    add_var_to_func(f, "string", "str1", 256, (const char *[]){"\"\""}, 1);
+    add_var_to_func(f, "string", "str2", 256, (const char *[]){"\"\""}, 1);
+    add_var_to_func(f, "string", "temp", 256, (const char *[]){"\"\""}, 1);
+    add_var_to_func(f, "int64", "len1", 1, zv, 1);
+    add_var_to_func(f, "int64", "len2", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "j", 1, zv, 1);
+    add_var_to_func(f, "int64", "ci", 1, zv, 1);
+    add_var_to_func(f, "int64", "cj", 1, zv, 1);
+    add_var_to_func(f, "int64", "found", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "strmod", 1, zv, 1);
+    const char *p1[] = {"\"Enter first string: \""};
+    const char *p2[] = {"\"Enter second string: \""};
+    add_var_to_func(f, "const-string", "prompt_a", 22, p1, 1);
+    add_var_to_func(f, "const-string", "prompt_b", 23, p2, 1);
+    const char *py[] = {"\"Strings are anagrams\""};
+    const char *pn[] = {"\"Strings are not anagrams\""};
+    add_var_to_func(f, "const-string", "yes_str", 23, py, 1);
+    add_var_to_func(f, "const-string", "no_str", 28, pn, 1);
+    func_append(f, "\t(strmod :string_init !)");
+    func_append(f, "\t(prompt_a :print_s !)");
+    func_append(f, "\t(maxlen str1 :input_s !)");
+    func_append(f, "\t(prompt_b :print_s !)");
+    func_append(f, "\t(maxlen str2 :input_s !)");
+    func_append(f, "\t(str1 len1 :string_length !)");
+    func_append(f, "\t(str2 len2 :string_length !)");
+    func_append(f, "\t(temp str2 :string_copy !)");
+    func_append(f, "\t(one found :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i len1 <) f :=) f for)");
+    func_append(f, "\t\t(str1 i ci :string_getc !)");
+    func_append(f, "\t\t(zero found :=)");
+    func_append(f, "\t\t(zero j :=)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t(((j len2 <) f :=) f for)");
+    func_append(f, "\t\t\t(temp j cj :string_getc !)");
+    func_append(f, "\t\t\t(((ci cj ==) f :=) f if)");
+    func_append(f, "\t\t\t\t(one found :=)");
+    func_append(f, "\t\t\t\t(temp j zero :string_setc !)");
+    func_append(f, "\t\t\t\t(len2 j :=)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t\t(j + one j :=)");
+    func_append(f, "\t\t(next)");
+    func_append(f, "\t\t(((found zero ==) f :=) f if)");
+    func_append(f, "\t\t\t(len1 i :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(((found one ==) f :=) f if+)");
+        func_append(f, "\t\t(yes_str :print_s !)");
+        func_append(f, "\t(else)");
+        func_append(f, "\t\t(no_str :print_s !)");
+        func_append(f, "\t(endif)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_string_to_upper(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "string.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *maxlen_v[] = {"256"};
+    const char *va[] = {"97"};
+    const char *vz[] = {"122"};
+    const char *vs[] = {"32"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "maxlen", 1, maxlen_v, 1);
+    add_var_to_func(f, "const-int64", "ch_a", 1, va, 1);
+    add_var_to_func(f, "const-int64", "ch_z", 1, vz, 1);
+    add_var_to_func(f, "const-int64", "shift", 1, vs, 1);
+    add_var_to_func(f, "string", "str", 256, (const char *[]){"\"\""}, 1);
+    add_var_to_func(f, "int64", "len", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "ch", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "f2", 1, zv, 1);
+    add_var_to_func(f, "int64", "strmod", 1, zv, 1);
+    const char *ps[] = {"\"Enter a string: \""};
+    add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
+    func_append(f, "\t(strmod :string_init !)");
+    func_append(f, "\t(prompt_str :print_s !)");
+    func_append(f, "\t(maxlen str :input_s !)");
+    func_append(f, "\t(str len :string_length !)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i len <) f :=) f for)");
+    func_append(f, "\t\t(str i ch :string_getc !)");
+    func_append(f, "\t\t(((ch ch_a >=) f :=) f if)");
+    func_append(f, "\t\t\t(((ch ch_z <=) f2 :=) f2 if)");
+    func_append(f, "\t\t\t\t(ch shift - ch :=)");
+    func_append(f, "\t\t\t\t(str i ch :string_setc !)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(str :print_s !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_string_to_lower(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "string.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *maxlen_v[] = {"256"};
+    const char *vA[] = {"65"};
+    const char *vZ[] = {"90"};
+    const char *vs[] = {"32"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "maxlen", 1, maxlen_v, 1);
+    add_var_to_func(f, "const-int64", "ch_A", 1, vA, 1);
+    add_var_to_func(f, "const-int64", "ch_Z", 1, vZ, 1);
+    add_var_to_func(f, "const-int64", "shift", 1, vs, 1);
+    add_var_to_func(f, "string", "str", 256, (const char *[]){"\"\""}, 1);
+    add_var_to_func(f, "int64", "len", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "ch", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "f2", 1, zv, 1);
+    add_var_to_func(f, "int64", "strmod", 1, zv, 1);
+    const char *ps[] = {"\"Enter a string: \""};
+    add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
+    func_append(f, "\t(strmod :string_init !)");
+    func_append(f, "\t(prompt_str :print_s !)");
+    func_append(f, "\t(maxlen str :input_s !)");
+    func_append(f, "\t(str len :string_length !)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i len <) f :=) f for)");
+    func_append(f, "\t\t(str i ch :string_getc !)");
+    func_append(f, "\t\t(((ch ch_A >=) f :=) f if)");
+    func_append(f, "\t\t\t(((ch ch_Z <=) f2 :=) f2 if)");
+    func_append(f, "\t\t\t\t(ch shift + ch :=)");
+    func_append(f, "\t\t\t\t(str i ch :string_setc !)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(str :print_s !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_caesar_cipher(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "string.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *maxlen_v[] = {"256"};
+    const char *va[] = {"97"}; const char *vz[] = {"122"};
+    const char *vA[] = {"65"}; const char *vZ[] = {"90"};
+    const char *vs[] = {"3"};
+    const char *v26[] = {"26"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "maxlen", 1, maxlen_v, 1);
+    add_var_to_func(f, "const-int64", "ch_a", 1, va, 1);
+    add_var_to_func(f, "const-int64", "ch_z", 1, vz, 1);
+    add_var_to_func(f, "const-int64", "ch_A", 1, vA, 1);
+    add_var_to_func(f, "const-int64", "ch_Z", 1, vZ, 1);
+    add_var_to_func(f, "const-int64", "shift", 1, vs, 1);
+    add_var_to_func(f, "const-int64", "twenty_six", 1, v26, 1);
+    add_var_to_func(f, "string", "str", 256, (const char *[]){"\"\""}, 1);
+    add_var_to_func(f, "int64", "len", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "ch", 1, zv, 1);
+    add_var_to_func(f, "int64", "base", 1, zv, 1);
+    add_var_to_func(f, "int64", "idx", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "f2", 1, zv, 1);
+    add_var_to_func(f, "int64", "strmod", 1, zv, 1);
+    const char *ps[] = {"\"Enter a string: \""};
+    add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
+    func_append(f, "\t(strmod :string_init !)");
+    func_append(f, "\t(prompt_str :print_s !)");
+    func_append(f, "\t(maxlen str :input_s !)");
+    func_append(f, "\t(str len :string_length !)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i len <) f :=) f for)");
+    func_append(f, "\t\t(str i ch :string_getc !)");
+    func_append(f, "\t\t(((ch ch_A >=) f :=) f if)");
+    func_append(f, "\t\t\t(((ch ch_Z <=) f2 :=) f2 if)");
+    func_append(f, "\t\t\t\t(ch ch_A - idx :=)");
+    func_append(f, "\t\t\t\t(idx shift + idx :=)");
+    func_append(f, "\t\t\t\t(idx twenty_six % idx :=)");
+    func_append(f, "\t\t\t\t(ch_A idx + ch :=)");
+    func_append(f, "\t\t\t\t(str i ch :string_setc !)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((ch ch_a >=) f :=) f if)");
+    func_append(f, "\t\t\t(((ch ch_z <=) f2 :=) f2 if)");
+    func_append(f, "\t\t\t\t(ch ch_a - idx :=)");
+    func_append(f, "\t\t\t\t(idx shift + idx :=)");
+    func_append(f, "\t\t\t\t(idx twenty_six % idx :=)");
+    func_append(f, "\t\t\t\t(ch_a idx + ch :=)");
+    func_append(f, "\t\t\t\t(str i ch :string_setc !)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(str :print_s !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_palindrome_string(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "string.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *maxlen_v[] = {"256"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "maxlen", 1, maxlen_v, 1);
+    add_var_to_func(f, "string", "str", 256, (const char *[]){"\"\""}, 1);
+    add_var_to_func(f, "int64", "len", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "j", 1, zv, 1);
+    add_var_to_func(f, "int64", "half", 1, zv, 1);
+    add_var_to_func(f, "int64", "ci", 1, zv, 1);
+    add_var_to_func(f, "int64", "cj", 1, zv, 1);
+    add_var_to_func(f, "int64", "pal", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "f2", 1, zv, 1);
+    add_var_to_func(f, "int64", "strmod", 1, zv, 1);
+    const char *ps[] = {"\"Enter a string: \""};
+    add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
+    const char *py[] = {"\" is a palindrome\""};
+    const char *pn[] = {"\" is not a palindrome\""};
+    add_var_to_func(f, "const-string", "yes_str", 18, py, 1);
+    add_var_to_func(f, "const-string", "no_str", 22, pn, 1);
+    func_append(f, "\t(strmod :string_init !)");
+    func_append(f, "\t(prompt_str :print_s !)");
+    func_append(f, "\t(maxlen str :input_s !)");
+    func_append(f, "\t(str len :string_length !)");
+    func_append(f, "\t(len two / half :=)");
+    func_append(f, "\t(one pal :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i half <) f :=) f for)");
+    func_append(f, "\t\t(str i ci :string_getc !)");
+    func_append(f, "\t\t(len one - j :=)");
+    func_append(f, "\t\t(j i - j :=)");
+    func_append(f, "\t\t(str j cj :string_getc !)");
+    func_append(f, "\t\t(((ci cj ==) f :=) f if-)");
+    func_append(f, "\t\t\t(zero pal :=)");
+    func_append(f, "\t\t\t(len i :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(((pal one ==) f :=) f if+)");
+        func_append(f, "\t\t(str :print_s !)");
+        func_append(f, "\t\t(yes_str :print_s !)");
+        func_append(f, "\t(else)");
+        func_append(f, "\t\t(str :print_s !)");
+        func_append(f, "\t\t(no_str :print_s !)");
+        func_append(f, "\t(endif)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_bubble_sort(Program *prog, Function *f, int skip_input) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "count", 1, (const char *[]){"5"}, 1);
+    add_var_to_func(f, "int64", "arr", 5, zv, 0);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "j", 1, zv, 1);
+    add_var_to_func(f, "int64", "temp", 1, zv, 1);
+    add_var_to_func(f, "int64", "realind", 1, zv, 1);
+    add_var_to_func(f, "int64", "realind2", 1, zv, 1);
+    add_var_to_func(f, "int64", "a", 1, zv, 1);
+    add_var_to_func(f, "int64", "b", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ps[] = {"\"Enter a number: \""};
+    add_var_to_func(f, "const-string", "input_prompt", 18, ps, 1);
+    if (!skip_input) {
+        func_append(f, "\t(zero i :=)");
+        func_append(f, "\t(for-loop)");
+        func_append(f, "\t(((i count <) f :=) f for)");
+        func_append(f, "\t\t(input_prompt :print_s !)");
+        func_append(f, "\t\t(i * int64_size realind :=)");
+        func_append(f, "\t\t(a :input_i !)");
+        func_append(f, "\t\t(a temp :=)");
+        func_append(f, "\t\t(temp arr [ realind ] =)");
+        func_append(f, "\t\t(i + one i :=)");
+        func_append(f, "\t(next)");
+    }
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i count <) f :=) f for)");
+    func_append(f, "\t\t(zero j :=)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t(((j count i - one - <) f :=) f for)");
+    func_append(f, "\t\t\t(j * int64_size realind :=)");
+    func_append(f, "\t\t\t(j + one * int64_size realind2 :=)");
+    func_append(f, "\t\t\t(arr [ realind ] a =)");
+    func_append(f, "\t\t\t(arr [ realind2 ] b =)");
+    func_append(f, "\t\t\t(a + zero a :=)");
+    func_append(f, "\t\t\t(b + zero b :=)");
+    func_append(f, "\t\t\t(((a b >) f :=) f if)");
+    func_append(f, "\t\t\t\t(a temp :=)");
+    func_append(f, "\t\t\t\t(b a :=)");
+    func_append(f, "\t\t\t\t(temp arr [ realind ] =)");
+    func_append(f, "\t\t\t\t(a arr [ realind2 ] =)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t\t(j + one j :=)");
+    func_append(f, "\t\t(next)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(zero i :=)");
+        func_append(f, "\t(for-loop)");
+        func_append(f, "\t(((i count <) f :=) f for)");
+        func_append(f, "\t\t(i * int64_size realind :=)");
+        func_append(f, "\t\t(arr [ realind ] a =)");
+        func_append(f, "\t\t(a + zero a :=)");
+        func_append(f, "\t\t(a :print_i !)");
+        func_append(f, "\t\t(:print_n !)");
+        func_append(f, "\t\t(i + one i :=)");
+        func_append(f, "\t(next)");
+    }
+}
+
+static void emit_binary_search(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "count", 1, (const char *[]){"7"}, 1);
+    add_var_to_func(f, "int64", "arr", 7, (const char *[]){"2", "5", "8", "12", "16", "23", "38"}, 7);
+    add_var_to_func(f, "int64", "target", 1, zv, 1);
+    add_var_to_func(f, "int64", "lo", 1, zv, 1);
+    add_var_to_func(f, "int64", "hi", 1, zv, 1);
+    add_var_to_func(f, "int64", "mid", 1, zv, 1);
+    add_var_to_func(f, "int64", "midval", 1, zv, 1);
+    add_var_to_func(f, "int64", "realind", 1, zv, 1);
+    add_var_to_func(f, "int64", "found", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ps[] = {"\"Enter target value: \""};
+    add_var_to_func(f, "const-string", "prompt_str", 21, ps, 1);
+    const char *pf[] = {"\"Found at index: \""};
+    const char *pnf[] = {"\"Not found\""};
+    add_var_to_func(f, "const-string", "found_str", 17, pf, 1);
+    add_var_to_func(f, "const-string", "not_found_str", 11, pnf, 1);
+    func_append(f, "\t(prompt_str :print_s !)");
+    func_append(f, "\t(target :input_i !)");
+    func_append(f, "\t(zero lo :=)");
+    func_append(f, "\t(count one - hi :=)");
+    func_append(f, "\t(zero found :=)");
+    func_append(f, "\t(do)");
+    func_append(f, "\t\t(lo hi + two / mid :=)");
+    func_append(f, "\t\t(mid * int64_size realind :=)");
+    func_append(f, "\t\t(arr [ realind ] midval =)");
+    func_append(f, "\t\t(((midval target ==) f :=) f if)");
+    func_append(f, "\t\t\t(one found :=)");
+    func_append(f, "\t\t\t(hi lo :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((midval target <) f :=) f if)");
+    func_append(f, "\t\t\t(mid + one lo :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((midval target >) f :=) f if)");
+    func_append(f, "\t\t\t(mid one - hi :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t(((lo hi <=) f :=) f while)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(((found one ==) f :=) f if+)");
+        func_append(f, "\t\t(found_str :print_s !)");
+        func_append(f, "\t\t(mid :print_i !)");
+        func_append(f, "\t(else)");
+        func_append(f, "\t\t(not_found_str :print_s !)");
+        func_append(f, "\t(endif)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_square_root(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "int64", "n", 1, zv, 1);
+    add_var_to_func(f, "int64", "x", 1, zv, 1);
+    add_var_to_func(f, "int64", "next_x", 1, zv, 1);
+    add_var_to_func(f, "int64", "diff", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ps[] = {"\"Enter a number: \""};
+    add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
+    const char *rs[] = {"\"Square root: \""};
+    add_var_to_func(f, "const-string", "result_str", 15, rs, 1);
+    func_append(f, "\t(prompt_str :print_s !)");
+    func_append(f, "\t(n :input_i !)");
+    func_append(f, "\t(n x :=)");
+    func_append(f, "\t(do)");
+    func_append(f, "\t\t(x n x / + two / next_x :=)");
+    func_append(f, "\t\t(next_x x - diff :=)");
+    func_append(f, "\t\t(((diff zero <) f :=) f if)");
+    func_append(f, "\t\t\t(zero diff - diff :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(next_x x :=)");
+    func_append(f, "\t(((diff one >) f :=) f while)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(result_str :print_s !)");
+        func_append(f, "\t(x :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_prime_factorization(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "int64", "n", 1, zv, 1);
+    add_var_to_func(f, "int64", "d", 1, zv, 1);
+    add_var_to_func(f, "int64", "rem", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ps[] = {"\"Enter a number: \""};
+    add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
+    func_append(f, "\t(prompt_str :print_s !)");
+    func_append(f, "\t(n :input_i !)");
+    func_append(f, "\t(two d :=)");
+    func_append(f, "\t(do)");
+    func_append(f, "\t\t(n d % rem :=)");
+    func_append(f, "\t\t(((rem zero ==) f :=) f if)");
+    func_append(f, "\t\t\t(d :print_i !)");
+    func_append(f, "\t\t\t(:print_n !)");
+    func_append(f, "\t\t\t(n d / n :=)");
+    func_append(f, "\t\t(else)");
+    func_append(f, "\t\t\t(d one + d :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t(((n one >) f :=) f while)");
+}
+
+static void emit_standard_deviation(Program *prog, Function *f, int skip_input) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "count", 1, (const char *[]){"5"}, 1);
+    add_var_to_func(f, "int64", "arr", 5, zv, 0);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "sum", 1, zv, 1);
+    add_var_to_func(f, "int64", "mean", 1, zv, 1);
+    add_var_to_func(f, "int64", "diff", 1, zv, 1);
+    add_var_to_func(f, "int64", "sq_sum", 1, zv, 1);
+    add_var_to_func(f, "int64", "variance", 1, zv, 1);
+    add_var_to_func(f, "int64", "stddev", 1, zv, 1);
+    add_var_to_func(f, "int64", "realind", 1, zv, 1);
+    add_var_to_func(f, "int64", "val", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ps[] = {"\"Enter a number: \""};
+    add_var_to_func(f, "const-string", "input_prompt", 18, ps, 1);
+    const char *rs[] = {"\"Standard deviation: \""};
+    add_var_to_func(f, "const-string", "result_str", 22, rs, 1);
+    if (!skip_input) {
+        func_append(f, "\t(zero i :=)");
+        func_append(f, "\t(for-loop)");
+        func_append(f, "\t(((i count <) f :=) f for)");
+        func_append(f, "\t\t(input_prompt :print_s !)");
+        func_append(f, "\t\t(i * int64_size realind :=)");
+        func_append(f, "\t\t(val :input_i !)");
+        func_append(f, "\t\t(val arr [ realind ] =)");
+        func_append(f, "\t\t(i + one i :=)");
+        func_append(f, "\t(next)");
+    }
+    func_append(f, "\t(zero sum :=)");
     func_append(f, "\t(zero i :=)");
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i count <) f :=) f for)");
     func_append(f, "\t\t(i * int64_size realind :=)");
-    func_append(f, "\t\t(arr [ realind ] a =)");
-    func_append(f, "\t\t(a + zero a :=)");
-    func_append(f, "\t\t(a :print_i !)");
+    func_append(f, "\t\t(arr [ realind ] val =)");
+    func_append(f, "\t\t(sum val + sum :=)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(sum count / mean :=)");
+    func_append(f, "\t(zero sq_sum :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i count <) f :=) f for)");
+    func_append(f, "\t\t(i * int64_size realind :=)");
+    func_append(f, "\t\t(arr [ realind ] val =)");
+    func_append(f, "\t\t(mean val - diff :=)");
+    func_append(f, "\t\t(((diff zero <) f :=) f if)");
+    func_append(f, "\t\t\t(zero diff - diff :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(diff diff * val :=)");
+    func_append(f, "\t\t(sq_sum val + sq_sum :=)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(sq_sum count / variance :=)");
+    func_append(f, "\t(variance stddev :=)");
+    func_append(f, "\t(zero sq_sum :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((sq_sum 100 <) f :=) f for)");
+    func_append(f, "\t\t(sq_sum one + sq_sum :=)");
+    func_append(f, "\t\t(stddev stddev + variance stddev / - stddev :=)");
+    func_append(f, "\t(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(result_str :print_s !)");
+        func_append(f, "\t(stddev :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_compound_interest(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *hv[] = {"100"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "one_hundred", 1, hv, 1);
+    add_var_to_func(f, "int64", "principal", 1, zv, 1);
+    add_var_to_func(f, "int64", "rate", 1, zv, 1);
+    add_var_to_func(f, "int64", "time_years", 1, zv, 1);
+    add_var_to_func(f, "int64", "amount", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *pp[] = {"\"Enter principal: \""};
+    const char *pr[] = {"\"Enter rate (%%): \""};
+    const char *pt[] = {"\"Enter time (years): \""};
+    add_var_to_func(f, "const-string", "prompt_p", 19, pp, 1);
+    add_var_to_func(f, "const-string", "prompt_r", 18, pr, 1);
+    add_var_to_func(f, "const-string", "prompt_t", 21, pt, 1);
+    const char *rs[] = {"\"Amount: \""};
+    add_var_to_func(f, "const-string", "result_str", 10, rs, 1);
+    func_append(f, "\t(prompt_p :print_s !)");
+    func_append(f, "\t(principal :input_i !)");
+    func_append(f, "\t(prompt_r :print_s !)");
+    func_append(f, "\t(rate :input_i !)");
+    func_append(f, "\t(prompt_t :print_s !)");
+    func_append(f, "\t(time_years :input_i !)");
+    func_append(f, "\t(principal amount :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i time_years <) f :=) f for)");
+    func_append(f, "\t\t(amount rate * one_hundred / amount + amount :=)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(result_str :print_s !)");
+        func_append(f, "\t(amount :print_i !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_decimal_to_binary(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "string.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *maxlen_v[] = {"64"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "maxlen", 1, maxlen_v, 1);
+    add_var_to_func(f, "int64", "n", 1, zv, 1);
+    add_var_to_func(f, "int64", "rem", 1, zv, 1);
+    add_var_to_func(f, "int64", "idx", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "strmod", 1, zv, 1);
+    add_var_to_func(f, "string", "bstr", 64, (const char *[]){"\"\""}, 1);
+    const char *ps[] = {"\"Enter a number: \""};
+    add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
+    const char *rs[] = {"\"Binary: \""};
+    add_var_to_func(f, "const-string", "result_str", 9, rs, 1);
+    func_append(f, "\t(strmod :string_init !)");
+    func_append(f, "\t(prompt_str :print_s !)");
+    func_append(f, "\t(n :input_i !)");
+    func_append(f, "\t(zero idx :=)");
+    func_append(f, "\t(do)");
+    func_append(f, "\t\t(n two % rem :=)");
+    func_append(f, "\t\t(rem 48 + rem :=)");
+    func_append(f, "\t\t(bstr idx rem :string_setc !)");
+    func_append(f, "\t\t(idx + one idx :=)");
+    func_append(f, "\t\t(n two / n :=)");
+    func_append(f, "\t(((n zero >) f :=) f while)");
+    func_append(f, "\t(bstr idx zero :string_setc !)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(result_str :print_s !)");
+        func_append(f, "\t(bstr :print_s !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_dice_roll(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *sv[] = {"6"};
+    const char *rv[] = {"5"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "six", 1, sv, 1);
+    add_var_to_func(f, "const-int64", "five", 1, rv, 1);
+    add_var_to_func(f, "int64", "roll", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ps[] = {"\"Rolling dice 5 times:\""};
+    add_var_to_func(f, "const-string", "msg_str", 21, ps, 1);
+    func_append(f, "\t(msg_str :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i five <) f :=) f for)");
+    func_append(f, "\t\t(roll :epochms !)");
+    func_append(f, "\t\t((roll six %) roll :=)");
+    func_append(f, "\t\t(roll + one roll :=)");
+    func_append(f, "\t\t(roll :print_i !)");
     func_append(f, "\t\t(:print_n !)");
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
+}
+
+static void emit_double_math(Program *prog, Function *f, const char *op) {
+    add_include(prog, "intr-func.l1h");
+    const char *zd[] = {"0.0"};
+    const char *fz[] = {"0"};
+    add_var_to_func(f, "const-double", "zerod", 1, zd, 1);
+    add_var_to_func(f, "double", "a", 1, zd, 1);
+    add_var_to_func(f, "double", "b", 1, zd, 1);
+    add_var_to_func(f, "double", "r", 1, zd, 1);
+    add_var_to_func(f, "int64", "f", 1, fz, 1);
+    const char *pa[] = {"\"Enter first number: \""};
+    const char *pb[] = {"\"Enter second number: \""};
+    add_var_to_func(f, "const-string", "prompt_a", 21, pa, 1);
+    add_var_to_func(f, "const-string", "prompt_b", 22, pb, 1);
+    func_append(f, "\t(prompt_a :print_s !)");
+    func_append(f, "\t(a :input_d !)");
+    func_append(f, "\t(prompt_b :print_s !)");
+    func_append(f, "\t(b :input_d !)");
+    const char *opr = "+d";
+    if (strcmp(op, "sub") == 0) opr = "-d";
+    else if (strcmp(op, "mul") == 0) opr = "*d";
+    else if (strcmp(op, "div") == 0) opr = "/d";
+    char ln[256];
+    snprintf(ln, sizeof(ln), "\t((a b %s) r =)", opr);
+    func_append(f, ln);
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(r :print_d !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_double_circle_area(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zd[] = {"0.0"};
+    const char *pd[] = {"3.141592653589793"};
+    const char *fz[] = {"0"};
+    add_var_to_func(f, "const-double", "zerod", 1, zd, 1);
+    add_var_to_func(f, "const-double", "pi_val", 1, pd, 1);
+    add_var_to_func(f, "double", "r", 1, zd, 1);
+    add_var_to_func(f, "double", "area", 1, zd, 1);
+    add_var_to_func(f, "int64", "f", 1, fz, 1);
+    const char *pr[] = {"\"Enter radius: \""};
+    add_var_to_func(f, "const-string", "prompt_r", 15, pr, 1);
+    func_append(f, "\t(prompt_r :print_s !)");
+    func_append(f, "\t(r :input_d !)");
+    func_append(f, "\t(r r *d area :=)");
+    func_append(f, "\t(area pi_val *d area :=)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(area :print_d !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_double_average(Program *prog, Function *f, int skip_input) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zd[] = {"0.0"};
+    const char *cd[] = {"5.0"};
+    const char *fz[] = {"0"};
+    add_var_to_func(f, "const-double", "zerod", 1, zd, 1);
+    add_var_to_func(f, "const-double", "countd", 1, cd, 1);
+    add_var_to_func(f, "const-int64", "zero", 1, fz, 1);
+    add_var_to_func(f, "const-int64", "one", 1, (const char *[]){"1"}, 1);
+    add_var_to_func(f, "int64", "count", 1, (const char *[]){"5"}, 1);
+    add_var_to_func(f, "double", "arr", 5, zd, 0);
+    add_var_to_func(f, "int64", "i", 1, fz, 1);
+    add_var_to_func(f, "int64", "realind", 1, fz, 1);
+    add_var_to_func(f, "double", "val", 1, zd, 1);
+    add_var_to_func(f, "double", "sum", 1, zd, 1);
+    add_var_to_func(f, "double", "avg", 1, zd, 1);
+    add_var_to_func(f, "int64", "f", 1, fz, 1);
+    const char *ps[] = {"\"Enter a number: \""};
+    add_var_to_func(f, "const-string", "input_prompt", 18, ps, 1);
+    if (!skip_input) {
+        func_append(f, "\t(zero i :=)");
+        func_append(f, "\t(for-loop)");
+        func_append(f, "\t(((i count <) f :=) f for)");
+        func_append(f, "\t\t(input_prompt :print_s !)");
+        func_append(f, "\t\t(i * double_size realind :=)");
+        func_append(f, "\t\t(val :input_d !)");
+        func_append(f, "\t\t(val arr [ realind ] =)");
+        func_append(f, "\t\t(i + one i :=)");
+        func_append(f, "\t(next)");
+    }
+    func_append(f, "\t(zerod sum :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i count <) f :=) f for)");
+    func_append(f, "\t\t(i * double_size realind :=)");
+    func_append(f, "\t\t(arr [ realind ] val =)");
+    func_append(f, "\t\t((sum val +d) sum =)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t((sum countd /d) avg =)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(avg :print_d !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_double_compound_interest(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zd[] = {"0.0"};
+    const char *hd[] = {"100.0"};
+    const char *od[] = {"1.0"};
+    const char *fz[] = {"0"};
+    add_var_to_func(f, "const-double", "zerod", 1, zd, 1);
+    add_var_to_func(f, "const-double", "oned", 1, od, 1);
+    add_var_to_func(f, "const-double", "one_hundredd", 1, hd, 1);
+    add_var_to_func(f, "double", "principal", 1, zd, 1);
+    add_var_to_func(f, "double", "rate", 1, zd, 1);
+    add_var_to_func(f, "double", "years", 1, zd, 1);
+    add_var_to_func(f, "double", "amount", 1, zd, 1);
+    add_var_to_func(f, "double", "i", 1, zd, 1);
+    add_var_to_func(f, "int64", "f", 1, fz, 1);
+    const char *pp[] = {"\"Enter principal: \""};
+    const char *prr[] = {"\"Enter rate (%): \""};
+    const char *py[] = {"\"Enter years: \""};
+    add_var_to_func(f, "const-string", "prompt_p", 19, pp, 1);
+    add_var_to_func(f, "const-string", "prompt_r", 16, prr, 1);
+    add_var_to_func(f, "const-string", "prompt_y", 14, py, 1);
+    func_append(f, "\t(prompt_p :print_s !)");
+    func_append(f, "\t(principal :input_d !)");
+    func_append(f, "\t(prompt_r :print_s !)");
+    func_append(f, "\t(rate :input_d !)");
+    func_append(f, "\t(prompt_y :print_s !)");
+    func_append(f, "\t(years :input_d !)");
+    func_append(f, "\t((rate one_hundredd /d) rate =)");
+    func_append(f, "\t((rate oned +d) rate =)");
+    func_append(f, "\t(principal amount :=)");
+    func_append(f, "\t(zerod i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i years <d) f :=) f for)");
+    func_append(f, "\t\t((amount rate *d) amount =)");
+    func_append(f, "\t\t(i oned +d i :=)");
+    func_append(f, "\t(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(amount :print_d !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+static void emit_double_pythagoras(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zd[] = {"0.0"};
+    const char *hd[] = {"0.5"};
+    const char *fz[] = {"0"};
+    const char *ov[] = {"1"};
+    add_var_to_func(f, "const-double", "zerod", 1, zd, 1);
+    add_var_to_func(f, "const-double", "half", 1, hd, 1);
+    add_var_to_func(f, "const-int64", "zero", 1, fz, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "double", "a", 1, zd, 1);
+    add_var_to_func(f, "double", "b", 1, zd, 1);
+    add_var_to_func(f, "double", "c", 1, zd, 1);
+    add_var_to_func(f, "double", "tmp", 1, zd, 1);
+    add_var_to_func(f, "int64", "i", 1, fz, 1);
+    add_var_to_func(f, "int64", "f", 1, fz, 1);
+    const char *pa[] = {"\"Enter side a: \""};
+    const char *pb[] = {"\"Enter side b: \""};
+    add_var_to_func(f, "const-string", "prompt_a", 15, pa, 1);
+    add_var_to_func(f, "const-string", "prompt_b", 15, pb, 1);
+    func_append(f, "	(prompt_a :print_s !)");
+    func_append(f, "	(a :input_d !)");
+    func_append(f, "	(prompt_b :print_s !)");
+    func_append(f, "	(b :input_d !)");
+    func_append(f, "	((a a *d) tmp =)");
+    func_append(f, "	((b b *d tmp +d) tmp =)");
+    func_append(f, "	(tmp c :=)");
+    func_append(f, "	(zero i :=)");
+    func_append(f, "	(for-loop)");
+    func_append(f, "	(((i 100 <) f :=) f for)");
+    func_append(f, "		((c tmp c /d +d) c :=)");
+    func_append(f, "		(c half *d c :=)");
+    func_append(f, "		(i + one i :=)");
+    func_append(f, "	(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "	(c :print_d !)");
+        func_append(f, "	(:print_n !)");
+    }
+}
+
+static void emit_double_temp_convert(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zd[] = {"0.0"};
+    const char *cd[] = {"5.0"};
+    const char *nd[] = {"9.0"};
+    const char *td[] = {"32.0"};
+    const char *fz[] = {"0"};
+    add_var_to_func(f, "const-double", "zerod", 1, zd, 1);
+    add_var_to_func(f, "const-double", "five", 1, cd, 1);
+    add_var_to_func(f, "const-double", "nine", 1, nd, 1);
+    add_var_to_func(f, "const-double", "thirtytwo", 1, td, 1);
+    add_var_to_func(f, "double", "celsius", 1, zd, 1);
+    add_var_to_func(f, "double", "fahrenheit", 1, zd, 1);
+    add_var_to_func(f, "int64", "f", 1, fz, 1);
+    const char *pc[] = {"\"Enter Celsius: \""};
+    add_var_to_func(f, "const-string", "prompt_c", 16, pc, 1);
+    func_append(f, "	(prompt_c :print_s !)");
+    func_append(f, "	(celsius :input_d !)");
+    func_append(f, "	((celsius nine *d) fahrenheit =)");
+    func_append(f, "	((fahrenheit five /d) fahrenheit =)");
+    func_append(f, "	((fahrenheit thirtytwo +d) fahrenheit =)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "	(fahrenheit :print_d !)");
+        func_append(f, "	(:print_n !)");
+    }
+}
+
+static void emit_double_sqrt(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zd[] = {"0.0"};
+    const char *hd[] = {"0.5"};
+    const char *fz[] = {"0"};
+    const char *ov[] = {"1"};
+    add_var_to_func(f, "const-double", "zerod", 1, zd, 1);
+    add_var_to_func(f, "const-double", "half", 1, hd, 1);
+    add_var_to_func(f, "const-int64", "zero", 1, fz, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "double", "n", 1, zd, 1);
+    add_var_to_func(f, "double", "x", 1, zd, 1);
+    add_var_to_func(f, "int64", "i", 1, fz, 1);
+    add_var_to_func(f, "int64", "f", 1, fz, 1);
+    const char *ps[] = {"\"Enter a number: \""};
+    add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
+    func_append(f, "	(prompt_str :print_s !)");
+    func_append(f, "	(n :input_d !)");
+    func_append(f, "	(n x :=)");
+    func_append(f, "	(zero i :=)");
+    func_append(f, "	(for-loop)");
+    func_append(f, "	(((i 100 <) f :=) f for)");
+    func_append(f, "		((x n x /d +d) x =)");
+    func_append(f, "		(x half *d x =)");
+    func_append(f, "		(i + one i :=)");
+    func_append(f, "	(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "	(x :print_d !)");
+        func_append(f, "	(:print_n !)");
+    }
 }
 
 static int parse_task(const char *prompt, TaskProfile *task) {
@@ -2950,6 +4324,90 @@ static int parse_task(const char *prompt, TaskProfile *task) {
         task->has_algorithm = 0;
     }
 
+    if (has_word(buf, "palindrome") || (has_word(buf, "reverse") && has_word(buf, "number")))
+        task->has_palindrome = 1;
+
+    if (has_word(buf, "lcm") || (has_word(buf, "least") && has_word(buf, "multiple")))
+        task->has_lcm = 1;
+
+    if (has_word(buf, "collatz") || (has_word(buf, "3n") && has_word(buf, "1")))
+        task->has_collatz = 1;
+
+    if (has_word(buf, "sum") && has_word(buf, "digit"))
+        task->has_sum_of_digits = 1;
+
+    if (has_word(buf, "reverse") && (has_word(buf, "string") || has_word(buf, "text") || has_word(buf, "wort")))
+        task->has_reverse_string = 1;
+
+    if (has_word(buf, "armstrong"))
+        task->has_armstrong = 1;
+
+    if ((has_word(buf, "perfect") || has_word(buf, "vollkommen")) && has_word(buf, "number"))
+        task->has_perfect_number = 1;
+
+    if (has_word(buf, "vowel") || has_word(buf, "vokale") || has_word(buf, "selbstlaut"))
+        task->has_count_vowels = 1;
+
+    if (has_word(buf, "anagram"))
+        task->has_anagram_check = 1;
+
+    if ((has_word(buf, "string") || has_word(buf, "zeichen") || has_word(buf, "text")) && has_word(buf, "upper"))
+        task->has_string_to_upper = 1;
+
+    if ((has_word(buf, "string") || has_word(buf, "zeichen") || has_word(buf, "text")) && has_word(buf, "lower"))
+        task->has_string_to_lower = 1;
+
+    if (has_word(buf, "caesar") || (has_word(buf, "shift") && has_word(buf, "cipher")))
+        task->has_caesar_cipher = 1;
+
+    if (has_word(buf, "palindrome") && (has_word(buf, "string") || has_word(buf, "text") || has_word(buf, "wort")))
+        task->has_palindrome_string = 1;
+
+    if (has_word(buf, "bubble") && has_word(buf, "sort"))
+        task->has_bubble_sort = 1;
+
+    if (has_word(buf, "binary") && has_word(buf, "search"))
+        task->has_binary_search = 1;
+
+    if (has_word(buf, "square") && has_word(buf, "root"))
+        task->has_square_root = 1;
+
+    if (has_word(buf, "prime") && (has_word(buf, "factor") || has_word(buf, "teil")))
+        task->has_prime_factorization = 1;
+
+    if (has_word(buf, "standard") && has_word(buf, "deviation"))
+        task->has_standard_deviation = 1;
+
+    if (has_word(buf, "compound") && has_word(buf, "interest"))
+        task->has_compound_interest = 1;
+
+    if (has_word(buf, "binary") && (has_word(buf, "decimal") || has_word(buf, "convert") || has_word(buf, "base")))
+        task->has_decimal_to_binary = 1;
+
+    if (has_word(buf, "dice") || has_word(buf, "würfel") || (has_word(buf, "roll") && has_word(buf, "die")))
+        task->has_dice_roll = 1;
+
+    if (has_word(buf, "double") && has_word(buf, "math"))
+        task->has_double_math = 1;
+
+    if (has_word(buf, "double") && has_word(buf, "circle"))
+        task->has_double_circle_area = 1;
+
+    if (has_word(buf, "double") && has_word(buf, "average"))
+        task->has_double_average = 1;
+
+    if (has_word(buf, "double") && has_word(buf, "interest"))
+        task->has_double_compound_interest = 1;
+
+    if (has_word(buf, "double") && has_word(buf, "pythagoras"))
+        task->has_double_pythagoras = 1;
+
+    if (has_word(buf, "double") && has_word(buf, "temp"))
+        task->has_double_temp_convert = 1;
+
+    if (has_word(buf, "double") && has_word(buf, "sqrt"))
+        task->has_double_sqrt = 1;
+
     if (has_word(buf, "fann") || has_word(buf, "neural") || (has_word(buf, "network") && has_word(buf, "ai"))) {
         if (has_word(buf, "train") || has_word(buf, "learn")) {
             task->has_fann_create = 1;
@@ -2988,7 +4446,17 @@ static int parse_task(const char *prompt, TaskProfile *task) {
         || task->has_array_vmath || task->has_string_to_num || task->has_timer
         || task->has_array_min_max || task->has_bool_demo || task->has_bit_check
         || task->has_leap_year || task->has_temp_convert || task->has_circle_area
-        || task->has_fann_create || task->has_fann_train || task->has_fann_run;
+        || task->has_fann_create || task->has_fann_train || task->has_fann_run
+        || task->has_palindrome || task->has_lcm || task->has_collatz
+        || task->has_sum_of_digits || task->has_reverse_string || task->has_armstrong
+        || task->has_perfect_number || task->has_count_vowels || task->has_anagram_check
+        || task->has_string_to_upper || task->has_string_to_lower || task->has_caesar_cipher
+        || task->has_palindrome_string || task->has_bubble_sort || task->has_binary_search
+        || task->has_square_root || task->has_prime_factorization || task->has_standard_deviation
+        || task->has_compound_interest || task->has_decimal_to_binary || task->has_dice_roll
+        || task->has_double_math || task->has_double_circle_area || task->has_double_average
+        || task->has_double_compound_interest || task->has_double_pythagoras
+        || task->has_double_temp_convert || task->has_double_sqrt;
 
     snprintf(task->title, sizeof(task->title), "%s", prompt);
     return has_any;
@@ -3275,6 +4743,146 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         ensure_exit(f, last_step);
         return 1;
     }
+    if (task->has_palindrome) {
+        emit_palindrome(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_lcm) {
+        emit_lcm(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_collatz) {
+        emit_collatz(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_sum_of_digits) {
+        emit_sum_of_digits(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_reverse_string) {
+        emit_reverse_string(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_armstrong) {
+        emit_armstrong(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_perfect_number) {
+        emit_perfect_number(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_count_vowels) {
+        emit_count_vowels(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_anagram_check) {
+        emit_anagram_check(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_string_to_upper) {
+        emit_string_to_upper(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_string_to_lower) {
+        emit_string_to_lower(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_caesar_cipher) {
+        emit_caesar_cipher(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_palindrome_string) {
+        emit_palindrome_string(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_bubble_sort) {
+        emit_bubble_sort(prog, f, task->skip_input);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_binary_search) {
+        emit_binary_search(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_square_root) {
+        emit_square_root(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_prime_factorization) {
+        emit_prime_factorization(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_standard_deviation) {
+        emit_standard_deviation(prog, f, task->skip_input);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_compound_interest) {
+        emit_compound_interest(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_decimal_to_binary) {
+        emit_decimal_to_binary(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_dice_roll) {
+        emit_dice_roll(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_double_math) {
+        emit_double_math(prog, f, task->op);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_double_circle_area) {
+        emit_double_circle_area(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_double_average) {
+        emit_double_average(prog, f, task->skip_input);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_double_compound_interest) {
+        emit_double_compound_interest(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_double_pythagoras) {
+        emit_double_pythagoras(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_double_temp_convert) {
+        emit_double_temp_convert(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_double_sqrt) {
+        emit_double_sqrt(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
 
     // If no single emitter matched but extra emitters are specified, run them
     // as a composite sequence. Each extra emitter runs on the same function.
@@ -3308,6 +4916,34 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
                 case 31: if (task->has_array_min_max) { emit_array_min_max(prog, f); emitted = 1; } break;
                 case 37: if (task->has_average && task->has_input) { emit_average(prog, f, task->skip_input); emitted = 1; } break;
                 case 38: if (task->has_sort && !task->has_input) { emit_selection_sort(prog, f, 5, task->skip_input); emitted = 1; } break;
+                case 39: if (task->has_palindrome) { emit_palindrome(prog, f); emitted = 1; } break;
+                case 40: if (task->has_lcm) { emit_lcm(prog, f); emitted = 1; } break;
+                case 41: if (task->has_collatz) { emit_collatz(prog, f); emitted = 1; } break;
+                case 42: if (task->has_sum_of_digits) { emit_sum_of_digits(prog, f); emitted = 1; } break;
+                case 43: if (task->has_reverse_string) { emit_reverse_string(prog, f); emitted = 1; } break;
+                case 44: if (task->has_armstrong) { emit_armstrong(prog, f); emitted = 1; } break;
+                case 45: if (task->has_perfect_number) { emit_perfect_number(prog, f); emitted = 1; } break;
+                case 46: if (task->has_count_vowels) { emit_count_vowels(prog, f); emitted = 1; } break;
+                case 47: if (task->has_anagram_check) { emit_anagram_check(prog, f); emitted = 1; } break;
+                case 48: if (task->has_string_to_upper) { emit_string_to_upper(prog, f); emitted = 1; } break;
+                case 49: if (task->has_string_to_lower) { emit_string_to_lower(prog, f); emitted = 1; } break;
+                case 50: if (task->has_caesar_cipher) { emit_caesar_cipher(prog, f); emitted = 1; } break;
+                case 51: if (task->has_palindrome_string) { emit_palindrome_string(prog, f); emitted = 1; } break;
+                case 52: if (task->has_bubble_sort) { emit_bubble_sort(prog, f, task->skip_input); emitted = 1; } break;
+                case 53: if (task->has_binary_search) { emit_binary_search(prog, f); emitted = 1; } break;
+                case 54: if (task->has_square_root) { emit_square_root(prog, f); emitted = 1; } break;
+                case 55: if (task->has_prime_factorization) { emit_prime_factorization(prog, f); emitted = 1; } break;
+                case 56: if (task->has_standard_deviation) { emit_standard_deviation(prog, f, task->skip_input); emitted = 1; } break;
+                case 57: if (task->has_compound_interest) { emit_compound_interest(prog, f); emitted = 1; } break;
+                case 58: if (task->has_decimal_to_binary) { emit_decimal_to_binary(prog, f); emitted = 1; } break;
+                case 59: if (task->has_dice_roll) { emit_dice_roll(prog, f); emitted = 1; } break;
+                case 60: if (task->has_double_math) { emit_double_math(prog, f, task->op); emitted = 1; } break;
+                case 61: if (task->has_double_circle_area) { emit_double_circle_area(prog, f); emitted = 1; } break;
+                case 62: if (task->has_double_average) { emit_double_average(prog, f, task->skip_input); emitted = 1; } break;
+                case 63: if (task->has_double_compound_interest) { emit_double_compound_interest(prog, f); emitted = 1; } break;
+                case 64: if (task->has_double_pythagoras) { emit_double_pythagoras(prog, f); emitted = 1; } break;
+                case 65: if (task->has_double_temp_convert) { emit_double_temp_convert(prog, f); emitted = 1; } break;
+                case 66: if (task->has_double_sqrt) { emit_double_sqrt(prog, f); emitted = 1; } break;
                 default: break;
             }
         }
@@ -3395,6 +5031,8 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
             memset(&task, 0, sizeof(task));
             if (parse_task(steps[i], &task)) {
                 task.skip_input = (i > 0);
+                task.suppress_output = (i < num_steps - 1);
+                dataflow_quiet_mode = task.suppress_output;
                 // populate inherited vars from previous steps
                 for (int iv = 0; iv < num_inherited; iv++) {
                     snprintf(task.inherit_var_names[task.num_inherit_vars], 64, "%s", inherited_names[iv]);
@@ -3439,6 +5077,7 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
         }
         // Exits are now handled by ensure_exit in generate_from_task, which only
         // adds :exit ! for the last step. No post-processing needed.
+        dataflow_quiet_mode = 0;
         snprintf(desc, desc_size, "multi-step generation (%d steps)", num_steps);
         return 1;
     }
