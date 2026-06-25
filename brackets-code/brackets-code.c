@@ -96,6 +96,27 @@ typedef struct {
     char globals[MAX_CODE];
 } Program;
 
+// Learned pattern from .l1com files
+#define MAX_LEARNED 64
+#define LEARNED_DIR ".brackets-code/learned"
+
+typedef struct {
+    char id[64];
+    char keywords[512];
+    char description[256];
+    char source_path[1024];
+    int is_learned;
+    int num_includes;
+    char includes[MAX_FUNCS][256];
+    int num_funcs;
+    Function funcs[MAX_FUNCS];
+    char globals[MAX_CODE];
+} LearnedPattern;
+
+static LearnedPattern learned_patterns[MAX_LEARNED];
+static int num_learned = 0;
+static int learned_loaded = 0;
+
 void trim(char *s) {
     char *p = s;
     int l = strlen(p);
@@ -281,11 +302,11 @@ static void answer_question(const char *prompt) {
         printf("  (zero :exit !)  - exit with status code in variable\n");
         printf("  zero should be (set const-int64 1 zero 0)\n");
     } else if (strstr(buf, "brackets") || strstr(buf, "l1vm") || strstr(buf, "l1com") || strstr(buf, "was ist")) {
-        printf("Brackets 0.6.1 (L1VM) is a stack-based virtual machine and assembly language.\n");
+        printf("Brackets 0.6.2 (L1VM) is a stack-based virtual machine and assembly language.\n");
         printf("Code is written in .l1com files using S-expressions (parentheses).\n");
         printf("Key concepts: (func), (set), (if), (for-loop), pointer access, local scoping via #var ~\n");
     } else {
-        printf("I'm a Brackets 0.6.1 (L1VM) code generator. Ask me about:\n");
+        printf("I'm a Brackets 0.6.2 (L1VM) code generator. Ask me about:\n");
         printf("- How to write loops, if/else, functions\n");
         printf("- Pointers, arrays, structs, strings\n");
         printf("- Stack operations, math, exit\n");
@@ -836,6 +857,18 @@ static int examples_indexed = 0;
 
 static void index_examples(void);
 static int search_examples(const char *query, int top_k, int *indices, float *scores);
+
+// Learned pattern functions
+static char* learned_dir_path(void);
+static void ensure_learned_dir(void);
+static int learn_from_file(const char *path, const char *keywords, const char *description);
+static int save_learned_pattern(LearnedPattern *lp);
+static void load_learned_patterns(void);
+static int match_learned_pattern(const char *prompt, int *best_score);
+static int emit_learned_pattern(Program *prog, int learned_idx);
+static int has_learned_id(const char *id);
+static int forget_learned(const char *id);
+static void list_learned(void);
 
 static unsigned long hash_word(const char *s) {
     unsigned long hash = 5381;
@@ -6557,6 +6590,7 @@ int generate_code(const char *prompt, const char *filename) {
     reset_temp();
     func_counter = 0;
 
+    // Try emitter system first; learned patterns serve as fallback
     char desc[256] = {0};
     if (smart_generate(prog, prompt, desc, sizeof(desc))) {
         if (is_q) c_printf(ANSI_CYAN, "Code example written to: %s\n", filename);
@@ -6564,6 +6598,21 @@ int generate_code(const char *prompt, const char *filename) {
         write_program(prog, filename);
         free(prog);
         return 1;
+    }
+
+    // Learned patterns as fallback emitter
+    load_learned_patterns();
+    {
+        int lscore;
+        int lidx = match_learned_pattern(prompt, &lscore);
+        if (lidx >= 0) {
+            if (emit_learned_pattern(prog, lidx)) {
+                c_printf(ANSI_GREEN, "Using learned pattern: %s (score: %d)\n", learned_patterns[lidx].id, lscore);
+                write_program(prog, filename);
+                free(prog);
+                return 1;
+            }
+        }
     }
 
     int score;
@@ -6618,6 +6667,580 @@ int generate_code(const char *prompt, const char *filename) {
     return 0;
 }
 
+// ==================== LEARNED PATTERN SYSTEM ====================
+
+static char* learned_dir_path(void) {
+    static char path[1024];
+    const char *home = getenv("HOME");
+    if (home) {
+        snprintf(path, sizeof(path), "%s/%s", home, LEARNED_DIR);
+    } else {
+        snprintf(path, sizeof(path), "%s", LEARNED_DIR);
+    }
+    return path;
+}
+
+static void ensure_learned_dir(void) {
+    char path[1024];
+    snprintf(path, sizeof(path), "%s", learned_dir_path());
+    char cmd[1100];
+    snprintf(cmd, sizeof(cmd), "mkdir -p \"%s\"", path);
+    system(cmd);
+}
+
+static int learn_from_file(const char *path, const char *keywords, const char *description) {
+    FILE *f = fopen(path, "r");
+    if (!f) {
+        c_printf(ANSI_RED, "Error: cannot open file '%s'\n", path);
+        return 0;
+    }
+
+    // Extract id from filename
+    const char *base = strrchr(path, '/');
+    base = base ? base + 1 : path;
+    char id[64];
+    snprintf(id, sizeof(id), "%s", base);
+    char *dot = strrchr(id, '.');
+    if (dot) *dot = '\0';
+
+    // Check if already learned
+    if (has_learned_id(id)) {
+        c_printf(ANSI_YELLOW, "Pattern '%s' already exists. Use --forget %s to remove it first.\n", id, id);
+        fclose(f);
+        return 0;
+    }
+
+    if (num_learned >= MAX_LEARNED) {
+        c_printf(ANSI_RED, "Maximum number of learned patterns (%d) reached.\n", MAX_LEARNED);
+        fclose(f);
+        return 0;
+    }
+
+    LearnedPattern *lp = &learned_patterns[num_learned];
+    memset(lp, 0, sizeof(LearnedPattern));
+    snprintf(lp->id, sizeof(lp->id), "%s", id);
+    snprintf(lp->source_path, sizeof(lp->source_path), "%s", path);
+    lp->is_learned = 1;
+
+    if (keywords && strlen(keywords) > 0) {
+        snprintf(lp->keywords, sizeof(lp->keywords), "%s %s", id, keywords);
+    } else {
+        snprintf(lp->keywords, sizeof(lp->keywords), "%s", id);
+    }
+
+    if (description && strlen(description) > 0) {
+        snprintf(lp->description, sizeof(lp->description), "%s", description);
+    } else {
+        snprintf(lp->description, sizeof(lp->description), "Learned pattern from %s", path);
+    }
+
+    // Parse the .l1com file into includes, globals and function structs
+    char line[MAX_LINE];
+    Function *cur_func = NULL;
+    int in_func = 0;
+
+    while (fgets(line, sizeof(line), f)) {
+        trim(line);
+        if (strlen(line) == 0) continue;
+
+        // Skip comments
+        if (line[0] == '/' && line[1] == '/') continue;
+
+        // Handle #include directives
+        if (strncmp(line, "#include", 8) == 0) {
+            char inc[256] = {0};
+            if (sscanf(line, "#include <%255[^>]>", inc) == 1 ||
+                sscanf(line, "#include \"%255[^\"]\"", inc) == 1) {
+                int found = 0;
+                for (int i = 0; i < lp->num_includes; i++) {
+                    if (strcmp(lp->includes[i], inc) == 0) { found = 1; break; }
+                }
+                if (!found && lp->num_includes < MAX_FUNCS) {
+                    snprintf(lp->includes[lp->num_includes++], sizeof(lp->includes[0]), "%s", inc);
+                }
+            }
+            continue;
+        }
+
+        // Function definition
+        if (strstr(line, " func)")) {
+            char fname[256] = {0};
+            if (sscanf(line, "(%255s func)", fname) == 1) {
+                if (lp->num_funcs < MAX_FUNCS) {
+                    cur_func = &lp->funcs[lp->num_funcs++];
+                    memset(cur_func, 0, sizeof(Function));
+                    snprintf(cur_func->name, sizeof(cur_func->name), "%s", fname);
+                    cur_func->body[0] = '\0';
+                    in_func = 1;
+                }
+            }
+            continue;
+        }
+
+        // Function end
+        if (strcmp(line, "(funcend)") == 0) {
+            in_func = 0;
+            cur_func = NULL;
+            continue;
+        }
+
+        if (!in_func) {
+            // Global variable declarations (outside functions)
+            size_t cur_len = strlen(lp->globals);
+            if (cur_len + strlen(line) + 2 < MAX_CODE) {
+                strcat(lp->globals, line);
+                strcat(lp->globals, "\n");
+            }
+            continue;
+        }
+
+        // Inside a function: parse variable declarations and body
+        if (strncmp(line, "(set ", 5) == 0) {
+            char vtype[32], vname[256];
+            int vcount;
+            if (sscanf(line, "(set %31s %d %255s", vtype, &vcount, vname) >= 3) {
+                // Check for duplicates
+                int found = 0;
+                for (int i = 0; i < cur_func->num_vars; i++) {
+                    if (strcmp(cur_func->vars[i].name, vname) == 0) { found = 1; break; }
+                }
+                if (!found && cur_func->num_vars < MAX_VARS) {
+                    Variable *v = &cur_func->vars[cur_func->num_vars++];
+                    snprintf(v->name, sizeof(v->name), "%s", vname);
+                    snprintf(v->type, sizeof(v->type), "%s", vtype);
+                    v->count = vcount;
+                    // Parse values
+                    char line_copy[MAX_LINE];
+                    snprintf(line_copy, sizeof(line_copy), "%s", line);
+                    // format: (set TYPE COUNT NAME [VAL1 VAL2 ...] )
+                    // tokens: ["(set", TYPE, COUNT, NAME, VAL1, VAL2, ..., ")"]
+                    int tok_idx = 0;
+                    char *token = strtok(line_copy, " \t");
+                    while (token) {
+                        if (tok_idx >= 4) {
+                            if (strcmp(token, ")") == 0) break;
+                            size_t tlen = strlen(token);
+                            if (token[tlen-1] == ')') token[tlen-1] = '\0';
+                            if (v->num_values < MAX_VALUES) {
+                                snprintf(v->values[v->num_values], sizeof(v->values[0]), "%s", token);
+                                v->num_values++;
+                            }
+                        }
+                        tok_idx++;
+                        token = strtok(NULL, " \t");
+                    }
+                }
+            }
+            continue;
+        }
+
+        // Check for #var ~ (local scope)
+        if (strncmp(line, "#var", 4) == 0) {
+            char scope[256] = {0};
+            if (sscanf(line, "#var ~ %255s", scope) == 1) {
+                if (cur_func) {
+                    cur_func->has_vardef = 1;
+                    cur_func->is_local = 1;
+                    snprintf(cur_func->vardef_name, sizeof(cur_func->vardef_name), "%s", scope);
+                }
+            }
+            continue;
+        }
+
+        // Body code
+        if (cur_func) {
+            size_t cur_len = strlen(cur_func->body);
+            if (cur_len + strlen(line) + 2 < MAX_CODE) {
+                strcat(cur_func->body, line);
+                strcat(cur_func->body, "\n");
+            }
+        }
+    }
+    fclose(f);
+
+    // Check we got at least one function
+    if (lp->num_funcs == 0) {
+        c_printf(ANSI_RED, "Error: no functions found in '%s'\n", path);
+        return 0;
+    }
+
+    num_learned++;
+
+    // Persist to disk
+    if (save_learned_pattern(lp)) {
+        c_printf(ANSI_GREEN, "Learned pattern '%s' from %s\n", lp->id, path);
+        if (verbose_flag) {
+            printf("  Keywords: %s\n", lp->keywords);
+            printf("  Description: %s\n", lp->description);
+            printf("  Includes: %d, Functions: %d\n", lp->num_includes, lp->num_funcs);
+        }
+        return 1;
+    }
+    return 0;
+}
+
+static int save_learned_pattern(LearnedPattern *lp) {
+    ensure_learned_dir();
+    char filepath[1100];
+    snprintf(filepath, sizeof(filepath), "%s/%s.l1lp", learned_dir_path(), lp->id);
+
+    FILE *f = fopen(filepath, "w");
+    if (!f) {
+        c_printf(ANSI_RED, "Error: cannot write '%s'\n", filepath);
+        return 0;
+    }
+
+    fprintf(f, "# Pattern: %s\n", lp->id);
+    fprintf(f, "# Description: %s\n", lp->description);
+    fprintf(f, "# Keywords: %s\n", lp->keywords);
+    fprintf(f, "# File: %s\n", lp->source_path);
+    fprintf(f, "# Includes: %d\n", lp->num_includes);
+    for (int i = 0; i < lp->num_includes; i++)
+        fprintf(f, "# Include: %s\n", lp->includes[i]);
+    fprintf(f, "# Functions: %d\n", lp->num_funcs);
+    fprintf(f, "---SOURCE---\n");
+
+    // Write the reconstructed .l1com source
+    for (int i = 0; i < lp->num_includes; i++)
+        fprintf(f, "#include <%s>\n", lp->includes[i]);
+
+    if (strlen(lp->globals) > 0)
+        fprintf(f, "%s\n", lp->globals);
+
+    for (int fi = 0; fi < lp->num_funcs; fi++) {
+        Function *fn = &lp->funcs[fi];
+        fprintf(f, "(%s func)\n", fn->name);
+        if (fn->has_vardef)
+            fprintf(f, "\t#var ~ %s\n", fn->vardef_name);
+        for (int vi = 0; vi < fn->num_vars; vi++) {
+            Variable *v = &fn->vars[vi];
+            fprintf(f, "\t(set %s %d %s", v->type, v->count, v->name);
+            for (int vj = 0; vj < v->num_values; vj++)
+                fprintf(f, " %s", v->values[vj]);
+            fprintf(f, ")\n");
+        }
+        fprintf(f, "%s", fn->body);
+        fprintf(f, "(funcend)\n\n");
+    }
+
+    fprintf(f, "---END---\n");
+    fclose(f);
+
+    if (verbose_flag)
+        printf("  Saved to %s\n", filepath);
+    return 1;
+}
+
+static void load_learned_patterns(void) {
+    if (learned_loaded) return;
+    learned_loaded = 1;
+
+    char dirpath[1024];
+    snprintf(dirpath, sizeof(dirpath), "%s", learned_dir_path());
+
+    DIR *d = opendir(dirpath);
+    if (!d) return;
+
+    struct dirent *entry;
+    while ((entry = readdir(d)) != NULL && num_learned < MAX_LEARNED) {
+        const char *ext = strrchr(entry->d_name, '.');
+        if (!ext || strcmp(ext, ".l1lp") != 0) continue;
+
+        char filepath[1100];
+        snprintf(filepath, sizeof(filepath), "%s/%s", dirpath, entry->d_name);
+
+        FILE *f = fopen(filepath, "r");
+        if (!f) continue;
+
+        LearnedPattern *lp = &learned_patterns[num_learned];
+        memset(lp, 0, sizeof(LearnedPattern));
+        lp->is_learned = 1;
+
+        char line[MAX_LINE];
+        int in_source = 0;
+        Function *cur_func = NULL;
+
+        while (fgets(line, sizeof(line), f)) {
+            trim(line);
+
+            if (strcmp(line, "---SOURCE---") == 0) {
+                in_source = 1;
+                continue;
+            }
+            if (strcmp(line, "---END---") == 0) {
+                in_source = 0;
+                continue;
+            }
+
+            if (!in_source) {
+                if (sscanf(line, "# Pattern: %63s", lp->id) == 1) continue;
+                char *val;
+                if ((val = strstr(line, "# Description: ")) != NULL) {
+                    snprintf(lp->description, sizeof(lp->description), "%s", val + 15);
+                    continue;
+                }
+                if ((val = strstr(line, "# Keywords: ")) != NULL) {
+                    snprintf(lp->keywords, sizeof(lp->keywords), "%s", val + 12);
+                    continue;
+                }
+                if ((val = strstr(line, "# File: ")) != NULL) {
+                    snprintf(lp->source_path, sizeof(lp->source_path), "%s", val + 8);
+                    continue;
+                }
+                continue;
+            }
+
+            // Parse source content
+            if (strncmp(line, "#include", 8) == 0) {
+                char inc[256] = {0};
+                if (sscanf(line, "#include <%255[^>]>", inc) == 1) {
+                    if (lp->num_includes < MAX_FUNCS)
+                        snprintf(lp->includes[lp->num_includes++], sizeof(lp->includes[0]), "%s", inc);
+                }
+                continue;
+            }
+
+            if (strstr(line, " func)")) {
+                char fname[256] = {0};
+                if (sscanf(line, "(%255s func)", fname) == 1) {
+                    if (lp->num_funcs < MAX_FUNCS) {
+                        cur_func = &lp->funcs[lp->num_funcs++];
+                        memset(cur_func, 0, sizeof(Function));
+                        snprintf(cur_func->name, sizeof(cur_func->name), "%s", fname);
+                    }
+                }
+                continue;
+            }
+
+            if (strcmp(line, "(funcend)") == 0) {
+                cur_func = NULL;
+                continue;
+            }
+
+            if (!cur_func) {
+                size_t cur_len = strlen(lp->globals);
+                if (cur_len + strlen(line) + 2 < MAX_CODE) {
+                    strcat(lp->globals, line);
+                    strcat(lp->globals, "\n");
+                }
+                continue;
+            }
+
+            if (strncmp(line, "(set ", 5) == 0) {
+                char vtype[32], vname[256];
+                int vcount;
+                if (sscanf(line, "(set %31s %d %255s", vtype, &vcount, vname) >= 3) {
+                    int found = 0;
+                    for (int i = 0; i < cur_func->num_vars; i++) {
+                        if (strcmp(cur_func->vars[i].name, vname) == 0) { found = 1; break; }
+                    }
+                    if (!found && cur_func->num_vars < MAX_VARS) {
+                        Variable *v = &cur_func->vars[cur_func->num_vars++];
+                        snprintf(v->name, sizeof(v->name), "%s", vname);
+                        snprintf(v->type, sizeof(v->type), "%s", vtype);
+                        v->count = vcount;
+                        char lc[MAX_LINE];
+                        snprintf(lc, sizeof(lc), "%s", line);
+                        int tok_idx = 0;
+                        char *token = strtok(lc, " \t");
+                        while (token) {
+                            if (tok_idx >= 4) {
+                                if (strcmp(token, ")") == 0) break;
+                                size_t tlen = strlen(token);
+                                if (token[tlen-1] == ')') token[tlen-1] = '\0';
+                                if (v->num_values < MAX_VALUES) {
+                                    snprintf(v->values[v->num_values], sizeof(v->values[0]), "%s", token);
+                                    v->num_values++;
+                                }
+                            }
+                            tok_idx++;
+                            token = strtok(NULL, " \t");
+                        }
+                    }
+                }
+                continue;
+            }
+
+            if (strncmp(line, "#var", 4) == 0) {
+                char scope[256] = {0};
+                if (sscanf(line, "#var ~ %255s", scope) == 1 && cur_func) {
+                    cur_func->has_vardef = 1;
+                    cur_func->is_local = 1;
+                    snprintf(cur_func->vardef_name, sizeof(cur_func->vardef_name), "%s", scope);
+                }
+                continue;
+            }
+
+            if (cur_func) {
+                size_t cur_len = strlen(cur_func->body);
+                if (cur_len + strlen(line) + 2 < MAX_CODE) {
+                    strcat(cur_func->body, line);
+                    strcat(cur_func->body, "\n");
+                }
+            }
+        }
+        fclose(f);
+
+        if (lp->num_funcs > 0) {
+            num_learned++;
+            if (verbose_flag) {
+                printf("  Loaded learned pattern: %s (%s)\n", lp->id, lp->description);
+            }
+        }
+    }
+    closedir(d);
+}
+
+static int match_learned_pattern(const char *prompt, int *best_score) {
+    if (num_learned == 0) return -1;
+
+    char buf[MAX_PROMPT];
+    snprintf(buf, sizeof(buf), "%s", prompt);
+    to_lowercase(buf);
+
+    int best_idx = -1;
+    *best_score = 0;
+
+    for (int i = 0; i < num_learned; i++) {
+        if (!learned_patterns[i].is_learned) continue;
+        if (strlen(learned_patterns[i].keywords) == 0) continue;
+
+        char kwbuf[1024];
+        snprintf(kwbuf, sizeof(kwbuf), "%s", learned_patterns[i].keywords);
+        to_lowercase(kwbuf);
+
+        int score = 0;
+        int total_kw = 0;
+        int any_match = 0;
+        char kwcopy[1024];
+        snprintf(kwcopy, sizeof(kwcopy), "%s", kwbuf);
+        char *kw = strtok(kwcopy, " ,/");
+        while (kw) {
+            trim(kw);
+            if (strlen(kw) > 0) {
+                total_kw++;
+                // Match as word OR as substring (handles hyphens in filenames)
+                if (str_contains_word(buf, kw) || strstr(buf, kw)) {
+                    score++;
+                    any_match = 1;
+                }
+            }
+            kw = strtok(NULL, " ,/");
+        }
+        // Match if at least one keyword matches and score >= 25% of total keywords
+        if (any_match && total_kw > 0) {
+            float ratio = (float)score / total_kw;
+            if ((score >= 1 && ratio >= 0.25f) || total_kw <= 2) {
+                // Weight: keyword matches + bonus for filename match
+                int final_score = score * 10;
+                if (strstr(buf, learned_patterns[i].id))
+                    final_score += 5;
+                if (final_score > *best_score) {
+                    *best_score = final_score;
+                    best_idx = i;
+                }
+            }
+        }
+    }
+    return best_idx;
+}
+
+static int emit_learned_pattern(Program *prog, int learned_idx) {
+    if (learned_idx < 0 || learned_idx >= num_learned) return 0;
+    LearnedPattern *lp = &learned_patterns[learned_idx];
+    if (!lp->is_learned) return 0;
+
+    // Copy includes
+    for (int i = 0; i < lp->num_includes; i++)
+        add_include(prog, lp->includes[i]);
+
+    // Copy globals
+    if (strlen(lp->globals) > 0) {
+        size_t cur_len = strlen(prog->globals);
+        if (cur_len + strlen(lp->globals) < MAX_CODE)
+            strcat(prog->globals, lp->globals);
+    }
+
+    // Copy functions
+    for (int fi = 0; fi < lp->num_funcs; fi++) {
+        Function *src = &lp->funcs[fi];
+        add_func(prog, src->name);
+        Function *dst = &prog->funcs[prog->num_funcs - 1];
+
+        dst->is_local = src->is_local;
+        dst->has_vars = src->has_vars;
+        dst->has_vardef = src->has_vardef;
+        snprintf(dst->vardef_name, sizeof(dst->vardef_name), "%s", src->vardef_name);
+
+        // Copy variables
+        for (int vi = 0; vi < src->num_vars; vi++) {
+            Variable *sv = &src->vars[vi];
+            Variable *dv = &dst->vars[dst->num_vars++];
+            snprintf(dv->name, sizeof(dv->name), "%s", sv->name);
+            snprintf(dv->type, sizeof(dv->type), "%s", sv->type);
+            dv->count = sv->count;
+            dv->num_values = sv->num_values;
+            for (int vj = 0; vj < sv->num_values; vj++)
+                snprintf(dv->values[vj], sizeof(dv->values[vj]), "%s", sv->values[vj]);
+        }
+
+        // Copy body
+        snprintf(dst->body, sizeof(dst->body), "%s", src->body);
+    }
+
+    return 1;
+}
+
+static int has_learned_id(const char *id) {
+    for (int i = 0; i < num_learned; i++) {
+        if (strcmp(learned_patterns[i].id, id) == 0)
+            return 1;
+    }
+    return 0;
+}
+
+static int forget_learned(const char *id) {
+    int found = -1;
+    for (int i = 0; i < num_learned; i++) {
+        if (strcmp(learned_patterns[i].id, id) == 0) {
+            found = i;
+            break;
+        }
+    }
+    if (found < 0) {
+        c_printf(ANSI_RED, "Pattern '%s' not found.\n", id);
+        return 0;
+    }
+
+    // Remove file from disk
+    char filepath[1100];
+    snprintf(filepath, sizeof(filepath), "%s/%s.l1lp", learned_dir_path(), learned_patterns[found].id);
+    remove(filepath);
+
+    // Shift array
+    for (int i = found; i < num_learned - 1; i++)
+        learned_patterns[i] = learned_patterns[i + 1];
+    num_learned--;
+
+    c_printf(ANSI_GREEN, "Forgot pattern '%s'.\n", id);
+    return 1;
+}
+
+static void list_learned(void) {
+    if (num_learned == 0) {
+        printf("No learned patterns.\n");
+        printf("Use --learn <file.l1com> [keywords] [description] to learn one.\n");
+        return;
+    }
+    printf("Learned patterns (%d):\n", num_learned);
+    for (int i = 0; i < num_learned; i++) {
+        LearnedPattern *lp = &learned_patterns[i];
+        printf("  %2d. %-20s Keywords: %s\n", i + 1, lp->id, lp->keywords);
+        printf("      Description: %s\n", lp->description);
+        printf("      Source: %s\n", lp->source_path);
+    }
+}
+
 static int self_test(void) {
     const char *test_prompts[] = {
         "hello world", "sum from 1 to 100", "print even numbers up to 10",
@@ -6664,7 +7287,7 @@ static int self_test(void) {
 }
 
 void show_help() {
-    printf("\nBrackets Code Generator 0.5 for Brackets (L1VM) Language\n");
+    printf("\nBrackets Code Generator 0.6.2 for Brackets (L1VM) Language\n");
     printf("============================================================\n");
     printf("Usage:\n");
     printf("  Interactive mode:       brackets-code\n");
@@ -6674,6 +7297,9 @@ void show_help() {
     printf("  Self-test:              brackets-code --self-test\n");
     printf("  Batch mode:             brackets-code --batch prompts.txt\n");
     printf("  Vector search:          brackets-code --search \"<query>\"\n");
+    printf("  Learn from file:        brackets-code --learn <file.l1com> [keywords] [\"description\"]\n");
+    printf("  Forget pattern:         brackets-code --forget <pattern-id>\n");
+    printf("  List learned patterns:  brackets-code --list-learned\n");
     printf("  List templates:         brackets-code --list\n\n");
     printf("Flags:\n");
     printf("  --verbose               Show emitter selection scores\n");
@@ -6687,6 +7313,9 @@ void show_help() {
     printf("\nSpecial commands in interactive mode:\n");
     printf("  /help      - Show this help\n");
     printf("  /list      - List all templates\n");
+    printf("  /learn <f> <kw> [desc] - Learn pattern from .l1com file\n");
+    printf("  /forget <id> - Forget a learned pattern\n");
+    printf("  /list-learned /ll - List learned patterns\n");
     printf("  /search <q>- Vector search example code\n");
     printf("  /exit      - Exit\n");
     printf("  /save <fn> - Save last generated code to file\n");
@@ -6719,7 +7348,7 @@ void interactive_mode() {
     char last_fname[256] = {0};
     int has_last = 0;
 
-    printf("Brackets Code Generator 0.5\n");
+    printf("Brackets Code Generator 0.6.2\n");
     printf("Type /help for help, /exit to quit.\n");
 
 #ifdef HAVE_READLINE
@@ -6767,6 +7396,43 @@ void interactive_mode() {
             } else {
                 printf("Use one-shot mode to generate specific code.\n");
             }
+            continue;
+        }
+
+        if (strncmp(prompt, "/learn", 6) == 0) {
+            char lpath[1024] = {0}, lkeywords[512] = {0}, ldesc[256] = {0};
+            int n = sscanf(prompt + 6, " %1023s %511[^\"] \"%255[^\"]\"", lpath, lkeywords, ldesc);
+            if (n == 0) {
+                printf("Usage: /learn <file.l1com> [keywords] [\"description\"]\n");
+            } else {
+                // Shift args if no description
+                if (n == 2) {
+                    snprintf(ldesc, sizeof(ldesc), "%s", lkeywords);
+                    lkeywords[0] = '\0';
+                }
+                ensure_learned_dir();
+                learn_from_file(lpath, lkeywords, ldesc);
+            }
+            continue;
+        }
+
+        if (strncmp(prompt, "/forget", 7) == 0) {
+            const char *id = prompt + 7;
+            while (*id == ' ') id++;
+            if (strlen(id) == 0) {
+                printf("Usage: /forget <pattern-id>\n");
+            } else {
+                ensure_learned_dir();
+                load_learned_patterns();
+                forget_learned(id);
+            }
+            continue;
+        }
+
+        if (strcmp(prompt, "/list-learned") == 0 || strcmp(prompt, "/ll") == 0) {
+            ensure_learned_dir();
+            load_learned_patterns();
+            list_learned();
             continue;
         }
 
@@ -6827,6 +7493,35 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
+    if (argc >= 2 && strcmp(argv[1], "--learn") == 0) {
+        if (argc < 3) {
+            fprintf(stderr, "Usage: %s --learn <file.l1com> [keywords] [description]\n", argv[0]);
+            return 1;
+        }
+        const char *lpath = argv[2];
+        const char *lkeywords = (argc > 3) ? argv[3] : "";
+        const char *ldesc = (argc > 4) ? argv[4] : "";
+        ensure_learned_dir();
+        return learn_from_file(lpath, lkeywords, ldesc) ? 0 : 1;
+    }
+
+    if (argc >= 2 && strcmp(argv[1], "--forget") == 0) {
+        if (argc < 3) {
+            fprintf(stderr, "Usage: %s --forget <pattern-id>\n", argv[0]);
+            return 1;
+        }
+        ensure_learned_dir();
+        load_learned_patterns();
+        return forget_learned(argv[2]) ? 0 : 1;
+    }
+
+    if (argc >= 2 && (strcmp(argv[1], "--list-learned") == 0 || strcmp(argv[1], "-L") == 0)) {
+        ensure_learned_dir();
+        load_learned_patterns();
+        list_learned();
+        return 0;
+    }
+
     if (argc >= 2 && (strcmp(argv[1], "--search") == 0 || strcmp(argv[1], "-s") == 0)) {
         if (argc < 3) {
             fprintf(stderr, "Usage: %s --search <query>\n", argv[0]);
@@ -6856,7 +7551,7 @@ int main(int argc, char *argv[]) {
     if (argc >= 2 && (strcmp(argv[1], "--bash-completion") == 0 || strcmp(argv[1], "--completion") == 0)) {
         printf("_brackets_code_completions() {\n");
         printf("  local cur=\"${COMP_WORDS[COMP_CWORD]}\"\n");
-        printf("  opts=\"--help -h --list -l --search --validate -v --self-test -t --verbose --out-dir --l1vm-root --batch --bash-completion\"\n");
+        printf("  opts=\"--help -h --list -l --search --validate -v --self-test -t --verbose --out-dir --l1vm-root --batch --bash-completion --learn --forget --list-learned\"\n");
         printf("  COMPREPLY=($(compgen -W \"${opts}\" -- \"$cur\"))\n");
         printf("}\n");
         printf("complete -F _brackets_code_completions brackets-code\n");
