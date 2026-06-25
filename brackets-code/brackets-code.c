@@ -791,6 +791,7 @@ static void emit_palindrome(Program *prog, Function *f);
 static void emit_lcm(Program *prog, Function *f);
 static void emit_collatz(Program *prog, Function *f);
 static void emit_sum_of_digits(Program *prog, Function *f);
+static void emit_function(Program *prog, Function *f);
 static void emit_reverse_string(Program *prog, Function *f);
 static void emit_armstrong(Program *prog, Function *f);
 static void emit_perfect_number(Program *prog, Function *f);
@@ -822,7 +823,7 @@ static void emit_double_sqrt(Program *prog, Function *f);
 #define VOCAB_SIZE 72
 #define TEMPERATURE 0.8
 #define MAX_STEPS 8
-#define NUM_EMITTERS 67
+#define NUM_EMITTERS 68
 
 typedef struct {
     char word[32];
@@ -831,7 +832,7 @@ typedef struct {
 
 static WordEmbedding word_embeddings[VOCAB_SIZE];
 static float attention_weights[NUM_EMITTERS];
-static const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt"};
+static const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt","function"};
 static int vs_boost_tokens[64];
 static int vs_boost_count = 0;
 
@@ -1026,6 +1027,7 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
     if (task->has_double_pythagoras) emitter_scores[64] = 2.0f;
     if (task->has_double_temp_convert) emitter_scores[65] = 2.0f;
     if (task->has_double_sqrt) emitter_scores[66] = 2.0f;
+    if (task->has_function) emitter_scores[67] = 2.0f;
 
     for (int ti = 0; ti < num_tokens && ti < 32; ti++) {
         int tok_id = tokens[ti];
@@ -2059,25 +2061,37 @@ static void emit_timer(Program *prog, Function *f) {
 static void emit_factorial(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
-    const char *ov[] = {"1"};
     const char *fv[] = {"5"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
     add_var_to_func(f, "int64", "num", 1, fv, 1);
-    add_var_to_func(f, "int64", "fac", 1, ov, 1);
-    add_var_to_func(f, "int64", "i", 1, zv, 1);
-    add_var_to_func(f, "int64", "f", 1, zv, 1);
-    func_append(f, "\t// calculate factorial");
-    func_append(f, "\t(one i :=)");
-    func_append(f, "\t(for-loop)");
-    func_append(f, "\t(((i num <=) f :=) f for)");
-    func_append(f, "\t\t(fac i * fac :=)");
-    func_append(f, "\t\t(i + one i :=)");
-    func_append(f, "\t(next)");
+    add_var_to_func(f, "int64", "fac", 1, zv, 1);
+    func_append(f, "\t// call factorial function");
+    func_append(f, "\t(num :factorial !)");
+    func_append(f, "\t(fac stpop)");
     if (!dataflow_quiet_mode) {
         func_append(f, "\t(fac :print_i !)");
         func_append(f, "\t(:print_n !)");
     }
+    add_func(prog, "factorial");
+    Function *ff = &prog->funcs[prog->num_funcs - 1];
+    ff->is_local = 1;
+    ff->has_vardef = 1;
+    snprintf(ff->vardef_name, sizeof(ff->vardef_name), "factorial");
+    add_var_to_func(ff, "const-int64", "zero~", 1, zv, 1);
+    add_var_to_func(ff, "const-int64", "one~", 1, (const char *[]){"1"}, 1);
+    add_var_to_func(ff, "int64", "n~", 1, zv, 1);
+    add_var_to_func(ff, "int64", "i~", 1, zv, 1);
+    add_var_to_func(ff, "int64", "fac~", 1, (const char *[]){"1"}, 1);
+    add_var_to_func(ff, "int64", "f~", 1, zv, 1);
+    func_append(ff, "\t(n~ stpop)");
+    func_append(ff, "\t(one~ i~ :=)");
+    func_append(ff, "\t(for-loop)");
+    func_append(ff, "\t(((i~ n~ <=) f~ :=) f~ for)");
+    func_append(ff, "\t\t(fac~ i~ * fac~ :=)");
+    func_append(ff, "\t\t(i~ one~ + i~ :=)");
+    func_append(ff, "\t(next)");
+    func_append(ff, "\t(fac~ stpush)");
+    func_append(ff, "\t(return)");
 }
 
 static void emit_fizzbuzz(Program *prog, Function *f) {
@@ -2191,28 +2205,42 @@ static void emit_even_odd(Program *prog, Function *f) {
 static void emit_power(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
-    const char *ov[] = {"1"};
     const char *bv[] = {"2"};
     const char *ev[] = {"10"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
     add_var_to_func(f, "int64", "base", 1, bv, 1);
     add_var_to_func(f, "int64", "exp", 1, ev, 1);
     add_var_to_func(f, "int64", "ret", 1, zv, 1);
-    add_var_to_func(f, "int64", "i", 1, zv, 1);
-    add_var_to_func(f, "int64", "f", 1, zv, 1);
-    func_append(f, "\t// power: base^exp");
-    func_append(f, "\t(base ret :=)");
-    func_append(f, "\t(one i :=)");
-    func_append(f, "\t(for-loop)");
-    func_append(f, "\t(((i exp <) f :=) f for)");
-    func_append(f, "\t\t(ret base * ret :=)");
-    func_append(f, "\t\t(i + one i :=)");
-    func_append(f, "\t(next)");
+    func_append(f, "\t// call power function");
+    func_append(f, "\t(base exp :power !)");
+    func_append(f, "\t(ret stpop)");
     if (!dataflow_quiet_mode) {
         func_append(f, "\t(ret :print_i !)");
         func_append(f, "\t(:print_n !)");
     }
+    add_func(prog, "power");
+    Function *pf = &prog->funcs[prog->num_funcs - 1];
+    pf->is_local = 1;
+    pf->has_vardef = 1;
+    snprintf(pf->vardef_name, sizeof(pf->vardef_name), "power");
+    add_var_to_func(pf, "const-int64", "zero~", 1, zv, 1);
+    add_var_to_func(pf, "const-int64", "one~", 1, (const char *[]){"1"}, 1);
+    add_var_to_func(pf, "int64", "b~", 1, zv, 1);
+    add_var_to_func(pf, "int64", "e~", 1, zv, 1);
+    add_var_to_func(pf, "int64", "r~", 1, (const char *[]){"1"}, 1);
+    add_var_to_func(pf, "int64", "i~", 1, zv, 1);
+    add_var_to_func(pf, "int64", "f~", 1, zv, 1);
+    func_append(pf, "\t(e~ stpop)");
+    func_append(pf, "\t(b~ stpop)");
+    func_append(pf, "\t(b~ r~ :=)");
+    func_append(pf, "\t(one~ i~ :=)");
+    func_append(pf, "\t(for-loop)");
+    func_append(pf, "\t(((i~ e~ <) f~ :=) f~ for)");
+    func_append(pf, "\t\t(r~ b~ * r~ :=)");
+    func_append(pf, "\t\t(i~ one~ + i~ :=)");
+    func_append(pf, "\t(next)");
+    func_append(pf, "\t(r~ stpush)");
+    func_append(pf, "\t(return)");
 }
 
 static void emit_multiplication_table(Program *prog, Function *f) {
@@ -2282,18 +2310,33 @@ static void emit_gcd(Program *prog, Function *f) {
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
     add_var_to_func(f, "int64", "a", 1, zv42, 1);
     add_var_to_func(f, "int64", "b", 1, zv9, 1);
-    add_var_to_func(f, "int64", "mod", 1, zv, 1);
-    add_var_to_func(f, "int64", "f", 1, zv, 1);
-    func_append(f, "\t// Euclidean algorithm");
-    func_append(f, "\t(do)");
-    func_append(f, "\t\t(a b % mod :=)");
-    func_append(f, "\t\t(b a :=)");
-    func_append(f, "\t\t(mod b :=)");
-    func_append(f, "\t(((b zero >) f :=) f while)");
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    func_append(f, "\t// call gcd function");
+    func_append(f, "\t(a b :gcd !)");
+    func_append(f, "\t(ret stpop)");
     if (!dataflow_quiet_mode) {
-        func_append(f, "\t(a :print_i !)");
+        func_append(f, "\t(ret :print_i !)");
         func_append(f, "\t(:print_n !)");
     }
+    add_func(prog, "gcd");
+    Function *gf = &prog->funcs[prog->num_funcs - 1];
+    gf->is_local = 1;
+    gf->has_vardef = 1;
+    snprintf(gf->vardef_name, sizeof(gf->vardef_name), "gcd");
+    add_var_to_func(gf, "const-int64", "zero~", 1, zv, 1);
+    add_var_to_func(gf, "int64", "a~", 1, zv, 1);
+    add_var_to_func(gf, "int64", "b~", 1, zv, 1);
+    add_var_to_func(gf, "int64", "mod~", 1, zv, 1);
+    add_var_to_func(gf, "int64", "f~", 1, zv, 1);
+    func_append(gf, "\t(b~ stpop)");
+    func_append(gf, "\t(a~ stpop)");
+    func_append(gf, "\t(do)");
+    func_append(gf, "\t\t(a~ b~ % mod~ :=)");
+    func_append(gf, "\t\t(b~ a~ :=)");
+    func_append(gf, "\t\t(mod~ b~ :=)");
+    func_append(gf, "\t(((b~ zero~ >) f~ :=) f~ while)");
+    func_append(gf, "\t(a~ stpush)");
+    func_append(gf, "\t(return)");
 }
 
 static void emit_random_number(Program *prog, Function *f) {
@@ -4496,6 +4539,32 @@ static int parse_task(const char *prompt, TaskProfile *task) {
     return has_any;
 }
 
+// ==================== FUNCTION EMITTER ====================
+
+static void emit_function(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *fv[] = {"5"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "int64", "num", 1, fv, 1);
+    add_var_to_func(f, "int64", "sq", 1, zv, 1);
+    func_append(f, "\t// call function: sq = square(num)");
+    func_append(f, "\t(num sq :square !)");
+    func_append(f, "\t(sq :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    add_func(prog, "square");
+    Function *sf = &prog->funcs[prog->num_funcs - 1];
+    sf->is_local = 1;
+    sf->has_vardef = 1;
+    snprintf(sf->vardef_name, sizeof(sf->vardef_name), "square");
+    add_var_to_func(sf, "int64", "n~", 1, zv, 1);
+    add_var_to_func(sf, "int64", "r~", 1, zv, 1);
+    func_append(sf, "\t(n~ stpop)");
+    func_append(sf, "\t(n~ n~ * r~ :=)");
+    func_append(sf, "\t(r~ stpush)");
+    func_append(sf, "\t(return)");
+}
+
 // ==================== PLAN-BASED GENERATOR ====================
 
 static void ensure_exit(Function *f, int last_step) {
@@ -4914,6 +4983,11 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     }
     if (task->has_double_sqrt) {
         emit_double_sqrt(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_function) {
+        emit_function(prog, f);
         ensure_exit(f, last_step);
         return 1;
     }
@@ -6838,6 +6912,8 @@ static int learn_from_file(const char *path, const char *keywords, const char *d
             char vtype[32], vname[256];
             int vcount;
             if (sscanf(line, "(set %31s %d %255s", vtype, &vcount, vname) >= 3) {
+                size_t vnlen = strlen(vname);
+                if (vnlen > 0 && vname[vnlen-1] == ')') vname[vnlen-1] = '\0';
                 // Check for duplicates
                 int found = 0;
                 for (int i = 0; i < cur_func->num_vars; i++) {
@@ -7069,6 +7145,8 @@ static void load_learned_patterns(void) {
                 char vtype[32], vname[256];
                 int vcount;
                 if (sscanf(line, "(set %31s %d %255s", vtype, &vcount, vname) >= 3) {
+                    size_t vnlen = strlen(vname);
+                    if (vnlen > 0 && vname[vnlen-1] == ')') vname[vnlen-1] = '\0';
                     int found = 0;
                     for (int i = 0; i < cur_func->num_vars; i++) {
                         if (strcmp(cur_func->vars[i].name, vname) == 0) { found = 1; break; }
