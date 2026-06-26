@@ -5,7 +5,7 @@ Brackets Code - Memory & Specification
 -------------
 Brackets Code is a CLI code generator for the Brackets (L1VM) assembly language.
 It converts natural-language prompts into working .l1com programs.
-Written in C, single-file (~6960 lines). Author: Stefan.
+Written in C, single-file (~8560 lines). Author: Stefan.
 
 2. ARCHITECTURE OVERVIEW
 ------------------------
@@ -46,7 +46,8 @@ TaskProfile (the plan struct):
     has_array_assign, has_array_reverse, has_array_find, has_average,
     has_read_file, has_write_file, has_array_vmath,
     has_string_to_num, has_timer,
-    has_array_min_max, has_bool_demo, has_bit_check
+    has_array_min_max, has_bool_demo, has_bit_check,
+    has_max, has_min, has_descending
   - has_loop, loop_start/end/step
   - has_condition, has_output, has_output_str
   - type[] ("int64", "double", "int32", "int16", "byte")
@@ -73,10 +74,12 @@ Template struct:
   - Extracts numbers (digit + written-out words: "eins"/"one"/...)
   - Count filter: words before "numbers/werte/zahlen/values"
   - Detects operations via ops[] map (add/sub/mul/div/mod in DE+EN)
-  - Detects ~45+ patterns (FAQ topics, algorithms, input/output, loops)
-  - Enhanced patterns override generic algorithm flags
+   - Detects ~45+ patterns (FAQ topics, algorithms, input/output, loops)
+   - Enhanced patterns override generic algorithm flags
+   - has_string_cat excluded when more specific string flag present
+     (reverse, length, vowels, anagram, upper, lower, caesar, palindrome)
 
-5b. Emitter Blocks (NUM_EMITTERS = 67):
+5b. Emitter Blocks (NUM_EMITTERS = 76):
   Each emits L1VM code for a specific pattern:
 
   Block                    Purpose
@@ -88,8 +91,8 @@ Template struct:
   emit_input_find_max       Read N, find maximum
   emit_countdown_from       Countdown N to 0
   emit_fib_seq             Fibonacci sequence (first N)
-  emit_input_sort           Read N, bubble sort, print
-  emit_median               Read N, sort, print median
+  emit_input_sort           Read N, bubble sort, print (supports descending, max, min)
+  emit_median               Read N, sort, print median (uses "two" const 2 for divide)
   emit_string_cat           Input 2 strings, concatenate
   emit_string_compare       Input 2 strings, compare
   emit_array_assign         Input index+value, assign to array
@@ -129,17 +132,45 @@ Template struct:
   emit_double_pythagoras    Double-precision Pythagoras (a^2 + b^2 = c^2)
   emit_double_temp_convert  Double-precision Celsius to Fahrenheit
   emit_double_sqrt          Double-precision Newton-Raphson square root
+  emit_string_length        Length of input string (loop over str_len)
+  emit_stack                Stack: push/pop/size/print-all via sp array
+  emit_queue                Queue: enqueue/dequeue/print via head/tail array
+  emit_insertion_sort       Insertion sort with nested for/while loops
+  emit_calculator           Calculator: add/sub/mul/div/mod via menu
+  emit_unit_converter       Unit converter: km/mi/kg/lb/cm/in via menu
+  emit_rock_paper_scissors  RPS game vs computer using epochms RNG
+  emit_pyramid              Print pyramid number pattern 1..n
 
 5c. Multi-Step Composition (split_prompt_steps):
-  - Split patterns (ordered longest-first):
-    " und dann ", " und danach ", " anschliessend ",
-    " and then ", " . ", ". ", "; ", " then ",
-    " danach ", " and " (math-guarded), " und " (math-guarded)
-  - Math guard: if conjunction surrounded by digits, skip split
-  - Each split segment parsed as independent TaskProfile
-  - Pre-validation: non-viable steps auto-merge backward
-  - Each viable step generates via generate_from_task
-  - Variables re-initialized if values differ between steps
+   - Split patterns (ordered longest-first):
+     " und dann ", " und danach ", " anschliessend ",
+     " and then ", " . ", ". ", "; ", " then ",
+     " danach ", " and " (math-guarded), " und " (math-guarded)
+   - Math guard: if conjunction surrounded by digits, skip split
+   - Each split segment parsed as independent TaskProfile
+   - Pre-validation: non-viable steps auto-merge backward
+   - Additional merge: "print the median/average/mean/largest/smallest/sum/max/min/them/it/result"
+     steps are merged with the preceding step (keeps read+print-the-result as single instruction)
+   - Each viable step generates via generate_from_task
+   - Variables re-initialized if values differ between steps
+
+5d. generate_from_task dispatch order:
+   - Checked in priority order:
+     has_input_sort -> emit_input_sort (with descending flag, prints all if !has_max&&!has_min)
+     has_median -> emit_median
+     has_input_fact, has_string_compare, has_array_* ...
+     has_factorial, has_fizzbuzz, has_primes ...
+     ...
+     has_reverse_string, has_count_vowels, has_anagram_check,
+     has_string_to_upper, has_string_to_lower, has_caesar_cipher,
+     has_palindrome_string, has_string_length, has_stack, has_queue,
+     has_insertion_sort, has_calculator, has_unit_converter,
+     has_rock_paper_scissors, has_pyramid ...
+     has_string_cat (last among string ops -- less specific than reverse/length/etc)
+   - For has_input_sort with has_max: enables dataflow_quiet_mode, emits arr[count-1] only
+   - For has_input_sort with has_min: enables dataflow_quiet_mode, emits arr[0] only
+   - "print them/it/result" on inherited arrays handled after main dispatch
+     (guarded by !has_max && !has_min to avoid double-printing)
 
 6. TEMPLATE SYSTEM (31 templates)
 ----------------------------------
@@ -218,24 +249,42 @@ Template struct:
   %/modulo/mod/rest -> mod
 
 13. KEY DESIGN DECISIONS
-------------------------
+-----------------------
   - Planner-first ordering; enhanced patterns clear has_algorithm
   - Multi-step variable conflicts resolved by re-initialization
   - Literal values always use named variables (zero, one, two)
   - vars.l1h added per-emitter rather than globally
   - Complex nested expressions split into single-operation lines
   - input_s requires variable (not literal) for length argument
+  - Label newline: L1VM strings do not support escape sequences ("\n")
+    -- use separate ":print_s !" and ":print_n !" calls instead
+  - string_len calling convention: push string address, call, stpop result
+    -- Correct: (str :string_len !) / (len stpop)
+    -- Wrong: (str len :string_len !)
   - Const-string declared size must be >= strlen(content) + 1
   - Labels use colon syntax: (:label) for definition, :label for reference
+  - "exit" in string constants triggers l1pre macro conflict (exit is a #func in intr-func.l1h)
+    -- use "quit" instead of "exit" in menu strings
   - l1pre needs trailing slash on include directory argument
+
+13b. L1VM DOUBLE-PRECISION RULES
+---------------------------------
+  - Double input: `(val :input_d !)` followed by `(val + zerod val :=)` to coerce
+    the value into a proper register (needs `(set const-double 1 zerod 0.0)`)
+  - Integer input: `(choice :input_i !)` followed by `(choice + zero choice :=)`
+    for similar register coercion
+  - Double multiplication: operator BETWEEN operands:
+    `(val * c_km_mi result :=)`  -- CORRECT
+    `(val c_km_mi * result :=)`  -- WRONG (works for int64 but not double)
+  - Print double: `(reset-reg)` BEFORE `(result :print_d !)` to reset double registers
 
 14. FILE LOCATION
 -----------------
-  /home/stefan/opencode/brackets-code/brackets-code.c (~6960 lines, 67 emitter blocks)
+  /home/stefan/opencode/brackets-code/brackets-code.c (~8560 lines, 76 emitter blocks)
 
 15. TEST SUITE
 --------------
   /home/stefan/opencode/brackets-code/tests/run_tests.sh
   Modes: all, quick, list, save <dir>
-  59 tests (32 templates + 25 emitters + 2 multi-step); self-test: 28
+  60 tests (32 templates + 25 emitters + 3 multi-step); self-test: 28
   Pipeline: l1pre -> l1com (no runtime execution yet)
