@@ -693,6 +693,16 @@ typedef struct {
     int has_unit_converter;
     int has_rock_paper_scissors;
     int has_pyramid;
+    int has_temp_converter_menu;
+    int has_sort_stats;
+    int has_string_analyzer;
+    int has_number_analyzer;
+    int has_filter_numbers;
+    int has_random_generator;
+    int has_math_menu;
+    int has_quiz_game;
+    int has_bmi_calculator;
+    int has_statistics_suite;
     int suppress_output;
     char result_var[64];
     int skip_input;
@@ -836,6 +846,16 @@ static void emit_calculator(Program *prog, Function *f);
 static void emit_unit_converter(Program *prog, Function *f);
 static void emit_rock_paper_scissors(Program *prog, Function *f);
 static void emit_pyramid(Program *prog, Function *f);
+static void emit_temp_converter_menu(Program *prog, Function *f);
+static void emit_sort_stats(Program *prog, Function *f);
+static void emit_string_analyzer(Program *prog, Function *f);
+static void emit_number_analyzer(Program *prog, Function *f);
+static void emit_filter_numbers(Program *prog, Function *f);
+static void emit_random_generator(Program *prog, Function *f);
+static void emit_math_menu(Program *prog, Function *f);
+static void emit_quiz_game(Program *prog, Function *f);
+static void emit_bmi_calculator(Program *prog, Function *f);
+static void emit_statistics_suite(Program *prog, Function *f);
 
 // ==================== TINY LLM INFERENCE ENGINE ====================
 
@@ -843,7 +863,7 @@ static void emit_pyramid(Program *prog, Function *f);
 #define VOCAB_SIZE 72
 #define TEMPERATURE 0.8
 #define MAX_STEPS 8
-#define NUM_EMITTERS 76
+#define NUM_EMITTERS 86
 
 typedef struct {
     char word[32];
@@ -852,7 +872,7 @@ typedef struct {
 
 static WordEmbedding word_embeddings[VOCAB_SIZE];
 static float attention_weights[NUM_EMITTERS];
-static const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt","function","string_length","stack","queue","insertion_sort","calculator","unit_converter","rock_paper_scissors","pyramid"};
+static const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt","function","string_length","stack","queue","insertion_sort","calculator","unit_converter","rock_paper_scissors","pyramid","temp_converter_menu","sort_stats","string_analyzer","number_analyzer","filter_numbers","random_generator","math_menu","quiz_game","bmi_calculator","statistics_suite"};
 static int vs_boost_tokens[64];
 static int vs_boost_count = 0;
 
@@ -1056,6 +1076,16 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
     if (task->has_unit_converter) emitter_scores[73] = 2.0f;
     if (task->has_rock_paper_scissors) emitter_scores[74] = 2.0f;
     if (task->has_pyramid) emitter_scores[75] = 2.0f;
+    if (task->has_temp_converter_menu) emitter_scores[76] = 2.0f;
+    if (task->has_sort_stats) emitter_scores[77] = 2.0f;
+    if (task->has_string_analyzer) emitter_scores[78] = 2.0f;
+    if (task->has_number_analyzer) emitter_scores[79] = 2.0f;
+    if (task->has_filter_numbers) emitter_scores[80] = 2.0f;
+    if (task->has_random_generator) emitter_scores[81] = 2.0f;
+    if (task->has_math_menu) emitter_scores[82] = 2.0f;
+    if (task->has_quiz_game) emitter_scores[83] = 2.0f;
+    if (task->has_bmi_calculator) emitter_scores[84] = 2.0f;
+    if (task->has_statistics_suite) emitter_scores[85] = 2.0f;
 
     for (int ti = 0; ti < num_tokens && ti < 32; ti++) {
         int tok_id = tokens[ti];
@@ -4583,6 +4613,36 @@ static int parse_task(const char *prompt, TaskProfile *task) {
     if ((has_word(buf, "pyramid") || has_word(buf, "pyramide")) && (has_word(buf, "number") || has_word(buf, "zahl") || has_word(buf, "pattern") || has_word(buf, "muster")))
         task->has_pyramid = 1;
 
+    if ((has_word(buf, "temperature") || has_word(buf, "temperatur")) && (has_word(buf, "convert") || has_word(buf, "converter") || has_word(buf, "umrechnen")))
+        task->has_temp_converter_menu = 1;
+
+    if (has_word(buf, "sort") && (has_word(buf, "stats") || has_word(buf, "statistics") || has_word(buf, "statistik") || has_word(buf, "analyze") || has_word(buf, "analyse")))
+        task->has_sort_stats = 1;
+
+    if ((has_word(buf, "analyze") || has_word(buf, "analyse")) && (has_word(buf, "string") || has_word(buf, "text") || has_word(buf, "zeichenkette")))
+        task->has_string_analyzer = 1;
+
+    if ((has_word(buf, "analyze") || has_word(buf, "analyse")) && (has_word(buf, "number") || has_word(buf, "zahl")))
+        task->has_number_analyzer = 1;
+
+    if (has_word(buf, "filter") && (has_word(buf, "number") || has_word(buf, "numbers") || has_word(buf, "zahlen") || has_word(buf, "values") || has_word(buf, "werte")))
+        task->has_filter_numbers = 1;
+
+    if ((has_word(buf, "random") || has_word(buf, "zufall")) && (has_word(buf, "generator") || has_word(buf, "generate") || has_word(buf, "generieren")))
+        task->has_random_generator = 1;
+
+    if ((has_word(buf, "math") || has_word(buf, "mathe")) && (has_word(buf, "menu") || has_word(buf, "menue") || has_word(buf, "rechner")))
+        task->has_math_menu = 1;
+
+    if ((has_word(buf, "quiz") || has_word(buf, "frage")) && (has_word(buf, "game") || has_word(buf, "spiel")))
+        task->has_quiz_game = 1;
+
+    if (has_word(buf, "bmi") || ((has_word(buf, "body") || has_word(buf, "koerper")) && has_word(buf, "mass") && has_word(buf, "index")))
+        task->has_bmi_calculator = 1;
+
+    if ((has_word(buf, "statistics") || has_word(buf, "statistik")) && (has_word(buf, "all") || has_word(buf, "suite") || has_word(buf, "alle") || has_word(buf, "full") || has_word(buf, "komplett")))
+        task->has_statistics_suite = 1;
+
     if (has_word(buf, "fann") || has_word(buf, "neural") || (has_word(buf, "network") && has_word(buf, "ai"))) {
         if (has_word(buf, "train") || has_word(buf, "learn")) {
             task->has_fann_create = 1;
@@ -5161,7 +5221,601 @@ static void emit_pyramid(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-// ==================== PLAN-BASED GENERATOR ====================
+// ==================== 10 NEW COMBO EMITTERS ====================
+
+static void emit_temp_converter_menu(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *thv[] = {"3"};
+    const char *fov[] = {"4"};
+    const char *fiv[] = {"5"};
+    const char *zdv[] = {"0.0"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "three", 1, thv, 1);
+    add_var_to_func(f, "const-int64", "four", 1, fov, 1);
+    add_var_to_func(f, "const-int64", "five", 1, fiv, 1);
+    add_var_to_func(f, "int64", "choice", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "double", "val", 1, zdv, 1);
+    add_var_to_func(f, "double", "result", 1, zdv, 1);
+    add_var_to_func(f, "double", "tempd", 1, zdv, 1);
+    const char *ms[] = {"\"1-C_to_F 2-F_to_C 3-C_to_K 4-K_to_C 5-quit\""};
+    add_var_to_func(f, "const-string", "menu_str", 48, ms, 1);
+    add_var_to_func(f, "const-string", "prompt_val", 14, (const char *[]){"\"Enter value: \""}, 1);
+    const char *cs[] = {"\"choice: \""};
+    add_var_to_func(f, "const-string", "prompt_choice", 12, cs, 1);
+    const char *rs[] = {"\"Result: \""};
+    add_var_to_func(f, "const-string", "result_str", 9, rs, 1);
+    add_var_to_func(f, "const-double", "zerod", 1, zdv, 1);
+    const char *c9[] = {"9.0"};
+    const char *c5[] = {"5.0"};
+    const char *c32[] = {"32.0"};
+    const char *c273[] = {"273.15"};
+    add_var_to_func(f, "const-double", "c_9", 1, c9, 1);
+    add_var_to_func(f, "const-double", "c_5", 1, c5, 1);
+    add_var_to_func(f, "const-double", "c_32", 1, c32, 1);
+    add_var_to_func(f, "const-double", "c_273", 1, c273, 1);
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((one one ==) f :=) f for)");
+    func_append(f, "\t\t(menu_str :print_s !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(prompt_choice :print_s !)");
+    func_append(f, "\t\t(choice :input_i !)");
+    func_append(f, "\t\t(choice + zero choice :=)");
+    func_append(f, "\t\t(((choice five ==) f :=) f if)");
+    func_append(f, "\t\t\t(zero :exit !)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(prompt_val :print_s !)");
+    func_append(f, "\t\t(val :input_d !)");
+    func_append(f, "\t\t(val + zerod val :=)");
+    func_append(f, "\t\t(((choice one ==) f :=) f if)");
+    func_append(f, "\t\t\t(val * c_9 result :=)");
+    func_append(f, "\t\t\t(result / c_5 result :=)");
+    func_append(f, "\t\t\t(result + c_32 result :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((choice two ==) f :=) f if)");
+    func_append(f, "\t\t\t(val - c_32 tempd :=)");
+    func_append(f, "\t\t\t(tempd * c_5 result :=)");
+    func_append(f, "\t\t\t(result / c_9 result :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((choice three ==) f :=) f if)");
+    func_append(f, "\t\t\t(val + c_273 result :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((choice four ==) f :=) f if)");
+    func_append(f, "\t\t\t(val - c_273 result :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(result_str :print_s !)");
+    func_append(f, "\t\t(reset-reg)");
+    func_append(f, "\t\t(result :print_d !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t(next)");
+}
+
+static void emit_sort_stats(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "int64", "n", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "j", 1, zv, 1);
+    add_var_to_func(f, "int64", "temp", 1, zv, 1);
+    add_var_to_func(f, "int64", "sum", 1, zv, 1);
+    add_var_to_func(f, "int64", "min_val", 1, zv, 1);
+    add_var_to_func(f, "int64", "max_val", 1, zv, 1);
+    add_var_to_func(f, "int64", "arr", 100, zv, 1);
+    const char *ns[] = {"\"Enter count (max 20): \""};
+    add_var_to_func(f, "const-string", "prompt_n", 23, ns, 1);
+    const char *ns2[] = {"\"Enter number: \""};
+    add_var_to_func(f, "const-string", "prompt_num", 15, ns2, 1);
+    const char *ss[] = {"\"Sorted: \""};
+    add_var_to_func(f, "const-string", "sorted_str", 9, ss, 1);
+    const char *smin[] = {"\" Min: \""};
+    add_var_to_func(f, "const-string", "min_str", 7, smin, 1);
+    const char *smax[] = {"\" Max: \""};
+    add_var_to_func(f, "const-string", "max_str", 7, smax, 1);
+    const char *savg[] = {"\" Avg: \""};
+    add_var_to_func(f, "const-string", "avg_str", 7, savg, 1);
+    func_append(f, "\t(prompt_n :print_s !)");
+    func_append(f, "\t(n :input_i !)");
+    func_append(f, "\t(n + zero n :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(((i n <) i :=) i for)");
+    func_append(f, "\t\t(prompt_num :print_s !)");
+    func_append(f, "\t\t(arr i :input_i_arr !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(((i n <) i :=) i for)");
+    func_append(f, "\t\t(i + one j :=)");
+    func_append(f, "\t\t(((j n <) j :=) j for)");
+    func_append(f, "\t\t\t(arr i arr j > if)");
+    func_append(f, "\t\t\t\t(arr i temp :=)");
+    func_append(f, "\t\t\t\t(arr j arr i :=)");
+    func_append(f, "\t\t\t\t(temp arr j :=)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t\t(j + one j :=)");
+    func_append(f, "\t\t(next)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(sorted_str :print_s !)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(((i n <) i :=) i for)");
+    func_append(f, "\t\t(arr i :print_i_arr !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(min_str :print_s !)");
+    func_append(f, "\t(arr 0 :print_i_arr !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(max_str :print_s !)");
+    func_append(f, "\t(n one - temp :=)");
+    func_append(f, "\t(arr temp :print_i_arr !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero sum :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(((i n <) i :=) i for)");
+    func_append(f, "\t\t(arr i sum + sum :=)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(avg_str :print_s !)");
+    func_append(f, "\t(sum n / temp :=)");
+    func_append(f, "\t(temp :print_i !)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_string_analyzer(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "len", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "vowel_count", 1, zv, 1);
+    add_var_to_func(f, "int64", "consonant_count", 1, zv, 1);
+    add_var_to_func(f, "string", "str", 100, zv, 1);
+    const char *vs[] = {"\"Enter a string: \""};
+    add_var_to_func(f, "const-string", "prompt_str", 16, vs, 1);
+    const char *vl[] = {"\"Length: \""};
+    add_var_to_func(f, "const-string", "len_str", 9, vl, 1);
+    const char *vv[] = {"\"Vowels: \""};
+    add_var_to_func(f, "const-string", "vowels_str", 9, vv, 1);
+    const char *vc[] = {"\"Consonants: \""};
+    add_var_to_func(f, "const-string", "cons_str", 13, vc, 1);
+    func_append(f, "\t(prompt_str :print_s !)");
+    func_append(f, "\t(str :input_s !)");
+    func_append(f, "\t(str :string_len !)");
+    func_append(f, "\t(len stpop)");
+    func_append(f, "\t(zero vowel_count :=)");
+    func_append(f, "\t(zero consonant_count :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(((i len <) i :=) i for)");
+    func_append(f, "\t\t(str i char@ vowel_count + vowel_count :=)");
+    func_append(f, "\t\t(str i char@ 1 - if)");
+    func_append(f, "\t\t\t(consonant_count + one consonant_count :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(len_str :print_s !)");
+    func_append(f, "\t(len :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(vowels_str :print_s !)");
+    func_append(f, "\t(vowel_count :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(cons_str :print_s !)");
+    func_append(f, "\t(consonant_count :print_i !)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_number_analyzer(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *zdv[] = {"0.0"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "double", "num", 1, zdv, 1);
+    add_var_to_func(f, "double", "sqrt_res", 1, zdv, 1);
+    add_var_to_func(f, "double", "abs_res", 1, zdv, 1);
+    add_var_to_func(f, "double", "two_d", 1, (const char *[]){"2.0"}, 1);
+    add_var_to_func(f, "const-double", "zerod", 1, zdv, 1);
+    const char *pn[] = {"\"Enter a number: \""};
+    add_var_to_func(f, "const-string", "prompt_num", 16, pn, 1);
+    const char *ss[] = {"\"Square root: \""};
+    add_var_to_func(f, "const-string", "sqrt_str", 14, ss, 1);
+    const char *sa[] = {"\"Absolute: \""};
+    add_var_to_func(f, "const-string", "abs_str", 11, sa, 1);
+    const char *sr[] = {"\"Rounded: \""};
+    add_var_to_func(f, "const-string", "round_str", 10, sr, 1);
+    const char *so[] = {"\"Odd/Even: \""};
+    add_var_to_func(f, "const-string", "odd_even_str", 12, so, 1);
+    const char *spos[] = {"\"Positive/Negative: \""};
+    add_var_to_func(f, "const-string", "pos_neg_str", 20, spos, 1);
+    func_append(f, "\t(prompt_num :print_s !)");
+    func_append(f, "\t(num :input_d !)");
+    func_append(f, "\t(num + zerod num :=)");
+    func_append(f, "\t(num :sqrt_d !)");
+    func_append(f, "\t(sqrt_res stpop)");
+    func_append(f, "\t(sqrt_str :print_s !)");
+    func_append(f, "\t(reset-reg)");
+    func_append(f, "\t(sqrt_res :print_d !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(num zerod < if)");
+    func_append(f, "\t\t(num neg abs_res :=)");
+    func_append(f, "\t(else)");
+    func_append(f, "\t\t(num abs_res :=)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(abs_str :print_s !)");
+    func_append(f, "\t(reset-reg)");
+    func_append(f, "\t(abs_res :print_d !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(round_str :print_s !)");
+    func_append(f, "\t(num zerod < if)");
+    func_append(f, "\t\t(num one_d - :trunc_d !)");
+    func_append(f, "\t(else)");
+    func_append(f, "\t\t(num :trunc_d !)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(num :trunc_d !)");
+    func_append(f, "\t(num_int stpop)");
+    func_append(f, "\t(odd_even_str :print_s !)");
+    func_append(f, "\t(num_int two % 0 == if)");
+    func_append(f, "\t\t(\"Even\" :print_s !)");
+    func_append(f, "\t(else)");
+    func_append(f, "\t\t(\"Odd\" :print_s !)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(pos_neg_str :print_s !)");
+    func_append(f, "\t(num zerod < if)");
+    func_append(f, "\t\t(\"Negative\" :print_s !)");
+    func_append(f, "\t(else)");
+    func_append(f, "\t\t(\"Positive\" :print_s !)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_filter_numbers(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "int64", "n", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "val", 1, zv, 1);
+    add_var_to_func(f, "int64", "arr", 100, zv, 1);
+    add_var_to_func(f, "int64", "result", 100, zv, 1);
+    add_var_to_func(f, "int64", "ri", 1, zv, 1);
+    add_var_to_func(f, "int64", "threshold", 1, zv, 1);
+    const char *ns[] = {"\"Enter count: \""};
+    add_var_to_func(f, "const-string", "prompt_n", 14, ns, 1);
+    const char *ns2[] = {"\"Enter number: \""};
+    add_var_to_func(f, "const-string", "prompt_num", 15, ns2, 1);
+    const char *nt[] = {"\"Threshold: \""};
+    add_var_to_func(f, "const-string", "prompt_thresh", 12, nt, 1);
+    const char *sr[] = {"\"Filtered (> threshold): \""};
+    add_var_to_func(f, "const-string", "result_str", 24, sr, 1);
+    func_append(f, "\t(prompt_n :print_s !)");
+    func_append(f, "\t(n :input_i !)");
+    func_append(f, "\t(n + zero n :=)");
+    func_append(f, "\t(prompt_thresh :print_s !)");
+    func_append(f, "\t(threshold :input_i !)");
+    func_append(f, "\t(threshold + zero threshold :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(((i n <) i :=) i for)");
+    func_append(f, "\t\t(prompt_num :print_s !)");
+    func_append(f, "\t\t(arr i :input_i_arr !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(zero ri :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(((i n <) i :=) i for)");
+    func_append(f, "\t\t(arr i threshold > if)");
+    func_append(f, "\t\t\t(arr i result ri :=)");
+    func_append(f, "\t\t\t(ri + one ri :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(result_str :print_s !)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(((i ri <) i :=) i for)");
+    func_append(f, "\t\t(result i :print_i_arr !)");
+    func_append(f, "\t\t(:print_s !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_random_generator(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "n", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "rand_max", 1, zv, 1);
+    const char *pc[] = {"\"Count: \""};
+    add_var_to_func(f, "const-string", "prompt_count", 8, pc, 1);
+    const char *pm[] = {"\"Max: \""};
+    add_var_to_func(f, "const-string", "prompt_max", 6, pm, 1);
+    const char *pr[] = {"\"Random: \""};
+    add_var_to_func(f, "const-string", "random_str", 9, pr, 1);
+    func_append(f, "\t(prompt_count :print_s !)");
+    func_append(f, "\t(n :input_i !)");
+    func_append(f, "\t(n + zero n :=)");
+    func_append(f, "\t(prompt_max :print_s !)");
+    func_append(f, "\t(rand_max :input_i !)");
+    func_append(f, "\t(rand_max + zero rand_max :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(((i n <) i :=) i for)");
+    func_append(f, "\t\t(rand_max :random_i !)");
+    func_append(f, "\t\t(:print_i !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+}
+
+static void emit_math_menu(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *zv_d[] = {"0.0"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "int64", "choice", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "double", "a", 1, zv_d, 1);
+    add_var_to_func(f, "double", "b", 1, zv_d, 1);
+    add_var_to_func(f, "double", "res", 1, zv_d, 1);
+    add_var_to_func(f, "const-double", "zerod", 1, zv_d, 1);
+    const char *ms[] = {"\"1-Add 2-Sub 3-Mul 4-Div 5-quit\""};
+    add_var_to_func(f, "const-string", "menu_str", 33, ms, 1);
+    const char *pc[] = {"\"Choice: \""};
+    add_var_to_func(f, "const-string", "prompt_choice", 10, pc, 1);
+    const char *pa[] = {"\"A: \""};
+    add_var_to_func(f, "const-string", "prompt_a", 5, pa, 1);
+    const char *pb[] = {"\"B: \""};
+    add_var_to_func(f, "const-string", "prompt_b", 5, pb, 1);
+    const char *pr[] = {"\"Result: \""};
+    add_var_to_func(f, "const-string", "result_str", 9, pr, 1);
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((one one ==) f :=) f for)");
+    func_append(f, "\t\t(menu_str :print_s !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(prompt_choice :print_s !)");
+    func_append(f, "\t\t(choice :input_i !)");
+    func_append(f, "\t\t(choice + zero choice :=)");
+    func_append(f, "\t\t(((choice 5 ==) f :=) f if)");
+    func_append(f, "\t\t\t(zero :exit !)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(prompt_a :print_s !)");
+    func_append(f, "\t\t(a :input_d !)");
+    func_append(f, "\t\t(a + zerod a :=)");
+    func_append(f, "\t\t(prompt_b :print_s !)");
+    func_append(f, "\t\t(b :input_d !)");
+    func_append(f, "\t\t(b + zerod b :=)");
+    func_append(f, "\t\t(((choice one ==) f :=) f if)");
+    func_append(f, "\t\t\t(a + b res :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((choice two ==) f :=) f if)");
+    func_append(f, "\t\t\t(a - b res :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((choice 3 ==) f :=) f if)");
+    func_append(f, "\t\t\t(a * b res :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((choice 4 ==) f :=) f if)");
+    func_append(f, "\t\t\t(b zerod == if)");
+    func_append(f, "\t\t\t\t(\"Error: div by zero\" :print_s !)");
+    func_append(f, "\t\t\t(else)");
+    func_append(f, "\t\t\t\t(a / b res :=)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(result_str :print_s !)");
+    func_append(f, "\t\t(reset-reg)");
+    func_append(f, "\t\t(res :print_d !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t(next)");
+}
+
+static void emit_quiz_game(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "score", 1, zv, 1);
+    add_var_to_func(f, "int64", "ans", 1, zv, 1);
+    const char *q1[] = {"\"What is 2+2? \""};
+    add_var_to_func(f, "const-string", "q1", 15, q1, 1);
+    const char *q2[] = {"\"What is 3*3? \""};
+    add_var_to_func(f, "const-string", "q2", 15, q2, 1);
+    const char *q3[] = {"\"What is 10-7? \""};
+    add_var_to_func(f, "const-string", "q3", 15, q3, 1);
+    const char *sc[] = {"\"Score: \""};
+    add_var_to_func(f, "const-string", "score_str", 8, sc, 1);
+    add_var_to_func(f, "int64", "four", 1, (const char *[]){"4"}, 1);
+    add_var_to_func(f, "int64", "nine", 1, (const char *[]){"9"}, 1);
+    add_var_to_func(f, "int64", "three", 1, (const char *[]){"3"}, 1);
+    func_append(f, "\t(zero score :=)");
+    func_append(f, "\t(q1 :print_s !)");
+    func_append(f, "\t(ans :input_i !)");
+    func_append(f, "\t(ans + zero ans :=)");
+    func_append(f, "\t(ans four == if)");
+    func_append(f, "\t\t(score + one score :=)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(q2 :print_s !)");
+    func_append(f, "\t(ans :input_i !)");
+    func_append(f, "\t(ans + zero ans :=)");
+    func_append(f, "\t(ans nine == if)");
+    func_append(f, "\t\t(score + one score :=)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(q3 :print_s !)");
+    func_append(f, "\t(ans :input_i !)");
+    func_append(f, "\t(ans + zero ans :=)");
+    func_append(f, "\t(ans three == if)");
+    func_append(f, "\t\t(score + one score :=)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(score_str :print_s !)");
+    func_append(f, "\t(score :print_i !)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_bmi_calculator(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *zdv[] = {"0.0"};
+    add_var_to_func(f, "int64", "choice", 1, zv, 1);
+    add_var_to_func(f, "double", "weight", 1, zdv, 1);
+    add_var_to_func(f, "double", "height", 1, zdv, 1);
+    add_var_to_func(f, "double", "bmi", 1, zdv, 1);
+    add_var_to_func(f, "const-double", "zerod", 1, zdv, 1);
+    const char *ms[] = {"\"1-Metric 2-Imperial 3-quit\""};
+    add_var_to_func(f, "const-string", "menu_str", 29, ms, 1);
+    const char *ps[] = {"\"Choice: \""};
+    add_var_to_func(f, "const-string", "prompt_choice", 10, ps, 1);
+    const char *pw[] = {"\"Weight (kg/lbs): \""};
+    add_var_to_func(f, "const-string", "prompt_weight", 19, pw, 1);
+    const char *ph[] = {"\"Height (m/in): \""};
+    add_var_to_func(f, "const-string", "prompt_height", 17, ph, 1);
+    const char *pb[] = {"\"BMI: \""};
+    add_var_to_func(f, "const-string", "bmi_str", 6, pb, 1);
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(menu_str :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(prompt_choice :print_s !)");
+    func_append(f, "\t(choice :input_i !)");
+    func_append(f, "\t(choice + zero choice :=)");
+    func_append(f, "\t(((choice 3 ==) f :=) f if)");
+    func_append(f, "\t\t(zero :exit !)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(prompt_weight :print_s !)");
+    func_append(f, "\t(weight :input_d !)");
+    func_append(f, "\t(weight + zerod weight :=)");
+    func_append(f, "\t(prompt_height :print_s !)");
+    func_append(f, "\t(height :input_d !)");
+    func_append(f, "\t(height + zerod height :=)");
+    func_append(f, "\t(((choice 1 ==) f :=) f if)");
+    func_append(f, "\t\t(height * height bmi :=)");
+    func_append(f, "\t\t(weight / bmi bmi :=)");
+    func_append(f, "\t(else)");
+    func_append(f, "\t\t(height * height bmi :=)");
+    func_append(f, "\t\t(weight * 703.0 bmi :=)");
+    func_append(f, "\t\t(bmi / height bmi :=)");
+    func_append(f, "\t\t(bmi / height bmi :=)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(bmi_str :print_s !)");
+    func_append(f, "\t(reset-reg)");
+    func_append(f, "\t(bmi :print_d !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(next)");
+}
+
+static void emit_statistics_suite(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *zdv[] = {"0.0"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "int64", "n", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "j", 1, zv, 1);
+    add_var_to_func(f, "int64", "temp", 1, zv, 1);
+    add_var_to_func(f, "double", "sum", 1, zdv, 1);
+    add_var_to_func(f, "double", "mean", 1, zdv, 1);
+    add_var_to_func(f, "double", "median", 1, zdv, 1);
+    add_var_to_func(f, "double", "variance", 1, zdv, 1);
+    add_var_to_func(f, "double", "stddev", 1, zdv, 1);
+    add_var_to_func(f, "double", "diff", 1, zdv, 1);
+    add_var_to_func(f, "double", "arr", 100, zdv, 1);
+    add_var_to_func(f, "const-double", "zerod", 1, zdv, 1);
+    const char *pn[] = {"\"Enter count: \""};
+    add_var_to_func(f, "const-string", "prompt_n", 14, pn, 1);
+    const char *pv[] = {"\"Enter value: \""};
+    add_var_to_func(f, "const-string", "prompt_val", 14, pv, 1);
+    const char *smean[] = {"\"Mean: \""};
+    add_var_to_func(f, "const-string", "mean_str", 7, smean, 1);
+    const char *smed[] = {"\"Median: \""};
+    add_var_to_func(f, "const-string", "median_str", 9, smed, 1);
+    const char *sstd[] = {"\"StdDev: \""};
+    add_var_to_func(f, "const-string", "stddev_str", 9, sstd, 1);
+    func_append(f, "\t(prompt_n :print_s !)");
+    func_append(f, "\t(n :input_i !)");
+    func_append(f, "\t(n + zero n :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(zero sum :=)");
+    func_append(f, "\t(((i n <) i :=) i for)");
+    func_append(f, "\t\t(prompt_val :print_s !)");
+    func_append(f, "\t\t(arr i :input_d_arr !)");
+    func_append(f, "\t\t(arr i + zerod arr i :=)");
+    func_append(f, "\t\t(arr i sum + sum :=)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(n :int-to-double !)");
+    func_append(f, "\t(tempd stpop)");
+    func_append(f, "\t(sum / tempd mean :=)");
+    func_append(f, "\t(mean_str :print_s !)");
+    func_append(f, "\t(reset-reg)");
+    func_append(f, "\t(mean :print_d !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(((i n <) i :=) i for)");
+    func_append(f, "\t\t(i + one j :=)");
+    func_append(f, "\t\t(((j n <) j :=) j for)");
+    func_append(f, "\t\t\t(arr i arr j > if)");
+    func_append(f, "\t\t\t\t(arr i tempd :=)");
+    func_append(f, "\t\t\t\t(arr j arr i :=)");
+    func_append(f, "\t\t\t\t(tempd arr j :=)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t\t(j + one j :=)");
+    func_append(f, "\t\t(next)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(n two % 0 == if)");
+    func_append(f, "\t\t(n two / temp :=)");
+    func_append(f, "\t\t(arr temp arr temp one - + median :=)");
+    func_append(f, "\t\t(median / 2.0 median :=)");
+    func_append(f, "\t(else)");
+    func_append(f, "\t\t(n two / temp :=)");
+    func_append(f, "\t\t(arr temp median :=)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(median_str :print_s !)");
+    func_append(f, "\t(reset-reg)");
+    func_append(f, "\t(median :print_d !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero variance :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(((i n <) i :=) i for)");
+    func_append(f, "\t\t(arr i mean - diff :=)");
+    func_append(f, "\t\t(diff * diff diff :=)");
+    func_append(f, "\t\t(diff variance + variance :=)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(variance / tempd variance :=)");
+    func_append(f, "\t(variance :sqrt_d !)");
+    func_append(f, "\t(stddev stpop)");
+    func_append(f, "\t(stddev_str :print_s !)");
+    func_append(f, "\t(reset-reg)");
+    func_append(f, "\t(stddev :print_d !)");
+    func_append(f, "\t(:print_n !)");
+}
 
 static void ensure_exit(Function *f, int last_step) {
     if (!last_step) return;
@@ -5651,6 +6305,56 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     }
     if (task->has_pyramid) {
         emit_pyramid(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_temp_converter_menu) {
+        emit_temp_converter_menu(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_sort_stats) {
+        emit_sort_stats(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_string_analyzer) {
+        emit_string_analyzer(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_number_analyzer) {
+        emit_number_analyzer(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_filter_numbers) {
+        emit_filter_numbers(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_random_generator) {
+        emit_random_generator(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_math_menu) {
+        emit_math_menu(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_quiz_game) {
+        emit_quiz_game(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_bmi_calculator) {
+        emit_bmi_calculator(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_statistics_suite) {
+        emit_statistics_suite(prog, f);
         ensure_exit(f, last_step);
         return 1;
     }
