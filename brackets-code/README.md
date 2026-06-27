@@ -1,6 +1,6 @@
 # Brackets Code
 
-A CLI code generator for the Brackets (L1VM) language — v0.6.2.
+A CLI code generator for the Brackets (L1VM) language — v0.6.3.
 Converts natural-language prompts into working `.l1com` programs.
 
 ## How it works
