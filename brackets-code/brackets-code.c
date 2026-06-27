@@ -650,6 +650,7 @@ typedef struct {
     int has_timer;
     int has_array_min_max;
     int has_bool_demo;
+    int has_print_var;
     int has_bit_check;
     int has_leap_year;
     int has_temp_convert;
@@ -2597,6 +2598,7 @@ static void emit_array_min_max(Program *prog, Function *f) {
 
 static void emit_bool_demo(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
+    add_include(prog, "bool.l1h");
     const char *zv[] = {"0"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
     const char *ov[] = {"1"};
@@ -2605,19 +2607,19 @@ static void emit_bool_demo(Program *prog, Function *f) {
     add_var_to_func(f, "int64", "a", 1, av, 1);
     add_var_to_func(f, "int64", "b", 1, zv, 1);
     add_var_to_func(f, "int64", "f", 1, zv, 1);
-    add_var_to_func(f, "bool", "Bool", 1, (const char *[]){"true"}, 1);
+    const char *bov[] = {"1"};
+    add_var_to_func(f, "bool", "Bool", 1, bov, 1);
     const char *ps[] = {"\"Bool = \""};
     add_var_to_func(f, "const-string", "bool_str", 8, ps, 1);
-    func_append(f, "\t(a b :=)");
-    func_append(f, "\t(((b a ==) f :=) f if+)");
-    func_append(f, "\t\t(true Bool :=)");
+    func_append(f, "\t(a b =)");
+    func_append(f, "\t(((b a ==) f =) f if+)");
+    func_append(f, "\t\t(true Bool =)");
     func_append(f, "\t(else)");
-    func_append(f, "\t\t(false Bool :=)");
+    func_append(f, "\t\t(false Bool =)");
     func_append(f, "\t(endif)");
     func_append(f, "\t(bool_str :print_s !)");
     func_append(f, "\t(Bool :print_i !)");
     func_append(f, "\t(:print_n !)");
-    add_include_post(prog, "bool.l1h");
 }
 
 static void emit_bit_check(Program *prog, Function *f) {
@@ -4334,6 +4336,10 @@ static int parse_task(const char *prompt, TaskProfile *task) {
         || has_word(buf, "output") || has_word(buf, "schreib"))
         task->has_output = 1;
 
+    // detect print variable
+    if (task->has_output && strstr(buf, "variable"))
+        task->has_print_var = 1;
+
     // detect operation
     const char *op = find_operation(buf);
     if (op) {
@@ -4370,7 +4376,7 @@ static int parse_task(const char *prompt, TaskProfile *task) {
         || has_word(buf, "least") || has_word(buf, "lowest") || has_word(buf, "minimum"))
         task->has_min = 1;
 
-    if (has_word(buf, "gcd") || has_word(buf, "ggt") || has_word(buf, "gcm"))
+    if (has_word(buf, "gcd") || has_word(buf, "ggt") || has_word(buf, "gcm") || strstr(buf, "common divisor") || strstr(buf, "greatest common"))
         task->has_gcd = 1;
 
     if (has_word(buf, "countdown") || has_word(buf, "count down"))
@@ -4422,7 +4428,8 @@ static int parse_task(const char *prompt, TaskProfile *task) {
     if (has_word(buf, "median") || has_word(buf, "mitte"))
         task->has_median = 1;
 
-    if ((has_word(buf, "string") || has_word(buf, "zeichen") || has_word(buf, "text")
+    if ((has_word(buf, "string") || strstr(buf, "strings") || strstr(buf, "string ")
+        || has_word(buf, "zeichen") || has_word(buf, "text")
         || has_word(buf, "wort"))
         && !has_word(buf, "length") && !has_word(buf, "laenge"))
         task->has_string_cat = 1;
@@ -4478,7 +4485,7 @@ static int parse_task(const char *prompt, TaskProfile *task) {
         task->has_algorithm = 0;
     }
 
-    if (has_word(buf, "countdown") && task->has_literals) {
+    if ((has_word(buf, "countdown") || strstr(buf, "count down")) && task->has_literals) {
         task->has_countdown_from = 1;
         if (task->num_literals >= 1) task->countdown_start = task->literals[0];
         else task->countdown_start = 10;
@@ -4553,7 +4560,7 @@ static int parse_task(const char *prompt, TaskProfile *task) {
         task->has_algorithm = 0;
     }
 
-    if (has_word(buf, "bool")) {
+    if (has_word(buf, "bool") || strstr(buf, "boolean")) {
         task->has_bool_demo = 1;
         task->has_algorithm = 0;
     }
@@ -4795,7 +4802,7 @@ static int parse_task(const char *prompt, TaskProfile *task) {
         || task->has_fib_seq || task->has_countdown_from || task->has_input_sort
         || task->has_input_fact || task->has_read_file || task->has_write_file
         || task->has_array_vmath || task->has_string_to_num || task->has_timer
-        || task->has_array_min_max || task->has_bool_demo || task->has_bit_check
+        || task->has_array_min_max || task->has_bool_demo || task->has_print_var || task->has_bit_check
         || task->has_leap_year || task->has_temp_convert || task->has_circle_area
         || task->has_fann_create || task->has_fann_train || task->has_fann_run
         || task->has_palindrome || task->has_lcm || task->has_collatz
@@ -8412,6 +8419,19 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         func_append(f, ln);
         func_append(f, "\t(a + zero a :=)");
         func_append(f, "\t(a :print_i !)");
+        func_append(f, "\t(:print_n !)");
+        ensure_exit(f, last_step);
+        return 1;
+    }
+
+    if (task->has_print_var) {
+        add_include(prog, "intr-func.l1h");
+        const char *zv[] = {"0"};
+        const char *mv[] = {"42"};
+        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+        add_var_to_func(f, "int64", "myvar", 1, mv, 1);
+        func_append(f, "\t// print a variable");
+        func_append(f, "\t(myvar :print_i !)");
         func_append(f, "\t(:print_n !)");
         ensure_exit(f, last_step);
         return 1;
