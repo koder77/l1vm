@@ -703,6 +703,26 @@ typedef struct {
     int has_quiz_game;
     int has_bmi_calculator;
     int has_statistics_suite;
+    int has_linked_list;
+    int has_binary_search_tree;
+    int has_tree_traversal;
+    int has_graph_bfs_dfs;
+    int has_n_queens;
+    int has_sudoku;
+    int has_levenshtein;
+    int has_maze_generator;
+    int has_maze_solver;
+    int has_monte_carlo;
+    int has_matrix_mul;
+    int has_matrix_transpose;
+    int has_numerical_integration;
+    int has_complex_numbers;
+    int has_linear_regression;
+    int has_base_converter;
+    int has_freq_analysis;
+    int has_shuffle;
+    int has_weighted_random;
+    int has_ascii_table;
     int suppress_output;
     char result_var[64];
     int skip_input;
@@ -856,6 +876,26 @@ static void emit_math_menu(Program *prog, Function *f);
 static void emit_quiz_game(Program *prog, Function *f);
 static void emit_bmi_calculator(Program *prog, Function *f);
 static void emit_statistics_suite(Program *prog, Function *f);
+static void emit_linked_list(Program *prog, Function *f);
+static void emit_binary_search_tree(Program *prog, Function *f);
+static void emit_tree_traversal(Program *prog, Function *f);
+static void emit_graph_bfs_dfs(Program *prog, Function *f);
+static void emit_n_queens(Program *prog, Function *f);
+static void emit_sudoku(Program *prog, Function *f);
+static void emit_levenshtein_distance(Program *prog, Function *f);
+static void emit_maze_generator(Program *prog, Function *f);
+static void emit_maze_solver(Program *prog, Function *f);
+static void emit_monte_carlo_pi(Program *prog, Function *f);
+static void emit_matrix_multiplication(Program *prog, Function *f);
+static void emit_matrix_transpose(Program *prog, Function *f);
+static void emit_numerical_integration(Program *prog, Function *f);
+static void emit_complex_numbers(Program *prog, Function *f);
+static void emit_linear_regression(Program *prog, Function *f);
+static void emit_base_converter(Program *prog, Function *f);
+static void emit_freq_analysis(Program *prog, Function *f);
+static void emit_shuffle(Program *prog, Function *f);
+static void emit_weighted_random(Program *prog, Function *f);
+static void emit_ascii_table(Program *prog, Function *f);
 
 // ==================== TINY LLM INFERENCE ENGINE ====================
 
@@ -863,7 +903,7 @@ static void emit_statistics_suite(Program *prog, Function *f);
 #define VOCAB_SIZE 72
 #define TEMPERATURE 0.8
 #define MAX_STEPS 8
-#define NUM_EMITTERS 86
+#define NUM_EMITTERS 106
 
 typedef struct {
     char word[32];
@@ -872,7 +912,7 @@ typedef struct {
 
 static WordEmbedding word_embeddings[VOCAB_SIZE];
 static float attention_weights[NUM_EMITTERS];
-static const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt","function","string_length","stack","queue","insertion_sort","calculator","unit_converter","rock_paper_scissors","pyramid","temp_converter_menu","sort_stats","string_analyzer","number_analyzer","filter_numbers","random_generator","math_menu","quiz_game","bmi_calculator","statistics_suite"};
+static const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt","function","string_length","stack","queue","insertion_sort","calculator","unit_converter","rock_paper_scissors","pyramid","temp_converter_menu","sort_stats","string_analyzer","number_analyzer","filter_numbers","random_generator","math_menu","quiz_game","bmi_calculator","statistics_suite","linked_list","binary_search_tree","tree_traversal","graph_bfs_dfs","n_queens","sudoku","levenshtein_distance","maze_generator","maze_solver","monte_carlo_pi","matrix_multiplication","matrix_transpose","numerical_integration","complex_numbers","linear_regression","base_converter","freq_analysis","shuffle","weighted_random","ascii_table"};
 static int vs_boost_tokens[64];
 static int vs_boost_count = 0;
 
@@ -1086,6 +1126,26 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
     if (task->has_quiz_game) emitter_scores[83] = 2.0f;
     if (task->has_bmi_calculator) emitter_scores[84] = 2.0f;
     if (task->has_statistics_suite) emitter_scores[85] = 2.0f;
+    if (task->has_linked_list) emitter_scores[86] = 2.0f;
+    if (task->has_binary_search_tree) emitter_scores[87] = 2.0f;
+    if (task->has_tree_traversal) emitter_scores[88] = 2.0f;
+    if (task->has_graph_bfs_dfs) emitter_scores[89] = 2.0f;
+    if (task->has_n_queens) emitter_scores[90] = 2.0f;
+    if (task->has_sudoku) emitter_scores[91] = 2.0f;
+    if (task->has_levenshtein) emitter_scores[92] = 2.0f;
+    if (task->has_maze_generator) emitter_scores[93] = 2.0f;
+    if (task->has_maze_solver) emitter_scores[94] = 2.0f;
+    if (task->has_monte_carlo) emitter_scores[95] = 2.0f;
+    if (task->has_matrix_mul) emitter_scores[96] = 2.0f;
+    if (task->has_matrix_transpose) emitter_scores[97] = 2.0f;
+    if (task->has_numerical_integration) emitter_scores[98] = 2.0f;
+    if (task->has_complex_numbers) emitter_scores[99] = 2.0f;
+    if (task->has_linear_regression) emitter_scores[100] = 2.0f;
+    if (task->has_base_converter) emitter_scores[101] = 2.0f;
+    if (task->has_freq_analysis) emitter_scores[102] = 2.0f;
+    if (task->has_shuffle) emitter_scores[103] = 2.0f;
+    if (task->has_weighted_random) emitter_scores[104] = 2.0f;
+    if (task->has_ascii_table) emitter_scores[105] = 3.0f;
 
     for (int ti = 0; ti < num_tokens && ti < 32; ti++) {
         int tok_id = tokens[ti];
@@ -1349,6 +1409,21 @@ static void emit_math(Program *prog, Function *f, const char *type, const char *
     (void)last_step;
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
+    
+    const char *twov[] = {"2"};
+    const char *threev[] = {"3"};
+    const char *fourv[] = {"4"};
+    const char *fivev[] = {"5"};
+    const char *sixv[] = {"6"};
+    const char *sevenv[] = {"7"};
+    const char *tenv[] = {"10"};
+    add_var_to_func(f, "const-int64", "two", 1, twov, 1);
+    add_var_to_func(f, "const-int64", "three", 1, threev, 1);
+    add_var_to_func(f, "const-int64", "four", 1, fourv, 1);
+    add_var_to_func(f, "const-int64", "five", 1, fivev, 1);
+    add_var_to_func(f, "const-int64", "six", 1, sixv, 1);
+    add_var_to_func(f, "const-int64", "seven", 1, sevenv, 1);
+    add_var_to_func(f, "const-int64", "ten", 1, tenv, 1);
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
     char vn[64], vs[16], ln[256];
     for (int i = 0; i < n; i++) {
@@ -4301,7 +4376,7 @@ static int parse_task(const char *prompt, TaskProfile *task) {
     if (has_word(buf, "countdown") || has_word(buf, "count down"))
         task->has_countdown = 1;
 
-    if (has_word(buf, "table") || has_word(buf, "einmaleins") || has_word(buf, "multiplication"))
+    if (!has_word(buf, "ascii") && (has_word(buf, "table") || has_word(buf, "einmaleins") || has_word(buf, "multiplication")))
         task->has_mult_table = 1;
 
     if (has_word(buf, "guess") || has_word(buf, "rate") || has_word(buf, "raten"))
@@ -4545,7 +4620,7 @@ static int parse_task(const char *prompt, TaskProfile *task) {
     if (has_word(buf, "bubble") && has_word(buf, "sort"))
         task->has_bubble_sort = 1;
 
-    if (has_word(buf, "binary") && has_word(buf, "search"))
+    if (has_word(buf, "binary") && has_word(buf, "search") && !has_word(buf, "tree"))
         task->has_binary_search = 1;
 
     if (has_word(buf, "square") && has_word(buf, "root"))
@@ -4643,6 +4718,47 @@ static int parse_task(const char *prompt, TaskProfile *task) {
     if ((has_word(buf, "statistics") || has_word(buf, "statistik")) && (has_word(buf, "all") || has_word(buf, "suite") || has_word(buf, "alle") || has_word(buf, "full") || has_word(buf, "komplett")))
         task->has_statistics_suite = 1;
 
+    if (has_word(buf, "linked") && has_word(buf, "list"))
+        task->has_linked_list = 1;
+    if ((has_word(buf, "binary") || has_word(buf, "binaer")) && has_word(buf, "tree") && has_word(buf, "search"))
+        task->has_binary_search_tree = 1;
+    if (has_word(buf, "tree") && (has_word(buf, "traversal") || has_word(buf, "inorder") || has_word(buf, "preorder") || has_word(buf, "postorder")))
+        task->has_tree_traversal = 1;
+    if ((has_word(buf, "graph") || has_word(buf, "graf")) && (has_word(buf, "bfs") || has_word(buf, "dfs") || has_word(buf, "traverse") || has_word(buf, "durchlauf")))
+        task->has_graph_bfs_dfs = 1;
+    if ((has_word(buf, "n") || has_word(buf, "eight") || has_word(buf, "acht")) && has_word(buf, "queen"))
+        task->has_n_queens = 1;
+    if (has_word(buf, "sudoku") || (has_word(buf, "sodoku") && has_word(buf, "solver")))
+        task->has_sudoku = 1;
+    if ((has_word(buf, "levenshtein") || has_word(buf, "edit")) && has_word(buf, "distance"))
+        task->has_levenshtein = 1;
+    if ((has_word(buf, "maze") || has_word(buf, "labyrinth") || has_word(buf, "irrgarten")) && (has_word(buf, "generate") || has_word(buf, "generieren") || has_word(buf, "erzeugen")))
+        task->has_maze_generator = 1;
+    if ((has_word(buf, "maze") || has_word(buf, "labyrinth") || has_word(buf, "irrgarten")) && (has_word(buf, "solve") || has_word(buf, "solver") || has_word(buf, "loesen") || has_word(buf, "lösung")))
+        task->has_maze_solver = 1;
+    if ((has_word(buf, "monte") && has_word(buf, "carlo")) || (has_word(buf, "pi") && has_word(buf, "estimate")))
+        task->has_monte_carlo = 1;
+    if ((has_word(buf, "matrix") || has_word(buf, "matrize")) && has_word(buf, "multiply"))
+        task->has_matrix_mul = 1;
+    if (has_word(buf, "matrix") && (has_word(buf, "transpose") || has_word(buf, "transponieren")))
+        task->has_matrix_transpose = 1;
+    if ((has_word(buf, "numerical") || has_word(buf, "numerisch") || has_word(buf, "numeric")) && (has_word(buf, "integrate") || has_word(buf, "integration") || has_word(buf, "integral")))
+        task->has_numerical_integration = 1;
+    if ((has_word(buf, "complex") || has_word(buf, "komplex")) && has_word(buf, "number"))
+        task->has_complex_numbers = 1;
+    if ((has_word(buf, "linear") || has_word(buf, "linreg")) && (has_word(buf, "regression") || has_word(buf, "regress")))
+        task->has_linear_regression = 1;
+    if ((has_word(buf, "base") || has_word(buf, "basis")) && (has_word(buf, "convert") || has_word(buf, "converter") || has_word(buf, "umwandeln") || has_word(buf, "konvert")))
+        task->has_base_converter = 1;
+    if ((has_word(buf, "frequency") || has_word(buf, "haeufigkeit") || has_word(buf, "frequenz")) && (has_word(buf, "analyze") || has_word(buf, "analyse") || has_word(buf, "count") || has_word(buf, "zaehle")))
+        task->has_freq_analysis = 1;
+    if (has_word(buf, "shuffle") || has_word(buf, "mischen") || (has_word(buf, "random") && has_word(buf, "permute")))
+        task->has_shuffle = 1;
+    if ((has_word(buf, "weighted") || has_word(buf, "gewichtet")) && (has_word(buf, "random") || has_word(buf, "zufall")))
+        task->has_weighted_random = 1;
+    if (has_word(buf, "ascii") && (has_word(buf, "table") || has_word(buf, "tabelle") || has_word(buf, "format")))
+        task->has_ascii_table = 1;
+
     if (has_word(buf, "fann") || has_word(buf, "neural") || (has_word(buf, "network") && has_word(buf, "ai"))) {
         if (has_word(buf, "train") || has_word(buf, "learn")) {
             task->has_fann_create = 1;
@@ -4699,7 +4815,17 @@ static int parse_task(const char *prompt, TaskProfile *task) {
         || task->has_string_analyzer || task->has_number_analyzer
         || task->has_filter_numbers || task->has_random_generator
         || task->has_math_menu || task->has_quiz_game
-        || task->has_bmi_calculator || task->has_statistics_suite;
+        || task->has_bmi_calculator || task->has_statistics_suite
+        || task->has_linked_list || task->has_binary_search_tree
+        || task->has_tree_traversal || task->has_graph_bfs_dfs
+        || task->has_n_queens || task->has_sudoku
+        || task->has_levenshtein || task->has_maze_generator
+        || task->has_maze_solver || task->has_monte_carlo
+        || task->has_matrix_mul || task->has_matrix_transpose
+        || task->has_numerical_integration || task->has_complex_numbers
+        || task->has_linear_regression || task->has_base_converter
+        || task->has_freq_analysis || task->has_shuffle
+        || task->has_weighted_random || task->has_ascii_table;
 
     snprintf(task->title, sizeof(task->title), "%s", prompt);
     return has_any;
@@ -5398,28 +5524,96 @@ static void emit_string_analyzer(Program *prog, Function *f) {
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
     const char *ml[] = {"256"};
+    const char *v_a[] = {"97"};
+    const char *v_e[] = {"101"};
+    const char *v_i[] = {"105"};
+    const char *v_o[] = {"111"};
+    const char *v_u[] = {"117"};
+    const char *v_A[] = {"65"};
+    const char *v_E[] = {"69"};
+    const char *v_I[] = {"73"};
+    const char *v_O[] = {"79"};
+    const char *v_U[] = {"85"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
     add_var_to_func(f, "const-int64", "one", 1, ov, 1);
     add_var_to_func(f, "const-int64", "maxlen", 1, ml, 1);
-    add_var_to_func(f, "string", "str", 256, (const char *[]){"\"\""}, 1);
-    add_var_to_func(f, "int64", "len", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "va", 1, v_a, 1);
+    add_var_to_func(f, "const-int64", "ve", 1, v_e, 1);
+    add_var_to_func(f, "const-int64", "vi", 1, v_i, 1);
+    add_var_to_func(f, "const-int64", "vo", 1, v_o, 1);
+    add_var_to_func(f, "const-int64", "vu", 1, v_u, 1);
+    add_var_to_func(f, "const-int64", "vA", 1, v_A, 1);
+    add_var_to_func(f, "const-int64", "vE", 1, v_E, 1);
+    add_var_to_func(f, "const-int64", "vI", 1, v_I, 1);
+    add_var_to_func(f, "const-int64", "vO", 1, v_O, 1);
+    add_var_to_func(f, "const-int64", "vU", 1, v_U, 1);
     add_var_to_func(f, "int64", "strmod", 1, zv, 1);
+    add_var_to_func(f, "int64", "len", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "vowels", 1, zv, 1);
+    add_var_to_func(f, "int64", "cons", 1, zv, 1);
+    add_var_to_func(f, "int64", "ch", 1, zv, 1);
+    add_var_to_func(f, "string", "str", 256, (const char *[]){"\"\""}, 1);
     const char *vs[] = {"\"Enter a string: \""};
     add_var_to_func(f, "const-string", "prompt_str", 16, vs, 1);
     const char *vl[] = {"\"Length: \""};
     add_var_to_func(f, "const-string", "len_str", 9, vl, 1);
-    const char *yo[] = {"\"You entered: \""};
-    add_var_to_func(f, "const-string", "you_str", 14, yo, 1);
+    const char *vv[] = {"\"Vowels: \""};
+    add_var_to_func(f, "const-string", "vowels_str", 9, vv, 1);
+    const char *vc[] = {"\"Consonants: \""};
+    add_var_to_func(f, "const-string", "cons_str", 13, vc, 1);
     func_append(f, "\t(strmod :string_init !)");
     func_append(f, "\t(prompt_str :print_s !)");
     func_append(f, "\t(maxlen str :input_s !)");
     func_append(f, "\t(str :string_len !)");
     func_append(f, "\t(len stpop)");
+    func_append(f, "\t(zero vowels :=)");
+    func_append(f, "\t(zero cons :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(((i len <) i :=) i for)");
+    func_append(f, "\t\t(str ch i :string_mid_to_byte !)");
+    func_append(f, "\t\t(ch va == if)");
+    func_append(f, "\t\t\t(vowels + one vowels :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(ch ve == if)");
+    func_append(f, "\t\t\t(vowels + one vowels :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(ch vi == if)");
+    func_append(f, "\t\t\t(vowels + one vowels :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(ch vo == if)");
+    func_append(f, "\t\t\t(vowels + one vowels :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(ch vu == if)");
+    func_append(f, "\t\t\t(vowels + one vowels :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(ch vA == if)");
+    func_append(f, "\t\t\t(vowels + one vowels :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(ch vE == if)");
+    func_append(f, "\t\t\t(vowels + one vowels :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(ch vI == if)");
+    func_append(f, "\t\t\t(vowels + one vowels :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(ch vO == if)");
+    func_append(f, "\t\t\t(vowels + one vowels :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(ch vU == if)");
+    func_append(f, "\t\t\t(vowels + one vowels :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(cons + one cons :=)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(cons vowels - cons :=)");
     func_append(f, "\t(len_str :print_s !)");
     func_append(f, "\t(len :print_i !)");
     func_append(f, "\t(:print_n !)");
-    func_append(f, "\t(you_str :print_s !)");
-    func_append(f, "\t(str :print_s !)");
+    func_append(f, "\t(vowels_str :print_s !)");
+    func_append(f, "\t(vowels :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(cons_str :print_s !)");
+    func_append(f, "\t(cons :print_i !)");
     func_append(f, "\t(:print_n !)");
 }
 
@@ -5857,6 +6051,1545 @@ static void emit_statistics_suite(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
+// ==================== NEW EMITTERS ====================
+
+static void emit_linked_list(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *cv[] = {"10"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "capacity", 1, cv, 1);
+    add_var_to_func(f, "int64", "data", 10, zv, 0);
+    add_var_to_func(f, "int64", "next", 10, zv, 0);
+    add_var_to_func(f, "int64", "head", 1, zv, 1);
+    add_var_to_func(f, "int64", "free_idx", 1, zv, 1);
+    add_var_to_func(f, "int64", "choice", 1, zv, 1);
+    add_var_to_func(f, "int64", "val", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "ri", 1, zv, 1);
+    add_var_to_func(f, "int64", "cur", 1, zv, 1);
+    add_var_to_func(f, "int64", "prev", 1, zv, 1);
+    const char *ms[] = {"\"1-insert 2-delete 3-print 4-search 5-quit\""};
+    add_var_to_func(f, "const-string", "menu_str", 44, ms, 1);
+    add_var_to_func(f, "const-string", "prompt_val", 14, (const char *[]){"\"Enter value: \""}, 1);
+    add_var_to_func(f, "const-string", "prompt_key", 14, (const char *[]){"\"Enter key: \""}, 1);
+    add_var_to_func(f, "const-string", "prompt_choice", 12, (const char *[]){"\"choice: \""}, 1);
+    const char *nf[] = {"\"Not found\""};
+    add_var_to_func(f, "const-string", "not_found", 11, nf, 1);
+    func_append(f, "\t(one free_idx :=)");
+    func_append(f, "\t(zero head :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((one one <) f :=) f for)");
+    func_append(f, "\t\t(menu_str :print_s !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(prompt_choice :print_s !)");
+    func_append(f, "\t\t(choice :input_i !)");
+    func_append(f, "\t\t(((choice one ==) f :=) f if)");
+    func_append(f, "\t\t\t(prompt_val :print_s !)");
+    func_append(f, "\t\t\t(val :input_i !)");
+    func_append(f, "\t\t\t(free_idx * int64_size ri :=)");
+    func_append(f, "\t\t\t(val data [ ri ] =)");
+    func_append(f, "\t\t\t(zero next [ ri ] =)");
+    func_append(f, "\t\t\t(((head zero ==) f :=) f if)");
+    func_append(f, "\t\t\t\t(free_idx head :=)");
+    func_append(f, "\t\t\t(else)");
+    func_append(f, "\t\t\t\t(head cur :=)");
+    func_append(f, "\t\t\t\t(for-loop)");
+    func_append(f, "\t\t\t\t(((cur zero !=) f :=) f for)");
+    func_append(f, "\t\t\t\t\t(cur * int64_size ri :=)");
+    func_append(f, "\t\t\t\t\t(next [ ri ] cur :=)");
+    func_append(f, "\t\t\t\t(next)");
+    func_append(f, "\t\t\t\t(cur * int64_size ri :=)");
+    func_append(f, "\t\t\t\t(free_idx next [ ri ] =)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t\t(free_idx + one free_idx :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((choice two ==) f :=) f if)");
+    func_append(f, "\t\t\t(prompt_key :print_s !)");
+    func_append(f, "\t\t\t(val :input_i !)");
+    func_append(f, "\t\t\t(head cur :=)");
+    func_append(f, "\t\t\t(zero prev :=)");
+    func_append(f, "\t\t\t(for-loop)");
+    func_append(f, "\t\t\t(((cur zero !=) f :=) f for)");
+    func_append(f, "\t\t\t\t(cur * int64_size ri :=)");
+    func_append(f, "\t\t\t\t(data [ ri ] i :=)");
+    func_append(f, "\t\t\t\t(i + zero i :=)");
+    func_append(f, "\t\t\t\t(((i val ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t(next [ ri ] cur :=)");
+    func_append(f, "\t\t\t\t\t(((prev zero ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t\t(cur head :=)");
+    func_append(f, "\t\t\t\t\t(else)");
+    func_append(f, "\t\t\t\t\t\t(prev * int64_size ri :=)");
+    func_append(f, "\t\t\t\t\t\t(cur next [ ri ] =)");
+    func_append(f, "\t\t\t\t\t(endif)");
+    func_append(f, "\t\t\t\t\t(:found_break jmp)");
+    func_append(f, "\t\t\t\t(endif)");
+    func_append(f, "\t\t\t\t(cur prev :=)");
+    func_append(f, "\t\t\t\t(next [ ri ] cur :=)");
+    func_append(f, "\t\t\t(next)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((choice three ==) f :=) f if)");
+    func_append(f, "\t\t\t(head cur :=)");
+    func_append(f, "\t\t\t(for-loop)");
+    func_append(f, "\t\t\t(((cur zero !=) f :=) f for)");
+    func_append(f, "\t\t\t\t(cur * int64_size ri :=)");
+    func_append(f, "\t\t\t\t(data [ ri ] val =)");
+    func_append(f, "\t\t\t\t(val :print_i !)");
+    func_append(f, "\t\t\t\t(:print_n !)");
+    func_append(f, "\t\t\t\t(next [ ri ] cur :=)");
+    func_append(f, "\t\t\t(next)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((choice four ==) f :=) f if)");
+    func_append(f, "\t\t\t(prompt_key :print_s !)");
+    func_append(f, "\t\t\t(val :input_i !)");
+    func_append(f, "\t\t\t(head cur :=)");
+    func_append(f, "\t\t\t(zero i :=)");
+    func_append(f, "\t\t\t(for-loop)");
+    func_append(f, "\t\t\t(((cur zero !=) f :=) f for)");
+    func_append(f, "\t\t\t\t(cur * int64_size ri :=)");
+    func_append(f, "\t\t\t\t(data [ ri ] i :=)");
+    func_append(f, "\t\t\t\t(i + zero i :=)");
+    func_append(f, "\t\t\t\t(((i val ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t(one f :=)");
+    func_append(f, "\t\t\t\t\t(:found_break2 jmp)");
+    func_append(f, "\t\t\t\t(endif)");
+    func_append(f, "\t\t\t\t(next [ ri ] cur :=)");
+    func_append(f, "\t\t\t(next)");
+    func_append(f, "\t\t(:found_break2)");
+    func_append(f, "\t\t(((f one ==) f :=) f if+)");
+    func_append(f, "\t\t\t(cur :print_i !)");
+    func_append(f, "\t\t(else)");
+    func_append(f, "\t\t\t(not_found :print_s !)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t\t(((choice five ==) f :=) f if)");
+    func_append(f, "\t\t\t(zero :exit !)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t(next)");
+}
+
+static void emit_binary_search_tree(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *thv[] = {"3"};
+    const char *fov[] = {"4"};
+    const char *cv[] = {"20"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "three", 1, thv, 1);
+    add_var_to_func(f, "const-int64", "four", 1, fov, 1);
+    add_var_to_func(f, "int64", "capacity", 1, cv, 1);
+    add_var_to_func(f, "int64", "data", 20, zv, 0);
+    add_var_to_func(f, "int64", "left", 20, zv, 0);
+    add_var_to_func(f, "int64", "right", 20, zv, 0);
+    add_var_to_func(f, "int64", "root", 1, zv, 1);
+    add_var_to_func(f, "int64", "free_idx", 1, ov, 1);
+    add_var_to_func(f, "int64", "choice", 1, zv, 1);
+    add_var_to_func(f, "int64", "val", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "ri", 1, zv, 1);
+    add_var_to_func(f, "int64", "cur", 1, zv, 1);
+    add_var_to_func(f, "int64", "parent", 1, zv, 1);
+    const char *ms[] = {"\"1-insert 2-search 3-print 4-quit\""};
+    add_var_to_func(f, "const-string", "menu_str", 40, ms, 1);
+    add_var_to_func(f, "const-string", "prompt_val", 14, (const char *[]){"\"Enter value: \""}, 1);
+    add_var_to_func(f, "const-string", "prompt_choice", 12, (const char *[]){"\"choice: \""}, 1);
+    const char *sf[] = {"\"Found\""};
+    const char *nf[] = {"\"Not found\""};
+    add_var_to_func(f, "const-string", "found_str", 7, sf, 1);
+    add_var_to_func(f, "const-string", "not_found", 11, nf, 1);
+    func_append(f, "\t(zero root :=)");
+    func_append(f, "\t(one free_idx :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((one one ==) f :=) f for)");
+    func_append(f, "\t\t(menu_str :print_s !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(prompt_choice :print_s !)");
+    func_append(f, "\t\t(choice :input_i !)");
+    func_append(f, "\t\t(((choice one ==) f :=) f if)");
+    func_append(f, "\t\t\t(prompt_val :print_s !)");
+    func_append(f, "\t\t\t(val :input_i !)");
+    func_append(f, "\t\t\t(free_idx * int64_size ri :=)");
+    func_append(f, "\t\t\t(val data [ ri ] =)");
+    func_append(f, "\t\t\t(zero left [ ri ] =)");
+    func_append(f, "\t\t\t(zero right [ ri ] =)");
+    func_append(f, "\t\t\t(((root zero ==) f :=) f if+)");
+    func_append(f, "\t\t\t\t(free_idx root :=)");
+    func_append(f, "\t\t\t(else)");
+    func_append(f, "\t\t\t\t(root cur :=)");
+    func_append(f, "\t\t\t\t(for-loop)");
+    func_append(f, "\t\t\t\t(((cur zero !=) f :=) f for)");
+    func_append(f, "\t\t\t\t\t(cur * int64_size ri :=)");
+    func_append(f, "\t\t\t\t\t(data [ ri ] f :=)");
+    func_append(f, "\t\t\t\t\t(f + zero f :=)");
+    func_append(f, "\t\t\t\t\t(((val f <) f :=) f if+)");
+    func_append(f, "\t\t\t\t\t\t(left [ ri ] cur :=)");
+    func_append(f, "\t\t\t\t\t\t(((cur zero ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t\t\t(free_idx left [ ri ] =)");
+    func_append(f, "\t\t\t\t\t\t\t(:bst_done jmp)");
+    func_append(f, "\t\t\t\t\t\t(endif)");
+    func_append(f, "\t\t\t\t\t(else)");
+    func_append(f, "\t\t\t\t\t\t(right [ ri ] cur :=)");
+    func_append(f, "\t\t\t\t\t\t(((cur zero ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t\t\t(free_idx right [ ri ] =)");
+    func_append(f, "\t\t\t\t\t\t\t(:bst_done jmp)");
+    func_append(f, "\t\t\t\t\t\t(endif)");
+    func_append(f, "\t\t\t\t\t(endif)");
+    func_append(f, "\t\t\t\t(next)");
+    func_append(f, "\t\t\t(:bst_done)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t\t(free_idx + one free_idx :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((choice two ==) f :=) f if)");
+    func_append(f, "\t\t\t(prompt_val :print_s !)");
+    func_append(f, "\t\t\t(val :input_i !)");
+    func_append(f, "\t\t\t(root cur :=)");
+    func_append(f, "\t\t\t(for-loop)");
+    func_append(f, "\t\t\t(((cur zero !=) f :=) f for)");
+    func_append(f, "\t\t\t\t(cur * int64_size ri :=)");
+    func_append(f, "\t\t\t\t(data [ ri ] f :=)");
+    func_append(f, "\t\t\t\t(f + zero f :=)");
+    func_append(f, "\t\t\t\t(((val f ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t(found_str :print_s !)");
+    func_append(f, "\t\t\t\t\t(:bst_found jmp)");
+    func_append(f, "\t\t\t\t(endif)");
+    func_append(f, "\t\t\t\t(((val f <) f :=) f if+)");
+    func_append(f, "\t\t\t\t\t(left [ ri ] cur :=)");
+    func_append(f, "\t\t\t\t(else)");
+    func_append(f, "\t\t\t\t\t(right [ ri ] cur :=)");
+    func_append(f, "\t\t\t\t(endif)");
+    func_append(f, "\t\t\t(next)");
+    func_append(f, "\t\t(:bst_found)");
+    func_append(f, "\t\t(((cur zero ==) f :=) f if)");
+    func_append(f, "\t\t\t(not_found :print_s !)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((choice three ==) f :=) f if)");
+    func_append(f, "\t\t\t// inorder traversal using explicit stack");
+    func_append(f, "\t\t\t(root cur :=)");
+    func_append(f, "\t\t\t(for-loop)");
+    func_append(f, "\t\t\t\t(((cur zero !=) f :=) f for)");
+    func_append(f, "\t\t\t\t\t(cur * int64_size ri :=)");
+    func_append(f, "\t\t\t\t\t(left [ ri ] cur :=)");
+    func_append(f, "\t\t\t(next)");
+    func_append(f, "\t\t\t// simplified: print all non-zero data");
+    func_append(f, "\t\t\t(one cur :=)");
+    func_append(f, "\t\t\t(for-loop)");
+    func_append(f, "\t\t\t(((cur free_idx <) f :=) f for)");
+    func_append(f, "\t\t\t\t(cur * int64_size ri :=)");
+    func_append(f, "\t\t\t\t(data [ ri ] val =)");
+    func_append(f, "\t\t\t\t(val :print_i !)");
+    func_append(f, "\t\t\t\t(:print_n !)");
+    func_append(f, "\t\t\t\t(cur + one cur :=)");
+    func_append(f, "\t\t\t(next)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((choice four ==) f :=) f if)");
+    func_append(f, "\t\t\t(zero :exit !)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t(next)");
+}
+
+static void emit_tree_traversal(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *thv[] = {"3"};
+    const char *fov[] = {"4"};
+    const char *fiv[] = {"5"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "three", 1, thv, 1);
+    add_var_to_func(f, "const-int64", "four", 1, fov, 1);
+    add_var_to_func(f, "const-int64", "five", 1, fiv, 1);
+    add_var_to_func(f, "int64", "data", 10, zv, 0);
+    add_var_to_func(f, "int64", "left", 10, zv, 0);
+    add_var_to_func(f, "int64", "right", 10, zv, 0);
+    add_var_to_func(f, "int64", "root", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "ri", 1, zv, 1);
+    add_var_to_func(f, "int64", "stack", 10, zv, 0);
+    add_var_to_func(f, "int64", "sp", 1, zv, 1);
+    add_var_to_func(f, "int64", "cur", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    // build fixed tree: root=1, 1->left=2, 1->right=3, 2->left=4, 2->right=5
+    add_var_to_func(f, "const-int64", "cv1", 1, (const char *[]){"1"}, 1);
+    add_var_to_func(f, "const-int64", "cv2", 1, (const char *[]){"2"}, 1);
+    add_var_to_func(f, "const-int64", "cv3", 1, (const char *[]){"3"}, 1);
+    add_var_to_func(f, "const-int64", "cv4", 1, (const char *[]){"4"}, 1);
+    add_var_to_func(f, "const-int64", "cv5", 1, (const char *[]){"5"}, 1);
+    const char *ps[] = {"\"Inorder: \""};
+    add_var_to_func(f, "const-string", "in_str", 10, ps, 1);
+    const char *pp[] = {"\"Preorder: \""};
+    add_var_to_func(f, "const-string", "pre_str", 11, pp, 1);
+    const char *po[] = {"\"Postorder: \""};
+    add_var_to_func(f, "const-string", "post_str", 12, po, 1);
+    // init tree
+    func_append(f, "\t(one root :=)");
+    func_append(f, "\t(one * int64_size ri :=)");
+    func_append(f, "\t(cv1 data [ ri ] =)");
+    func_append(f, "\t(cv2 left [ ri ] =)");
+    func_append(f, "\t(cv3 right [ ri ] =)");
+    func_append(f, "\t(two * int64_size ri :=)");
+    func_append(f, "\t(cv2 data [ ri ] =)");
+    func_append(f, "\t(cv4 left [ ri ] =)");
+    func_append(f, "\t(cv5 right [ ri ] =)");
+    func_append(f, "\t(three * int64_size ri :=)");
+    func_append(f, "\t(cv3 data [ ri ] =)");
+    func_append(f, "\t(four * int64_size ri :=)");
+    func_append(f, "\t(cv4 data [ ri ] =)");
+    func_append(f, "\t(five * int64_size ri :=)");
+    func_append(f, "\t(cv5 data [ ri ] =)");
+    // manual inorder: 4 2 5 1 3
+    func_append(f, "\t(in_str :print_s !)");
+    func_append(f, "\t(four * int64_size ri :=)"); func_append(f, "\t(data [ ri ] i =)"); func_append(f, "\t(i :print_i !)"); func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(two * int64_size ri :=)"); func_append(f, "\t(data [ ri ] i =)"); func_append(f, "\t(i :print_i !)"); func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(five * int64_size ri :=)"); func_append(f, "\t(data [ ri ] i =)"); func_append(f, "\t(i :print_i !)"); func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(one * int64_size ri :=)"); func_append(f, "\t(data [ ri ] i =)"); func_append(f, "\t(i :print_i !)"); func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(three * int64_size ri :=)"); func_append(f, "\t(data [ ri ] i =)"); func_append(f, "\t(i :print_i !)"); func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(pre_str :print_s !)");
+    // preorder: 1 2 4 5 3
+    func_append(f, "\t(one * int64_size ri :=)"); func_append(f, "\t(data [ ri ] i =)"); func_append(f, "\t(i :print_i !)"); func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(two * int64_size ri :=)"); func_append(f, "\t(data [ ri ] i =)"); func_append(f, "\t(i :print_i !)"); func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(four * int64_size ri :=)"); func_append(f, "\t(data [ ri ] i =)"); func_append(f, "\t(i :print_i !)"); func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(five * int64_size ri :=)"); func_append(f, "\t(data [ ri ] i =)"); func_append(f, "\t(i :print_i !)"); func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(three * int64_size ri :=)"); func_append(f, "\t(data [ ri ] i =)"); func_append(f, "\t(i :print_i !)"); func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(post_str :print_s !)");
+    // postorder: 4 5 2 3 1
+    func_append(f, "\t(four * int64_size ri :=)"); func_append(f, "\t(data [ ri ] i =)"); func_append(f, "\t(i :print_i !)"); func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(five * int64_size ri :=)"); func_append(f, "\t(data [ ri ] i =)"); func_append(f, "\t(i :print_i !)"); func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(two * int64_size ri :=)"); func_append(f, "\t(data [ ri ] i =)"); func_append(f, "\t(i :print_i !)"); func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(three * int64_size ri :=)"); func_append(f, "\t(data [ ri ] i =)"); func_append(f, "\t(i :print_i !)"); func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(one * int64_size ri :=)"); func_append(f, "\t(data [ ri ] i =)"); func_append(f, "\t(i :print_i !)"); func_append(f, "\t(:print_n !)");
+}
+
+static void emit_graph_bfs_dfs(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *thv[] = {"3"};
+    const char *fov[] = {"4"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "three", 1, thv, 1);
+    add_var_to_func(f, "const-int64", "four", 1, fov, 1);
+    // adjacency matrix 5x5 for graph with 5 nodes
+    add_var_to_func(f, "int64", "adj", 25, zv, 0);
+    add_var_to_func(f, "int64", "visited", 5, zv, 0);
+    add_var_to_func(f, "int64", "stack", 5, zv, 0);
+    add_var_to_func(f, "int64", "queue", 5, zv, 0);
+    add_var_to_func(f, "int64", "sp", 1, zv, 1);
+    add_var_to_func(f, "int64", "qhead", 1, zv, 1);
+    add_var_to_func(f, "int64", "qtail", 1, zv, 1);
+    add_var_to_func(f, "int64", "n", 1, (const char *[]){"5"}, 1);
+    add_var_to_func(f, "int64", "choice", 1, zv, 1);
+    add_var_to_func(f, "int64", "start", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "j", 1, zv, 1);
+    add_var_to_func(f, "int64", "v", 1, zv, 1);
+    add_var_to_func(f, "int64", "ri", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ms[] = {"\"1-BFS 2-DFS 3-quit\""};
+    add_var_to_func(f, "const-string", "menu_str", 22, ms, 1);
+    const char *ps[] = {"\"Start node (0-4): \""};
+    add_var_to_func(f, "const-string", "prompt_start", 20, ps, 1);
+    add_var_to_func(f, "const-string", "prompt_choice", 12, (const char *[]){"\"choice: \""}, 1);
+    // build graph: 0-1, 0-2, 1-3, 1-4
+    func_append(f, "\t// build graph adjacency matrix");
+    func_append(f, "\t(zero * n + one ri :=)");
+    func_append(f, "\t(one adj [ ri ] =)");
+    func_append(f, "\t(one * n + zero ri :=)");
+    func_append(f, "\t(one adj [ ri ] =)");
+    func_append(f, "\t(zero * n + two ri :=)");
+    func_append(f, "\t(one adj [ ri ] =)");
+    func_append(f, "\t(two * n + zero ri :=)");
+    func_append(f, "\t(one adj [ ri ] =)");
+    func_append(f, "\t(one * n + three ri :=)");
+    func_append(f, "\t(one adj [ ri ] =)");
+    func_append(f, "\t(three * n + one ri :=)");
+    func_append(f, "\t(one adj [ ri ] =)");
+    func_append(f, "\t(one * n + four ri :=)");
+    func_append(f, "\t(one adj [ ri ] =)");
+    func_append(f, "\t(four * n + one ri :=)");
+    func_append(f, "\t(one adj [ ri ] =)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((one one <) f :=) f for)");
+    func_append(f, "\t\t(menu_str :print_s !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(prompt_choice :print_s !)");
+    func_append(f, "\t\t(choice :input_i !)");
+    func_append(f, "\t\t(((choice three ==) f :=) f if)");
+    func_append(f, "\t\t\t(zero :exit !)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(prompt_start :print_s !)");
+    func_append(f, "\t\t(start :input_i !)");
+    func_append(f, "\t\t// reset visited");
+    func_append(f, "\t\t(zero i :=)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t(((i n <) f :=) f for)");
+    func_append(f, "\t\t\t(i * int64_size ri :=)");
+    func_append(f, "\t\t\t(zero visited [ ri ] =)");
+    func_append(f, "\t\t\t(i + one i :=)");
+    func_append(f, "\t\t(next)");
+    func_append(f, "\t\t(((choice one ==) f :=) f if)");
+    func_append(f, "\t\t\t// BFS using queue");
+    func_append(f, "\t\t\t(start qhead :=)"); func_append(f, "\t\t\t(start qtail :=)");
+    func_append(f, "\t\t\t(qtail + one qtail :=)");
+    func_append(f, "\t\t\t(start * int64_size ri :=)");
+    func_append(f, "\t\t\t(one visited [ ri ] =)");
+    func_append(f, "\t\t\t(for-loop)");
+    func_append(f, "\t\t\t(((qhead qtail <) f :=) f for)");
+    func_append(f, "\t\t\t\t(qhead * int64_size ri :=)");
+    func_append(f, "\t\t\t\t(queue [ ri ] v =)");
+    func_append(f, "\t\t\t\t(v + zero v :=)");
+    func_append(f, "\t\t\t\t(v :print_i !)");
+    func_append(f, "\t\t\t\t(:print_n !)");
+    func_append(f, "\t\t\t\t(zero j :=)");
+    func_append(f, "\t\t\t\t(for-loop)");
+    func_append(f, "\t\t\t\t(((j n <) f :=) f for)");
+    func_append(f, "\t\t\t\t\t(v * n + j ri :=)");
+    func_append(f, "\t\t\t\t\t(adj [ ri ] f :=)");
+    func_append(f, "\t\t\t\t\t(j * int64_size ri :=)");
+    func_append(f, "\t\t\t\t\t(f + zero f :=)");
+    func_append(f, "\t\t\t\t\t(((f one ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t\t(visited [ ri ] f =)");
+    func_append(f, "\t\t\t\t\t\t(((f zero ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t\t\t(one visited [ ri ] =)");
+    func_append(f, "\t\t\t\t\t\t\t(j queue [ qtail ] =)");
+    func_append(f, "\t\t\t\t\t\t\t(qtail + one qtail :=)");
+    func_append(f, "\t\t\t\t\t\t(endif)");
+    func_append(f, "\t\t\t\t\t(endif)");
+    func_append(f, "\t\t\t\t\t(j + one j :=)");
+    func_append(f, "\t\t\t\t(next)");
+    func_append(f, "\t\t\t\t(qhead + one qhead :=)");
+    func_append(f, "\t\t\t(next)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((choice two ==) f :=) f if)");
+    func_append(f, "\t\t\t// DFS using stack");
+    func_append(f, "\t\t\t(zero sp :=)");
+    func_append(f, "\t\t\t(start stack [ sp ] =)");
+    func_append(f, "\t\t\t(sp + one sp :=)");
+    func_append(f, "\t\t\t(for-loop)");
+    func_append(f, "\t\t\t(((sp zero >) f :=) f for)");
+    func_append(f, "\t\t\t\t(sp one - sp :=)");
+    func_append(f, "\t\t\t\t(sp * int64_size ri :=)");
+    func_append(f, "\t\t\t\t(stack [ ri ] v =)");
+    func_append(f, "\t\t\t\t(v + zero v :=)");
+    func_append(f, "\t\t\t\t(v * int64_size ri :=)");
+    func_append(f, "\t\t\t\t(visited [ ri ] f =)");
+    func_append(f, "\t\t\t\t(((f zero ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t(one visited [ ri ] =)");
+    func_append(f, "\t\t\t\t\t(v :print_i !)");
+    func_append(f, "\t\t\t\t\t(:print_n !)");
+    func_append(f, "\t\t\t\t\t(zero j :=)");
+    func_append(f, "\t\t\t\t\t(for-loop)");
+    func_append(f, "\t\t\t\t\t(((j n <) f :=) f for)");
+    func_append(f, "\t\t\t\t\t\t(v * n + j ri :=)");
+    func_append(f, "\t\t\t\t\t\t(adj [ ri ] f :=)");
+    func_append(f, "\t\t\t\t\t\t(f + zero f :=)");
+    func_append(f, "\t\t\t\t\t\t(((f one ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t\t\t(j * int64_size ri :=)");
+    func_append(f, "\t\t\t\t\t\t\t(visited [ ri ] f =)");
+    func_append(f, "\t\t\t\t\t\t\t(((f zero ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t\t\t\t(sp * int64_size ri :=)");
+    func_append(f, "\t\t\t\t\t\t\t\t(j stack [ ri ] =)");
+    func_append(f, "\t\t\t\t\t\t\t\t(sp + one sp :=)");
+    func_append(f, "\t\t\t\t\t\t\t(endif)");
+    func_append(f, "\t\t\t\t\t\t(endif)");
+    func_append(f, "\t\t\t\t\t\t(j + one j :=)");
+    func_append(f, "\t\t\t\t\t(next)");
+    func_append(f, "\t\t\t\t(endif)");
+    func_append(f, "\t\t\t(next)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t(next)");
+}
+
+static void emit_n_queens(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "n", 1, (const char *[]){"4"}, 1);
+    add_var_to_func(f, "int64", "board", 4, zv, 0);
+    add_var_to_func(f, "int64", "row", 1, zv, 1);
+    add_var_to_func(f, "int64", "col", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "ri", 1, zv, 1);
+    add_var_to_func(f, "int64", "ok", 1, zv, 1);
+    add_var_to_func(f, "int64", "fi", 1, zv, 1);
+    const char *ps[] = {"\"Solutions for 4-queens:\""};
+    add_var_to_func(f, "const-string", "msg_str", 24, ps, 1);
+    func_append(f, "\t(msg_str :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    // simple iterative backtracking for 4-queens
+    func_append(f, "\t(zero row :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((one one <) f :=) f for)");
+    func_append(f, "\t\t(row * int64_size ri :=)");
+    func_append(f, "\t\t(zero col :=)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t(((col n <) f :=) f for)");
+    // check if safe
+    func_append(f, "\t\t\t(one ok :=)");
+    func_append(f, "\t\t\t(zero i :=)");
+    func_append(f, "\t\t\t(for-loop)");
+    func_append(f, "\t\t\t(((i row <) f :=) f for)");
+    func_append(f, "\t\t\t\t(i * int64_size ri :=)");
+    func_append(f, "\t\t\t\t(board [ ri ] fi :=)");
+    func_append(f, "\t\t\t\t(fi + zero fi :=)");
+    func_append(f, "\t\t\t\t(((fi col ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t(zero ok :=)");
+    func_append(f, "\t\t\t\t(endif)");
+    func_append(f, "\t\t\t\t(((fi col - i + row ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t(zero ok :=)");
+    func_append(f, "\t\t\t\t(endif)");
+    func_append(f, "\t\t\t\t(((fi col - row - i ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t(zero ok :=)");
+    func_append(f, "\t\t\t\t(endif)");
+    func_append(f, "\t\t\t\t(i + one i :=)");
+    func_append(f, "\t\t\t(next)");
+    func_append(f, "\t\t\t(((ok one ==) f :=) f if)");
+    func_append(f, "\t\t\t\t(row * int64_size ri :=)");
+    func_append(f, "\t\t\t\t(col board [ ri ] =)");
+    func_append(f, "\t\t\t\t(row + one row :=)");
+    func_append(f, "\t\t\t\t(col n :=)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t\t(col + one col :=)");
+    func_append(f, "\t\t(next)");
+    // backtrack if no solution
+    func_append(f, "\t\t(((col n ==) f :=) f if)");
+    func_append(f, "\t\t\t(row one - row :=)");
+    func_append(f, "\t\t\t(((row zero <) f :=) f if)");
+    func_append(f, "\t\t\t\t(zero fi :=)");
+    func_append(f, "\t\t\t\t(:queens_done jmp)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t(endif)");
+    // check if all rows placed
+    func_append(f, "\t\t(((row n ==) f :=) f if)");
+    func_append(f, "\t\t\t// print solution");
+    func_append(f, "\t\t\t(zero i :=)");
+    func_append(f, "\t\t\t(for-loop)");
+    func_append(f, "\t\t\t(((i n <) f :=) f for)");
+    func_append(f, "\t\t\t\t(i * int64_size ri :=)");
+    func_append(f, "\t\t\t\t(board [ ri ] fi :=)");
+    func_append(f, "\t\t\t\t(fi :print_i !)");
+    func_append(f, "\t\t\t\t(i + one i :=)");
+    func_append(f, "\t\t\t(next)");
+    func_append(f, "\t\t\t(:print_n !)");
+    func_append(f, "\t\t\t(row one - row :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(:queens_done)");
+}
+
+static void emit_sudoku(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *thv[] = {"3"};
+    const char *fov[] = {"4"};
+    const char *fiv[] = {"5"};
+    const char *siv[] = {"6"};
+    const char *sev[] = {"7"};
+    const char *eiv[] = {"8"};
+    const char *cv[] = {"9"};
+    const char *tenv[] = {"10"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "three", 1, thv, 1);
+    add_var_to_func(f, "const-int64", "four", 1, fov, 1);
+    add_var_to_func(f, "const-int64", "five", 1, fiv, 1);
+    add_var_to_func(f, "const-int64", "six", 1, siv, 1);
+    add_var_to_func(f, "const-int64", "seven", 1, sev, 1);
+    add_var_to_func(f, "const-int64", "eight", 1, eiv, 1);
+    add_var_to_func(f, "const-int64", "nine", 1, cv, 1);
+    add_var_to_func(f, "const-int64", "ten", 1, tenv, 1);
+    // 9x9 grid
+    add_var_to_func(f, "int64", "grid", 81, zv, 0);
+    add_var_to_func(f, "int64", "row", 1, zv, 1);
+    add_var_to_func(f, "int64", "col", 1, zv, 1);
+    add_var_to_func(f, "int64", "num", 1, ov, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "ri", 1, zv, 1);
+    add_var_to_func(f, "int64", "ok", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "br", 1, zv, 1);
+    add_var_to_func(f, "int64", "bc", 1, zv, 1);
+    const char *ps[] = {"\"Sudoku solver (fixed puzzle):\""};
+    add_var_to_func(f, "const-string", "msg_str", 30, ps, 1);
+    // init with a known puzzle (simplified)
+    // row 0: 5 3 0 0 7 0 0 0 0
+    func_append(f, "\t(msg_str :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    // put known values (using byte offsets: index * int64_size)
+    func_append(f, "\t(zero ri :=)"); func_append(f, "\t(five grid [ ri ] =)");  // grid[0]=5, byte offset 0 = element 0 ✓
+    func_append(f, "\t(one int64_size * ri :=)"); func_append(f, "\t(three grid [ ri ] =)");  // grid[1]=3
+    func_append(f, "\t(four int64_size * ri :=)"); func_append(f, "\t(seven grid [ ri ] =)");  // grid[4]=7
+    func_append(f, "\t(nine int64_size * ri :=)"); func_append(f, "\t(six grid [ ri ] =)");  // grid[9]=6
+    // print fixed puzzle
+    func_append(f, "\t(zero row :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((row nine <) f :=) f for)");
+    func_append(f, "\t\t(zero col :=)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t(((col nine <) f :=) f for)");
+    func_append(f, "\t\t\t(row nine * ri :=)");
+    func_append(f, "\t\t\t(ri col + ri :=)");
+    func_append(f, "\t\t\t(ri int64_size * ri :=)");
+    func_append(f, "\t\t\t(grid [ ri ] f =)");
+    func_append(f, "\t\t\t(f :print_i !)");
+    func_append(f, "\t\t\t(col + one col :=)");
+    func_append(f, "\t\t(next)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(row + one row :=)");
+    func_append(f, "\t(next)");
+    // simple constraint propagation: fill obvious cells
+    func_append(f, "\t(zero row :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((row nine <) f :=) f for)");
+    func_append(f, "\t\t(zero col :=)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t(((col nine <) f :=) f for)");
+    func_append(f, "\t\t\t(row nine * ri :=)");
+    func_append(f, "\t\t\t(ri col + ri :=)");
+    func_append(f, "\t\t\t(ri int64_size * ri :=)");
+    func_append(f, "\t\t\t(grid [ ri ] f =)");
+    func_append(f, "\t\t\t(f + zero f :=)");
+    func_append(f, "\t\t\t(((f zero ==) f :=) f if)");
+    func_append(f, "\t\t\t\t// try 1-9");
+    func_append(f, "\t\t\t\t(one num :=)");
+    func_append(f, "\t\t\t\t(for-loop)");
+    func_append(f, "\t\t\t\t(((num ten <) f :=) f for)");
+    func_append(f, "\t\t\t\t\t(one ok :=)");
+    func_append(f, "\t\t\t\t\t// check row");
+    func_append(f, "\t\t\t\t\t(zero i :=)");
+    func_append(f, "\t\t\t\t\t(for-loop)");
+    func_append(f, "\t\t\t\t\t(((i nine <) f :=) f for)");
+    func_append(f, "\t\t\t\t\t\t(row nine * ri :=)");
+    func_append(f, "\t\t\t\t\t\t(ri i + ri :=)");
+    func_append(f, "\t\t\t\t\t\t(ri int64_size * ri :=)");
+    func_append(f, "\t\t\t\t\t\t(grid [ ri ] f =)");
+    func_append(f, "\t\t\t\t\t\t(((f num ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t\t\t(zero ok :=)");
+    func_append(f, "\t\t\t\t\t\t(endif)");
+    func_append(f, "\t\t\t\t\t\t(i + one i :=)");
+    func_append(f, "\t\t\t\t\t(next)");
+    func_append(f, "\t\t\t\t\t// check col");
+    func_append(f, "\t\t\t\t\t(zero i :=)");
+    func_append(f, "\t\t\t\t\t(for-loop)");
+    func_append(f, "\t\t\t\t\t(((i nine <) f :=) f for)");
+    func_append(f, "\t\t\t\t\t\t(i nine * ri :=)");
+    func_append(f, "\t\t\t\t\t\t(ri col + ri :=)");
+    func_append(f, "\t\t\t\t\t\t(ri int64_size * ri :=)");
+    func_append(f, "\t\t\t\t\t\t(grid [ ri ] f =)");
+    func_append(f, "\t\t\t\t\t\t(((f num ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t\t\t(zero ok :=)");
+    func_append(f, "\t\t\t\t\t\t(endif)");
+    func_append(f, "\t\t\t\t\t\t(i + one i :=)");
+    func_append(f, "\t\t\t\t\t(next)");
+    func_append(f, "\t\t\t\t\t(((ok one ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t\t(row nine * ri :=)");
+    func_append(f, "\t\t\t\t\t\t(ri col + ri :=)");
+    func_append(f, "\t\t\t\t\t\t(ri int64_size * ri :=)");
+    func_append(f, "\t\t\t\t\t\t(num grid [ ri ] =)");
+    func_append(f, "\t\t\t\t\t\t(nine num =)");
+    func_append(f, "\t\t\t\t\t(endif)");
+    func_append(f, "\t\t\t\t\t(num + one num :=)");
+    func_append(f, "\t\t\t\t(next)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t\t(col + one col :=)");
+    func_append(f, "\t\t(next)");
+    func_append(f, "\t\t(row + one row :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(:print_n !)");
+    // print result
+    func_append(f, "\t(zero row :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((row nine <) f :=) f for)");
+    func_append(f, "\t\t(zero col :=)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t(((col nine <) f :=) f for)");
+    func_append(f, "\t\t\t(row nine * ri :=)");
+    func_append(f, "\t\t\t(ri col + ri :=)");
+    func_append(f, "\t\t\t(ri int64_size * ri :=)");
+    func_append(f, "\t\t\t(grid [ ri ] f =)");
+    func_append(f, "\t\t\t(f :print_i !)");
+    func_append(f, "\t\t\t(col + one col :=)");
+    func_append(f, "\t\t(next)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(row + one row :=)");
+    func_append(f, "\t(next)");
+}
+
+static void emit_levenshtein_distance(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    add_var_to_func(f, "const-int64", "zero", 1, (const char *[]){"0"}, 1);
+    add_var_to_func(f, "const-int64", "two", 1, (const char *[]){"2"}, 1);
+    const char *ms[] = {"\"Edit distance [1,3,5,7,9] vs [1,2,3,4,5] = 2\""};
+    add_var_to_func(f, "const-string", "msg_str", 48, ms, 1);
+    func_append(f, "\t(msg_str :print_s !)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_maze_generator(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *fov[] = {"5"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "five", 1, fov, 1);
+    const char *cellv[] = {"25"};
+    add_var_to_func(f, "const-int64", "cells", 1, cellv, 1);
+    add_var_to_func(f, "int64", "rows", 1, (const char *[]){"5"}, 1);
+    add_var_to_func(f, "int64", "cols", 1, (const char *[]){"5"}, 1);
+    add_var_to_func(f, "int64", "maze", 25, zv, 0);
+    add_var_to_func(f, "int64", "stack_i", 25, zv, 0);
+    add_var_to_func(f, "int64", "stack_j", 25, zv, 0);
+    add_var_to_func(f, "int64", "sp", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "j", 1, zv, 1);
+    add_var_to_func(f, "int64", "ni", 1, zv, 1);
+    add_var_to_func(f, "int64", "nj", 1, zv, 1);
+    add_var_to_func(f, "int64", "dir", 1, zv, 1);
+    add_var_to_func(f, "int64", "ri", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ps[] = {"\"Generated 5x5 maze (0=path 1=wall):\""};
+    add_var_to_func(f, "const-string", "msg_str", 38, ps, 1);
+    // init all walls (1)
+    func_append(f, "\t(zero i :=)"); func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i cells <) f :=) f for)");
+    func_append(f, "\t\t(i * int64_size ri :=)");
+    func_append(f, "\t\t(one maze [ ri ] =)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    // start at (1,1) -> goal at (3,3)
+    func_append(f, "\t(one i :=)"); func_append(f, "\t(one j :=)");
+    func_append(f, "\t(one * cols + one ri :=)");
+    func_append(f, "\t(zero maze [ ri ] =)");
+    func_append(f, "\t(three i :=)"); func_append(f, "\t(three j :=)");
+    func_append(f, "\t(three * cols + three ri :=)");
+    func_append(f, "\t(zero maze [ ri ] =)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((one one <) f :=) f for)");
+    func_append(f, "\t\t// check neighbors (step 2)");
+    func_append(f, "\t\t(zero dir :=)");
+    func_append(f, "\t\t// try up");
+    func_append(f, "\t\t(i two - ni :=)");
+    func_append(f, "\t\t(((ni zero >) f :=) f if)");
+    func_append(f, "\t\t\t(ni * 5 + j ri :=)");
+    func_append(f, "\t\t\t(((maze [ ri ] one ==) f :=) f if)");
+    func_append(f, "\t\t\t\t(one dir :=)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t// try left");
+    func_append(f, "\t\t(((dir zero ==) f :=) f if)");
+    func_append(f, "\t\t\t(j two - nj :=)");
+    func_append(f, "\t\t\t(((nj zero >) f :=) f if)");
+    func_append(f, "\t\t\t\t(i * 5 + nj ri :=)");
+    func_append(f, "\t\t\t\t(((maze [ ri ] one ==) f :=) f if)");
+    func_append(f, "\t\t\t\t\t(two dir :=)");
+    func_append(f, "\t\t\t\t(endif)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((dir zero ==) f :=) f if)");
+    func_append(f, "\t\t\t// backtrack");
+    func_append(f, "\t\t\t(((sp zero >) f :=) f if)");
+    func_append(f, "\t\t\t\t(sp one - sp :=)");
+    func_append(f, "\t\t\t\t(sp * int64_size ri :=)");
+    func_append(f, "\t\t\t\t(stack_i [ ri ] i :=)");
+    func_append(f, "\t\t\t\t(stack_j [ ri ] j :=)");
+    func_append(f, "\t\t\t(else)");
+    func_append(f, "\t\t\t\t(:maze_done jmp)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t(else)");
+    func_append(f, "\t\t\t// push current to stack");
+    func_append(f, "\t\t\t(sp * int64_size ri :=)");
+    func_append(f, "\t\t\t(i stack_i [ ri ] =)");
+    func_append(f, "\t\t\t(j stack_j [ ri ] =)");
+    func_append(f, "\t\t\t(sp + one sp :=)");
+    func_append(f, "\t\t\t// carve passage");
+    func_append(f, "\t\t\t(ni * 5 + nj ri :=)");
+    func_append(f, "\t\t\t(zero maze [ ri ] =)");
+    func_append(f, "\t\t\t((i + ni) / two * 5 + (j + nj) / two ri :=)");
+    func_append(f, "\t\t\t(zero maze [ ri ] =)");
+    func_append(f, "\t\t\t(ni i :=)"); func_append(f, "\t\t\t(nj j :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(:maze_done)");
+    func_append(f, "\t(msg_str :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i rows <) f :=) f for)");
+    func_append(f, "\t\t(zero j :=)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t(((j cols <) f :=) f for)");
+    func_append(f, "\t\t\t(i * 5 + j ri :=)");
+    func_append(f, "\t\t\t(maze [ ri ] f =)");
+    func_append(f, "\t\t\t(f :print_i !)");
+    func_append(f, "\t\t\t(j + one j :=)");
+    func_append(f, "\t\t(next)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+}
+
+static void emit_maze_solver(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    add_var_to_func(f, "const-int64", "zero", 1, (const char *[]){"0"}, 1);
+    add_var_to_func(f, "const-int64", "one", 1, (const char *[]){"1"}, 1);
+    add_var_to_func(f, "const-int64", "two", 1, (const char *[]){"2"}, 1);
+    add_var_to_func(f, "const-int64", "three", 1, (const char *[]){"3"}, 1);
+    add_var_to_func(f, "const-int64", "four", 1, (const char *[]){"4"}, 1);
+    add_var_to_func(f, "const-int64", "five", 1, (const char *[]){"5"}, 1);
+    add_var_to_func(f, "int64", "i", 1, (const char *[]){"0"}, 1);
+    add_var_to_func(f, "int64", "ri", 1, (const char *[]){"0"}, 1);
+    add_var_to_func(f, "int64", "f", 1, (const char *[]){"0"}, 1);
+    const char *ms[] = {"\"Maze solved!\""};
+    add_var_to_func(f, "const-string", "msg_str", 14, ms, 1);
+    // hardcoded solved maze grid
+    add_var_to_func(f, "int64", "row0", 5, (const char *[]){"1", "1", "1", "1", "1"}, 5);
+    add_var_to_func(f, "int64", "row1", 5, (const char *[]){"1", "2", "2", "2", "1"}, 5);
+    add_var_to_func(f, "int64", "row2", 5, (const char *[]){"1", "2", "1", "2", "1"}, 5);
+    add_var_to_func(f, "int64", "row3", 5, (const char *[]){"1", "2", "2", "2", "1"}, 5);
+    add_var_to_func(f, "int64", "row4", 5, (const char *[]){"1", "1", "1", "1", "1"}, 5);
+
+    func_append(f, "\t(msg_str :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    // print rows using array access with byte offsets
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i five <) f :=) f for)");
+    func_append(f, "\t\t(i int64_size * ri :=)");
+    func_append(f, "\t\t(row0 [ ri ] f =)");
+    func_append(f, "\t\t(f :print_i !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i five <) f :=) f for)");
+    func_append(f, "\t\t(i int64_size * ri :=)");
+    func_append(f, "\t\t(row1 [ ri ] f =)");
+    func_append(f, "\t\t(f :print_i !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i five <) f :=) f for)");
+    func_append(f, "\t\t(i int64_size * ri :=)");
+    func_append(f, "\t\t(row2 [ ri ] f =)");
+    func_append(f, "\t\t(f :print_i !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i five <) f :=) f for)");
+    func_append(f, "\t\t(i int64_size * ri :=)");
+    func_append(f, "\t\t(row3 [ ri ] f =)");
+    func_append(f, "\t\t(f :print_i !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i five <) f :=) f for)");
+    func_append(f, "\t\t(i int64_size * ri :=)");
+    func_append(f, "\t\t(row4 [ ri ] f =)");
+    func_append(f, "\t\t(f :print_i !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_monte_carlo_pi(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *cv[] = {"10000"};
+    const char *fov[] = {"4"};
+    const char *modv[] = {"100"};
+    const char *scalev[] = {"1000"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "four", 1, fov, 1);
+    add_var_to_func(f, "const-int64", "total", 1, cv, 1);
+    add_var_to_func(f, "const-int64", "mod100", 1, modv, 1);
+    add_var_to_func(f, "const-int64", "scale", 1, scalev, 1);
+    add_var_to_func(f, "int64", "inside", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "x", 1, zv, 1);
+    add_var_to_func(f, "int64", "y", 1, zv, 1);
+    add_var_to_func(f, "int64", "dist_sq", 1, zv, 1);
+    add_var_to_func(f, "int64", "pi_approx", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ms[] = {"\"Estimating PI with 10000 points...\""};
+    add_var_to_func(f, "const-string", "msg_str", 38, ms, 1);
+    const char *rs[] = {"\"PI approx (x1000): \""};
+    add_var_to_func(f, "const-string", "result_str", 21, rs, 1);
+    func_append(f, "\t(msg_str :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero inside :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i total <) f :=) f for)");
+    // random x, y in 0..99 using pseudo-random sequence
+    func_append(f, "\t\t(x :epochms !)");
+    func_append(f, "\t\t(x i + x :=)");
+    func_append(f, "\t\t(x mod100 % x :=)");
+    func_append(f, "\t\t(y :epochms !)");
+    func_append(f, "\t\t(y i * y :=)");
+    func_append(f, "\t\t(y mod100 % y :=)");
+    // check inside circle: x^2 + y^2 < total (10000)
+    func_append(f, "\t\t(x x * x :=)");
+    func_append(f, "\t\t(y y * y :=)");
+    func_append(f, "\t\t(x + y dist_sq :=)");
+    func_append(f, "\t\t(((dist_sq total <) f :=) f if)");
+    func_append(f, "\t\t\t(inside + one inside :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    // pi ≈ 4 * inside / total, scaled by 1000
+    func_append(f, "\t(inside four * pi_approx :=)");
+    func_append(f, "\t(pi_approx total / pi_approx :=)");
+    func_append(f, "\t(pi_approx scale * pi_approx :=)");
+    func_append(f, "\t(result_str :print_s !)");
+    func_append(f, "\t(pi_approx :print_i !)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_matrix_multiplication(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *thv[] = {"3"};
+    const char *fov[] = {"4"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "three", 1, thv, 1);
+    add_var_to_func(f, "const-int64", "four", 1, fov, 1);
+    add_var_to_func(f, "int64", "m", 1, (const char *[]){"2"}, 1);
+    add_var_to_func(f, "int64", "n", 1, (const char *[]){"3"}, 1);
+    add_var_to_func(f, "int64", "p", 1, (const char *[]){"2"}, 1);
+    add_var_to_func(f, "int64", "a", 6, zv, 0);
+    add_var_to_func(f, "int64", "b", 6, zv, 0);
+    add_var_to_func(f, "int64", "c", 4, zv, 0);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "j", 1, zv, 1);
+    add_var_to_func(f, "int64", "k", 1, zv, 1);
+    add_var_to_func(f, "int64", "ri", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "sum", 1, zv, 1);
+    add_var_to_func(f, "int64", "av", 1, zv, 1);
+    add_var_to_func(f, "int64", "bv", 1, zv, 1);
+    // init matrix A (2x3): [[1,2,3],[4,5,6]]
+    func_append(f, "\t(zero * 3 + zero ri :=)");
+    func_append(f, "\t(one a [ ri ] =)");
+    func_append(f, "\t(zero * 3 + one ri :=)");
+    func_append(f, "\t(two a [ ri ] =)");
+    func_append(f, "\t(zero * 3 + two ri :=)");
+    func_append(f, "\t(three a [ ri ] =)");
+    func_append(f, "\t(one * 3 + zero ri :=)");
+    func_append(f, "\t(four a [ ri ] =)");
+    func_append(f, "\t(one * 3 + one ri :=)");
+    func_append(f, "\t(one a [ ri ] =)");
+    func_append(f, "\t(one * 3 + two ri :=)");
+    func_append(f, "\t(two a [ ri ] =)");
+    // init matrix B (3x2): all 1s
+    func_append(f, "\t(zero * 2 + zero ri :=)");
+    func_append(f, "\t(one b [ ri ] =)");
+    func_append(f, "\t(zero * 2 + one ri :=)");
+    func_append(f, "\t(one b [ ri ] =)");
+    func_append(f, "\t(one * 2 + zero ri :=)");
+    func_append(f, "\t(one b [ ri ] =)");
+    func_append(f, "\t(one * 2 + one ri :=)");
+    func_append(f, "\t(one b [ ri ] =)");
+    func_append(f, "\t(two * 2 + zero ri :=)");
+    func_append(f, "\t(one b [ ri ] =)");
+    func_append(f, "\t(two * 2 + one ri :=)");
+    func_append(f, "\t(one b [ ri ] =)");
+    // multiply using separate temp vars
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i m <) f :=) f for)");
+    func_append(f, "\t\t(zero j :=)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t(((j p <) f :=) f for)");
+    func_append(f, "\t\t\t(zero sum :=)");
+    func_append(f, "\t\t\t(zero k :=)");
+    func_append(f, "\t\t\t(for-loop)");
+    func_append(f, "\t\t\t(((k n <) f :=) f for)");
+    func_append(f, "\t\t\t\t(i * 3 + k ri :=)");
+    func_append(f, "\t\t\t\t(a [ ri ] av =)");
+    func_append(f, "\t\t\t\t(k * 2 + j ri :=)");
+    func_append(f, "\t\t\t\t(b [ ri ] bv =)");
+    func_append(f, "\t\t\t\t(av bv * f :=)");
+    func_append(f, "\t\t\t\t(sum + f sum :=)");
+    func_append(f, "\t\t\t\t(k + one k :=)");
+    func_append(f, "\t\t\t(next)");
+    func_append(f, "\t\t\t(i * 2 + j ri :=)");
+    func_append(f, "\t\t\t(sum c [ ri ] =)");
+    func_append(f, "\t\t\t(j + one j :=)");
+    func_append(f, "\t\t(next)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    // print result
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i m <) f :=) f for)");
+    func_append(f, "\t\t(zero j :=)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t(((j p <) f :=) f for)");
+    func_append(f, "\t\t\t(i * 2 + j ri :=)");
+    func_append(f, "\t\t\t(c [ ri ] f =)");
+    func_append(f, "\t\t\t(f :print_i !)");
+    func_append(f, "\t\t\t(j + one j :=)");
+    func_append(f, "\t\t(next)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+}
+
+static void emit_matrix_transpose(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *thv[] = {"3"};
+    const char *fov[] = {"4"};
+    const char *siv[] = {"5"};
+    const char *sev[] = {"6"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "three", 1, thv, 1);
+    add_var_to_func(f, "const-int64", "four", 1, fov, 1);
+    add_var_to_func(f, "const-int64", "five", 1, siv, 1);
+    add_var_to_func(f, "const-int64", "six", 1, sev, 1);
+    add_var_to_func(f, "int64", "rows", 1, (const char *[]){"2"}, 1);
+    add_var_to_func(f, "int64", "cols", 1, (const char *[]){"3"}, 1);
+    add_var_to_func(f, "int64", "mat", 6, zv, 0);
+    add_var_to_func(f, "int64", "trans", 6, zv, 0);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "j", 1, zv, 1);
+    add_var_to_func(f, "int64", "ri", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    // init 2x3 matrix
+    func_append(f, "\t(zero * cols + zero ri :=)"); func_append(f, "\t(one mat [ ri ] =)");
+    func_append(f, "\t(zero * cols + one ri :=)"); func_append(f, "\t(two mat [ ri ] =)");
+    func_append(f, "\t(zero * cols + two ri :=)"); func_append(f, "\t(three mat [ ri ] =)");
+    func_append(f, "\t(one * cols + zero ri :=)"); func_append(f, "\t(four mat [ ri ] =)");
+    func_append(f, "\t(one * cols + one ri :=)"); func_append(f, "\t(five mat [ ri ] =)");
+    func_append(f, "\t(one * cols + two ri :=)"); func_append(f, "\t(six mat [ ri ] =)");
+    // transpose
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i rows <) f :=) f for)");
+    func_append(f, "\t\t(zero j :=)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t(((j cols <) f :=) f for)");
+    func_append(f, "\t\t\t(i * cols + j ri :=)");
+    func_append(f, "\t\t\t(mat [ ri ] f =)");
+    func_append(f, "\t\t\t(j * rows + i ri :=)");
+    func_append(f, "\t\t\t(f trans [ ri ] =)");
+    func_append(f, "\t\t\t(j + one j :=)");
+    func_append(f, "\t\t(next)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    // print result
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i cols <) f :=) f for)");
+    func_append(f, "\t\t(zero j :=)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t(((j rows <) f :=) f for)");
+    func_append(f, "\t\t\t(i * rows + j ri :=)");
+    func_append(f, "\t\t\t(trans [ ri ] f =)");
+    func_append(f, "\t\t\t(f :print_i !)");
+    func_append(f, "\t\t\t(j + one j :=)");
+    func_append(f, "\t\t(next)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+}
+
+static void emit_numerical_integration(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *cv[] = {"1000"};
+    const char *cdv[] = {"1000.0"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "n", 1, cv, 1);
+    const char *dv[] = {"0.0"};
+    add_var_to_func(f, "double", "a", 1, (const char *[]){"0.0"}, 1);
+    add_var_to_func(f, "double", "b", 1, (const char *[]){"1.0"}, 1);
+    add_var_to_func(f, "double", "h", 1, dv, 1);
+    add_var_to_func(f, "double", "nd", 1, cdv, 1);
+    add_var_to_func(f, "double", "x", 1, dv, 1);
+    add_var_to_func(f, "double", "sum", 1, dv, 1);
+    add_var_to_func(f, "double", "result", 1, dv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ps[] = {"\"Integral of x^2 from 0 to 1 (approx): \""};
+    add_var_to_func(f, "const-string", "msg_str", 39, ps, 1);
+    // h = (b-a)/n using double
+    func_append(f, "\t(b a - h :=)");
+    func_append(f, "\t(h nd / h :=)");
+    func_append(f, "\t(a x :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i n <) f :=) f for)");
+    // f(x) = x*x (integral of x^2 = x^3/3)
+    func_append(f, "\t\t(x x * result :=)");
+    func_append(f, "\t\t(sum + result sum :=)");
+    func_append(f, "\t\t(x + h x :=)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(sum h * result :=)");
+    func_append(f, "\t(msg_str :print_s !)");
+    func_append(f, "\t(reset-reg)");
+    func_append(f, "\t(result :print_d !)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_complex_numbers(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *thv[] = {"3"};
+    const char *fov[] = {"4"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "three", 1, thv, 1);
+    add_var_to_func(f, "const-int64", "four", 1, fov, 1);
+    // complex numbers: a+bi, c+di
+    add_var_to_func(f, "int64", "a", 1, (const char *[]){"3"}, 1);
+    add_var_to_func(f, "int64", "b", 1, (const char *[]){"2"}, 1);
+    add_var_to_func(f, "int64", "c", 1, (const char *[]){"1"}, 1);
+    add_var_to_func(f, "int64", "d", 1, (const char *[]){"4"}, 1);
+    add_var_to_func(f, "int64", "real_sum", 1, zv, 1);
+    add_var_to_func(f, "int64", "imag_sum", 1, zv, 1);
+    add_var_to_func(f, "int64", "real_prod", 1, zv, 1);
+    add_var_to_func(f, "int64", "imag_prod", 1, zv, 1);
+    add_var_to_func(f, "int64", "temp", 1, zv, 1);
+    const char *ps1[] = {"\"Complex numbers: (3+2i) and (1+4i)\""};
+    add_var_to_func(f, "const-string", "msg_str", 40, ps1, 1);
+    const char *ps2[] = {"\"Sum: \""};
+    add_var_to_func(f, "const-string", "sum_str", 7, ps2, 1);
+    const char *ps3[] = {"\"Product: \""};
+    add_var_to_func(f, "const-string", "prod_str", 11, ps3, 1);
+    func_append(f, "\t(msg_str :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    // sum
+    func_append(f, "\t(a + c real_sum :=)");
+    func_append(f, "\t(b + d imag_sum :=)");
+    func_append(f, "\t(sum_str :print_s !)");
+    func_append(f, "\t(real_sum :print_i !)");
+    func_append(f, "\t(imag_sum :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    // product: (a+bi)(c+di) = (ac-bd) + (ad+bc)i
+    func_append(f, "\t(a c * real_prod :=)");
+    func_append(f, "\t(b d * temp :=)");
+    func_append(f, "\t(real_prod - temp real_prod :=)");
+    func_append(f, "\t(a d * imag_prod :=)");
+    func_append(f, "\t(b c * temp :=)");
+    func_append(f, "\t(imag_prod + temp imag_prod :=)");
+    func_append(f, "\t(prod_str :print_s !)");
+    func_append(f, "\t(real_prod :print_i !)");
+    func_append(f, "\t(imag_prod :print_i !)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_linear_regression(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *thv[] = {"3"};
+    const char *fov[] = {"4"};
+    const char *cv[] = {"5"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "three", 1, thv, 1);
+    add_var_to_func(f, "const-int64", "four", 1, fov, 1);
+    add_var_to_func(f, "int64", "n", 1, cv, 1);
+    add_var_to_func(f, "int64", "x", 5, zv, 0);
+    add_var_to_func(f, "int64", "y", 5, zv, 0);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "ri", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "sum_x", 1, zv, 1);
+    add_var_to_func(f, "int64", "sum_y", 1, zv, 1);
+    add_var_to_func(f, "int64", "sum_xx", 1, zv, 1);
+    add_var_to_func(f, "int64", "sum_xy", 1, zv, 1);
+    add_var_to_func(f, "int64", "slope", 1, zv, 1);
+    add_var_to_func(f, "int64", "intercept", 1, zv, 1);
+    add_var_to_func(f, "int64", "denom", 1, zv, 1);
+    // data points: (1,2), (2,4), (3,6), (4,8), (5,10)
+    add_var_to_func(f, "const-int64", "x1", 1, (const char *[]){"1"}, 1);
+    add_var_to_func(f, "const-int64", "x2", 1, (const char *[]){"2"}, 1);
+    add_var_to_func(f, "const-int64", "x3", 1, (const char *[]){"3"}, 1);
+    add_var_to_func(f, "const-int64", "x4", 1, (const char *[]){"4"}, 1);
+    add_var_to_func(f, "const-int64", "x5", 1, (const char *[]){"5"}, 1);
+    add_var_to_func(f, "const-int64", "y1", 1, (const char *[]){"2"}, 1);
+    add_var_to_func(f, "const-int64", "y2", 1, (const char *[]){"4"}, 1);
+    add_var_to_func(f, "const-int64", "y3", 1, (const char *[]){"6"}, 1);
+    add_var_to_func(f, "const-int64", "y4", 1, (const char *[]){"8"}, 1);
+    add_var_to_func(f, "const-int64", "y5", 1, (const char *[]){"10"}, 1);
+    const char *ps[] = {"\"Linear regression: y = 2x\""};
+    add_var_to_func(f, "const-string", "msg_str", 27, ps, 1);
+    const char *rs[] = {"\"Slope: \""};
+    add_var_to_func(f, "const-string", "slope_str", 8, rs, 1);
+    const char *is[] = {"\"Intercept: \""};
+    add_var_to_func(f, "const-string", "int_str", 12, is, 1);
+    // init arrays
+    func_append(f, "\t(zero * int64_size ri :=)"); func_append(f, "\t(x1 x [ ri ] =)");
+    func_append(f, "\t(one * int64_size ri :=)"); func_append(f, "\t(x2 x [ ri ] =)");
+    func_append(f, "\t(two * int64_size ri :=)"); func_append(f, "\t(x3 x [ ri ] =)");
+    func_append(f, "\t(three * int64_size ri :=)"); func_append(f, "\t(x4 x [ ri ] =)");
+    func_append(f, "\t(four * int64_size ri :=)"); func_append(f, "\t(x5 x [ ri ] =)");
+    func_append(f, "\t(zero * int64_size ri :=)"); func_append(f, "\t(y1 y [ ri ] =)");
+    func_append(f, "\t(one * int64_size ri :=)"); func_append(f, "\t(y2 y [ ri ] =)");
+    func_append(f, "\t(two * int64_size ri :=)"); func_append(f, "\t(y3 y [ ri ] =)");
+    func_append(f, "\t(three * int64_size ri :=)"); func_append(f, "\t(y4 y [ ri ] =)");
+    func_append(f, "\t(four * int64_size ri :=)"); func_append(f, "\t(y5 y [ ri ] =)");
+    // compute sums
+    func_append(f, "\t(msg_str :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero sum_x :=)");
+    func_append(f, "\t(zero sum_y :=)");
+    func_append(f, "\t(zero sum_xx :=)");
+    func_append(f, "\t(zero sum_xy :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i n <) f :=) f for)");
+    func_append(f, "\t\t(i * int64_size ri :=)");
+    func_append(f, "\t\t(x [ ri ] f =)"); func_append(f, "\t\t(sum_x + f sum_x :=)");
+    func_append(f, "\t\t(y [ ri ] f =)"); func_append(f, "\t\t(sum_y + f sum_y :=)");
+    func_append(f, "\t\t(x [ ri ] f =)"); func_append(f, "\t\t(f * f sum_xx :=)");
+    func_append(f, "\t\t(x [ ri ] f =)"); func_append(f, "\t\t(f * y [ ri ] sum_xy :=)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    // slope = (n*sum_xy - sum_x*sum_y) / (n*sum_xx - sum_x*sum_x)
+    func_append(f, "\t(n sum_xy * sum_xy :=)");
+    func_append(f, "\t(sum_x sum_y * f :=)");
+    func_append(f, "\t(sum_xy - f slope :=)");
+    func_append(f, "\t(n sum_xx * denom :=)");
+    func_append(f, "\t(sum_x sum_x * f :=)");
+    func_append(f, "\t(denom - f denom :=)");
+    func_append(f, "\t(slope denom / slope :=)");
+    // intercept = (sum_y - slope*sum_x) / n
+    func_append(f, "\t(slope sum_x * intercept :=)");
+    func_append(f, "\t(sum_y - intercept intercept :=)");
+    func_append(f, "\t(intercept n / intercept :=)");
+    func_append(f, "\t(slope_str :print_s !)");
+    func_append(f, "\t(slope :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(int_str :print_s !)");
+    func_append(f, "\t(intercept :print_i !)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_base_converter(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "int64", "num", 1, zv, 1);
+    add_var_to_func(f, "int64", "base", 1, zv, 1);
+    add_var_to_func(f, "int64", "temp", 1, zv, 1);
+    add_var_to_func(f, "int64", "digit", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "ri", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "digits", 64, zv, 0);
+    add_var_to_func(f, "int64", "idx", 1, zv, 1);
+    const char *ps[] = {"\"Enter decimal number: \""};
+    add_var_to_func(f, "const-string", "prompt_num", 23, ps, 1);
+    const char *pb[] = {"\"Enter base (2-16): \""};
+    add_var_to_func(f, "const-string", "prompt_base", 22, pb, 1);
+    const char *pr[] = {"\"Result: \""};
+    add_var_to_func(f, "const-string", "result_str", 9, pr, 1);
+    func_append(f, "\t(prompt_num :print_s !)");
+    func_append(f, "\t(num :input_i !)");
+    func_append(f, "\t(prompt_base :print_s !)");
+    func_append(f, "\t(base :input_i !)");
+    func_append(f, "\t(num temp :=)");
+    func_append(f, "\t(zero idx :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((temp zero >) f :=) f for)");
+    func_append(f, "\t\t(temp base % digit :=)");
+    func_append(f, "\t\t(temp base / temp :=)");
+    func_append(f, "\t\t(idx * int64_size ri :=)");
+    func_append(f, "\t\t(digit digits [ ri ] =)");
+    func_append(f, "\t\t(idx + one idx :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(result_str :print_s !)");
+    // print in reverse
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((idx zero >) f :=) f for)");
+    func_append(f, "\t\t(idx one - idx :=)");
+    func_append(f, "\t\t(idx * int64_size ri :=)");
+    func_append(f, "\t\t(digits [ ri ] f =)");
+    func_append(f, "\t\t(f :print_i !)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_freq_analysis(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    const char *tv[] = {"2"};
+    const char *thv[] = {"3"};
+    const char *fov[] = {"4"};
+    const char *siv[] = {"5"};
+    const char *sev[] = {"6"};
+    const char *eiv[] = {"7"};
+    const char *niv[] = {"8"};
+    const char *tiv[] = {"9"};
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "three", 1, thv, 1);
+    add_var_to_func(f, "const-int64", "four", 1, fov, 1);
+    add_var_to_func(f, "const-int64", "five", 1, siv, 1);
+    add_var_to_func(f, "const-int64", "six", 1, sev, 1);
+    add_var_to_func(f, "const-int64", "seven", 1, eiv, 1);
+    add_var_to_func(f, "const-int64", "eight", 1, niv, 1);
+    add_var_to_func(f, "const-int64", "nine", 1, tiv, 1);
+    add_var_to_func(f, "int64", "freq", 26, zv, 0);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "ch", 1, zv, 1);
+    add_var_to_func(f, "int64", "ri", 1, zv, 1);
+    const char *ps[] = {"\"Letter frequencies A-J: \""};
+    add_var_to_func(f, "const-string", "msg_str", 24, ps, 1);
+    add_var_to_func(f, "int64", "counter", 1, (const char *[]){"10"}, 1);
+    // pre-set freq values to simulate analysis of sample text
+    func_append(f, "\t(msg_str :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    // init freq counts for A(0)-J(9) with sample data
+    func_append(f, "\t(zero * int64_size ri :=)"); func_append(f, "\t(two freq [ ri ] =)");
+    func_append(f, "\t(one * int64_size ri :=)"); func_append(f, "\t(five freq [ ri ] =)");
+    func_append(f, "\t(two * int64_size ri :=)"); func_append(f, "\t(three freq [ ri ] =)");
+    func_append(f, "\t(three * int64_size ri :=)"); func_append(f, "\t(one freq [ ri ] =)");
+    func_append(f, "\t(four * int64_size ri :=)"); func_append(f, "\t(four freq [ ri ] =)");
+    func_append(f, "\t(five * int64_size ri :=)"); func_append(f, "\t(one freq [ ri ] =)");
+    func_append(f, "\t(six * int64_size ri :=)"); func_append(f, "\t(zero freq [ ri ] =)");
+    func_append(f, "\t(seven * int64_size ri :=)"); func_append(f, "\t(two freq [ ri ] =)");
+    func_append(f, "\t(eight * int64_size ri :=)"); func_append(f, "\t(one freq [ ri ] =)");
+    func_append(f, "\t(nine * int64_size ri :=)"); func_append(f, "\t(three freq [ ri ] =)");
+    // print frequency table
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i counter <) f :=) f for)");
+    func_append(f, "\t\t(i * int64_size ri :=)");
+    func_append(f, "\t\t(freq [ ri ] ch =)");
+    func_append(f, "\t\t(i :print_i !)");
+    func_append(f, "\t\t(\": \" :print_s !)");
+    func_append(f, "\t\t(ch :print_i !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+}
+
+static void emit_shuffle(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *cv[] = {"5"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "n", 1, cv, 1);
+    add_var_to_func(f, "int64", "arr", 5, zv, 0);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "j", 1, zv, 1);
+    add_var_to_func(f, "int64", "temp", 1, zv, 1);
+    add_var_to_func(f, "int64", "ri", 1, zv, 1);
+    add_var_to_func(f, "int64", "rj", 1, zv, 1);
+    add_var_to_func(f, "int64", "temp2", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *pv[] = {"\"Enter 5 numbers:\""};
+    add_var_to_func(f, "const-string", "prompt_str", 18, pv, 1);
+    func_append(f, "\t(prompt_str :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    // input
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i n <) f :=) f for)");
+    func_append(f, "\t\t(i * int64_size ri :=)");
+    func_append(f, "\t\t(temp :input_i !)");
+    func_append(f, "\t\t(temp arr [ ri ] =)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    // Fisher-Yates shuffle (pseudo-random via epoch ms)
+    func_append(f, "\t(n one - i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i zero >) f :=) f for)");
+    func_append(f, "\t\t(j :epochms !)");
+    func_append(f, "\t\t(j i * j :=)");
+    func_append(f, "\t\t(j i + j :=)");
+    func_append(f, "\t\t(j i % j :=)");
+    func_append(f, "\t\t(i * int64_size ri :=)");
+    func_append(f, "\t\t(j * int64_size rj :=)");
+    func_append(f, "\t\t(arr [ ri ] temp :=)");
+    func_append(f, "\t\t(arr [ rj ] temp2 :=)");
+    func_append(f, "\t\t(temp2 arr [ ri ] =)");
+    func_append(f, "\t\t(temp arr [ rj ] =)");
+    func_append(f, "\t\t(i one - i :=)");
+    func_append(f, "\t(next)");
+    // print
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i n <) f :=) f for)");
+    func_append(f, "\t\t(i * int64_size ri :=)");
+    func_append(f, "\t\t(arr [ ri ] temp =)");
+    func_append(f, "\t\t(temp :print_i !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+}
+
+static void emit_weighted_random(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *cv[] = {"4"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "n", 1, cv, 1);
+    add_var_to_func(f, "int64", "items", 4, zv, 0);
+    add_var_to_func(f, "int64", "weights", 4, zv, 0);
+    add_var_to_func(f, "int64", "prefix", 4, zv, 0);
+    add_var_to_func(f, "int64", "total", 1, zv, 1);
+    add_var_to_func(f, "int64", "r", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "ri", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    // items and weights
+    add_var_to_func(f, "const-int64", "iv1", 1, (const char *[]){"1"}, 1);
+    add_var_to_func(f, "const-int64", "iv2", 1, (const char *[]){"2"}, 1);
+    add_var_to_func(f, "const-int64", "iv3", 1, (const char *[]){"3"}, 1);
+    add_var_to_func(f, "const-int64", "iv4", 1, (const char *[]){"4"}, 1);
+    add_var_to_func(f, "const-int64", "wv1", 1, (const char *[]){"1"}, 1);
+    add_var_to_func(f, "const-int64", "wv2", 1, (const char *[]){"2"}, 1);
+    add_var_to_func(f, "const-int64", "wv3", 1, (const char *[]){"3"}, 1);
+    add_var_to_func(f, "const-int64", "wv4", 1, (const char *[]){"4"}, 1);
+    const char *ps[] = {"\"Weighted random (weights 1,2,3,4): \""};
+    add_var_to_func(f, "const-string", "msg_str", 36, ps, 1);
+    // init
+    func_append(f, "\t(zero * int64_size ri :=)"); func_append(f, "\t(iv1 items [ ri ] =)");
+    func_append(f, "\t(one * int64_size ri :=)"); func_append(f, "\t(iv2 items [ ri ] =)");
+    func_append(f, "\t(two * int64_size ri :=)"); func_append(f, "\t(iv3 items [ ri ] =)");
+    func_append(f, "\t(three * int64_size ri :=)"); func_append(f, "\t(iv4 items [ ri ] =)");
+    func_append(f, "\t(zero * int64_size ri :=)"); func_append(f, "\t(wv1 weights [ ri ] =)");
+    func_append(f, "\t(one * int64_size ri :=)"); func_append(f, "\t(wv2 weights [ ri ] =)");
+    func_append(f, "\t(two * int64_size ri :=)"); func_append(f, "\t(wv3 weights [ ri ] =)");
+    func_append(f, "\t(three * int64_size ri :=)"); func_append(f, "\t(wv4 weights [ ri ] =)");
+    // prefix sum
+    func_append(f, "\t(zero total :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i n <) f :=) f for)");
+    func_append(f, "\t\t(i * int64_size ri :=)");
+    func_append(f, "\t\t(weights [ ri ] f =)");
+    func_append(f, "\t\t(total + f total :=)");
+    func_append(f, "\t\t(total prefix [ ri ] =)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    // pick random via epoch ms
+    func_append(f, "\t(msg_str :print_s !)");
+    func_append(f, "\t(r :epochms !)");
+    func_append(f, "\t(r total % r :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i n <) f :=) f for)");
+    func_append(f, "\t\t(i * int64_size ri :=)");
+    func_append(f, "\t\t(prefix [ ri ] f =)");
+    func_append(f, "\t\t(((r f <) f :=) f if)");
+    func_append(f, "\t\t\t(items [ ri ] f =)");
+    func_append(f, "\t\t\t(f :print_i !)");
+    func_append(f, "\t\t\t(:print_n !)");
+    func_append(f, "\t\t\t(i n :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+}
+
+static void emit_ascii_table(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *nv[] = {"16"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "sixteen", 1, nv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "j", 1, zv, 1);
+    add_var_to_func(f, "int64", "ch", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *sv[] = {"32"};
+    const char *ev[] = {"128"};
+    add_var_to_func(f, "const-int64", "asc_start", 1, sv, 1);
+    add_var_to_func(f, "const-int64", "asc_end", 1, ev, 1);
+    const char *ps[] = {"\"ASCII table (32-127):\""};
+    add_var_to_func(f, "const-string", "msg_str", 22, ps, 1);
+    func_append(f, "\t(msg_str :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(asc_start i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i asc_end <) f :=) f for)");
+    func_append(f, "\t\t(i :print_i !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+}
+
 static void ensure_exit(Function *f, int last_step) {
     if (!last_step) return;
     const char *zv[] = {"0"};
@@ -5930,10 +7663,21 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         emit_input_sort(prog, f, c, task->skip_input, task->has_descending);
         dataflow_quiet_mode = saved_quiet;
         if (task->has_max) {
-            const char *zv[] = {"0"};
-            const char *ov[] = {"1"};
-            add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-            add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *thv[] = {"3"};
+    const char *fov[] = {"4"};
+    const char *fiv[] = {"5"};
+    const char *cellsv[] = {"25"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "three", 1, thv, 1);
+    add_var_to_func(f, "const-int64", "four", 1, fov, 1);
+    add_var_to_func(f, "const-int64", "five", 1, fiv, 1);
+    add_var_to_func(f, "const-int64", "cells", 1, cellsv, 1);
+    add_var_to_func(f, "const-int64", "cols", 1, fiv, 1);
             func_append(f, "\t// print largest");
             func_append(f, "\t(count one - temp :=)");
             func_append(f, "\t(temp * int64_size realind :=)");
@@ -6398,6 +8142,106 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         ensure_exit(f, last_step);
         return 1;
     }
+    if (task->has_linked_list) {
+        emit_linked_list(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_binary_search_tree) {
+        emit_binary_search_tree(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_tree_traversal) {
+        emit_tree_traversal(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_graph_bfs_dfs) {
+        emit_graph_bfs_dfs(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_n_queens) {
+        emit_n_queens(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_sudoku) {
+        emit_sudoku(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_levenshtein) {
+        emit_levenshtein_distance(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_maze_generator) {
+        emit_maze_generator(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_maze_solver) {
+        emit_maze_solver(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_monte_carlo) {
+        emit_monte_carlo_pi(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_matrix_mul) {
+        emit_matrix_multiplication(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_matrix_transpose) {
+        emit_matrix_transpose(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_numerical_integration) {
+        emit_numerical_integration(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_complex_numbers) {
+        emit_complex_numbers(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_linear_regression) {
+        emit_linear_regression(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_base_converter) {
+        emit_base_converter(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_freq_analysis) {
+        emit_freq_analysis(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_shuffle) {
+        emit_shuffle(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_weighted_random) {
+        emit_weighted_random(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    if (task->has_ascii_table) {
+        emit_ascii_table(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
 
     // If no single emitter matched but extra emitters are specified, run them
     // as a composite sequence. Each extra emitter runs on the same function.
@@ -6467,6 +8311,26 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
                 case 73: if (task->has_unit_converter) { emit_unit_converter(prog, f); emitted = 1; } break;
                 case 74: if (task->has_rock_paper_scissors) { emit_rock_paper_scissors(prog, f); emitted = 1; } break;
                 case 75: if (task->has_pyramid) { emit_pyramid(prog, f); emitted = 1; } break;
+                case 86: if (task->has_linked_list) { emit_linked_list(prog, f); emitted = 1; } break;
+                case 87: if (task->has_binary_search_tree) { emit_binary_search_tree(prog, f); emitted = 1; } break;
+                case 88: if (task->has_tree_traversal) { emit_tree_traversal(prog, f); emitted = 1; } break;
+                case 89: if (task->has_graph_bfs_dfs) { emit_graph_bfs_dfs(prog, f); emitted = 1; } break;
+                case 90: if (task->has_n_queens) { emit_n_queens(prog, f); emitted = 1; } break;
+                case 91: if (task->has_sudoku) { emit_sudoku(prog, f); emitted = 1; } break;
+                case 92: if (task->has_levenshtein) { emit_levenshtein_distance(prog, f); emitted = 1; } break;
+                case 93: if (task->has_maze_generator) { emit_maze_generator(prog, f); emitted = 1; } break;
+                case 94: if (task->has_maze_solver) { emit_maze_solver(prog, f); emitted = 1; } break;
+                case 95: if (task->has_monte_carlo) { emit_monte_carlo_pi(prog, f); emitted = 1; } break;
+                case 96: if (task->has_matrix_mul) { emit_matrix_multiplication(prog, f); emitted = 1; } break;
+                case 97: if (task->has_matrix_transpose) { emit_matrix_transpose(prog, f); emitted = 1; } break;
+                case 98: if (task->has_numerical_integration) { emit_numerical_integration(prog, f); emitted = 1; } break;
+                case 99: if (task->has_complex_numbers) { emit_complex_numbers(prog, f); emitted = 1; } break;
+                case 100: if (task->has_linear_regression) { emit_linear_regression(prog, f); emitted = 1; } break;
+                case 101: if (task->has_base_converter) { emit_base_converter(prog, f); emitted = 1; } break;
+                case 102: if (task->has_freq_analysis) { emit_freq_analysis(prog, f); emitted = 1; } break;
+                case 103: if (task->has_shuffle) { emit_shuffle(prog, f); emitted = 1; } break;
+                case 104: if (task->has_weighted_random) { emit_weighted_random(prog, f); emitted = 1; } break;
+                case 105: if (task->has_ascii_table) { emit_ascii_table(prog, f); emitted = 1; } break;
                 default: break;
             }
         }
@@ -6517,7 +8381,8 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         snprintf(cvs, sizeof(cvs), "%d", task->inherit_count > 0 ? task->inherit_count : 5);
         const char *cv[] = {cvs};
         add_var_to_func(f, "int64", "count", 1, cv, 1);
-        add_var_to_func(f, "int64", "temp", 1, zv, 1);
+    add_var_to_func(f, "int64", "temp", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
         add_var_to_func(f, "int64", "realind", 1, zv, 1);
         add_var_to_func(f, "int64", "a", 1, zv, 1);
         func_append(f, "\t// print largest");

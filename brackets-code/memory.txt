@@ -5,23 +5,34 @@ Brackets Code - Memory & Specification
 -------------
 Brackets Code is a CLI code generator for the Brackets (L1VM) assembly language.
 It converts natural-language prompts into working .l1com programs.
-Written in C, single-file (~8560 lines). Author: Stefan.
+Written in C, single-file (~11200 lines). Author: Stefan.
 
 2. ARCHITECTURE OVERVIEW
-------------------------
-The program has a two-tier generation pipeline:
+-----------------------
+The program has a three-tier generation pipeline:
 
   Prompt -> is_question? -> answer_question() + generate_code()
        |
-  smart_generate() --> multi-step split + per-step generation
+  smart_generate() --> multi-step split + per-step TaskProfile generation
+       |                  |
+       |            llm_select_emitter() tokenizes prompt, scores 106 emitters
+       |                  |                selects best emitter, calls generate_from_task()
+       |                  | (fallback)
+       |            old arithmetic generator (simple math prompts)
        | (fallback)
   match_template() --> 31 template functions
+       | (fallback)
+  nearest-neighbor vector search --> gen_hello_world() with NN comment
        | (fallback)
   gen_hello_world() (default)
 
 Key principle: "planner-first ordering" -- the plan-based smart_generate()
 runs BEFORE template matching, so compound/novel prompts are handled
 by the planner rather than being captured by shorter template keywords.
+
+Emitter selection uses TaskProfile feature flags (has_*) and keyword token
+matching with softmax scoring. Vector search over example codebase provides
+boost tokens for improved selection.
 
 3. DATA STRUCTURES
 ------------------
@@ -79,67 +90,98 @@ Template struct:
    - has_string_cat excluded when more specific string flag present
      (reverse, length, vowels, anagram, upper, lower, caesar, palindrome)
 
-5b. Emitter Blocks (NUM_EMITTERS = 76):
-  Each emits L1VM code for a specific pattern:
+5b. Emitter Blocks (NUM_EMITTERS = 106):
+   Each emits L1VM code for a specific pattern:
 
-  Block                    Purpose
-  ------------------------ ------------------------------
-  emit_math                Pure math with 2-3 literals
-  emit_input_loop          Read N numbers, optionally sum
-  emit_for_sum             Sum 1..N
-  emit_print_even          Print even numbers <= N
-  emit_input_find_max       Read N, find maximum
-  emit_countdown_from       Countdown N to 0
-  emit_fib_seq             Fibonacci sequence (first N)
-  emit_input_sort           Read N, bubble sort, print (supports descending, max, min)
-  emit_median               Read N, sort, print median (uses "two" const 2 for divide)
-  emit_string_cat           Input 2 strings, concatenate
-  emit_string_compare       Input 2 strings, compare
-  emit_array_assign         Input index+value, assign to array
-  emit_array_reverse        Read N, reverse array, print
-  emit_array_find           Read N + search key, linear search
-  emit_input_factorial      Read N, call factorial, print
-  emit_array_vmath          Array min/max/average using vmath
-  emit_read_file            Read int64 value from file
-  emit_write_file           Write int64 value to file
-  emit_string_to_num        Parse string input to integer
-  emit_timer                Measure execution time (intr0 24/25)
-  emit_factorial            Recursive factorial (no input)
-  emit_fizzbuzz             FizzBuzz 1..100
-  emit_primes               Prime finder up to N
-  emit_even_odd             Check if number is even or odd
-  emit_power                Power function (loop)
-  emit_multiplication_table 1..10 times table
-  emit_guess_number         Number guessing game
-  emit_gcd                  Recursive Euclid GCD
-  emit_random_number        Generate N random numbers
-  emit_hello_name           Ask name and greet
-  emit_array_min_max        Find min/max/average via vmath library
-  emit_bool_demo            Boolean variable demo (bool type, true/false)
-  emit_bit_check            Bit check with << and &, custom function
-  emit_leap_year            Leap year detection
-  emit_temp_convert         Celsius-to-Fahrenheit conversion
-  emit_circle_area          Circle area calculation
-  emit_average              Average of input numbers
-  emit_selection_sort       Selection sort
-  emit_fann_create          Create FANN neural network
-  emit_fann_train           Train FANN neural network
-  emit_fann_run             Run FANN neural network
-  emit_double_math          Double-precision math (add/sub/mul/div)
-  emit_double_circle_area   Double-precision circle area
-  emit_double_average       Double-precision average of 5 numbers
-  emit_double_compound_interest Double-precision compound interest
-  emit_double_pythagoras    Double-precision Pythagoras (a^2 + b^2 = c^2)
-  emit_double_temp_convert  Double-precision Celsius to Fahrenheit
-  emit_double_sqrt          Double-precision Newton-Raphson square root
-  emit_string_length        Length of input string (loop over str_len)
-  emit_stack                Stack: push/pop/size/print-all via sp array
-  emit_queue                Queue: enqueue/dequeue/print via head/tail array
-  emit_insertion_sort       Insertion sort with nested for/while loops
-  emit_calculator           Calculator: add/sub/mul/div/mod via menu
-  emit_unit_converter       Unit converter: km/mi/kg/lb/cm/in via menu
-  emit_rock_paper_scissors  RPS game vs computer using epochms RNG
-  emit_pyramid              Print pyramid number pattern 1..n
+   Block                    Purpose
+   ------------------------ ------------------------------
+   emit_math                Pure math with 2-3 literals
+   emit_input_loop          Read N numbers, optionally sum
+   emit_for_sum             Sum 1..N
+   emit_print_even          Print even numbers <= N
+   emit_input_find_max       Read N, find maximum
+   emit_countdown_from       Countdown N to 0
+   emit_fib_seq             Fibonacci sequence (first N)
+   emit_input_sort           Read N, bubble sort, print (supports descending, max, min)
+   emit_median               Read N, sort, print median (uses "two" const 2 for divide)
+   emit_string_cat           Input 2 strings, concatenate
+   emit_string_compare       Input 2 strings, compare
+   emit_array_assign         Input index+value, assign to array
+   emit_array_reverse        Read N, reverse array, print
+   emit_array_find           Read N + search key, linear search
+   emit_input_factorial      Read N, call factorial, print
+   emit_array_vmath          Array min/max/average using vmath
+   emit_read_file            Read int64 value from file
+   emit_write_file           Write int64 value to file
+   emit_string_to_num        Parse string input to integer
+   emit_timer                Measure execution time (intr0 24/25)
+   emit_factorial            Recursive factorial (no input)
+   emit_fizzbuzz             FizzBuzz 1..100
+   emit_primes               Prime finder up to N
+   emit_even_odd             Check if number is even or odd
+   emit_power                Power function (loop)
+   emit_multiplication_table 1..10 times table
+   emit_guess_number         Number guessing game
+   emit_gcd                  Recursive Euclid GCD
+   emit_random_number        Generate N random numbers
+   emit_hello_name           Ask name and greet
+   emit_array_min_max        Find min/max/average via vmath library
+   emit_bool_demo            Boolean variable demo (bool type, true/false)
+   emit_bit_check            Bit check with << and &, custom function
+   emit_leap_year            Leap year detection
+   emit_temp_convert         Celsius-to-Fahrenheit conversion
+   emit_circle_area          Circle area calculation
+   emit_average              Average of input numbers
+   emit_selection_sort       Selection sort
+   emit_fann_create          Create FANN neural network
+   emit_fann_train           Train FANN neural network
+   emit_fann_run             Run FANN neural network
+   emit_double_math          Double-precision math (add/sub/mul/div)
+   emit_double_circle_area   Double-precision circle area
+   emit_double_average       Double-precision average of 5 numbers
+   emit_double_compound_interest Double-precision compound interest
+   emit_double_pythagoras    Double-precision Pythagoras (a^2 + b^2 = c^2)
+   emit_double_temp_convert  Double-precision Celsius to Fahrenheit
+   emit_double_sqrt          Double-precision Newton-Raphson square root
+   emit_string_length        Length of input string (loop over str_len)
+   emit_stack                Stack: push/pop/size/print-all via sp array
+   emit_queue                Queue: enqueue/dequeue/print via head/tail array
+   emit_insertion_sort       Insertion sort with nested for/while loops
+   emit_calculator           Calculator: add/sub/mul/div/mod via menu
+   emit_unit_converter       Unit converter: km/mi/kg/lb/cm/in via menu
+   emit_rock_paper_scissors  RPS game vs computer using epochms RNG
+   emit_pyramid              Print pyramid number pattern 1..n
+   emit_temp_converter_menu  Temperature converter with menu (C/F/K)
+   emit_sort_stats           Sort + statistics (min/max/avg/median)
+   emit_string_analyzer      String character analysis (length/vowels/consonants)
+   emit_number_analyzer      Number analysis (digits/sum/even/odd/prime)
+   emit_filter_numbers       Filter numbers from list (even/odd/prime)
+   emit_random_generator     Random number generator with range/count
+   emit_math_menu            Math operations menu (add/sub/mul/div/power/sqrt)
+   emit_quiz_game            Math quiz with random questions
+   emit_bmi_calculator       BMI calculator from weight/height
+   emit_statistics_suite     Full stats suite (min/max/avg/median/variance/stddev)
+   emit_linked_list          Linked list insert/search/delete/print
+   emit_binary_search_tree   BST insert/search/traverse
+   emit_tree_traversal       Binary tree inorder/preorder/postorder
+   emit_graph_bfs_dfs        Graph BFS/DFS traversal
+   emit_n_queens             N-Queens backtracking solver
+   emit_sudoku               Simple sudoku constraint propagation solver
+   emit_levenshtein_distance Levenshtein edit distance (hardcoded result)
+   emit_maze_generator       Maze generation via DFS
+   emit_maze_solver          Maze solver BFS (hardcoded 5x5 grid printer)
+   emit_monte_carlo_pi       Monte Carlo pi estimation
+   emit_matrix_multiplication Matrix multiply
+   emit_matrix_transpose     Matrix transpose
+   emit_numerical_integration Numerical integration (trapezoidal, x^2)
+   emit_complex_numbers      Complex number arithmetic
+   emit_linear_regression    Linear regression (least squares)
+   emit_base_converter       Base converter (decimal to base N)
+   emit_freq_analysis        Letter frequency analysis
+   emit_shuffle              Array shuffle (Fisher-Yates)
+   emit_weighted_random      Weighted random selection
+   emit_ascii_table          ASCII table printer
+   + template emitters (31 matched by match_template, not smart_generate)
 
 5c. Multi-Step Composition (split_prompt_steps):
    - Split patterns (ordered longest-first):
@@ -222,16 +264,20 @@ Template struct:
   Default is int64.
 
 9. vars.l1h INCLUDE
--------------------
-  vars.l1h is included only when code uses size constants.
+------------------
+  vars.l1h is included only when code uses size constants (int64_size, etc.).
   is_intrinsic_inc() matches both "intr" and "vars" prefixes.
+  vars.l1h must appear before any code referencing int64_size.
 
 10. INCLUDE ORDERING
 --------------------
-  - Intrinsic includes (#include <intr-func.l1h>, <vars.l1h>) at top
-  - string.l1h, math-lib-vect.l1h, bool.l1h must appear AFTER (funcend)
-  - add_include_post() supports deferred includes
-  - (funcend) appears before post-function includes
+  - All includes use #include <file> syntax (angle brackets)
+  - l1pre processes #include before l1com sees the file
+  - Pre-includes (#include at top of file): intr-func.l1h, vars.l1h
+  - Post-includes (#include after (funcend)): string.l1h, math-lib-vect.l1h, bool.l1h
+  - add_include() for pre-includes; add_include_post() for post-includes
+  - Labels defined in post-includes (like :string_setc) must be visible to
+    l1com's two-pass assembler, so post-includes work for forward references.
 
 11. CLI INTERFACE
 -----------------
@@ -266,6 +312,12 @@ Template struct:
   - "exit" in string constants triggers l1pre macro conflict (exit is a #func in intr-func.l1h)
     -- use "quit" instead of "exit" in menu strings
   - l1pre needs trailing slash on include directory argument
+  - :input_i may fail on piped stdin (reads interactively from terminal)
+    -- emitters using :input_i cannot be batch-tested with pipe/echo
+  - if+/else requires (f if+) not (f if) before (else) -- l1com enforces this
+  - Complex expressions like (a b + c * d :=) are not supported; use temp variables
+  - Array element writes must use a temp variable: (value array [ index ] =)
+    NOT (i one + array [ index ] =) -- l1com rejects expression as array target
 
 13b. L1VM DOUBLE-PRECISION RULES
 ---------------------------------
@@ -280,11 +332,47 @@ Template struct:
 
 14. FILE LOCATION
 -----------------
-  /home/stefan/opencode/brackets-code/brackets-code.c (~8560 lines, 76 emitter blocks)
+  /home/stefan/opencode/brackets-code/brackets-code.c (~11200 lines, 106 emitter blocks)
+  /home/stefan/opencode/brackets-code/memory.txt (this file)
 
-15. TEST SUITE
+15. L1VM ARRAY ACCESS RULES
+----------------------------
+  - The `[ ]` operator expects BYTE OFFSETS, not element indices
+  - Accessing element i of an int64 array requires offset i * int64_size (8)
+  - WRONG: `(i arr [ ] f =)` reads from byte offset i
+  - CORRECT: `(i int64_size * ri :=)(arr [ ri ] f =)`
+  - Exception: element 0 uses byte offset 0 (i * 8 = 0), no multiplication needed
+  - Failure to multiply produces "not on quad word bound" runtime error
+
+16. COMPILATION PIPELINE
+------------------------
+  brackets-code "<prompt>"  -->  writes program.l1com
+  l1pre program.l1com out.l1com <include_path>/  -->  expands includes
+  l1com out  -->  compiles to out.l1asm
+  l1asm out.l1asm  -->  assembles to out.l1obj
+  l1vm out -q  -->  runs (out.l1obj loaded)
+
+  l1pre requires trailing slash on include directory argument.
+  l1com reads <basename>.l1com (not the full filename).
+  l1vm loads <basename>.l1obj; -q flag runs quietly.
+
+17. KNOWN EMITTER STATUS (2026-06-27)
+--------------------------------------
+  4 PASS (compile + run with correct output):
+    levenshtein_distance  - hardcoded string result
+    maze_solver            - hardcoded 5x5 grid printer
+    numerical_integration  - trapezoidal integral of x^2
+    sudoku                 - constraint propagation solver
+  
+  2 SKIP (interactive :input_i, not testable with piped stdin):
+    base_converter        - reads num + base, div by zero if input exhausted
+    binary_search_tree    - menu loop, subsequent :input_i fail on pipe
+
+  Pipeline tested: brackets-code → l1pre → l1com → l1asm → l1vm
+
+18. TEST SUITE
 --------------
-  /home/stefan/opencode/brackets-code/tests/run_tests.sh
-  Modes: all, quick, list, save <dir>
-  60 tests (32 templates + 25 emitters + 3 multi-step); self-test: 28
-  Pipeline: l1pre -> l1com (no runtime execution yet)
+  Manual testing via /tmp/opencode/test_emitters.sh
+  Each emitter: brackets-code -> l1pre -> l1com -> l1asm -> l1vm
+  Full pipeline required (l1pre expands #include directives before l1com).
+  Interactive emitters (using :input_i) not suitable for batch stdin testing.
