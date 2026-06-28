@@ -74,9 +74,11 @@ typedef struct {
     int has_vars;
     int has_vardef;
     char vardef_name[256];
-    Variable vars[MAX_VARS];
+    Variable *vars;
     int num_vars;
-    char body[MAX_CODE];
+    int vars_cap;
+    char *body;
+    int body_cap;
 } Function;
 
 #ifdef HAVE_READLINE
@@ -89,12 +91,15 @@ typedef struct {
 
 typedef struct {
     char filename[256];
-    Function funcs[MAX_FUNCS];
+    Function *funcs;
     int num_funcs;
-    char includes[MAX_FUNCS][256];
+    int funcs_cap;
+    char (*includes)[256];
     int num_includes;
-    char includes_post[MAX_FUNCS][256];
+    int includes_cap;
+    char (*includes_post)[256];
     int num_includes_post;
+    int includes_post_cap;
     char globals[MAX_CODE];
 } Program;
 
@@ -109,15 +114,139 @@ typedef struct {
     char source_path[1024];
     int is_learned;
     int num_includes;
-    char includes[MAX_FUNCS][256];
+    char (*includes)[256];
+    int includes_cap;
     int num_funcs;
-    Function funcs[MAX_FUNCS];
+    Function *funcs;
+    int funcs_cap;
     char globals[MAX_CODE];
 } LearnedPattern;
 
 static LearnedPattern learned_patterns[MAX_LEARNED];
 static int num_learned = 0;
 static int learned_loaded = 0;
+
+// Dynamic allocation helpers
+#define INIT_VARS_CAP 8
+#define INIT_BODY_CAP 4096
+#define INIT_FUNCS_CAP 4
+#define INIT_INCLUDES_CAP 4
+
+static int resize_vars(Function *f, int new_cap) {
+    Variable *p = realloc(f->vars, (size_t)new_cap * sizeof(Variable));
+    if (!p) return 0;
+    f->vars = p;
+    if (new_cap > f->vars_cap)
+        memset(&f->vars[f->vars_cap], 0, (size_t)(new_cap - f->vars_cap) * sizeof(Variable));
+    f->vars_cap = new_cap;
+    return 1;
+}
+
+static int ensure_vars_cap(Function *f, int needed) {
+    if (needed <= f->vars_cap) return 1;
+    int new_cap = f->vars_cap ? f->vars_cap * 2 : INIT_VARS_CAP;
+    while (new_cap < needed) new_cap *= 2;
+    return resize_vars(f, new_cap);
+}
+
+static int resize_body(Function *f, int new_cap) {
+    char *p = realloc(f->body, (size_t)new_cap);
+    if (!p) return 0;
+    f->body = p;
+    if (new_cap > f->body_cap)
+        memset(&f->body[f->body_cap], 0, (size_t)(new_cap - f->body_cap));
+    f->body_cap = new_cap;
+    return 1;
+}
+
+static int ensure_body_cap(Function *f, int needed) {
+    if (needed <= f->body_cap) return 1;
+    int new_cap = f->body_cap ? f->body_cap * 2 : INIT_BODY_CAP;
+    while (new_cap < needed) new_cap *= 2;
+    return resize_body(f, new_cap);
+}
+
+static int init_function(Function *f) {
+    memset(f, 0, sizeof(Function));
+    f->vars = NULL; f->vars_cap = 0;
+    f->body = NULL; f->body_cap = 0;
+    if (!resize_vars(f, INIT_VARS_CAP)) return 0;
+    if (!resize_body(f, INIT_BODY_CAP)) return 0;
+    f->body[0] = '\0';
+    return 1;
+}
+
+static void free_function(Function *f) {
+    free(f->vars); f->vars = NULL; f->vars_cap = 0;
+    free(f->body); f->body = NULL; f->body_cap = 0;
+    f->num_vars = 0;
+}
+
+static int resize_funcs_array(Function **pfuncs, int *cap, int new_cap) {
+    Function *p = realloc(*pfuncs, (size_t)new_cap * sizeof(Function));
+    if (!p) return 0;
+    *pfuncs = p;
+    if (new_cap > *cap) {
+        for (int i = *cap; i < new_cap; i++)
+            init_function(&(*pfuncs)[i]);
+    }
+    *cap = new_cap;
+    return 1;
+}
+
+static int ensure_funcs_cap(Function **pfuncs, int *cap, int needed) {
+    if (needed <= *cap) return 1;
+    int new_cap = *cap ? *cap * 2 : INIT_FUNCS_CAP;
+    while (new_cap < needed) new_cap *= 2;
+    return resize_funcs_array(pfuncs, cap, new_cap);
+}
+
+static int resize_includes_arr(char (**pinc)[256], int *cap, int new_cap) {
+    char (*p)[256] = realloc(*pinc, (size_t)new_cap * sizeof(char[256]));
+    if (!p) return 0;
+    *pinc = p;
+    if (new_cap > *cap)
+        memset(&(*pinc)[*cap], 0, (size_t)(new_cap - *cap) * sizeof(char[256]));
+    *cap = new_cap;
+    return 1;
+}
+
+static int ensure_includes_cap(char (**pinc)[256], int *cap, int needed) {
+    if (needed <= *cap) return 1;
+    int new_cap = *cap ? *cap * 2 : INIT_INCLUDES_CAP;
+    while (new_cap < needed) new_cap *= 2;
+    return resize_includes_arr(pinc, cap, new_cap);
+}
+
+static int init_program(Program *prog) {
+    memset(prog, 0, sizeof(Program));
+    if (!resize_funcs_array(&prog->funcs, &prog->funcs_cap, INIT_FUNCS_CAP)) return 0;
+    if (!resize_includes_arr(&prog->includes, &prog->includes_cap, INIT_INCLUDES_CAP)) return 0;
+    if (!resize_includes_arr(&prog->includes_post, &prog->includes_post_cap, INIT_INCLUDES_CAP)) return 0;
+    return 1;
+}
+
+static void free_program(Program *prog) {
+    for (int i = 0; i < prog->funcs_cap; i++)
+        free_function(&prog->funcs[i]);
+    free(prog->funcs); prog->funcs = NULL; prog->funcs_cap = 0;
+    free(prog->includes); prog->includes = NULL; prog->includes_cap = 0;
+    free(prog->includes_post); prog->includes_post = NULL; prog->includes_post_cap = 0;
+}
+
+static int init_learned_pattern(LearnedPattern *lp) {
+    memset(lp, 0, sizeof(LearnedPattern));
+    if (!resize_includes_arr(&lp->includes, &lp->includes_cap, INIT_INCLUDES_CAP)) return 0;
+    if (!resize_funcs_array(&lp->funcs, &lp->funcs_cap, INIT_FUNCS_CAP)) return 0;
+    return 1;
+}
+
+static void free_learned_pattern(LearnedPattern *lp) {
+    for (int i = 0; i < lp->funcs_cap; i++)
+        free_function(&lp->funcs[i]);
+    free(lp->funcs); lp->funcs = NULL; lp->funcs_cap = 0;
+    free(lp->includes); lp->includes = NULL; lp->includes_cap = 0;
+}
 
 void trim(char *s) {
     char *p = s;
@@ -155,31 +284,39 @@ void to_lowercase(char *s) {
 void add_include(Program *prog, const char *inc) {
     for (int i = 0; i < prog->num_includes; i++)
         if (strcmp(prog->includes[i], inc) == 0) return;
-    snprintf(prog->includes[prog->num_includes++], sizeof(prog->includes[0]), "%s", inc);
+    if (!ensure_includes_cap(&prog->includes, &prog->includes_cap, prog->num_includes + 1)) return;
+    snprintf(prog->includes[prog->num_includes], sizeof(prog->includes[0]), "%s", inc);
+    prog->num_includes++;
 }
 
 void add_include_post(Program *prog, const char *inc) {
     for (int i = 0; i < prog->num_includes_post; i++)
         if (strcmp(prog->includes_post[i], inc) == 0) return;
-    snprintf(prog->includes_post[prog->num_includes_post++], sizeof(prog->includes_post[0]), "%s", inc);
+    if (!ensure_includes_cap(&prog->includes_post, &prog->includes_post_cap, prog->num_includes_post + 1)) return;
+    snprintf(prog->includes_post[prog->num_includes_post], sizeof(prog->includes_post[0]), "%s", inc);
+    prog->num_includes_post++;
 }
 
 void add_func(Program *prog, const char *name) {
     for (int i = 0; i < prog->num_funcs; i++)
         if (strcmp(prog->funcs[i].name, name) == 0) return;
-    Function *f = &prog->funcs[prog->num_funcs++];
+    if (!ensure_funcs_cap(&prog->funcs, &prog->funcs_cap, prog->num_funcs + 1)) return;
+    Function *f = &prog->funcs[prog->num_funcs];
+    init_function(f);
     snprintf(f->name, sizeof(f->name), "%s", name);
     f->is_local = 0;
     f->has_vars = 0;
     f->has_vardef = 0;
     f->num_vars = 0;
     f->body[0] = '\0';
+    prog->num_funcs++;
 }
 
 void add_var_to_func(Function *f, const char *type, const char *name, int count, const char **values, int num_values) {
     // Skip if variable with same name already exists (prevents duplicate declarations)
     for (int i = 0; i < f->num_vars; i++)
         if (strcmp(f->vars[i].name, name) == 0) return;
+    if (!ensure_vars_cap(f, f->num_vars + 1)) return;
     Variable *v = &f->vars[f->num_vars++];
     snprintf(v->name, sizeof(v->name), "%s", name);
     snprintf(v->type, sizeof(v->type), "%s", type);
@@ -190,10 +327,10 @@ void add_var_to_func(Function *f, const char *type, const char *name, int count,
 }
 
 void func_append(Function *f, const char *line) {
-    if (strlen(f->body) + strlen(line) + 2 < MAX_CODE) {
-        strcat(f->body, line);
-        strcat(f->body, "\n");
-    }
+    size_t needed = strlen(f->body) + strlen(line) + 2;
+    if (!ensure_body_cap(f, (int)needed + 1)) return;
+    strcat(f->body, line);
+    strcat(f->body, "\n");
 }
 
 void func_vardef(Function *f, const char *scope) {
@@ -10075,6 +10212,7 @@ int generate_code(const char *prompt, const char *filename) {
 
     Program *prog = calloc(1, sizeof(Program));
     if (!prog) { c_printf(ANSI_RED, "Out of memory\n"); return 0; }
+    init_program(prog);
     snprintf(prog->filename, sizeof(prog->filename), "%s", filename);
     reset_temp();
     func_counter = 0;
@@ -10085,7 +10223,7 @@ int generate_code(const char *prompt, const char *filename) {
         if (is_q) c_printf(ANSI_CYAN, "Code example written to: %s\n", filename);
         else c_printf(ANSI_GREEN, "Smart generated (plan): %s\n", desc);
         write_program(prog, filename);
-        free(prog);
+        free_program(prog); free(prog);
         return 1;
     }
 
@@ -10098,7 +10236,7 @@ int generate_code(const char *prompt, const char *filename) {
             if (emit_learned_pattern(prog, lidx)) {
                 c_printf(ANSI_GREEN, "Using learned pattern: %s (score: %d)\n", learned_patterns[lidx].id, lscore);
                 write_program(prog, filename);
-                free(prog);
+                free_program(prog); free(prog);
                 return 1;
             }
         }
@@ -10112,12 +10250,12 @@ int generate_code(const char *prompt, const char *filename) {
         else c_printf(ANSI_GREEN, "Matched template: %s (score: %d)\n", templates[idx].desc, score);
         templates[idx].gen(prog, prompt);
         write_program(prog, filename);
-        free(prog);
+        free_program(prog); free(prog);
         return 1;
     }
 
     if (is_q) {
-        free(prog);
+        free_program(prog); free(prog);
         return 1;
     }
 
@@ -10145,14 +10283,14 @@ int generate_code(const char *prompt, const char *filename) {
         }
         c_printf(ANSI_YELLOW, "Nearest-neighbor generated: %s\n", example_docs[nn_indices[0]].stem);
         write_program(prog, filename);
-        free(prog);
+        free_program(prog); free(prog);
         return 1;
     }
 
     c_printf(ANSI_YELLOW, "No template matched for: '%s'. Generating default hello world.\n", prompt);
     gen_hello_world(prog, prompt);
     write_program(prog, filename);
-    free(prog);
+    free_program(prog); free(prog);
     return 0;
 }
 
@@ -10206,7 +10344,7 @@ static int learn_from_file(const char *path, const char *keywords, const char *d
     }
 
     LearnedPattern *lp = &learned_patterns[num_learned];
-    memset(lp, 0, sizeof(LearnedPattern));
+    init_learned_pattern(lp);
     snprintf(lp->id, sizeof(lp->id), "%s", id);
     snprintf(lp->source_path, sizeof(lp->source_path), "%s", path);
     lp->is_learned = 1;
@@ -10244,7 +10382,8 @@ static int learn_from_file(const char *path, const char *keywords, const char *d
                 for (int i = 0; i < lp->num_includes; i++) {
                     if (strcmp(lp->includes[i], inc) == 0) { found = 1; break; }
                 }
-                if (!found && lp->num_includes < MAX_FUNCS) {
+                if (!found) {
+                    if (!ensure_includes_cap(&lp->includes, &lp->includes_cap, lp->num_includes + 1)) continue;
                     snprintf(lp->includes[lp->num_includes++], sizeof(lp->includes[0]), "%s", inc);
                 }
             }
@@ -10255,13 +10394,11 @@ static int learn_from_file(const char *path, const char *keywords, const char *d
         if (strstr(line, " func)")) {
             char fname[256] = {0};
             if (sscanf(line, "(%255s func)", fname) == 1) {
-                if (lp->num_funcs < MAX_FUNCS) {
-                    cur_func = &lp->funcs[lp->num_funcs++];
-                    memset(cur_func, 0, sizeof(Function));
-                    snprintf(cur_func->name, sizeof(cur_func->name), "%s", fname);
-                    cur_func->body[0] = '\0';
-                    in_func = 1;
-                }
+                if (!ensure_funcs_cap(&lp->funcs, &lp->funcs_cap, lp->num_funcs + 1)) continue;
+                cur_func = &lp->funcs[lp->num_funcs++];
+                init_function(cur_func);
+                snprintf(cur_func->name, sizeof(cur_func->name), "%s", fname);
+                in_func = 1;
             }
             continue;
         }
@@ -10295,7 +10432,8 @@ static int learn_from_file(const char *path, const char *keywords, const char *d
                 for (int i = 0; i < cur_func->num_vars; i++) {
                     if (strcmp(cur_func->vars[i].name, vname) == 0) { found = 1; break; }
                 }
-                if (!found && cur_func->num_vars < MAX_VARS) {
+                if (!found) {
+                    if (!ensure_vars_cap(cur_func, cur_func->num_vars + 1)) continue;
                     Variable *v = &cur_func->vars[cur_func->num_vars++];
                     snprintf(v->name, sizeof(v->name), "%s", vname);
                     snprintf(v->type, sizeof(v->type), "%s", vtype);
@@ -10340,11 +10478,10 @@ static int learn_from_file(const char *path, const char *keywords, const char *d
 
         // Body code
         if (cur_func) {
-            size_t cur_len = strlen(cur_func->body);
-            if (cur_len + strlen(line) + 2 < MAX_CODE) {
-                strcat(cur_func->body, line);
-                strcat(cur_func->body, "\n");
-            }
+            size_t needed = strlen(cur_func->body) + strlen(line) + 2;
+            if (!ensure_body_cap(cur_func, (int)needed + 1)) continue;
+            strcat(cur_func->body, line);
+            strcat(cur_func->body, "\n");
         }
     }
     fclose(f);
@@ -10444,7 +10581,7 @@ static void load_learned_patterns(void) {
         if (!f) continue;
 
         LearnedPattern *lp = &learned_patterns[num_learned];
-        memset(lp, 0, sizeof(LearnedPattern));
+        init_learned_pattern(lp);
         lp->is_learned = 1;
 
         char line[MAX_LINE];
@@ -10485,7 +10622,7 @@ static void load_learned_patterns(void) {
             if (strncmp(line, "#include", 8) == 0) {
                 char inc[256] = {0};
                 if (sscanf(line, "#include <%255[^>]>", inc) == 1) {
-                    if (lp->num_includes < MAX_FUNCS)
+                    if (ensure_includes_cap(&lp->includes, &lp->includes_cap, lp->num_includes + 1))
                         snprintf(lp->includes[lp->num_includes++], sizeof(lp->includes[0]), "%s", inc);
                 }
                 continue;
@@ -10494,9 +10631,9 @@ static void load_learned_patterns(void) {
             if (strstr(line, " func)")) {
                 char fname[256] = {0};
                 if (sscanf(line, "(%255s func)", fname) == 1) {
-                    if (lp->num_funcs < MAX_FUNCS) {
+                    if (ensure_funcs_cap(&lp->funcs, &lp->funcs_cap, lp->num_funcs + 1)) {
                         cur_func = &lp->funcs[lp->num_funcs++];
-                        memset(cur_func, 0, sizeof(Function));
+                        init_function(cur_func);
                         snprintf(cur_func->name, sizeof(cur_func->name), "%s", fname);
                     }
                 }
@@ -10527,7 +10664,8 @@ static void load_learned_patterns(void) {
                     for (int i = 0; i < cur_func->num_vars; i++) {
                         if (strcmp(cur_func->vars[i].name, vname) == 0) { found = 1; break; }
                     }
-                    if (!found && cur_func->num_vars < MAX_VARS) {
+                    if (!found) {
+                        if (!ensure_vars_cap(cur_func, cur_func->num_vars + 1)) continue;
                         Variable *v = &cur_func->vars[cur_func->num_vars++];
                         snprintf(v->name, sizeof(v->name), "%s", vname);
                         snprintf(v->type, sizeof(v->type), "%s", vtype);
@@ -10565,11 +10703,10 @@ static void load_learned_patterns(void) {
             }
 
             if (cur_func) {
-                size_t cur_len = strlen(cur_func->body);
-                if (cur_len + strlen(line) + 2 < MAX_CODE) {
-                    strcat(cur_func->body, line);
-                    strcat(cur_func->body, "\n");
-                }
+                size_t needed = strlen(cur_func->body) + strlen(line) + 2;
+                if (!ensure_body_cap(cur_func, (int)needed + 1)) continue;
+                strcat(cur_func->body, line);
+                strcat(cur_func->body, "\n");
             }
         }
         fclose(f);
@@ -10667,6 +10804,7 @@ static int emit_learned_pattern(Program *prog, int learned_idx) {
 
         // Copy variables
         for (int vi = 0; vi < src->num_vars; vi++) {
+            if (!ensure_vars_cap(dst, dst->num_vars + 1)) continue;
             Variable *sv = &src->vars[vi];
             Variable *dv = &dst->vars[dst->num_vars++];
             snprintf(dv->name, sizeof(dv->name), "%s", sv->name);
@@ -10678,7 +10816,9 @@ static int emit_learned_pattern(Program *prog, int learned_idx) {
         }
 
         // Copy body
-        snprintf(dst->body, sizeof(dst->body), "%s", src->body);
+        size_t needed = strlen(src->body) + 1;
+        if (ensure_body_cap(dst, (int)needed))
+            snprintf(dst->body, (size_t)dst->body_cap, "%s", src->body);
     }
 
     return 1;
@@ -10710,14 +10850,15 @@ static int emit_learned_step(Program *prog, int learned_idx) {
 
         if (existing >= 0) {
             Function *dst = &prog->funcs[existing];
-            size_t cur_len = strlen(dst->body);
-            if (cur_len + strlen(src->body) < MAX_CODE)
+            size_t needed = strlen(dst->body) + strlen(src->body) + 1;
+            if (ensure_body_cap(dst, (int)needed + 1))
                 strcat(dst->body, src->body);
-            for (int vi = 0; vi < src->num_vars && dst->num_vars < MAX_VARS; vi++) {
+            for (int vi = 0; vi < src->num_vars; vi++) {
                 int found = 0;
                 for (int dv = 0; dv < dst->num_vars; dv++)
                     if (strcmp(dst->vars[dv].name, src->vars[vi].name) == 0) { found = 1; break; }
                 if (!found) {
+                    if (!ensure_vars_cap(dst, dst->num_vars + 1)) continue;
                     Variable *sv = &src->vars[vi];
                     Variable *dv = &dst->vars[dst->num_vars++];
                     snprintf(dv->name, sizeof(dv->name), "%s", sv->name);
@@ -10736,6 +10877,7 @@ static int emit_learned_step(Program *prog, int learned_idx) {
             dst->has_vardef = src->has_vardef;
             snprintf(dst->vardef_name, sizeof(dst->vardef_name), "%s", src->vardef_name);
             for (int vi = 0; vi < src->num_vars; vi++) {
+                if (!ensure_vars_cap(dst, dst->num_vars + 1)) continue;
                 Variable *sv = &src->vars[vi];
                 Variable *dv = &dst->vars[dst->num_vars++];
                 snprintf(dv->name, sizeof(dv->name), "%s", sv->name);
@@ -10745,7 +10887,9 @@ static int emit_learned_step(Program *prog, int learned_idx) {
                 for (int vj = 0; vj < sv->num_values; vj++)
                     snprintf(dv->values[vj], sizeof(dv->values[vj]), "%s", sv->values[vj]);
             }
-            snprintf(dst->body, sizeof(dst->body), "%s", src->body);
+            size_t needed = strlen(src->body) + 1;
+            if (ensure_body_cap(dst, (int)needed))
+                snprintf(dst->body, (size_t)dst->body_cap, "%s", src->body);
         }
     }
     return 1;
