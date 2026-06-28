@@ -10921,10 +10921,16 @@ static int forget_learned(const char *id) {
     snprintf(filepath, sizeof(filepath), "%s/%s.l1lp", learned_dir_path(), learned_patterns[found].id);
     remove(filepath);
 
+    // Free allocated memory in the pattern being removed
+    free_learned_pattern(&learned_patterns[found]);
+
     // Shift array
     for (int i = found; i < num_learned - 1; i++)
         learned_patterns[i] = learned_patterns[i + 1];
     num_learned--;
+
+    // Clear the now-unused slot to prevent stale pointer copies
+    memset(&learned_patterns[num_learned], 0, sizeof(LearnedPattern));
 
     c_printf(ANSI_GREEN, "Forgot pattern '%s'.\n", id);
     return 1;
