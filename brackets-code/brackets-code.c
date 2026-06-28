@@ -31,6 +31,7 @@
 #include <math.h>
 #include <dirent.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 
 #define VERSION_TXT "0.6.4"
@@ -9223,7 +9224,7 @@ static void shell_escape(const char *raw, char *out, size_t out_size) {
 }
 
 static int validate_code(const char *filename) {
-    char cmd[16384];
+    char cmd[32768];
     char ppname[512];
     const char *dot = strrchr(filename, '.');
     if (dot) {
@@ -9256,11 +9257,15 @@ static int validate_code(const char *filename) {
         l1com_bin = l1com_path;
     }
 
+    char escaped_l1pre[4096], escaped_l1com[4096];
+    shell_escape(l1pre_bin, escaped_l1pre, sizeof(escaped_l1pre));
+    shell_escape(l1com_bin, escaped_l1com, sizeof(escaped_l1com));
+
     char escaped_filename[4096], escaped_ppname[4096], escaped_incdir[4096];
     shell_escape(filename, escaped_filename, sizeof(escaped_filename));
     shell_escape(ppname, escaped_ppname, sizeof(escaped_ppname));
     shell_escape(include_dir, escaped_incdir, sizeof(escaped_incdir));
-    snprintf(cmd, sizeof(cmd), "%s %s %s %s 2>&1", l1pre_bin, escaped_filename, escaped_ppname, escaped_incdir);
+    snprintf(cmd, sizeof(cmd), "%s %s %s %s 2>&1", escaped_l1pre, escaped_filename, escaped_ppname, escaped_incdir);
     int ret = system(cmd);
     if (ret != 0) {
         c_printf(ANSI_RED, "Validation: l1pre FAILED (exit code %d)\n", ret);
@@ -9272,7 +9277,7 @@ static int validate_code(const char *filename) {
     snprintf(compname, sizeof(compname), "%.*s_pp", (int)(dot ? dot - filename : (int)strlen(filename)), filename);
     char escaped_compname[4096];
     shell_escape(compname, escaped_compname, sizeof(escaped_compname));
-    snprintf(cmd, sizeof(cmd), "%s %s 2>&1", l1com_bin, escaped_compname);
+    snprintf(cmd, sizeof(cmd), "%s %s 2>&1", escaped_l1com, escaped_compname);
     ret = system(cmd);
     if (ret == 0) {
         c_printf(ANSI_GREEN, "Validation: OK\n");
@@ -9764,6 +9769,11 @@ int main(int argc, char *argv[]) {
 
     if (arg_idx < argc) {
         snprintf(fname, sizeof(fname), "%s", argv[arg_idx]);
+        // block path traversal in filename
+        if (strstr(fname, "..") || strchr(fname, '/')) {
+            fprintf(stderr, "Error: filename must not contain '..' or '/'\n");
+            return 1;
+        }
         if (!strstr(fname, ".l1com")) strncat(fname, ".l1com", sizeof(fname) - strlen(fname) - 1);
     } else {
         prompt_to_filename(prompt, fname, sizeof(fname));

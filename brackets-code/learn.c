@@ -14,11 +14,17 @@ static char* learned_dir_path(void) {
 static void ensure_learned_dir(void) {
     char path[1024];
     snprintf(path, sizeof(path), "%s", learned_dir_path());
-    char escaped[2048];
-    shell_escape(path, escaped, sizeof(escaped));
-    char cmd[2300];
-    snprintf(cmd, sizeof(cmd), "mkdir -p %s", escaped);
-    system(cmd);
+    // POSIX mkdir - create each directory level
+    char tmp[1024];
+    snprintf(tmp, sizeof(tmp), "%s", path);
+    for (char *p = tmp + 1; *p; p++) {
+        if (*p == '/') {
+            *p = '\0';
+            mkdir(tmp, 0755);
+            *p = '/';
+        }
+    }
+    mkdir(tmp, 0755);
 }
 
 static int learn_from_file(const char *path, const char *keywords, const char *description) {
@@ -615,7 +621,22 @@ static int has_learned_id(const char *id) {
     return 0;
 }
 
+static int is_safe_id(const char *id) {
+    if (!id || !*id) return 0;
+    if (strstr(id, "..") || strchr(id, '/')) return 0;
+    for (const char *p = id; *p; p++) {
+        if (!isalnum(*p) && *p != '-' && *p != '_' && *p != '.')
+            return 0;
+    }
+    return 1;
+}
+
 static int forget_learned(const char *id) {
+    if (!is_safe_id(id)) {
+        c_printf(ANSI_RED, "Error: invalid pattern id (path traversal blocked)\n");
+        return 0;
+    }
+
     int found = -1;
     for (int i = 0; i < num_learned; i++) {
         if (strcmp(learned_patterns[i].id, id) == 0) {
