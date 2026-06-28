@@ -1,0 +1,768 @@
+// ==================== TINY LLM INFERENCE ENGINE ====================
+
+#define EMBED_DIM 32
+#define VOCAB_SIZE 72
+#define TEMPERATURE 0.8
+#define MAX_STEPS 8
+#define NUM_EMITTERS 106
+
+typedef struct {
+    char word[32];
+    float embed[EMBED_DIM];
+} WordEmbedding;
+
+static WordEmbedding word_embeddings[VOCAB_SIZE];
+static float attention_weights[NUM_EMITTERS];
+static const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt","function","string_length","stack","queue","insertion_sort","calculator","unit_converter","rock_paper_scissors","pyramid","temp_converter_menu","sort_stats","string_analyzer","number_analyzer","filter_numbers","random_generator","math_menu","quiz_game","bmi_calculator","statistics_suite","linked_list","binary_search_tree","tree_traversal","graph_bfs_dfs","n_queens","sudoku","levenshtein_distance","maze_generator","maze_solver","monte_carlo_pi","matrix_multiplication","matrix_transpose","numerical_integration","complex_numbers","linear_regression","base_converter","freq_analysis","shuffle","weighted_random","ascii_table"};
+static int vs_boost_tokens[64];
+static int vs_boost_count = 0;
+
+// Vector search data structures
+#define MAX_EXAMPLES 512
+#define MAX_TOP_K 10
+#define EXAMPLE_DIR "l1vm-example-code"
+#define EXAMPLE_SUBDIRS 3
+static const char *example_subdirs[EXAMPLE_SUBDIRS] = {"prog", "include", "lib"};
+static const char *example_exts[] = {".l1com", ".l1h", ".l1asm"};
+#define EXAMPLE_EXTS 3
+
+typedef struct {
+    char filename[1024];
+    char stem[512];
+    float embedding[EMBED_DIM];
+    float score;
+} ExampleDoc;
+
+static ExampleDoc example_docs[MAX_EXAMPLES];
+static int num_examples = 0;
+static int examples_indexed = 0;
+
+static void index_examples(void);
+static int search_examples(const char *query, int top_k, int *indices, float *scores);
+
+static unsigned long hash_word(const char *s) {
+    unsigned long hash = 5381;
+    int c;
+    while ((c = *s++))
+        hash = ((hash << 5) + hash) + c;
+    return hash;
+}
+
+static float idf_weights[VOCAB_SIZE];
+
+// Vocabulary token IDs
+#define TOK_SUM 0
+#define TOK_ADD 1
+#define TOK_SUB 2
+#define TOK_MUL 3
+#define TOK_DIV 4
+#define TOK_MOD 5
+#define TOK_INPUT 6
+#define TOK_PRINT 7
+#define TOK_LOOP 8
+#define TOK_FOR 9
+#define TOK_WHILE 10
+#define TOK_IF 11
+#define TOK_ARRAY 12
+#define TOK_SORT 13
+#define TOK_MAX 14
+#define TOK_MIN 15
+#define TOK_AVERAGE 16
+#define TOK_MEDIAN 17
+#define TOK_COUNTDOWN 18
+#define TOK_FIBONACCI 19
+#define TOK_FACTORIAL 20
+#define TOK_PRIME 21
+#define TOK_FIZZBUZZ 22
+#define TOK_POWER 23
+#define TOK_GCD 24
+#define TOK_TIME 25
+#define TOK_POINTER 26
+#define TOK_STRUCT 27
+#define TOK_STRING 28
+#define TOK_CONCAT 29
+#define TOK_COMPARE 30
+#define TOK_REVERSE 31
+#define TOK_FIND 32
+#define TOK_ASSIGN 33
+#define TOK_FILE 34
+#define TOK_READ 35
+#define TOK_WRITE 36
+#define TOK_CONVERT 37
+#define TOK_TIMER 38
+#define TOK_SHELL 39
+#define TOK_HELLO 40
+#define TOK_FUNCTION 41
+#define TOK_EVEN 42
+#define TOK_ODD 43
+#define TOK_GUESS 44
+#define TOK_TABLE 45
+#define TOK_HEX 46
+#define TOK_BINARY 47
+#define TOK_RANGE 48
+#define TOK_EXIT 49
+#define TOK_ZERO 50
+#define TOK_ONE 51
+#define TOK_TWO 52
+#define TOK_NUM 53
+#define TOK_VALUE 54
+#define TOK_DATA 55
+#define TOK_CODE 56
+#define TOK_GENERATE 57
+#define TOK_CREATE 58
+#define TOK_MAKE 59
+#define TOK_SHOW 60
+#define TOK_START 61
+#define TOK_STOP 62
+#define TOK_RUN 63
+#define TOK_FANN 64
+#define TOK_TRAIN 65
+#define TOK_NEURAL 66
+#define TOK_NETWORK 67
+#define TOK_MODEL 68
+#define TOK_LAYER 69
+#define TOK_LEARN 70
+#define TOK_PREDICT 71
+
+static const char *vocab[VOCAB_SIZE] = {
+    "sum", "add", "sub", "mul", "div", "mod", "input", "print", "loop", "for",
+    "while", "if", "array", "sort", "max", "min", "average", "median", "countdown",
+    "fibonacci", "factorial", "prime", "fizzbuzz", "power", "gcd", "time", "pointer",
+    "struct", "string", "concat", "compare", "reverse", "find", "assign", "file",
+    "read", "write", "convert", "timer", "shell", "hello", "function", "even",
+    "odd", "guess", "table", "hex", "binary", "range", "exit", "zero", "one",
+    "two", "num", "value", "data", "code", "generate", "create", "make", "show",
+    "start", "stop", "run",
+    "fann", "train", "neural", "network", "model", "layer", "learn", "predict"
+};
+
+static int embeddings_initialized = 0;
+
+static void init_embeddings(void) {
+    if (embeddings_initialized) return;
+    embeddings_initialized = 1;
+    for (int i = 0; i < VOCAB_SIZE; i++) {
+        unsigned long seed = hash_word(vocab[i]);
+        srand(seed);
+        float sum = 0;
+        for (int j = 0; j < EMBED_DIM; j++) {
+            word_embeddings[i].embed[j] = ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
+            sum += word_embeddings[i].embed[j] * word_embeddings[i].embed[j];
+        }
+        float norm = sqrtf(sum);
+        if (norm > 0)
+            for (int j = 0; j < EMBED_DIM; j++) word_embeddings[i].embed[j] /= norm;
+    }
+    for (int i = 0; i < VOCAB_SIZE; i++) idf_weights[i] = 1.0f;
+}
+
+static int tokenize(const char *text, int *tokens, int max_tokens) {
+    char buf[MAX_PROMPT];
+    snprintf(buf, sizeof(buf), "%s", text);
+    to_lowercase(buf);
+    int count = 0;
+    char *p = buf;
+    while (*p && count < max_tokens) {
+        while (*p && !isalpha(*p)) p++;
+        if (!*p) break;
+        char *start = p;
+        while (*p && isalpha(*p)) p++;
+        char saved = *p;
+        *p = '\0';
+        int found = -1;
+        for (int i = 0; i < VOCAB_SIZE; i++) {
+            if (strcmp(start, vocab[i]) == 0) { found = i; break; }
+        }
+        if (found < 0) {
+            const char *syn = resolve_synonym(start);
+            if (syn) {
+                for (int i = 0; i < VOCAB_SIZE; i++) {
+                    if (strcmp(syn, vocab[i]) == 0) { found = i; break; }
+                }
+            }
+        }
+        if (found >= 0 && count < max_tokens) tokens[count++] = found;
+        *p = saved;
+    }
+    return count;
+}
+
+static void softmax(float *x, int n) {
+    if (n <= 0) return;
+    float max = x[0], sum = 0;
+    for (int i = 1; i < n; i++) if (x[i] > max) max = x[i];
+    for (int i = 0; i < n; i++) { x[i] = expf(x[i] - max); sum += x[i]; }
+    for (int i = 0; i < n; i++) x[i] /= sum;
+}
+
+static void apply_token_boosts(float *scores, const int *tokens, int count,
+                                float fann_34, float fann_35, float fann_36,
+                                float train_34, float train_35,
+                                float predict_36,
+                                float p, float s,
+                                float power_0, float power_25)
+{
+    for (int ti = 0; ti < count && ti < 32; ti++) {
+        int tok_id = tokens[ti];
+        if (tok_id == TOK_FANN || tok_id == TOK_NEURAL || tok_id == TOK_NETWORK) {
+            scores[34] += fann_34; scores[35] += fann_35; scores[36] += fann_36; }
+        if (tok_id == TOK_TRAIN || tok_id == TOK_LEARN) { scores[34] += train_34; scores[35] += train_35; }
+        if (tok_id == TOK_PREDICT) { scores[36] += predict_36; }
+        if (tok_id == TOK_SUM || tok_id == TOK_DIV) scores[0] += p;
+        if (tok_id == TOK_MOD || tok_id == TOK_ADD) scores[1] += p;
+        if (tok_id == TOK_LOOP || tok_id == TOK_FOR) scores[2] += p;
+        if (tok_id == TOK_MEDIAN) scores[9] += s;
+        if (tok_id == TOK_FIBONACCI) scores[7] += s;
+        if (tok_id == TOK_FACTORIAL) scores[15] += s;
+        if (tok_id == TOK_SORT) scores[8] += s;
+        if (tok_id == TOK_MAX) scores[5] += s;
+        if (tok_id == TOK_MIN) scores[16] += p;
+        if (tok_id == TOK_STRING) { scores[10] += s; scores[11] += s; }
+        if (tok_id == TOK_FIND) scores[13] += s;
+        if (tok_id == TOK_ASSIGN) scores[14] += s;
+        if (tok_id == TOK_WRITE || tok_id == TOK_READ) { scores[17] += s; scores[18] += s; }
+        if (tok_id == TOK_CONVERT) scores[19] += s;
+        if (tok_id == TOK_TIMER) scores[20] += s;
+        if (tok_id == TOK_STRUCT) scores[6] += s;
+        if (tok_id == TOK_POWER) scores[0] += power_0;
+        if (tok_id == TOK_FACTORIAL) scores[21] += s;
+        if (tok_id == TOK_FIZZBUZZ) scores[22] += s;
+        if (tok_id == TOK_PRIME) scores[23] += s;
+        if (tok_id == TOK_EVEN || tok_id == TOK_ODD) scores[24] += s;
+        if (tok_id == TOK_POWER) scores[25] += power_25;
+        if (tok_id == TOK_HEX) scores[26] += s;
+        if (tok_id == TOK_GUESS) scores[27] += s;
+        if (tok_id == TOK_GCD) scores[28] += s;
+        if (tok_id == TOK_HELLO) scores[29] += s;
+        if (tok_id == TOK_NUM) scores[30] += p;
+    }
+}
+
+static int llm_select_emitter(const char *prompt, TaskProfile *task) {
+    int tokens[64], num_tokens = tokenize(prompt, tokens, 64);
+
+    float emitter_scores[NUM_EMITTERS];
+    for (int i = 0; i < NUM_EMITTERS; i++) emitter_scores[i] = 0;
+
+    if (task->has_operation && task->has_literals) emitter_scores[0] = 1.5f;
+    if (task->has_input && !task->has_operation) emitter_scores[1] = 1.5f;
+    if (task->has_input && task->has_operation) emitter_scores[1] += 1.0f;
+    if (task->has_loop && !task->has_operation && !task->has_input) emitter_scores[2] = 1.5f;
+    if (task->has_sum_range) emitter_scores[3] = 2.0f;
+    if (task->has_print_even) emitter_scores[4] = 2.0f;
+    if (task->has_find_max) emitter_scores[5] = 2.0f;
+    if (task->has_countdown_from) emitter_scores[6] = 2.0f;
+    if (task->has_fib_seq) emitter_scores[7] = 2.0f;
+    if (task->has_input_sort) emitter_scores[8] = 2.0f;
+    if (task->has_median) emitter_scores[9] = 2.0f;
+    if (task->has_string_cat) emitter_scores[10] = 2.0f;
+    if (task->has_string_compare) emitter_scores[11] = 2.0f;
+    if (task->has_array_assign) emitter_scores[12] = 2.0f;
+    if (task->has_array_reverse) emitter_scores[13] = 2.0f;
+    if (task->has_array_find) emitter_scores[14] = 2.0f;
+    if (task->has_input_fact) emitter_scores[15] = 2.0f;
+    if (task->has_array_vmath) emitter_scores[16] = 2.0f;
+    if (task->has_read_file) emitter_scores[17] = 2.0f;
+    if (task->has_write_file) emitter_scores[18] = 2.0f;
+    if (task->has_string_to_num) emitter_scores[19] = 2.0f;
+    if (task->has_timer) emitter_scores[20] = 2.0f;
+    if (task->has_factorial && !task->has_input) emitter_scores[21] = 2.0f;
+    if (task->has_fizzbuzz) emitter_scores[22] = 2.0f;
+    if (task->has_primes) emitter_scores[23] = 2.0f;
+    if (task->has_even_odd && !task->has_print_even) emitter_scores[24] = 2.0f;
+    if (task->has_power) emitter_scores[25] = 2.0f;
+    if (task->has_mult_table) emitter_scores[26] = 2.0f;
+    if (task->has_guess) emitter_scores[27] = 2.0f;
+    if (task->has_gcd) emitter_scores[28] = 2.0f;
+    if (task->has_hello_name) emitter_scores[29] = 2.0f;
+    if (task->has_random) emitter_scores[30] = 2.0f;
+    if (task->has_array_min_max) emitter_scores[31] = 2.0f;
+    if (task->has_bool_demo) emitter_scores[32] = 2.0f;
+    if (task->has_bit_check) emitter_scores[33] = 2.0f;
+    if (task->has_fann_create && task->has_fann_train) emitter_scores[35] = 2.5f;
+    if (task->has_fann_create && !task->has_fann_train) emitter_scores[34] = 2.0f;
+    if (task->has_fann_run) emitter_scores[36] = 2.0f;
+    if (task->has_average && task->has_input) emitter_scores[37] = 2.0f;
+    if (task->has_sort && !task->has_input) emitter_scores[38] = 2.0f;
+    if (task->has_palindrome) emitter_scores[39] = 2.0f;
+    if (task->has_lcm) emitter_scores[40] = 2.0f;
+    if (task->has_collatz) emitter_scores[41] = 2.0f;
+    if (task->has_sum_of_digits) emitter_scores[42] = 2.0f;
+    if (task->has_reverse_string) emitter_scores[43] = 2.0f;
+    if (task->has_armstrong) emitter_scores[44] = 2.0f;
+    if (task->has_perfect_number) emitter_scores[45] = 2.0f;
+    if (task->has_count_vowels) emitter_scores[46] = 2.0f;
+    if (task->has_anagram_check) emitter_scores[47] = 2.0f;
+    if (task->has_string_to_upper) emitter_scores[48] = 2.0f;
+    if (task->has_string_to_lower) emitter_scores[49] = 2.0f;
+    if (task->has_caesar_cipher) emitter_scores[50] = 2.0f;
+    if (task->has_palindrome_string) emitter_scores[51] = 2.0f;
+    if (task->has_bubble_sort) emitter_scores[52] = 2.0f;
+    if (task->has_binary_search) emitter_scores[53] = 2.0f;
+    if (task->has_square_root) emitter_scores[54] = 2.0f;
+    if (task->has_prime_factorization) emitter_scores[55] = 2.0f;
+    if (task->has_standard_deviation) emitter_scores[56] = 2.0f;
+    if (task->has_compound_interest) emitter_scores[57] = 2.0f;
+    if (task->has_decimal_to_binary) emitter_scores[58] = 2.0f;
+    if (task->has_dice_roll) emitter_scores[59] = 2.0f;
+    if (task->has_double_math) emitter_scores[60] = 2.0f;
+    if (task->has_double_circle_area) emitter_scores[61] = 2.0f;
+    if (task->has_double_average) emitter_scores[62] = 2.0f;
+    if (task->has_double_compound_interest) emitter_scores[63] = 2.0f;
+    if (task->has_double_pythagoras) emitter_scores[64] = 2.0f;
+    if (task->has_double_temp_convert) emitter_scores[65] = 2.0f;
+    if (task->has_double_sqrt) emitter_scores[66] = 2.0f;
+    if (task->has_function) emitter_scores[67] = 2.0f;
+    if (task->has_string_length) emitter_scores[68] = 2.0f;
+    if (task->has_stack) emitter_scores[69] = 2.0f;
+    if (task->has_queue) emitter_scores[70] = 2.0f;
+    if (task->has_insertion_sort) emitter_scores[71] = 2.0f;
+    if (task->has_calculator) emitter_scores[72] = 2.0f;
+    if (task->has_unit_converter) emitter_scores[73] = 2.0f;
+    if (task->has_rock_paper_scissors) emitter_scores[74] = 2.0f;
+    if (task->has_pyramid) emitter_scores[75] = 2.0f;
+    if (task->has_temp_converter_menu) emitter_scores[76] = 2.0f;
+    if (task->has_sort_stats) emitter_scores[77] = 2.0f;
+    if (task->has_string_analyzer) emitter_scores[78] = 2.0f;
+    if (task->has_number_analyzer) emitter_scores[79] = 2.0f;
+    if (task->has_filter_numbers) emitter_scores[80] = 2.0f;
+    if (task->has_random_generator) emitter_scores[81] = 2.0f;
+    if (task->has_math_menu) emitter_scores[82] = 2.0f;
+    if (task->has_quiz_game) emitter_scores[83] = 2.0f;
+    if (task->has_bmi_calculator) emitter_scores[84] = 2.0f;
+    if (task->has_statistics_suite) emitter_scores[85] = 2.0f;
+    if (task->has_linked_list) emitter_scores[86] = 2.0f;
+    if (task->has_binary_search_tree) emitter_scores[87] = 2.0f;
+    if (task->has_tree_traversal) emitter_scores[88] = 2.0f;
+    if (task->has_graph_bfs_dfs) emitter_scores[89] = 2.0f;
+    if (task->has_n_queens) emitter_scores[90] = 2.0f;
+    if (task->has_sudoku) emitter_scores[91] = 2.0f;
+    if (task->has_levenshtein) emitter_scores[92] = 2.0f;
+    if (task->has_maze_generator) emitter_scores[93] = 2.0f;
+    if (task->has_maze_solver) emitter_scores[94] = 2.0f;
+    if (task->has_monte_carlo) emitter_scores[95] = 2.0f;
+    if (task->has_matrix_mul) emitter_scores[96] = 2.0f;
+    if (task->has_matrix_transpose) emitter_scores[97] = 2.0f;
+    if (task->has_numerical_integration) emitter_scores[98] = 2.0f;
+    if (task->has_complex_numbers) emitter_scores[99] = 2.0f;
+    if (task->has_linear_regression) emitter_scores[100] = 2.0f;
+    if (task->has_base_converter) emitter_scores[101] = 2.0f;
+    if (task->has_freq_analysis) emitter_scores[102] = 2.0f;
+    if (task->has_shuffle) emitter_scores[103] = 2.0f;
+    if (task->has_weighted_random) emitter_scores[104] = 2.0f;
+    if (task->has_ascii_table) emitter_scores[105] = 3.0f;
+
+    // Phase 2a: prompt token boosts
+    apply_token_boosts(emitter_scores, tokens, num_tokens,
+        1.0f, 1.5f, 1.0f,
+        0.5f, 1.5f,
+        1.5f,
+        0.5f, 0.8f,
+        0.3f, 0.5f);
+
+    // Phase 2b: Vector search boost tokens from matched examples
+    apply_token_boosts(emitter_scores, vs_boost_tokens, vs_boost_count,
+        0.5f, 0.7f, 0.5f,
+        0.3f, 0.7f,
+        0.7f,
+        0.3f, 0.4f,
+        0.2f, 0.3f);
+
+    float temp = TEMPERATURE;
+    for (int i = 0; i < NUM_EMITTERS; i++) emitter_scores[i] /= temp;
+    softmax(emitter_scores, NUM_EMITTERS);
+    for (int i = 0; i < NUM_EMITTERS; i++) attention_weights[i] = emitter_scores[i];
+
+    int best = 0;
+    float best_p = emitter_scores[0];
+    for (int i = 1; i < NUM_EMITTERS; i++) {
+        if (emitter_scores[i] > best_p) { best_p = emitter_scores[i]; best = i; }
+    }
+
+    if (verbose_flag) {
+        printf("\nEmitter scores:\n");
+        for (int i = 0; i < NUM_EMITTERS; i++)
+            printf("  %2d %-16s %.3f\n", i, EMITTER_NAMES[i], emitter_scores[i]);
+        printf("  -> best: %s (%.3f)\n", EMITTER_NAMES[best], best_p);
+    }
+
+    // Multi-emitter composition: add strongly-scored secondary emitters
+    // Dynamic threshold based on prompt length: longer prompts more likely multi-step
+    float pfactor = (float)strlen(prompt) / 80.0f;
+    if (pfactor > 2.0f) pfactor = 2.0f;
+    if (pfactor < 0.5f) pfactor = 0.5f;
+    task->num_extra_emitters = 0;
+    float threshold = best_p * (0.5f / pfactor);
+    float hard_min = 0.2f;
+    if (threshold < hard_min) threshold = hard_min;
+    for (int i = 0; i < NUM_EMITTERS && task->num_extra_emitters < 8; i++) {
+        if (i != best && emitter_scores[i] >= threshold && emitter_scores[i] >= 0.5f) {
+            task->extra_emitters[task->num_extra_emitters++] = i;
+        }
+    }
+
+    if (verbose_flag && task->num_extra_emitters > 0) {
+        printf("  extra emitters:");
+        for (int ei = 0; ei < task->num_extra_emitters; ei++)
+            printf(" %s", EMITTER_NAMES[task->extra_emitters[ei]]);
+        printf("\n");
+    }
+
+    return best;
+}
+
+static int has_actionable_keyword(const char *text) {
+    return has_word(text, "lies") || has_word(text, "read") || has_word(text, "input")
+        || has_word(text, "gib") || has_word(text, "enter") || has_word(text, "erfasse")
+        || has_word(text, "print") || has_word(text, "druck") || has_word(text, "ausg")
+        || has_word(text, "show") || has_word(text, "display") || has_word(text, "zeig")
+        || has_word(text, "add") || has_word(text, "sum") || has_word(text, "summe")
+        || has_word(text, "sub") || has_word(text, "subtract") || has_word(text, "minus")
+        || has_word(text, "mul") || has_word(text, "multiply") || has_word(text, "mal")
+        || has_word(text, "div") || has_word(text, "divide") || has_word(text, "geteilt")
+        || has_word(text, "mod") || has_word(text, "modulo")
+        || has_word(text, "max") || has_word(text, "größt") || has_word(text, "largest")
+        || has_word(text, "greatest") || has_word(text, "groesst")
+        || has_word(text, "sort") || has_word(text, "sortiere") || has_word(text, "bubble")
+        || has_word(text, "sorted") || has_word(text, "sortiert")
+        || has_word(text, "average") || has_word(text, "durchschnitt") || has_word(text, "mean")
+        || has_word(text, "factorial") || has_word(text, "fakult") || has_word(text, "median")
+        || has_word(text, "fibonacci") || has_word(text, "fib") || has_word(text, "find")
+        || has_word(text, "search") || has_word(text, "suche") || has_word(text, "reverse")
+        || has_word(text, "umkehr") || has_word(text, "countdown")
+        || has_word(text, "cat") || has_word(text, "concat") || has_word(text, "compare")
+        || has_word(text, "cmp") || has_word(text, "vergleich") || has_word(text, "assign")
+        || has_word(text, "zuweis") || has_word(text, "write") || has_word(text, "schreib")
+        || has_word(text, "hello") || has_word(text, "hallo")
+        || has_word(text, "prime") || has_word(text, "prim") || has_word(text, "fizzbuzz")
+        || has_word(text, "even") || has_word(text, "odd") || has_word(text, "gerade")
+        || has_word(text, "ungerade") || has_word(text, "power") || has_word(text, "potenz")
+        || has_word(text, "exponent") || has_word(text, "hoch")
+        || has_word(text, "guess") || has_word(text, "rate") || has_word(text, "raten")
+        || has_word(text, "table") || has_word(text, "einmaleins")
+        || has_word(text, "multiplication") || has_word(text, "multiplika")
+        || has_word(text, "gcd") || has_word(text, "ggt") || has_word(text, "gcm")
+        || has_word(text, "time") || has_word(text, "zeit") || has_word(text, "clock")
+        || has_word(text, "pointer") || has_word(text, "zeiger") || has_word(text, "struct")
+        || has_word(text, "function") || has_word(text, "funktion")
+        || has_word(text, "for") || has_word(text, "loop") || has_word(text, "schleife")
+        || has_word(text, "if") || has_word(text, "bedingung") || has_word(text, "wenn")
+        || has_word(text, "while") || has_word(text, "switch") || has_word(text, "case")
+        || has_word(text, "array") || has_word(text, "feld") || has_word(text, "liste")
+        || has_word(text, "string") || has_word(text, "zeichen") || has_word(text, "text")
+        || has_word(text, "shell") || has_word(text, "argument") || has_word(text, "parameter")
+        || has_word(text, "ergebnis") || has_word(text, "result") || has_word(text, "value")
+        || has_word(text, "wert") || has_word(text, "number") || has_word(text, "zahl")
+        || has_word(text, "element") || has_word(text, "index") || has_word(text, "bis")
+        || has_word(text, "to") || has_word(text, "von") || has_word(text, "from")
+        || has_word(text, "file") || has_word(text, "datei")
+        || has_word(text, "convert") || has_word(text, "parse") || has_word(text, "umwand")
+        || has_word(text, "timer") || has_word(text, "benchmark")
+        || has_word(text, "measure") || has_word(text, "mess") || has_word(text, "dauer")
+        || has_word(text, "execution") || has_word(text, "ausführ") || has_word(text, "lauf")
+        || has_word(text, "fann") || has_word(text, "neural") || has_word(text, "network")
+        || has_word(text, "train") || has_word(text, "learn") || has_word(text, "predict")
+        || has_word(text, "infer") || has_word(text, "ai");
+}
+
+static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
+    char buf[MAX_PROMPT];
+    snprintf(buf, sizeof(buf), "%s", prompt);
+    to_lowercase(buf);
+    int num_steps = 0;
+    char *remaining = buf;
+
+    struct { const char *pat; int len; } patterns[] = {
+        {" und dann ", 10}, {" und danach ", 12}, {" anschließend ", 14},
+        {" and then ", 10}, {" . ", 3}, {". ", 2}, {"; ", 2},
+        {" then ", 6}, {" danach ", 8},
+        {" und ", 5}, {" and ", 5}, {", ", 2},
+    };
+    int npats = sizeof(patterns) / sizeof(patterns[0]);
+
+    while (num_steps < MAX_STEPS - 1) {
+        int best_pos = -1, best_len = 0;
+        for (int i = 0; i < npats; i++) {
+            char *pos = strstr(remaining, patterns[i].pat);
+            if (!pos) continue;
+            int idx = pos - remaining;
+            if (best_pos >= 0 && idx >= best_pos) continue;
+            best_pos = idx; best_len = patterns[i].len;
+        }
+        if (best_pos < 0) break;
+        char step[MAX_PROMPT];
+        snprintf(step, MAX_PROMPT, "%.*s", best_pos, remaining);
+        trim(step);
+        if (strlen(step) > 0) { snprintf(steps[num_steps], MAX_PROMPT, "%s", step); num_steps++; }
+        remaining += best_pos + best_len;
+    }
+    trim(remaining);
+    if (strlen(remaining) > 0) { snprintf(steps[num_steps], MAX_PROMPT, "%s", remaining); num_steps++; }
+
+    if (num_steps > 1) {
+        int merged = 1;
+        while (merged) {
+            merged = 0;
+            for (int i = 0; i < num_steps; i++) {
+                if (!has_actionable_keyword(steps[i])) {
+                    if (i > 0) {
+                    char merged_step[MAX_PROMPT * 2];
+                    snprintf(merged_step, sizeof(merged_step), "%.*s %.*s", MAX_PROMPT - 1, steps[i-1], MAX_PROMPT - 1, steps[i]);
+                        trim(merged_step);
+                        snprintf(steps[i-1], MAX_PROMPT, "%.*s", MAX_PROMPT - 1, merged_step);
+                        for (int j = i; j < num_steps - 1; j++) snprintf(steps[j], MAX_PROMPT, "%s", steps[j+1]);
+                        num_steps--; merged = 1; break;
+                    } else if (i == 0 && num_steps > 1) {
+                        char merged_step[MAX_PROMPT * 2];
+                        snprintf(merged_step, sizeof(merged_step), "%.*s %.*s", MAX_PROMPT - 1, steps[0], MAX_PROMPT - 1, steps[1]);
+                        trim(merged_step);
+                        snprintf(steps[0], MAX_PROMPT, "%.*s", MAX_PROMPT - 1, merged_step);
+                        for (int j = 1; j < num_steps - 1; j++) snprintf(steps[j], MAX_PROMPT, "%s", steps[j+1]);
+                        num_steps--; merged = 1; break;
+                    }
+                }
+            }
+        }
+    }
+
+    // Additional merge: keep "read X and print the Y" as a single step
+    if (num_steps > 1) {
+        int merged = 1;
+        while (merged) {
+            merged = 0;
+            for (int i = 1; i < num_steps; i++) {
+                if (has_word(steps[i], "print") &&
+                    (has_word(steps[i], "median") || has_word(steps[i], "average") ||
+                     has_word(steps[i], "mean") || has_word(steps[i], "largest") ||
+                     has_word(steps[i], "smallest") || has_word(steps[i], "greatest") ||
+                     has_word(steps[i], "sum") || has_word(steps[i], "max") ||
+                     has_word(steps[i], "min") || has_word(steps[i], "them") ||
+                     has_word(steps[i], "it") || has_word(steps[i], "result"))) {
+                    char merged_step[MAX_PROMPT * 2];
+                    snprintf(merged_step, sizeof(merged_step), "%.*s %.*s", MAX_PROMPT - 1, steps[i-1], MAX_PROMPT - 1, steps[i]);
+                    trim(merged_step);
+                    snprintf(steps[i-1], MAX_PROMPT, "%.*s", MAX_PROMPT - 1, merged_step);
+                    for (int j = i; j < num_steps - 1; j++) snprintf(steps[j], MAX_PROMPT, "%s", steps[j+1]);
+                    num_steps--; merged = 1; break;
+                }
+            }
+        }
+    }
+
+    if (num_steps <= 1) { snprintf(steps[0], MAX_PROMPT, "%s", prompt); return 1; }
+    return num_steps;
+}
+
+// ==================== VECTOR SEARCH ====================
+
+static float cosine_sim(const float *a, const float *b) {
+    float dot = 0, na = 0, nb = 0;
+    for (int i = 0; i < EMBED_DIM; i++) {
+        dot += a[i] * b[i];
+        na += a[i] * a[i];
+        nb += b[i] * b[i];
+    }
+    float denom = sqrtf(na) * sqrtf(nb);
+    return (denom == 0) ? 0 : dot / denom;
+}
+
+static void embed_text(const char *text, float *out) {
+    memset(out, 0, sizeof(float) * EMBED_DIM);
+    char buf[MAX_PROMPT];
+    snprintf(buf, sizeof(buf), "%s", text);
+    to_lowercase(buf);
+
+    float total_weight = 0;
+    char *p = buf;
+    while (*p) {
+        while (*p && !isalpha(*p)) p++;
+        if (!*p) break;
+        char *start = p;
+        while (*p && isalpha(*p)) p++;
+        char saved = *p;
+        *p = '\0';
+
+        int tok_id = -1;
+        for (int i = 0; i < VOCAB_SIZE; i++) {
+            if (strcmp(start, vocab[i]) == 0) { tok_id = i; break; }
+        }
+        if (tok_id < 0) {
+            const char *syn = resolve_synonym(start);
+            if (syn) {
+                for (int i = 0; i < VOCAB_SIZE; i++) {
+                    if (strcmp(syn, vocab[i]) == 0) { tok_id = i; break; }
+                }
+            }
+        }
+
+        if (tok_id >= 0) {
+            float w = idf_weights[tok_id];
+            for (int j = 0; j < EMBED_DIM; j++)
+                out[j] += w * word_embeddings[tok_id].embed[j];
+            total_weight += w;
+        } else {
+            int len = strlen(start);
+            if (len >= 2) {
+                float ngram_embed[EMBED_DIM];
+                memset(ngram_embed, 0, sizeof(ngram_embed));
+                int ngram_count = 0;
+                for (int ci = 0; ci < len - 1; ci++) {
+                    char bigram[3] = {start[ci], start[ci+1], '\0'};
+                    unsigned long h = hash_word(bigram);
+                    srand(h);
+                    for (int j = 0; j < EMBED_DIM; j++)
+                        ngram_embed[j] += ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
+                    ngram_count++;
+                }
+                if (ngram_count > 0) {
+                    float inv = 1.0f / ngram_count;
+                    float norm = 0;
+                    for (int j = 0; j < EMBED_DIM; j++) {
+                        ngram_embed[j] *= inv;
+                        norm += ngram_embed[j] * ngram_embed[j];
+                    }
+                    norm = sqrtf(norm);
+                    if (norm > 0) {
+                        for (int j = 0; j < EMBED_DIM; j++)
+                            out[j] += ngram_embed[j] / norm;
+                        total_weight += 1.0f;
+                    }
+                }
+            }
+        }
+
+        *p = saved;
+    }
+
+    if (total_weight > 0) {
+        float inv = 1.0f / total_weight;
+        for (int j = 0; j < EMBED_DIM; j++) out[j] *= inv;
+    }
+}
+
+static void filename_stem(const char *path, char *stem) {
+    const char *p = strrchr(path, '/');
+    p = p ? p + 1 : path;
+    char buf[256];
+    snprintf(buf, sizeof(buf), "%s", p);
+    char *dot = strrchr(buf, '.');
+    if (dot) *dot = '\0';
+    for (char *q = buf; *q; q++)
+        if (*q == '-' || *q == '_') *q = ' ';
+    snprintf(stem, 256, "%s", buf);
+}
+
+static void index_examples(void) {
+    if (examples_indexed) return;
+    examples_indexed = 1;
+    num_examples = 0;
+
+    for (int s = 0; s < EXAMPLE_SUBDIRS; s++) {
+        char dirpath[512];
+        snprintf(dirpath, sizeof(dirpath), "%s/%s", EXAMPLE_DIR, example_subdirs[s]);
+        DIR *d = opendir(dirpath);
+        if (!d) continue;
+
+        struct dirent *entry;
+        while ((entry = readdir(d)) != NULL && num_examples < MAX_EXAMPLES) {
+            const char *ext = strrchr(entry->d_name, '.');
+            if (!ext) continue;
+            int valid_ext = 0;
+            for (int e = 0; e < EXAMPLE_EXTS; e++) {
+                if (strcmp(ext, example_exts[e]) == 0) { valid_ext = 1; break; }
+            }
+            if (!valid_ext) continue;
+
+            char fullpath[1024];
+            snprintf(fullpath, sizeof(fullpath), "%s/%s", dirpath, entry->d_name);
+            snprintf(example_docs[num_examples].filename, sizeof(example_docs[num_examples].filename), "%s", fullpath);
+
+            char raw_stem[256];
+            filename_stem(entry->d_name, raw_stem);
+            snprintf(example_docs[num_examples].stem, sizeof(example_docs[num_examples].stem), "%s/%s", example_subdirs[s], raw_stem);
+
+            char content[8192] = {0};
+            FILE *f = fopen(fullpath, "r");
+            if (f) {
+                char line[512];
+                int lines_read = 0;
+                while (fgets(line, sizeof(line), f) && lines_read < 100 && strlen(content) < 7000) {
+                    char *trimmed = line;
+                    while (*trimmed == ' ' || *trimmed == '\t') trimmed++;
+                    if (trimmed[0] == '/' && trimmed[1] == '/') continue;
+                    strncat(content, line, sizeof(content) - strlen(content) - 1);
+                    lines_read++;
+                }
+                fclose(f);
+            }
+            char combined[8192];
+            snprintf(combined, sizeof(combined), "%s %s %s %s",
+                     example_docs[num_examples].stem,
+                     example_docs[num_examples].stem,
+                     example_docs[num_examples].stem,
+                     content);
+            embed_text(combined, example_docs[num_examples].embedding);
+            num_examples++;
+        }
+        closedir(d);
+    }
+
+    if (num_examples > 0) {
+        int doc_freq[VOCAB_SIZE];
+        memset(doc_freq, 0, sizeof(doc_freq));
+        for (int i = 0; i < num_examples; i++) {
+            int seen[VOCAB_SIZE] = {0};
+            char buf[MAX_PROMPT];
+            snprintf(buf, sizeof(buf), "%s", example_docs[i].stem);
+            int tokens[128];
+            int n = tokenize(buf, tokens, 128);
+            for (int t = 0; t < n; t++) {
+                if (!seen[tokens[t]]) {
+                    seen[tokens[t]] = 1;
+                    doc_freq[tokens[t]]++;
+                }
+            }
+        }
+        for (int i = 0; i < VOCAB_SIZE; i++) {
+            if (doc_freq[i] > 0)
+                idf_weights[i] = logf((float)num_examples / doc_freq[i]) + 1.0f;
+            else
+                idf_weights[i] = 1.0f;
+        }
+    }
+}
+
+static int search_examples(const char *query, int top_k, int *indices, float *scores) {
+    if (num_examples == 0) return 0;
+
+    char expanded[MAX_PROMPT];
+    expand_query(query, expanded, sizeof(expanded));
+
+    float q_embed[EMBED_DIM];
+    embed_text(expanded, q_embed);
+
+    for (int i = 0; i < num_examples; i++)
+        example_docs[i].score = cosine_sim(q_embed, example_docs[i].embedding);
+
+    int count = top_k < num_examples ? top_k : num_examples;
+    int *used = malloc((size_t)num_examples * sizeof(int));
+    if (!used) return 0;
+    memset(used, 0, (size_t)num_examples * sizeof(int));
+    int result = 0;
+    for (int k = 0; k < count; k++) {
+        int best = -1;
+        for (int i = 0; i < num_examples; i++) {
+            if (used[i]) continue;
+            if (best < 0 || example_docs[i].score > example_docs[best].score)
+                best = i;
+        }
+        if (best >= 0 && example_docs[best].score > 0) {
+            indices[k] = best;
+            scores[k] = example_docs[best].score;
+            used[best] = 1;
+            result++;
+        }
+    }
+    free(used);
+    return result;
+}

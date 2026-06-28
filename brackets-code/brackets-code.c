@@ -22,6 +22,7 @@
 // Generated with opencode: Big Pickle
 //
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,10 +32,8 @@
 #include <dirent.h>
 #include <unistd.h>
 
-/* format-truncation warnings: snprintf output is safely truncated for real-world sizes */
-#pragma GCC diagnostic ignored "-Wformat-truncation"
 
-#define VERSION_TXT "0.6.3"
+#define VERSION_TXT "0.6.4"
 
 #define MAX_LINE 4096
 #define MAX_VARS 48
@@ -47,6 +46,8 @@
 int validate_flag = 0;
 int retry_seed = 0;
 int verbose_flag = 0;
+int dry_run_flag = 0;
+int dataflow_quiet_mode = 0;
 char out_dir[512] = "";
 char l1vm_root[512] = "";
 static const char *current_prompt = "";
@@ -144,8 +145,12 @@ static int resize_vars(Function *f, int new_cap) {
 
 static int ensure_vars_cap(Function *f, int needed) {
     if (needed <= f->vars_cap) return 1;
+    if (f->vars_cap > INT_MAX / 2) return 0;
     int new_cap = f->vars_cap ? f->vars_cap * 2 : INIT_VARS_CAP;
-    while (new_cap < needed) new_cap *= 2;
+    while (new_cap < needed) {
+        if (new_cap > INT_MAX / 2) return 0;
+        new_cap *= 2;
+    }
     return resize_vars(f, new_cap);
 }
 
@@ -161,8 +166,12 @@ static int resize_body(Function *f, int new_cap) {
 
 static int ensure_body_cap(Function *f, int needed) {
     if (needed <= f->body_cap) return 1;
+    if (f->body_cap > INT_MAX / 2) return 0;
     int new_cap = f->body_cap ? f->body_cap * 2 : INIT_BODY_CAP;
-    while (new_cap < needed) new_cap *= 2;
+    while (new_cap < needed) {
+        if (new_cap > INT_MAX / 2) return 0;
+        new_cap *= 2;
+    }
     return resize_body(f, new_cap);
 }
 
@@ -171,7 +180,10 @@ static int init_function(Function *f) {
     f->vars = NULL; f->vars_cap = 0;
     f->body = NULL; f->body_cap = 0;
     if (!resize_vars(f, INIT_VARS_CAP)) return 0;
-    if (!resize_body(f, INIT_BODY_CAP)) return 0;
+    if (!resize_body(f, INIT_BODY_CAP)) {
+        free(f->vars); f->vars = NULL; f->vars_cap = 0;
+        return 0;
+    }
     f->body[0] = '\0';
     return 1;
 }
@@ -187,8 +199,12 @@ static int resize_funcs_array(Function **pfuncs, int *cap, int new_cap) {
     if (!p) return 0;
     *pfuncs = p;
     if (new_cap > *cap) {
-        for (int i = *cap; i < new_cap; i++)
-            init_function(&(*pfuncs)[i]);
+        for (int i = *cap; i < new_cap; i++) {
+            if (!init_function(&(*pfuncs)[i])) {
+                for (int j = *cap; j < i; j++) free_function(&(*pfuncs)[j]);
+                return 0;
+            }
+        }
     }
     *cap = new_cap;
     return 1;
@@ -196,8 +212,12 @@ static int resize_funcs_array(Function **pfuncs, int *cap, int new_cap) {
 
 static int ensure_funcs_cap(Function **pfuncs, int *cap, int needed) {
     if (needed <= *cap) return 1;
+    if (*cap > INT_MAX / 2) return 0;
     int new_cap = *cap ? *cap * 2 : INIT_FUNCS_CAP;
-    while (new_cap < needed) new_cap *= 2;
+    while (new_cap < needed) {
+        if (new_cap > INT_MAX / 2) return 0;
+        new_cap *= 2;
+    }
     return resize_funcs_array(pfuncs, cap, new_cap);
 }
 
@@ -213,16 +233,27 @@ static int resize_includes_arr(char (**pinc)[256], int *cap, int new_cap) {
 
 static int ensure_includes_cap(char (**pinc)[256], int *cap, int needed) {
     if (needed <= *cap) return 1;
+    if (*cap > INT_MAX / 2) return 0;
     int new_cap = *cap ? *cap * 2 : INIT_INCLUDES_CAP;
-    while (new_cap < needed) new_cap *= 2;
+    while (new_cap < needed) {
+        if (new_cap > INT_MAX / 2) return 0;
+        new_cap *= 2;
+    }
     return resize_includes_arr(pinc, cap, new_cap);
 }
 
 static int init_program(Program *prog) {
     memset(prog, 0, sizeof(Program));
     if (!resize_funcs_array(&prog->funcs, &prog->funcs_cap, INIT_FUNCS_CAP)) return 0;
-    if (!resize_includes_arr(&prog->includes, &prog->includes_cap, INIT_INCLUDES_CAP)) return 0;
-    if (!resize_includes_arr(&prog->includes_post, &prog->includes_post_cap, INIT_INCLUDES_CAP)) return 0;
+    if (!resize_includes_arr(&prog->includes, &prog->includes_cap, INIT_INCLUDES_CAP)) {
+        free(prog->funcs); prog->funcs = NULL; prog->funcs_cap = 0;
+        return 0;
+    }
+    if (!resize_includes_arr(&prog->includes_post, &prog->includes_post_cap, INIT_INCLUDES_CAP)) {
+        free(prog->funcs); prog->funcs = NULL; prog->funcs_cap = 0;
+        free(prog->includes); prog->includes = NULL; prog->includes_cap = 0;
+        return 0;
+    }
     return 1;
 }
 
@@ -237,7 +268,10 @@ static void free_program(Program *prog) {
 static int init_learned_pattern(LearnedPattern *lp) {
     memset(lp, 0, sizeof(LearnedPattern));
     if (!resize_includes_arr(&lp->includes, &lp->includes_cap, INIT_INCLUDES_CAP)) return 0;
-    if (!resize_funcs_array(&lp->funcs, &lp->funcs_cap, INIT_FUNCS_CAP)) return 0;
+    if (!resize_funcs_array(&lp->funcs, &lp->funcs_cap, INIT_FUNCS_CAP)) {
+        free(lp->includes); lp->includes = NULL; lp->includes_cap = 0;
+        return 0;
+    }
     return 1;
 }
 
@@ -248,7 +282,7 @@ static void free_learned_pattern(LearnedPattern *lp) {
     free(lp->includes); lp->includes = NULL; lp->includes_cap = 0;
 }
 
-void trim(char *s) {
+static void trim(char *s) {
     char *p = s;
     int l = strlen(p);
     while (isspace(p[l-1])) p[--l] = 0;
@@ -256,11 +290,7 @@ void trim(char *s) {
     memmove(s, p, l - (p - s) + 1);
 }
 
-int str_contains(const char *str, const char *sub) {
-    return strstr(str, sub) != NULL;
-}
-
-int str_contains_word(const char *str, const char *word) {
+static int str_contains_word(const char *str, const char *word) {
     char buf[MAX_LINE];
     snprintf(buf, sizeof(buf), "%s", str);
     char *p = buf;
@@ -277,11 +307,11 @@ int str_contains_word(const char *str, const char *word) {
     return 0;
 }
 
-void to_lowercase(char *s) {
+static void to_lowercase(char *s) {
     for (; *s; s++) *s = tolower(*s);
 }
 
-void add_include(Program *prog, const char *inc) {
+static void add_include(Program *prog, const char *inc) {
     for (int i = 0; i < prog->num_includes; i++)
         if (strcmp(prog->includes[i], inc) == 0) return;
     if (!ensure_includes_cap(&prog->includes, &prog->includes_cap, prog->num_includes + 1)) return;
@@ -289,7 +319,7 @@ void add_include(Program *prog, const char *inc) {
     prog->num_includes++;
 }
 
-void add_include_post(Program *prog, const char *inc) {
+static void add_include_post(Program *prog, const char *inc) {
     for (int i = 0; i < prog->num_includes_post; i++)
         if (strcmp(prog->includes_post[i], inc) == 0) return;
     if (!ensure_includes_cap(&prog->includes_post, &prog->includes_post_cap, prog->num_includes_post + 1)) return;
@@ -297,7 +327,7 @@ void add_include_post(Program *prog, const char *inc) {
     prog->num_includes_post++;
 }
 
-void add_func(Program *prog, const char *name) {
+static void add_func(Program *prog, const char *name) {
     for (int i = 0; i < prog->num_funcs; i++)
         if (strcmp(prog->funcs[i].name, name) == 0) return;
     if (!ensure_funcs_cap(&prog->funcs, &prog->funcs_cap, prog->num_funcs + 1)) return;
@@ -312,7 +342,7 @@ void add_func(Program *prog, const char *name) {
     prog->num_funcs++;
 }
 
-void add_var_to_func(Function *f, const char *type, const char *name, int count, const char **values, int num_values) {
+static void add_var_to_func(Function *f, const char *type, const char *name, int count, const char **values, int num_values) {
     // Skip if variable with same name already exists (prevents duplicate declarations)
     for (int i = 0; i < f->num_vars; i++)
         if (strcmp(f->vars[i].name, name) == 0) return;
@@ -326,21 +356,21 @@ void add_var_to_func(Function *f, const char *type, const char *name, int count,
         snprintf(v->values[i], sizeof(v->values[i]), "%s", values[i]);
 }
 
-void func_append(Function *f, const char *line) {
+static void func_append(Function *f, const char *line) {
     size_t needed = strlen(f->body) + strlen(line) + 2;
     if (!ensure_body_cap(f, (int)needed + 1)) return;
-    strcat(f->body, line);
-    strcat(f->body, "\n");
+    strncat(f->body, line, (size_t)f->body_cap - strlen(f->body) - 1);
+    strncat(f->body, "\n", (size_t)f->body_cap - strlen(f->body) - 1);
 }
 
-void func_vardef(Function *f, const char *scope) {
+static void func_vardef(Function *f, const char *scope) {
     if (f->has_vardef) return;
     f->has_vardef = 1;
     f->is_local = 1;
     snprintf(f->vardef_name, sizeof(f->vardef_name), "%s", scope);
 }
 
-int prompt_to_filename(const char *prompt, char *out, int max) {
+static int prompt_to_filename(const char *prompt, char *out, int max) {
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
@@ -353,30 +383,19 @@ int prompt_to_filename(const char *prompt, char *out, int max) {
     return 1;
 }
 
-static int temp_counter = 0;
-const char* temp_name() {
-    static char buf[64];
-    snprintf(buf, sizeof(buf), "tmp_%d", temp_counter++);
-    return buf;
-}
-
-void reset_temp() { temp_counter = 0; }
-
-static int func_counter = 0;
-const char* local_buf() {
-    static char buf[64];
-    snprintf(buf, sizeof(buf), "local%d", func_counter++);
-    return buf;
-}
-
 static int is_question(const char *prompt) {
-    const char *qwords[] = {"was ", "wie ", "wer ", "wo ", "warum ", "wann ", "welche", "what ", "how ", "why ", "where ", "when ", "can ", "does ", "is ", "are ", NULL};
+    const char *qwords[] = {"was", "wie", "wer", "wo", "warum", "wann", "welche", "what", "how", "why", "where", "when", "can", "does", "is", "are", NULL};
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
     if (strchr(buf, '?')) return 1;
-    for (int i = 0; qwords[i]; i++)
-        if (strncmp(buf, qwords[i], strlen(qwords[i])) == 0) return 1;
+    for (int i = 0; qwords[i]; i++) {
+        size_t len = strlen(qwords[i]);
+        if (strncmp(buf, qwords[i], len) == 0) {
+            char c = buf[len];
+            if (c == ' ' || c == '\0' || c == '?' || c == ',' || c == '.') return 1;
+        }
+    }
     return 0;
 }
 
@@ -494,9 +513,68 @@ static const char* find_operation(const char *buf) {
 
 // ==================== FUZZY SYNONYM MATCHING ====================
 
-typedef struct { char word[40]; char canonical[40]; } Synonym;
+typedef struct { char word[256]; char canonical[256]; } Synonym;
 
-static const Synonym SYNONYM_TABLE[] = {
+#define SYNONYM_FILE "synonyms.txt"
+#define SYNONYM_DIR ".config/brackets-code"
+#define MAX_DYN_SYNONYMS 1024
+static Synonym dyn_synonyms[MAX_DYN_SYNONYMS];
+static int num_dyn_synonyms = 0;
+static int synonyms_loaded = 0;
+
+static FILE *open_synonym_file(void) {
+    FILE *f = fopen(SYNONYM_FILE, "r");
+    if (f) return f;
+    const char *home = getenv("HOME");
+    if (home) {
+        char path[1024];
+        snprintf(path, sizeof(path), "%s/%s/%s", home, SYNONYM_DIR, SYNONYM_FILE);
+        f = fopen(path, "r");
+        if (f) return f;
+    }
+    // Try next to the executable
+    char self_path[1024];
+    ssize_t len = readlink("/proc/self/exe", self_path, sizeof(self_path) - 1);
+    if (len > 0) {
+        self_path[len] = '\0';
+        char *slash = strrchr(self_path, '/');
+        if (slash) {
+            snprintf(slash + 1, sizeof(self_path) - (size_t)(slash - self_path + 1), "%s", SYNONYM_FILE);
+            f = fopen(self_path, "r");
+            if (f) return f;
+        }
+    }
+    return NULL;
+}
+
+static void load_synonyms(void) {
+    if (synonyms_loaded) return;
+    synonyms_loaded = 1;
+    FILE *f = open_synonym_file();
+    if (!f) return;
+    char line[256];
+    while (fgets(line, sizeof(line), f) && num_dyn_synonyms < MAX_DYN_SYNONYMS) {
+        trim(line);
+        if (line[0] == '#' || line[0] == '\0') continue;
+        char *colon = strchr(line, ':');
+        if (!colon) continue;
+        *colon = '\0';
+        char *word = line;
+        char *canonical = colon + 1;
+        trim(word);
+        trim(canonical);
+        if (strlen(word) > 0 && strlen(canonical) > 0) {
+            snprintf(dyn_synonyms[num_dyn_synonyms].word, sizeof(dyn_synonyms[0].word), "%s", word);
+            snprintf(dyn_synonyms[num_dyn_synonyms].canonical, sizeof(dyn_synonyms[0].canonical), "%s", canonical);
+            num_dyn_synonyms++;
+        }
+    }
+    fclose(f);
+}
+
+typedef struct { char word[40]; char canonical[40]; } SynonymEntry;
+
+static const SynonymEntry SYNONYM_TABLE[] = {
     {"accumulate", "sum"}, {"addiere", "add"}, {"addieren", "add"}, {"addition", "add"},
     {"aggregate", "sum"}, {"arrange", "sort"}, {"aufaddieren", "sum"}, {"aufrechnen", "sum"},
     {"aufsummieren", "sum"}, {"berechnen", "sum"}, {"berechne", "sum"}, {"bubble sort", "sort"},
@@ -619,6 +697,9 @@ static const Synonym SYNONYM_TABLE[] = {
 static const int NUM_SYNONYMS = sizeof(SYNONYM_TABLE) / sizeof(SYNONYM_TABLE[0]);
 
 static const char* resolve_synonym(const char *word) {
+    for (int i = 0; i < num_dyn_synonyms; i++)
+        if (strcmp(word, dyn_synonyms[i].word) == 0)
+            return dyn_synonyms[i].canonical;
     for (int i = 0; i < NUM_SYNONYMS; i++)
         if (strcmp(word, SYNONYM_TABLE[i].word) == 0)
             return SYNONYM_TABLE[i].canonical;
@@ -682,7 +763,7 @@ static int has_word(const char *prompt, const char *word) {
 }
 
 static const char* extract_var_name(const char *prompt, const char *fallback) {
-    static char buf[256];
+    static char buf[MAX_PROMPT];
     static const char *keywords[] = {
         "sum", "total", "number", "value", "result", "count", "index",
         "name", "max", "min", "average", "median", "temp", "size",
@@ -866,8 +947,8 @@ typedef struct {
     int skip_input;
     char inherit_var[64];
     int inherit_count;
-    char inherit_var_names[64][64];
-    char inherit_var_types[64][32];
+    char inherit_var_names[64][256];
+    char inherit_var_types[64][64];
     int inherit_var_counts[64];
     int num_inherit_vars;
     int extra_emitters[8];
@@ -1035,49 +1116,10 @@ static void emit_shuffle(Program *prog, Function *f);
 static void emit_weighted_random(Program *prog, Function *f);
 static void emit_ascii_table(Program *prog, Function *f);
 
-// ==================== TINY LLM INFERENCE ENGINE ====================
+// ==================== TINY LLM INFERENCE ENGINE + VECTOR SEARCH ====================
+#include "embed.c"
 
-#define EMBED_DIM 32
-#define VOCAB_SIZE 72
-#define TEMPERATURE 0.8
-#define MAX_STEPS 8
-#define NUM_EMITTERS 106
-
-typedef struct {
-    char word[32];
-    float embed[EMBED_DIM];
-} WordEmbedding;
-
-static WordEmbedding word_embeddings[VOCAB_SIZE];
-static float attention_weights[NUM_EMITTERS];
-static const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt","function","string_length","stack","queue","insertion_sort","calculator","unit_converter","rock_paper_scissors","pyramid","temp_converter_menu","sort_stats","string_analyzer","number_analyzer","filter_numbers","random_generator","math_menu","quiz_game","bmi_calculator","statistics_suite","linked_list","binary_search_tree","tree_traversal","graph_bfs_dfs","n_queens","sudoku","levenshtein_distance","maze_generator","maze_solver","monte_carlo_pi","matrix_multiplication","matrix_transpose","numerical_integration","complex_numbers","linear_regression","base_converter","freq_analysis","shuffle","weighted_random","ascii_table"};
-static int vs_boost_tokens[64];
-static int vs_boost_count = 0;
-
-// Vector search data structures
-#define MAX_EXAMPLES 512
-#define MAX_TOP_K 10
-#define EXAMPLE_DIR "l1vm-example-code"
-#define EXAMPLE_SUBDIRS 3
-static const char *example_subdirs[EXAMPLE_SUBDIRS] = {"prog", "include", "lib"};
-static const char *example_exts[] = {".l1com", ".l1h", ".l1asm"};
-#define EXAMPLE_EXTS 3
-
-typedef struct {
-    char filename[1024];
-    char stem[512];
-    float embedding[EMBED_DIM];
-    float score;
-} ExampleDoc;
-
-static ExampleDoc example_docs[MAX_EXAMPLES];
-static int num_examples = 0;
-static int examples_indexed = 0;
-
-static void index_examples(void);
-static int search_examples(const char *query, int top_k, int *indices, float *scores);
-
-// Learned pattern functions
+// Learned pattern functions forward declarations
 static char* learned_dir_path(void);
 static void ensure_learned_dir(void);
 static int learn_from_file(const char *path, const char *keywords, const char *description);
@@ -1090,456 +1132,9 @@ static int has_learned_id(const char *id);
 static int forget_learned(const char *id);
 static void list_learned(void);
 
-static unsigned long hash_word(const char *s) {
-    unsigned long hash = 5381;
-    int c;
-    while ((c = *s++))
-        hash = ((hash << 5) + hash) + c;
-    return hash;
-}
-
-static float idf_weights[VOCAB_SIZE];
-
-static const char *vocab[VOCAB_SIZE] = {
-    "sum", "add", "sub", "mul", "div", "mod", "input", "print", "loop", "for",
-    "while", "if", "array", "sort", "max", "min", "average", "median", "countdown",
-    "fibonacci", "factorial", "prime", "fizzbuzz", "power", "gcd", "time", "pointer",
-    "struct", "string", "concat", "compare", "reverse", "find", "assign", "file",
-    "read", "write", "convert", "timer", "shell", "hello", "function", "even",
-    "odd", "guess", "table", "hex", "binary", "range", "exit", "zero", "one",
-    "two", "num", "value", "data", "code", "generate", "create", "make", "show",
-    "start", "stop", "run",
-    "fann", "train", "neural", "network", "model", "layer", "learn", "predict"
-};
-
-static int embeddings_initialized = 0;
-static int dataflow_quiet_mode = 0;
-
-static void init_embeddings(void) {
-    if (embeddings_initialized) return;
-    embeddings_initialized = 1;
-    for (int i = 0; i < VOCAB_SIZE; i++) {
-        unsigned long seed = hash_word(vocab[i]);
-        srand(seed);
-        float sum = 0;
-        for (int j = 0; j < EMBED_DIM; j++) {
-            word_embeddings[i].embed[j] = ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
-            sum += word_embeddings[i].embed[j] * word_embeddings[i].embed[j];
-        }
-        float norm = sqrtf(sum);
-        if (norm > 0)
-            for (int j = 0; j < EMBED_DIM; j++) word_embeddings[i].embed[j] /= norm;
-    }
-    for (int i = 0; i < VOCAB_SIZE; i++) idf_weights[i] = 1.0f;
-}
-
-static int tokenize(const char *text, int *tokens, int max_tokens) {
-    char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", text);
-    to_lowercase(buf);
-    int count = 0;
-    char *p = buf;
-    while (*p && count < max_tokens) {
-        while (*p && !isalpha(*p)) p++;
-        if (!*p) break;
-        char *start = p;
-        while (*p && isalpha(*p)) p++;
-        char saved = *p;
-        *p = '\0';
-        int found = -1;
-        for (int i = 0; i < VOCAB_SIZE; i++) {
-            if (strcmp(start, vocab[i]) == 0) { found = i; break; }
-        }
-        if (found < 0) {
-            const char *syn = resolve_synonym(start);
-            if (syn) {
-                for (int i = 0; i < VOCAB_SIZE; i++) {
-                    if (strcmp(syn, vocab[i]) == 0) { found = i; break; }
-                }
-            }
-        }
-        if (found >= 0 && count < max_tokens) tokens[count++] = found;
-        *p = saved;
-    }
-    return count;
-}
-
-static void softmax(float *x, int n) {
-    float max = x[0], sum = 0;
-    for (int i = 1; i < n; i++) if (x[i] > max) max = x[i];
-    for (int i = 0; i < n; i++) { x[i] = expf(x[i] - max); sum += x[i]; }
-    for (int i = 0; i < n; i++) x[i] /= sum;
-}
-
-static int llm_select_emitter(const char *prompt, TaskProfile *task) {
-    int tokens[64], num_tokens = tokenize(prompt, tokens, 64);
-
-    float emitter_scores[NUM_EMITTERS];
-    for (int i = 0; i < NUM_EMITTERS; i++) emitter_scores[i] = 0;
-
-    if (task->has_operation && task->has_literals) emitter_scores[0] = 1.5f;
-    if (task->has_input && !task->has_operation) emitter_scores[1] = 1.5f;
-    if (task->has_input && task->has_operation) emitter_scores[1] += 1.0f;
-    if (task->has_loop && !task->has_operation && !task->has_input) emitter_scores[2] = 1.5f;
-    if (task->has_sum_range) emitter_scores[3] = 2.0f;
-    if (task->has_print_even) emitter_scores[4] = 2.0f;
-    if (task->has_find_max) emitter_scores[5] = 2.0f;
-    if (task->has_countdown_from) emitter_scores[6] = 2.0f;
-    if (task->has_fib_seq) emitter_scores[7] = 2.0f;
-    if (task->has_input_sort) emitter_scores[8] = 2.0f;
-    if (task->has_median) emitter_scores[9] = 2.0f;
-    if (task->has_string_cat) emitter_scores[10] = 2.0f;
-    if (task->has_string_compare) emitter_scores[11] = 2.0f;
-    if (task->has_array_assign) emitter_scores[12] = 2.0f;
-    if (task->has_array_reverse) emitter_scores[13] = 2.0f;
-    if (task->has_array_find) emitter_scores[14] = 2.0f;
-    if (task->has_input_fact) emitter_scores[15] = 2.0f;
-    if (task->has_array_vmath) emitter_scores[16] = 2.0f;
-    if (task->has_read_file) emitter_scores[17] = 2.0f;
-    if (task->has_write_file) emitter_scores[18] = 2.0f;
-    if (task->has_string_to_num) emitter_scores[19] = 2.0f;
-    if (task->has_timer) emitter_scores[20] = 2.0f;
-    if (task->has_factorial && !task->has_input) emitter_scores[21] = 2.0f;
-    if (task->has_fizzbuzz) emitter_scores[22] = 2.0f;
-    if (task->has_primes) emitter_scores[23] = 2.0f;
-    if (task->has_even_odd && !task->has_print_even) emitter_scores[24] = 2.0f;
-    if (task->has_power) emitter_scores[25] = 2.0f;
-    if (task->has_mult_table) emitter_scores[26] = 2.0f;
-    if (task->has_guess) emitter_scores[27] = 2.0f;
-    if (task->has_gcd) emitter_scores[28] = 2.0f;
-    if (task->has_hello_name) emitter_scores[29] = 2.0f;
-    if (task->has_random) emitter_scores[30] = 2.0f;
-    if (task->has_array_min_max) emitter_scores[31] = 2.0f;
-    if (task->has_bool_demo) emitter_scores[32] = 2.0f;
-    if (task->has_bit_check) emitter_scores[33] = 2.0f;
-    if (task->has_fann_create && task->has_fann_train) emitter_scores[35] = 2.5f;
-    if (task->has_fann_create && !task->has_fann_train) emitter_scores[34] = 2.0f;
-    if (task->has_fann_run) emitter_scores[36] = 2.0f;
-    if (task->has_average && task->has_input) emitter_scores[37] = 2.0f;
-    if (task->has_sort && !task->has_input) emitter_scores[38] = 2.0f;
-    if (task->has_palindrome) emitter_scores[39] = 2.0f;
-    if (task->has_lcm) emitter_scores[40] = 2.0f;
-    if (task->has_collatz) emitter_scores[41] = 2.0f;
-    if (task->has_sum_of_digits) emitter_scores[42] = 2.0f;
-    if (task->has_reverse_string) emitter_scores[43] = 2.0f;
-    if (task->has_armstrong) emitter_scores[44] = 2.0f;
-    if (task->has_perfect_number) emitter_scores[45] = 2.0f;
-    if (task->has_count_vowels) emitter_scores[46] = 2.0f;
-    if (task->has_anagram_check) emitter_scores[47] = 2.0f;
-    if (task->has_string_to_upper) emitter_scores[48] = 2.0f;
-    if (task->has_string_to_lower) emitter_scores[49] = 2.0f;
-    if (task->has_caesar_cipher) emitter_scores[50] = 2.0f;
-    if (task->has_palindrome_string) emitter_scores[51] = 2.0f;
-    if (task->has_bubble_sort) emitter_scores[52] = 2.0f;
-    if (task->has_binary_search) emitter_scores[53] = 2.0f;
-    if (task->has_square_root) emitter_scores[54] = 2.0f;
-    if (task->has_prime_factorization) emitter_scores[55] = 2.0f;
-    if (task->has_standard_deviation) emitter_scores[56] = 2.0f;
-    if (task->has_compound_interest) emitter_scores[57] = 2.0f;
-    if (task->has_decimal_to_binary) emitter_scores[58] = 2.0f;
-    if (task->has_dice_roll) emitter_scores[59] = 2.0f;
-    if (task->has_double_math) emitter_scores[60] = 2.0f;
-    if (task->has_double_circle_area) emitter_scores[61] = 2.0f;
-    if (task->has_double_average) emitter_scores[62] = 2.0f;
-    if (task->has_double_compound_interest) emitter_scores[63] = 2.0f;
-    if (task->has_double_pythagoras) emitter_scores[64] = 2.0f;
-    if (task->has_double_temp_convert) emitter_scores[65] = 2.0f;
-    if (task->has_double_sqrt) emitter_scores[66] = 2.0f;
-    if (task->has_function) emitter_scores[67] = 2.0f;
-    if (task->has_string_length) emitter_scores[68] = 2.0f;
-    if (task->has_stack) emitter_scores[69] = 2.0f;
-    if (task->has_queue) emitter_scores[70] = 2.0f;
-    if (task->has_insertion_sort) emitter_scores[71] = 2.0f;
-    if (task->has_calculator) emitter_scores[72] = 2.0f;
-    if (task->has_unit_converter) emitter_scores[73] = 2.0f;
-    if (task->has_rock_paper_scissors) emitter_scores[74] = 2.0f;
-    if (task->has_pyramid) emitter_scores[75] = 2.0f;
-    if (task->has_temp_converter_menu) emitter_scores[76] = 2.0f;
-    if (task->has_sort_stats) emitter_scores[77] = 2.0f;
-    if (task->has_string_analyzer) emitter_scores[78] = 2.0f;
-    if (task->has_number_analyzer) emitter_scores[79] = 2.0f;
-    if (task->has_filter_numbers) emitter_scores[80] = 2.0f;
-    if (task->has_random_generator) emitter_scores[81] = 2.0f;
-    if (task->has_math_menu) emitter_scores[82] = 2.0f;
-    if (task->has_quiz_game) emitter_scores[83] = 2.0f;
-    if (task->has_bmi_calculator) emitter_scores[84] = 2.0f;
-    if (task->has_statistics_suite) emitter_scores[85] = 2.0f;
-    if (task->has_linked_list) emitter_scores[86] = 2.0f;
-    if (task->has_binary_search_tree) emitter_scores[87] = 2.0f;
-    if (task->has_tree_traversal) emitter_scores[88] = 2.0f;
-    if (task->has_graph_bfs_dfs) emitter_scores[89] = 2.0f;
-    if (task->has_n_queens) emitter_scores[90] = 2.0f;
-    if (task->has_sudoku) emitter_scores[91] = 2.0f;
-    if (task->has_levenshtein) emitter_scores[92] = 2.0f;
-    if (task->has_maze_generator) emitter_scores[93] = 2.0f;
-    if (task->has_maze_solver) emitter_scores[94] = 2.0f;
-    if (task->has_monte_carlo) emitter_scores[95] = 2.0f;
-    if (task->has_matrix_mul) emitter_scores[96] = 2.0f;
-    if (task->has_matrix_transpose) emitter_scores[97] = 2.0f;
-    if (task->has_numerical_integration) emitter_scores[98] = 2.0f;
-    if (task->has_complex_numbers) emitter_scores[99] = 2.0f;
-    if (task->has_linear_regression) emitter_scores[100] = 2.0f;
-    if (task->has_base_converter) emitter_scores[101] = 2.0f;
-    if (task->has_freq_analysis) emitter_scores[102] = 2.0f;
-    if (task->has_shuffle) emitter_scores[103] = 2.0f;
-    if (task->has_weighted_random) emitter_scores[104] = 2.0f;
-    if (task->has_ascii_table) emitter_scores[105] = 3.0f;
-
-    for (int ti = 0; ti < num_tokens && ti < 32; ti++) {
-        int tok_id = tokens[ti];
-        if (tok_id == 64 || tok_id == 66 || tok_id == 67) { emitter_scores[34] += 1.0f; emitter_scores[35] += 1.5f; emitter_scores[36] += 1.0f; }
-        if (tok_id == 65 || tok_id == 70) { emitter_scores[34] += 0.5f; emitter_scores[35] += 1.5f; }
-        if (tok_id == 71) { emitter_scores[36] += 1.5f; }
-        if (tok_id == 0 || tok_id == 4) emitter_scores[0] += 0.5f;
-        if (tok_id == 5 || tok_id == 1) emitter_scores[1] += 0.5f;
-        if (tok_id == 8 || tok_id == 9) emitter_scores[2] += 0.5f;
-        if (tok_id == 17) emitter_scores[9] += 0.8f;
-        if (tok_id == 19) emitter_scores[7] += 0.8f;
-        if (tok_id == 20) emitter_scores[15] += 0.8f;
-        if (tok_id == 13) emitter_scores[8] += 0.8f;
-        if (tok_id == 14) emitter_scores[5] += 0.8f;
-        if (tok_id == 15) emitter_scores[16] += 0.5f;
-        if (tok_id == 28) { emitter_scores[10] += 0.8f; emitter_scores[11] += 0.8f; }
-        if (tok_id == 32) emitter_scores[13] += 0.8f;
-        if (tok_id == 33) emitter_scores[14] += 0.8f;
-        if (tok_id == 36 || tok_id == 35) { emitter_scores[17] += 0.8f; emitter_scores[18] += 0.8f; }
-        if (tok_id == 37) emitter_scores[19] += 0.8f;
-        if (tok_id == 38) emitter_scores[20] += 0.8f;
-        if (tok_id == 27) emitter_scores[6] += 0.8f;
-        if (tok_id == 23) emitter_scores[0] += 0.3f;
-        if (tok_id == 20) emitter_scores[21] += 0.8f;
-        if (tok_id == 22) emitter_scores[22] += 0.8f;
-        if (tok_id == 21) emitter_scores[23] += 0.8f;
-        if (tok_id == 42 || tok_id == 43) emitter_scores[24] += 0.8f;
-        if (tok_id == 23) emitter_scores[25] += 0.5f;
-        if (tok_id == 46) emitter_scores[26] += 0.8f;
-        if (tok_id == 44) emitter_scores[27] += 0.8f;
-        if (tok_id == 24) emitter_scores[28] += 0.8f;
-        if (tok_id == 40) emitter_scores[29] += 0.8f;
-        if (tok_id == 53) emitter_scores[30] += 0.5f;
-    }
-
-    // Phase 2b: Vector search boost tokens from matched examples
-    for (int ti = 0; ti < vs_boost_count && ti < 32; ti++) {
-        int tok_id = vs_boost_tokens[ti];
-        if (tok_id == 64 || tok_id == 66 || tok_id == 67) { emitter_scores[34] += 0.5f; emitter_scores[35] += 0.7f; emitter_scores[36] += 0.5f; }
-        if (tok_id == 65 || tok_id == 70) { emitter_scores[34] += 0.3f; emitter_scores[35] += 0.7f; }
-        if (tok_id == 71) { emitter_scores[36] += 0.7f; }
-        if (tok_id == 0 || tok_id == 4) emitter_scores[0] += 0.3f;
-        if (tok_id == 5 || tok_id == 1) emitter_scores[1] += 0.3f;
-        if (tok_id == 8 || tok_id == 9) emitter_scores[2] += 0.3f;
-        if (tok_id == 17) emitter_scores[9] += 0.4f;
-        if (tok_id == 19) emitter_scores[7] += 0.4f;
-        if (tok_id == 20) emitter_scores[15] += 0.4f;
-        if (tok_id == 13) emitter_scores[8] += 0.4f;
-        if (tok_id == 14) emitter_scores[5] += 0.4f;
-        if (tok_id == 15) emitter_scores[16] += 0.3f;
-        if (tok_id == 28) { emitter_scores[10] += 0.4f; emitter_scores[11] += 0.4f; }
-        if (tok_id == 32) emitter_scores[13] += 0.4f;
-        if (tok_id == 33) emitter_scores[14] += 0.4f;
-        if (tok_id == 36 || tok_id == 35) { emitter_scores[17] += 0.4f; emitter_scores[18] += 0.4f; }
-        if (tok_id == 37) emitter_scores[19] += 0.4f;
-        if (tok_id == 38) emitter_scores[20] += 0.4f;
-        if (tok_id == 27) emitter_scores[6] += 0.4f;
-        if (tok_id == 23) { emitter_scores[0] += 0.2f; emitter_scores[25] += 0.3f; }
-        if (tok_id == 22) emitter_scores[22] += 0.4f;
-        if (tok_id == 21) emitter_scores[23] += 0.4f;
-        if (tok_id == 42 || tok_id == 43) emitter_scores[24] += 0.4f;
-        if (tok_id == 44) emitter_scores[27] += 0.4f;
-        if (tok_id == 24) emitter_scores[28] += 0.4f;
-        if (tok_id == 40) emitter_scores[29] += 0.4f;
-        if (tok_id == 46) emitter_scores[26] += 0.4f;
-        if (tok_id == 53) emitter_scores[30] += 0.3f;
-    }
-
-    float temp = TEMPERATURE;
-    for (int i = 0; i < NUM_EMITTERS; i++) emitter_scores[i] /= temp;
-    softmax(emitter_scores, NUM_EMITTERS);
-    for (int i = 0; i < NUM_EMITTERS; i++) attention_weights[i] = emitter_scores[i];
-
-    int best = 0;
-    float best_p = emitter_scores[0];
-    for (int i = 1; i < NUM_EMITTERS; i++) {
-        if (emitter_scores[i] > best_p) { best_p = emitter_scores[i]; best = i; }
-    }
-
-    if (verbose_flag) {
-        printf("\nEmitter scores:\n");
-        for (int i = 0; i < NUM_EMITTERS; i++)
-            printf("  %2d %-16s %.3f\n", i, EMITTER_NAMES[i], emitter_scores[i]);
-        printf("  -> best: %s (%.3f)\n", EMITTER_NAMES[best], best_p);
-    }
-
-    // Multi-emitter composition: add strongly-scored secondary emitters
-    // Dynamic threshold based on prompt length: longer prompts more likely multi-step
-    float pfactor = (float)strlen(prompt) / 80.0f;
-    if (pfactor > 2.0f) pfactor = 2.0f;
-    if (pfactor < 0.5f) pfactor = 0.5f;
-    task->num_extra_emitters = 0;
-    float threshold = best_p * (0.5f / pfactor);
-    float hard_min = 0.2f;
-    if (threshold < hard_min) threshold = hard_min;
-    for (int i = 0; i < NUM_EMITTERS && task->num_extra_emitters < 8; i++) {
-        if (i != best && emitter_scores[i] >= threshold && emitter_scores[i] >= 0.5f) {
-            task->extra_emitters[task->num_extra_emitters++] = i;
-        }
-    }
-
-    if (verbose_flag && task->num_extra_emitters > 0) {
-        printf("  extra emitters:");
-        for (int ei = 0; ei < task->num_extra_emitters; ei++)
-            printf(" %s", EMITTER_NAMES[task->extra_emitters[ei]]);
-        printf("\n");
-    }
-
-    return best;
-}
-
 // Forward declarations for plan-based generator
 static int parse_task(const char *prompt, TaskProfile *task);
 static int generate_from_task(Program *prog, TaskProfile *task, int last_step);
-
-static int has_actionable_keyword(const char *text) {
-    return has_word(text, "lies") || has_word(text, "read") || has_word(text, "input")
-        || has_word(text, "gib") || has_word(text, "enter") || has_word(text, "erfasse")
-        || has_word(text, "print") || has_word(text, "druck") || has_word(text, "ausg")
-        || has_word(text, "show") || has_word(text, "display") || has_word(text, "zeig")
-        || has_word(text, "add") || has_word(text, "sum") || has_word(text, "summe")
-        || has_word(text, "sub") || has_word(text, "subtract") || has_word(text, "minus")
-        || has_word(text, "mul") || has_word(text, "multiply") || has_word(text, "mal")
-        || has_word(text, "div") || has_word(text, "divide") || has_word(text, "geteilt")
-        || has_word(text, "mod") || has_word(text, "modulo")
-        || has_word(text, "max") || has_word(text, "größt") || has_word(text, "largest")
-        || has_word(text, "greatest") || has_word(text, "groesst")
-        || has_word(text, "sort") || has_word(text, "sortiere") || has_word(text, "bubble")
-        || has_word(text, "sorted") || has_word(text, "sortiert")
-        || has_word(text, "average") || has_word(text, "durchschnitt") || has_word(text, "mean")
-        || has_word(text, "factorial") || has_word(text, "fakult") || has_word(text, "median")
-        || has_word(text, "fibonacci") || has_word(text, "fib") || has_word(text, "find")
-        || has_word(text, "search") || has_word(text, "suche") || has_word(text, "reverse")
-        || has_word(text, "umkehr") || has_word(text, "countdown")
-        || has_word(text, "cat") || has_word(text, "concat") || has_word(text, "compare")
-        || has_word(text, "cmp") || has_word(text, "vergleich") || has_word(text, "assign")
-        || has_word(text, "zuweis") || has_word(text, "write") || has_word(text, "schreib")
-        || has_word(text, "hello") || has_word(text, "hallo")
-        || has_word(text, "prime") || has_word(text, "prim") || has_word(text, "fizzbuzz")
-        || has_word(text, "even") || has_word(text, "odd") || has_word(text, "gerade")
-        || has_word(text, "ungerade") || has_word(text, "power") || has_word(text, "potenz")
-        || has_word(text, "exponent") || has_word(text, "hoch")
-        || has_word(text, "guess") || has_word(text, "rate") || has_word(text, "raten")
-        || has_word(text, "table") || has_word(text, "einmaleins")
-        || has_word(text, "multiplication") || has_word(text, "multiplika")
-        || has_word(text, "gcd") || has_word(text, "ggt") || has_word(text, "gcm")
-        || has_word(text, "time") || has_word(text, "zeit") || has_word(text, "clock")
-        || has_word(text, "pointer") || has_word(text, "zeiger") || has_word(text, "struct")
-        || has_word(text, "function") || has_word(text, "funktion")
-        || has_word(text, "for") || has_word(text, "loop") || has_word(text, "schleife")
-        || has_word(text, "if") || has_word(text, "bedingung") || has_word(text, "wenn")
-        || has_word(text, "while") || has_word(text, "switch") || has_word(text, "case")
-        || has_word(text, "array") || has_word(text, "feld") || has_word(text, "liste")
-        || has_word(text, "string") || has_word(text, "zeichen") || has_word(text, "text")
-        || has_word(text, "shell") || has_word(text, "argument") || has_word(text, "parameter")
-        || has_word(text, "ergebnis") || has_word(text, "result") || has_word(text, "value")
-        || has_word(text, "wert") || has_word(text, "number") || has_word(text, "zahl")
-        || has_word(text, "element") || has_word(text, "index") || has_word(text, "bis")
-        || has_word(text, "to") || has_word(text, "von") || has_word(text, "from")
-        || has_word(text, "file") || has_word(text, "datei")
-        || has_word(text, "convert") || has_word(text, "parse") || has_word(text, "umwand")
-        || has_word(text, "timer") || has_word(text, "benchmark")
-        || has_word(text, "measure") || has_word(text, "mess") || has_word(text, "dauer")
-        || has_word(text, "execution") || has_word(text, "ausführ") || has_word(text, "lauf")
-        || has_word(text, "fann") || has_word(text, "neural") || has_word(text, "network")
-        || has_word(text, "train") || has_word(text, "learn") || has_word(text, "predict")
-        || has_word(text, "infer") || has_word(text, "ai");
-}
-
-static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
-    char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", prompt);
-    to_lowercase(buf);
-    int num_steps = 0;
-    char *remaining = buf;
-
-    struct { const char *pat; int len; } patterns[] = {
-        {" und dann ", 10}, {" und danach ", 12}, {" anschließend ", 14},
-        {" and then ", 10}, {" . ", 3}, {". ", 2}, {"; ", 2},
-        {" then ", 6}, {" danach ", 8},
-        {" und ", 5}, {" and ", 5}, {", ", 2},
-    };
-    int npats = sizeof(patterns) / sizeof(patterns[0]);
-
-    while (num_steps < MAX_STEPS - 1) {
-        int best_pos = -1, best_len = 0;
-        for (int i = 0; i < npats; i++) {
-            char *pos = strstr(remaining, patterns[i].pat);
-            if (!pos) continue;
-            int idx = pos - remaining;
-            if (best_pos >= 0 && idx >= best_pos) continue;
-            best_pos = idx; best_len = patterns[i].len;
-        }
-        if (best_pos < 0) break;
-        char step[MAX_PROMPT];
-        snprintf(step, MAX_PROMPT, "%.*s", best_pos, remaining);
-        trim(step);
-        if (strlen(step) > 0) { snprintf(steps[num_steps], MAX_PROMPT, "%s", step); num_steps++; }
-        remaining += best_pos + best_len;
-    }
-    trim(remaining);
-    if (strlen(remaining) > 0) { snprintf(steps[num_steps], MAX_PROMPT, "%s", remaining); num_steps++; }
-
-    if (num_steps > 1) {
-        int merged = 1;
-        while (merged) {
-            merged = 0;
-            for (int i = 0; i < num_steps; i++) {
-                if (!has_actionable_keyword(steps[i])) {
-                    if (i > 0) {
-                    char merged_step[MAX_PROMPT * 2];
-                    snprintf(merged_step, sizeof(merged_step), "%s %s", steps[i-1], steps[i]);
-                        trim(merged_step);
-                        snprintf(steps[i-1], MAX_PROMPT, "%s", merged_step);
-                        for (int j = i; j < num_steps - 1; j++) snprintf(steps[j], MAX_PROMPT, "%s", steps[j+1]);
-                        num_steps--; merged = 1; break;
-                    } else if (i == 0 && num_steps > 1) {
-                        char merged_step[MAX_PROMPT * 2];
-                        snprintf(merged_step, sizeof(merged_step), "%s %s", steps[0], steps[1]);
-                        trim(merged_step);
-                        snprintf(steps[0], MAX_PROMPT, "%s", merged_step);
-                        for (int j = 1; j < num_steps - 1; j++) snprintf(steps[j], MAX_PROMPT, "%s", steps[j+1]);
-                        num_steps--; merged = 1; break;
-                    }
-                }
-            }
-        }
-    }
-
-    // Additional merge: keep "read X and print the Y" as a single step
-    if (num_steps > 1) {
-        int merged = 1;
-        while (merged) {
-            merged = 0;
-            for (int i = 1; i < num_steps; i++) {
-                if (has_word(steps[i], "print") &&
-                    (has_word(steps[i], "median") || has_word(steps[i], "average") ||
-                     has_word(steps[i], "mean") || has_word(steps[i], "largest") ||
-                     has_word(steps[i], "smallest") || has_word(steps[i], "greatest") ||
-                     has_word(steps[i], "sum") || has_word(steps[i], "max") ||
-                     has_word(steps[i], "min") || has_word(steps[i], "them") ||
-                     has_word(steps[i], "it") || has_word(steps[i], "result"))) {
-                    char merged_step[MAX_PROMPT * 2];
-                    snprintf(merged_step, sizeof(merged_step), "%s %s", steps[i-1], steps[i]);
-                    trim(merged_step);
-                    snprintf(steps[i-1], MAX_PROMPT, "%s", merged_step);
-                    for (int j = i; j < num_steps - 1; j++) snprintf(steps[j], MAX_PROMPT, "%s", steps[j+1]);
-                    num_steps--; merged = 1; break;
-                }
-            }
-        }
-    }
-
-    if (num_steps <= 1) { snprintf(steps[0], MAX_PROMPT, "%s", prompt); return 1; }
-    return num_steps;
-}
 
 // ==================== 21 EMITTER BLOCK IMPLEMENTATIONS ====================
 
@@ -4650,7 +4245,7 @@ static int parse_task(const char *prompt, TaskProfile *task) {
     }
 
     if (task->has_string_cat && !has_word(buf, "compare") && !has_word(buf, "vergleich")) {
-        // string_cat unless compare is explicit
+        // string_cat unless compare is explicit (intentionally empty)
     }
 
     if (has_word(buf, "array") && has_word(buf, "reverse")) {
@@ -7741,6 +7336,10 @@ static void ensure_exit(Function *f, int last_step) {
     func_append(f, "\t(zero :exit !)");
 }
 
+// Dispatch macro for uniform emitter blocks
+#define DISPATCH(field, func) \
+    if (task->field) { func(prog, f); ensure_exit(f, last_step); return 1; }
+
 static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     // check if main function already exists
     Function *f = NULL;
@@ -7848,21 +7447,9 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         ensure_exit(f, last_step);
         return 1;
     }
-    if (task->has_input_fact) {
-        emit_input_factorial(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_string_compare) {
-        emit_string_compare(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_array_assign) {
-        emit_array_assign(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    DISPATCH(has_input_fact, emit_input_factorial);
+    DISPATCH(has_string_compare, emit_string_compare);
+    DISPATCH(has_array_assign, emit_array_assign);
     if (task->has_array_reverse) {
         if (task->inherit_var[0]) {
             char cvs[16];
@@ -7896,91 +7483,31 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         ensure_exit(f, last_step);
         return 1;
     }
-    if (task->has_read_file) {
-        emit_read_file(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_write_file) {
-        emit_write_file(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_string_to_num) {
-        emit_string_to_num(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_timer) {
-        emit_timer(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    DISPATCH(has_read_file, emit_read_file);
+    DISPATCH(has_write_file, emit_write_file);
+    DISPATCH(has_string_to_num, emit_string_to_num);
+    DISPATCH(has_timer, emit_timer);
     if (task->has_factorial && !task->has_input) {
         emit_factorial(prog, f);
         ensure_exit(f, last_step);
         return 1;
     }
-    if (task->has_fizzbuzz) {
-        emit_fizzbuzz(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_primes) {
-        emit_primes(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    DISPATCH(has_fizzbuzz, emit_fizzbuzz);
+    DISPATCH(has_primes, emit_primes);
     if (task->has_even_odd && !task->has_print_even) {
         emit_even_odd(prog, f);
         ensure_exit(f, last_step);
         return 1;
     }
-    if (task->has_power) {
-        emit_power(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_mult_table) {
-        emit_multiplication_table(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_guess) {
-        emit_guess_number(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_gcd) {
-        emit_gcd(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_hello_name) {
-        emit_hello_name(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_random) {
-        emit_random_number(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_array_min_max) {
-        emit_array_min_max(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_bool_demo) {
-        emit_bool_demo(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_bit_check) {
-        emit_bit_check(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    DISPATCH(has_power, emit_power);
+    DISPATCH(has_mult_table, emit_multiplication_table);
+    DISPATCH(has_guess, emit_guess_number);
+    DISPATCH(has_gcd, emit_gcd);
+    DISPATCH(has_hello_name, emit_hello_name);
+    DISPATCH(has_random, emit_random_number);
+    DISPATCH(has_array_min_max, emit_array_min_max);
+    DISPATCH(has_bool_demo, emit_bool_demo);
+    DISPATCH(has_bit_check, emit_bit_check);
     if (task->has_loop && task->has_literals && task->has_sum) {
         int n = task->num_literals > 0 ? task->literals[0] : 100;
         emit_for_sum(prog, f, n);
@@ -7997,31 +7524,15 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         ensure_exit(f, last_step);
         return 1;
     }
-    if (task->has_leap_year) {
-        emit_leap_year(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_temp_convert) {
-        emit_temp_convert(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_circle_area) {
-        emit_circle_area(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    DISPATCH(has_leap_year, emit_leap_year);
+    DISPATCH(has_temp_convert, emit_temp_convert);
+    DISPATCH(has_circle_area, emit_circle_area);
     if (task->has_average && task->has_input) {
         emit_average(prog, f, task->skip_input);
         ensure_exit(f, last_step);
         return 1;
     }
-    if (task->has_sort_stats) {
-        emit_sort_stats(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    DISPATCH(has_sort_stats, emit_sort_stats);
     if (task->has_sort && !task->has_input) {
         int c = 5;
         emit_selection_sort(prog, f, c, task->skip_input);
@@ -8038,354 +7549,102 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         ensure_exit(f, last_step);
         return 1;
     }
-    if (task->has_fann_run) {
-        emit_fann_run(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    DISPATCH(has_fann_run, emit_fann_run);
     if (task->has_input && !task->has_operation) {
         int c = task->input_count > 0 ? task->input_count : 5;
         emit_input_loop(prog, f, c, task->type, 0);
         ensure_exit(f, last_step);
         return 1;
     }
-    if (task->has_palindrome) {
-        emit_palindrome(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_lcm) {
-        emit_lcm(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_collatz) {
-        emit_collatz(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_sum_of_digits) {
-        emit_sum_of_digits(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_reverse_string) {
-        emit_reverse_string(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_armstrong) {
-        emit_armstrong(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_perfect_number) {
-        emit_perfect_number(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_count_vowels) {
-        emit_count_vowels(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_anagram_check) {
-        emit_anagram_check(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_string_to_upper) {
-        emit_string_to_upper(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_string_to_lower) {
-        emit_string_to_lower(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_caesar_cipher) {
-        emit_caesar_cipher(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_palindrome_string) {
-        emit_palindrome_string(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    DISPATCH(has_palindrome, emit_palindrome);
+    DISPATCH(has_lcm, emit_lcm);
+    DISPATCH(has_collatz, emit_collatz);
+    DISPATCH(has_sum_of_digits, emit_sum_of_digits);
+    DISPATCH(has_reverse_string, emit_reverse_string);
+    DISPATCH(has_armstrong, emit_armstrong);
+    DISPATCH(has_perfect_number, emit_perfect_number);
+    DISPATCH(has_count_vowels, emit_count_vowels);
+    DISPATCH(has_anagram_check, emit_anagram_check);
+    DISPATCH(has_string_to_upper, emit_string_to_upper);
+    DISPATCH(has_string_to_lower, emit_string_to_lower);
+    DISPATCH(has_caesar_cipher, emit_caesar_cipher);
+    DISPATCH(has_palindrome_string, emit_palindrome_string);
     // string_cat last among string ops (less specific than reverse/length/etc)
-    if (task->has_string_cat) {
-        emit_string_cat(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    DISPATCH(has_string_cat, emit_string_cat);
     if (task->has_bubble_sort) {
         emit_bubble_sort(prog, f, task->skip_input);
         ensure_exit(f, last_step);
         return 1;
     }
-    if (task->has_binary_search) {
-        emit_binary_search(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_square_root) {
-        emit_square_root(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_prime_factorization) {
-        emit_prime_factorization(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    DISPATCH(has_binary_search, emit_binary_search);
+    DISPATCH(has_square_root, emit_square_root);
+    DISPATCH(has_prime_factorization, emit_prime_factorization);
     if (task->has_standard_deviation) {
         emit_standard_deviation(prog, f, task->skip_input);
         ensure_exit(f, last_step);
         return 1;
     }
-    if (task->has_compound_interest) {
-        emit_compound_interest(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_decimal_to_binary) {
-        emit_decimal_to_binary(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_dice_roll) {
-        emit_dice_roll(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    DISPATCH(has_compound_interest, emit_compound_interest);
+    DISPATCH(has_decimal_to_binary, emit_decimal_to_binary);
+    DISPATCH(has_dice_roll, emit_dice_roll);
     if (task->has_double_math) {
         emit_double_math(prog, f, task->op);
         ensure_exit(f, last_step);
         return 1;
     }
-    if (task->has_double_circle_area) {
-        emit_double_circle_area(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    DISPATCH(has_double_circle_area, emit_double_circle_area);
     if (task->has_double_average) {
         emit_double_average(prog, f, task->skip_input);
         ensure_exit(f, last_step);
         return 1;
     }
-    if (task->has_double_compound_interest) {
-        emit_double_compound_interest(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_double_pythagoras) {
-        emit_double_pythagoras(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_double_temp_convert) {
-        emit_double_temp_convert(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_double_sqrt) {
-        emit_double_sqrt(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_function) {
-        emit_function(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_string_length) {
-        emit_string_length(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_stack) {
-        emit_stack(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_queue) {
-        emit_queue(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    DISPATCH(has_double_compound_interest, emit_double_compound_interest);
+    DISPATCH(has_double_pythagoras, emit_double_pythagoras);
+    DISPATCH(has_double_temp_convert, emit_double_temp_convert);
+    DISPATCH(has_double_sqrt, emit_double_sqrt);
+    DISPATCH(has_function, emit_function);
+    DISPATCH(has_string_length, emit_string_length);
+    DISPATCH(has_stack, emit_stack);
+    DISPATCH(has_queue, emit_queue);
     if (task->has_insertion_sort) {
         int c = 5;
         emit_insertion_sort(prog, f, c, task->skip_input);
         ensure_exit(f, last_step);
         return 1;
     }
-    if (task->has_bmi_calculator) {
-        emit_bmi_calculator(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_calculator) {
-        emit_calculator(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_unit_converter) {
-        emit_unit_converter(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_rock_paper_scissors) {
-        emit_rock_paper_scissors(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_pyramid) {
-        emit_pyramid(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_temp_converter_menu) {
-        emit_temp_converter_menu(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_string_analyzer) {
-        emit_string_analyzer(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_number_analyzer) {
-        emit_number_analyzer(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_filter_numbers) {
-        emit_filter_numbers(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_random_generator) {
-        emit_random_generator(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_math_menu) {
-        emit_math_menu(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_quiz_game) {
-        emit_quiz_game(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_statistics_suite) {
-        emit_statistics_suite(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_linked_list) {
-        emit_linked_list(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_binary_search_tree) {
-        emit_binary_search_tree(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_tree_traversal) {
-        emit_tree_traversal(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_graph_bfs_dfs) {
-        emit_graph_bfs_dfs(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_n_queens) {
-        emit_n_queens(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_sudoku) {
-        emit_sudoku(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_levenshtein) {
-        emit_levenshtein_distance(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_maze_generator) {
-        emit_maze_generator(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_maze_solver) {
-        emit_maze_solver(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_monte_carlo) {
-        emit_monte_carlo_pi(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_matrix_mul) {
-        emit_matrix_multiplication(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_matrix_transpose) {
-        emit_matrix_transpose(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_numerical_integration) {
-        emit_numerical_integration(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_complex_numbers) {
-        emit_complex_numbers(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_linear_regression) {
-        emit_linear_regression(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_base_converter) {
-        emit_base_converter(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_freq_analysis) {
-        emit_freq_analysis(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_shuffle) {
-        emit_shuffle(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_weighted_random) {
-        emit_weighted_random(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
-    if (task->has_ascii_table) {
-        emit_ascii_table(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    DISPATCH(has_bmi_calculator, emit_bmi_calculator);
+    DISPATCH(has_calculator, emit_calculator);
+    DISPATCH(has_unit_converter, emit_unit_converter);
+    DISPATCH(has_rock_paper_scissors, emit_rock_paper_scissors);
+    DISPATCH(has_pyramid, emit_pyramid);
+    DISPATCH(has_temp_converter_menu, emit_temp_converter_menu);
+    DISPATCH(has_string_analyzer, emit_string_analyzer);
+    DISPATCH(has_number_analyzer, emit_number_analyzer);
+    DISPATCH(has_filter_numbers, emit_filter_numbers);
+    DISPATCH(has_random_generator, emit_random_generator);
+    DISPATCH(has_math_menu, emit_math_menu);
+    DISPATCH(has_quiz_game, emit_quiz_game);
+    DISPATCH(has_statistics_suite, emit_statistics_suite);
+    DISPATCH(has_linked_list, emit_linked_list);
+    DISPATCH(has_binary_search_tree, emit_binary_search_tree);
+    DISPATCH(has_tree_traversal, emit_tree_traversal);
+    DISPATCH(has_graph_bfs_dfs, emit_graph_bfs_dfs);
+    DISPATCH(has_n_queens, emit_n_queens);
+    DISPATCH(has_sudoku, emit_sudoku);
+    DISPATCH(has_levenshtein, emit_levenshtein_distance);
+    DISPATCH(has_maze_generator, emit_maze_generator);
+    DISPATCH(has_maze_solver, emit_maze_solver);
+    DISPATCH(has_monte_carlo, emit_monte_carlo_pi);
+    DISPATCH(has_matrix_mul, emit_matrix_multiplication);
+    DISPATCH(has_matrix_transpose, emit_matrix_transpose);
+    DISPATCH(has_numerical_integration, emit_numerical_integration);
+    DISPATCH(has_complex_numbers, emit_complex_numbers);
+    DISPATCH(has_linear_regression, emit_linear_regression);
+    DISPATCH(has_base_converter, emit_base_converter);
+    DISPATCH(has_freq_analysis, emit_freq_analysis);
+    DISPATCH(has_shuffle, emit_shuffle);
+    DISPATCH(has_weighted_random, emit_weighted_random);
+    DISPATCH(has_ascii_table, emit_ascii_table);
 
     // If no single emitter matched but extra emitters are specified, run them
     // as a composite sequence. Each extra emitter runs on the same function.
@@ -8577,7 +7836,7 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     return 0;
 }
 
-static void gen_arithmetic(Program *prog, const char *op, const char *type, int *vals, int num_vals) {
+static void gen_arithmetic(Program *prog, const char *op, const char *type, const int *vals, int num_vals) {
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -8658,46 +7917,48 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
     int num_steps = split_prompt_steps(prompt, steps);
 
     if (num_steps > 1) {
-        char inherited_names[64][64] = {{0}};
-        char inherited_types[64][32] = {{0}};
+        char inherited_names[64][256] = {{0}};
+        char inherited_types[64][64] = {{0}};
         int inherited_counts[64] = {0};
         int num_inherited = 0;
         for (int i = 0; i < num_steps; i++) {
+            int learned_emitted = 0;
             // Try per-step learned pattern match
             {
                 int lscore;
                 int lidx = match_learned_pattern(steps[i], &lscore);
                 if (lidx >= 0) {
                     if (emit_learned_step(prog, lidx)) {
-                        goto collect_vars;
+                        learned_emitted = 1;
                     }
                 }
             }
-            TaskProfile task;
-            memset(&task, 0, sizeof(task));
-            if (parse_task(steps[i], &task)) {
-                task.skip_input = (i > 0);
-                task.suppress_output = (i < num_steps - 1);
-                dataflow_quiet_mode = task.suppress_output;
-                // populate inherited vars from previous steps
-                for (int iv = 0; iv < num_inherited; iv++) {
-                    snprintf(task.inherit_var_names[task.num_inherit_vars], 64, "%s", inherited_names[iv]);
-                    snprintf(task.inherit_var_types[task.num_inherit_vars], 32, "%s", inherited_types[iv]);
-                    task.inherit_var_counts[task.num_inherit_vars] = inherited_counts[iv];
-                    task.num_inherit_vars++;
-                }
-                // backward compat: first array var
-                if (i > 0) {
+            if (!learned_emitted) {
+                TaskProfile task;
+                memset(&task, 0, sizeof(task));
+                if (parse_task(steps[i], &task)) {
+                    task.skip_input = (i > 0);
+                    task.suppress_output = (i < num_steps - 1);
+                    dataflow_quiet_mode = task.suppress_output;
+                    // populate inherited vars from previous steps
                     for (int iv = 0; iv < num_inherited; iv++) {
-                        if (inherited_counts[iv] > 1 && !task.inherit_var[0]) {
-                            snprintf(task.inherit_var, sizeof(task.inherit_var), "%s", inherited_names[iv]);
-                            task.inherit_count = inherited_counts[iv];
+                        snprintf(task.inherit_var_names[task.num_inherit_vars], sizeof(task.inherit_var_names[task.num_inherit_vars]), "%.*s", (int)sizeof(task.inherit_var_names[task.num_inherit_vars]) - 1, inherited_names[iv]);
+                        snprintf(task.inherit_var_types[task.num_inherit_vars], sizeof(task.inherit_var_types[task.num_inherit_vars]), "%.*s", (int)sizeof(task.inherit_var_types[task.num_inherit_vars]) - 1, inherited_types[iv]);
+                        task.inherit_var_counts[task.num_inherit_vars] = inherited_counts[iv];
+                        task.num_inherit_vars++;
+                    }
+                    // backward compat: first array var
+                    if (i > 0) {
+                        for (int iv = 0; iv < num_inherited; iv++) {
+                            if (inherited_counts[iv] > 1 && !task.inherit_var[0]) {
+                                snprintf(task.inherit_var, sizeof(task.inherit_var), "%s", inherited_names[iv]);
+                                task.inherit_count = inherited_counts[iv];
+                            }
                         }
                     }
+                    generate_from_task(prog, &task, (i == num_steps - 1));
                 }
-                generate_from_task(prog, &task, (i == num_steps - 1));
             }
-            collect_vars:
             // collect inherited variables from the main function for next steps
             Function *fcur = NULL;
             for (int fi = 0; fi < prog->num_funcs; fi++)
@@ -8713,8 +7974,8 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
                             if (strcmp(inherited_names[ck], fcur->vars[vi].name) == 0) already = 1;
                         }
                         if (!already) {
-                            snprintf(inherited_names[num_inherited], 64, "%s", fcur->vars[vi].name);
-                            snprintf(inherited_types[num_inherited], 32, "%s", fcur->vars[vi].type);
+                            snprintf(inherited_names[num_inherited], sizeof(inherited_names[num_inherited]), "%s", fcur->vars[vi].name);
+                            snprintf(inherited_types[num_inherited], sizeof(inherited_types[num_inherited]), "%s", fcur->vars[vi].type);
                             inherited_counts[num_inherited] = fcur->vars[vi].count;
                             num_inherited++;
                         }
@@ -8836,18 +8097,27 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
     return 1;
 }
 
-void write_program(Program *prog, const char *filename) {
-    FILE *f = fopen(filename, "w");
-    if (!f) { fprintf(stderr, "Error: cannot write %s\n", filename); return; }
+static void write_program(Program *prog, const char *filename) {
+    FILE *f = NULL;
+    if (dry_run_flag) {
+        f = stdout;
+    } else {
+        f = fopen(filename, "w");
+        if (!f) { fprintf(stderr, "Error: cannot write %s\n", filename); return; }
+    }
 
     time_t t = time(NULL);
     struct tm *tm = localtime(&t);
     char date[64];
     strftime(date, sizeof(date), "%Y-%m-%d", tm);
 
-    fprintf(f, "// %s\n", filename);
-    fprintf(f, "// Generated by Brackets Code on %s\n", date);
-    fprintf(f, "//\n\n");
+    if (!dry_run_flag) {
+        fprintf(f, "// %s\n", filename);
+        fprintf(f, "// Generated by Brackets Code on %s\n", date);
+        fprintf(f, "//\n\n");
+    } else {
+        fprintf(f, "# %s (dry-run)\n", filename);
+    }
 
     for (int i = 0; i < prog->num_includes; i++)
         fprintf(f, "#include <%s>\n", prog->includes[i]);
@@ -8875,13 +8145,15 @@ void write_program(Program *prog, const char *filename) {
     for (int i = 0; i < prog->num_includes_post; i++)
         fprintf(f, "#include <%s>\n", prog->includes_post[i]);
 
-    fclose(f);
-    printf("Written: %s\n", filename);
+    if (!dry_run_flag) {
+        fclose(f);
+        printf("Written: %s\n", filename);
+    }
 }
 
 // ==================== TEMPLATES ====================
 
-void gen_hello_world(Program *prog, const char *prompt) {
+static void gen_hello_world(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -8894,7 +8166,7 @@ void gen_hello_world(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_print_var(Program *prog, const char *prompt) {
+static void gen_print_var(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -8907,7 +8179,7 @@ void gen_print_var(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_math_ops(Program *prog, const char *prompt) {
+static void gen_math_ops(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -8927,7 +8199,7 @@ void gen_math_ops(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_for_loop(Program *prog, const char *prompt) {
+static void gen_for_loop(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -8950,7 +8222,7 @@ void gen_for_loop(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_while_loop(Program *prog, const char *prompt) {
+static void gen_while_loop(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -8970,7 +8242,7 @@ void gen_while_loop(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_if_else(Program *prog, const char *prompt) {
+static void gen_if_else(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -8997,7 +8269,7 @@ void gen_if_else(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_if_else_chain(Program *prog, const char *prompt) {
+static void gen_if_else_chain(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9028,7 +8300,7 @@ void gen_if_else_chain(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_switch(Program *prog, const char *prompt) {
+static void gen_switch(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9057,7 +8329,7 @@ void gen_switch(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_factorial(Program *prog, const char *prompt) {
+static void gen_factorial(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9096,7 +8368,7 @@ void gen_factorial(Program *prog, const char *prompt) {
     func_append(ff, "\t(return)");
 }
 
-void gen_fibonacci(Program *prog, const char *prompt) {
+static void gen_fibonacci(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9138,7 +8410,7 @@ void gen_fibonacci(Program *prog, const char *prompt) {
     func_append(ff, "\t(return)");
 }
 
-void gen_fizzbuzz(Program *prog, const char *prompt) {
+static void gen_fizzbuzz(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9191,7 +8463,7 @@ void gen_fizzbuzz(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_array_demo(Program *prog, const char *prompt) {
+static void gen_array_demo(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
@@ -9221,7 +8493,7 @@ void gen_array_demo(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_string_demo(Program *prog, const char *prompt) {
+static void gen_string_demo(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9245,7 +8517,7 @@ void gen_string_demo(Program *prog, const char *prompt) {
     add_include_post(prog, "string.l1h");
 }
 
-void gen_user_input(Program *prog, const char *prompt) {
+static void gen_user_input(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9262,7 +8534,7 @@ void gen_user_input(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_shell_args(Program *prog, const char *prompt) {
+static void gen_shell_args(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9293,7 +8565,7 @@ void gen_shell_args(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_countdown(Program *prog, const char *prompt) {
+static void gen_countdown(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9313,7 +8585,7 @@ void gen_countdown(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_sum(Program *prog, const char *prompt) {
+static void gen_sum(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9338,7 +8610,7 @@ void gen_sum(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_primes(Program *prog, const char *prompt) {
+static void gen_primes(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9379,7 +8651,7 @@ void gen_primes(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_function_demo(Program *prog, const char *prompt) {
+static void gen_function_demo(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9415,7 +8687,7 @@ void gen_function_demo(Program *prog, const char *prompt) {
     func_append(sf, "\t(return)");
 }
 
-void gen_guess_number(Program *prog, const char *prompt) {
+static void gen_guess_number(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9450,7 +8722,7 @@ void gen_guess_number(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_multiplication_table(Program *prog, const char *prompt) {
+static void gen_multiplication_table(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9493,7 +8765,7 @@ void gen_multiplication_table(Program *prog, const char *prompt) {
     add_include_post(prog, "string.l1h");
 }
 
-void gen_even_odd(Program *prog, const char *prompt) {
+static void gen_even_odd(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9529,7 +8801,7 @@ void gen_even_odd(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_power(Program *prog, const char *prompt) {
+static void gen_power(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9566,7 +8838,7 @@ void gen_power(Program *prog, const char *prompt) {
     func_append(pf, "\t(return)");
 }
 
-void gen_max_of_three(Program *prog, const char *prompt) {
+static void gen_max_of_three(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9604,7 +8876,7 @@ void gen_max_of_three(Program *prog, const char *prompt) {
     func_append(mf, "\t(return)");
 }
 
-void gen_hello_name(Program *prog, const char *prompt) {
+static void gen_hello_name(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9625,7 +8897,7 @@ void gen_hello_name(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_bubble_sort(Program *prog, const char *prompt) {
+static void gen_bubble_sort(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
@@ -9681,7 +8953,7 @@ void gen_bubble_sort(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_struct_demo(Program *prog, const char *prompt) {
+static void gen_struct_demo(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9700,7 +8972,7 @@ void gen_struct_demo(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_pointer_demo(Program *prog, const char *prompt) {
+static void gen_pointer_demo(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9722,7 +8994,7 @@ void gen_pointer_demo(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_time_demo(Program *prog, const char *prompt) {
+static void gen_time_demo(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9765,7 +9037,7 @@ void gen_time_demo(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-void gen_gcd(Program *prog, const char *prompt) {
+static void gen_gcd(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9808,7 +9080,7 @@ void gen_gcd(Program *prog, const char *prompt) {
     add_var_to_func(gf, "int64", "ret~", 1, vals, 1);
 }
 
-void gen_hex_binary(Program *prog, const char *prompt) {
+static void gen_hex_binary(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9890,7 +9162,7 @@ Template templates[] = {
 
 static int num_templates = sizeof(templates) / sizeof(templates[0]);
 
-int match_template(const char *prompt, int *best_score) {
+static int match_template(const char *prompt, int *best_score) {
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
@@ -9931,8 +9203,27 @@ int match_template(const char *prompt, int *best_score) {
 
 static void prepend_out_dir(const char *fname, char *buf, int bufsize);
 
+// Shell-escape a string by wrapping in single quotes; 
+// embedded single quotes are escaped as '\'' per POSIX convention.
+static void shell_escape(const char *raw, char *out, size_t out_size) {
+    size_t pos = 0;
+    if (pos < out_size) out[pos++] = '\'';
+    for (const char *p = raw; *p && pos < out_size - 5; p++) {
+        if (*p == '\'') {
+            if (pos + 4 > out_size - 1) break;
+            out[pos++] = '\''; out[pos++] = '\\';
+            out[pos++] = '\''; out[pos++] = '\'';
+        } else {
+            out[pos++] = *p;
+        }
+    }
+    if (pos < out_size) out[pos++] = '\'';
+    if (pos < out_size) out[pos] = '\0';
+    else out[out_size - 1] = '\0';
+}
+
 static int validate_code(const char *filename) {
-    char cmd[2048];
+    char cmd[16384];
     char ppname[512];
     const char *dot = strrchr(filename, '.');
     if (dot) {
@@ -9943,7 +9234,7 @@ static int validate_code(const char *filename) {
     }
     const char *include_dir = getenv("L1VM_INCLUDE");
     if (!include_dir) {
-        static char fallback[512];
+        static char fallback[1024];
         if (l1vm_root[0]) {
             snprintf(fallback, sizeof(fallback), "%s/include/", l1vm_root);
         } else {
@@ -9965,235 +9256,31 @@ static int validate_code(const char *filename) {
         l1com_bin = l1com_path;
     }
 
-    snprintf(cmd, sizeof(cmd), "%s \"%s\" \"%s\" \"%s\" 2>&1", l1pre_bin, filename, ppname, include_dir);
+    char escaped_filename[4096], escaped_ppname[4096], escaped_incdir[4096];
+    shell_escape(filename, escaped_filename, sizeof(escaped_filename));
+    shell_escape(ppname, escaped_ppname, sizeof(escaped_ppname));
+    shell_escape(include_dir, escaped_incdir, sizeof(escaped_incdir));
+    snprintf(cmd, sizeof(cmd), "%s %s %s %s 2>&1", l1pre_bin, escaped_filename, escaped_ppname, escaped_incdir);
     int ret = system(cmd);
     if (ret != 0) {
         c_printf(ANSI_RED, "Validation: l1pre FAILED (exit code %d)\n", ret);
-        remove(ppname);
+        (void)remove(ppname);
         return 0;
     }
 
     char compname[512];
     snprintf(compname, sizeof(compname), "%.*s_pp", (int)(dot ? dot - filename : (int)strlen(filename)), filename);
-    snprintf(cmd, sizeof(cmd), "%s \"%s\" 2>&1", l1com_bin, compname);
+    char escaped_compname[4096];
+    shell_escape(compname, escaped_compname, sizeof(escaped_compname));
+    snprintf(cmd, sizeof(cmd), "%s %s 2>&1", l1com_bin, escaped_compname);
     ret = system(cmd);
     if (ret == 0) {
         c_printf(ANSI_GREEN, "Validation: OK\n");
     } else {
         c_printf(ANSI_RED, "Validation: FAILED (exit code %d)\n", ret);
     }
-    remove(ppname);
+    (void)remove(ppname);
     return ret == 0;
-}
-
-static float cosine_sim(const float *a, const float *b) {
-    float dot = 0, na = 0, nb = 0;
-    for (int i = 0; i < EMBED_DIM; i++) {
-        dot += a[i] * b[i];
-        na += a[i] * a[i];
-        nb += b[i] * b[i];
-    }
-    float denom = sqrtf(na) * sqrtf(nb);
-    return (denom == 0) ? 0 : dot / denom;
-}
-
-static void embed_text(const char *text, float *out) {
-    memset(out, 0, sizeof(float) * EMBED_DIM);
-    char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", text);
-    to_lowercase(buf);
-
-    float total_weight = 0;
-    char *p = buf;
-    while (*p) {
-        while (*p && !isalpha(*p)) p++;
-        if (!*p) break;
-        char *start = p;
-        while (*p && isalpha(*p)) p++;
-        char saved = *p;
-        *p = '\0';
-
-        int tok_id = -1;
-        for (int i = 0; i < VOCAB_SIZE; i++) {
-            if (strcmp(start, vocab[i]) == 0) { tok_id = i; break; }
-        }
-        if (tok_id < 0) {
-            const char *syn = resolve_synonym(start);
-            if (syn) {
-                for (int i = 0; i < VOCAB_SIZE; i++) {
-                    if (strcmp(syn, vocab[i]) == 0) { tok_id = i; break; }
-                }
-            }
-        }
-
-        if (tok_id >= 0) {
-            float w = idf_weights[tok_id];
-            for (int j = 0; j < EMBED_DIM; j++)
-                out[j] += w * word_embeddings[tok_id].embed[j];
-            total_weight += w;
-        } else {
-            int len = strlen(start);
-            if (len >= 2) {
-                float ngram_embed[EMBED_DIM];
-                memset(ngram_embed, 0, sizeof(ngram_embed));
-                int ngram_count = 0;
-                for (int ci = 0; ci < len - 1; ci++) {
-                    char bigram[3] = {start[ci], start[ci+1], '\0'};
-                    unsigned long h = hash_word(bigram);
-                    srand(h);
-                    for (int j = 0; j < EMBED_DIM; j++)
-                        ngram_embed[j] += ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
-                    ngram_count++;
-                }
-                if (ngram_count > 0) {
-                    float inv = 1.0f / ngram_count;
-                    float norm = 0;
-                    for (int j = 0; j < EMBED_DIM; j++) {
-                        ngram_embed[j] *= inv;
-                        norm += ngram_embed[j] * ngram_embed[j];
-                    }
-                    norm = sqrtf(norm);
-                    if (norm > 0) {
-                        for (int j = 0; j < EMBED_DIM; j++)
-                            out[j] += ngram_embed[j] / norm;
-                        total_weight += 1.0f;
-                    }
-                }
-            }
-        }
-
-        *p = saved;
-    }
-
-    if (total_weight > 0) {
-        float inv = 1.0f / total_weight;
-        for (int j = 0; j < EMBED_DIM; j++) out[j] *= inv;
-    }
-}
-
-static void filename_stem(const char *path, char *stem) {
-    const char *p = strrchr(path, '/');
-    p = p ? p + 1 : path;
-    char buf[256];
-    snprintf(buf, sizeof(buf), "%s", p);
-    char *dot = strrchr(buf, '.');
-    if (dot) *dot = '\0';
-    for (char *q = buf; *q; q++)
-        if (*q == '-' || *q == '_') *q = ' ';
-    snprintf(stem, 256, "%s", buf);
-}
-
-static void index_examples(void) {
-    if (examples_indexed) return;
-    examples_indexed = 1;
-    num_examples = 0;
-
-    for (int s = 0; s < EXAMPLE_SUBDIRS; s++) {
-        char dirpath[512];
-        snprintf(dirpath, sizeof(dirpath), "%s/%s", EXAMPLE_DIR, example_subdirs[s]);
-        DIR *d = opendir(dirpath);
-        if (!d) continue;
-
-        struct dirent *entry;
-        while ((entry = readdir(d)) != NULL && num_examples < MAX_EXAMPLES) {
-            const char *ext = strrchr(entry->d_name, '.');
-            if (!ext) continue;
-            int valid_ext = 0;
-            for (int e = 0; e < EXAMPLE_EXTS; e++) {
-                if (strcmp(ext, example_exts[e]) == 0) { valid_ext = 1; break; }
-            }
-            if (!valid_ext) continue;
-
-            char fullpath[1024];
-            snprintf(fullpath, sizeof(fullpath), "%s/%s", dirpath, entry->d_name);
-            snprintf(example_docs[num_examples].filename, sizeof(example_docs[num_examples].filename), "%s", fullpath);
-
-            char raw_stem[256];
-            filename_stem(entry->d_name, raw_stem);
-            snprintf(example_docs[num_examples].stem, sizeof(example_docs[num_examples].stem), "%s/%s", example_subdirs[s], raw_stem);
-
-            char content[8192] = {0};
-            FILE *f = fopen(fullpath, "r");
-            if (f) {
-                char line[512];
-                int lines_read = 0;
-                while (fgets(line, sizeof(line), f) && lines_read < 100 && strlen(content) < 7000) {
-                    char *trimmed = line;
-                    while (*trimmed == ' ' || *trimmed == '\t') trimmed++;
-                    if (trimmed[0] == '/' && trimmed[1] == '/') continue;
-                    strncat(content, line, sizeof(content) - strlen(content) - 1);
-                    lines_read++;
-                }
-                fclose(f);
-            }
-            char combined[8192];
-            snprintf(combined, sizeof(combined), "%s %s %s %s",
-                     example_docs[num_examples].stem,
-                     example_docs[num_examples].stem,
-                     example_docs[num_examples].stem,
-                     content);
-            embed_text(combined, example_docs[num_examples].embedding);
-            num_examples++;
-        }
-        closedir(d);
-    }
-
-    if (num_examples > 0) {
-        int doc_freq[VOCAB_SIZE];
-        memset(doc_freq, 0, sizeof(doc_freq));
-        for (int i = 0; i < num_examples; i++) {
-            int seen[VOCAB_SIZE] = {0};
-            char buf[MAX_PROMPT];
-            snprintf(buf, sizeof(buf), "%s", example_docs[i].stem);
-            int tokens[128];
-            int n = tokenize(buf, tokens, 128);
-            for (int t = 0; t < n; t++) {
-                if (!seen[tokens[t]]) {
-                    seen[tokens[t]] = 1;
-                    doc_freq[tokens[t]]++;
-                }
-            }
-        }
-        for (int i = 0; i < VOCAB_SIZE; i++) {
-            if (doc_freq[i] > 0)
-                idf_weights[i] = logf((float)num_examples / doc_freq[i]) + 1.0f;
-            else
-                idf_weights[i] = 1.0f;
-        }
-    }
-}
-
-static int search_examples(const char *query, int top_k, int *indices, float *scores) {
-    if (num_examples == 0) return 0;
-
-    char expanded[MAX_PROMPT];
-    expand_query(query, expanded, sizeof(expanded));
-
-    float q_embed[EMBED_DIM];
-    embed_text(expanded, q_embed);
-
-    for (int i = 0; i < num_examples; i++)
-        example_docs[i].score = cosine_sim(q_embed, example_docs[i].embedding);
-
-    int count = top_k < num_examples ? top_k : num_examples;
-    int *used = calloc(num_examples, sizeof(int));
-    int result = 0;
-    for (int k = 0; k < count; k++) {
-        int best = -1;
-        for (int i = 0; i < num_examples; i++) {
-            if (used[i]) continue;
-            if (best < 0 || example_docs[i].score > example_docs[best].score)
-                best = i;
-        }
-        if (best >= 0 && example_docs[best].score > 0) {
-            indices[k] = best;
-            scores[k] = example_docs[best].score;
-            used[best] = 1;
-            result++;
-        }
-    }
-    free(used);
-    return result;
 }
 
 static void prepend_out_dir(const char *fname, char *buf, int bufsize) {
@@ -10205,20 +9292,20 @@ static void prepend_out_dir(const char *fname, char *buf, int bufsize) {
     }
 }
 
-int generate_code(const char *prompt, const char *filename) {
+static int generate_code(const char *prompt, const char *filename) {
     int is_q = is_question(prompt);
     if (is_q)
         answer_question(prompt);
 
-    Program *prog = calloc(1, sizeof(Program));
+    Program *prog = malloc(sizeof(Program));
     if (!prog) { c_printf(ANSI_RED, "Out of memory\n"); return 0; }
-    init_program(prog);
+    memset(prog, 0, sizeof(Program));
+    if (!init_program(prog)) { free(prog); c_printf(ANSI_RED, "Out of memory\n"); return 0; }
     snprintf(prog->filename, sizeof(prog->filename), "%s", filename);
-    reset_temp();
-    func_counter = 0;
+    // (temp/func counters removed)
 
     // Try emitter system first; learned patterns serve as fallback
-    char desc[256] = {0};
+    char desc[512] = {0};
     if (smart_generate(prog, prompt, desc, sizeof(desc))) {
         if (is_q) c_printf(ANSI_CYAN, "Code example written to: %s\n", filename);
         else c_printf(ANSI_GREEN, "Smart generated (plan): %s\n", desc);
@@ -10294,662 +9381,7 @@ int generate_code(const char *prompt, const char *filename) {
     return 0;
 }
 
-// ==================== LEARNED PATTERN SYSTEM ====================
-
-static char* learned_dir_path(void) {
-    static char path[1024];
-    const char *home = getenv("HOME");
-    if (home) {
-        snprintf(path, sizeof(path), "%s/%s", home, LEARNED_DIR);
-    } else {
-        snprintf(path, sizeof(path), "%s", LEARNED_DIR);
-    }
-    return path;
-}
-
-static void ensure_learned_dir(void) {
-    char path[1024];
-    snprintf(path, sizeof(path), "%s", learned_dir_path());
-    char cmd[1100];
-    snprintf(cmd, sizeof(cmd), "mkdir -p \"%s\"", path);
-    system(cmd);
-}
-
-static int learn_from_file(const char *path, const char *keywords, const char *description) {
-    FILE *f = fopen(path, "r");
-    if (!f) {
-        c_printf(ANSI_RED, "Error: cannot open file '%s'\n", path);
-        return 0;
-    }
-
-    // Extract id from filename
-    const char *base = strrchr(path, '/');
-    base = base ? base + 1 : path;
-    char id[64];
-    snprintf(id, sizeof(id), "%s", base);
-    char *dot = strrchr(id, '.');
-    if (dot) *dot = '\0';
-
-    // Check if already learned
-    if (has_learned_id(id)) {
-        c_printf(ANSI_YELLOW, "Pattern '%s' already exists. Use --forget %s to remove it first.\n", id, id);
-        fclose(f);
-        return 0;
-    }
-
-    if (num_learned >= MAX_LEARNED) {
-        c_printf(ANSI_RED, "Maximum number of learned patterns (%d) reached.\n", MAX_LEARNED);
-        fclose(f);
-        return 0;
-    }
-
-    LearnedPattern *lp = &learned_patterns[num_learned];
-    init_learned_pattern(lp);
-    snprintf(lp->id, sizeof(lp->id), "%s", id);
-    snprintf(lp->source_path, sizeof(lp->source_path), "%s", path);
-    lp->is_learned = 1;
-
-    if (keywords && strlen(keywords) > 0) {
-        snprintf(lp->keywords, sizeof(lp->keywords), "%s %s", id, keywords);
-    } else {
-        snprintf(lp->keywords, sizeof(lp->keywords), "%s", id);
-    }
-
-    if (description && strlen(description) > 0) {
-        snprintf(lp->description, sizeof(lp->description), "%s", description);
-    } else {
-        snprintf(lp->description, sizeof(lp->description), "Learned pattern from %s", path);
-    }
-
-    // Parse the .l1com file into includes, globals and function structs
-    char line[MAX_LINE];
-    Function *cur_func = NULL;
-    int in_func = 0;
-
-    while (fgets(line, sizeof(line), f)) {
-        trim(line);
-        if (strlen(line) == 0) continue;
-
-        // Skip comments
-        if (line[0] == '/' && line[1] == '/') continue;
-
-        // Handle #include directives
-        if (strncmp(line, "#include", 8) == 0) {
-            char inc[256] = {0};
-            if (sscanf(line, "#include <%255[^>]>", inc) == 1 ||
-                sscanf(line, "#include \"%255[^\"]\"", inc) == 1) {
-                int found = 0;
-                for (int i = 0; i < lp->num_includes; i++) {
-                    if (strcmp(lp->includes[i], inc) == 0) { found = 1; break; }
-                }
-                if (!found) {
-                    if (!ensure_includes_cap(&lp->includes, &lp->includes_cap, lp->num_includes + 1)) continue;
-                    snprintf(lp->includes[lp->num_includes++], sizeof(lp->includes[0]), "%s", inc);
-                }
-            }
-            continue;
-        }
-
-        // Function definition
-        if (strstr(line, " func)")) {
-            char fname[256] = {0};
-            if (sscanf(line, "(%255s func)", fname) == 1) {
-                if (!ensure_funcs_cap(&lp->funcs, &lp->funcs_cap, lp->num_funcs + 1)) continue;
-                cur_func = &lp->funcs[lp->num_funcs++];
-                init_function(cur_func);
-                snprintf(cur_func->name, sizeof(cur_func->name), "%s", fname);
-                in_func = 1;
-            }
-            continue;
-        }
-
-        // Function end
-        if (strcmp(line, "(funcend)") == 0) {
-            in_func = 0;
-            cur_func = NULL;
-            continue;
-        }
-
-        if (!in_func) {
-            // Global variable declarations (outside functions)
-            size_t cur_len = strlen(lp->globals);
-            if (cur_len + strlen(line) + 2 < MAX_CODE) {
-                strcat(lp->globals, line);
-                strcat(lp->globals, "\n");
-            }
-            continue;
-        }
-
-        // Inside a function: parse variable declarations and body
-        if (strncmp(line, "(set ", 5) == 0) {
-            char vtype[32], vname[256];
-            int vcount;
-            if (sscanf(line, "(set %31s %d %255s", vtype, &vcount, vname) >= 3) {
-                size_t vnlen = strlen(vname);
-                if (vnlen > 0 && vname[vnlen-1] == ')') vname[vnlen-1] = '\0';
-                // Check for duplicates
-                int found = 0;
-                for (int i = 0; i < cur_func->num_vars; i++) {
-                    if (strcmp(cur_func->vars[i].name, vname) == 0) { found = 1; break; }
-                }
-                if (!found) {
-                    if (!ensure_vars_cap(cur_func, cur_func->num_vars + 1)) continue;
-                    Variable *v = &cur_func->vars[cur_func->num_vars++];
-                    snprintf(v->name, sizeof(v->name), "%s", vname);
-                    snprintf(v->type, sizeof(v->type), "%s", vtype);
-                    v->count = vcount;
-                    // Parse values
-                    char line_copy[MAX_LINE];
-                    snprintf(line_copy, sizeof(line_copy), "%s", line);
-                    // format: (set TYPE COUNT NAME [VAL1 VAL2 ...] )
-                    // tokens: ["(set", TYPE, COUNT, NAME, VAL1, VAL2, ..., ")"]
-                    int tok_idx = 0;
-                    char *token = strtok(line_copy, " \t");
-                    while (token) {
-                        if (tok_idx >= 4) {
-                            if (strcmp(token, ")") == 0) break;
-                            size_t tlen = strlen(token);
-                            if (token[tlen-1] == ')') token[tlen-1] = '\0';
-                            if (v->num_values < MAX_VALUES) {
-                                snprintf(v->values[v->num_values], sizeof(v->values[0]), "%s", token);
-                                v->num_values++;
-                            }
-                        }
-                        tok_idx++;
-                        token = strtok(NULL, " \t");
-                    }
-                }
-            }
-            continue;
-        }
-
-        // Check for #var ~ (local scope)
-        if (strncmp(line, "#var", 4) == 0) {
-            char scope[256] = {0};
-            if (sscanf(line, "#var ~ %255s", scope) == 1) {
-                if (cur_func) {
-                    cur_func->has_vardef = 1;
-                    cur_func->is_local = 1;
-                    snprintf(cur_func->vardef_name, sizeof(cur_func->vardef_name), "%s", scope);
-                }
-            }
-            continue;
-        }
-
-        // Body code
-        if (cur_func) {
-            size_t needed = strlen(cur_func->body) + strlen(line) + 2;
-            if (!ensure_body_cap(cur_func, (int)needed + 1)) continue;
-            strcat(cur_func->body, line);
-            strcat(cur_func->body, "\n");
-        }
-    }
-    fclose(f);
-
-    // Check we got at least one function
-    if (lp->num_funcs == 0) {
-        c_printf(ANSI_RED, "Error: no functions found in '%s'\n", path);
-        return 0;
-    }
-
-    num_learned++;
-
-    // Persist to disk
-    if (save_learned_pattern(lp)) {
-        c_printf(ANSI_GREEN, "Learned pattern '%s' from %s\n", lp->id, path);
-        if (verbose_flag) {
-            printf("  Keywords: %s\n", lp->keywords);
-            printf("  Description: %s\n", lp->description);
-            printf("  Includes: %d, Functions: %d\n", lp->num_includes, lp->num_funcs);
-        }
-        return 1;
-    }
-    return 0;
-}
-
-static int save_learned_pattern(LearnedPattern *lp) {
-    ensure_learned_dir();
-    char filepath[1100];
-    snprintf(filepath, sizeof(filepath), "%s/%s.l1lp", learned_dir_path(), lp->id);
-
-    FILE *f = fopen(filepath, "w");
-    if (!f) {
-        c_printf(ANSI_RED, "Error: cannot write '%s'\n", filepath);
-        return 0;
-    }
-
-    fprintf(f, "# Pattern: %s\n", lp->id);
-    fprintf(f, "# Description: %s\n", lp->description);
-    fprintf(f, "# Keywords: %s\n", lp->keywords);
-    fprintf(f, "# File: %s\n", lp->source_path);
-    fprintf(f, "# Includes: %d\n", lp->num_includes);
-    for (int i = 0; i < lp->num_includes; i++)
-        fprintf(f, "# Include: %s\n", lp->includes[i]);
-    fprintf(f, "# Functions: %d\n", lp->num_funcs);
-    fprintf(f, "---SOURCE---\n");
-
-    // Write the reconstructed .l1com source
-    for (int i = 0; i < lp->num_includes; i++)
-        fprintf(f, "#include <%s>\n", lp->includes[i]);
-
-    if (strlen(lp->globals) > 0)
-        fprintf(f, "%s\n", lp->globals);
-
-    for (int fi = 0; fi < lp->num_funcs; fi++) {
-        Function *fn = &lp->funcs[fi];
-        fprintf(f, "(%s func)\n", fn->name);
-        if (fn->has_vardef)
-            fprintf(f, "\t#var ~ %s\n", fn->vardef_name);
-        for (int vi = 0; vi < fn->num_vars; vi++) {
-            Variable *v = &fn->vars[vi];
-            fprintf(f, "\t(set %s %d %s", v->type, v->count, v->name);
-            for (int vj = 0; vj < v->num_values; vj++)
-                fprintf(f, " %s", v->values[vj]);
-            fprintf(f, ")\n");
-        }
-        fprintf(f, "%s", fn->body);
-        fprintf(f, "(funcend)\n\n");
-    }
-
-    fprintf(f, "---END---\n");
-    fclose(f);
-
-    if (verbose_flag)
-        printf("  Saved to %s\n", filepath);
-    return 1;
-}
-
-static void load_learned_patterns(void) {
-    if (learned_loaded) return;
-    learned_loaded = 1;
-
-    char dirpath[1024];
-    snprintf(dirpath, sizeof(dirpath), "%s", learned_dir_path());
-
-    DIR *d = opendir(dirpath);
-    if (!d) return;
-
-    struct dirent *entry;
-    while ((entry = readdir(d)) != NULL && num_learned < MAX_LEARNED) {
-        const char *ext = strrchr(entry->d_name, '.');
-        if (!ext || strcmp(ext, ".l1lp") != 0) continue;
-
-        char filepath[1100];
-        snprintf(filepath, sizeof(filepath), "%s/%s", dirpath, entry->d_name);
-
-        FILE *f = fopen(filepath, "r");
-        if (!f) continue;
-
-        LearnedPattern *lp = &learned_patterns[num_learned];
-        init_learned_pattern(lp);
-        lp->is_learned = 1;
-
-        char line[MAX_LINE];
-        int in_source = 0;
-        Function *cur_func = NULL;
-
-        while (fgets(line, sizeof(line), f)) {
-            trim(line);
-
-            if (strcmp(line, "---SOURCE---") == 0) {
-                in_source = 1;
-                continue;
-            }
-            if (strcmp(line, "---END---") == 0) {
-                in_source = 0;
-                continue;
-            }
-
-            if (!in_source) {
-                if (sscanf(line, "# Pattern: %63s", lp->id) == 1) continue;
-                char *val;
-                if ((val = strstr(line, "# Description: ")) != NULL) {
-                    snprintf(lp->description, sizeof(lp->description), "%s", val + 15);
-                    continue;
-                }
-                if ((val = strstr(line, "# Keywords: ")) != NULL) {
-                    snprintf(lp->keywords, sizeof(lp->keywords), "%s", val + 12);
-                    continue;
-                }
-                if ((val = strstr(line, "# File: ")) != NULL) {
-                    snprintf(lp->source_path, sizeof(lp->source_path), "%s", val + 8);
-                    continue;
-                }
-                continue;
-            }
-
-            // Parse source content
-            if (strncmp(line, "#include", 8) == 0) {
-                char inc[256] = {0};
-                if (sscanf(line, "#include <%255[^>]>", inc) == 1) {
-                    if (ensure_includes_cap(&lp->includes, &lp->includes_cap, lp->num_includes + 1))
-                        snprintf(lp->includes[lp->num_includes++], sizeof(lp->includes[0]), "%s", inc);
-                }
-                continue;
-            }
-
-            if (strstr(line, " func)")) {
-                char fname[256] = {0};
-                if (sscanf(line, "(%255s func)", fname) == 1) {
-                    if (ensure_funcs_cap(&lp->funcs, &lp->funcs_cap, lp->num_funcs + 1)) {
-                        cur_func = &lp->funcs[lp->num_funcs++];
-                        init_function(cur_func);
-                        snprintf(cur_func->name, sizeof(cur_func->name), "%s", fname);
-                    }
-                }
-                continue;
-            }
-
-            if (strcmp(line, "(funcend)") == 0) {
-                cur_func = NULL;
-                continue;
-            }
-
-            if (!cur_func) {
-                size_t cur_len = strlen(lp->globals);
-                if (cur_len + strlen(line) + 2 < MAX_CODE) {
-                    strcat(lp->globals, line);
-                    strcat(lp->globals, "\n");
-                }
-                continue;
-            }
-
-            if (strncmp(line, "(set ", 5) == 0) {
-                char vtype[32], vname[256];
-                int vcount;
-                if (sscanf(line, "(set %31s %d %255s", vtype, &vcount, vname) >= 3) {
-                    size_t vnlen = strlen(vname);
-                    if (vnlen > 0 && vname[vnlen-1] == ')') vname[vnlen-1] = '\0';
-                    int found = 0;
-                    for (int i = 0; i < cur_func->num_vars; i++) {
-                        if (strcmp(cur_func->vars[i].name, vname) == 0) { found = 1; break; }
-                    }
-                    if (!found) {
-                        if (!ensure_vars_cap(cur_func, cur_func->num_vars + 1)) continue;
-                        Variable *v = &cur_func->vars[cur_func->num_vars++];
-                        snprintf(v->name, sizeof(v->name), "%s", vname);
-                        snprintf(v->type, sizeof(v->type), "%s", vtype);
-                        v->count = vcount;
-                        char lc[MAX_LINE];
-                        snprintf(lc, sizeof(lc), "%s", line);
-                        int tok_idx = 0;
-                        char *token = strtok(lc, " \t");
-                        while (token) {
-                            if (tok_idx >= 4) {
-                                if (strcmp(token, ")") == 0) break;
-                                size_t tlen = strlen(token);
-                                if (token[tlen-1] == ')') token[tlen-1] = '\0';
-                                if (v->num_values < MAX_VALUES) {
-                                    snprintf(v->values[v->num_values], sizeof(v->values[0]), "%s", token);
-                                    v->num_values++;
-                                }
-                            }
-                            tok_idx++;
-                            token = strtok(NULL, " \t");
-                        }
-                    }
-                }
-                continue;
-            }
-
-            if (strncmp(line, "#var", 4) == 0) {
-                char scope[256] = {0};
-                if (sscanf(line, "#var ~ %255s", scope) == 1 && cur_func) {
-                    cur_func->has_vardef = 1;
-                    cur_func->is_local = 1;
-                    snprintf(cur_func->vardef_name, sizeof(cur_func->vardef_name), "%s", scope);
-                }
-                continue;
-            }
-
-            if (cur_func) {
-                size_t needed = strlen(cur_func->body) + strlen(line) + 2;
-                if (!ensure_body_cap(cur_func, (int)needed + 1)) continue;
-                strcat(cur_func->body, line);
-                strcat(cur_func->body, "\n");
-            }
-        }
-        fclose(f);
-
-        if (lp->num_funcs > 0) {
-            num_learned++;
-            if (verbose_flag) {
-                printf("  Loaded learned pattern: %s (%s)\n", lp->id, lp->description);
-            }
-        }
-    }
-    closedir(d);
-}
-
-static int match_learned_pattern(const char *prompt, int *best_score) {
-    if (num_learned == 0) return -1;
-
-    char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", prompt);
-    to_lowercase(buf);
-
-    int best_idx = -1;
-    *best_score = 0;
-
-    for (int i = 0; i < num_learned; i++) {
-        if (!learned_patterns[i].is_learned) continue;
-        if (strlen(learned_patterns[i].keywords) == 0) continue;
-
-        char kwbuf[1024];
-        snprintf(kwbuf, sizeof(kwbuf), "%s", learned_patterns[i].keywords);
-        to_lowercase(kwbuf);
-
-        int score = 0;
-        int total_kw = 0;
-        int any_match = 0;
-        char kwcopy[1024];
-        snprintf(kwcopy, sizeof(kwcopy), "%s", kwbuf);
-        char *kw = strtok(kwcopy, " ,/");
-        while (kw) {
-            trim(kw);
-            if (strlen(kw) > 0) {
-                total_kw++;
-                // Match as word OR as substring (handles hyphens in filenames)
-                if (str_contains_word(buf, kw) || strstr(buf, kw)) {
-                    score++;
-                    any_match = 1;
-                }
-            }
-            kw = strtok(NULL, " ,/");
-        }
-        // Match if at least one keyword matches and score >= 25% of total keywords
-        if (any_match && total_kw > 0) {
-            float ratio = (float)score / total_kw;
-            if ((score >= 1 && ratio >= 0.25f) || total_kw <= 2) {
-                // Weight: keyword matches + bonus for filename match
-                int final_score = score * 10;
-                if (strstr(buf, learned_patterns[i].id))
-                    final_score += 5;
-                if (final_score > *best_score) {
-                    *best_score = final_score;
-                    best_idx = i;
-                }
-            }
-        }
-    }
-    return best_idx;
-}
-
-static int emit_learned_pattern(Program *prog, int learned_idx) {
-    if (learned_idx < 0 || learned_idx >= num_learned) return 0;
-    LearnedPattern *lp = &learned_patterns[learned_idx];
-    if (!lp->is_learned) return 0;
-
-    // Copy includes
-    for (int i = 0; i < lp->num_includes; i++)
-        add_include(prog, lp->includes[i]);
-
-    // Copy globals
-    if (strlen(lp->globals) > 0) {
-        size_t cur_len = strlen(prog->globals);
-        if (cur_len + strlen(lp->globals) < MAX_CODE)
-            strcat(prog->globals, lp->globals);
-    }
-
-    // Copy functions
-    for (int fi = 0; fi < lp->num_funcs; fi++) {
-        Function *src = &lp->funcs[fi];
-        add_func(prog, src->name);
-        Function *dst = &prog->funcs[prog->num_funcs - 1];
-
-        dst->is_local = src->is_local;
-        dst->has_vars = src->has_vars;
-        dst->has_vardef = src->has_vardef;
-        snprintf(dst->vardef_name, sizeof(dst->vardef_name), "%s", src->vardef_name);
-
-        // Copy variables
-        for (int vi = 0; vi < src->num_vars; vi++) {
-            if (!ensure_vars_cap(dst, dst->num_vars + 1)) continue;
-            Variable *sv = &src->vars[vi];
-            Variable *dv = &dst->vars[dst->num_vars++];
-            snprintf(dv->name, sizeof(dv->name), "%s", sv->name);
-            snprintf(dv->type, sizeof(dv->type), "%s", sv->type);
-            dv->count = sv->count;
-            dv->num_values = sv->num_values;
-            for (int vj = 0; vj < sv->num_values; vj++)
-                snprintf(dv->values[vj], sizeof(dv->values[vj]), "%s", sv->values[vj]);
-        }
-
-        // Copy body
-        size_t needed = strlen(src->body) + 1;
-        if (ensure_body_cap(dst, (int)needed))
-            snprintf(dst->body, (size_t)dst->body_cap, "%s", src->body);
-    }
-
-    return 1;
-}
-
-static int emit_learned_step(Program *prog, int learned_idx) {
-    if (learned_idx < 0 || learned_idx >= num_learned) return 0;
-    LearnedPattern *lp = &learned_patterns[learned_idx];
-    if (!lp->is_learned) return 0;
-
-    // Copy includes (add_include handles duplicates)
-    for (int i = 0; i < lp->num_includes; i++)
-        add_include(prog, lp->includes[i]);
-
-    // Append globals
-    if (strlen(lp->globals) > 0) {
-        size_t cur_len = strlen(prog->globals);
-        if (cur_len + strlen(lp->globals) < MAX_CODE)
-            strcat(prog->globals, lp->globals);
-    }
-
-    // Copy functions - for existing main, append body & vars
-    for (int fi = 0; fi < lp->num_funcs; fi++) {
-        Function *src = &lp->funcs[fi];
-
-        int existing = -1;
-        for (int i = 0; i < prog->num_funcs; i++)
-            if (strcmp(prog->funcs[i].name, src->name) == 0) { existing = i; break; }
-
-        if (existing >= 0) {
-            Function *dst = &prog->funcs[existing];
-            size_t needed = strlen(dst->body) + strlen(src->body) + 1;
-            if (ensure_body_cap(dst, (int)needed + 1))
-                strcat(dst->body, src->body);
-            for (int vi = 0; vi < src->num_vars; vi++) {
-                int found = 0;
-                for (int dv = 0; dv < dst->num_vars; dv++)
-                    if (strcmp(dst->vars[dv].name, src->vars[vi].name) == 0) { found = 1; break; }
-                if (!found) {
-                    if (!ensure_vars_cap(dst, dst->num_vars + 1)) continue;
-                    Variable *sv = &src->vars[vi];
-                    Variable *dv = &dst->vars[dst->num_vars++];
-                    snprintf(dv->name, sizeof(dv->name), "%s", sv->name);
-                    snprintf(dv->type, sizeof(dv->type), "%s", sv->type);
-                    dv->count = sv->count;
-                    dv->num_values = sv->num_values;
-                    for (int vj = 0; vj < sv->num_values; vj++)
-                        snprintf(dv->values[vj], sizeof(dv->values[vj]), "%s", sv->values[vj]);
-                }
-            }
-        } else {
-            add_func(prog, src->name);
-            Function *dst = &prog->funcs[prog->num_funcs - 1];
-            dst->is_local = src->is_local;
-            dst->has_vars = src->has_vars;
-            dst->has_vardef = src->has_vardef;
-            snprintf(dst->vardef_name, sizeof(dst->vardef_name), "%s", src->vardef_name);
-            for (int vi = 0; vi < src->num_vars; vi++) {
-                if (!ensure_vars_cap(dst, dst->num_vars + 1)) continue;
-                Variable *sv = &src->vars[vi];
-                Variable *dv = &dst->vars[dst->num_vars++];
-                snprintf(dv->name, sizeof(dv->name), "%s", sv->name);
-                snprintf(dv->type, sizeof(dv->type), "%s", sv->type);
-                dv->count = sv->count;
-                dv->num_values = sv->num_values;
-                for (int vj = 0; vj < sv->num_values; vj++)
-                    snprintf(dv->values[vj], sizeof(dv->values[vj]), "%s", sv->values[vj]);
-            }
-            size_t needed = strlen(src->body) + 1;
-            if (ensure_body_cap(dst, (int)needed))
-                snprintf(dst->body, (size_t)dst->body_cap, "%s", src->body);
-        }
-    }
-    return 1;
-}
-
-static int has_learned_id(const char *id) {
-    for (int i = 0; i < num_learned; i++) {
-        if (strcmp(learned_patterns[i].id, id) == 0)
-            return 1;
-    }
-    return 0;
-}
-
-static int forget_learned(const char *id) {
-    int found = -1;
-    for (int i = 0; i < num_learned; i++) {
-        if (strcmp(learned_patterns[i].id, id) == 0) {
-            found = i;
-            break;
-        }
-    }
-    if (found < 0) {
-        c_printf(ANSI_RED, "Pattern '%s' not found.\n", id);
-        return 0;
-    }
-
-    // Remove file from disk
-    char filepath[1100];
-    snprintf(filepath, sizeof(filepath), "%s/%s.l1lp", learned_dir_path(), learned_patterns[found].id);
-    remove(filepath);
-
-    // Free allocated memory in the pattern being removed
-    free_learned_pattern(&learned_patterns[found]);
-
-    // Shift array
-    for (int i = found; i < num_learned - 1; i++)
-        learned_patterns[i] = learned_patterns[i + 1];
-    num_learned--;
-
-    // Clear the now-unused slot to prevent stale pointer copies
-    memset(&learned_patterns[num_learned], 0, sizeof(LearnedPattern));
-
-    c_printf(ANSI_GREEN, "Forgot pattern '%s'.\n", id);
-    return 1;
-}
-
-static void list_learned(void) {
-    if (num_learned == 0) {
-        printf("No learned patterns.\n");
-        printf("Use --learn <file.l1com> [keywords] [description] to learn one.\n");
-        return;
-    }
-    printf("Learned patterns (%d):\n", num_learned);
-    for (int i = 0; i < num_learned; i++) {
-        LearnedPattern *lp = &learned_patterns[i];
-        printf("  %2d. %-20s Keywords: %s\n", i + 1, lp->id, lp->keywords);
-        printf("      Description: %s\n", lp->description);
-        printf("      Source: %s\n", lp->source_path);
-    }
-}
+#include "learn.c"
 
 static int self_test(void) {
     const char *test_prompts[] = {
@@ -10984,9 +9416,9 @@ static int self_test(void) {
         }
         if (ok) { c_printf(ANSI_GREEN, "  PASS\n"); passed++; }
         else    { c_printf(ANSI_RED,   "  FAIL\n"); failed++; }
-        char fullpath[512];
+        char fullpath[1024];
         prepend_out_dir(fname, fullpath, sizeof(fullpath));
-        remove(fullpath);
+        (void)remove(fullpath);
     }
     printf("\n--- self-test: ");
     c_printf(ANSI_GREEN, "%d passed", passed);
@@ -10996,7 +9428,7 @@ static int self_test(void) {
     return failed == 0;
 }
 
-void show_help() {
+static void show_help(void) {
     printf("\nBrackets Code Generator %s for Brackets (L1VM) Language\n", VERSION_TXT);
     printf("============================================================\n");
     printf("Usage:\n");
@@ -11053,7 +9485,7 @@ static char **cmd_completion(const char *text, int start, int end) {
 }
 #endif
 
-void interactive_mode() {
+static void interactive_mode(void) {
     char prompt[MAX_PROMPT];
     char last_fname[256] = {0};
     int has_last = 0;
@@ -11095,7 +9527,7 @@ void interactive_mode() {
         }
 
         if (strncmp(prompt, "/save", 5) == 0) {
-            char fname[512] = {0};
+            char fname[MAX_PROMPT] = {0};
             if (strlen(prompt) > 6) {
                 snprintf(fname, sizeof(fname), "%s", prompt + 6);
                 trim(fname);
@@ -11186,6 +9618,7 @@ void interactive_mode() {
 
 int main(int argc, char *argv[]) {
     use_color = isatty(STDOUT_FILENO);
+    load_synonyms();
     if (argc == 1) {
         interactive_mode();
         return 0;
@@ -11261,7 +9694,7 @@ int main(int argc, char *argv[]) {
     if (argc >= 2 && (strcmp(argv[1], "--bash-completion") == 0 || strcmp(argv[1], "--completion") == 0)) {
         printf("_brackets_code_completions() {\n");
         printf("  local cur=\"${COMP_WORDS[COMP_CWORD]}\"\n");
-        printf("  opts=\"--help -h --list -l --search --validate -v --self-test -t --verbose --out-dir --l1vm-root --batch --bash-completion --learn --forget --list-learned\"\n");
+        printf("            opts=\"--help -h --list -l --search --validate -v --self-test -t --verbose --dry-run --out-dir --l1vm-root --batch --bash-completion --learn --forget --list-learned\"\n");
         printf("  COMPREPLY=($(compgen -W \"${opts}\" -- \"$cur\"))\n");
         printf("}\n");
         printf("complete -F _brackets_code_completions brackets-code\n");
@@ -11271,6 +9704,7 @@ int main(int argc, char *argv[]) {
     // Scan for global flags before positional args
     while (arg_idx < argc) {
         if (strcmp(argv[arg_idx], "--verbose") == 0) { verbose_flag = 1; arg_idx++; }
+        else if (strcmp(argv[arg_idx], "--dry-run") == 0) { dry_run_flag = 1; arg_idx++; }
         else if (strcmp(argv[arg_idx], "--out-dir") == 0) {
             if (arg_idx + 1 < argc) { snprintf(out_dir, sizeof(out_dir), "%s", argv[arg_idx + 1]); arg_idx += 2; }
             else { fprintf(stderr, "Usage: ... --out-dir <directory>\n"); return 1; }
@@ -11294,9 +9728,9 @@ int main(int argc, char *argv[]) {
             trim(bline);
             if (strlen(bline) == 0) continue;
             total++;
-            char bfname[256];
+            char bfname[512];
             prompt_to_filename(bline, bfname, sizeof(bfname));
-            char bfull[512];
+            char bfull[1024];
             prepend_out_dir(bfname, bfull, sizeof(bfull));
             int bgen = generate_code(bline, bfull);
             int bok = 0;
@@ -11330,11 +9764,11 @@ int main(int argc, char *argv[]) {
 
     if (arg_idx < argc) {
         snprintf(fname, sizeof(fname), "%s", argv[arg_idx]);
-        if (!strstr(fname, ".l1com")) strcat(fname, ".l1com");
+        if (!strstr(fname, ".l1com")) strncat(fname, ".l1com", sizeof(fname) - strlen(fname) - 1);
     } else {
         prompt_to_filename(prompt, fname, sizeof(fname));
     }
-    char fullpath[512];
+    char fullpath[1024];
     prepend_out_dir(fname, fullpath, sizeof(fullpath));
 
     int validated = 0;

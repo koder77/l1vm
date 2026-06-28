@@ -61,6 +61,7 @@ Flags:
     --forget <id>            Forget a learned pattern
     --list-learned           List learned patterns
     --verbose                Show emitter selection scores
+    --dry-run                Print generated code to stdout (don't write file)
     --out-dir <dir>          Output directory for generated files
     --l1vm-root <path>       L1VM installation root (for --validate)
     --bash-completion        Print bash completion script
@@ -93,11 +94,16 @@ Or:
 
 ## Project structure
 
-    brackets-code.c        Main source (~7762 lines)
+    brackets-code.c        Main source (~11300 lines)
+    brackets-code.h        Header file with types and declarations
     brackets-code          Compiled binary
+    synonyms.txt           External synonym table (edit without recompilation)
+    brackets-code.1        Man page
     l1vm-example-code/     Reference L1VM programs (pattern source)
     tests/run_tests.sh     Test suite
+    tests/saved-failures/  Saved failing test outputs
     memory.txt             Architecture documentation
+    .github/workflows/     CI configuration
 
 ## License
 
