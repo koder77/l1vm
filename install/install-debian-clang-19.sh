@@ -104,7 +104,7 @@ if ! dpkg -s libssl-dev &> /dev/null; then
 fi
 
 if ! dpkg -s libcrypto++-dev &> /dev/null; then
-	echo "try to install licbcrypto++-dev..."
+	echo "try to install li bcrypto++-dev..."
 	if ! sudo apt-get install libcrypto++-dev -y; then
 		echo "installation failed!"
 		exit 1
