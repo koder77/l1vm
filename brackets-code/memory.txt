@@ -5,9 +5,27 @@ Brackets Code - Memory & Specification
 -------------
 Brackets Code is a CLI code generator for the Brackets (L1VM) assembly language.
 It converts natural-language prompts into working .l1com programs.
-Written in C, single-file (~11200 lines). Author: Stefan.
+Written in C, split across 4 source files (~11800 lines total). Author: Stefan.
 
-2. ARCHITECTURE OVERVIEW
+2. SOURCE FILE ORGANIZATION
+---------------------------
+  brackets-code.h  -- master header: type defs (Variable, Function, Program, TaskProfile, etc.),
+                      constants, global variable externs, and all forward declarations
+                      (emitters, templates, utilities, CLI).
+  brackets-code.c  -- main translation unit: includes embed.c + learn.c via #include.
+                      Contains utility funcs, data structures, all 106 emitters,
+                      31 templates, parse_task, generate_code, CLI (main + interactive).
+  embed.c          -- #included at line 1121: tiny LLM inference engine (word embeddings,
+                      softmax attention), vector search over l1vm-example-code/,
+                      llm_select_emitter(), split_prompt_steps().
+  learn.c          -- #included at line 9389: learned pattern system (learn from .l1com files,
+                      persist/reload .l1lp files, match + emit learned patterns).
+
+  This split keeps the main file under 10k lines while allowing embed.c and learn.c
+  to be developed independently. Both are #included (not separately compiled) to avoid
+  link-time symbol visibility issues with the many static functions in brackets-code.c.
+
+3. ARCHITECTURE OVERVIEW
 -----------------------
 The program has a three-tier generation pipeline:
 
@@ -34,7 +52,7 @@ Emitter selection uses TaskProfile feature flags (has_*) and keyword token
 matching with softmax scoring. Vector search over example codebase provides
 boost tokens for improved selection.
 
-3. DATA STRUCTURES
+4. DATA STRUCTURES
 ------------------
 Program:
   - filename, funcs[] (up to 24), includes[] (up to 24), includes_post[] (up to 24), globals
@@ -67,7 +85,7 @@ TaskProfile (the plan struct):
 Template struct:
   - keywords (space-separated), description, function pointer
 
-4. GENERATION FLOW (generate_code)
+5. GENERATION FLOW (generate_code)
 -----------------------------------
 1. Check if input is a question -> answer via FAQ
 2. Try smart_generate() which:
@@ -78,7 +96,7 @@ Template struct:
 3. If plan fails, try match_template() -- scores all 31 templates
 4. If template fails, generate default "hello world"
 
-5. PLAN-BASED GENERATOR
+6. PLAN-BASED GENERATOR
 -----------------------
 5a. Task Parsing (parse_task):
   - Detects type: byte/int8 -> int16/short -> int32 -> int64 -> double/float
@@ -214,7 +232,7 @@ Template struct:
    - "print them/it/result" on inherited arrays handled after main dispatch
      (guarded by !has_max && !has_min to avoid double-printing)
 
-6. TEMPLATE SYSTEM (31 templates)
+7. TEMPLATE SYSTEM (31 templates)
 ----------------------------------
   Template              Description
   --------------------  ---------------------------
@@ -253,23 +271,23 @@ Template struct:
   Matching: all keywords in template must appear as words in prompt.
   Best score wins (more keyword matches = higher score).
 
-7. FAQ SYSTEM
+8. FAQ SYSTEM
 -------------
   Detects questions (starts with was/wie/wer/what/how/why/where/when
   or contains "?"). Answers are hardcoded strings organized by topic.
 
-8. TYPE DETECTION
+9. TYPE DETECTION
 -----------------
   Order: byte/int8 > int16/short > int32 > int64 > double/float
   Default is int64.
 
-9. vars.l1h INCLUDE
+10. vars.l1h INCLUDE
 ------------------
   vars.l1h is included only when code uses size constants (int64_size, etc.).
   is_intrinsic_inc() matches both "intr" and "vars" prefixes.
   vars.l1h must appear before any code referencing int64_size.
 
-10. INCLUDE ORDERING
+11. INCLUDE ORDERING
 --------------------
   - All includes use #include <file> syntax (angle brackets)
   - l1pre processes #include before l1com sees the file
@@ -279,14 +297,14 @@ Template struct:
   - Labels defined in post-includes (like :string_setc) must be visible to
     l1com's two-pass assembler, so post-includes work for forward references.
 
-11. CLI INTERFACE
+12. CLI INTERFACE
 -----------------
   One-shot:    brackets-code "<prompt>" [filename]
   Interactive: brackets-code (no args)
   Commands: /help, /list, /exit, /save <filename>
   Flags: --help/-h, --list/-l, --validate/-v
 
-12. OP MAP (DE+EN support)
+13. OP MAP (DE+EN support)
 --------------------------
   +/plus/add/addiere/sum -> add
   -/minus/subtract/subtrahiere/differenz -> sub
@@ -294,7 +312,7 @@ Template struct:
   //geteilt/divide/dividiere/quotient -> div
   %/modulo/mod/rest -> mod
 
-13. KEY DESIGN DECISIONS
+14. KEY DESIGN DECISIONS
 -----------------------
   - Planner-first ordering; enhanced patterns clear has_algorithm
   - Multi-step variable conflicts resolved by re-initialization
@@ -319,7 +337,7 @@ Template struct:
   - Array element writes must use a temp variable: (value array [ index ] =)
     NOT (i one + array [ index ] =) -- l1com rejects expression as array target
 
-13b. L1VM DOUBLE-PRECISION RULES
+14b. L1VM DOUBLE-PRECISION RULES
 ---------------------------------
   - Double input: `(val :input_d !)` followed by `(val + zerod val :=)` to coerce
     the value into a proper register (needs `(set const-double 1 zerod 0.0)`)
@@ -330,12 +348,19 @@ Template struct:
     `(val c_km_mi * result :=)`  -- WRONG (works for int64 but not double)
   - Print double: `(reset-reg)` BEFORE `(result :print_d !)` to reset double registers
 
-14. FILE LOCATION
+15. FILE LOCATION
 -----------------
-  /home/stefan/opencode/brackets-code/brackets-code.c (~11200 lines, 106 emitter blocks)
-  /home/stefan/opencode/brackets-code/memory.txt (this file)
+  /home/stefan/opencode/brackets-code/brackets-code.c  (9810 lines, 106 emitter blocks, #include's embed.c + learn.c)
+  /home/stefan/opencode/brackets-code/brackets-code.h  (542 lines, header with types, constants, function declarations)
+  /home/stefan/opencode/brackets-code/embed.c           (768 lines, LLM inference engine + vector search, #include'd at line 1121)
+  /home/stefan/opencode/brackets-code/learn.c           (685 lines, learned pattern system, #include'd at line 9389)
+  /home/stefan/opencode/brackets-code/synonyms.txt      (fuzzy synonym defs for DE+EN)
+  /home/stefan/opencode/brackets-code/memory.txt        (this file)
 
-15. L1VM ARRAY ACCESS RULES
+  Total: ~11805 lines across 4 source files.
+  Compilation: gcc brackets-code.c -lm (embed.c + learn.c pulled in via #include)
+
+16. L1VM ARRAY ACCESS RULES
 ----------------------------
   - The `[ ]` operator expects BYTE OFFSETS, not element indices
   - Accessing element i of an int64 array requires offset i * int64_size (8)
@@ -344,7 +369,7 @@ Template struct:
   - Exception: element 0 uses byte offset 0 (i * 8 = 0), no multiplication needed
   - Failure to multiply produces "not on quad word bound" runtime error
 
-16. COMPILATION PIPELINE
+17. COMPILATION PIPELINE
 ------------------------
   brackets-code "<prompt>"  -->  writes program.l1com
   l1pre program.l1com out.l1com <include_path>/  -->  expands includes
@@ -356,7 +381,7 @@ Template struct:
   l1com reads <basename>.l1com (not the full filename).
   l1vm loads <basename>.l1obj; -q flag runs quietly.
 
-17. KNOWN EMITTER STATUS (2026-06-27)
+18. KNOWN EMITTER STATUS (2026-06-27)
 --------------------------------------
   4 PASS (compile + run with correct output):
     levenshtein_distance  - hardcoded string result
@@ -370,7 +395,7 @@ Template struct:
 
   Pipeline tested: brackets-code → l1pre → l1com → l1asm → l1vm
 
-18. TEST SUITE
+19. TEST SUITE
 --------------
   Manual testing via /tmp/opencode/test_emitters.sh
   Each emitter: brackets-code -> l1pre -> l1com -> l1asm -> l1vm
