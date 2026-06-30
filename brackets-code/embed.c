@@ -4,7 +4,7 @@
 #define VOCAB_SIZE 72
 #define TEMPERATURE 0.8
 #define MAX_STEPS 8
-#define NUM_EMITTERS 106
+#define NUM_EMITTERS 110
 
 typedef struct {
     char word[32];
@@ -13,7 +13,7 @@ typedef struct {
 
 static WordEmbedding word_embeddings[VOCAB_SIZE];
 static float attention_weights[NUM_EMITTERS];
-static const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt","function","string_length","stack","queue","insertion_sort","calculator","unit_converter","rock_paper_scissors","pyramid","temp_converter_menu","sort_stats","string_analyzer","number_analyzer","filter_numbers","random_generator","math_menu","quiz_game","bmi_calculator","statistics_suite","linked_list","binary_search_tree","tree_traversal","graph_bfs_dfs","n_queens","sudoku","levenshtein_distance","maze_generator","maze_solver","monte_carlo_pi","matrix_multiplication","matrix_transpose","numerical_integration","complex_numbers","linear_regression","base_converter","freq_analysis","shuffle","weighted_random","ascii_table"};
+static const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt","function","string_length","stack","queue","insertion_sort","calculator","unit_converter","rock_paper_scissors","pyramid","temp_converter_menu","sort_stats","string_analyzer","number_analyzer","filter_numbers","random_generator","math_menu","quiz_game","bmi_calculator","statistics_suite","linked_list","binary_search_tree","tree_traversal","graph_bfs_dfs","n_queens","sudoku","levenshtein_distance","maze_generator","maze_solver","monte_carlo_pi","matrix_multiplication","matrix_transpose","numerical_integration","complex_numbers","linear_regression","base_converter","freq_analysis","shuffle","weighted_random","ascii_table","bignum_math","password_card","chess_problem","shell_repl"};
 static int vs_boost_tokens[64];
 static int vs_boost_count = 0;
 
@@ -351,6 +351,10 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
     if (task->has_shuffle) emitter_scores[103] = 2.0f;
     if (task->has_weighted_random) emitter_scores[104] = 2.0f;
     if (task->has_ascii_table) emitter_scores[105] = 3.0f;
+    if (task->has_bignum_math) emitter_scores[106] = 2.5f;
+    if (task->has_password_card) emitter_scores[107] = 2.5f;
+    if (task->has_chess_problem) emitter_scores[108] = 2.5f;
+    if (task->has_shell_repl) emitter_scores[109] = 2.5f;
 
     // Phase 2a: prompt token boosts
     apply_token_boosts(emitter_scores, tokens, num_tokens,

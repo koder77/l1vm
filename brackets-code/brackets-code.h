@@ -24,7 +24,7 @@
 #define VOCAB_SIZE 72
 #define TEMPERATURE 0.8
 #define MAX_STEPS 8
-#define NUM_EMITTERS 106
+#define NUM_EMITTERS 110
 
 #define MAX_LEARNED 64
 #define LEARNED_DIR ".brackets-code/learned"
@@ -249,6 +249,10 @@ typedef struct {
     int has_shuffle;
     int has_weighted_random;
     int has_ascii_table;
+    int has_bignum_math;
+    int has_password_card;
+    int has_chess_problem;
+    int has_shell_repl;
     int suppress_output;
     char result_var[64];
     int skip_input;
@@ -496,6 +500,10 @@ void emit_freq_analysis(Program *prog, Function *f);
 void emit_shuffle(Program *prog, Function *f);
 void emit_weighted_random(Program *prog, Function *f);
 void emit_ascii_table(Program *prog, Function *f);
+void emit_bignum_math(Program *prog, Function *f);
+void emit_password_card(Program *prog, Function *f);
+void emit_chess_problem(Program *prog, Function *f);
+void emit_shell_repl(Program *prog, Function *f);
 
 // Template generators
 void gen_hello_world(Program *prog, const char *prompt);

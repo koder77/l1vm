@@ -943,6 +943,10 @@ typedef struct {
     int has_shuffle;
     int has_weighted_random;
     int has_ascii_table;
+    int has_bignum_math;
+    int has_password_card;
+    int has_chess_problem;
+    int has_shell_repl;
     int suppress_output;
     char result_var[64];
     int skip_input;
@@ -1030,7 +1034,7 @@ static void emit_string_to_num(Program *prog, Function *f);
 static void emit_timer(Program *prog, Function *f);
 static void emit_factorial(Program *prog, Function *f);
 static void emit_fizzbuzz(Program *prog, Function *f);
-static void emit_primes(Program *prog, Function *f);
+static void emit_primes(Program *prog, Function *f, int max_val);
 static void emit_even_odd(Program *prog, Function *f);
 static void emit_power(Program *prog, Function *f);
 static void emit_multiplication_table(Program *prog, Function *f);
@@ -1116,6 +1120,10 @@ static void emit_freq_analysis(Program *prog, Function *f);
 static void emit_shuffle(Program *prog, Function *f);
 static void emit_weighted_random(Program *prog, Function *f);
 static void emit_ascii_table(Program *prog, Function *f);
+static void emit_bignum_math(Program *prog, Function *f);
+static void emit_password_card(Program *prog, Function *f);
+static void emit_chess_problem(Program *prog, Function *f);
+static void emit_shell_repl(Program *prog, Function *f);
 
 // ==================== TINY LLM INFERENCE ENGINE + VECTOR SEARCH ====================
 #include "embed.c"
@@ -2028,12 +2036,14 @@ static void emit_fizzbuzz(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_primes(Program *prog, Function *f) {
+static void emit_primes(Program *prog, Function *f, int max_val) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
     const char *tv[] = {"2"};
-    const char *mv[] = {"50"};
+    char max_str[16];
+    snprintf(max_str, sizeof(max_str), "%d", max_val);
+    const char *mv[] = {max_str};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
     add_var_to_func(f, "const-int64", "one", 1, ov, 1);
     add_var_to_func(f, "const-int64", "two", 1, tv, 1);
@@ -4097,6 +4107,9 @@ static int parse_task(const char *prompt, TaskProfile *task) {
     if (has_word(buf, "descending") || has_word(buf, "descendig") || has_word(buf, "desc") || has_word(buf, "absteigend"))
         task->has_descending = 1;
 
+    if ((has_word(buf, "bignum") || (has_word(buf, "big") && has_word(buf, "number")) || has_word(buf, "mpfr")) && (has_word(buf, "power") || has_word(buf, "pow") || has_word(buf, "potenz") || has_word(buf, "calculate") || has_word(buf, "^")))
+        task->has_bignum_math = 1;
+
     if (has_word(buf, "power") || has_word(buf, "potenz") || has_word(buf, "exponent")
         || has_word(buf, "square") || has_word(buf, "quadrat") || has_word(buf, "cube"))
         task->has_power = 1;
@@ -4499,6 +4512,15 @@ static int parse_task(const char *prompt, TaskProfile *task) {
     if (has_word(buf, "ascii") && (has_word(buf, "table") || has_word(buf, "tabelle") || has_word(buf, "format")))
         task->has_ascii_table = 1;
 
+    if ((has_word(buf, "password") || has_word(buf, "passwort") || has_word(buf, "passwd")) && (has_word(buf, "card") || has_word(buf, "karte") || has_word(buf, "generate") || has_word(buf, "generator")))
+        task->has_password_card = 1;
+    if ((has_word(buf, "chess") || has_word(buf, "schach") || has_word(buf, "rice") || has_word(buf, "reis")) && (has_word(buf, "problem") || has_word(buf, "board") || has_word(buf, "brett") || has_word(buf, "exponential")))
+        task->has_chess_problem = 1;
+    if ((has_word(buf, "repl") || has_word(buf, "terminal")) && (has_word(buf, "run") || has_word(buf, "execute") || has_word(buf, "ausfuehren") || has_word(buf, "ausführen")))
+        task->has_shell_repl = 1;
+    if ((has_word(buf, "shell") || has_word(buf, "interactive")) && (has_word(buf, "run") || has_word(buf, "running") || has_word(buf, "execute") || has_word(buf, "command") || has_word(buf, "ausfuehren") || has_word(buf, "ausführen") || has_word(buf, "befehl")))
+        task->has_shell_repl = 1;
+
     if (has_word(buf, "fann") || has_word(buf, "neural") || (has_word(buf, "network") && has_word(buf, "ai"))) {
         if (has_word(buf, "train") || has_word(buf, "learn")) {
             task->has_fann_create = 1;
@@ -4565,7 +4587,9 @@ static int parse_task(const char *prompt, TaskProfile *task) {
         || task->has_numerical_integration || task->has_complex_numbers
         || task->has_linear_regression || task->has_base_converter
         || task->has_freq_analysis || task->has_shuffle
-        || task->has_weighted_random || task->has_ascii_table;
+        || task->has_weighted_random || task->has_ascii_table
+        || task->has_bignum_math || task->has_password_card
+        || task->has_chess_problem || task->has_shell_repl;
 
     snprintf(task->title, sizeof(task->title), "%s", prompt);
     return has_any;
@@ -7330,6 +7354,238 @@ static void emit_ascii_table(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
+static void emit_bignum_math(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *bv[] = {"10"};
+    const char *pv[] = {"50"};
+    const char *nv[] = {"4096"};
+    const char *hv[] = {"4095"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "base", 1, bv, 1);
+    add_var_to_func(f, "const-int64", "precision", 1, pv, 1);
+    add_var_to_func(f, "const-int64", "potnum", 1, nv, 1);
+    add_var_to_func(f, "const-int64", "outstr_len", 1, hv, 1);
+    add_var_to_func(f, "int64", "baseaddr", 1, zv, 1);
+    add_var_to_func(f, "int64", "potaddr", 1, ov, 1);
+    add_var_to_func(f, "int64", "resaddr", 1, nv, 1);
+    add_var_to_func(f, "int64", "outaddr", 1, nv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *bs[] = {"\"2.0\""};
+    const char *ps[] = {"\"4096.0\""};
+    const char *rs[] = {"\"0.0\""};
+    const char *fs[] = {"\"%.20Ff\""};
+    const char *ms[] = {"\"2 ^ 4096 =\""};
+    const char *os[] = {"\"\""};
+    add_var_to_func(f, "const-string", "basestr", 4, bs, 1);
+    add_var_to_func(f, "const-string", "potstr", 8, ps, 1);
+    add_var_to_func(f, "const-string", "resstr", 4, rs, 1);
+    add_var_to_func(f, "const-string", "formatstr", 10, fs, 1);
+    add_var_to_func(f, "const-string", "msgstr", 11, ms, 1);
+    add_var_to_func(f, "string", "outstr", 4096, os, 1);
+    func_append(f, "\t(zero :mp_math_init call)");
+    func_append(f, "\t(msgstr :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(basestr base baseaddr :mp_set_float !)");
+    func_append(f, "\t(potstr base potaddr :mp_set_float !)");
+    func_append(f, "\t(baseaddr potaddr resaddr :mp_pow_float !)");
+    func_append(f, "\t(resaddr outaddr outstr_len formatstr precision :mp_prints_float !)");
+    func_append(f, "\t(outstr :print_s !)");
+    func_append(f, "\t(:print_n !)");
+}
+
+static void emit_password_card(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"10"};
+    const char *thv[] = {"3"};
+    const char *rv[] = {"\"   ABC DEF GHI JKL MNO PQR STU VWX YZ  .\""};
+    const char *sp[] = {"\" \""};
+    const char *cs[] = {"\"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$%&/[]{}?*+#.:,;-<>|@~\""};
+    const char *e2[] = {"\"\""};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "xmax", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "ymax", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "random_max", 1, thv, 1);
+    add_var_to_func(f, "int64", "char_len", 1, zv, 1);
+    add_var_to_func(f, "int64", "x", 1, zv, 1);
+    add_var_to_func(f, "int64", "y", 1, zv, 1);
+    add_var_to_func(f, "int64", "random_i", 1, zv, 1);
+    add_var_to_func(f, "int64", "randi", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "const-string", "headstr", 46, rv, 1);
+    add_var_to_func(f, "const-string", "spacestr", 2, sp, 1);
+    add_var_to_func(f, "const-string", "charstr", 77, cs, 1);
+    add_var_to_func(f, "string", "chstr", 2, e2, 1);
+    func_append(f, "\t(zero :string_init call)");
+    func_append(f, "\t(one :math_init call)");
+    func_append(f, "\t(charstr :string_len call)");
+    func_append(f, "\t(char_len stpopi)");
+    func_append(f, "\t((char_len one -) char_len =)");
+    func_append(f, "\t(zero :math_randinit call)");
+    func_append(f, "\t(headstr :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((y ymax <=) f =) f for)");
+    func_append(f, "\t\t(((y ymax <) f =) f if+)");
+    func_append(f, "\t\t\t(spacestr :print_s !)");
+    func_append(f, "\t\t\t(y :print_i !)");
+    func_append(f, "\t\t\t(spacestr :print_s !)");
+    func_append(f, "\t\t(else)");
+    func_append(f, "\t\t\t(y :print_i !)");
+    func_append(f, "\t\t\t(spacestr :print_s !)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(one x :=)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t\t(((x xmax <=) f =) f for)");
+    func_append(f, "\t\t\t(one random_i :=)");
+    func_append(f, "\t\t\t(for-loop)");
+    func_append(f, "\t\t\t(((random_i random_max <=) f =) f for)");
+    func_append(f, "\t\t\t\t(char_len :math_randintmax call)");
+    func_append(f, "\t\t\t\t(randi stpopi)");
+    func_append(f, "\t\t\t\t(charstr chstr randi :string_mid call)");
+    func_append(f, "\t\t\t\t(chstr :print_s !)");
+    func_append(f, "\t\t\t\t((random_i one +) random_i =)");
+    func_append(f, "\t\t\t(next)");
+    func_append(f, "\t\t\t(spacestr :print_s !)");
+    func_append(f, "\t\t\t((x one +) x =)");
+    func_append(f, "\t\t(next)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t((y one +) y =)");
+    func_append(f, "\t(next)");
+}
+
+static void emit_chess_problem(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *sv[] = {"64"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "maxloop", 1, sv, 1);
+    add_var_to_func(f, "int64", "field", 1, zv, 1);
+    add_var_to_func(f, "int64", "total", 1, zv, 1);
+    add_var_to_func(f, "int64", "loop", 1, zv, 1);
+    add_var_to_func(f, "int64", "base", 1, tv, 1);
+    add_var_to_func(f, "int64", "precision", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *os[] = {"\"1.0\""};
+    const char *ts[] = {"\"2.0\""};
+    const char *fs[] = {"\"0.0\""};
+    const char *tls[] = {"\"0.0\""};
+    const char *fms[] = {"\"%.20Ff\""};
+    const char *txs[] = {"\"chess field: \""};
+    const char *tns[] = {"\"total: \""};
+    add_var_to_func(f, "const-string", "onestr", 4, os, 1);
+    add_var_to_func(f, "const-string", "twostr", 4, ts, 1);
+    add_var_to_func(f, "const-string", "fieldstr", 4, fs, 1);
+    add_var_to_func(f, "const-string", "totalstr", 4, tls, 1);
+    add_var_to_func(f, "const-string", "formatstr", 10, fms, 1);
+    add_var_to_func(f, "const-string", "textstr", 14, txs, 1);
+    add_var_to_func(f, "const-string", "totalnumstr", 9, tns, 1);
+    add_var_to_func(f, "const-string", "emptystr", 1, tls, 1);
+    func_append(f, "\t(zero :mp_math_init call)");
+    func_append(f, "\t(onestr base one :mp_set_float !)");
+    func_append(f, "\t(twostr base two :mp_set_float !)");
+    func_append(f, "\t(fieldstr base field :mp_set_float !)");
+    func_append(f, "\t(totalstr base total :mp_set_float !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((loop maxloop <=) f =) f for)");
+    func_append(f, "\t\t(textstr :print_s !)");
+    func_append(f, "\t\t(loop :print_i !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(((loop one ==) f =) f if+)");
+    func_append(f, "\t\t\t(field one field :mp_add_float !)");
+    func_append(f, "\t\t(else)");
+    func_append(f, "\t\t\t(field two field :mp_mul_float !)");
+    func_append(f, "\t\t\t(total field total :mp_add_float !)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(field formatstr precision :mp_print_float !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(totalnumstr :print_s !)");
+    func_append(f, "\t\t(total formatstr precision :mp_print_float !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t((loop one +) loop =)");
+    func_append(f, "\t(next)");
+}
+
+static void emit_shell_repl(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *thv[] = {"3"};
+    const char *tv[] = {"255"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "runlen", 1, thv, 1);
+    add_var_to_func(f, "const-int64", "inputmax", 1, tv, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "inputlen", 1, zv, 1);
+    add_var_to_func(f, "int64", "rightpart", 1, zv, 1);
+    const char *ps[] = {"\"l1vm-sh $ \""};
+    const char *rs[] = {"\"run\""};
+    const char *ls[] = {"\"l1vm\""};
+    const char *ss[] = {"\"!\""};
+    const char *es[] = {"\"\""};
+    add_var_to_func(f, "const-string", "promptstr", 12, ps, 1);
+    add_var_to_func(f, "const-string", "runstr", 5, rs, 1);
+    add_var_to_func(f, "const-string", "runl1vmstr", 6, ls, 1);
+    add_var_to_func(f, "const-string", "runshortstr", 3, ss, 1);
+    add_var_to_func(f, "string", "inputstr", 256, es, 1);
+    add_var_to_func(f, "string", "bufstr", 256, es, 1);
+    add_var_to_func(f, "string", "runshellstr", 256, es, 1);
+    func_append(f, "\t(zero :string_init !)");
+    func_append(f, "\t(one :process_init !)");
+    func_append(f, "\t(:loop)");
+    func_append(f, "\t\t(promptstr :print_s !)");
+    func_append(f, "\t\t(inputmax inputstr :input_s !)");
+    func_append(f, "\t\t(inputstr :string_len !)");
+    func_append(f, "\t\t(inputlen stpopi)");
+    func_append(f, "\t\t(((inputlen one >) f =) f if)");
+    func_append(f, "\t\t\t(inputstr bufstr one :string_left !)");
+    func_append(f, "\t\t\t(bufstr runshortstr :string_compare !)");
+    func_append(f, "\t\t\t(ret stpopi)");
+    func_append(f, "\t\t\t(((ret zero ==) f =) f if)");
+    func_append(f, "\t\t\t\t((inputlen one -) rightpart =)");
+    func_append(f, "\t\t\t\t(inputstr bufstr rightpart :string_right !)");
+    func_append(f, "\t\t\t\t(runshellstr runl1vmstr :string_copy !)");
+    func_append(f, "\t\t\t\t(runshellstr bufstr :string_cat !)");
+    func_append(f, "\t\t\t\t(runshellstr :run_shell !)");
+    func_append(f, "\t\t\t\t(ret stpopi)");
+    func_append(f, "\t\t\t\t(:loop jmp)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((inputlen runlen >) f =) f if+)");
+    func_append(f, "\t\t\t(inputstr bufstr runlen :string_left !)");
+    func_append(f, "\t\t\t(bufstr runstr :string_compare !)");
+    func_append(f, "\t\t\t(ret stpopi)");
+    func_append(f, "\t\t\t(((ret zero ==) f =) f if+)");
+    func_append(f, "\t\t\t\t((inputlen runlen -) rightpart =)");
+    func_append(f, "\t\t\t\t(inputstr bufstr rightpart :string_right !)");
+    func_append(f, "\t\t\t\t(runshellstr runl1vmstr :string_copy !)");
+    func_append(f, "\t\t\t\t(runshellstr bufstr :string_cat !)");
+    func_append(f, "\t\t\t\t(runshellstr :run_shell !)");
+    func_append(f, "\t\t\t\t(ret stpopi)");
+    func_append(f, "\t\t\t(else)");
+    func_append(f, "\t\t\t\t(inputstr :run_shell !)");
+    func_append(f, "\t\t\t\t(ret stpopi)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t(else)");
+    func_append(f, "\t\t\t(inputstr :run_shell !)");
+    func_append(f, "\t\t\t(ret stpopi)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(:loop jmp)");
+}
+
 static void ensure_exit(Function *f, int last_step) {
     if (!last_step) return;
     const char *zv[] = {"0"};
@@ -7494,9 +7750,20 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         return 1;
     }
     DISPATCH(has_fizzbuzz, emit_fizzbuzz);
-    DISPATCH(has_primes, emit_primes);
+    if (task->has_primes) {
+        int n = task->num_literals > 0 ? task->literals[0] : 50;
+        emit_primes(prog, f, n);
+        ensure_exit(f, last_step);
+        return 1;
+    }
     if (task->has_even_odd && !task->has_print_even) {
         emit_even_odd(prog, f);
+        ensure_exit(f, last_step);
+        return 1;
+    }
+    // has_bignum_math must be checked before has_power since bignum implies power
+    if (task->has_bignum_math) {
+        emit_bignum_math(prog, f);
         ensure_exit(f, last_step);
         return 1;
     }
@@ -7646,6 +7913,9 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     DISPATCH(has_shuffle, emit_shuffle);
     DISPATCH(has_weighted_random, emit_weighted_random);
     DISPATCH(has_ascii_table, emit_ascii_table);
+    DISPATCH(has_password_card, emit_password_card);
+    DISPATCH(has_chess_problem, emit_chess_problem);
+    DISPATCH(has_shell_repl, emit_shell_repl);
 
     // If no single emitter matched but extra emitters are specified, run them
     // as a composite sequence. Each extra emitter runs on the same function.
@@ -7674,7 +7944,7 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
                 case 17: if (task->has_read_file) { emit_read_file(prog, f); emitted = 1; } break;
                 case 18: if (task->has_write_file) { emit_write_file(prog, f); emitted = 1; } break;
                 case 22: if (task->has_fizzbuzz) { emit_fizzbuzz(prog, f); emitted = 1; } break;
-                case 23: if (task->has_primes) { emit_primes(prog, f); emitted = 1; } break;
+                case 23: if (task->has_primes) { int n = task->num_literals > 0 ? task->literals[0] : 50; emit_primes(prog, f, n); emitted = 1; } break;
                 case 24: if (task->has_even_odd) { emit_even_odd(prog, f); emitted = 1; } break;
                 case 31: if (task->has_array_min_max) { emit_array_min_max(prog, f); emitted = 1; } break;
                 case 37: if (task->has_average && task->has_input) { emit_average(prog, f, task->skip_input); emitted = 1; } break;
@@ -7735,6 +8005,10 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
                 case 103: if (task->has_shuffle) { emit_shuffle(prog, f); emitted = 1; } break;
                 case 104: if (task->has_weighted_random) { emit_weighted_random(prog, f); emitted = 1; } break;
                 case 105: if (task->has_ascii_table) { emit_ascii_table(prog, f); emitted = 1; } break;
+                case 106: if (task->has_bignum_math) { emit_bignum_math(prog, f); emitted = 1; } break;
+                case 107: if (task->has_password_card) { emit_password_card(prog, f); emitted = 1; } break;
+                case 108: if (task->has_chess_problem) { emit_chess_problem(prog, f); emitted = 1; } break;
+                case 109: if (task->has_shell_repl) { emit_shell_repl(prog, f); emitted = 1; } break;
                 default: break;
             }
         }
@@ -8084,13 +8358,13 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
     if (num_count >= 3) avals[2] = nums[2];
 
     gen_arithmetic(prog, op, type, avals, n_vals);
-    const char *op_name = "operation";
-    const char *sym = "+";
+    const char *op_name;
+    const char *sym;
     if (strcmp(op, "sub") == 0) { op_name = "subtraction"; sym = "-"; }
     else if (strcmp(op, "mul") == 0) { op_name = "multiplication"; sym = "*"; }
     else if (strcmp(op, "div") == 0) { op_name = "division"; sym = "/"; }
     else if (strcmp(op, "mod") == 0) { op_name = "modulo"; sym = "%"; }
-    else op_name = "addition";
+    else { op_name = "addition"; sym = "+"; }
     if (n_vals == 3)
         snprintf(desc, desc_size, "%s of three %s numbers (%d %s %d %s %d)", op_name, type, avals[0], sym, avals[1], sym, avals[2]);
     else
@@ -8612,19 +8886,23 @@ static void gen_sum(Program *prog, const char *prompt) {
 }
 
 static void gen_primes(Program *prog, const char *prompt) {
-    (void)prompt;
+    int nums[4];
+    int num_count = extract_numbers(prompt, nums, 4);
+    int max_val = 50;
+    if (num_count > 0) max_val = nums[0];
+    char max_str[16];
+    snprintf(max_str, sizeof(max_str), "%d", max_val);
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
     const char *vals[] = {"0"};
     const char *vals1[] = {"1"};
     const char *vals2[] = {"2"};
-    const char *vals50[] = {"50"};
     add_var_to_func(f, "const-int64", "zero", 1, vals, 1);
     add_var_to_func(f, "int64", "one", 1, vals1, 1);
     add_var_to_func(f, "int64", "two", 1, vals2, 1);
     add_var_to_func(f, "int64", "num", 1, vals2, 1);
-    add_var_to_func(f, "int64", "max", 1, vals50, 1);
+    add_var_to_func(f, "int64", "max", 1, (const char *[]){max_str}, 1);
     add_var_to_func(f, "int64", "f", 1, vals, 1);
     add_var_to_func(f, "int64", "i", 1, vals, 1);
     add_var_to_func(f, "int64", "is_prime", 1, vals, 1);
@@ -9305,7 +9583,7 @@ static int generate_code(const char *prompt, const char *filename) {
     Program *prog = malloc(sizeof(Program));
     if (!prog) { c_printf(ANSI_RED, "Out of memory\n"); return 0; }
     memset(prog, 0, sizeof(Program));
-    if (!init_program(prog)) { free(prog); c_printf(ANSI_RED, "Out of memory\n"); return 0; }
+    if (!init_program(prog)) { free_program(prog); free(prog); c_printf(ANSI_RED, "Out of memory\n"); return 0; }
     snprintf(prog->filename, sizeof(prog->filename), "%s", filename);
     // (temp/func counters removed)
 
