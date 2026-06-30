@@ -10988,8 +10988,8 @@ int main(int argc, char *argv[]) {
     if (arg_idx < argc) {
         snprintf(fname, sizeof(fname), "%s", argv[arg_idx]);
         // block path traversal in filename
-        if (strstr(fname, "..") || strchr(fname, '/')) {
-            fprintf(stderr, "Error: filename must not contain '..' or '/'\n");
+        if (strstr(fname, "..")) {
+            fprintf(stderr, "Error: filename must not contain '..'\n");
             return 1;
         }
         if (!strstr(fname, ".l1com")) strncat(fname, ".l1com", sizeof(fname) - strlen(fname) - 1);
