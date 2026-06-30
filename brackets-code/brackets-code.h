@@ -24,7 +24,7 @@
 #define VOCAB_SIZE 72
 #define TEMPERATURE 0.8
 #define MAX_STEPS 8
-#define NUM_EMITTERS 110
+#define NUM_EMITTERS 133
 
 #define MAX_LEARNED 64
 #define LEARNED_DIR ".brackets-code/learned"

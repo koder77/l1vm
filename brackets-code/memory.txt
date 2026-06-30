@@ -5,7 +5,7 @@ Brackets Code - Memory & Specification
 -------------
 Brackets Code is a CLI code generator for the Brackets (L1VM) assembly language.
 It converts natural-language prompts into working .l1com programs.
-Written in C, split across 4 source files (~11800 lines total). Author: Stefan.
+Written in C, split across 4 source files (~12900 lines total). Author: Stefan.
 
 2. SOURCE FILE ORGANIZATION
 ---------------------------
@@ -33,7 +33,7 @@ The program has a three-tier generation pipeline:
        |
   smart_generate() --> multi-step split + per-step TaskProfile generation
        |                  |
-       |            llm_select_emitter() tokenizes prompt, scores 106 emitters
+       |            llm_select_emitter() tokenizes prompt, scores 133 emitters
        |                  |                selects best emitter, calls generate_from_task()
        |                  | (fallback)
        |            old arithmetic generator (simple math prompts)
@@ -108,7 +108,7 @@ Template struct:
    - has_string_cat excluded when more specific string flag present
      (reverse, length, vowels, anagram, upper, lower, caesar, palindrome)
 
-5b. Emitter Blocks (NUM_EMITTERS = 106):
+5b. Emitter Blocks (NUM_EMITTERS = 133):
    Each emits L1VM code for a specific pattern:
 
    Block                    Purpose
@@ -198,8 +198,31 @@ Template struct:
    emit_freq_analysis        Letter frequency analysis
    emit_shuffle              Array shuffle (Fisher-Yates)
    emit_weighted_random      Weighted random selection
-   emit_ascii_table          ASCII table printer
-   + template emitters (31 matched by match_template, not smart_generate)
+    emit_ascii_table          ASCII table printer
+    emit_webserver            TCP web server with socket API
+    emit_sdl_window           SDL pixel-graphics window
+    emit_sdl_button           SDL button GUI with mouse interaction
+    emit_thread               Two-thread demo using intr0 9/10
+    emit_scheduler            Task scheduler with queue/priority
+    emit_shell_exec           Shell command execution via intr0 42
+    emit_json                 JSON string get/set via json.l1h
+    emit_crypto               Encrypt/decrypt via crypto.l1h
+    emit_bluetooth_ble        Bluetooth LE init stub
+    emit_serial_rs232         Serial RS-232 init stub
+    emit_gpio                 GPIO pin I/O via gpio.l1h
+    emit_gps                  GPS position read via gps.l1h
+    emit_timer_date           Timer elapsed ms + date/time display
+    emit_sdl_sound            SDL sound playback via sdl-lib.l1h
+    emit_sdl_joystick         SDL joystick axis/button via sdl-lib.l1h
+    emit_sdl_mouse            SDL mouse motion/click via sdl-lib.l1h
+    emit_fractal              Mandelbrot fractal ASCII render
+    emit_cluster_3x1          3x1 cluster communication stub
+    emit_reload               Self-reload stub via intr0 11
+    emit_coordinate_grid      2D coordinate grid operations
+    emit_turmite              Turmite (ant) simulation on grid
+    emit_crossword            Crossword puzzle grid generator
+    emit_linter               Code linter stub
+    + template emitters (31 matched by match_template, not smart_generate)
 
 5c. Multi-Step Composition (split_prompt_steps):
    - Split patterns (ordered longest-first):
@@ -350,14 +373,14 @@ Template struct:
 
 15. FILE LOCATION
 -----------------
-  /home/stefan/opencode/brackets-code/brackets-code.c  (9810 lines, 106 emitter blocks, #include's embed.c + learn.c)
+   /home/stefan/opencode/brackets-code/brackets-code.c  (~10900 lines, 133 emitter blocks, #include's embed.c + learn.c)
   /home/stefan/opencode/brackets-code/brackets-code.h  (542 lines, header with types, constants, function declarations)
   /home/stefan/opencode/brackets-code/embed.c           (768 lines, LLM inference engine + vector search, #include'd at line 1121)
   /home/stefan/opencode/brackets-code/learn.c           (685 lines, learned pattern system, #include'd at line 9389)
   /home/stefan/opencode/brackets-code/synonyms.txt      (fuzzy synonym defs for DE+EN)
   /home/stefan/opencode/brackets-code/memory.txt        (this file)
 
-  Total: ~11805 lines across 4 source files.
+   Total: ~12900 lines across 4 source files.
   Compilation: gcc brackets-code.c -lm (embed.c + learn.c pulled in via #include)
 
 16. L1VM ARRAY ACCESS RULES
@@ -381,7 +404,7 @@ Template struct:
   l1com reads <basename>.l1com (not the full filename).
   l1vm loads <basename>.l1obj; -q flag runs quietly.
 
-18. KNOWN EMITTER STATUS (2026-06-27)
+18. KNOWN EMITTER STATUS (2026-06-30)
 --------------------------------------
   4 PASS (compile + run with correct output):
     levenshtein_distance  - hardcoded string result

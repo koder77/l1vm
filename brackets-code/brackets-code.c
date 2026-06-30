@@ -947,6 +947,29 @@ typedef struct {
     int has_password_card;
     int has_chess_problem;
     int has_shell_repl;
+    int has_webserver;
+    int has_sdl_window;
+    int has_sdl_button;
+    int has_thread;
+    int has_scheduler;
+    int has_shell_exec;
+    int has_json;
+    int has_crypto;
+    int has_bluetooth_ble;
+    int has_serial_rs232;
+    int has_gpio;
+    int has_gps;
+    int has_timer_date;
+    int has_sdl_sound;
+    int has_sdl_joystick;
+    int has_sdl_mouse;
+    int has_fractal;
+    int has_cluster_3x1;
+    int has_reload;
+    int has_coordinate_grid;
+    int has_turmite;
+    int has_crossword;
+    int has_linter;
     int suppress_output;
     char result_var[64];
     int skip_input;
@@ -1124,6 +1147,29 @@ static void emit_bignum_math(Program *prog, Function *f);
 static void emit_password_card(Program *prog, Function *f);
 static void emit_chess_problem(Program *prog, Function *f);
 static void emit_shell_repl(Program *prog, Function *f);
+static void emit_webserver(Program *prog, Function *f);
+static void emit_sdl_window(Program *prog, Function *f);
+static void emit_sdl_button(Program *prog, Function *f);
+static void emit_thread(Program *prog, Function *f);
+static void emit_scheduler(Program *prog, Function *f);
+static void emit_shell_exec(Program *prog, Function *f);
+static void emit_json(Program *prog, Function *f);
+static void emit_crypto(Program *prog, Function *f);
+static void emit_bluetooth_ble(Program *prog, Function *f);
+static void emit_serial_rs232(Program *prog, Function *f);
+static void emit_gpio(Program *prog, Function *f);
+static void emit_gps(Program *prog, Function *f);
+static void emit_timer_date(Program *prog, Function *f);
+static void emit_sdl_sound(Program *prog, Function *f);
+static void emit_sdl_joystick(Program *prog, Function *f);
+static void emit_sdl_mouse(Program *prog, Function *f);
+static void emit_fractal(Program *prog, Function *f);
+static void emit_cluster_3x1(Program *prog, Function *f);
+static void emit_reload(Program *prog, Function *f);
+static void emit_coordinate_grid(Program *prog, Function *f);
+static void emit_turmite(Program *prog, Function *f);
+static void emit_crossword(Program *prog, Function *f);
+static void emit_linter(Program *prog, Function *f);
 
 // ==================== TINY LLM INFERENCE ENGINE + VECTOR SEARCH ====================
 #include "embed.c"
@@ -4031,6 +4077,799 @@ static void emit_double_sqrt(Program *prog, Function *f) {
     }
 }
 
+static void emit_webserver(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "net-lib.l1h");
+    add_include_post(prog, "string.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"}, *tv[] = {"2"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "maxsockets", 1, (const char *[]){"10"}, 1);
+    add_var_to_func(f, "int64", "server", 1, zv, 1);
+    add_var_to_func(f, "int64", "portnum", 1, (const char *[]){"2000"}, 1);
+    add_var_to_func(f, "int64", "server_open", 1, zv, 1);
+    add_var_to_func(f, "int64", "server_accept", 1, zv, 1);
+    add_var_to_func(f, "int64", "socket_handle", 1, zv, 1);
+    add_var_to_func(f, "string", "ip", 2, (const char *[]){"\"127.0.0.1\""}, 1);
+    const char *ns[] = {"\"error: can't init sockets!\""};
+    add_var_to_func(f, "const-string", "netinitstr", 28, ns, 1);
+    const char *ws[] = {"\"waiting for connections...\""};
+    add_var_to_func(f, "const-string", "waiting", 25, ws, 1);
+    func_append(f, "\t(zero maxsockets :net_init !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(((ret zero !=) f :=) f if)");
+    func_append(f, "\t\t(netinitstr :print_s !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(one :exit !)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(one :string_init !)");
+    func_append(f, "\t(ip :get_hostbyname !)");
+    func_append(f, "\t(portnum :open_server_socket !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(socket_handle stpopi)");
+    func_append(f, "\t(:wait_loop)");
+    func_append(f, "\t\t(waiting :print_s !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(socket_handle :open_accept_server !)");
+    func_append(f, "\t\t(ret stpopi)");
+    func_append(f, "\t\t(server_accept stpopi)");
+    func_append(f, "\t\t(((ret zero !=) f :=) f if)");
+    func_append(f, "\t\t\t(\"error accept\" :print_s !)");
+    func_append(f, "\t\t\t(:print_n !)");
+    func_append(f, "\t\t\t(:wait_loop jmp)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(:wait_loop jmp)");
+}
+
+static void emit_sdl_window(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "sdl-lib.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"}, *tv[] = {"2"}, *fv[] = {"255"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "byte", "maxcol", 1, fv, 1);
+    add_var_to_func(f, "int64", "width", 1, (const char *[]){"320"}, 1);
+    add_var_to_func(f, "int64", "height", 1, (const char *[]){"200"}, 1);
+    add_var_to_func(f, "int64", "bit", 1, (const char *[]){"32"}, 1);
+    add_var_to_func(f, "int64", "x", 1, zv, 1);
+    add_var_to_func(f, "int64", "y", 1, zv, 1);
+    add_var_to_func(f, "byte", "col", 1, zv, 1);
+    add_var_to_func(f, "byte", "one_b", 1, (const char *[]){"1"}, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "int64", "delay", 1, (const char *[]){"20000"}, 1);
+    func_append(f, "\t(zero width height bit zero :sdl_open_screen !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(zero x :=)");
+    func_append(f, "\t(:xloop)");
+    func_append(f, "\t(zero y :=)");
+    func_append(f, "\t(:yloop)");
+    func_append(f, "\t(x y col col col maxcol :sdl_pixel !)");
+    func_append(f, "\t((col one_b +) col :=)");
+    func_append(f, "\t((col maxcol >) f :=)");
+    func_append(f, "\t(f :resetcol jmpi)");
+    func_append(f, "\t(:nexty jmp)");
+    func_append(f, "\t(:resetcol)");
+    func_append(f, "\t(zero col :=)");
+    func_append(f, "\t(:nexty)");
+    func_append(f, "\t((y one +) y :=)");
+    func_append(f, "\t((y height <) f :=)");
+    func_append(f, "\t(f :yloop jmpi)");
+    func_append(f, "\t((x one +) x :=)");
+    func_append(f, "\t((x width <) f :=)");
+    func_append(f, "\t(f :xloop jmpi)");
+    func_append(f, "\t(:sdl_update !)");
+    func_append(f, "\t(delay delay 0 0 intr0)");
+    func_append(f, "\t(:sdl_quit !)");
+    func_append(f, "\t(one zero 0 0 intr0)");
+}
+
+static void emit_sdl_button(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "sdl-lib.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    const char *wv[] = {"170"}, *hv[] = {"80"}, *whv[] = {"169"}, *hhv[] = {"79"};
+    const char *bv[] = {"32"}, *gv[] = {"1"}, *fsv[] = {"20"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "width", 1, wv, 1);
+    add_var_to_func(f, "const-int64", "height", 1, hv, 1);
+    add_var_to_func(f, "const-int64", "width_b", 1, whv, 1);
+    add_var_to_func(f, "const-int64", "height_b", 1, hhv, 1);
+    add_var_to_func(f, "const-int64", "bit", 1, bv, 1);
+    add_var_to_func(f, "const-int64", "gadgets", 1, gv, 1);
+    add_var_to_func(f, "const-int64", "fontsize", 1, fsv, 1);
+    add_var_to_func(f, "byte", "back_r", 1, (const char *[]){"143"}, 1);
+    add_var_to_func(f, "byte", "back_g", 1, (const char *[]){"147"}, 1);
+    add_var_to_func(f, "byte", "back_b", 1, (const char *[]){"151"}, 1);
+    add_var_to_func(f, "byte", "alpha", 1, (const char *[]){"255"}, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "x", 1, (const char *[]){"10"}, 1);
+    add_var_to_func(f, "int64", "y", 1, (const char *[]){"10"}, 1);
+    add_var_to_func(f, "int64", "status", 1, ov, 1);
+    add_var_to_func(f, "int64", "value", 1, zv, 1);
+    add_var_to_func(f, "int64", "gadget_sel", 1, zv, 1);
+    add_var_to_func(f, "string", "retstr", 256, (const char *[]){"\"\""}, 1);
+    const char *bs[] = {"\"click me!\""};
+    add_var_to_func(f, "const-string", "button_str", 10, bs, 1);
+    const char *fn[] = {"\"fonts/free/FreeMono.ttf\""};
+    add_var_to_func(f, "const-string", "fontname", 26, fn, 1);
+    func_append(f, "\t(zero width height bit zero :sdl_open_screen !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(fontname fontsize :sdl_font_ttf !)");
+    func_append(f, "\t(zero zero width_b height_b back_r back_g back_b alpha :sdl_rectangle_fill !)");
+    func_append(f, "\t(gadgets :init_gui !)");
+    func_append(f, "\t(zero x y button_str status :set_gadget_button !)");
+    func_append(f, "\t(:loop)");
+    func_append(f, "\t(retstr :gadget_event !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(value stpopi)");
+    func_append(f, "\t(gadget_sel stpopi)");
+    func_append(f, "\t(((gadget_sel zero ==) f :=) f if)");
+    func_append(f, "\t\t(:sdl_free_all_gadgets !)");
+    func_append(f, "\t\t(zero :exit !)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(:loop jmp)");
+}
+
+static void emit_thread(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"}, *tv[] = {"2"}, *thv[] = {"3"}, *fov[] = {"4"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "three", 1, thv, 1);
+    add_var_to_func(f, "const-int64", "four", 1, fov, 1);
+    add_var_to_func(f, "int64", "run", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "delay", 1, (const char *[]){"2000"}, 1);
+    const char *is[] = {"\"starting threads...\""};
+    add_var_to_func(f, "const-string", "infostr", 19, is, 1);
+    func_append(f, "\t(((run zero ==) f :=) f if)");
+    func_append(f, "\t\t(infostr :print_s !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(:start_thread !)");
+    func_append(f, "\t\t(one run :=)");
+    func_append(f, "\t(endif)");
+    add_func(prog, "start_thread");
+    Function *sf = &prog->funcs[prog->num_funcs - 1];
+    sf->is_local = 1;
+    add_var_to_func(sf, "const-int64", "zero~", 1, zv, 1);
+    add_var_to_func(sf, "const-int64", "one~", 1, ov, 1);
+    add_var_to_func(sf, "int64", "run~", 1, (const char *[]){"0"}, 1);
+    func_append(sf, "\t(ASM)");
+    func_append(sf, "\tloadl :hello_one, 9");
+    func_append(sf, "\tloadl :hello_two, 10");
+    func_append(sf, "\tloadl :thread_loop_one, 11");
+    func_append(sf, "\tloadl :thread_loop_two, 12");
+    func_append(sf, "\t// start two threads");
+    func_append(sf, "\t(call 0 0 0 9 intr0)");
+    func_append(sf, "\t(call 0 0 0 10 intr0)");
+    func_append(sf, "\t(:forever_jmp jmp)");
+    func_append(sf, "\t(ASMEND)");
+    func_append(sf, "\t(:hello_one)");
+    func_append(sf, "\t(:thread_loop_one)");
+    func_append(sf, "\t\t(\"thread 1\" :print_s !)");
+    func_append(sf, "\t\t(:print_n !)");
+    func_append(sf, "\t\t(:thread_loop_one jmp)");
+    func_append(sf, "\t(:hello_two)");
+    func_append(sf, "\t(:thread_loop_two)");
+    func_append(sf, "\t\t(\"thread 2\" :print_s !)");
+    func_append(sf, "\t\t(:print_n !)");
+    func_append(sf, "\t\t(:thread_loop_two jmp)");
+    func_append(sf, "\t(:forever_jmp)");
+    func_append(sf, "\t(zero~ :exit !)");
+}
+
+static void emit_scheduler(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "run", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "delay", 1, (const char *[]){"2000"}, 1);
+    const char *ms[] = {"\"scheduler demo\""};
+    add_var_to_func(f, "const-string", "msg", 15, ms, 1);
+    func_append(f, "\t(msg :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(((run zero ==) f :=) f if)");
+    func_append(f, "\t\t(one :scheduler_init !)");
+    func_append(f, "\t\t(one run :=)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i 10 <) f :=) f for)");
+    func_append(f, "\t\t(i :print_i !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(delay 0 0 0 intr0)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+static void emit_shell_exec(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "inputmax", 1, (const char *[]){"255"}, 1);
+    add_var_to_func(f, "int64", "inputlen", 1, zv, 1);
+    add_var_to_func(f, "string", "inputstr", 256, (const char *[]){"\"\""}, 1);
+    const char *ps[] = {"\"l1vm-sh $ \""};
+    add_var_to_func(f, "const-string", "prompt_str", 10, ps, 1);
+    func_append(f, "\t(zero :string_init !)");
+    func_append(f, "\t(one :process_init !)");
+    func_append(f, "\t(:loop)");
+    func_append(f, "\t\t(prompt_str :print_s !)");
+    func_append(f, "\t\t(inputmax inputstr :input_s !)");
+    func_append(f, "\t\t(inputstr :string_len !)");
+    func_append(f, "\t\t(inputlen stpopi)");
+    func_append(f, "\t\t(((inputlen zero >) f :=) f if)");
+    func_append(f, "\t\t\t(inputstr :run_shell !)");
+    func_append(f, "\t\t\t(ret stpopi)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(:loop jmp)");
+}
+
+static void emit_json(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "json.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "int64", "strmod", 1, zv, 1);
+    add_var_to_func(f, "string", "jsonstr", 256, (const char *[]){"\"{\\\"name\\\":\\\"Brackets\\\",\\\"year\\\":2024}\""}, 1);
+    add_var_to_func(f, "string", "result", 256, (const char *[]){"\"\""}, 1);
+    add_var_to_func(f, "int64", "ival", 1, zv, 1);
+    const char *ks[] = {"\"name\""};
+    add_var_to_func(f, "const-string", "key", 6, ks, 1);
+    func_append(f, "\t(strmod :string_init !)");
+    func_append(f, "\t(jsonstr :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(jsonstr key result :json_get_string !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(\"value: \" :print_s !)");
+    func_append(f, "\t(result :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+static void emit_crypto(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "crypto.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "int64", "strmod", 1, zv, 1);
+    add_var_to_func(f, "string", "plain", 256, (const char *[]){"\"Hello L1VM crypto!\""}, 1);
+    add_var_to_func(f, "string", "cipher", 256, (const char *[]){"\"\""}, 1);
+    add_var_to_func(f, "string", "decrypted", 256, (const char *[]){"\"\""}, 1);
+    const char *ks[] = {"\"mykey123\""};
+    add_var_to_func(f, "const-string", "key", 9, ks, 1);
+    func_append(f, "\t(strmod :string_init !)");
+    func_append(f, "\t(plain :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(plain key cipher :encrypt !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(\"encrypted: \" :print_s !)");
+    func_append(f, "\t(cipher :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(cipher key decrypted :decrypt !)");
+    func_append(f, "\t(\"decrypted: \" :print_s !)");
+    func_append(f, "\t(decrypted :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+static void emit_bluetooth_ble(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "bluetooth-ble.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "dev", 1, zv, 1);
+    const char *ms[] = {"\"ble init\""};
+    add_var_to_func(f, "const-string", "msg", 9, ms, 1);
+    func_append(f, "\t(msg :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :ble_init !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(((ret zero !=) f :=) f if)");
+    func_append(f, "\t\t(\"ble init error\" :print_s !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(one :exit !)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(\"scanning...\" :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(:ble_scan !)");
+    func_append(f, "\t(:ble_connect !)");
+    func_append(f, "\t(\"connected\" :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+static void emit_serial_rs232(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "rs232-lib.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "handle", 1, zv, 1);
+    add_var_to_func(f, "int64", "baud", 1, (const char *[]){"9600"}, 1);
+    const char *pn[] = {"\"COM1\""};
+    add_var_to_func(f, "const-string", "portname", 5, pn, 1);
+    const char *ms[] = {"\"rs232 init\""};
+    add_var_to_func(f, "const-string", "msg", 10, ms, 1);
+    func_append(f, "\t(msg :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(portname baud :rs232_open !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(handle stpopi)");
+    func_append(f, "\t(((ret zero !=) f :=) f if)");
+    func_append(f, "\t\t(\"rs232 open error\" :print_s !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(one :exit !)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(\"serial port opened\" :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+static void emit_gpio(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "gpio-lib.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "pin", 1, (const char *[]){"17"}, 1);
+    const char *ms[] = {"\"gpio demo\""};
+    add_var_to_func(f, "const-string", "msg", 9, ms, 1);
+    func_append(f, "\t(msg :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(:gpio_init !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(((ret zero !=) f :=) f if)");
+    func_append(f, "\t\t(\"gpio init error\" :print_s !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(one :exit !)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(pin :gpio_set_output !)");
+    func_append(f, "\t(pin one :gpio_write !)");
+    func_append(f, "\t(\"pin set high\" :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+static void emit_gps(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "gps.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "double", "lat", 1, zv, 1);
+    add_var_to_func(f, "double", "lon", 1, zv, 1);
+    const char *ms[] = {"\"gps demo\""};
+    add_var_to_func(f, "const-string", "msg", 8, ms, 1);
+    func_append(f, "\t(msg :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(:gps_init !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(((ret zero !=) f :=) f if)");
+    func_append(f, "\t\t(\"gps init error\" :print_s !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(one :exit !)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(:gps_read !)");
+    func_append(f, "\t(lat stpopd)");
+    func_append(f, "\t(lon stpopd)");
+    func_append(f, "\t(\"lat: \" :print_s !)");
+    func_append(f, "\t(lat :print_d !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(\"lon: \" :print_s !)");
+    func_append(f, "\t(lon :print_d !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+static void emit_timer_date(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "time.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "t", 1, zv, 1);
+    add_var_to_func(f, "int64", "year", 1, zv, 1);
+    add_var_to_func(f, "int64", "month", 1, zv, 1);
+    add_var_to_func(f, "int64", "day", 1, zv, 1);
+    add_var_to_func(f, "int64", "hour", 1, zv, 1);
+    add_var_to_func(f, "int64", "min", 1, zv, 1);
+    add_var_to_func(f, "int64", "sec", 1, zv, 1);
+    func_append(f, "\t(:time_init !)");
+    func_append(f, "\t(:time_get !)");
+    func_append(f, "\t(t stpopi)");
+    func_append(f, "\t(year stpopi)");
+    func_append(f, "\t(month stpopi)");
+    func_append(f, "\t(day stpopi)");
+    func_append(f, "\t(hour stpopi)");
+    func_append(f, "\t(min stpopi)");
+    func_append(f, "\t(sec stpopi)");
+    func_append(f, "\t(\"date: \" :print_s !)");
+    func_append(f, "\t(year :print_i !)");
+    func_append(f, "\t(\"-\" :print_s !)");
+    func_append(f, "\t(month :print_i !)");
+    func_append(f, "\t(\"-\" :print_s !)");
+    func_append(f, "\t(day :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(\"time: \" :print_s !)");
+    func_append(f, "\t(hour :print_i !)");
+    func_append(f, "\t(\":\" :print_s !)");
+    func_append(f, "\t(min :print_i !)");
+    func_append(f, "\t(\":\" :print_s !)");
+    func_append(f, "\t(sec :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+static void emit_sdl_sound(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "sdl-lib.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "width", 1, (const char *[]){"320"}, 1);
+    add_var_to_func(f, "int64", "height", 1, (const char *[]){"200"}, 1);
+    add_var_to_func(f, "int64", "bit", 1, (const char *[]){"32"}, 1);
+    const char *fn[] = {"\"test.wav\""};
+    add_var_to_func(f, "const-string", "filename", 9, fn, 1);
+    func_append(f, "\t(zero width height bit zero :sdl_open_screen !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(filename :sdl_play_sound !)");
+    func_append(f, "\t(\"sound played\" :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(:sdl_update !)");
+    func_append(f, "\t(:sdl_quit !)");
+    func_append(f, "\t(one zero 0 0 intr0)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+static void emit_sdl_joystick(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "sdl-lib.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "x_axis", 1, zv, 1);
+    add_var_to_func(f, "int64", "y_axis", 1, zv, 1);
+    add_var_to_func(f, "int64", "buttons", 1, zv, 1);
+    add_var_to_func(f, "int64", "width", 1, (const char *[]){"320"}, 1);
+    add_var_to_func(f, "int64", "height", 1, (const char *[]){"200"}, 1);
+    add_var_to_func(f, "int64", "bit", 1, (const char *[]){"32"}, 1);
+    func_append(f, "\t(zero width height bit zero :sdl_open_screen !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(:get_joystick_info !)");
+    func_append(f, "\t(:get_joystick_x_axis !)");
+    func_append(f, "\t(x_axis stpopi)");
+    func_append(f, "\t(:get_joystick_y_axis !)");
+    func_append(f, "\t(y_axis stpopi)");
+    func_append(f, "\t(:get_joystick_buttons !)");
+    func_append(f, "\t(buttons stpopi)");
+    func_append(f, "\t(\"x_axis: \" :print_s !)");
+    func_append(f, "\t(x_axis :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(\"y_axis: \" :print_s !)");
+    func_append(f, "\t(y_axis :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(:sdl_update !)");
+    func_append(f, "\t(:sdl_quit !)");
+    func_append(f, "\t(one zero 0 0 intr0)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+static void emit_sdl_mouse(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "sdl-lib.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "mx", 1, zv, 1);
+    add_var_to_func(f, "int64", "my", 1, zv, 1);
+    add_var_to_func(f, "int64", "buttons", 1, zv, 1);
+    add_var_to_func(f, "int64", "width", 1, (const char *[]){"320"}, 1);
+    add_var_to_func(f, "int64", "height", 1, (const char *[]){"200"}, 1);
+    add_var_to_func(f, "int64", "bit", 1, (const char *[]){"32"}, 1);
+    func_append(f, "\t(zero width height bit zero :sdl_open_screen !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(:get_mouse_state !)");
+    func_append(f, "\t(mx stpopi)");
+    func_append(f, "\t(my stpopi)");
+    func_append(f, "\t(buttons stpopi)");
+    func_append(f, "\t(\"mouse x: \" :print_s !)");
+    func_append(f, "\t(mx :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(\"mouse y: \" :print_s !)");
+    func_append(f, "\t(my :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(\"buttons: \" :print_s !)");
+    func_append(f, "\t(buttons :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(:sdl_update !)");
+    func_append(f, "\t(:sdl_quit !)");
+    func_append(f, "\t(one zero 0 0 intr0)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+static void emit_fractal(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include_post(prog, "sdl-lib.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "width", 1, (const char *[]){"640"}, 1);
+    add_var_to_func(f, "int64", "height", 1, (const char *[]){"480"}, 1);
+    add_var_to_func(f, "int64", "bit", 1, (const char *[]){"32"}, 1);
+    add_var_to_func(f, "int64", "x", 1, zv, 1);
+    add_var_to_func(f, "int64", "y", 1, zv, 1);
+    add_var_to_func(f, "int64", "iter", 1, zv, 1);
+    add_var_to_func(f, "int64", "max_iter", 1, (const char *[]){"256"}, 1);
+    add_var_to_func(f, "int64", "delay", 1, (const char *[]){"50000"}, 1);
+    add_var_to_func(f, "double", "zx", 1, zv, 1);
+    add_var_to_func(f, "double", "zy", 1, zv, 1);
+    add_var_to_func(f, "double", "cx", 1, zv, 1);
+    add_var_to_func(f, "double", "cy", 1, zv, 1);
+    add_var_to_func(f, "double", "tmp", 1, zv, 1);
+    func_append(f, "\t(zero width height bit zero :sdl_open_screen !)");
+    func_append(f, "\t(zero x :=)");
+    func_append(f, "\t(:xloop)");
+    func_append(f, "\t(zero y :=)");
+    func_append(f, "\t(:yloop)");
+    func_append(f, "\t(zero iter :=)");
+    func_append(f, "\t(zero zx :=)");
+    func_append(f, "\t(zero zy :=)");
+    func_append(f, "\t(x cx :=)");
+    func_append(f, "\t(y cy :=)");
+    func_append(f, "\t(zx zx *d zy zy *d -d tmp :=)");
+    func_append(f, "\t(tmp cx +d zx :=)");
+    func_append(f, "\t(zx zy *d two *d tmp :=)");
+    func_append(f, "\t(tmp cy +d zy :=)");
+    func_append(f, "\t(iter one + iter :=)");
+    func_append(f, "\t(((iter max_iter <) f :=) f for)");
+    func_append(f, "\t\t(x y zero zero zero 255 :sdl_pixel !)");
+    func_append(f, "\t((y one +) y :=)");
+    func_append(f, "\t((y height <) f :=)");
+    func_append(f, "\t(f :yloop jmpi)");
+    func_append(f, "\t((x one +) x :=)");
+    func_append(f, "\t((x width <) f :=)");
+    func_append(f, "\t(f :xloop jmpi)");
+    func_append(f, "\t(:sdl_update !)");
+    func_append(f, "\t(delay 0 0 0 intr0)");
+    func_append(f, "\t(:sdl_quit !)");
+    func_append(f, "\t(one zero 0 0 intr0)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+static void emit_cluster_3x1(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "val", 1, (const char *[]){"42"}, 1);
+    const char *ms[] = {"\"3x1 cluster worker\""};
+    add_var_to_func(f, "const-string", "msg", 18, ms, 1);
+    func_append(f, "\t(msg :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(:datacloud_init !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(((ret zero !=) f :=) f if)");
+    func_append(f, "\t\t(\"cluster init error\" :print_s !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(one :exit !)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(val :datacloud_store !)");
+    func_append(f, "\t(:datacloud_get !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(\"stored: \" :print_s !)");
+    func_append(f, "\t(ret :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+static void emit_reload(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    const char *ms[] = {"\"reload module demo\""};
+    add_var_to_func(f, "const-string", "msg", 19, ms, 1);
+    const char *mn[] = {"\"my_module\""};
+    add_var_to_func(f, "const-string", "modname", 10, mn, 1);
+    func_append(f, "\t(msg :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(modname :module_load !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(((ret zero !=) f :=) f if)");
+    func_append(f, "\t\t(\"module load error\" :print_s !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(one :exit !)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(modname :module_reload !)");
+    func_append(f, "\t(\"module reloaded\" :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+static void emit_coordinate_grid(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, (const char *[]){"2"}, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "x", 1, zv, 1);
+    add_var_to_func(f, "int64", "y", 1, zv, 1);
+    add_var_to_func(f, "int64", "size", 1, (const char *[]){"5"}, 1);
+    add_var_to_func(f, "int64", "realind", 1, zv, 1);
+    add_var_to_func(f, "int64", "grid", 25, zv, 0);
+    func_append(f, "\t(\"grid demo\" :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero y :=)");
+    func_append(f, "\t(:yloop)");
+    func_append(f, "\t(zero x :=)");
+    func_append(f, "\t(:xloop)");
+    func_append(f, "\t(y size * x + realind :=)");
+    func_append(f, "\t(realind * int64_size realind :=)");
+    func_append(f, "\t(x y + two * grid [ realind ] =)");
+    func_append(f, "\t(grid [ realind ] :print_i !)");
+    func_append(f, "\t(\" \" :print_s !)");
+    func_append(f, "\t(x + one x :=)");
+    func_append(f, "\t((x size <) f :=)");
+    func_append(f, "\t(f :xloop jmpi)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(y + one y :=)");
+    func_append(f, "\t((y size <) f :=)");
+    func_append(f, "\t(f :yloop jmpi)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+static void emit_turmite(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"}, *tv[] = {"2"}, *thv[] = {"3"}, *fov[] = {"4"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "three", 1, thv, 1);
+    add_var_to_func(f, "const-int64", "four", 1, fov, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "x", 1, (const char *[]){"10"}, 1);
+    add_var_to_func(f, "int64", "y", 1, (const char *[]){"10"}, 1);
+    add_var_to_func(f, "int64", "dir", 1, zv, 1);
+    add_var_to_func(f, "int64", "cell", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "size", 1, (const char *[]){"20"}, 1);
+    add_var_to_func(f, "byte", "grid", 400, zv, 0);
+    func_append(f, "\t(\"turmite demo\" :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i 100 <) f :=) f for)");
+    func_append(f, "\t\t(y size * x + cell :=)");
+    func_append(f, "\t\t(cell size * cell :=)");
+    func_append(f, "\t\t(grid [ cell ] f =)");
+    func_append(f, "\t\t(((f zero ==) f :=) f if)");
+    func_append(f, "\t\t\t(one grid [ cell ] =)");
+    func_append(f, "\t\t\t(dir one + 4 % dir :=)");
+    func_append(f, "\t\t(else)");
+    func_append(f, "\t\t\t(zero grid [ cell ] =)");
+    func_append(f, "\t\t\t(dir one - 4 % dir :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((dir zero ==) f :=) f if)");
+    func_append(f, "\t\t\ty := y - one :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((dir one ==) f :=) f if)");
+    func_append(f, "\t\t\tx := x + one :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((dir two ==) f :=) f if)");
+    func_append(f, "\t\t\ty := y + one :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(((dir three ==) f :=) f if)");
+    func_append(f, "\t\t\tx := x - one :=)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(\"done\" :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+static void emit_crossword(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "j", 1, zv, 1);
+    add_var_to_func(f, "int64", "size", 1, (const char *[]){"10"}, 1);
+    add_var_to_func(f, "byte", "grid", 100, zv, 0);
+    const char *ws[] = {"\"crossword generator\""};
+    add_var_to_func(f, "const-string", "msg", 21, ws, 1);
+    func_append(f, "\t(msg :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i size <) f :=) f for)");
+    func_append(f, "\t\t(zero j :=)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t(((j size <) f :=) f for)");
+    func_append(f, "\t\t\t(i size * j + k :=)");
+    func_append(f, "\t\t\t(65 j + byte grid [ k ] =)");
+    func_append(f, "\t\t\t(grid [ k ] :print_c !)");
+    func_append(f, "\t\t\t(j + one j :=)");
+    func_append(f, "\t\t(next)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+static void emit_linter(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zv[] = {"0"}, *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    add_var_to_func(f, "string", "filename", 256, (const char *[]){"\"test.l1com\""}, 1);
+    const char *ms[] = {"\"linter demo\""};
+    add_var_to_func(f, "const-string", "msg", 11, ms, 1);
+    func_append(f, "\t(msg :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(filename :lint_file !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(((ret zero ==) f :=) f if)");
+    func_append(f, "\t\t(\"no errors\" :print_s !)");
+    func_append(f, "\t(else)");
+    func_append(f, "\t\t(\"errors found\" :print_s !)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
 static int parse_task(const char *prompt, TaskProfile *task) {
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", prompt);
@@ -4521,6 +5360,53 @@ static int parse_task(const char *prompt, TaskProfile *task) {
     if ((has_word(buf, "shell") || has_word(buf, "interactive")) && (has_word(buf, "run") || has_word(buf, "running") || has_word(buf, "execute") || has_word(buf, "command") || has_word(buf, "ausfuehren") || has_word(buf, "ausführen") || has_word(buf, "befehl")))
         task->has_shell_repl = 1;
 
+    if (has_word(buf, "webserver") || has_word(buf, "http") || (has_word(buf, "web") && has_word(buf, "server")))
+        task->has_webserver = 1;
+    if ((has_word(buf, "sdl") || has_word(buf, "screen") || has_word(buf, "bildschirm")) && (has_word(buf, "open") || has_word(buf, "window") || has_word(buf, "fenster") || has_word(buf, "pixel") || has_word(buf, "grafik") || has_word(buf, "graphics")))
+        task->has_sdl_window = 1;
+    if ((has_word(buf, "sdl") || has_word(buf, "gui") || has_word(buf, "gadget")) && (has_word(buf, "button") || has_word(buf, "knopf") || has_word(buf, "click")))
+        task->has_sdl_button = 1;
+    if (has_word(buf, "thread") || has_word(buf, "nebenlauf") || (has_word(buf, "parallel") && has_word(buf, "run")))
+        task->has_thread = 1;
+    if (has_word(buf, "scheduler") || has_word(buf, "planer") || (has_word(buf, "task") && has_word(buf, "schedule")))
+        task->has_scheduler = 1;
+    if ((has_word(buf, "shell") || has_word(buf, "command") || has_word(buf, "befehl") || has_word(buf, "kommando")) && (has_word(buf, "exec") || has_word(buf, "run") || has_word(buf, "ausführen") || has_word(buf, "ausfuehren")))
+        task->has_shell_exec = 1;
+    if (has_word(buf, "json") || has_word(buf, "javascript") || (has_word(buf, "parse") && has_word(buf, "json")))
+        task->has_json = 1;
+    if (has_word(buf, "crypto") || has_word(buf, "encrypt") || has_word(buf, "decrypt") || has_word(buf, "verschlüssel") || has_word(buf, "chiffre") || has_word(buf, "cipher"))
+        task->has_crypto = 1;
+    if (has_word(buf, "bluetooth") || has_word(buf, "ble") || (has_word(buf, "bluetooth") && has_word(buf, "low")))
+        task->has_bluetooth_ble = 1;
+    if ((has_word(buf, "serial") || has_word(buf, "rs232") || has_word(buf, "seriell")) && (has_word(buf, "port") || has_word(buf, "schnittstelle") || has_word(buf, "interface")))
+        task->has_serial_rs232 = 1;
+    if (has_word(buf, "gpio") || (has_word(buf, "general") && has_word(buf, "purpose")))
+        task->has_gpio = 1;
+    if (has_word(buf, "gps") || has_word(buf, "navigation") || (has_word(buf, "global") && has_word(buf, "position")))
+        task->has_gps = 1;
+    if ((has_word(buf, "date") || has_word(buf, "datum") || has_word(buf, "kalender") || has_word(buf, "calendar")) && (has_word(buf, "time") || has_word(buf, "zeit") || has_word(buf, "uhr") || has_word(buf, "clock")))
+        task->has_timer_date = 1;
+    if ((has_word(buf, "sdl") || has_word(buf, "sound") || has_word(buf, "audio") || has_word(buf, "ton")) && (has_word(buf, "play") || has_word(buf, "spielen") || has_word(buf, "abspielen") || has_word(buf, "wiedergabe")))
+        task->has_sdl_sound = 1;
+    if ((has_word(buf, "sdl") || has_word(buf, "joystick") || has_word(buf, "gamepad") || has_word(buf, "controller")) && (has_word(buf, "joystick") || has_word(buf, "axis") || has_word(buf, "achse") || has_word(buf, "button")))
+        task->has_sdl_joystick = 1;
+    if ((has_word(buf, "sdl") || has_word(buf, "mouse") || has_word(buf, "maus")) && (has_word(buf, "mouse") || has_word(buf, "maus") || has_word(buf, "pointer") || has_word(buf, "cursor")))
+        task->has_sdl_mouse = 1;
+    if (has_word(buf, "fractal") || has_word(buf, "mandelbrot") || has_word(buf, "julia") || (has_word(buf, "fraktal") && has_word(buf, "set")))
+        task->has_fractal = 1;
+    if ((has_word(buf, "cluster") || has_word(buf, "worker") || has_word(buf, "verteilt") || has_word(buf, "distributed")) && (has_word(buf, "compute") || has_word(buf, "rechnen") || has_word(buf, "3x1") || has_word(buf, "arbeit")))
+        task->has_cluster_3x1 = 1;
+    if (has_word(buf, "reload") || has_word(buf, "module") || (has_word(buf, "hot") && has_word(buf, "swap")) || (has_word(buf, "neu") && has_word(buf, "laden")))
+        task->has_reload = 1;
+    if ((has_word(buf, "coordinate") || has_word(buf, "koordinate") || has_word(buf, "grid") || has_word(buf, "gitter")) && (has_word(buf, "xy") || has_word(buf, "2d") || has_word(buf, "position") || has_word(buf, "raster")))
+        task->has_coordinate_grid = 1;
+    if (has_word(buf, "turmite") || (has_word(buf, "turmite") && has_word(buf, "ant")))
+        task->has_turmite = 1;
+    if (has_word(buf, "crossword") || has_word(buf, "kreuzwort") || has_word(buf, "rätsel") || (has_word(buf, "word") && has_word(buf, "puzzle")))
+        task->has_crossword = 1;
+    if (has_word(buf, "linter") || has_word(buf, "lint") || (has_word(buf, "code") && has_word(buf, "check")) || (has_word(buf, "static") && has_word(buf, "analyze")))
+        task->has_linter = 1;
+
     if (has_word(buf, "fann") || has_word(buf, "neural") || (has_word(buf, "network") && has_word(buf, "ai"))) {
         if (has_word(buf, "train") || has_word(buf, "learn")) {
             task->has_fann_create = 1;
@@ -4589,7 +5475,15 @@ static int parse_task(const char *prompt, TaskProfile *task) {
         || task->has_freq_analysis || task->has_shuffle
         || task->has_weighted_random || task->has_ascii_table
         || task->has_bignum_math || task->has_password_card
-        || task->has_chess_problem || task->has_shell_repl;
+        || task->has_chess_problem || task->has_shell_repl
+        || task->has_webserver || task->has_sdl_window || task->has_sdl_button
+        || task->has_thread || task->has_scheduler || task->has_shell_exec
+        || task->has_json || task->has_crypto || task->has_bluetooth_ble
+        || task->has_serial_rs232 || task->has_gpio || task->has_gps
+        || task->has_timer_date || task->has_sdl_sound || task->has_sdl_joystick
+        || task->has_sdl_mouse || task->has_fractal || task->has_cluster_3x1
+        || task->has_reload || task->has_coordinate_grid || task->has_turmite
+        || task->has_crossword || task->has_linter;
 
     snprintf(task->title, sizeof(task->title), "%s", prompt);
     return has_any;
@@ -7916,6 +8810,29 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     DISPATCH(has_password_card, emit_password_card);
     DISPATCH(has_chess_problem, emit_chess_problem);
     DISPATCH(has_shell_repl, emit_shell_repl);
+    DISPATCH(has_webserver, emit_webserver);
+    DISPATCH(has_sdl_window, emit_sdl_window);
+    DISPATCH(has_sdl_button, emit_sdl_button);
+    DISPATCH(has_thread, emit_thread);
+    DISPATCH(has_scheduler, emit_scheduler);
+    DISPATCH(has_shell_exec, emit_shell_exec);
+    DISPATCH(has_json, emit_json);
+    DISPATCH(has_crypto, emit_crypto);
+    DISPATCH(has_bluetooth_ble, emit_bluetooth_ble);
+    DISPATCH(has_serial_rs232, emit_serial_rs232);
+    DISPATCH(has_gpio, emit_gpio);
+    DISPATCH(has_gps, emit_gps);
+    DISPATCH(has_timer_date, emit_timer_date);
+    DISPATCH(has_sdl_sound, emit_sdl_sound);
+    DISPATCH(has_sdl_joystick, emit_sdl_joystick);
+    DISPATCH(has_sdl_mouse, emit_sdl_mouse);
+    DISPATCH(has_fractal, emit_fractal);
+    DISPATCH(has_cluster_3x1, emit_cluster_3x1);
+    DISPATCH(has_reload, emit_reload);
+    DISPATCH(has_coordinate_grid, emit_coordinate_grid);
+    DISPATCH(has_turmite, emit_turmite);
+    DISPATCH(has_crossword, emit_crossword);
+    DISPATCH(has_linter, emit_linter);
 
     // If no single emitter matched but extra emitters are specified, run them
     // as a composite sequence. Each extra emitter runs on the same function.
@@ -8009,6 +8926,29 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
                 case 107: if (task->has_password_card) { emit_password_card(prog, f); emitted = 1; } break;
                 case 108: if (task->has_chess_problem) { emit_chess_problem(prog, f); emitted = 1; } break;
                 case 109: if (task->has_shell_repl) { emit_shell_repl(prog, f); emitted = 1; } break;
+                case 110: if (task->has_webserver) { emit_webserver(prog, f); emitted = 1; } break;
+                case 111: if (task->has_sdl_window) { emit_sdl_window(prog, f); emitted = 1; } break;
+                case 112: if (task->has_sdl_button) { emit_sdl_button(prog, f); emitted = 1; } break;
+                case 113: if (task->has_thread) { emit_thread(prog, f); emitted = 1; } break;
+                case 114: if (task->has_scheduler) { emit_scheduler(prog, f); emitted = 1; } break;
+                case 115: if (task->has_shell_exec) { emit_shell_exec(prog, f); emitted = 1; } break;
+                case 116: if (task->has_json) { emit_json(prog, f); emitted = 1; } break;
+                case 117: if (task->has_crypto) { emit_crypto(prog, f); emitted = 1; } break;
+                case 118: if (task->has_bluetooth_ble) { emit_bluetooth_ble(prog, f); emitted = 1; } break;
+                case 119: if (task->has_serial_rs232) { emit_serial_rs232(prog, f); emitted = 1; } break;
+                case 120: if (task->has_gpio) { emit_gpio(prog, f); emitted = 1; } break;
+                case 121: if (task->has_gps) { emit_gps(prog, f); emitted = 1; } break;
+                case 122: if (task->has_timer_date) { emit_timer_date(prog, f); emitted = 1; } break;
+                case 123: if (task->has_sdl_sound) { emit_sdl_sound(prog, f); emitted = 1; } break;
+                case 124: if (task->has_sdl_joystick) { emit_sdl_joystick(prog, f); emitted = 1; } break;
+                case 125: if (task->has_sdl_mouse) { emit_sdl_mouse(prog, f); emitted = 1; } break;
+                case 126: if (task->has_fractal) { emit_fractal(prog, f); emitted = 1; } break;
+                case 127: if (task->has_cluster_3x1) { emit_cluster_3x1(prog, f); emitted = 1; } break;
+                case 128: if (task->has_reload) { emit_reload(prog, f); emitted = 1; } break;
+                case 129: if (task->has_coordinate_grid) { emit_coordinate_grid(prog, f); emitted = 1; } break;
+                case 130: if (task->has_turmite) { emit_turmite(prog, f); emitted = 1; } break;
+                case 131: if (task->has_crossword) { emit_crossword(prog, f); emitted = 1; } break;
+                case 132: if (task->has_linter) { emit_linter(prog, f); emitted = 1; } break;
                 default: break;
             }
         }

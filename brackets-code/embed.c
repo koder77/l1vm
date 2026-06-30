@@ -4,7 +4,7 @@
 #define VOCAB_SIZE 72
 #define TEMPERATURE 0.8
 #define MAX_STEPS 8
-#define NUM_EMITTERS 110
+#define NUM_EMITTERS 133
 
 typedef struct {
     char word[32];
@@ -13,7 +13,7 @@ typedef struct {
 
 static WordEmbedding word_embeddings[VOCAB_SIZE];
 static float attention_weights[NUM_EMITTERS];
-static const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt","function","string_length","stack","queue","insertion_sort","calculator","unit_converter","rock_paper_scissors","pyramid","temp_converter_menu","sort_stats","string_analyzer","number_analyzer","filter_numbers","random_generator","math_menu","quiz_game","bmi_calculator","statistics_suite","linked_list","binary_search_tree","tree_traversal","graph_bfs_dfs","n_queens","sudoku","levenshtein_distance","maze_generator","maze_solver","monte_carlo_pi","matrix_multiplication","matrix_transpose","numerical_integration","complex_numbers","linear_regression","base_converter","freq_analysis","shuffle","weighted_random","ascii_table","bignum_math","password_card","chess_problem","shell_repl"};
+static const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt","function","string_length","stack","queue","insertion_sort","calculator","unit_converter","rock_paper_scissors","pyramid","temp_converter_menu","sort_stats","string_analyzer","number_analyzer","filter_numbers","random_generator","math_menu","quiz_game","bmi_calculator","statistics_suite","linked_list","binary_search_tree","tree_traversal","graph_bfs_dfs","n_queens","sudoku","levenshtein_distance","maze_generator","maze_solver","monte_carlo_pi","matrix_multiplication","matrix_transpose","numerical_integration","complex_numbers","linear_regression","base_converter","freq_analysis","shuffle","weighted_random","ascii_table","bignum_math","password_card","chess_problem","shell_repl","webserver","sdl_window","sdl_button","thread","scheduler","shell_exec","json","crypto","bluetooth_ble","serial_rs232","gpio","gps","timer_date","sdl_sound","sdl_joystick","sdl_mouse","fractal","cluster_3x1","reload","coordinate_grid","turmite","crossword","linter"};
 static int vs_boost_tokens[64];
 static int vs_boost_count = 0;
 
@@ -355,6 +355,29 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
     if (task->has_password_card) emitter_scores[107] = 2.5f;
     if (task->has_chess_problem) emitter_scores[108] = 2.5f;
     if (task->has_shell_repl) emitter_scores[109] = 2.5f;
+    if (task->has_webserver) emitter_scores[110] = 2.5f;
+    if (task->has_sdl_window) emitter_scores[111] = 2.5f;
+    if (task->has_sdl_button) emitter_scores[112] = 2.5f;
+    if (task->has_thread) emitter_scores[113] = 2.0f;
+    if (task->has_scheduler) emitter_scores[114] = 2.0f;
+    if (task->has_shell_exec) emitter_scores[115] = 2.5f;
+    if (task->has_json) emitter_scores[116] = 2.5f;
+    if (task->has_crypto) emitter_scores[117] = 2.5f;
+    if (task->has_bluetooth_ble) emitter_scores[118] = 2.5f;
+    if (task->has_serial_rs232) emitter_scores[119] = 2.5f;
+    if (task->has_gpio) emitter_scores[120] = 2.5f;
+    if (task->has_gps) emitter_scores[121] = 2.5f;
+    if (task->has_timer_date) emitter_scores[122] = 2.0f;
+    if (task->has_sdl_sound) emitter_scores[123] = 2.5f;
+    if (task->has_sdl_joystick) emitter_scores[124] = 2.5f;
+    if (task->has_sdl_mouse) emitter_scores[125] = 2.5f;
+    if (task->has_fractal) emitter_scores[126] = 2.5f;
+    if (task->has_cluster_3x1) emitter_scores[127] = 2.5f;
+    if (task->has_reload) emitter_scores[128] = 2.0f;
+    if (task->has_coordinate_grid) emitter_scores[129] = 2.0f;
+    if (task->has_turmite) emitter_scores[130] = 2.5f;
+    if (task->has_crossword) emitter_scores[131] = 2.5f;
+    if (task->has_linter) emitter_scores[132] = 2.0f;
 
     // Phase 2a: prompt token boosts
     apply_token_boosts(emitter_scores, tokens, num_tokens,
