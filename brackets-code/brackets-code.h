@@ -26,7 +26,7 @@
 #define MAX_STEPS 8
 #define NUM_EMITTERS 133
 
-#define MAX_LEARNED 64
+#define MAX_LEARNED 4096
 #define LEARNED_DIR ".brackets-code/learned"
 
 #define MAX_EXAMPLES 512
