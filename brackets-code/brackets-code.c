@@ -765,6 +765,51 @@ static int has_word(const char *prompt, const char *word) {
     return has_word_fuzzy(prompt, word);
 }
 
+static int is_negated(const char *prompt, const char *keyword) {
+    char buf[MAX_PROMPT];
+    snprintf(buf, sizeof(buf), "%s", prompt);
+    to_lowercase(buf);
+    int kwlen = strlen(keyword);
+    char *p = buf;
+    static const char *negations[] = {
+        "not", "don't", "dont", "doesn't", "doesnt", "isn't", "isnt",
+        "won't", "wont", "can't", "cant", "no", "without", "kein",
+        "nicht", "keine", "keinen", "keinem", "never", "niemals",
+        "weder", "nor", "neither", NULL
+    };
+    while ((p = strstr(p, keyword)) != NULL) {
+        int at_start = (p == buf);
+        int before_ok = at_start || !isalpha((unsigned char)*(p - 1));
+        int after_ok = (p[kwlen] == '\0') || !isalpha((unsigned char)p[kwlen]);
+        if (before_ok && after_ok) {
+            // Look backwards from keyword for negation words within 5 words
+            char *scan = p - 1;
+            int words_back = 0;
+            while (scan >= buf && words_back < 5) {
+                while (scan >= buf && isspace((unsigned char)*scan)) scan--;
+                if (scan < buf) break;
+                char *word_end = scan;
+                while (scan >= buf && isalpha((unsigned char)*scan)) scan--;
+                char *word_start = scan + 1;
+                int wlen = word_end - word_start + 1;
+                if (wlen > 0 && wlen < 32) {
+                    char wbuf[32];
+                    snprintf(wbuf, sizeof(wbuf), "%.*s", wlen, word_start);
+                    to_lowercase(wbuf);
+                    for (int ni = 0; negations[ni]; ni++) {
+                        if (strcmp(wbuf, negations[ni]) == 0) return 1;
+                    }
+                    words_back++;
+                }
+                if (scan >= buf) scan--;
+            }
+            return 0;
+        }
+        p++;
+    }
+    return 0;
+}
+
 static const char* extract_var_name(const char *prompt, const char *fallback) {
     static char buf[MAX_PROMPT];
     static const char *keywords[] = {
@@ -5500,6 +5545,18 @@ static int parse_task(const char *prompt, TaskProfile *task) {
         || task->has_crossword || task->has_linter;
 
     snprintf(task->title, sizeof(task->title), "%s", prompt);
+
+    // Negation post-processing: clear flags if keyword is negated
+    if (task->has_sort && is_negated(buf, "sort")) task->has_sort = 0;
+    if (task->has_loop && is_negated(buf, "loop")) task->has_loop = 0;
+    if (task->has_condition && is_negated(buf, "if")) task->has_condition = 0;
+    if (task->has_input && is_negated(buf, "input")) task->has_input = 0;
+    if (task->has_output && is_negated(buf, "print")) task->has_output = 0;
+    if (task->has_sum && is_negated(buf, "sum")) task->has_sum = 0;
+    if (task->has_average && is_negated(buf, "average")) task->has_average = 0;
+    if (task->has_power && is_negated(buf, "power")) task->has_power = 0;
+    if (task->has_gcd && is_negated(buf, "gcd")) task->has_gcd = 0;
+
     return has_any;
 }
 
@@ -8494,6 +8551,9 @@ static void emit_shell_repl(Program *prog, Function *f) {
     func_append(f, "\t\t(:loop jmp)");
 }
 
+// Temporary suppress unused function warnings for generated wrapper functions
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
 static void ensure_exit(Function *f, int last_step) {
     if (!last_step) return;
     const char *zv[] = {"0"};
@@ -8504,6 +8564,169 @@ static void ensure_exit(Function *f, int last_step) {
 // Dispatch macro for uniform emitter blocks (no early return)
 #define DISPATCH(field, func) \
     if (task->field) { func(prog, f); emitted = 1; }
+
+// ==================== EXTRA EMITTER DISPATCH TABLE ====================
+// Replaces the ~100-line switch with a function-pointer table
+typedef void (*ExtraEmitterFunc)(Program*, Function*, TaskProfile*);
+
+#define EE_SIMPLE(name) \
+    static void ee_##name(Program *p, Function *f, TaskProfile *t) { \
+        (void)t; emit_##name(p, f); \
+    }
+
+EE_SIMPLE(string_cat)
+EE_SIMPLE(fizzbuzz)
+EE_SIMPLE(even_odd)
+EE_SIMPLE(array_min_max)
+EE_SIMPLE(palindrome)
+EE_SIMPLE(lcm)
+EE_SIMPLE(collatz)
+EE_SIMPLE(sum_of_digits)
+EE_SIMPLE(reverse_string)
+EE_SIMPLE(armstrong)
+EE_SIMPLE(perfect_number)
+EE_SIMPLE(count_vowels)
+EE_SIMPLE(anagram_check)
+EE_SIMPLE(string_to_upper)
+EE_SIMPLE(string_to_lower)
+EE_SIMPLE(caesar_cipher)
+EE_SIMPLE(palindrome_string)
+EE_SIMPLE(binary_search)
+EE_SIMPLE(square_root)
+EE_SIMPLE(prime_factorization)
+EE_SIMPLE(compound_interest)
+EE_SIMPLE(decimal_to_binary)
+EE_SIMPLE(dice_roll)
+EE_SIMPLE(double_circle_area)
+EE_SIMPLE(double_pythagoras)
+EE_SIMPLE(double_temp_convert)
+EE_SIMPLE(double_sqrt)
+EE_SIMPLE(string_length)
+EE_SIMPLE(stack)
+EE_SIMPLE(queue)
+EE_SIMPLE(bmi_calculator)
+EE_SIMPLE(calculator)
+EE_SIMPLE(unit_converter)
+EE_SIMPLE(rock_paper_scissors)
+EE_SIMPLE(pyramid)
+EE_SIMPLE(temp_converter_menu)
+EE_SIMPLE(string_analyzer)
+EE_SIMPLE(number_analyzer)
+EE_SIMPLE(filter_numbers)
+EE_SIMPLE(random_generator)
+EE_SIMPLE(math_menu)
+EE_SIMPLE(quiz_game)
+EE_SIMPLE(statistics_suite)
+EE_SIMPLE(linter)
+EE_SIMPLE(linked_list)
+EE_SIMPLE(binary_search_tree)
+EE_SIMPLE(tree_traversal)
+EE_SIMPLE(graph_bfs_dfs)
+EE_SIMPLE(n_queens)
+EE_SIMPLE(sudoku)
+EE_SIMPLE(levenshtein_distance)
+EE_SIMPLE(maze_generator)
+EE_SIMPLE(maze_solver)
+EE_SIMPLE(monte_carlo_pi)
+EE_SIMPLE(matrix_multiplication)
+EE_SIMPLE(matrix_transpose)
+EE_SIMPLE(numerical_integration)
+EE_SIMPLE(complex_numbers)
+EE_SIMPLE(linear_regression)
+EE_SIMPLE(base_converter)
+EE_SIMPLE(freq_analysis)
+EE_SIMPLE(shuffle)
+EE_SIMPLE(weighted_random)
+EE_SIMPLE(ascii_table)
+EE_SIMPLE(password_card)
+EE_SIMPLE(chess_problem)
+EE_SIMPLE(shell_repl)
+EE_SIMPLE(webserver)
+EE_SIMPLE(sdl_window)
+EE_SIMPLE(sdl_button)
+EE_SIMPLE(thread)
+EE_SIMPLE(scheduler)
+EE_SIMPLE(shell_exec)
+EE_SIMPLE(json)
+EE_SIMPLE(crypto)
+EE_SIMPLE(bluetooth_ble)
+EE_SIMPLE(serial_rs232)
+EE_SIMPLE(gpio)
+EE_SIMPLE(gps)
+EE_SIMPLE(timer_date)
+EE_SIMPLE(sdl_sound)
+EE_SIMPLE(sdl_joystick)
+EE_SIMPLE(sdl_mouse)
+EE_SIMPLE(fractal)
+EE_SIMPLE(cluster_3x1)
+EE_SIMPLE(reload)
+EE_SIMPLE(coordinate_grid)
+EE_SIMPLE(turmite)
+EE_SIMPLE(crossword)
+EE_SIMPLE(bignum_math)
+
+// Wrappers for emitters with extra parameters
+static void ee_read_file(Program *p, Function *f, TaskProfile *t) { (void)t; emit_read_file(p, f); }
+static void ee_write_file(Program *p, Function *f, TaskProfile *t) { (void)t; emit_write_file(p, f); }
+static void ee_double_math(Program *p, Function *f, TaskProfile *t) { emit_double_math(p, f, t->op); }
+static void ee_double_compound_interest(Program *p, Function *f, TaskProfile *t) { (void)t; emit_double_compound_interest(p, f); }
+static void ee_double_average(Program *p, Function *f, TaskProfile *t) { emit_double_average(p, f, t->skip_input); }
+static void ee_bubble_sort(Program *p, Function *f, TaskProfile *t) { emit_bubble_sort(p, f, t->skip_input); }
+static void ee_standard_deviation(Program *p, Function *f, TaskProfile *t) { emit_standard_deviation(p, f, t->skip_input); }
+static void ee_insertion_sort(Program *p, Function *f, TaskProfile *t) { emit_insertion_sort(p, f, 5, t->skip_input); }
+static void ee_selection_sort(Program *p, Function *f, TaskProfile *t) { emit_selection_sort(p, f, 5, t->skip_input); }
+static void ee_average(Program *p, Function *f, TaskProfile *t) { emit_average(p, f, t->skip_input); }
+static void ee_array_reverse(Program *p, Function *f, TaskProfile *t) { emit_array_reverse(p, f, t->skip_input); }
+static void ee_array_find(Program *p, Function *f, TaskProfile *t) { emit_array_find(p, f, t->skip_input); }
+static void ee_array_vmath(Program *p, Function *f, TaskProfile *t) { emit_array_vmath(p, f, t->skip_input); }
+static void ee_math(Program *p, Function *f, TaskProfile *t) { emit_math(p, f, t->type, t->op, t->literals, t->num_literals > 2 ? 3 : 2, 1); }
+static void ee_input_loop(Program *p, Function *f, TaskProfile *t) { emit_input_loop(p, f, t->input_count > 0 ? t->input_count : 5, t->type, 0); }
+static void ee_for_sum(Program *p, Function *f, TaskProfile *t) { emit_for_sum(p, f, t->sum_range_n > 0 ? t->sum_range_n : 100); }
+static void ee_print_even(Program *p, Function *f, TaskProfile *t) { emit_print_even(p, f, t->print_even_n > 0 ? t->print_even_n : 100); }
+static void ee_input_sort(Program *p, Function *f, TaskProfile *t) { emit_input_sort(p, f, t->input_sort_count > 0 ? t->input_sort_count : 5, t->skip_input, t->has_descending); }
+static void ee_primes(Program *p, Function *f, TaskProfile *t) { int n = t->num_literals > 0 ? t->literals[0] : 50; emit_primes(p, f, n); }
+
+// Table indexed by emitter index (0..NUM_EMITTERS-1), NULL = no-op
+static ExtraEmitterFunc ee_table[NUM_EMITTERS] = {
+    [0] = ee_math, [1] = ee_input_loop, [3] = ee_for_sum, [4] = ee_print_even,
+    [8] = ee_input_sort, [10] = ee_string_cat, [13] = ee_array_reverse,
+    [14] = ee_array_find, [16] = ee_array_vmath, [17] = ee_read_file,
+    [18] = ee_write_file, [22] = ee_fizzbuzz, [23] = ee_primes,
+    [24] = ee_even_odd, [31] = ee_array_min_max, [37] = ee_average,
+    [38] = ee_selection_sort, [39] = ee_palindrome, [40] = ee_lcm,
+    [41] = ee_collatz, [42] = ee_sum_of_digits, [43] = ee_reverse_string,
+    [44] = ee_armstrong, [45] = ee_perfect_number, [46] = ee_count_vowels,
+    [47] = ee_anagram_check, [48] = ee_string_to_upper, [49] = ee_string_to_lower,
+    [50] = ee_caesar_cipher, [51] = ee_palindrome_string, [52] = ee_bubble_sort,
+    [53] = ee_binary_search, [54] = ee_square_root, [55] = ee_prime_factorization,
+    [56] = ee_standard_deviation, [57] = ee_compound_interest,
+    [58] = ee_decimal_to_binary, [59] = ee_dice_roll, [60] = ee_double_math,
+    [61] = ee_double_circle_area, [62] = ee_double_average,
+    [63] = ee_double_compound_interest, [64] = ee_double_pythagoras,
+    [65] = ee_double_temp_convert, [66] = ee_double_sqrt,
+    [68] = ee_string_length, [69] = ee_stack, [70] = ee_queue,
+    [71] = ee_insertion_sort, [72] = ee_calculator, [73] = ee_unit_converter,
+    [74] = ee_rock_paper_scissors, [75] = ee_pyramid,
+    [86] = ee_linked_list, [87] = ee_binary_search_tree, [88] = ee_tree_traversal,
+    [89] = ee_graph_bfs_dfs, [90] = ee_n_queens, [91] = ee_sudoku,
+    [92] = ee_levenshtein_distance, [93] = ee_maze_generator, [94] = ee_maze_solver,
+    [95] = ee_monte_carlo_pi, [96] = ee_matrix_multiplication,
+    [97] = ee_matrix_transpose, [98] = ee_numerical_integration,
+    [99] = ee_complex_numbers, [100] = ee_linear_regression, [101] = ee_base_converter,
+    [102] = ee_freq_analysis, [103] = ee_shuffle, [104] = ee_weighted_random,
+    [105] = ee_ascii_table, [106] = ee_bignum_math, [107] = ee_password_card,
+    [108] = ee_chess_problem, [109] = ee_shell_repl, [110] = ee_webserver,
+    [111] = ee_sdl_window, [112] = ee_sdl_button, [113] = ee_thread,
+    [114] = ee_scheduler, [115] = ee_shell_exec, [116] = ee_json,
+    [117] = ee_crypto, [118] = ee_bluetooth_ble, [119] = ee_serial_rs232,
+    [120] = ee_gpio, [121] = ee_gps, [122] = ee_timer_date,
+    [123] = ee_sdl_sound, [124] = ee_sdl_joystick, [125] = ee_sdl_mouse,
+    [126] = ee_fractal, [127] = ee_cluster_3x1, [128] = ee_reload,
+    [129] = ee_coordinate_grid, [130] = ee_turmite, [131] = ee_crossword,
+    [132] = ee_linter,
+};
+
+#pragma GCC diagnostic pop
 
 static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     // check if main function already exists
@@ -8829,110 +9052,9 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         if (task->num_extra_emitters > 0) {
             for (int ei = 0; ei < task->num_extra_emitters && ei < 32; ei++) {
                 int idx = task->extra_emitters[ei];
-                // Dispatch by index directly (LLM already scored them, skip flag checks)
-                switch (idx) {
-                    case 0: emit_math(prog, f, task->type, task->op, task->literals, task->num_literals > 2 ? 3 : 2, 1); break;
-                    case 1: emit_input_loop(prog, f, task->input_count > 0 ? task->input_count : 5, task->type, 0); break;
-                    case 3: emit_for_sum(prog, f, task->sum_range_n > 0 ? task->sum_range_n : 100); break;
-                    case 4: emit_print_even(prog, f, task->print_even_n > 0 ? task->print_even_n : 100); break;
-                    case 8: emit_input_sort(prog, f, task->input_sort_count > 0 ? task->input_sort_count : 5, task->skip_input, task->has_descending); break;
-                    case 10: emit_string_cat(prog, f); break;
-                    case 13: emit_array_reverse(prog, f, task->skip_input); break;
-                    case 14: emit_array_find(prog, f, task->skip_input); break;
-                    case 16: emit_array_vmath(prog, f, task->skip_input); break;
-                    case 17: emit_read_file(prog, f); break;
-                    case 18: emit_write_file(prog, f); break;
-                    case 22: emit_fizzbuzz(prog, f); break;
-                    case 23: { int n = task->num_literals > 0 ? task->literals[0] : 50; emit_primes(prog, f, n); } break;
-                    case 24: emit_even_odd(prog, f); break;
-                    case 31: emit_array_min_max(prog, f); break;
-                    case 37: emit_average(prog, f, task->skip_input); break;
-                    case 38: emit_selection_sort(prog, f, 5, task->skip_input); break;
-                    case 39: emit_palindrome(prog, f); break;
-                    case 40: emit_lcm(prog, f); break;
-                    case 41: emit_collatz(prog, f); break;
-                    case 42: emit_sum_of_digits(prog, f); break;
-                    case 43: emit_reverse_string(prog, f); break;
-                    case 44: emit_armstrong(prog, f); break;
-                    case 45: emit_perfect_number(prog, f); break;
-                    case 46: emit_count_vowels(prog, f); break;
-                    case 47: emit_anagram_check(prog, f); break;
-                    case 48: emit_string_to_upper(prog, f); break;
-                    case 49: emit_string_to_lower(prog, f); break;
-                    case 50: emit_caesar_cipher(prog, f); break;
-                    case 51: emit_palindrome_string(prog, f); break;
-                    case 52: emit_bubble_sort(prog, f, task->skip_input); break;
-                    case 53: emit_binary_search(prog, f); break;
-                    case 54: emit_square_root(prog, f); break;
-                    case 55: emit_prime_factorization(prog, f); break;
-                    case 56: emit_standard_deviation(prog, f, task->skip_input); break;
-                    case 57: emit_compound_interest(prog, f); break;
-                    case 58: emit_decimal_to_binary(prog, f); break;
-                    case 59: emit_dice_roll(prog, f); break;
-                    case 60: emit_double_math(prog, f, task->op); break;
-                    case 61: emit_double_circle_area(prog, f); break;
-                    case 62: emit_double_average(prog, f, task->skip_input); break;
-                    case 63: emit_double_compound_interest(prog, f); break;
-                    case 64: emit_double_pythagoras(prog, f); break;
-                    case 65: emit_double_temp_convert(prog, f); break;
-                    case 66: emit_double_sqrt(prog, f); break;
-                    case 68: emit_string_length(prog, f); break;
-                    case 69: emit_stack(prog, f); break;
-                    case 70: emit_queue(prog, f); break;
-                    case 71: emit_insertion_sort(prog, f, 5, task->skip_input); break;
-                    case 72: emit_calculator(prog, f); break;
-                    case 73: emit_unit_converter(prog, f); break;
-                    case 74: emit_rock_paper_scissors(prog, f); break;
-                    case 75: emit_pyramid(prog, f); break;
-                    case 86: emit_linked_list(prog, f); break;
-                    case 87: emit_binary_search_tree(prog, f); break;
-                    case 88: emit_tree_traversal(prog, f); break;
-                    case 89: emit_graph_bfs_dfs(prog, f); break;
-                    case 90: emit_n_queens(prog, f); break;
-                    case 91: emit_sudoku(prog, f); break;
-                    case 92: emit_levenshtein_distance(prog, f); break;
-                    case 93: emit_maze_generator(prog, f); break;
-                    case 94: emit_maze_solver(prog, f); break;
-                    case 95: emit_monte_carlo_pi(prog, f); break;
-                    case 96: emit_matrix_multiplication(prog, f); break;
-                    case 97: emit_matrix_transpose(prog, f); break;
-                    case 98: emit_numerical_integration(prog, f); break;
-                    case 99: emit_complex_numbers(prog, f); break;
-                    case 100: emit_linear_regression(prog, f); break;
-                    case 101: emit_base_converter(prog, f); break;
-                    case 102: emit_freq_analysis(prog, f); break;
-                    case 103: emit_shuffle(prog, f); break;
-                    case 104: emit_weighted_random(prog, f); break;
-                    case 105: emit_ascii_table(prog, f); break;
-                    case 106: emit_bignum_math(prog, f); break;
-                    case 107: emit_password_card(prog, f); break;
-                    case 108: emit_chess_problem(prog, f); break;
-                    case 109: emit_shell_repl(prog, f); break;
-                    case 110: emit_webserver(prog, f); break;
-                    case 111: emit_sdl_window(prog, f); break;
-                    case 112: emit_sdl_button(prog, f); break;
-                    case 113: emit_thread(prog, f); break;
-                    case 114: emit_scheduler(prog, f); break;
-                    case 115: emit_shell_exec(prog, f); break;
-                    case 116: emit_json(prog, f); break;
-                    case 117: emit_crypto(prog, f); break;
-                    case 118: emit_bluetooth_ble(prog, f); break;
-                    case 119: emit_serial_rs232(prog, f); break;
-                    case 120: emit_gpio(prog, f); break;
-                    case 121: emit_gps(prog, f); break;
-                    case 122: emit_timer_date(prog, f); break;
-                    case 123: emit_sdl_sound(prog, f); break;
-                    case 124: emit_sdl_joystick(prog, f); break;
-                    case 125: emit_sdl_mouse(prog, f); break;
-                    case 126: emit_fractal(prog, f); break;
-                    case 127: emit_cluster_3x1(prog, f); break;
-                    case 128: emit_reload(prog, f); break;
-                    case 129: emit_coordinate_grid(prog, f); break;
-                    case 130: emit_turmite(prog, f); break;
-                    case 131: emit_crossword(prog, f); break;
-                    case 132: emit_linter(prog, f); break;
-                    default: break;
-                }
+                // Dispatch by index directly via function pointer table
+                if (idx >= 0 && idx < NUM_EMITTERS && ee_table[idx])
+                    ee_table[idx](prog, f, task);
             }
         }
         ensure_exit(f, last_step);

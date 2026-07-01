@@ -144,11 +144,42 @@ static void init_embeddings(void) {
     if (embeddings_initialized) return;
     embeddings_initialized = 1;
     for (int i = 0; i < VOCAB_SIZE; i++) {
-        unsigned long seed = hash_word(vocab[i]);
-        srand(seed);
+        const char *w = vocab[i];
+        int len = strlen(w);
+        // Build embedding from character trigrams so similar words get similar vectors
+        int ngram_count = 0;
+        for (int ci = 0; ci + 2 < len; ci++) {
+            char trigram[4] = {w[ci], w[ci+1], w[ci+2], '\0'};
+            unsigned long th = hash_word(trigram);
+            srand(th);
+            for (int j = 0; j < EMBED_DIM; j++)
+                word_embeddings[i].embed[j] += ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
+            ngram_count++;
+        }
+        // Fallback for short words: use bigrams and character-position hash
+        if (ngram_count == 0) {
+            for (int ci = 0; ci + 1 < len; ci++) {
+                char bigram[3] = {w[ci], w[ci+1], '\0'};
+                unsigned long th = hash_word(bigram);
+                srand(th);
+                for (int j = 0; j < EMBED_DIM; j++)
+                    word_embeddings[i].embed[j] += ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
+                ngram_count++;
+            }
+        }
+        // Single-char fallback
+        if (ngram_count == 0) {
+            unsigned long th = hash_word(w);
+            srand(th);
+            for (int j = 0; j < EMBED_DIM; j++)
+                word_embeddings[i].embed[j] = ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
+            ngram_count = 1;
+        }
+        // Average
+        float inv = 1.0f / ngram_count;
         float sum = 0;
         for (int j = 0; j < EMBED_DIM; j++) {
-            word_embeddings[i].embed[j] = ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
+            word_embeddings[i].embed[j] *= inv;
             sum += word_embeddings[i].embed[j] * word_embeddings[i].embed[j];
         }
         float norm = sqrtf(sum);
@@ -402,10 +433,29 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
     softmax(emitter_scores, NUM_EMITTERS);
     for (int i = 0; i < NUM_EMITTERS; i++) attention_weights[i] = emitter_scores[i];
 
+    // Rank emitters by score, storing top alternatives for retry
+    int ranked[NUM_EMITTERS];
+    for (int i = 0; i < NUM_EMITTERS; i++) ranked[i] = i;
+    // Simple bubble sort (NUM_EMITTERS is small, 133)
+    for (int i = 0; i < NUM_EMITTERS - 1; i++) {
+        for (int j = 0; j < NUM_EMITTERS - i - 1; j++) {
+            if (emitter_scores[ranked[j]] < emitter_scores[ranked[j + 1]]) {
+                int tmp = ranked[j]; ranked[j] = ranked[j + 1]; ranked[j + 1] = tmp;
+            }
+        }
+    }
+
     int best = 0;
     float best_p = emitter_scores[0];
     for (int i = 1; i < NUM_EMITTERS; i++) {
         if (emitter_scores[i] > best_p) { best_p = emitter_scores[i]; best = i; }
+    }
+
+    // Use retry_seed to select alternative emitter (for validation retry)
+    if (retry_seed > 0) {
+        int alt_idx = retry_seed < NUM_EMITTERS ? retry_seed : NUM_EMITTERS - 1;
+        best = ranked[alt_idx];
+        best_p = emitter_scores[best];
     }
 
     if (verbose_flag) {
@@ -413,8 +463,11 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
         for (int i = 0; i < NUM_EMITTERS; i++)
             printf("  %2d %-16s %.3f\n", i, EMITTER_NAMES[i], emitter_scores[i]);
         printf("  -> best: %s (%.3f)\n", EMITTER_NAMES[best], best_p);
+        if (retry_seed > 0) printf("  (retry %d, using alternative rank %d)\n", retry_seed, retry_seed);
     }
 
+    // Store ranked alternatives in extra_emitters for retry fallback
+    // (used when retry_seed changes which primary emitter is selected)
     // Multi-emitter composition: add strongly-scored secondary emitters
     // Dynamic threshold based on prompt length: longer prompts more likely multi-step
     float pfactor = (float)strlen(prompt) / 80.0f;
