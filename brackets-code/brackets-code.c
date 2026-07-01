@@ -8930,7 +8930,7 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         emitted = 1;
     }
     DISPATCH(has_fann_run, emit_fann_run);
-    if (task->has_input && !task->has_operation) {
+    if (!emitted && task->has_input && !task->has_operation) {
         int c = task->input_count > 0 ? task->input_count : 5;
         emit_input_loop(prog, f, c, task->type, 0);
         emitted = 1;

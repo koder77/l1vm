@@ -485,6 +485,14 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
     static const char *const fib_domain[] = {"fibonacci", "fib_seq", NULL};
     static const char *const fann_domain[] = {"fann_create", "fann_train", "fann_run", NULL};
 
+    // Input-reading emitters: mutual exclusion - if primary reads input, skip other input-readers
+    static const char *const input_readers[] = {"math", "input_loop", "for_sum", "print_even",
+        "input_sort", "average", "selection_sort", "bubble_sort",
+        "standard_deviation", "insertion_sort", NULL};
+    int best_reads_input = 0;
+    for (int ri = 0; input_readers[ri]; ri++)
+        if (strcmp(EMITTER_NAMES[best], input_readers[ri]) == 0) { best_reads_input = 1; break; }
+
     // Determine which domain the best emitter belongs to
     int in_domain = 0;
     const char *best_name = EMITTER_NAMES[best];
@@ -505,6 +513,13 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
                     if (strcmp(EMITTER_NAMES[i], domains[d][di]) == 0) { same_domain = 1; break; }
                 }
                 if (same_domain) continue;
+                // Skip input-reading emitters if primary also reads input
+                if (best_reads_input) {
+                    int is_input_reader = 0;
+                    for (int ri = 0; input_readers[ri]; ri++)
+                        if (strcmp(EMITTER_NAMES[i], input_readers[ri]) == 0) { is_input_reader = 1; break; }
+                    if (is_input_reader) continue;
+                }
                 if (emitter_scores[i] >= threshold && emitter_scores[i] >= 0.5f) {
                     task->extra_emitters[task->num_extra_emitters++] = i;
                 }
@@ -515,7 +530,15 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
     if (!in_domain) {
         // Fallback: original behavior for undomained emitters
         for (int i = 0; i < NUM_EMITTERS && task->num_extra_emitters < 32; i++) {
-            if (i != best && emitter_scores[i] >= threshold && emitter_scores[i] >= 0.5f) {
+            if (i == best) continue;
+            // Skip input-reading emitters if primary also reads input
+            if (best_reads_input) {
+                int is_input_reader = 0;
+                for (int ri = 0; input_readers[ri]; ri++)
+                    if (strcmp(EMITTER_NAMES[i], input_readers[ri]) == 0) { is_input_reader = 1; break; }
+                if (is_input_reader) continue;
+            }
+            if (emitter_scores[i] >= threshold && emitter_scores[i] >= 0.5f) {
                 task->extra_emitters[task->num_extra_emitters++] = i;
             }
         }
