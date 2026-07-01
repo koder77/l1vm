@@ -5,23 +5,23 @@ rackets Code - Memory & Specification
 -------------
 Brackets Code is a CLI code generator for the Brackets (L1VM) assembly language.
 It converts natural-language prompts into working .l1com programs.
-Written in C, split across 4 source files (~12900 lines total). Author: Stefan.
+Written in C, split across 4 source files (~13616 lines total). Author: Stefan.
 
 2. SOURCE FILE ORGANIZATION
----------------------------
+--------------------------
   brackets-code.h  -- master header: type defs (Variable, Function, Program, TaskProfile, etc.),
                       constants, global variable externs, and all forward declarations
                       (emitters, templates, utilities, CLI).
   brackets-code.c  -- main translation unit: includes embed.c + learn.c via #include.
-                      Contains utility funcs, data structures, all 106 emitters,
+                      Contains utility funcs, data structures, all 133 emitters,
                       31 templates, parse_task, generate_code, CLI (main + interactive).
-  embed.c          -- #included at line 1121: tiny LLM inference engine (word embeddings,
+  embed.c          -- #included at line 1222: tiny LLM inference engine (word embeddings,
                       softmax attention), vector search over l1vm-example-code/,
                       llm_select_emitter(), split_prompt_steps().
-  learn.c          -- #included at line 9389: learned pattern system (learn from .l1com files,
+  learn.c          -- #included at line 10725: learned pattern system (learn from .l1com files,
                       persist/reload .l1lp files, match + emit learned patterns).
 
-  This split keeps the main file under 10k lines while allowing embed.c and learn.c
+  This split keeps the main file under 12k lines while allowing embed.c and learn.c
   to be developed independently. Both are #included (not separately compiled) to avoid
   link-time symbol visibility issues with the many static functions in brackets-code.c.
 
@@ -154,6 +154,27 @@ Template struct:
    emit_fann_create          Create FANN neural network
    emit_fann_train           Train FANN neural network
    emit_fann_run             Run FANN neural network
+   emit_palindrome           Palindrome number check
+   emit_lcm                  Least Common Multiple
+   emit_collatz              Collatz sequence generator
+   emit_sum_of_digits        Sum of digits of a number
+   emit_reverse_string       Reverse a string
+   emit_armstrong            Armstrong number check
+   emit_perfect_number       Perfect number check
+   emit_count_vowels         Count vowels in a string
+   emit_anagram_check        Anagram string comparison
+   emit_string_to_upper      Convert string to uppercase
+   emit_string_to_lower      Convert string to lowercase
+   emit_caesar_cipher        Caesar cipher encode/decode
+   emit_palindrome_string    Palindrome string check
+   emit_bubble_sort          Bubble sort with hardcoded array
+   emit_binary_search        Binary search on sorted array
+   emit_square_root          Integer square root via Newton-Raphson
+   emit_prime_factorization  Prime factor decomposition
+   emit_standard_deviation   Standard deviation of N numbers
+   emit_compound_interest    Compound interest calculation
+   emit_decimal_to_binary    Decimal to binary conversion
+   emit_dice_roll            Dice roll simulation (1-6)
    emit_double_math          Double-precision math (add/sub/mul/div)
    emit_double_circle_area   Double-precision circle area
    emit_double_average       Double-precision average of 5 numbers
@@ -161,6 +182,7 @@ Template struct:
    emit_double_pythagoras    Double-precision Pythagoras (a^2 + b^2 = c^2)
    emit_double_temp_convert  Double-precision Celsius to Fahrenheit
    emit_double_sqrt          Double-precision Newton-Raphson square root
+   emit_function             User-defined function call demo
    emit_string_length        Length of input string (loop over str_len)
    emit_stack                Stack: push/pop/size/print-all via sp array
    emit_queue                Queue: enqueue/dequeue/print via head/tail array
@@ -198,31 +220,35 @@ Template struct:
    emit_freq_analysis        Letter frequency analysis
    emit_shuffle              Array shuffle (Fisher-Yates)
    emit_weighted_random      Weighted random selection
-    emit_ascii_table          ASCII table printer
-    emit_webserver            TCP web server with socket API
-    emit_sdl_window           SDL pixel-graphics window
-    emit_sdl_button           SDL button GUI with mouse interaction
-    emit_thread               Two-thread demo using intr0 9/10
-    emit_scheduler            Task scheduler with queue/priority
-    emit_shell_exec           Shell command execution via intr0 42
-    emit_json                 JSON string get/set via json.l1h
-    emit_crypto               Encrypt/decrypt via crypto.l1h
-    emit_bluetooth_ble        Bluetooth LE init stub
-    emit_serial_rs232         Serial RS-232 init stub
-    emit_gpio                 GPIO pin I/O via gpio.l1h
-    emit_gps                  GPS position read via gps.l1h
-    emit_timer_date           Timer elapsed ms + date/time display
-    emit_sdl_sound            SDL sound playback via sdl-lib.l1h
-    emit_sdl_joystick         SDL joystick axis/button via sdl-lib.l1h
-    emit_sdl_mouse            SDL mouse motion/click via sdl-lib.l1h
-    emit_fractal              Mandelbrot fractal ASCII render
-    emit_cluster_3x1          3x1 cluster communication stub
-    emit_reload               Self-reload stub via intr0 11
-    emit_coordinate_grid      2D coordinate grid operations
-    emit_turmite              Turmite (ant) simulation on grid
-    emit_crossword            Crossword puzzle grid generator
-    emit_linter               Code linter stub
-    + template emitters (31 matched by match_template, not smart_generate)
+   emit_ascii_table          ASCII table printer
+   emit_bignum_math          Bignum arithmetic (large numbers)
+   emit_password_card        Password card generator
+   emit_chess_problem        Chess puzzle setup
+   emit_shell_repl           Interactive shell REPL
+   emit_webserver            TCP web server with socket API
+   emit_sdl_window           SDL pixel-graphics window
+   emit_sdl_button           SDL button GUI with mouse interaction
+   emit_thread               Two-thread demo using intr0 9/10
+   emit_scheduler            Task scheduler with queue/priority
+   emit_shell_exec           Shell command execution via intr0 42
+   emit_json                 JSON string get/set via json.l1h
+   emit_crypto               Encrypt/decrypt via crypto.l1h
+   emit_bluetooth_ble        Bluetooth LE init stub
+   emit_serial_rs232         Serial RS-232 init stub
+   emit_gpio                 GPIO pin I/O via gpio.l1h
+   emit_gps                  GPS position read via gps.l1h
+   emit_timer_date           Timer elapsed ms + date/time display
+   emit_sdl_sound            SDL sound playback via sdl-lib.l1h
+   emit_sdl_joystick         SDL joystick axis/button via sdl-lib.l1h
+   emit_sdl_mouse            SDL mouse motion/click via sdl-lib.l1h
+   emit_fractal              Mandelbrot fractal ASCII render
+   emit_cluster_3x1          3x1 cluster communication stub
+   emit_reload               Self-reload stub via intr0 11
+   emit_coordinate_grid      2D coordinate grid operations
+   emit_turmite              Turmite (ant) simulation on grid
+   emit_crossword            Crossword puzzle grid generator
+   emit_linter               Code linter stub
+   + template emitters (31 matched by match_template, not smart_generate)
 
 5c. Multi-Step Composition (split_prompt_steps):
    - Split patterns (ordered longest-first):
@@ -248,7 +274,11 @@ Template struct:
      has_string_to_upper, has_string_to_lower, has_caesar_cipher,
      has_palindrome_string, has_string_length, has_stack, has_queue,
      has_insertion_sort, has_calculator, has_unit_converter,
-     has_rock_paper_scissors, has_pyramid ...
+     has_rock_paper_scissors, has_pyramid, has_palindrome,
+     has_lcm, has_collatz, has_sum_of_digits, has_armstrong,
+     has_perfect_number, has_bubble_sort, has_binary_search,
+     has_square_root, has_prime_factorization, has_standard_deviation,
+     has_compound_interest, has_decimal_to_binary, has_dice_roll ...
      has_string_cat (last among string ops -- less specific than reverse/length/etc)
    - For has_input_sort with has_max: enables dataflow_quiet_mode, emits arr[count-1] only
    - For has_input_sort with has_min: enables dataflow_quiet_mode, emits arr[0] only
@@ -373,14 +403,14 @@ Template struct:
 
 15. FILE LOCATION
 -----------------
-   /home/stefan/opencode/brackets-code/brackets-code.c  (~10900 lines, 133 emitter blocks, #include's embed.c + learn.c)
-  /home/stefan/opencode/brackets-code/brackets-code.h  (542 lines, header with types, constants, function declarations)
-  /home/stefan/opencode/brackets-code/embed.c           (768 lines, LLM inference engine + vector search, #include'd at line 1121)
-  /home/stefan/opencode/brackets-code/learn.c           (685 lines, learned pattern system, #include'd at line 9389)
+   /home/stefan/opencode/brackets-code/brackets-code.c  (11147 lines, 133 emitter blocks, #include's embed.c + learn.c)
+  /home/stefan/opencode/brackets-code/brackets-code.h  (549 lines, header with types, constants, function declarations)
+  /home/stefan/opencode/brackets-code/embed.c           (1235 lines, LLM inference engine + vector search, #include'd at line 1222)
+  /home/stefan/opencode/brackets-code/learn.c           (685 lines, learned pattern system, #include'd at line 10725)
   /home/stefan/opencode/brackets-code/synonyms.txt      (fuzzy synonym defs for DE+EN)
   /home/stefan/opencode/brackets-code/memory.txt        (this file)
 
-   Total: ~12900 lines across 4 source files.
+   Total: 13616 lines across 4 source files.
   Compilation: gcc brackets-code.c -lm (embed.c + learn.c pulled in via #include)
 
 16. L1VM ARRAY ACCESS RULES
@@ -404,7 +434,7 @@ Template struct:
   l1com reads <basename>.l1com (not the full filename).
   l1vm loads <basename>.l1obj; -q flag runs quietly.
 
-18. KNOWN EMITTER STATUS (2026-06-30)
+18. KNOWN EMITTER STATUS (2026-07-01)
 --------------------------------------
   4 PASS (compile + run with correct output):
     levenshtein_distance  - hardcoded string result
