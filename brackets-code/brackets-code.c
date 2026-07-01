@@ -59,7 +59,7 @@ static const char *current_prompt = "";
 #define ANSI_YELLOW  "\033[33m"
 #define ANSI_CYAN    "\033[36m"
 #define ANSI_BOLD    "\033[1m"
-static int use_color = 1;
+int use_color = 1;
 #define c_printf(color, ...) do { if (use_color) { printf(color); printf(__VA_ARGS__); printf(ANSI_RESET); } else printf(__VA_ARGS__); } while(0)
 
 typedef struct {
@@ -106,7 +106,7 @@ typedef struct {
 } Program;
 
 // Learned pattern from .l1com files
-#define MAX_LEARNED 64
+#define MAX_LEARNED 4096
 #define LEARNED_DIR ".brackets-code/learned"
 
 typedef struct {
@@ -124,9 +124,9 @@ typedef struct {
     char globals[MAX_CODE];
 } LearnedPattern;
 
-static LearnedPattern learned_patterns[MAX_LEARNED];
-static int num_learned = 0;
-static int learned_loaded = 0;
+LearnedPattern learned_patterns[MAX_LEARNED];
+int num_learned = 0;
+int learned_loaded = 0;
 
 // Dynamic allocation helpers
 #define INIT_VARS_CAP 8
@@ -247,10 +247,12 @@ static int init_program(Program *prog) {
     memset(prog, 0, sizeof(Program));
     if (!resize_funcs_array(&prog->funcs, &prog->funcs_cap, INIT_FUNCS_CAP)) return 0;
     if (!resize_includes_arr(&prog->includes, &prog->includes_cap, INIT_INCLUDES_CAP)) {
+        for (int i = 0; i < prog->funcs_cap; i++) free_function(&prog->funcs[i]);
         free(prog->funcs); prog->funcs = NULL; prog->funcs_cap = 0;
         return 0;
     }
     if (!resize_includes_arr(&prog->includes_post, &prog->includes_post_cap, INIT_INCLUDES_CAP)) {
+        for (int i = 0; i < prog->funcs_cap; i++) free_function(&prog->funcs[i]);
         free(prog->funcs); prog->funcs = NULL; prog->funcs_cap = 0;
         free(prog->includes); prog->includes = NULL; prog->includes_cap = 0;
         return 0;
@@ -2798,8 +2800,6 @@ static void emit_selection_sort(Program *prog, Function *f, int count, int skip_
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
     if (!dataflow_quiet_mode) {
-        // print sorted
-    if (!dataflow_quiet_mode) {
         func_append(f, "\t(zero i :=)");
         func_append(f, "\t(for-loop)");
         func_append(f, "\t(((i count <) f :=) f for)");
@@ -2811,8 +2811,6 @@ static void emit_selection_sort(Program *prog, Function *f, int count, int skip_
         func_append(f, "\t\t(i + one i :=)");
         func_append(f, "\t(next)");
     }
-}
-
 }
 
 static void emit_palindrome(Program *prog, Function *f) {
@@ -2978,6 +2976,8 @@ static void emit_reverse_string(Program *prog, Function *f) {
     add_var_to_func(f, "int64", "cj", 1, zv, 1);
     add_var_to_func(f, "int64", "half", 1, zv, 1);
     add_var_to_func(f, "int64", "strmod", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "string", "ctemp", 2, (const char *[]){"\"\""}, 1);
     const char *ps[] = {"\"Enter a string: \""};
     add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
     func_append(f, "\t(strmod :string_init !)");
@@ -2989,12 +2989,14 @@ static void emit_reverse_string(Program *prog, Function *f) {
     func_append(f, "\t(zero i :=)");
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i half <) f :=) f for)");
-    func_append(f, "\t\t(str i ci :string_getc !)");
+    func_append(f, "\t\t(str ci i :string_mid_to_byte !)");
     func_append(f, "\t\t(len one - j :=)");
     func_append(f, "\t\t(j i - j :=)");
-    func_append(f, "\t\t(str j cj :string_getc !)");
-    func_append(f, "\t\t(str i cj :string_setc !)");
-    func_append(f, "\t\t(str j ci :string_setc !)");
+    func_append(f, "\t\t(str cj j :string_mid_to_byte !)");
+    func_append(f, "\t\t(cj ctemp :string_bytetostring !)");
+    func_append(f, "\t\t(ctemp str i :string_to_string !)");
+    func_append(f, "\t\t(ci ctemp :string_bytetostring !)");
+    func_append(f, "\t\t(ctemp str j :string_to_string !)");
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
     if (!dataflow_quiet_mode) {
@@ -3138,7 +3140,7 @@ static void emit_count_vowels(Program *prog, Function *f) {
     func_append(f, "\t(zero i :=)");
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i len <) f :=) f for)");
-    func_append(f, "\t\t(str i ch :string_getc !)");
+    func_append(f, "\t\t(str ch i :string_mid_to_byte !)");
     func_append(f, "\t\t(((ch ch_a ==) f :=) f if)");
     func_append(f, "\t\t\t(count + one count :=)");
     func_append(f, "\t\t(endif)");
@@ -3199,6 +3201,7 @@ static void emit_anagram_check(Program *prog, Function *f) {
     add_var_to_func(f, "int64", "found", 1, zv, 1);
     add_var_to_func(f, "int64", "f", 1, zv, 1);
     add_var_to_func(f, "int64", "strmod", 1, zv, 1);
+    add_var_to_func(f, "string", "ctemp", 2, (const char *[]){"\"\""}, 1);
     const char *p1[] = {"\"Enter first string: \""};
     const char *p2[] = {"\"Enter second string: \""};
     add_var_to_func(f, "const-string", "prompt_a", 22, p1, 1);
@@ -3221,15 +3224,16 @@ static void emit_anagram_check(Program *prog, Function *f) {
     func_append(f, "\t(zero i :=)");
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i len1 <) f :=) f for)");
-    func_append(f, "\t\t(str1 i ci :string_getc !)");
+    func_append(f, "\t\t(str1 ci i :string_mid_to_byte !)");
     func_append(f, "\t\t(zero found :=)");
     func_append(f, "\t\t(zero j :=)");
     func_append(f, "\t\t(for-loop)");
     func_append(f, "\t\t(((j len2 <) f :=) f for)");
-    func_append(f, "\t\t\t(temp j cj :string_getc !)");
+    func_append(f, "\t\t\t(temp cj j :string_mid_to_byte !)");
     func_append(f, "\t\t\t(((ci cj ==) f :=) f if)");
     func_append(f, "\t\t\t\t(one found :=)");
-    func_append(f, "\t\t\t\t(temp j zero :string_setc !)");
+    func_append(f, "\t\t\t\t(zero ctemp :string_bytetostring !)");
+    func_append(f, "\t\t\t\t(ctemp temp j :string_to_string !)");
     func_append(f, "\t\t\t\t(len2 j :=)");
     func_append(f, "\t\t\t(endif)");
     func_append(f, "\t\t\t(j + one j :=)");
@@ -3271,6 +3275,7 @@ static void emit_string_to_upper(Program *prog, Function *f) {
     add_var_to_func(f, "int64", "f", 1, zv, 1);
     add_var_to_func(f, "int64", "f2", 1, zv, 1);
     add_var_to_func(f, "int64", "strmod", 1, zv, 1);
+    add_var_to_func(f, "string", "ctemp", 2, (const char *[]){"\"\""}, 1);
     const char *ps[] = {"\"Enter a string: \""};
     add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
     func_append(f, "\t(strmod :string_init !)");
@@ -3281,11 +3286,12 @@ static void emit_string_to_upper(Program *prog, Function *f) {
     func_append(f, "\t(zero i :=)");
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i len <) f :=) f for)");
-    func_append(f, "\t\t(str i ch :string_getc !)");
+    func_append(f, "\t\t(str ch i :string_mid_to_byte !)");
     func_append(f, "\t\t(((ch ch_a >=) f :=) f if)");
     func_append(f, "\t\t\t(((ch ch_z <=) f2 :=) f2 if)");
     func_append(f, "\t\t\t\t(ch shift - ch :=)");
-    func_append(f, "\t\t\t\t(str i ch :string_setc !)");
+    func_append(f, "\t\t\t\t(ch ctemp :string_bytetostring !)");
+    func_append(f, "\t\t\t\t(ctemp str i :string_to_string !)");
     func_append(f, "\t\t\t(endif)");
     func_append(f, "\t\t(endif)");
     func_append(f, "\t\t(i + one i :=)");
@@ -3318,6 +3324,7 @@ static void emit_string_to_lower(Program *prog, Function *f) {
     add_var_to_func(f, "int64", "f", 1, zv, 1);
     add_var_to_func(f, "int64", "f2", 1, zv, 1);
     add_var_to_func(f, "int64", "strmod", 1, zv, 1);
+    add_var_to_func(f, "string", "ctemp", 2, (const char *[]){"\"\""}, 1);
     const char *ps[] = {"\"Enter a string: \""};
     add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
     func_append(f, "\t(strmod :string_init !)");
@@ -3328,11 +3335,12 @@ static void emit_string_to_lower(Program *prog, Function *f) {
     func_append(f, "\t(zero i :=)");
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i len <) f :=) f for)");
-    func_append(f, "\t\t(str i ch :string_getc !)");
+    func_append(f, "\t\t(str ch i :string_mid_to_byte !)");
     func_append(f, "\t\t(((ch ch_A >=) f :=) f if)");
     func_append(f, "\t\t\t(((ch ch_Z <=) f2 :=) f2 if)");
     func_append(f, "\t\t\t\t(ch shift + ch :=)");
-    func_append(f, "\t\t\t\t(str i ch :string_setc !)");
+    func_append(f, "\t\t\t\t(ch ctemp :string_bytetostring !)");
+    func_append(f, "\t\t\t\t(ctemp str i :string_to_string !)");
     func_append(f, "\t\t\t(endif)");
     func_append(f, "\t\t(endif)");
     func_append(f, "\t\t(i + one i :=)");
@@ -3371,6 +3379,7 @@ static void emit_caesar_cipher(Program *prog, Function *f) {
     add_var_to_func(f, "int64", "f", 1, zv, 1);
     add_var_to_func(f, "int64", "f2", 1, zv, 1);
     add_var_to_func(f, "int64", "strmod", 1, zv, 1);
+    add_var_to_func(f, "string", "ctemp", 2, (const char *[]){"\"\""}, 1);
     const char *ps[] = {"\"Enter a string: \""};
     add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
     func_append(f, "\t(strmod :string_init !)");
@@ -3381,14 +3390,15 @@ static void emit_caesar_cipher(Program *prog, Function *f) {
     func_append(f, "\t(zero i :=)");
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i len <) f :=) f for)");
-    func_append(f, "\t\t(str i ch :string_getc !)");
+    func_append(f, "\t\t(str ch i :string_mid_to_byte !)");
     func_append(f, "\t\t(((ch ch_A >=) f :=) f if)");
     func_append(f, "\t\t\t(((ch ch_Z <=) f2 :=) f2 if)");
     func_append(f, "\t\t\t\t(ch ch_A - idx :=)");
     func_append(f, "\t\t\t\t(idx shift + idx :=)");
     func_append(f, "\t\t\t\t(idx twenty_six % idx :=)");
     func_append(f, "\t\t\t\t(ch_A idx + ch :=)");
-    func_append(f, "\t\t\t\t(str i ch :string_setc !)");
+    func_append(f, "\t\t\t\t(ch ctemp :string_bytetostring !)");
+    func_append(f, "\t\t\t\t(ctemp str i :string_to_string !)");
     func_append(f, "\t\t\t(endif)");
     func_append(f, "\t\t(endif)");
     func_append(f, "\t\t(((ch ch_a >=) f :=) f if)");
@@ -3397,7 +3407,8 @@ static void emit_caesar_cipher(Program *prog, Function *f) {
     func_append(f, "\t\t\t\t(idx shift + idx :=)");
     func_append(f, "\t\t\t\t(idx twenty_six % idx :=)");
     func_append(f, "\t\t\t\t(ch_a idx + ch :=)");
-    func_append(f, "\t\t\t\t(str i ch :string_setc !)");
+    func_append(f, "\t\t\t\t(ch ctemp :string_bytetostring !)");
+    func_append(f, "\t\t\t\t(ctemp str i :string_to_string !)");
     func_append(f, "\t\t\t(endif)");
     func_append(f, "\t\t(endif)");
     func_append(f, "\t\t(i + one i :=)");
@@ -3446,10 +3457,10 @@ static void emit_palindrome_string(Program *prog, Function *f) {
     func_append(f, "\t(zero i :=)");
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i half <) f :=) f for)");
-    func_append(f, "\t\t(str i ci :string_getc !)");
+    func_append(f, "\t\t(str ci i :string_mid_to_byte !)");
     func_append(f, "\t\t(len one - j :=)");
     func_append(f, "\t\t(j i - j :=)");
-    func_append(f, "\t\t(str j cj :string_getc !)");
+    func_append(f, "\t\t(str cj j :string_mid_to_byte !)");
     func_append(f, "\t\t(((ci cj ==) f :=) f if-)");
     func_append(f, "\t\t\t(zero pal :=)");
     func_append(f, "\t\t\t(len i :=)");
@@ -3785,6 +3796,7 @@ static void emit_decimal_to_binary(Program *prog, Function *f) {
     add_var_to_func(f, "int64", "f", 1, zv, 1);
     add_var_to_func(f, "int64", "strmod", 1, zv, 1);
     add_var_to_func(f, "string", "bstr", 64, (const char *[]){"\"\""}, 1);
+    add_var_to_func(f, "string", "ctemp", 2, (const char *[]){"\"\""}, 1);
     const char *ps[] = {"\"Enter a number: \""};
     add_var_to_func(f, "const-string", "prompt_str", 17, ps, 1);
     const char *rs[] = {"\"Binary: \""};
@@ -3796,11 +3808,13 @@ static void emit_decimal_to_binary(Program *prog, Function *f) {
     func_append(f, "\t(do)");
     func_append(f, "\t\t(n two % rem :=)");
     func_append(f, "\t\t(rem 48 + rem :=)");
-    func_append(f, "\t\t(bstr idx rem :string_setc !)");
+    func_append(f, "\t\t(rem ctemp :string_bytetostring !)");
+    func_append(f, "\t\t(ctemp bstr idx :string_to_string !)");
     func_append(f, "\t\t(idx + one idx :=)");
     func_append(f, "\t\t(n two / n :=)");
     func_append(f, "\t(((n zero >) f :=) f while)");
-    func_append(f, "\t(bstr idx zero :string_setc !)");
+    func_append(f, "\t(zero ctemp :string_bytetostring !)");
+    func_append(f, "\t(ctemp bstr idx :string_to_string !)");
     if (!dataflow_quiet_mode) {
         func_append(f, "\t(result_str :print_s !)");
         func_append(f, "\t(bstr :print_s !)");
@@ -3822,7 +3836,7 @@ static void emit_dice_roll(Program *prog, Function *f) {
     add_var_to_func(f, "int64", "i", 1, zv, 1);
     add_var_to_func(f, "int64", "f", 1, zv, 1);
     const char *ps[] = {"\"Rolling dice 5 times:\""};
-    add_var_to_func(f, "const-string", "msg_str", 21, ps, 1);
+    add_var_to_func(f, "const-string", "msg_str", 22, ps, 1);
     func_append(f, "\t(msg_str :print_s !)");
     func_append(f, "\t(:print_n !)");
     func_append(f, "\t(zero i :=)");
@@ -10522,7 +10536,6 @@ static int generate_code(const char *prompt, const char *filename) {
 
     Program *prog = malloc(sizeof(Program));
     if (!prog) { c_printf(ANSI_RED, "Out of memory\n"); return 0; }
-    memset(prog, 0, sizeof(Program));
     if (!init_program(prog)) { free_program(prog); free(prog); c_printf(ANSI_RED, "Out of memory\n"); return 0; }
     snprintf(prog->filename, sizeof(prog->filename), "%s", filename);
     // (temp/func counters removed)
@@ -10667,6 +10680,7 @@ static void show_help(void) {
     printf("  List learned patterns:  brackets-code --list-learned\n");
     printf("  List templates:         brackets-code --list\n\n");
     printf("Flags:\n");
+    printf("  --dry-run               Dry run (print filename only, no output)\n");
     printf("  --verbose               Show emitter selection scores\n");
     printf("  --out-dir <dir>         Output directory for generated files\n");
     printf("  --l1vm-root <path>      L1VM installation root (for --validate)\n");

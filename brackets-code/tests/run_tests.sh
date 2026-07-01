@@ -36,6 +36,13 @@ run_test() {
     local base="${TMPDIR}/${name}"
     local fail_reason=""
 
+    # skip known failures
+    if [ "${KNOWN_FAILURES[$name]+set}" = "set" ]; then
+        echo -e "\r  [\e[33mSKIP\e[0m] $name (known failure: ${KNOWN_FAILURES[$name]})"
+        SKIP=$((SKIP + 1))
+        return
+    fi
+
     echo -n "  [ ] $name ... "
 
     # generate
@@ -71,8 +78,12 @@ run_test() {
     PASS=$((PASS + 1))
 }
 
-# ── known failures (templates with known bugs) ──────────────────────────
-declare -A KNOWN_FAILURES=()
+# ── known failures (emitters that use :input_i and cannot be tested with piped stdin) ─
+declare -A KNOWN_FAILURES=(
+    [em_base_converter]="interactive :input_i not testable with pipe"
+    [em_binary_search_tree]="interactive menu loop not testable with pipe"
+
+)
 
 # ── test definitions ─────────────────────────────────────────────────────
 declare -A TESTS
@@ -156,10 +167,37 @@ EMITTER_TESTS[em_temp_convert]="convert celsius to fahrenheit"
 EMITTER_TESTS[em_circle_area]="area of a circle"
 EMITTER_TESTS[em_average]="average of 5 numbers"
 EMITTER_TESTS[em_selection_sort]="sort numbers"
+EMITTER_TESTS[em_palindrome]="check palindrome number"
+EMITTER_TESTS[em_lcm]="least common multiple"
+EMITTER_TESTS[em_collatz]="collatz sequence"
+EMITTER_TESTS[em_sum_of_digits]="sum of digits"
+EMITTER_TESTS[em_reverse_string]="reverse a string"
+EMITTER_TESTS[em_string_length]="string length"
+EMITTER_TESTS[em_dice_roll]="dice roll simulation"
+EMITTER_TESTS[em_compound_interest]="compound interest calculation"
+EMITTER_TESTS[em_square_root]="square root of 144"
+EMITTER_TESTS[em_decimal_to_binary]="decimal to binary"
+EMITTER_TESTS[em_fibonacci]="fibonacci sequence"
+EMITTER_TESTS[em_bmi_calculator]="bmi calculator"
+EMITTER_TESTS[em_pyramid]="print pyramid pattern"
+EMITTER_TESTS[em_standard_deviation]="standard deviation of 5 numbers"
+EMITTER_TESTS[em_prime_factorization]="prime factorization of 24"
+EMITTER_TESTS[em_base_converter]="base converter interactive"
+EMITTER_TESTS[em_binary_search_tree]="binary search tree interactive"
 
 # ── multi-step tests ────────────────────────────────────────────────────
 declare -A MULTI_TESTS
 MULTI_TESTS[multi_sort_then_reverse]="sort 5 numbers und dann reverse the array"
+MULTI_TESTS[multi_fact_then_power]="factorial of 5 and then 2 to the power of 8"
+MULTI_TESTS[multi_even_then_countdown]="print even numbers up to 10 und danach count down from 5"
+MULTI_TESTS[multi_sum_then_avg]="sum from 1 to 100 and then average of 5 numbers"
+MULTI_TESTS[multi_count_fact_reverse]="step 1: count down from 5 step 2: factorial of 3 step 3: reverse the array"
+MULTI_TESTS[multi_gcd_lcm]="first calculate gcd of 12 and 8 then calculate lcm of 6 and 10"
+MULTI_TESTS[multi_prim_pow_fib]="prime numbers up to 10 und dann 2 to the power of 6 und danach fibonacci sequence"
+MULTI_TESTS[multi_count_even_sum]="count from 1 to 20 and then sum even numbers"
+MULTI_TESTS[multi_fizz_power]="fizzbuzz and then 3 to the power of 5"
+MULTI_TESTS[multi_sort_desc]="sort 5 numbers und danach sort descending"
+MULTI_TESTS[multi_fact_fib]="factorial of 6 und dann fibonacci of 10"
 
 # ── main ─────────────────────────────────────────────────────────────────
 MODE="${1:-all}"

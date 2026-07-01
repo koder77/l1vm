@@ -14,6 +14,8 @@ typedef struct {
 static WordEmbedding word_embeddings[VOCAB_SIZE];
 static float attention_weights[NUM_EMITTERS];
 static const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt","function","string_length","stack","queue","insertion_sort","calculator","unit_converter","rock_paper_scissors","pyramid","temp_converter_menu","sort_stats","string_analyzer","number_analyzer","filter_numbers","random_generator","math_menu","quiz_game","bmi_calculator","statistics_suite","linked_list","binary_search_tree","tree_traversal","graph_bfs_dfs","n_queens","sudoku","levenshtein_distance","maze_generator","maze_solver","monte_carlo_pi","matrix_multiplication","matrix_transpose","numerical_integration","complex_numbers","linear_regression","base_converter","freq_analysis","shuffle","weighted_random","ascii_table","bignum_math","password_card","chess_problem","shell_repl","webserver","sdl_window","sdl_button","thread","scheduler","shell_exec","json","crypto","bluetooth_ble","serial_rs232","gpio","gps","timer_date","sdl_sound","sdl_joystick","sdl_mouse","fractal","cluster_3x1","reload","coordinate_grid","turmite","crossword","linter"};
+/* compile-time assert: NUM_EMITTERS must match actual array count */
+typedef int EMITTER_COUNT_CHECK[(sizeof(EMITTER_NAMES)/sizeof(EMITTER_NAMES[0])) == NUM_EMITTERS ? 1 : -1];
 static int vs_boost_tokens[64];
 static int vs_boost_count = 0;
 
@@ -422,9 +424,47 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
     float threshold = best_p * (0.5f / pfactor);
     float hard_min = 0.2f;
     if (threshold < hard_min) threshold = hard_min;
-    for (int i = 0; i < NUM_EMITTERS && task->num_extra_emitters < 8; i++) {
-        if (i != best && emitter_scores[i] >= threshold && emitter_scores[i] >= 0.5f) {
-            task->extra_emitters[task->num_extra_emitters++] = i;
+
+    // Emitter domain groups: avoid selecting redundant emitters from same domain
+    static const char *const sort_domain[] = {"input_sort", "bubble_sort", "selection_sort", "insertion_sort", NULL};
+    static const char *const math_domain[] = {"math", "input_loop", "loop", "for_sum", NULL};
+    static const char *const string_domain[] = {"string_cat", "reverse_string", "count_vowels", "anagram_check", "string_to_upper", "string_to_lower", "caesar_cipher", "palindrome_string", "string_compare", "string_length", "string_analyzer", NULL};
+    static const char *const fib_domain[] = {"fibonacci", "fib_seq", NULL};
+    static const char *const fann_domain[] = {"fann_create", "fann_train", "fann_run", NULL};
+
+    // Determine which domain the best emitter belongs to
+    int in_domain = 0;
+    const char *best_name = EMITTER_NAMES[best];
+    const char *const *domains[] = {sort_domain, math_domain, string_domain, fib_domain, fann_domain, NULL};
+    for (int d = 0; domains[d]; d++) {
+        for (int di = 0; domains[d][di]; di++) {
+            if (strcmp(best_name, domains[d][di]) == 0) {
+                in_domain = 1;
+                break;
+            }
+        }
+        if (in_domain) {
+            for (int i = 0; i < NUM_EMITTERS && task->num_extra_emitters < 8; i++) {
+                if (i == best) continue;
+                // Skip emitters in the same domain as the primary
+                int same_domain = 0;
+                for (int di = 0; domains[d][di]; di++) {
+                    if (strcmp(EMITTER_NAMES[i], domains[d][di]) == 0) { same_domain = 1; break; }
+                }
+                if (same_domain) continue;
+                if (emitter_scores[i] >= threshold && emitter_scores[i] >= 0.5f) {
+                    task->extra_emitters[task->num_extra_emitters++] = i;
+                }
+            }
+            break;
+        }
+    }
+    if (!in_domain) {
+        // Fallback: original behavior for undomained emitters
+        for (int i = 0; i < NUM_EMITTERS && task->num_extra_emitters < 8; i++) {
+            if (i != best && emitter_scores[i] >= threshold && emitter_scores[i] >= 0.5f) {
+                task->extra_emitters[task->num_extra_emitters++] = i;
+            }
         }
     }
 
@@ -439,57 +479,191 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
 }
 
 static int has_actionable_keyword(const char *text) {
-    return has_word(text, "lies") || has_word(text, "read") || has_word(text, "input")
+    // arithmetic
+    if (has_word(text, "add") || has_word(text, "sum") || has_word(text, "summe")
+        || has_word(text, "plus") || has_word(text, "berechne") || has_word(text, "ermittle")
+        || has_word(text, "calculate") || has_word(text, "compute") || has_word(text, "count")
+        || has_word(text, "zähle") || has_word(text, "anzahl"))
+        return 1;
+    if (has_word(text, "sub") || has_word(text, "subtract") || has_word(text, "minus")
+        || has_word(text, "difference") || has_word(text, "differenz"))
+        return 1;
+    if (has_word(text, "mul") || has_word(text, "multiply") || has_word(text, "mal")
+        || has_word(text, "times") || has_word(text, "product") || has_word(text, "produkt"))
+        return 1;
+    if (has_word(text, "div") || has_word(text, "divide") || has_word(text, "geteilt")
+        || has_word(text, "quotient"))
+        return 1;
+    if (has_word(text, "mod") || has_word(text, "modulo") || has_word(text, "remainder")
+        || has_word(text, "rest"))
+        return 1;
+    if (has_word(text, "power") || has_word(text, "potenz") || has_word(text, "exponent")
+        || has_word(text, "hoch") || has_word(text, "square") || has_word(text, "quadrat")
+        || has_word(text, "cube") || has_word(text, "kubik") || has_word(text, "sqrt")
+        || has_word(text, "wurzel") || has_word(text, "root"))
+        return 1;
+
+    // comparison
+    if (has_word(text, "max") || has_word(text, "größt") || has_word(text, "largest")
+        || has_word(text, "greatest") || has_word(text, "groesst") || has_word(text, "maximum")
+        || has_word(text, "minimum") || has_word(text, "min") || has_word(text, "kleinste")
+        || has_word(text, "smallest") || has_word(text, "compare") || has_word(text, "vergleich"))
+        return 1;
+
+    // io
+    if (has_word(text, "lies") || has_word(text, "read") || has_word(text, "input")
         || has_word(text, "gib") || has_word(text, "enter") || has_word(text, "erfasse")
-        || has_word(text, "print") || has_word(text, "druck") || has_word(text, "ausg")
+        || has_word(text, "collect") || has_word(text, "eingabe") || has_word(text, "einlesen"))
+        return 1;
+    if (has_word(text, "print") || has_word(text, "druck") || has_word(text, "ausg")
         || has_word(text, "show") || has_word(text, "display") || has_word(text, "zeig")
-        || has_word(text, "add") || has_word(text, "sum") || has_word(text, "summe")
-        || has_word(text, "sub") || has_word(text, "subtract") || has_word(text, "minus")
-        || has_word(text, "mul") || has_word(text, "multiply") || has_word(text, "mal")
-        || has_word(text, "div") || has_word(text, "divide") || has_word(text, "geteilt")
-        || has_word(text, "mod") || has_word(text, "modulo")
-        || has_word(text, "max") || has_word(text, "größt") || has_word(text, "largest")
-        || has_word(text, "greatest") || has_word(text, "groesst")
-        || has_word(text, "sort") || has_word(text, "sortiere") || has_word(text, "bubble")
-        || has_word(text, "sorted") || has_word(text, "sortiert")
-        || has_word(text, "average") || has_word(text, "durchschnitt") || has_word(text, "mean")
-        || has_word(text, "factorial") || has_word(text, "fakult") || has_word(text, "median")
-        || has_word(text, "fibonacci") || has_word(text, "fib") || has_word(text, "find")
-        || has_word(text, "search") || has_word(text, "suche") || has_word(text, "reverse")
-        || has_word(text, "umkehr") || has_word(text, "countdown")
-        || has_word(text, "cat") || has_word(text, "concat") || has_word(text, "compare")
-        || has_word(text, "cmp") || has_word(text, "vergleich") || has_word(text, "assign")
-        || has_word(text, "zuweis") || has_word(text, "write") || has_word(text, "schreib")
-        || has_word(text, "hello") || has_word(text, "hallo")
-        || has_word(text, "prime") || has_word(text, "prim") || has_word(text, "fizzbuzz")
-        || has_word(text, "even") || has_word(text, "odd") || has_word(text, "gerade")
-        || has_word(text, "ungerade") || has_word(text, "power") || has_word(text, "potenz")
-        || has_word(text, "exponent") || has_word(text, "hoch")
-        || has_word(text, "guess") || has_word(text, "rate") || has_word(text, "raten")
-        || has_word(text, "table") || has_word(text, "einmaleins")
-        || has_word(text, "multiplication") || has_word(text, "multiplika")
-        || has_word(text, "gcd") || has_word(text, "ggt") || has_word(text, "gcm")
-        || has_word(text, "time") || has_word(text, "zeit") || has_word(text, "clock")
-        || has_word(text, "pointer") || has_word(text, "zeiger") || has_word(text, "struct")
-        || has_word(text, "function") || has_word(text, "funktion")
-        || has_word(text, "for") || has_word(text, "loop") || has_word(text, "schleife")
-        || has_word(text, "if") || has_word(text, "bedingung") || has_word(text, "wenn")
+        || has_word(text, "output") || has_word(text, "schreib") || has_word(text, "write")
+        || has_word(text, "ausgeben"))
+        return 1;
+
+    // sorting / searching
+    if (has_word(text, "sort") || has_word(text, "sortiere") || has_word(text, "bubble")
+        || has_word(text, "sorted") || has_word(text, "sortiert") || has_word(text, "order")
+        || has_word(text, "ordne") || has_word(text, "selection") || has_word(text, "insertion"))
+        return 1;
+    if (has_word(text, "find") || has_word(text, "search") || has_word(text, "suche")
+        || has_word(text, "lookup") || has_word(text, "filter") || has_word(text, "select")
+        || has_word(text, "choose") || has_word(text, "wähle") || has_word(text, "auswählen"))
+        return 1;
+
+    // sequence transformation
+    if (has_word(text, "reverse") || has_word(text, "umkehr") || has_word(text, "swap")
+        || has_word(text, "tausche") || has_word(text, "rotate") || has_word(text, "shift")
+        || has_word(text, "verschieb") || has_word(text, "shuffle") || has_word(text, "misch"))
+        return 1;
+
+    // aggregate
+    if (has_word(text, "average") || has_word(text, "durchschnitt") || has_word(text, "mean")
+        || has_word(text, "median") || has_word(text, "standard") || has_word(text, "deviation"))
+        return 1;
+
+    // number theory
+    if (has_word(text, "factorial") || has_word(text, "fakult") || has_word(text, "fibo")
+        || has_word(text, "fibonacci") || has_word(text, "prime") || has_word(text, "prim")
+        || has_word(text, "fizzbuzz") || has_word(text, "gcd") || has_word(text, "ggt")
+        || has_word(text, "gcm") || has_word(text, "lcm") || has_word(text, "kgv")
+        || has_word(text, "collatz") || has_word(text, "palindrome") || has_word(text, "palindrom")
+        || has_word(text, "armstrong") || has_word(text, "perfect") || has_word(text, "perfekt"))
+        return 1;
+
+    // even/odd / boolean
+    if (has_word(text, "even") || has_word(text, "odd") || has_word(text, "gerade")
+        || has_word(text, "ungerade") || has_word(text, "leap") || has_word(text, "schalt"))
+        return 1;
+
+    // loops / conditions
+    if (has_word(text, "for") || has_word(text, "loop") || has_word(text, "schleife")
         || has_word(text, "while") || has_word(text, "switch") || has_word(text, "case")
-        || has_word(text, "array") || has_word(text, "feld") || has_word(text, "liste")
-        || has_word(text, "string") || has_word(text, "zeichen") || has_word(text, "text")
-        || has_word(text, "shell") || has_word(text, "argument") || has_word(text, "parameter")
-        || has_word(text, "ergebnis") || has_word(text, "result") || has_word(text, "value")
+        || has_word(text, "if") || has_word(text, "bedingung") || has_word(text, "wenn"))
+        return 1;
+
+    // data structures
+    if (has_word(text, "array") || has_word(text, "feld") || has_word(text, "liste")
+        || has_word(text, "list") || has_word(text, "stack") || has_word(text, "queue")
+        || has_word(text, "pointer") || has_word(text, "zeiger") || has_word(text, "struct")
+        || has_word(text, "tree") || has_word(text, "baum") || has_word(text, "graph")
+        || has_word(text, "linked") || has_word(text, "verkettet"))
+        return 1;
+
+    // string operations
+    if (has_word(text, "string") || has_word(text, "zeichen") || has_word(text, "text")
+        || has_word(text, "cat") || has_word(text, "concat") || has_word(text, "vowel")
+        || has_word(text, "vokal") || has_word(text, "anagram") || has_word(text, "upper")
+        || has_word(text, "lower") || has_word(text, "groß") || has_word(text, "klein")
+        || has_word(text, "caesar") || has_word(text, "cipher") || has_word(text, "chiffre")
+        || has_word(text, "length") || has_word(text, "länge") || has_word(text, "len"))
+        return 1;
+
+    // conversion
+    if (has_word(text, "convert") || has_word(text, "parse") || has_word(text, "umwand")
+        || has_word(text, "decimal") || has_word(text, "dezimal") || has_word(text, "binary")
+        || has_word(text, "binär") || has_word(text, "hex") || has_word(text, "hexadezimal")
+        || has_word(text, "celsius") || has_word(text, "fahrenheit") || has_word(text, "temp"))
+        return 1;
+
+    // games / simulation
+    if (has_word(text, "guess") || has_word(text, "rate") || has_word(text, "raten")
+        || has_word(text, "dice") || has_word(text, "würfel") || has_word(text, "wuerfel")
+        || has_word(text, "random") || has_word(text, "zufall") || has_word(text, "game")
+        || has_word(text, "spiel") || has_word(text, "rock") || has_word(text, "paper")
+        || has_word(text, "scissors") || has_word(text, "schere") || has_word(text, "stein"))
+        return 1;
+
+    // math utilities
+    if (has_word(text, "table") || has_word(text, "einmaleins") || has_word(text, "time")
+        || has_word(text, "zeit") || has_word(text, "clock") || has_word(text, "countdown")
+        || has_word(text, "function") || has_word(text, "funktion") || has_word(text, "area")
+        || has_word(text, "fläche") || has_word(text, "circle") || has_word(text, "kreis")
+        || has_word(text, "bmi") || has_word(text, "interest") || has_word(text, "zins")
+        || has_word(text, "pyramid") || has_word(text, "pyramide") || has_word(text, "matrix"))
+        return 1;
+
+    // file / system
+    if (has_word(text, "file") || has_word(text, "datei") || has_word(text, "shell")
+        || has_word(text, "argument") || has_word(text, "parameter") || has_word(text, "env")
+        || has_word(text, "timer") || has_word(text, "benchmark") || has_word(text, "measure")
+        || has_word(text, "mess") || has_word(text, "dauer") || has_word(text, "execution")
+        || has_word(text, "ausführ") || has_word(text, "lauf"))
+        return 1;
+
+    // hello / misc
+    if (has_word(text, "hello") || has_word(text, "hallo") || has_word(text, "hello")
+        || has_word(text, "hi") || has_word(text, "name"))
+        return 1;
+
+    // general action verbs
+    if (has_word(text, "generate") || has_word(text, "create") || has_word(text, "erzeuge")
+        || has_word(text, "erstelle") || has_word(text, "bau") || has_word(text, "build")
+        || has_word(text, "check") || has_word(text, "prüfe") || has_word(text, "teste")
+        || has_word(text, "verify") || has_word(text, "überprüf") || has_word(text, "solve")
+        || has_word(text, "löse") || has_word(text, "set") || has_word(text, "initialize")
+        || has_word(text, "initialisiere") || has_word(text, "setze") || has_word(text, "analyze")
+        || has_word(text, "analyse") || has_word(text, "untersuche") || has_word(text, "determine")
+        || has_word(text, "bestimme") || has_word(text, "evaluate") || has_word(text, "auswerten"))
+        return 1;
+
+    // nouns as context
+    if (has_word(text, "ergebnis") || has_word(text, "result") || has_word(text, "value")
         || has_word(text, "wert") || has_word(text, "number") || has_word(text, "zahl")
         || has_word(text, "element") || has_word(text, "index") || has_word(text, "bis")
         || has_word(text, "to") || has_word(text, "von") || has_word(text, "from")
-        || has_word(text, "file") || has_word(text, "datei")
-        || has_word(text, "convert") || has_word(text, "parse") || has_word(text, "umwand")
-        || has_word(text, "timer") || has_word(text, "benchmark")
-        || has_word(text, "measure") || has_word(text, "mess") || has_word(text, "dauer")
-        || has_word(text, "execution") || has_word(text, "ausführ") || has_word(text, "lauf")
-        || has_word(text, "fann") || has_word(text, "neural") || has_word(text, "network")
+        || has_word(text, "data") || has_word(text, "daten") || has_word(text, "sequence")
+        || has_word(text, "folge") || has_word(text, "reihe") || has_word(text, "series"))
+        return 1;
+
+    // boolean
+    if (has_word(text, "fann") || has_word(text, "neural") || has_word(text, "network")
         || has_word(text, "train") || has_word(text, "learn") || has_word(text, "predict")
-        || has_word(text, "infer") || has_word(text, "ai");
+        || has_word(text, "infer"))
+        return 1;
+
+    return 0;
+}
+
+static int has_sequential_pattern(const char *text) {
+    // Check if text contains numbered steps like "1)...2)..." or "step 1...step 2..."
+    int count_enumerated = 0;
+    const char *p = text;
+    while (*p && count_enumerated < 2) {
+        if ((p[0] >= '1' && p[0] <= '9') && (p[1] == ')' || p[1] == '.')) { count_enumerated++; p += 2; }
+        else if (strncmp(p, "step ", 5) == 0 && p[5] >= '1' && p[5] <= '9') { count_enumerated++; p += 6; }
+        else p++;
+    }
+    if (count_enumerated >= 2) return 1;
+
+    // Check for multi-step sequential adverbs: at least 2 of "first, then, finally"
+    int seq_count = 0;
+    if (has_word(text, "first") || has_word(text, "zuerst") || has_word(text, "erstens")) seq_count++;
+    if (has_word(text, "second") || has_word(text, "zweitens")) seq_count++;
+    if (has_word(text, "third") || has_word(text, "drittens")) seq_count++;
+    if (has_word(text, "finally") || has_word(text, "schließlich") || has_word(text, "abschließend")) seq_count++;
+    if (seq_count >= 2) return 1;
+    return 0;
 }
 
 static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
@@ -499,10 +673,73 @@ static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROM
     int num_steps = 0;
     char *remaining = buf;
 
+    // Phase 1: Numbered/enumerated steps (highest confidence)
+    // e.g., "step 1: sort 5 numbers step 2: reverse the array"
+    //        "1) sort 5 numbers 2) reverse the array"
+    if (has_sequential_pattern(buf)) {
+        char *p = remaining;
+        char current[MAX_PROMPT] = "";
+        int collecting = 0;
+        while (*p && num_steps < MAX_STEPS - 1) {
+            // Detect step boundaries
+            int step_found = 0;
+            if ((p[0] >= '1' && p[0] <= '9') && (p[1] == ')' || p[1] == '.')) {
+                if (collecting && strlen(current) > 0) {
+                    trim(current);
+                    snprintf(steps[num_steps], MAX_PROMPT, "%s", current);
+                    num_steps++;
+                }
+                p += 2; while (*p && isspace(*p)) p++;
+                snprintf(current, sizeof(current), "%s", p);
+                collecting = 1;
+                step_found = 1;
+            } else if (strncmp(p, "step ", 5) == 0 && p[5] >= '1' && p[5] <= '9') {
+                if (collecting && strlen(current) > 0) {
+                    trim(current);
+                    snprintf(steps[num_steps], MAX_PROMPT, "%s", current);
+                    num_steps++;
+                }
+                p += 5; while (*p && isspace(*p)) p++;
+                if (*p == ':') p++;
+                while (*p && isspace(*p)) p++;
+                snprintf(current, sizeof(current), "%s", p);
+                collecting = 1;
+                step_found = 1;
+            }
+            if (!step_found) { p++; }
+            else { while (*p && !((p[0] >= '1' && p[0] <= '9' && (p[1] == ')' || p[1] == '.')) || strncmp(p, "step ", 5) == 0)) p++; }
+        }
+        if (collecting && strlen(current) > 0) {
+            trim(current);
+            snprintf(steps[num_steps], MAX_PROMPT, "%s", current);
+            num_steps++;
+        }
+        if (num_steps >= 2) {
+            // Remove step number prefixes from each step
+            for (int si = 0; si < num_steps; si++) {
+                char *s = steps[si];
+                while (*s && ((*s >= '0' && *s <= '9') || *s == ')' || *s == '.')) s++;
+                while (*s && isspace(*s)) s++;
+                if (s > steps[si]) memmove(steps[si], s, strlen(s) + 1);
+            }
+            return num_steps;
+        }
+        num_steps = 0;
+        remaining = buf;
+    }
+
+    // Phase 2: Conjunction-based splitting
     struct { const char *pat; int len; } patterns[] = {
+        // Long multi-word conjunctions (highest priority within same position)
         {" und dann ", 10}, {" und danach ", 12}, {" anschließend ", 14},
-        {" and then ", 10}, {" . ", 3}, {". ", 2}, {"; ", 2},
-        {" then ", 6}, {" danach ", 8},
+        {" als nächstes ", 14}, {" zum Schluss ", 13},
+        {" and then ", 10}, {" and finally ", 12},
+        {" first ", 7}, {" then ", 6}, {" finally ", 9},
+        // German sequential
+        {" danach ", 8}, {" daraufhin ", 11},
+        // Punctuation (medium confidence)
+        {" . ", 3}, {". ", 2}, {"; ", 2},
+        // Short conjunctions (lowest priority within same position)
         {" und ", 5}, {" and ", 5}, {", ", 2},
     };
     int npats = sizeof(patterns) / sizeof(patterns[0]);
@@ -513,19 +750,35 @@ static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROM
             char *pos = strstr(remaining, patterns[i].pat);
             if (!pos) continue;
             int idx = pos - remaining;
-            if (best_pos >= 0 && idx >= best_pos) continue;
+            if (best_pos >= 0 && idx > best_pos) continue;
+            if (best_pos >= 0 && idx == best_pos) continue; // earlier pattern in array wins ties
             best_pos = idx; best_len = patterns[i].len;
         }
         if (best_pos < 0) break;
         char step[MAX_PROMPT];
         snprintf(step, MAX_PROMPT, "%.*s", best_pos, remaining);
+        // Skip split if the step before separator has no actionable keyword
+        // (avoid splitting "read input and sort it" at "and")
         trim(step);
-        if (strlen(step) > 0) { snprintf(steps[num_steps], MAX_PROMPT, "%s", step); num_steps++; }
-        remaining += best_pos + best_len;
+        if (strlen(step) > 0 && has_actionable_keyword(step)) {
+            snprintf(steps[num_steps], MAX_PROMPT, "%s", step); num_steps++;
+            remaining += best_pos + best_len;
+        } else if (strlen(step) > 0) {
+            // Step has no actionable keyword - reattach and skip separator
+            char *rest = remaining + best_pos + best_len;
+            char combined[MAX_PROMPT * 2];
+            snprintf(combined, sizeof(combined), "%s %s", step, rest);
+            trim(combined);
+            snprintf(remaining, MAX_PROMPT, "%.*s", MAX_PROMPT - 1, combined);
+            break;
+        } else {
+            remaining += best_pos + best_len;
+        }
     }
     trim(remaining);
     if (strlen(remaining) > 0) { snprintf(steps[num_steps], MAX_PROMPT, "%s", remaining); num_steps++; }
 
+    // Phase 3: Merge non-viable steps backward into their predecessor
     if (num_steps > 1) {
         int merged = 1;
         while (merged) {
@@ -539,7 +792,7 @@ static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROM
                         snprintf(steps[i-1], MAX_PROMPT, "%.*s", MAX_PROMPT - 1, merged_step);
                         for (int j = i; j < num_steps - 1; j++) snprintf(steps[j], MAX_PROMPT, "%s", steps[j+1]);
                         num_steps--; merged = 1; break;
-                    } else if (i == 0 && num_steps > 1) {
+                    } else if (num_steps > 1) {
                         char merged_step[MAX_PROMPT * 2];
                         snprintf(merged_step, sizeof(merged_step), "%.*s %.*s", MAX_PROMPT - 1, steps[0], MAX_PROMPT - 1, steps[1]);
                         trim(merged_step);
@@ -552,19 +805,27 @@ static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROM
         }
     }
 
-    // Additional merge: keep "read X and print the Y" as a single step
+    // Phase 4: Merge "print/display/show the result" with preceding step
     if (num_steps > 1) {
         int merged = 1;
         while (merged) {
             merged = 0;
             for (int i = 1; i < num_steps; i++) {
-                if (has_word(steps[i], "print") &&
-                    (has_word(steps[i], "median") || has_word(steps[i], "average") ||
-                     has_word(steps[i], "mean") || has_word(steps[i], "largest") ||
-                     has_word(steps[i], "smallest") || has_word(steps[i], "greatest") ||
-                     has_word(steps[i], "sum") || has_word(steps[i], "max") ||
-                     has_word(steps[i], "min") || has_word(steps[i], "them") ||
-                     has_word(steps[i], "it") || has_word(steps[i], "result"))) {
+                if ((has_word(steps[i], "print") || has_word(steps[i], "show")
+                     || has_word(steps[i], "display") || has_word(steps[i], "ausgeb")
+                     || has_word(steps[i], "zeig"))
+                    && (has_word(steps[i], "median") || has_word(steps[i], "average")
+                     || has_word(steps[i], "mean") || has_word(steps[i], "largest")
+                     || has_word(steps[i], "smallest") || has_word(steps[i], "greatest")
+                     || has_word(steps[i], "sum") || has_word(steps[i], "max")
+                     || has_word(steps[i], "min") || has_word(steps[i], "them")
+                     || has_word(steps[i], "it") || has_word(steps[i], "result")
+                     || has_word(steps[i], "ergebnis") || has_word(steps[i], "resultat")
+                     || has_word(steps[i], "sorted") || has_word(steps[i], "sortiert")
+                     || has_word(steps[i], "output") || has_word(steps[i], "ausgabe")
+                     || has_word(steps[i], "the") || has_word(steps[i], "die")
+                     || has_word(steps[i], "calculated") || has_word(steps[i], "computed")
+                     || has_word(steps[i], "berech") || has_word(steps[i], "ermittelt"))) {
                     char merged_step[MAX_PROMPT * 2];
                     snprintf(merged_step, sizeof(merged_step), "%.*s %.*s", MAX_PROMPT - 1, steps[i-1], MAX_PROMPT - 1, steps[i]);
                     trim(merged_step);

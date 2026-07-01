@@ -301,7 +301,6 @@ extern int dataflow_quiet_mode;
 extern char out_dir[512];
 extern char l1vm_root[512];
 extern int use_color;
-extern int dataflow_quiet_mode;
 
 extern LearnedPattern learned_patterns[MAX_LEARNED];
 extern int num_learned;

@@ -1,4 +1,4 @@
-Brackets Code - Memory & Specification
+rackets Code - Memory & Specification
 =============================================
 
 1. WHAT IT IS
