@@ -23,7 +23,7 @@
 #define EMBED_DIM 32
 #define VOCAB_SIZE 72
 #define TEMPERATURE 0.8
-#define MAX_STEPS 8
+#define MAX_STEPS 32
 #define NUM_EMITTERS 133
 
 #define MAX_LEARNED 4096
@@ -262,7 +262,7 @@ typedef struct {
     char inherit_var_types[64][64];
     int inherit_var_counts[64];
     int num_inherit_vars;
-    int extra_emitters[8];
+    int extra_emitters[32];
     int num_extra_emitters;
     char type[16];
     char title[256];

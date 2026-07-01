@@ -3,7 +3,7 @@
 #define EMBED_DIM 32
 #define VOCAB_SIZE 72
 #define TEMPERATURE 0.8
-#define MAX_STEPS 8
+#define MAX_STEPS 32
 #define NUM_EMITTERS 133
 
 typedef struct {
@@ -444,7 +444,7 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
             }
         }
         if (in_domain) {
-            for (int i = 0; i < NUM_EMITTERS && task->num_extra_emitters < 8; i++) {
+            for (int i = 0; i < NUM_EMITTERS && task->num_extra_emitters < 32; i++) {
                 if (i == best) continue;
                 // Skip emitters in the same domain as the primary
                 int same_domain = 0;
@@ -461,7 +461,7 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
     }
     if (!in_domain) {
         // Fallback: original behavior for undomained emitters
-        for (int i = 0; i < NUM_EMITTERS && task->num_extra_emitters < 8; i++) {
+        for (int i = 0; i < NUM_EMITTERS && task->num_extra_emitters < 32; i++) {
             if (i != best && emitter_scores[i] >= threshold && emitter_scores[i] >= 0.5f) {
                 task->extra_emitters[task->num_extra_emitters++] = i;
             }
@@ -651,17 +651,32 @@ static int has_sequential_pattern(const char *text) {
     const char *p = text;
     while (*p && count_enumerated < 2) {
         if ((p[0] >= '1' && p[0] <= '9') && (p[1] == ')' || p[1] == '.')) { count_enumerated++; p += 2; }
+        else if ((p[0] == '(') && (p[1] >= '1' && p[1] <= '9') && p[2] == ')') { count_enumerated++; p += 3; }
         else if (strncmp(p, "step ", 5) == 0 && p[5] >= '1' && p[5] <= '9') { count_enumerated++; p += 6; }
         else p++;
     }
     if (count_enumerated >= 2) return 1;
 
+    // Check for bullet points: lines starting with "-", "*", "+"
+    int bullet_count = 0;
+    const char *bp = text;
+    while (*bp) {
+        while (*bp && *bp == ' ') bp++;
+        if (*bp == '-' || *bp == '*' || *bp == '+') { bullet_count++; if (bullet_count >= 2) return 1; }
+        while (*bp && *bp != '\n') bp++;
+        if (*bp == '\n') bp++;
+    }
+
     // Check for multi-step sequential adverbs: at least 2 of "first, then, finally"
     int seq_count = 0;
     if (has_word(text, "first") || has_word(text, "zuerst") || has_word(text, "erstens")) seq_count++;
-    if (has_word(text, "second") || has_word(text, "zweitens")) seq_count++;
-    if (has_word(text, "third") || has_word(text, "drittens")) seq_count++;
+    if (has_word(text, "second") || has_word(text, "zweitens") || has_word(text, "zweit")) seq_count++;
+    if (has_word(text, "third") || has_word(text, "drittens") || has_word(text, "dritt")) seq_count++;
+    if (has_word(text, "fourth") || has_word(text, "viertens") || has_word(text, "viert")) seq_count++;
+    if (has_word(text, "fifth") || has_word(text, "fünftens") || has_word(text, "fuenft")) seq_count++;
     if (has_word(text, "finally") || has_word(text, "schließlich") || has_word(text, "abschließend")) seq_count++;
+    if (has_word(text, "then") || has_word(text, "dann")) seq_count++;
+    if (has_word(text, "next") || has_word(text, "als nächstes") || has_word(text, "danach")) seq_count++;
     if (seq_count >= 2) return 1;
     return 0;
 }
@@ -673,15 +688,82 @@ static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROM
     int num_steps = 0;
     char *remaining = buf;
 
-    // Phase 1: Numbered/enumerated steps (highest confidence)
+    // Phase 1: Newline-based splitting (bullet points, numbered lists, line-separated items)
+    // Detect if prompt contains explicit line breaks with list markers
+    {
+        int newline_count = 0;
+        char *nlp = buf;
+        while (*nlp) { if (*nlp == '\n') newline_count++; nlp++; }
+        if (newline_count >= 2) {
+            char *line = buf;
+            char *next;
+            while (line && num_steps < MAX_STEPS) {
+                next = strchr(line, '\n');
+                if (next) *next = '\0';
+                trim(line);
+                // Strip leading bullet/number markers
+                char *content = line;
+                while (*content == ' ' || *content == '\t') content++;
+                if (*content == '-' || *content == '*' || *content == '+') { content++; while (*content == ' ') content++; }
+                else {
+                    while ((*content >= '0' && *content <= '9') || *content == '(' || *content == ')' || *content == '.') content++;
+                    while (*content == ' ') content++;
+                }
+                if (strlen(content) > 0 && has_actionable_keyword(content)) {
+                    snprintf(steps[num_steps], MAX_PROMPT, "%s", content);
+                    num_steps++;
+                }
+                if (next) { *next = '\n'; line = next + 1; }
+                else break;
+            }
+            if (num_steps >= 2) return num_steps;
+            num_steps = 0;
+        }
+    }
+
+    // Phase 2: Numbered/enumerated steps (high confidence)
     // e.g., "step 1: sort 5 numbers step 2: reverse the array"
     //        "1) sort 5 numbers 2) reverse the array"
+    //        "(1) sort 5 numbers (2) reverse the array"
+    //        "1. sort 5 numbers 2. reverse the array"
     if (has_sequential_pattern(buf)) {
+        // Try bullet point first (dash/asterisk/plus lists)
+        {
+            char *bp = remaining;
+            char bullet_steps[MAX_STEPS][MAX_PROMPT];
+            int bs_count = 0;
+            while (*bp && bs_count < MAX_STEPS) {
+                while (*bp == ' ') bp++;
+                if (*bp == '-' || *bp == '*' || *bp == '+') {
+                    bp++; while (*bp == ' ') bp++;
+                    char *start = bp;
+                    while (*bp && *bp != '\n' &&
+                           !(*bp == ' ' && (bp[1] == '-' || bp[1] == '*' || bp[1] == '+'))) bp++;
+                    char saved = *bp;
+                    *bp = '\0';
+                    trim(start);
+                    if (strlen(start) > 0) {
+                        snprintf(bullet_steps[bs_count], MAX_PROMPT, "%s", start);
+                        bs_count++;
+                    }
+                    *bp = saved;
+                    if (*bp == '\n') bp++;
+                } else {
+                    while (*bp && *bp != '\n') bp++;
+                    if (*bp == '\n') bp++;
+                }
+            }
+            if (bs_count >= 2) {
+                for (int bsi = 0; bsi < bs_count; bsi++)
+                    snprintf(steps[num_steps++], MAX_PROMPT, "%s", bullet_steps[bsi]);
+                return num_steps;
+            }
+        }
+
         char *p = remaining;
         char current[MAX_PROMPT] = "";
         int collecting = 0;
         while (*p && num_steps < MAX_STEPS - 1) {
-            // Detect step boundaries
             int step_found = 0;
             if ((p[0] >= '1' && p[0] <= '9') && (p[1] == ')' || p[1] == '.')) {
                 if (collecting && strlen(current) > 0) {
@@ -690,6 +772,16 @@ static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROM
                     num_steps++;
                 }
                 p += 2; while (*p && isspace(*p)) p++;
+                snprintf(current, sizeof(current), "%s", p);
+                collecting = 1;
+                step_found = 1;
+            } else if (p[0] == '(' && p[1] >= '1' && p[1] <= '9' && p[2] == ')') {
+                if (collecting && strlen(current) > 0) {
+                    trim(current);
+                    snprintf(steps[num_steps], MAX_PROMPT, "%s", current);
+                    num_steps++;
+                }
+                p += 3; while (*p && isspace(*p)) p++;
                 snprintf(current, sizeof(current), "%s", p);
                 collecting = 1;
                 step_found = 1;
@@ -707,7 +799,11 @@ static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROM
                 step_found = 1;
             }
             if (!step_found) { p++; }
-            else { while (*p && !((p[0] >= '1' && p[0] <= '9' && (p[1] == ')' || p[1] == '.')) || strncmp(p, "step ", 5) == 0)) p++; }
+            else {
+                while (*p && !((p[0] >= '1' && p[0] <= '9' && (p[1] == ')' || p[1] == '.'))
+                       || (p[0] == '(' && p[1] >= '1' && p[1] <= '9' && p[2] == ')')
+                       || strncmp(p, "step ", 5) == 0)) p++;
+            }
         }
         if (collecting && strlen(current) > 0) {
             trim(current);
@@ -715,10 +811,9 @@ static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROM
             num_steps++;
         }
         if (num_steps >= 2) {
-            // Remove step number prefixes from each step
             for (int si = 0; si < num_steps; si++) {
                 char *s = steps[si];
-                while (*s && ((*s >= '0' && *s <= '9') || *s == ')' || *s == '.')) s++;
+                while (*s && ((*s >= '0' && *s <= '9') || *s == ')' || *s == '(' || *s == '.')) s++;
                 while (*s && isspace(*s)) s++;
                 if (s > steps[si]) memmove(steps[si], s, strlen(s) + 1);
             }
@@ -728,18 +823,25 @@ static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROM
         remaining = buf;
     }
 
-    // Phase 2: Conjunction-based splitting
+    // Phase 3: Conjunction-based splitting with extended pattern set
     struct { const char *pat; int len; } patterns[] = {
-        // Long multi-word conjunctions (highest priority within same position)
-        {" und dann ", 10}, {" und danach ", 12}, {" anschließend ", 14},
+        // Long multi-word conjunctions (highest priority)
+        {" und dann ", 10}, {" und danach ", 12}, {" und anschließend ", 18},
+        {" anschließend ", 14},
         {" als nächstes ", 14}, {" zum Schluss ", 13},
         {" and then ", 10}, {" and finally ", 12},
         {" first ", 7}, {" then ", 6}, {" finally ", 9},
+        {" next ", 6}, {" afterwards ", 12}, {" after that ", 12},
         // German sequential
-        {" danach ", 8}, {" daraufhin ", 11},
+        {" danach ", 8}, {" daraufhin ", 11}, {" zuerst ", 8},
+        {" als erstes ", 12}, {" als zweites ", 13}, {" als drittes ", 13},
+        {" nun ", 5},
+        // English sequential
+        {" firstly ", 9}, {" secondly ", 10}, {" thirdly ", 9},
+        {" subsequently ", 14}, {" thereafter ", 12},
         // Punctuation (medium confidence)
-        {" . ", 3}, {". ", 2}, {"; ", 2},
-        // Short conjunctions (lowest priority within same position)
+        {" . ", 3}, {". ", 2}, {"; ", 2}, {": ", 2},
+        // Short conjunctions (lowest priority)
         {" und ", 5}, {" and ", 5}, {", ", 2},
     };
     int npats = sizeof(patterns) / sizeof(patterns[0]);
@@ -751,20 +853,17 @@ static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROM
             if (!pos) continue;
             int idx = pos - remaining;
             if (best_pos >= 0 && idx > best_pos) continue;
-            if (best_pos >= 0 && idx == best_pos) continue; // earlier pattern in array wins ties
+            if (best_pos >= 0 && idx == best_pos) continue;
             best_pos = idx; best_len = patterns[i].len;
         }
         if (best_pos < 0) break;
         char step[MAX_PROMPT];
         snprintf(step, MAX_PROMPT, "%.*s", best_pos, remaining);
-        // Skip split if the step before separator has no actionable keyword
-        // (avoid splitting "read input and sort it" at "and")
         trim(step);
         if (strlen(step) > 0 && has_actionable_keyword(step)) {
             snprintf(steps[num_steps], MAX_PROMPT, "%s", step); num_steps++;
             remaining += best_pos + best_len;
         } else if (strlen(step) > 0) {
-            // Step has no actionable keyword - reattach and skip separator
             char *rest = remaining + best_pos + best_len;
             char combined[MAX_PROMPT * 2];
             snprintf(combined, sizeof(combined), "%s %s", step, rest);
@@ -778,7 +877,7 @@ static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROM
     trim(remaining);
     if (strlen(remaining) > 0) { snprintf(steps[num_steps], MAX_PROMPT, "%s", remaining); num_steps++; }
 
-    // Phase 3: Merge non-viable steps backward into their predecessor
+    // Phase 4: Merge non-viable steps backward into their predecessor
     if (num_steps > 1) {
         int merged = 1;
         while (merged) {
@@ -805,7 +904,7 @@ static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROM
         }
     }
 
-    // Phase 4: Merge "print/display/show the result" with preceding step
+    // Phase 5: Merge "print/display/show the result" with preceding step
     if (num_steps > 1) {
         int merged = 1;
         while (merged) {
@@ -836,6 +935,10 @@ static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROM
             }
         }
     }
+
+    // Phase 6: For long prompts with many "and" / "," splits, merge consecutive
+    // steps that belong together (e.g., "read 5 numbers" + "and sort them" → keep separate if both have keywords)
+    // This is intentionally a no-op - both have keywords so they stay separate.
 
     if (num_steps <= 1) { snprintf(steps[0], MAX_PROMPT, "%s", prompt); return 1; }
     return num_steps;

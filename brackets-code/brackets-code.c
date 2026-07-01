@@ -981,7 +981,7 @@ typedef struct {
     char inherit_var_types[64][64];
     int inherit_var_counts[64];
     int num_inherit_vars;
-    int extra_emitters[8];
+    int extra_emitters[32];
     int num_extra_emitters;
     char type[16];
     char title[256];
@@ -8852,7 +8852,7 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     // as a composite sequence. Each extra emitter runs on the same function.
     if (task->num_extra_emitters > 0) {
         int emitted = 0;
-        for (int ei = 0; ei < task->num_extra_emitters && ei < 8; ei++) {
+        for (int ei = 0; ei < task->num_extra_emitters && ei < 32; ei++) {
             int idx = task->extra_emitters[ei];
             // Dispatch by index (matches the order in llm_select_emitter scoring)
             // We reuse generate_from_task recursively on a fresh task for each extra
@@ -9185,19 +9185,38 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
                             }
                         }
                     }
+                    // Also try LLM emitter selection for this step to get extra emitters
+                    if (num_steps > 1) {
+                        current_prompt = steps[i];
+                        int vs_indices2[3];
+                        float vs_scores2[3];
+                        int vs_count2 = search_examples(steps[i], 3, vs_indices2, vs_scores2);
+                        if (vs_count2 > 0 && vs_scores2[0] > 0.3f) {
+                            vs_boost_count = tokenize(example_docs[vs_indices2[0]].stem, vs_boost_tokens, 64);
+                        }
+                        llm_select_emitter(steps[i], &task);
+                        // Run extra emitters if the LLM found them
+                        if (task.num_extra_emitters > 0) {
+                            // Primary emitter and extra emitters run in sequence within this step
+                            // generate_from_task with extra emitters will handle multiple emitters
+                        }
+                    }
                     generate_from_task(prog, &task, (i == num_steps - 1));
                 }
             }
             // collect inherited variables from the main function for next steps
+            // Now also collects scalar variables (not just arrays) for data flow
             Function *fcur = NULL;
             for (int fi = 0; fi < prog->num_funcs; fi++)
                 if (strcmp(prog->funcs[fi].name, "main") == 0) { fcur = &prog->funcs[fi]; break; }
             if (fcur) {
                 for (int vi = 0; vi < fcur->num_vars && num_inherited < 64; vi++) {
-                    int is_scalar = (fcur->vars[vi].count <= 1);
                     int is_const = (strstr(fcur->vars[vi].type, "const") != NULL);
-                    int is_standard = (strcmp(fcur->vars[vi].name, "zero") == 0 || strcmp(fcur->vars[vi].name, "one") == 0);
-                    if (!is_scalar && !is_const && !is_standard) {
+                    int is_standard = (strcmp(fcur->vars[vi].name, "zero") == 0 || strcmp(fcur->vars[vi].name, "one") == 0
+                        || strcmp(fcur->vars[vi].name, "two") == 0 || strcmp(fcur->vars[vi].name, "three") == 0
+                        || strcmp(fcur->vars[vi].name, "four") == 0 || strcmp(fcur->vars[vi].name, "five") == 0);
+                    // Skip standard constants, but keep arrays AND scalars that look like result variables
+                    if (!is_const && !is_standard) {
                         int already = 0;
                         for (int ck = 0; ck < num_inherited; ck++) {
                             if (strcmp(inherited_names[ck], fcur->vars[vi].name) == 0) already = 1;
