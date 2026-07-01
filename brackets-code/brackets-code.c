@@ -8501,9 +8501,9 @@ static void ensure_exit(Function *f, int last_step) {
     func_append(f, "\t(zero :exit !)");
 }
 
-// Dispatch macro for uniform emitter blocks
+// Dispatch macro for uniform emitter blocks (no early return)
 #define DISPATCH(field, func) \
-    if (task->field) { func(prog, f); ensure_exit(f, last_step); return 1; }
+    if (task->field) { func(prog, f); emitted = 1; }
 
 static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     // check if main function already exists
@@ -8518,6 +8518,7 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     }
 
     add_include(prog, "intr-func.l1h");
+    int emitted = 0;
 
     // Pre-declare inherited variables (dedup by name ensures emitter's own decls get skipped)
     for (int vi = 0; vi < task->num_inherit_vars; vi++) {
@@ -8536,32 +8537,27 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     if (task->has_sum_range) {
         int n = task->sum_range_n > 0 ? task->sum_range_n : 100;
         emit_for_sum(prog, f, n);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     if (task->has_print_even) {
         int n = task->print_even_n > 0 ? task->print_even_n : 100;
         emit_print_even(prog, f, n);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     if (task->has_find_max) {
         int c = task->find_max_count > 0 ? task->find_max_count : 5;
         emit_input_find_max(prog, f, c);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     if (task->has_fib_seq) {
         int n = task->fib_seq_n > 0 ? task->fib_seq_n : 10;
         emit_fib_seq(prog, f, n);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     if (task->has_countdown_from) {
         int s = task->countdown_start > 0 ? task->countdown_start : 10;
         emit_countdown_from(prog, f, s);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     if (task->has_input_sort) {
         int c = task->input_sort_count > 0 ? task->input_sort_count : 5;
@@ -8603,14 +8599,12 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
             func_append(f, "\t(a :print_i !)");
             func_append(f, "\t(:print_n !)");
         }
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     if (task->has_median) {
         int c = task->median_count > 0 ? task->median_count : 5;
         emit_median(prog, f, c, task->skip_input);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     DISPATCH(has_input_fact, emit_input_factorial);
     DISPATCH(has_string_compare, emit_string_compare);
@@ -8623,8 +8617,7 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
             add_var_to_func(f, "int64", "count", 1, icv, 1);
         }
         emit_array_reverse(prog, f, task->skip_input);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     if (task->has_array_find) {
         if (task->inherit_var[0]) {
@@ -8634,8 +8627,7 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
             add_var_to_func(f, "int64", "count", 1, icv, 1);
         }
         emit_array_find(prog, f, task->skip_input);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     if (task->has_array_vmath) {
         if (task->inherit_var[0]) {
@@ -8645,8 +8637,7 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
             add_var_to_func(f, "int64", "count", 1, icv, 1);
         }
         emit_array_vmath(prog, f, task->skip_input);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     DISPATCH(has_read_file, emit_read_file);
     DISPATCH(has_write_file, emit_write_file);
@@ -8654,26 +8645,22 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     DISPATCH(has_timer, emit_timer);
     if (task->has_factorial && !task->has_input) {
         emit_factorial(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     DISPATCH(has_fizzbuzz, emit_fizzbuzz);
     if (task->has_primes) {
         int n = task->num_literals > 0 ? task->literals[0] : 50;
         emit_primes(prog, f, n);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     if (task->has_even_odd && !task->has_print_even) {
         emit_even_odd(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     // has_bignum_math must be checked before has_power since bignum implies power
     if (task->has_bignum_math) {
         emit_bignum_math(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     DISPATCH(has_power, emit_power);
     DISPATCH(has_mult_table, emit_multiplication_table);
@@ -8687,8 +8674,7 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     if (task->has_loop && task->has_literals && task->has_sum) {
         int n = task->num_literals > 0 ? task->literals[0] : 100;
         emit_for_sum(prog, f, n);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     if (task->has_operation && task->has_literals) {
         int n = task->num_literals > 2 ? 3 : (task->num_literals < 2 ? 2 : task->num_literals);
@@ -8697,40 +8683,34 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         if (task->num_literals >= 2) vals[1] = task->literals[1];
         if (task->num_literals >= 3) vals[2] = task->literals[2];
         emit_math(prog, f, task->type, task->op, vals, n, 1);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     DISPATCH(has_leap_year, emit_leap_year);
     DISPATCH(has_temp_convert, emit_temp_convert);
     DISPATCH(has_circle_area, emit_circle_area);
     if (task->has_average && task->has_input) {
         emit_average(prog, f, task->skip_input);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     DISPATCH(has_sort_stats, emit_sort_stats);
     if (task->has_sort && !task->has_input) {
         int c = 5;
         emit_selection_sort(prog, f, c, task->skip_input);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     if (task->has_fann_create && task->has_fann_train) {
         emit_fann_train(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     if (task->has_fann_create && !task->has_fann_train) {
         emit_fann_create(prog, f);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     DISPATCH(has_fann_run, emit_fann_run);
     if (task->has_input && !task->has_operation) {
         int c = task->input_count > 0 ? task->input_count : 5;
         emit_input_loop(prog, f, c, task->type, 0);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     DISPATCH(has_palindrome, emit_palindrome);
     DISPATCH(has_lcm, emit_lcm);
@@ -8749,30 +8729,26 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     DISPATCH(has_string_cat, emit_string_cat);
     if (task->has_bubble_sort) {
         emit_bubble_sort(prog, f, task->skip_input);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     DISPATCH(has_binary_search, emit_binary_search);
     DISPATCH(has_square_root, emit_square_root);
     DISPATCH(has_prime_factorization, emit_prime_factorization);
     if (task->has_standard_deviation) {
         emit_standard_deviation(prog, f, task->skip_input);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     DISPATCH(has_compound_interest, emit_compound_interest);
     DISPATCH(has_decimal_to_binary, emit_decimal_to_binary);
     DISPATCH(has_dice_roll, emit_dice_roll);
     if (task->has_double_math) {
         emit_double_math(prog, f, task->op);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     DISPATCH(has_double_circle_area, emit_double_circle_area);
     if (task->has_double_average) {
         emit_double_average(prog, f, task->skip_input);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     DISPATCH(has_double_compound_interest, emit_double_compound_interest);
     DISPATCH(has_double_pythagoras, emit_double_pythagoras);
@@ -8785,8 +8761,7 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     if (task->has_insertion_sort) {
         int c = 5;
         emit_insertion_sort(prog, f, c, task->skip_input);
-        ensure_exit(f, last_step);
-        return 1;
+        emitted = 1;
     }
     DISPATCH(has_bmi_calculator, emit_bmi_calculator);
     DISPATCH(has_calculator, emit_calculator);
@@ -8848,128 +8823,120 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     DISPATCH(has_crossword, emit_crossword);
     DISPATCH(has_linter, emit_linter);
 
-    // If no single emitter matched but extra emitters are specified, run them
-    // as a composite sequence. Each extra emitter runs on the same function.
-    if (task->num_extra_emitters > 0) {
-        int emitted = 0;
-        for (int ei = 0; ei < task->num_extra_emitters && ei < 32; ei++) {
-            int idx = task->extra_emitters[ei];
-            // Dispatch by index (matches the order in llm_select_emitter scoring)
-            // We reuse generate_from_task recursively on a fresh task for each extra
-            TaskProfile sub;
-            memset(&sub, 0, sizeof(sub));
-            sub.skip_input = 1;
-            // Run the extra emitter by appending to the same function
-            // We do this by calling specific emit_ functions based on index
-            // (same order as the scoring in llm_select_emitter)
-            switch (idx) {
-                case 0: if (task->has_operation && task->has_literals) { emit_math(prog, f, task->type, task->op, task->literals, task->num_literals > 2 ? 3 : 2, 1); emitted = 1; } break;
-                case 1: if (task->has_input && !task->has_operation) { emit_input_loop(prog, f, task->input_count > 0 ? task->input_count : 5, task->type, 0); emitted = 1; } break;
-                case 3: if (task->has_sum_range) { emit_for_sum(prog, f, task->sum_range_n > 0 ? task->sum_range_n : 100); emitted = 1; } break;
-                case 4: if (task->has_print_even) { emit_print_even(prog, f, task->print_even_n > 0 ? task->print_even_n : 100); emitted = 1; } break;
-                case 8: if (task->has_input_sort) { emit_input_sort(prog, f, task->input_sort_count > 0 ? task->input_sort_count : 5, task->skip_input, task->has_descending); emitted = 1; } break;
-                case 10: if (task->has_string_cat) { emit_string_cat(prog, f); emitted = 1; } break;
-                case 13: if (task->has_array_reverse) { emit_array_reverse(prog, f, task->skip_input); emitted = 1; } break;
-                case 14: if (task->has_array_find) { emit_array_find(prog, f, task->skip_input); emitted = 1; } break;
-                case 16: if (task->has_array_vmath) { emit_array_vmath(prog, f, task->skip_input); emitted = 1; } break;
-                case 17: if (task->has_read_file) { emit_read_file(prog, f); emitted = 1; } break;
-                case 18: if (task->has_write_file) { emit_write_file(prog, f); emitted = 1; } break;
-                case 22: if (task->has_fizzbuzz) { emit_fizzbuzz(prog, f); emitted = 1; } break;
-                case 23: if (task->has_primes) { int n = task->num_literals > 0 ? task->literals[0] : 50; emit_primes(prog, f, n); emitted = 1; } break;
-                case 24: if (task->has_even_odd) { emit_even_odd(prog, f); emitted = 1; } break;
-                case 31: if (task->has_array_min_max) { emit_array_min_max(prog, f); emitted = 1; } break;
-                case 37: if (task->has_average && task->has_input) { emit_average(prog, f, task->skip_input); emitted = 1; } break;
-                case 38: if (task->has_sort && !task->has_input) { emit_selection_sort(prog, f, 5, task->skip_input); emitted = 1; } break;
-                case 39: if (task->has_palindrome) { emit_palindrome(prog, f); emitted = 1; } break;
-                case 40: if (task->has_lcm) { emit_lcm(prog, f); emitted = 1; } break;
-                case 41: if (task->has_collatz) { emit_collatz(prog, f); emitted = 1; } break;
-                case 42: if (task->has_sum_of_digits) { emit_sum_of_digits(prog, f); emitted = 1; } break;
-                case 43: if (task->has_reverse_string) { emit_reverse_string(prog, f); emitted = 1; } break;
-                case 44: if (task->has_armstrong) { emit_armstrong(prog, f); emitted = 1; } break;
-                case 45: if (task->has_perfect_number) { emit_perfect_number(prog, f); emitted = 1; } break;
-                case 46: if (task->has_count_vowels) { emit_count_vowels(prog, f); emitted = 1; } break;
-                case 47: if (task->has_anagram_check) { emit_anagram_check(prog, f); emitted = 1; } break;
-                case 48: if (task->has_string_to_upper) { emit_string_to_upper(prog, f); emitted = 1; } break;
-                case 49: if (task->has_string_to_lower) { emit_string_to_lower(prog, f); emitted = 1; } break;
-                case 50: if (task->has_caesar_cipher) { emit_caesar_cipher(prog, f); emitted = 1; } break;
-                case 51: if (task->has_palindrome_string) { emit_palindrome_string(prog, f); emitted = 1; } break;
-                case 52: if (task->has_bubble_sort) { emit_bubble_sort(prog, f, task->skip_input); emitted = 1; } break;
-                case 53: if (task->has_binary_search) { emit_binary_search(prog, f); emitted = 1; } break;
-                case 54: if (task->has_square_root) { emit_square_root(prog, f); emitted = 1; } break;
-                case 55: if (task->has_prime_factorization) { emit_prime_factorization(prog, f); emitted = 1; } break;
-                case 56: if (task->has_standard_deviation) { emit_standard_deviation(prog, f, task->skip_input); emitted = 1; } break;
-                case 57: if (task->has_compound_interest) { emit_compound_interest(prog, f); emitted = 1; } break;
-                case 58: if (task->has_decimal_to_binary) { emit_decimal_to_binary(prog, f); emitted = 1; } break;
-                case 59: if (task->has_dice_roll) { emit_dice_roll(prog, f); emitted = 1; } break;
-                case 60: if (task->has_double_math) { emit_double_math(prog, f, task->op); emitted = 1; } break;
-                case 61: if (task->has_double_circle_area) { emit_double_circle_area(prog, f); emitted = 1; } break;
-                case 62: if (task->has_double_average) { emit_double_average(prog, f, task->skip_input); emitted = 1; } break;
-                case 63: if (task->has_double_compound_interest) { emit_double_compound_interest(prog, f); emitted = 1; } break;
-                case 64: if (task->has_double_pythagoras) { emit_double_pythagoras(prog, f); emitted = 1; } break;
-                case 65: if (task->has_double_temp_convert) { emit_double_temp_convert(prog, f); emitted = 1; } break;
-                case 66: if (task->has_double_sqrt) { emit_double_sqrt(prog, f); emitted = 1; } break;
-                case 68: if (task->has_string_length) { emit_string_length(prog, f); emitted = 1; } break;
-                case 69: if (task->has_stack) { emit_stack(prog, f); emitted = 1; } break;
-                case 70: if (task->has_queue) { emit_queue(prog, f); emitted = 1; } break;
-                case 71: if (task->has_insertion_sort) { emit_insertion_sort(prog, f, 5, task->skip_input); emitted = 1; } break;
-                case 72: if (task->has_calculator) { emit_calculator(prog, f); emitted = 1; } break;
-                case 73: if (task->has_unit_converter) { emit_unit_converter(prog, f); emitted = 1; } break;
-                case 74: if (task->has_rock_paper_scissors) { emit_rock_paper_scissors(prog, f); emitted = 1; } break;
-                case 75: if (task->has_pyramid) { emit_pyramid(prog, f); emitted = 1; } break;
-                case 86: if (task->has_linked_list) { emit_linked_list(prog, f); emitted = 1; } break;
-                case 87: if (task->has_binary_search_tree) { emit_binary_search_tree(prog, f); emitted = 1; } break;
-                case 88: if (task->has_tree_traversal) { emit_tree_traversal(prog, f); emitted = 1; } break;
-                case 89: if (task->has_graph_bfs_dfs) { emit_graph_bfs_dfs(prog, f); emitted = 1; } break;
-                case 90: if (task->has_n_queens) { emit_n_queens(prog, f); emitted = 1; } break;
-                case 91: if (task->has_sudoku) { emit_sudoku(prog, f); emitted = 1; } break;
-                case 92: if (task->has_levenshtein) { emit_levenshtein_distance(prog, f); emitted = 1; } break;
-                case 93: if (task->has_maze_generator) { emit_maze_generator(prog, f); emitted = 1; } break;
-                case 94: if (task->has_maze_solver) { emit_maze_solver(prog, f); emitted = 1; } break;
-                case 95: if (task->has_monte_carlo) { emit_monte_carlo_pi(prog, f); emitted = 1; } break;
-                case 96: if (task->has_matrix_mul) { emit_matrix_multiplication(prog, f); emitted = 1; } break;
-                case 97: if (task->has_matrix_transpose) { emit_matrix_transpose(prog, f); emitted = 1; } break;
-                case 98: if (task->has_numerical_integration) { emit_numerical_integration(prog, f); emitted = 1; } break;
-                case 99: if (task->has_complex_numbers) { emit_complex_numbers(prog, f); emitted = 1; } break;
-                case 100: if (task->has_linear_regression) { emit_linear_regression(prog, f); emitted = 1; } break;
-                case 101: if (task->has_base_converter) { emit_base_converter(prog, f); emitted = 1; } break;
-                case 102: if (task->has_freq_analysis) { emit_freq_analysis(prog, f); emitted = 1; } break;
-                case 103: if (task->has_shuffle) { emit_shuffle(prog, f); emitted = 1; } break;
-                case 104: if (task->has_weighted_random) { emit_weighted_random(prog, f); emitted = 1; } break;
-                case 105: if (task->has_ascii_table) { emit_ascii_table(prog, f); emitted = 1; } break;
-                case 106: if (task->has_bignum_math) { emit_bignum_math(prog, f); emitted = 1; } break;
-                case 107: if (task->has_password_card) { emit_password_card(prog, f); emitted = 1; } break;
-                case 108: if (task->has_chess_problem) { emit_chess_problem(prog, f); emitted = 1; } break;
-                case 109: if (task->has_shell_repl) { emit_shell_repl(prog, f); emitted = 1; } break;
-                case 110: if (task->has_webserver) { emit_webserver(prog, f); emitted = 1; } break;
-                case 111: if (task->has_sdl_window) { emit_sdl_window(prog, f); emitted = 1; } break;
-                case 112: if (task->has_sdl_button) { emit_sdl_button(prog, f); emitted = 1; } break;
-                case 113: if (task->has_thread) { emit_thread(prog, f); emitted = 1; } break;
-                case 114: if (task->has_scheduler) { emit_scheduler(prog, f); emitted = 1; } break;
-                case 115: if (task->has_shell_exec) { emit_shell_exec(prog, f); emitted = 1; } break;
-                case 116: if (task->has_json) { emit_json(prog, f); emitted = 1; } break;
-                case 117: if (task->has_crypto) { emit_crypto(prog, f); emitted = 1; } break;
-                case 118: if (task->has_bluetooth_ble) { emit_bluetooth_ble(prog, f); emitted = 1; } break;
-                case 119: if (task->has_serial_rs232) { emit_serial_rs232(prog, f); emitted = 1; } break;
-                case 120: if (task->has_gpio) { emit_gpio(prog, f); emitted = 1; } break;
-                case 121: if (task->has_gps) { emit_gps(prog, f); emitted = 1; } break;
-                case 122: if (task->has_timer_date) { emit_timer_date(prog, f); emitted = 1; } break;
-                case 123: if (task->has_sdl_sound) { emit_sdl_sound(prog, f); emitted = 1; } break;
-                case 124: if (task->has_sdl_joystick) { emit_sdl_joystick(prog, f); emitted = 1; } break;
-                case 125: if (task->has_sdl_mouse) { emit_sdl_mouse(prog, f); emitted = 1; } break;
-                case 126: if (task->has_fractal) { emit_fractal(prog, f); emitted = 1; } break;
-                case 127: if (task->has_cluster_3x1) { emit_cluster_3x1(prog, f); emitted = 1; } break;
-                case 128: if (task->has_reload) { emit_reload(prog, f); emitted = 1; } break;
-                case 129: if (task->has_coordinate_grid) { emit_coordinate_grid(prog, f); emitted = 1; } break;
-                case 130: if (task->has_turmite) { emit_turmite(prog, f); emitted = 1; } break;
-                case 131: if (task->has_crossword) { emit_crossword(prog, f); emitted = 1; } break;
-                case 132: if (task->has_linter) { emit_linter(prog, f); emitted = 1; } break;
-                default: break;
+    // If we emitted code, also run any LLM-selected extra emitters in sequence
+    if (emitted || task->num_extra_emitters > 0) {
+        // Run extra emitters (LLM-selected secondary operations for the same step)
+        if (task->num_extra_emitters > 0) {
+            for (int ei = 0; ei < task->num_extra_emitters && ei < 32; ei++) {
+                int idx = task->extra_emitters[ei];
+                // Dispatch by index directly (LLM already scored them, skip flag checks)
+                switch (idx) {
+                    case 0: emit_math(prog, f, task->type, task->op, task->literals, task->num_literals > 2 ? 3 : 2, 1); break;
+                    case 1: emit_input_loop(prog, f, task->input_count > 0 ? task->input_count : 5, task->type, 0); break;
+                    case 3: emit_for_sum(prog, f, task->sum_range_n > 0 ? task->sum_range_n : 100); break;
+                    case 4: emit_print_even(prog, f, task->print_even_n > 0 ? task->print_even_n : 100); break;
+                    case 8: emit_input_sort(prog, f, task->input_sort_count > 0 ? task->input_sort_count : 5, task->skip_input, task->has_descending); break;
+                    case 10: emit_string_cat(prog, f); break;
+                    case 13: emit_array_reverse(prog, f, task->skip_input); break;
+                    case 14: emit_array_find(prog, f, task->skip_input); break;
+                    case 16: emit_array_vmath(prog, f, task->skip_input); break;
+                    case 17: emit_read_file(prog, f); break;
+                    case 18: emit_write_file(prog, f); break;
+                    case 22: emit_fizzbuzz(prog, f); break;
+                    case 23: { int n = task->num_literals > 0 ? task->literals[0] : 50; emit_primes(prog, f, n); } break;
+                    case 24: emit_even_odd(prog, f); break;
+                    case 31: emit_array_min_max(prog, f); break;
+                    case 37: emit_average(prog, f, task->skip_input); break;
+                    case 38: emit_selection_sort(prog, f, 5, task->skip_input); break;
+                    case 39: emit_palindrome(prog, f); break;
+                    case 40: emit_lcm(prog, f); break;
+                    case 41: emit_collatz(prog, f); break;
+                    case 42: emit_sum_of_digits(prog, f); break;
+                    case 43: emit_reverse_string(prog, f); break;
+                    case 44: emit_armstrong(prog, f); break;
+                    case 45: emit_perfect_number(prog, f); break;
+                    case 46: emit_count_vowels(prog, f); break;
+                    case 47: emit_anagram_check(prog, f); break;
+                    case 48: emit_string_to_upper(prog, f); break;
+                    case 49: emit_string_to_lower(prog, f); break;
+                    case 50: emit_caesar_cipher(prog, f); break;
+                    case 51: emit_palindrome_string(prog, f); break;
+                    case 52: emit_bubble_sort(prog, f, task->skip_input); break;
+                    case 53: emit_binary_search(prog, f); break;
+                    case 54: emit_square_root(prog, f); break;
+                    case 55: emit_prime_factorization(prog, f); break;
+                    case 56: emit_standard_deviation(prog, f, task->skip_input); break;
+                    case 57: emit_compound_interest(prog, f); break;
+                    case 58: emit_decimal_to_binary(prog, f); break;
+                    case 59: emit_dice_roll(prog, f); break;
+                    case 60: emit_double_math(prog, f, task->op); break;
+                    case 61: emit_double_circle_area(prog, f); break;
+                    case 62: emit_double_average(prog, f, task->skip_input); break;
+                    case 63: emit_double_compound_interest(prog, f); break;
+                    case 64: emit_double_pythagoras(prog, f); break;
+                    case 65: emit_double_temp_convert(prog, f); break;
+                    case 66: emit_double_sqrt(prog, f); break;
+                    case 68: emit_string_length(prog, f); break;
+                    case 69: emit_stack(prog, f); break;
+                    case 70: emit_queue(prog, f); break;
+                    case 71: emit_insertion_sort(prog, f, 5, task->skip_input); break;
+                    case 72: emit_calculator(prog, f); break;
+                    case 73: emit_unit_converter(prog, f); break;
+                    case 74: emit_rock_paper_scissors(prog, f); break;
+                    case 75: emit_pyramid(prog, f); break;
+                    case 86: emit_linked_list(prog, f); break;
+                    case 87: emit_binary_search_tree(prog, f); break;
+                    case 88: emit_tree_traversal(prog, f); break;
+                    case 89: emit_graph_bfs_dfs(prog, f); break;
+                    case 90: emit_n_queens(prog, f); break;
+                    case 91: emit_sudoku(prog, f); break;
+                    case 92: emit_levenshtein_distance(prog, f); break;
+                    case 93: emit_maze_generator(prog, f); break;
+                    case 94: emit_maze_solver(prog, f); break;
+                    case 95: emit_monte_carlo_pi(prog, f); break;
+                    case 96: emit_matrix_multiplication(prog, f); break;
+                    case 97: emit_matrix_transpose(prog, f); break;
+                    case 98: emit_numerical_integration(prog, f); break;
+                    case 99: emit_complex_numbers(prog, f); break;
+                    case 100: emit_linear_regression(prog, f); break;
+                    case 101: emit_base_converter(prog, f); break;
+                    case 102: emit_freq_analysis(prog, f); break;
+                    case 103: emit_shuffle(prog, f); break;
+                    case 104: emit_weighted_random(prog, f); break;
+                    case 105: emit_ascii_table(prog, f); break;
+                    case 106: emit_bignum_math(prog, f); break;
+                    case 107: emit_password_card(prog, f); break;
+                    case 108: emit_chess_problem(prog, f); break;
+                    case 109: emit_shell_repl(prog, f); break;
+                    case 110: emit_webserver(prog, f); break;
+                    case 111: emit_sdl_window(prog, f); break;
+                    case 112: emit_sdl_button(prog, f); break;
+                    case 113: emit_thread(prog, f); break;
+                    case 114: emit_scheduler(prog, f); break;
+                    case 115: emit_shell_exec(prog, f); break;
+                    case 116: emit_json(prog, f); break;
+                    case 117: emit_crypto(prog, f); break;
+                    case 118: emit_bluetooth_ble(prog, f); break;
+                    case 119: emit_serial_rs232(prog, f); break;
+                    case 120: emit_gpio(prog, f); break;
+                    case 121: emit_gps(prog, f); break;
+                    case 122: emit_timer_date(prog, f); break;
+                    case 123: emit_sdl_sound(prog, f); break;
+                    case 124: emit_sdl_joystick(prog, f); break;
+                    case 125: emit_sdl_mouse(prog, f); break;
+                    case 126: emit_fractal(prog, f); break;
+                    case 127: emit_cluster_3x1(prog, f); break;
+                    case 128: emit_reload(prog, f); break;
+                    case 129: emit_coordinate_grid(prog, f); break;
+                    case 130: emit_turmite(prog, f); break;
+                    case 131: emit_crossword(prog, f); break;
+                    case 132: emit_linter(prog, f); break;
+                    default: break;
+                }
             }
         }
-        if (emitted) {
-            ensure_exit(f, last_step);
-            return 1;
-        }
+        ensure_exit(f, last_step);
+        return 1;
     }
 
     // Handle "print them" when an array was inherited from a prior step
@@ -9186,7 +9153,8 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
                         }
                     }
                     // Also try LLM emitter selection for this step to get extra emitters
-                    if (num_steps > 1) {
+                    // The LLM scores all 133 emitters and selects strongly-scored secondaries
+                    if (num_steps > 0) {
                         current_prompt = steps[i];
                         int vs_indices2[3];
                         float vs_scores2[3];
@@ -9195,12 +9163,8 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
                             vs_boost_count = tokenize(example_docs[vs_indices2[0]].stem, vs_boost_tokens, 64);
                         }
                         llm_select_emitter(steps[i], &task);
-                        // Run extra emitters if the LLM found them
-                        if (task.num_extra_emitters > 0) {
-                            // Primary emitter and extra emitters run in sequence within this step
-                            // generate_from_task with extra emitters will handle multiple emitters
-                        }
                     }
+                    // generate_from_task runs primary emitter(s) AND extra emitters in sequence
                     generate_from_task(prog, &task, (i == num_steps - 1));
                 }
             }
