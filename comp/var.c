@@ -33,6 +33,8 @@ extern U1 check_ascii; // if set 1, disallow unicode chars in variable name!
 extern U1 varname_end[MAXLINELEN];
 extern U1 variable_prefix[MAXSTRLEN];
 
+extern U1 inside_intr;
+
 // protos
 U1 checkdigit (U1 *str);
 size_t strlen_safe (const char *str, int maxlen);
@@ -239,10 +241,13 @@ S2 checkdef (U1 *name)
 		return (0);
 	}
 
-	if (checkdigit (name) == TRUE)
+	if (inside_intr == 1)
 	{
-		// is number not variable name: set checked
-		return (0);
+		if (checkdigit (name) == TRUE)
+		{
+			// is number not variable name: set checked
+			return (0);
+		}
 	}
 
 	if (check_varname_end == 1)
@@ -294,10 +299,13 @@ S2 checkset (U1 *name)
 		return (0);
 	}
 
-	if (checkdigit (name) == TRUE)
+	if (inside_intr == 1)
 	{
-		// is number not variable name: set checked
-		return (0);
+		if (checkdigit (name) == TRUE)
+		{
+			// is number not variable name: set checked
+			return (0);
+		}
 	}
 
 	for (i = 0; i <= data_ind; i++)

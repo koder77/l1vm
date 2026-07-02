@@ -149,6 +149,10 @@ U1 memory_bounds = 1;
 // emit compiler code into assembly file as comments
 U1 save_compiler_line = 0;
 
+// for checkdef/checkvar to catch numbers in code which are not allowed!
+// and must be declared by set!
+U1 inside_intr = 0;
+
 // contracts
 U1 contracts = 0;
 U1 precondition = 0;
@@ -927,6 +931,9 @@ S2 parse_line (U1 *line)
 	S2 normal_brackets = 0;
 
 	S2 right_assign_pos = 0;
+
+	// for checkdef/checkvar
+	inside_intr = 0;
 
     ret = check_for_brackets (line);
 	if (ret == 1)
@@ -3597,6 +3604,9 @@ S2 parse_line (U1 *line)
 
 								if (strcmp ((const char *) ast[level].expr[j][last_arg], "intr0") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], "intr1") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], "pushb") == 0 || strcmp ((const char *) ast[level].expr[j][last_arg], "pullb") == 0)
 								{
+									// for checkdef/checkvar
+									inside_intr = 1;
+
 									strcpy ((char *) code_temp, (const char *) ast[level].expr[j][last_arg]);
 									strcat ((char *) code_temp, " ");
 

@@ -1731,7 +1731,7 @@ static void emit_array_assign(Program *prog, Function *f) {
     func_append(f, "\t// print array");
     func_append(f, "\t(zero index :=)");
     func_append(f, "\t(for-loop)");
-    func_append(f, "\t(((index 5 <) f :=) f for)");
+    func_append(f, "\t(((index arrsize <) f :=) f for)");
     func_append(f, "\t\t(index * int64_size realind :=)");
     func_append(f, "\t\t(arr [ realind ] value =)");
     func_append(f, "\t\t(value + zero value :=)");
@@ -2348,6 +2348,8 @@ static void emit_random_number(Program *prog, Function *f) {
     add_var_to_func(f, "int64", "randval", 1, zv, 1);
     add_var_to_func(f, "int64", "f", 1, zv, 1);
     add_var_to_func(f, "int64", "i", 1, zv, 1);
+    const char *cv[] = {"5"};
+    add_var_to_func(f, "const-int64", "count", 1, cv, 1);
     const char *vs[] = {"\"Random numbers 1-100:\""};
     add_var_to_func(f, "const-string", "rstr", 22, vs, 1);
     func_append(f, "\t(rstr :print_s !)");
@@ -2355,7 +2357,7 @@ static void emit_random_number(Program *prog, Function *f) {
     func_append(f, "\t// using simple pseudo-random via timer");
     func_append(f, "\t(zero i :=)");
     func_append(f, "\t(for-loop)");
-    func_append(f, "\t(((i 5 <) f :=) f for)");
+    func_append(f, "\t(((i count <) f :=) f for)");
     func_append(f, "\t\t// compute pseudo-random: take epoch ms mod maxval");
     func_append(f, "\t\t(randval :epochms !)");
     func_append(f, "\t\t((randval maxval %) randval :=)");
