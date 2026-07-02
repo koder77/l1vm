@@ -3,6 +3,16 @@ CFLAGS  = -O2 -Wall -Wextra
 LDFLAGS = -lm
 PREFIX  = /usr/local
 
+# Detect readline availability early so -DHAVE_READLINE is used
+# during compilation of .o files, not just at link time.
+HAVE_RL := $(shell (pkg-config --exists readline 2>/dev/null && echo 1) || \
+                   [ -f /usr/include/readline/readline.h ] && echo 1 || echo 0)
+ifeq ($(HAVE_RL),1)
+  CFLAGS  += -DHAVE_READLINE
+  RL_LIBS := $(shell pkg-config --libs readline 2>/dev/null || echo -lreadline)
+  LDFLAGS += $(RL_LIBS)
+endif
+
 BINARY  = brackets-code
 SOURCE  = brackets-code.c
 EMBED   = embed.c
@@ -23,16 +33,12 @@ embed.o: CFLAGS += -Wno-unused-function
 learn.o: CFLAGS += -Wno-unused-function
 
 $(BINARY): $(SOURCE:.c=.o) $(EMBED:.c=.o) $(LEARN:.c=.o)
-	@if pkg-config --exists readline 2>/dev/null; then \
+	@if [ "$(HAVE_RL)" = "1" ]; then \
 		echo "  readline found, enabling interactive history"; \
-		$(CC) $(CFLAGS) -DHAVE_READLINE -o $@ $^ $(LDFLAGS) $$(pkg-config --libs readline); \
-	elif [ -f /usr/include/readline/readline.h ]; then \
-		echo "  readline headers found, enabling interactive history"; \
-		$(CC) $(CFLAGS) -DHAVE_READLINE -o $@ $^ $(LDFLAGS) -lreadline; \
 	else \
 		echo "  readline not found, using plain fgets"; \
-		$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS); \
 	fi
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 # Static analysis
 lint: $(SOURCE)

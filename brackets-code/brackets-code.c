@@ -35,8 +35,6 @@
 
 #include "brackets-code.h"
 
-#define VERSION_TXT "0.6.4"
-
 #define MAX_LINE 4096
 #define MAX_VARS 48
 #define MAX_FUNCS 24
@@ -10733,8 +10731,9 @@ void interactive_mode(void) {
         if (*prompt) add_history(prompt);
         trim(prompt);
 #else
-    printf("> ");
-    while (fgets(prompt, sizeof(prompt), stdin)) {
+    while (1) {
+        printf("> ");
+        if (!fgets(prompt, sizeof(prompt), stdin)) break;
         trim(prompt);
 #endif
         if (strlen(prompt) == 0) continue;
