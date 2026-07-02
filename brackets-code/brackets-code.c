@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+#include "brackets-code.h"
 
 #define VERSION_TXT "0.6.4"
 
@@ -62,67 +63,7 @@ static const char *current_prompt = "";
 int use_color = 1;
 #define c_printf(color, ...) do { if (use_color) { printf(color); printf(__VA_ARGS__); printf(ANSI_RESET); } else printf(__VA_ARGS__); } while(0)
 
-typedef struct {
-    char name[256];
-    char type[32];
-    int count;
-    char values[MAX_VALUES][256];
-    int num_values;
-} Variable;
-
-typedef struct {
-    char name[256];
-    int is_local;
-    int has_vars;
-    int has_vardef;
-    char vardef_name[256];
-    Variable *vars;
-    int num_vars;
-    int vars_cap;
-    char *body;
-    int body_cap;
-} Function;
-
-#ifdef HAVE_READLINE
-/* readline defines its own incompatible Function typedef; undef ours after include */
-#define Function L1vmFunction
-#include <readline/readline.h>
-#include <readline/history.h>
-#undef Function
-#endif
-
-typedef struct {
-    char filename[256];
-    Function *funcs;
-    int num_funcs;
-    int funcs_cap;
-    char (*includes)[256];
-    int num_includes;
-    int includes_cap;
-    char (*includes_post)[256];
-    int num_includes_post;
-    int includes_post_cap;
-    char globals[MAX_CODE];
-} Program;
-
-// Learned pattern from .l1com files
-#define MAX_LEARNED 4096
-#define LEARNED_DIR ".brackets-code/learned"
-
-typedef struct {
-    char id[64];
-    char keywords[512];
-    char description[256];
-    char source_path[1024];
-    int is_learned;
-    int num_includes;
-    char (*includes)[256];
-    int includes_cap;
-    int num_funcs;
-    Function *funcs;
-    int funcs_cap;
-    char globals[MAX_CODE];
-} LearnedPattern;
+#include "brackets-code.h"
 
 LearnedPattern learned_patterns[MAX_LEARNED];
 int num_learned = 0;
@@ -144,7 +85,7 @@ static int resize_vars(Function *f, int new_cap) {
     return 1;
 }
 
-static int ensure_vars_cap(Function *f, int needed) {
+int ensure_vars_cap(Function *f, int needed) {
     if (needed <= f->vars_cap) return 1;
     if (f->vars_cap > INT_MAX / 2) return 0;
     int new_cap = f->vars_cap ? f->vars_cap * 2 : INIT_VARS_CAP;
@@ -165,7 +106,7 @@ static int resize_body(Function *f, int new_cap) {
     return 1;
 }
 
-static int ensure_body_cap(Function *f, int needed) {
+int ensure_body_cap(Function *f, int needed) {
     if (needed <= f->body_cap) return 1;
     if (f->body_cap > INT_MAX / 2) return 0;
     int new_cap = f->body_cap ? f->body_cap * 2 : INIT_BODY_CAP;
@@ -176,7 +117,7 @@ static int ensure_body_cap(Function *f, int needed) {
     return resize_body(f, new_cap);
 }
 
-static int init_function(Function *f) {
+int init_function(Function *f) {
     memset(f, 0, sizeof(Function));
     f->vars = NULL; f->vars_cap = 0;
     f->body = NULL; f->body_cap = 0;
@@ -189,7 +130,7 @@ static int init_function(Function *f) {
     return 1;
 }
 
-static void free_function(Function *f) {
+void free_function(Function *f) {
     free(f->vars); f->vars = NULL; f->vars_cap = 0;
     free(f->body); f->body = NULL; f->body_cap = 0;
     f->num_vars = 0;
@@ -211,7 +152,7 @@ static int resize_funcs_array(Function **pfuncs, int *cap, int new_cap) {
     return 1;
 }
 
-static int ensure_funcs_cap(Function **pfuncs, int *cap, int needed) {
+int ensure_funcs_cap(Function **pfuncs, int *cap, int needed) {
     if (needed <= *cap) return 1;
     if (*cap > INT_MAX / 2) return 0;
     int new_cap = *cap ? *cap * 2 : INIT_FUNCS_CAP;
@@ -232,7 +173,7 @@ static int resize_includes_arr(char (**pinc)[256], int *cap, int new_cap) {
     return 1;
 }
 
-static int ensure_includes_cap(char (**pinc)[256], int *cap, int needed) {
+int ensure_includes_cap(char (**pinc)[256], int *cap, int needed) {
     if (needed <= *cap) return 1;
     if (*cap > INT_MAX / 2) return 0;
     int new_cap = *cap ? *cap * 2 : INIT_INCLUDES_CAP;
@@ -243,7 +184,7 @@ static int ensure_includes_cap(char (**pinc)[256], int *cap, int needed) {
     return resize_includes_arr(pinc, cap, new_cap);
 }
 
-static int init_program(Program *prog) {
+int init_program(Program *prog) {
     memset(prog, 0, sizeof(Program));
     if (!resize_funcs_array(&prog->funcs, &prog->funcs_cap, INIT_FUNCS_CAP)) return 0;
     if (!resize_includes_arr(&prog->includes, &prog->includes_cap, INIT_INCLUDES_CAP)) {
@@ -260,7 +201,7 @@ static int init_program(Program *prog) {
     return 1;
 }
 
-static void free_program(Program *prog) {
+void free_program(Program *prog) {
     for (int i = 0; i < prog->funcs_cap; i++)
         free_function(&prog->funcs[i]);
     free(prog->funcs); prog->funcs = NULL; prog->funcs_cap = 0;
@@ -268,7 +209,7 @@ static void free_program(Program *prog) {
     free(prog->includes_post); prog->includes_post = NULL; prog->includes_post_cap = 0;
 }
 
-static int init_learned_pattern(LearnedPattern *lp) {
+int init_learned_pattern(LearnedPattern *lp) {
     memset(lp, 0, sizeof(LearnedPattern));
     if (!resize_includes_arr(&lp->includes, &lp->includes_cap, INIT_INCLUDES_CAP)) return 0;
     if (!resize_funcs_array(&lp->funcs, &lp->funcs_cap, INIT_FUNCS_CAP)) {
@@ -278,14 +219,14 @@ static int init_learned_pattern(LearnedPattern *lp) {
     return 1;
 }
 
-static void free_learned_pattern(LearnedPattern *lp) {
+void free_learned_pattern(LearnedPattern *lp) {
     for (int i = 0; i < lp->funcs_cap; i++)
         free_function(&lp->funcs[i]);
     free(lp->funcs); lp->funcs = NULL; lp->funcs_cap = 0;
     free(lp->includes); lp->includes = NULL; lp->includes_cap = 0;
 }
 
-static void trim(char *s) {
+void trim(char *s) {
     char *p = s;
     int l = strlen(p);
     while (isspace(p[l-1])) p[--l] = 0;
@@ -293,7 +234,7 @@ static void trim(char *s) {
     memmove(s, p, l - (p - s) + 1);
 }
 
-static int str_contains_word(const char *str, const char *word) {
+int str_contains_word(const char *str, const char *word) {
     char buf[MAX_LINE];
     snprintf(buf, sizeof(buf), "%s", str);
     char *p = buf;
@@ -310,11 +251,11 @@ static int str_contains_word(const char *str, const char *word) {
     return 0;
 }
 
-static void to_lowercase(char *s) {
+void to_lowercase(char *s) {
     for (; *s; s++) *s = tolower(*s);
 }
 
-static void add_include(Program *prog, const char *inc) {
+void add_include(Program *prog, const char *inc) {
     for (int i = 0; i < prog->num_includes; i++)
         if (strcmp(prog->includes[i], inc) == 0) return;
     if (!ensure_includes_cap(&prog->includes, &prog->includes_cap, prog->num_includes + 1)) return;
@@ -322,7 +263,7 @@ static void add_include(Program *prog, const char *inc) {
     prog->num_includes++;
 }
 
-static void add_include_post(Program *prog, const char *inc) {
+void add_include_post(Program *prog, const char *inc) {
     for (int i = 0; i < prog->num_includes_post; i++)
         if (strcmp(prog->includes_post[i], inc) == 0) return;
     if (!ensure_includes_cap(&prog->includes_post, &prog->includes_post_cap, prog->num_includes_post + 1)) return;
@@ -330,7 +271,7 @@ static void add_include_post(Program *prog, const char *inc) {
     prog->num_includes_post++;
 }
 
-static void add_func(Program *prog, const char *name) {
+void add_func(Program *prog, const char *name) {
     for (int i = 0; i < prog->num_funcs; i++)
         if (strcmp(prog->funcs[i].name, name) == 0) return;
     if (!ensure_funcs_cap(&prog->funcs, &prog->funcs_cap, prog->num_funcs + 1)) return;
@@ -345,7 +286,7 @@ static void add_func(Program *prog, const char *name) {
     prog->num_funcs++;
 }
 
-static void add_var_to_func(Function *f, const char *type, const char *name, int count, const char **values, int num_values) {
+void add_var_to_func(Function *f, const char *type, const char *name, int count, const char **values, int num_values) {
     // Skip if variable with same name already exists (prevents duplicate declarations)
     for (int i = 0; i < f->num_vars; i++)
         if (strcmp(f->vars[i].name, name) == 0) return;
@@ -359,21 +300,21 @@ static void add_var_to_func(Function *f, const char *type, const char *name, int
         snprintf(v->values[i], sizeof(v->values[i]), "%s", values[i]);
 }
 
-static void func_append(Function *f, const char *line) {
+void func_append(Function *f, const char *line) {
     size_t needed = strlen(f->body) + strlen(line) + 2;
     if (!ensure_body_cap(f, (int)needed + 1)) return;
     strncat(f->body, line, (size_t)f->body_cap - strlen(f->body) - 1);
     strncat(f->body, "\n", (size_t)f->body_cap - strlen(f->body) - 1);
 }
 
-static void func_vardef(Function *f, const char *scope) {
+void func_vardef(Function *f, const char *scope) {
     if (f->has_vardef) return;
     f->has_vardef = 1;
     f->is_local = 1;
     snprintf(f->vardef_name, sizeof(f->vardef_name), "%s", scope);
 }
 
-static int prompt_to_filename(const char *prompt, char *out, int max) {
+int prompt_to_filename(const char *prompt, char *out, int max) {
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
@@ -386,7 +327,7 @@ static int prompt_to_filename(const char *prompt, char *out, int max) {
     return 1;
 }
 
-static int is_question(const char *prompt) {
+int is_question(const char *prompt) {
     const char *qwords[] = {"was", "wie", "wer", "wo", "warum", "wann", "welche", "what", "how", "why", "where", "when", "can", "does", "is", "are", NULL};
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", prompt);
@@ -402,7 +343,7 @@ static int is_question(const char *prompt) {
     return 0;
 }
 
-static void answer_question(const char *prompt) {
+void answer_question(const char *prompt) {
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
@@ -516,8 +457,6 @@ static const char* find_operation(const char *buf) {
 
 // ==================== FUZZY SYNONYM MATCHING ====================
 
-typedef struct { char word[256]; char canonical[256]; } Synonym;
-
 #define SYNONYM_FILE "synonyms.txt"
 #define SYNONYM_DIR ".config/brackets-code"
 #define MAX_DYN_SYNONYMS 1024
@@ -550,7 +489,7 @@ static FILE *open_synonym_file(void) {
     return NULL;
 }
 
-static void load_synonyms(void) {
+void load_synonyms(void) {
     if (synonyms_loaded) return;
     synonyms_loaded = 1;
     FILE *f = open_synonym_file();
@@ -699,7 +638,7 @@ static const SynonymEntry SYNONYM_TABLE[] = {
 };
 static const int NUM_SYNONYMS = sizeof(SYNONYM_TABLE) / sizeof(SYNONYM_TABLE[0]);
 
-static const char* resolve_synonym(const char *word) {
+const char* resolve_synonym(const char *word) {
     for (int i = 0; i < num_dyn_synonyms; i++)
         if (strcmp(word, dyn_synonyms[i].word) == 0)
             return dyn_synonyms[i].canonical;
@@ -709,7 +648,7 @@ static const char* resolve_synonym(const char *word) {
     return NULL;
 }
 
-static void expand_query(const char *query, char *expanded, int max_len) {
+void expand_query(const char *query, char *expanded, int max_len) {
     snprintf(expanded, max_len, "%s", query);
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", query);
@@ -731,7 +670,7 @@ static void expand_query(const char *query, char *expanded, int max_len) {
     }
 }
 
-static int has_word_fuzzy(const char *text, const char *keyword) {
+int has_word_fuzzy(const char *text, const char *keyword) {
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", text);
     to_lowercase(buf);
@@ -761,7 +700,7 @@ static int has_word_fuzzy(const char *text, const char *keyword) {
     return 0;
 }
 
-static int has_word(const char *prompt, const char *word) {
+int has_word(const char *prompt, const char *word) {
     return has_word_fuzzy(prompt, word);
 }
 
@@ -848,189 +787,6 @@ static const char* extract_var_name(const char *prompt, const char *fallback) {
 
 #define MAX_NUMS 8
 
-typedef struct {
-    int has_input;
-    int input_count;
-    int count_value;
-    int has_literals;
-    int literals[MAX_NUMS];
-    int num_literals;
-    int has_operation;
-    char op[16];
-    int has_algorithm;
-    char algorithm[32];
-    int algo_param;
-    int has_loop;
-    int loop_start, loop_end;
-    int has_condition;
-    int has_output;
-    int has_sort;
-    int has_power;
-    int has_max;
-    int has_min;
-    int has_descending;
-    int has_gcd;
-    int has_countdown;
-    int has_mult_table;
-    int has_guess;
-    int has_random;
-    int has_hello_name;
-    int has_time;
-    int has_pointer;
-    int has_struct;
-    int has_hex_binary;
-    int has_shell_args;
-    int has_array;
-    int has_function;
-    int has_average;
-    int has_fizzbuzz;
-    int has_even_odd;
-    int has_primes;
-    int has_sum;
-    int has_factorial;
-    int has_fibonacci;
-    int has_median;
-    int median_count;
-    int has_string_cat;
-    int has_string_compare;
-    int has_array_assign;
-    int has_array_reverse;
-    int has_array_find;
-    int has_sum_range;
-    int sum_range_n;
-    int has_print_even;
-    int print_even_n;
-    int has_find_max;
-    int find_max_count;
-    int has_fib_seq;
-    int fib_seq_n;
-    int has_input_sort;
-    int input_sort_count;
-    int has_input_fact;
-    int has_countdown_from;
-    int countdown_start;
-    int has_read_file;
-    int has_write_file;
-    int has_array_vmath;
-    int has_string_to_num;
-    int has_timer;
-    int has_array_min_max;
-    int has_bool_demo;
-    int has_print_var;
-    int has_bit_check;
-    int has_leap_year;
-    int has_temp_convert;
-    int has_circle_area;
-    int has_fann_create;
-    int has_fann_train;
-    int has_fann_run;
-    int has_palindrome;
-    int has_lcm;
-    int has_collatz;
-    int has_sum_of_digits;
-    int has_reverse_string;
-    int has_armstrong;
-    int has_perfect_number;
-    int has_count_vowels;
-    int has_anagram_check;
-    int has_string_to_upper;
-    int has_string_to_lower;
-    int has_caesar_cipher;
-    int has_palindrome_string;
-    int has_bubble_sort;
-    int has_binary_search;
-    int has_square_root;
-    int has_prime_factorization;
-    int has_standard_deviation;
-    int has_compound_interest;
-    int has_decimal_to_binary;
-    int has_dice_roll;
-    int has_double_math;
-    int has_double_circle_area;
-    int has_double_average;
-    int has_double_compound_interest;
-    int has_double_pythagoras;
-    int has_double_temp_convert;
-    int has_double_sqrt;
-    int has_string_length;
-    int has_stack;
-    int has_queue;
-    int has_insertion_sort;
-    int has_calculator;
-    int has_unit_converter;
-    int has_rock_paper_scissors;
-    int has_pyramid;
-    int has_temp_converter_menu;
-    int has_sort_stats;
-    int has_string_analyzer;
-    int has_number_analyzer;
-    int has_filter_numbers;
-    int has_random_generator;
-    int has_math_menu;
-    int has_quiz_game;
-    int has_bmi_calculator;
-    int has_statistics_suite;
-    int has_linked_list;
-    int has_binary_search_tree;
-    int has_tree_traversal;
-    int has_graph_bfs_dfs;
-    int has_n_queens;
-    int has_sudoku;
-    int has_levenshtein;
-    int has_maze_generator;
-    int has_maze_solver;
-    int has_monte_carlo;
-    int has_matrix_mul;
-    int has_matrix_transpose;
-    int has_numerical_integration;
-    int has_complex_numbers;
-    int has_linear_regression;
-    int has_base_converter;
-    int has_freq_analysis;
-    int has_shuffle;
-    int has_weighted_random;
-    int has_ascii_table;
-    int has_bignum_math;
-    int has_password_card;
-    int has_chess_problem;
-    int has_shell_repl;
-    int has_webserver;
-    int has_sdl_window;
-    int has_sdl_button;
-    int has_thread;
-    int has_scheduler;
-    int has_shell_exec;
-    int has_json;
-    int has_crypto;
-    int has_bluetooth_ble;
-    int has_serial_rs232;
-    int has_gpio;
-    int has_gps;
-    int has_timer_date;
-    int has_sdl_sound;
-    int has_sdl_joystick;
-    int has_sdl_mouse;
-    int has_fractal;
-    int has_cluster_3x1;
-    int has_reload;
-    int has_coordinate_grid;
-    int has_turmite;
-    int has_crossword;
-    int has_linter;
-    int suppress_output;
-    char result_var[64];
-    int skip_input;
-    char inherit_var[64];
-    int inherit_count;
-    char inherit_var_names[64][256];
-    char inherit_var_types[64][64];
-    int inherit_var_counts[64];
-    int num_inherit_vars;
-    int extra_emitters[32];
-    int num_extra_emitters;
-    char type[16];
-    char title[256];
-} TaskProfile;
 
 static int word_to_num(const char *word);
 
@@ -1082,165 +838,149 @@ static int extract_numbers(const char *prompt, int *nums, int max_nums) {
 // ==================== 21 EMITTER BLOCKS ====================
 
 // 1-3: Basic emitters
-static void emit_math(Program *prog, Function *f, const char *type, const char *op, const int *vals, int n, int last_step);
-static void emit_input_loop(Program *prog, Function *f, int count, const char *type, int do_sum);
-static void emit_for_sum(Program *prog, Function *f, int n);
-static void emit_print_even(Program *prog, Function *f, int n);
-static void emit_input_find_max(Program *prog, Function *f, int count);
-static void emit_countdown_from(Program *prog, Function *f, int start);
-static void emit_fib_seq(Program *prog, Function *f, int n);
-static void emit_input_sort(Program *prog, Function *f, int count, int skip_input, int descending);
-static void emit_median(Program *prog, Function *f, int count, int skip_input);
-static void emit_string_cat(Program *prog, Function *f);
-static void emit_string_compare(Program *prog, Function *f);
-static void emit_array_assign(Program *prog, Function *f);
-static void emit_array_reverse(Program *prog, Function *f, int skip_input);
-static void emit_array_find(Program *prog, Function *f, int skip_input);
-static void emit_input_factorial(Program *prog, Function *f);
-static void emit_array_vmath(Program *prog, Function *f, int skip_input);
-static void emit_read_file(Program *prog, Function *f);
-static void emit_write_file(Program *prog, Function *f);
-static void emit_string_to_num(Program *prog, Function *f);
-static void emit_timer(Program *prog, Function *f);
-static void emit_factorial(Program *prog, Function *f);
-static void emit_fizzbuzz(Program *prog, Function *f);
-static void emit_primes(Program *prog, Function *f, int max_val);
-static void emit_even_odd(Program *prog, Function *f);
-static void emit_power(Program *prog, Function *f);
-static void emit_multiplication_table(Program *prog, Function *f);
-static void emit_guess_number(Program *prog, Function *f);
-static void emit_gcd(Program *prog, Function *f);
-static void emit_random_number(Program *prog, Function *f);
-static void emit_hello_name(Program *prog, Function *f);
-static void emit_array_min_max(Program *prog, Function *f);
-static void emit_bool_demo(Program *prog, Function *f);
-static void emit_bit_check(Program *prog, Function *f);
-static void emit_leap_year(Program *prog, Function *f);
-static void emit_temp_convert(Program *prog, Function *f);
-static void emit_circle_area(Program *prog, Function *f);
-static void emit_average(Program *prog, Function *f, int skip_input);
-static void emit_selection_sort(Program *prog, Function *f, int count, int skip_input);
-static void emit_fann_create(Program *prog, Function *f);
-static void emit_fann_train(Program *prog, Function *f);
-static void emit_fann_run(Program *prog, Function *f);
-static void emit_palindrome(Program *prog, Function *f);
-static void emit_lcm(Program *prog, Function *f);
-static void emit_collatz(Program *prog, Function *f);
-static void emit_sum_of_digits(Program *prog, Function *f);
-static void emit_function(Program *prog, Function *f);
-static void emit_reverse_string(Program *prog, Function *f);
-static void emit_armstrong(Program *prog, Function *f);
-static void emit_perfect_number(Program *prog, Function *f);
-static void emit_count_vowels(Program *prog, Function *f);
-static void emit_anagram_check(Program *prog, Function *f);
-static void emit_string_to_upper(Program *prog, Function *f);
-static void emit_string_to_lower(Program *prog, Function *f);
-static void emit_caesar_cipher(Program *prog, Function *f);
-static void emit_palindrome_string(Program *prog, Function *f);
-static void emit_bubble_sort(Program *prog, Function *f, int skip_input);
-static void emit_binary_search(Program *prog, Function *f);
-static void emit_square_root(Program *prog, Function *f);
-static void emit_prime_factorization(Program *prog, Function *f);
-static void emit_standard_deviation(Program *prog, Function *f, int skip_input);
-static void emit_compound_interest(Program *prog, Function *f);
-static void emit_decimal_to_binary(Program *prog, Function *f);
-static void emit_dice_roll(Program *prog, Function *f);
-static void emit_double_math(Program *prog, Function *f, const char *op);
-static void emit_double_circle_area(Program *prog, Function *f);
-static void emit_double_average(Program *prog, Function *f, int skip_input);
-static void emit_double_compound_interest(Program *prog, Function *f);
-static void emit_double_pythagoras(Program *prog, Function *f);
-static void emit_double_temp_convert(Program *prog, Function *f);
-static void emit_double_sqrt(Program *prog, Function *f);
-static void emit_string_length(Program *prog, Function *f);
-static void emit_stack(Program *prog, Function *f);
-static void emit_queue(Program *prog, Function *f);
-static void emit_insertion_sort(Program *prog, Function *f, int count, int skip_input);
-static void emit_calculator(Program *prog, Function *f);
-static void emit_unit_converter(Program *prog, Function *f);
-static void emit_rock_paper_scissors(Program *prog, Function *f);
-static void emit_pyramid(Program *prog, Function *f);
-static void emit_temp_converter_menu(Program *prog, Function *f);
-static void emit_sort_stats(Program *prog, Function *f);
-static void emit_string_analyzer(Program *prog, Function *f);
-static void emit_number_analyzer(Program *prog, Function *f);
-static void emit_filter_numbers(Program *prog, Function *f);
-static void emit_random_generator(Program *prog, Function *f);
-static void emit_math_menu(Program *prog, Function *f);
-static void emit_quiz_game(Program *prog, Function *f);
-static void emit_bmi_calculator(Program *prog, Function *f);
-static void emit_statistics_suite(Program *prog, Function *f);
-static void emit_linked_list(Program *prog, Function *f);
-static void emit_binary_search_tree(Program *prog, Function *f);
-static void emit_tree_traversal(Program *prog, Function *f);
-static void emit_graph_bfs_dfs(Program *prog, Function *f);
-static void emit_n_queens(Program *prog, Function *f);
-static void emit_sudoku(Program *prog, Function *f);
-static void emit_levenshtein_distance(Program *prog, Function *f);
-static void emit_maze_generator(Program *prog, Function *f);
-static void emit_maze_solver(Program *prog, Function *f);
-static void emit_monte_carlo_pi(Program *prog, Function *f);
-static void emit_matrix_multiplication(Program *prog, Function *f);
-static void emit_matrix_transpose(Program *prog, Function *f);
-static void emit_numerical_integration(Program *prog, Function *f);
-static void emit_complex_numbers(Program *prog, Function *f);
-static void emit_linear_regression(Program *prog, Function *f);
-static void emit_base_converter(Program *prog, Function *f);
-static void emit_freq_analysis(Program *prog, Function *f);
-static void emit_shuffle(Program *prog, Function *f);
-static void emit_weighted_random(Program *prog, Function *f);
-static void emit_ascii_table(Program *prog, Function *f);
-static void emit_bignum_math(Program *prog, Function *f);
-static void emit_password_card(Program *prog, Function *f);
-static void emit_chess_problem(Program *prog, Function *f);
-static void emit_shell_repl(Program *prog, Function *f);
-static void emit_webserver(Program *prog, Function *f);
-static void emit_sdl_window(Program *prog, Function *f);
-static void emit_sdl_button(Program *prog, Function *f);
-static void emit_thread(Program *prog, Function *f);
-static void emit_scheduler(Program *prog, Function *f);
-static void emit_shell_exec(Program *prog, Function *f);
-static void emit_json(Program *prog, Function *f);
-static void emit_crypto(Program *prog, Function *f);
-static void emit_bluetooth_ble(Program *prog, Function *f);
-static void emit_serial_rs232(Program *prog, Function *f);
-static void emit_gpio(Program *prog, Function *f);
-static void emit_gps(Program *prog, Function *f);
-static void emit_timer_date(Program *prog, Function *f);
-static void emit_sdl_sound(Program *prog, Function *f);
-static void emit_sdl_joystick(Program *prog, Function *f);
-static void emit_sdl_mouse(Program *prog, Function *f);
-static void emit_fractal(Program *prog, Function *f);
-static void emit_cluster_3x1(Program *prog, Function *f);
-static void emit_reload(Program *prog, Function *f);
-static void emit_coordinate_grid(Program *prog, Function *f);
-static void emit_turmite(Program *prog, Function *f);
-static void emit_crossword(Program *prog, Function *f);
-static void emit_linter(Program *prog, Function *f);
-
-// ==================== TINY LLM INFERENCE ENGINE + VECTOR SEARCH ====================
-#include "embed.c"
-
-// Learned pattern functions forward declarations
-static char* learned_dir_path(void);
-static void ensure_learned_dir(void);
-static int learn_from_file(const char *path, const char *keywords, const char *description);
-static int save_learned_pattern(LearnedPattern *lp);
-static void load_learned_patterns(void);
-static int match_learned_pattern(const char *prompt, int *best_score);
-static int emit_learned_pattern(Program *prog, int learned_idx);
-static int emit_learned_step(Program *prog, int learned_idx);
-static int has_learned_id(const char *id);
-static int forget_learned(const char *id);
-static void list_learned(void);
+void emit_math(Program *prog, Function *f, const char *type, const char *op, const int *vals, int n, int last_step);
+void emit_input_loop(Program *prog, Function *f, int count, const char *type, int do_sum);
+void emit_for_sum(Program *prog, Function *f, int n);
+void emit_print_even(Program *prog, Function *f, int n);
+void emit_input_find_max(Program *prog, Function *f, int count);
+void emit_countdown_from(Program *prog, Function *f, int start);
+void emit_fib_seq(Program *prog, Function *f, int n);
+void emit_input_sort(Program *prog, Function *f, int count, int skip_input, int descending);
+void emit_median(Program *prog, Function *f, int count, int skip_input);
+void emit_string_cat(Program *prog, Function *f);
+void emit_string_compare(Program *prog, Function *f);
+void emit_array_assign(Program *prog, Function *f);
+void emit_array_reverse(Program *prog, Function *f, int skip_input);
+void emit_array_find(Program *prog, Function *f, int skip_input);
+void emit_input_factorial(Program *prog, Function *f);
+void emit_array_vmath(Program *prog, Function *f, int skip_input);
+void emit_read_file(Program *prog, Function *f);
+void emit_write_file(Program *prog, Function *f);
+void emit_string_to_num(Program *prog, Function *f);
+void emit_timer(Program *prog, Function *f);
+void emit_factorial(Program *prog, Function *f);
+void emit_fizzbuzz(Program *prog, Function *f);
+void emit_primes(Program *prog, Function *f, int max_val);
+void emit_even_odd(Program *prog, Function *f);
+void emit_power(Program *prog, Function *f);
+void emit_multiplication_table(Program *prog, Function *f);
+void emit_guess_number(Program *prog, Function *f);
+void emit_gcd(Program *prog, Function *f);
+void emit_random_number(Program *prog, Function *f);
+void emit_hello_name(Program *prog, Function *f);
+void emit_array_min_max(Program *prog, Function *f);
+void emit_bool_demo(Program *prog, Function *f);
+void emit_bit_check(Program *prog, Function *f);
+void emit_leap_year(Program *prog, Function *f);
+void emit_temp_convert(Program *prog, Function *f);
+void emit_circle_area(Program *prog, Function *f);
+void emit_average(Program *prog, Function *f, int skip_input);
+void emit_selection_sort(Program *prog, Function *f, int count, int skip_input);
+void emit_fann_create(Program *prog, Function *f);
+void emit_fann_train(Program *prog, Function *f);
+void emit_fann_run(Program *prog, Function *f);
+void emit_palindrome(Program *prog, Function *f);
+void emit_lcm(Program *prog, Function *f);
+void emit_collatz(Program *prog, Function *f);
+void emit_sum_of_digits(Program *prog, Function *f);
+void emit_function(Program *prog, Function *f);
+void emit_reverse_string(Program *prog, Function *f);
+void emit_armstrong(Program *prog, Function *f);
+void emit_perfect_number(Program *prog, Function *f);
+void emit_count_vowels(Program *prog, Function *f);
+void emit_anagram_check(Program *prog, Function *f);
+void emit_string_to_upper(Program *prog, Function *f);
+void emit_string_to_lower(Program *prog, Function *f);
+void emit_caesar_cipher(Program *prog, Function *f);
+void emit_palindrome_string(Program *prog, Function *f);
+void emit_bubble_sort(Program *prog, Function *f, int skip_input);
+void emit_binary_search(Program *prog, Function *f);
+void emit_square_root(Program *prog, Function *f);
+void emit_prime_factorization(Program *prog, Function *f);
+void emit_standard_deviation(Program *prog, Function *f, int skip_input);
+void emit_compound_interest(Program *prog, Function *f);
+void emit_decimal_to_binary(Program *prog, Function *f);
+void emit_dice_roll(Program *prog, Function *f);
+void emit_double_math(Program *prog, Function *f, const char *op);
+void emit_double_circle_area(Program *prog, Function *f);
+void emit_double_average(Program *prog, Function *f, int skip_input);
+void emit_double_compound_interest(Program *prog, Function *f);
+void emit_double_pythagoras(Program *prog, Function *f);
+void emit_double_temp_convert(Program *prog, Function *f);
+void emit_double_sqrt(Program *prog, Function *f);
+void emit_string_length(Program *prog, Function *f);
+void emit_stack(Program *prog, Function *f);
+void emit_queue(Program *prog, Function *f);
+void emit_insertion_sort(Program *prog, Function *f, int count, int skip_input);
+void emit_calculator(Program *prog, Function *f);
+void emit_unit_converter(Program *prog, Function *f);
+void emit_rock_paper_scissors(Program *prog, Function *f);
+void emit_pyramid(Program *prog, Function *f);
+void emit_temp_converter_menu(Program *prog, Function *f);
+void emit_sort_stats(Program *prog, Function *f);
+void emit_string_analyzer(Program *prog, Function *f);
+void emit_number_analyzer(Program *prog, Function *f);
+void emit_filter_numbers(Program *prog, Function *f);
+void emit_random_generator(Program *prog, Function *f);
+void emit_math_menu(Program *prog, Function *f);
+void emit_quiz_game(Program *prog, Function *f);
+void emit_bmi_calculator(Program *prog, Function *f);
+void emit_statistics_suite(Program *prog, Function *f);
+void emit_linked_list(Program *prog, Function *f);
+void emit_binary_search_tree(Program *prog, Function *f);
+void emit_tree_traversal(Program *prog, Function *f);
+void emit_graph_bfs_dfs(Program *prog, Function *f);
+void emit_n_queens(Program *prog, Function *f);
+void emit_sudoku(Program *prog, Function *f);
+void emit_levenshtein_distance(Program *prog, Function *f);
+void emit_maze_generator(Program *prog, Function *f);
+void emit_maze_solver(Program *prog, Function *f);
+void emit_monte_carlo_pi(Program *prog, Function *f);
+void emit_matrix_multiplication(Program *prog, Function *f);
+void emit_matrix_transpose(Program *prog, Function *f);
+void emit_numerical_integration(Program *prog, Function *f);
+void emit_complex_numbers(Program *prog, Function *f);
+void emit_linear_regression(Program *prog, Function *f);
+void emit_base_converter(Program *prog, Function *f);
+void emit_freq_analysis(Program *prog, Function *f);
+void emit_shuffle(Program *prog, Function *f);
+void emit_weighted_random(Program *prog, Function *f);
+void emit_ascii_table(Program *prog, Function *f);
+void emit_bignum_math(Program *prog, Function *f);
+void emit_password_card(Program *prog, Function *f);
+void emit_chess_problem(Program *prog, Function *f);
+void emit_shell_repl(Program *prog, Function *f);
+void emit_webserver(Program *prog, Function *f);
+void emit_sdl_window(Program *prog, Function *f);
+void emit_sdl_button(Program *prog, Function *f);
+void emit_thread(Program *prog, Function *f);
+void emit_scheduler(Program *prog, Function *f);
+void emit_shell_exec(Program *prog, Function *f);
+void emit_json(Program *prog, Function *f);
+void emit_crypto(Program *prog, Function *f);
+void emit_bluetooth_ble(Program *prog, Function *f);
+void emit_serial_rs232(Program *prog, Function *f);
+void emit_gpio(Program *prog, Function *f);
+void emit_gps(Program *prog, Function *f);
+void emit_timer_date(Program *prog, Function *f);
+void emit_sdl_sound(Program *prog, Function *f);
+void emit_sdl_joystick(Program *prog, Function *f);
+void emit_sdl_mouse(Program *prog, Function *f);
+void emit_fractal(Program *prog, Function *f);
+void emit_cluster_3x1(Program *prog, Function *f);
+void emit_reload(Program *prog, Function *f);
+void emit_coordinate_grid(Program *prog, Function *f);
+void emit_turmite(Program *prog, Function *f);
+void emit_crossword(Program *prog, Function *f);
+void emit_linter(Program *prog, Function *f);
 
 // Forward declarations for plan-based generator
-static int parse_task(const char *prompt, TaskProfile *task);
-static int generate_from_task(Program *prog, TaskProfile *task, int last_step);
+int parse_task(const char *prompt, TaskProfile *task);
+int generate_from_task(Program *prog, TaskProfile *task, int last_step);
 
 // ==================== 21 EMITTER BLOCK IMPLEMENTATIONS ====================
 
-static void emit_math(Program *prog, Function *f, const char *type, const char *op, const int *vals, int n, int last_step) {
+void emit_math(Program *prog, Function *f, const char *type, const char *op, const int *vals, int n, int last_step) {
     (void)last_step;
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
@@ -1302,7 +1042,7 @@ static void emit_math(Program *prog, Function *f, const char *type, const char *
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_input_loop(Program *prog, Function *f, int count, const char *type, int do_sum) {
+void emit_input_loop(Program *prog, Function *f, int count, const char *type, int do_sum) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -1340,7 +1080,7 @@ static void emit_input_loop(Program *prog, Function *f, int count, const char *t
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_for_sum(Program *prog, Function *f, int n) {
+void emit_for_sum(Program *prog, Function *f, int n) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -1366,7 +1106,7 @@ static void emit_for_sum(Program *prog, Function *f, int n) {
     }
 }
 
-static void emit_print_even(Program *prog, Function *f, int n) {
+void emit_print_even(Program *prog, Function *f, int n) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -1397,7 +1137,7 @@ static void emit_print_even(Program *prog, Function *f, int n) {
     func_append(f, "\t(next)");
 }
 
-static void emit_input_find_max(Program *prog, Function *f, int count) {
+void emit_input_find_max(Program *prog, Function *f, int count) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -1427,7 +1167,7 @@ static void emit_input_find_max(Program *prog, Function *f, int count) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_countdown_from(Program *prog, Function *f, int start) {
+void emit_countdown_from(Program *prog, Function *f, int start) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -1448,7 +1188,7 @@ static void emit_countdown_from(Program *prog, Function *f, int start) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_fib_seq(Program *prog, Function *f, int n) {
+void emit_fib_seq(Program *prog, Function *f, int n) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -1479,7 +1219,7 @@ static void emit_fib_seq(Program *prog, Function *f, int n) {
     func_append(f, "\t(next)");
 }
 
-static void emit_input_sort(Program *prog, Function *f, int count, int skip_input, int descending) {
+void emit_input_sort(Program *prog, Function *f, int count, int skip_input, int descending) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -1556,7 +1296,7 @@ static void emit_input_sort(Program *prog, Function *f, int count, int skip_inpu
     }
 }
 
-static void emit_median(Program *prog, Function *f, int count, int skip_input) {
+void emit_median(Program *prog, Function *f, int count, int skip_input) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -1630,7 +1370,7 @@ static void emit_median(Program *prog, Function *f, int count, int skip_input) {
     }
 }
 
-static void emit_string_cat(Program *prog, Function *f) {
+void emit_string_cat(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "string.l1h");
     const char *zv[] = {"0"};
@@ -1656,7 +1396,7 @@ static void emit_string_cat(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_string_compare(Program *prog, Function *f) {
+void emit_string_compare(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "string.l1h");
     const char *zv[] = {"0"};
@@ -1689,7 +1429,7 @@ static void emit_string_compare(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_array_assign(Program *prog, Function *f) {
+void emit_array_assign(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -1741,7 +1481,7 @@ static void emit_array_assign(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_array_reverse(Program *prog, Function *f, int skip_input) {
+void emit_array_reverse(Program *prog, Function *f, int skip_input) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -1810,7 +1550,7 @@ static void emit_array_reverse(Program *prog, Function *f, int skip_input) {
     }
 }
 
-static void emit_array_find(Program *prog, Function *f, int skip_input) {
+void emit_array_find(Program *prog, Function *f, int skip_input) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -1872,7 +1612,7 @@ static void emit_array_find(Program *prog, Function *f, int skip_input) {
     }
 }
 
-static void emit_input_factorial(Program *prog, Function *f) {
+void emit_input_factorial(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -1900,7 +1640,7 @@ static void emit_input_factorial(Program *prog, Function *f) {
     }
 }
 
-static void emit_array_vmath(Program *prog, Function *f, int skip_input) {
+void emit_array_vmath(Program *prog, Function *f, int skip_input) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -1971,7 +1711,7 @@ static void emit_array_vmath(Program *prog, Function *f, int skip_input) {
     }
 }
 
-static void emit_read_file(Program *prog, Function *f) {
+void emit_read_file(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
@@ -1989,7 +1729,7 @@ static void emit_read_file(Program *prog, Function *f) {
     func_append(f, "\t(fh :fclose !)");
 }
 
-static void emit_write_file(Program *prog, Function *f) {
+void emit_write_file(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
@@ -2005,7 +1745,7 @@ static void emit_write_file(Program *prog, Function *f) {
     func_append(f, "\t(fh :fclose !)");
 }
 
-static void emit_string_to_num(Program *prog, Function *f) {
+void emit_string_to_num(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "string.l1h");
     const char *zv[] = {"0"};
@@ -2025,7 +1765,7 @@ static void emit_string_to_num(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_timer(Program *prog, Function *f) {
+void emit_timer(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -2054,7 +1794,7 @@ static void emit_timer(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_factorial(Program *prog, Function *f) {
+void emit_factorial(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *fv[] = {"5"};
@@ -2090,7 +1830,7 @@ static void emit_factorial(Program *prog, Function *f) {
     func_append(ff, "\t(return)");
 }
 
-static void emit_fizzbuzz(Program *prog, Function *f) {
+void emit_fizzbuzz(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -2129,7 +1869,7 @@ static void emit_fizzbuzz(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_primes(Program *prog, Function *f, int max_val) {
+void emit_primes(Program *prog, Function *f, int max_val) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -2168,7 +1908,7 @@ static void emit_primes(Program *prog, Function *f, int max_val) {
     func_append(f, "\t(next)");
 }
 
-static void emit_even_odd(Program *prog, Function *f) {
+void emit_even_odd(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -2200,7 +1940,7 @@ static void emit_even_odd(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_power(Program *prog, Function *f) {
+void emit_power(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *bv[] = {"2"};
@@ -2241,7 +1981,7 @@ static void emit_power(Program *prog, Function *f) {
     func_append(pf, "\t(return)");
 }
 
-static void emit_multiplication_table(Program *prog, Function *f) {
+void emit_multiplication_table(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -2268,7 +2008,7 @@ static void emit_multiplication_table(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_guess_number(Program *prog, Function *f) {
+void emit_guess_number(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *zv42[] = {"42"};
@@ -2300,7 +2040,7 @@ static void emit_guess_number(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_gcd(Program *prog, Function *f) {
+void emit_gcd(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *zv9[] = {"9"};
@@ -2337,7 +2077,7 @@ static void emit_gcd(Program *prog, Function *f) {
     func_append(gf, "\t(return)");
 }
 
-static void emit_random_number(Program *prog, Function *f) {
+void emit_random_number(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -2367,7 +2107,7 @@ static void emit_random_number(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_hello_name(Program *prog, Function *f) {
+void emit_hello_name(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *maxlen_v[] = {"256"};
@@ -2390,7 +2130,7 @@ static void emit_hello_name(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_array_min_max(Program *prog, Function *f) {
+void emit_array_min_max(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -2434,7 +2174,7 @@ static void emit_array_min_max(Program *prog, Function *f) {
     add_include_post(prog, "math-lib-vect.l1h");
 }
 
-static void emit_bool_demo(Program *prog, Function *f) {
+void emit_bool_demo(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "bool.l1h");
     const char *zv[] = {"0"};
@@ -2460,7 +2200,7 @@ static void emit_bool_demo(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_bit_check(Program *prog, Function *f) {
+void emit_bit_check(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
@@ -2518,7 +2258,7 @@ static void emit_bit_check(Program *prog, Function *f) {
     func_append(sf, "\t(bitset~ stpushi)");
 }
 
-static void emit_leap_year(Program *prog, Function *f) {
+void emit_leap_year(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -2567,7 +2307,7 @@ static void emit_leap_year(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_temp_convert(Program *prog, Function *f) {
+void emit_temp_convert(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *nv[] = {"9"};
@@ -2594,7 +2334,7 @@ static void emit_temp_convert(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_circle_area(Program *prog, Function *f) {
+void emit_circle_area(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *pnv[] = {"314"};
@@ -2620,7 +2360,7 @@ static void emit_circle_area(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_fann_create(Program *prog, Function *f) {
+void emit_fann_create(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "fann-lib.l1h");
     const char *zv[] = {"0"};
@@ -2645,7 +2385,7 @@ static void emit_fann_create(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_fann_train(Program *prog, Function *f) {
+void emit_fann_train(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "fann-lib.l1h");
     const char *zv[] = {"0"};
@@ -2691,7 +2431,7 @@ static void emit_fann_train(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_fann_run(Program *prog, Function *f) {
+void emit_fann_run(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "fann-lib.l1h");
     const char *zv[] = {"0"};
@@ -2733,7 +2473,7 @@ static void emit_fann_run(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_average(Program *prog, Function *f, int skip_input) {
+void emit_average(Program *prog, Function *f, int skip_input) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -2781,7 +2521,7 @@ static void emit_average(Program *prog, Function *f, int skip_input) {
     }
 }
 
-static void emit_selection_sort(Program *prog, Function *f, int count, int skip_input) {
+void emit_selection_sort(Program *prog, Function *f, int count, int skip_input) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -2860,7 +2600,7 @@ static void emit_selection_sort(Program *prog, Function *f, int count, int skip_
     }
 }
 
-static void emit_palindrome(Program *prog, Function *f) {
+void emit_palindrome(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -2899,7 +2639,7 @@ static void emit_palindrome(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_lcm(Program *prog, Function *f) {
+void emit_lcm(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -2941,7 +2681,7 @@ static void emit_lcm(Program *prog, Function *f) {
     }
 }
 
-static void emit_collatz(Program *prog, Function *f) {
+void emit_collatz(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -2975,7 +2715,7 @@ static void emit_collatz(Program *prog, Function *f) {
     }
 }
 
-static void emit_sum_of_digits(Program *prog, Function *f) {
+void emit_sum_of_digits(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *tv[] = {"10"};
@@ -3004,7 +2744,7 @@ static void emit_sum_of_digits(Program *prog, Function *f) {
     }
 }
 
-static void emit_reverse_string(Program *prog, Function *f) {
+void emit_reverse_string(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "string.l1h");
     const char *zv[] = {"0"};
@@ -3052,7 +2792,7 @@ static void emit_reverse_string(Program *prog, Function *f) {
     }
 }
 
-static void emit_armstrong(Program *prog, Function *f) {
+void emit_armstrong(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *tv[] = {"10"};
@@ -3093,7 +2833,7 @@ static void emit_armstrong(Program *prog, Function *f) {
     }
 }
 
-static void emit_perfect_number(Program *prog, Function *f) {
+void emit_perfect_number(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -3138,7 +2878,7 @@ static void emit_perfect_number(Program *prog, Function *f) {
     }
 }
 
-static void emit_count_vowels(Program *prog, Function *f) {
+void emit_count_vowels(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "string.l1h");
     const char *zv[] = {"0"};
@@ -3227,7 +2967,7 @@ static void emit_count_vowels(Program *prog, Function *f) {
     }
 }
 
-static void emit_anagram_check(Program *prog, Function *f) {
+void emit_anagram_check(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "string.l1h");
     const char *zv[] = {"0"};
@@ -3300,7 +3040,7 @@ static void emit_anagram_check(Program *prog, Function *f) {
     }
 }
 
-static void emit_string_to_upper(Program *prog, Function *f) {
+void emit_string_to_upper(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "string.l1h");
     const char *zv[] = {"0"};
@@ -3349,7 +3089,7 @@ static void emit_string_to_upper(Program *prog, Function *f) {
     }
 }
 
-static void emit_string_to_lower(Program *prog, Function *f) {
+void emit_string_to_lower(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "string.l1h");
     const char *zv[] = {"0"};
@@ -3398,7 +3138,7 @@ static void emit_string_to_lower(Program *prog, Function *f) {
     }
 }
 
-static void emit_caesar_cipher(Program *prog, Function *f) {
+void emit_caesar_cipher(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "string.l1h");
     const char *zv[] = {"0"};
@@ -3466,7 +3206,7 @@ static void emit_caesar_cipher(Program *prog, Function *f) {
     }
 }
 
-static void emit_palindrome_string(Program *prog, Function *f) {
+void emit_palindrome_string(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "string.l1h");
     const char *zv[] = {"0"};
@@ -3526,7 +3266,7 @@ static void emit_palindrome_string(Program *prog, Function *f) {
     }
 }
 
-static void emit_bubble_sort(Program *prog, Function *f, int skip_input) {
+void emit_bubble_sort(Program *prog, Function *f, int skip_input) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -3593,7 +3333,7 @@ static void emit_bubble_sort(Program *prog, Function *f, int skip_input) {
     }
 }
 
-static void emit_binary_search(Program *prog, Function *f) {
+void emit_binary_search(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -3647,7 +3387,7 @@ static void emit_binary_search(Program *prog, Function *f) {
     }
 }
 
-static void emit_square_root(Program *prog, Function *f) {
+void emit_square_root(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -3682,7 +3422,7 @@ static void emit_square_root(Program *prog, Function *f) {
     }
 }
 
-static void emit_prime_factorization(Program *prog, Function *f) {
+void emit_prime_factorization(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -3711,7 +3451,7 @@ static void emit_prime_factorization(Program *prog, Function *f) {
     func_append(f, "\t(((n one >) f :=) f while)");
 }
 
-static void emit_standard_deviation(Program *prog, Function *f, int skip_input) {
+void emit_standard_deviation(Program *prog, Function *f, int skip_input) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -3730,6 +3470,8 @@ static void emit_standard_deviation(Program *prog, Function *f, int skip_input) 
     add_var_to_func(f, "int64", "realind", 1, zv, 1);
     add_var_to_func(f, "int64", "val", 1, zv, 1);
     add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *oh[] = {"100"};
+    add_var_to_func(f, "const-int64", "one_hundred", 1, oh, 1);
     const char *ps[] = {"\"Enter a number: \""};
     add_var_to_func(f, "const-string", "input_prompt", 18, ps, 1);
     const char *rs[] = {"\"Standard deviation: \""};
@@ -3773,7 +3515,7 @@ static void emit_standard_deviation(Program *prog, Function *f, int skip_input) 
     func_append(f, "\t(variance stddev :=)");
     func_append(f, "\t(zero sq_sum :=)");
     func_append(f, "\t(for-loop)");
-    func_append(f, "\t(((sq_sum 100 <) f :=) f for)");
+    func_append(f, "\t(((sq_sum one_hundred <) f :=) f for)");
     func_append(f, "\t\t(sq_sum one + sq_sum :=)");
     func_append(f, "\t\t(stddev stddev + variance stddev / - stddev :=)");
     func_append(f, "\t(next)");
@@ -3784,7 +3526,7 @@ static void emit_standard_deviation(Program *prog, Function *f, int skip_input) 
     }
 }
 
-static void emit_compound_interest(Program *prog, Function *f) {
+void emit_compound_interest(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -3826,7 +3568,7 @@ static void emit_compound_interest(Program *prog, Function *f) {
     }
 }
 
-static void emit_decimal_to_binary(Program *prog, Function *f) {
+void emit_decimal_to_binary(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "string.l1h");
     const char *zv[] = {"0"};
@@ -3837,6 +3579,8 @@ static void emit_decimal_to_binary(Program *prog, Function *f) {
     add_var_to_func(f, "const-int64", "one", 1, ov, 1);
     add_var_to_func(f, "const-int64", "two", 1, tv, 1);
     add_var_to_func(f, "const-int64", "maxlen", 1, maxlen_v, 1);
+    const char *ascii_v[] = {"48"};
+    add_var_to_func(f, "const-int64", "ascii_offset", 1, ascii_v, 1);
     add_var_to_func(f, "int64", "n", 1, zv, 1);
     add_var_to_func(f, "int64", "rem", 1, zv, 1);
     add_var_to_func(f, "int64", "idx", 1, zv, 1);
@@ -3854,7 +3598,7 @@ static void emit_decimal_to_binary(Program *prog, Function *f) {
     func_append(f, "\t(zero idx :=)");
     func_append(f, "\t(do)");
     func_append(f, "\t\t(n two % rem :=)");
-    func_append(f, "\t\t(rem 48 + rem :=)");
+    func_append(f, "\t\t(rem ascii_offset + rem :=)");
     func_append(f, "\t\t(rem ctemp :string_bytetostring !)");
     func_append(f, "\t\t(ctemp bstr idx :string_to_string !)");
     func_append(f, "\t\t(idx + one idx :=)");
@@ -3869,7 +3613,7 @@ static void emit_decimal_to_binary(Program *prog, Function *f) {
     }
 }
 
-static void emit_dice_roll(Program *prog, Function *f) {
+void emit_dice_roll(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -3898,7 +3642,7 @@ static void emit_dice_roll(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_double_math(Program *prog, Function *f, const char *op) {
+void emit_double_math(Program *prog, Function *f, const char *op) {
     add_include(prog, "intr-func.l1h");
     const char *zd[] = {"0.0"};
     const char *fz[] = {"0"};
@@ -3928,7 +3672,7 @@ static void emit_double_math(Program *prog, Function *f, const char *op) {
     }
 }
 
-static void emit_double_circle_area(Program *prog, Function *f) {
+void emit_double_circle_area(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zd[] = {"0.0"};
     const char *pd[] = {"3.141592653589793"};
@@ -3950,7 +3694,7 @@ static void emit_double_circle_area(Program *prog, Function *f) {
     }
 }
 
-static void emit_double_average(Program *prog, Function *f, int skip_input) {
+void emit_double_average(Program *prog, Function *f, int skip_input) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zd[] = {"0.0"};
@@ -3997,7 +3741,7 @@ static void emit_double_average(Program *prog, Function *f, int skip_input) {
     }
 }
 
-static void emit_double_compound_interest(Program *prog, Function *f) {
+void emit_double_compound_interest(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zd[] = {"0.0"};
     const char *hd[] = {"100.0"};
@@ -4039,7 +3783,7 @@ static void emit_double_compound_interest(Program *prog, Function *f) {
     }
 }
 
-static void emit_double_pythagoras(Program *prog, Function *f) {
+void emit_double_pythagoras(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zd[] = {"0.0"};
     const char *hd[] = {"0.5"};
@@ -4079,7 +3823,7 @@ static void emit_double_pythagoras(Program *prog, Function *f) {
     }
 }
 
-static void emit_double_temp_convert(Program *prog, Function *f) {
+void emit_double_temp_convert(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zd[] = {"0.0"};
     const char *cd[] = {"5.0"};
@@ -4106,7 +3850,7 @@ static void emit_double_temp_convert(Program *prog, Function *f) {
     }
 }
 
-static void emit_double_sqrt(Program *prog, Function *f) {
+void emit_double_sqrt(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zd[] = {"0.0"};
     const char *hd[] = {"0.5"};
@@ -4138,7 +3882,7 @@ static void emit_double_sqrt(Program *prog, Function *f) {
     }
 }
 
-static void emit_webserver(Program *prog, Function *f) {
+void emit_webserver(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "net-lib.l1h");
     add_include_post(prog, "string.l1h");
@@ -4185,7 +3929,7 @@ static void emit_webserver(Program *prog, Function *f) {
     func_append(f, "\t\t(:wait_loop jmp)");
 }
 
-static void emit_sdl_window(Program *prog, Function *f) {
+void emit_sdl_window(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "sdl-lib.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"}, *tv[] = {"2"}, *fv[] = {"255"};
@@ -4229,7 +3973,7 @@ static void emit_sdl_window(Program *prog, Function *f) {
     func_append(f, "\t(one zero 0 0 intr0)");
 }
 
-static void emit_sdl_button(Program *prog, Function *f) {
+void emit_sdl_button(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "sdl-lib.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
@@ -4278,7 +4022,7 @@ static void emit_sdl_button(Program *prog, Function *f) {
     func_append(f, "\t(:loop jmp)");
 }
 
-static void emit_thread(Program *prog, Function *f) {
+void emit_thread(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"}, *tv[] = {"2"}, *thv[] = {"3"}, *fov[] = {"4"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
@@ -4327,7 +4071,7 @@ static void emit_thread(Program *prog, Function *f) {
     func_append(sf, "\t(zero~ :exit !)");
 }
 
-static void emit_scheduler(Program *prog, Function *f) {
+void emit_scheduler(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
@@ -4354,7 +4098,7 @@ static void emit_scheduler(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_shell_exec(Program *prog, Function *f) {
+void emit_shell_exec(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
@@ -4380,7 +4124,7 @@ static void emit_shell_exec(Program *prog, Function *f) {
     func_append(f, "\t\t(:loop jmp)");
 }
 
-static void emit_json(Program *prog, Function *f) {
+void emit_json(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "json.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
@@ -4405,7 +4149,7 @@ static void emit_json(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_crypto(Program *prog, Function *f) {
+void emit_crypto(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "crypto.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
@@ -4434,7 +4178,7 @@ static void emit_crypto(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_bluetooth_ble(Program *prog, Function *f) {
+void emit_bluetooth_ble(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "bluetooth-ble.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
@@ -4463,7 +4207,7 @@ static void emit_bluetooth_ble(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_serial_rs232(Program *prog, Function *f) {
+void emit_serial_rs232(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "rs232-lib.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
@@ -4492,7 +4236,7 @@ static void emit_serial_rs232(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_gpio(Program *prog, Function *f) {
+void emit_gpio(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "gpio-lib.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
@@ -4519,7 +4263,7 @@ static void emit_gpio(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_gps(Program *prog, Function *f) {
+void emit_gps(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "gps.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
@@ -4552,7 +4296,7 @@ static void emit_gps(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_timer_date(Program *prog, Function *f) {
+void emit_timer_date(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "time.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
@@ -4592,7 +4336,7 @@ static void emit_timer_date(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_sdl_sound(Program *prog, Function *f) {
+void emit_sdl_sound(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "sdl-lib.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
@@ -4616,7 +4360,7 @@ static void emit_sdl_sound(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_sdl_joystick(Program *prog, Function *f) {
+void emit_sdl_joystick(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "sdl-lib.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
@@ -4651,7 +4395,7 @@ static void emit_sdl_joystick(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_sdl_mouse(Program *prog, Function *f) {
+void emit_sdl_mouse(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "sdl-lib.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
@@ -4686,7 +4430,7 @@ static void emit_sdl_mouse(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_fractal(Program *prog, Function *f) {
+void emit_fractal(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "sdl-lib.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
@@ -4736,7 +4480,7 @@ static void emit_fractal(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_cluster_3x1(Program *prog, Function *f) {
+void emit_cluster_3x1(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
@@ -4764,7 +4508,7 @@ static void emit_cluster_3x1(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_reload(Program *prog, Function *f) {
+void emit_reload(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
@@ -4790,7 +4534,7 @@ static void emit_reload(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_coordinate_grid(Program *prog, Function *f) {
+void emit_coordinate_grid(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
@@ -4824,7 +4568,7 @@ static void emit_coordinate_grid(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_turmite(Program *prog, Function *f) {
+void emit_turmite(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"}, *tv[] = {"2"}, *thv[] = {"3"}, *fov[] = {"4"};
@@ -4875,7 +4619,7 @@ static void emit_turmite(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_crossword(Program *prog, Function *f) {
+void emit_crossword(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
@@ -4907,7 +4651,7 @@ static void emit_crossword(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void emit_linter(Program *prog, Function *f) {
+void emit_linter(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"}, *ov[] = {"1"};
@@ -4931,7 +4675,7 @@ static void emit_linter(Program *prog, Function *f) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static int parse_task(const char *prompt, TaskProfile *task) {
+int parse_task(const char *prompt, TaskProfile *task) {
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
@@ -5627,7 +5371,7 @@ static int parse_task(const char *prompt, TaskProfile *task) {
 
 // ==================== FUNCTION EMITTER ====================
 
-static void emit_function(Program *prog, Function *f) {
+void emit_function(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *fv[] = {"5"};
@@ -5651,7 +5395,7 @@ static void emit_function(Program *prog, Function *f) {
     func_append(sf, "\t(return)");
 }
 
-static void emit_string_length(Program *prog, Function *f) {
+void emit_string_length(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "string.l1h");
     const char *zv[] = {"0"};
@@ -5676,7 +5420,7 @@ static void emit_string_length(Program *prog, Function *f) {
     }
 }
 
-static void emit_stack(Program *prog, Function *f) {
+void emit_stack(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -5746,7 +5490,7 @@ static void emit_stack(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_queue(Program *prog, Function *f) {
+void emit_queue(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -5811,7 +5555,7 @@ static void emit_queue(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_insertion_sort(Program *prog, Function *f, int count, int skip_input) {
+void emit_insertion_sort(Program *prog, Function *f, int count, int skip_input) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -5881,7 +5625,7 @@ static void emit_insertion_sort(Program *prog, Function *f, int count, int skip_
     }
 }
 
-static void emit_calculator(Program *prog, Function *f) {
+void emit_calculator(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -5944,7 +5688,7 @@ static void emit_calculator(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_unit_converter(Program *prog, Function *f) {
+void emit_unit_converter(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -6029,7 +5773,7 @@ static void emit_unit_converter(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_rock_paper_scissors(Program *prog, Function *f) {
+void emit_rock_paper_scissors(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -6118,7 +5862,7 @@ static void emit_rock_paper_scissors(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_pyramid(Program *prog, Function *f) {
+void emit_pyramid(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -6148,7 +5892,7 @@ static void emit_pyramid(Program *prog, Function *f) {
 
 // ==================== 10 NEW COMBO EMITTERS ====================
 
-static void emit_temp_converter_menu(Program *prog, Function *f) {
+void emit_temp_converter_menu(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -6220,7 +5964,7 @@ static void emit_temp_converter_menu(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_sort_stats(Program *prog, Function *f) {
+void emit_sort_stats(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -6312,7 +6056,7 @@ static void emit_sort_stats(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_string_analyzer(Program *prog, Function *f) {
+void emit_string_analyzer(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "string.l1h");
     const char *zv[] = {"0"};
@@ -6411,7 +6155,7 @@ static void emit_string_analyzer(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_number_analyzer(Program *prog, Function *f) {
+void emit_number_analyzer(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -6467,7 +6211,7 @@ static void emit_number_analyzer(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_filter_numbers(Program *prog, Function *f) {
+void emit_filter_numbers(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -6529,7 +6273,7 @@ static void emit_filter_numbers(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_random_generator(Program *prog, Function *f) {
+void emit_random_generator(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -6561,7 +6305,7 @@ static void emit_random_generator(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_math_menu(Program *prog, Function *f) {
+void emit_math_menu(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -6631,7 +6375,7 @@ static void emit_math_menu(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_quiz_game(Program *prog, Function *f) {
+void emit_quiz_game(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -6674,7 +6418,7 @@ static void emit_quiz_game(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_bmi_calculator(Program *prog, Function *f) {
+void emit_bmi_calculator(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -6737,7 +6481,7 @@ static void emit_bmi_calculator(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_statistics_suite(Program *prog, Function *f) {
+void emit_statistics_suite(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -6847,7 +6591,7 @@ static void emit_statistics_suite(Program *prog, Function *f) {
 
 // ==================== NEW EMITTERS ====================
 
-static void emit_linked_list(Program *prog, Function *f) {
+void emit_linked_list(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -6967,7 +6711,7 @@ static void emit_linked_list(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_binary_search_tree(Program *prog, Function *f) {
+void emit_binary_search_tree(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -7093,7 +6837,7 @@ static void emit_binary_search_tree(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_tree_traversal(Program *prog, Function *f) {
+void emit_tree_traversal(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -7169,7 +6913,7 @@ static void emit_tree_traversal(Program *prog, Function *f) {
     func_append(f, "\t(one * int64_size ri :=)"); func_append(f, "\t(data [ ri ] i =)"); func_append(f, "\t(i :print_i !)"); func_append(f, "\t(:print_n !)");
 }
 
-static void emit_graph_bfs_dfs(Program *prog, Function *f) {
+void emit_graph_bfs_dfs(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -7313,7 +7057,7 @@ static void emit_graph_bfs_dfs(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_n_queens(Program *prog, Function *f) {
+void emit_n_queens(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -7393,7 +7137,7 @@ static void emit_n_queens(Program *prog, Function *f) {
     func_append(f, "\t(:queens_done)");
 }
 
-static void emit_sudoku(Program *prog, Function *f) {
+void emit_sudoku(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -7535,7 +7279,7 @@ static void emit_sudoku(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_levenshtein_distance(Program *prog, Function *f) {
+void emit_levenshtein_distance(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     add_var_to_func(f, "const-int64", "zero", 1, (const char *[]){"0"}, 1);
@@ -7546,7 +7290,7 @@ static void emit_levenshtein_distance(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_maze_generator(Program *prog, Function *f) {
+void emit_maze_generator(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -7653,7 +7397,7 @@ static void emit_maze_generator(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_maze_solver(Program *prog, Function *f) {
+void emit_maze_solver(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     add_var_to_func(f, "const-int64", "zero", 1, (const char *[]){"0"}, 1);
@@ -7724,7 +7468,7 @@ static void emit_maze_solver(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_monte_carlo_pi(Program *prog, Function *f) {
+void emit_monte_carlo_pi(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -7781,7 +7525,7 @@ static void emit_monte_carlo_pi(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_matrix_multiplication(Program *prog, Function *f) {
+void emit_matrix_multiplication(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -7876,7 +7620,7 @@ static void emit_matrix_multiplication(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_matrix_transpose(Program *prog, Function *f) {
+void emit_matrix_transpose(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -7940,7 +7684,7 @@ static void emit_matrix_transpose(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_numerical_integration(Program *prog, Function *f) {
+void emit_numerical_integration(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -7981,7 +7725,7 @@ static void emit_numerical_integration(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_complex_numbers(Program *prog, Function *f) {
+void emit_complex_numbers(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -8031,7 +7775,7 @@ static void emit_complex_numbers(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_linear_regression(Program *prog, Function *f) {
+void emit_linear_regression(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -8123,7 +7867,7 @@ static void emit_linear_regression(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_base_converter(Program *prog, Function *f) {
+void emit_base_converter(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -8173,7 +7917,7 @@ static void emit_base_converter(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_freq_analysis(Program *prog, Function *f) {
+void emit_freq_analysis(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -8230,7 +7974,7 @@ static void emit_freq_analysis(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_shuffle(Program *prog, Function *f) {
+void emit_shuffle(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -8288,7 +8032,7 @@ static void emit_shuffle(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_weighted_random(Program *prog, Function *f) {
+void emit_weighted_random(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
@@ -8355,7 +8099,7 @@ static void emit_weighted_random(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_ascii_table(Program *prog, Function *f) {
+void emit_ascii_table(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -8384,7 +8128,7 @@ static void emit_ascii_table(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_bignum_math(Program *prog, Function *f) {
+void emit_bignum_math(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -8426,7 +8170,7 @@ static void emit_bignum_math(Program *prog, Function *f) {
     func_append(f, "\t(:print_n !)");
 }
 
-static void emit_password_card(Program *prog, Function *f) {
+void emit_password_card(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -8489,7 +8233,7 @@ static void emit_password_card(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_chess_problem(Program *prog, Function *f) {
+void emit_chess_problem(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -8547,7 +8291,7 @@ static void emit_chess_problem(Program *prog, Function *f) {
     func_append(f, "\t(next)");
 }
 
-static void emit_shell_repl(Program *prog, Function *f) {
+void emit_shell_repl(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -8838,7 +8582,7 @@ static ExtraEmitterFunc ee_table[NUM_EMITTERS] = {
 
 #pragma GCC diagnostic pop
 
-static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
+int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     // check if main function already exists
     Function *f = NULL;
     int found = 0;
@@ -9271,7 +9015,7 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     return 0;
 }
 
-static void gen_arithmetic(Program *prog, const char *op, const char *type, const int *vals, int num_vals) {
+void gen_arithmetic(Program *prog, const char *op, const char *type, const int *vals, int num_vals) {
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
@@ -9346,7 +9090,7 @@ static int word_to_num(const char *word) {
     return -1;
 }
 
-static int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size) {
+int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size) {
     init_embeddings();
     index_examples();
 
@@ -9573,7 +9317,7 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
     return 1;
 }
 
-static void write_program(Program *prog, const char *filename) {
+void write_program(Program *prog, const char *filename) {
     FILE *f = NULL;
     if (dry_run_flag) {
         f = stdout;
@@ -9629,7 +9373,7 @@ static void write_program(Program *prog, const char *filename) {
 
 // ==================== TEMPLATES ====================
 
-static void gen_hello_world(Program *prog, const char *prompt) {
+void gen_hello_world(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9642,7 +9386,7 @@ static void gen_hello_world(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_print_var(Program *prog, const char *prompt) {
+void gen_print_var(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9655,7 +9399,7 @@ static void gen_print_var(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_math_ops(Program *prog, const char *prompt) {
+void gen_math_ops(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9675,7 +9419,7 @@ static void gen_math_ops(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_for_loop(Program *prog, const char *prompt) {
+void gen_for_loop(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9698,7 +9442,7 @@ static void gen_for_loop(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_while_loop(Program *prog, const char *prompt) {
+void gen_while_loop(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9718,7 +9462,7 @@ static void gen_while_loop(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_if_else(Program *prog, const char *prompt) {
+void gen_if_else(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9745,7 +9489,7 @@ static void gen_if_else(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_if_else_chain(Program *prog, const char *prompt) {
+void gen_if_else_chain(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9776,7 +9520,7 @@ static void gen_if_else_chain(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_switch(Program *prog, const char *prompt) {
+void gen_switch(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9805,7 +9549,7 @@ static void gen_switch(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_factorial(Program *prog, const char *prompt) {
+void gen_factorial(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9844,7 +9588,7 @@ static void gen_factorial(Program *prog, const char *prompt) {
     func_append(ff, "\t(return)");
 }
 
-static void gen_fibonacci(Program *prog, const char *prompt) {
+void gen_fibonacci(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9886,7 +9630,7 @@ static void gen_fibonacci(Program *prog, const char *prompt) {
     func_append(ff, "\t(return)");
 }
 
-static void gen_fizzbuzz(Program *prog, const char *prompt) {
+void gen_fizzbuzz(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9939,7 +9683,7 @@ static void gen_fizzbuzz(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_array_demo(Program *prog, const char *prompt) {
+void gen_array_demo(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
@@ -9969,7 +9713,7 @@ static void gen_array_demo(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_string_demo(Program *prog, const char *prompt) {
+void gen_string_demo(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -9993,7 +9737,7 @@ static void gen_string_demo(Program *prog, const char *prompt) {
     add_include_post(prog, "string.l1h");
 }
 
-static void gen_user_input(Program *prog, const char *prompt) {
+void gen_user_input(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -10010,7 +9754,7 @@ static void gen_user_input(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_shell_args(Program *prog, const char *prompt) {
+void gen_shell_args(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -10041,7 +9785,7 @@ static void gen_shell_args(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_countdown(Program *prog, const char *prompt) {
+void gen_countdown(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -10061,7 +9805,7 @@ static void gen_countdown(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_sum(Program *prog, const char *prompt) {
+void gen_sum(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -10086,7 +9830,7 @@ static void gen_sum(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_primes(Program *prog, const char *prompt) {
+void gen_primes(Program *prog, const char *prompt) {
     int nums[4];
     int num_count = extract_numbers(prompt, nums, 4);
     int max_val = 50;
@@ -10131,7 +9875,7 @@ static void gen_primes(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_function_demo(Program *prog, const char *prompt) {
+void gen_function_demo(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -10167,7 +9911,7 @@ static void gen_function_demo(Program *prog, const char *prompt) {
     func_append(sf, "\t(return)");
 }
 
-static void gen_guess_number(Program *prog, const char *prompt) {
+void gen_guess_number(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -10202,7 +9946,7 @@ static void gen_guess_number(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_multiplication_table(Program *prog, const char *prompt) {
+void gen_multiplication_table(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -10222,6 +9966,8 @@ static void gen_multiplication_table(Program *prog, const char *prompt) {
     add_var_to_func(f, "string", "sp", 2, (const char *[]){"\" \""}, 1);
     add_var_to_func(f, "string", "empty", 2, (const char *[]){"\"\""}, 1);
     add_var_to_func(f, "int64", "strmod", 1, vals, 1);
+    const char *nsv[] = {"32"};
+    add_var_to_func(f, "const-int64", "ns_len", 1, nsv, 1);
     func_append(f, "\t(strmod :string_init !)");
     func_append(f, "\t(:print_n !)");
     func_append(f, "\t(one i :=)");
@@ -10232,7 +9978,7 @@ static void gen_multiplication_table(Program *prog, const char *prompt) {
     func_append(f, "\t\t(for-loop)");
     func_append(f, "\t\t(((j mx <=) f :=) f for)");
     func_append(f, "\t\t\t(i * j p :=)");
-    func_append(f, "\t\t\t(p ns 32 :string_int64tostring !)");
+    func_append(f, "\t\t\t(p ns ns_len :string_int64tostring !)");
     func_append(f, "\t\t\t(ns row :string_cat !)");
     func_append(f, "\t\t\t(sp row :string_cat !)");
     func_append(f, "\t\t\t(j + one j :=)");
@@ -10245,7 +9991,7 @@ static void gen_multiplication_table(Program *prog, const char *prompt) {
     add_include_post(prog, "string.l1h");
 }
 
-static void gen_even_odd(Program *prog, const char *prompt) {
+void gen_even_odd(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -10281,7 +10027,7 @@ static void gen_even_odd(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_power(Program *prog, const char *prompt) {
+void gen_power(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -10318,7 +10064,7 @@ static void gen_power(Program *prog, const char *prompt) {
     func_append(pf, "\t(return)");
 }
 
-static void gen_max_of_three(Program *prog, const char *prompt) {
+void gen_max_of_three(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -10356,7 +10102,7 @@ static void gen_max_of_three(Program *prog, const char *prompt) {
     func_append(mf, "\t(return)");
 }
 
-static void gen_hello_name(Program *prog, const char *prompt) {
+void gen_hello_name(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -10377,7 +10123,7 @@ static void gen_hello_name(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_bubble_sort(Program *prog, const char *prompt) {
+void gen_bubble_sort(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
@@ -10403,8 +10149,9 @@ static void gen_bubble_sort(Program *prog, const char *prompt) {
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i n <) f :=) f for)");
     func_append(f, "\t\t(zero j :=)");
+    func_append(f, "\t\t(n one - temp :=)");
     func_append(f, "\t\t(for-loop)");
-    func_append(f, "\t\t(((j n one - <) f :=) f for)");
+    func_append(f, "\t\t(((j temp <) f :=) f for)");
     func_append(f, "\t\t\t(j * int64_size realind :=)");
     func_append(f, "\t\t\t((j + one) * int64_size realind2 :=)");
     func_append(f, "\t\t\t(arr [ realind ] a =)");
@@ -10433,7 +10180,7 @@ static void gen_bubble_sort(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_struct_demo(Program *prog, const char *prompt) {
+void gen_struct_demo(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -10452,13 +10199,15 @@ static void gen_struct_demo(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_pointer_demo(Program *prog, const char *prompt) {
+void gen_pointer_demo(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
     const char *vals[] = {"0"};
     add_var_to_func(f, "const-int64", "zero", 1, vals, 1);
+    const char *const100_v[] = {"100"};
+    add_var_to_func(f, "const-int64", "const100", 1, const100_v, 1);
     add_var_to_func(f, "int64", "x", 1, (const char *[]){"42"}, 1);
     add_var_to_func(f, "int64", "Px", 1, vals, 1);
     add_var_to_func(f, "int64", "val", 1, vals, 1);
@@ -10468,15 +10217,16 @@ static void gen_pointer_demo(Program *prog, const char *prompt) {
     func_append(f, "\t(val :print_i !)");
     func_append(f, "\t(:print_n !)");
     func_append(f, "\t// change value via pointer");
-    func_append(f, "\t(100 Px [ zero ] =)");
+    func_append(f, "\t(const100 Px [ zero ] =)");
     func_append(f, "\t(x :print_i !)");
     func_append(f, "\t(:print_n !)");
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_time_demo(Program *prog, const char *prompt) {
+void gen_time_demo(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
+    add_include(prog, "misc-macros.l1h");
     add_func(prog, "main");
     Function *f = &prog->funcs[prog->num_funcs - 1];
     const char *vals[] = {"0"};
@@ -10517,7 +10267,7 @@ static void gen_time_demo(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
-static void gen_gcd(Program *prog, const char *prompt) {
+void gen_gcd(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -10560,7 +10310,7 @@ static void gen_gcd(Program *prog, const char *prompt) {
     add_var_to_func(gf, "int64", "ret~", 1, vals, 1);
 }
 
-static void gen_hex_binary(Program *prog, const char *prompt) {
+void gen_hex_binary(Program *prog, const char *prompt) {
     (void)prompt;
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
@@ -10578,12 +10328,6 @@ static void gen_hex_binary(Program *prog, const char *prompt) {
     func_append(f, "\t(:print_n !)");
     func_append(f, "\t(zero :exit !)");
 }
-
-typedef struct {
-    char *keywords;
-    char *desc;
-    void (*gen)(Program*, const char*);
-} Template;
 
 Template templates[] = {
     {"hello world", "Hello World program", gen_hello_world},
@@ -10640,9 +10384,9 @@ Template templates[] = {
     {"binary", "Hex and binary number demo", gen_hex_binary},
 };
 
-static int num_templates = sizeof(templates) / sizeof(templates[0]);
+int num_templates = sizeof(templates) / sizeof(templates[0]);
 
-static int match_template(const char *prompt, int *best_score) {
+int match_template(const char *prompt, int *best_score) {
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
@@ -10681,7 +10425,7 @@ static int match_template(const char *prompt, int *best_score) {
     return best_idx;
 }
 
-static void prepend_out_dir(const char *fname, char *buf, int bufsize);
+void prepend_out_dir(const char *fname, char *buf, int bufsize);
 
 // Shell-escape a string by wrapping in single quotes; 
 // embedded single quotes are escaped as '\'' per POSIX convention.
@@ -10702,7 +10446,7 @@ static void shell_escape(const char *raw, char *out, size_t out_size) {
     else out[out_size - 1] = '\0';
 }
 
-static int validate_code(const char *filename) {
+int validate_code(const char *filename) {
     char cmd[32768];
     char ppname[512];
     const char *dot = strrchr(filename, '.');
@@ -10767,7 +10511,7 @@ static int validate_code(const char *filename) {
     return ret == 0;
 }
 
-static void prepend_out_dir(const char *fname, char *buf, int bufsize) {
+void prepend_out_dir(const char *fname, char *buf, int bufsize) {
     if (out_dir[0]) {
         snprintf(buf, bufsize, "%s/%s", out_dir, fname);
         buf[bufsize - 1] = '\0';
@@ -10776,7 +10520,7 @@ static void prepend_out_dir(const char *fname, char *buf, int bufsize) {
     }
 }
 
-static int generate_code(const char *prompt, const char *filename) {
+int generate_code(const char *prompt, const char *filename) {
     int is_q = is_question(prompt);
     if (is_q)
         answer_question(prompt);
@@ -10787,7 +10531,25 @@ static int generate_code(const char *prompt, const char *filename) {
     snprintf(prog->filename, sizeof(prog->filename), "%s", filename);
     // (temp/func counters removed)
 
-    // Try emitter system first; learned patterns serve as fallback
+    // Try exact keyword template match first (most reliable)
+    int score;
+    int idx = match_template(prompt, &score);
+
+    if (idx >= 0) {
+        if (is_q) c_printf(ANSI_CYAN, "Code example written to: %s\n", filename);
+        else c_printf(ANSI_GREEN, "Matched template: %s (score: %d)\n", templates[idx].desc, score);
+        templates[idx].gen(prog, prompt);
+        write_program(prog, filename);
+        free_program(prog); free(prog);
+        return 1;
+    }
+
+    if (is_q) {
+        free_program(prog); free(prog);
+        return 1;
+    }
+
+    // Smart generation via LLM emitter system
     char desc[512] = {0};
     if (smart_generate(prog, prompt, desc, sizeof(desc))) {
         if (is_q) c_printf(ANSI_CYAN, "Code example written to: %s\n", filename);
@@ -10810,23 +10572,6 @@ static int generate_code(const char *prompt, const char *filename) {
                 return 1;
             }
         }
-    }
-
-    int score;
-    int idx = match_template(prompt, &score);
-
-    if (idx >= 0) {
-        if (is_q) c_printf(ANSI_CYAN, "Code example written to: %s\n", filename);
-        else c_printf(ANSI_GREEN, "Matched template: %s (score: %d)\n", templates[idx].desc, score);
-        templates[idx].gen(prog, prompt);
-        write_program(prog, filename);
-        free_program(prog); free(prog);
-        return 1;
-    }
-
-    if (is_q) {
-        free_program(prog); free(prog);
-        return 1;
     }
 
     // Nearest-neighbor fallback: use vector search to find closest example
@@ -10864,9 +10609,7 @@ static int generate_code(const char *prompt, const char *filename) {
     return 0;
 }
 
-#include "learn.c"
-
-static int self_test(void) {
+int self_test(void) {
     const char *test_prompts[] = {
         "hello world", "sum from 1 to 100", "print even numbers up to 10",
         "count down from 5", "print numbers 1 to 5 in a loop", "calculate 10 plus 5",
@@ -10911,7 +10654,7 @@ static int self_test(void) {
     return failed == 0;
 }
 
-static void show_help(void) {
+void show_help(void) {
     printf("\nBrackets Code Generator %s for Brackets (L1VM) Language\n", VERSION_TXT);
     printf("============================================================\n");
     printf("Usage:\n");
@@ -10969,7 +10712,7 @@ static char **cmd_completion(const char *text, int start, int end) {
 }
 #endif
 
-static void interactive_mode(void) {
+void interactive_mode(void) {
     char prompt[MAX_PROMPT];
     char last_fname[256] = {0};
     int has_last = 0;

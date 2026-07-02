@@ -1,3 +1,5 @@
+#include "brackets-code.h"
+
 // ==================== TINY LLM INFERENCE ENGINE ====================
 
 #define EMBED_DIM 32
@@ -6,43 +8,31 @@
 #define MAX_STEPS 32
 #define NUM_EMITTERS 133
 
-typedef struct {
-    char word[32];
-    float embed[EMBED_DIM];
-} WordEmbedding;
-
-static WordEmbedding word_embeddings[VOCAB_SIZE];
-static float attention_weights[NUM_EMITTERS];
-static const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt","function","string_length","stack","queue","insertion_sort","calculator","unit_converter","rock_paper_scissors","pyramid","temp_converter_menu","sort_stats","string_analyzer","number_analyzer","filter_numbers","random_generator","math_menu","quiz_game","bmi_calculator","statistics_suite","linked_list","binary_search_tree","tree_traversal","graph_bfs_dfs","n_queens","sudoku","levenshtein_distance","maze_generator","maze_solver","monte_carlo_pi","matrix_multiplication","matrix_transpose","numerical_integration","complex_numbers","linear_regression","base_converter","freq_analysis","shuffle","weighted_random","ascii_table","bignum_math","password_card","chess_problem","shell_repl","webserver","sdl_window","sdl_button","thread","scheduler","shell_exec","json","crypto","bluetooth_ble","serial_rs232","gpio","gps","timer_date","sdl_sound","sdl_joystick","sdl_mouse","fractal","cluster_3x1","reload","coordinate_grid","turmite","crossword","linter"};
+WordEmbedding word_embeddings[VOCAB_SIZE];
+float attention_weights[NUM_EMITTERS];
+const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt","function","string_length","stack","queue","insertion_sort","calculator","unit_converter","rock_paper_scissors","pyramid","temp_converter_menu","sort_stats","string_analyzer","number_analyzer","filter_numbers","random_generator","math_menu","quiz_game","bmi_calculator","statistics_suite","linked_list","binary_search_tree","tree_traversal","graph_bfs_dfs","n_queens","sudoku","levenshtein_distance","maze_generator","maze_solver","monte_carlo_pi","matrix_multiplication","matrix_transpose","numerical_integration","complex_numbers","linear_regression","base_converter","freq_analysis","shuffle","weighted_random","ascii_table","bignum_math","password_card","chess_problem","shell_repl","webserver","sdl_window","sdl_button","thread","scheduler","shell_exec","json","crypto","bluetooth_ble","serial_rs232","gpio","gps","timer_date","sdl_sound","sdl_joystick","sdl_mouse","fractal","cluster_3x1","reload","coordinate_grid","turmite","crossword","linter"};
 /* compile-time assert: NUM_EMITTERS must match actual array count */
 typedef int EMITTER_COUNT_CHECK[(sizeof(EMITTER_NAMES)/sizeof(EMITTER_NAMES[0])) == NUM_EMITTERS ? 1 : -1];
-static int vs_boost_tokens[64];
-static int vs_boost_count = 0;
+int vs_boost_tokens[64];
+int vs_boost_count = 0;
 
 // Vector search data structures
 #define MAX_EXAMPLES 512
 #define MAX_TOP_K 10
 #define EXAMPLE_DIR "l1vm-example-code"
 #define EXAMPLE_SUBDIRS 3
-static const char *example_subdirs[EXAMPLE_SUBDIRS] = {"prog", "include", "lib"};
+const char *example_subdirs[EXAMPLE_SUBDIRS] = {"prog", "include", "lib"};
 static const char *example_exts[] = {".l1com", ".l1h", ".l1asm"};
 #define EXAMPLE_EXTS 3
 
-typedef struct {
-    char filename[1024];
-    char stem[512];
-    float embedding[EMBED_DIM];
-    float score;
-} ExampleDoc;
+ExampleDoc example_docs[MAX_EXAMPLES];
+int num_examples = 0;
+int examples_indexed = 0;
 
-static ExampleDoc example_docs[MAX_EXAMPLES];
-static int num_examples = 0;
-static int examples_indexed = 0;
+void index_examples(void);
+int search_examples(const char *query, int top_k, int *indices, float *scores);
 
-static void index_examples(void);
-static int search_examples(const char *query, int top_k, int *indices, float *scores);
-
-static unsigned long hash_word(const char *s) {
+unsigned long hash_word(const char *s) {
     unsigned long hash = 5381;
     int c;
     while ((c = *s++))
@@ -50,7 +40,7 @@ static unsigned long hash_word(const char *s) {
     return hash;
 }
 
-static float idf_weights[VOCAB_SIZE];
+float idf_weights[VOCAB_SIZE];
 
 // Vocabulary token IDs
 #define TOK_SUM 0
@@ -126,7 +116,7 @@ static float idf_weights[VOCAB_SIZE];
 #define TOK_LEARN 70
 #define TOK_PREDICT 71
 
-static const char *vocab[VOCAB_SIZE] = {
+const char *vocab[VOCAB_SIZE] = {
     "sum", "add", "sub", "mul", "div", "mod", "input", "print", "loop", "for",
     "while", "if", "array", "sort", "max", "min", "average", "median", "countdown",
     "fibonacci", "factorial", "prime", "fizzbuzz", "power", "gcd", "time", "pointer",
@@ -138,9 +128,9 @@ static const char *vocab[VOCAB_SIZE] = {
     "fann", "train", "neural", "network", "model", "layer", "learn", "predict"
 };
 
-static int embeddings_initialized = 0;
+int embeddings_initialized = 0;
 
-static void init_embeddings(void) {
+void init_embeddings(void) {
     if (embeddings_initialized) return;
     embeddings_initialized = 1;
     for (int i = 0; i < VOCAB_SIZE; i++) {
@@ -189,7 +179,7 @@ static void init_embeddings(void) {
     for (int i = 0; i < VOCAB_SIZE; i++) idf_weights[i] = 1.0f;
 }
 
-static int tokenize(const char *text, int *tokens, int max_tokens) {
+int tokenize(const char *text, int *tokens, int max_tokens) {
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", text);
     to_lowercase(buf);
@@ -220,7 +210,7 @@ static int tokenize(const char *text, int *tokens, int max_tokens) {
     return count;
 }
 
-static void softmax(float *x, int n) {
+void softmax(float *x, int n) {
     if (n <= 0) return;
     float max = x[0], sum = 0;
     for (int i = 1; i < n; i++) if (x[i] > max) max = x[i];
@@ -228,7 +218,7 @@ static void softmax(float *x, int n) {
     for (int i = 0; i < n; i++) x[i] /= sum;
 }
 
-static void apply_token_boosts(float *scores, const int *tokens, int count,
+void apply_token_boosts(float *scores, const int *tokens, int count,
                                 float fann_34, float fann_35, float fann_36,
                                 float train_34, float train_35,
                                 float predict_36,
@@ -271,7 +261,7 @@ static void apply_token_boosts(float *scores, const int *tokens, int count,
     }
 }
 
-static int llm_select_emitter(const char *prompt, TaskProfile *task) {
+int llm_select_emitter(const char *prompt, TaskProfile *task) {
     int tokens[64], num_tokens = tokenize(prompt, tokens, 64);
 
     float emitter_scores[NUM_EMITTERS];
@@ -554,7 +544,7 @@ static int llm_select_emitter(const char *prompt, TaskProfile *task) {
     return best;
 }
 
-static int has_actionable_keyword(const char *text) {
+int has_actionable_keyword(const char *text) {
     // arithmetic
     if (has_word(text, "add") || has_word(text, "sum") || has_word(text, "summe")
         || has_word(text, "plus") || has_word(text, "berechne") || has_word(text, "ermittle")
@@ -721,7 +711,7 @@ static int has_actionable_keyword(const char *text) {
     return 0;
 }
 
-static int has_sequential_pattern(const char *text) {
+int has_sequential_pattern(const char *text) {
     // Check if text contains numbered steps like "1)...2)..." or "step 1...step 2..."
     int count_enumerated = 0;
     const char *p = text;
@@ -757,7 +747,7 @@ static int has_sequential_pattern(const char *text) {
     return 0;
 }
 
-static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
+int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
@@ -1022,7 +1012,7 @@ static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROM
 
 // ==================== VECTOR SEARCH ====================
 
-static float cosine_sim(const float *a, const float *b) {
+float cosine_sim(const float *a, const float *b) {
     float dot = 0, na = 0, nb = 0;
     for (int i = 0; i < EMBED_DIM; i++) {
         dot += a[i] * b[i];
@@ -1033,7 +1023,7 @@ static float cosine_sim(const float *a, const float *b) {
     return (denom == 0) ? 0 : dot / denom;
 }
 
-static void embed_text(const char *text, float *out) {
+void embed_text(const char *text, float *out) {
     memset(out, 0, sizeof(float) * EMBED_DIM);
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", text);
@@ -1107,7 +1097,7 @@ static void embed_text(const char *text, float *out) {
     }
 }
 
-static void filename_stem(const char *path, char *stem) {
+void filename_stem(const char *path, char *stem) {
     const char *p = strrchr(path, '/');
     p = p ? p + 1 : path;
     char buf[256];
@@ -1119,7 +1109,7 @@ static void filename_stem(const char *path, char *stem) {
     snprintf(stem, 256, "%s", buf);
 }
 
-static void index_examples(void) {
+void index_examples(void) {
     if (examples_indexed) return;
     examples_indexed = 1;
     num_examples = 0;
@@ -1199,7 +1189,7 @@ static void index_examples(void) {
     }
 }
 
-static int search_examples(const char *query, int top_k, int *indices, float *scores) {
+int search_examples(const char *query, int top_k, int *indices, float *scores) {
     if (num_examples == 0) return 0;
 
     char expanded[MAX_PROMPT];

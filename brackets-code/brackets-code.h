@@ -9,8 +9,9 @@
 #include <math.h>
 #include <dirent.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
-#define VERSION_TXT "0.6.4"
+#define VERSION_TXT "0.6.5"
 
 #define MAX_LINE 4096
 #define MAX_VARS 48
@@ -54,6 +55,8 @@
 #include <readline/history.h>
 #undef Function
 #endif
+
+#define c_printf(color, ...) do { if (use_color) { printf(color); printf(__VA_ARGS__); printf(ANSI_RESET); } else printf(__VA_ARGS__); } while(0)
 
 // ==================== DATA STRUCTURES ====================
 
@@ -253,6 +256,29 @@ typedef struct {
     int has_password_card;
     int has_chess_problem;
     int has_shell_repl;
+    int has_webserver;
+    int has_sdl_window;
+    int has_sdl_button;
+    int has_thread;
+    int has_scheduler;
+    int has_shell_exec;
+    int has_json;
+    int has_crypto;
+    int has_bluetooth_ble;
+    int has_serial_rs232;
+    int has_gpio;
+    int has_gps;
+    int has_timer_date;
+    int has_sdl_sound;
+    int has_sdl_joystick;
+    int has_sdl_mouse;
+    int has_fractal;
+    int has_cluster_3x1;
+    int has_reload;
+    int has_coordinate_grid;
+    int has_turmite;
+    int has_crossword;
+    int has_linter;
     int suppress_output;
     char result_var[64];
     int skip_input;
@@ -326,7 +352,6 @@ extern int num_templates;
 // Utility
 void trim(char *s);
 void to_lowercase(char *s);
-int c_printf(const char *color, const char *fmt, ...);
 
 // Program management
 int init_program(Program *prog);
@@ -413,7 +438,7 @@ void emit_string_to_num(Program *prog, Function *f);
 void emit_timer(Program *prog, Function *f);
 void emit_factorial(Program *prog, Function *f);
 void emit_fizzbuzz(Program *prog, Function *f);
-void emit_primes(Program *prog, Function *f);
+void emit_primes(Program *prog, Function *f, int max_val);
 void emit_even_odd(Program *prog, Function *f);
 void emit_power(Program *prog, Function *f);
 void emit_multiplication_table(Program *prog, Function *f);

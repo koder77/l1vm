@@ -16,16 +16,22 @@ TEST_SH = tests/run_tests.sh
 
 all: $(BINARY)
 
-$(BINARY): $(SOURCE) $(EMBED) $(LEARN) $(HEADER) $(SYNONYM)
+%.o: %.c $(HEADER)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+embed.o: CFLAGS += -Wno-unused-function
+learn.o: CFLAGS += -Wno-unused-function
+
+$(BINARY): $(SOURCE:.c=.o) $(EMBED:.c=.o) $(LEARN:.c=.o)
 	@if pkg-config --exists readline 2>/dev/null; then \
 		echo "  readline found, enabling interactive history"; \
-		$(CC) $(CFLAGS) -DHAVE_READLINE -o $@ $< $(LDFLAGS) $$(pkg-config --libs readline); \
+		$(CC) $(CFLAGS) -DHAVE_READLINE -o $@ $^ $(LDFLAGS) $$(pkg-config --libs readline); \
 	elif [ -f /usr/include/readline/readline.h ]; then \
 		echo "  readline headers found, enabling interactive history"; \
-		$(CC) $(CFLAGS) -DHAVE_READLINE -o $@ $< $(LDFLAGS) -lreadline; \
+		$(CC) $(CFLAGS) -DHAVE_READLINE -o $@ $^ $(LDFLAGS) -lreadline; \
 	else \
 		echo "  readline not found, using plain fgets"; \
-		$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS); \
+		$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS); \
 	fi
 
 # Static analysis

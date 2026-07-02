@@ -5,7 +5,7 @@ rackets Code - Memory & Specification
 -------------
 Brackets Code is a CLI code generator for the Brackets (L1VM) assembly language.
 It converts natural-language prompts into working .l1com programs.
-Written in C, split across 4 source files (~13616 lines total). Author: Stefan.
+Written in C, split across 4 source files (~13518 lines total). Author: Stefan.
 
 2. SOURCE FILE ORGANIZATION
 --------------------------
@@ -403,15 +403,17 @@ Template struct:
 
 15. FILE LOCATION
 -----------------
-   /home/stefan/opencode/brackets-code/brackets-code.c  (11147 lines, 133 emitter blocks, #include's embed.c + learn.c)
-  /home/stefan/opencode/brackets-code/brackets-code.h  (549 lines, header with types, constants, function declarations)
-  /home/stefan/opencode/brackets-code/embed.c           (1235 lines, LLM inference engine + vector search, #include'd at line 1222)
-  /home/stefan/opencode/brackets-code/learn.c           (685 lines, learned pattern system, #include'd at line 10725)
-  /home/stefan/opencode/brackets-code/synonyms.txt      (fuzzy synonym defs for DE+EN)
-  /home/stefan/opencode/brackets-code/memory.txt        (this file)
+   /home/stefan/opencode/brackets-code/brackets-code.c  (11032 lines, 133 emitter blocks, #include's embed.c + learn.c)
+   /home/stefan/opencode/brackets-code/brackets-code.h  (574 lines, header with types, constants, function declarations)
+   /home/stefan/opencode/brackets-code/embed.c           (1225 lines, LLM inference engine + vector search, #include'd at line 1222)
+   /home/stefan/opencode/brackets-code/learn.c           (687 lines, learned pattern system, #include'd at line 10725)
+   /home/stefan/opencode/brackets-code/synonyms.txt      (fuzzy synonym defs for DE+EN)
+   /home/stefan/opencode/brackets-code/Makefile          (build configuration with readline auto-detection)
+   /home/stefan/opencode/brackets-code/memory.txt        (this file)
 
-   Total: 13616 lines across 4 source files.
-  Compilation: gcc brackets-code.c -lm (embed.c + learn.c pulled in via #include)
+   Total: 13518 lines across 4 source files.
+   Compilation: gcc brackets-code.c -lm (embed.c + learn.c pulled in via #include)
+   Optional: pkg-config or /usr/include/readline/readline.h enables readline for interactive history
 
 16. L1VM ARRAY ACCESS RULES
 ----------------------------
@@ -441,7 +443,7 @@ Template struct:
     maze_solver            - hardcoded 5x5 grid printer
     numerical_integration  - trapezoidal integral of x^2
     sudoku                 - constraint propagation solver
-  
+
   2 SKIP (interactive :input_i, not testable with piped stdin):
     base_converter        - reads num + base, div by zero if input exhausted
     binary_search_tree    - menu loop, subsequent :input_i fail on pipe
@@ -450,7 +452,10 @@ Template struct:
 
 19. TEST SUITE
 --------------
-  Manual testing via /tmp/opencode/test_emitters.sh
-  Each emitter: brackets-code -> l1pre -> l1com -> l1asm -> l1vm
-  Full pipeline required (l1pre expands #include directives before l1com).
+  Shell-based test suite at tests/run_tests.sh (218 lines).
+  Tests generation + full L1VM pipeline (l1pre → l1com → l1asm → l1vm).
+  Three test categories: template tests, emitter tests, multi-step tests.
+  Latest run: 55 passed, 0 failed, 5 skipped.
+  Quick mode: 14 tests.
+  Skipped tests are known failures (e.g., generation mismatch with template keywords).
   Interactive emitters (using :input_i) not suitable for batch stdin testing.

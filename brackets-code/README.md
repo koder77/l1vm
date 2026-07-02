@@ -8,7 +8,7 @@ Converts natural-language prompts into working `.l1com` programs.
 - **133 code generation blocks** — 31 template-matched + 102 plan-based emitters with vector scoring
 - **Three-tier pipeline**: smart planner runs first, template matching as fallback, default "hello world" last
 - **No LLM involved** — deterministic pattern extraction from `l1vm-example-code/`
-- **97 tests** (95 active, 2 known-skip for interactive input) through full `l1pre → l1com` pipeline
+- **60 tests** (55 active, 5 known-skip) through full `l1pre → l1com` pipeline
 - **Vector search** over example code with `--search` (interactive: `/search`)
 - **Learn/forget** user-provided patterns at runtime without recompilation
 
@@ -87,14 +87,14 @@ Tab completion is supported.
 
 Or:
 
-    ./tests/run_tests.sh          # run all 97 tests (95 active, 2 known-skip)
+    ./tests/run_tests.sh          # run all tests (60 tests, 55 active, 5 skipped)
     ./tests/run_tests.sh quick    # quick subset (14 tests)
     ./tests/run_tests.sh list     # list test names
     ./tests/run_tests.sh save <d> # save failing sources to <d>
 
 ## Project structure
 
-    brackets-code.c        Main source (11147 lines)
+    brackets-code.c        Main source (11032 lines)
     brackets-code.h        Header file with types and declarations
     brackets-code          Compiled binary
     synonyms.txt           External synonym table (edit without recompilation)

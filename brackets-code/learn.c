@@ -1,6 +1,8 @@
+#include "brackets-code.h"
+
 // ==================== LEARNED PATTERN SYSTEM ====================
 
-static char* learned_dir_path(void) {
+char* learned_dir_path(void) {
     static char path[1024];
     const char *home = getenv("HOME");
     if (home) {
@@ -11,7 +13,7 @@ static char* learned_dir_path(void) {
     return path;
 }
 
-static void ensure_learned_dir(void) {
+void ensure_learned_dir(void) {
     char path[1024];
     snprintf(path, sizeof(path), "%s", learned_dir_path());
     // POSIX mkdir - create each directory level
@@ -27,7 +29,7 @@ static void ensure_learned_dir(void) {
     mkdir(tmp, 0755);
 }
 
-static int learn_from_file(const char *path, const char *keywords, const char *description) {
+int learn_from_file(const char *path, const char *keywords, const char *description) {
     FILE *f = fopen(path, "r");
     if (!f) {
         c_printf(ANSI_RED, "Error: cannot open file '%s'\n", path);
@@ -223,7 +225,7 @@ static int learn_from_file(const char *path, const char *keywords, const char *d
     return 0;
 }
 
-static int save_learned_pattern(LearnedPattern *lp) {
+int save_learned_pattern(LearnedPattern *lp) {
     ensure_learned_dir();
     char filepath[1100];
     snprintf(filepath, sizeof(filepath), "%s/%s.l1lp", learned_dir_path(), lp->id);
@@ -275,7 +277,7 @@ static int save_learned_pattern(LearnedPattern *lp) {
     return 1;
 }
 
-static void load_learned_patterns(void) {
+void load_learned_patterns(void) {
     if (learned_loaded) return;
     learned_loaded = 1;
 
@@ -439,7 +441,7 @@ static void load_learned_patterns(void) {
     closedir(d);
 }
 
-static int match_learned_pattern(const char *prompt, int *best_score) {
+int match_learned_pattern(const char *prompt, int *best_score) {
     if (num_learned == 0) return -1;
 
     char buf[MAX_PROMPT];
@@ -493,7 +495,7 @@ static int match_learned_pattern(const char *prompt, int *best_score) {
     return best_idx;
 }
 
-static int emit_learned_pattern(Program *prog, int learned_idx) {
+int emit_learned_pattern(Program *prog, int learned_idx) {
     if (learned_idx < 0 || learned_idx >= num_learned) return 0;
     LearnedPattern *lp = &learned_patterns[learned_idx];
     if (!lp->is_learned) return 0;
@@ -542,7 +544,7 @@ static int emit_learned_pattern(Program *prog, int learned_idx) {
     return 1;
 }
 
-static int emit_learned_step(Program *prog, int learned_idx) {
+int emit_learned_step(Program *prog, int learned_idx) {
     if (learned_idx < 0 || learned_idx >= num_learned) return 0;
     LearnedPattern *lp = &learned_patterns[learned_idx];
     if (!lp->is_learned) return 0;
@@ -613,7 +615,7 @@ static int emit_learned_step(Program *prog, int learned_idx) {
     return 1;
 }
 
-static int has_learned_id(const char *id) {
+int has_learned_id(const char *id) {
     for (int i = 0; i < num_learned; i++) {
         if (strcmp(learned_patterns[i].id, id) == 0)
             return 1;
@@ -631,7 +633,7 @@ static int is_safe_id(const char *id) {
     return 1;
 }
 
-static int forget_learned(const char *id) {
+int forget_learned(const char *id) {
     if (!is_safe_id(id)) {
         c_printf(ANSI_RED, "Error: invalid pattern id (path traversal blocked)\n");
         return 0;
@@ -669,7 +671,7 @@ static int forget_learned(const char *id) {
     return 1;
 }
 
-static void list_learned(void) {
+void list_learned(void) {
     if (num_learned == 0) {
         printf("No learned patterns.\n");
         printf("Use --learn <file.l1com> [keywords] [description] to learn one.\n");
