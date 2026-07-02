@@ -4961,10 +4961,32 @@ static int parse_task(const char *prompt, TaskProfile *task) {
             if (q < p && isdigit(*q)) {
                 task->input_count = atoi(q);
                 task->has_input = 1;
+            } else {
+                // check for spelled-out number before "numbers"
+                q = p - 1;
+                while (q >= buf && isspace(*q)) q--;
+                char *end = q + 1;
+                while (q >= buf && isalpha(*q)) q--;
+                q++;
+                if (q < end) {
+                    char w[32]; int wi = 0;
+                    while (q < end && wi < 31) w[wi++] = *q++;
+                    w[wi] = '\0';
+                    int n = word_to_num(w);
+                    if (n > 0) { task->input_count = n; task->has_input = 1; }
+                }
             }
             break;
         }
         p++;
+    }
+    // if count has no word-based number and first literal could be a count, use it
+    if (!task->has_input && task->num_literals > 0 && task->has_literals) {
+        int lit = task->literals[0];
+        if (lit >= 1 && lit <= 1000) {
+            task->input_count = lit;
+            task->has_input = 1;
+        }
     }
 
     // detect input keywords
@@ -5151,6 +5173,47 @@ static int parse_task(const char *prompt, TaskProfile *task) {
         else if (task->num_literals >= 1) task->median_count = task->literals[0];
         else task->median_count = 5;
         task->has_algorithm = 0;
+    }
+
+    // "first N primes", "first N fibonacci" patterns
+    if (task->has_primes && !task->has_input && task->num_literals == 0) {
+        if (has_word(buf, "first") || has_word(buf, "erste") || has_word(buf, "ersten")) {
+            // need to find the number after "first" - extract from raw prompt
+            int nums2[MAX_NUMS];
+            int n2 = extract_numbers(prompt, nums2, MAX_NUMS);
+            if (n2 > 0) { task->num_literals = n2; task->has_literals = 1; task->literals[0] = nums2[0]; }
+        }
+    }
+    if (task->has_primes && (has_word(buf, "up") || has_word(buf, "bis")) && has_word(buf, "to") && task->num_literals == 0) {
+        int nums2[MAX_NUMS];
+        int n2 = extract_numbers(prompt, nums2, MAX_NUMS);
+        if (n2 > 0) { task->num_literals = n2; task->has_literals = 1; task->literals[0] = nums2[0]; }
+    }
+    if (task->has_fib_seq && task->num_literals == 0 &&
+        (has_word(buf, "first") || has_word(buf, "erste") || has_word(buf, "ersten"))) {
+        int nums2[MAX_NUMS];
+        int n2 = extract_numbers(prompt, nums2, MAX_NUMS);
+        if (n2 > 0) { task->num_literals = n2; task->has_literals = 1; task->literals[0] = nums2[0]; }
+        if (task->num_literals >= 1) task->fib_seq_n = task->literals[0];
+        else task->fib_seq_n = 10;
+    }
+
+    // "from X to Y" pattern for sum_range
+    if (has_word(buf, "from") || has_word(buf, "von")) {
+        if (task->has_sum_range && task->num_literals >= 2) {
+            task->has_sum_range = 1;
+            task->sum_range_n = task->literals[1];
+        }
+    }
+
+    // "up to N" / "bis N" for countdown
+    if (task->has_countdown_from && task->num_literals == 0 &&
+        (has_word(buf, "up") || has_word(buf, "bis"))) {
+        int nums2[MAX_NUMS];
+        int n2 = extract_numbers(prompt, nums2, MAX_NUMS);
+        if (n2 > 0) { task->num_literals = n2; task->has_literals = 1; task->literals[0] = nums2[0]; }
+        if (task->num_literals >= 1) task->countdown_start = task->literals[0];
+        else task->countdown_start = 10;
     }
 
     if (task->has_input && task->has_factorial) {
@@ -8579,6 +8642,21 @@ typedef void (*ExtraEmitterFunc)(Program*, Function*, TaskProfile*);
 EE_SIMPLE(string_cat)
 EE_SIMPLE(fizzbuzz)
 EE_SIMPLE(even_odd)
+EE_SIMPLE(string_compare)
+EE_SIMPLE(array_assign)
+EE_SIMPLE(string_to_num)
+EE_SIMPLE(timer)
+EE_SIMPLE(factorial)
+EE_SIMPLE(power)
+EE_SIMPLE(gcd)
+EE_SIMPLE(hello_name)
+EE_SIMPLE(bool_demo)
+EE_SIMPLE(bit_check)
+EE_SIMPLE(fann_create)
+EE_SIMPLE(fann_train)
+EE_SIMPLE(fann_run)
+EE_SIMPLE(function)
+EE_SIMPLE(sort_stats)
 EE_SIMPLE(array_min_max)
 EE_SIMPLE(palindrome)
 EE_SIMPLE(lcm)
@@ -8687,14 +8765,40 @@ static void ee_for_sum(Program *p, Function *f, TaskProfile *t) { emit_for_sum(p
 static void ee_print_even(Program *p, Function *f, TaskProfile *t) { emit_print_even(p, f, t->print_even_n > 0 ? t->print_even_n : 100); }
 static void ee_input_sort(Program *p, Function *f, TaskProfile *t) { emit_input_sort(p, f, t->input_sort_count > 0 ? t->input_sort_count : 5, t->skip_input, t->has_descending); }
 static void ee_primes(Program *p, Function *f, TaskProfile *t) { int n = t->num_literals > 0 ? t->literals[0] : 50; emit_primes(p, f, n); }
+static void ee_input_fact(Program *p, Function *f, TaskProfile *t) { (void)t; emit_input_factorial(p, f); }
+static void ee_mult_table(Program *p, Function *f, TaskProfile *t) { (void)t; emit_multiplication_table(p, f); }
+static void ee_guess(Program *p, Function *f, TaskProfile *t) { (void)t; emit_guess_number(p, f); }
+static void ee_random(Program *p, Function *f, TaskProfile *t) { (void)t; emit_random_number(p, f); }
+static void ee_find_max(Program *p, Function *f, TaskProfile *t) {
+    int c = t->find_max_count > 0 ? t->find_max_count : 5;
+    emit_input_find_max(p, f, c);
+}
+static void ee_countdown(Program *p, Function *f, TaskProfile *t) {
+    int s = t->countdown_start > 0 ? t->countdown_start : 10;
+    emit_countdown_from(p, f, s);
+}
+static void ee_fib_seq(Program *p, Function *f, TaskProfile *t) {
+    int n = t->fib_seq_n > 0 ? t->fib_seq_n : 10;
+    emit_fib_seq(p, f, n);
+}
+static void ee_median(Program *p, Function *f, TaskProfile *t) {
+    int c = t->median_count > 0 ? t->median_count : 5;
+    emit_median(p, f, c, t->skip_input);
+}
 
 // Table indexed by emitter index (0..NUM_EMITTERS-1), NULL = no-op
 static ExtraEmitterFunc ee_table[NUM_EMITTERS] = {
     [0] = ee_math, [1] = ee_input_loop, [3] = ee_for_sum, [4] = ee_print_even,
-    [8] = ee_input_sort, [10] = ee_string_cat, [13] = ee_array_reverse,
-    [14] = ee_array_find, [16] = ee_array_vmath, [17] = ee_read_file,
-    [18] = ee_write_file, [22] = ee_fizzbuzz, [23] = ee_primes,
-    [24] = ee_even_odd, [31] = ee_array_min_max, [37] = ee_average,
+    [5] = ee_find_max, [6] = ee_countdown, [7] = ee_fib_seq,
+    [8] = ee_input_sort, [9] = ee_median, [10] = ee_string_cat,
+    [11] = ee_string_compare, [12] = ee_array_assign, [13] = ee_array_reverse,
+    [14] = ee_array_find, [15] = ee_input_fact, [16] = ee_array_vmath,
+    [17] = ee_read_file, [18] = ee_write_file, [19] = ee_string_to_num,
+    [20] = ee_timer, [21] = ee_factorial, [22] = ee_fizzbuzz, [23] = ee_primes,
+    [24] = ee_even_odd, [25] = ee_power, [26] = ee_mult_table, [27] = ee_guess,
+    [28] = ee_gcd, [29] = ee_hello_name, [30] = ee_random, [31] = ee_array_min_max,
+    [32] = ee_bool_demo, [33] = ee_bit_check, [34] = ee_fann_create,
+    [35] = ee_fann_train, [36] = ee_fann_run, [37] = ee_average,
     [38] = ee_selection_sort, [39] = ee_palindrome, [40] = ee_lcm,
     [41] = ee_collatz, [42] = ee_sum_of_digits, [43] = ee_reverse_string,
     [44] = ee_armstrong, [45] = ee_perfect_number, [46] = ee_count_vowels,
@@ -8706,9 +8810,13 @@ static ExtraEmitterFunc ee_table[NUM_EMITTERS] = {
     [61] = ee_double_circle_area, [62] = ee_double_average,
     [63] = ee_double_compound_interest, [64] = ee_double_pythagoras,
     [65] = ee_double_temp_convert, [66] = ee_double_sqrt,
-    [68] = ee_string_length, [69] = ee_stack, [70] = ee_queue,
+    [67] = ee_function, [68] = ee_string_length, [69] = ee_stack, [70] = ee_queue,
     [71] = ee_insertion_sort, [72] = ee_calculator, [73] = ee_unit_converter,
     [74] = ee_rock_paper_scissors, [75] = ee_pyramid,
+    [76] = ee_sort_stats, [77] = ee_string_analyzer, [78] = ee_number_analyzer,
+    [79] = ee_filter_numbers, [80] = ee_random_generator, [81] = ee_math_menu,
+    [82] = ee_quiz_game, [83] = ee_bmi_calculator, [84] = ee_statistics_suite,
+    [85] = ee_temp_converter_menu,
     [86] = ee_linked_list, [87] = ee_binary_search_tree, [88] = ee_tree_traversal,
     [89] = ee_graph_bfs_dfs, [90] = ee_n_queens, [91] = ee_sudoku,
     [92] = ee_levenshtein_distance, [93] = ee_maze_generator, [94] = ee_maze_solver,
@@ -8892,7 +9000,14 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     DISPATCH(has_guess, emit_guess_number);
     DISPATCH(has_gcd, emit_gcd);
     DISPATCH(has_hello_name, emit_hello_name);
-    DISPATCH(has_random, emit_random_number);
+    if (task->has_random) {
+        int n = task->input_count > 0 ? task->input_count : (task->num_literals > 0 ? task->literals[0] : 5);
+        char cvs[16]; snprintf(cvs, sizeof(cvs), "%d", n);
+        const char *cv[] = {cvs};
+        add_var_to_func(f, "const-int64", "count", 1, cv, 1);
+        emit_random_number(prog, f);
+        emitted = 1;
+    }
     DISPATCH(has_array_min_max, emit_array_min_max);
     DISPATCH(has_bool_demo, emit_bool_demo);
     DISPATCH(has_bit_check, emit_bit_check);
@@ -8919,7 +9034,7 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     }
     DISPATCH(has_sort_stats, emit_sort_stats);
     if (task->has_sort && !task->has_input) {
-        int c = 5;
+        int c = task->num_literals > 0 ? task->literals[0] : 5;
         emit_selection_sort(prog, f, c, task->skip_input);
         emitted = 1;
     }
@@ -8984,7 +9099,7 @@ static int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     DISPATCH(has_stack, emit_stack);
     DISPATCH(has_queue, emit_queue);
     if (task->has_insertion_sort) {
-        int c = 5;
+        int c = task->num_literals > 0 ? task->literals[0] : 5;
         emit_insertion_sort(prog, f, c, task->skip_input);
         emitted = 1;
     }
@@ -9210,6 +9325,24 @@ static int word_to_num(const char *word) {
     if (strcmp(word, "acht") == 0 || strcmp(word, "eight") == 0) return 8;
     if (strcmp(word, "neun") == 0 || strcmp(word, "nine") == 0) return 9;
     if (strcmp(word, "zehn") == 0 || strcmp(word, "ten") == 0) return 10;
+    if (strcmp(word, "elf") == 0 || strcmp(word, "eleven") == 0) return 11;
+    if (strcmp(word, "zwoelf") == 0 || strcmp(word, "zwölf") == 0 || strcmp(word, "twelve") == 0) return 12;
+    if (strcmp(word, "dreizehn") == 0 || strcmp(word, "thirteen") == 0) return 13;
+    if (strcmp(word, "vierzehn") == 0 || strcmp(word, "fourteen") == 0) return 14;
+    if (strcmp(word, "fuenfzehn") == 0 || strcmp(word, "fünfzehn") == 0 || strcmp(word, "fifteen") == 0) return 15;
+    if (strcmp(word, "sechzehn") == 0 || strcmp(word, "sixteen") == 0) return 16;
+    if (strcmp(word, "siebzehn") == 0 || strcmp(word, "seventeen") == 0) return 17;
+    if (strcmp(word, "achtzehn") == 0 || strcmp(word, "eighteen") == 0) return 18;
+    if (strcmp(word, "neunzehn") == 0 || strcmp(word, "nineteen") == 0) return 19;
+    if (strcmp(word, "zwanzig") == 0 || strcmp(word, "twenty") == 0) return 20;
+    if (strcmp(word, "dreissig") == 0 || strcmp(word, "dreißig") == 0 || strcmp(word, "thirty") == 0) return 30;
+    if (strcmp(word, "vierzig") == 0 || strcmp(word, "forty") == 0) return 40;
+    if (strcmp(word, "fuenfzig") == 0 || strcmp(word, "fünfzig") == 0 || strcmp(word, "fifty") == 0) return 50;
+    if (strcmp(word, "sechzig") == 0 || strcmp(word, "sixty") == 0) return 60;
+    if (strcmp(word, "siebzig") == 0 || strcmp(word, "seventy") == 0) return 70;
+    if (strcmp(word, "achtzig") == 0 || strcmp(word, "eighty") == 0) return 80;
+    if (strcmp(word, "neunzig") == 0 || strcmp(word, "ninety") == 0) return 90;
+    if (strcmp(word, "hundert") == 0 || strcmp(word, "hundred") == 0) return 100;
     return -1;
 }
 
@@ -9303,8 +9436,15 @@ static int smart_generate(Program *prog, const char *prompt, char *desc, int des
                     int is_standard = (strcmp(fcur->vars[vi].name, "zero") == 0 || strcmp(fcur->vars[vi].name, "one") == 0
                         || strcmp(fcur->vars[vi].name, "two") == 0 || strcmp(fcur->vars[vi].name, "three") == 0
                         || strcmp(fcur->vars[vi].name, "four") == 0 || strcmp(fcur->vars[vi].name, "five") == 0);
-                    // Skip standard constants, but keep arrays AND scalars that look like result variables
-                    if (!is_const && !is_standard) {
+                    int is_loop_var = (strcmp(fcur->vars[vi].name, "i") == 0 || strcmp(fcur->vars[vi].name, "j") == 0
+                        || strcmp(fcur->vars[vi].name, "f") == 0 || strcmp(fcur->vars[vi].name, "temp") == 0
+                        || strcmp(fcur->vars[vi].name, "realind") == 0 || strcmp(fcur->vars[vi].name, "realind2") == 0
+                        || strcmp(fcur->vars[vi].name, "a") == 0 || strcmp(fcur->vars[vi].name, "b") == 0
+                        || strcmp(fcur->vars[vi].name, "min_idx") == 0 || strcmp(fcur->vars[vi].name, "modtmp") == 0
+                        || strcmp(fcur->vars[vi].name, "is_prime") == 0 || strcmp(fcur->vars[vi].name, "mid") == 0
+                        || strcmp(fcur->vars[vi].name, "num") == 0 || strcmp(fcur->vars[vi].name, "aux") == 0);
+                    // Skip standard constants, loop variables, but keep arrays AND scalars that look like result variables
+                    if (!is_const && !is_standard && !is_loop_var) {
                         int already = 0;
                         for (int ck = 0; ck < num_inherited; ck++) {
                             if (strcmp(inherited_names[ck], fcur->vars[vi].name) == 0) already = 1;

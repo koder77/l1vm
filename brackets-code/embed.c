@@ -916,7 +916,7 @@ static int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROM
         {" firstly ", 9}, {" secondly ", 10}, {" thirdly ", 9},
         {" subsequently ", 14}, {" thereafter ", 12},
         // Punctuation (medium confidence)
-        {" . ", 3}, {". ", 2}, {"; ", 2}, {": ", 2},
+        {" . ", 3}, {". ", 2}, {"; ", 2}, {";", 1}, {": ", 2},
         // Short conjunctions (lowest priority)
         {" und ", 5}, {" and ", 5}, {", ", 2},
     };
