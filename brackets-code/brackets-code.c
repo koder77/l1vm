@@ -2077,6 +2077,8 @@ void emit_gcd(Program *prog, Function *f) {
 
 void emit_random_number(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
+    add_include(prog, "math-const.l1h");
+    add_include_post(prog, "math-lib.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
     const char *mv[] = {"100"};
@@ -2090,15 +2092,15 @@ void emit_random_number(Program *prog, Function *f) {
     add_var_to_func(f, "const-int64", "count", 1, cv, 1);
     const char *vs[] = {"\"Random numbers 1-100:\""};
     add_var_to_func(f, "const-string", "rstr", 22, vs, 1);
+    func_append(f, "\t(zero :math_init !)");
+    func_append(f, "\t(zero :math_randinit !)");
     func_append(f, "\t(rstr :print_s !)");
     func_append(f, "\t(:print_n !)");
-    func_append(f, "\t// using simple pseudo-random via timer");
     func_append(f, "\t(zero i :=)");
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i count <) f :=) f for)");
-    func_append(f, "\t\t// compute pseudo-random: take epoch ms mod maxval");
-    func_append(f, "\t\t(randval :epochms !)");
-    func_append(f, "\t\t((randval maxval %) randval :=)");
+    func_append(f, "\t\t(maxval :math_randintmax !)");
+    func_append(f, "\t\t(randval stpopi)");
     func_append(f, "\t\t(randval :print_i !)");
     func_append(f, "\t\t(:print_n !)");
     func_append(f, "\t\t(i + one i :=)");
@@ -3613,6 +3615,8 @@ void emit_decimal_to_binary(Program *prog, Function *f) {
 
 void emit_dice_roll(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
+    add_include(prog, "math-const.l1h");
+    add_include_post(prog, "math-lib.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
     const char *sv[] = {"6"};
@@ -3626,13 +3630,15 @@ void emit_dice_roll(Program *prog, Function *f) {
     add_var_to_func(f, "int64", "f", 1, zv, 1);
     const char *ps[] = {"\"Rolling dice 5 times:\""};
     add_var_to_func(f, "const-string", "msg_str", 22, ps, 1);
+    func_append(f, "\t(zero :math_init !)");
+    func_append(f, "\t(zero :math_randinit !)");
     func_append(f, "\t(msg_str :print_s !)");
     func_append(f, "\t(:print_n !)");
     func_append(f, "\t(zero i :=)");
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i five <) f :=) f for)");
-    func_append(f, "\t\t(roll :epochms !)");
-    func_append(f, "\t\t((roll six %) roll :=)");
+    func_append(f, "\t\t(six :math_randintmax !)");
+    func_append(f, "\t\t(roll stpopi)");
     func_append(f, "\t\t(roll + one roll :=)");
     func_append(f, "\t\t(roll :print_i !)");
     func_append(f, "\t\t(:print_n !)");
@@ -5161,8 +5167,10 @@ int parse_task(const char *prompt, TaskProfile *task) {
     if (has_word(buf, "filter") && (has_word(buf, "number") || has_word(buf, "numbers") || has_word(buf, "zahlen") || has_word(buf, "values") || has_word(buf, "werte")))
         task->has_filter_numbers = 1;
 
-    if ((has_word(buf, "random") || has_word(buf, "zufall")) && (has_word(buf, "generator") || has_word(buf, "generate") || has_word(buf, "generieren")))
+    if ((has_word(buf, "random") || has_word(buf, "zufall")) && (has_word(buf, "generator") || has_word(buf, "generieren")))
         task->has_random_generator = 1;
+    if (task->has_random_generator)
+        task->has_random = 0;
 
     if ((has_word(buf, "math") || has_word(buf, "mathe")) && (has_word(buf, "menu") || has_word(buf, "menue") || has_word(buf, "rechner")))
         task->has_math_menu = 1;
@@ -5773,6 +5781,8 @@ void emit_unit_converter(Program *prog, Function *f) {
 
 void emit_rock_paper_scissors(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
+    add_include(prog, "math-const.l1h");
+    add_include_post(prog, "math-lib.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
     const char *mv[] = {"3"};
@@ -5800,6 +5810,8 @@ void emit_rock_paper_scissors(Program *prog, Function *f) {
     add_var_to_func(f, "const-string", "draw_str", 6, ds, 1);
     const char *ss[] = {"\"Score: \""};
     add_var_to_func(f, "const-string", "score_str", 8, ss, 1);
+    func_append(f, "\t(zero :math_init !)");
+    func_append(f, "\t(zero :math_randinit !)");
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((one one <) f :=) f for)");
     func_append(f, "\t\t(menu_str :print_s !)");
@@ -5812,8 +5824,8 @@ void emit_rock_paper_scissors(Program *prog, Function *f) {
     func_append(f, "\t\t\t(:print_n !)");
     func_append(f, "\t\t\t(zero :exit !)");
     func_append(f, "\t\t(endif)");
-    func_append(f, "\t\t(computer :epochms !)");
-    func_append(f, "\t\t(computer mod3 % computer :=)");
+    func_append(f, "\t\t(mod3 :math_randintmax !)");
+    func_append(f, "\t\t(computer stpopi)");
     func_append(f, "\t\t(((player computer ==) f :=) f if)");
     func_append(f, "\t\t\t(draw_str :print_s !)");
     func_append(f, "\t\t\t(:print_n !)");
@@ -6273,12 +6285,15 @@ void emit_filter_numbers(Program *prog, Function *f) {
 
 void emit_random_generator(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
+    add_include(prog, "math-const.l1h");
+    add_include_post(prog, "math-lib.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
     add_var_to_func(f, "const-int64", "one", 1, ov, 1);
     add_var_to_func(f, "int64", "n", 1, zv, 1);
     add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
     add_var_to_func(f, "int64", "rand_max", 1, zv, 1);
     add_var_to_func(f, "int64", "randval", 1, zv, 1);
     const char *pc[] = {"\"Count: \""};
@@ -6287,6 +6302,8 @@ void emit_random_generator(Program *prog, Function *f) {
     add_var_to_func(f, "const-string", "prompt_max", 6, pm, 1);
     const char *pr[] = {"\"Random: \""};
     add_var_to_func(f, "const-string", "random_str", 9, pr, 1);
+    func_append(f, "\t(zero :math_init !)");
+    func_append(f, "\t(zero :math_randinit !)");
     func_append(f, "\t(prompt_count :print_s !)");
     func_append(f, "\t(n :input_i !)");
     func_append(f, "\t(n + zero n :=)");
@@ -6294,9 +6311,10 @@ void emit_random_generator(Program *prog, Function *f) {
     func_append(f, "\t(rand_max :input_i !)");
     func_append(f, "\t(rand_max + zero rand_max :=)");
     func_append(f, "\t(zero i :=)");
-    func_append(f, "\t(((i n <) i :=) i for)");
-    func_append(f, "\t\t(randval :epochms !)");
-    func_append(f, "\t\t(randval rand_max % randval :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i n <) f :=) f for)");
+    func_append(f, "\t\t(rand_max :math_randintmax !)");
+    func_append(f, "\t\t(randval stpopi)");
     func_append(f, "\t\t(randval :print_i !)");
     func_append(f, "\t\t(:print_n !)");
     func_append(f, "\t\t(i + one i :=)");
@@ -7468,6 +7486,8 @@ void emit_maze_solver(Program *prog, Function *f) {
 
 void emit_monte_carlo_pi(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
+    add_include(prog, "math-const.l1h");
+    add_include_post(prog, "math-lib.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -7492,19 +7512,18 @@ void emit_monte_carlo_pi(Program *prog, Function *f) {
     add_var_to_func(f, "const-string", "msg_str", 38, ms, 1);
     const char *rs[] = {"\"PI approx (x1000): \""};
     add_var_to_func(f, "const-string", "result_str", 21, rs, 1);
+    func_append(f, "\t(zero :math_init !)");
+    func_append(f, "\t(zero :math_randinit !)");
     func_append(f, "\t(msg_str :print_s !)");
     func_append(f, "\t(:print_n !)");
     func_append(f, "\t(zero inside :=)");
     func_append(f, "\t(zero i :=)");
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i total <) f :=) f for)");
-    // random x, y in 0..99 using pseudo-random sequence
-    func_append(f, "\t\t(x :epochms !)");
-    func_append(f, "\t\t(x i + x :=)");
-    func_append(f, "\t\t(x mod100 % x :=)");
-    func_append(f, "\t\t(y :epochms !)");
-    func_append(f, "\t\t(y i * y :=)");
-    func_append(f, "\t\t(y mod100 % y :=)");
+    func_append(f, "\t\t(mod100 :math_randintmax !)");
+    func_append(f, "\t\t(x stpopi)");
+    func_append(f, "\t\t(mod100 :math_randintmax !)");
+    func_append(f, "\t\t(y stpopi)");
     // check inside circle: x^2 + y^2 < total (10000)
     func_append(f, "\t\t(x x * x :=)");
     func_append(f, "\t\t(y y * y :=)");
@@ -7974,6 +7993,8 @@ void emit_freq_analysis(Program *prog, Function *f) {
 
 void emit_shuffle(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
+    add_include(prog, "math-const.l1h");
+    add_include_post(prog, "math-lib.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
@@ -7991,6 +8012,8 @@ void emit_shuffle(Program *prog, Function *f) {
     add_var_to_func(f, "int64", "f", 1, zv, 1);
     const char *pv[] = {"\"Enter 5 numbers:\""};
     add_var_to_func(f, "const-string", "prompt_str", 18, pv, 1);
+    func_append(f, "\t(zero :math_init !)");
+    func_append(f, "\t(zero :math_randinit !)");
     func_append(f, "\t(prompt_str :print_s !)");
     func_append(f, "\t(:print_n !)");
     // input
@@ -8002,14 +8025,12 @@ void emit_shuffle(Program *prog, Function *f) {
     func_append(f, "\t\t(temp arr [ ri ] =)");
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
-    // Fisher-Yates shuffle (pseudo-random via epoch ms)
+    // Fisher-Yates shuffle
     func_append(f, "\t(n one - i :=)");
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i zero >) f :=) f for)");
-    func_append(f, "\t\t(j :epochms !)");
-    func_append(f, "\t\t(j i * j :=)");
-    func_append(f, "\t\t(j i + j :=)");
-    func_append(f, "\t\t(j i % j :=)");
+    func_append(f, "\t\t(i :math_randintmax !)");
+    func_append(f, "\t\t(j stpopi)");
     func_append(f, "\t\t(i * int64_size ri :=)");
     func_append(f, "\t\t(j * int64_size rj :=)");
     func_append(f, "\t\t(arr [ ri ] temp :=)");
@@ -8032,12 +8053,18 @@ void emit_shuffle(Program *prog, Function *f) {
 
 void emit_weighted_random(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
+    add_include(prog, "math-const.l1h");
+    add_include_post(prog, "math-lib.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
     const char *cv[] = {"4"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
     add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    const char *tv[] = {"2"};
+    const char *thv[] = {"3"};
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "three", 1, thv, 1);
     add_var_to_func(f, "int64", "n", 1, cv, 1);
     add_var_to_func(f, "int64", "items", 4, zv, 0);
     add_var_to_func(f, "int64", "weights", 4, zv, 0);
@@ -8059,6 +8086,8 @@ void emit_weighted_random(Program *prog, Function *f) {
     const char *ps[] = {"\"Weighted random (weights 1,2,3,4): \""};
     add_var_to_func(f, "const-string", "msg_str", 36, ps, 1);
     // init
+    func_append(f, "\t(zero :math_init !)");
+    func_append(f, "\t(zero :math_randinit !)");
     func_append(f, "\t(zero * int64_size ri :=)"); func_append(f, "\t(iv1 items [ ri ] =)");
     func_append(f, "\t(one * int64_size ri :=)"); func_append(f, "\t(iv2 items [ ri ] =)");
     func_append(f, "\t(two * int64_size ri :=)"); func_append(f, "\t(iv3 items [ ri ] =)");
@@ -8078,10 +8107,10 @@ void emit_weighted_random(Program *prog, Function *f) {
     func_append(f, "\t\t(total prefix [ ri ] =)");
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
-    // pick random via epoch ms
+    // pick random
     func_append(f, "\t(msg_str :print_s !)");
-    func_append(f, "\t(r :epochms !)");
-    func_append(f, "\t(r total % r :=)");
+    func_append(f, "\t(total :math_randintmax !)");
+    func_append(f, "\t(r stpopi)");
     func_append(f, "\t(zero i :=)");
     func_append(f, "\t(for-loop)");
     func_append(f, "\t(((i n <) f :=) f for)");
