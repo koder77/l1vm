@@ -3,7 +3,7 @@
 
 echo "Install base package with includes and programs..."
 # Known-good SHA256 checksum for l1vm-base-pkg.tar.bz2 - update when the package is updated
-EXPECTED_SHA256="b0bc1a8d684473f6b013b8a31aa25d46ee5c5c78db08a7bbd164e1357621ced4"
+EXPECTED_SHA256="a6f5570de9fdffc66b6d7640bfcf5fd9dae3704ecfbf9c7b3158c2b44c328239"
 ../scripts/download-pkg.sh https://midnight-coding.de/blog/assets/l1vm/l1vm-base-pkg.tar.bz2 l1vm-base-pkg.tar.bz2
 ACTUAL_SHA256=$(sha256 -q l1vm-base-pkg.tar.bz2 2>/dev/null || openssl dgst -sha256 l1vm-base-pkg.tar.bz2 2>/dev/null | awk '{print $NF}')
 if [ "$ACTUAL_SHA256" != "$EXPECTED_SHA256" ]; then
