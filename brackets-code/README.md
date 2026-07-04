@@ -1,14 +1,13 @@
 # Brackets Code
 
-A CLI code generator for the Brackets (L1VM) language — v0.6.4.
+A CLI code generator for the Brackets (L1VM) language — v0.6.5.
 Converts natural-language prompts into working `.l1com` programs.
 
 ## How it works
 
-- **133 code generation blocks** — 31 template-matched + 102 plan-based emitters with vector scoring
+- **197 code generation blocks** — 31 template-matched + 166 plan-based emitters with vector scoring
 - **Three-tier pipeline**: smart planner runs first, template matching as fallback, default "hello world" last
 - **No LLM involved** — deterministic pattern extraction from `l1vm-example-code/`
-- **60 tests** (55 active, 5 known-skip) through full `l1pre → l1com` pipeline
 - **Vector search** over example code with `--search` (interactive: `/search`)
 - **Learn/forget** user-provided patterns at runtime without recompilation
 
@@ -87,16 +86,18 @@ Tab completion is supported.
 
 Or:
 
-    ./tests/run_tests.sh          # run all tests (60 tests, 55 active, 5 skipped)
+    ./tests/run_tests.sh          # run all tests
     ./tests/run_tests.sh quick    # quick subset (14 tests)
     ./tests/run_tests.sh list     # list test names
     ./tests/run_tests.sh save <d> # save failing sources to <d>
 
 ## Project structure
 
-    brackets-code.c        Main source (11032 lines)
-    brackets-code.h        Header file with types and declarations
+    brackets-code.c        Main source (11963 lines)
+    brackets-code.h        Header file with types and declarations (631 lines)
     brackets-code          Compiled binary
+    embed.c                Tiny LLM inference engine + vector search (#included, 1262 lines)
+    learn.c                Learned pattern system (#included, 687 lines)
     synonyms.txt           External synonym table (edit without recompilation)
     brackets-code.1        Man page
     l1vm-example-code/     Reference L1VM programs (pattern source)

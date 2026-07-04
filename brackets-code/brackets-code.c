@@ -837,7 +837,7 @@ static int extract_numbers(const char *prompt, int *nums, int max_nums) {
 
 // 1-3: Basic emitters
 void emit_math(Program *prog, Function *f, const char *type, const char *op, const int *vals, int n, int last_step);
-void emit_input_loop(Program *prog, Function *f, int count, const char *type, int do_sum);
+void emit_input_loop(Program *prog, Function *f, int count, const char *type, const char *op);
 void emit_for_sum(Program *prog, Function *f, int n);
 void emit_print_even(Program *prog, Function *f, int n);
 void emit_input_find_max(Program *prog, Function *f, int count);
@@ -980,9 +980,9 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step);
 
 void emit_math(Program *prog, Function *f, const char *type, const char *op, const int *vals, int n, int last_step) {
     (void)last_step;
+    int is_double = (strcmp(type, "double") == 0);
     add_include(prog, "intr-func.l1h");
     const char *zv[] = {"0"};
-    
     const char *twov[] = {"2"};
     const char *threev[] = {"3"};
     const char *fourv[] = {"4"};
@@ -998,27 +998,38 @@ void emit_math(Program *prog, Function *f, const char *type, const char *op, con
     add_var_to_func(f, "const-int64", "seven", 1, sevenv, 1);
     add_var_to_func(f, "const-int64", "ten", 1, tenv, 1);
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-    char vn[64], vs[16], ln[256];
+    char vn[64], vs[32], ln[256];
     for (int i = 0; i < n; i++) {
         snprintf(vn, sizeof(vn), "%s_%c", type, 'a' + i);
-        snprintf(vs, sizeof(vs), "%d", vals[i]);
+        if (is_double)
+            snprintf(vs, sizeof(vs), "%d.0", vals[i]);
+        else
+            snprintf(vs, sizeof(vs), "%d", vals[i]);
         const char *vv[] = {vs};
         add_var_to_func(f, type, vn, 1, vv, 1);
     }
-    const char *rv[] = {"0"};
     char rn[64];
     snprintf(rn, sizeof(rn), "%s_r", type);
+    const char *rv[] = {is_double ? "0.0" : "0"};
     add_var_to_func(f, type, rn, 1, rv, 1);
     const char *sym = "+";
-    if (strcmp(op, "sub") == 0) sym = "-";
-    else if (strcmp(op, "mul") == 0) sym = "*";
-    else if (strcmp(op, "div") == 0) sym = "/";
-    else if (strcmp(op, "mod") == 0) sym = "%";
-    if (n == 2)
-        snprintf(ln, sizeof(ln), "\t(%s_%c %s %s_%c %s :=)", type, 'a', sym, type, 'b', rn);
-    else
-        snprintf(ln, sizeof(ln), "\t((%s_%c %s %s_%c) %s %s_%c %s :=)", type, 'a', sym, type, 'b', sym, type, 'c', rn);
-    if (strcmp(op, "div") == 0 || strcmp(op, "mod") == 0) {
+    const char *dsym = " +d";
+    if (strcmp(op, "sub") == 0) { sym = " -"; dsym = " -d"; }
+    else if (strcmp(op, "mul") == 0) { sym = " *"; dsym = " *d"; }
+    else if (strcmp(op, "div") == 0) { sym = " /"; dsym = " /d"; }
+    else if (strcmp(op, "mod") == 0) { sym = " %"; dsym = " %"; }
+    if (is_double) {
+        if (n == 2)
+            snprintf(ln, sizeof(ln), "\t(%s_%c %s_%c%s %s =)", type, 'a', type, 'b', dsym, rn);
+        else
+            snprintf(ln, sizeof(ln), "\t((%s_%c %s_%c%s) %s_%c%s %s =)", type, 'a', type, 'b', dsym, type, 'c', dsym, rn);
+    } else {
+        if (n == 2)
+            snprintf(ln, sizeof(ln), "\t(%s_%c%s %s_%c %s :=)", type, 'a', sym, type, 'b', rn);
+        else
+            snprintf(ln, sizeof(ln), "\t((%s_%c%s %s_%c)%s %s_%c %s :=)", type, 'a', sym, type, 'b', sym, type, 'c', rn);
+    }
+    if (!is_double && (strcmp(op, "div") == 0 || strcmp(op, "mod") == 0)) {
         const char *errdiv[] = {"\"Error: division by zero!\""};
         add_var_to_func(f, "const-string", "div_err", 25, errdiv, 1);
         const char *err_code[] = {"1"};
@@ -1035,25 +1046,35 @@ void emit_math(Program *prog, Function *f, const char *type, const char *op, con
     }
     func_append(f, ln);
     func_append(f, "\t// Ergebnis ausgeben:");
-    snprintf(ln, sizeof(ln), "\t(%s :print_i !)", rn);
+    if (is_double)
+        snprintf(ln, sizeof(ln), "\t(%s :print_d !)", rn);
+    else
+        snprintf(ln, sizeof(ln), "\t(%s :print_i !)", rn);
     func_append(f, ln);
     func_append(f, "\t(:print_n !)");
 }
 
-void emit_input_loop(Program *prog, Function *f, int count, const char *type, int do_sum) {
+void emit_input_loop(Program *prog, Function *f, int count, const char *type, const char *op) {
     add_include(prog, "intr-func.l1h");
-    const char *zv[] = {"0"};
-    const char *ov[] = {"1"};
-    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    int is_double = (strcmp(type, "double") == 0);
+    int mul_div = op && (strcmp(op, "mul") == 0 || strcmp(op, "div") == 0);
+    const char *ziv[] = {"0"};
+    const char *zdv[] = {"0.0"};
+    const char *onev[] = {"1"};
+    const char *onedv[] = {"1.0"};
+    add_var_to_func(f, "const-int64", "zero", 1, ziv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, onev, 1);
     char vs[16], ln[256];
     snprintf(vs, sizeof(vs), "%d", count);
     const char *cv[] = {vs};
     add_var_to_func(f, "int64", "count", 1, cv, 1);
-    add_var_to_func(f, type, "val", 1, zv, 1);
-    add_var_to_func(f, "int64", "i", 1, zv, 1);
-    add_var_to_func(f, "int64", "sum", 1, zv, 1);
-    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, type, "val", 1, is_double ? zdv : ziv, 1);
+    add_var_to_func(f, "int64", "i", 1, ziv, 1);
+    const char **sv;
+    if (mul_div) sv = is_double ? onedv : onev;
+    else sv = is_double ? zdv : ziv;
+    add_var_to_func(f, is_double ? "double" : "int64", "sum", 1, sv, 1);
+    add_var_to_func(f, "int64", "f", 1, ziv, 1);
     const char *ps[] = {"\"Enter a number: \""};
     add_var_to_func(f, "const-string", "input_prompt", 18, ps, 1);
     const char *rps[] = {"\"Result: \""};
@@ -1062,19 +1083,30 @@ void emit_input_loop(Program *prog, Function *f, int count, const char *type, in
     snprintf(ln, sizeof(ln), "\t(((i count <) f :=) f for)");
     func_append(f, ln);
     func_append(f, "\t\t(input_prompt :print_s !)");
-    if (strcmp(type, "double") == 0)
+    if (is_double)
         func_append(f, "\t\t(val :input_d !)");
     else
         func_append(f, "\t\t(val :input_i !)");
-    if (do_sum)
-        func_append(f, "\t\t(sum + val sum :=)");
-    func_append(f, "\t\t(val :print_i !)");
+    if (op) {
+        const char *infix_op = NULL;
+        if (strcmp(op, "add") == 0) infix_op = "+";
+        else if (strcmp(op, "sub") == 0) infix_op = "-";
+        else if (strcmp(op, "mul") == 0) infix_op = "*";
+        else if (strcmp(op, "div") == 0) infix_op = "/";
+        if (infix_op) {
+            snprintf(ln, sizeof(ln), is_double
+                ? "\t\t(sum %s val sum =)"
+                : "\t\t(sum %s val sum :=)", infix_op);
+            func_append(f, ln);
+        }
+    }
+    func_append(f, is_double ? "\t\t(val :print_d !)" : "\t\t(val :print_i !)");
     func_append(f, "\t\t(:print_n !)");
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
     func_append(f, "\t(result_prompt :print_s !)");
     func_append(f, "\t(:print_n !)");
-    func_append(f, "\t(sum :print_i !)");
+    func_append(f, is_double ? "\t(sum :print_d !)" : "\t(sum :print_i !)");
     func_append(f, "\t(:print_n !)");
 }
 
@@ -3886,6 +3918,678 @@ void emit_double_sqrt(Program *prog, Function *f) {
     }
 }
 
+void emit_double_power(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zd[] = {"0.0"};
+    const char *od[] = {"1.0"};
+    const char *fz[] = {"0"};
+    const char *ov[] = {"1"};
+    add_var_to_func(f, "const-double", "zerod", 1, zd, 1);
+    add_var_to_func(f, "const-double", "oned", 1, od, 1);
+    add_var_to_func(f, "const-int64", "zero", 1, fz, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "double", "base", 1, zd, 1);
+    add_var_to_func(f, "double", "exp", 1, zd, 1);
+    add_var_to_func(f, "double", "result", 1, od, 1);
+    add_var_to_func(f, "double", "i", 1, od, 1);
+    add_var_to_func(f, "int64", "f", 1, fz, 1);
+    const char *pb[] = {"\"Enter base: \""};
+    const char *pe[] = {"\"Enter exponent: \""};
+    add_var_to_func(f, "const-string", "prompt_base", 12, pb, 1);
+    add_var_to_func(f, "const-string", "prompt_exp", 15, pe, 1);
+    func_append(f, "\t(prompt_base :print_s !)");
+    func_append(f, "\t(base :input_d !)");
+    func_append(f, "\t(prompt_exp :print_s !)");
+    func_append(f, "\t(exp :input_d !)");
+    func_append(f, "\t(base result :=)");
+    func_append(f, "\t(oned i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i exp <d) f :=) f for)");
+    func_append(f, "\t\t((result base *d) result =)");
+    func_append(f, "\t\t(i oned +d i :=)");
+    func_append(f, "\t(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(result :print_d !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+void emit_double_volume_sphere(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zd[] = {"0.0"};
+    const char *pd[] = {"3.141592653589793"};
+    const char *fz[] = {"0"};
+    const char *fd[] = {"4.0"};
+    const char *td[] = {"3.0"};
+    add_var_to_func(f, "const-double", "zerod", 1, zd, 1);
+    add_var_to_func(f, "const-double", "pi_val", 1, pd, 1);
+    add_var_to_func(f, "const-double", "four", 1, fd, 1);
+    add_var_to_func(f, "const-double", "three", 1, td, 1);
+    add_var_to_func(f, "double", "r", 1, zd, 1);
+    add_var_to_func(f, "double", "vol", 1, zd, 1);
+    add_var_to_func(f, "double", "tmp", 1, zd, 1);
+    add_var_to_func(f, "int64", "f", 1, fz, 1);
+    const char *pr[] = {"\"Enter radius: \""};
+    add_var_to_func(f, "const-string", "prompt_r", 15, pr, 1);
+    func_append(f, "\t(prompt_r :print_s !)");
+    func_append(f, "\t(r :input_d !)");
+    func_append(f, "\t(r r *d tmp :=)");
+    func_append(f, "\t(tmp r *d tmp :=)");
+    func_append(f, "\t((four three /d) vol =)");
+    func_append(f, "\t((vol pi_val *d) vol =)");
+    func_append(f, "\t((vol tmp *d) vol =)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(vol :print_d !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+void emit_double_discount(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zd[] = {"0.0"};
+    const char *hd[] = {"100.0"};
+    const char *fz[] = {"0"};
+    add_var_to_func(f, "const-double", "zerod", 1, zd, 1);
+    add_var_to_func(f, "const-double", "one_hundredd", 1, hd, 1);
+    add_var_to_func(f, "double", "price", 1, zd, 1);
+    add_var_to_func(f, "double", "disc", 1, zd, 1);
+    add_var_to_func(f, "double", "result", 1, zd, 1);
+    add_var_to_func(f, "double", "tmp", 1, zd, 1);
+    add_var_to_func(f, "int64", "f", 1, fz, 1);
+    const char *pp[] = {"\"Enter price: \""};
+    const char *pd[] = {"\"Enter discount (%): \""};
+    add_var_to_func(f, "const-string", "prompt_price", 14, pp, 1);
+    add_var_to_func(f, "const-string", "prompt_disc", 20, pd, 1);
+    func_append(f, "\t(prompt_price :print_s !)");
+    func_append(f, "\t(price :input_d !)");
+    func_append(f, "\t(prompt_disc :print_s !)");
+    func_append(f, "\t(disc :input_d !)");
+    func_append(f, "\t((one_hundredd disc -d) tmp =)");
+    func_append(f, "\t((price tmp *d) result =)");
+    func_append(f, "\t((result one_hundredd /d) result =)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(result :print_d !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+void emit_double_simple_interest(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zd[] = {"0.0"};
+    const char *hd[] = {"100.0"};
+    const char *fz[] = {"0"};
+    add_var_to_func(f, "const-double", "zerod", 1, zd, 1);
+    add_var_to_func(f, "const-double", "one_hundredd", 1, hd, 1);
+    add_var_to_func(f, "double", "principal", 1, zd, 1);
+    add_var_to_func(f, "double", "rate", 1, zd, 1);
+    add_var_to_func(f, "double", "time_val", 1, zd, 1);
+    add_var_to_func(f, "double", "interest", 1, zd, 1);
+    add_var_to_func(f, "int64", "f", 1, fz, 1);
+    const char *pp[] = {"\"Enter principal: \""};
+    const char *pr[] = {"\"Enter rate (%): \""};
+    const char *pt[] = {"\"Enter time (years): \""};
+    add_var_to_func(f, "const-string", "prompt_p", 19, pp, 1);
+    add_var_to_func(f, "const-string", "prompt_r", 16, pr, 1);
+    add_var_to_func(f, "const-string", "prompt_t", 21, pt, 1);
+    func_append(f, "\t(prompt_p :print_s !)");
+    func_append(f, "\t(principal :input_d !)");
+    func_append(f, "\t(prompt_r :print_s !)");
+    func_append(f, "\t(rate :input_d !)");
+    func_append(f, "\t(prompt_t :print_s !)");
+    func_append(f, "\t(time_val :input_d !)");
+    func_append(f, "\t((principal rate *d) interest =)");
+    func_append(f, "\t((interest time_val *d) interest =)");
+    func_append(f, "\t((interest one_hundredd /d) interest =)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(interest :print_d !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+void emit_double_bmi(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zd[] = {"0.0"};
+    const char *fz[] = {"0"};
+    add_var_to_func(f, "const-double", "zerod", 1, zd, 1);
+    add_var_to_func(f, "double", "weight", 1, zd, 1);
+    add_var_to_func(f, "double", "height", 1, zd, 1);
+    add_var_to_func(f, "double", "bmi", 1, zd, 1);
+    add_var_to_func(f, "double", "tmp", 1, zd, 1);
+    add_var_to_func(f, "int64", "f", 1, fz, 1);
+    const char *pw[] = {"\"Enter weight (kg): \""};
+    const char *ph[] = {"\"Enter height (m): \""};
+    add_var_to_func(f, "const-string", "prompt_weight", 20, pw, 1);
+    add_var_to_func(f, "const-string", "prompt_height", 18, ph, 1);
+    func_append(f, "\t(prompt_weight :print_s !)");
+    func_append(f, "\t(weight :input_d !)");
+    func_append(f, "\t(prompt_height :print_s !)");
+    func_append(f, "\t(height :input_d !)");
+    func_append(f, "\t((height height *d) tmp =)");
+    func_append(f, "\t((weight tmp /d) bmi =)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(bmi :print_d !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+void emit_double_standard_deviation(Program *prog, Function *f, int skip_input) {
+    add_include(prog, "intr-func.l1h");
+    add_include(prog, "vars.l1h");
+    const char *zd[] = {"0.0"};
+    const char *fz[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *cd[] = {"5.0"};
+    add_var_to_func(f, "const-double", "zerod", 1, zd, 1);
+    add_var_to_func(f, "const-double", "countd", 1, cd, 1);
+    add_var_to_func(f, "const-int64", "zero", 1, fz, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "count", 1, (const char *[]){"5"}, 1);
+    add_var_to_func(f, "double", "arr", 5, zd, 0);
+    add_var_to_func(f, "int64", "i", 1, fz, 1);
+    add_var_to_func(f, "int64", "realind", 1, fz, 1);
+    add_var_to_func(f, "double", "val", 1, zd, 1);
+    add_var_to_func(f, "double", "sum", 1, zd, 1);
+    add_var_to_func(f, "double", "mean", 1, zd, 1);
+    add_var_to_func(f, "double", "diff", 1, zd, 1);
+    add_var_to_func(f, "double", "sq_sum", 1, zd, 1);
+    add_var_to_func(f, "double", "variance", 1, zd, 1);
+    add_var_to_func(f, "double", "stddev", 1, zd, 1);
+    add_var_to_func(f, "int64", "f", 1, fz, 1);
+    const char *ps[] = {"\"Enter a number: \""};
+    add_var_to_func(f, "const-string", "input_prompt", 18, ps, 1);
+    if (!skip_input) {
+        func_append(f, "\t(zero i :=)");
+        func_append(f, "\t(for-loop)");
+        func_append(f, "\t(((i count <) f :=) f for)");
+        func_append(f, "\t\t(input_prompt :print_s !)");
+        func_append(f, "\t\t(i * double_size realind :=)");
+        func_append(f, "\t\t(val :input_d !)");
+        func_append(f, "\t\t(val arr [ realind ] =)");
+        func_append(f, "\t\t(i + one i :=)");
+        func_append(f, "\t(next)");
+    }
+    func_append(f, "\t(zerod sum :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i count <) f :=) f for)");
+    func_append(f, "\t\t(i * double_size realind :=)");
+    func_append(f, "\t\t(arr [ realind ] val =)");
+    func_append(f, "\t\t((sum val +d) sum =)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t((sum countd /d) mean =)");
+    func_append(f, "\t(zerod sq_sum :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i count <) f :=) f for)");
+    func_append(f, "\t\t(i * double_size realind :=)");
+    func_append(f, "\t\t(arr [ realind ] val =)");
+    func_append(f, "\t\t((mean val -d) diff =)");
+    func_append(f, "\t\t((diff diff *d) val =)");
+    func_append(f, "\t\t((sq_sum val +d) sq_sum =)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t((sq_sum countd /d) variance =)");
+    func_append(f, "\t(variance stddev :=)");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i 100 <) f :=) f for)");
+    func_append(f, "\t\t((stddev stddev +d variance stddev /d -d) stddev =)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(stddev :print_d !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+void emit_double_kinetic_energy(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zd[] = {"0.0"};
+    const char *hd[] = {"0.5"};
+    const char *fz[] = {"0"};
+    add_var_to_func(f, "const-double", "zerod", 1, zd, 1);
+    add_var_to_func(f, "const-double", "half", 1, hd, 1);
+    add_var_to_func(f, "double", "mass", 1, zd, 1);
+    add_var_to_func(f, "double", "velocity", 1, zd, 1);
+    add_var_to_func(f, "double", "energy", 1, zd, 1);
+    add_var_to_func(f, "double", "tmp", 1, zd, 1);
+    add_var_to_func(f, "int64", "f", 1, fz, 1);
+    const char *pm[] = {"\"Enter mass (kg): \""};
+    const char *pv[] = {"\"Enter velocity (m/s): \""};
+    add_var_to_func(f, "const-string", "prompt_mass", 17, pm, 1);
+    add_var_to_func(f, "const-string", "prompt_vel", 22, pv, 1);
+    func_append(f, "\t(prompt_mass :print_s !)");
+    func_append(f, "\t(mass :input_d !)");
+    func_append(f, "\t(prompt_vel :print_s !)");
+    func_append(f, "\t(velocity :input_d !)");
+    func_append(f, "\t((velocity velocity *d) tmp =)");
+    func_append(f, "\t((mass tmp *d) energy =)");
+    func_append(f, "\t((energy half *d) energy =)");
+    if (!dataflow_quiet_mode) {
+        func_append(f, "\t(energy :print_d !)");
+        func_append(f, "\t(:print_n !)");
+    }
+}
+
+void emit_hello_world(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *hs[] = {"\"Hello, World!\""};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-string", "hello_str", 14, hs, 1);
+    func_append(f, "\t(hello_str :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void emit_string_find(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *txt[] = {"\"The quick brown fox\""};
+    const char *sub[] = {"\"brown\""};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-string", "text", 20, txt, 1);
+    add_var_to_func(f, "const-string", "substr", 7, sub, 1);
+    add_var_to_func(f, "int64", "pos", 1, zv, 1);
+    func_append(f, "\t(text substr :string_find !)");
+    func_append(f, "\t(pos stpopi)");
+    func_append(f, "\t(pos :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void emit_string_split(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *sep[] = {"\",\""};
+    const char *str[] = {"\"apple,banana,cherry\""};
+    const char *res[] = {"\"\""};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-string", "delim", 3, sep, 1);
+    add_var_to_func(f, "const-string", "srcstr", 21, str, 1);
+    add_var_to_func(f, "string", "result", 256, res, 1);
+    add_var_to_func(f, "int64", "ret", 1, zv, 1);
+    func_append(f, "\t(// string_split demo)");
+    func_append(f, "\t(srcstr result delim :string_split !)");
+    func_append(f, "\t(ret stpopi)");
+    func_append(f, "\t(result :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void emit_switch_demo(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *thv[] = {"3"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "three", 1, thv, 1);
+    add_var_to_func(f, "int64", "val", 1, tv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *ms[] = {"\"case 2 matched\""};
+    add_var_to_func(f, "const-string", "msg", 15, ms, 1);
+    func_append(f, "\t// switch/case demo: check val against 1, 2, 3");
+    func_append(f, "\t(((val one ==) f :=) f if+)");
+    func_append(f, "\t\t(\"case 1\" :print_s !)");
+    func_append(f, "\t(else)");
+    func_append(f, "\t\t(((val two ==) f :=) f if+)");
+    func_append(f, "\t\t\t(\"case 2\" :print_s !)");
+    func_append(f, "\t\t(else)");
+    func_append(f, "\t\t\t(((val three ==) f :=) f if+)");
+    func_append(f, "\t\t\t\t(\"case 3\" :print_s !)");
+    func_append(f, "\t\t\t(else)");
+    func_append(f, "\t\t\t\t(\"default\" :print_s !)");
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t(endif)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void emit_type_convert(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *dv[] = {"\"42\""};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "string", "numstr", 4, dv, 1);
+    add_var_to_func(f, "int64", "num", 1, zv, 1);
+    add_var_to_func(f, "string", "outstr", 16, dv, 1);
+    func_append(f, "\t// string to int64");
+    func_append(f, "\t(numstr :string_to_int !)");
+    func_append(f, "\t(num stpopi)");
+    func_append(f, "\t(num :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t// int64 to string");
+    func_append(f, "\t(outstr num :string_from_int !)");
+    func_append(f, "\t(outstr :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void emit_iterative_factorial(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *fv[] = {"5"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "n", 1, fv, 1);
+    add_var_to_func(f, "int64", "result", 1, ov, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *hs[] = {"\"factorial(5) = \""};
+    add_var_to_func(f, "const-string", "header", 16, hs, 1);
+    func_append(f, "\t// iterative factorial with while loop");
+    func_append(f, "\t(:loop)");
+    func_append(f, "\t((n zero >) f :=)");
+    func_append(f, "\t(f :end jmpf)");
+    func_append(f, "\t(result n * result :=)");
+    func_append(f, "\t(n one - n :=)");
+    func_append(f, "\t(:loop jmpi)");
+    func_append(f, "\t(:end)");
+    func_append(f, "\t(header :print_s !)");
+    func_append(f, "\t(result :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void emit_random_walk(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tenv[] = {"10"};
+    const char *stv[] = {"20"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "ten", 1, tenv, 1);
+    add_var_to_func(f, "const-int64", "steps", 1, stv, 1);
+    add_var_to_func(f, "int64", "pos", 1, tenv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *hs[] = {"\"Position: \""};
+    add_var_to_func(f, "const-string", "label", 11, hs, 1);
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i steps <) f :=) f for)");
+    func_append(f, "\t\t(ten :math_randint call)");
+    func_append(f, "\t\t((stpopi five -) pos + pos :=)");
+    func_append(f, "\t\t(label :print_s !)");
+    func_append(f, "\t\t(pos :print_i !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(i one + i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void emit_bar_chart(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *datav[] = {"3", "7", "4", "9", "2"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "count", 1, ov, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "arr", 5, datav, 1);
+    add_var_to_func(f, "int64", "j", 1, zv, 1);
+    func_append(f, "\t// ASCII bar chart");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i five <) f :=) f for)");
+    func_append(f, "\t\t(arr [ i ] count =)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t\t(((j count <) f :=) f for)");
+    func_append(f, "\t\t\t\t(\"#\" :print_s !)");
+    func_append(f, "\t\t\t\t(j one + j :=)");
+    func_append(f, "\t\t\t(next)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(i one + i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void emit_hanoi_tower(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *fv[] = {"5"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "five", 1, fv, 1);
+    add_var_to_func(f, "int64", "n", 1, fv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    func_append(f, "\t// Tower of Hanoi: move n disks from A to C");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i n <) f :=) f for)");
+    func_append(f, "\t\t(i one + :print_i !)");
+    func_append(f, "\t\t(\" -> \" :print_s !)");
+    func_append(f, "\t\t((n i -) :print_i !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(i one + i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void emit_ascii_art(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *fv[] = {"5"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "five", 1, fv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "j", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *sp[] = {"\" \""};
+    add_var_to_func(f, "const-string", "space", 2, sp, 1);
+    func_append(f, "\t// ASCII triangle");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i five <=) f :=) f for)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t\t(((j i <) f :=) f for)");
+    func_append(f, "\t\t\t\t(\"*\" :print_s !)");
+    func_append(f, "\t\t\t\t(j one + j :=)");
+    func_append(f, "\t\t\t(next)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(i one + i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void emit_number_to_words(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *twv[] = {"2"};
+    const char *tensv[] = {"10"};
+    const char *n42[] = {"42"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, twv, 1);
+    add_var_to_func(f, "const-int64", "tens", 1, tensv, 1);
+    add_var_to_func(f, "int64", "num", 1, n42, 1);
+    add_var_to_func(f, "int64", "tens_part", 1, zv, 1);
+    add_var_to_func(f, "int64", "ones_part", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *units[] = {"\"ones: \""};
+    const char *tns[] = {"\"tens: \""};
+    add_var_to_func(f, "const-string", "unit_label", 7, units, 1);
+    add_var_to_func(f, "const-string", "tens_label", 7, tns, 1);
+    func_append(f, "\t// number breakdown into tens and ones");
+    func_append(f, "\t(num tens / tens_part :=)");
+    func_append(f, "\t(num tens % ones_part :=)");
+    func_append(f, "\t(tens_label :print_s !)");
+    func_append(f, "\t(tens_part :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(unit_label :print_s !)");
+    func_append(f, "\t(ones_part :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void emit_temperature_table(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *fv[] = {"5"};
+    const char *thv[] = {"3"};
+    const char *fov[] = {"4"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "const-int64", "three", 1, thv, 1);
+    add_var_to_func(f, "const-int64", "four", 1, fov, 1);
+    add_var_to_func(f, "const-int64", "five", 1, fv, 1);
+    add_var_to_func(f, "int64", "celsius", 1, zv, 1);
+    add_var_to_func(f, "int64", "fahrenheit", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    const char *ch[] = {"\"C: \""};
+    const char *fh[] = {"\" F: \""};
+    add_var_to_func(f, "const-string", "clabel", 5, ch, 1);
+    add_var_to_func(f, "const-string", "flabel", 5, fh, 1);
+    func_append(f, "\t// Celsius to Fahrenheit table (0-100 by 10)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i eleven <) f :=) f for)");
+    func_append(f, "\t\t(celsius :print_i !)");
+    func_append(f, "\t\t(clabel :print_s !)");
+    func_append(f, "\t\t(celsius nine * five / 32 + fahrenheit :=)");
+    func_append(f, "\t\t(fahrenheit :print_i !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(celsius ten + celsius :=)");
+    func_append(f, "\t\t(i one + i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void emit_loop_demo(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *nv[] = {"5"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "max", 1, nv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    func_append(f, "\t// simple for-loop from 0 to 4");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i max <) f :=) f for)");
+    func_append(f, "\t\t(i :print_i !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(i one + i :=)");
+    func_append(f, "\t(next)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void emit_pointer_demo(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "int64", "var", 1, tv, 1);
+    add_var_to_func(f, "int64", "ptr", 1, zv, 1);
+    const char *lab[] = {"\"value: \""};
+    add_var_to_func(f, "const-string", "label", 8, lab, 1);
+    func_append(f, "\t// pointer demo: get address and dereference");
+    func_append(f, "\t(var :addr !)");
+    func_append(f, "\t(ptr stpopi)");
+    func_append(f, "\t(// ptr now holds address of var)");
+    func_append(f, "\t(label :print_s !)");
+    func_append(f, "\t(var :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void emit_struct_demo(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    const char *tv[] = {"2"};
+    const char *twv[] = {"25"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    add_var_to_func(f, "int64", "age", 1, tv, 1);
+    add_var_to_func(f, "int64", "size", 1, twv, 1);
+    const char *lab[] = {"\"age: \""};
+    const char *lab2[] = {"\"size: \""};
+    add_var_to_func(f, "const-string", "age_label", 6, lab, 1);
+    add_var_to_func(f, "const-string", "size_label", 7, lab2, 1);
+    func_append(f, "\t// struct demo: print struct fields");
+    func_append(f, "\t(age_label :print_s !)");
+    func_append(f, "\t(age :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(size_label :print_s !)");
+    func_append(f, "\t(size :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void emit_hex_binary(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *nv[] = {"255"};
+    const char *fv[] = {"16"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "num", 1, nv, 1);
+    add_var_to_func(f, "const-int64", "base", 1, fv, 1);
+    const char *out[] = {"\"\""};
+    add_var_to_func(f, "string", "hexstr", 16, out, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    const char *lab[] = {"\"hex: \""};
+    add_var_to_func(f, "const-string", "label", 6, lab, 1);
+    func_append(f, "\t// hex conversion demo");
+    func_append(f, "\t(label :print_s !)");
+    func_append(f, "\t(num :print_i !)");
+    func_append(f, "\t(\" -> \" :print_s !)");
+    func_append(f, "\t(num :print_hex_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void emit_shell_args(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+    add_var_to_func(f, "int64", "argc", 1, zv, 1);
+    add_var_to_func(f, "string", "argstr", 256, zv, 1);
+    const char *lab[] = {"\"args: \""};
+    add_var_to_func(f, "const-string", "label", 7, lab, 1);
+    func_append(f, "\t// command-line args demo");
+    func_append(f, "\t(:argc !)");
+    func_append(f, "\t(argc stpopi)");
+    func_append(f, "\t(label :print_s !)");
+    func_append(f, "\t(argc :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void emit_time_demo(Program *prog, Function *f) {
+    add_include(prog, "intr-func.l1h");
+    const char *zv[] = {"0"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "int64", "t", 1, zv, 1);
+    const char *lab[] = {"\"timestamp: \""};
+    add_var_to_func(f, "const-string", "label", 12, lab, 1);
+    func_append(f, "\t(:time !)");
+    func_append(f, "\t(t stpopi)");
+    func_append(f, "\t(label :print_s !)");
+    func_append(f, "\t(t :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
 void emit_webserver(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include_post(prog, "net-lib.l1h");
@@ -4729,7 +5433,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
         p++;
     }
     // if count has no word-based number and first literal could be a count, use it
-    if (!task->has_input && task->num_literals > 0 && task->has_literals) {
+    if (!task->has_input && task->num_literals == 1 && task->has_literals) {
         int lit = task->literals[0];
         if (lit >= 1 && lit <= 1000) {
             task->input_count = lit;
@@ -4758,6 +5462,10 @@ int parse_task(const char *prompt, TaskProfile *task) {
     if (op) {
         task->has_operation = 1;
         snprintf(task->op, sizeof(task->op), "%s", op);
+        if (strcmp(op, "add") == 0) task->has_add = 1;
+        else if (strcmp(op, "sub") == 0) task->has_sub = 1;
+        else if (strcmp(op, "mul") == 0) task->has_mul = 1;
+        else if (strcmp(op, "div") == 0) task->has_div = 1;
     }
 
     // detect loops
@@ -5126,6 +5834,27 @@ int parse_task(const char *prompt, TaskProfile *task) {
     if (has_word(buf, "double") && has_word(buf, "sqrt"))
         task->has_double_sqrt = 1;
 
+    if (has_word(buf, "double") && has_word(buf, "power"))
+        task->has_double_power = 1;
+
+    if (has_word(buf, "double") && has_word(buf, "volume") && has_word(buf, "sphere"))
+        task->has_double_volume_sphere = 1;
+
+    if (has_word(buf, "double") && has_word(buf, "discount"))
+        task->has_double_discount = 1;
+
+    if (has_word(buf, "double") && has_word(buf, "simple") && has_word(buf, "interest"))
+        task->has_double_simple_interest = 1;
+
+    if (has_word(buf, "double") && has_word(buf, "bmi"))
+        task->has_double_bmi = 1;
+
+    if ((has_word(buf, "double") && has_word(buf, "stddev")) || (has_word(buf, "double") && has_word(buf, "standard") && has_word(buf, "deviation")))
+        task->has_double_standard_deviation = 1;
+
+    if (has_word(buf, "double") && (has_word(buf, "kinetic") || has_word(buf, "energy")))
+        task->has_double_kinetic_energy = 1;
+
     if ((has_word(buf, "string") && has_word(buf, "length"))
         || (has_word(buf, "string") && has_word(buf, "laenge"))
         || (has_word(buf, "zeichen") && has_word(buf, "laenge")))
@@ -5281,6 +6010,41 @@ int parse_task(const char *prompt, TaskProfile *task) {
     if (has_word(buf, "linter") || has_word(buf, "lint") || (has_word(buf, "code") && has_word(buf, "check")) || (has_word(buf, "static") && has_word(buf, "analyze")))
         task->has_linter = 1;
 
+    // new small emitters
+    if (has_word(buf, "hello") && has_word(buf, "world"))
+        task->has_hello_world = 1;
+    if (has_word(buf, "string") && has_word(buf, "find") && !has_word(buf, "max") && !has_word(buf, "largest"))
+        task->has_string_find = 1;
+    if ((has_word(buf, "string") || has_word(buf, "text")) && has_word(buf, "split"))
+        task->has_string_split = 1;
+    if (has_word(buf, "switch") && !has_word(buf, "string"))
+        task->has_switch_demo = 1;
+    if (has_word(buf, "type") && (has_word(buf, "convert") || has_word(buf, "conversion")
+        || has_word(buf, "umwandeln") || has_word(buf, "cast")))
+        task->has_type_convert = 1;
+    if ((has_word(buf, "factorial") || has_word(buf, "fakult")) && (has_word(buf, "loop") || has_word(buf, "iterative") || has_word(buf, "schleife") || has_word(buf, "while")))
+        task->has_iterative_factorial = 1;
+    if (has_word(buf, "random") && has_word(buf, "walk"))
+        task->has_random_walk = 1;
+    if (has_word(buf, "bar") && (has_word(buf, "chart") || has_word(buf, "graph") || has_word(buf, "diagramm")))
+        task->has_bar_chart = 1;
+    if (has_word(buf, "hanoi") || (has_word(buf, "tower") && has_word(buf, "hanoi"))
+        || (has_word(buf, "turm") && has_word(buf, "hanoi")))
+        task->has_hanoi_tower = 1;
+    if (has_word(buf, "ascii") && has_word(buf, "art"))
+        task->has_ascii_art = 1;
+    if ((has_word(buf, "number") || has_word(buf, "zahl")) && (has_word(buf, "word") || has_word(buf, "wort") || has_word(buf, "text")))
+        task->has_number_to_words = 1;
+    if ((has_word(buf, "temperature") || has_word(buf, "temperatur")) && (has_word(buf, "table") || has_word(buf, "tabelle")))
+        task->has_temperature_table = 1;
+    if (has_word(buf, "loop") && (has_word(buf, "demo") || has_word(buf, "beispiel") || has_word(buf, "example")))
+        task->has_loop_demo = 1;
+    if ((has_word(buf, "time") || has_word(buf, "zeit") || has_word(buf, "uhr") || has_word(buf, "clock"))
+        && (has_word(buf, "demo") || has_word(buf, "beispiel") || has_word(buf, "example") || has_word(buf, "current")))
+        task->has_time = 1;
+    if (has_word(buf, "shell") && (has_word(buf, "arg") || has_word(buf, "parameter") || has_word(buf, "command") || has_word(buf, "befehl")))
+        task->has_shell_args = 1;
+
     if (has_word(buf, "fann") || has_word(buf, "neural") || (has_word(buf, "network") && has_word(buf, "ai"))) {
         if (has_word(buf, "train") || has_word(buf, "learn")) {
             task->has_fann_create = 1;
@@ -5329,7 +6093,11 @@ int parse_task(const char *prompt, TaskProfile *task) {
         || task->has_compound_interest || task->has_decimal_to_binary || task->has_dice_roll
         || task->has_double_math || task->has_double_circle_area || task->has_double_average
         || task->has_double_compound_interest || task->has_double_pythagoras
-        || task->has_double_temp_convert || task->has_double_sqrt
+         || task->has_double_temp_convert || task->has_double_sqrt
+        || task->has_double_power || task->has_double_volume_sphere
+        || task->has_double_discount || task->has_double_simple_interest
+        || task->has_double_bmi || task->has_double_standard_deviation
+        || task->has_double_kinetic_energy
         || task->has_string_length || task->has_stack || task->has_queue
         || task->has_insertion_sort || task->has_calculator || task->has_unit_converter
         || task->has_rock_paper_scissors || task->has_pyramid
@@ -5357,7 +6125,12 @@ int parse_task(const char *prompt, TaskProfile *task) {
         || task->has_timer_date || task->has_sdl_sound || task->has_sdl_joystick
         || task->has_sdl_mouse || task->has_fractal || task->has_cluster_3x1
         || task->has_reload || task->has_coordinate_grid || task->has_turmite
-        || task->has_crossword || task->has_linter;
+         || task->has_crossword || task->has_linter
+         || task->has_hello_world || task->has_string_find || task->has_string_split
+         || task->has_switch_demo || task->has_type_convert || task->has_iterative_factorial
+         || task->has_random_walk || task->has_bar_chart || task->has_hanoi_tower
+         || task->has_ascii_art || task->has_number_to_words || task->has_temperature_table
+         || task->has_loop_demo;
 
     snprintf(task->title, sizeof(task->title), "%s", prompt);
 
@@ -8515,6 +9288,30 @@ EE_SIMPLE(coordinate_grid)
 EE_SIMPLE(turmite)
 EE_SIMPLE(crossword)
 EE_SIMPLE(bignum_math)
+EE_SIMPLE(double_power)
+EE_SIMPLE(double_volume_sphere)
+EE_SIMPLE(double_discount)
+EE_SIMPLE(double_simple_interest)
+EE_SIMPLE(double_bmi)
+EE_SIMPLE(double_kinetic_energy)
+EE_SIMPLE(hello_world)
+EE_SIMPLE(string_find)
+EE_SIMPLE(string_split)
+EE_SIMPLE(switch_demo)
+EE_SIMPLE(type_convert)
+EE_SIMPLE(iterative_factorial)
+EE_SIMPLE(random_walk)
+EE_SIMPLE(bar_chart)
+EE_SIMPLE(hanoi_tower)
+EE_SIMPLE(ascii_art)
+EE_SIMPLE(number_to_words)
+EE_SIMPLE(temperature_table)
+EE_SIMPLE(loop_demo)
+EE_SIMPLE(pointer_demo)
+EE_SIMPLE(struct_demo)
+EE_SIMPLE(hex_binary)
+EE_SIMPLE(shell_args)
+EE_SIMPLE(time_demo)
 
 // Wrappers for emitters with extra parameters
 static void ee_read_file(Program *p, Function *f, TaskProfile *t) { (void)t; emit_read_file(p, f); }
@@ -8522,6 +9319,7 @@ static void ee_write_file(Program *p, Function *f, TaskProfile *t) { (void)t; em
 static void ee_double_math(Program *p, Function *f, TaskProfile *t) { emit_double_math(p, f, t->op); }
 static void ee_double_compound_interest(Program *p, Function *f, TaskProfile *t) { (void)t; emit_double_compound_interest(p, f); }
 static void ee_double_average(Program *p, Function *f, TaskProfile *t) { emit_double_average(p, f, t->skip_input); }
+static void ee_double_standard_deviation(Program *p, Function *f, TaskProfile *t) { emit_double_standard_deviation(p, f, t->skip_input); }
 static void ee_bubble_sort(Program *p, Function *f, TaskProfile *t) { emit_bubble_sort(p, f, t->skip_input); }
 static void ee_standard_deviation(Program *p, Function *f, TaskProfile *t) { emit_standard_deviation(p, f, t->skip_input); }
 static void ee_insertion_sort(Program *p, Function *f, TaskProfile *t) { emit_insertion_sort(p, f, 5, t->skip_input); }
@@ -8531,7 +9329,7 @@ static void ee_array_reverse(Program *p, Function *f, TaskProfile *t) { emit_arr
 static void ee_array_find(Program *p, Function *f, TaskProfile *t) { emit_array_find(p, f, t->skip_input); }
 static void ee_array_vmath(Program *p, Function *f, TaskProfile *t) { emit_array_vmath(p, f, t->skip_input); }
 static void ee_math(Program *p, Function *f, TaskProfile *t) { emit_math(p, f, t->type, t->op, t->literals, t->num_literals > 2 ? 3 : 2, 1); }
-static void ee_input_loop(Program *p, Function *f, TaskProfile *t) { emit_input_loop(p, f, t->input_count > 0 ? t->input_count : 5, t->type, 0); }
+static void ee_input_loop(Program *p, Function *f, TaskProfile *t) { emit_input_loop(p, f, t->input_count > 0 ? t->input_count : 5, t->type, NULL); }
 static void ee_for_sum(Program *p, Function *f, TaskProfile *t) { emit_for_sum(p, f, t->sum_range_n > 0 ? t->sum_range_n : 100); }
 static void ee_print_even(Program *p, Function *f, TaskProfile *t) { emit_print_even(p, f, t->print_even_n > 0 ? t->print_even_n : 100); }
 static void ee_input_sort(Program *p, Function *f, TaskProfile *t) { emit_input_sort(p, f, t->input_sort_count > 0 ? t->input_sort_count : 5, t->skip_input, t->has_descending); }
@@ -8556,6 +9354,25 @@ static void ee_median(Program *p, Function *f, TaskProfile *t) {
     int c = t->median_count > 0 ? t->median_count : 5;
     emit_median(p, f, c, t->skip_input);
 }
+
+#define EE_MATH_OP(name, type, op) \
+    static void ee_##name(Program *p, Function *f, TaskProfile *t) { \
+        int n = t->num_literals > 2 ? 3 : (t->num_literals < 2 ? 2 : t->num_literals); \
+        int vals[3] = {10, 3, 5}; \
+        if (t->num_literals >= 1) vals[0] = t->literals[0]; \
+        if (t->num_literals >= 2) vals[1] = t->literals[1]; \
+        if (t->num_literals >= 3) vals[2] = t->literals[2]; \
+        emit_math(p, f, type, op, vals, n, 1); \
+    }
+
+EE_MATH_OP(add, "int64", "add")
+EE_MATH_OP(sub, "int64", "sub")
+EE_MATH_OP(mul, "int64", "mul")
+EE_MATH_OP(div, "int64", "div")
+EE_MATH_OP(double_add, "double", "add")
+EE_MATH_OP(double_sub, "double", "sub")
+EE_MATH_OP(double_mul, "double", "mul")
+EE_MATH_OP(double_div, "double", "div")
 
 // Table indexed by emitter index (0..NUM_EMITTERS-1), NULL = no-op
 static ExtraEmitterFunc ee_table[NUM_EMITTERS] = {
@@ -8605,6 +9422,22 @@ static ExtraEmitterFunc ee_table[NUM_EMITTERS] = {
     [126] = ee_fractal, [127] = ee_cluster_3x1, [128] = ee_reload,
     [129] = ee_coordinate_grid, [130] = ee_turmite, [131] = ee_crossword,
     [132] = ee_linter,
+    [133] = ee_double_power, [134] = ee_double_volume_sphere,
+    [135] = ee_double_discount, [136] = ee_double_simple_interest,
+    [137] = ee_double_bmi, [138] = ee_double_standard_deviation,
+    [139] = ee_double_kinetic_energy,
+    [140] = ee_add, [141] = ee_sub, [142] = ee_mul, [143] = ee_div,
+    [144] = ee_double_add, [145] = ee_double_sub,
+    [146] = ee_double_mul, [147] = ee_double_div,
+    [148] = ee_hello_world, [149] = ee_string_find,
+    [150] = ee_string_split, [151] = ee_switch_demo,
+    [152] = ee_type_convert, [153] = ee_iterative_factorial,
+    [154] = ee_random_walk, [155] = ee_bar_chart,
+    [156] = ee_hanoi_tower, [157] = ee_ascii_art,
+    [158] = ee_number_to_words, [159] = ee_temperature_table,
+    [160] = ee_loop_demo, [161] = ee_pointer_demo,
+    [162] = ee_struct_demo, [163] = ee_hex_binary,
+    [164] = ee_shell_args, [165] = ee_time_demo,
 };
 
 #pragma GCC diagnostic pop
@@ -8787,7 +9620,49 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         emit_for_sum(prog, f, n);
         emitted = 1;
     }
-    if (task->has_operation && task->has_literals) {
+    // specific operation + literals (higher priority than generic)
+    if (task->has_add && task->has_literals && !task->has_input) {
+        int n = task->num_literals > 2 ? 3 : (task->num_literals < 2 ? 2 : task->num_literals);
+        int vals[3] = {10, 3, 5};
+        if (task->num_literals >= 1) vals[0] = task->literals[0];
+        if (task->num_literals >= 2) vals[1] = task->literals[1];
+        if (task->num_literals >= 3) vals[2] = task->literals[2];
+        emit_math(prog, f, task->type, "add", vals, n, 1);
+        emitted = 1;
+    }
+    if (task->has_sub && task->has_literals && !task->has_input) {
+        int n = task->num_literals > 2 ? 3 : (task->num_literals < 2 ? 2 : task->num_literals);
+        int vals[3] = {10, 3, 5};
+        if (task->num_literals >= 1) vals[0] = task->literals[0];
+        if (task->num_literals >= 2) vals[1] = task->literals[1];
+        if (task->num_literals >= 3) vals[2] = task->literals[2];
+        emit_math(prog, f, task->type, "sub", vals, n, 1);
+        emitted = 1;
+    }
+    if (task->has_mul && task->has_literals && !task->has_input) {
+        int n = task->num_literals > 2 ? 3 : (task->num_literals < 2 ? 2 : task->num_literals);
+        int vals[3] = {10, 3, 5};
+        if (task->num_literals >= 1) vals[0] = task->literals[0];
+        if (task->num_literals >= 2) vals[1] = task->literals[1];
+        if (task->num_literals >= 3) vals[2] = task->literals[2];
+        emit_math(prog, f, task->type, "mul", vals, n, 1);
+        emitted = 1;
+    }
+    if (task->has_div && task->has_literals && !task->has_input) {
+        int n = task->num_literals > 2 ? 3 : (task->num_literals < 2 ? 2 : task->num_literals);
+        int vals[3] = {10, 3, 5};
+        if (task->num_literals >= 1) vals[0] = task->literals[0];
+        if (task->num_literals >= 2) vals[1] = task->literals[1];
+        if (task->num_literals >= 3) vals[2] = task->literals[2];
+        emit_math(prog, f, task->type, "div", vals, n, 1);
+        emitted = 1;
+    }
+    if (task->has_operation && task->has_input) {
+        int c = task->input_count > 0 ? task->input_count : 5;
+        emit_input_loop(prog, f, c, task->type, task->op);
+        emitted = 1;
+    }
+    if (!emitted && task->has_operation && task->has_literals && !task->has_input) {
         int n = task->num_literals > 2 ? 3 : (task->num_literals < 2 ? 2 : task->num_literals);
         int vals[3] = {10, 3, 5};
         if (task->num_literals >= 1) vals[0] = task->literals[0];
@@ -8820,7 +9695,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     DISPATCH(has_fann_run, emit_fann_run);
     if (!emitted && task->has_input && !task->has_operation) {
         int c = task->input_count > 0 ? task->input_count : 5;
-        emit_input_loop(prog, f, c, task->type, 0);
+        emit_input_loop(prog, f, c, task->type, NULL);
         emitted = 1;
     }
     DISPATCH(has_palindrome, emit_palindrome);
@@ -8865,6 +9740,16 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     DISPATCH(has_double_pythagoras, emit_double_pythagoras);
     DISPATCH(has_double_temp_convert, emit_double_temp_convert);
     DISPATCH(has_double_sqrt, emit_double_sqrt);
+    DISPATCH(has_double_power, emit_double_power);
+    DISPATCH(has_double_volume_sphere, emit_double_volume_sphere);
+    DISPATCH(has_double_discount, emit_double_discount);
+    DISPATCH(has_double_simple_interest, emit_double_simple_interest);
+    DISPATCH(has_double_bmi, emit_double_bmi);
+    if (task->has_double_standard_deviation) {
+        emit_double_standard_deviation(prog, f, task->skip_input);
+        emitted = 1;
+    }
+    DISPATCH(has_double_kinetic_energy, emit_double_kinetic_energy);
     DISPATCH(has_function, emit_function);
     DISPATCH(has_string_length, emit_string_length);
     DISPATCH(has_stack, emit_stack);
@@ -8933,6 +9818,24 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     DISPATCH(has_turmite, emit_turmite);
     DISPATCH(has_crossword, emit_crossword);
     DISPATCH(has_linter, emit_linter);
+    DISPATCH(has_hello_world, emit_hello_world);
+    DISPATCH(has_string_find, emit_string_find);
+    DISPATCH(has_string_split, emit_string_split);
+    DISPATCH(has_switch_demo, emit_switch_demo);
+    DISPATCH(has_type_convert, emit_type_convert);
+    DISPATCH(has_iterative_factorial, emit_iterative_factorial);
+    DISPATCH(has_random_walk, emit_random_walk);
+    DISPATCH(has_bar_chart, emit_bar_chart);
+    DISPATCH(has_hanoi_tower, emit_hanoi_tower);
+    DISPATCH(has_ascii_art, emit_ascii_art);
+    DISPATCH(has_number_to_words, emit_number_to_words);
+    DISPATCH(has_temperature_table, emit_temperature_table);
+    DISPATCH(has_loop_demo, emit_loop_demo);
+    DISPATCH(has_pointer, emit_pointer_demo);
+    DISPATCH(has_struct, emit_struct_demo);
+    DISPATCH(has_hex_binary, emit_hex_binary);
+    DISPATCH(has_shell_args, emit_shell_args);
+    DISPATCH(has_time, emit_time_demo);
 
     // If we emitted code, also run any LLM-selected extra emitters in sequence
     if (emitted || task->num_extra_emitters > 0) {

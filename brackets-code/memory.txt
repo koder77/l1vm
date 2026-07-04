@@ -5,7 +5,7 @@ rackets Code - Memory & Specification
 -------------
 Brackets Code is a CLI code generator for the Brackets (L1VM) assembly language.
 It converts natural-language prompts into working .l1com programs.
-Written in C, split across 4 source files (~13518 lines total). Author: Stefan.
+Written in C, split across 4 source files (~14543 lines total). Author: Stefan.
 
 2. SOURCE FILE ORGANIZATION
 --------------------------
@@ -33,7 +33,7 @@ The program has a three-tier generation pipeline:
        |
   smart_generate() --> multi-step split + per-step TaskProfile generation
        |                  |
-       |            llm_select_emitter() tokenizes prompt, scores 133 emitters
+       |            llm_select_emitter() tokenizes prompt, scores 166 emitters
        |                  |                selects best emitter, calls generate_from_task()
        |                  | (fallback)
        |            old arithmetic generator (simple math prompts)
@@ -108,7 +108,7 @@ Template struct:
    - has_string_cat excluded when more specific string flag present
      (reverse, length, vowels, anagram, upper, lower, caesar, palindrome)
 
-5b. Emitter Blocks (NUM_EMITTERS = 133):
+5b. Emitter Blocks (NUM_EMITTERS = 166):
    Each emits L1VM code for a specific pattern:
 
    Block                    Purpose
@@ -247,8 +247,26 @@ Template struct:
    emit_coordinate_grid      2D coordinate grid operations
    emit_turmite              Turmite (ant) simulation on grid
    emit_crossword            Crossword puzzle grid generator
-   emit_linter               Code linter stub
-   + template emitters (31 matched by match_template, not smart_generate)
+    emit_linter               Code linter stub
+    emit_hello_world          Hello World program
+    emit_string_find          Find substring in a string
+    emit_string_split         Split string by delimiter
+    emit_switch_demo          Switch/case control flow demo
+    emit_type_convert         Type conversion (int64 ↔ double ↔ string)
+    emit_iterative_factorial  Iterative factorial with while loop
+    emit_random_walk          Random walk simulation
+    emit_bar_chart            ASCII bar chart from data array
+    emit_hanoi_tower          Towers of Hanoi step printer
+    emit_ascii_art            Simple ASCII art shapes
+    emit_number_to_words      Convert numbers to English words
+    emit_temperature_table    Celsius/Fahrenheit conversion table
+    emit_loop_demo            Loop constructs demo (for/while)
+    emit_pointer_demo         Pointer access demo
+    emit_struct_demo          Struct (dotted vars) demo
+    emit_hex_binary           Hex and binary literal demo
+    emit_shell_args           Command-line arguments demo
+    emit_time_demo            Current time + epoch ms
+    + template emitters (31 matched by match_template, not smart_generate)
 
 5c. Multi-Step Composition (split_prompt_steps):
    - Split patterns (ordered longest-first):
@@ -403,15 +421,15 @@ Template struct:
 
 15. FILE LOCATION
 -----------------
-   /home/stefan/opencode/brackets-code/brackets-code.c  (11032 lines, 133 emitter blocks, #include's embed.c + learn.c)
-   /home/stefan/opencode/brackets-code/brackets-code.h  (574 lines, header with types, constants, function declarations)
-   /home/stefan/opencode/brackets-code/embed.c           (1225 lines, LLM inference engine + vector search, #include'd at line 1222)
+   /home/stefan/opencode/brackets-code/brackets-code.c  (11963 lines, 166 emitter blocks, #include's embed.c + learn.c)
+   /home/stefan/opencode/brackets-code/brackets-code.h  (631 lines, header with types, constants, function declarations)
+   /home/stefan/opencode/brackets-code/embed.c           (1262 lines, LLM inference engine + vector search, #include'd at line 1222)
    /home/stefan/opencode/brackets-code/learn.c           (687 lines, learned pattern system, #include'd at line 10725)
    /home/stefan/opencode/brackets-code/synonyms.txt      (fuzzy synonym defs for DE+EN)
    /home/stefan/opencode/brackets-code/Makefile          (build configuration with readline auto-detection)
    /home/stefan/opencode/brackets-code/memory.txt        (this file)
 
-   Total: 13518 lines across 4 source files.
+   Total: 14543 lines across 4 source files.
    Compilation: gcc brackets-code.c -lm (embed.c + learn.c pulled in via #include)
    Optional: pkg-config or /usr/include/readline/readline.h enables readline for interactive history
 
@@ -436,7 +454,7 @@ Template struct:
   l1com reads <basename>.l1com (not the full filename).
   l1vm loads <basename>.l1obj; -q flag runs quietly.
 
-18. KNOWN EMITTER STATUS (2026-07-01)
+18. KNOWN EMITTER STATUS (2026-07-04)
 --------------------------------------
   4 PASS (compile + run with correct output):
     levenshtein_distance  - hardcoded string result

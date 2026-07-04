@@ -6,11 +6,14 @@
 #define VOCAB_SIZE 72
 #define TEMPERATURE 0.8
 #define MAX_STEPS 32
-#define NUM_EMITTERS 133
-
 WordEmbedding word_embeddings[VOCAB_SIZE];
 float attention_weights[NUM_EMITTERS];
-const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt","function","string_length","stack","queue","insertion_sort","calculator","unit_converter","rock_paper_scissors","pyramid","temp_converter_menu","sort_stats","string_analyzer","number_analyzer","filter_numbers","random_generator","math_menu","quiz_game","bmi_calculator","statistics_suite","linked_list","binary_search_tree","tree_traversal","graph_bfs_dfs","n_queens","sudoku","levenshtein_distance","maze_generator","maze_solver","monte_carlo_pi","matrix_multiplication","matrix_transpose","numerical_integration","complex_numbers","linear_regression","base_converter","freq_analysis","shuffle","weighted_random","ascii_table","bignum_math","password_card","chess_problem","shell_repl","webserver","sdl_window","sdl_button","thread","scheduler","shell_exec","json","crypto","bluetooth_ble","serial_rs232","gpio","gps","timer_date","sdl_sound","sdl_joystick","sdl_mouse","fractal","cluster_3x1","reload","coordinate_grid","turmite","crossword","linter"};
+const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt","function","string_length","stack","queue","insertion_sort","calculator","unit_converter","rock_paper_scissors","pyramid","temp_converter_menu","sort_stats","string_analyzer","number_analyzer","filter_numbers","random_generator","math_menu","quiz_game","bmi_calculator","statistics_suite","linked_list","binary_search_tree","tree_traversal","graph_bfs_dfs","n_queens","sudoku","levenshtein_distance","maze_generator","maze_solver","monte_carlo_pi","matrix_multiplication","matrix_transpose","numerical_integration","complex_numbers","linear_regression","base_converter","freq_analysis","shuffle","weighted_random","ascii_table","bignum_math","password_card","chess_problem","shell_repl","webserver","sdl_window","sdl_button","thread","scheduler","shell_exec","json","crypto","bluetooth_ble","serial_rs232","gpio","gps","timer_date","sdl_sound","sdl_joystick","sdl_mouse","fractal","cluster_3x1","reload","coordinate_grid","turmite","crossword","linter","double_power","double_volume_sphere","double_discount","double_simple_interest","double_bmi","double_standard_deviation","double_kinetic_energy","add","sub","mul","div","double_add","double_sub","double_mul","double_div",
+"hello_world", "string_find", "string_split", "switch_demo",
+"type_convert", "iterative_factorial", "random_walk", "bar_chart",
+"hanoi_tower", "ascii_art", "number_to_words", "temperature_table",
+"loop_demo", "pointer_demo", "struct_demo", "hex_binary",
+"shell_args", "time_demo"};
 /* compile-time assert: NUM_EMITTERS must match actual array count */
 typedef int EMITTER_COUNT_CHECK[(sizeof(EMITTER_NAMES)/sizeof(EMITTER_NAMES[0])) == NUM_EMITTERS ? 1 : -1];
 int vs_boost_tokens[64];
@@ -401,6 +404,40 @@ int llm_select_emitter(const char *prompt, TaskProfile *task) {
     if (task->has_turmite) emitter_scores[130] = 2.5f;
     if (task->has_crossword) emitter_scores[131] = 2.5f;
     if (task->has_linter) emitter_scores[132] = 2.0f;
+    if (task->has_double_power) emitter_scores[133] = 2.0f;
+    if (task->has_double_volume_sphere) emitter_scores[134] = 2.0f;
+    if (task->has_double_discount) emitter_scores[135] = 2.0f;
+    if (task->has_double_simple_interest) emitter_scores[136] = 2.0f;
+    if (task->has_double_bmi) emitter_scores[137] = 2.0f;
+    if (task->has_double_standard_deviation) emitter_scores[138] = 2.0f;
+    if (task->has_double_kinetic_energy) emitter_scores[139] = 2.0f;
+    if (task->has_add && task->has_literals && !task->has_input) { emitter_scores[140] = 2.0f; }
+    if (task->has_sub && task->has_literals && !task->has_input) { emitter_scores[141] = 2.0f; }
+    if (task->has_mul && task->has_literals && !task->has_input) { emitter_scores[142] = 2.0f; }
+    if (task->has_div && task->has_literals && !task->has_input) { emitter_scores[143] = 2.0f; }
+    if (task->has_add && task->has_literals && !task->has_input && strcmp(task->type, "double") == 0) { emitter_scores[144] = 2.5f; }
+    if (task->has_sub && task->has_literals && !task->has_input && strcmp(task->type, "double") == 0) { emitter_scores[145] = 2.5f; }
+    if (task->has_mul && task->has_literals && !task->has_input && strcmp(task->type, "double") == 0) { emitter_scores[146] = 2.5f; }
+    if (task->has_div && task->has_literals && !task->has_input && strcmp(task->type, "double") == 0) { emitter_scores[147] = 2.5f; }
+
+    if (task->has_hello_world) { emitter_scores[148] = 2.0f; }
+    if (task->has_string_find) { emitter_scores[149] = 2.0f; }
+    if (task->has_string_split) { emitter_scores[150] = 2.0f; }
+    if (task->has_switch_demo) { emitter_scores[151] = 2.0f; }
+    if (task->has_type_convert) { emitter_scores[152] = 2.0f; }
+    if (task->has_iterative_factorial) { emitter_scores[153] = 2.0f; }
+    if (task->has_random_walk) { emitter_scores[154] = 2.0f; }
+    if (task->has_bar_chart) { emitter_scores[155] = 2.0f; }
+    if (task->has_hanoi_tower) { emitter_scores[156] = 2.0f; }
+    if (task->has_ascii_art) { emitter_scores[157] = 2.0f; }
+    if (task->has_number_to_words) { emitter_scores[158] = 2.0f; }
+    if (task->has_temperature_table) { emitter_scores[159] = 2.0f; }
+    if (task->has_loop_demo) { emitter_scores[160] = 2.0f; }
+    if (task->has_pointer) { emitter_scores[161] = 2.0f; }
+    if (task->has_struct) { emitter_scores[162] = 2.0f; }
+    if (task->has_hex_binary) { emitter_scores[163] = 2.0f; }
+    if (task->has_shell_args) { emitter_scores[164] = 2.0f; }
+    if (task->has_time) { emitter_scores[165] = 2.0f; }
 
     // Phase 2a: prompt token boosts
     apply_token_boosts(emitter_scores, tokens, num_tokens,

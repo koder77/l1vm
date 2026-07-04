@@ -25,7 +25,7 @@
 #define VOCAB_SIZE 72
 #define TEMPERATURE 0.8
 #define MAX_STEPS 32
-#define NUM_EMITTERS 133
+#define NUM_EMITTERS 166
 
 #define MAX_LEARNED 4096
 #define LEARNED_DIR ".brackets-code/learned"
@@ -119,6 +119,10 @@ typedef struct {
     int num_literals;
     int has_operation;
     char op[16];
+    int has_add;
+    int has_sub;
+    int has_mul;
+    int has_div;
     int has_algorithm;
     char algorithm[32];
     int algo_param;
@@ -214,6 +218,13 @@ typedef struct {
     int has_double_pythagoras;
     int has_double_temp_convert;
     int has_double_sqrt;
+    int has_double_power;
+    int has_double_volume_sphere;
+    int has_double_discount;
+    int has_double_simple_interest;
+    int has_double_bmi;
+    int has_double_standard_deviation;
+    int has_double_kinetic_energy;
     int has_string_length;
     int has_stack;
     int has_queue;
@@ -279,6 +290,19 @@ typedef struct {
     int has_turmite;
     int has_crossword;
     int has_linter;
+    int has_hello_world;
+    int has_string_find;
+    int has_string_split;
+    int has_switch_demo;
+    int has_type_convert;
+    int has_iterative_factorial;
+    int has_random_walk;
+    int has_bar_chart;
+    int has_hanoi_tower;
+    int has_ascii_art;
+    int has_number_to_words;
+    int has_temperature_table;
+    int has_loop_demo;
     int suppress_output;
     char result_var[64];
     int skip_input;
@@ -417,7 +441,7 @@ void list_learned(void);
 
 // Emitters
 void emit_math(Program *prog, Function *f, const char *type, const char *op, const int *vals, int n, int last_step);
-void emit_input_loop(Program *prog, Function *f, int count, const char *type, int do_sum);
+void emit_input_loop(Program *prog, Function *f, int count, const char *type, const char *op);
 void emit_for_sum(Program *prog, Function *f, int n);
 void emit_print_even(Program *prog, Function *f, int n);
 void emit_input_find_max(Program *prog, Function *f, int count);
@@ -486,6 +510,39 @@ void emit_double_compound_interest(Program *prog, Function *f);
 void emit_double_pythagoras(Program *prog, Function *f);
 void emit_double_temp_convert(Program *prog, Function *f);
 void emit_double_sqrt(Program *prog, Function *f);
+void emit_double_power(Program *prog, Function *f);
+void emit_double_volume_sphere(Program *prog, Function *f);
+void emit_double_discount(Program *prog, Function *f);
+void emit_double_simple_interest(Program *prog, Function *f);
+void emit_double_bmi(Program *prog, Function *f);
+void emit_double_standard_deviation(Program *prog, Function *f, int skip_input);
+void emit_double_kinetic_energy(Program *prog, Function *f);
+void emit_add(Program *prog, Function *f);
+void emit_sub(Program *prog, Function *f);
+void emit_mul(Program *prog, Function *f);
+void emit_div(Program *prog, Function *f);
+void emit_double_add(Program *prog, Function *f);
+void emit_double_sub(Program *prog, Function *f);
+void emit_double_mul(Program *prog, Function *f);
+void emit_double_div(Program *prog, Function *f);
+void emit_hello_world(Program *prog, Function *f);
+void emit_string_find(Program *prog, Function *f);
+void emit_string_split(Program *prog, Function *f);
+void emit_switch_demo(Program *prog, Function *f);
+void emit_type_convert(Program *prog, Function *f);
+void emit_iterative_factorial(Program *prog, Function *f);
+void emit_random_walk(Program *prog, Function *f);
+void emit_bar_chart(Program *prog, Function *f);
+void emit_hanoi_tower(Program *prog, Function *f);
+void emit_ascii_art(Program *prog, Function *f);
+void emit_number_to_words(Program *prog, Function *f);
+void emit_temperature_table(Program *prog, Function *f);
+void emit_loop_demo(Program *prog, Function *f);
+void emit_pointer_demo(Program *prog, Function *f);
+void emit_struct_demo(Program *prog, Function *f);
+void emit_hex_binary(Program *prog, Function *f);
+void emit_shell_args(Program *prog, Function *f);
+void emit_time_demo(Program *prog, Function *f);
 void emit_string_length(Program *prog, Function *f);
 void emit_stack(Program *prog, Function *f);
 void emit_queue(Program *prog, Function *f);
