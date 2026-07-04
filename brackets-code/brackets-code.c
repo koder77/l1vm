@@ -430,6 +430,7 @@ static const OpMap ops[] = {
     {"minus", "sub"},
     {"subtract", "sub"},
     {"subtrahiere", "sub"},
+    {"zieh", "sub"},
     {"differenz", "sub"},
     {"*", "mul"},
     {"mal", "mul"},
@@ -523,10 +524,10 @@ static const SynonymEntry SYNONYM_TABLE[] = {
     {"differenz", "sub"}, {"divide", "div"}, {"dividieren", "div"}, {"enumeration", "print"},
     {"enumerate", "print"}, {"evaluate", "sum"}, {"figure out", "sum"}, {"gather", "input"},
     {"group", "sort"}, {"herabsetzen", "sub"}, {"increment", "add"}, {"iteration", "loop"},
-    {"iterate", "loop"}, {"merge sort", "sort"}, {"minus", "sub"}, {"multiplizieren", "mul"},
+    {"iterate", "loop"}, {"merge sort", "sort"}, {"minus", "sub"}, {"multipliziere", "mul"}, {"multiplizieren", "mul"},
     {"order", "sort"}, {"ordnen", "sort"}, {"organize", "sort"}, {"plus", "add"},
     {"produkt", "mul"}, {"product", "mul"}, {"quotient", "div"}, {"quick sort", "sort"},
-    {"rechnen", "sum"}, {"reduce", "sub"}, {"remainder", "mod"}, {"reorder", "sort"},
+    {"rechnen", "sum"},     {"reduce", "sub"}, {"zieh", "sub"}, {"subtrahiere", "sub"}, {"remainder", "mod"}, {"reorder", "sort"},
     {"repeat", "loop"}, {"rest", "mod"}, {"series", "loop"}, {"sortieren", "sort"},
     {"sortiert", "sort"}, {"subtrahieren", "sub"}, {"subtraktion", "sub"}, {"tally", "sum"},
     {"total", "sum"}, {"vermindern", "sub"}, {"zusammenzaehlen", "sum"}, {"zusammenzählen", "sum"},
@@ -843,7 +844,7 @@ void emit_print_even(Program *prog, Function *f, int n);
 void emit_input_find_max(Program *prog, Function *f, int count);
 void emit_countdown_from(Program *prog, Function *f, int start);
 void emit_fib_seq(Program *prog, Function *f, int n);
-void emit_input_sort(Program *prog, Function *f, int count, int skip_input, int descending);
+void emit_input_sort(Program *prog, Function *f, int count, int skip_input, int descending, const char *type);
 void emit_median(Program *prog, Function *f, int count, int skip_input);
 void emit_string_cat(Program *prog, Function *f);
 void emit_string_compare(Program *prog, Function *f);
@@ -1249,40 +1250,52 @@ void emit_fib_seq(Program *prog, Function *f, int n) {
     func_append(f, "\t(next)");
 }
 
-void emit_input_sort(Program *prog, Function *f, int count, int skip_input, int descending) {
+void emit_input_sort(Program *prog, Function *f, int count, int skip_input, int descending, const char *type) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
+    int is_double = (strcmp(type, "double") == 0);
     const char *zv[] = {"0"};
+    const char *zd[] = {"0.0"};
     const char *ov[] = {"1"};
     const char *tv[] = {"2"};
     add_var_to_func(f, "const-int64", "one", 1, ov, 1);
     add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+    if (is_double)
+        add_var_to_func(f, "const-double", "zerod", 1, zd, 1);
+    else
+        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    const char *dtype = is_double ? "double" : "int64";
     char vs[16], ln[256];
     snprintf(vs, sizeof(vs), "%d", count);
     const char *cv[] = {vs};
     add_var_to_func(f, "int64", "count", 1, cv, 1);
-    add_var_to_func(f, "int64", "arr", (count > 0 ? count : 1), cv, 0);
+    add_var_to_func(f, dtype, "arr", (count > 0 ? count : 1), cv, 0);
     add_var_to_func(f, "int64", "i", 1, zv, 1);
     add_var_to_func(f, "int64", "j", 1, zv, 1);
     add_var_to_func(f, "int64", "temp", 1, zv, 1);
     add_var_to_func(f, "int64", "realind", 1, zv, 1);
     add_var_to_func(f, "int64", "realind2", 1, zv, 1);
-    add_var_to_func(f, "int64", "a", 1, zv, 1);
-    add_var_to_func(f, "int64", "b", 1, zv, 1);
-    add_var_to_func(f, "int64", "mid", 1, zv, 1);
+    add_var_to_func(f, dtype, "a", 1, is_double ? zd : zv, 1);
+    add_var_to_func(f, dtype, "b", 1, is_double ? zd : zv, 1);
+    add_var_to_func(f, dtype, "mid", 1, is_double ? zd : zv, 1);
     add_var_to_func(f, "int64", "f", 1, zv, 1);
     const char *ps[] = {"\"Enter a number: \""};
     add_var_to_func(f, "const-string", "input_prompt", 18, ps, 1);
+    const char *size_var = is_double ? "double_size" : "int64_size";
+    const char *input_fmt = is_double ? "\t\t(a :input_d !)" : "\t\t(a :input_i !)";
+    const char *copy_a = is_double ? "\t\t\t(a + zerod a :=)" : "\t\t\t(a + zero a :=)";
+    const char *copy_b = is_double ? "\t\t\t(b + zerod b :=)" : "\t\t\t(b + zero b :=)";
     if (!skip_input) {
         func_append(f, "\t(zero i :=)");
         func_append(f, "\t(for-loop)");
         snprintf(ln, sizeof(ln), "\t(((i count <) f :=) f for)");
         func_append(f, ln);
         func_append(f, "\t\t(input_prompt :print_s !)");
-        func_append(f, "\t\t(i * int64_size realind :=)");
-        func_append(f, "\t\t(a :input_i !)");
-        func_append(f, "\t\t(a temp :=)");
-        func_append(f, "\t\t(temp arr [ realind ] =)");
+        snprintf(ln, sizeof(ln), "\t\t(i * %s realind :=)", size_var);
+        func_append(f, ln);
+        func_append(f, input_fmt);
+        if (is_double) func_append(f, "\t\t(a + zerod a :=)");
+        func_append(f, "\t\t(a arr [ realind ] =)");
         func_append(f, "\t\t(i + one i :=)");
         func_append(f, "\t(next)");
     }
@@ -1296,18 +1309,20 @@ void emit_input_sort(Program *prog, Function *f, int count, int skip_input, int 
     func_append(f, "\t\t\t(count one - temp :=)");
     snprintf(ln, sizeof(ln), "\t\t(((j temp <) f :=) f for)");
     func_append(f, ln);
-    func_append(f, "\t\t\t(j * int64_size realind :=)");
-    func_append(f, "\t\t\t((j + one) * int64_size realind2 :=)");
+    snprintf(ln, sizeof(ln), "\t\t\t(j * %s realind :=)", size_var);
+    func_append(f, ln);
+    snprintf(ln, sizeof(ln), "\t\t\t((j + one) * %s realind2 :=)", size_var);
+    func_append(f, ln);
     func_append(f, "\t\t\t(arr [ realind ] a =)");
-    func_append(f, "\t\t\t(a + zero a :=)");
+    func_append(f, copy_a);
     func_append(f, "\t\t\t(arr [ realind2 ] b =)");
-    func_append(f, "\t\t\t(b + zero b :=)");
+    func_append(f, copy_b);
     func_append(f, descending ? "\t\t\t(((a b <) f :=) f if)" : "\t\t\t(((a b >) f :=) f if)");
     func_append(f, "\t\t\t\t(b arr [ realind ] =)");
     func_append(f, "\t\t\t\t(a arr [ realind2 ] =)");
     func_append(f, "\t\t\t(endif)");
     func_append(f, "\t\t\t(j + one j :=)");
-    func_append(f, "\t\t(next)");
+    func_append(f, "\t(next)");
     func_append(f, "\t\t(i + one i :=)");
     func_append(f, "\t(next)");
     if (!dataflow_quiet_mode) {
@@ -1316,10 +1331,11 @@ void emit_input_sort(Program *prog, Function *f, int count, int skip_input, int 
         func_append(f, "\t(for-loop)");
         snprintf(ln, sizeof(ln), "\t(((i count <) f :=) f for)");
         func_append(f, ln);
-        func_append(f, "\t\t(i * int64_size realind :=)");
+        snprintf(ln, sizeof(ln), "\t\t(i * %s realind :=)", size_var);
+        func_append(f, ln);
         func_append(f, "\t\t(arr [ realind ] a =)");
-        func_append(f, "\t\t(a + zero a :=)");
-        func_append(f, "\t\t(a :print_i !)");
+        func_append(f, is_double ? "\t\t(a + zerod a :=)" : "\t\t(a + zero a :=)");
+        func_append(f, is_double ? "\t\t(a :print_d !)" : "\t\t(a :print_i !)");
         func_append(f, "\t\t(:print_n !)");
         func_append(f, "\t\t(i + one i :=)");
         func_append(f, "\t(next)");
@@ -5395,11 +5411,41 @@ int parse_task(const char *prompt, TaskProfile *task) {
     if (strstr(buf, "byte") || strstr(buf, "int8")) snprintf(task->type, sizeof(task->type), "%s", "byte");
     else if (strstr(buf, "int16") || strstr(buf, "short")) snprintf(task->type, sizeof(task->type), "%s", "int16");
     else if (strstr(buf, "int32")) snprintf(task->type, sizeof(task->type), "%s", "int32");
-    else if (strstr(buf, "int64") || strstr(buf, "int") || strstr(buf, "long")) snprintf(task->type, sizeof(task->type), "%s", "int64");
+    else if (strstr(buf, "int64") || has_word(buf, "int") || strstr(buf, "long")) snprintf(task->type, sizeof(task->type), "%s", "int64");
     else if (strstr(buf, "double") || strstr(buf, "float") || strstr(buf, "real") || strstr(buf, "komma")) snprintf(task->type, sizeof(task->type), "%s", "double");
 
     // extract numbers
     task->num_literals = extract_numbers(prompt, task->literals, MAX_NUMS);
+    // also extract double literals (decimal numbers)
+    int has_decimals = 0;
+    for (int di = 0; di < task->num_literals && di < MAX_NUMS; di++)
+        task->double_literals[di] = (double)task->literals[di];
+    {
+        char dscan[MAX_PROMPT];
+        snprintf(dscan, sizeof(dscan), "%s", buf);
+        char *dp = dscan;
+        int di = 0;
+        while (*dp && di < MAX_NUMS) {
+            if (isdigit(*dp)) {
+                char *start = dp;
+                while (*dp && (isdigit(*dp) || *dp == '.')) dp++;
+                if (strchr(start, '.') != NULL) {
+                    task->double_literals[di] = atof(start);
+                    has_decimals = 1;
+                } else {
+                    task->double_literals[di] = (double)task->literals[di];
+                }
+                di++;
+                continue;
+            }
+            dp++;
+        }
+        // override num_literals with count from this pass (handles decimals as single values)
+        if (has_decimals) {
+            task->num_literals = di;
+            snprintf(task->type, sizeof(task->type), "%s", "double");
+        }
+    }
     task->has_literals = (task->num_literals > 0);
 
     // count detection: word before "numbers/werte/zahlen/values"
@@ -5432,17 +5478,8 @@ int parse_task(const char *prompt, TaskProfile *task) {
         }
         p++;
     }
-    // if count has no word-based number and first literal could be a count, use it
-    if (!task->has_input && task->num_literals == 1 && task->has_literals) {
-        int lit = task->literals[0];
-        if (lit >= 1 && lit <= 1000) {
-            task->input_count = lit;
-            task->has_input = 1;
-        }
-    }
-
     // detect input keywords
-    if (has_word(buf, "lies") || has_word(buf, "read") || has_word(buf, "input")
+    if (has_word(buf, "lies") || has_word(buf, "lese") || has_word(buf, "read") || has_word(buf, "input")
         || has_word(buf, "gib") || has_word(buf, "enter") || has_word(buf, "erfasse")
         || has_word(buf, "collect") || has_word(buf, "eingabe") || has_word(buf, "einlesen"))
         task->has_input = 1;
@@ -5466,6 +5503,73 @@ int parse_task(const char *prompt, TaskProfile *task) {
         else if (strcmp(op, "sub") == 0) task->has_sub = 1;
         else if (strcmp(op, "mul") == 0) task->has_mul = 1;
         else if (strcmp(op, "div") == 0) task->has_div = 1;
+    }
+    // also detect each operation independently via strstr (like find_operation)
+    for (int oi = 0; oi < (int)(sizeof(ops)/sizeof(ops[0])); oi++) {
+        if (strstr(buf, ops[oi].op)) {
+            if (strcmp(ops[oi].rpn_op, "add") == 0) task->has_add = 1;
+            else if (strcmp(ops[oi].rpn_op, "sub") == 0) task->has_sub = 1;
+            else if (strcmp(ops[oi].rpn_op, "mul") == 0) task->has_mul = 1;
+            else if (strcmp(ops[oi].rpn_op, "div") == 0) task->has_div = 1;
+        }
+    }
+
+    // build operation sequence in prompt order (left-to-right)
+    task->num_ops = 0;
+    {
+        // Find all operation keywords via strstr (mirrors the old detection loop)
+        // Record position and sort by position to maintain prompt order
+        int found_ops = 0;
+        int op_positions[32];
+        char op_names[32][8];
+        for (int oi = 0; oi < (int)(sizeof(ops)/sizeof(ops[0])); oi++) {
+            char *p = buf;
+            while ((p = strstr(p, ops[oi].op)) != NULL && found_ops < 32) {
+                // word-boundary check (before only, matching strstr-loop behavior)
+                int at_start = (p == buf);
+                int before_ok = at_start || !isalpha((unsigned char)*(p - 1));
+                if (before_ok) {
+                    int pos = (int)(p - buf);
+                    int dup = 0;
+                    for (int di = 0; di < found_ops; di++) {
+                        if (op_positions[di] == pos) { dup = 1; break; }
+                    }
+                    if (!dup) {
+                        op_positions[found_ops] = pos;
+                        snprintf(op_names[found_ops], sizeof(op_names[0]), "%s", ops[oi].rpn_op);
+                        found_ops++;
+                    }
+                }
+                p++;
+            }
+        }
+        // Sort by position to restore prompt order
+        for (int i = 0; i < found_ops - 1; i++) {
+            for (int j = i + 1; j < found_ops; j++) {
+                if (op_positions[j] < op_positions[i]) {
+                    int tp = op_positions[i]; op_positions[i] = op_positions[j]; op_positions[j] = tp;
+                    char tn[8]; snprintf(tn, sizeof(tn), "%s", op_names[i]);
+                    snprintf(op_names[i], sizeof(op_names[i]), "%s", op_names[j]);
+                    snprintf(op_names[j], sizeof(op_names[j]), "%s", tn);
+                }
+            }
+        }
+        // Pair operations with literals in prompt order
+        int lit_idx = 0;
+        for (int oi = 0; oi < found_ops && lit_idx < task->num_literals; oi++) {
+            snprintf(task->op_seq[task->num_ops], sizeof(task->op_seq[0]), "%s", op_names[oi]);
+            task->op_seq_literals[task->num_ops] = task->literals[lit_idx++];
+            task->num_ops++;
+        }
+    }
+
+    // if count not yet set and single literal could be a count (only when no operation present)
+    if (!task->has_input && task->num_literals == 1 && task->has_literals && !task->has_operation) {
+        int lit = task->literals[0];
+        if (lit >= 1 && lit <= 1000) {
+            task->input_count = lit;
+            task->has_input = 1;
+        }
     }
 
     // detect loops
@@ -5493,7 +5597,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
         task->has_power = 1;
 
     if (has_word(buf, "max") || has_word(buf, "größt") || has_word(buf, "largest")
-        || has_word(buf, "greatest") || has_word(buf, "highest"))
+        || has_word(buf, "greatest") || has_word(buf, "highest") || has_word(buf, "maximum"))
         task->has_max = 1;
 
     if (has_word(buf, "min") || has_word(buf, "kleinste") || has_word(buf, "smallest")
@@ -5523,7 +5627,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
         || has_word(buf, "struktur") || has_word(buf, "record"))
         task->has_struct = 1;
 
-    if (has_word(buf, "function") || has_word(buf, "funktion") || has_word(buf, "sub"))
+    if (has_word(buf, "function") || has_word(buf, "funktion") || has_word(buf, "subroutine"))
         task->has_function = 1;
 
     if (has_word(buf, "hex") || has_word(buf, "binary") || has_word(buf, "binaer"))
@@ -5573,8 +5677,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
         || (has_word(buf, "what") && has_word(buf, "your")))
         task->has_hello_name = 1;
 
-    if ((has_word(buf, "even") || has_word(buf, "odd") || has_word(buf, "gerade") || has_word(buf, "ungerade"))
-        && !task->has_literals)
+    if ((has_word(buf, "even") || has_word(buf, "odd") || has_word(buf, "gerade") || has_word(buf, "ungerade")))
         task->has_even_odd = 1;
 
     // enhanced pattern detection
@@ -5587,7 +5690,8 @@ int parse_task(const char *prompt, TaskProfile *task) {
         task->has_operation = 0;
     }
 
-    if ((has_word(buf, "even") || has_word(buf, "gerade")) && task->has_literals) {
+    if ((has_word(buf, "even") || has_word(buf, "gerade")) && task->has_literals
+        && !has_word(buf, "ungerade") && !has_word(buf, "odd")) {
         task->has_print_even = 1;
         if (task->num_literals >= 1) task->print_even_n = task->literals[0];
         else task->print_even_n = 100;
@@ -9332,7 +9436,7 @@ static void ee_math(Program *p, Function *f, TaskProfile *t) { emit_math(p, f, t
 static void ee_input_loop(Program *p, Function *f, TaskProfile *t) { emit_input_loop(p, f, t->input_count > 0 ? t->input_count : 5, t->type, NULL); }
 static void ee_for_sum(Program *p, Function *f, TaskProfile *t) { emit_for_sum(p, f, t->sum_range_n > 0 ? t->sum_range_n : 100); }
 static void ee_print_even(Program *p, Function *f, TaskProfile *t) { emit_print_even(p, f, t->print_even_n > 0 ? t->print_even_n : 100); }
-static void ee_input_sort(Program *p, Function *f, TaskProfile *t) { emit_input_sort(p, f, t->input_sort_count > 0 ? t->input_sort_count : 5, t->skip_input, t->has_descending); }
+static void ee_input_sort(Program *p, Function *f, TaskProfile *t) { emit_input_sort(p, f, t->input_sort_count > 0 ? t->input_sort_count : 5, t->skip_input, t->has_descending, t->type); }
 static void ee_primes(Program *p, Function *f, TaskProfile *t) { int n = t->num_literals > 0 ? t->literals[0] : 50; emit_primes(p, f, n); }
 static void ee_input_fact(Program *p, Function *f, TaskProfile *t) { (void)t; emit_input_factorial(p, f); }
 static void ee_mult_table(Program *p, Function *f, TaskProfile *t) { (void)t; emit_multiplication_table(p, f); }
@@ -9501,17 +9605,21 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         if (task->inherit_var[0]) c = task->inherit_count > 0 ? task->inherit_count : c;
         int saved_quiet = dataflow_quiet_mode;
         if (task->has_max || task->has_min) dataflow_quiet_mode = 1;
-        emit_input_sort(prog, f, c, task->skip_input, task->has_descending);
+        emit_input_sort(prog, f, c, task->skip_input, task->has_descending, task->type);
         dataflow_quiet_mode = saved_quiet;
+        int is_double = (strcmp(task->type, "double") == 0);
+        const char *size_var = is_double ? "double_size" : "int64_size";
         if (task->has_max) {
+    char ln[256];
     const char *zv[] = {"0"};
+    const char *zd[] = {"0.0"};
     const char *ov[] = {"1"};
     const char *tv[] = {"2"};
     const char *thv[] = {"3"};
     const char *fov[] = {"4"};
     const char *fiv[] = {"5"};
     const char *cellsv[] = {"25"};
-    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, is_double ? "const-double" : "const-int64", is_double ? "zerod" : "zero", 1, is_double ? zd : zv, 1);
     add_var_to_func(f, "const-int64", "one", 1, ov, 1);
     add_var_to_func(f, "const-int64", "two", 1, tv, 1);
     add_var_to_func(f, "const-int64", "three", 1, thv, 1);
@@ -9521,19 +9629,70 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     add_var_to_func(f, "const-int64", "cols", 1, fiv, 1);
             func_append(f, "\t// print largest");
             func_append(f, "\t(count one - temp :=)");
-            func_append(f, "\t(temp * int64_size realind :=)");
+            snprintf(ln, sizeof(ln), "\t(temp * %s realind :=)", size_var);
+            func_append(f, ln);
             func_append(f, "\t(arr [ realind ] a =)");
-            func_append(f, "\t(a + zero a :=)");
-            func_append(f, "\t(a :print_i !)");
+            func_append(f, is_double ? "\t(a + zerod a :=)" : "\t(a + zero a :=)");
+            func_append(f, is_double ? "\t(a :print_d !)" : "\t(a :print_i !)");
             func_append(f, "\t(:print_n !)");
-        } else if (task->has_min) {
+        }
+        if (task->has_min) {
+            char ln[256];
             const char *zv[] = {"0"};
-            add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+            const char *zd[] = {"0.0"};
+            add_var_to_func(f, is_double ? "const-double" : "const-int64", is_double ? "zerod" : "zero", 1, is_double ? zd : zv, 1);
             func_append(f, "\t// print smallest");
-            func_append(f, "\t(zero * int64_size realind :=)");
+            snprintf(ln, sizeof(ln), "\t(zero * %s realind :=)", size_var);
+            func_append(f, ln);
             func_append(f, "\t(arr [ realind ] a =)");
-            func_append(f, "\t(a + zero a :=)");
-            func_append(f, "\t(a :print_i !)");
+            func_append(f, is_double ? "\t(a + zerod a :=)" : "\t(a + zero a :=)");
+            func_append(f, is_double ? "\t(a :print_d !)" : "\t(a :print_i !)");
+            func_append(f, "\t(:print_n !)");
+        }
+        emitted = 1;
+    }
+    // Standalone min/max output for inherited arrays (when sort+input was in a previous step)
+    if ((task->has_max || task->has_min) && !task->has_input_sort && task->inherit_var[0]) {
+        int is_double = (strcmp(task->type, "double") == 0);
+        if (!is_double) {
+            for (int vi = 0; vi < task->num_inherit_vars; vi++)
+                if (strcmp(task->inherit_var_types[vi], "double") == 0) { is_double = 1; break; }
+        }
+        const char *zv[] = {"0"};
+        const char *zd[] = {"0.0"};
+        const char *ov[] = {"1"};
+        add_var_to_func(f, is_double ? "const-double" : "const-int64", is_double ? "zerod" : "zero", 1, is_double ? zd : zv, 1);
+        add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+        char cvs[16];
+        snprintf(cvs, sizeof(cvs), "%d", task->inherit_count > 0 ? task->inherit_count : 5);
+        const char *cv[] = {cvs};
+        add_var_to_func(f, "int64", "count", 1, cv, 1);
+        add_var_to_func(f, "int64", "temp", 1, zv, 1);
+        add_var_to_func(f, "int64", "realind", 1, zv, 1);
+        add_var_to_func(f, is_double ? "double" : "int64", "a", 1, is_double ? zd : zv, 1);
+        add_var_to_func(f, "int64", "f", 1, zv, 1);
+        const char *size_var = is_double ? "double_size" : "int64_size";
+        if (task->has_max) {
+            char ln[256];
+            func_append(f, "\t// print largest");
+            func_append(f, "\t(count one - temp :=)");
+            snprintf(ln, sizeof(ln), "\t(temp * %s realind :=)", size_var);
+            func_append(f, ln);
+            snprintf(ln, sizeof(ln), "\t(%s [ realind ] a =)", task->inherit_var);
+            func_append(f, ln);
+            func_append(f, is_double ? "\t(a + zerod a :=)" : "\t(a + zero a :=)");
+            func_append(f, is_double ? "\t(a :print_d !)" : "\t(a :print_i !)");
+            func_append(f, "\t(:print_n !)");
+        }
+        if (task->has_min) {
+            char ln[256];
+            func_append(f, "\t// print smallest");
+            snprintf(ln, sizeof(ln), "\t(zero * %s realind :=)", size_var);
+            func_append(f, ln);
+            snprintf(ln, sizeof(ln), "\t(%s [ realind ] a =)", task->inherit_var);
+            func_append(f, ln);
+            func_append(f, is_double ? "\t(a + zerod a :=)" : "\t(a + zero a :=)");
+            func_append(f, is_double ? "\t(a :print_d !)" : "\t(a :print_i !)");
             func_append(f, "\t(:print_n !)");
         }
         emitted = 1;
@@ -9657,7 +9816,101 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         emit_math(prog, f, task->type, "div", vals, n, 1);
         emitted = 1;
     }
-    if (task->has_operation && task->has_input) {
+    // Input + operation(s) with literal operand(s): read one number, apply ops
+    if (!emitted && task->has_input && task->has_operation && task->has_literals
+        && task->input_count == 0 && task->num_literals >= 1) {
+        int is_double = (strcmp(task->type, "double") == 0);
+        const char *const_type = is_double ? "const-double" : "const-int64";
+        const char *var_type = is_double ? "double" : "int64";
+        const char *input_op = is_double ? ":input_d !" : ":input_i !";
+        const char *print_op = is_double ? ":print_d !" : ":print_i !";
+        const char *zero_val = is_double ? "0.0" : "0";
+        const char *one_val = is_double ? "1.0" : "1";
+        const char *zv[] = {zero_val};
+        const char *ov[] = {one_val};
+        add_var_to_func(f, const_type, "zero", 1, zv, 1);
+        add_var_to_func(f, const_type, "one", 1, ov, 1);
+        add_var_to_func(f, var_type, "a", 1, zv, 1);
+        add_var_to_func(f, "int64", "f", 1, (const char *[]){"0"}, 1);
+        if (task->has_even_odd && !is_double) {
+            const char *tv[] = {"2"};
+            add_var_to_func(f, "const-int64", "two", 1, tv, 1);
+            add_var_to_func(f, "int64", "mod", 1, zv, 1);
+            const char *es[] = {"\" is even\""};
+            const char *os[] = {"\" is odd\""};
+            add_var_to_func(f, "const-string", "even_str", 10, es, 1);
+            add_var_to_func(f, "const-string", "odd_str", 9, os, 1);
+        }
+        const char *ps[] = {"\"Enter a number: \""};
+        add_var_to_func(f, "const-string", "input_prompt", 18, ps, 1);
+        char ln[256];
+        func_append(f, "\t(input_prompt :print_s !)");
+        snprintf(ln, sizeof(ln), "\t(a %s", input_op);
+        func_append(f, ln);
+        // declare each literal as a named variable
+        char var_names[32][16];
+        int num_vars = 0;
+        for (int li = 0; li < task->num_literals && li < 32; li++) {
+            snprintf(var_names[li], sizeof(var_names[li]), "v%d", li);
+            char vs[32];
+            if (is_double)
+                snprintf(vs, sizeof(vs), "%.10g", task->double_literals[li]);
+            else
+                snprintf(vs, sizeof(vs), "%d", task->literals[li]);
+            const char *vv[] = {vs};
+            add_var_to_func(f, const_type, var_names[li], 1, vv, 1);
+            num_vars++;
+        }
+        if (task->num_ops > 0) {
+            for (int oi = 0; oi < task->num_ops && oi < num_vars; oi++) {
+                const char *sym = is_double ? "+d" : "+";
+                if (strcmp(task->op_seq[oi], "sub") == 0) sym = is_double ? "-d" : "-";
+                else if (strcmp(task->op_seq[oi], "mul") == 0) sym = is_double ? "*d" : "*";
+                else if (strcmp(task->op_seq[oi], "div") == 0) sym = is_double ? "/d" : "/";
+                snprintf(ln, sizeof(ln), "\t(a %s %s a :=)", sym, var_names[oi]);
+                func_append(f, ln);
+            }
+        } else {
+            // fallback: use boolean flags (unordered)
+            int lit_idx = 0;
+            const char *order[] = {"add", "sub", "mul", "div"};
+            const char *sym_add = is_double ? "+d" : "+";
+            const char *sym_sub = is_double ? "-d" : "-";
+            const char *sym_mul = is_double ? "*d" : "*";
+            const char *sym_div = is_double ? "/d" : "/";
+            for (int oi = 0; oi < 4 && lit_idx < num_vars; oi++) {
+                int has_op = 0;
+                if (strcmp(order[oi], "add") == 0) has_op = task->has_add;
+                else if (strcmp(order[oi], "sub") == 0) has_op = task->has_sub;
+                else if (strcmp(order[oi], "mul") == 0) has_op = task->has_mul;
+                else if (strcmp(order[oi], "div") == 0) has_op = task->has_div;
+                if (has_op) {
+                    const char *sym = sym_add;
+                    if (strcmp(order[oi], "sub") == 0) sym = sym_sub;
+                    else if (strcmp(order[oi], "mul") == 0) sym = sym_mul;
+                    else if (strcmp(order[oi], "div") == 0) sym = sym_div;
+                    snprintf(ln, sizeof(ln), "\t(a %s %s a :=)", sym, var_names[lit_idx++]);
+                    func_append(f, ln);
+                }
+            }
+        }
+        if (task->has_even_odd && !is_double) {
+            func_append(f, "\t(a % two mod :=)");
+        }
+        snprintf(ln, sizeof(ln), "\t(a %s", print_op);
+        func_append(f, ln);
+        func_append(f, "\t(:print_n !)");
+        if (task->has_even_odd && !is_double) {
+            func_append(f, "\t(((mod zero ==) f :=) f if+)");
+            func_append(f, "\t\t(even_str :print_s !)");
+            func_append(f, "\t(else)");
+            func_append(f, "\t\t(odd_str :print_s !)");
+            func_append(f, "\t(endif)");
+            func_append(f, "\t(:print_n !)");
+        }
+        emitted = 1;
+    }
+    if (!emitted && task->has_operation && task->has_input) {
         int c = task->input_count > 0 ? task->input_count : 5;
         emit_input_loop(prog, f, c, task->type, task->op);
         emitted = 1;
@@ -9989,7 +10242,7 @@ void gen_arithmetic(Program *prog, const char *op, const char *type, const int *
 
 static int word_to_num(const char *word) {
     if (strcmp(word, "null") == 0 || strcmp(word, "zero") == 0) return 0;
-    if (strcmp(word, "eins") == 0 || strcmp(word, "ein") == 0 || strcmp(word, "one") == 0) return 1;
+    if (strcmp(word, "eins") == 0 || strcmp(word, "one") == 0) return 1;
     if (strcmp(word, "zwei") == 0 || strcmp(word, "two") == 0) return 2;
     if (strcmp(word, "drei") == 0 || strcmp(word, "three") == 0) return 3;
     if (strcmp(word, "vier") == 0 || strcmp(word, "four") == 0) return 4;
@@ -11324,12 +11577,22 @@ int match_template(const char *prompt, int *best_score) {
     int best_idx = -1;
     *best_score = 0;
 
+    // Count total words in prompt (to avoid matching generic templates against complex prompts)
+    int total_words = 0;
+    {
+        char wc_buf[MAX_PROMPT];
+        snprintf(wc_buf, sizeof(wc_buf), "%s", buf);
+        char *wc = strtok(wc_buf, " ");
+        while (wc) { trim(wc); if (strlen(wc) > 0) total_words++; wc = strtok(NULL, " "); }
+    }
+
     for (int i = 0; i < num_templates; i++) {
         char kwbuf[512];
         snprintf(kwbuf, sizeof(kwbuf), "%s", templates[i].keywords);
         to_lowercase(kwbuf);
 
         int score = 0;
+        int num_kw = 0;
         char kwcopy[512];
         snprintf(kwcopy, sizeof(kwcopy), "%s", kwbuf);
         char *kw = strtok(kwcopy, " ,/");
@@ -11337,6 +11600,7 @@ int match_template(const char *prompt, int *best_score) {
         while (kw) {
             trim(kw);
             if (strlen(kw) > 0) {
+                num_kw++;
                 if (str_contains_word(buf, kw)) {
                     score++;
                 } else {
@@ -11346,6 +11610,11 @@ int match_template(const char *prompt, int *best_score) {
             kw = strtok(NULL, " ,/");
         }
         if (all_match && score > 0) {
+            // Avoid matching generic short-keyword templates against complex prompts.
+            // If the prompt has more than 3x the template's keyword count, it likely
+            // contains additional intent (e.g. "read", "minimum") that the simple
+            // template handler would ignore.
+            if (total_words > num_kw * 3) continue;
             if (score > *best_score) {
                 *best_score = score;
                 best_idx = i;

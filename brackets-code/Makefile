@@ -5,8 +5,7 @@ PREFIX  = /usr/local
 
 # Detect readline availability early so -DHAVE_READLINE is used
 # during compilation of .o files, not just at link time.
-HAVE_RL := $(shell (pkg-config --exists readline 2>/dev/null && echo 1) || \
-                   [ -f /usr/include/readline/readline.h ] && echo 1 || echo 0)
+HAVE_RL := $(shell pkg-config --exists readline 2>/dev/null && echo 1 || ( [ -f /usr/include/readline/readline.h ] && echo 1 || echo 0 ))
 ifeq ($(HAVE_RL),1)
   CFLAGS  += -DHAVE_READLINE
   RL_LIBS := $(shell pkg-config --libs readline 2>/dev/null || echo -lreadline)

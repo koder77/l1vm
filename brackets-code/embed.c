@@ -772,7 +772,7 @@ int has_sequential_pattern(const char *text) {
     int count_enumerated = 0;
     const char *p = text;
     while (*p && count_enumerated < 2) {
-        if ((p[0] >= '1' && p[0] <= '9') && (p[1] == ')' || p[1] == '.')) { count_enumerated++; p += 2; }
+        if ((p[0] >= '1' && p[0] <= '9') && (p[1] == ')' || (p[1] == '.' && p[2] != '.' && !(p[2] >= '0' && p[2] <= '9')))) { count_enumerated++; p += 2; }
         else if ((p[0] == '(') && (p[1] >= '1' && p[1] <= '9') && p[2] == ')') { count_enumerated++; p += 3; }
         else if (strncmp(p, "step ", 5) == 0 && p[5] >= '1' && p[5] <= '9') { count_enumerated++; p += 6; }
         else p++;
@@ -877,7 +877,7 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
             }
             if (bs_count >= 2) {
                 for (int bsi = 0; bsi < bs_count; bsi++)
-                    snprintf(steps[num_steps++], MAX_PROMPT, "%s", bullet_steps[bsi]);
+                    snprintf(steps[num_steps++], MAX_PROMPT, "%.8191s", bullet_steps[bsi]);
                 return num_steps;
             }
         }
@@ -887,7 +887,7 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
         int collecting = 0;
         while (*p && num_steps < MAX_STEPS - 1) {
             int step_found = 0;
-            if ((p[0] >= '1' && p[0] <= '9') && (p[1] == ')' || p[1] == '.')) {
+            if ((p[0] >= '1' && p[0] <= '9') && (p[1] == ')' || (p[1] == '.' && p[2] != '.' && !(p[2] >= '0' && p[2] <= '9')))) {
                 if (collecting && strlen(current) > 0) {
                     trim(current);
                     snprintf(steps[num_steps], MAX_PROMPT, "%s", current);
@@ -897,7 +897,7 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                 snprintf(current, sizeof(current), "%s", p);
                 collecting = 1;
                 step_found = 1;
-            } else if (p[0] == '(' && p[1] >= '1' && p[1] <= '9' && p[2] == ')') {
+            } else if ((p[0] == '(') && (p[1] >= '1' && p[1] <= '9') && p[2] == ')') {
                 if (collecting && strlen(current) > 0) {
                     trim(current);
                     snprintf(steps[num_steps], MAX_PROMPT, "%s", current);
@@ -922,7 +922,7 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
             }
             if (!step_found) { p++; }
             else {
-                while (*p && !((p[0] >= '1' && p[0] <= '9' && (p[1] == ')' || p[1] == '.'))
+                while (*p && !((p[0] >= '1' && p[0] <= '9' && (p[1] == ')' || (p[1] == '.' && p[2] != '.' && !(p[2] >= '0' && p[2] <= '9'))))
                        || (p[0] == '(' && p[1] >= '1' && p[1] <= '9' && p[2] == ')')
                        || strncmp(p, "step ", 5) == 0)) p++;
             }
@@ -983,6 +983,39 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
         snprintf(step, MAX_PROMPT, "%.*s", best_pos, remaining);
         trim(step);
         if (strlen(step) > 0 && has_actionable_keyword(step)) {
+            // Avoid splitting on short conjunctions (" und ", " and ", ", ") when
+            // both sides are short (< 4 words each), as this is likely a list
+            // (e.g. "minimum und maximum") rather than sequential action steps,
+            // OR when both sides contain arithmetic operation keywords (e.g.
+            // "addiere 3 und multipliziere mit 10" → one compound action).
+            int is_short_conj = (best_len <= 5);
+            if (is_short_conj) {
+                char *rest = remaining + best_pos + best_len;
+                int left_has_op = has_word(step, "add") || has_word(step, "sub") || has_word(step, "mul") || has_word(step, "div")
+                    || has_word(step, "addiere") || has_word(step, "subtrahier") || has_word(step, "multiplizier")
+                    || has_word(step, "dividier") || has_word(step, "plus") || has_word(step, "minus")
+                    || has_word(step, "mal") || has_word(step, "durch");
+                int right_has_op = has_word(rest, "add") || has_word(rest, "sub") || has_word(rest, "mul") || has_word(rest, "div")
+                    || has_word(rest, "addiere") || has_word(rest, "subtrahier") || has_word(rest, "multiplizier")
+                    || has_word(rest, "dividier") || has_word(rest, "plus") || has_word(rest, "minus")
+                    || has_word(rest, "mal") || has_word(rest, "durch");
+                int sw = 0, rw = 0;
+                char tmp[MAX_PROMPT];
+                snprintf(tmp, sizeof(tmp), "%s", step);
+                char *t = strtok(tmp, " ");
+                while (t) { trim(t); if (strlen(t) > 0) sw++; t = strtok(NULL, " "); }
+                snprintf(tmp, sizeof(tmp), "%s", rest);
+                t = strtok(tmp, " ");
+                while (t) { trim(t); if (strlen(t) > 0) rw++; t = strtok(NULL, " "); }
+                if ((sw < 4 && rw < 4) || (left_has_op && right_has_op)) {
+                    // False split – merge and continue as single step
+                    char combined[MAX_PROMPT * 2];
+                    snprintf(combined, sizeof(combined), "%s %s", step, rest);
+                    trim(combined);
+                    snprintf(remaining, MAX_PROMPT, "%.*s", MAX_PROMPT - 1, combined);
+                    break;
+                }
+            }
             snprintf(steps[num_steps], MAX_PROMPT, "%s", step); num_steps++;
             remaining += best_pos + best_len;
         } else if (strlen(step) > 0) {
@@ -1034,7 +1067,7 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
             for (int i = 1; i < num_steps; i++) {
                 if ((has_word(steps[i], "print") || has_word(steps[i], "show")
                      || has_word(steps[i], "display") || has_word(steps[i], "ausgeb")
-                     || has_word(steps[i], "zeig"))
+                     || has_word(steps[i], "zeig") || strstr(steps[i], "gib aus"))
                     && (has_word(steps[i], "median") || has_word(steps[i], "average")
                      || has_word(steps[i], "mean") || has_word(steps[i], "largest")
                      || has_word(steps[i], "smallest") || has_word(steps[i], "greatest")

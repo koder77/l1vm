@@ -135,6 +135,7 @@ typedef struct {
     int count_value;
     int has_literals;
     int literals[MAX_NUMS];
+    double double_literals[MAX_NUMS];
     int num_literals;
     int has_operation;
     char op[16];
@@ -333,6 +334,9 @@ typedef struct {
     int num_inherit_vars;
     int extra_emitters[32];
     int num_extra_emitters;
+    char op_seq[32][8];
+    int op_seq_literals[32];
+    int num_ops;
     char type[16];
     char title[256];
 } TaskProfile;
@@ -466,7 +470,7 @@ void emit_print_even(Program *prog, Function *f, int n);
 void emit_input_find_max(Program *prog, Function *f, int count);
 void emit_countdown_from(Program *prog, Function *f, int start);
 void emit_fib_seq(Program *prog, Function *f, int n);
-void emit_input_sort(Program *prog, Function *f, int count, int skip_input, int descending);
+void emit_input_sort(Program *prog, Function *f, int count, int skip_input, int descending, const char *type);
 void emit_median(Program *prog, Function *f, int count, int skip_input);
 void emit_string_cat(Program *prog, Function *f);
 void emit_string_compare(Program *prog, Function *f);
