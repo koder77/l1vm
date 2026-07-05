@@ -338,6 +338,7 @@ typedef struct {
     int suppress_output;
     char result_var[64];
     int skip_input;
+    char prompt[MAX_PROMPT];
     char inherit_var[64];
     int inherit_count;
     char inherit_var_names[64][256];

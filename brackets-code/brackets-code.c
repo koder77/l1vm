@@ -1852,6 +1852,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
+    snprintf(task->prompt, sizeof(task->prompt), "%s", prompt);
 
     // default type
     snprintf(task->type, sizeof(task->type), "%s", "int64");

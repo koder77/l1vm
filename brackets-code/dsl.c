@@ -954,5 +954,20 @@ int dsl_generate_from_task(Program *prog, TaskProfile *task, Function *f)
             return 1;
         }
     }
+
+    if (strlen(task->prompt) > 0) {
+        DslRule *kw_rule = NULL;
+        float kw_score = 0.0f;
+        if (dsl_match_rule(task->prompt, &kw_rule, &kw_score)) {
+            if (kw_score >= 0.3f) {
+                if (verbose_flag) {
+                    printf("DSL: keyword matched rule '%s' (%s) score=%.2f\n",
+                           kw_rule->keyword, kw_rule->filename, kw_score);
+                }
+                dsl_generate_code(prog, kw_rule, f);
+                return 1;
+            }
+        }
+    }
     return 0;
 }
