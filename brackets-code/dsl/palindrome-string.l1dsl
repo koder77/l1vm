@@ -1,0 +1,43 @@
+// palindrome-string.l1dsl
+parser: "palindrome string, string palindrome"
+match: has_palindrome_string
+include: intr-func.l1h
+include-post: string.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 maxlen 1 256
+var: string str 256 "\"\""
+var: int64 len 1 0
+var: int64 i 1 0
+var: int64 j 1 0
+var: int64 ch_i 1 0
+var: int64 ch_j 1 0
+var: int64 f 1 0
+var: int64 strmod 1 0
+desc: "Check if a string is a palindrome"
+
+code:
+    (strmod :string_init !)
+    ("Enter a string: " :print_s !)
+    (maxlen str :input_s !)
+    (str :string_len len !)
+    (zero i :=)
+    (len one - j :=)
+    (one f :=)
+    (for-loop)
+    (((i j <) f :=) f for)
+        (str i :string_getchar ch_i !)
+        (str j :string_getchar ch_j !)
+        (((ch_i ch_j ==) f :=) f if+)
+        (else)
+            (zero f :=)
+        (endif)
+        (i + one i :=)
+        (j - one j :=)
+    (next)
+    (((f one ==) f :=) f if)
+        ("palindrome" :print_s !)
+    (else)
+        ("not palindrome" :print_s !)
+    (endif)
+    (:print_n !)

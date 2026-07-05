@@ -14,9 +14,11 @@ endif
 
 BINARY  = brackets-code
 SOURCE  = brackets-code.c
+DSL     = dsl.c
 EMBED   = embed.c
 LEARN   = learn.c
 HEADER  = brackets-code.h
+DSL_H   = dsl.h
 SYNONYM = synonyms.txt
 MANPAGE = brackets-code.1
 TEST_SH = tests/run_tests.sh
@@ -25,13 +27,13 @@ TEST_SH = tests/run_tests.sh
 
 all: $(BINARY)
 
-%.o: %.c $(HEADER)
+%.o: %.c $(HEADER) $(DSL_H)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 embed.o: CFLAGS += -Wno-unused-function
 learn.o: CFLAGS += -Wno-unused-function
 
-$(BINARY): $(SOURCE:.c=.o) $(EMBED:.c=.o) $(LEARN:.c=.o)
+$(BINARY): $(SOURCE:.c=.o) $(DSL:.c=.o) $(EMBED:.c=.o) $(LEARN:.c=.o)
 	@if [ "$(HAVE_RL)" = "1" ]; then \
 		echo "  readline found, enabling interactive history"; \
 	else \
@@ -67,13 +69,16 @@ clean:
 	rm -f tests/saved-failures/*.l1com tests/saved-failures/*_pp.l1com
 	rm -f *.o
 
-install: $(BINARY) $(SYNONYM) $(MANPAGE) $(HEADER)
+install: $(BINARY) $(SYNONYM) $(MANPAGE) $(HEADER) $(DSL_H)
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install -d $(DESTDIR)$(PREFIX)/share/brackets-code
+	install -d $(DESTDIR)$(PREFIX)/share/brackets-code/dsl
 	install -d $(DESTDIR)$(PREFIX)/share/man/man1
 	install -m 755 $(BINARY) $(DESTDIR)$(PREFIX)/bin/$(BINARY)
 	install -m 644 $(SYNONYM) $(DESTDIR)$(PREFIX)/share/brackets-code/$(SYNONYM)
 	install -m 644 $(HEADER) $(DESTDIR)$(PREFIX)/share/brackets-code/$(HEADER)
+	install -m 644 $(DSL_H) $(DESTDIR)$(PREFIX)/share/brackets-code/$(DSL_H)
+	install -m 644 dsl/*.l1dsl $(DESTDIR)$(PREFIX)/share/brackets-code/dsl/
 	install -m 644 $(MANPAGE) $(DESTDIR)$(PREFIX)/share/man/man1/$(MANPAGE)
 
 uninstall:
@@ -86,7 +91,7 @@ dist:
 	@VERSION="$$(grep 'VERSION_TXT' $(SOURCE) | cut -d'"' -f2)"; \
 	tardir="brackets-code-$$VERSION"; \
 	mkdir -p /tmp/$$tardir; \
-	cp $(SOURCE) $(EMBED) $(LEARN) $(HEADER) $(SYNONYM) $(MANPAGE) Makefile README.md memory.txt /tmp/$$tardir/; \
-	cp -r tests l1vm-example-code /tmp/$$tardir/; \
+	cp $(SOURCE) $(DSL) $(EMBED) $(LEARN) $(HEADER) $(DSL_H) $(SYNONYM) $(MANPAGE) Makefile README.md memory.txt /tmp/$$tardir/; \
+	cp -r tests l1vm-example-code dsl /tmp/$$tardir/; \
 	cd /tmp && tar czf brackets-code-$$VERSION.tar.gz $$tardir; \
 	echo "Created /tmp/brackets-code-$$VERSION.tar.gz"

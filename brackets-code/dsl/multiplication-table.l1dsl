@@ -1,0 +1,27 @@
+// multiplication-table.l1dsl
+parser: "multiplication table, times table, 1x1, einmaleins"
+match: has_mult_table
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 ten 1 10
+var: int64 i 1 1
+var: int64 j 1 1
+var: int64 prod 1 0
+var: int64 f 1 0
+desc: "Print a 10x10 multiplication table"
+
+code:
+    (for-loop)
+    (((i ten <=) f :=) f for)
+        (one j :=)
+        (for-loop)
+        (((j ten <=) f :=) f for)
+            (i * j prod :=)
+            (prod :print_i !)
+            (" " :print_s !)
+            (j + one j :=)
+        (next)
+        (:print_n !)
+        (i + one i :=)
+    (next)

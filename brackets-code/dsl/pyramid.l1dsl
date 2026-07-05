@@ -1,0 +1,29 @@
+// pyramid.l1dsl
+parser: "keywords for matching"
+match: has_pyramid
+token: token type and name
+result: result type and name
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: int64 n 1 0
+var: int64 i 1 0
+var: int64 j 1 0
+var: int64 f 1 0
+var: const-string prompt_n 24 "Enter number of rows: "
+desc: "print a number pyramid"
+code:
+    (prompt_n :print_s !)
+    (n :input_i !)
+    (one i :=)
+    (for-loop)
+    (((i n <=) f :=) f for)
+        (one j :=)
+        (for-loop)
+        (((j i <=) f :=) f for)
+            (j :print_i !)
+            (j + one j :=)
+        (next)
+        (:print_n !)
+        (i + one i :=)
+    (next)

@@ -1,0 +1,6 @@
+// add-int64.l1dsl
+parser: "add, sum"
+token: int64 x, int64 y
+result: int64 z
+
+code: "(x + y z :=)"

@@ -1,0 +1,37 @@
+// random-generator.l1dsl
+parser: "keywords for matching"
+match: has_random_generator
+token: token type and name
+result: result type and name
+include: intr-func.l1h
+include: math-const.l1h
+include-post: math-lib.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: int64 n 1 0
+var: int64 i 1 0
+var: int64 f 1 0
+var: int64 rand_max 1 0
+var: int64 randval 1 0
+var: const-string prompt_count 8 "Count: "
+var: const-string prompt_max 6 "Max: "
+var: const-string random_str 9 "Random: "
+desc: "generate random numbers"
+code:
+    (zero :math_init !)
+    (zero :math_randinit !)
+    (prompt_count :print_s !)
+    (n :input_i !)
+    (n + zero n :=)
+    (prompt_max :print_s !)
+    (rand_max :input_i !)
+    (rand_max + zero rand_max :=)
+    (zero i :=)
+    (for-loop)
+    (((i n <) f :=) f for)
+        (rand_max :math_randintmax !)
+        (randval stpopi)
+        (randval :print_i !)
+        (:print_n !)
+        (i + one i :=)
+    (next)

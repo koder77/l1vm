@@ -1,0 +1,21 @@
+// bool-demo.l1dsl
+parser: "bool demo, boolean, true false"
+match: has_bool_demo
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: int64 flag 1 0
+var: int64 f 1 0
+desc: "Demonstrate boolean logic with if/else"
+
+code:
+    (one flag :=)
+    (((flag one ==) f :=) f if)
+        ("flag is true" :print_s !)
+        (:print_n !)
+    (endif)
+    (zero flag :=)
+    (((flag zero ==) f :=) f if)
+        ("flag is false" :print_s !)
+        (:print_n !)
+    (endif)

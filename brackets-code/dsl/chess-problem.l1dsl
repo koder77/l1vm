@@ -1,0 +1,49 @@
+// chess-problem.l1dsl
+parser: "chess problem, wheat and chessboard, exponential"
+match: has_chess_problem
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 two 1 2
+var: const-int64 maxloop 1 64
+var: int64 field 1 0
+var: int64 total 1 0
+var: int64 loop 1 0
+var: int64 base 1 2
+var: int64 precision 1 0
+var: int64 f 1 0
+var: const-string onestr 4 "\"1.0\""
+var: const-string twostr 4 "\"2.0\""
+var: const-string fieldstr 4 "\"0.0\""
+var: const-string totalstr 4 "\"0.0\""
+var: const-string formatstr 10 "\"%.20Ff\""
+var: const-string textstr 14 "\"chess field: \""
+var: const-string totalnumstr 9 "\"total: \""
+var: const-string emptystr 1 "\"0.0\""
+desc: "Wheat and chessboard problem using big number math"
+code:
+    (zero :mp_math_init call)
+    (onestr base one :mp_set_float !)
+    (twostr base two :mp_set_float !)
+    (fieldstr base field :mp_set_float !)
+    (totalstr base total :mp_set_float !)
+    (:print_n !)
+    (for-loop)
+    (((loop maxloop <=) f =) f for)
+        (textstr :print_s !)
+        (loop :print_i !)
+        (:print_n !)
+        (((loop one ==) f =) f if+)
+            (field one field :mp_add_float !)
+        (else)
+            (field two field :mp_mul_float !)
+            (total field total :mp_add_float !)
+        (endif)
+        (field formatstr precision :mp_print_float !)
+        (:print_n !)
+        (totalnumstr :print_s !)
+        (total formatstr precision :mp_print_float !)
+        (:print_n !)
+        (:print_n !)
+        ((loop one +) loop =)
+    (next)

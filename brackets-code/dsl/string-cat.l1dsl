@@ -1,0 +1,23 @@
+// string-cat.l1dsl
+parser: "string concatenate, concat strings, string cat"
+match: has_string_cat
+include: intr-func.l1h
+include-post: string.l1h
+var: const-int64 zero 1 0
+var: const-int64 maxlen 1 256
+var: string str_a 256 "\"\""
+var: string str_b 256 "\"\""
+var: string result 512 "\"\""
+var: int64 strmod 1 0
+desc: "Read two strings and concatenate them"
+
+code:
+    (strmod :string_init !)
+    ("Enter first string: " :print_s !)
+    (maxlen str_a :input_s !)
+    ("Enter second string: " :print_s !)
+    (maxlen str_b :input_s !)
+    (result str_a :string_copy !)
+    (result str_b :string_cat !)
+    (result :print_s !)
+    (:print_n !)

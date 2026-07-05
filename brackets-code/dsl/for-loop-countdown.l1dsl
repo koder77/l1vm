@@ -1,0 +1,20 @@
+// for-loop-countdown.l1dsl
+parser: "countdown, count down, backwards, decrement"
+match: has_countdown_from
+token: int64 start
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 0
+var: int64 i 1 0
+var: int64 f 1 0
+desc: "Count down from start to zero and print each number"
+
+code:
+    (start i :=)
+    (do)
+        (i :print_i !)
+        (:print_n !)
+        (i - one i :=)
+    (((i zero >) f :=) f while)
+    (zero :print_i !)
+    (:print_n !)

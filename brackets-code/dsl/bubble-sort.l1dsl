@@ -1,0 +1,40 @@
+// bubble-sort.l1dsl
+parser: "bubble sort, sort array, sort numbers"
+token: int64 arr, int64 count
+include: intr-func.l1h
+include: vars.l1h
+var: int64 realind 1 0
+var: int64 realind2 1 0
+var: int64 i 1 0
+var: int64 j 1 0
+var: int64 temp 1 0
+var: int64 a 1 0
+var: int64 b 1 0
+var: int64 f 1 0
+var: const-int64 zero 1 0
+var: const-int64 one 1 0
+desc: "Sort an int64 array using bubble sort algorithm"
+
+code:
+    // bubble sort
+    (zero i :=)
+    (for-loop)
+    (((i count <) f :=) f for)
+        (zero j :=)
+        (for-loop)
+            (count one - temp :=)
+        (((j temp <) f :=) f for)
+            (j * int64_size realind :=)
+            ((j + one) * int64_size realind2 :=)
+            (arr [ realind ] a =)
+            (a + zero a :=)
+            (arr [ realind2 ] b =)
+            (b + zero b :=)
+            (((a b >) f :=) f if)
+                (b arr [ realind ] =)
+                (a arr [ realind2 ] =)
+            (endif)
+            (j + one j :=)
+        (next)
+        (i + one i :=)
+    (next)

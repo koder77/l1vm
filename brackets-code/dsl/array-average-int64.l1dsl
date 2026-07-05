@@ -1,0 +1,29 @@
+// array-average-int64.l1dsl
+parser: "array average, mean array, average of int64 array, int64 average"
+match: has_array_average
+token: int64 arr, int64 count
+result: int64 avg
+include: intr-func.l1h
+include: vars.l1h
+var: int64 realind 1 0
+var: int64 i 1 0
+var: int64 val 1 0
+var: int64 sum 1 0
+var: int64 f 1 0
+var: const-int64 zero 1 0
+var: const-int64 one 1 0
+desc: "Calculate the average of an int64 array"
+
+code:
+    (zero sum :=)
+    (zero i :=)
+    (for-loop)
+    (((i count <) f :=) f for)
+        (i * int64_size realind :=)
+        (arr [ realind ] val =)
+        (sum + val sum :=)
+        (i + one i :=)
+    (next)
+    (sum count / avg :=)
+    (avg :print_i !)
+    (:print_n !)

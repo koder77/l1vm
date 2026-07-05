@@ -323,6 +323,18 @@ typedef struct {
     int has_number_to_words;
     int has_temperature_table;
     int has_loop_demo;
+    int has_array_access;
+    int has_array_write;
+    int has_array_iterate;
+    int has_array_sum;
+    int has_array_average;
+    int has_double_array_access;
+    int has_double_array_write;
+    int has_double_array_iterate;
+    int has_double_array_sum;
+    int has_double_array_min_max;
+    int has_double_array_reverse;
+    int has_double_array_average;
     int suppress_output;
     char result_var[64];
     int skip_input;

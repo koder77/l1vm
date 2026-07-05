@@ -1,0 +1,18 @@
+// double-temp-convert.l1dsl
+parser: "double temperature, celsius to fahrenheit double"
+match: has_double_temp_convert
+token: double celsius
+result: double fahrenheit
+include: intr-func.l1h
+var: const-double zero 1 0.0
+var: const-double nine 1 9.0
+var: const-double five 1 5.0
+var: const-double thirtytwo 1 32.0
+desc: "Convert Celsius to Fahrenheit using double precision"
+
+code:
+    (celsius *d nine f :=)
+    (f /d five f :=)
+    (f +d thirtytwo fahrenheit :=)
+    (fahrenheit :print_d !)
+    (:print_n !)

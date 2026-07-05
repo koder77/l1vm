@@ -1,0 +1,25 @@
+// input-factorial.l1dsl
+parser: "factorial, input factorial, calculate factorial"
+match: has_input_fact
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: int64 n 1 0
+var: int64 fac 1 0
+var: int64 i 1 0
+var: int64 f 1 0
+var: const-string input_prompt 18 "\"Enter a number: \""
+desc: "Calculate factorial of a user-input number"
+
+code:
+    (input_prompt :print_s !)
+    (n :input_i !)
+    (one fac :=)
+    (one i :=)
+    (for-loop)
+    (((i n <=) f :=) f for)
+        (fac i * fac :=)
+        (i + one i :=)
+    (next)
+    (fac :print_i !)
+    (:print_n !)

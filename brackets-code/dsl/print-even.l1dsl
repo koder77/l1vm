@@ -1,0 +1,26 @@
+// print-even.l1dsl
+parser: "print even numbers, even numbers, gerade zahlen"
+match: has_print_even
+token: int64 n
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 two 1 2
+var: int64 i 1 0
+var: int64 mod 1 0
+var: int64 f 1 0
+var: const-string even_str 10 "\" is even\""
+desc: "Print even numbers up to n"
+
+code:
+    (zero i :=)
+    (for-loop)
+    (((i n <=) f :=) f for)
+        (i % two mod :=)
+        (((mod zero ==) f :=) f if)
+            (i :print_i !)
+            (even_str :print_s !)
+            (:print_n !)
+        (endif)
+        (i + one i :=)
+    (next)

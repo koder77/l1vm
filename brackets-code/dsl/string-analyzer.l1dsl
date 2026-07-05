@@ -1,0 +1,84 @@
+// string-analyzer.l1dsl
+parser: "string analyzer, vowels, consonants, length"
+match: has_string_analyzer
+include: intr-func.l1h
+include-post: string.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 maxlen 1 256
+var: const-int64 va 1 97
+var: const-int64 ve 1 101
+var: const-int64 vi 1 105
+var: const-int64 vo 1 111
+var: const-int64 vu 1 117
+var: const-int64 vA 1 65
+var: const-int64 vE 1 69
+var: const-int64 vI 1 73
+var: const-int64 vO 1 79
+var: const-int64 vU 1 85
+var: int64 strmod 1 0
+var: int64 len 1 0
+var: int64 i 1 0
+var: int64 vowels 1 0
+var: int64 cons 1 0
+var: int64 ch 1 0
+var: string str 256 "\"\""
+var: const-string prompt_str 16 "\"Enter a string: \""
+var: const-string len_str 9 "\"Length: \""
+var: const-string vowels_str 9 "\"Vowels: \""
+var: const-string cons_str 13 "\"Consonants: \""
+desc: "Analyze a string for length, vowel count, and consonant count"
+code:
+    (strmod :string_init !)
+    (prompt_str :print_s !)
+    (maxlen str :input_s !)
+    (str :string_len !)
+    (len stpop)
+    (zero vowels :=)
+    (zero cons :=)
+    (zero i :=)
+    (((i len <) i :=) i for)
+        (str ch i :string_mid_to_byte !)
+        (ch va == if)
+            (vowels + one vowels :=)
+        (endif)
+        (ch ve == if)
+            (vowels + one vowels :=)
+        (endif)
+        (ch vi == if)
+            (vowels + one vowels :=)
+        (endif)
+        (ch vo == if)
+            (vowels + one vowels :=)
+        (endif)
+        (ch vu == if)
+            (vowels + one vowels :=)
+        (endif)
+        (ch vA == if)
+            (vowels + one vowels :=)
+        (endif)
+        (ch vE == if)
+            (vowels + one vowels :=)
+        (endif)
+        (ch vI == if)
+            (vowels + one vowels :=)
+        (endif)
+        (ch vO == if)
+            (vowels + one vowels :=)
+        (endif)
+        (ch vU == if)
+            (vowels + one vowels :=)
+        (endif)
+        (cons + one cons :=)
+        (i + one i :=)
+    (next)
+    (cons vowels - cons :=)
+    (len_str :print_s !)
+    (len :print_i !)
+    (:print_n !)
+    (vowels_str :print_s !)
+    (vowels :print_i !)
+    (:print_n !)
+    (cons_str :print_s !)
+    (cons :print_i !)
+    (:print_n !)

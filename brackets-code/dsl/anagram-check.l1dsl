@@ -1,0 +1,74 @@
+// anagram-check.l1dsl
+parser: "anagram, anagram check, word anagram"
+match: has_anagram_check
+include: intr-func.l1h
+include-post: string.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 maxlen 1 256
+var: const-int64 twenty six 1 26
+var: string a 256 "\"\""
+var: string b 256 "\"\""
+var: int64 len_a 1 0
+var: int64 len_b 1 0
+var: int64 count_a 26 0
+var: int64 count_b 26 0
+var: int64 i 1 0
+var: int64 ch 1 0
+var: int64 idx 1 0
+var: int64 f 1 0
+var: int64 strmod 1 0
+desc: "Check if two strings are anagrams"
+
+code:
+    (strmod :string_init !)
+    ("Enter first word: " :print_s !)
+    (maxlen a :input_s !)
+    ("Enter second word: " :print_s !)
+    (maxlen b :input_s !)
+    (a :string_len len_a !)
+    (b :string_len len_b !)
+    (((len_a len_b ==) f :=) f if+)
+        (zero i :=)
+        (for-loop)
+        (((i len_a <) f :=) f for)
+            (a i :string_getchar ch !)
+            (ch - 'a' idx :=)
+            (count_a [ idx ] val =)
+            (val + one val :=)
+            (val count_a [ idx ] =)
+            (i + one i :=)
+        (next)
+        (zero i :=)
+        (for-loop)
+        (((i len_b <) f :=) f for)
+            (b i :string_getchar ch !)
+            (ch - 'a' idx :=)
+            (count_b [ idx ] val =)
+            (val + one val :=)
+            (val count_b [ idx ] =)
+            (i + one i :=)
+        (next)
+        (zero f :=)
+        (zero i :=)
+        (for-loop)
+        (((i twenty six <) f :=) f for)
+            (count_a [ idx ] a =)
+            (a + zero a :=)
+            (count_b [ idx ] b =)
+            (b + zero b :=)
+            (((a b ==) f :=) f if+)
+            (else)
+                (one f :=)
+            (endif)
+            (i + one i :=)
+        (next)
+        (((f zero ==) f :=) f if)
+            ("anagrams" :print_s !)
+        (else)
+            ("not anagrams" :print_s !)
+        (endif)
+    (else)
+        ("not anagrams" :print_s !)
+    (endif)
+    (:print_n !)

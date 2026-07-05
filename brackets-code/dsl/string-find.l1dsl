@@ -1,0 +1,16 @@
+// string-find.l1dsl
+parser: "string find, find substring, string search"
+match: has_string_find
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-string text 20 "\"The quick brown fox\""
+var: const-string substr 7 "\"brown\""
+var: int64 pos 1 0
+desc: "Find the position of a substring within a string"
+
+code:
+    (text substr :string_find !)
+    (pos stpopi)
+    (pos :print_i !)
+    (:print_n !)
+    (zero :exit !)

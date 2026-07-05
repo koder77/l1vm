@@ -1,0 +1,13 @@
+// double-array-access.l1dsl
+parser: "double array access, read double array, get double element, double array index"
+token: double arr, int64 index
+result: double value
+include: intr-func.l1h
+include: vars.l1h
+var: int64 realind 1 0
+desc: "Access a double array element by index"
+
+code:
+    (index * int64_size realind :=)
+    (arr [ realind ] value =)
+    (value +d zero value :=)

@@ -1,0 +1,11 @@
+// double-array-write.l1dsl
+parser: "write double array, set double array element, assign double array, store double"
+token: double arr, int64 index, double newval
+include: intr-func.l1h
+include: vars.l1h
+var: int64 realind 1 0
+desc: "Write a double value to a double array element by index"
+
+code:
+    (index * int64_size realind :=)
+    (newval arr [ realind ] =)

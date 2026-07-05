@@ -1,0 +1,23 @@
+// even-odd.l1dsl
+parser: "even odd, even or odd, check parity"
+match: has_even_odd
+token: int64 n
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 two 1 2
+var: int64 mod 1 0
+var: int64 f 1 0
+var: const-string even_str 10 "\" is even\""
+var: const-string odd_str 9 "\" is odd\""
+desc: "Check if a number is even or odd"
+
+code:
+    (n % two mod :=)
+    (((mod zero ==) f :=) f if+)
+        (n :print_i !)
+        (even_str :print_s !)
+    (else)
+        (n :print_i !)
+        (odd_str :print_s !)
+    (endif)
+    (:print_n !)

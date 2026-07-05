@@ -1,0 +1,32 @@
+// guess-number.l1dsl
+parser: "guess number, rate zahl, guessing game"
+match: has_guess
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 hundred 1 100
+var: int64 secret 1 0
+var: int64 guess 1 0
+var: int64 f 1 0
+var: const-string prompt_str 22 "\"Guess a number (1-100): \""
+var: const-string high_str 13 "\"Too high!\""
+var: const-string low_str 12 "\"Too low!\""
+var: const-string win_str 16 "\"Correct!\""
+desc: "Number guessing game"
+
+code:
+    (hundred :random_i secret !)
+    (do)
+        (prompt_str :print_s !)
+        (guess :input_i !)
+        (((guess secret >) f :=) f if)
+            (high_str :print_s !)
+            (:print_n !)
+        (endif)
+        (((guess secret <) f :=) f if)
+            (low_str :print_s !)
+            (:print_n !)
+        (endif)
+    (((guess secret ==) f :=) f while)
+    (win_str :print_s !)
+    (:print_n !)

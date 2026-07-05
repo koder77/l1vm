@@ -1,0 +1,30 @@
+// reverse-string.l1dsl
+parser: "reverse string, string reverse, umkehren"
+match: has_reverse_string
+include: intr-func.l1h
+include-post: string.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 maxlen 1 256
+var: string str 256 "\"\""
+var: string rev 256 "\"\""
+var: int64 len 1 0
+var: int64 i 1 0
+var: int64 f 1 0
+var: int64 strmod 1 0
+desc: "Read a string and print it reversed"
+
+code:
+    (strmod :string_init !)
+    ("Enter a string: " :print_s !)
+    (maxlen str :input_s !)
+    (str :string_len len !)
+    (len one - i :=)
+    (for-loop)
+    (((i zero >=) f :=) f for)
+        (str i :string_getchar f !)
+        (rev rev f :string_setchar !)
+        (i - one i :=)
+    (next)
+    (rev :print_s !)
+    (:print_n !)

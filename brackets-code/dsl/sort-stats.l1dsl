@@ -1,0 +1,86 @@
+// sort-stats.l1dsl
+parser: "sort, statistics, min, max, average"
+match: has_sort_stats
+include: intr-func.l1h
+include: vars.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: int64 n 1 0
+var: int64 i 1 0
+var: int64 j 1 0
+var: int64 temp 1 0
+var: int64 sum 1 0
+var: int64 ri 1 0
+var: int64 rj 1 0
+var: int64 a 1 0
+var: int64 b 1 0
+var: int64 arr 100 0
+var: const-string prompt_n 14 "\"Enter count: \""
+var: const-string prompt_num 15 "\"Enter number: \""
+var: const-string sorted_str 9 "\"Sorted: \""
+var: const-string min_str 7 "\" Min: \""
+var: const-string max_str 7 "\" Max: \""
+var: const-string avg_str 7 "\" Avg: \""
+desc: "Sort numbers and compute min, max, average"
+code:
+    (prompt_n :print_s !)
+    (n :input_i !)
+    (n + zero n :=)
+    (zero i :=)
+    (((i n <) i :=) i for)
+        (prompt_num :print_s !)
+        (a :input_i !)
+        (i * int64_size ri :=)
+        (a arr [ ri ] =)
+        (i + one i :=)
+    (next)
+    (zero i :=)
+    (((i n <) i :=) i for)
+        (i + one j :=)
+        (((j n <) j :=) j for)
+            (i * int64_size ri :=)
+            (j * int64_size rj :=)
+            (arr [ ri ] a =)
+            (arr [ rj ] b =)
+            (a b > if)
+                (arr [ ri ] temp :=)
+                (b arr [ ri ] =)
+                (temp arr [ rj ] =)
+            (endif)
+            (j + one j :=)
+        (next)
+        (i + one i :=)
+    (next)
+    (sorted_str :print_s !)
+    (zero i :=)
+    (((i n <) i :=) i for)
+        (i * int64_size ri :=)
+        (arr [ ri ] a =)
+        (a :print_i !)
+        (:print_s !)
+        (i + one i :=)
+    (next)
+    (:print_n !)
+    (min_str :print_s !)
+    (zero * int64_size ri :=)
+    (arr [ ri ] a =)
+    (a :print_i !)
+    (:print_n !)
+    (max_str :print_s !)
+    (n one - temp :=)
+    (temp * int64_size ri :=)
+    (arr [ ri ] a =)
+    (a :print_i !)
+    (:print_n !)
+    (zero sum :=)
+    (zero i :=)
+    (((i n <) i :=) i for)
+        (i * int64_size ri :=)
+        (arr [ ri ] a =)
+        (a sum + sum :=)
+        (i + one i :=)
+    (next)
+    (avg_str :print_s !)
+    (sum n / temp :=)
+    (temp :print_i !)
+    (:print_n !)

@@ -1,0 +1,21 @@
+// loop-demo.l1dsl
+parser: "keywords for matching"
+match: has_loop_demo
+token: token type and name
+result: result type and name
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 max 1 5
+var: int64 i 1 0
+var: int64 f 1 0
+desc: "simple for-loop from 0 to 4"
+code:
+    // simple for-loop from 0 to 4
+    (for-loop)
+    (((i max <) f :=) f for)
+        (i :print_i !)
+        (:print_n !)
+        (i one + i :=)
+    (next)
+    (zero :exit !)

@@ -1,0 +1,17 @@
+// time-demo.l1dsl
+parser: "keywords for matching"
+match: has_time
+token: token type and name
+result: result type and name
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: int64 t 1 0
+var: const-string label 12 "timestamp: "
+desc: "time demo: get current timestamp"
+code:
+    (:time !)
+    (t stpopi)
+    (label :print_s !)
+    (t :print_i !)
+    (:print_n !)
+    (zero :exit !)

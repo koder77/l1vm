@@ -1,0 +1,49 @@
+// binary-search.l1dsl
+parser: "binary search, binary search array"
+match: has_binary_search
+include: intr-func.l1h
+include: vars.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 two 1 2
+var: const-int64 count 1 10
+var: int64 arr 10 0
+var: int64 key 1 0
+var: int64 low 1 0
+var: int64 high 1 9
+var: int64 mid 1 0
+var: int64 realind 1 0
+var: int64 val 1 0
+var: int64 found 1 0
+var: int64 f 1 0
+var: const-string prompt_key 16 "\"Enter search key: \""
+desc: "Binary search on a sorted array"
+
+code:
+    // binary search
+    (prompt_key :print_s !)
+    (key :input_i !)
+    (zero found :=)
+    (do)
+        (low + high mid :=)
+        (mid / two mid :=)
+        (mid * int64_size realind :=)
+        (arr [ realind ] val =)
+        (val + zero val :=)
+        (((val key ==) f :=) f if)
+            (one found :=)
+        (endif)
+        (((val key <) f :=) f if)
+            (mid + one low :=)
+        (endif)
+        (((val key >) f :=) f if)
+            (mid - one high :=)
+        (endif)
+    (((low high <=) f :=) f while)
+    (((found one ==) f :=) f if)
+        ("found at index " :print_s !)
+        (mid :print_i !)
+    (else)
+        ("not found" :print_s !)
+    (endif)
+    (:print_n !)

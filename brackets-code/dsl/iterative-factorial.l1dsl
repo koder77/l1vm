@@ -1,0 +1,25 @@
+// iterative-factorial.l1dsl
+parser: "iterative factorial, factorial while loop"
+match: has_iterative_factorial
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: int64 n 1 5
+var: int64 result 1 1
+var: int64 f 1 0
+var: const-string header 16 "\"factorial(5) = \""
+desc: "Calculate factorial of 5 using iterative while loop"
+
+code:
+    // iterative factorial with while loop
+    (:loop)
+    ((n zero >) f :=)
+    (f :end jmpf)
+    (result n * result :=)
+    (n one - n :=)
+    (:loop jmpi)
+    (:end)
+    (header :print_s !)
+    (result :print_i !)
+    (:print_n !)
+    (zero :exit !)

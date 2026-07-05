@@ -1,0 +1,27 @@
+// perfect-number.l1dsl
+parser: "perfect number, vollkommene zahl"
+match: has_perfect_number
+token: int64 n
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: int64 sum 1 0
+var: int64 i 1 1
+var: int64 f 1 0
+desc: "Check if a number is a perfect number"
+
+code:
+    (zero sum :=)
+    (for-loop)
+    (((i n <) f :=) f for)
+        (((n % i zero ==) f :=) f if)
+            (sum + i sum :=)
+        (endif)
+        (i + one i :=)
+    (next)
+    (((n sum ==) f :=) f if)
+        ("perfect number" :print_s !)
+    (else)
+        ("not perfect" :print_s !)
+    (endif)
+    (:print_n !)

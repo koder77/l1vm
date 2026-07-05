@@ -1,0 +1,17 @@
+// dice-roll.l1dsl
+parser: "dice roll, dice, würfel, random dice"
+match: has_dice_roll
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 six 1 6
+var: int64 roll 1 0
+var: const-string result_str 8 "\"You rolled: \""
+desc: "Simulate rolling a six-sided die"
+
+code:
+    (six :random_i roll !)
+    (roll + one roll :=)
+    (result_str :print_s !)
+    (roll :print_i !)
+    (:print_n !)

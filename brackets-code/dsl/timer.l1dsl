@@ -1,0 +1,22 @@
+// timer.l1dsl
+parser: "timer, benchmark, measure time, stopwatch"
+match: has_timer
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: int64 start 1 0
+var: int64 end 1 0
+desc: "Measure and print the execution time"
+
+code:
+    (:time_s start !)
+    ("working..." :print_s !)
+    (:print_n !)
+    (for-loop)
+    (((i thousand <) f :=) f for)
+    (next)
+    (:time_s end !)
+    (end - start f :=)
+    (end - start f :=)
+    (f :print_i !)
+    (" ms" :print_s !)
+    (:print_n !)

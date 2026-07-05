@@ -1,0 +1,29 @@
+// palindrome.l1dsl
+parser: "palindrome number, number palindrome"
+match: has_palindrome
+token: int64 n
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 ten 1 10
+var: int64 temp 1 0
+var: int64 rev 1 0
+var: int64 digit 1 0
+var: int64 f 1 0
+desc: "Check if a number is a palindrome"
+
+code:
+    (n temp :=)
+    (zero rev :=)
+    (do)
+        (temp % ten digit :=)
+        (rev * ten rev :=)
+        (rev + digit rev :=)
+        (temp / ten temp :=)
+    (((temp zero >) f :=) f while)
+    (((n rev ==) f :=) f if)
+        ("palindrome" :print_s !)
+    (else)
+        ("not palindrome" :print_s !)
+    (endif)
+    (:print_n !)

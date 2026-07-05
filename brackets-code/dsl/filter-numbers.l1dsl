@@ -1,0 +1,60 @@
+// filter-numbers.l1dsl
+parser: "keywords for matching"
+match: has_filter_numbers
+token: token type and name
+result: result type and name
+include: intr-func.l1h
+include: vars.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: int64 n 1 0
+var: int64 i 1 0
+var: int64 val 1 0
+var: int64 arr 100 0
+var: int64 result 100 0
+var: int64 ri 1 0
+var: int64 rr 1 0
+var: int64 threshold 1 0
+var: int64 a 1 0
+var: const-string prompt_n 14 "Enter count: "
+var: const-string prompt_num 15 "Enter number: "
+var: const-string prompt_thresh 12 "Threshold: "
+var: const-string result_str 24 "Filtered (> threshold): "
+desc: "filter numbers greater than threshold"
+code:
+    (prompt_n :print_s !)
+    (n :input_i !)
+    (n + zero n :=)
+    (prompt_thresh :print_s !)
+    (threshold :input_i !)
+    (threshold + zero threshold :=)
+    (zero i :=)
+    (((i n <) i :=) i for)
+        (prompt_num :print_s !)
+        (a :input_i !)
+        (i * int64_size ri :=)
+        (a arr [ ri ] =)
+        (i + one i :=)
+    (next)
+    (zero rr :=)
+    (zero i :=)
+    (((i n <) i :=) i for)
+        (i * int64_size ri :=)
+        (arr [ ri ] a =)
+        (a threshold > if)
+            (rr * int64_size ri :=)
+            (a result [ ri ] =)
+            (rr + one rr :=)
+        (endif)
+        (i + one i :=)
+    (next)
+    (result_str :print_s !)
+    (zero i :=)
+    (((i rr <) i :=) i for)
+        (i * int64_size ri :=)
+        (result [ ri ] a =)
+        (a :print_i !)
+        (:print_s !)
+        (i + one i :=)
+    (next)
+    (:print_n !)

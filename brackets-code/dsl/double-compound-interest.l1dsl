@@ -1,0 +1,26 @@
+// double-compound-interest.l1dsl
+parser: "compound interest double, investment double"
+match: has_double_compound_interest
+token: double principal, double rate, double time, int64 n
+result: double amount
+include: intr-func.l1h
+var: const-double zero 1 0.0
+var: const-double one 1 1.0
+var: int64 i 1 0
+var: double base 1 0.0
+var: double factor 1 0.0
+desc: "Calculate compound interest using double precision"
+
+code:
+    (rate /d n i->d base :=)
+    (base +d one base :=)
+    (one factor :=)
+    (zero i :=)
+    (for-loop)
+    (((i n <) f :=) f for)
+        (factor *d base factor :=)
+        (i + one i :=)
+    (next)
+    (principal *d factor amount :=)
+    (amount :print_d !)
+    (:print_n !)

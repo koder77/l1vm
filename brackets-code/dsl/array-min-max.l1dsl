@@ -1,0 +1,39 @@
+// array-min-max.l1dsl
+parser: "array min max, array min, array max, array average"
+match: has_array_min_max
+include: intr-func.l1h
+include: vars.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: int64 count 1 7
+var: int64 arr 7 42 23 8 15 4 16 99
+var: int64 i 1 0
+var: int64 mn 1 0
+var: int64 mx 1 0
+var: int64 avg 1 0
+var: int64 realind 1 0
+var: int64 f 1 0
+var: const-string min_str 6 "\"min: \""
+var: const-string max_str 6 "\"max: \""
+var: const-string avg_str 10 "\"average: \""
+include-post: math-lib-vect.l1h
+desc: "Find minimum, maximum, and average of array elements using vmath library"
+
+code:
+    // find min, max, average using vmath library
+    (arr Parray pointer)
+    (Parray zero count vmath_min_int call)
+    (mn stpop)
+    (Parray zero count vmath_max_int call)
+    (mx stpop)
+    (Parray zero count vmath_average_int call)
+    (avg stpop)
+    (min_str :print_s !)
+    (mn :print_i !)
+    (:print_n !)
+    (max_str :print_s !)
+    (mx :print_i !)
+    (:print_n !)
+    (avg_str :print_s !)
+    (avg :print_i !)
+    (:print_n !)

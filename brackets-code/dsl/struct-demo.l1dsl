@@ -1,0 +1,23 @@
+// struct-demo.l1dsl
+parser: "keywords for matching"
+match: has_struct
+token: token type and name
+result: result type and name
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 two 1 2
+var: int64 age 1 2
+var: int64 size 1 25
+var: const-string age_label 6 "age: "
+var: const-string size_label 7 "size: "
+desc: "struct demo: print struct fields"
+code:
+    // struct demo: print struct fields
+    (age_label :print_s !)
+    (age :print_i !)
+    (:print_n !)
+    (size_label :print_s !)
+    (size :print_i !)
+    (:print_n !)
+    (zero :exit !)

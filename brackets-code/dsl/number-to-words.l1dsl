@@ -1,0 +1,28 @@
+// number-to-words.l1dsl
+parser: "keywords for matching"
+match: has_number_to_words
+token: token type and name
+result: result type and name
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 two 1 2
+var: const-int64 tens 1 10
+var: int64 num 1 42
+var: int64 tens_part 1 0
+var: int64 ones_part 1 0
+var: int64 f 1 0
+var: const-string unit_label 7 "ones: "
+var: const-string tens_label 7 "tens: "
+desc: "number breakdown into tens and ones"
+code:
+    // number breakdown into tens and ones
+    (num tens / tens_part :=)
+    (num tens % ones_part :=)
+    (tens_label :print_s !)
+    (tens_part :print_i !)
+    (:print_n !)
+    (unit_label :print_s !)
+    (ones_part :print_i !)
+    (:print_n !)
+    (zero :exit !)

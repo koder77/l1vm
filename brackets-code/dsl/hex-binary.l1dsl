@@ -1,0 +1,21 @@
+// hex-binary.l1dsl
+parser: "keywords for matching"
+match: has_hex_binary
+token: token type and name
+result: result type and name
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 num 1 255
+var: const-int64 base 1 16
+var: string hexstr 16 ""
+var: int64 f 1 0
+var: const-string label 6 "hex: "
+desc: "hex conversion demo"
+code:
+    // hex conversion demo
+    (label :print_s !)
+    (num :print_i !)
+    (" -> " :print_s !)
+    (num :print_hex_i !)
+    (:print_n !)
+    (zero :exit !)

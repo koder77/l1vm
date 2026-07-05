@@ -1,0 +1,22 @@
+// power.l1dsl
+parser: "power, exponent, square, cube, raise"
+match: has_power
+token: int64 base, int64 exp
+result: int64 result
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: int64 i 1 0
+var: int64 f 1 0
+desc: "Calculate base raised to the power of exp"
+
+code:
+    (one result :=)
+    (zero i :=)
+    (for-loop)
+    (((i exp <) f :=) f for)
+        (result * base result :=)
+        (i + one i :=)
+    (next)
+    (result :print_i !)
+    (:print_n !)

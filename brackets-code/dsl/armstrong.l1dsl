@@ -1,0 +1,46 @@
+// armstrong.l1dsl
+parser: "armstrong, armstrong number, narcissistic"
+match: has_armstrong
+token: int64 n
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 ten 1 10
+var: int64 temp 1 0
+var: int64 sum 1 0
+var: int64 digit 1 0
+var: int64 orig 1 0
+var: int64 count 1 0
+var: int64 i 1 0
+var: int64 digit_pow 1 0
+var: int64 f 1 0
+desc: "Check if a number is an Armstrong number"
+
+code:
+    (n orig :=)
+    (n temp :=)
+    (zero count :=)
+    (do)
+        (count + one count :=)
+        (temp / ten temp :=)
+    (((temp zero >) f :=) f while)
+    (n temp :=)
+    (zero sum :=)
+    (do)
+        (temp % ten digit :=)
+        (one digit_pow :=)
+        (zero i :=)
+        (for-loop)
+        (((i count <) f :=) f for)
+            (digit_pow * digit digit_pow :=)
+            (i + one i :=)
+        (next)
+        (sum + digit_pow sum :=)
+        (temp / ten temp :=)
+    (((temp zero >) f :=) f while)
+    (((orig sum ==) f :=) f if)
+        ("Armstrong number" :print_s !)
+    (else)
+        ("not Armstrong" :print_s !)
+    (endif)
+    (:print_n !)

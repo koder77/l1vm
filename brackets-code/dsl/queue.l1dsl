@@ -1,0 +1,39 @@
+// queue.l1dsl
+parser: "queue, queue data structure, enqueue dequeue"
+match: has_queue
+include: intr-func.l1h
+include: vars.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 three 1 3
+var: int64 queue 5 0
+var: int64 head 1 0
+var: int64 tail 1 0
+var: int64 val 1 0
+var: int64 i 1 0
+var: int64 realind 1 0
+var: int64 f 1 0
+var: const-string prompt_str 16 "\"Enter value: \""
+desc: "Queue data structure demonstration (enqueue/dequeue)"
+
+code:
+    // enqueue 3 values
+    (zero head :=)
+    (zero tail :=)
+    (for-loop)
+    (((tail three <) f :=) f for)
+        (prompt_str :print_s !)
+        (val :input_i !)
+        (tail * int64_size realind :=)
+        (val queue [ realind ] =)
+        (tail + one tail :=)
+    (next)
+    // dequeue and print
+    (do)
+        (head * int64_size realind :=)
+        (queue [ realind ] val =)
+        (val + zero val :=)
+        (val :print_i !)
+        (:print_n !)
+        (head + one head :=)
+    (((head tail <) f :=) f while)

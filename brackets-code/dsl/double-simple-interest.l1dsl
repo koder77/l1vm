@@ -1,0 +1,16 @@
+// double-simple-interest.l1dsl
+parser: "simple interest double, interest calculate double"
+match: has_double_simple_interest
+token: double principal, double rate, double time
+result: double interest
+include: intr-func.l1h
+var: const-double zero 1 0.0
+var: const-double onehundred 1 100.0
+desc: "Calculate simple interest using double precision"
+
+code:
+    (principal *d rate interest :=)
+    (interest *d time interest :=)
+    (interest /d onehundred interest :=)
+    (interest :print_d !)
+    (:print_n !)

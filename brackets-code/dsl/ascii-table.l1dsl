@@ -1,0 +1,27 @@
+// ascii-table.l1dsl
+parser: "keywords for matching"
+match: has_ascii_table
+token: token type and name
+result: result type and name
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 sixteen 1 16
+var: int64 i 1 0
+var: int64 j 1 0
+var: int64 ch 1 0
+var: int64 f 1 0
+var: const-int64 asc_start 1 32
+var: const-int64 asc_end 1 128
+var: const-string msg_str 22 "ASCII table (32-127):"
+desc: "print ASCII table from 32 to 127"
+code:
+    (msg_str :print_s !)
+    (:print_n !)
+    (asc_start i :=)
+    (for-loop)
+    (((i asc_end <) f :=) f for)
+        (i :print_i !)
+        (:print_n !)
+        (i + one i :=)
+    (next)

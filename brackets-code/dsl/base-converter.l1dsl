@@ -1,0 +1,46 @@
+// base-converter.l1dsl
+parser: "base converter, decimal to base, number base conversion"
+match: has_base_converter
+include: intr-func.l1h
+include: vars.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 two 1 2
+var: int64 num 1 0
+var: int64 base 1 0
+var: int64 temp 1 0
+var: int64 digit 1 0
+var: int64 i 1 0
+var: int64 ri 1 0
+var: int64 f 1 0
+var: int64 digits 64 0
+var: int64 idx 1 0
+var: const-string prompt_num 23 "\"Enter decimal number: \""
+var: const-string prompt_base 22 "\"Enter base (2-16): \""
+var: const-string result_str 9 "\"Result: \""
+desc: "Convert a decimal number to any base (2-16)"
+code:
+    (prompt_num :print_s !)
+    (num :input_i !)
+    (prompt_base :print_s !)
+    (base :input_i !)
+    (num temp :=)
+    (zero idx :=)
+    (for-loop)
+    (((temp zero >) f :=) f for)
+        (temp base % digit :=)
+        (temp base / temp :=)
+        (idx * int64_size ri :=)
+        (digit digits [ ri ] =)
+        (idx + one idx :=)
+    (next)
+    (result_str :print_s !)
+    // print in reverse
+    (for-loop)
+    (((idx zero >) f :=) f for)
+        (idx one - idx :=)
+        (idx * int64_size ri :=)
+        (digits [ ri ] f =)
+        (f :print_i !)
+    (next)
+    (:print_n !)

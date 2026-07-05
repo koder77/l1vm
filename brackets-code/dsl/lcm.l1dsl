@@ -1,0 +1,26 @@
+// lcm.l1dsl
+parser: "lcm, least common multiple, kgv"
+match: has_lcm
+token: int64 a, int64 b
+result: int64 result
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: int64 orig_a 1 0
+var: int64 orig_b 1 0
+var: int64 temp 1 0
+var: int64 gcd 1 0
+desc: "Calculate the least common multiple of two numbers"
+
+code:
+    (a orig_a :=)
+    (b orig_b :=)
+    (do)
+        (a % b temp :=)
+        (b a :=)
+        (temp b :=)
+    (((b zero >) f :=) f while)
+    (a gcd :=)
+    (orig_a * orig_b result :=)
+    (result / gcd result :=)
+    (result :print_i !)
+    (:print_n !)

@@ -1,0 +1,10 @@
+// hello-world.l1dsl
+parser: "hello world, hallo welt"
+match: has_hello_world
+include: intr-func.l1h
+desc: "Print Hello, World!"
+
+code:
+    (set string s hello_worldstr "Hello, world!")
+    (hello_worldstr :print_s !)
+    (:print_n !)

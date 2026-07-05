@@ -1,0 +1,36 @@
+// string-to-lower.l1dsl
+parser: "string lowercase, to lower, kleinbuchstaben"
+match: has_string_to_lower
+include: intr-func.l1h
+include-post: string.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 maxlen 1 256
+var: const-int64 thirtytwo 1 32
+var: string str 256 "\"\""
+var: int64 len 1 0
+var: int64 i 1 0
+var: int64 ch 1 0
+var: int64 f 1 0
+var: int64 strmod 1 0
+desc: "Convert a string to lowercase"
+
+code:
+    (strmod :string_init !)
+    ("Enter a string: " :print_s !)
+    (maxlen str :input_s !)
+    (str :string_len len !)
+    (zero i :=)
+    (for-loop)
+    (((i len <) f :=) f for)
+        (str i :string_getchar ch !)
+        (((ch 'A' >=) f :=) f if)
+        (((ch 'Z' <=) f :=) f if)
+            (ch + thirtytwo ch :=)
+            (str i ch :string_setchar !)
+        (endif)
+        (endif)
+        (i + one i :=)
+    (next)
+    (str :print_s !)
+    (:print_n !)

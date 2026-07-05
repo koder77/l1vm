@@ -1,0 +1,13 @@
+// double-sqrt.l1dsl
+parser: "double sqrt, square root double, sqrt double"
+match: has_double_sqrt
+token: double n
+result: double root
+include: intr-func.l1h
+var: const-double zero 1 0.0
+desc: "Calculate square root of a double"
+
+code:
+    (n :sqrt_d root !)
+    (root :print_d !)
+    (:print_n !)

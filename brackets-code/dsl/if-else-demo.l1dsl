@@ -1,0 +1,23 @@
+// if-else-demo.l1dsl
+parser: "if else, conditional, branch, decision, compare"
+token: int64 x, int64 y
+include: intr-func.l1h
+var: int64 f 1 0
+var: const-int64 zero 1 0
+desc: "Compare two numbers and print which is larger"
+
+code:
+    (((x y >) f :=) f if)
+        (x :print_i !)
+        (" is greater" :print_s !)
+        (:print_n !)
+    (endif)
+    (((x y <) f :=) f if)
+        (y :print_i !)
+        (" is greater" :print_s !)
+        (:print_n !)
+    (endif)
+    (((x y ==) f :=) f if)
+        ("both are equal" :print_s !)
+        (:print_n !)
+    (endif)

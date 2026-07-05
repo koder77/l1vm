@@ -1,0 +1,22 @@
+// for-loop-sum.l1dsl
+parser: "sum numbers, for sum, sum from, sum to, add numbers, sum range"
+match: has_for_sum
+token: int64 n
+result: int64 sum
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 0
+var: int64 i 1 0
+var: int64 f 1 0
+desc: "Sum numbers from 1 to n using a for loop"
+
+code:
+    (zero i :=)
+    (zero sum :=)
+    (for-loop)
+    (((i n <=) f :=) f for)
+        (sum + i sum :=)
+        (i + one i :=)
+    (next)
+    (sum :print_i !)
+    (:print_n !)

@@ -1,0 +1,58 @@
+// shuffle.l1dsl
+parser: "shuffle, fisher yates, randomize array"
+match: has_shuffle
+include: intr-func.l1h
+include: math-const.l1h
+include: vars.l1h
+include-post: math-lib.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: int64 n 1 5
+var: int64 arr 5 0
+var: int64 i 1 0
+var: int64 j 1 0
+var: int64 temp 1 0
+var: int64 ri 1 0
+var: int64 rj 1 0
+var: int64 temp2 1 0
+var: int64 f 1 0
+var: const-string prompt_str 18 "\"Enter 5 numbers:\""
+desc: "Shuffle an array of 5 numbers using Fisher-Yates algorithm"
+code:
+    (zero :math_init !)
+    (zero :math_randinit !)
+    (prompt_str :print_s !)
+    (:print_n !)
+    // input
+    (zero i :=)
+    (for-loop)
+    (((i n <) f :=) f for)
+        (i * int64_size ri :=)
+        (temp :input_i !)
+        (temp arr [ ri ] =)
+        (i + one i :=)
+    (next)
+    // Fisher-Yates shuffle
+    (n one - i :=)
+    (for-loop)
+    (((i zero >) f :=) f for)
+        (i :math_randintmax !)
+        (j stpopi)
+        (i * int64_size ri :=)
+        (j * int64_size rj :=)
+        (arr [ ri ] temp :=)
+        (arr [ rj ] temp2 :=)
+        (temp2 arr [ ri ] =)
+        (temp arr [ rj ] =)
+        (i one - i :=)
+    (next)
+    // print
+    (zero i :=)
+    (for-loop)
+    (((i n <) f :=) f for)
+        (i * int64_size ri :=)
+        (arr [ ri ] temp =)
+        (temp :print_i !)
+        (:print_n !)
+        (i + one i :=)
+    (next)

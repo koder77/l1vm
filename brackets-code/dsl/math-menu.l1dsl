@@ -1,0 +1,60 @@
+// math-menu.l1dsl
+parser: "math menu, add, subtract, multiply, divide"
+match: has_math_menu
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 two 1 2
+var: const-int64 three 1 3
+var: const-int64 four 1 4
+var: const-int64 five 1 5
+var: int64 choice 1 0
+var: int64 f 1 0
+var: double a 1 0.0
+var: double b 1 0.0
+var: double res 1 0.0
+var: const-double zerod 1 0.0
+var: const-string menu_str 33 "\"1-Add 2-Sub 3-Mul 4-Div 5-quit\""
+var: const-string prompt_choice 10 "\"Choice: \""
+var: const-string prompt_a 5 "\"A: \""
+var: const-string prompt_b 5 "\"B: \""
+var: const-string result_str 9 "\"Result: \""
+desc: "Menu-driven math operations on double values"
+code:
+    (for-loop)
+    (((one one ==) f :=) f for)
+        (menu_str :print_s !)
+        (:print_n !)
+        (prompt_choice :print_s !)
+        (choice :input_i !)
+        (choice + zero choice :=)
+        (((choice five ==) f :=) f if)
+            (zero :exit !)
+        (endif)
+        (prompt_a :print_s !)
+        (a :input_d !)
+        (a + zerod a :=)
+        (prompt_b :print_s !)
+        (b :input_d !)
+        (b + zerod b :=)
+        (((choice one ==) f :=) f if)
+            (a + b res :=)
+        (endif)
+        (((choice two ==) f :=) f if)
+            (a - b res :=)
+        (endif)
+        (((choice three ==) f :=) f if)
+            (a * b res :=)
+        (endif)
+        (((choice four ==) f :=) f if)
+            (b zerod == if)
+                ("Error: div by zero" :print_s !)
+            (else)
+                (a / b res :=)
+            (endif)
+        (endif)
+        (result_str :print_s !)
+        (reset-reg)
+        (res :print_d !)
+        (:print_n !)
+    (next)

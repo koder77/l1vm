@@ -1,0 +1,30 @@
+// double-array-average.l1dsl
+parser: "double array average, mean double array, average of double array"
+token: double arr, int64 count
+result: double avg
+include: intr-func.l1h
+include: vars.l1h
+var: int64 realind 1 0
+var: int64 i 1 0
+var: double val 1 0.0
+var: double sum 1 0.0
+var: int64 f 1 0
+var: const-int64 zero 1 0
+var: const-int64 one 1 0
+var: const-double dzero 1 0.0
+desc: "Calculate the average of a double array"
+
+code:
+    (dzero sum :=)
+    (zero i :=)
+    (for-loop)
+    (((i count <) f :=) f for)
+        (i * int64_size realind :=)
+        (arr [ realind ] val =)
+        (sum +d val sum :=)
+        (i + one i :=)
+    (next)
+    (sum count i->d avg :=)
+    (avg /d count i->d avg :=)
+    (avg :print_d !)
+    (:print_n !)

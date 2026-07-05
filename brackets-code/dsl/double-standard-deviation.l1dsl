@@ -1,0 +1,47 @@
+// double-standard-deviation.l1dsl
+parser: "standard deviation double, stddev double"
+match: has_double_standard_deviation
+token: int64 count
+result: double stddev
+include: intr-func.l1h
+var: const-double zero 1 0.0
+var: const-double one 1 1.0
+var: int64 i 1 0
+var: int64 addr 1 0
+var: double sum 1 0.0
+var: double mean 1 0.0
+var: double diff 1 0.0
+var: double variance 1 0.0
+var: int64 el 1 0
+desc: "Calculate standard deviation of an array of doubles"
+
+code:
+    (zero sum :=)
+    (zero i :=)
+    (for-loop)
+    (((i count <) f :=) f for)
+        (i 8 *d addr :=)
+        (arr +d addr addr :=)
+        (addr @d el :=)
+        (sum +d el sum :=)
+        (i + one i :=)
+    (next)
+    (sum count i->d mean :=)
+    (mean /d count i->d mean :=)
+    (zero sum :=)
+    (zero i :=)
+    (for-loop)
+    (((i count <) f :=) f for)
+        (i 8 *d addr :=)
+        (arr +d addr addr :=)
+        (addr @d el :=)
+        (el -d mean diff :=)
+        (diff *d diff diff :=)
+        (sum +d diff sum :=)
+        (i + one i :=)
+    (next)
+    (sum count i->d variance :=)
+    (variance /d count i->d variance :=)
+    (variance :sqrt_d stddev !)
+    (stddev :print_d !)
+    (:print_n !)

@@ -1,0 +1,21 @@
+// type-convert.l1dsl
+parser: "type convert, string to int, int to string, type conversion"
+match: has_type_convert
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: string numstr 4 "\"42\""
+var: int64 num 1 0
+var: string outstr 16 "\"42\""
+desc: "Convert between string and int64 types"
+
+code:
+    // string to int64
+    (numstr :string_to_int !)
+    (num stpopi)
+    (num :print_i !)
+    (:print_n !)
+    // int64 to string
+    (outstr num :string_from_int !)
+    (outstr :print_s !)
+    (:print_n !)
+    (zero :exit !)

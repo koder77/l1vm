@@ -1,0 +1,34 @@
+// bignum-math.l1dsl
+parser: "keywords for matching"
+match: has_bignum_math
+token: token type and name
+result: result type and name
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 base 1 10
+var: const-int64 precision 1 50
+var: const-int64 potnum 1 4096
+var: const-int64 outstr_len 1 4095
+var: int64 baseaddr 1 0
+var: int64 potaddr 1 1
+var: int64 resaddr 1 4096
+var: int64 outaddr 1 4096
+var: int64 f 1 0
+var: const-string basestr 4 "2.0"
+var: const-string potstr 8 "4096.0"
+var: const-string resstr 4 "0.0"
+var: const-string formatstr 10 "%.20Ff"
+var: const-string msgstr 11 "2 ^ 4096 ="
+var: string outstr 4096 ""
+desc: "compute 2^4096 using bignum math"
+code:
+    (zero :mp_math_init call)
+    (msgstr :print_s !)
+    (:print_n !)
+    (basestr base baseaddr :mp_set_float !)
+    (potstr base potaddr :mp_set_float !)
+    (baseaddr potaddr resaddr :mp_pow_float !)
+    (resaddr outaddr outstr_len formatstr precision :mp_prints_float !)
+    (outstr :print_s !)
+    (:print_n !)

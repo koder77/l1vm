@@ -1,0 +1,36 @@
+// count-vowels.l1dsl
+parser: "count vowels, vowel count, vokale zaehlen"
+match: has_count_vowels
+include: intr-func.l1h
+include-post: string.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 maxlen 1 256
+var: string str 256 "\"\""
+var: int64 len 1 0
+var: int64 i 1 0
+var: int64 ch 1 0
+var: int64 count 1 0
+var: int64 f 1 0
+var: int64 strmod 1 0
+desc: "Count the number of vowels in a string"
+
+code:
+    (strmod :string_init !)
+    ("Enter a string: " :print_s !)
+    (maxlen str :input_s !)
+    (str :string_len len !)
+    (zero count :=)
+    (zero i :=)
+    (for-loop)
+    (((i len <) f :=) f for)
+        (str i :string_getchar ch !)
+        (((ch 'a' ==) f :=) f if+) (count + one count :=) (endif)
+        (((ch 'e' ==) f :=) f if+) (count + one count :=) (endif)
+        (((ch 'i' ==) f :=) f if+) (count + one count :=) (endif)
+        (((ch 'o' ==) f :=) f if+) (count + one count :=) (endif)
+        (((ch 'u' ==) f :=) f if+) (count + one count :=) (endif)
+        (i + one i :=)
+    (next)
+    (count :print_i !)
+    (:print_n !)

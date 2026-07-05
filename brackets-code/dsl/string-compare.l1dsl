@@ -1,0 +1,28 @@
+// string-compare.l1dsl
+parser: "string compare, compare strings, string vergleich"
+match: has_string_compare
+include: intr-func.l1h
+include-post: string.l1h
+var: const-int64 zero 1 0
+var: const-int64 maxlen 1 256
+var: string str_a 256 "\"\""
+var: string str_b 256 "\"\""
+var: int64 cmp 1 0
+var: int64 strmod 1 0
+var: const-string eq_str 20 "\"strings are equal\""
+var: const-string ne_str 16 "\"strings differ\""
+desc: "Compare two strings for equality"
+
+code:
+    (strmod :string_init !)
+    ("Enter first string: " :print_s !)
+    (maxlen str_a :input_s !)
+    ("Enter second string: " :print_s !)
+    (maxlen str_b :input_s !)
+    (str_a str_b cmp :string_compare !)
+    (cmp if)
+        (eq_str :print_s !)
+    (else)
+        (ne_str :print_s !)
+    (endif)
+    (:print_n !)

@@ -1,0 +1,29 @@
+// leap-year.l1dsl
+parser: "leap year, schaltjahr"
+match: has_leap_year
+token: int64 year
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 four 1 4
+var: const-int64 hundred 1 100
+var: const-int64 fourhundred 1 400
+var: int64 mod4 1 0
+var: int64 mod100 1 0
+var: int64 mod400 1 0
+var: int64 f 1 0
+desc: "Check if a year is a leap year"
+
+code:
+    (year % four mod4 :=)
+    (year % hundred mod100 :=)
+    (year % fourhundred mod400 :=)
+    ((((mod4 zero ==) (mod100 zero >) &) f :=) f if+)
+        ("leap year" :print_s !)
+    (else)
+        (((mod400 zero ==) f :=) f if)
+            ("leap year" :print_s !)
+        (else)
+            ("not a leap year" :print_s !)
+        (endif)
+    (endif)
+    (:print_n !)

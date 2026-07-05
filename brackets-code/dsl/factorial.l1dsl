@@ -1,0 +1,21 @@
+// factorial.l1dsl
+parser: "factorial, calculate factorial"
+match: has_factorial
+token: int64 n
+result: int64 fact
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: int64 i 1 1
+var: int64 f 1 0
+desc: "Calculate the factorial of n using iterative multiplication"
+
+code:
+    (one fact :=)
+    (for-loop)
+    (((i n <=) f :=) f for)
+        (fact * i fact :=)
+        (i + one i :=)
+    (next)
+    (fact :print_i !)
+    (:print_n !)

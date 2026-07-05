@@ -1,0 +1,37 @@
+// stack.l1dsl
+parser: "stack, stack data structure, push pop"
+match: has_stack
+include: intr-func.l1h
+include: vars.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 five 1 5
+var: int64 stack 5 0
+var: int64 sp 1 0
+var: int64 val 1 0
+var: int64 i 1 0
+var: int64 realind 1 0
+var: int64 f 1 0
+var: const-string prompt_str 16 "\"Enter value: \""
+desc: "Stack data structure demonstration (push/pop)"
+
+code:
+    // push 3 values
+    (zero sp :=)
+    (for-loop)
+    (((sp three <) f :=) f for)
+        (prompt_str :print_s !)
+        (val :input_i !)
+        (sp * int64_size realind :=)
+        (val stack [ realind ] =)
+        (sp + one sp :=)
+    (next)
+    // pop and print
+    (do)
+        (sp - one sp :=)
+        (sp * int64_size realind :=)
+        (stack [ realind ] val =)
+        (val + zero val :=)
+        (val :print_i !)
+        (:print_n !)
+    (((sp zero >) f :=) f while)

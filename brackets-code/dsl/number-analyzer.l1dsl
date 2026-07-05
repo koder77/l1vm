@@ -1,0 +1,50 @@
+// number-analyzer.l1dsl
+parser: "number analyzer, absolute, odd even, positive negative"
+match: has_number_analyzer
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 two 1 2
+var: double num 1 0.0
+var: double abs_res 1 0.0
+var: int64 num_int 1 0
+var: int64 temp_i 1 0
+var: const-double zerod 1 0.0
+var: const-string prompt_num 16 "\"Enter a number: \""
+var: const-string abs_str 11 "\"Absolute: \""
+var: const-string odd_even_str 12 "\"Odd/Even: \""
+var: const-string pos_neg_str 20 "\"Positive/Negative: \""
+desc: "Analyze a number: absolute value, odd/even, positive/negative"
+code:
+    (prompt_num :print_s !)
+    (num :input_d !)
+    (num + zerod num :=)
+    (num zerod < if)
+        (zerod - num abs_res :=)
+    (endif)
+    (num zerod >= if)
+        (num abs_res :=)
+    (endif)
+    (abs_str :print_s !)
+    (reset-reg)
+    (abs_res :print_d !)
+    (:print_n !)
+    (prompt_num :print_s !)
+    (num_int :input_i !)
+    (num_int + zero num_int :=)
+    (odd_even_str :print_s !)
+    (num_int two % zero == if)
+        ("Even" :print_s !)
+    (endif)
+    (num_int two % one == if)
+        ("Odd" :print_s !)
+    (endif)
+    (:print_n !)
+    (pos_neg_str :print_s !)
+    (num zerod < if)
+        ("Negative" :print_s !)
+    (endif)
+    (num zerod >= if)
+        ("Positive" :print_s !)
+    (endif)
+    (:print_n !)

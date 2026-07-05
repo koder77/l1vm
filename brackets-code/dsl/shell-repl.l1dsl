@@ -1,0 +1,62 @@
+// shell-repl.l1dsl
+parser: "shell repl, shell, command execution, l1vm sh"
+match: has_shell_repl
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 runlen 1 3
+var: const-int64 inputmax 1 255
+var: int64 ret 1 0
+var: int64 f 1 0
+var: int64 inputlen 1 0
+var: int64 rightpart 1 0
+var: const-string promptstr 12 "\"l1vm-sh $ \""
+var: const-string runstr 5 "\"run\""
+var: const-string runl1vmstr 6 "\"l1vm\""
+var: const-string runshortstr 3 "\"!\""
+var: string inputstr 256 "\"\""
+var: string bufstr 256 "\"\""
+var: string runshellstr 256 "\"\""
+desc: "Shell REPL for running commands via L1VM"
+code:
+    (zero :string_init !)
+    (one :process_init !)
+    (:loop)
+        (promptstr :print_s !)
+        (inputmax inputstr :input_s !)
+        (inputstr :string_len !)
+        (inputlen stpopi)
+        (((inputlen one >) f =) f if)
+            (inputstr bufstr one :string_left !)
+            (bufstr runshortstr :string_compare !)
+            (ret stpopi)
+            (((ret zero ==) f =) f if)
+                ((inputlen one -) rightpart =)
+                (inputstr bufstr rightpart :string_right !)
+                (runshellstr runl1vmstr :string_copy !)
+                (runshellstr bufstr :string_cat !)
+                (runshellstr :run_shell !)
+                (ret stpopi)
+                (:loop jmp)
+            (endif)
+        (endif)
+        (((inputlen runlen >) f =) f if+)
+            (inputstr bufstr runlen :string_left !)
+            (bufstr runstr :string_compare !)
+            (ret stpopi)
+            (((ret zero ==) f =) f if+)
+                ((inputlen runlen -) rightpart =)
+                (inputstr bufstr rightpart :string_right !)
+                (runshellstr runl1vmstr :string_copy !)
+                (runshellstr bufstr :string_cat !)
+                (runshellstr :run_shell !)
+                (ret stpopi)
+            (else)
+                (inputstr :run_shell !)
+                (ret stpopi)
+            (endif)
+        (else)
+            (inputstr :run_shell !)
+            (ret stpopi)
+        (endif)
+        (:loop jmp)

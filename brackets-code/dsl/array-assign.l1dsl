@@ -1,0 +1,50 @@
+// array-assign.l1dsl
+parser: "array assign, array element assignment"
+match: has_array_assign
+include: intr-func.l1h
+include: vars.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: int64 arr 5 0
+var: int64 index 1 0
+var: int64 value 1 0
+var: int64 realind 1 0
+var: int64 aux 1 0
+var: int64 f 1 0
+var: const-string prompt_idx 20 "\"Enter index (0-4): \""
+var: const-string prompt_val 14 "\"Enter value: \""
+var: const-string err_idx 34 "\"Error: index out of bounds (0-4)!\""
+var: const-int64 arrsize 1 5
+var: const-int64 int64_size 1 8
+desc: "Demonstrate array element assignment with bounds checking"
+
+code:
+    (prompt_idx :print_s !)
+    (index :input_i !)
+    // bounds check
+    (((index zero <) f :=) f if)
+        (err_idx :print_s !)
+        (:print_n !)
+        (zero :exit !)
+    (endif)
+    (((index arrsize >=) f :=) f if)
+        (err_idx :print_s !)
+        (:print_n !)
+        (zero :exit !)
+    (endif)
+    (prompt_val :print_s !)
+    (value :input_i !)
+    (value aux :=)
+    (index * int64_size realind :=)
+    (aux arr [ realind ] =)
+    // print array
+    (zero index :=)
+    (for-loop)
+    (((index arrsize <) f :=) f for)
+        (index * int64_size realind :=)
+        (arr [ realind ] value =)
+        (value + zero value :=)
+        (value :print_i !)
+        (:print_n !)
+        (index + one index :=)
+    (next)

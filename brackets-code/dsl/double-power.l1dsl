@@ -1,0 +1,19 @@
+// double-power.l1dsl
+parser: "double power, pow double, exponent double"
+match: has_double_power
+token: double base, double exp
+result: double result
+include: intr-func.l1h
+var: const-double zero 1 0.0
+var: const-double one 1 1.0
+desc: "Calculate power of double (using repeated multiplication)"
+
+code:
+    (one result :=)
+    (for-loop)
+    (((i exp_i <) f :=) f for)
+        (result *d base result :=)
+        (i + one i :=)
+    (next)
+    (result :print_d !)
+    (:print_n !)

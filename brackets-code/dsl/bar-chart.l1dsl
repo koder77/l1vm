@@ -1,0 +1,27 @@
+// bar-chart.l1dsl
+parser: "bar chart, ascii bar chart, horizontal bar chart"
+match: has_bar_chart
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: int64 count 1 1
+var: int64 i 1 0
+var: int64 f 1 0
+var: int64 arr 5 3 7 4 9 2
+var: int64 j 1 0
+desc: "Display an ASCII bar chart from array data"
+
+code:
+    // ASCII bar chart
+    (for-loop)
+    (((i five <) f :=) f for)
+        (arr [ i ] count =)
+        (for-loop)
+            (((j count <) f :=) f for)
+                ("#" :print_s !)
+                (j one + j :=)
+            (next)
+        (:print_n !)
+        (i one + i :=)
+    (next)
+    (zero :exit !)

@@ -1,0 +1,22 @@
+// sum-of-digits.l1dsl
+parser: "sum of digits, digit sum, quersumme"
+match: has_sum_of_digits
+token: int64 n
+result: int64 sum
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 ten 1 10
+var: int64 digit 1 0
+var: int64 temp 1 0
+desc: "Calculate the sum of the digits of a number"
+
+code:
+    (n temp :=)
+    (zero sum :=)
+    (do)
+        (temp % ten digit :=)
+        (sum + digit sum :=)
+        (temp / ten temp :=)
+    (((temp zero >) f :=) f while)
+    (sum :print_i !)
+    (:print_n !)

@@ -1,0 +1,32 @@
+// array-reverse-int64.l1dsl
+parser: "reverse array, invert array, flip int64 array"
+match: has_array_reverse
+token: int64 arr, int64 count
+include: intr-func.l1h
+include: vars.l1h
+var: int64 realind_l 1 0
+var: int64 realind_r 1 0
+var: int64 tmp 1 0
+var: int64 lval 1 0
+var: int64 rval 1 0
+var: int64 left 1 0
+var: int64 right 1 0
+var: int64 f 1 0
+var: const-int64 zero 1 0
+var: const-int64 one 1 0
+desc: "Reverse the elements of an int64 array in place"
+
+code:
+    (zero left :=)
+    (count one - right :=)
+    (for-loop)
+    (((left right <) f :=) f for)
+        (left * int64_size realind_l :=)
+        (right * int64_size realind_r :=)
+        (arr [ realind_l ] lval =)
+        (arr [ realind_r ] rval =)
+        (lval arr [ realind_r ] =)
+        (rval arr [ realind_l ] =)
+        (left + one left :=)
+        (right - one right :=)
+    (next)

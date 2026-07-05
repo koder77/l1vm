@@ -1,0 +1,27 @@
+// array-sum-int64.l1dsl
+parser: "sum array, add array, total array, sum int64 array"
+match: has_array_sum
+token: int64 arr, int64 count
+result: int64 sum
+include: intr-func.l1h
+include: vars.l1h
+var: int64 realind 1 0
+var: int64 i 1 0
+var: int64 val 1 0
+var: int64 f 1 0
+var: const-int64 zero 1 0
+var: const-int64 one 1 0
+desc: "Sum all elements in an int64 array"
+
+code:
+    (zero sum :=)
+    (zero i :=)
+    (for-loop)
+    (((i count <) f :=) f for)
+        (i * int64_size realind :=)
+        (arr [ realind ] val =)
+        (sum + val sum :=)
+        (i + one i :=)
+    (next)
+    (sum :print_i !)
+    (:print_n !)

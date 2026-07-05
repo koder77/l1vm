@@ -1,0 +1,25 @@
+// compound-interest.l1dsl
+parser: "compound interest, interest calculation, zinseszins"
+match: has_compound_interest
+token: int64 principal, int64 rate, int64 years
+result: int64 amount
+include: intr-func.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 hundred 1 100
+var: int64 i 1 0
+var: int64 f 1 0
+desc: "Calculate compound interest"
+
+code:
+    (principal amount :=)
+    (zero i :=)
+    (for-loop)
+    (((i years <) f :=) f for)
+        (amount * rate f :=)
+        (f / hundred f :=)
+        (amount + f amount :=)
+        (i + one i :=)
+    (next)
+    (amount :print_i !)
+    (:print_n !)
