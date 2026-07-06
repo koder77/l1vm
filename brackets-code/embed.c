@@ -1001,12 +1001,13 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                     || has_word(rest, "mal") || has_word(rest, "durch");
                 int sw = 0, rw = 0;
                 char tmp[MAX_PROMPT];
+                char *saveptr;
                 snprintf(tmp, sizeof(tmp), "%s", step);
-                char *t = strtok(tmp, " ");
-                while (t) { trim(t); if (strlen(t) > 0) sw++; t = strtok(NULL, " "); }
+                char *t = strtok_r(tmp, " ", &saveptr);
+                while (t) { trim(t); if (strlen(t) > 0) sw++; t = strtok_r(NULL, " ", &saveptr); }
                 snprintf(tmp, sizeof(tmp), "%s", rest);
-                t = strtok(tmp, " ");
-                while (t) { trim(t); if (strlen(t) > 0) rw++; t = strtok(NULL, " "); }
+                t = strtok_r(tmp, " ", &saveptr);
+                while (t) { trim(t); if (strlen(t) > 0) rw++; t = strtok_r(NULL, " ", &saveptr); }
                 if ((sw < 4 && rw < 4) || (left_has_op && right_has_op)) {
                     // False split – merge and continue as single step
                     char combined[MAX_PROMPT * 2];
@@ -1044,14 +1045,14 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                     snprintf(merged_step, sizeof(merged_step), "%.*s %.*s", MAX_PROMPT - 1, steps[i-1], MAX_PROMPT - 1, steps[i]);
                         trim(merged_step);
                         snprintf(steps[i-1], MAX_PROMPT, "%.*s", MAX_PROMPT - 1, merged_step);
-                        for (int j = i; j < num_steps - 1; j++) snprintf(steps[j], MAX_PROMPT, "%s", steps[j+1]);
+                        for (int j = i; j < num_steps - 1; j++) memmove(steps[j], steps[j+1], MAX_PROMPT);
                         num_steps--; merged = 1; break;
                     } else if (num_steps > 1) {
                         char merged_step[MAX_PROMPT * 2];
                         snprintf(merged_step, sizeof(merged_step), "%.*s %.*s", MAX_PROMPT - 1, steps[0], MAX_PROMPT - 1, steps[1]);
                         trim(merged_step);
                         snprintf(steps[0], MAX_PROMPT, "%.*s", MAX_PROMPT - 1, merged_step);
-                        for (int j = 1; j < num_steps - 1; j++) snprintf(steps[j], MAX_PROMPT, "%s", steps[j+1]);
+                        for (int j = 1; j < num_steps - 1; j++) memmove(steps[j], steps[j+1], MAX_PROMPT);
                         num_steps--; merged = 1; break;
                     }
                 }
@@ -1084,7 +1085,7 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                     snprintf(merged_step, sizeof(merged_step), "%.*s %.*s", MAX_PROMPT - 1, steps[i-1], MAX_PROMPT - 1, steps[i]);
                     trim(merged_step);
                     snprintf(steps[i-1], MAX_PROMPT, "%.*s", MAX_PROMPT - 1, merged_step);
-                    for (int j = i; j < num_steps - 1; j++) snprintf(steps[j], MAX_PROMPT, "%s", steps[j+1]);
+                    for (int j = i; j < num_steps - 1; j++) memmove(steps[j], steps[j+1], MAX_PROMPT);
                     num_steps--; merged = 1; break;
                 }
             }
@@ -1241,7 +1242,7 @@ void index_examples(void) {
                 }
                 fclose(f);
             }
-            char combined[8192];
+            char combined[10000];
             snprintf(combined, sizeof(combined), "%s %s %s %s",
                      example_docs[num_examples].stem,
                      example_docs[num_examples].stem,

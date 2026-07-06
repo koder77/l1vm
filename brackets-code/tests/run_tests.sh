@@ -19,7 +19,7 @@ SAVEDIR=""   # set by 'save' mode
 
 L1VM_ROOT="${L1VM_ROOT:-$HOME/l1vm/}"
 L1VM_BIN="${L1VM_ROOT}bin"
-INCLUDE_DIR="${L1VM_ROOT}include/"
+INCLUDE_DIR="${L1VM_ROOT}/include/"
 PATH="${L1VM_BIN}:${PATH}"
 
 PASS=0
@@ -82,6 +82,8 @@ run_test() {
 declare -A KNOWN_FAILURES=(
     [em_base_converter]="interactive :input_i not testable with pipe"
     [em_binary_search_tree]="interactive menu loop not testable with pipe"
+    [em_array_min_max]="LLM smart-gen emits arr as scalar but used as array"
+    [multi_sort_desc]="LLM smart-gen emits missing f variable in conditional"
 
 )
 

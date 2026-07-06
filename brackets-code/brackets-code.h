@@ -29,8 +29,10 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
+#include <spawn.h>
 
-#define VERSION_TXT "0.6.5"
+#define VERSION_TXT "0.6.6"
 
 #define MAX_LINE 4096
 #define MAX_VARS 48
@@ -339,7 +341,7 @@ typedef struct {
     char result_var[64];
     int skip_input;
     char prompt[MAX_PROMPT];
-    char inherit_var[64];
+    char inherit_var[256];
     int inherit_count;
     char inherit_var_names[64][256];
     char inherit_var_types[64][64];
@@ -654,6 +656,8 @@ void gen_pointer_demo(Program *prog, const char *prompt);
 void gen_time_demo(Program *prog, const char *prompt);
 void gen_gcd(Program *prog, const char *prompt);
 void gen_hex_binary(Program *prog, const char *prompt);
+void gen_bool_demo(Program *prog, const char *prompt);
+void gen_string_cat(Program *prog, const char *prompt);
 
 // CLI
 int self_test(void);

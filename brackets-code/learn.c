@@ -177,7 +177,8 @@ int learn_from_file(const char *path, const char *keywords, const char *descript
                     // format: (set TYPE COUNT NAME [VAL1 VAL2 ...] )
                     // tokens: ["(set", TYPE, COUNT, NAME, VAL1, VAL2, ..., ")"]
                     int tok_idx = 0;
-                    char *token = strtok(line_copy, " \t");
+                    char *saveptr;
+                    char *token = strtok_r(line_copy, " \t", &saveptr);
                     while (token) {
                         if (tok_idx >= 4) {
                             if (strcmp(token, ")") == 0) break;
@@ -189,7 +190,7 @@ int learn_from_file(const char *path, const char *keywords, const char *descript
                             }
                         }
                         tok_idx++;
-                        token = strtok(NULL, " \t");
+                        token = strtok_r(NULL, " \t", &saveptr);
                     }
                 }
             }
@@ -410,7 +411,8 @@ void load_learned_patterns(void) {
                         char lc[MAX_LINE];
                         snprintf(lc, sizeof(lc), "%s", line);
                         int tok_idx = 0;
-                        char *token = strtok(lc, " \t");
+                        char *saveptr2;
+                        char *token = strtok_r(lc, " \t", &saveptr2);
                         while (token) {
                             if (tok_idx >= 4) {
                                 if (strcmp(token, ")") == 0) break;
@@ -422,7 +424,7 @@ void load_learned_patterns(void) {
                                 }
                             }
                             tok_idx++;
-                            token = strtok(NULL, " \t");
+                            token = strtok_r(NULL, " \t", &saveptr2);
                         }
                     }
                 }
@@ -483,7 +485,8 @@ int match_learned_pattern(const char *prompt, int *best_score) {
         int any_match = 0;
         char kwcopy[1024];
         snprintf(kwcopy, sizeof(kwcopy), "%s", kwbuf);
-        char *kw = strtok(kwcopy, " ,/");
+        char *saveptr3;
+        char *kw = strtok_r(kwcopy, " ,/", &saveptr3);
         while (kw) {
             trim(kw);
             if (strlen(kw) > 0) {
@@ -494,7 +497,7 @@ int match_learned_pattern(const char *prompt, int *best_score) {
                     any_match = 1;
                 }
             }
-            kw = strtok(NULL, " ,/");
+            kw = strtok_r(NULL, " ,/", &saveptr3);
         }
         // Match if at least one keyword matches and score >= 25% of total keywords
         if (any_match && total_kw > 0) {

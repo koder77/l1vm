@@ -30,8 +30,7 @@ all: $(BINARY)
 %.o: %.c $(HEADER) $(DSL_H)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-embed.o: CFLAGS += -Wno-unused-function
-learn.o: CFLAGS += -Wno-unused-function
+# embed.o and learn.o compile clean with -Wall -Wextra
 
 $(BINARY): $(SOURCE:.c=.o) $(DSL:.c=.o) $(EMBED:.c=.o) $(LEARN:.c=.o)
 	@if [ "$(HAVE_RL)" = "1" ]; then \

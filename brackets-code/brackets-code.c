@@ -228,6 +228,7 @@ void free_learned_pattern(LearnedPattern *lp) {
 void trim(char *s) {
     char *p = s;
     int l = strlen(p);
+    if (l == 0) return;
     while (isspace(p[l-1])) p[--l] = 0;
     while (*p && isspace(*p)) ++p;
     memmove(s, p, l - (p - s) + 1);
@@ -792,7 +793,7 @@ static int extract_numbers(const char *prompt, int *nums, int max_nums) {
                     continue;
                 }
             }
-            nums[count++] = atoi(p);
+            nums[count++] = (int)strtol(p, NULL, 10);
             while (*p && isdigit(*p)) p++;
             continue;
         }
@@ -1907,7 +1908,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
             while (q >= buf && isdigit(*q)) q--;
             q++;
             if (q < p && isdigit(*q)) {
-                task->input_count = atoi(q);
+                task->input_count = (int)strtol(q, NULL, 10);
                 task->has_input = 1;
             } else {
                 // check for spelled-out number before "numbers"
@@ -1998,9 +1999,9 @@ int parse_task(const char *prompt, TaskProfile *task) {
             for (int j = i + 1; j < found_ops; j++) {
                 if (op_positions[j] < op_positions[i]) {
                     int tp = op_positions[i]; op_positions[i] = op_positions[j]; op_positions[j] = tp;
-                    char tn[8]; snprintf(tn, sizeof(tn), "%s", op_names[i]);
-                    snprintf(op_names[i], sizeof(op_names[i]), "%s", op_names[j]);
-                    snprintf(op_names[j], sizeof(op_names[j]), "%s", tn);
+                    char tn[8]; memcpy(tn, op_names[i], sizeof(tn));
+                    memcpy(op_names[i], op_names[j], sizeof(op_names[i]));
+                    memcpy(op_names[j], tn, sizeof(op_names[j]));
                 }
             }
         }
@@ -2777,9 +2778,6 @@ void emit_insertion_sort(Program *prog, Function *f, int count, int skip_input) 
         func_append(f, "\t(next)");
     }
 }
-// Temporary suppress unused function warnings for generated wrapper functions
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
 static void ensure_exit(Function *f, int last_step) {
     if (!last_step) return;
     const char *zv[] = {"0"};
@@ -2859,8 +2857,6 @@ static ExtraEmitterFunc ee_table[NUM_EMITTERS] = {
     [146] = ee_double_mul, [147] = ee_double_div,
 };
 
-#pragma GCC diagnostic pop
-
 int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     // check if main function already exists
     Function *f = NULL;
@@ -2906,7 +2902,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         int is_double = (strcmp(task->type, "double") == 0);
         const char *size_var = is_double ? "double_size" : "int64_size";
         if (task->has_max) {
-    char ln[256];
+    char ln[512];
     const char *zv[] = {"0"};
     const char *zd[] = {"0.0"};
     const char *ov[] = {"1"};
@@ -2933,7 +2929,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
             func_append(f, "\t(:print_n !)");
         }
         if (task->has_min) {
-            char ln[256];
+            char ln[512];
             const char *zv[] = {"0"};
             const char *zd[] = {"0.0"};
             add_var_to_func(f, is_double ? "const-double" : "const-int64", is_double ? "zerod" : "zero", 1, is_double ? zd : zv, 1);
@@ -2969,7 +2965,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         add_var_to_func(f, "int64", "f", 1, zv, 1);
         const char *size_var = is_double ? "double_size" : "int64_size";
         if (task->has_max) {
-            char ln[256];
+            char ln[512];
             func_append(f, "\t// print largest");
             func_append(f, "\t(count one - temp :=)");
             snprintf(ln, sizeof(ln), "\t(temp * %s realind :=)", size_var);
@@ -2981,7 +2977,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
             func_append(f, "\t(:print_n !)");
         }
         if (task->has_min) {
-            char ln[256];
+            char ln[512];
             func_append(f, "\t// print smallest");
             snprintf(ln, sizeof(ln), "\t(zero * %s realind :=)", size_var);
             func_append(f, ln);
@@ -3092,7 +3088,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         }
         const char *ps[] = {"\"Enter a number: \""};
         add_var_to_func(f, "const-string", "input_prompt", 18, ps, 1);
-        char ln[256];
+        char ln[512];
         func_append(f, "\t(input_prompt :print_s !)");
         snprintf(ln, sizeof(ln), "\t(a %s", input_op);
         func_append(f, ln);
@@ -3251,7 +3247,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         func_append(f, "\t(for-loop)");
         func_append(f, "\t(((i count <) f :=) f for)");
         func_append(f, "\t\t(i * int64_size realind :=)");
-        char ln[256];
+        char ln[512];
         snprintf(ln, sizeof(ln), "\t\t(%s [ realind ] a =)", task->inherit_var);
         func_append(f, ln);
         func_append(f, "\t\t(a + zero a :=)");
@@ -3280,7 +3276,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         func_append(f, "\t// print largest");
         func_append(f, "\t(count one - temp :=)");
         func_append(f, "\t(temp * int64_size realind :=)");
-        char ln[256];
+        char ln[512];
         snprintf(ln, sizeof(ln), "\t(%s [ realind ] a =)", task->inherit_var);
         func_append(f, ln);
         func_append(f, "\t(a + zero a :=)");
@@ -3296,7 +3292,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
         add_var_to_func(f, "int64", "realind", 1, zv, 1);
         add_var_to_func(f, "int64", "a", 1, zv, 1);
-        char ln[256];
+        char ln[512];
         snprintf(ln, sizeof(ln), "\t(zero * int64_size realind :=)");
         func_append(f, ln);
         func_append(f, "\t// print smallest");
@@ -3600,7 +3596,7 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
                     continue;
                 }
             }
-            nums[num_count++] = atoi(p);
+            nums[num_count++] = (int)strtol(p, NULL, 10);
             while (*p && isdigit(*p)) p++;
             continue;
         }
@@ -4608,7 +4604,7 @@ void gen_gcd(Program *prog, const char *prompt) {
     add_var_to_func(gf, "int64", "f~", 1, vals, 1);
     func_append(gf, "\t(b~ stpop)");
     func_append(gf, "\t(a~ stpop)");
-    func_append(gf, "\t(((b~ zero~ ==) f~ =) f~ if)");
+    func_append(gf, "\t(((b~ zero~ ==) f~ :=) f~ if)");
     func_append(gf, "\t\t(a~ stpush)");
     func_append(gf, "\t\t(return)");
     func_append(gf, "\t(endif)");
@@ -4639,6 +4635,53 @@ void gen_hex_binary(Program *prog, const char *prompt) {
     func_append(f, "\t(zero :exit !)");
 }
 
+void gen_bool_demo(Program *prog, const char *prompt) {
+    (void)prompt;
+    add_include(prog, "intr-func.l1h");
+    add_func(prog, "main");
+    Function *f = &prog->funcs[prog->num_funcs - 1];
+    const char *vals[] = {"0"};
+    const char *vone[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, vals, 1);
+    add_var_to_func(f, "const-int64", "one", 1, vone, 1);
+    add_var_to_func(f, "int64", "flag", 1, vone, 1);
+    add_var_to_func(f, "int64", "f", 1, vals, 1);
+    const char *vtrue[] = {"\"flag is true\""};
+    const char *vfalse[] = {"\"flag is false\""};
+    add_var_to_func(f, "const-string", "true_str", 13, vtrue, 1);
+    add_var_to_func(f, "const-string", "false_str", 14, vfalse, 1);
+    func_append(f, "\t// boolean variable demo");
+    func_append(f, "\t(((flag one ==) f :=) f if+)");
+    func_append(f, "\t\t(true_str :print_s !)");
+    func_append(f, "\t(else)");
+    func_append(f, "\t\t(false_str :print_s !)");
+    func_append(f, "\t(endif)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+}
+
+void gen_string_cat(Program *prog, const char *prompt) {
+    (void)prompt;
+    add_include(prog, "intr-func.l1h");
+    add_func(prog, "main");
+    Function *f = &prog->funcs[prog->num_funcs - 1];
+    const char *vals[] = {"0"};
+    add_var_to_func(f, "const-int64", "zero", 1, vals, 1);
+    add_var_to_func(f, "int64", "strmod", 1, vals, 1);
+    const char *vhello[] = {"\"Hello \""};
+    const char *vname[] = {"\"Brackets\""};
+    add_var_to_func(f, "string", "a", 8, vhello, 1);
+    add_var_to_func(f, "string", "b", 10, vname, 1);
+    add_var_to_func(f, "string", "result", 256, (const char *[]){"\"\""}, 1);
+    func_append(f, "\t(strmod :string_init !)");
+    func_append(f, "\t(result a :string_copy !)");
+    func_append(f, "\t(result b :string_cat !)");
+    func_append(f, "\t(result :print_s !)");
+    func_append(f, "\t(:print_n !)");
+    func_append(f, "\t(zero :exit !)");
+    add_include_post(prog, "string.l1h");
+}
+
 Template templates[] = {
     {"hello world", "Hello World program", gen_hello_world},
     {"hello", "Hello World program", gen_hello_world},
@@ -4651,6 +4694,7 @@ Template templates[] = {
     {"while loop", "While loop example", gen_while_loop},
     {"while", "While loop example", gen_while_loop},
     {"countdown", "Countdown from 10 to 1", gen_countdown},
+    {"count down", "Countdown from 10 to 1", gen_countdown},
     {"if else", "If-else conditionals", gen_if_else},
     {"if", "If-else conditionals", gen_if_else},
     {"condition", "If-else conditionals", gen_if_else},
@@ -4659,6 +4703,7 @@ Template templates[] = {
     {"case", "Switch/case example", gen_switch},
     {"array", "Array index access demo", gen_array_demo},
     {"print var", "Print a variable", gen_print_var},
+    {"print variable", "Print a variable", gen_print_var},
     {"math", "Math operations demo", gen_math_ops},
     {"string concat", "String concatenation demo", gen_string_demo},
     {"string", "String operations demo", gen_string_demo},
@@ -4689,7 +4734,10 @@ Template templates[] = {
     {"pointer", "Pointer access demo", gen_pointer_demo},
     {"time", "Get current time and epoch ms", gen_time_demo},
     {"clock", "Get current time and epoch ms", gen_time_demo},
+    {"boolean variable", "Boolean variable demo", gen_bool_demo},
+    {"concatenate strings", "String concatenation demo", gen_string_cat},
     {"gcd", "GCD (greatest common divisor)", gen_gcd},
+    {"greatest common divisor", "GCD (greatest common divisor)", gen_gcd},
     {"hex", "Hex and binary number demo", gen_hex_binary},
     {"binary", "Hex and binary number demo", gen_hex_binary},
 };
@@ -4708,9 +4756,10 @@ int match_template(const char *prompt, int *best_score) {
     int total_words = 0;
     {
         char wc_buf[MAX_PROMPT];
+        char *saveptr;
         snprintf(wc_buf, sizeof(wc_buf), "%s", buf);
-        char *wc = strtok(wc_buf, " ");
-        while (wc) { trim(wc); if (strlen(wc) > 0) total_words++; wc = strtok(NULL, " "); }
+        char *wc = strtok_r(wc_buf, " ", &saveptr);
+        while (wc) { trim(wc); if (strlen(wc) > 0) total_words++; wc = strtok_r(NULL, " ", &saveptr); }
     }
 
     for (int i = 0; i < num_templates; i++) {
@@ -4722,7 +4771,8 @@ int match_template(const char *prompt, int *best_score) {
         int num_kw = 0;
         char kwcopy[512];
         snprintf(kwcopy, sizeof(kwcopy), "%s", kwbuf);
-        char *kw = strtok(kwcopy, " ,/");
+        char *saveptr2;
+        char *kw = strtok_r(kwcopy, " ,/", &saveptr2);
         int all_match = 1;
         while (kw) {
             trim(kw);
@@ -4734,7 +4784,7 @@ int match_template(const char *prompt, int *best_score) {
                     all_match = 0;
                 }
             }
-            kw = strtok(NULL, " ,/");
+            kw = strtok_r(NULL, " ,/", &saveptr2);
         }
         if (all_match && score > 0) {
             // Avoid matching generic short-keyword templates against complex prompts.
@@ -4753,27 +4803,29 @@ int match_template(const char *prompt, int *best_score) {
 
 void prepend_out_dir(const char *fname, char *buf, int bufsize);
 
-// Shell-escape a string by wrapping in single quotes; 
-// embedded single quotes are escaped as '\'' per POSIX convention.
-static void shell_escape(const char *raw, char *out, size_t out_size) {
-    size_t pos = 0;
-    if (pos < out_size) out[pos++] = '\'';
-    for (const char *p = raw; *p && pos < out_size - 5; p++) {
-        if (*p == '\'') {
-            if (pos + 4 > out_size - 1) break;
-            out[pos++] = '\''; out[pos++] = '\\';
-            out[pos++] = '\''; out[pos++] = '\'';
-        } else {
-            out[pos++] = *p;
-        }
+extern char **environ;
+
+static int run_cmd(const char **argv) {
+    posix_spawn_file_actions_t actions;
+    posix_spawn_file_actions_init(&actions);
+    posix_spawn_file_actions_adddup2(&actions, STDOUT_FILENO, STDERR_FILENO);
+
+    pid_t pid;
+    int ret = posix_spawnp(&pid, argv[0], &actions, NULL, (char *const *)argv, environ);
+    posix_spawn_file_actions_destroy(&actions);
+
+    if (ret != 0) {
+        c_printf(ANSI_RED, "Error: failed to execute '%s'\n", argv[0]);
+        return -1;
     }
-    if (pos < out_size) out[pos++] = '\'';
-    if (pos < out_size) out[pos] = '\0';
-    else out[out_size - 1] = '\0';
+
+    int status;
+    if (waitpid(pid, &status, 0) == -1) return -1;
+    if (WIFEXITED(status)) return WEXITSTATUS(status);
+    return -1;
 }
 
 int validate_code(const char *filename) {
-    char cmd[32768];
     char ppname[512];
     const char *dot = strrchr(filename, '.');
     if (dot) {
@@ -4806,31 +4858,21 @@ int validate_code(const char *filename) {
         l1com_bin = l1com_path;
     }
 
-    char escaped_l1pre[4096], escaped_l1com[4096];
-    shell_escape(l1pre_bin, escaped_l1pre, sizeof(escaped_l1pre));
-    shell_escape(l1com_bin, escaped_l1com, sizeof(escaped_l1com));
-
-    char escaped_filename[4096], escaped_ppname[4096], escaped_incdir[4096];
-    shell_escape(filename, escaped_filename, sizeof(escaped_filename));
-    shell_escape(ppname, escaped_ppname, sizeof(escaped_ppname));
-    shell_escape(include_dir, escaped_incdir, sizeof(escaped_incdir));
-    snprintf(cmd, sizeof(cmd), "%s %s %s %s 2>&1", escaped_l1pre, escaped_filename, escaped_ppname, escaped_incdir);
-    int ret = system(cmd);
+    const char *l1pre_argv[] = {l1pre_bin, filename, ppname, include_dir, NULL};
+    int ret = run_cmd(l1pre_argv);
     if (ret != 0) {
-        c_printf(ANSI_RED, "Validation: l1pre FAILED (exit code %d)\n", ret);
+        if (ret > 0) c_printf(ANSI_RED, "Validation: l1pre FAILED (exit code %d)\n", ret);
         (void)remove(ppname);
         return 0;
     }
 
     char compname[512];
     snprintf(compname, sizeof(compname), "%.*s_pp", (int)(dot ? dot - filename : (int)strlen(filename)), filename);
-    char escaped_compname[4096];
-    shell_escape(compname, escaped_compname, sizeof(escaped_compname));
-    snprintf(cmd, sizeof(cmd), "%s %s 2>&1", escaped_l1com, escaped_compname);
-    ret = system(cmd);
+    const char *l1com_argv[] = {l1com_bin, compname, NULL};
+    ret = run_cmd(l1com_argv);
     if (ret == 0) {
         c_printf(ANSI_GREEN, "Validation: OK\n");
-    } else {
+    } else if (ret > 0) {
         c_printf(ANSI_RED, "Validation: FAILED (exit code %d)\n", ret);
     }
     (void)remove(ppname);
@@ -4918,7 +4960,7 @@ int generate_code(const char *prompt, const char *filename) {
         for (int i = 0; i < prog->num_funcs; i++)
             if (strcmp(prog->funcs[i].name, "main") == 0) { f = &prog->funcs[i]; break; }
         if (f) {
-            char nn_msg[256];
+            char nn_msg[1100];
             snprintf(nn_msg, sizeof(nn_msg), "\t// nearest example: %s", example_docs[nn_indices[0]].filename);
             func_append(f, nn_msg);
         }
@@ -5096,7 +5138,7 @@ void interactive_mode(void) {
         }
 
         if (strncmp(prompt, "/learn", 6) == 0) {
-            char lpath[1024] = {0}, lkeywords[512] = {0}, ldesc[256] = {0};
+            char lpath[1024] = {0}, lkeywords[512] = {0}, ldesc[512] = {0};
             int n = sscanf(prompt + 6, " %1023s %511[^\"] \"%255[^\"]\"", lpath, lkeywords, ldesc);
             if (n == 0) {
                 printf("Usage: /learn <file.l1com> [keywords] [\"description\"]\n");

@@ -117,7 +117,7 @@ static int parse_token_decl(const char *line, DslToken *token)
         char *rbracket = strchr(lbracket + 1, ']');
         if (rbracket) {
             *rbracket = '\0';
-            array_size = atoi(lbracket + 1);
+            array_size = (int)strtol(lbracket + 1, NULL, 10);
             if (array_size < 1) array_size = 1;
         }
     }
@@ -195,6 +195,11 @@ static int parse_dsl_line(const char *line, const char *key, char *value, int va
     while (*p && isspace((unsigned char)*p)) p++;
     snprintf(value, val_size, "%s", p);
     trim_line(value);
+    int vlen = strlen(value);
+    if (vlen >= 2 && value[0] == '"' && value[vlen-1] == '"') {
+        memmove(value, value+1, vlen-1);
+        value[vlen-2] = '\0';
+    }
     return 1;
 }
 
@@ -500,13 +505,17 @@ int dsl_match_rule(const char *prompt, DslRule **rule, float *score)
         char *saveptr;
         char kw_copy[256];
         snprintf(kw_copy, sizeof(kw_copy), "%s", keyword_lower);
-        char *kw = strtok_r(kw_copy, ", ", &saveptr);
+        char *kw = strtok_r(kw_copy, ",", &saveptr);
         while (kw) {
+            while (*kw == ' ') kw++;
+            char *end = kw + strlen(kw) - 1;
+            while (end > kw && *end == ' ') end--;
+            *(end+1) = '\0';
             if (strlen(kw) > 0 && strstr(prompt_lower, kw)) {
                 match += 1.0f;
                 found = 1;
             }
-            kw = strtok_r(NULL, ", ", &saveptr);
+            kw = strtok_r(NULL, ",", &saveptr);
         }
 
         if (found) {
@@ -625,7 +634,7 @@ int dsl_generate_code(Program *prog, DslRule *rule, Function *f)
         DslToken *tok = &rule->tokens[i];
         int count = tok->is_array ? tok->array_size : 1;
         const char *tv[1];
-        char td[64];
+        char td[256];
         if (strlen(tok->default_value) > 0) {
             snprintf(td, sizeof(td), "%s", tok->default_value);
         } else {
