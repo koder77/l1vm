@@ -15,9 +15,9 @@ var: int64 ri 1 0
 var: int64 f 1 0
 var: int64 digits 64 0
 var: int64 idx 1 0
-var: const-string prompt_num 23 "\"Enter decimal number: \""
-var: const-string prompt_base 22 "\"Enter base (2-16): \""
-var: const-string result_str 9 "\"Result: \""
+var: const-string prompt_num 23 "Enter decimal number: "
+var: const-string prompt_base 22 "Enter base (2-16): "
+var: const-string result_str 9 "Result: "
 desc: "Convert a decimal number to any base (2-16)"
 code:
     (prompt_num :print_s !)

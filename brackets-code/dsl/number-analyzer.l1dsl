@@ -10,11 +10,19 @@ var: double abs_res 1 0.0
 var: int64 num_int 1 0
 var: int64 temp_i 1 0
 var: const-double zerod 1 0.0
-var: const-string prompt_num 16 "\"Enter a number: \""
-var: const-string abs_str 11 "\"Absolute: \""
-var: const-string odd_even_str 12 "\"Odd/Even: \""
-var: const-string pos_neg_str 20 "\"Positive/Negative: \""
+var: const-string prompt_num 17 "Enter a number: "
+var: const-string abs_str 11 "Absolute: "
+var: const-string odd_even_str 12 "Odd/Even: "
+var: const-string pos_neg_str 20 "Positive/Negative: "
 desc: "Analyze a number: absolute value, odd/even, positive/negative"
+var: const-string even_str 5 "Even"
+var: const-string odd_str 4 "Odd"
+var: const-string negative_str 9 "Negative"
+var: const-string positive_str 9 "Positive"
+var: const-string even_str_1 5 "Even"
+var: const-string negative_str_1 9 "Negative"
+var: const-string odd_str_1 4 "Odd"
+var: const-string positive_str_1 9 "Positive"
 code:
     (prompt_num :print_s !)
     (num :input_d !)
@@ -34,17 +42,17 @@ code:
     (num_int + zero num_int :=)
     (odd_even_str :print_s !)
     (num_int two % zero == if)
-        ("Even" :print_s !)
+        (even_str_1 :print_s !)
     (endif)
     (num_int two % one == if)
-        ("Odd" :print_s !)
+        (odd_str_1 :print_s !)
     (endif)
     (:print_n !)
     (pos_neg_str :print_s !)
     (num zerod < if)
-        ("Negative" :print_s !)
+        (negative_str_1 :print_s !)
     (endif)
     (num zerod >= if)
-        ("Positive" :print_s !)
+        (positive_str_1 :print_s !)
     (endif)
     (:print_n !)

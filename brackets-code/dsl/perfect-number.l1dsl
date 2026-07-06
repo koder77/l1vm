@@ -8,6 +8,8 @@ var: const-int64 one 1 1
 var: int64 sum 1 0
 var: int64 i 1 1
 var: int64 f 1 0
+var: const-string perfect_str s "perfect number"
+var: const-string not_str s "not perfect"
 desc: "Check if a number is a perfect number"
 
 code:
@@ -20,8 +22,8 @@ code:
         (i + one i :=)
     (next)
     (((n sum ==) f :=) f if)
-        ("perfect number" :print_s !)
+        (perfect_str :print_s !)
     (else)
-        ("not perfect" :print_s !)
+        (not_str :print_s !)
     (endif)
     (:print_n !)

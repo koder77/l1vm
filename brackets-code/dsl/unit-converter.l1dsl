@@ -14,10 +14,10 @@ var: int64 choice 1 0
 var: double val 1 0.0
 var: double result 1 0.0
 var: int64 f 1 0
-var: const-string menu_str 70 "\"1-km_mi 2-mi_km 3-kg_lb 4-lb_kg 5-cm_in 6-in_cm 7-quit\""
-var: const-string prompt_val 14 "\"Enter value: \""
-var: const-string prompt_choice 12 "\"choice: \""
-var: const-string result_str 9 "\"Result: \""
+var: const-string menu_str 70 "1-km_mi 2-mi_km 3-kg_lb 4-lb_kg 5-cm_in 6-in_cm 7-quit"
+var: const-string prompt_val 14 "Enter value: "
+var: const-string prompt_choice 12 "choice: "
+var: const-string result_str 9 "Result: "
 var: const-double c_km_mi 1 0.621
 var: const-double c_mi_km 1 1.609
 var: const-double c_kg_lb 1 2.204

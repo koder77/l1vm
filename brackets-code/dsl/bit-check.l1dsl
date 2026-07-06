@@ -5,11 +5,16 @@ token: int64 val, int64 bitpos
 include: intr-func.l1h
 var: const-int64 zero 1 0
 var: const-int64 one 1 1
+var: const-int64 two 1 2
 var: int64 mask 1 0
 var: int64 result 1 0
 var: int64 f 1 0
 desc: "Check if a specific bit is set in a value"
 
+var: const-string bit_is_0_str 9 "bit is 0"
+var: const-string bit_is_1_str 9 "bit is 1"
+var: const-string bit_is_0_str_1 9 "bit is 0"
+var: const-string bit_is_1_str_1 9 "bit is 1"
 code:
     (one mask :=)
     (for-loop)
@@ -19,9 +24,9 @@ code:
     (next)
     (val & mask result :=)
     (((result zero ==) f :=) f if)
-        ("bit is 0" :print_s !)
+        (bit_is_0_str_1 :print_s !)
     (endif)
     (((result zero >) f :=) f if)
-        ("bit is 1" :print_s !)
+        (bit_is_1_str_1 :print_s !)
     (endif)
     (:print_n !)

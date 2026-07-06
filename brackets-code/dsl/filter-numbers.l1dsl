@@ -19,7 +19,8 @@ var: int64 a 1 0
 var: const-string prompt_n 14 "Enter count: "
 var: const-string prompt_num 15 "Enter number: "
 var: const-string prompt_thresh 12 "Threshold: "
-var: const-string result_str 24 "Filtered (> threshold): "
+var: const-string result_str 25 "Filtered (> threshold): "
+var: const-string space_str 2 " "
 desc: "filter numbers greater than threshold"
 code:
     (prompt_n :print_s !)
@@ -54,7 +55,7 @@ code:
         (i * int64_size ri :=)
         (result [ ri ] a =)
         (a :print_i !)
-        (:print_s !)
+        (space_str :print_s !)
         (i + one i :=)
     (next)
     (:print_n !)

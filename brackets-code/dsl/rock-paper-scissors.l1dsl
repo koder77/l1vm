@@ -1,0 +1,60 @@
+// rock-paper-scissors.l1dsl
+parser: "rock paper scissors, rock paper scissors game, schere stein papier, rps"
+include: intr-func.l1h
+include: math-const.l1h
+include-post: math-lib.l1h
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+var: const-int64 two 1 2
+var: const-int64 three 1 3
+var: int64 choice 1 0
+var: int64 comp 1 0
+var: int64 f 1 0
+var: const-string prompt_str 26 "1-rock 2-paper 3-scissors: "
+var: const-string rock_str 5 "rock"
+var: const-string paper_str 6 "paper"
+var: const-string scissors_str 8 "scissors"
+var: const-string win_str 5 "You win"
+var: const-string lose_str 7 "You lose"
+var: const-string tie_str 4 "Tie"
+desc: "Play rock-paper-scissors against the computer"
+
+code:
+    (zero :math_init !)
+    (zero :math_randinit !)
+    (prompt_str :print_s !)
+    (choice :input_i !)
+    (three :math_randintmax !)
+    (comp stpopi)
+    (comp + one comp :=)
+    // print computer choice
+    (((comp one ==) f :=) f if)
+        (rock_str :print_s !)
+    (endif)
+    (((comp two ==) f :=) f if)
+        (paper_str :print_s !)
+    (endif)
+    (((comp three ==) f :=) f if)
+        (scissors_str :print_s !)
+    (endif)
+    (:print_n !)
+    // determine winner
+    (((choice comp ==) f :=) f if)
+        (tie_str :print_s !)
+    (endif)
+    (((choice one ==) f :=) f if)
+        (((comp three ==) f :=) f if)
+            (win_str :print_s !)
+        (endif)
+    (endif)
+    (((choice two ==) f :=) f if)
+        (((comp one ==) f :=) f if)
+            (win_str :print_s !)
+        (endif)
+    (endif)
+    (((choice three ==) f :=) f if)
+        (((comp two ==) f :=) f if)
+            (win_str :print_s !)
+        (endif)
+    (endif)
+    (:print_n !)

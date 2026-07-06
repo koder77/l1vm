@@ -11,11 +11,13 @@ var: string hexstr 16 ""
 var: int64 f 1 0
 var: const-string label 6 "hex: "
 desc: "hex conversion demo"
+var: const-string str_str 5 " -> "
+var: const-string str_str_1 5 " -> "
 code:
     // hex conversion demo
     (label :print_s !)
     (num :print_i !)
-    (" -> " :print_s !)
+    (str_str_1 :print_s !)
     (num :print_hex_i !)
     (:print_n !)
     (zero :exit !)

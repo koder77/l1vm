@@ -5,8 +5,8 @@ include: intr-func.l1h
 var: const-int64 zero 1 0
 var: int64 fh 1 -1
 var: int64 val 1 0
-var: const-string fname 10 "\"data.bin\""
-var: const-string mode 4 "\"rb\""
+var: const-string fname 10 "data.bin"
+var: const-string mode 4 "rb"
 desc: "Read an int64 value from a binary file"
 
 code:

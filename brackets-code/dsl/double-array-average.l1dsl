@@ -1,5 +1,6 @@
 // double-array-average.l1dsl
 parser: "double array average, mean double array, average of double array"
+match: has_double_array_average
 token: double arr, int64 count
 result: double avg
 include: intr-func.l1h

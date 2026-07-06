@@ -12,14 +12,14 @@ var: int64 loop 1 0
 var: int64 base 1 2
 var: int64 precision 1 0
 var: int64 f 1 0
-var: const-string onestr 4 "\"1.0\""
-var: const-string twostr 4 "\"2.0\""
-var: const-string fieldstr 4 "\"0.0\""
-var: const-string totalstr 4 "\"0.0\""
-var: const-string formatstr 10 "\"%.20Ff\""
-var: const-string textstr 14 "\"chess field: \""
-var: const-string totalnumstr 9 "\"total: \""
-var: const-string emptystr 1 "\"0.0\""
+var: const-string onestr 4 "1.0"
+var: const-string twostr 4 "2.0"
+var: const-string fieldstr 4 "0.0"
+var: const-string totalstr 4 "0.0"
+var: const-string formatstr 10 "%.20Ff"
+var: const-string textstr 14 "chess field: "
+var: const-string totalnumstr 9 "total: "
+var: const-string emptystr 4 "0.0"
 desc: "Wheat and chessboard problem using big number math"
 code:
     (zero :mp_math_init call)

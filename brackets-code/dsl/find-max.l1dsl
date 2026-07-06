@@ -1,10 +1,11 @@
 // find-max.l1dsl
 parser: "find max, find largest, maximum, greatest, biggest"
 match: has_find_max
-token: int64 arr, int64 count
-result: int64 mx
 include: intr-func.l1h
 include: vars.l1h
+var: int64 arr 100 0
+var: int64 count 1 0
+var: int64 mx 1 0
 var: int64 realind 1 0
 var: int64 i 1 0
 var: int64 val 1 0

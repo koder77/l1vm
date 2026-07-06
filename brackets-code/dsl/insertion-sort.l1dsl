@@ -1,0 +1,34 @@
+// insertion-sort.l1dsl
+parser: "insertion sort, insertion sort array, sort insert"
+token: int64 arr, int64 count
+include: intr-func.l1h
+include: vars.l1h
+var: int64 i 1 1
+var: int64 j 1 0
+var: int64 key 1 0
+var: int64 realind 1 0
+var: int64 realind_j 1 0
+var: int64 f 1 0
+var: const-int64 zero 1 0
+var: const-int64 one 1 1
+desc: "Sort an int64 array using insertion sort"
+
+code:
+    (for-loop)
+    (((i count <) f :=) f for)
+        (i * int64_size realind :=)
+        (arr [ realind ] key =)
+        (key + zero key :=)
+        (i one - j :=)
+        (do)
+            (j * int64_size realind_j :=)
+            (((j >= zero) f :=) f if)
+                (((arr [ realind_j ] key >) f :=) f if)
+                    (arr [ realind_j ] arr [ realind ] =)
+                (endif)
+            (endif)
+            (j - one j :=)
+        (((j >= zero) f :=) f while)
+        (key arr [ realind ] =)
+        (i + one i :=)
+    (next)

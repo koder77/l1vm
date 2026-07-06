@@ -8,10 +8,10 @@ var: const-int64 hundred 1 100
 var: int64 secret 1 0
 var: int64 guess 1 0
 var: int64 f 1 0
-var: const-string prompt_str 22 "\"Guess a number (1-100): \""
-var: const-string high_str 13 "\"Too high!\""
-var: const-string low_str 12 "\"Too low!\""
-var: const-string win_str 16 "\"Correct!\""
+var: const-string prompt_str 25 "Guess a number (1-100): "
+var: const-string high_str 13 "Too high!"
+var: const-string low_str 12 "Too low!"
+var: const-string win_str 16 "Correct!"
 desc: "Number guessing game"
 
 code:

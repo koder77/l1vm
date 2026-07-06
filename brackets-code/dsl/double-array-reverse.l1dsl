@@ -1,5 +1,6 @@
 // double-array-reverse.l1dsl
 parser: "reverse double array, invert double array, flip double array"
+match: has_double_array_reverse
 token: double arr, int64 count
 include: intr-func.l1h
 include: vars.l1h

@@ -1,5 +1,6 @@
 // double-array-iterate.l1dsl
 parser: "iterate double array, loop double array, traverse double array, print double array"
+match: has_double_array_iterate
 token: double arr, int64 count
 include: intr-func.l1h
 include: vars.l1h

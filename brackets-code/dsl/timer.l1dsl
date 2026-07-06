@@ -7,9 +7,13 @@ var: int64 start 1 0
 var: int64 end 1 0
 desc: "Measure and print the execution time"
 
+var: const-string working_str 11 "working..."
+var: const-string ms_str 4 " ms"
+var: const-string ms_str_1 4 " ms"
+var: const-string working_str_1 11 "working..."
 code:
     (:time_s start !)
-    ("working..." :print_s !)
+    (working_str_1 :print_s !)
     (:print_n !)
     (for-loop)
     (((i thousand <) f :=) f for)
@@ -18,5 +22,5 @@ code:
     (end - start f :=)
     (end - start f :=)
     (f :print_i !)
-    (" ms" :print_s !)
+    (ms_str_1 :print_s !)
     (:print_n !)

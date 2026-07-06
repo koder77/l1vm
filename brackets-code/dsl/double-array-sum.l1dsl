@@ -1,5 +1,6 @@
 // double-array-sum.l1dsl
 parser: "sum double array, add double array, total double array"
+match: has_double_array_sum
 token: double arr, int64 count
 result: double sum
 include: intr-func.l1h

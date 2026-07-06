@@ -8,16 +8,18 @@ var: const-int64 five 1 5
 var: int64 i 1 0
 var: int64 j 1 0
 var: int64 f 1 0
-var: const-string space 2 "\" \""
+var: const-string space 2 " "
 desc: "Print an ASCII triangle pattern"
 
+var: const-string str_str 2 "*"
+var: const-string str_str_1 2 "*"
 code:
     // ASCII triangle
     (for-loop)
     (((i five <=) f :=) f for)
         (for-loop)
             (((j i <) f :=) f for)
-                ("*" :print_s !)
+                (str_str_1 :print_s !)
                 (j one + j :=)
             (next)
         (:print_n !)

@@ -16,7 +16,7 @@ var: int64 ri 1 0
 var: int64 rj 1 0
 var: int64 temp2 1 0
 var: int64 f 1 0
-var: const-string prompt_str 18 "\"Enter 5 numbers:\""
+var: const-string prompt_str 18 "Enter 5 numbers:"
 desc: "Shuffle an array of 5 numbers using Fisher-Yates algorithm"
 code:
     (zero :math_init !)

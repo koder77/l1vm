@@ -6,7 +6,7 @@ include-post: string.l1h
 var: const-int64 zero 1 0
 var: const-int64 one 1 1
 var: const-int64 maxlen 1 256
-var: string str 256 "\"\""
+var: string str 256 ""
 var: int64 len 1 0
 var: int64 i 1 0
 var: int64 ch 1 0
@@ -14,9 +14,11 @@ var: int64 f 1 0
 var: int64 strmod 1 0
 desc: "Convert a string to uppercase"
 
+var: const-string enter_a_string_str 17 "Enter a string: "
+var: const-string enter_a_string_str_1 17 "Enter a string: "
 code:
     (strmod :string_init !)
-    ("Enter a string: " :print_s !)
+    (enter_a_string_str_1 :print_s !)
     (maxlen str :input_s !)
     (str :string_len len !)
     (zero i :=)

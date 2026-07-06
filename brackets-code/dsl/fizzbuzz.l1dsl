@@ -14,19 +14,25 @@ var: int64 mod5 1 0
 var: int64 f 1 0
 desc: "Print numbers from 1 to 100, replacing multiples of 3 with Fizz, 5 with Buzz, 15 with FizzBuzz"
 
+var: const-string fizzbuzz_str 9 "FizzBuzz"
+var: const-string fizz_str 5 "Fizz"
+var: const-string buzz_str 5 "Buzz"
+var: const-string buzz_str_1 5 "Buzz"
+var: const-string fizz_str_1 5 "Fizz"
+var: const-string fizzbuzz_str_1 9 "FizzBuzz"
 code:
     (for-loop)
     (((i max <=) f :=) f for)
         (i % three mod3 :=)
         (i % five mod5 :=)
         ((((mod3 zero ==) (mod5 zero ==) &) f :=) f if)
-            ("FizzBuzz" :print_s !)
+            (fizzbuzz_str_1 :print_s !)
         (endif)
         (((mod3 zero ==) f :=) f if)
-            ("Fizz" :print_s !)
+            (fizz_str_1 :print_s !)
         (endif)
         (((mod5 zero ==) f :=) f if)
-            ("Buzz" :print_s !)
+            (buzz_str_1 :print_s !)
         (endif)
         ((((mod3 zero ==) (mod5 zero ==) |) f :=) f if+)
         (else)

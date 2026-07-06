@@ -10,13 +10,13 @@ var: int64 ret 1 0
 var: int64 f 1 0
 var: int64 inputlen 1 0
 var: int64 rightpart 1 0
-var: const-string promptstr 12 "\"l1vm-sh $ \""
-var: const-string runstr 5 "\"run\""
-var: const-string runl1vmstr 6 "\"l1vm\""
-var: const-string runshortstr 3 "\"!\""
-var: string inputstr 256 "\"\""
-var: string bufstr 256 "\"\""
-var: string runshellstr 256 "\"\""
+var: const-string promptstr 12 "l1vm-sh $ "
+var: const-string runstr 5 "run"
+var: const-string runl1vmstr 6 "l1vm"
+var: const-string runshortstr 3 "!"
+var: string inputstr 256 ""
+var: string bufstr 256 ""
+var: string runshellstr 256 ""
 desc: "Shell REPL for running commands via L1VM"
 code:
     (zero :string_init !)

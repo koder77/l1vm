@@ -11,6 +11,8 @@ var: int64 arr 5 3 7 4 9 2
 var: int64 j 1 0
 desc: "Display an ASCII bar chart from array data"
 
+var: const-string str_str 2 "#"
+var: const-string str_str_1 2 "#"
 code:
     // ASCII bar chart
     (for-loop)
@@ -18,7 +20,7 @@ code:
         (arr [ i ] count =)
         (for-loop)
             (((j count <) f :=) f for)
-                ("#" :print_s !)
+                (str_str_1 :print_s !)
                 (j one + j :=)
             (next)
         (:print_n !)

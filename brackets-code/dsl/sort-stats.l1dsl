@@ -15,12 +15,13 @@ var: int64 rj 1 0
 var: int64 a 1 0
 var: int64 b 1 0
 var: int64 arr 100 0
-var: const-string prompt_n 14 "\"Enter count: \""
-var: const-string prompt_num 15 "\"Enter number: \""
-var: const-string sorted_str 9 "\"Sorted: \""
-var: const-string min_str 7 "\" Min: \""
-var: const-string max_str 7 "\" Max: \""
-var: const-string avg_str 7 "\" Avg: \""
+var: const-string prompt_n 14 "Enter count: "
+var: const-string prompt_num 15 "Enter number: "
+var: const-string sorted_str 9 "Sorted: "
+var: const-string min_str 7 " Min: "
+var: const-string max_str 7 " Max: "
+var: const-string avg_str 7 " Avg: "
+var: const-string space_str 2 " "
 desc: "Sort numbers and compute min, max, average"
 code:
     (prompt_n :print_s !)
@@ -42,7 +43,7 @@ code:
             (j * int64_size rj :=)
             (arr [ ri ] a =)
             (arr [ rj ] b =)
-            (a b > if)
+            (((a b >) f :=) f if)
                 (arr [ ri ] temp :=)
                 (b arr [ ri ] =)
                 (temp arr [ rj ] =)
@@ -57,7 +58,7 @@ code:
         (i * int64_size ri :=)
         (arr [ ri ] a =)
         (a :print_i !)
-        (:print_s !)
+        (space_str :print_s !)
         (i + one i :=)
     (next)
     (:print_n !)

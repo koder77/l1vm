@@ -9,6 +9,8 @@ var: const-int64 two 1 2
 var: const-int64 max_default 1 50
 var: int64 i 1 2
 var: int64 j 1 0
+var: int64 j_sq 1 0
+var: int64 mod_result 1 0
 var: int64 is_prime 1 0
 var: int64 f 1 0
 desc: "Print all prime numbers up to max_val"
@@ -19,8 +21,10 @@ code:
         (one is_prime :=)
         (two j :=)
         (for-loop)
-        (((j * j i <=) f :=) f for)
-            (((i % j zero ==) f :=) f if)
+        (j * j j_sq :=)
+        (((j_sq i <=) f :=) f for)
+            (i j % mod_result :=)
+            (((mod_result zero ==) f :=) f if)
                 (zero is_prime :=)
             (endif)
             (j + one j :=)

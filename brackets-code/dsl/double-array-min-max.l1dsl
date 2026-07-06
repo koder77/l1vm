@@ -1,5 +1,6 @@
 // double-array-min-max.l1dsl
 parser: "double array min max, find min double array, find max double array"
+match: has_double_array_min_max
 token: double arr, int64 count
 include: intr-func.l1h
 include: vars.l1h

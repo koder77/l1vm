@@ -9,7 +9,7 @@ var: const-int64 steps 1 20
 var: int64 pos 1 10
 var: int64 i 1 0
 var: int64 f 1 0
-var: const-string label 11 "\"Position: \""
+var: const-string label 11 "Position: "
 desc: "Simulate a 1D random walk with 20 steps"
 
 code:

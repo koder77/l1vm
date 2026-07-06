@@ -11,6 +11,8 @@ var: int64 mod4 1 0
 var: int64 mod100 1 0
 var: int64 mod400 1 0
 var: int64 f 1 0
+var: const-string leap_str s "leap year"
+var: const-string not_leap_str s "not a leap year"
 desc: "Check if a year is a leap year"
 
 code:
@@ -18,12 +20,12 @@ code:
     (year % hundred mod100 :=)
     (year % fourhundred mod400 :=)
     ((((mod4 zero ==) (mod100 zero >) &) f :=) f if+)
-        ("leap year" :print_s !)
+        (leap_str :print_s !)
     (else)
         (((mod400 zero ==) f :=) f if)
-            ("leap year" :print_s !)
+            (leap_str :print_s !)
         (else)
-            ("not a leap year" :print_s !)
+            (not_leap_str :print_s !)
         (endif)
     (endif)
     (:print_n !)

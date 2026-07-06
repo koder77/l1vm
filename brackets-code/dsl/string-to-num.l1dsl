@@ -5,7 +5,7 @@ include: intr-func.l1h
 var: const-int64 zero 1 0
 var: const-int64 ten 1 10
 var: const-int64 maxlen 1 256
-var: string str 256 "\"\""
+var: string str 256 ""
 var: int64 len 1 0
 var: int64 i 1 0
 var: int64 ch 1 0
@@ -14,9 +14,11 @@ var: int64 f 1 0
 var: int64 strmod 1 0
 desc: "Read a string of digits and convert to integer"
 
+var: const-string enter_a_number_as_string_str 27 "Enter a number as string: "
+var: const-string enter_a_number_as_string_str_1 27 "Enter a number as string: "
 code:
     (strmod :string_init !)
-    ("Enter a number as string: " :print_s !)
+    (enter_a_number_as_string_str_1 :print_s !)
     (maxlen str :input_s !)
     (str :string_len len !)
     (zero num :=)

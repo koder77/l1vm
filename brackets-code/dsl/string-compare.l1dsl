@@ -5,19 +5,23 @@ include: intr-func.l1h
 include-post: string.l1h
 var: const-int64 zero 1 0
 var: const-int64 maxlen 1 256
-var: string str_a 256 "\"\""
-var: string str_b 256 "\"\""
+var: string str_a 256 ""
+var: string str_b 256 ""
 var: int64 cmp 1 0
 var: int64 strmod 1 0
-var: const-string eq_str 20 "\"strings are equal\""
-var: const-string ne_str 16 "\"strings differ\""
+var: const-string eq_str 20 "strings are equal"
+var: const-string ne_str 16 "strings differ"
 desc: "Compare two strings for equality"
 
+var: const-string enter_first_string_str 21 "Enter first string: "
+var: const-string enter_second_string_str 22 "Enter second string: "
+var: const-string enter_first_string_str_1 21 "Enter first string: "
+var: const-string enter_second_string_str_1 22 "Enter second string: "
 code:
     (strmod :string_init !)
-    ("Enter first string: " :print_s !)
+    (enter_first_string_str_1 :print_s !)
     (maxlen str_a :input_s !)
-    ("Enter second string: " :print_s !)
+    (enter_second_string_str_1 :print_s !)
     (maxlen str_b :input_s !)
     (str_a str_b cmp :string_compare !)
     (cmp if)

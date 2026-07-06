@@ -2,8 +2,11 @@
 parser: "random number, zufallszahl, random"
 match: has_random
 include: intr-func.l1h
+include: math-const.l1h
+include-post: math-lib.l1h
 var: const-int64 zero 1 0
 var: const-int64 one 1 1
+var: const-int64 hundred 1 100
 var: const-int64 count 1 5
 var: int64 i 1 0
 var: int64 rnd 1 0
@@ -11,10 +14,13 @@ var: int64 f 1 0
 desc: "Generate and print random numbers"
 
 code:
+    (zero :math_init !)
+    (zero :math_randinit !)
     (zero i :=)
     (for-loop)
     (((i count <) f :=) f for)
-        (hundred :random_i rnd !)
+        (hundred :math_randintmax !)
+        (rnd stpopi)
         (rnd :print_i !)
         (:print_n !)
         (i + one i :=)

@@ -13,9 +13,9 @@ var: int64 mx 1 0
 var: int64 avg 1 0
 var: int64 realind 1 0
 var: int64 f 1 0
-var: const-string min_str 6 "\"min: \""
-var: const-string max_str 6 "\"max: \""
-var: const-string avg_str 10 "\"average: \""
+var: const-string min_str 6 "min: "
+var: const-string max_str 6 "max: "
+var: const-string avg_str 10 "average: "
 include-post: math-lib-vect.l1h
 desc: "Find minimum, maximum, and average of array elements using vmath library"
 

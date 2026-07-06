@@ -7,7 +7,7 @@ var: const-int64 one 1 1
 var: int64 n 1 5
 var: int64 result 1 1
 var: int64 f 1 0
-var: const-string header 16 "\"factorial(5) = \""
+var: const-string header 16 "factorial(5) = "
 desc: "Calculate factorial of 5 using iterative while loop"
 
 code:

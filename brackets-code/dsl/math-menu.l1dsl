@@ -14,12 +14,14 @@ var: double a 1 0.0
 var: double b 1 0.0
 var: double res 1 0.0
 var: const-double zerod 1 0.0
-var: const-string menu_str 33 "\"1-Add 2-Sub 3-Mul 4-Div 5-quit\""
-var: const-string prompt_choice 10 "\"Choice: \""
-var: const-string prompt_a 5 "\"A: \""
-var: const-string prompt_b 5 "\"B: \""
-var: const-string result_str 9 "\"Result: \""
+var: const-string menu_str 33 "1-Add 2-Sub 3-Mul 4-Div 5-quit"
+var: const-string prompt_choice 10 "Choice: "
+var: const-string prompt_a 5 "A: "
+var: const-string prompt_b 5 "B: "
+var: const-string result_str 9 "Result: "
 desc: "Menu-driven math operations on double values"
+var: const-string error_div_by_zero_str 19 "Error: div by zero"
+var: const-string error_div_by_zero_str_1 19 "Error: div by zero"
 code:
     (for-loop)
     (((one one ==) f :=) f for)
@@ -48,7 +50,7 @@ code:
         (endif)
         (((choice four ==) f :=) f if)
             (b zerod == if)
-                ("Error: div by zero" :print_s !)
+                (error_div_by_zero_str_1 :print_s !)
             (else)
                 (a / b res :=)
             (endif)

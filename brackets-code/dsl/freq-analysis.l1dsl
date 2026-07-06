@@ -16,7 +16,7 @@ var: int64 freq 26 0
 var: int64 i 1 0
 var: int64 ch 1 0
 var: int64 ri 1 0
-var: const-string msg_str 24 "\"Letter frequencies A-J: \""
+var: const-string msg_str 25 "Letter frequencies A-J: "
 var: int64 counter 1 10
 desc: "Display letter frequency analysis for A-J"
 code:
@@ -40,7 +40,7 @@ code:
         (i * int64_size ri :=)
         (freq [ ri ] ch =)
         (i :print_i !)
-        (\": \" :print_s !)
+        (:  :print_s !)
         (ch :print_i !)
         (:print_n !)
         (i + one i :=)

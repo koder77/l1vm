@@ -9,6 +9,7 @@ var: int64 orig_a 1 0
 var: int64 orig_b 1 0
 var: int64 temp 1 0
 var: int64 gcd 1 0
+var: int64 f 1 0
 desc: "Calculate the least common multiple of two numbers"
 
 code:

@@ -16,6 +16,10 @@ var: int64 digit_pow 1 0
 var: int64 f 1 0
 desc: "Check if a number is an Armstrong number"
 
+var: const-string armstrong_number_str 17 "Armstrong number"
+var: const-string not_armstrong_str 14 "not Armstrong"
+var: const-string armstrong_number_str_1 17 "Armstrong number"
+var: const-string not_armstrong_str_1 14 "not Armstrong"
 code:
     (n orig :=)
     (n temp :=)
@@ -39,8 +43,8 @@ code:
         (temp / ten temp :=)
     (((temp zero >) f :=) f while)
     (((orig sum ==) f :=) f if)
-        ("Armstrong number" :print_s !)
+        (armstrong_number_str_1 :print_s !)
     (else)
-        ("not Armstrong" :print_s !)
+        (not_armstrong_str_1 :print_s !)
     (endif)
     (:print_n !)

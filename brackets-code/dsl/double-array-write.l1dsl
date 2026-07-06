@@ -1,5 +1,6 @@
 // double-array-write.l1dsl
 parser: "write double array, set double array element, assign double array, store double"
+match: has_double_array_write
 token: double arr, int64 index, double newval
 include: intr-func.l1h
 include: vars.l1h

@@ -1,8 +1,6 @@
 // pyramid.l1dsl
 parser: "keywords for matching"
 match: has_pyramid
-token: token type and name
-result: result type and name
 include: intr-func.l1h
 var: const-int64 zero 1 0
 var: const-int64 one 1 1

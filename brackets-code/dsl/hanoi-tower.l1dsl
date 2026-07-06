@@ -10,12 +10,14 @@ var: int64 f 1 0
 var: int64 i 1 0
 desc: "Display Tower of Hanoi move sequence for 5 disks"
 
+var: const-string str_str 5 " -> "
+var: const-string str_str_1 5 " -> "
 code:
     // Tower of Hanoi: move n disks from A to C
     (for-loop)
     (((i n <) f :=) f for)
         (i one + :print_i !)
-        (" -> " :print_s !)
+        (str_str_1 :print_s !)
         ((n i -) :print_i !)
         (:print_n !)
         (i one + i :=)

@@ -7,8 +7,8 @@ var: const-int64 zero 1 0
 var: const-int64 one 1 1
 var: const-int64 maxlen 1 256
 var: const-int64 twenty six 1 26
-var: string a 256 "\"\""
-var: string b 256 "\"\""
+var: string a 256 ""
+var: string b 256 ""
 var: int64 len_a 1 0
 var: int64 len_b 1 0
 var: int64 count_a 26 0
@@ -20,11 +20,20 @@ var: int64 f 1 0
 var: int64 strmod 1 0
 desc: "Check if two strings are anagrams"
 
+var: const-string enter_first_word_str 19 "Enter first word: "
+var: const-string enter_second_word_str 20 "Enter second word: "
+var: const-string anagrams_str 9 "anagrams"
+var: const-string not_anagrams_str 13 "not anagrams"
+var: const-string not_anagrams_1_str 13 "not anagrams"
+var: const-string anagrams_str_1 9 "anagrams"
+var: const-string enter_first_word_str_1 19 "Enter first word: "
+var: const-string enter_second_word_str_1 20 "Enter second word: "
+var: const-string not_anagrams_str_1 13 "not anagrams"
 code:
     (strmod :string_init !)
-    ("Enter first word: " :print_s !)
+    (enter_first_word_str_1 :print_s !)
     (maxlen a :input_s !)
-    ("Enter second word: " :print_s !)
+    (enter_second_word_str_1 :print_s !)
     (maxlen b :input_s !)
     (a :string_len len_a !)
     (b :string_len len_b !)
@@ -64,11 +73,11 @@ code:
             (i + one i :=)
         (next)
         (((f zero ==) f :=) f if)
-            ("anagrams" :print_s !)
+            (anagrams_str_1 :print_s !)
         (else)
-            ("not anagrams" :print_s !)
+            (not_anagrams_str_1 :print_s !)
         (endif)
     (else)
-        ("not anagrams" :print_s !)
+        (not_anagrams_str_1 :print_s !)
     (endif)
     (:print_n !)

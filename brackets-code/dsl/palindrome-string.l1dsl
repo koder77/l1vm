@@ -6,7 +6,7 @@ include-post: string.l1h
 var: const-int64 zero 1 0
 var: const-int64 one 1 1
 var: const-int64 maxlen 1 256
-var: string str 256 "\"\""
+var: string str 256 ""
 var: int64 len 1 0
 var: int64 i 1 0
 var: int64 j 1 0
@@ -16,9 +16,15 @@ var: int64 f 1 0
 var: int64 strmod 1 0
 desc: "Check if a string is a palindrome"
 
+var: const-string enter_a_string_str 17 "Enter a string: "
+var: const-string palindrome_str 11 "palindrome"
+var: const-string not_palindrome_str 15 "not palindrome"
+var: const-string enter_a_string_str_1 17 "Enter a string: "
+var: const-string not_palindrome_str_1 15 "not palindrome"
+var: const-string palindrome_str_1 11 "palindrome"
 code:
     (strmod :string_init !)
-    ("Enter a string: " :print_s !)
+    (enter_a_string_str_1 :print_s !)
     (maxlen str :input_s !)
     (str :string_len len !)
     (zero i :=)
@@ -36,8 +42,8 @@ code:
         (j - one j :=)
     (next)
     (((f one ==) f :=) f if)
-        ("palindrome" :print_s !)
+        (palindrome_str_1 :print_s !)
     (else)
-        ("not palindrome" :print_s !)
+        (not_palindrome_str_1 :print_s !)
     (endif)
     (:print_n !)

@@ -1,5 +1,6 @@
 // double-array-access.l1dsl
 parser: "double array access, read double array, get double element, double array index"
+match: has_double_array_access
 token: double arr, int64 index
 result: double value
 include: intr-func.l1h
