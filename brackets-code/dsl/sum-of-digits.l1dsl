@@ -4,13 +4,13 @@ match: has_sum_of_digits
 token: int64 n
 result: int64 sum
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 ten 1 10
-var: int64 digit 1 0
-var: int64 temp 1 0
 desc: "Calculate the sum of the digits of a number"
 
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 ten 10)
+    (set int64 1 digit 0)
+    (set int64 1 temp 0)
     (n temp :=)
     (zero sum :=)
     (do)

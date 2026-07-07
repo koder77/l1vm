@@ -4,9 +4,9 @@ match: has_array_write
 token: int64 arr, int64 index, int64 newval
 include: intr-func.l1h
 include: vars.l1h
-var: int64 realind 1 0
 desc: "Write a value to an int64 array element by index"
 
 code:
+    (set int64 1 realind 0)
     (index * int64_size realind :=)
     (newval arr [ realind ] =)

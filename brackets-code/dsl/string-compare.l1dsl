@@ -3,21 +3,21 @@ parser: "string compare, compare strings, string vergleich"
 match: has_string_compare
 include: intr-func.l1h
 include-post: string.l1h
-var: const-int64 zero 1 0
-var: const-int64 maxlen 1 256
-var: string str_a 256 ""
-var: string str_b 256 ""
-var: int64 cmp 1 0
-var: int64 strmod 1 0
-var: const-string eq_str 20 "strings are equal"
-var: const-string ne_str 16 "strings differ"
 desc: "Compare two strings for equality"
 
-var: const-string enter_first_string_str 21 "Enter first string: "
-var: const-string enter_second_string_str 22 "Enter second string: "
-var: const-string enter_first_string_str_1 21 "Enter first string: "
-var: const-string enter_second_string_str_1 22 "Enter second string: "
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 maxlen 256)
+    (set string 256 str_a "")
+    (set string 256 str_b "")
+    (set int64 1 cmp 0)
+    (set int64 1 strmod 0)
+    (set string s eq_str "strings are equal")
+    (set string s ne_str "strings differ")
+    (set string s enter_first_string_str "Enter first string: ")
+    (set string s enter_second_string_str "Enter second string: ")
+    (set string s enter_first_string_str_1 "Enter first string: ")
+    (set string s enter_second_string_str_1 "Enter second string: ")
     (strmod :string_init !)
     (enter_first_string_str_1 :print_s !)
     (maxlen str_a :input_s !)

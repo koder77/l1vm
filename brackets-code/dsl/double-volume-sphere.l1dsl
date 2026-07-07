@@ -4,13 +4,13 @@ match: has_double_volume_sphere
 token: double radius
 result: double volume
 include: intr-func.l1h
-var: const-double zero 1 0.0
-var: const-double pi 1 3.14159
-var: const-double four 1 4.0
-var: const-double three 1 3.0
 desc: "Calculate the volume of a sphere"
 
 code:
+    (set const-double 1 zero 0.0)
+    (set const-double 1 pi 3.14159)
+    (set const-double 1 four 4.0)
+    (set const-double 1 three 3.0)
     (radius *d radius r2 :=)
     (r2 *d radius r3 :=)
     (four *d pi volume :=)

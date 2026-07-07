@@ -2,15 +2,15 @@
 parser: "bool demo, boolean, true false"
 match: has_bool_demo
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: int64 flag 1 0
-var: int64 f 1 0
-var: const-string trueflagstr 13 "flag is true"
-var: const-string falseflagstr 14 "flag is false"
 desc: "Demonstrate boolean logic with if/else"
 
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set int64 1 flag 0)
+    (set int64 1 f 0)
+    (set string s trueflagstr "flag is true")
+    (set string s falseflagstr "flag is false")
     (one flag :=)
     (((flag one ==) f :=) f if)
         (trueflagstr :print_s !)

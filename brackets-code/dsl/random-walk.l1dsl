@@ -2,17 +2,17 @@
 parser: "random walk, random walk simulation"
 match: has_random_walk
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 ten 1 10
-var: const-int64 steps 1 20
-var: int64 pos 1 10
-var: int64 i 1 0
-var: int64 f 1 0
-var: const-string label 11 "Position: "
 desc: "Simulate a 1D random walk with 20 steps"
 
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 ten 10)
+    (set const-int64 1 steps 20)
+    (set int64 1 pos 10)
+    (set int64 1 i 0)
+    (set int64 1 f 0)
+    (set string s label "Position: ")
     (for-loop)
     (((i steps <) f :=) f for)
         (ten :math_randint call)

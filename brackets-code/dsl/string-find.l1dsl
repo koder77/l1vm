@@ -2,13 +2,13 @@
 parser: "string find, find substring, string search"
 match: has_string_find
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-string text 20 "The quick brown fox"
-var: const-string substr 7 "brown"
-var: int64 pos 1 0
 desc: "Find the position of a substring within a string"
 
 code:
+    (set const-int64 1 zero 0)
+    (set string s text "The quick brown fox")
+    (set string s substr "brown")
+    (set int64 1 pos 0)
     (text substr :string_find !)
     (pos stpopi)
     (pos :print_i !)

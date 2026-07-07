@@ -5,20 +5,20 @@ include: intr-func.l1h
 include: math-const.l1h
 include: vars.l1h
 include-post: math-lib.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: int64 n 1 5
-var: int64 arr 5 0
-var: int64 i 1 0
-var: int64 j 1 0
-var: int64 temp 1 0
-var: int64 ri 1 0
-var: int64 rj 1 0
-var: int64 temp2 1 0
-var: int64 f 1 0
-var: const-string prompt_str 18 "Enter 5 numbers:"
 desc: "Shuffle an array of 5 numbers using Fisher-Yates algorithm"
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set int64 1 n 5)
+    (set int64 5 arr 0)
+    (set int64 1 i 0)
+    (set int64 1 j 0)
+    (set int64 1 temp 0)
+    (set int64 1 ri 0)
+    (set int64 1 rj 0)
+    (set int64 1 temp2 0)
+    (set int64 1 f 0)
+    (set string s prompt_str "Enter 5 numbers:")
     (zero :math_init !)
     (zero :math_randinit !)
     (prompt_str :print_s !)

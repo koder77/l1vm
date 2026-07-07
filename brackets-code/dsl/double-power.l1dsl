@@ -4,11 +4,11 @@ match: has_double_power
 token: double base, double exp
 result: double result
 include: intr-func.l1h
-var: const-double zero 1 0.0
-var: const-double one 1 1.0
 desc: "Calculate power of double (using repeated multiplication)"
 
 code:
+    (set const-double 1 zero 0.0)
+    (set const-double 1 one 1.0)
     (one result :=)
     (for-loop)
     (((i exp_i <) f :=) f for)

@@ -3,32 +3,32 @@ parser: "string analyzer, vowels, consonants, length"
 match: has_string_analyzer
 include: intr-func.l1h
 include-post: string.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 maxlen 1 256
-var: const-int64 va 1 97
-var: const-int64 ve 1 101
-var: const-int64 vi 1 105
-var: const-int64 vo 1 111
-var: const-int64 vu 1 117
-var: const-int64 vA 1 65
-var: const-int64 vE 1 69
-var: const-int64 vI 1 73
-var: const-int64 vO 1 79
-var: const-int64 vU 1 85
-var: int64 strmod 1 0
-var: int64 len 1 0
-var: int64 i 1 0
-var: int64 vowels 1 0
-var: int64 cons 1 0
-var: int64 ch 1 0
-var: string str 256 ""
-var: const-string prompt_str 17 "Enter a string: "
-var: const-string len_str 9 "Length: "
-var: const-string vowels_str 9 "Vowels: "
-var: const-string cons_str 13 "Consonants: "
 desc: "Analyze a string for length, vowel count, and consonant count"
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 maxlen 256)
+    (set const-int64 1 va 97)
+    (set const-int64 1 ve 101)
+    (set const-int64 1 vi 105)
+    (set const-int64 1 vo 111)
+    (set const-int64 1 vu 117)
+    (set const-int64 1 vA 65)
+    (set const-int64 1 vE 69)
+    (set const-int64 1 vI 73)
+    (set const-int64 1 vO 79)
+    (set const-int64 1 vU 85)
+    (set int64 1 strmod 0)
+    (set int64 1 len 0)
+    (set int64 1 i 0)
+    (set int64 1 vowels 0)
+    (set int64 1 cons 0)
+    (set int64 1 ch 0)
+    (set string 256 str "")
+    (set string s prompt_str "Enter a string: ")
+    (set string s len_str "Length: ")
+    (set string s vowels_str "Vowels: ")
+    (set string s cons_str "Consonants: ")
     (strmod :string_init !)
     (prompt_str :print_s !)
     (maxlen str :input_s !)

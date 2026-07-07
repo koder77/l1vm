@@ -4,17 +4,17 @@ match: has_square_root
 token: int64 n
 result: int64 root
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 two 1 2
-var: int64 low 1 0
-var: int64 high 1 0
-var: int64 mid 1 0
-var: int64 sq 1 0
-var: int64 f 1 0
 desc: "Calculate the integer square root of n"
 
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 two 2)
+    (set int64 1 low 0)
+    (set int64 1 high 0)
+    (set int64 1 mid 0)
+    (set int64 1 sq 0)
+    (set int64 1 f 0)
     (n high :=)
     (zero low :=)
     (do)

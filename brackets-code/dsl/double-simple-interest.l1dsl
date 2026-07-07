@@ -4,11 +4,11 @@ match: has_double_simple_interest
 token: double principal, double rate, double time
 result: double interest
 include: intr-func.l1h
-var: const-double zero 1 0.0
-var: const-double onehundred 1 100.0
 desc: "Calculate simple interest using double precision"
 
 code:
+    (set const-double 1 zero 0.0)
+    (set const-double 1 onehundred 100.0)
     (principal *d rate interest :=)
     (interest *d time interest :=)
     (interest /d onehundred interest :=)

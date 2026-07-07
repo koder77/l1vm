@@ -3,21 +3,21 @@ parser: "array assign, array element assignment"
 match: has_array_assign
 include: intr-func.l1h
 include: vars.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: int64 arr 5 0
-var: int64 index 1 0
-var: int64 value 1 0
-var: int64 realind 1 0
-var: int64 aux 1 0
-var: int64 f 1 0
-var: const-string prompt_idx 20 "Enter index (0-4): "
-var: const-string prompt_val 14 "Enter value: "
-var: const-string err_idx 34 "Error: index out of bounds (0-4)!"
-var: const-int64 arrsize 1 5
 desc: "Demonstrate array element assignment with bounds checking"
 
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set int64 5 arr 0)
+    (set int64 1 index 0)
+    (set int64 1 value 0)
+    (set int64 1 realind 0)
+    (set int64 1 aux 0)
+    (set int64 1 f 0)
+    (set string s prompt_idx "Enter index (0-4): ")
+    (set string s prompt_val "Enter value: ")
+    (set string s err_idx "Error: index out of bounds (0-4)!")
+    (set const-int64 1 arrsize 5)
     (prompt_idx :print_s !)
     (index :input_i !)
     // bounds check

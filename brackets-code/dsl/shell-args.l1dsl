@@ -4,13 +4,13 @@ match: has_shell_args
 token: token type and name
 result: result type and name
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: int64 argc 1 0
-var: string argstr 256 0
-var: const-string label 7 "args: "
 desc: "command-line args demo"
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set int64 1 argc 0)
+    (set string 256 argstr 0)
+    (set string s label "args: ")
     // command-line args demo
     (:argc !)
     (argc stpopi)

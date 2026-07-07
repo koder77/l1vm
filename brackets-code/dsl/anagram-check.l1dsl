@@ -3,33 +3,33 @@ parser: "anagram, anagram check, word anagram"
 match: has_anagram_check
 include: intr-func.l1h
 include-post: string.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 maxlen 1 256
-var: const-int64 twenty six 1 26
-var: string a 256 ""
-var: string b 256 ""
-var: int64 len_a 1 0
-var: int64 len_b 1 0
-var: int64 count_a 26 0
-var: int64 count_b 26 0
-var: int64 i 1 0
-var: int64 ch 1 0
-var: int64 idx 1 0
-var: int64 f 1 0
-var: int64 strmod 1 0
 desc: "Check if two strings are anagrams"
 
-var: const-string enter_first_word_str 19 "Enter first word: "
-var: const-string enter_second_word_str 20 "Enter second word: "
-var: const-string anagrams_str 9 "anagrams"
-var: const-string not_anagrams_str 13 "not anagrams"
-var: const-string not_anagrams_1_str 13 "not anagrams"
-var: const-string anagrams_str_1 9 "anagrams"
-var: const-string enter_first_word_str_1 19 "Enter first word: "
-var: const-string enter_second_word_str_1 20 "Enter second word: "
-var: const-string not_anagrams_str_1 13 "not anagrams"
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 maxlen 256)
+    (set const-int64 1 twenty six 26)
+    (set string 256 a "")
+    (set string 256 b "")
+    (set int64 1 len_a 0)
+    (set int64 1 len_b 0)
+    (set int64 26 count_a 0)
+    (set int64 26 count_b 0)
+    (set int64 1 i 0)
+    (set int64 1 ch 0)
+    (set int64 1 idx 0)
+    (set int64 1 f 0)
+    (set int64 1 strmod 0)
+    (set string s enter_first_word_str "Enter first word: ")
+    (set string s enter_second_word_str "Enter second word: ")
+    (set string s anagrams_str "anagrams")
+    (set string s not_anagrams_str "not anagrams")
+    (set string s not_anagrams_1_str "not anagrams")
+    (set string s anagrams_str_1 "anagrams")
+    (set string s enter_first_word_str_1 "Enter first word: ")
+    (set string s enter_second_word_str_1 "Enter second word: ")
+    (set string s not_anagrams_str_1 "not anagrams")
     (strmod :string_init !)
     (enter_first_word_str_1 :print_s !)
     (maxlen a :input_s !)

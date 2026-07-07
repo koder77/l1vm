@@ -5,10 +5,10 @@ token: int64 arr, int64 index
 result: int64 value
 include: intr-func.l1h
 include: vars.l1h
-var: int64 realind 1 0
 desc: "Access an int64 array element by index"
 
 code:
+    (set int64 1 realind 0)
     (index * int64_size realind :=)
     (arr [ realind ] value =)
     (value + zero value :=)

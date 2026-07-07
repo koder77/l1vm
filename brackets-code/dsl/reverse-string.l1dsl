@@ -3,20 +3,20 @@ parser: "reverse string, string reverse, umkehren"
 match: has_reverse_string
 include: intr-func.l1h
 include-post: string.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 maxlen 1 256
-var: string str 256 ""
-var: string rev 256 ""
-var: int64 len 1 0
-var: int64 i 1 0
-var: int64 f 1 0
-var: int64 strmod 1 0
 desc: "Read a string and print it reversed"
 
-var: const-string enter_a_string_str 17 "Enter a string: "
-var: const-string enter_a_string_str_1 17 "Enter a string: "
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 maxlen 256)
+    (set string 256 str "")
+    (set string 256 rev "")
+    (set int64 1 len 0)
+    (set int64 1 i 0)
+    (set int64 1 f 0)
+    (set int64 1 strmod 0)
+    (set string s enter_a_string_str "Enter a string: ")
+    (set string s enter_a_string_str_1 "Enter a string: ")
     (strmod :string_init !)
     (enter_a_string_str_1 :print_s !)
     (maxlen str :input_s !)

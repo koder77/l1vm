@@ -2,13 +2,13 @@
 parser: "type convert, string to int, int to string, type conversion"
 match: has_type_convert
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: string numstr 4 "42"
-var: int64 num 1 0
-var: string outstr 16 "42"
 desc: "Convert between string and int64 types"
 
 code:
+    (set const-int64 1 zero 0)
+    (set string 4 numstr "42")
+    (set int64 1 num 0)
+    (set string 16 outstr "42")
     // string to int64
     (numstr :string_to_int !)
     (num stpopi)

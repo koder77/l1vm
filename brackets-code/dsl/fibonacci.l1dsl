@@ -3,16 +3,16 @@ parser: "fibonacci, fib, fib sequence"
 match: has_fib_seq
 token: int64 n
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 0
-var: int64 a 1 0
-var: int64 b 1 1
-var: int64 c 1 0
-var: int64 i 1 2
-var: int64 f 1 0
 desc: "Print the first n numbers of the Fibonacci sequence"
 
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 0)
+    (set int64 1 a 0)
+    (set int64 1 b 1)
+    (set int64 1 c 0)
+    (set int64 1 i 2)
+    (set int64 1 f 0)
     (a :print_i !)
     (:print_n !)
     (b :print_i !)

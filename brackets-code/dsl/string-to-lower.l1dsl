@@ -3,21 +3,21 @@ parser: "string lowercase, to lower, kleinbuchstaben"
 match: has_string_to_lower
 include: intr-func.l1h
 include-post: string.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 maxlen 1 256
-var: const-int64 thirtytwo 1 32
-var: string str 256 ""
-var: int64 len 1 0
-var: int64 i 1 0
-var: int64 ch 1 0
-var: int64 f 1 0
-var: int64 strmod 1 0
 desc: "Convert a string to lowercase"
 
-var: const-string enter_a_string_str 17 "Enter a string: "
-var: const-string enter_a_string_str_1 17 "Enter a string: "
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 maxlen 256)
+    (set const-int64 1 thirtytwo 32)
+    (set string 256 str "")
+    (set int64 1 len 0)
+    (set int64 1 i 0)
+    (set int64 1 ch 0)
+    (set int64 1 f 0)
+    (set int64 1 strmod 0)
+    (set string s enter_a_string_str "Enter a string: ")
+    (set string s enter_a_string_str_1 "Enter a string: ")
     (strmod :string_init !)
     (enter_a_string_str_1 :print_s !)
     (maxlen str :input_s !)

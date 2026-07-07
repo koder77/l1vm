@@ -2,18 +2,18 @@
 parser: "bar chart, ascii bar chart, horizontal bar chart"
 match: has_bar_chart
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: int64 count 1 1
-var: int64 i 1 0
-var: int64 f 1 0
-var: int64 arr 5 3 7 4 9 2
-var: int64 j 1 0
 desc: "Display an ASCII bar chart from array data"
 
-var: const-string str_str 2 "#"
-var: const-string str_str_1 2 "#"
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set int64 1 count 1)
+    (set int64 1 i 0)
+    (set int64 1 f 0)
+    (set int64 5 arr 3 7 4 9 2)
+    (set int64 1 j 0)
+    (set string s str_str "#")
+    (set string s str_str_1 "#")
     // ASCII bar chart
     (for-loop)
     (((i five <) f :=) f for)

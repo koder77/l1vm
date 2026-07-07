@@ -4,12 +4,12 @@ match: has_gcd
 token: int64 a, int64 b
 result: int64 result
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: int64 f 1 0
-var: int64 temp 1 0
 desc: "Calculate the greatest common divisor of two numbers using Euclidean algorithm"
 
 code:
+    (set const-int64 1 zero 0)
+    (set int64 1 f 0)
+    (set int64 1 temp 0)
     (do)
         (a % b temp :=)
         (b a :=)

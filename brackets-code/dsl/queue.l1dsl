@@ -3,20 +3,20 @@ parser: "queue, queue data structure, enqueue dequeue"
 match: has_queue
 include: intr-func.l1h
 include: vars.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 three 1 3
-var: int64 queue 5 0
-var: int64 head 1 0
-var: int64 tail 1 0
-var: int64 val 1 0
-var: int64 i 1 0
-var: int64 realind 1 0
-var: int64 f 1 0
-var: const-string prompt_str 16 "Enter value: "
 desc: "Queue data structure demonstration (enqueue/dequeue)"
 
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 three 3)
+    (set int64 5 queue 0)
+    (set int64 1 head 0)
+    (set int64 1 tail 0)
+    (set int64 1 val 0)
+    (set int64 1 i 0)
+    (set int64 1 realind 0)
+    (set int64 1 f 0)
+    (set string s prompt_str "Enter value: ")
     // enqueue 3 values
     (zero head :=)
     (zero tail :=)

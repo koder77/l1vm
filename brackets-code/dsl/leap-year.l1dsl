@@ -3,19 +3,19 @@ parser: "leap year, schaltjahr"
 match: has_leap_year
 token: int64 year
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 four 1 4
-var: const-int64 hundred 1 100
-var: const-int64 fourhundred 1 400
-var: int64 mod4 1 0
-var: int64 mod100 1 0
-var: int64 mod400 1 0
-var: int64 f 1 0
-var: const-string leap_str s "leap year"
-var: const-string not_leap_str s "not a leap year"
 desc: "Check if a year is a leap year"
 
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 four 4)
+    (set const-int64 1 hundred 100)
+    (set const-int64 1 fourhundred 400)
+    (set int64 1 mod4 0)
+    (set int64 1 mod100 0)
+    (set int64 1 mod400 0)
+    (set int64 1 f 0)
+    (set string s leap_str "leap year")
+    (set string s not_leap_str "not a leap year")
     (year % four mod4 :=)
     (year % hundred mod100 :=)
     (year % fourhundred mod400 :=)

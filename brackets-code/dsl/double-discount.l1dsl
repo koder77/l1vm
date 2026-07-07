@@ -4,11 +4,11 @@ match: has_double_discount
 token: double price, double percent
 result: double final_price
 include: intr-func.l1h
-var: const-double zero 1 0.0
-var: const-double onehundred 1 100.0
 desc: "Calculate discounted price using double precision"
 
 code:
+    (set const-double 1 zero 0.0)
+    (set const-double 1 onehundred 100.0)
     (price *d percent discount :=)
     (discount /d onehundred discount :=)
     (price -d discount final_price :=)

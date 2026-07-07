@@ -3,19 +3,19 @@ parser: "bit check, bit test, check bit"
 match: has_bit_check
 token: int64 val, int64 bitpos
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 two 1 2
-var: int64 mask 1 0
-var: int64 result 1 0
-var: int64 f 1 0
 desc: "Check if a specific bit is set in a value"
 
-var: const-string bit_is_0_str 9 "bit is 0"
-var: const-string bit_is_1_str 9 "bit is 1"
-var: const-string bit_is_0_str_1 9 "bit is 0"
-var: const-string bit_is_1_str_1 9 "bit is 1"
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 two 2)
+    (set int64 1 mask 0)
+    (set int64 1 result 0)
+    (set int64 1 f 0)
+    (set string s bit_is_0_str "bit is 0")
+    (set string s bit_is_1_str "bit is 1")
+    (set string s bit_is_0_str_1 "bit is 0")
+    (set string s bit_is_1_str_1 "bit is 1")
     (one mask :=)
     (for-loop)
     (((bitpos zero >) f :=) f for)

@@ -2,21 +2,21 @@
 parser: "string to number, parse string, string to int"
 match: has_string_to_num
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 ten 1 10
-var: const-int64 maxlen 1 256
-var: string str 256 ""
-var: int64 len 1 0
-var: int64 i 1 0
-var: int64 ch 1 0
-var: int64 num 1 0
-var: int64 f 1 0
-var: int64 strmod 1 0
 desc: "Read a string of digits and convert to integer"
 
-var: const-string enter_a_number_as_string_str 27 "Enter a number as string: "
-var: const-string enter_a_number_as_string_str_1 27 "Enter a number as string: "
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 ten 10)
+    (set const-int64 1 maxlen 256)
+    (set string 256 str "")
+    (set int64 1 len 0)
+    (set int64 1 i 0)
+    (set int64 1 ch 0)
+    (set int64 1 num 0)
+    (set int64 1 f 0)
+    (set int64 1 strmod 0)
+    (set string s enter_a_number_as_string_str "Enter a number as string: ")
+    (set string s enter_a_number_as_string_str_1 "Enter a number as string: ")
     (strmod :string_init !)
     (enter_a_number_as_string_str_1 :print_s !)
     (maxlen str :input_s !)

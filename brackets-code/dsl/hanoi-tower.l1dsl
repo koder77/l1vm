@@ -2,17 +2,17 @@
 parser: "tower of hanoi, hanoi tower, hanoi"
 match: has_hanoi_tower
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 five 1 5
-var: int64 n 1 5
-var: int64 f 1 0
-var: int64 i 1 0
 desc: "Display Tower of Hanoi move sequence for 5 disks"
 
-var: const-string str_str 5 " -> "
-var: const-string str_str_1 5 " -> "
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 five 5)
+    (set int64 1 n 5)
+    (set int64 1 f 0)
+    (set int64 1 i 0)
+    (set string s str_str " -> ")
+    (set string s str_str_1 " -> ")
     // Tower of Hanoi: move n disks from A to C
     (for-loop)
     (((i n <) f :=) f for)

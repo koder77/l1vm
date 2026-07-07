@@ -2,16 +2,16 @@
 parser: "if else, conditional, branch, decision, compare"
 token: int64 x, int64 y
 include: intr-func.l1h
-var: int64 f 1 0
-var: const-int64 zero 1 0
 desc: "Compare two numbers and print which is larger"
 
-var: const-string is_greater_str 12 " is greater"
-var: const-string is_greater_1_str 12 " is greater"
-var: const-string both_are_equal_str 15 "both are equal"
-var: const-string both_are_equal_str_1 15 "both are equal"
-var: const-string is_greater_str_1 12 " is greater"
 code:
+    (set int64 1 f 0)
+    (set const-int64 1 zero 0)
+    (set string s is_greater_str " is greater")
+    (set string s is_greater_1_str " is greater")
+    (set string s both_are_equal_str "both are equal")
+    (set string s both_are_equal_str_1 "both are equal")
+    (set string s is_greater_str_1 " is greater")
     (((x y >) f :=) f if)
         (x :print_i !)
         (is_greater_str_1 :print_s !)

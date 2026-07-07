@@ -2,10 +2,10 @@
 parser: "print variable, print value, show variable"
 match: has_print_var
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: int64 myvar 1 42
 desc: "Print the value of a variable"
 
 code:
+    (set const-int64 1 zero 0)
+    (set int64 1 myvar 42)
     (myvar :print_i !)
     (:print_n !)

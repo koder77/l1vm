@@ -2,28 +2,28 @@
 parser: "number analyzer, absolute, odd even, positive negative"
 match: has_number_analyzer
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 two 1 2
-var: double num 1 0.0
-var: double abs_res 1 0.0
-var: int64 num_int 1 0
-var: int64 temp_i 1 0
-var: const-double zerod 1 0.0
-var: const-string prompt_num 17 "Enter a number: "
-var: const-string abs_str 11 "Absolute: "
-var: const-string odd_even_str 12 "Odd/Even: "
-var: const-string pos_neg_str 20 "Positive/Negative: "
 desc: "Analyze a number: absolute value, odd/even, positive/negative"
-var: const-string even_str 5 "Even"
-var: const-string odd_str 4 "Odd"
-var: const-string negative_str 9 "Negative"
-var: const-string positive_str 9 "Positive"
-var: const-string even_str_1 5 "Even"
-var: const-string negative_str_1 9 "Negative"
-var: const-string odd_str_1 4 "Odd"
-var: const-string positive_str_1 9 "Positive"
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 two 2)
+    (set double 1 num 0.0)
+    (set double 1 abs_res 0.0)
+    (set int64 1 num_int 0)
+    (set int64 1 temp_i 0)
+    (set const-double 1 zerod 0.0)
+    (set string s prompt_num "Enter a number: ")
+    (set string s abs_str "Absolute: ")
+    (set string s odd_even_str "Odd/Even: ")
+    (set string s pos_neg_str "Positive/Negative: ")
+    (set string s even_str "Even")
+    (set string s odd_str "Odd")
+    (set string s negative_str "Negative")
+    (set string s positive_str "Positive")
+    (set string s even_str_1 "Even")
+    (set string s negative_str_1 "Negative")
+    (set string s odd_str_1 "Odd")
+    (set string s positive_str_1 "Positive")
     (prompt_num :print_s !)
     (num :input_d !)
     (num + zerod num :=)

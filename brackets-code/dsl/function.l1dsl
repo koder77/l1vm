@@ -3,14 +3,14 @@ parser: "function, define function, subroutine"
 match: has_function
 include: intr-func.l1h
 include: vars.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: int64 arg 1 0
-var: int64 retval 1 0
-var: int64 f 1 0
 desc: "Define and call a function in Brackets"
 
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set int64 1 arg 0)
+    (set int64 1 retval 0)
+    (set int64 1 f 0)
     // (myfunc func)
     //     #var ~ myfunc
     //     (set int64 1 arg~ 0)

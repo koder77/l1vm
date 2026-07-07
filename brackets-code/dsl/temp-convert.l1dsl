@@ -4,14 +4,14 @@ match: has_temp_convert
 token: int64 celsius
 result: int64 fahrenheit
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 nine 1 9
-var: const-int64 five 1 5
-var: const-int64 thirtytwo 1 32
-var: int64 f 1 0
 desc: "Convert Celsius to Fahrenheit"
 
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 nine 9)
+    (set const-int64 1 five 5)
+    (set const-int64 1 thirtytwo 32)
+    (set int64 1 f 0)
     (celsius * nine f :=)
     (f / five f :=)
     (f + thirtytwo fahrenheit :=)

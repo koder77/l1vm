@@ -3,17 +3,17 @@ parser: "decimal to binary, dec to bin, binary conversion"
 match: has_decimal_to_binary
 token: int64 n
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 two 1 2
-var: int64 temp 1 0
-var: int64 bit 1 0
-var: int64 result 1 0
-var: int64 place 1 1
-var: int64 f 1 0
 desc: "Convert a decimal number to binary"
 
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 two 2)
+    (set int64 1 temp 0)
+    (set int64 1 bit 0)
+    (set int64 1 result 0)
+    (set int64 1 place 1)
+    (set int64 1 f 0)
     (n temp :=)
     (zero result :=)
     (one place :=)

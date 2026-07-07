@@ -4,10 +4,10 @@ match: has_double_pythagoras
 token: double a, double b
 result: double c
 include: intr-func.l1h
-var: const-double zero 1 0.0
 desc: "Calculate the hypotenuse of a right triangle using the Pythagorean theorem"
 
 code:
+    (set const-double 1 zero 0.0)
     (a *d a a2 :=)
     (b *d b b2 :=)
     (a2 +d b2 c :=)

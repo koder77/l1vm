@@ -2,15 +2,15 @@
 parser: "iterative factorial, factorial while loop"
 match: has_iterative_factorial
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: int64 n 1 5
-var: int64 result 1 1
-var: int64 f 1 0
-var: const-string header 16 "factorial(5) = "
 desc: "Calculate factorial of 5 using iterative while loop"
 
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set int64 1 n 5)
+    (set int64 1 result 1)
+    (set int64 1 f 0)
+    (set string s header "factorial(5) = ")
     // iterative factorial with while loop
     (:loop)
     ((n zero >) f :=)

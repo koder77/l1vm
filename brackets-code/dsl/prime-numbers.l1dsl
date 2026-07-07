@@ -3,19 +3,19 @@ parser: "prime numbers, primes, primzahlen"
 match: has_primes
 token: int64 max_val
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 two 1 2
-var: const-int64 max_default 1 50
-var: int64 i 1 2
-var: int64 j 1 0
-var: int64 j_sq 1 0
-var: int64 mod_result 1 0
-var: int64 is_prime 1 0
-var: int64 f 1 0
 desc: "Print all prime numbers up to max_val"
 
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 two 2)
+    (set const-int64 1 max_default 50)
+    (set int64 1 i 2)
+    (set int64 1 j 0)
+    (set int64 1 j_sq 0)
+    (set int64 1 mod_result 0)
+    (set int64 1 is_prime 0)
+    (set int64 1 f 0)
     (for-loop)
     (((i max_val <=) f :=) f for)
         (one is_prime :=)

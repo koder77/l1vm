@@ -3,13 +3,13 @@ parser: "countdown, count down, backwards, decrement"
 match: has_countdown_from
 token: int64 start
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 0
-var: int64 i 1 0
-var: int64 f 1 0
 desc: "Count down from start to zero and print each number"
 
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 0)
+    (set int64 1 i 0)
+    (set int64 1 f 0)
     (start i :=)
     (do)
         (i :print_i !)

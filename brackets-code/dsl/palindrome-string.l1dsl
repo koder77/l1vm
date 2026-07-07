@@ -3,26 +3,26 @@ parser: "palindrome string, string palindrome"
 match: has_palindrome_string
 include: intr-func.l1h
 include-post: string.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 maxlen 1 256
-var: string str 256 ""
-var: int64 len 1 0
-var: int64 i 1 0
-var: int64 j 1 0
-var: int64 ch_i 1 0
-var: int64 ch_j 1 0
-var: int64 f 1 0
-var: int64 strmod 1 0
 desc: "Check if a string is a palindrome"
 
-var: const-string enter_a_string_str 17 "Enter a string: "
-var: const-string palindrome_str 11 "palindrome"
-var: const-string not_palindrome_str 15 "not palindrome"
-var: const-string enter_a_string_str_1 17 "Enter a string: "
-var: const-string not_palindrome_str_1 15 "not palindrome"
-var: const-string palindrome_str_1 11 "palindrome"
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 maxlen 256)
+    (set string 256 str "")
+    (set int64 1 len 0)
+    (set int64 1 i 0)
+    (set int64 1 j 0)
+    (set int64 1 ch_i 0)
+    (set int64 1 ch_j 0)
+    (set int64 1 f 0)
+    (set int64 1 strmod 0)
+    (set string s enter_a_string_str "Enter a string: ")
+    (set string s palindrome_str "palindrome")
+    (set string s not_palindrome_str "not palindrome")
+    (set string s enter_a_string_str_1 "Enter a string: ")
+    (set string s not_palindrome_str_1 "not palindrome")
+    (set string s palindrome_str_1 "palindrome")
     (strmod :string_init !)
     (enter_a_string_str_1 :print_s !)
     (maxlen str :input_s !)

@@ -4,16 +4,16 @@ match: has_hex_binary
 token: token type and name
 result: result type and name
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 num 1 255
-var: const-int64 base 1 16
-var: string hexstr 16 ""
-var: int64 f 1 0
-var: const-string label 6 "hex: "
 desc: "hex conversion demo"
-var: const-string str_str 5 " -> "
-var: const-string str_str_1 5 " -> "
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 num 255)
+    (set const-int64 1 base 16)
+    (set string 16 hexstr "")
+    (set int64 1 f 0)
+    (set string s label "hex: ")
+    (set string s str_str " -> ")
+    (set string s str_str_1 " -> ")
     // hex conversion demo
     (label :print_s !)
     (num :print_i !)

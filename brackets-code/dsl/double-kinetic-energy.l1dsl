@@ -4,11 +4,11 @@ match: has_double_kinetic_energy
 token: double mass, double velocity
 result: double energy
 include: intr-func.l1h
-var: const-double zero 1 0.0
-var: const-double half 1 0.5
 desc: "Calculate kinetic energy using double precision"
 
 code:
+    (set const-double 1 zero 0.0)
+    (set const-double 1 half 0.5)
     (velocity *d velocity v2 :=)
     (half *d mass energy :=)
     (energy *d v2 energy :=)

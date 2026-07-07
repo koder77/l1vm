@@ -6,18 +6,18 @@ result: result type and name
 include: intr-func.l1h
 include: math-const.l1h
 include-post: math-lib.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: int64 n 1 0
-var: int64 i 1 0
-var: int64 f 1 0
-var: int64 rand_max 1 0
-var: int64 randval 1 0
-var: const-string prompt_count 8 "Count: "
-var: const-string prompt_max 6 "Max: "
-var: const-string random_str 9 "Random: "
 desc: "generate random numbers"
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set int64 1 n 0)
+    (set int64 1 i 0)
+    (set int64 1 f 0)
+    (set int64 1 rand_max 0)
+    (set int64 1 randval 0)
+    (set string s prompt_count "Count: ")
+    (set string s prompt_max "Max: ")
+    (set string s random_str "Random: ")
     (zero :math_init !)
     (zero :math_randinit !)
     (prompt_count :print_s !)

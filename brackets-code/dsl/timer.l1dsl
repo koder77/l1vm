@@ -2,16 +2,16 @@
 parser: "timer, benchmark, measure time, stopwatch"
 match: has_timer
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: int64 start 1 0
-var: int64 end 1 0
 desc: "Measure and print the execution time"
 
-var: const-string working_str 11 "working..."
-var: const-string ms_str 4 " ms"
-var: const-string ms_str_1 4 " ms"
-var: const-string working_str_1 11 "working..."
 code:
+    (set const-int64 1 zero 0)
+    (set int64 1 start 0)
+    (set int64 1 end 0)
+    (set string s working_str "working...")
+    (set string s ms_str " ms")
+    (set string s ms_str_1 " ms")
+    (set string s working_str_1 "working...")
     (:time_s start !)
     (working_str_1 :print_s !)
     (:print_n !)

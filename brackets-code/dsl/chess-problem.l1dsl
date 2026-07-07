@@ -2,26 +2,26 @@
 parser: "chess problem, wheat and chessboard, exponential"
 match: has_chess_problem
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 two 1 2
-var: const-int64 maxloop 1 64
-var: int64 field 1 0
-var: int64 total 1 0
-var: int64 loop 1 0
-var: int64 base 1 2
-var: int64 precision 1 0
-var: int64 f 1 0
-var: const-string onestr 4 "1.0"
-var: const-string twostr 4 "2.0"
-var: const-string fieldstr 4 "0.0"
-var: const-string totalstr 4 "0.0"
-var: const-string formatstr 10 "%.20Ff"
-var: const-string textstr 14 "chess field: "
-var: const-string totalnumstr 9 "total: "
-var: const-string emptystr 4 "0.0"
 desc: "Wheat and chessboard problem using big number math"
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 two 2)
+    (set const-int64 1 maxloop 64)
+    (set int64 1 field 0)
+    (set int64 1 total 0)
+    (set int64 1 loop 0)
+    (set int64 1 base 2)
+    (set int64 1 precision 0)
+    (set int64 1 f 0)
+    (set string s onestr "1.0")
+    (set string s twostr "2.0")
+    (set string s fieldstr "0.0")
+    (set string s totalstr "0.0")
+    (set string s formatstr "%.20Ff")
+    (set string s textstr "chess field: ")
+    (set string s totalnumstr "total: ")
+    (set string s emptystr "0.0")
     (zero :mp_math_init call)
     (onestr base one :mp_set_float !)
     (twostr base two :mp_set_float !)

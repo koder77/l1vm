@@ -4,14 +4,14 @@ match: has_dice_roll
 include: intr-func.l1h
 include: math-const.l1h
 include-post: math-lib.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 six 1 6
-var: int64 roll 1 0
-var: const-string result_str 13 "You rolled: "
 desc: "Simulate rolling a six-sided die"
 
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 six 6)
+    (set int64 1 roll 0)
+    (set string s result_str "You rolled: ")
     (zero :math_init !)
     (zero :math_randinit !)
     (six :math_randintmax !)

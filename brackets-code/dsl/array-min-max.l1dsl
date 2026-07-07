@@ -3,23 +3,23 @@ parser: "array min max, array min, array max, array average"
 match: has_array_min_max
 include: intr-func.l1h
 include: vars.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: int64 count 1 7
-var: int64 arr 7 42 23 8 15 4 16 99
-var: int64 i 1 0
-var: int64 mn 1 0
-var: int64 mx 1 0
-var: int64 avg 1 0
-var: int64 realind 1 0
-var: int64 f 1 0
-var: const-string min_str 6 "min: "
-var: const-string max_str 6 "max: "
-var: const-string avg_str 10 "average: "
 include-post: math-lib-vect.l1h
 desc: "Find minimum, maximum, and average of array elements using vmath library"
 
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set int64 1 count 7)
+    (set int64 7 arr 42 23 8 15 4 16 99)
+    (set int64 1 i 0)
+    (set int64 1 mn 0)
+    (set int64 1 mx 0)
+    (set int64 1 avg 0)
+    (set int64 1 realind 0)
+    (set int64 1 f 0)
+    (set string s min_str "min: ")
+    (set string s max_str "max: ")
+    (set string s avg_str "average: ")
     // find min, max, average using vmath library
     (arr Parray pointer)
     (Parray zero count vmath_min_int call)

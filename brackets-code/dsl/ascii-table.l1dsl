@@ -4,18 +4,18 @@ match: has_ascii_table
 token: token type and name
 result: result type and name
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 sixteen 1 16
-var: int64 i 1 0
-var: int64 j 1 0
-var: int64 ch 1 0
-var: int64 f 1 0
-var: const-int64 asc_start 1 32
-var: const-int64 asc_end 1 128
-var: const-string msg_str 22 "ASCII table (32-127):"
 desc: "print ASCII table from 32 to 127"
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 sixteen 16)
+    (set int64 1 i 0)
+    (set int64 1 j 0)
+    (set int64 1 ch 0)
+    (set int64 1 f 0)
+    (set const-int64 1 asc_start 32)
+    (set const-int64 1 asc_end 128)
+    (set string s msg_str "ASCII table (32-127):")
     (msg_str :print_s !)
     (:print_n !)
     (asc_start i :=)

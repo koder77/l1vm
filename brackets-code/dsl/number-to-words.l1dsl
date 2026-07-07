@@ -4,18 +4,18 @@ match: has_number_to_words
 token: token type and name
 result: result type and name
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 two 1 2
-var: const-int64 tens 1 10
-var: int64 num 1 42
-var: int64 tens_part 1 0
-var: int64 ones_part 1 0
-var: int64 f 1 0
-var: const-string unit_label 7 "ones: "
-var: const-string tens_label 7 "tens: "
 desc: "number breakdown into tens and ones"
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 two 2)
+    (set const-int64 1 tens 10)
+    (set int64 1 num 42)
+    (set int64 1 tens_part 0)
+    (set int64 1 ones_part 0)
+    (set int64 1 f 0)
+    (set string s unit_label "ones: ")
+    (set string s tens_label "tens: ")
     // number breakdown into tens and ones
     (num tens / tens_part :=)
     (num tens % ones_part :=)

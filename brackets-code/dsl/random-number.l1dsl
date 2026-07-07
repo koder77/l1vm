@@ -4,16 +4,16 @@ match: has_random
 include: intr-func.l1h
 include: math-const.l1h
 include-post: math-lib.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 hundred 1 100
-var: const-int64 count 1 5
-var: int64 i 1 0
-var: int64 rnd 1 0
-var: int64 f 1 0
 desc: "Generate and print random numbers"
 
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 hundred 100)
+    (set const-int64 1 count 5)
+    (set int64 1 i 0)
+    (set int64 1 rnd 0)
+    (set int64 1 f 0)
     (zero :math_init !)
     (zero :math_randinit !)
     (zero i :=)

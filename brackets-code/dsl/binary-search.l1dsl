@@ -3,27 +3,27 @@ parser: "binary search, binary search array"
 match: has_binary_search
 include: intr-func.l1h
 include: vars.l1h
-var: const-int64 zero 1 0
-var: const-int64 one 1 1
-var: const-int64 two 1 2
-var: const-int64 count 1 10
-var: int64 arr 10 0
-var: int64 key 1 0
-var: int64 low 1 0
-var: int64 high 1 9
-var: int64 mid 1 0
-var: int64 realind 1 0
-var: int64 val 1 0
-var: int64 found 1 0
-var: int64 f 1 0
-var: const-string prompt_key 19 "Enter search key: "
 desc: "Binary search on a sorted array"
 
-var: const-string found_at_index_str 16 "found at index "
-var: const-string not_found_str 10 "not found"
-var: const-string found_at_index_str_1 16 "found at index "
-var: const-string not_found_str_1 10 "not found"
 code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 two 2)
+    (set const-int64 1 count 10)
+    (set int64 10 arr 0)
+    (set int64 1 key 0)
+    (set int64 1 low 0)
+    (set int64 1 high 9)
+    (set int64 1 mid 0)
+    (set int64 1 realind 0)
+    (set int64 1 val 0)
+    (set int64 1 found 0)
+    (set int64 1 f 0)
+    (set string s prompt_key "Enter search key: ")
+    (set string s found_at_index_str "found at index ")
+    (set string s not_found_str "not found")
+    (set string s found_at_index_str_1 "found at index ")
+    (set string s not_found_str_1 "not found")
     // binary search
     (prompt_key :print_s !)
     (key :input_i !)

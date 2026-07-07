@@ -2,14 +2,14 @@
 parser: "read file, file read, binary read"
 match: has_read_file
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: int64 fh 1 -1
-var: int64 val 1 0
-var: const-string fname 10 "data.bin"
-var: const-string mode 4 "rb"
 desc: "Read an int64 value from a binary file"
 
 code:
+    (set const-int64 1 zero 0)
+    (set int64 1 fh -1)
+    (set int64 1 val 0)
+    (set string s fname "data.bin")
+    (set string s mode "rb")
     (fname mode :fopen !)
     (fh stpop)
     (fh val :fread_int64 !)

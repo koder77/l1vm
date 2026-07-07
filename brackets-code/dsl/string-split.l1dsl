@@ -2,14 +2,14 @@
 parser: "string split, split string, delimited string"
 match: has_string_split
 include: intr-func.l1h
-var: const-int64 zero 1 0
-var: const-string delim 3 ","
-var: const-string srcstr 21 "apple,banana,cherry"
-var: string result 256 ""
-var: int64 ret 1 0
 desc: "Split a delimited string into parts"
 
 code:
+    (set const-int64 1 zero 0)
+    (set string s delim ",")
+    (set string s srcstr "apple,banana,cherry")
+    (set string 256 result "")
+    (set int64 1 ret 0)
     (// string_split demo)
     (srcstr result delim :string_split !)
     (ret stpopi)
