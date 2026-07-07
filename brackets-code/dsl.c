@@ -481,6 +481,61 @@ int dsl_load_rules(const char *dir_path)
     return dsl_num_rules;
 }
 
+int dsl_match_all_rules(const char *prompt, DslRule **rules, float *scores, int max_rules, float min_score)
+{
+    if (dsl_num_rules == 0 || max_rules <= 0) return 0;
+
+    char prompt_lower[1024];
+    snprintf(prompt_lower, sizeof(prompt_lower), "%s", prompt);
+    for (int i = 0; prompt_lower[i]; i++)
+        prompt_lower[i] = tolower((unsigned char)prompt_lower[i]);
+
+    int count = 0;
+
+    for (int i = 0; i < dsl_num_rules && count < max_rules; i++) {
+        char keyword_lower[256];
+        snprintf(keyword_lower, sizeof(keyword_lower), "%.255s", dsl_rules[i].keyword);
+        for (int j = 0; keyword_lower[j]; j++)
+            keyword_lower[j] = tolower((unsigned char)keyword_lower[j]);
+
+        float match = 0.0f;
+        int found = 0;
+
+        char *saveptr;
+        char kw_copy[256];
+        snprintf(kw_copy, sizeof(kw_copy), "%s", keyword_lower);
+        char *kw = strtok_r(kw_copy, ",", &saveptr);
+        while (kw) {
+            while (*kw == ' ') kw++;
+            char *end = kw + strlen(kw) - 1;
+            while (end > kw && *end == ' ') end--;
+            *(end+1) = '\0';
+            if (strlen(kw) > 0 && strstr(prompt_lower, kw)) {
+                match += 1.0f;
+                found = 1;
+            }
+            kw = strtok_r(NULL, ",", &saveptr);
+        }
+
+        if (found) {
+            float word_ratio = match;
+            int prompt_words = 1;
+            for (int j = 0; prompt_lower[j]; j++)
+                if (prompt_lower[j] == ' ') prompt_words++;
+            if (prompt_words > 0)
+                word_ratio = match / (float)prompt_words;
+
+            float score_val = match + word_ratio * 0.5f;
+            if (score_val >= min_score) {
+                rules[count] = &dsl_rules[i];
+                scores[count] = score_val;
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
 int dsl_match_rule(const char *prompt, DslRule **rule, float *score)
 {
     if (dsl_num_rules == 0) return 0;
@@ -954,29 +1009,30 @@ int dsl_match_task_flags(DslRule *rule, TaskProfile *task)
 
 int dsl_generate_from_task(Program *prog, TaskProfile *task, Function *f)
 {
+    int generated = 0;
+
     for (int i = 0; i < dsl_num_rules; i++) {
         if (dsl_match_task_flags(&dsl_rules[i], task)) {
             if (verbose_flag) {
                 printf("DSL: matched rule '%s' (%s)\n", dsl_rules[i].keyword, dsl_rules[i].filename);
             }
             dsl_generate_code(prog, &dsl_rules[i], f);
-            return 1;
+            generated = 1;
         }
     }
 
     if (strlen(task->prompt) > 0) {
-        DslRule *kw_rule = NULL;
-        float kw_score = 0.0f;
-        if (dsl_match_rule(task->prompt, &kw_rule, &kw_score)) {
-            if (kw_score >= 0.3f) {
-                if (verbose_flag) {
-                    printf("DSL: keyword matched rule '%s' (%s) score=%.2f\n",
-                           kw_rule->keyword, kw_rule->filename, kw_score);
-                }
-                dsl_generate_code(prog, kw_rule, f);
-                return 1;
+        DslRule *kw_rules[MAX_DSL_RULES];
+        float kw_scores[MAX_DSL_RULES];
+        int kw_count = dsl_match_all_rules(task->prompt, kw_rules, kw_scores, MAX_DSL_RULES, 0.3f);
+        for (int i = 0; i < kw_count; i++) {
+            if (verbose_flag) {
+                printf("DSL: keyword matched rule '%s' (%s) score=%.2f\n",
+                       kw_rules[i]->keyword, kw_rules[i]->filename, kw_scores[i]);
             }
+            dsl_generate_code(prog, kw_rules[i], f);
+            generated = 1;
         }
     }
-    return 0;
+    return generated;
 }

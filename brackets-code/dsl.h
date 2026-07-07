@@ -114,6 +114,7 @@ int dsl_load_rules(const char *dir_path);
 int dsl_load_rule_file(const char *path);
 void dsl_free_rules(void);
 int dsl_match_rule(const char *prompt, DslRule **rule, float *score);
+int dsl_match_all_rules(const char *prompt, DslRule **rules, float *scores, int max_rules, float min_score);
 int dsl_generate_code(Program *prog, DslRule *rule, Function *f);
 
 int dsl_add_array_rule(const char *name, const char *index_var, const char *element_type);
