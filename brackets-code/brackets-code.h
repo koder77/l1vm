@@ -490,7 +490,7 @@ void emit_median(Program *prog, Function *f, int count, int skip_input);
 void emit_string_cat(Program *prog, Function *f);
 void emit_string_compare(Program *prog, Function *f);
 void emit_array_assign(Program *prog, Function *f);
-void emit_array_reverse(Program *prog, Function *f, int skip_input);
+void emit_array_reverse(Program *prog, Function *f, int skip_input, int array_count);
 void emit_array_find(Program *prog, Function *f, int skip_input);
 void emit_input_factorial(Program *prog, Function *f);
 void emit_array_vmath(Program *prog, Function *f, int skip_input);

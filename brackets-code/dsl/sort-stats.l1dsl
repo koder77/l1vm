@@ -1,5 +1,5 @@
 // sort-stats.l1dsl
-parser: "sort, statistics, min, max, average"
+parser: "statistics, min, max, average, sort stats, sort statistic, sort analyze, sort calculate, sort avg, sort statistik"
 match: has_sort_stats
 include: intr-func.l1h
 include: vars.l1h

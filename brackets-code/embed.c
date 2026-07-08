@@ -907,13 +907,15 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                 snprintf(current, sizeof(current), "%s", p);
                 collecting = 1;
                 step_found = 1;
-            } else if (strncmp(p, "step ", 5) == 0 && p[5] >= '1' && p[5] <= '9') {
+            } else if ((strncmp(p, "step ", 5) == 0 && p[5] >= '1' && p[5] <= '9') || (strncmp(p, "schritt ", 8) == 0 && p[8] >= '1' && p[8] <= '9')) {
+                int is_step = (strncmp(p, "step ", 5) == 0);
+                int prefix_len = is_step ? 5 : 8;
                 if (collecting && strlen(current) > 0) {
                     trim(current);
                     snprintf(steps[num_steps], MAX_PROMPT, "%s", current);
                     num_steps++;
                 }
-                p += 5; while (*p && isspace(*p)) p++;
+                p += prefix_len; while (*p && isspace(*p)) p++;
                 if (*p == ':') p++;
                 while (*p && isspace(*p)) p++;
                 snprintf(current, sizeof(current), "%s", p);
@@ -924,7 +926,7 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
             else {
                 while (*p && !((p[0] >= '1' && p[0] <= '9' && (p[1] == ')' || (p[1] == '.' && p[2] != '.' && !(p[2] >= '0' && p[2] <= '9'))))
                        || (p[0] == '(' && p[1] >= '1' && p[1] <= '9' && p[2] == ')')
-                       || strncmp(p, "step ", 5) == 0)) p++;
+                       || strncmp(p, "step ", 5) == 0 || strncmp(p, "schritt ", 8) == 0)) p++;
             }
         }
         if (collecting && strlen(current) > 0) {
@@ -991,6 +993,20 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
             int is_short_conj = (best_len <= 5);
             if (is_short_conj) {
                 char *rest = remaining + best_pos + best_len;
+                // Comma before "and"/"und"/"or"/"oder" is punctuation, not step separator
+                if (best_len == 2) {
+                    char *rp = rest;
+                    while (*rp == ' ') rp++;
+                    if (strncmp(rp, "and ", 4) == 0 || strncmp(rp, "und ", 4) == 0
+                        || strncmp(rp, "or ", 3) == 0 || strncmp(rp, "oder ", 5) == 0)
+                    {
+                        char combined[MAX_PROMPT * 2];
+                        snprintf(combined, sizeof(combined), "%s %s", step, rp);
+                        trim(combined);
+                        snprintf(remaining, MAX_PROMPT, "%.*s", MAX_PROMPT - 1, combined);
+                        break;
+                    }
+                }
                 int left_has_op = has_word(step, "add") || has_word(step, "sub") || has_word(step, "mul") || has_word(step, "div")
                     || has_word(step, "addiere") || has_word(step, "subtrahier") || has_word(step, "multiplizier")
                     || has_word(step, "dividier") || has_word(step, "plus") || has_word(step, "minus")

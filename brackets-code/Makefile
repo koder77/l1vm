@@ -64,9 +64,9 @@ test: $(BINARY)
 
 clean:
 	rm -f $(BINARY)
-	rm -f *.l1com *.l1asm *.l1dbg *.l1obj
+	rm -f ./*.l1com ./*.l1asm ./*.l1dbg ./*.l1obj
 	rm -f tests/saved-failures/*.l1com tests/saved-failures/*_pp.l1com
-	rm -f *.o
+	rm -f ./*.o
 
 install: $(BINARY) $(SYNONYM) $(MANPAGE) $(HEADER) $(DSL_H)
 	install -d $(DESTDIR)$(PREFIX)/bin

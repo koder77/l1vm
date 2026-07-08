@@ -499,7 +499,7 @@ int dsl_match_all_rules(const char *prompt, DslRule **rules, float *scores, int 
             keyword_lower[j] = tolower((unsigned char)keyword_lower[j]);
 
         float match = 0.0f;
-        int found = 0;
+        int num_keywords = 0;
 
         char *saveptr;
         char kw_copy[256];
@@ -510,14 +510,16 @@ int dsl_match_all_rules(const char *prompt, DslRule **rules, float *scores, int 
             char *end = kw + strlen(kw) - 1;
             while (end > kw && *end == ' ') end--;
             *(end+1) = '\0';
-            if (strlen(kw) > 0 && strstr(prompt_lower, kw)) {
-                match += 1.0f;
-                found = 1;
+            if (strlen(kw) > 0) {
+                num_keywords++;
+                if (strstr(prompt_lower, kw))
+                    match += 1.0f;
             }
             kw = strtok_r(NULL, ",", &saveptr);
         }
 
-        if (found) {
+        int min_match = (num_keywords >= 3) ? 2 : 1;
+        if (match >= (float)min_match) {
             float word_ratio = match;
             int prompt_words = 1;
             for (int j = 0; prompt_lower[j]; j++)
@@ -555,7 +557,7 @@ int dsl_match_rule(const char *prompt, DslRule **rule, float *score)
             keyword_lower[j] = tolower((unsigned char)keyword_lower[j]);
 
         float match = 0.0f;
-        int found = 0;
+        int num_keywords = 0;
 
         char *saveptr;
         char kw_copy[256];
@@ -566,14 +568,16 @@ int dsl_match_rule(const char *prompt, DslRule **rule, float *score)
             char *end = kw + strlen(kw) - 1;
             while (end > kw && *end == ' ') end--;
             *(end+1) = '\0';
-            if (strlen(kw) > 0 && strstr(prompt_lower, kw)) {
-                match += 1.0f;
-                found = 1;
+            if (strlen(kw) > 0) {
+                num_keywords++;
+                if (strstr(prompt_lower, kw))
+                    match += 1.0f;
             }
             kw = strtok_r(NULL, ",", &saveptr);
         }
 
-        if (found) {
+        int min_match = (num_keywords >= 3) ? 2 : 1;
+        if (match >= (float)min_match) {
             float word_ratio = match;
             int prompt_words = 1;
             for (int j = 0; prompt_lower[j]; j++)
@@ -730,10 +734,13 @@ int dsl_generate_code(Program *prog, DslRule *rule, Function *f)
         substitute_template(substituted, sizeof(substituted),
             rule->code[i], rule, NULL, NULL);
 
+        char indented[4100];
+        snprintf(indented, sizeof(indented), "\t%s", substituted);
+
         // Skip duplicate (set ...) lines already in body (common in matching DSL rules)
         if (strncmp(substituted, "(set ", 5) == 0 && strstr(f->body, substituted) != NULL)
             continue;
-        func_append(f, substituted);
+        func_append(f, indented);
     }
 
     return 1;

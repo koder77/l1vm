@@ -811,7 +811,7 @@ void emit_input_loop(Program *prog, Function *f, int count, const char *type, co
 void emit_input_sort(Program *prog, Function *f, int count, int skip_input, int descending, const char *type);
 void emit_median(Program *prog, Function *f, int count, int skip_input);
 
-void emit_array_reverse(Program *prog, Function *f, int skip_input);
+void emit_array_reverse(Program *prog, Function *f, int skip_input, int array_count);
 void emit_array_find(Program *prog, Function *f, int skip_input);
 void emit_array_vmath(Program *prog, Function *f, int skip_input);
 
@@ -1136,17 +1136,20 @@ void emit_median(Program *prog, Function *f, int count, int skip_input) {
 
 
 
-void emit_array_reverse(Program *prog, Function *f, int skip_input) {
+void emit_array_reverse(Program *prog, Function *f, int skip_input, int array_count) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "vars.l1h");
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
     add_var_to_func(f, "const-int64", "one", 1, ov, 1);
-    const char *cv[] = {"5"};
+    if (array_count < 1) array_count = 5;
+    char cvs[16];
+    snprintf(cvs, sizeof(cvs), "%d", array_count);
+    const char *cv[] = {cvs};
     add_var_to_func(f, "int64", "count", 1, cv, 1);
-    add_var_to_func(f, "int64", "arr", 5, cv, 0);
-    add_var_to_func(f, "int64", "reverse", 5, cv, 0);
+    add_var_to_func(f, "int64", "arr", array_count, cv, 0);
+    add_var_to_func(f, "int64", "reverse", array_count, cv, 0);
     add_var_to_func(f, "int64", "i", 1, zv, 1);
     add_var_to_func(f, "int64", "j", 1, zv, 1);
     add_var_to_func(f, "int64", "temp", 1, zv, 1);
@@ -2171,7 +2174,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
         task->has_algorithm = 0;
     }
 
-    if (task->has_sort && task->has_input) {
+    if (task->has_sort && (task->has_input || task->has_descending)) {
         task->has_input_sort = 1;
         if (task->input_count > 0) task->input_sort_count = task->input_count;
         else if (task->num_literals >= 1) task->input_sort_count = task->literals[0];
@@ -2439,7 +2442,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
     if ((has_word(buf, "temperature") || has_word(buf, "temperatur")) && (has_word(buf, "convert") || has_word(buf, "converter") || has_word(buf, "umrechnen")))
         task->has_temp_converter_menu = 1;
 
-    if (has_word(buf, "sort") && (has_word(buf, "stats") || has_word(buf, "statistics") || has_word(buf, "statistik") || has_word(buf, "analyze") || has_word(buf, "analyse")))
+    if (has_word(buf, "sort") && (has_word(buf, "stats") || has_word(buf, "statistics") || has_word(buf, "statistik") || has_word(buf, "analyze") || has_word(buf, "analyse") || has_word(buf, "min") || has_word(buf, "max") || has_word(buf, "average") || has_word(buf, "avg")))
         task->has_sort_stats = 1;
 
     if ((has_word(buf, "analyze") || has_word(buf, "analyse")) && (has_word(buf, "string") || has_word(buf, "text") || has_word(buf, "zeichenkette")))
@@ -2810,7 +2813,7 @@ static void ee_standard_deviation(Program *p, Function *f, TaskProfile *t) { emi
 static void ee_insertion_sort(Program *p, Function *f, TaskProfile *t) { emit_insertion_sort(p, f, 5, t->skip_input); }
 static void ee_selection_sort(Program *p, Function *f, TaskProfile *t) { emit_selection_sort(p, f, 5, t->skip_input); }
 static void ee_average(Program *p, Function *f, TaskProfile *t) { emit_average(p, f, t->skip_input); }
-static void ee_array_reverse(Program *p, Function *f, TaskProfile *t) { emit_array_reverse(p, f, t->skip_input); }
+static void ee_array_reverse(Program *p, Function *f, TaskProfile *t) { emit_array_reverse(p, f, t->skip_input, 5); }
 static void ee_array_find(Program *p, Function *f, TaskProfile *t) { emit_array_find(p, f, t->skip_input); }
 static void ee_array_vmath(Program *p, Function *f, TaskProfile *t) { emit_array_vmath(p, f, t->skip_input); }
 static void ee_math(Program *p, Function *f, TaskProfile *t) { emit_math(p, f, t->type, t->op, t->literals, t->num_literals > 2 ? 3 : 2, 1); }
@@ -3001,7 +3004,8 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
             const char *icv[] = {cvs};
             add_var_to_func(f, "int64", "count", 1, icv, 1);
         }
-        emit_array_reverse(prog, f, task->skip_input);
+        int arr_count = task->inherit_count > 0 ? task->inherit_count : 5;
+        emit_array_reverse(prog, f, task->skip_input, arr_count);
         emitted = 1;
     }
     if (task->has_array_find) {
@@ -3425,6 +3429,7 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
         int inherited_counts[64] = {0};
         int num_inherited = 0;
         for (int i = 0; i < num_steps; i++) {
+            c_printf(ANSI_CYAN, "  Step %d/%d: %s\n", i + 1, num_steps, steps[i]);
             int learned_emitted = 0;
             // Try per-step learned pattern match
             {
@@ -3439,10 +3444,14 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
             if (!learned_emitted) {
                 TaskProfile task;
                 memset(&task, 0, sizeof(task));
-                if (parse_task(steps[i], &task)) {
-                    task.skip_input = (i > 0);
-                    task.suppress_output = (i < num_steps - 1);
-                    dataflow_quiet_mode = task.suppress_output;
+                if (!parse_task(steps[i], &task)) {
+                    fprintf(stderr, "Error: could not parse step %d: \"%s\"\n", i + 1, steps[i]);
+                    dataflow_quiet_mode = 0;
+                    return 0;
+                }
+                task.skip_input = (i > 0);
+                task.suppress_output = (i < num_steps - 1);
+                dataflow_quiet_mode = task.suppress_output;
                     // populate inherited vars from previous steps
                     for (int iv = 0; iv < num_inherited; iv++) {
                         snprintf(task.inherit_var_names[task.num_inherit_vars], sizeof(task.inherit_var_names[task.num_inherit_vars]), "%.*s", (int)sizeof(task.inherit_var_names[task.num_inherit_vars]) - 1, inherited_names[iv]);
@@ -3473,7 +3482,6 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
                     }
                     // generate_from_task runs primary emitter(s) AND extra emitters in sequence
                     generate_from_task(prog, &task, (i == num_steps - 1));
-                }
             }
             // collect inherited variables from the main function for next steps
             // Now also collects scalar variables (not just arrays) for data flow
@@ -3483,18 +3491,13 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
             if (fcur) {
                 for (int vi = 0; vi < fcur->num_vars && num_inherited < 64; vi++) {
                     int is_const = (strstr(fcur->vars[vi].type, "const") != NULL);
-                    int is_standard = (strcmp(fcur->vars[vi].name, "zero") == 0 || strcmp(fcur->vars[vi].name, "one") == 0
+                    int is_standard_constant = (strcmp(fcur->vars[vi].name, "zero") == 0 || strcmp(fcur->vars[vi].name, "one") == 0
                         || strcmp(fcur->vars[vi].name, "two") == 0 || strcmp(fcur->vars[vi].name, "three") == 0
                         || strcmp(fcur->vars[vi].name, "four") == 0 || strcmp(fcur->vars[vi].name, "five") == 0);
-                    int is_loop_var = (strcmp(fcur->vars[vi].name, "i") == 0 || strcmp(fcur->vars[vi].name, "j") == 0
-                        || strcmp(fcur->vars[vi].name, "f") == 0 || strcmp(fcur->vars[vi].name, "temp") == 0
-                        || strcmp(fcur->vars[vi].name, "realind") == 0 || strcmp(fcur->vars[vi].name, "realind2") == 0
-                        || strcmp(fcur->vars[vi].name, "a") == 0 || strcmp(fcur->vars[vi].name, "b") == 0
-                        || strcmp(fcur->vars[vi].name, "min_idx") == 0 || strcmp(fcur->vars[vi].name, "modtmp") == 0
-                        || strcmp(fcur->vars[vi].name, "is_prime") == 0 || strcmp(fcur->vars[vi].name, "mid") == 0
-                        || strcmp(fcur->vars[vi].name, "num") == 0 || strcmp(fcur->vars[vi].name, "aux") == 0);
-                    // Skip standard constants, loop variables, but keep arrays AND scalars that look like result variables
-                    if (!is_const && !is_standard && !is_loop_var) {
+                    int is_input_prompt = (strcmp(fcur->vars[vi].name, "input_prompt") == 0);
+                    // Skip const types, standard constants (zero-one-five), and input_prompt
+                    // Keep arrays AND scalars — let the emitter handle dedup
+                    if (!is_const && !is_standard_constant && !is_input_prompt) {
                         int already = 0;
                         for (int ck = 0; ck < num_inherited; ck++) {
                             if (strcmp(inherited_names[ck], fcur->vars[vi].name) == 0) already = 1;
@@ -3657,15 +3660,22 @@ void write_program(Program *prog, const char *filename) {
         fprintf(f, "(%s func)\n", fn->name);
         if (fn->has_vardef)
             fprintf(f, "\t#var ~ %s\n", fn->vardef_name);
+        // Track all variable names already emitted as (set ...) in the output
+        char emitted_names[4096] = " ";
         for (int vi = 0; vi < fn->num_vars; vi++) {
             Variable *v = &fn->vars[vi];
             fprintf(f, "\t(set %s %d %s", v->type, v->count, v->name);
             for (int vj = 0; vj < v->num_values; vj++)
                 fprintf(f, " %s", v->values[vj]);
             fprintf(f, ")\n");
+            if (strlen(emitted_names) + strlen(v->name) + 2 < sizeof(emitted_names)) {
+                strcat(emitted_names, v->name);
+                strcat(emitted_names, " ");
+            }
         }
         {
-            // Filter duplicate (set ...) lines from body that match fn->vars[] declarations
+            // Filter duplicate (set ...) lines from body whose variable name
+            // already appeared in fn->vars[] or a prior body (set ...) line
             const char *bp = fn->body;
             while (*bp) {
                 const char *nl = strchr(bp, '\n');
@@ -3687,18 +3697,13 @@ void write_program(Program *prog, const char *filename) {
                             vn[vni++] = *sp++;
                         vn[vni] = '\0';
                         if (vni > 0) {
-                            for (int vi = 0; vi < fn->num_vars; vi++) {
-                                if (strcmp(fn->vars[vi].name, vn) == 0) {
-                                    // Build canonical declaration for this variable
-                                    char canon[4096];
-                                    int cpos = snprintf(canon, sizeof(canon), "(set %s %d %s",
-                                        fn->vars[vi].type, fn->vars[vi].count, fn->vars[vi].name);
-                                    for (int vj = 0; vj < fn->vars[vi].num_values; vj++)
-                                        cpos += snprintf(canon + cpos, sizeof(canon) - cpos, " %s", fn->vars[vi].values[vj]);
-                                    snprintf(canon + cpos, sizeof(canon) - cpos, ")");
-                                    if (strcmp(p, canon) == 0)
-                                        { skip = 1; break; }
-                                }
+                            char check[384];
+                            snprintf(check, sizeof(check), " %s ", vn);
+                            if (strstr(emitted_names, check) != NULL) {
+                                skip = 1;
+                            } else if (strlen(emitted_names) + vni + 2 < sizeof(emitted_names)) {
+                                strcat(emitted_names, vn);
+                                strcat(emitted_names, " ");
                             }
                         }
                     }
