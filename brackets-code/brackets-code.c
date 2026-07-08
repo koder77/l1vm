@@ -3664,7 +3664,51 @@ void write_program(Program *prog, const char *filename) {
                 fprintf(f, " %s", v->values[vj]);
             fprintf(f, ")\n");
         }
-        fprintf(f, "%s", fn->body);
+        {
+            // Filter duplicate (set ...) lines from body that match fn->vars[] declarations
+            const char *bp = fn->body;
+            while (*bp) {
+                const char *nl = strchr(bp, '\n');
+                size_t llen = nl ? (size_t)(nl - bp) : strlen(bp);
+                int skip = 0;
+                char line[4096];
+                if (llen > 0 && llen < sizeof(line)) {
+                    memcpy(line, bp, llen);
+                    line[llen] = '\0';
+                    const char *p = line;
+                    while (*p == ' ' || *p == '\t') p++;
+                    if (strncmp(p, "(set ", 5) == 0) {
+                        const char *sp = p + 5;
+                        while (*sp && *sp != ' ') sp++;
+                        if (*sp) { sp++; while (*sp && *sp != ' ') sp++; }
+                        if (*sp) { sp++; while (*sp == ' ') sp++; }
+                        char vn[256]; int vni = 0;
+                        while (*sp && *sp != ' ' && *sp != ')' && vni < 255)
+                            vn[vni++] = *sp++;
+                        vn[vni] = '\0';
+                        if (vni > 0) {
+                            for (int vi = 0; vi < fn->num_vars; vi++) {
+                                if (strcmp(fn->vars[vi].name, vn) == 0) {
+                                    // Build canonical declaration for this variable
+                                    char canon[4096];
+                                    int cpos = snprintf(canon, sizeof(canon), "(set %s %d %s",
+                                        fn->vars[vi].type, fn->vars[vi].count, fn->vars[vi].name);
+                                    for (int vj = 0; vj < fn->vars[vi].num_values; vj++)
+                                        cpos += snprintf(canon + cpos, sizeof(canon) - cpos, " %s", fn->vars[vi].values[vj]);
+                                    snprintf(canon + cpos, sizeof(canon) - cpos, ")");
+                                    if (strcmp(p, canon) == 0)
+                                        { skip = 1; break; }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!skip)
+                    fprintf(f, "%.*s\n", (int)llen, bp);
+                if (!nl) break;
+                bp = nl + 1;
+            }
+        }
         fprintf(f, "(funcend)\n\n");
     }
 

@@ -729,6 +729,10 @@ int dsl_generate_code(Program *prog, DslRule *rule, Function *f)
         char substituted[4096];
         substitute_template(substituted, sizeof(substituted),
             rule->code[i], rule, NULL, NULL);
+
+        // Skip duplicate (set ...) lines already in body (common in matching DSL rules)
+        if (strncmp(substituted, "(set ", 5) == 0 && strstr(f->body, substituted) != NULL)
+            continue;
         func_append(f, substituted);
     }
 
@@ -1007,9 +1011,32 @@ int dsl_match_task_flags(DslRule *rule, TaskProfile *task)
     return 0;
 }
 
+static void update_token_from_prompt(Function *f, const char *prompt) {
+    int nums[8];
+    int num_count = 0;
+    const char *p = prompt;
+    while (*p && num_count < 8) {
+        if (*p >= '0' && *p <= '9') {
+            int val = 0;
+            while (*p >= '0' && *p <= '9') { val = val * 10 + (*p - '0'); p++; }
+            nums[num_count++] = val;
+        } else { p++; }
+    }
+    int ni = 0;
+    for (int vi = 0; vi < f->num_vars && ni < num_count; vi++) {
+        if (strcmp(f->vars[vi].type, "int64") == 0 || strcmp(f->vars[vi].type, "const-int64") == 0) {
+            if (f->vars[vi].num_values > 0 && strcmp(f->vars[vi].values[0], "0") == 0) {
+                snprintf(f->vars[vi].values[0], sizeof(f->vars[vi].values[0]), "%d", nums[ni]);
+                ni++;
+            }
+        }
+    }
+}
+
 int dsl_generate_from_task(Program *prog, TaskProfile *task, Function *f)
 {
     int generated = 0;
+    int applied[MAX_DSL_RULES] = {0};
 
     for (int i = 0; i < dsl_num_rules; i++) {
         if (dsl_match_task_flags(&dsl_rules[i], task)) {
@@ -1017,6 +1044,7 @@ int dsl_generate_from_task(Program *prog, TaskProfile *task, Function *f)
                 printf("DSL: matched rule '%s' (%s)\n", dsl_rules[i].keyword, dsl_rules[i].filename);
             }
             dsl_generate_code(prog, &dsl_rules[i], f);
+            applied[i] = 1;
             generated = 1;
         }
     }
@@ -1026,6 +1054,11 @@ int dsl_generate_from_task(Program *prog, TaskProfile *task, Function *f)
         float kw_scores[MAX_DSL_RULES];
         int kw_count = dsl_match_all_rules(task->prompt, kw_rules, kw_scores, MAX_DSL_RULES, 0.3f);
         for (int i = 0; i < kw_count; i++) {
+            int idx = -1;
+            for (int j = 0; j < dsl_num_rules; j++) {
+                if (&dsl_rules[j] == kw_rules[i]) { idx = j; break; }
+            }
+            if (idx >= 0 && applied[idx]) continue;
             if (verbose_flag) {
                 printf("DSL: keyword matched rule '%s' (%s) score=%.2f\n",
                        kw_rules[i]->keyword, kw_rules[i]->filename, kw_scores[i]);
@@ -1034,5 +1067,9 @@ int dsl_generate_from_task(Program *prog, TaskProfile *task, Function *f)
             generated = 1;
         }
     }
+
+    if (generated && strlen(task->prompt) > 0)
+        update_token_from_prompt(f, task->prompt);
+
     return generated;
 }
