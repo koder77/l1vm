@@ -1,29 +1,29 @@
-rackets Code - Memory & Specification
+Brackets Code - Memory & Specification
 =============================================
 
 1. WHAT IT IS
--------------
+--------------
 Brackets Code is a CLI code generator for the Brackets (L1VM) assembly language.
 It converts natural-language prompts into working .l1com programs.
-Written in C, split across 4 source files (~14543 lines total). Author: Stefan.
+Written in C, split across 4 source files (~12500 lines total). Author: Stefan.
 
 2. SOURCE FILE ORGANIZATION
 --------------------------
   brackets-code.h  -- master header: type defs (Variable, Function, Program, TaskProfile, etc.),
                       constants, global variable externs, and all forward declarations
                       (emitters, templates, utilities, CLI).
-  brackets-code.c  -- main translation unit: includes embed.c + learn.c via #include.
-                      Contains utility funcs, data structures, all 133 emitters,
-                      31 templates, parse_task, generate_code, CLI (main + interactive).
-  embed.c          -- #included at line 1222: tiny LLM inference engine (word embeddings,
-                      softmax attention), vector search over l1vm-example-code/,
-                      llm_select_emitter(), split_prompt_steps().
-  learn.c          -- #included at line 10725: learned pattern system (learn from .l1com files,
-                      persist/reload .l1lp files, match + emit learned patterns).
+  brackets-code.c  -- main translation unit (~8500 lines): utility funcs, data structures,
+                      all 166 emitters, 31 templates, parse_task, generate_code, CLI.
+  dsl.c            -- DSL rule engine (~1080 lines): dsl_parse_file(), dsl_match_*,
+                      dsl_generate_code(), dsl_generate_from_task(). Separately compiled.
+  embed.c          -- tiny LLM inference engine (~1170 lines): word embeddings, softmax,
+                      vector search, llm_select_emitter(), split_prompt_steps().
+  learn.c          -- learned pattern system (~690 lines): learn from .l1com files,
+                      persist/reload .l1lp files, match + emit learned patterns.
+  dsl.h            -- DSL header: types (DslRule, DslToken, DslVarDecl), function declarations.
 
-  This split keeps the main file under 12k lines while allowing embed.c and learn.c
-  to be developed independently. Both are #included (not separately compiled) to avoid
-  link-time symbol visibility issues with the many static functions in brackets-code.c.
+  embed.c and learn.c are #included into brackets-code.c (at lines ~1005 and ~7650).
+  dsl.c is SEPARATELY COMPILED (not #included) and linked.
 
 3. ARCHITECTURE OVERVIEW
 -----------------------
@@ -33,10 +33,10 @@ The program has a three-tier generation pipeline:
        |
   smart_generate() --> multi-step split + per-step TaskProfile generation
        |                  |
-       |            llm_select_emitter() tokenizes prompt, scores 166 emitters
-       |                  |                selects best emitter, calls generate_from_task()
-       |                  | (fallback)
-       |            old arithmetic generator (simple math prompts)
+       |            generate_from_task():
+       |              a) dsl_generate_from_task() -- DSL rules (flag + keyword matching)
+       |              b) llm_select_emitter() -- scores 166 emitters via softmax
+       |              c) Regular emitter dispatch (input_sort, median, factorial, etc.)
        | (fallback)
   match_template() --> 31 template functions
        | (fallback)
@@ -48,9 +48,8 @@ Key principle: "planner-first ordering" -- the plan-based smart_generate()
 runs BEFORE template matching, so compound/novel prompts are handled
 by the planner rather than being captured by shorter template keywords.
 
-Emitter selection uses TaskProfile feature flags (has_*) and keyword token
-matching with softmax scoring. Vector search over example codebase provides
-boost tokens for improved selection.
+DSL rules take priority: if dsl_generate_from_task() returns 1, the
+regular emitter is never called for that step.
 
 4. DATA STRUCTURES
 ------------------
@@ -76,373 +75,286 @@ TaskProfile (the plan struct):
     has_read_file, has_write_file, has_array_vmath,
     has_string_to_num, has_timer,
     has_array_min_max, has_bool_demo, has_bit_check,
-    has_max, has_min, has_descending
+    has_max, has_min, has_descending, has_sort_stats,
+    has_input, has_factorial, has_power, has_fizzbuzz, has_primes, ...
   - has_loop, loop_start/end/step
   - has_condition, has_output, has_output_str
   - type[] ("int64", "double", "int32", "int16", "byte")
   - title[]
+  - inherit_var[], inherit_count, num_inherit_vars
+  - inherit_var_types[][], inherit_var_names[][], inherit_var_counts[]
 
 Template struct:
   - keywords (space-separated), description, function pointer
 
-5. GENERATION FLOW (generate_code)
+5. DSL RULE SYSTEM
+-------------------
+  DSL rules are stored in dsl/*.l1dsl files. Each rule has:
+    parser: "keywords, ..."        -- tokenization keywords for scoring
+    match: has_flag_name           -- required TaskProfile flag (optional)
+    token: type name               -- parsed numeric tokens from prompt
+    result: type name              -- the output variable
+    var: type name value           -- explicit variable declaration
+    include: header.l1h            -- file to #include
+    desc: "description"            -- human-readable description
+    code:                          -- L1VM code body (indented lines)
+
+  Generation flow (dsl_generate_from_task in dsl.c):
+    1. Flag matching: for each rule, check if task->has_* flag matches
+       rule->match. If match, call dsl_generate_code().
+    2. Keyword matching: dsl_match_all_rules() scores all rules against
+       prompt text. Rules with >=3 keywords need >=2 matches.
+       Skip already-applied flag-matched rules.
+    3. Token value update: update_token_from_prompt() fills token defaults
+       from numbers in the prompt.
+
+  dsl_generate_code() in dsl.c:
+    1. Add includes (pre + post)
+    2. Declare var:/token:/result: variables via add_var_to_func() (dedup'd by name)
+    3. Append code lines to f->body, dedup'd by exact string match:
+       if strncmp("(set ", 5) == 0 && strstr(f->body, line) != NULL → skip
+    4. Code lines get \t prefix for L1VM indentation
+
+  dsl.c is compiled separately with -Wall -Wextra (no warnings).
+
+6. EMITTER BLOCKS (NUM_EMITTERS = 166)
+--------------------------------------
+  Each emits L1VM code for a specific pattern:
+
+  Block                    Purpose
+  ------------------------ ------------------------------
+  emit_math                Pure math with 2-3 literals
+  emit_input_loop          Read N numbers, optionally sum
+  emit_for_sum             Sum 1..N
+  emit_print_even          Print even numbers <= N
+  emit_input_find_max       Read N, find maximum
+  emit_countdown_from       Countdown N to 0
+  emit_fib_seq             Fibonacci sequence (first N)
+  emit_input_sort           Read N, bubble sort, print (supports descending, max, min)
+  emit_median               Read N, sort, print median (uses "two" const 2 for divide)
+  emit_string_cat           Input 2 strings, concatenate
+  emit_string_compare       Input 2 strings, compare
+  emit_array_assign         Input index+value, assign to array
+  emit_array_reverse        Read N, reverse array, print (parameterized array_count)
+  emit_array_find           Read N + search key, linear search
+  emit_input_factorial      Read N, call factorial, print
+  emit_array_vmath          Array min/max/average using vmath
+  emit_read_file            Read int64 value from file
+  emit_write_file           Write int64 value to file
+  emit_string_to_num        Parse string input to integer
+  emit_timer                Measure execution time (intr0 24/25)
+  emit_factorial            Recursive factorial (no input)
+  emit_fizzbuzz             FizzBuzz 1..100
+  emit_primes               Prime finder up to N
+  emit_even_odd             Check if number is even or odd
+  emit_power                Power function (loop)
+  emit_multiplication_table 1..10 times table
+  emit_guess_number         Number guessing game
+  emit_gcd                  Recursive Euclid GCD
+  emit_random_number        Generate N random numbers
+  emit_hello_name           Ask name and greet
+  emit_array_min_max        Find min/max/average via vmath library
+  emit_bool_demo            Boolean variable demo
+  emit_bit_check            Bit check with << and &
+  emit_leap_year            Leap year detection
+  emit_temp_convert         Celsius-to-Fahrenheit conversion
+  emit_circle_area          Circle area calculation
+  emit_average              Average of input numbers
+  emit_selection_sort       Selection sort
+  emit_fann_create          Create FANN neural network
+  emit_fann_train           Train FANN neural network
+  emit_fann_run             Run FANN neural network
+  emit_palindrome           Palindrome number check
+  emit_lcm                  Least Common Multiple
+  emit_collatz              Collatz sequence generator
+  emit_sum_of_digits        Sum of digits of a number
+  emit_reverse_string       Reverse a string
+  emit_armstrong            Armstrong number check
+  emit_perfect_number       Perfect number check
+  emit_count_vowels         Count vowels in a string
+  emit_anagram_check        Anagram string comparison
+  emit_string_to_upper      Convert string to uppercase
+  emit_string_to_lower      Convert string to lowercase
+  emit_caesar_cipher        Caesar cipher encode/decode
+  emit_palindrome_string    Palindrome string check
+  emit_bubble_sort          Bubble sort with hardcoded array
+  emit_binary_search        Binary search on sorted array
+  emit_square_root          Integer square root via Newton-Raphson
+  emit_prime_factorization  Prime factor decomposition
+  emit_standard_deviation   Standard deviation of N numbers
+  emit_compound_interest    Compound interest calculation
+  emit_decimal_to_binary    Decimal to binary conversion
+  emit_dice_roll            Dice roll simulation (1-6)
+  emit_double_math          Double-precision math (add/sub/mul/div)
+  emit_double_circle_area   Double-precision circle area
+  emit_double_average       Double-precision average of 5 numbers
+  emit_double_compound_interest Double-precision compound interest
+  emit_double_pythagoras    Double-precision Pythagoras
+  emit_double_temp_convert  Double-precision Celsius to Fahrenheit
+  emit_double_sqrt          Double-precision Newton-Raphson sqrt
+  emit_function             User-defined function call demo
+  emit_string_length        Length of input string
+  emit_stack                Stack: push/pop/size/print-all via sp array
+  emit_queue                Queue: enqueue/dequeue/print via head/tail array
+  emit_insertion_sort       Insertion sort with nested for/while loops
+  emit_calculator           Calculator: add/sub/mul/div/mod via menu
+  emit_unit_converter       Unit converter: km/mi/kg/lb/cm/in via menu
+  emit_rock_paper_scissors  RPS game vs computer
+  emit_pyramid              Print pyramid number pattern 1..n
+  emit_temp_converter_menu  Temperature converter with menu (C/F/K)
+  emit_sort_stats           Sort + statistics (min/max/avg/median)
+  emit_string_analyzer      String character analysis
+  emit_number_analyzer      Number analysis (digits/sum/even/odd/prime)
+  emit_filter_numbers       Filter numbers from list (even/odd/prime)
+  emit_random_generator     Random number generator with range/count
+  emit_math_menu            Math operations menu
+  emit_quiz_game            Math quiz with random questions
+  emit_bmi_calculator       BMI calculator
+  emit_statistics_suite     Full stats suite
+  emit_linked_list          Linked list insert/search/delete/print
+  emit_binary_search_tree   BST insert/search/traverse
+  emit_tree_traversal       Binary tree inorder/preorder/postorder
+  emit_graph_bfs_dfs        Graph BFS/DFS traversal
+  emit_n_queens             N-Queens backtracking solver
+  emit_sudoku               Simple sudoku constraint propagation solver
+  emit_levenshtein_distance Levenshtein edit distance
+  emit_maze_generator       Maze generation via DFS
+  emit_maze_solver          Maze solver BFS
+  emit_monte_carlo_pi       Monte Carlo pi estimation
+  emit_matrix_multiplication Matrix multiply
+  emit_matrix_transpose     Matrix transpose
+  emit_numerical_integration Numerical integration (trapezoidal)
+  emit_complex_numbers      Complex number arithmetic
+  emit_linear_regression    Linear regression (least squares)
+  emit_base_converter       Base converter (decimal to base N)
+  emit_freq_analysis        Letter frequency analysis
+  emit_shuffle              Array shuffle (Fisher-Yates)
+  emit_weighted_random      Weighted random selection
+  emit_ascii_table          ASCII table printer
+  emit_bignum_math          Bignum arithmetic
+  emit_password_card        Password card generator
+  emit_chess_problem        Chess puzzle setup
+  emit_shell_repl           Interactive shell REPL
+  emit_webserver            TCP web server
+  emit_sdl_window           SDL pixel-graphics window
+  emit_sdl_button           SDL button GUI
+  emit_thread               Two-thread demo
+  emit_scheduler            Task scheduler
+  emit_shell_exec           Shell command execution
+  emit_json                 JSON string get/set
+  emit_crypto               Encrypt/decrypt
+  emit_bluetooth_ble        Bluetooth LE init stub
+  emit_serial_rs232         Serial RS-232 init stub
+  emit_gpio                 GPIO pin I/O
+  emit_gps                  GPS position read
+  emit_timer_date           Timer elapsed ms + date/time
+  emit_sdl_sound            SDL sound playback
+  emit_sdl_joystick         SDL joystick axis/button
+  emit_sdl_mouse            SDL mouse motion/click
+  emit_fractal              Mandelbrot fractal ASCII render
+  emit_cluster_3x1          3x1 cluster communication stub
+  emit_reload               Self-reload stub
+  emit_coordinate_grid      2D coordinate grid operations
+  emit_turmite              Turmite (ant) simulation
+  emit_crossword            Crossword puzzle grid generator
+  emit_linter               Code linter stub
+  emit_hello_world          Hello World program
+  emit_string_find          Find substring in a string
+  emit_string_split         Split string by delimiter
+  emit_switch_demo          Switch/case control flow demo
+  emit_type_convert         Type conversion
+  emit_iterative_factorial  Iterative factorial with while loop
+  emit_random_walk          Random walk simulation
+  emit_bar_chart            ASCII bar chart from data array
+  emit_hanoi_tower          Towers of Hanoi step printer
+  emit_ascii_art            Simple ASCII art shapes
+  emit_number_to_words      Convert numbers to English words
+  emit_temperature_table    Celsius/Fahrenheit conversion table
+  emit_loop_demo            Loop constructs demo
+  emit_pointer_demo         Pointer access demo
+  emit_struct_demo          Struct (dotted vars) demo
+  emit_hex_binary           Hex and binary literal demo
+  emit_shell_args           Command-line arguments demo
+  emit_time_demo            Current time + epoch ms
+  + template emitters (31 matched by match_template, not smart_generate)
+
+7. GENERATION FLOW (generate_code)
 -----------------------------------
 1. Check if input is a question -> answer via FAQ
 2. Try smart_generate() which:
    a. Splits prompt on conjunctions (multi-step detection)
    b. Validates/merges non-viable steps
-   c. Generates per-step code using emitter blocks
+   c. Per-step: generate_from_task()
+      i.   dsl_generate_from_task() -- DSL flag + keyword matching
+      ii.  llm_select_emitter() + dispatch to emitter block
    d. Falls through to single-step plan-based generation
 3. If plan fails, try match_template() -- scores all 31 templates
 4. If template fails, generate default "hello world"
 
-6. PLAN-BASED GENERATOR
+8. MULTI-STEP COMPOSITION (split_prompt_steps in embed.c)
+----------------------------------------------------------
+  - Split patterns (ordered longest-first):
+    " und dann ", " und danach ", " anschliessend ",
+    " and then ", " . ", ". ", "; ", " then ",
+    " danach ", " and " (math-guarded), " und " (math-guarded)
+    "Schritt N:" / "step N:" patterns (phase 2)
+  - Math guard: if conjunction surrounded by digits, skip split
+  - Comma guard: ", and" / ", und" / ", or" / ", oder" → false positive for split
+  - Each split segment parsed as independent TaskProfile
+  - Pre-validation: non-viable steps auto-merge backward
+  - Additional merge: "print the median/average/.../result/them/it"
+    steps merge with preceding step
+  - Per-step generation via generate_from_task (same Function f)
+  - Variable inheritance: non-const vars from prior steps passed to next step
+
+9. DSL KEYWORD MATCHING
 -----------------------
-5a. Task Parsing (parse_task):
-  - Detects type: byte/int8 -> int16/short -> int32 -> int64 -> double/float
-  - Extracts numbers (digit + written-out words: "eins"/"one"/...)
-  - Count filter: words before "numbers/werte/zahlen/values"
-  - Detects operations via ops[] map (add/sub/mul/div/mod in DE+EN)
-   - Detects ~45+ patterns (FAQ topics, algorithms, input/output, loops)
-   - Enhanced patterns override generic algorithm flags
-   - has_string_cat excluded when more specific string flag present
-     (reverse, length, vowels, anagram, upper, lower, caesar, palindrome)
+  dsl_match_all_rules() in dsl.c:
+    - Tokenizes prompt into words
+    - For each rule, tokenizes parser keywords into individual words
+    - Counts how many keyword words appear in the prompt
+    - Rules with >=3 keywords require >=2 matches (minimum match count)
+    - Scores are (match_count / total_keyword_count) normalized
+    - Results sorted by score descending
+    - Threshold: score >= 0.3f to be considered a match
 
-5b. Emitter Blocks (NUM_EMITTERS = 166):
-   Each emits L1VM code for a specific pattern:
+  dsl_match_rule() in dsl.c:
+    - Dedicated single-rule keyword matching
+    - Same minimum-match logic: >=2 matches for >=3 keyword rules
 
-   Block                    Purpose
-   ------------------------ ------------------------------
-   emit_math                Pure math with 2-3 literals
-   emit_input_loop          Read N numbers, optionally sum
-   emit_for_sum             Sum 1..N
-   emit_print_even          Print even numbers <= N
-   emit_input_find_max       Read N, find maximum
-   emit_countdown_from       Countdown N to 0
-   emit_fib_seq             Fibonacci sequence (first N)
-   emit_input_sort           Read N, bubble sort, print (supports descending, max, min)
-   emit_median               Read N, sort, print median (uses "two" const 2 for divide)
-   emit_string_cat           Input 2 strings, concatenate
-   emit_string_compare       Input 2 strings, compare
-   emit_array_assign         Input index+value, assign to array
-   emit_array_reverse        Read N, reverse array, print
-   emit_array_find           Read N + search key, linear search
-   emit_input_factorial      Read N, call factorial, print
-   emit_array_vmath          Array min/max/average using vmath
-   emit_read_file            Read int64 value from file
-   emit_write_file           Write int64 value to file
-   emit_string_to_num        Parse string input to integer
-   emit_timer                Measure execution time (intr0 24/25)
-   emit_factorial            Recursive factorial (no input)
-   emit_fizzbuzz             FizzBuzz 1..100
-   emit_primes               Prime finder up to N
-   emit_even_odd             Check if number is even or odd
-   emit_power                Power function (loop)
-   emit_multiplication_table 1..10 times table
-   emit_guess_number         Number guessing game
-   emit_gcd                  Recursive Euclid GCD
-   emit_random_number        Generate N random numbers
-   emit_hello_name           Ask name and greet
-   emit_array_min_max        Find min/max/average via vmath library
-   emit_bool_demo            Boolean variable demo (bool type, true/false)
-   emit_bit_check            Bit check with << and &, custom function
-   emit_leap_year            Leap year detection
-   emit_temp_convert         Celsius-to-Fahrenheit conversion
-   emit_circle_area          Circle area calculation
-   emit_average              Average of input numbers
-   emit_selection_sort       Selection sort
-   emit_fann_create          Create FANN neural network
-   emit_fann_train           Train FANN neural network
-   emit_fann_run             Run FANN neural network
-   emit_palindrome           Palindrome number check
-   emit_lcm                  Least Common Multiple
-   emit_collatz              Collatz sequence generator
-   emit_sum_of_digits        Sum of digits of a number
-   emit_reverse_string       Reverse a string
-   emit_armstrong            Armstrong number check
-   emit_perfect_number       Perfect number check
-   emit_count_vowels         Count vowels in a string
-   emit_anagram_check        Anagram string comparison
-   emit_string_to_upper      Convert string to uppercase
-   emit_string_to_lower      Convert string to lowercase
-   emit_caesar_cipher        Caesar cipher encode/decode
-   emit_palindrome_string    Palindrome string check
-   emit_bubble_sort          Bubble sort with hardcoded array
-   emit_binary_search        Binary search on sorted array
-   emit_square_root          Integer square root via Newton-Raphson
-   emit_prime_factorization  Prime factor decomposition
-   emit_standard_deviation   Standard deviation of N numbers
-   emit_compound_interest    Compound interest calculation
-   emit_decimal_to_binary    Decimal to binary conversion
-   emit_dice_roll            Dice roll simulation (1-6)
-   emit_double_math          Double-precision math (add/sub/mul/div)
-   emit_double_circle_area   Double-precision circle area
-   emit_double_average       Double-precision average of 5 numbers
-   emit_double_compound_interest Double-precision compound interest
-   emit_double_pythagoras    Double-precision Pythagoras (a^2 + b^2 = c^2)
-   emit_double_temp_convert  Double-precision Celsius to Fahrenheit
-   emit_double_sqrt          Double-precision Newton-Raphson square root
-   emit_function             User-defined function call demo
-   emit_string_length        Length of input string (loop over str_len)
-   emit_stack                Stack: push/pop/size/print-all via sp array
-   emit_queue                Queue: enqueue/dequeue/print via head/tail array
-   emit_insertion_sort       Insertion sort with nested for/while loops
-   emit_calculator           Calculator: add/sub/mul/div/mod via menu
-   emit_unit_converter       Unit converter: km/mi/kg/lb/cm/in via menu
-   emit_rock_paper_scissors  RPS game vs computer using epochms RNG
-   emit_pyramid              Print pyramid number pattern 1..n
-   emit_temp_converter_menu  Temperature converter with menu (C/F/K)
-   emit_sort_stats           Sort + statistics (min/max/avg/median)
-   emit_string_analyzer      String character analysis (length/vowels/consonants)
-   emit_number_analyzer      Number analysis (digits/sum/even/odd/prime)
-   emit_filter_numbers       Filter numbers from list (even/odd/prime)
-   emit_random_generator     Random number generator with range/count
-   emit_math_menu            Math operations menu (add/sub/mul/div/power/sqrt)
-   emit_quiz_game            Math quiz with random questions
-   emit_bmi_calculator       BMI calculator from weight/height
-   emit_statistics_suite     Full stats suite (min/max/avg/median/variance/stddev)
-   emit_linked_list          Linked list insert/search/delete/print
-   emit_binary_search_tree   BST insert/search/traverse
-   emit_tree_traversal       Binary tree inorder/preorder/postorder
-   emit_graph_bfs_dfs        Graph BFS/DFS traversal
-   emit_n_queens             N-Queens backtracking solver
-   emit_sudoku               Simple sudoku constraint propagation solver
-   emit_levenshtein_distance Levenshtein edit distance (hardcoded result)
-   emit_maze_generator       Maze generation via DFS
-   emit_maze_solver          Maze solver BFS (hardcoded 5x5 grid printer)
-   emit_monte_carlo_pi       Monte Carlo pi estimation
-   emit_matrix_multiplication Matrix multiply
-   emit_matrix_transpose     Matrix transpose
-   emit_numerical_integration Numerical integration (trapezoidal, x^2)
-   emit_complex_numbers      Complex number arithmetic
-   emit_linear_regression    Linear regression (least squares)
-   emit_base_converter       Base converter (decimal to base N)
-   emit_freq_analysis        Letter frequency analysis
-   emit_shuffle              Array shuffle (Fisher-Yates)
-   emit_weighted_random      Weighted random selection
-   emit_ascii_table          ASCII table printer
-   emit_bignum_math          Bignum arithmetic (large numbers)
-   emit_password_card        Password card generator
-   emit_chess_problem        Chess puzzle setup
-   emit_shell_repl           Interactive shell REPL
-   emit_webserver            TCP web server with socket API
-   emit_sdl_window           SDL pixel-graphics window
-   emit_sdl_button           SDL button GUI with mouse interaction
-   emit_thread               Two-thread demo using intr0 9/10
-   emit_scheduler            Task scheduler with queue/priority
-   emit_shell_exec           Shell command execution via intr0 42
-   emit_json                 JSON string get/set via json.l1h
-   emit_crypto               Encrypt/decrypt via crypto.l1h
-   emit_bluetooth_ble        Bluetooth LE init stub
-   emit_serial_rs232         Serial RS-232 init stub
-   emit_gpio                 GPIO pin I/O via gpio.l1h
-   emit_gps                  GPS position read via gps.l1h
-   emit_timer_date           Timer elapsed ms + date/time display
-   emit_sdl_sound            SDL sound playback via sdl-lib.l1h
-   emit_sdl_joystick         SDL joystick axis/button via sdl-lib.l1h
-   emit_sdl_mouse            SDL mouse motion/click via sdl-lib.l1h
-   emit_fractal              Mandelbrot fractal ASCII render
-   emit_cluster_3x1          3x1 cluster communication stub
-   emit_reload               Self-reload stub via intr0 11
-   emit_coordinate_grid      2D coordinate grid operations
-   emit_turmite              Turmite (ant) simulation on grid
-   emit_crossword            Crossword puzzle grid generator
-    emit_linter               Code linter stub
-    emit_hello_world          Hello World program
-    emit_string_find          Find substring in a string
-    emit_string_split         Split string by delimiter
-    emit_switch_demo          Switch/case control flow demo
-    emit_type_convert         Type conversion (int64 ↔ double ↔ string)
-    emit_iterative_factorial  Iterative factorial with while loop
-    emit_random_walk          Random walk simulation
-    emit_bar_chart            ASCII bar chart from data array
-    emit_hanoi_tower          Towers of Hanoi step printer
-    emit_ascii_art            Simple ASCII art shapes
-    emit_number_to_words      Convert numbers to English words
-    emit_temperature_table    Celsius/Fahrenheit conversion table
-    emit_loop_demo            Loop constructs demo (for/while)
-    emit_pointer_demo         Pointer access demo
-    emit_struct_demo          Struct (dotted vars) demo
-    emit_hex_binary           Hex and binary literal demo
-    emit_shell_args           Command-line arguments demo
-    emit_time_demo            Current time + epoch ms
-    + template emitters (31 matched by match_template, not smart_generate)
+10. write_program DEDUP
+------------------------
+  write_program() in brackets-code.c writes a Function's vars + body:
+    - Vars section: writes all fn->vars[] as (set ...) declarations
+      and tracks emitted variable names in emitted_names[] buffer
+    - Body section: for each body line:
+      - Skip lines starting with "(set " whose variable name is already
+        in emitted_names (dedup with " %s " space-delimited match)
+      - Otherwise emit line and add variable name to emitted_names
+    - Purpose: prevent duplicate variable declarations when multiple
+      DSL rules generate code for the same function
+    - False-positive guard: " %s " format avoids matching "c " inside "fac "
 
-5c. Multi-Step Composition (split_prompt_steps):
-   - Split patterns (ordered longest-first):
-     " und dann ", " und danach ", " anschliessend ",
-     " and then ", " . ", ". ", "; ", " then ",
-     " danach ", " and " (math-guarded), " und " (math-guarded)
-   - Math guard: if conjunction surrounded by digits, skip split
-   - Each split segment parsed as independent TaskProfile
-   - Pre-validation: non-viable steps auto-merge backward
-   - Additional merge: "print the median/average/mean/largest/smallest/sum/max/min/them/it/result"
-     steps are merged with the preceding step (keeps read+print-the-result as single instruction)
-   - Each viable step generates via generate_from_task
-   - Variables re-initialized if values differ between steps
-
-5d. generate_from_task dispatch order:
-   - Checked in priority order:
-     has_input_sort -> emit_input_sort (with descending flag, prints all if !has_max&&!has_min)
-     has_median -> emit_median
-     has_input_fact, has_string_compare, has_array_* ...
-     has_factorial, has_fizzbuzz, has_primes ...
-     ...
-     has_reverse_string, has_count_vowels, has_anagram_check,
-     has_string_to_upper, has_string_to_lower, has_caesar_cipher,
-     has_palindrome_string, has_string_length, has_stack, has_queue,
-     has_insertion_sort, has_calculator, has_unit_converter,
-     has_rock_paper_scissors, has_pyramid, has_palindrome,
-     has_lcm, has_collatz, has_sum_of_digits, has_armstrong,
-     has_perfect_number, has_bubble_sort, has_binary_search,
-     has_square_root, has_prime_factorization, has_standard_deviation,
-     has_compound_interest, has_decimal_to_binary, has_dice_roll ...
-     has_string_cat (last among string ops -- less specific than reverse/length/etc)
-   - For has_input_sort with has_max: enables dataflow_quiet_mode, emits arr[count-1] only
-   - For has_input_sort with has_min: enables dataflow_quiet_mode, emits arr[0] only
-   - "print them/it/result" on inherited arrays handled after main dispatch
-     (guarded by !has_max && !has_min to avoid double-printing)
-
-7. TEMPLATE SYSTEM (31 templates)
-----------------------------------
-  Template              Description
-  --------------------  ---------------------------
-  hello world           Hello World program
-  factorial             Recursive factorial
-  fibonacci             Recursive fibonacci
-  fizzbuzz              FizzBuzz 1..100
-  for loop / loop       For-loop counting demo
-  while loop / while    While-loop counting down
-  countdown             Do-while countdown 10..1
-  if else / if / cond   If-else comparison
-  positive negative     If-else chain (pos/neg/zero)
-  switch / case         Switch/case matching
-  array                 Array index access demo
-  print var             Print a variable
-  math                  Math operations demo
-  string concat/string  String copy + concatenation
-  input / user input    Read integer from user
-  shell args / args     Command-line arguments
-  sum                   Sum from 1 to N
-  primes / prime        Sieve-like prime finder
-  function              Function call + square
-  guess / guess number  Number guessing game
-  multiplication table  1..10 times table
-  even odd / even       Even/odd classifier
-  power / exponent      Power function (loop)
-  max of three / max    Max function + call
-  what is your name     Ask name and greet
-  bubble sort / sort    Hardcoded bubble sort demo
-  struct / person       Struct (dotted vars) demo
-  pointer               Pointer access demo
-  time / clock          Current time + epoch ms
-  gcd                   Recursive Euclid GCD
-  hex / binary          Hex and binary literals
-
-  Matching: all keywords in template must appear as words in prompt.
-  Best score wins (more keyword matches = higher score).
-
-8. FAQ SYSTEM
--------------
-  Detects questions (starts with was/wie/wer/what/how/why/where/when
-  or contains "?"). Answers are hardcoded strings organized by topic.
-
-9. TYPE DETECTION
------------------
-  Order: byte/int8 > int16/short > int32 > int64 > double/float
-  Default is int64.
-
-10. vars.l1h INCLUDE
-------------------
-  vars.l1h is included only when code uses size constants (int64_size, etc.).
-  is_intrinsic_inc() matches both "intr" and "vars" prefixes.
-  vars.l1h must appear before any code referencing int64_size.
-
-11. INCLUDE ORDERING
---------------------
-  - All includes use #include <file> syntax (angle brackets)
-  - l1pre processes #include before l1com sees the file
-  - Pre-includes (#include at top of file): intr-func.l1h, vars.l1h
-  - Post-includes (#include after (funcend)): string.l1h, math-lib-vect.l1h, bool.l1h
-  - add_include() for pre-includes; add_include_post() for post-includes
-  - Labels defined in post-includes (like :string_setc) must be visible to
-    l1com's two-pass assembler, so post-includes work for forward references.
-
-12. CLI INTERFACE
------------------
-  One-shot:    brackets-code "<prompt>" [filename]
-  Interactive: brackets-code (no args)
-  Commands: /help, /list, /exit, /save <filename>
-  Flags: --help/-h, --list/-l, --validate/-v
-
-13. OP MAP (DE+EN support)
---------------------------
-  +/plus/add/addiere/sum -> add
-  -/minus/subtract/subtrahiere/differenz -> sub
-  */mal/multiply/multipliziere/product -> mul
-  //geteilt/divide/dividiere/quotient -> div
-  %/modulo/mod/rest -> mod
-
-14. KEY DESIGN DECISIONS
------------------------
-  - Planner-first ordering; enhanced patterns clear has_algorithm
-  - Multi-step variable conflicts resolved by re-initialization
+11. KEY DESIGN DECISIONS
+------------------------
+  - Planner-first ordering; DSL takes priority over emitters
+  - Multi-step: all steps share same Function f (body accumulates)
+  - Variable inheritance: non-const, non-zero/one/two/four/five vars inherited
+  - DSL code body lines get \t prefix (matching emitter code format)
+  - emit_array_reverse takes array_count parameter (not hardcoded 5)
+  - has_sort_stats set when sort + (min|max|average|avg) in prompt
+  - has_input_sort activated if has_descending set even without has_input
   - Literal values always use named variables (zero, one, two)
-  - vars.l1h added per-emitter rather than globally
   - Complex nested expressions split into single-operation lines
-  - input_s requires variable (not literal) for length argument
-  - Label newline: L1VM strings do not support escape sequences ("\n")
-    -- use separate ":print_s !" and ":print_n !" calls instead
-  - string_len calling convention: push string address, call, stpop result
-    -- Correct: (str :string_len !) / (len stpop)
-    -- Wrong: (str len :string_len !)
-  - Const-string declared size must be >= strlen(content) + 1
+  - vars.l1h added per-emitter rather than globally
   - Labels use colon syntax: (:label) for definition, :label for reference
-  - "exit" in string constants triggers l1pre macro conflict (exit is a #func in intr-func.l1h)
-    -- use "quit" instead of "exit" in menu strings
-  - l1pre needs trailing slash on include directory argument
-  - :input_i may fail on piped stdin (reads interactively from terminal)
-    -- emitters using :input_i cannot be batch-tested with pipe/echo
-  - if+/else requires (f if+) not (f if) before (else) -- l1com enforces this
-  - Complex expressions like (a b + c * d :=) are not supported; use temp variables
-  - Array element writes must use a temp variable: (value array [ index ] =)
-    NOT (i one + array [ index ] =) -- l1com rejects expression as array target
+  - "exit" in string constants triggers l1pre macro conflict
+  - :input_i fails on piped stdin (interactive terminal reads)
+  - if+/else requires (f if+) not (f if) before (else)
+  - Array element writes: (value array [ index ] =) NOT expression as target
+  - Double operations: operator BETWEEN operands, reset-reg before :print_d
 
-14b. L1VM DOUBLE-PRECISION RULES
----------------------------------
-  - Double input: `(val :input_d !)` followed by `(val + zerod val :=)` to coerce
-    the value into a proper register (needs `(set const-double 1 zerod 0.0)`)
-  - Integer input: `(choice :input_i !)` followed by `(choice + zero choice :=)`
-    for similar register coercion
-  - Double multiplication: operator BETWEEN operands:
-    `(val * c_km_mi result :=)`  -- CORRECT
-    `(val c_km_mi * result :=)`  -- WRONG (works for int64 but not double)
-  - Print double: `(reset-reg)` BEFORE `(result :print_d !)` to reset double registers
-
-15. FILE LOCATION
------------------
-   /home/stefan/opencode/brackets-code/brackets-code.c  (11963 lines, 166 emitter blocks, #include's embed.c + learn.c)
-   /home/stefan/opencode/brackets-code/brackets-code.h  (631 lines, header with types, constants, function declarations)
-   /home/stefan/opencode/brackets-code/embed.c           (1262 lines, LLM inference engine + vector search, #include'd at line 1222)
-   /home/stefan/opencode/brackets-code/learn.c           (687 lines, learned pattern system, #include'd at line 10725)
-   /home/stefan/opencode/brackets-code/synonyms.txt      (fuzzy synonym defs for DE+EN)
-   /home/stefan/opencode/brackets-code/Makefile          (build configuration with readline auto-detection)
-   /home/stefan/opencode/brackets-code/memory.txt        (this file)
-
-   Total: 14543 lines across 4 source files.
-   Compilation: gcc brackets-code.c -lm (embed.c + learn.c pulled in via #include)
-   Optional: pkg-config or /usr/include/readline/readline.h enables readline for interactive history
-
-16. L1VM ARRAY ACCESS RULES
-----------------------------
-  - The `[ ]` operator expects BYTE OFFSETS, not element indices
-  - Accessing element i of an int64 array requires offset i * int64_size (8)
-  - WRONG: `(i arr [ ] f =)` reads from byte offset i
-  - CORRECT: `(i int64_size * ri :=)(arr [ ri ] f =)`
-  - Exception: element 0 uses byte offset 0 (i * 8 = 0), no multiplication needed
-  - Failure to multiply produces "not on quad word bound" runtime error
-
-17. COMPILATION PIPELINE
+12. COMPILATION PIPELINE
 ------------------------
   brackets-code "<prompt>"  -->  writes program.l1com
   l1pre program.l1com out.l1com <include_path>/  -->  expands includes
@@ -454,26 +366,31 @@ Template struct:
   l1com reads <basename>.l1com (not the full filename).
   l1vm loads <basename>.l1obj; -q flag runs quietly.
 
-18. KNOWN EMITTER STATUS (2026-07-04)
---------------------------------------
-  4 PASS (compile + run with correct output):
-    levenshtein_distance  - hardcoded string result
-    maze_solver            - hardcoded 5x5 grid printer
-    numerical_integration  - trapezoidal integral of x^2
-    sudoku                 - constraint propagation solver
-
-  2 SKIP (interactive :input_i, not testable with piped stdin):
-    base_converter        - reads num + base, div by zero if input exhausted
-    binary_search_tree    - menu loop, subsequent :input_i fail on pipe
-
-  Pipeline tested: brackets-code → l1pre → l1com → l1asm → l1vm
-
-19. TEST SUITE
+13. TEST SUITE
 --------------
-  Shell-based test suite at tests/run_tests.sh (218 lines).
-  Tests generation + full L1VM pipeline (l1pre → l1com → l1asm → l1vm).
-  Three test categories: template tests, emitter tests, multi-step tests.
-  Latest run: 55 passed, 0 failed, 5 skipped.
-  Quick mode: 14 tests.
-  Skipped tests are known failures (e.g., generation mismatch with template keywords).
-  Interactive emitters (using :input_i) not suitable for batch stdin testing.
+  Shell-based test suite at tests/run_tests.sh (282 lines).
+  Tests generation + L1VM pipeline (l1pre → l1com).
+  Two modes: --quick (22 tests) and full (87 tests).
+  Categories: template tests, emitter tests, multi-step tests.
+  Known failures (4 total):
+    em_array_min_max: LLM smart-gen emits arr as scalar but used as array
+    em_base_converter: interactive :input_i not testable with pipe
+    em_binary_search_tree: interactive menu loop not testable with pipe
+    multi_sort_desc: LLM smart-gen emits missing f variable in conditional
+  Latest run: 82 passed, 1 failed, 4 skipped.
+
+14. FILE LOCATIONS
+------------------
+  /home/stefan/opencode/brackets-code/brackets-code.c  (~8500 lines)
+  /home/stefan/opencode/brackets-code/brackets-code.h  (~640 lines)
+  /home/stefan/opencode/brackets-code/dsl.c            (~1080 lines)
+  /home/stefan/opencode/brackets-code/dsl.h            (~130 lines)
+  /home/stefan/opencode/brackets-code/embed.c          (~1170 lines)
+  /home/stefan/opencode/brackets-code/learn.c          (~690 lines)
+  /home/stefan/opencode/brackets-code/synonyms.txt     (fuzzy synonyms)
+  /home/stefan/opencode/brackets-code/Makefile         (build, readline auto-detect)
+  /home/stefan/opencode/brackets-code/memory.txt       (this file)
+
+  Total: ~12500 lines across 6 source files.
+  Compilation: gcc brackets-code.c dsl.c -lm (embed.c + learn.c #included)
+  Optional: readline for interactive history (pkg-config or /usr/include/readline/readline.h)
