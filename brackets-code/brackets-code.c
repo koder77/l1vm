@@ -53,16 +53,8 @@ char out_dir[512] = "";
 char l1vm_root[512] = "";
 static const char *current_prompt = "";
 
-#define ANSI_RESET   "\033[0m"
-#define ANSI_RED     "\033[31m"
-#define ANSI_GREEN   "\033[32m"
-#define ANSI_YELLOW  "\033[33m"
-#define ANSI_CYAN    "\033[36m"
-#define ANSI_BOLD    "\033[1m"
 int use_color = 1;
 #define c_printf(color, ...) do { if (use_color) { printf(color); printf(__VA_ARGS__); printf(ANSI_RESET); } else printf(__VA_ARGS__); } while(0)
-
-#include "brackets-code.h"
 
 LearnedPattern learned_patterns[MAX_LEARNED];
 int num_learned = 0;
@@ -793,7 +785,9 @@ static int extract_numbers(const char *prompt, int *nums, int max_nums) {
                     continue;
                 }
             }
-            nums[count++] = (int)strtol(p, NULL, 10);
+            char *endptr = NULL;
+            long val = strtol(p, &endptr, 10);
+            if (endptr != p) nums[count++] = (int)val;
             while (*p && isdigit(*p)) p++;
             continue;
         }
@@ -1343,16 +1337,6 @@ void emit_array_vmath(Program *prog, Function *f, int skip_input) {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
 void emit_fann_create(Program *prog, Function *f) {
     add_include(prog, "intr-func.l1h");
     add_include(prog, "fann-lib.l1h");
@@ -1814,44 +1798,6 @@ void emit_double_average(Program *prog, Function *f, int skip_input) {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 int parse_task(const char *prompt, TaskProfile *task) {
     char buf[MAX_PROMPT];
     snprintf(buf, sizeof(buf), "%s", prompt);
@@ -1884,7 +1830,9 @@ int parse_task(const char *prompt, TaskProfile *task) {
                 char *start = dp;
                 while (*dp && (isdigit(*dp) || *dp == '.')) dp++;
                 if (strchr(start, '.') != NULL) {
-                    task->double_literals[di] = atof(start);
+                    char *endptr_d = NULL;
+                    task->double_literals[di] = strtod(start, &endptr_d);
+                    if (endptr_d == start) task->double_literals[di] = 0.0;
                     has_decimals = 1;
                 } else {
                     task->double_literals[di] = (double)task->literals[di];
@@ -2236,7 +2184,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
     }
 
     if (task->has_string_cat && !has_word(buf, "compare") && !has_word(buf, "vergleich")) {
-        // string_cat unless compare is explicit (intentionally empty)
+        /* string_cat unless compare is explicit (intentionally empty) */
     }
 
     if (has_word(buf, "array") && has_word(buf, "reverse")) {
@@ -2705,12 +2653,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
 
     return has_any;
 }
-
 // ==================== FUNCTION EMITTER ====================
-
-
-
-
 
 void emit_insertion_sort(Program *prog, Function *f, int count, int skip_input) {
     add_include(prog, "intr-func.l1h");
@@ -3668,9 +3611,11 @@ void write_program(Program *prog, const char *filename) {
             for (int vj = 0; vj < v->num_values; vj++)
                 fprintf(f, " %s", v->values[vj]);
             fprintf(f, ")\n");
-            if (strlen(emitted_names) + strlen(v->name) + 2 < sizeof(emitted_names)) {
-                strcat(emitted_names, v->name);
-                strcat(emitted_names, " ");
+            size_t en_len = strlen(emitted_names);
+            if (en_len + strlen(v->name) + 2 < sizeof(emitted_names)) {
+                strncat(emitted_names, v->name, sizeof(emitted_names) - en_len - 1);
+                en_len = strlen(emitted_names);
+                strncat(emitted_names, " ", sizeof(emitted_names) - en_len - 1);
             }
         }
         {
@@ -3702,8 +3647,10 @@ void write_program(Program *prog, const char *filename) {
                             if (strstr(emitted_names, check) != NULL) {
                                 skip = 1;
                             } else if (strlen(emitted_names) + vni + 2 < sizeof(emitted_names)) {
-                                strcat(emitted_names, vn);
-                                strcat(emitted_names, " ");
+                                size_t en2_len = strlen(emitted_names);
+                                strncat(emitted_names, vn, sizeof(emitted_names) - en2_len - 1);
+                                en2_len = strlen(emitted_names);
+                                strncat(emitted_names, " ", sizeof(emitted_names) - en2_len - 1);
                             }
                         }
                     }
