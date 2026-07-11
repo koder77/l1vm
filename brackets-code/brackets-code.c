@@ -1693,6 +1693,57 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         return 1;
     }
 
+    // Handle "sort them" when an array was inherited from a prior step
+    if (task->has_sort && task->inherit_var[0]) {
+        const char *zv[] = {"0"};
+        const char *ov[] = {"1"};
+        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+        add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+        char cvs[16];
+        SNPRINTF_CHECK(cvs, sizeof(cvs), "%d", task->inherit_count > 0 ? task->inherit_count : 5);
+        const char *cv[] = {cvs};
+        add_var_to_func(f, "int64", "count", 1, cv, 1);
+        add_var_to_func(f, "int64", "i", 1, zv, 1);
+        add_var_to_func(f, "int64", "j", 1, zv, 1);
+        add_var_to_func(f, "int64", "temp", 1, zv, 1);
+        add_var_to_func(f, "int64", "realind", 1, zv, 1);
+        add_var_to_func(f, "int64", "realind2", 1, zv, 1);
+        add_var_to_func(f, "int64", "a", 1, zv, 1);
+        add_var_to_func(f, "int64", "b", 1, zv, 1);
+        add_var_to_func(f, "int64", "x", 1, zv, 1);
+        add_var_to_func(f, "int64", "y", 1, zv, 1);
+        add_var_to_func(f, "int64", "f", 1, zv, 1);
+        func_append(f, "\t// bubble sort");
+        func_append(f, "\t(zero i :=)");
+        func_append(f, "\t(for-loop)");
+        func_append(f, "\t(((i count <) f :=) f for)");
+        func_append(f, "\t\t(zero j :=)");
+        func_append(f, "\t\t(count one - temp :=)");
+        func_append(f, "\t\t(for-loop)");
+        func_append(f, "\t\t(((j temp <) f :=) f for)");
+        func_append(f, "\t\t\t(j * int64_size realind :=)");
+        func_append(f, "\t\t\t((j + one) * int64_size realind2 :=)");
+        char ln[512];
+        SNPRINTF_CHECK(ln, sizeof(ln), "\t\t\t(%s [ realind ] a =)", task->inherit_var);
+        func_append(f, ln);
+        func_append(f, "\t\t\t(a x :=)");
+        SNPRINTF_CHECK(ln, sizeof(ln), "\t\t\t(%s [ realind2 ] b =)", task->inherit_var);
+        func_append(f, ln);
+        func_append(f, "\t\t\t(b y :=)");
+        func_append(f, "\t\t\t(((x y >) f :=) f if)");
+        SNPRINTF_CHECK(ln, sizeof(ln), "\t\t\t\t(y %s [ realind ] =)", task->inherit_var);
+        func_append(f, ln);
+        SNPRINTF_CHECK(ln, sizeof(ln), "\t\t\t\t(x %s [ realind2 ] =)", task->inherit_var);
+        func_append(f, ln);
+        func_append(f, "\t\t\t(endif)");
+        func_append(f, "\t\t\t(j + one j :=)");
+        func_append(f, "\t\t(next)");
+        func_append(f, "\t\t(i + one i :=)");
+        func_append(f, "\t(next)");
+        ensure_exit(f, last_step);
+        return 1;
+    }
+
     // Handle "print them" when an array was inherited from a prior step
     if (task->has_output && task->inherit_var[0] && !task->has_max && !task->has_min) {
         const char *zv[] = {"0"};
@@ -2480,8 +2531,13 @@ int generate_code(const char *prompt, const char *filename) {
     // (temp/func counters removed)
 
     // Try exact keyword template match first (most reliable)
-    int score;
-    int idx = match_template(prompt, &score);
+    // Skip for multi-step prompts (e.g. "input numbers then sort them then print them")
+    // to let smart_generate() handle them with proper step splitting.
+    int score = 0;
+    int idx = -1;
+    if (!has_sequential_pattern(prompt)) {
+        idx = match_template(prompt, &score);
+    }
 
     if (idx >= 0) {
         if (is_q) c_printf(ANSI_CYAN, "Code example written to: %s\n", filename);

@@ -1097,6 +1097,8 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
     }
 
     // Phase 5: Merge "print/display/show the result" with preceding step
+    // Only merge when the print step explicitly mentions a result word (not generic pronouns
+    // like "them"/"it" which cause cascading merges that collapse multi-step prompts).
     if (num_steps > 1) {
         int merged = 1;
         while (merged) {
@@ -1109,12 +1111,11 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                      || has_word(steps[i], "mean") || has_word(steps[i], "largest")
                      || has_word(steps[i], "smallest") || has_word(steps[i], "greatest")
                      || has_word(steps[i], "sum") || has_word(steps[i], "max")
-                     || has_word(steps[i], "min") || has_word(steps[i], "them")
-                     || has_word(steps[i], "it") || has_word(steps[i], "result")
+                     || has_word(steps[i], "min")
+                     || has_word(steps[i], "result")
                      || has_word(steps[i], "ergebnis") || has_word(steps[i], "resultat")
                      || has_word(steps[i], "sorted") || has_word(steps[i], "sortiert")
                      || has_word(steps[i], "output") || has_word(steps[i], "ausgabe")
-                     || has_word(steps[i], "the") || has_word(steps[i], "die")
                      || has_word(steps[i], "calculated") || has_word(steps[i], "computed")
                      || has_word(steps[i], "berech") || has_word(steps[i], "ermittelt"))) {
                     char merged_step[MAX_PROMPT * 2];

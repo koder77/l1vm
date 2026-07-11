@@ -449,6 +449,7 @@ void expand_query(const char *query, char *expanded, int max_len);
 int prompt_to_filename(const char *prompt, char *out, int max);
 int parse_task(const char *prompt, TaskProfile *task);
 int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]);
+int has_sequential_pattern(const char *text);
 
 // Embeddings & vector search
 void init_embeddings(void);
