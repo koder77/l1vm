@@ -790,6 +790,7 @@ int has_sequential_pattern(const char *text) {
     }
 
     // Check for multi-step sequential adverbs: at least 2 of "first, then, finally"
+    // Count multiple occurrences of "then" (e.g. "input numbers then sort then print")
     int seq_count = 0;
     if (has_word(text, "first") || has_word(text, "zuerst") || has_word(text, "erstens")) seq_count++;
     if (has_word(text, "second") || has_word(text, "zweitens") || has_word(text, "zweit")) seq_count++;
@@ -797,7 +798,8 @@ int has_sequential_pattern(const char *text) {
     if (has_word(text, "fourth") || has_word(text, "viertens") || has_word(text, "viert")) seq_count++;
     if (has_word(text, "fifth") || has_word(text, "fünftens") || has_word(text, "fuenft")) seq_count++;
     if (has_word(text, "finally") || has_word(text, "schließlich") || has_word(text, "abschließend")) seq_count++;
-    if (has_word(text, "then") || has_word(text, "dann")) seq_count++;
+    { const char *tp = text; while ((tp = strstr(tp, "then")) != NULL) { seq_count++; tp++; } }
+    { const char *tp = text; while ((tp = strstr(tp, "dann")) != NULL) { seq_count++; tp++; } }
     if (has_word(text, "next") || has_word(text, "als nächstes") || has_word(text, "danach")) seq_count++;
     if (seq_count >= 2) return 1;
     return 0;
@@ -889,6 +891,11 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
             int step_found = 0;
             if ((p[0] >= '1' && p[0] <= '9') && (p[1] == ')' || (p[1] == '.' && p[2] != '.' && !(p[2] >= '0' && p[2] <= '9')))) {
                 if (collecting && strlen(current) > 0) {
+                    for (char *cp = current + 1; *cp; cp++) {
+                        if (((cp[0] >= '1' && cp[0] <= '9') && (cp[1] == ')' || (cp[1] == '.' && cp[2] != '.' && !(cp[2] >= '0' && cp[2] <= '9'))))
+                            || (cp[0] == '(' && cp[1] >= '1' && cp[1] <= '9' && cp[2] == ')')
+                            || strncmp(cp, "step ", 5) == 0 || strncmp(cp, "schritt ", 8) == 0) { *cp = '\0'; break; }
+                    }
                     trim(current);
                     snprintf(steps[num_steps], MAX_PROMPT, "%s", current);
                     num_steps++;
@@ -899,6 +906,11 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                 step_found = 1;
             } else if ((p[0] == '(') && (p[1] >= '1' && p[1] <= '9') && p[2] == ')') {
                 if (collecting && strlen(current) > 0) {
+                    for (char *cp = current + 1; *cp; cp++) {
+                        if (((cp[0] >= '1' && cp[0] <= '9') && (cp[1] == ')' || (cp[1] == '.' && cp[2] != '.' && !(cp[2] >= '0' && cp[2] <= '9'))))
+                            || (cp[0] == '(' && cp[1] >= '1' && cp[1] <= '9' && cp[2] == ')')
+                            || strncmp(cp, "step ", 5) == 0 || strncmp(cp, "schritt ", 8) == 0) { *cp = '\0'; break; }
+                    }
                     trim(current);
                     snprintf(steps[num_steps], MAX_PROMPT, "%s", current);
                     num_steps++;
@@ -911,6 +923,11 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                 int is_step = (strncmp(p, "step ", 5) == 0);
                 int prefix_len = is_step ? 5 : 8;
                 if (collecting && strlen(current) > 0) {
+                    for (char *cp = current + 1; *cp; cp++) {
+                        if (((cp[0] >= '1' && cp[0] <= '9') && (cp[1] == ')' || (cp[1] == '.' && cp[2] != '.' && !(cp[2] >= '0' && cp[2] <= '9'))))
+                            || (cp[0] == '(' && cp[1] >= '1' && cp[1] <= '9' && cp[2] == ')')
+                            || strncmp(cp, "step ", 5) == 0 || strncmp(cp, "schritt ", 8) == 0) { *cp = '\0'; break; }
+                    }
                     trim(current);
                     snprintf(steps[num_steps], MAX_PROMPT, "%s", current);
                     num_steps++;
@@ -1049,6 +1066,9 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
     trim(remaining);
     if (strlen(remaining) > 0) { snprintf(steps[num_steps], MAX_PROMPT, "%s", remaining); num_steps++; }
 
+    fprintf(stderr, "DEBUG split: num_steps=%d steps:", num_steps);
+    for (int d = 0; d < num_steps; d++) fprintf(stderr, " [%d]='%s'", d, steps[d]);
+    fprintf(stderr, "\n");
     // Phase 4: Merge non-viable steps backward into their predecessor
     if (num_steps > 1) {
         int merged = 1;

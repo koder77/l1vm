@@ -1,0 +1,17 @@
+// for-loop.l1dsl
+parser: "for loop"
+include: intr-func.l1h
+desc: "For loop example"
+code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set int64 1 i 0)
+    (set int64 1 max 10)
+    (set int64 1 f 0)
+    (zero i :=)
+    (for-loop)
+    (((i max <) f :=) f for)
+        (i :print_i !)
+        (:print_n !)
+        (i + one i :=)
+    (next)

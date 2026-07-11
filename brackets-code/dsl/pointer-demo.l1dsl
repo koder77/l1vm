@@ -1,22 +1,19 @@
 // pointer-demo.l1dsl
-parser: "keywords for matching"
-match: has_pointer
-token: token type and name
-result: result type and name
+parser: "pointer demo"
 include: intr-func.l1h
-desc: "pointer demo: get address and dereference"
+desc: "Pointer access demo"
 code:
     (set const-int64 1 zero 0)
-    (set const-int64 1 one 1)
-    (set const-int64 1 two 2)
-    (set int64 1 var 2)
-    (set int64 1 ptr 0)
-    (set string s label "value: ")
-    // pointer demo: get address and dereference
-    (var :addr !)
-    (ptr stpopi)
-    (// ptr now holds address of var)
-    (label :print_s !)
-    (var :print_i !)
+    (set const-int64 1 const100 100)
+    (set int64 1 x 42)
+    (set int64 1 Px 0)
+    (set int64 1 val 0)
+    // get pointer to x
+    (x Px pointer)
+    (Px [ zero ] val =)
+    (val :print_i !)
     (:print_n !)
-    (zero :exit !)
+    // change value via pointer
+    (const100 Px [ zero ] =)
+    (x :print_i !)
+    (:print_n !)

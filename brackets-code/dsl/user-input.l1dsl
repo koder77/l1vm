@@ -1,0 +1,12 @@
+// user-input.l1dsl
+parser: "user input"
+include: intr-func.l1h
+desc: "Get user input"
+code:
+    (set const-int64 1 zero 0)
+    (set int64 1 x 0)
+    (set const-string 18 prompt "Enter a number: ")
+    (prompt :print_s !)
+    (x :input_i !)
+    (x :print_i !)
+    (:print_n !)

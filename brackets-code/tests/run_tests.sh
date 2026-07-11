@@ -82,8 +82,6 @@ run_test() {
 declare -A KNOWN_FAILURES=(
     [em_base_converter]="interactive :input_i not testable with pipe"
     [em_binary_search_tree]="interactive menu loop not testable with pipe"
-    [em_array_min_max]="LLM smart-gen emits arr as scalar but used as array"
-    [multi_sort_desc]="LLM smart-gen emits missing f variable in conditional"
 
 )
 

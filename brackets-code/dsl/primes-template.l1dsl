@@ -1,0 +1,36 @@
+// primes-template.l1dsl
+parser: "primes, prime numbers"
+include: intr-func.l1h
+desc: "Print prime numbers up to 50"
+
+code:
+    (set const-int64 1 zero 0)
+    (set int64 1 one 1)
+    (set int64 1 two 2)
+    (set int64 1 num 2)
+    (set int64 1 max 50)
+    (set int64 1 f 0)
+    (set int64 1 i 0)
+    (set int64 1 is_prime 0)
+    (set int64 1 modtmp 0)
+    (for-loop)
+    (((num max <=) f :=) f for)
+        (two i :=)
+        (one is_prime :=)
+        (for-loop)
+        (((i num <) f :=) f for)
+            (num i % modtmp :=)
+            (((modtmp zero ==) f :=) f if)
+                (zero is_prime :=)
+                (:break jmp)
+            (endif)
+            (i + one i :=)
+        (next)
+        (:break)
+        (is_prime if)
+            (num :print_i !)
+            (:print_n !)
+        (endif)
+        (num + one num :=)
+    (next)
+    (zero :exit !)

@@ -1,0 +1,23 @@
+// array-demo.l1dsl
+parser: "array demo"
+include: intr-func.l1h
+include: vars.l1h
+desc: "Array index access demo"
+code:
+    (set const-int64 1 zero 0)
+    (set int64 1 one 1)
+    (set int64 1 n 5)
+    (set int64 5 arr 10 5 8 4 3)
+    (set int64 1 i 0)
+    (set int64 1 realind 0)
+    (set int64 1 num 0)
+    (set int64 1 f 0)
+    (for-loop)
+    (((i n <) f :=) f for)
+        (i * int64_size realind :=)
+        (arr [ realind ] num =)
+        (num + zero num :=)
+        (num :print_i !)
+        (:print_n !)
+        (i + one i :=)
+    (next)

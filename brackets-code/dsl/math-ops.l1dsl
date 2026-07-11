@@ -1,0 +1,11 @@
+// math-ops.l1dsl
+parser: "math, calculate, compute, arithmetic, add, plus, sum, subtract, minus, multiply, times, divide, division"
+include: intr-func.l1h
+desc: "Perform arithmetic operations on int64 values"
+match: has_operation
+
+code:
+    (set const-int64 1 zero 0)
+    (set int64 1 a 0)
+    (set int64 1 b 0)
+    (set int64 1 r 0)

@@ -1,11 +1,9 @@
 // print-var.l1dsl
-parser: "print variable, print value, show variable"
-match: has_print_var
+parser: "print var"
 include: intr-func.l1h
-desc: "Print the value of a variable"
-
+desc: "Print a variable"
 code:
     (set const-int64 1 zero 0)
-    (set int64 1 myvar 42)
-    (myvar :print_i !)
+    (set int64 1 x 42)
+    (x :print_i !)
     (:print_n !)

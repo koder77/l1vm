@@ -1,23 +1,15 @@
 // struct-demo.l1dsl
-parser: "keywords for matching"
-match: has_struct
-token: token type and name
-result: result type and name
+parser: "struct demo"
 include: intr-func.l1h
-desc: "struct demo: print struct fields"
+desc: "Person struct (dotted vars) demo"
 code:
     (set const-int64 1 zero 0)
-    (set const-int64 1 one 1)
-    (set const-int64 1 two 2)
-    (set int64 1 age 2)
-    (set int64 1 size 25)
-    (set string s age_label "age: ")
-    (set string s size_label "size: ")
-    // struct demo: print struct fields
-    (age_label :print_s !)
-    (age :print_i !)
+    (set const-string 64 person.name "Jane")
+    (set const-string 64 person.city "New York")
+    (set int64 1 person.age 30)
+    (person.name :print_s !)
     (:print_n !)
-    (size_label :print_s !)
-    (size :print_i !)
+    (person.city :print_s !)
     (:print_n !)
-    (zero :exit !)
+    (person.age :print_i !)
+    (:print_n !)

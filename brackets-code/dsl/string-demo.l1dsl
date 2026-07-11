@@ -1,0 +1,18 @@
+// string-demo.l1dsl
+parser: "string concat"
+include: intr-func.l1h
+include-post: string.l1h
+desc: "String operations demo"
+code:
+    (set const-int64 1 zero 0)
+    (set int64 1 strmod 0)
+    (set string 8 greeting "Hello ")
+    (set string 10 name "Brackets")
+    (set string 256 result "")
+    (strmod :string_init !)
+    (greeting :print_s !)
+    (:print_n !)
+    (result greeting :string_copy !)
+    (result name :string_cat !)
+    (result :print_s !)
+    (:print_n !)

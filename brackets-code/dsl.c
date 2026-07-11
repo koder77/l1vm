@@ -1014,6 +1014,26 @@ int dsl_match_task_flags(DslRule *rule, TaskProfile *task)
         if (strcmp(flag, "has_double_array_min_max") == 0 && task->has_double_array_min_max) return 1;
         if (strcmp(flag, "has_double_array_reverse") == 0 && task->has_double_array_reverse) return 1;
         if (strcmp(flag, "has_double_array_average") == 0 && task->has_double_array_average) return 1;
+        if (strcmp(flag, "has_bubble_sort") == 0 && task->has_bubble_sort && !task->has_descending && !task->has_input_sort) return 1;
+        if (strcmp(flag, "has_descending") == 0 && task->has_descending) return 1;
+        if (strcmp(flag, "has_input_sort") == 0 && task->has_input_sort) return 1;
+        if (strcmp(flag, "has_median") == 0 && task->has_median) return 1;
+        if (strcmp(flag, "has_array_reverse") == 0 && task->has_array_reverse) return 1;
+        if (strcmp(flag, "has_array_find") == 0 && task->has_array_find) return 1;
+        if (strcmp(flag, "has_array_vmath") == 0 && task->has_array_vmath) return 1;
+        if (strcmp(flag, "has_average") == 0 && task->has_average) return 1;
+        if (strcmp(flag, "has_sort") == 0 && task->has_sort) return 1;
+        if (strcmp(flag, "has_fann_create") == 0 && task->has_fann_create) return 1;
+        if (strcmp(flag, "has_fann_train") == 0 && task->has_fann_train) return 1;
+        if (strcmp(flag, "has_fann_run") == 0 && task->has_fann_run) return 1;
+        if (strcmp(flag, "has_standard_deviation") == 0 && task->has_standard_deviation) return 1;
+        if (strcmp(flag, "has_double_math") == 0 && task->has_double_math) return 1;
+        if (strcmp(flag, "has_double_average") == 0 && task->has_double_average) return 1;
+        if (strcmp(flag, "has_insertion_sort") == 0 && task->has_insertion_sort) return 1;
+        if (strcmp(flag, "has_add") == 0 && task->has_add) return 1;
+        if (strcmp(flag, "has_sub") == 0 && task->has_sub) return 1;
+        if (strcmp(flag, "has_mul") == 0 && task->has_mul) return 1;
+        if (strcmp(flag, "has_div") == 0 && task->has_div) return 1;
     }
     return 0;
 }
@@ -1066,6 +1086,20 @@ int dsl_generate_from_task(Program *prog, TaskProfile *task, Function *f)
                 if (&dsl_rules[j] == kw_rules[i]) { idx = j; break; }
             }
             if (idx >= 0 && applied[idx]) continue;
+            // Skip if rule has match flags that conflict with current task
+            if (idx >= 0 && dsl_rules[idx].num_match_flags > 0 && !dsl_match_task_flags(&dsl_rules[idx], task))
+                continue;
+            // Skip if rule's primary keyword overlaps with an already-applied rule
+            if (generated && idx >= 0) {
+                int skip_kw = 0;
+                for (int a = 0; a < dsl_num_rules; a++) {
+                    if (applied[a] && strcmp(dsl_rules[a].keyword, kw_rules[i]->keyword) == 0) {
+                        skip_kw = 1;
+                        break;
+                    }
+                }
+                if (skip_kw) continue;
+            }
             if (verbose_flag) {
                 printf("DSL: keyword matched rule '%s' (%s) score=%.2f\n",
                        kw_rules[i]->keyword, kw_rules[i]->filename, kw_scores[i]);

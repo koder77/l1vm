@@ -1,7 +1,7 @@
 // array-reverse-int64.l1dsl
 parser: "reverse array, invert array, flip int64 array"
 match: has_array_reverse
-token: int64 arr, int64 count
+token: int64 arr[100], int64 count
 include: intr-func.l1h
 include: vars.l1h
 desc: "Reverse the elements of an int64 array in place"
@@ -16,7 +16,7 @@ code:
     (set int64 1 right 0)
     (set int64 1 f 0)
     (set const-int64 1 zero 0)
-    (set const-int64 1 one 0)
+    (set const-int64 1 one 1)
     (zero left :=)
     (count one - right :=)
     (for-loop)

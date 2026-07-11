@@ -1,0 +1,23 @@
+// fann-create.l1dsl
+parser: "fann create, neural network create, create neural network, create fann"
+include: intr-func.l1h
+include: fann-lib.l1h
+desc: "Create a FANN neural network from file"
+match: has_fann_create
+
+code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 max_ann 2)
+    (set const-int64 1 mod_handle 0)
+    (set int64 1 ret 0)
+    (set const-string 12 ann_file "my_ann.net")
+    (set const-string 33 msg_str "Creating FANN neural network...")
+    (msg_str :print_s !)
+    (:print_n !)
+    (max_ann stpushi)
+    (mod_handle stpushi)
+    (fann_init_lib call)
+    (ann_file addr stpushi)
+    (ret stpushi)
+    (fann_create call)
+    (:print_n !)

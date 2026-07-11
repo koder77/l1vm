@@ -1,0 +1,14 @@
+// countdown.l1dsl
+parser: "countdown"
+include: intr-func.l1h
+desc: "Countdown from 10 to 1"
+code:
+    (set const-int64 1 zero 0)
+    (set int64 1 one 1)
+    (set int64 1 i 10)
+    (set int64 1 f 0)
+    (do)
+        (i :print_i !)
+        (:print_n !)
+        (i - one i :=)
+    (((i zero >) f :=) f while)

@@ -1,0 +1,37 @@
+// array-vmath.l1dsl
+parser: "array vmath, array stats, min max average"
+include: intr-func.l1h
+include: vars.l1h
+desc: "Compute min, max, and average of an int64 array"
+
+code:
+    (set int64 1 i 0)
+    (set int64 1 mn 0)
+    (set int64 1 mx 0)
+    (set int64 1 sum 0)
+    (set int64 1 avg 0)
+    (set int64 1 realind 0)
+    (set int64 1 val 0)
+    (set int64 1 f 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 zero 0)
+    (zero i :=)
+    (arr [ i ] mn =)
+    (mn + zero mn :=)
+    (arr [ i ] mx =)
+    (mx + zero mx :=)
+    (for-loop)
+    (((i count <) f :=) f for)
+        (i * int64_size realind :=)
+        (arr [ realind ] val =)
+        (val + zero val :=)
+        (sum + val sum :=)
+        (((val mn <) f :=) f if)
+            (val mn :=)
+        (endif)
+        (((val mx >) f :=) f if)
+            (val mx :=)
+        (endif)
+        (i + one i :=)
+    (next)
+    (sum count / avg :=)

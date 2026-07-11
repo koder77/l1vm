@@ -1,0 +1,29 @@
+// input-loop.l1dsl
+parser: "input loop, read numbers, enter numbers, input numbers loop, read multiple numbers"
+include: intr-func.l1h
+desc: "Read numbers from user input in a loop and sum them"
+match: has_input
+
+code:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set int64 1 i 0)
+    (set int64 1 val 0)
+    (set int64 1 sum 0)
+    (set int64 1 f 0)
+    (set const-string 18 input_prompt "Enter a number: ")
+    (set const-string 9 result_prompt "Result: ")
+    (zero sum :=)
+    (for-loop)
+    (((i count <) f :=) f for)
+        (input_prompt :print_s !)
+        (val :input_i !)
+        (sum + val sum :=)
+        (val :print_i !)
+        (:print_n !)
+        (i + one i :=)
+    (next)
+    (result_prompt :print_s !)
+    (:print_n !)
+    (sum :print_i !)
+    (:print_n !)

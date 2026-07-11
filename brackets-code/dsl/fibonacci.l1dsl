@@ -7,7 +7,7 @@ desc: "Print the first n numbers of the Fibonacci sequence"
 
 code:
     (set const-int64 1 zero 0)
-    (set const-int64 1 one 0)
+    (set const-int64 1 one 1)
     (set int64 1 a 0)
     (set int64 1 b 1)
     (set int64 1 c 0)

@@ -32,7 +32,7 @@
 #include <sys/wait.h>
 #include <spawn.h>
 
-#define VERSION_TXT "0.6.6"
+#define VERSION_TXT "0.6.7"
 
 #define MAX_LINE 4096
 #define MAX_VARS 48
@@ -349,7 +349,7 @@ typedef struct {
     int num_inherit_vars;
     int extra_emitters[32];
     int num_extra_emitters;
-    char op_seq[32][8];
+    char op_seq[32][64];
     int op_seq_literals[32];
     int num_ops;
     char type[16];
@@ -377,6 +377,7 @@ typedef struct {
     char *keywords;
     char *desc;
     void (*gen)(Program*, const char*);
+    const char *dsl_keyword;  // if set, use gen_from_dsl_keyword instead of gen
 } Template;
 
 // ==================== GLOBAL VARIABLES ====================
@@ -533,7 +534,6 @@ void emit_string_to_upper(Program *prog, Function *f);
 void emit_string_to_lower(Program *prog, Function *f);
 void emit_caesar_cipher(Program *prog, Function *f);
 void emit_palindrome_string(Program *prog, Function *f);
-void emit_bubble_sort(Program *prog, Function *f, int skip_input);
 void emit_binary_search(Program *prog, Function *f);
 void emit_square_root(Program *prog, Function *f);
 void emit_prime_factorization(Program *prog, Function *f);
@@ -625,39 +625,8 @@ void emit_chess_problem(Program *prog, Function *f);
 void emit_shell_repl(Program *prog, Function *f);
 
 // Template generators
-void gen_hello_world(Program *prog, const char *prompt);
-void gen_factorial(Program *prog, const char *prompt);
-void gen_fibonacci(Program *prog, const char *prompt);
-void gen_fizzbuzz(Program *prog, const char *prompt);
-void gen_for_loop(Program *prog, const char *prompt);
-void gen_while_loop(Program *prog, const char *prompt);
-void gen_countdown(Program *prog, const char *prompt);
-void gen_if_else(Program *prog, const char *prompt);
-void gen_if_else_chain(Program *prog, const char *prompt);
-void gen_switch(Program *prog, const char *prompt);
-void gen_array_demo(Program *prog, const char *prompt);
-void gen_print_var(Program *prog, const char *prompt);
-void gen_math_ops(Program *prog, const char *prompt);
-void gen_string_demo(Program *prog, const char *prompt);
-void gen_user_input(Program *prog, const char *prompt);
-void gen_shell_args(Program *prog, const char *prompt);
-void gen_sum(Program *prog, const char *prompt);
-void gen_primes(Program *prog, const char *prompt);
-void gen_function_demo(Program *prog, const char *prompt);
-void gen_guess_number(Program *prog, const char *prompt);
-void gen_multiplication_table(Program *prog, const char *prompt);
-void gen_even_odd(Program *prog, const char *prompt);
-void gen_power(Program *prog, const char *prompt);
-void gen_max_of_three(Program *prog, const char *prompt);
-void gen_hello_name(Program *prog, const char *prompt);
-void gen_bubble_sort(Program *prog, const char *prompt);
-void gen_struct_demo(Program *prog, const char *prompt);
-void gen_pointer_demo(Program *prog, const char *prompt);
-void gen_time_demo(Program *prog, const char *prompt);
-void gen_gcd(Program *prog, const char *prompt);
-void gen_hex_binary(Program *prog, const char *prompt);
-void gen_bool_demo(Program *prog, const char *prompt);
-void gen_string_cat(Program *prog, const char *prompt);
+void gen_from_dsl_keyword(Program *prog, const char *dsl_keyword);
+int dsl_apply_to_func(Program *prog, Function *f, const char *keyword);
 
 // CLI
 int self_test(void);

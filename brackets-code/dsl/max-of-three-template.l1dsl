@@ -1,0 +1,23 @@
+// max-of-three-template.l1dsl
+parser: "max of three, maximum of three numbers"
+include: intr-func.l1h
+desc: "Maximum of three numbers"
+
+code:
+    (set const-int64 1 zero 0)
+    (set int64 1 a 17)
+    (set int64 1 b 42)
+    (set int64 1 c 8)
+    (set int64 1 mx 0)
+    (set int64 1 f 0)
+    // max of a and b
+    (((a b <) f :=) f if)
+        (b a :=)
+    (endif)
+    // max of a and c
+    (((a c <) f :=) f if)
+        (c a :=)
+    (endif)
+    (a :print_i !)
+    (:print_n !)
+    (zero :exit !)

@@ -1,23 +1,27 @@
 // even-odd.l1dsl
-parser: "even odd, even or odd, check parity"
-match: has_even_odd
-token: int64 n
+parser: "even odd"
 include: intr-func.l1h
-desc: "Check if a number is even or odd"
-
+desc: "Even/Odd number checker"
 code:
     (set const-int64 1 zero 0)
-    (set const-int64 1 two 2)
-    (set int64 1 mod 0)
+    (set int64 1 one 1)
+    (set int64 1 two 2)
+    (set int64 1 i 0)
+    (set int64 1 max 20)
     (set int64 1 f 0)
-    (set string s even_str " is even")
-    (set string s odd_str " is odd")
-    (n % two mod :=)
-    (((mod zero ==) f :=) f if+)
-        (n :print_i !)
-        (even_str :print_s !)
-    (else)
-        (n :print_i !)
-        (odd_str :print_s !)
-    (endif)
-    (:print_n !)
+    (set int64 1 mod 0)
+    (set const-string 10 even_str " is even")
+    (set const-string 9 odd_str " is odd")
+    (zero i :=)
+    (for-loop)
+    (((i max <=) f :=) f for)
+        (i % two mod :=)
+        (i :print_i !)
+        (((mod zero ==) f :=) f if+)
+            (even_str :print_s !)
+        (else)
+            (odd_str :print_s !)
+        (endif)
+        (:print_n !)
+        (i + one i :=)
+    (next)

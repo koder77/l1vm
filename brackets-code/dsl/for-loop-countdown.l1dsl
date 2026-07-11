@@ -7,7 +7,7 @@ desc: "Count down from start to zero and print each number"
 
 code:
     (set const-int64 1 zero 0)
-    (set const-int64 1 one 0)
+    (set const-int64 1 one 1)
     (set int64 1 i 0)
     (set int64 1 f 0)
     (start i :=)

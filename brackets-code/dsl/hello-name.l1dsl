@@ -1,18 +1,15 @@
 // hello-name.l1dsl
-parser: "hello name, greet, say hello"
-match: has_hello_name
+parser: "hello name"
 include: intr-func.l1h
-include-post: string.l1h
-desc: "Ask for a name, then print a greeting"
-
+desc: "Ask name and greet"
 code:
     (set const-int64 1 zero 0)
     (set const-int64 1 maxlen 256)
     (set string 256 name "")
-    (set string s greet "Hello, ")
-    (set int64 0 strmod )
-    (strmod :string_init !)
-    (greet :print_s !)
+    (set const-string 22 ask_str "What is your name? ")
+    (set const-string 8 hello_str "Hello, ")
+    (ask_str :print_s !)
     (maxlen name :input_s !)
+    (hello_str :print_s !)
     (name :print_s !)
     (:print_n !)
