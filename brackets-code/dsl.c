@@ -97,7 +97,7 @@ static void trim_line(char *s)
 static int parse_token_decl(const char *line, DslToken *token)
 {
     char buf[512];
-    snprintf(buf, sizeof(buf), "%s", line);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", line);
     trim_line(buf);
 
     char *space = strchr(buf, ' ');
@@ -122,8 +122,8 @@ static int parse_token_decl(const char *line, DslToken *token)
         }
     }
 
-    snprintf(token->name, sizeof(token->name), "%s", name_str);
-        snprintf(token->l1vm_type, sizeof(token->l1vm_type), "%.31s", type_str);
+    SNPRINTF_CHECK(token->name, sizeof(token->name), "%s", name_str);
+        SNPRINTF_CHECK(token->l1vm_type, sizeof(token->l1vm_type), "%.31s", type_str);
     token->type = parse_token_type(type_str);
     token->is_array = is_array;
     token->array_size = array_size;
@@ -148,7 +148,7 @@ static int parse_token_decl(const char *line, DslToken *token)
 static int parse_var_decl(const char *line, DslVarDecl *vd)
 {
     char buf[512];
-    snprintf(buf, sizeof(buf), "%s", line);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", line);
     trim_line(buf);
 
     char type[64], name[64];
@@ -158,12 +158,12 @@ static int parse_var_decl(const char *line, DslVarDecl *vd)
     int n = sscanf(buf, "%63s %63s %d %255[^\n\r]", type, name, &count, value);
     if (n < 2) return 0;
 
-    snprintf(vd->type, sizeof(vd->type), "%s", type);
-    snprintf(vd->name, sizeof(vd->name), "%s", name);
+    SNPRINTF_CHECK(vd->type, sizeof(vd->type), "%s", type);
+    SNPRINTF_CHECK(vd->name, sizeof(vd->name), "%s", name);
     vd->count = (n >= 3) ? count : 1;
     if (n >= 4) {
         trim_line(value);
-        snprintf(vd->value, sizeof(vd->value), "%s", value);
+        SNPRINTF_CHECK(vd->value, sizeof(vd->value), "%s", value);
     } else {
         vd->value[0] = '\0';
     }
@@ -193,7 +193,7 @@ static int parse_dsl_line(const char *line, const char *key, char *value, int va
     if (*p != ':') return 0;
     p++;
     while (*p && isspace((unsigned char)*p)) p++;
-    snprintf(value, val_size, "%s", p);
+    SNPRINTF_CHECK(value, val_size, "%s", p);
     trim_line(value);
     int vlen = strlen(value);
     if (vlen >= 2 && value[0] == '"' && value[vlen-1] == '"') {
@@ -258,12 +258,12 @@ int dsl_load_rule_file(const char *path)
         if (!in_code_block) {
             char val[4096];
             if (parse_dsl_line(line, "parser", val, sizeof(val))) {
-                snprintf(raw.parser_keywords, sizeof(raw.parser_keywords), "%.255s", val);
+                SNPRINTF_CHECK(raw.parser_keywords, sizeof(raw.parser_keywords), "%.255s", val);
             } else if (parse_dsl_line(line, "token", val, sizeof(val))) {
                 strncat(raw.token_decl, val, sizeof(raw.token_decl) - strlen(raw.token_decl) - 1);
                 strncat(raw.token_decl, "\n", sizeof(raw.token_decl) - strlen(raw.token_decl) - 1);
             } else if (parse_dsl_line(line, "result", val, sizeof(val))) {
-                snprintf(raw.result_decl, sizeof(raw.result_decl), "%.255s", val);
+                SNPRINTF_CHECK(raw.result_decl, sizeof(raw.result_decl), "%.255s", val);
             } else if (parse_dsl_line(line, "include", val, sizeof(val))) {
                 strncat(raw.include_list, val, sizeof(raw.include_list) - strlen(raw.include_list) - 1);
                 strncat(raw.include_list, "\n", sizeof(raw.include_list) - strlen(raw.include_list) - 1);
@@ -274,18 +274,18 @@ int dsl_load_rule_file(const char *path)
                 strncat(raw.var_decls, val, sizeof(raw.var_decls) - strlen(raw.var_decls) - 1);
                 strncat(raw.var_decls, "\n", sizeof(raw.var_decls) - strlen(raw.var_decls) - 1);
             } else if (parse_dsl_line(line, "desc", val, sizeof(val))) {
-                snprintf(raw.desc_text, sizeof(raw.desc_text), "%.511s", val);
+                SNPRINTF_CHECK(raw.desc_text, sizeof(raw.desc_text), "%.511s", val);
             } else if (parse_dsl_line(line, "match", val, sizeof(val))) {
-                snprintf(raw.match_text, sizeof(raw.match_text), "%.1023s", val);
+                SNPRINTF_CHECK(raw.match_text, sizeof(raw.match_text), "%.1023s", val);
             } else if (parse_dsl_line(line, "array", val, sizeof(val))) {
                 char aname[64], aidx[64], atyp[32];
                 if (sscanf(val, "%63s %63s %31s", aname, aidx, atyp) >= 2) {
-                    snprintf(raw.array_rule_name, sizeof(raw.array_rule_name), "%s", aname);
-                    snprintf(raw.array_rule_index, sizeof(raw.array_rule_index), "%s", aidx);
+                    SNPRINTF_CHECK(raw.array_rule_name, sizeof(raw.array_rule_name), "%s", aname);
+                    SNPRINTF_CHECK(raw.array_rule_index, sizeof(raw.array_rule_index), "%s", aidx);
                     if (strlen(atyp) > 0)
-                        snprintf(raw.array_rule_elem_type, sizeof(raw.array_rule_elem_type), "%s", atyp);
+                        SNPRINTF_CHECK(raw.array_rule_elem_type, sizeof(raw.array_rule_elem_type), "%s", atyp);
                     else
-                        snprintf(raw.array_rule_elem_type, sizeof(raw.array_rule_elem_type), "int64");
+                        SNPRINTF_CHECK(raw.array_rule_elem_type, sizeof(raw.array_rule_elem_type), "int64");
                 }
             }
         }
@@ -294,7 +294,7 @@ int dsl_load_rule_file(const char *path)
 
     DslRule *rule = &dsl_rules[dsl_num_rules];
     memset(rule, 0, sizeof(DslRule));
-    snprintf(rule->filename, sizeof(rule->filename), "%s", path);
+    SNPRINTF_CHECK(rule->filename, sizeof(rule->filename), "%s", path);
 
     if (!dsl_parse_raw(&raw, rule)) return 0;
 
@@ -304,17 +304,17 @@ int dsl_load_rule_file(const char *path)
 
 int dsl_parse_raw(DslRawRule *raw, DslRule *rule)
 {
-    snprintf(rule->desc, sizeof(rule->desc), "%s", raw->desc_text);
+    SNPRINTF_CHECK(rule->desc, sizeof(rule->desc), "%s", raw->desc_text);
 
     if (strlen(raw->match_text) > 0) {
         char mcopy[1024];
-        snprintf(mcopy, sizeof(mcopy), "%s", raw->match_text);
+        SNPRINTF_CHECK(mcopy, sizeof(mcopy), "%s", raw->match_text);
         char *mctx = NULL;
         char *mtok = strtok_r(mcopy, ", ", &mctx);
         while (mtok && rule->num_match_flags < MAX_DSL_TOKENS) {
             trim_line(mtok);
             if (strlen(mtok) > 0) {
-                snprintf(rule->match_flags[rule->num_match_flags], sizeof(rule->match_flags[0]), "%s", mtok);
+                SNPRINTF_CHECK(rule->match_flags[rule->num_match_flags], sizeof(rule->match_flags[0]), "%s", mtok);
                 rule->num_match_flags++;
             }
             mtok = strtok_r(NULL, ", ", &mctx);
@@ -323,27 +323,27 @@ int dsl_parse_raw(DslRawRule *raw, DslRule *rule)
 
     if (strlen(raw->array_rule_name) > 0) {
         rule->has_array_rule = 1;
-        snprintf(rule->array_name, sizeof(rule->array_name), "%s", raw->array_rule_name);
-        snprintf(rule->array_index, sizeof(rule->array_index), "%s", raw->array_rule_index);
-        snprintf(rule->array_element_type, sizeof(rule->array_element_type), "%s", raw->array_rule_elem_type);
+        SNPRINTF_CHECK(rule->array_name, sizeof(rule->array_name), "%s", raw->array_rule_name);
+        SNPRINTF_CHECK(rule->array_index, sizeof(rule->array_index), "%s", raw->array_rule_index);
+        SNPRINTF_CHECK(rule->array_element_type, sizeof(rule->array_element_type), "%s", raw->array_rule_elem_type);
     }
 
     char keyword_buf[512];
-    snprintf(keyword_buf, sizeof(keyword_buf), "%s", raw->parser_keywords);
+    SNPRINTF_CHECK(keyword_buf, sizeof(keyword_buf), "%s", raw->parser_keywords);
     char *comma = strchr(keyword_buf, ',');
     if (comma) {
         *comma = '\0';
         char *k = keyword_buf;
         trim_line(k);
-        snprintf(rule->keyword, sizeof(rule->keyword), "%.63s", k);
+        SNPRINTF_CHECK(rule->keyword, sizeof(rule->keyword), "%.63s", k);
     } else {
-        snprintf(rule->keyword, sizeof(rule->keyword), "%.63s", keyword_buf);
+        SNPRINTF_CHECK(rule->keyword, sizeof(rule->keyword), "%.63s", keyword_buf);
     }
 
     char *tlines[32];
     int nt = 0;
     char tbuf[1024];
-    snprintf(tbuf, sizeof(tbuf), "%s", raw->token_decl);
+    SNPRINTF_CHECK(tbuf, sizeof(tbuf), "%s", raw->token_decl);
     char *saveptr_t;
     char *tline = strtok_r(tbuf, "\n", &saveptr_t);
     while (tline && nt < 32) {
@@ -386,7 +386,7 @@ int dsl_parse_raw(DslRawRule *raw, DslRule *rule)
     char *ilines[16];
     int ni = 0;
     char ibuf[1024];
-    snprintf(ibuf, sizeof(ibuf), "%s", raw->include_list);
+    SNPRINTF_CHECK(ibuf, sizeof(ibuf), "%s", raw->include_list);
     char *saveptr_i;
     char *iline = strtok_r(ibuf, "\n", &saveptr_i);
     while (iline && ni < 16) {
@@ -398,14 +398,14 @@ int dsl_parse_raw(DslRawRule *raw, DslRule *rule)
         iline = strtok_r(NULL, "\n", &saveptr_i);
     }
     for (int i = 0; i < ni && rule->num_includes < MAX_DSL_INCLUDES; i++) {
-        snprintf(rule->includes[rule->num_includes], sizeof(rule->includes[0]), "%s", ilines[i]);
+        SNPRINTF_CHECK(rule->includes[rule->num_includes], sizeof(rule->includes[0]), "%s", ilines[i]);
         rule->num_includes++;
     }
 
     char *ipost_lines[16];
     int nip = 0;
     char ipost_buf[1024];
-    snprintf(ipost_buf, sizeof(ipost_buf), "%s", raw->include_post_list);
+    SNPRINTF_CHECK(ipost_buf, sizeof(ipost_buf), "%s", raw->include_post_list);
     char *saveptr_ip;
     char *ipost_line = strtok_r(ipost_buf, "\n", &saveptr_ip);
     while (ipost_line && nip < 16) {
@@ -417,14 +417,14 @@ int dsl_parse_raw(DslRawRule *raw, DslRule *rule)
         ipost_line = strtok_r(NULL, "\n", &saveptr_ip);
     }
     for (int i = 0; i < nip && rule->num_includes_post < MAX_DSL_INCLUDES_POST; i++) {
-        snprintf(rule->includes_post[rule->num_includes_post], sizeof(rule->includes_post[0]), "%s", ipost_lines[i]);
+        SNPRINTF_CHECK(rule->includes_post[rule->num_includes_post], sizeof(rule->includes_post[0]), "%s", ipost_lines[i]);
         rule->num_includes_post++;
     }
 
     char *vlines[32];
     int nv = 0;
     char vbuf[2048];
-    snprintf(vbuf, sizeof(vbuf), "%s", raw->var_decls);
+    SNPRINTF_CHECK(vbuf, sizeof(vbuf), "%s", raw->var_decls);
     char *saveptr_v;
     char *vline = strtok_r(vbuf, "\n", &saveptr_v);
     while (vline && nv < 32) {
@@ -443,7 +443,7 @@ int dsl_parse_raw(DslRawRule *raw, DslRule *rule)
     char *clines[MAX_DSL_CODE_LINES];
     int nc = 0;
     char cbuf[4096];
-    snprintf(cbuf, sizeof(cbuf), "%s", raw->code_lines);
+    SNPRINTF_CHECK(cbuf, sizeof(cbuf), "%s", raw->code_lines);
     char *saveptr_c;
     char *cline = strtok_r(cbuf, "\n", &saveptr_c);
     while (cline && nc < MAX_DSL_CODE_LINES) {
@@ -455,7 +455,7 @@ int dsl_parse_raw(DslRawRule *raw, DslRule *rule)
         cline = strtok_r(NULL, "\n", &saveptr_c);
     }
     for (int i = 0; i < nc && rule->num_code_lines < MAX_DSL_CODE_LINES; i++) {
-        snprintf(rule->code[rule->num_code_lines], sizeof(rule->code[0]), "%s", clines[i]);
+        SNPRINTF_CHECK(rule->code[rule->num_code_lines], sizeof(rule->code[0]), "%s", clines[i]);
         rule->num_code_lines++;
     }
 
@@ -473,7 +473,7 @@ int dsl_load_rules(const char *dir_path)
         size_t len = strlen(name);
         if (len > 6 && strcmp(name + len - 6, ".l1dsl") == 0) {
             char full_path[1024];
-            snprintf(full_path, sizeof(full_path), "%s/%s", dir_path, name);
+            SNPRINTF_CHECK(full_path, sizeof(full_path), "%s/%s", dir_path, name);
             dsl_load_rule_file(full_path);
         }
     }
@@ -486,7 +486,7 @@ int dsl_match_all_rules(const char *prompt, DslRule **rules, float *scores, int 
     if (dsl_num_rules == 0 || max_rules <= 0) return 0;
 
     char prompt_lower[1024];
-    snprintf(prompt_lower, sizeof(prompt_lower), "%s", prompt);
+    SNPRINTF_CHECK(prompt_lower, sizeof(prompt_lower), "%s", prompt);
     for (int i = 0; prompt_lower[i]; i++)
         prompt_lower[i] = tolower((unsigned char)prompt_lower[i]);
 
@@ -494,7 +494,7 @@ int dsl_match_all_rules(const char *prompt, DslRule **rules, float *scores, int 
 
     for (int i = 0; i < dsl_num_rules && count < max_rules; i++) {
         char keyword_lower[256];
-        snprintf(keyword_lower, sizeof(keyword_lower), "%.255s", dsl_rules[i].keyword);
+        SNPRINTF_CHECK(keyword_lower, sizeof(keyword_lower), "%.255s", dsl_rules[i].keyword);
         for (int j = 0; keyword_lower[j]; j++)
             keyword_lower[j] = tolower((unsigned char)keyword_lower[j]);
 
@@ -503,7 +503,7 @@ int dsl_match_all_rules(const char *prompt, DslRule **rules, float *scores, int 
 
         char *saveptr;
         char kw_copy[256];
-        snprintf(kw_copy, sizeof(kw_copy), "%s", keyword_lower);
+        SNPRINTF_CHECK(kw_copy, sizeof(kw_copy), "%s", keyword_lower);
         char *kw = strtok_r(kw_copy, ",", &saveptr);
         while (kw) {
             while (*kw == ' ') kw++;
@@ -543,7 +543,7 @@ int dsl_match_rule(const char *prompt, DslRule **rule, float *score)
     if (dsl_num_rules == 0) return 0;
 
     char prompt_lower[1024];
-    snprintf(prompt_lower, sizeof(prompt_lower), "%s", prompt);
+    SNPRINTF_CHECK(prompt_lower, sizeof(prompt_lower), "%s", prompt);
     for (int i = 0; prompt_lower[i]; i++)
         prompt_lower[i] = tolower((unsigned char)prompt_lower[i]);
 
@@ -552,7 +552,7 @@ int dsl_match_rule(const char *prompt, DslRule **rule, float *score)
 
     for (int i = 0; i < dsl_num_rules; i++) {
         char keyword_lower[256];
-        snprintf(keyword_lower, sizeof(keyword_lower), "%.255s", dsl_rules[i].keyword);
+        SNPRINTF_CHECK(keyword_lower, sizeof(keyword_lower), "%.255s", dsl_rules[i].keyword);
         for (int j = 0; keyword_lower[j]; j++)
             keyword_lower[j] = tolower((unsigned char)keyword_lower[j]);
 
@@ -561,7 +561,7 @@ int dsl_match_rule(const char *prompt, DslRule **rule, float *score)
 
         char *saveptr;
         char kw_copy[256];
-        snprintf(kw_copy, sizeof(kw_copy), "%s", keyword_lower);
+        SNPRINTF_CHECK(kw_copy, sizeof(kw_copy), "%s", keyword_lower);
         char *kw = strtok_r(kw_copy, ",", &saveptr);
         while (kw) {
             while (*kw == ' ') kw++;
@@ -653,7 +653,7 @@ static void substitute_template(char *out, int out_size, const char *template_st
         p = close + 1;
     }
 
-    snprintf(out, out_size, "%s", result);
+    SNPRINTF_CHECK(out, out_size, "%s", result);
 }
 
 int dsl_generate_code(Program *prog, DslRule *rule, Function *f)
@@ -675,9 +675,9 @@ int dsl_generate_code(Program *prog, DslRule *rule, Function *f)
         const char *values[1];
         char default_val[256];
         if (strlen(vd->value) > 0) {
-            snprintf(default_val, sizeof(default_val), "%s", vd->value);
+            SNPRINTF_CHECK(default_val, sizeof(default_val), "%s", vd->value);
         } else {
-            snprintf(default_val, sizeof(default_val), "%s",
+            SNPRINTF_CHECK(default_val, sizeof(default_val), "%s",
                 (strstr(vd->type, "int64") || strstr(vd->type, "const-int64")) ? "0" :
                 (strstr(vd->type, "double") || strstr(vd->type, "const-double")) ? "0.0" : "\"\"");
         }
@@ -695,16 +695,16 @@ int dsl_generate_code(Program *prog, DslRule *rule, Function *f)
         const char *tv[1];
         char td[256];
         if (strlen(tok->default_value) > 0) {
-            snprintf(td, sizeof(td), "%s", tok->default_value);
+            SNPRINTF_CHECK(td, sizeof(td), "%s", tok->default_value);
         } else {
             switch (tok->type) {
                 case DSL_TOKEN_CONST_INT64:
-                case DSL_TOKEN_INT64: snprintf(td, sizeof(td), "0"); break;
+                case DSL_TOKEN_INT64: SNPRINTF_CHECK(td, sizeof(td), "0"); break;
                 case DSL_TOKEN_CONST_DOUBLE:
-                case DSL_TOKEN_DOUBLE: snprintf(td, sizeof(td), "0.0"); break;
+                case DSL_TOKEN_DOUBLE: SNPRINTF_CHECK(td, sizeof(td), "0.0"); break;
                 case DSL_TOKEN_CONST_STRING:
-                case DSL_TOKEN_STRING: snprintf(td, sizeof(td), "\"\""); break;
-                default: snprintf(td, sizeof(td), "0"); break;
+                case DSL_TOKEN_STRING: SNPRINTF_CHECK(td, sizeof(td), "\"\""); break;
+                default: SNPRINTF_CHECK(td, sizeof(td), "0"); break;
             }
         }
         tv[0] = td;
@@ -718,12 +718,12 @@ int dsl_generate_code(Program *prog, DslRule *rule, Function *f)
         char rd[64];
         switch (res->type) {
             case DSL_TOKEN_CONST_INT64:
-            case DSL_TOKEN_INT64: snprintf(rd, sizeof(rd), "0"); break;
+            case DSL_TOKEN_INT64: SNPRINTF_CHECK(rd, sizeof(rd), "0"); break;
             case DSL_TOKEN_CONST_DOUBLE:
-            case DSL_TOKEN_DOUBLE: snprintf(rd, sizeof(rd), "0.0"); break;
+            case DSL_TOKEN_DOUBLE: SNPRINTF_CHECK(rd, sizeof(rd), "0.0"); break;
             case DSL_TOKEN_CONST_STRING:
-            case DSL_TOKEN_STRING: snprintf(rd, sizeof(rd), "\"\""); break;
-            default: snprintf(rd, sizeof(rd), "0"); break;
+            case DSL_TOKEN_STRING: SNPRINTF_CHECK(rd, sizeof(rd), "\"\""); break;
+            default: SNPRINTF_CHECK(rd, sizeof(rd), "0"); break;
         }
         rv[0] = rd;
         add_var_to_func(f, res->l1vm_type, res->name, count, rv, 1);
@@ -735,7 +735,7 @@ int dsl_generate_code(Program *prog, DslRule *rule, Function *f)
             rule->code[i], rule, NULL, NULL);
 
         char indented[4100];
-        snprintf(indented, sizeof(indented), "\t%s", substituted);
+        SNPRINTF_CHECK(indented, sizeof(indented), "\t%s", substituted);
 
         // Skip duplicate (set ...) lines already in body (common in matching DSL rules)
         if (strncmp(substituted, "(set ", 5) == 0 && strstr(f->body, substituted) != NULL)
@@ -754,65 +754,65 @@ int dsl_add_array_rule(const char *name, const char *index_var, const char *elem
     memset(rule, 0, sizeof(DslRule));
 
     rule->has_array_rule = 1;
-    snprintf(rule->array_name, sizeof(rule->array_name), "%s", name);
-    snprintf(rule->array_index, sizeof(rule->array_index), "%s", index_var);
-    snprintf(rule->array_element_type, sizeof(rule->array_element_type), "%s", element_type);
-    snprintf(rule->keyword, sizeof(rule->keyword), "array %s", name);
-    snprintf(rule->desc, sizeof(rule->desc), "Array access rule for '%s' with index '%s' type '%s'",
+    SNPRINTF_CHECK(rule->array_name, sizeof(rule->array_name), "%s", name);
+    SNPRINTF_CHECK(rule->array_index, sizeof(rule->array_index), "%s", index_var);
+    SNPRINTF_CHECK(rule->array_element_type, sizeof(rule->array_element_type), "%s", element_type);
+    SNPRINTF_CHECK(rule->keyword, sizeof(rule->keyword), "array %s", name);
+    SNPRINTF_CHECK(rule->desc, sizeof(rule->desc), "Array access rule for '%s' with index '%s' type '%s'",
              name, index_var, element_type);
     rule->is_learned = 1;
 
-    snprintf(rule->includes[rule->num_includes], sizeof(rule->includes[0]), "intr-func.l1h");
+    SNPRINTF_CHECK(rule->includes[rule->num_includes], sizeof(rule->includes[0]), "intr-func.l1h");
     rule->num_includes++;
-    snprintf(rule->includes[rule->num_includes], sizeof(rule->includes[0]), "vars.l1h");
+    SNPRINTF_CHECK(rule->includes[rule->num_includes], sizeof(rule->includes[0]), "vars.l1h");
     rule->num_includes++;
 
     char size_var[32];
-    snprintf(size_var, sizeof(size_var), "%s_size", element_type);
+    SNPRINTF_CHECK(size_var, sizeof(size_var), "%s_size", element_type);
 
     DslVarDecl *vd = &rule->vars[rule->num_vars];
-    snprintf(vd->type, sizeof(vd->type), "int64");
-    snprintf(vd->name, sizeof(vd->name), "realind");
+    SNPRINTF_CHECK(vd->type, sizeof(vd->type), "int64");
+    SNPRINTF_CHECK(vd->name, sizeof(vd->name), "realind");
     vd->count = 1;
-    snprintf(vd->value, sizeof(vd->value), "0");
+    SNPRINTF_CHECK(vd->value, sizeof(vd->value), "0");
     rule->num_vars++;
 
     vd = &rule->vars[rule->num_vars];
-    snprintf(vd->type, sizeof(vd->type), "int64");
-    snprintf(vd->name, sizeof(vd->name), "f");
+    SNPRINTF_CHECK(vd->type, sizeof(vd->type), "int64");
+    SNPRINTF_CHECK(vd->name, sizeof(vd->name), "f");
     vd->count = 1;
-    snprintf(vd->value, sizeof(vd->value), "0");
+    SNPRINTF_CHECK(vd->value, sizeof(vd->value), "0");
     rule->num_vars++;
 
     vd = &rule->vars[rule->num_vars];
-    snprintf(vd->type, sizeof(vd->type), "const-int64");
-    snprintf(vd->name, sizeof(vd->name), "zero");
+    SNPRINTF_CHECK(vd->type, sizeof(vd->type), "const-int64");
+    SNPRINTF_CHECK(vd->name, sizeof(vd->name), "zero");
     vd->count = 1;
-    snprintf(vd->value, sizeof(vd->value), "0");
+    SNPRINTF_CHECK(vd->value, sizeof(vd->value), "0");
     rule->num_vars++;
 
     char code_line[DSL_LINE_SIZE];
-    snprintf(code_line, sizeof(code_line), "\t// array access: %s[%s]", name, index_var);
-    snprintf(rule->code[rule->num_code_lines], DSL_LINE_SIZE, "%s", code_line);
+    SNPRINTF_CHECK(code_line, sizeof(code_line), "\t// array access: %s[%s]", name, index_var);
+    SNPRINTF_CHECK(rule->code[rule->num_code_lines], DSL_LINE_SIZE, "%s", code_line);
     rule->num_code_lines++;
 
-    snprintf(code_line, sizeof(code_line), "\t(%s * %s realind :=)", index_var, size_var);
-    snprintf(rule->code[rule->num_code_lines], DSL_LINE_SIZE, "%s", code_line);
+    SNPRINTF_CHECK(code_line, sizeof(code_line), "\t(%s * %s realind :=)", index_var, size_var);
+    SNPRINTF_CHECK(rule->code[rule->num_code_lines], DSL_LINE_SIZE, "%s", code_line);
     rule->num_code_lines++;
 
-    snprintf(code_line, sizeof(code_line), "\t(%s [ realind ] val =)", name);
-    snprintf(rule->code[rule->num_code_lines], DSL_LINE_SIZE, "%s", code_line);
+    SNPRINTF_CHECK(code_line, sizeof(code_line), "\t(%s [ realind ] val =)", name);
+    SNPRINTF_CHECK(rule->code[rule->num_code_lines], DSL_LINE_SIZE, "%s", code_line);
     rule->num_code_lines++;
 
-    snprintf(code_line, sizeof(code_line), "\t(val + zero val :=)");
-    snprintf(rule->code[rule->num_code_lines], DSL_LINE_SIZE, "%s", code_line);
+    SNPRINTF_CHECK(code_line, sizeof(code_line), "\t(val + zero val :=)");
+    SNPRINTF_CHECK(rule->code[rule->num_code_lines], DSL_LINE_SIZE, "%s", code_line);
     rule->num_code_lines++;
 
     DslVarDecl *result_vd = &rule->vars[rule->num_vars];
-    snprintf(result_vd->type, sizeof(result_vd->type), "%s", element_type);
-    snprintf(result_vd->name, sizeof(result_vd->name), "val");
+    SNPRINTF_CHECK(result_vd->type, sizeof(result_vd->type), "%s", element_type);
+    SNPRINTF_CHECK(result_vd->name, sizeof(result_vd->name), "val");
     result_vd->count = 1;
-    snprintf(result_vd->value, sizeof(result_vd->value),
+    SNPRINTF_CHECK(result_vd->value, sizeof(result_vd->value),
         strcmp(element_type, "double") == 0 ? "0.0" : "0");
     rule->num_vars++;
 
@@ -1053,7 +1053,7 @@ static void update_token_from_prompt(Function *f, const char *prompt) {
     for (int vi = 0; vi < f->num_vars && ni < num_count; vi++) {
         if (strcmp(f->vars[vi].type, "int64") == 0 || strcmp(f->vars[vi].type, "const-int64") == 0) {
             if (f->vars[vi].num_values > 0 && strcmp(f->vars[vi].values[0], "0") == 0) {
-                snprintf(f->vars[vi].values[0], sizeof(f->vars[vi].values[0]), "%d", nums[ni]);
+                SNPRINTF_CHECK(f->vars[vi].values[0], sizeof(f->vars[vi].values[0]), "%d", nums[ni]);
                 ni++;
             }
         }

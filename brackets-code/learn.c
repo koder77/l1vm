@@ -25,19 +25,19 @@ char* learned_dir_path(void) {
     static char path[1024];
     const char *home = getenv("HOME");
     if (home) {
-        snprintf(path, sizeof(path), "%s/%s", home, LEARNED_DIR);
+        SNPRINTF_CHECK(path, sizeof(path), "%s/%s", home, LEARNED_DIR);
     } else {
-        snprintf(path, sizeof(path), "%s", LEARNED_DIR);
+        SNPRINTF_CHECK(path, sizeof(path), "%s", LEARNED_DIR);
     }
     return path;
 }
 
 void ensure_learned_dir(void) {
     char path[1024];
-    snprintf(path, sizeof(path), "%s", learned_dir_path());
+    SNPRINTF_CHECK(path, sizeof(path), "%s", learned_dir_path());
     // POSIX mkdir - create each directory level
     char tmp[1024];
-    snprintf(tmp, sizeof(tmp), "%s", path);
+    SNPRINTF_CHECK(tmp, sizeof(tmp), "%s", path);
     for (char *p = tmp + 1; *p; p++) {
         if (*p == '/') {
             *p = '\0';
@@ -59,7 +59,7 @@ int learn_from_file(const char *path, const char *keywords, const char *descript
     const char *base = strrchr(path, '/');
     base = base ? base + 1 : path;
     char id[64];
-    snprintf(id, sizeof(id), "%s", base);
+    SNPRINTF_CHECK(id, sizeof(id), "%s", base);
     char *dot = strrchr(id, '.');
     if (dot) *dot = '\0';
 
@@ -78,20 +78,20 @@ int learn_from_file(const char *path, const char *keywords, const char *descript
 
     LearnedPattern *lp = &learned_patterns[num_learned];
     init_learned_pattern(lp);
-    snprintf(lp->id, sizeof(lp->id), "%s", id);
-    snprintf(lp->source_path, sizeof(lp->source_path), "%s", path);
+    SNPRINTF_CHECK(lp->id, sizeof(lp->id), "%s", id);
+    SNPRINTF_CHECK(lp->source_path, sizeof(lp->source_path), "%s", path);
     lp->is_learned = 1;
 
     if (keywords && strlen(keywords) > 0) {
-        snprintf(lp->keywords, sizeof(lp->keywords), "%s %s", id, keywords);
+        SNPRINTF_CHECK(lp->keywords, sizeof(lp->keywords), "%s %s", id, keywords);
     } else {
-        snprintf(lp->keywords, sizeof(lp->keywords), "%s", id);
+        SNPRINTF_CHECK(lp->keywords, sizeof(lp->keywords), "%s", id);
     }
 
     if (description && strlen(description) > 0) {
-        snprintf(lp->description, sizeof(lp->description), "%s", description);
+        SNPRINTF_CHECK(lp->description, sizeof(lp->description), "%s", description);
     } else {
-        snprintf(lp->description, sizeof(lp->description), "Learned pattern from %s", path);
+        SNPRINTF_CHECK(lp->description, sizeof(lp->description), "Learned pattern from %s", path);
     }
 
     // Parse the .l1com file into includes, globals and function structs
@@ -117,7 +117,7 @@ int learn_from_file(const char *path, const char *keywords, const char *descript
                 }
                 if (!found) {
                     if (!ensure_includes_cap(&lp->includes, &lp->includes_cap, lp->num_includes + 1)) continue;
-                    snprintf(lp->includes[lp->num_includes++], sizeof(lp->includes[0]), "%s", inc);
+                    SNPRINTF_CHECK(lp->includes[lp->num_includes++], sizeof(lp->includes[0]), "%s", inc);
                 }
             }
             continue;
@@ -130,7 +130,7 @@ int learn_from_file(const char *path, const char *keywords, const char *descript
                 if (!ensure_funcs_cap(&lp->funcs, &lp->funcs_cap, lp->num_funcs + 1)) continue;
                 cur_func = &lp->funcs[lp->num_funcs++];
                 init_function(cur_func);
-                snprintf(cur_func->name, sizeof(cur_func->name), "%s", fname);
+                SNPRINTF_CHECK(cur_func->name, sizeof(cur_func->name), "%s", fname);
                 in_func = 1;
             }
             continue;
@@ -168,12 +168,12 @@ int learn_from_file(const char *path, const char *keywords, const char *descript
                 if (!found) {
                     if (!ensure_vars_cap(cur_func, cur_func->num_vars + 1)) continue;
                     Variable *v = &cur_func->vars[cur_func->num_vars++];
-                    snprintf(v->name, sizeof(v->name), "%s", vname);
-                    snprintf(v->type, sizeof(v->type), "%s", vtype);
+                    SNPRINTF_CHECK(v->name, sizeof(v->name), "%s", vname);
+                    SNPRINTF_CHECK(v->type, sizeof(v->type), "%s", vtype);
                     v->count = vcount;
                     // Parse values
                     char line_copy[MAX_LINE];
-                    snprintf(line_copy, sizeof(line_copy), "%s", line);
+                    SNPRINTF_CHECK(line_copy, sizeof(line_copy), "%s", line);
                     // format: (set TYPE COUNT NAME [VAL1 VAL2 ...] )
                     // tokens: ["(set", TYPE, COUNT, NAME, VAL1, VAL2, ..., ")"]
                     int tok_idx = 0;
@@ -185,7 +185,7 @@ int learn_from_file(const char *path, const char *keywords, const char *descript
                             size_t tlen = strlen(token);
                             if (token[tlen-1] == ')') token[tlen-1] = '\0';
                             if (v->num_values < MAX_VALUES) {
-                                snprintf(v->values[v->num_values], sizeof(v->values[0]), "%s", token);
+                                SNPRINTF_CHECK(v->values[v->num_values], sizeof(v->values[0]), "%s", token);
                                 v->num_values++;
                             }
                         }
@@ -204,7 +204,7 @@ int learn_from_file(const char *path, const char *keywords, const char *descript
                 if (cur_func) {
                     cur_func->has_vardef = 1;
                     cur_func->is_local = 1;
-                    snprintf(cur_func->vardef_name, sizeof(cur_func->vardef_name), "%s", scope);
+                    SNPRINTF_CHECK(cur_func->vardef_name, sizeof(cur_func->vardef_name), "%s", scope);
                 }
             }
             continue;
@@ -248,7 +248,7 @@ int learn_from_file(const char *path, const char *keywords, const char *descript
 int save_learned_pattern(LearnedPattern *lp) {
     ensure_learned_dir();
     char filepath[1100];
-    snprintf(filepath, sizeof(filepath), "%s/%s.l1lp", learned_dir_path(), lp->id);
+    SNPRINTF_CHECK(filepath, sizeof(filepath), "%s/%s.l1lp", learned_dir_path(), lp->id);
 
     FILE *f = fopen(filepath, "w");
     if (!f) {
@@ -302,7 +302,7 @@ void load_learned_patterns(void) {
     learned_loaded = 1;
 
     char dirpath[1024];
-    snprintf(dirpath, sizeof(dirpath), "%s", learned_dir_path());
+    SNPRINTF_CHECK(dirpath, sizeof(dirpath), "%s", learned_dir_path());
 
     DIR *d = opendir(dirpath);
     if (!d) return;
@@ -313,7 +313,7 @@ void load_learned_patterns(void) {
         if (!ext || strcmp(ext, ".l1lp") != 0) continue;
 
         char filepath[2048];
-        snprintf(filepath, sizeof(filepath), "%s/%s", dirpath, entry->d_name);
+        SNPRINTF_CHECK(filepath, sizeof(filepath), "%s/%s", dirpath, entry->d_name);
 
         FILE *f = fopen(filepath, "r");
         if (!f) continue;
@@ -342,15 +342,15 @@ void load_learned_patterns(void) {
                 if (sscanf(line, "# Pattern: %63s", lp->id) == 1) continue;
                 char *val;
                 if ((val = strstr(line, "# Description: ")) != NULL) {
-                    snprintf(lp->description, sizeof(lp->description), "%s", val + 15);
+                    SNPRINTF_CHECK(lp->description, sizeof(lp->description), "%s", val + 15);
                     continue;
                 }
                 if ((val = strstr(line, "# Keywords: ")) != NULL) {
-                    snprintf(lp->keywords, sizeof(lp->keywords), "%s", val + 12);
+                    SNPRINTF_CHECK(lp->keywords, sizeof(lp->keywords), "%s", val + 12);
                     continue;
                 }
                 if ((val = strstr(line, "# File: ")) != NULL) {
-                    snprintf(lp->source_path, sizeof(lp->source_path), "%s", val + 8);
+                    SNPRINTF_CHECK(lp->source_path, sizeof(lp->source_path), "%s", val + 8);
                     continue;
                 }
                 continue;
@@ -361,7 +361,7 @@ void load_learned_patterns(void) {
                 char inc[256] = {0};
                 if (sscanf(line, "#include <%255[^>]>", inc) == 1) {
                     if (ensure_includes_cap(&lp->includes, &lp->includes_cap, lp->num_includes + 1))
-                        snprintf(lp->includes[lp->num_includes++], sizeof(lp->includes[0]), "%s", inc);
+                        SNPRINTF_CHECK(lp->includes[lp->num_includes++], sizeof(lp->includes[0]), "%s", inc);
                 }
                 continue;
             }
@@ -372,7 +372,7 @@ void load_learned_patterns(void) {
                     if (ensure_funcs_cap(&lp->funcs, &lp->funcs_cap, lp->num_funcs + 1)) {
                         cur_func = &lp->funcs[lp->num_funcs++];
                         init_function(cur_func);
-                        snprintf(cur_func->name, sizeof(cur_func->name), "%s", fname);
+                        SNPRINTF_CHECK(cur_func->name, sizeof(cur_func->name), "%s", fname);
                     }
                 }
                 continue;
@@ -405,11 +405,11 @@ void load_learned_patterns(void) {
                     if (!found) {
                         if (!ensure_vars_cap(cur_func, cur_func->num_vars + 1)) continue;
                         Variable *v = &cur_func->vars[cur_func->num_vars++];
-                        snprintf(v->name, sizeof(v->name), "%s", vname);
-                        snprintf(v->type, sizeof(v->type), "%s", vtype);
+                        SNPRINTF_CHECK(v->name, sizeof(v->name), "%s", vname);
+                        SNPRINTF_CHECK(v->type, sizeof(v->type), "%s", vtype);
                         v->count = vcount;
                         char lc[MAX_LINE];
-                        snprintf(lc, sizeof(lc), "%s", line);
+                        SNPRINTF_CHECK(lc, sizeof(lc), "%s", line);
                         int tok_idx = 0;
                         char *saveptr2;
                         char *token = strtok_r(lc, " \t", &saveptr2);
@@ -419,7 +419,7 @@ void load_learned_patterns(void) {
                                 size_t tlen = strlen(token);
                                 if (token[tlen-1] == ')') token[tlen-1] = '\0';
                                 if (v->num_values < MAX_VALUES) {
-                                    snprintf(v->values[v->num_values], sizeof(v->values[0]), "%s", token);
+                                    SNPRINTF_CHECK(v->values[v->num_values], sizeof(v->values[0]), "%s", token);
                                     v->num_values++;
                                 }
                             }
@@ -436,7 +436,7 @@ void load_learned_patterns(void) {
                 if (sscanf(line, "#var ~ %255s", scope) == 1 && cur_func) {
                     cur_func->has_vardef = 1;
                     cur_func->is_local = 1;
-                    snprintf(cur_func->vardef_name, sizeof(cur_func->vardef_name), "%s", scope);
+                    SNPRINTF_CHECK(cur_func->vardef_name, sizeof(cur_func->vardef_name), "%s", scope);
                 }
                 continue;
             }
@@ -466,7 +466,7 @@ int match_learned_pattern(const char *prompt, int *best_score) {
     if (num_learned == 0) return -1;
 
     char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", prompt);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
 
     int best_idx = -1;
@@ -477,14 +477,14 @@ int match_learned_pattern(const char *prompt, int *best_score) {
         if (strlen(learned_patterns[i].keywords) == 0) continue;
 
         char kwbuf[1024];
-        snprintf(kwbuf, sizeof(kwbuf), "%s", learned_patterns[i].keywords);
+        SNPRINTF_CHECK(kwbuf, sizeof(kwbuf), "%s", learned_patterns[i].keywords);
         to_lowercase(kwbuf);
 
         int score = 0;
         int total_kw = 0;
         int any_match = 0;
         char kwcopy[1024];
-        snprintf(kwcopy, sizeof(kwcopy), "%s", kwbuf);
+        SNPRINTF_CHECK(kwcopy, sizeof(kwcopy), "%s", kwbuf);
         char *saveptr3;
         char *kw = strtok_r(kwcopy, " ,/", &saveptr3);
         while (kw) {
@@ -542,25 +542,25 @@ int emit_learned_pattern(Program *prog, int learned_idx) {
         dst->is_local = src->is_local;
         dst->has_vars = src->has_vars;
         dst->has_vardef = src->has_vardef;
-        snprintf(dst->vardef_name, sizeof(dst->vardef_name), "%s", src->vardef_name);
+        SNPRINTF_CHECK(dst->vardef_name, sizeof(dst->vardef_name), "%s", src->vardef_name);
 
         // Copy variables
         for (int vi = 0; vi < src->num_vars; vi++) {
             if (!ensure_vars_cap(dst, dst->num_vars + 1)) continue;
             Variable *sv = &src->vars[vi];
             Variable *dv = &dst->vars[dst->num_vars++];
-            snprintf(dv->name, sizeof(dv->name), "%s", sv->name);
-            snprintf(dv->type, sizeof(dv->type), "%s", sv->type);
+            SNPRINTF_CHECK(dv->name, sizeof(dv->name), "%s", sv->name);
+            SNPRINTF_CHECK(dv->type, sizeof(dv->type), "%s", sv->type);
             dv->count = sv->count;
             dv->num_values = sv->num_values;
             for (int vj = 0; vj < sv->num_values; vj++)
-                snprintf(dv->values[vj], sizeof(dv->values[vj]), "%s", sv->values[vj]);
+                SNPRINTF_CHECK(dv->values[vj], sizeof(dv->values[vj]), "%s", sv->values[vj]);
         }
 
         // Copy body
         size_t needed = strlen(src->body) + 1;
         if (ensure_body_cap(dst, (int)needed))
-            snprintf(dst->body, (size_t)dst->body_cap, "%s", src->body);
+            SNPRINTF_CHECK(dst->body, (size_t)dst->body_cap, "%s", src->body);
     }
 
     return 1;
@@ -603,12 +603,12 @@ int emit_learned_step(Program *prog, int learned_idx) {
                     if (!ensure_vars_cap(dst, dst->num_vars + 1)) continue;
                     Variable *sv = &src->vars[vi];
                     Variable *dv = &dst->vars[dst->num_vars++];
-                    snprintf(dv->name, sizeof(dv->name), "%s", sv->name);
-                    snprintf(dv->type, sizeof(dv->type), "%s", sv->type);
+                    SNPRINTF_CHECK(dv->name, sizeof(dv->name), "%s", sv->name);
+                    SNPRINTF_CHECK(dv->type, sizeof(dv->type), "%s", sv->type);
                     dv->count = sv->count;
                     dv->num_values = sv->num_values;
                     for (int vj = 0; vj < sv->num_values; vj++)
-                        snprintf(dv->values[vj], sizeof(dv->values[vj]), "%s", sv->values[vj]);
+                        SNPRINTF_CHECK(dv->values[vj], sizeof(dv->values[vj]), "%s", sv->values[vj]);
                 }
             }
         } else {
@@ -617,21 +617,21 @@ int emit_learned_step(Program *prog, int learned_idx) {
             dst->is_local = src->is_local;
             dst->has_vars = src->has_vars;
             dst->has_vardef = src->has_vardef;
-            snprintf(dst->vardef_name, sizeof(dst->vardef_name), "%s", src->vardef_name);
+            SNPRINTF_CHECK(dst->vardef_name, sizeof(dst->vardef_name), "%s", src->vardef_name);
             for (int vi = 0; vi < src->num_vars; vi++) {
                 if (!ensure_vars_cap(dst, dst->num_vars + 1)) continue;
                 Variable *sv = &src->vars[vi];
                 Variable *dv = &dst->vars[dst->num_vars++];
-                snprintf(dv->name, sizeof(dv->name), "%s", sv->name);
-                snprintf(dv->type, sizeof(dv->type), "%s", sv->type);
+                SNPRINTF_CHECK(dv->name, sizeof(dv->name), "%s", sv->name);
+                SNPRINTF_CHECK(dv->type, sizeof(dv->type), "%s", sv->type);
                 dv->count = sv->count;
                 dv->num_values = sv->num_values;
                 for (int vj = 0; vj < sv->num_values; vj++)
-                    snprintf(dv->values[vj], sizeof(dv->values[vj]), "%s", sv->values[vj]);
+                    SNPRINTF_CHECK(dv->values[vj], sizeof(dv->values[vj]), "%s", sv->values[vj]);
             }
             size_t needed = strlen(src->body) + 1;
             if (ensure_body_cap(dst, (int)needed))
-                snprintf(dst->body, (size_t)dst->body_cap, "%s", src->body);
+                SNPRINTF_CHECK(dst->body, (size_t)dst->body_cap, "%s", src->body);
         }
     }
     return 1;
@@ -675,7 +675,7 @@ int forget_learned(const char *id) {
 
     // Remove file from disk
     char filepath[1100];
-    snprintf(filepath, sizeof(filepath), "%s/%s.l1lp", learned_dir_path(), learned_patterns[found].id);
+    SNPRINTF_CHECK(filepath, sizeof(filepath), "%s/%s.l1lp", learned_dir_path(), learned_patterns[found].id);
     remove(filepath);
 
     // Free allocated memory in the pattern being removed

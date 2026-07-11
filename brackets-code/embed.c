@@ -203,7 +203,7 @@ void init_embeddings(void) {
 
 int tokenize(const char *text, int *tokens, int max_tokens) {
     char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", text);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", text);
     to_lowercase(buf);
     int count = 0;
     char *p = buf;
@@ -807,7 +807,7 @@ int has_sequential_pattern(const char *text) {
 
 int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
     char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", prompt);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
     int num_steps = 0;
     char *remaining = buf;
@@ -834,7 +834,7 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                     while (*content == ' ') content++;
                 }
                 if (strlen(content) > 0 && has_actionable_keyword(content)) {
-                    snprintf(steps[num_steps], MAX_PROMPT, "%s", content);
+                    SNPRINTF_CHECK(steps[num_steps], MAX_PROMPT, "%s", content);
                     num_steps++;
                 }
                 if (next) { *next = '\n'; line = next + 1; }
@@ -867,7 +867,7 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                     *bp = '\0';
                     trim(start);
                     if (strlen(start) > 0) {
-                        snprintf(bullet_steps[bs_count], MAX_PROMPT, "%s", start);
+                        SNPRINTF_CHECK(bullet_steps[bs_count], MAX_PROMPT, "%s", start);
                         bs_count++;
                     }
                     *bp = saved;
@@ -879,7 +879,7 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
             }
             if (bs_count >= 2) {
                 for (int bsi = 0; bsi < bs_count; bsi++)
-                    snprintf(steps[num_steps++], MAX_PROMPT, "%.8191s", bullet_steps[bsi]);
+                    SNPRINTF_CHECK(steps[num_steps++], MAX_PROMPT, "%.8191s", bullet_steps[bsi]);
                 return num_steps;
             }
         }
@@ -897,11 +897,11 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                             || strncmp(cp, "step ", 5) == 0 || strncmp(cp, "schritt ", 8) == 0) { *cp = '\0'; break; }
                     }
                     trim(current);
-                    snprintf(steps[num_steps], MAX_PROMPT, "%s", current);
+                    SNPRINTF_CHECK(steps[num_steps], MAX_PROMPT, "%s", current);
                     num_steps++;
                 }
                 p += 2; while (*p && isspace(*p)) p++;
-                snprintf(current, sizeof(current), "%s", p);
+                SNPRINTF_CHECK(current, sizeof(current), "%s", p);
                 collecting = 1;
                 step_found = 1;
             } else if ((p[0] == '(') && (p[1] >= '1' && p[1] <= '9') && p[2] == ')') {
@@ -912,11 +912,11 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                             || strncmp(cp, "step ", 5) == 0 || strncmp(cp, "schritt ", 8) == 0) { *cp = '\0'; break; }
                     }
                     trim(current);
-                    snprintf(steps[num_steps], MAX_PROMPT, "%s", current);
+                    SNPRINTF_CHECK(steps[num_steps], MAX_PROMPT, "%s", current);
                     num_steps++;
                 }
                 p += 3; while (*p && isspace(*p)) p++;
-                snprintf(current, sizeof(current), "%s", p);
+                SNPRINTF_CHECK(current, sizeof(current), "%s", p);
                 collecting = 1;
                 step_found = 1;
             } else if ((strncmp(p, "step ", 5) == 0 && p[5] >= '1' && p[5] <= '9') || (strncmp(p, "schritt ", 8) == 0 && p[8] >= '1' && p[8] <= '9')) {
@@ -929,13 +929,13 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                             || strncmp(cp, "step ", 5) == 0 || strncmp(cp, "schritt ", 8) == 0) { *cp = '\0'; break; }
                     }
                     trim(current);
-                    snprintf(steps[num_steps], MAX_PROMPT, "%s", current);
+                    SNPRINTF_CHECK(steps[num_steps], MAX_PROMPT, "%s", current);
                     num_steps++;
                 }
                 p += prefix_len; while (*p && isspace(*p)) p++;
                 if (*p == ':') p++;
                 while (*p && isspace(*p)) p++;
-                snprintf(current, sizeof(current), "%s", p);
+                SNPRINTF_CHECK(current, sizeof(current), "%s", p);
                 collecting = 1;
                 step_found = 1;
             }
@@ -948,7 +948,7 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
         }
         if (collecting && strlen(current) > 0) {
             trim(current);
-            snprintf(steps[num_steps], MAX_PROMPT, "%s", current);
+            SNPRINTF_CHECK(steps[num_steps], MAX_PROMPT, "%s", current);
             num_steps++;
         }
         if (num_steps >= 2) {
@@ -999,7 +999,7 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
         }
         if (best_pos < 0) break;
         char step[MAX_PROMPT];
-        snprintf(step, MAX_PROMPT, "%.*s", best_pos, remaining);
+        SNPRINTF_CHECK(step, MAX_PROMPT, "%.*s", best_pos, remaining);
         trim(step);
         if (strlen(step) > 0 && has_actionable_keyword(step)) {
             // Avoid splitting on short conjunctions (" und ", " and ", ", ") when
@@ -1018,9 +1018,9 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                         || strncmp(rp, "or ", 3) == 0 || strncmp(rp, "oder ", 5) == 0)
                     {
                         char combined[MAX_PROMPT * 2];
-                        snprintf(combined, sizeof(combined), "%s %s", step, rp);
+                        SNPRINTF_CHECK(combined, sizeof(combined), "%s %s", step, rp);
                         trim(combined);
-                        snprintf(remaining, MAX_PROMPT, "%.*s", MAX_PROMPT - 1, combined);
+                        SNPRINTF_CHECK(remaining, MAX_PROMPT, "%.*s", MAX_PROMPT - 1, combined);
                         break;
                     }
                 }
@@ -1035,36 +1035,36 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                 int sw = 0, rw = 0;
                 char tmp[MAX_PROMPT];
                 char *saveptr;
-                snprintf(tmp, sizeof(tmp), "%s", step);
+                SNPRINTF_CHECK(tmp, sizeof(tmp), "%s", step);
                 char *t = strtok_r(tmp, " ", &saveptr);
                 while (t) { trim(t); if (strlen(t) > 0) sw++; t = strtok_r(NULL, " ", &saveptr); }
-                snprintf(tmp, sizeof(tmp), "%s", rest);
+                SNPRINTF_CHECK(tmp, sizeof(tmp), "%s", rest);
                 t = strtok_r(tmp, " ", &saveptr);
                 while (t) { trim(t); if (strlen(t) > 0) rw++; t = strtok_r(NULL, " ", &saveptr); }
                 if ((sw < 4 && rw < 4) || (left_has_op && right_has_op)) {
                     // False split – merge and continue as single step
                     char combined[MAX_PROMPT * 2];
-                    snprintf(combined, sizeof(combined), "%s %s", step, rest);
+                    SNPRINTF_CHECK(combined, sizeof(combined), "%s %s", step, rest);
                     trim(combined);
-                    snprintf(remaining, MAX_PROMPT, "%.*s", MAX_PROMPT - 1, combined);
+                    SNPRINTF_CHECK(remaining, MAX_PROMPT, "%.*s", MAX_PROMPT - 1, combined);
                     break;
                 }
             }
-            snprintf(steps[num_steps], MAX_PROMPT, "%s", step); num_steps++;
+            SNPRINTF_CHECK(steps[num_steps], MAX_PROMPT, "%s", step); num_steps++;
             remaining += best_pos + best_len;
         } else if (strlen(step) > 0) {
             char *rest = remaining + best_pos + best_len;
             char combined[MAX_PROMPT * 2];
-            snprintf(combined, sizeof(combined), "%s %s", step, rest);
+            SNPRINTF_CHECK(combined, sizeof(combined), "%s %s", step, rest);
             trim(combined);
-            snprintf(remaining, MAX_PROMPT, "%.*s", MAX_PROMPT - 1, combined);
+            SNPRINTF_CHECK(remaining, MAX_PROMPT, "%.*s", MAX_PROMPT - 1, combined);
             break;
         } else {
             remaining += best_pos + best_len;
         }
     }
     trim(remaining);
-    if (strlen(remaining) > 0) { snprintf(steps[num_steps], MAX_PROMPT, "%s", remaining); num_steps++; }
+    if (strlen(remaining) > 0) { SNPRINTF_CHECK(steps[num_steps], MAX_PROMPT, "%s", remaining); num_steps++; }
 
     fprintf(stderr, "DEBUG split: num_steps=%d steps:", num_steps);
     for (int d = 0; d < num_steps; d++) fprintf(stderr, " [%d]='%s'", d, steps[d]);
@@ -1078,16 +1078,16 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                 if (!has_actionable_keyword(steps[i])) {
                     if (i > 0) {
                     char merged_step[MAX_PROMPT * 2];
-                    snprintf(merged_step, sizeof(merged_step), "%.*s %.*s", MAX_PROMPT - 1, steps[i-1], MAX_PROMPT - 1, steps[i]);
+                    SNPRINTF_CHECK(merged_step, sizeof(merged_step), "%.*s %.*s", MAX_PROMPT - 1, steps[i-1], MAX_PROMPT - 1, steps[i]);
                         trim(merged_step);
-                        snprintf(steps[i-1], MAX_PROMPT, "%.*s", MAX_PROMPT - 1, merged_step);
+                        SNPRINTF_CHECK(steps[i-1], MAX_PROMPT, "%.*s", MAX_PROMPT - 1, merged_step);
                         for (int j = i; j < num_steps - 1; j++) memmove(steps[j], steps[j+1], MAX_PROMPT);
                         num_steps--; merged = 1; break;
                     } else if (num_steps > 1) {
                         char merged_step[MAX_PROMPT * 2];
-                        snprintf(merged_step, sizeof(merged_step), "%.*s %.*s", MAX_PROMPT - 1, steps[0], MAX_PROMPT - 1, steps[1]);
+                        SNPRINTF_CHECK(merged_step, sizeof(merged_step), "%.*s %.*s", MAX_PROMPT - 1, steps[0], MAX_PROMPT - 1, steps[1]);
                         trim(merged_step);
-                        snprintf(steps[0], MAX_PROMPT, "%.*s", MAX_PROMPT - 1, merged_step);
+                        SNPRINTF_CHECK(steps[0], MAX_PROMPT, "%.*s", MAX_PROMPT - 1, merged_step);
                         for (int j = 1; j < num_steps - 1; j++) memmove(steps[j], steps[j+1], MAX_PROMPT);
                         num_steps--; merged = 1; break;
                     }
@@ -1118,9 +1118,9 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                      || has_word(steps[i], "calculated") || has_word(steps[i], "computed")
                      || has_word(steps[i], "berech") || has_word(steps[i], "ermittelt"))) {
                     char merged_step[MAX_PROMPT * 2];
-                    snprintf(merged_step, sizeof(merged_step), "%.*s %.*s", MAX_PROMPT - 1, steps[i-1], MAX_PROMPT - 1, steps[i]);
+                    SNPRINTF_CHECK(merged_step, sizeof(merged_step), "%.*s %.*s", MAX_PROMPT - 1, steps[i-1], MAX_PROMPT - 1, steps[i]);
                     trim(merged_step);
-                    snprintf(steps[i-1], MAX_PROMPT, "%.*s", MAX_PROMPT - 1, merged_step);
+                    SNPRINTF_CHECK(steps[i-1], MAX_PROMPT, "%.*s", MAX_PROMPT - 1, merged_step);
                     for (int j = i; j < num_steps - 1; j++) memmove(steps[j], steps[j+1], MAX_PROMPT);
                     num_steps--; merged = 1; break;
                 }
@@ -1132,7 +1132,7 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
     // steps that belong together (e.g., "read 5 numbers" + "and sort them" → keep separate if both have keywords)
     // This is intentionally a no-op - both have keywords so they stay separate.
 
-    if (num_steps <= 1) { snprintf(steps[0], MAX_PROMPT, "%s", prompt); return 1; }
+    if (num_steps <= 1) { SNPRINTF_CHECK(steps[0], MAX_PROMPT, "%s", prompt); return 1; }
     return num_steps;
 }
 
@@ -1152,7 +1152,7 @@ float cosine_sim(const float *a, const float *b) {
 void embed_text(const char *text, float *out) {
     memset(out, 0, sizeof(float) * EMBED_DIM);
     char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", text);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", text);
     to_lowercase(buf);
 
     float total_weight = 0;
@@ -1227,12 +1227,12 @@ void filename_stem(const char *path, char *stem) {
     const char *p = strrchr(path, '/');
     p = p ? p + 1 : path;
     char buf[256];
-    snprintf(buf, sizeof(buf), "%s", p);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", p);
     char *dot = strrchr(buf, '.');
     if (dot) *dot = '\0';
     for (char *q = buf; *q; q++)
         if (*q == '-' || *q == '_') *q = ' ';
-    snprintf(stem, 256, "%s", buf);
+    SNPRINTF_CHECK(stem, 256, "%s", buf);
 }
 
 void index_examples(void) {
@@ -1242,7 +1242,7 @@ void index_examples(void) {
 
     for (int s = 0; s < EXAMPLE_SUBDIRS; s++) {
         char dirpath[512];
-        snprintf(dirpath, sizeof(dirpath), "%s/%s", EXAMPLE_DIR, example_subdirs[s]);
+        SNPRINTF_CHECK(dirpath, sizeof(dirpath), "%s/%s", EXAMPLE_DIR, example_subdirs[s]);
         DIR *d = opendir(dirpath);
         if (!d) continue;
 
@@ -1257,12 +1257,12 @@ void index_examples(void) {
             if (!valid_ext) continue;
 
             char fullpath[1024];
-            snprintf(fullpath, sizeof(fullpath), "%s/%s", dirpath, entry->d_name);
-            snprintf(example_docs[num_examples].filename, sizeof(example_docs[num_examples].filename), "%s", fullpath);
+            SNPRINTF_CHECK(fullpath, sizeof(fullpath), "%s/%s", dirpath, entry->d_name);
+            SNPRINTF_CHECK(example_docs[num_examples].filename, sizeof(example_docs[num_examples].filename), "%s", fullpath);
 
             char raw_stem[256];
             filename_stem(entry->d_name, raw_stem);
-            snprintf(example_docs[num_examples].stem, sizeof(example_docs[num_examples].stem), "%s/%s", example_subdirs[s], raw_stem);
+            SNPRINTF_CHECK(example_docs[num_examples].stem, sizeof(example_docs[num_examples].stem), "%s/%s", example_subdirs[s], raw_stem);
 
             char content[8192] = {0};
             FILE *f = fopen(fullpath, "r");
@@ -1279,7 +1279,7 @@ void index_examples(void) {
                 fclose(f);
             }
             char combined[10000];
-            snprintf(combined, sizeof(combined), "%s %s %s %s",
+            SNPRINTF_CHECK(combined, sizeof(combined), "%s %s %s %s",
                      example_docs[num_examples].stem,
                      example_docs[num_examples].stem,
                      example_docs[num_examples].stem,
@@ -1296,7 +1296,7 @@ void index_examples(void) {
         for (int i = 0; i < num_examples; i++) {
             int seen[VOCAB_SIZE] = {0};
             char buf[MAX_PROMPT];
-            snprintf(buf, sizeof(buf), "%s", example_docs[i].stem);
+            SNPRINTF_CHECK(buf, sizeof(buf), "%s", example_docs[i].stem);
             int tokens[128];
             int n = tokenize(buf, tokens, 128);
             for (int t = 0; t < n; t++) {

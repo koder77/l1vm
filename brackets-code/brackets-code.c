@@ -228,7 +228,7 @@ void trim(char *s) {
 
 int str_contains_word(const char *str, const char *word) {
     char buf[MAX_LINE];
-    snprintf(buf, sizeof(buf), "%s", str);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", str);
     char *p = buf;
     while (*p) {
         while (*p && !isalpha(*p)) p++;
@@ -251,7 +251,7 @@ void add_include(Program *prog, const char *inc) {
     for (int i = 0; i < prog->num_includes; i++)
         if (strcmp(prog->includes[i], inc) == 0) return;
     if (!ensure_includes_cap(&prog->includes, &prog->includes_cap, prog->num_includes + 1)) return;
-    snprintf(prog->includes[prog->num_includes], sizeof(prog->includes[0]), "%s", inc);
+    SNPRINTF_CHECK(prog->includes[prog->num_includes], sizeof(prog->includes[0]), "%s", inc);
     prog->num_includes++;
 }
 
@@ -259,7 +259,7 @@ void add_include_post(Program *prog, const char *inc) {
     for (int i = 0; i < prog->num_includes_post; i++)
         if (strcmp(prog->includes_post[i], inc) == 0) return;
     if (!ensure_includes_cap(&prog->includes_post, &prog->includes_post_cap, prog->num_includes_post + 1)) return;
-    snprintf(prog->includes_post[prog->num_includes_post], sizeof(prog->includes_post[0]), "%s", inc);
+    SNPRINTF_CHECK(prog->includes_post[prog->num_includes_post], sizeof(prog->includes_post[0]), "%s", inc);
     prog->num_includes_post++;
 }
 
@@ -269,7 +269,7 @@ void add_func(Program *prog, const char *name) {
     if (!ensure_funcs_cap(&prog->funcs, &prog->funcs_cap, prog->num_funcs + 1)) return;
     Function *f = &prog->funcs[prog->num_funcs];
     init_function(f);
-    snprintf(f->name, sizeof(f->name), "%s", name);
+    SNPRINTF_CHECK(f->name, sizeof(f->name), "%s", name);
     f->is_local = 0;
     f->has_vars = 0;
     f->has_vardef = 0;
@@ -284,12 +284,12 @@ void add_var_to_func(Function *f, const char *type, const char *name, int count,
         if (strcmp(f->vars[i].name, name) == 0) return;
     if (!ensure_vars_cap(f, f->num_vars + 1)) return;
     Variable *v = &f->vars[f->num_vars++];
-    snprintf(v->name, sizeof(v->name), "%s", name);
-    snprintf(v->type, sizeof(v->type), "%s", type);
+    SNPRINTF_CHECK(v->name, sizeof(v->name), "%s", name);
+    SNPRINTF_CHECK(v->type, sizeof(v->type), "%s", type);
     v->count = count;
     v->num_values = num_values;
     for (int i = 0; i < num_values && i < MAX_VALUES; i++)
-        snprintf(v->values[i], sizeof(v->values[i]), "%s", values[i]);
+        SNPRINTF_CHECK(v->values[i], sizeof(v->values[i]), "%s", values[i]);
 }
 
 void func_append(Function *f, const char *line) {
@@ -303,26 +303,26 @@ void func_vardef(Function *f, const char *scope) {
     if (f->has_vardef) return;
     f->has_vardef = 1;
     f->is_local = 1;
-    snprintf(f->vardef_name, sizeof(f->vardef_name), "%s", scope);
+    SNPRINTF_CHECK(f->vardef_name, sizeof(f->vardef_name), "%s", scope);
 }
 
 int prompt_to_filename(const char *prompt, char *out, int max) {
     char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", prompt);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
     for (int i = 0; buf[i]; i++)
         if (!isalnum(buf[i])) buf[i] = '_';
     while (buf[0] == '_') memmove(buf, buf+1, strlen(buf));
     char *p = buf + strlen(buf) - 1;
     while (p > buf && *p == '_') *p-- = '\0';
-    snprintf(out, max, "%s.l1com", buf);
+    SNPRINTF_CHECK(out, max, "%s.l1com", buf);
     return 1;
 }
 
 int is_question(const char *prompt) {
     const char *qwords[] = {"was", "wie", "wer", "wo", "warum", "wann", "welche", "what", "how", "why", "where", "when", "can", "does", "is", "are", NULL};
     char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", prompt);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
     if (strchr(buf, '?')) return 1;
     for (int i = 0; qwords[i]; i++) {
@@ -337,7 +337,7 @@ int is_question(const char *prompt) {
 
 void answer_question(const char *prompt) {
     char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", prompt);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
     printf("\n");
     if (strstr(buf, "pointer") || strstr(buf, "zeiger") || strstr(buf, "speicher") || strstr(buf, "adresse")) {
@@ -463,7 +463,7 @@ static FILE *open_synonym_file(void) {
     const char *home = getenv("HOME");
     if (home) {
         char path[1024];
-        snprintf(path, sizeof(path), "%s/%s/%s", home, SYNONYM_DIR, SYNONYM_FILE);
+        SNPRINTF_CHECK(path, sizeof(path), "%s/%s/%s", home, SYNONYM_DIR, SYNONYM_FILE);
         f = fopen(path, "r");
         if (f) return f;
     }
@@ -474,7 +474,7 @@ static FILE *open_synonym_file(void) {
         self_path[len] = '\0';
         char *slash = strrchr(self_path, '/');
         if (slash) {
-            snprintf(slash + 1, sizeof(self_path) - (size_t)(slash - self_path + 1), "%s", SYNONYM_FILE);
+            SNPRINTF_CHECK(slash + 1, sizeof(self_path) - (size_t)(slash - self_path + 1), "%s", SYNONYM_FILE);
             f = fopen(self_path, "r");
             if (f) return f;
         }
@@ -499,8 +499,8 @@ void load_synonyms(void) {
         trim(word);
         trim(canonical);
         if (strlen(word) > 0 && strlen(canonical) > 0) {
-            snprintf(dyn_synonyms[num_dyn_synonyms].word, sizeof(dyn_synonyms[0].word), "%s", word);
-            snprintf(dyn_synonyms[num_dyn_synonyms].canonical, sizeof(dyn_synonyms[0].canonical), "%s", canonical);
+            SNPRINTF_CHECK(dyn_synonyms[num_dyn_synonyms].word, sizeof(dyn_synonyms[0].word), "%s", word);
+            SNPRINTF_CHECK(dyn_synonyms[num_dyn_synonyms].canonical, sizeof(dyn_synonyms[0].canonical), "%s", canonical);
             num_dyn_synonyms++;
         }
     }
@@ -642,9 +642,9 @@ const char* resolve_synonym(const char *word) {
 }
 
 void expand_query(const char *query, char *expanded, int max_len) {
-    snprintf(expanded, max_len, "%s", query);
+    SNPRINTF_CHECK(expanded, max_len, "%s", query);
     char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", query);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", query);
     to_lowercase(buf);
     char *p = buf;
     while (*p) {
@@ -665,7 +665,7 @@ void expand_query(const char *query, char *expanded, int max_len) {
 
 int has_word_fuzzy(const char *text, const char *keyword) {
     char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", text);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", text);
     to_lowercase(buf);
     int kwlen = strlen(keyword);
     char *p = buf;
@@ -699,7 +699,7 @@ int has_word(const char *prompt, const char *word) {
 
 static int is_negated(const char *prompt, const char *keyword) {
     char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", prompt);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
     int kwlen = strlen(keyword);
     char *p = buf;
@@ -726,7 +726,7 @@ static int is_negated(const char *prompt, const char *keyword) {
                 int wlen = word_end - word_start + 1;
                 if (wlen > 0 && wlen < 32) {
                     char wbuf[32];
-                    snprintf(wbuf, sizeof(wbuf), "%.*s", wlen, word_start);
+                    SNPRINTF_CHECK(wbuf, sizeof(wbuf), "%.*s", wlen, word_start);
                     to_lowercase(wbuf);
                     for (int ni = 0; negations[ni]; ni++) {
                         if (strcmp(wbuf, negations[ni]) == 0) return 1;
@@ -751,7 +751,7 @@ static int word_to_num(const char *word);
 
 static int extract_numbers(const char *prompt, int *nums, int max_nums) {
     char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", prompt);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
     int count = 0;
     char *p = buf;
@@ -803,19 +803,19 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step);
 
 int parse_task(const char *prompt, TaskProfile *task) {
     char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", prompt);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
-    snprintf(task->prompt, sizeof(task->prompt), "%s", prompt);
+    SNPRINTF_CHECK(task->prompt, sizeof(task->prompt), "%s", prompt);
 
     // default type
-    snprintf(task->type, sizeof(task->type), "%s", "int64");
+    SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "int64");
 
     // detect type
-    if (strstr(buf, "byte") || strstr(buf, "int8")) snprintf(task->type, sizeof(task->type), "%s", "byte");
-    else if (strstr(buf, "int16") || strstr(buf, "short")) snprintf(task->type, sizeof(task->type), "%s", "int16");
-    else if (strstr(buf, "int32")) snprintf(task->type, sizeof(task->type), "%s", "int32");
-    else if (strstr(buf, "int64") || has_word(buf, "int") || strstr(buf, "long")) snprintf(task->type, sizeof(task->type), "%s", "int64");
-    else if (strstr(buf, "double") || strstr(buf, "float") || strstr(buf, "real") || strstr(buf, "komma")) snprintf(task->type, sizeof(task->type), "%s", "double");
+    if (strstr(buf, "byte") || strstr(buf, "int8")) SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "byte");
+    else if (strstr(buf, "int16") || strstr(buf, "short")) SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "int16");
+    else if (strstr(buf, "int32")) SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "int32");
+    else if (strstr(buf, "int64") || has_word(buf, "int") || strstr(buf, "long")) SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "int64");
+    else if (strstr(buf, "double") || strstr(buf, "float") || strstr(buf, "real") || strstr(buf, "komma")) SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "double");
 
     // extract numbers
     task->num_literals = extract_numbers(prompt, task->literals, MAX_NUMS);
@@ -825,7 +825,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
         task->double_literals[di] = (double)task->literals[di];
     {
         char dscan[MAX_PROMPT];
-        snprintf(dscan, sizeof(dscan), "%s", buf);
+        SNPRINTF_CHECK(dscan, sizeof(dscan), "%s", buf);
         char *dp = dscan;
         int di = 0;
         while (*dp && di < MAX_NUMS) {
@@ -848,7 +848,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
         // override num_literals with count from this pass (handles decimals as single values)
         if (has_decimals) {
             task->num_literals = di;
-            snprintf(task->type, sizeof(task->type), "%s", "double");
+            SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "double");
         }
     }
     task->has_literals = (task->num_literals > 0);
@@ -903,7 +903,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
     const char *op = find_operation(buf);
     if (op) {
         task->has_operation = 1;
-        snprintf(task->op, sizeof(task->op), "%s", op);
+        SNPRINTF_CHECK(task->op, sizeof(task->op), "%s", op);
         if (strcmp(op, "add") == 0) task->has_add = 1;
         else if (strcmp(op, "sub") == 0) task->has_sub = 1;
         else if (strcmp(op, "mul") == 0) task->has_mul = 1;
@@ -941,7 +941,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
                     }
                     if (!dup) {
                         op_positions[found_ops] = pos;
-                        snprintf(op_names[found_ops], sizeof(op_names[0]), "%s", ops[oi].rpn_op);
+                        SNPRINTF_CHECK(op_names[found_ops], sizeof(op_names[0]), "%s", ops[oi].rpn_op);
                         found_ops++;
                     }
                 }
@@ -962,7 +962,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
         // Pair operations with literals in prompt order
         int lit_idx = 0;
         for (int oi = 0; oi < found_ops && lit_idx < task->num_literals; oi++) {
-            snprintf(task->op_seq[task->num_ops], sizeof(task->op_seq[0]), "%.*s", (int)sizeof(task->op_seq[0]) - 1, op_names[oi]);
+            SNPRINTF_CHECK(task->op_seq[task->num_ops], sizeof(task->op_seq[0]), "%.*s", (int)sizeof(task->op_seq[0]) - 1, op_names[oi]);
             task->op_seq_literals[task->num_ops] = task->literals[lit_idx++];
             task->num_ops++;
         }
@@ -1585,7 +1585,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
     }
 
     // build title
-    { snprintf(task->title, sizeof(task->title), "%s", prompt); }
+    { SNPRINTF_CHECK(task->title, sizeof(task->title), "%s", prompt); }
 
     // has action if any flag set
     int has_any = task->has_input || task->has_output || task->has_operation || task->has_algorithm
@@ -1652,7 +1652,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
          || task->has_ascii_art || task->has_number_to_words || task->has_temperature_table
          || task->has_loop_demo;
 
-    snprintf(task->title, sizeof(task->title), "%s", prompt);
+    SNPRINTF_CHECK(task->title, sizeof(task->title), "%s", prompt);
 
     // Negation post-processing: clear flags if keyword is negated
     if (task->has_sort && is_negated(buf, "sort")) task->has_sort = 0;
@@ -1700,7 +1700,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
         add_var_to_func(f, "const-int64", "one", 1, ov, 1);
         char cvs[16];
-        snprintf(cvs, sizeof(cvs), "%d", task->inherit_count > 0 ? task->inherit_count : 5);
+        SNPRINTF_CHECK(cvs, sizeof(cvs), "%d", task->inherit_count > 0 ? task->inherit_count : 5);
         const char *cv[] = {cvs};
         add_var_to_func(f, "int64", "count", 1, cv, 1);
         add_var_to_func(f, "int64", "i", 1, zv, 1);
@@ -1713,7 +1713,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         func_append(f, "\t(((i count <) f :=) f for)");
         func_append(f, "\t\t(i * int64_size realind :=)");
         char ln[512];
-        snprintf(ln, sizeof(ln), "\t\t(%s [ realind ] a =)", task->inherit_var);
+        SNPRINTF_CHECK(ln, sizeof(ln), "\t\t(%s [ realind ] a =)", task->inherit_var);
         func_append(f, ln);
         func_append(f, "\t\t(a + zero a :=)");
         func_append(f, "\t\t(a :print_i !)");
@@ -1731,7 +1731,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
         add_var_to_func(f, "const-int64", "one", 1, ov, 1);
         char cvs[16];
-        snprintf(cvs, sizeof(cvs), "%d", task->inherit_count > 0 ? task->inherit_count : 5);
+        SNPRINTF_CHECK(cvs, sizeof(cvs), "%d", task->inherit_count > 0 ? task->inherit_count : 5);
         const char *cv[] = {cvs};
         add_var_to_func(f, "int64", "count", 1, cv, 1);
     add_var_to_func(f, "int64", "temp", 1, zv, 1);
@@ -1742,7 +1742,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         func_append(f, "\t(count one - temp :=)");
         func_append(f, "\t(temp * int64_size realind :=)");
         char ln[512];
-        snprintf(ln, sizeof(ln), "\t(%s [ realind ] a =)", task->inherit_var);
+        SNPRINTF_CHECK(ln, sizeof(ln), "\t(%s [ realind ] a =)", task->inherit_var);
         func_append(f, ln);
         func_append(f, "\t(a + zero a :=)");
         func_append(f, "\t(a :print_i !)");
@@ -1758,10 +1758,10 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         add_var_to_func(f, "int64", "realind", 1, zv, 1);
         add_var_to_func(f, "int64", "a", 1, zv, 1);
         char ln[512];
-        snprintf(ln, sizeof(ln), "\t(zero * int64_size realind :=)");
+        SNPRINTF_CHECK(ln, sizeof(ln), "\t(zero * int64_size realind :=)");
         func_append(f, ln);
         func_append(f, "\t// print smallest");
-        snprintf(ln, sizeof(ln), "\t(%s [ realind ] a =)", task->inherit_var);
+        SNPRINTF_CHECK(ln, sizeof(ln), "\t(%s [ realind ] a =)", task->inherit_var);
         func_append(f, ln);
         func_append(f, "\t(a + zero a :=)");
         func_append(f, "\t(a :print_i !)");
@@ -1804,25 +1804,25 @@ void gen_arithmetic(Program *prog, const char *op, const char *type, const int *
     const char *r_v[] = {"0"};
 
     for (int i = 0; i < num_vals; i++) {
-        snprintf(vname, sizeof(vname), "%s_%c", type, 'a' + i);
-        snprintf(vstr, sizeof(vstr), "%d", vals[i]);
+        SNPRINTF_CHECK(vname, sizeof(vname), "%s_%c", type, 'a' + i);
+        SNPRINTF_CHECK(vstr, sizeof(vstr), "%d", vals[i]);
         const char *vv[] = {vstr};
         add_var_to_func(f, type, vname, 1, vv, 1);
     }
 
     char rname[64];
-    snprintf(rname, sizeof(rname), "%s_r", type);
+    SNPRINTF_CHECK(rname, sizeof(rname), "%s_r", type);
     add_var_to_func(f, type, rname, 1, r_v, 1);
 
     if (num_vals == 2) {
-        snprintf(line, sizeof(line), "\t(%s_%c %s %s_%c %s :=)", type, 'a', sym, type, 'b', rname);
+        SNPRINTF_CHECK(line, sizeof(line), "\t(%s_%c %s %s_%c %s :=)", type, 'a', sym, type, 'b', rname);
     } else {
-        snprintf(line, sizeof(line), "\t((%s_%c %s %s_%c) %s %s_%c %s :=)", type, 'a', sym, type, 'b', sym, type, 'c', rname);
+        SNPRINTF_CHECK(line, sizeof(line), "\t((%s_%c %s %s_%c) %s %s_%c %s :=)", type, 'a', sym, type, 'b', sym, type, 'c', rname);
     }
     func_append(f, line);
 
     func_append(f, "\t// Ergebnis ausgeben:");
-    snprintf(line, sizeof(line), "\t(%s :print_i !)", rname);
+    SNPRINTF_CHECK(line, sizeof(line), "\t(%s :print_i !)", rname);
     func_append(f, line);
     func_append(f, "\t(:print_n !)");
     func_append(f, "\t(zero :exit !)");
@@ -1874,7 +1874,7 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
         int lidx = match_learned_pattern(prompt, &lscore);
         if (lidx >= 0) {
             if (emit_learned_pattern(prog, lidx)) {
-                snprintf(desc, desc_size, "learned pattern: %s (score: %d)", learned_patterns[lidx].id, lscore);
+                SNPRINTF_CHECK(desc, desc_size, "learned pattern: %s (score: %d)", learned_patterns[lidx].id, lscore);
                 return 1;
             }
         }
@@ -1917,8 +1917,8 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
                 dataflow_quiet_mode = task.suppress_output;
                     // populate inherited vars from previous steps
                     for (int iv = 0; iv < num_inherited; iv++) {
-                        snprintf(task.inherit_var_names[task.num_inherit_vars], sizeof(task.inherit_var_names[task.num_inherit_vars]), "%.*s", (int)sizeof(task.inherit_var_names[task.num_inherit_vars]) - 1, inherited_names[iv]);
-                        snprintf(task.inherit_var_types[task.num_inherit_vars], sizeof(task.inherit_var_types[task.num_inherit_vars]), "%.*s", (int)sizeof(task.inherit_var_types[task.num_inherit_vars]) - 1, inherited_types[iv]);
+                        SNPRINTF_CHECK(task.inherit_var_names[task.num_inherit_vars], sizeof(task.inherit_var_names[task.num_inherit_vars]), "%.*s", (int)sizeof(task.inherit_var_names[task.num_inherit_vars]) - 1, inherited_names[iv]);
+                        SNPRINTF_CHECK(task.inherit_var_types[task.num_inherit_vars], sizeof(task.inherit_var_types[task.num_inherit_vars]), "%.*s", (int)sizeof(task.inherit_var_types[task.num_inherit_vars]) - 1, inherited_types[iv]);
                         task.inherit_var_counts[task.num_inherit_vars] = inherited_counts[iv];
                         task.num_inherit_vars++;
                     }
@@ -1926,7 +1926,7 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
                     if (i > 0) {
                         for (int iv = 0; iv < num_inherited; iv++) {
                             if (inherited_counts[iv] > 1 && !task.inherit_var[0]) {
-                                snprintf(task.inherit_var, sizeof(task.inherit_var), "%.*s", (int)sizeof(task.inherit_var) - 1, inherited_names[iv]);
+                                SNPRINTF_CHECK(task.inherit_var, sizeof(task.inherit_var), "%.*s", (int)sizeof(task.inherit_var) - 1, inherited_names[iv]);
                                 task.inherit_count = inherited_counts[iv];
                             }
                         }
@@ -1966,8 +1966,8 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
                             if (strcmp(inherited_names[ck], fcur->vars[vi].name) == 0) already = 1;
                         }
                         if (!already) {
-                            snprintf(inherited_names[num_inherited], sizeof(inherited_names[num_inherited]), "%s", fcur->vars[vi].name);
-                            snprintf(inherited_types[num_inherited], sizeof(inherited_types[num_inherited]), "%s", fcur->vars[vi].type);
+                            SNPRINTF_CHECK(inherited_names[num_inherited], sizeof(inherited_names[num_inherited]), "%s", fcur->vars[vi].name);
+                            SNPRINTF_CHECK(inherited_types[num_inherited], sizeof(inherited_types[num_inherited]), "%s", fcur->vars[vi].type);
                             inherited_counts[num_inherited] = fcur->vars[vi].count;
                             num_inherited++;
                         }
@@ -1978,7 +1978,7 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
         // Exits are now handled by ensure_exit in generate_from_task, which only
         // adds :exit ! for the last step. No post-processing needed.
         dataflow_quiet_mode = 0;
-        snprintf(desc, desc_size, "multi-step generation (%d steps)", num_steps);
+        SNPRINTF_CHECK(desc, desc_size, "multi-step generation (%d steps)", num_steps);
         return 1;
     }
 
@@ -1988,7 +1988,7 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
         int lidx = match_learned_pattern(prompt, &lscore);
         if (lidx >= 0) {
             if (emit_learned_pattern(prog, lidx)) {
-                snprintf(desc, desc_size, "learned pattern: %s (score: %d)", learned_patterns[lidx].id, lscore);
+                SNPRINTF_CHECK(desc, desc_size, "learned pattern: %s (score: %d)", learned_patterns[lidx].id, lscore);
                 return 1;
             }
         }
@@ -2016,14 +2016,14 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
     int emitter_idx = llm_select_emitter(prompt, &task);
     if (emitter_idx >= 0) {
         if (generate_from_task(prog, &task, 1)) {
-            snprintf(desc, desc_size, "llm plan: %s", task.title);
+            SNPRINTF_CHECK(desc, desc_size, "llm plan: %s", task.title);
             return 1;
         }
     }
 
     // Fallback: old arithmetic generator for simple math prompts
     char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", prompt);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
     const char *op = find_operation(buf);
     if (!op) return 0;
@@ -2084,9 +2084,9 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
     else if (strcmp(op, "mod") == 0) { op_name = "modulo"; sym = "%"; }
     else { op_name = "addition"; sym = "+"; }
     if (n_vals == 3)
-        snprintf(desc, desc_size, "%s of three %s numbers (%d %s %d %s %d)", op_name, type, avals[0], sym, avals[1], sym, avals[2]);
+        SNPRINTF_CHECK(desc, desc_size, "%s of three %s numbers (%d %s %d %s %d)", op_name, type, avals[0], sym, avals[1], sym, avals[2]);
     else
-        snprintf(desc, desc_size, "%s of two %s numbers (%d %s %d)", op_name, type, avals[0], sym, avals[1]);
+        SNPRINTF_CHECK(desc, desc_size, "%s of two %s numbers (%d %s %d)", op_name, type, avals[0], sym, avals[1]);
     return 1;
 }
 
@@ -2150,11 +2150,11 @@ void write_program(Program *prog, const char *filename) {
                                     char *rp = rest;
                                     char *tok;
                                     while ((tok = strtok_r(rp, " ", &rp)) && nv < 16)
-                                        snprintf(vals[nv++], sizeof(vals[0]), "%s", tok);
+                                        SNPRINTF_CHECK(vals[nv++], sizeof(vals[0]), "%s", tok);
                                     if (nv > 0) {
                                         fn->vars[vi].num_values = nv;
                                         for (int vj = 0; vj < nv; vj++)
-                                            snprintf(fn->vars[vi].values[vj], sizeof(fn->vars[vi].values[0]), "%.*s", (int)sizeof(fn->vars[vi].values[0]) - 1, vals[vj]);
+                                            SNPRINTF_CHECK(fn->vars[vi].values[vj], sizeof(fn->vars[vi].values[0]), "%.*s", (int)sizeof(fn->vars[vi].values[0]) - 1, vals[vj]);
                                     }
                                     break;
                                 }
@@ -2206,7 +2206,7 @@ void write_program(Program *prog, const char *filename) {
                         vn[vni] = '\0';
                         if (vni > 0) {
                             char check[384];
-                            snprintf(check, sizeof(check), " %s ", vn);
+                            SNPRINTF_CHECK(check, sizeof(check), " %s ", vn);
                             if (strstr(emitted_names, check) != NULL) {
                                 skip = 1;
                             } else if (strlen(emitted_names) + vni + 2 < sizeof(emitted_names)) {
@@ -2326,7 +2326,7 @@ int num_templates = sizeof(templates) / sizeof(templates[0]);
 
 int match_template(const char *prompt, int *best_score) {
     char buf[MAX_PROMPT];
-    snprintf(buf, sizeof(buf), "%s", prompt);
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
 
     int best_idx = -1;
@@ -2337,20 +2337,20 @@ int match_template(const char *prompt, int *best_score) {
     {
         char wc_buf[MAX_PROMPT];
         char *saveptr;
-        snprintf(wc_buf, sizeof(wc_buf), "%s", buf);
+        SNPRINTF_CHECK(wc_buf, sizeof(wc_buf), "%s", buf);
         char *wc = strtok_r(wc_buf, " ", &saveptr);
         while (wc) { trim(wc); if (strlen(wc) > 0) total_words++; wc = strtok_r(NULL, " ", &saveptr); }
     }
 
     for (int i = 0; i < num_templates; i++) {
         char kwbuf[512];
-        snprintf(kwbuf, sizeof(kwbuf), "%s", templates[i].keywords);
+        SNPRINTF_CHECK(kwbuf, sizeof(kwbuf), "%s", templates[i].keywords);
         to_lowercase(kwbuf);
 
         int score = 0;
         int num_kw = 0;
         char kwcopy[512];
-        snprintf(kwcopy, sizeof(kwcopy), "%s", kwbuf);
+        SNPRINTF_CHECK(kwcopy, sizeof(kwcopy), "%s", kwbuf);
         char *saveptr2;
         char *kw = strtok_r(kwcopy, " ,/", &saveptr2);
         int all_match = 1;
@@ -2410,19 +2410,19 @@ int validate_code(const char *filename) {
     const char *dot = strrchr(filename, '.');
     if (dot) {
         int len = dot - filename;
-        snprintf(ppname, sizeof(ppname), "%.*s_pp.l1com", len, filename);
+        SNPRINTF_CHECK(ppname, sizeof(ppname), "%.*s_pp.l1com", len, filename);
     } else {
-        snprintf(ppname, sizeof(ppname), "%s_pp.l1com", filename);
+        SNPRINTF_CHECK(ppname, sizeof(ppname), "%s_pp.l1com", filename);
     }
     const char *include_dir = getenv("L1VM_INCLUDE");
     if (!include_dir) {
         static char fallback[1024];
         if (l1vm_root[0]) {
-            snprintf(fallback, sizeof(fallback), "%s/include/", l1vm_root);
+            SNPRINTF_CHECK(fallback, sizeof(fallback), "%s/include/", l1vm_root);
         } else {
             const char *home = getenv("HOME");
-            if (home) snprintf(fallback, sizeof(fallback), "%s/l1vm/include/", home);
-            else snprintf(fallback, sizeof(fallback), "/usr/local/l1vm/include/");
+            if (home) SNPRINTF_CHECK(fallback, sizeof(fallback), "%s/l1vm/include/", home);
+            else SNPRINTF_CHECK(fallback, sizeof(fallback), "/usr/local/l1vm/include/");
         }
         include_dir = fallback;
     }
@@ -2432,9 +2432,9 @@ int validate_code(const char *filename) {
     char l1pre_path[1024];
     char l1com_path[1024];
     if (l1vm_root[0]) {
-        snprintf(l1pre_path, sizeof(l1pre_path), "%s/bin/l1pre", l1vm_root);
+        SNPRINTF_CHECK(l1pre_path, sizeof(l1pre_path), "%s/bin/l1pre", l1vm_root);
         l1pre_bin = l1pre_path;
-        snprintf(l1com_path, sizeof(l1com_path), "%s/bin/l1com", l1vm_root);
+        SNPRINTF_CHECK(l1com_path, sizeof(l1com_path), "%s/bin/l1com", l1vm_root);
         l1com_bin = l1com_path;
     }
 
@@ -2447,7 +2447,7 @@ int validate_code(const char *filename) {
     }
 
     char compname[512];
-    snprintf(compname, sizeof(compname), "%.*s_pp", (int)(dot ? dot - filename : (int)strlen(filename)), filename);
+    SNPRINTF_CHECK(compname, sizeof(compname), "%.*s_pp", (int)(dot ? dot - filename : (int)strlen(filename)), filename);
     const char *l1com_argv[] = {l1com_bin, compname, NULL};
     ret = run_cmd(l1com_argv);
     if (ret == 0) {
@@ -2461,10 +2461,10 @@ int validate_code(const char *filename) {
 
 void prepend_out_dir(const char *fname, char *buf, int bufsize) {
     if (out_dir[0]) {
-        snprintf(buf, bufsize, "%s/%s", out_dir, fname);
+        SNPRINTF_CHECK(buf, bufsize, "%s/%s", out_dir, fname);
         buf[bufsize - 1] = '\0';
     } else {
-        snprintf(buf, bufsize, "%s", fname);
+        SNPRINTF_CHECK(buf, bufsize, "%s", fname);
     }
 }
 
@@ -2476,7 +2476,7 @@ int generate_code(const char *prompt, const char *filename) {
     Program *prog = malloc(sizeof(Program));
     if (!prog) { c_printf(ANSI_RED, "Out of memory\n"); return 0; }
     if (!init_program(prog)) { free_program(prog); free(prog); c_printf(ANSI_RED, "Out of memory\n"); return 0; }
-    snprintf(prog->filename, sizeof(prog->filename), "%s", filename);
+    SNPRINTF_CHECK(prog->filename, sizeof(prog->filename), "%s", filename);
     // (temp/func counters removed)
 
     // Try exact keyword template match first (most reliable)
@@ -2544,7 +2544,7 @@ int generate_code(const char *prompt, const char *filename) {
             if (strcmp(prog->funcs[i].name, "main") == 0) { f = &prog->funcs[i]; break; }
         if (f) {
             char nn_msg[1100];
-            snprintf(nn_msg, sizeof(nn_msg), "\t// nearest example: %s", example_docs[nn_indices[0]].filename);
+            SNPRINTF_CHECK(nn_msg, sizeof(nn_msg), "\t// nearest example: %s", example_docs[nn_indices[0]].filename);
             func_append(f, nn_msg);
         }
         c_printf(ANSI_YELLOW, "Nearest-neighbor generated: %s\n", example_docs[nn_indices[0]].stem);
@@ -2676,10 +2676,10 @@ void interactive_mode(void) {
     using_history();
     const char *histfile = getenv("HOME");
     char histpath[512] = "";
-    if (histfile) { snprintf(histpath, sizeof(histpath), "%s/.brackets-code_history", histfile); read_history(histpath); }
+    if (histfile) { SNPRINTF_CHECK(histpath, sizeof(histpath), "%s/.brackets-code_history", histfile); read_history(histpath); }
     char *rl_line;
     while ((rl_line = readline("> ")) != NULL) {
-        snprintf(prompt, sizeof(prompt), "%s", rl_line);
+        SNPRINTF_CHECK(prompt, sizeof(prompt), "%s", rl_line);
         free(rl_line);
         if (*prompt) add_history(prompt);
         trim(prompt);
@@ -2708,7 +2708,7 @@ void interactive_mode(void) {
         if (strncmp(prompt, "/save", 5) == 0) {
             char fname[MAX_PROMPT] = {0};
             if (strlen(prompt) > 6) {
-                snprintf(fname, sizeof(fname), "%s", prompt + 6);
+                SNPRINTF_CHECK(fname, sizeof(fname), "%s", prompt + 6);
                 trim(fname);
             }
             if (strlen(fname) == 0) {
@@ -2728,7 +2728,7 @@ void interactive_mode(void) {
             } else {
                 // Shift args if no description
                 if (n == 2) {
-                    snprintf(ldesc, sizeof(ldesc), "%s", lkeywords);
+                    SNPRINTF_CHECK(ldesc, sizeof(ldesc), "%s", lkeywords);
                     lkeywords[0] = '\0';
                 }
                 ensure_learned_dir();
@@ -2783,14 +2783,14 @@ void interactive_mode(void) {
         char fname[256];
         prompt_to_filename(prompt, fname, sizeof(fname));
         generate_code(prompt, fname);
-        snprintf(last_fname, sizeof(last_fname), "%s", fname);
+        SNPRINTF_CHECK(last_fname, sizeof(last_fname), "%s", fname);
         has_last = 1;
     }
     printf("\nBye!\n");
 #ifdef HAVE_READLINE
     {
         const char *hf = getenv("HOME");
-        if (hf) { char hp[512]; snprintf(hp, sizeof(hp), "%s/.brackets-code_history", hf); write_history(hp); }
+        if (hf) { char hp[512]; SNPRINTF_CHECK(hp, sizeof(hp), "%s/.brackets-code_history", hf); write_history(hp); }
     }
 #endif
 }
@@ -2886,11 +2886,11 @@ int main(int argc, char *argv[]) {
         if (strcmp(argv[arg_idx], "--verbose") == 0) { verbose_flag = 1; arg_idx++; }
         else if (strcmp(argv[arg_idx], "--dry-run") == 0) { dry_run_flag = 1; arg_idx++; }
         else if (strcmp(argv[arg_idx], "--out-dir") == 0) {
-            if (arg_idx + 1 < argc) { snprintf(out_dir, sizeof(out_dir), "%s", argv[arg_idx + 1]); arg_idx += 2; }
+            if (arg_idx + 1 < argc) { SNPRINTF_CHECK(out_dir, sizeof(out_dir), "%s", argv[arg_idx + 1]); arg_idx += 2; }
             else { fprintf(stderr, "Usage: ... --out-dir <directory>\n"); return 1; }
         }
         else if (strcmp(argv[arg_idx], "--l1vm-root") == 0) {
-            if (arg_idx + 1 < argc) { snprintf(l1vm_root, sizeof(l1vm_root), "%s", argv[arg_idx + 1]); arg_idx += 2; }
+            if (arg_idx + 1 < argc) { SNPRINTF_CHECK(l1vm_root, sizeof(l1vm_root), "%s", argv[arg_idx + 1]); arg_idx += 2; }
             else { fprintf(stderr, "Usage: ... --l1vm-root <path>\n"); return 1; }
         }
         else if (strcmp(argv[arg_idx], "--validate") == 0 || strcmp(argv[arg_idx], "-v") == 0) { validate_flag = 1; arg_idx++; }
@@ -2943,7 +2943,7 @@ int main(int argc, char *argv[]) {
     char fname[256];
 
     if (arg_idx < argc) {
-        snprintf(fname, sizeof(fname), "%s", argv[arg_idx]);
+        SNPRINTF_CHECK(fname, sizeof(fname), "%s", argv[arg_idx]);
         // block path traversal in filename
         if (strstr(fname, "..")) {
             fprintf(stderr, "Error: filename must not contain '..'\n");

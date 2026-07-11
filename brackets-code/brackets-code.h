@@ -79,6 +79,13 @@
 
 #define c_printf(color, ...) do { if (use_color) { printf(color); printf(__VA_ARGS__); printf(ANSI_RESET); } else printf(__VA_ARGS__); } while(0)
 
+#define SNPRINTF_CHECK(buf, sz, ...) ({ \
+    int _snr = snprintf(buf, sz, __VA_ARGS__); \
+    if (_snr < 0 || _snr >= (int)(sz)) \
+        fprintf(stderr, "snprintf trunc/error at %s:%d\n", __FILE__, __LINE__); \
+    _snr; \
+})
+
 // ==================== DATA STRUCTURES ====================
 
 typedef struct {
