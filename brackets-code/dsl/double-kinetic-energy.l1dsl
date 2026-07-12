@@ -7,10 +7,10 @@ include: intr-func.l1h
 desc: "Calculate kinetic energy using double precision"
 
 code:
-    (set const-double 1 zero 0.0)
     (set const-double 1 half 0.5)
-    (velocity *d velocity v2 :=)
-    (half *d mass energy :=)
-    (energy *d v2 energy :=)
+    (set double 1 v2 0.0)
+    ((velocity velocity *d) v2 =)
+    ((half mass *d) energy =)
+    ((energy v2 *d) energy =)
     (energy :print_d !)
     (:print_n !)

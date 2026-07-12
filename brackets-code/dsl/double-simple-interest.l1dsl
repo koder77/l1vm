@@ -7,10 +7,9 @@ include: intr-func.l1h
 desc: "Calculate simple interest using double precision"
 
 code:
-    (set const-double 1 zero 0.0)
     (set const-double 1 onehundred 100.0)
-    (principal *d rate interest :=)
-    (interest *d time interest :=)
-    (interest /d onehundred interest :=)
+    ((principal rate *d) interest =)
+    ((interest time *d) interest =)
+    ((interest onehundred /d) interest =)
     (interest :print_d !)
     (:print_n !)

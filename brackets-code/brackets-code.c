@@ -1375,6 +1375,11 @@ int parse_task(const char *prompt, TaskProfile *task) {
     if (has_word(buf, "double") && (has_word(buf, "kinetic") || has_word(buf, "energy")))
         task->has_double_kinetic_energy = 1;
 
+    /* Clear integer flags when double variant is detected to prevent
+       both integer and double rules from generating conflicting code */
+    if (task->has_double_circle_area) task->has_circle_area = 0;
+    if (task->has_double_temp_convert) task->has_temp_convert = 0;
+
     if ((has_word(buf, "string") && has_word(buf, "length"))
         || (has_word(buf, "string") && has_word(buf, "laenge"))
         || (has_word(buf, "zeichen") && has_word(buf, "laenge")))
@@ -1934,10 +1939,8 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
     // Multi-step support
     char steps[MAX_STEPS][MAX_PROMPT];
     int num_steps = split_prompt_steps(prompt, steps);
-    fprintf(stderr, "DEBUG smart_generate: num_steps=%d\n", num_steps);
 
     if (num_steps > 1) {
-        fprintf(stderr, "DEBUG multi-step: %d steps\n", num_steps);
         char inherited_names[64][256] = {{0}};
         char inherited_types[64][64] = {{0}};
         int inherited_counts[64] = {0};
@@ -1959,7 +1962,8 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
                 TaskProfile task;
                 memset(&task, 0, sizeof(task));
                 if (!parse_task(steps[i], &task)) {
-                    fprintf(stderr, "Error: could not parse step %d: \"%s\"\n", i + 1, steps[i]);
+                    c_printf(ANSI_RED, "Error: Could not understand step %d: \"%s\"\n", i + 1, steps[i]);
+                    c_printf(ANSI_YELLOW, "  Hint: Try rephrasing with clearer keywords (e.g., 'sort numbers', 'print result')\n");
                     dataflow_quiet_mode = 0;
                     return 0;
                 }
@@ -2046,7 +2050,6 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
     }
 
     // Single-step: parse task and use LLM to select emitter
-    fprintf(stderr, "DEBUG single-step fallback for: '%s'\n", prompt);
     TaskProfile task;
     memset(&task, 0, sizeof(task));
     current_prompt = prompt;
@@ -2147,7 +2150,11 @@ void write_program(Program *prog, const char *filename) {
         f = stdout;
     } else {
         f = fopen(filename, "w");
-        if (!f) { fprintf(stderr, "Error: cannot write %s\n", filename); return; }
+        if (!f) {
+            c_printf(ANSI_RED, "Error: Cannot write to file: %s\n", filename);
+            c_printf(ANSI_YELLOW, "  Hint: Check if the directory exists and you have write permissions\n");
+            return;
+        }
     }
 
     time_t t = time(NULL);
@@ -2446,7 +2453,8 @@ static int run_cmd(const char **argv) {
     posix_spawn_file_actions_destroy(&actions);
 
     if (ret != 0) {
-        c_printf(ANSI_RED, "Error: failed to execute '%s'\n", argv[0]);
+        c_printf(ANSI_RED, "Error: Failed to execute '%s'\n", argv[0]);
+        c_printf(ANSI_YELLOW, "  Hint: Check if the program is installed and in your PATH\n");
         return -1;
     }
 
@@ -2492,7 +2500,7 @@ int validate_code(const char *filename) {
     const char *l1pre_argv[] = {l1pre_bin, filename, ppname, include_dir, NULL};
     int ret = run_cmd(l1pre_argv);
     if (ret != 0) {
-        if (ret > 0) c_printf(ANSI_RED, "Validation: l1pre FAILED (exit code %d)\n", ret);
+        if (ret > 0) c_printf(ANSI_RED, "Validation: l1pre preprocessing failed (exit code %d)\n", ret);
         (void)remove(ppname);
         return 0;
     }
@@ -2504,7 +2512,8 @@ int validate_code(const char *filename) {
     if (ret == 0) {
         c_printf(ANSI_GREEN, "Validation: OK\n");
     } else if (ret > 0) {
-        c_printf(ANSI_RED, "Validation: FAILED (exit code %d)\n", ret);
+        c_printf(ANSI_RED, "Validation: l1com compilation failed (exit code %d)\n", ret);
+        c_printf(ANSI_YELLOW, "  Hint: Check for undefined variables, missing labels, or syntax errors in the generated code\n");
     }
     (void)remove(ppname);
     return ret == 0;
@@ -2957,7 +2966,11 @@ int main(int argc, char *argv[]) {
     if (argc >= arg_idx + 2 && (strcmp(argv[arg_idx], "--batch") == 0)) {
         const char *batch_file = argv[arg_idx + 1];
         FILE *bf = fopen(batch_file, "r");
-        if (!bf) { c_printf(ANSI_RED, "Cannot open batch file: %s\n", batch_file); return 1; }
+        if (!bf) {
+            c_printf(ANSI_RED, "Error: Cannot open batch file: %s\n", batch_file);
+            c_printf(ANSI_YELLOW, "  Hint: Check if the file exists and the path is correct\n");
+            return 1;
+        }
         char bline[MAX_PROMPT];
         int total = 0, good = 0;
         while (fgets(bline, sizeof(bline), bf)) {
@@ -2981,7 +2994,9 @@ int main(int argc, char *argv[]) {
         return (good == total) ? 0 : 1;
     }
     if (arg_idx >= argc) {
-        fprintf(stderr, "Usage: %s [--validate] [--l1vm-root <path>] <prompt> [filename]\n", argv[0]);
+        c_printf(ANSI_RED, "Error: No prompt provided\n");
+        c_printf(ANSI_YELLOW, "Usage: %s [--validate] [--l1vm-root <path>] <prompt> [filename]\n", argv[0]);
+        c_printf(ANSI_YELLOW, "  Example: %s \"hello world\" output.l1com\n", argv[0]);
         return 1;
     }
 
@@ -3002,7 +3017,7 @@ int main(int argc, char *argv[]) {
         SNPRINTF_CHECK(fname, sizeof(fname), "%s", argv[arg_idx]);
         // block path traversal in filename
         if (strstr(fname, "..")) {
-            fprintf(stderr, "Error: filename must not contain '..'\n");
+            c_printf(ANSI_RED, "Error: Filename must not contain '..' (path traversal blocked)\n");
             return 1;
         }
         if (!strstr(fname, ".l1com")) strncat(fname, ".l1com", sizeof(fname) - strlen(fname) - 1);
@@ -3023,7 +3038,7 @@ int main(int argc, char *argv[]) {
                 exit_code = 0;
                 break;
             } else {
-                c_printf(ANSI_YELLOW, "Validation failed, retrying (%d/3)...\n", retry + 1);
+                c_printf(ANSI_YELLOW, "Validation failed, retrying with different code generation (attempt %d/3)...\n", retry + 1);
             }
         } else if (gen_ok) {
             validated = 1;
@@ -3032,7 +3047,8 @@ int main(int argc, char *argv[]) {
         }
     }
     if (!validated && validate_flag) {
-        c_printf(ANSI_RED, "Warning: code could not be validated after 3 attempts.\n");
+        c_printf(ANSI_RED, "Warning: Code could not be validated after 3 attempts.\n");
+        c_printf(ANSI_YELLOW, "  Hint: The generated code may have syntax errors. Try rephrasing your prompt.\n");
         exit_code = 2;
     } else if (!validated) {
         exit_code = 1;

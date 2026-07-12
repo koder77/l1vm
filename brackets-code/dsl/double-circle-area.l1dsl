@@ -1,15 +1,15 @@
 // double-circle-area.l1dsl
 parser: "double circle area, area circle double"
 match: has_double_circle_area
-token: double radius
-result: double area
+token: double d_radius
+result: double d_area
 include: intr-func.l1h
 desc: "Calculate area of a circle using double precision"
 
 code:
-    (set const-double 1 zero 0.0)
     (set const-double 1 pi 3.14159)
-    (radius *d radius r2 :=)
-    (r2 *d pi area :=)
-    (area :print_d !)
+    (set double 1 d_r2 0.0)
+    ((d_radius d_radius *d) d_r2 =)
+    ((d_r2 pi *d) d_area =)
+    (d_area :print_d !)
     (:print_n !)

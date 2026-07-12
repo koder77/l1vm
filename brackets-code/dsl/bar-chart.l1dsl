@@ -16,7 +16,7 @@ code:
     (set string s str_str_1 "#")
     // ASCII bar chart
     (for-loop)
-    (((i five <) f :=) f for)
+    (((i 5 <) f :=) f for)
         (arr [ i ] count =)
         (for-loop)
             (((j count <) f :=) f for)

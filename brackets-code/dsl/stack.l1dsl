@@ -19,7 +19,7 @@ code:
     // push 3 values
     (zero sp :=)
     (for-loop)
-    (((sp three <) f :=) f for)
+    (((sp 3 <) f :=) f for)
         (prompt_str :print_s !)
         (val :input_i !)
         (sp * int64_size realind :=)

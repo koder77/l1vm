@@ -42,7 +42,7 @@ code:
         (sum + digit_pow sum :=)
         (temp / ten temp :=)
     (((temp zero >) f :=) f while)
-    (((orig sum ==) f :=) f if)
+    (((orig sum ==) f :=) f if+)
         (armstrong_number_str_1 :print_s !)
     (else)
         (not_armstrong_str_1 :print_s !)

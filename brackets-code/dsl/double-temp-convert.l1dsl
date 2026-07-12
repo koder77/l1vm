@@ -7,12 +7,12 @@ include: intr-func.l1h
 desc: "Convert Celsius to Fahrenheit using double precision"
 
 code:
-    (set const-double 1 zero 0.0)
     (set const-double 1 nine 9.0)
     (set const-double 1 five 5.0)
     (set const-double 1 thirtytwo 32.0)
-    (celsius *d nine f :=)
-    (f /d five f :=)
-    (f +d thirtytwo fahrenheit :=)
+    (set double 1 temp 0.0)
+    ((celsius nine *d) temp =)
+    ((temp five /d) temp =)
+    ((temp thirtytwo +d) fahrenheit =)
     (fahrenheit :print_d !)
     (:print_n !)
