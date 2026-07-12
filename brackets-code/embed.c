@@ -165,7 +165,7 @@ void init_embeddings(void) {
             unsigned long th = hash_word(trigram);
             srand(th);
             for (int j = 0; j < EMBED_DIM; j++)
-                word_embeddings[i].embed[j] += ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
+                word_embeddings[i].embed[j] += ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
             ngram_count++;
         }
         // Fallback for short words: use bigrams and character-position hash
@@ -175,7 +175,7 @@ void init_embeddings(void) {
                 unsigned long th = hash_word(bigram);
                 srand(th);
                 for (int j = 0; j < EMBED_DIM; j++)
-                    word_embeddings[i].embed[j] += ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
+                    word_embeddings[i].embed[j] += ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
                 ngram_count++;
             }
         }
@@ -184,7 +184,7 @@ void init_embeddings(void) {
             unsigned long th = hash_word(w);
             srand(th);
             for (int j = 0; j < EMBED_DIM; j++)
-                word_embeddings[i].embed[j] = ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
+                word_embeddings[i].embed[j] = ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
             ngram_count = 1;
         }
         // Average
@@ -1195,7 +1195,7 @@ void embed_text(const char *text, float *out) {
                     unsigned long h = hash_word(bigram);
                     srand(h);
                     for (int j = 0; j < EMBED_DIM; j++)
-                        ngram_embed[j] += ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
+                        ngram_embed[j] += ((float)rand() / (float)RAND_MAX) * 2.0f - 1.0f;
                     ngram_count++;
                 }
                 if (ngram_count > 0) {

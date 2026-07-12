@@ -1,4 +1,4 @@
-CC      = gcc
+CC      = clang-19
 CFLAGS  = -O2 -Wall -Wextra
 LDFLAGS = -lm
 PREFIX  = /usr/local
