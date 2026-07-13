@@ -1,5 +1,5 @@
 // pyramid.l1dsl
-parser: "keywords for matching"
+parser: "pyramid, pyramide, triangle pattern"
 match: has_pyramid
 include: intr-func.l1h
 desc: "print a number pyramid"

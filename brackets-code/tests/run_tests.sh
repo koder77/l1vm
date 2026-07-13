@@ -222,8 +222,8 @@ DSL_TESTS[dsl_find_max]="find max in data"
 DSL_TESTS[dsl_average_data]="compute average of data"
 DSL_TESTS[dsl_reverse_data]="reverse data list"
 DSL_TESTS[dsl_sum_data]="sum all data elements"
-DSL_TESTS[dsl_array_access]="read elements of data"
-DSL_TESTS[dsl_array_write]="get data at index 3"
+DSL_TESTS[dsl_array_access]="read array element"
+DSL_TESTS[dsl_array_write]="write array element"
 DSL_TESTS[dsl_shuffle_elements]="shuffle array elements"
 
 # double array operations

@@ -1220,6 +1220,16 @@ int parse_task(const char *prompt, TaskProfile *task) {
         task->has_algorithm = 0;
     }
 
+    if (has_word(buf, "array") && (has_word(buf, "access") || has_word(buf, "read") || has_word(buf, "get") || has_word(buf, "element") || has_word(buf, "index"))) {
+        task->has_array_access = 1;
+        task->has_algorithm = 0;
+    }
+
+    if (has_word(buf, "array") && (has_word(buf, "write") || has_word(buf, "set") || has_word(buf, "store"))) {
+        task->has_array_write = 1;
+        task->has_algorithm = 0;
+    }
+
     if ((has_word(buf, "array") && (has_word(buf, "min") || has_word(buf, "max") || has_word(buf, "average") || has_word(buf, "vmath"))) || (has_word(buf, "stat") && has_word(buf, "array"))) {
         task->has_array_vmath = 1;
         task->has_algorithm = 0;
@@ -1403,7 +1413,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
     if (has_word(buf, "rock") && has_word(buf, "paper") && has_word(buf, "scissors"))
         task->has_rock_paper_scissors = 1;
 
-    if ((has_word(buf, "pyramid") || has_word(buf, "pyramide")) && (has_word(buf, "number") || has_word(buf, "zahl") || has_word(buf, "pattern") || has_word(buf, "muster")))
+    if ((has_word(buf, "pyramid") || has_word(buf, "pyramide")) && (has_word(buf, "number") || has_word(buf, "zahl") || has_word(buf, "pattern") || has_word(buf, "muster") || has_word(buf, "height") || has_word(buf, "hoehe") || has_word(buf, "rows") || has_word(buf, "zeilen")))
         task->has_pyramid = 1;
 
     if ((has_word(buf, "temperature") || has_word(buf, "temperatur")) && (has_word(buf, "convert") || has_word(buf, "converter") || has_word(buf, "umrechnen")))
@@ -1415,7 +1425,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
     if ((has_word(buf, "analyze") || has_word(buf, "analyse")) && (has_word(buf, "string") || has_word(buf, "text") || has_word(buf, "zeichenkette")))
         task->has_string_analyzer = 1;
 
-    if ((has_word(buf, "analyze") || has_word(buf, "analyse")) && (has_word(buf, "number") || has_word(buf, "zahl")))
+    if ((has_word(buf, "analyze") || has_word(buf, "analyse") || has_word(buf, "analyzer") || has_word(buf, "analyser")) && (has_word(buf, "number") || has_word(buf, "zahl")))
         task->has_number_analyzer = 1;
 
     if (has_word(buf, "filter") && (has_word(buf, "number") || has_word(buf, "numbers") || has_word(buf, "zahlen") || has_word(buf, "values") || has_word(buf, "werte")))
@@ -1470,7 +1480,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
         task->has_linear_regression = 1;
     if ((has_word(buf, "base") || has_word(buf, "basis")) && (has_word(buf, "convert") || has_word(buf, "converter") || has_word(buf, "umwandeln") || has_word(buf, "konvert")))
         task->has_base_converter = 1;
-    if ((has_word(buf, "frequency") || has_word(buf, "haeufigkeit") || has_word(buf, "frequenz")) && (has_word(buf, "analyze") || has_word(buf, "analyse") || has_word(buf, "count") || has_word(buf, "zaehle")))
+    if ((has_word(buf, "frequency") || has_word(buf, "haeufigkeit") || has_word(buf, "frequenz") || has_word(buf, "freq")) && (has_word(buf, "analyze") || has_word(buf, "analyse") || has_word(buf, "count") || has_word(buf, "zaehle") || has_word(buf, "analysis")))
         task->has_freq_analysis = 1;
     if (has_word(buf, "shuffle") || has_word(buf, "mischen") || (has_word(buf, "random") && has_word(buf, "permute")))
         task->has_shuffle = 1;
@@ -1558,7 +1568,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
         task->has_hanoi_tower = 1;
     if (has_word(buf, "ascii") && has_word(buf, "art"))
         task->has_ascii_art = 1;
-    if ((has_word(buf, "number") || has_word(buf, "zahl")) && (has_word(buf, "word") || has_word(buf, "wort") || has_word(buf, "text")))
+    if ((has_word(buf, "number") || has_word(buf, "zahl")) && (has_word(buf, "word") || has_word(buf, "words") || has_word(buf, "wort") || has_word(buf, "worter") || has_word(buf, "text")))
         task->has_number_to_words = 1;
     if ((has_word(buf, "temperature") || has_word(buf, "temperatur")) && (has_word(buf, "table") || has_word(buf, "tabelle")))
         task->has_temperature_table = 1;
@@ -1602,6 +1612,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
         || task->has_primes || task->has_sum || task->has_factorial || task->has_fibonacci
         || task->has_median || task->has_string_cat || task->has_string_compare
         || task->has_array_assign || task->has_array_reverse || task->has_array_find
+        || task->has_array_access || task->has_array_write
         || task->has_sum_range || task->has_print_even || task->has_find_max
         || task->has_fib_seq || task->has_countdown_from || task->has_input_sort
         || task->has_input_fact || task->has_read_file || task->has_write_file

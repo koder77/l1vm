@@ -1,8 +1,6 @@
 // number-to-words.l1dsl
-parser: "keywords for matching"
+parser: "number to words, number words, zahl worte"
 match: has_number_to_words
-token: token type and name
-result: result type and name
 include: intr-func.l1h
 desc: "number breakdown into tens and ones"
 code:

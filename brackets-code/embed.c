@@ -305,6 +305,8 @@ int llm_select_emitter(const char *prompt, TaskProfile *task) {
     if (task->has_array_assign) emitter_scores[12] = 2.0f;
     if (task->has_array_reverse) emitter_scores[13] = 2.0f;
     if (task->has_array_find) emitter_scores[14] = 2.0f;
+    if (task->has_array_access) emitter_scores[14] = 2.0f;
+    if (task->has_array_write) emitter_scores[12] = 2.0f;
     if (task->has_input_fact) emitter_scores[15] = 2.0f;
     if (task->has_array_vmath) emitter_scores[16] = 2.0f;
     if (task->has_read_file) emitter_scores[17] = 2.0f;
