@@ -1068,9 +1068,11 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
     trim(remaining);
     if (strlen(remaining) > 0) { SNPRINTF_CHECK(steps[num_steps], MAX_PROMPT, "%s", remaining); num_steps++; }
 
-    fprintf(stderr, "DEBUG split: num_steps=%d steps:", num_steps);
-    for (int d = 0; d < num_steps; d++) fprintf(stderr, " [%d]='%s'", d, steps[d]);
-    fprintf(stderr, "\n");
+    if (verbose_flag) {
+        fprintf(stderr, "DEBUG split: num_steps=%d steps:", num_steps);
+        for (int d = 0; d < num_steps; d++) fprintf(stderr, " [%d]='%s'", d, steps[d]);
+        fprintf(stderr, "\n");
+    }
     // Phase 4: Merge non-viable steps backward into their predecessor
     if (num_steps > 1) {
         int merged = 1;
@@ -1331,9 +1333,7 @@ int search_examples(const char *query, int top_k, int *indices, float *scores) {
         example_docs[i].score = cosine_sim(q_embed, example_docs[i].embedding);
 
     int count = top_k < num_examples ? top_k : num_examples;
-    int *used = malloc((size_t)num_examples * sizeof(int));
-    if (!used) return 0;
-    memset(used, 0, (size_t)num_examples * sizeof(int));
+    int used[MAX_EXAMPLES] = {0};
     int result = 0;
     for (int k = 0; k < count; k++) {
         int best = -1;
@@ -1349,6 +1349,6 @@ int search_examples(const char *query, int top_k, int *indices, float *scores) {
             result++;
         }
     }
-    free(used);
+
     return result;
 }

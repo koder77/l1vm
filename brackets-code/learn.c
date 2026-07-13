@@ -21,20 +21,19 @@
 
 // ==================== LEARNED PATTERN SYSTEM ====================
 
-char* learned_dir_path(void) {
-    static char path[1024];
+char* learned_dir_path(char *buf, int bufsize) {
     const char *home = getenv("HOME");
     if (home) {
-        SNPRINTF_CHECK(path, sizeof(path), "%s/%s", home, LEARNED_DIR);
+        SNPRINTF_CHECK(buf, bufsize, "%s/%s", home, LEARNED_DIR);
     } else {
-        SNPRINTF_CHECK(path, sizeof(path), "%s", LEARNED_DIR);
+        SNPRINTF_CHECK(buf, bufsize, "%s", LEARNED_DIR);
     }
-    return path;
+    return buf;
 }
 
 void ensure_learned_dir(void) {
     char path[1024];
-    SNPRINTF_CHECK(path, sizeof(path), "%s", learned_dir_path());
+    learned_dir_path(path, sizeof(path));
     // POSIX mkdir - create each directory level
     char tmp[1024];
     SNPRINTF_CHECK(tmp, sizeof(tmp), "%s", path);
@@ -248,7 +247,9 @@ int learn_from_file(const char *path, const char *keywords, const char *descript
 int save_learned_pattern(LearnedPattern *lp) {
     ensure_learned_dir();
     char filepath[1100];
-    SNPRINTF_CHECK(filepath, sizeof(filepath), "%s/%s.l1lp", learned_dir_path(), lp->id);
+    char ldir[1024];
+    learned_dir_path(ldir, sizeof(ldir));
+    SNPRINTF_CHECK(filepath, sizeof(filepath), "%s/%s.l1lp", ldir, lp->id);
 
     FILE *f = fopen(filepath, "w");
     if (!f) {
@@ -302,7 +303,7 @@ void load_learned_patterns(void) {
     learned_loaded = 1;
 
     char dirpath[1024];
-    SNPRINTF_CHECK(dirpath, sizeof(dirpath), "%s", learned_dir_path());
+    learned_dir_path(dirpath, sizeof(dirpath));
 
     DIR *d = opendir(dirpath);
     if (!d) return;
@@ -675,7 +676,9 @@ int forget_learned(const char *id) {
 
     // Remove file from disk
     char filepath[1100];
-    SNPRINTF_CHECK(filepath, sizeof(filepath), "%s/%s.l1lp", learned_dir_path(), learned_patterns[found].id);
+    char ldir[1024];
+    learned_dir_path(ldir, sizeof(ldir));
+    SNPRINTF_CHECK(filepath, sizeof(filepath), "%s/%s.l1lp", ldir, learned_patterns[found].id);
     remove(filepath);
 
     // Free allocated memory in the pattern being removed

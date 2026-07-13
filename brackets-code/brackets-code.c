@@ -443,9 +443,19 @@ static const OpMap ops[] = {
 };
 
 static const char* find_operation(const char *buf) {
-    for (int i = 0; i < (int)(sizeof(ops)/sizeof(ops[0])); i++)
-        if (strstr(buf, ops[i].op)) return ops[i].rpn_op;
-    return NULL;
+    const char *best = NULL;
+    int best_len = 0;
+    for (int i = 0; i < (int)(sizeof(ops)/sizeof(ops[0])); i++) {
+        const char *hit = strstr(buf, ops[i].op);
+        if (hit) {
+            int oplen = (int)strlen(ops[i].op);
+            if (oplen > best_len) {
+                best_len = oplen;
+                best = ops[i].rpn_op;
+            }
+        }
+    }
+    return best;
 }
 
 // ==================== FUZZY SYNONYM MATCHING ====================
@@ -663,32 +673,39 @@ void expand_query(const char *query, char *expanded, int max_len) {
     }
 }
 
+static int _has_word_lowered(const char *lowered_text, const char *keyword);
+
 int has_word_fuzzy(const char *text, const char *keyword) {
     char buf[MAX_PROMPT];
     SNPRINTF_CHECK(buf, sizeof(buf), "%s", text);
     to_lowercase(buf);
+    return _has_word_lowered(buf, keyword);
+}
+
+static int _has_word_lowered(const char *lowered_text, const char *keyword) {
     int kwlen = strlen(keyword);
-    char *p = buf;
+    const char *p = lowered_text;
     while ((p = strstr(p, keyword)) != NULL) {
-        // check word boundaries before and after
-        int at_start = (p == buf);
+        int at_start = (p == lowered_text);
         int at_end = (p[kwlen] == '\0');
         int before_ok = at_start || !isalpha((unsigned char)*(p - 1));
         int after_ok = at_end || !isalpha((unsigned char)p[kwlen]);
         if (before_ok && after_ok) return 1;
         p++;
     }
-    p = buf;
+    p = lowered_text;
     while (*p) {
         while (*p && !isalpha(*p)) p++;
         if (!*p) break;
-        char *start = p;
+        const char *start = p;
         while (*p && isalpha(*p)) p++;
-        char saved = *p;
-        *p = '\0';
-        const char *canonical = resolve_synonym(start);
-        if (canonical != NULL && strcmp(canonical, keyword) == 0) { *p = saved; return 1; }
-        *p = saved;
+        int len = (int)(p - start);
+        if (len >= 256) len = 255;
+        char word_buf[256];
+        memcpy(word_buf, start, len);
+        word_buf[len] = '\0';
+        const char *canonical = resolve_synonym(word_buf);
+        if (canonical != NULL && strcmp(canonical, keyword) == 0) return 1;
     }
     return 0;
 }
@@ -697,12 +714,9 @@ int has_word(const char *prompt, const char *word) {
     return has_word_fuzzy(prompt, word);
 }
 
-static int is_negated(const char *prompt, const char *keyword) {
-    char buf[MAX_PROMPT];
-    SNPRINTF_CHECK(buf, sizeof(buf), "%s", prompt);
-    to_lowercase(buf);
+static int _is_negated_lowered(const char *lowered_text, const char *keyword) {
     int kwlen = strlen(keyword);
-    char *p = buf;
+    const char *p = lowered_text;
     static const char *negations[] = {
         "not", "don't", "dont", "doesn't", "doesnt", "isn't", "isnt",
         "won't", "wont", "can't", "cant", "no", "without", "kein",
@@ -710,30 +724,29 @@ static int is_negated(const char *prompt, const char *keyword) {
         "weder", "nor", "neither", NULL
     };
     while ((p = strstr(p, keyword)) != NULL) {
-        int at_start = (p == buf);
+        int at_start = (p == lowered_text);
         int before_ok = at_start || !isalpha((unsigned char)*(p - 1));
         int after_ok = (p[kwlen] == '\0') || !isalpha((unsigned char)p[kwlen]);
         if (before_ok && after_ok) {
-            // Look backwards from keyword for negation words within 5 words
-            char *scan = p - 1;
+            const char *scan = p - 1;
             int words_back = 0;
-            while (scan >= buf && words_back < 5) {
-                while (scan >= buf && isspace((unsigned char)*scan)) scan--;
-                if (scan < buf) break;
-                char *word_end = scan;
-                while (scan >= buf && isalpha((unsigned char)*scan)) scan--;
-                char *word_start = scan + 1;
+            while (scan >= lowered_text && words_back < 5) {
+                while (scan >= lowered_text && isspace((unsigned char)*scan)) scan--;
+                if (scan < lowered_text) break;
+                const char *word_end = scan;
+                while (scan >= lowered_text && isalpha((unsigned char)*scan)) scan--;
+                const char *word_start = scan + 1;
                 int wlen = word_end - word_start + 1;
                 if (wlen > 0 && wlen < 32) {
                     char wbuf[32];
-                    SNPRINTF_CHECK(wbuf, sizeof(wbuf), "%.*s", wlen, word_start);
-                    to_lowercase(wbuf);
+                    memcpy(wbuf, word_start, wlen);
+                    wbuf[wlen] = '\0';
                     for (int ni = 0; negations[ni]; ni++) {
                         if (strcmp(wbuf, negations[ni]) == 0) return 1;
                     }
                     words_back++;
                 }
-                if (scan >= buf) scan--;
+                if (scan >= lowered_text) scan--;
             }
             return 0;
         }
@@ -787,7 +800,8 @@ static int extract_numbers(const char *prompt, int *nums, int max_nums) {
             }
             char *endptr = NULL;
             long val = strtol(p, &endptr, 10);
-            if (endptr != p) nums[count++] = (int)val;
+            if (endptr != p && val >= INT_MIN && val <= INT_MAX)
+                nums[count++] = (int)val;
             while (*p && isdigit(*p)) p++;
             continue;
         }
@@ -814,7 +828,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
     if (strstr(buf, "byte") || strstr(buf, "int8")) SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "byte");
     else if (strstr(buf, "int16") || strstr(buf, "short")) SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "int16");
     else if (strstr(buf, "int32")) SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "int32");
-    else if (strstr(buf, "int64") || has_word(buf, "int") || strstr(buf, "long")) SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "int64");
+    else if (strstr(buf, "int64") || _has_word_lowered(buf, "int") || strstr(buf, "long")) SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "int64");
     else if (strstr(buf, "double") || strstr(buf, "float") || strstr(buf, "real") || strstr(buf, "komma")) SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "double");
 
     // extract numbers
@@ -884,15 +898,15 @@ int parse_task(const char *prompt, TaskProfile *task) {
         p++;
     }
     // detect input keywords
-    if (has_word(buf, "lies") || has_word(buf, "lese") || has_word(buf, "read") || has_word(buf, "input")
-        || has_word(buf, "gib") || has_word(buf, "enter") || has_word(buf, "erfasse")
-        || has_word(buf, "collect") || has_word(buf, "eingabe") || has_word(buf, "einlesen"))
+    if (_has_word_lowered(buf, "lies") || _has_word_lowered(buf, "lese") || _has_word_lowered(buf, "read") || _has_word_lowered(buf, "input")
+        || _has_word_lowered(buf, "gib") || _has_word_lowered(buf, "enter") || _has_word_lowered(buf, "erfasse")
+        || _has_word_lowered(buf, "collect") || _has_word_lowered(buf, "eingabe") || _has_word_lowered(buf, "einlesen"))
         task->has_input = 1;
 
     // detect output
-    if (has_word(buf, "print") || has_word(buf, "druck") || has_word(buf, "ausg")
-        || has_word(buf, "show") || has_word(buf, "display") || has_word(buf, "zeig")
-        || has_word(buf, "output") || has_word(buf, "schreib"))
+    if (_has_word_lowered(buf, "print") || _has_word_lowered(buf, "druck") || _has_word_lowered(buf, "ausg")
+        || _has_word_lowered(buf, "show") || _has_word_lowered(buf, "display") || _has_word_lowered(buf, "zeig")
+        || _has_word_lowered(buf, "output") || _has_word_lowered(buf, "schreib"))
         task->has_output = 1;
 
     // detect print variable
@@ -978,115 +992,115 @@ int parse_task(const char *prompt, TaskProfile *task) {
     }
 
     // detect loops
-    if (has_word(buf, "loop") || has_word(buf, "schleife") || has_word(buf, "for")
-        || has_word(buf, "while") || has_word(buf, "wiederhol") || has_word(buf, "iterate"))
+    if (_has_word_lowered(buf, "loop") || _has_word_lowered(buf, "schleife") || _has_word_lowered(buf, "for")
+        || _has_word_lowered(buf, "while") || _has_word_lowered(buf, "wiederhol") || _has_word_lowered(buf, "iterate"))
         task->has_loop = 1;
 
     // detect condition
-    if (has_word(buf, "if") || has_word(buf, "bedingung") || has_word(buf, "wenn")
-        || has_word(buf, "condition") || has_word(buf, "falls"))
+    if (_has_word_lowered(buf, "if") || _has_word_lowered(buf, "bedingung") || _has_word_lowered(buf, "wenn")
+        || _has_word_lowered(buf, "condition") || _has_word_lowered(buf, "falls"))
         task->has_condition = 1;
 
     // algorithm detection
-    if (has_word(buf, "sort") || has_word(buf, "bubble") || has_word(buf, "sortiere"))
+    if (_has_word_lowered(buf, "sort") || _has_word_lowered(buf, "bubble") || _has_word_lowered(buf, "sortiere"))
         task->has_sort = 1;
 
-    if (has_word(buf, "descending") || has_word(buf, "descendig") || has_word(buf, "desc") || has_word(buf, "absteigend"))
+    if (_has_word_lowered(buf, "descending") || _has_word_lowered(buf, "descendig") || _has_word_lowered(buf, "desc") || _has_word_lowered(buf, "absteigend"))
         task->has_descending = 1;
 
-    if ((has_word(buf, "bignum") || (has_word(buf, "big") && has_word(buf, "number")) || has_word(buf, "mpfr")) && (has_word(buf, "power") || has_word(buf, "pow") || has_word(buf, "potenz") || has_word(buf, "calculate") || has_word(buf, "^")))
+    if ((_has_word_lowered(buf, "bignum") || (_has_word_lowered(buf, "big") && _has_word_lowered(buf, "number")) || _has_word_lowered(buf, "mpfr")) && (_has_word_lowered(buf, "power") || _has_word_lowered(buf, "pow") || _has_word_lowered(buf, "potenz") || _has_word_lowered(buf, "calculate") || _has_word_lowered(buf, "^")))
         task->has_bignum_math = 1;
 
-    if (has_word(buf, "power") || has_word(buf, "potenz") || has_word(buf, "exponent")
-        || has_word(buf, "square") || has_word(buf, "quadrat") || has_word(buf, "cube"))
+    if (_has_word_lowered(buf, "power") || _has_word_lowered(buf, "potenz") || _has_word_lowered(buf, "exponent")
+        || _has_word_lowered(buf, "square") || _has_word_lowered(buf, "quadrat") || _has_word_lowered(buf, "cube"))
         task->has_power = 1;
 
-    if (has_word(buf, "max") || has_word(buf, "größt") || has_word(buf, "largest")
-        || has_word(buf, "greatest") || has_word(buf, "highest") || has_word(buf, "maximum"))
+    if (_has_word_lowered(buf, "max") || _has_word_lowered(buf, "größt") || _has_word_lowered(buf, "largest")
+        || _has_word_lowered(buf, "greatest") || _has_word_lowered(buf, "highest") || _has_word_lowered(buf, "maximum"))
         task->has_max = 1;
 
-    if (has_word(buf, "min") || has_word(buf, "kleinste") || has_word(buf, "smallest")
-        || has_word(buf, "least") || has_word(buf, "lowest") || has_word(buf, "minimum"))
+    if (_has_word_lowered(buf, "min") || _has_word_lowered(buf, "kleinste") || _has_word_lowered(buf, "smallest")
+        || _has_word_lowered(buf, "least") || _has_word_lowered(buf, "lowest") || _has_word_lowered(buf, "minimum"))
         task->has_min = 1;
 
-    if (has_word(buf, "gcd") || has_word(buf, "ggt") || has_word(buf, "gcm") || strstr(buf, "common divisor") || strstr(buf, "greatest common"))
+    if (_has_word_lowered(buf, "gcd") || _has_word_lowered(buf, "ggt") || _has_word_lowered(buf, "gcm") || strstr(buf, "common divisor") || strstr(buf, "greatest common"))
         task->has_gcd = 1;
 
-    if (has_word(buf, "countdown") || has_word(buf, "count down"))
+    if (_has_word_lowered(buf, "countdown") || _has_word_lowered(buf, "count down"))
         task->has_countdown = 1;
 
-    if (!has_word(buf, "ascii") && (has_word(buf, "table") || has_word(buf, "einmaleins") || has_word(buf, "multiplication")))
+    if (!_has_word_lowered(buf, "ascii") && (_has_word_lowered(buf, "table") || _has_word_lowered(buf, "einmaleins") || _has_word_lowered(buf, "multiplication")))
         task->has_mult_table = 1;
 
-    if (has_word(buf, "guess") || has_word(buf, "rate") || has_word(buf, "raten"))
+    if (_has_word_lowered(buf, "guess") || _has_word_lowered(buf, "rate") || _has_word_lowered(buf, "raten"))
         task->has_guess = 1;
 
-    if (has_word(buf, "random") || has_word(buf, "zufall") || has_word(buf, "rand"))
+    if (_has_word_lowered(buf, "random") || _has_word_lowered(buf, "zufall") || _has_word_lowered(buf, "rand"))
         task->has_random = 1;
 
-    if (has_word(buf, "point") || has_word(buf, "zeiger") || has_word(buf, "adresse")
-        || has_word(buf, "address") || has_word(buf, "memory") || has_word(buf, "mem"))
+    if (_has_word_lowered(buf, "point") || _has_word_lowered(buf, "zeiger") || _has_word_lowered(buf, "adresse")
+        || _has_word_lowered(buf, "address") || _has_word_lowered(buf, "memory") || _has_word_lowered(buf, "mem"))
         task->has_pointer = 1;
 
-    if (has_word(buf, "struct") || has_word(buf, "dotted") || has_word(buf, "punkt")
-        || has_word(buf, "struktur") || has_word(buf, "record"))
+    if (_has_word_lowered(buf, "struct") || _has_word_lowered(buf, "dotted") || _has_word_lowered(buf, "punkt")
+        || _has_word_lowered(buf, "struktur") || _has_word_lowered(buf, "record"))
         task->has_struct = 1;
 
-    if (has_word(buf, "function") || has_word(buf, "funktion") || has_word(buf, "subroutine"))
+    if (_has_word_lowered(buf, "function") || _has_word_lowered(buf, "funktion") || _has_word_lowered(buf, "subroutine"))
         task->has_function = 1;
 
-    if (has_word(buf, "hex") || has_word(buf, "binary") || has_word(buf, "binaer"))
+    if (_has_word_lowered(buf, "hex") || _has_word_lowered(buf, "binary") || _has_word_lowered(buf, "binaer"))
         task->has_hex_binary = 1;
 
-    if (has_word(buf, "average") || has_word(buf, "durchschnitt") || has_word(buf, "mean"))
+    if (_has_word_lowered(buf, "average") || _has_word_lowered(buf, "durchschnitt") || _has_word_lowered(buf, "mean"))
         task->has_average = 1;
 
-    if (has_word(buf, "fizzbuzz") || has_word(buf, "fizz buzz") || has_word(buf, "fizz"))
+    if (_has_word_lowered(buf, "fizzbuzz") || _has_word_lowered(buf, "fizz buzz") || _has_word_lowered(buf, "fizz"))
         task->has_fizzbuzz = 1;
 
-    if (has_word(buf, "prime") || has_word(buf, "prim"))
+    if (_has_word_lowered(buf, "prime") || _has_word_lowered(buf, "prim"))
         task->has_primes = 1;
 
-    if (has_word(buf, "sum") || has_word(buf, "summe") || has_word(buf, "add"))
+    if (_has_word_lowered(buf, "sum") || _has_word_lowered(buf, "summe") || _has_word_lowered(buf, "add"))
         task->has_sum = 1;
 
     if (strcmp(task->op, "add") == 0) task->has_sum = 1;
 
-    if (has_word(buf, "factorial") || has_word(buf, "fakult"))
+    if (_has_word_lowered(buf, "factorial") || _has_word_lowered(buf, "fakult"))
         task->has_factorial = 1;
 
-    if (has_word(buf, "fib") || has_word(buf, "fibonacci"))
+    if (_has_word_lowered(buf, "fib") || _has_word_lowered(buf, "fibonacci"))
         task->has_fibonacci = 1;
 
-    if (has_word(buf, "median") || has_word(buf, "mitte"))
+    if (_has_word_lowered(buf, "median") || _has_word_lowered(buf, "mitte"))
         task->has_median = 1;
 
-    if ((has_word(buf, "string") || strstr(buf, "strings") || strstr(buf, "string ")
-        || has_word(buf, "zeichen") || has_word(buf, "text")
-        || has_word(buf, "wort"))
-        && !has_word(buf, "length") && !has_word(buf, "laenge"))
+    if ((_has_word_lowered(buf, "string") || strstr(buf, "strings") || strstr(buf, "string ")
+        || _has_word_lowered(buf, "zeichen") || _has_word_lowered(buf, "text")
+        || _has_word_lowered(buf, "wort"))
+        && !_has_word_lowered(buf, "length") && !_has_word_lowered(buf, "laenge"))
         task->has_string_cat = 1;
 
-    if (has_word(buf, "compare") || has_word(buf, "vergleich") || has_word(buf, "cmp"))
+    if (_has_word_lowered(buf, "compare") || _has_word_lowered(buf, "vergleich") || _has_word_lowered(buf, "cmp"))
         task->has_string_compare = 1;
 
-    if (has_word(buf, "file") || has_word(buf, "datei"))
+    if (_has_word_lowered(buf, "file") || _has_word_lowered(buf, "datei"))
         { task->has_read_file = 1; task->has_write_file = 1; }
 
-    if (has_word(buf, "timer") || has_word(buf, "zeit") || has_word(buf, "time")
-        || has_word(buf, "benchmark") || has_word(buf, "measure") || has_word(buf, "mess")
-        || has_word(buf, "dauer") || has_word(buf, "execution") || has_word(buf, "lauf"))
+    if (_has_word_lowered(buf, "timer") || _has_word_lowered(buf, "zeit") || _has_word_lowered(buf, "time")
+        || _has_word_lowered(buf, "benchmark") || _has_word_lowered(buf, "measure") || _has_word_lowered(buf, "mess")
+        || _has_word_lowered(buf, "dauer") || _has_word_lowered(buf, "execution") || _has_word_lowered(buf, "lauf"))
         task->has_timer = 1;
 
-    if (has_word(buf, "hello") || has_word(buf, "hallo") || has_word(buf, "name")
-        || (has_word(buf, "what") && has_word(buf, "your")))
+    if (_has_word_lowered(buf, "hello") || _has_word_lowered(buf, "hallo") || _has_word_lowered(buf, "name")
+        || (_has_word_lowered(buf, "what") && _has_word_lowered(buf, "your")))
         task->has_hello_name = 1;
 
-    if ((has_word(buf, "even") || has_word(buf, "odd") || has_word(buf, "gerade") || has_word(buf, "ungerade")))
+    if ((_has_word_lowered(buf, "even") || _has_word_lowered(buf, "odd") || _has_word_lowered(buf, "gerade") || _has_word_lowered(buf, "ungerade")))
         task->has_even_odd = 1;
 
     // enhanced pattern detection
-    if ((has_word(buf, "sum") || has_word(buf, "summe")) && has_word(buf, "to") && task->has_literals) {
+    if ((_has_word_lowered(buf, "sum") || _has_word_lowered(buf, "summe")) && _has_word_lowered(buf, "to") && task->has_literals) {
         task->has_sum_range = 1;
         if (task->num_literals >= 1) task->sum_range_n = task->literals[0];
         else task->sum_range_n = 100;
@@ -1096,8 +1110,8 @@ int parse_task(const char *prompt, TaskProfile *task) {
     }
 
     // "count from 1 to 20" → treat as sum_range (prints numbers in range)
-    if ((has_word(buf, "count") || has_word(buf, "zähle") || has_word(buf, "zaehle"))
-        && has_word(buf, "to") && task->has_literals) {
+    if ((_has_word_lowered(buf, "count") || _has_word_lowered(buf, "zähle") || _has_word_lowered(buf, "zaehle"))
+        && _has_word_lowered(buf, "to") && task->has_literals) {
         task->has_sum_range = 1;
         if (task->num_literals >= 2) task->sum_range_n = task->literals[1];
         else if (task->num_literals >= 1) task->sum_range_n = task->literals[0];
@@ -1106,15 +1120,15 @@ int parse_task(const char *prompt, TaskProfile *task) {
         task->has_operation = 0;
     }
 
-    if ((has_word(buf, "even") || has_word(buf, "gerade")) && task->has_literals
-        && !has_word(buf, "ungerade") && !has_word(buf, "odd")) {
+    if ((_has_word_lowered(buf, "even") || _has_word_lowered(buf, "gerade")) && task->has_literals
+        && !_has_word_lowered(buf, "ungerade") && !_has_word_lowered(buf, "odd")) {
         task->has_print_even = 1;
         if (task->num_literals >= 1) task->print_even_n = task->literals[0];
         else task->print_even_n = 100;
         task->has_algorithm = 0;
     }
 
-    if (has_word(buf, "find") && (has_word(buf, "max") || has_word(buf, "largest") || has_word(buf, "greatest") || has_word(buf, "größt"))) {
+    if (_has_word_lowered(buf, "find") && (_has_word_lowered(buf, "max") || _has_word_lowered(buf, "largest") || _has_word_lowered(buf, "greatest") || _has_word_lowered(buf, "größt"))) {
         task->has_find_max = 1;
         if (task->num_literals >= 1) task->find_max_count = task->literals[0];
         else task->find_max_count = 5;
@@ -1122,14 +1136,14 @@ int parse_task(const char *prompt, TaskProfile *task) {
         task->has_algorithm = 0;
     }
 
-    if (has_word(buf, "fib") && task->has_literals) {
+    if (_has_word_lowered(buf, "fib") && task->has_literals) {
         task->has_fib_seq = 1;
         if (task->num_literals >= 1) task->fib_seq_n = task->literals[0];
         else task->fib_seq_n = 10;
         task->has_algorithm = 0;
     }
 
-    if ((has_word(buf, "countdown") || strstr(buf, "count down")) && task->has_literals) {
+    if ((_has_word_lowered(buf, "countdown") || strstr(buf, "count down")) && task->has_literals) {
         task->has_countdown_from = 1;
         if (task->num_literals >= 1) task->countdown_start = task->literals[0];
         else task->countdown_start = 10;
@@ -1153,20 +1167,20 @@ int parse_task(const char *prompt, TaskProfile *task) {
 
     // "first N primes", "first N fibonacci" patterns
     if (task->has_primes && !task->has_input && task->num_literals == 0) {
-        if (has_word(buf, "first") || has_word(buf, "erste") || has_word(buf, "ersten")) {
+        if (_has_word_lowered(buf, "first") || _has_word_lowered(buf, "erste") || _has_word_lowered(buf, "ersten")) {
             // need to find the number after "first" - extract from raw prompt
             int nums2[MAX_NUMS];
             int n2 = extract_numbers(prompt, nums2, MAX_NUMS);
             if (n2 > 0) { task->num_literals = n2; task->has_literals = 1; task->literals[0] = nums2[0]; }
         }
     }
-    if (task->has_primes && (has_word(buf, "up") || has_word(buf, "bis")) && has_word(buf, "to") && task->num_literals == 0) {
+    if (task->has_primes && (_has_word_lowered(buf, "up") || _has_word_lowered(buf, "bis")) && _has_word_lowered(buf, "to") && task->num_literals == 0) {
         int nums2[MAX_NUMS];
         int n2 = extract_numbers(prompt, nums2, MAX_NUMS);
         if (n2 > 0) { task->num_literals = n2; task->has_literals = 1; task->literals[0] = nums2[0]; }
     }
     if (task->has_fib_seq && task->num_literals == 0 &&
-        (has_word(buf, "first") || has_word(buf, "erste") || has_word(buf, "ersten"))) {
+        (_has_word_lowered(buf, "first") || _has_word_lowered(buf, "erste") || _has_word_lowered(buf, "ersten"))) {
         int nums2[MAX_NUMS];
         int n2 = extract_numbers(prompt, nums2, MAX_NUMS);
         if (n2 > 0) { task->num_literals = n2; task->has_literals = 1; task->literals[0] = nums2[0]; }
@@ -1175,7 +1189,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
     }
 
     // "from X to Y" pattern for sum_range
-    if (has_word(buf, "from") || has_word(buf, "von")) {
+    if (_has_word_lowered(buf, "from") || _has_word_lowered(buf, "von")) {
         if (task->has_sum_range && task->num_literals >= 2) {
             task->has_sum_range = 1;
             task->sum_range_n = task->literals[1];
@@ -1184,7 +1198,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
 
     // "up to N" / "bis N" for countdown
     if (task->has_countdown_from && task->num_literals == 0 &&
-        (has_word(buf, "up") || has_word(buf, "bis"))) {
+        (_has_word_lowered(buf, "up") || _has_word_lowered(buf, "bis"))) {
         int nums2[MAX_NUMS];
         int n2 = extract_numbers(prompt, nums2, MAX_NUMS);
         if (n2 > 0) { task->num_literals = n2; task->has_literals = 1; task->literals[0] = nums2[0]; }
@@ -1197,192 +1211,192 @@ int parse_task(const char *prompt, TaskProfile *task) {
         task->has_algorithm = 0;
     }
 
-    if (task->has_string_cat && !has_word(buf, "compare") && !has_word(buf, "vergleich")) {
+    if (task->has_string_cat && !_has_word_lowered(buf, "compare") && !_has_word_lowered(buf, "vergleich")) {
         /* string_cat unless compare is explicit (intentionally empty) */
     }
 
-    if (has_word(buf, "array") && has_word(buf, "reverse")) {
+    if (_has_word_lowered(buf, "array") && _has_word_lowered(buf, "reverse")) {
         task->has_array_reverse = 1;
         task->has_algorithm = 0;
     }
-    if (has_word(buf, "reverse") && (has_word(buf, "element") || has_word(buf, "list") || has_word(buf, "array") || has_word(buf, "order") || has_word(buf, "reihenfolge"))) {
+    if (_has_word_lowered(buf, "reverse") && (_has_word_lowered(buf, "element") || _has_word_lowered(buf, "list") || _has_word_lowered(buf, "array") || _has_word_lowered(buf, "order") || _has_word_lowered(buf, "reihenfolge"))) {
         task->has_array_reverse = 1;
         task->has_algorithm = 0;
     }
 
-    if ((has_word(buf, "array") && (has_word(buf, "find") || has_word(buf, "search") || has_word(buf, "suche"))) || (has_word(buf, "search") && has_word(buf, "array"))) {
+    if ((_has_word_lowered(buf, "array") && (_has_word_lowered(buf, "find") || _has_word_lowered(buf, "search") || _has_word_lowered(buf, "suche"))) || (_has_word_lowered(buf, "search") && _has_word_lowered(buf, "array"))) {
         task->has_array_find = 1;
         task->has_algorithm = 0;
     }
 
-    if (has_word(buf, "array") && has_word(buf, "assign")) {
+    if (_has_word_lowered(buf, "array") && _has_word_lowered(buf, "assign")) {
         task->has_array_assign = 1;
         task->has_algorithm = 0;
     }
 
-    if (has_word(buf, "array") && (has_word(buf, "access") || has_word(buf, "read") || has_word(buf, "get") || has_word(buf, "element") || has_word(buf, "index"))) {
+    if (_has_word_lowered(buf, "array") && (_has_word_lowered(buf, "access") || _has_word_lowered(buf, "read") || _has_word_lowered(buf, "get") || _has_word_lowered(buf, "element") || _has_word_lowered(buf, "index"))) {
         task->has_array_access = 1;
         task->has_algorithm = 0;
     }
 
-    if (has_word(buf, "array") && (has_word(buf, "write") || has_word(buf, "set") || has_word(buf, "store"))) {
+    if (_has_word_lowered(buf, "array") && (_has_word_lowered(buf, "write") || _has_word_lowered(buf, "set") || _has_word_lowered(buf, "store"))) {
         task->has_array_write = 1;
         task->has_algorithm = 0;
     }
 
-    if ((has_word(buf, "array") && (has_word(buf, "min") || has_word(buf, "max") || has_word(buf, "average") || has_word(buf, "vmath"))) || (has_word(buf, "stat") && has_word(buf, "array"))) {
+    if ((_has_word_lowered(buf, "array") && (_has_word_lowered(buf, "min") || _has_word_lowered(buf, "max") || _has_word_lowered(buf, "average") || _has_word_lowered(buf, "vmath"))) || (_has_word_lowered(buf, "stat") && _has_word_lowered(buf, "array"))) {
         task->has_array_vmath = 1;
         task->has_algorithm = 0;
     }
 
-    if (has_word(buf, "read") && has_word(buf, "file")) {
+    if (_has_word_lowered(buf, "read") && _has_word_lowered(buf, "file")) {
         task->has_read_file = 1;
         task->has_algorithm = 0;
     }
 
-    if (has_word(buf, "write") && has_word(buf, "file")) {
+    if (_has_word_lowered(buf, "write") && _has_word_lowered(buf, "file")) {
         task->has_write_file = 1;
         task->has_algorithm = 0;
     }
 
-    if (has_word(buf, "string") && (has_word(buf, "to") || has_word(buf, "parse") || has_word(buf, "convert")) && has_word(buf, "number")) {
+    if (_has_word_lowered(buf, "string") && (_has_word_lowered(buf, "to") || _has_word_lowered(buf, "parse") || _has_word_lowered(buf, "convert")) && _has_word_lowered(buf, "number")) {
         task->has_string_to_num = 1;
         task->has_algorithm = 0;
     }
 
-    if (has_word(buf, "min") && has_word(buf, "max") && has_word(buf, "array")) {
+    if (_has_word_lowered(buf, "min") && _has_word_lowered(buf, "max") && _has_word_lowered(buf, "array")) {
         task->has_array_min_max = 1;
         task->has_algorithm = 0;
     }
 
-    if (has_word(buf, "bool") || strstr(buf, "boolean")) {
+    if (_has_word_lowered(buf, "bool") || strstr(buf, "boolean")) {
         task->has_bool_demo = 1;
         task->has_algorithm = 0;
     }
 
-    if ((has_word(buf, "bit") || has_word(buf, "check")) && (has_word(buf, "check") || has_word(buf, "set") || has_word(buf, "clear"))) {
+    if ((_has_word_lowered(buf, "bit") || _has_word_lowered(buf, "check")) && (_has_word_lowered(buf, "check") || _has_word_lowered(buf, "set") || _has_word_lowered(buf, "clear"))) {
         task->has_bit_check = 1;
         task->has_algorithm = 0;
     }
 
-    if ((has_word(buf, "leap") || has_word(buf, "schalt")) && (has_word(buf, "year") || has_word(buf, "jahr"))) {
+    if ((_has_word_lowered(buf, "leap") || _has_word_lowered(buf, "schalt")) && (_has_word_lowered(buf, "year") || _has_word_lowered(buf, "jahr"))) {
         task->has_leap_year = 1;
         task->has_algorithm = 0;
     }
 
-    if ((has_word(buf, "celsius") || has_word(buf, "fahrenheit") || has_word(buf, "temperature")) && (has_word(buf, "convert") || has_word(buf, "umrechnen") || has_word(buf, "to"))) {
+    if ((_has_word_lowered(buf, "celsius") || _has_word_lowered(buf, "fahrenheit") || _has_word_lowered(buf, "temperature")) && (_has_word_lowered(buf, "convert") || _has_word_lowered(buf, "umrechnen") || _has_word_lowered(buf, "to"))) {
         task->has_temp_convert = 1;
         task->has_algorithm = 0;
     }
 
-    if ((has_word(buf, "circle") || has_word(buf, "kreis")) && (has_word(buf, "area") || has_word(buf, "fläche") || has_word(buf, "flaeche"))) {
+    if ((_has_word_lowered(buf, "circle") || _has_word_lowered(buf, "kreis")) && (_has_word_lowered(buf, "area") || _has_word_lowered(buf, "fläche") || _has_word_lowered(buf, "flaeche"))) {
         task->has_circle_area = 1;
         task->has_algorithm = 0;
     }
 
-    if (has_word(buf, "palindrome") || (has_word(buf, "reverse") && has_word(buf, "number")))
+    if (_has_word_lowered(buf, "palindrome") || (_has_word_lowered(buf, "reverse") && _has_word_lowered(buf, "number")))
         task->has_palindrome = 1;
 
-    if (has_word(buf, "lcm") || (has_word(buf, "least") && has_word(buf, "multiple")))
+    if (_has_word_lowered(buf, "lcm") || (_has_word_lowered(buf, "least") && _has_word_lowered(buf, "multiple")))
         task->has_lcm = 1;
 
-    if (has_word(buf, "collatz") || (has_word(buf, "3n") && has_word(buf, "1")))
+    if (_has_word_lowered(buf, "collatz") || (_has_word_lowered(buf, "3n") && _has_word_lowered(buf, "1")))
         task->has_collatz = 1;
 
-    if (has_word(buf, "sum") && has_word(buf, "digit"))
+    if (_has_word_lowered(buf, "sum") && _has_word_lowered(buf, "digit"))
         task->has_sum_of_digits = 1;
 
-    if (has_word(buf, "reverse") && (has_word(buf, "string") || has_word(buf, "text") || has_word(buf, "wort")))
+    if (_has_word_lowered(buf, "reverse") && (_has_word_lowered(buf, "string") || _has_word_lowered(buf, "text") || _has_word_lowered(buf, "wort")))
         task->has_reverse_string = 1;
 
-    if (has_word(buf, "armstrong"))
+    if (_has_word_lowered(buf, "armstrong"))
         task->has_armstrong = 1;
 
-    if ((has_word(buf, "perfect") || has_word(buf, "vollkommen")) && has_word(buf, "number"))
+    if ((_has_word_lowered(buf, "perfect") || _has_word_lowered(buf, "vollkommen")) && _has_word_lowered(buf, "number"))
         task->has_perfect_number = 1;
 
-    if (has_word(buf, "vowel") || has_word(buf, "vokale") || has_word(buf, "selbstlaut"))
+    if (_has_word_lowered(buf, "vowel") || _has_word_lowered(buf, "vokale") || _has_word_lowered(buf, "selbstlaut"))
         task->has_count_vowels = 1;
 
-    if (has_word(buf, "anagram"))
+    if (_has_word_lowered(buf, "anagram"))
         task->has_anagram_check = 1;
 
-    if ((has_word(buf, "string") || has_word(buf, "zeichen") || has_word(buf, "text")) && has_word(buf, "upper"))
+    if ((_has_word_lowered(buf, "string") || _has_word_lowered(buf, "zeichen") || _has_word_lowered(buf, "text")) && _has_word_lowered(buf, "upper"))
         task->has_string_to_upper = 1;
 
-    if ((has_word(buf, "string") || has_word(buf, "zeichen") || has_word(buf, "text")) && has_word(buf, "lower"))
+    if ((_has_word_lowered(buf, "string") || _has_word_lowered(buf, "zeichen") || _has_word_lowered(buf, "text")) && _has_word_lowered(buf, "lower"))
         task->has_string_to_lower = 1;
 
-    if (has_word(buf, "caesar") || (has_word(buf, "shift") && has_word(buf, "cipher")))
+    if (_has_word_lowered(buf, "caesar") || (_has_word_lowered(buf, "shift") && _has_word_lowered(buf, "cipher")))
         task->has_caesar_cipher = 1;
 
-    if (has_word(buf, "palindrome") && (has_word(buf, "string") || has_word(buf, "text") || has_word(buf, "wort")))
+    if (_has_word_lowered(buf, "palindrome") && (_has_word_lowered(buf, "string") || _has_word_lowered(buf, "text") || _has_word_lowered(buf, "wort")))
         task->has_palindrome_string = 1;
 
-    if (has_word(buf, "bubble") && has_word(buf, "sort"))
+    if (_has_word_lowered(buf, "bubble") && _has_word_lowered(buf, "sort"))
         task->has_bubble_sort = 1;
 
-    if (has_word(buf, "binary") && has_word(buf, "search") && !has_word(buf, "tree"))
+    if (_has_word_lowered(buf, "binary") && _has_word_lowered(buf, "search") && !_has_word_lowered(buf, "tree"))
         task->has_binary_search = 1;
 
-    if (has_word(buf, "square") && has_word(buf, "root"))
+    if (_has_word_lowered(buf, "square") && _has_word_lowered(buf, "root"))
         task->has_square_root = 1;
 
-    if (has_word(buf, "prime") && (has_word(buf, "factor") || has_word(buf, "teil")))
+    if (_has_word_lowered(buf, "prime") && (_has_word_lowered(buf, "factor") || _has_word_lowered(buf, "teil")))
         task->has_prime_factorization = 1;
 
-    if (has_word(buf, "standard") && has_word(buf, "deviation"))
+    if (_has_word_lowered(buf, "standard") && _has_word_lowered(buf, "deviation"))
         task->has_standard_deviation = 1;
 
-    if (has_word(buf, "compound") && has_word(buf, "interest"))
+    if (_has_word_lowered(buf, "compound") && _has_word_lowered(buf, "interest"))
         task->has_compound_interest = 1;
 
-    if (has_word(buf, "binary") && (has_word(buf, "decimal") || has_word(buf, "convert") || has_word(buf, "base")))
+    if (_has_word_lowered(buf, "binary") && (_has_word_lowered(buf, "decimal") || _has_word_lowered(buf, "convert") || _has_word_lowered(buf, "base")))
         task->has_decimal_to_binary = 1;
 
-    if (has_word(buf, "dice") || has_word(buf, "würfel") || (has_word(buf, "roll") && has_word(buf, "die")))
+    if (_has_word_lowered(buf, "dice") || _has_word_lowered(buf, "würfel") || (_has_word_lowered(buf, "roll") && _has_word_lowered(buf, "die")))
         task->has_dice_roll = 1;
 
-    if (has_word(buf, "double") && has_word(buf, "math"))
+    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "math"))
         task->has_double_math = 1;
 
-    if (has_word(buf, "double") && has_word(buf, "circle"))
+    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "circle"))
         task->has_double_circle_area = 1;
 
-    if (has_word(buf, "double") && has_word(buf, "average"))
+    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "average"))
         task->has_double_average = 1;
 
-    if (has_word(buf, "double") && has_word(buf, "interest"))
+    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "interest"))
         task->has_double_compound_interest = 1;
 
-    if (has_word(buf, "double") && has_word(buf, "pythagoras"))
+    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "pythagoras"))
         task->has_double_pythagoras = 1;
 
-    if (has_word(buf, "double") && has_word(buf, "temp"))
+    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "temp"))
         task->has_double_temp_convert = 1;
 
-    if (has_word(buf, "double") && has_word(buf, "sqrt"))
+    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "sqrt"))
         task->has_double_sqrt = 1;
 
-    if (has_word(buf, "double") && has_word(buf, "power"))
+    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "power"))
         task->has_double_power = 1;
 
-    if (has_word(buf, "double") && has_word(buf, "volume") && has_word(buf, "sphere"))
+    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "volume") && _has_word_lowered(buf, "sphere"))
         task->has_double_volume_sphere = 1;
 
-    if (has_word(buf, "double") && has_word(buf, "discount"))
+    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "discount"))
         task->has_double_discount = 1;
 
-    if (has_word(buf, "double") && has_word(buf, "simple") && has_word(buf, "interest"))
+    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "simple") && _has_word_lowered(buf, "interest"))
         task->has_double_simple_interest = 1;
 
-    if (has_word(buf, "double") && has_word(buf, "bmi"))
+    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "bmi"))
         task->has_double_bmi = 1;
 
-    if ((has_word(buf, "double") && has_word(buf, "stddev")) || (has_word(buf, "double") && has_word(buf, "standard") && has_word(buf, "deviation")))
+    if ((_has_word_lowered(buf, "double") && _has_word_lowered(buf, "stddev")) || (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "standard") && _has_word_lowered(buf, "deviation")))
         task->has_double_standard_deviation = 1;
 
-    if (has_word(buf, "double") && (has_word(buf, "kinetic") || has_word(buf, "energy")))
+    if (_has_word_lowered(buf, "double") && (_has_word_lowered(buf, "kinetic") || _has_word_lowered(buf, "energy")))
         task->has_double_kinetic_energy = 1;
 
     /* Clear integer flags when double variant is detected to prevent
@@ -1390,205 +1404,205 @@ int parse_task(const char *prompt, TaskProfile *task) {
     if (task->has_double_circle_area) task->has_circle_area = 0;
     if (task->has_double_temp_convert) task->has_temp_convert = 0;
 
-    if ((has_word(buf, "string") && has_word(buf, "length"))
-        || (has_word(buf, "string") && has_word(buf, "laenge"))
-        || (has_word(buf, "zeichen") && has_word(buf, "laenge")))
+    if ((_has_word_lowered(buf, "string") && _has_word_lowered(buf, "length"))
+        || (_has_word_lowered(buf, "string") && _has_word_lowered(buf, "laenge"))
+        || (_has_word_lowered(buf, "zeichen") && _has_word_lowered(buf, "laenge")))
         task->has_string_length = 1;
 
-    if (has_word(buf, "stack") || (has_word(buf, "push") && has_word(buf, "pop")))
+    if (_has_word_lowered(buf, "stack") || (_has_word_lowered(buf, "push") && _has_word_lowered(buf, "pop")))
         task->has_stack = 1;
 
-    if (has_word(buf, "queue") || (has_word(buf, "enqueue") && has_word(buf, "dequeue")))
+    if (_has_word_lowered(buf, "queue") || (_has_word_lowered(buf, "enqueue") && _has_word_lowered(buf, "dequeue")))
         task->has_queue = 1;
 
-    if (has_word(buf, "insertion") && has_word(buf, "sort"))
+    if (_has_word_lowered(buf, "insertion") && _has_word_lowered(buf, "sort"))
         task->has_insertion_sort = 1;
 
-    if (has_word(buf, "calculator") || (has_word(buf, "calc") && has_word(buf, "repl")))
+    if (_has_word_lowered(buf, "calculator") || (_has_word_lowered(buf, "calc") && _has_word_lowered(buf, "repl")))
         task->has_calculator = 1;
 
-    if ((has_word(buf, "unit") || has_word(buf, "einheit")) && (has_word(buf, "convert") || has_word(buf, "converter") || has_word(buf, "umrechnen") || has_word(buf, "umwandeln")))
+    if ((_has_word_lowered(buf, "unit") || _has_word_lowered(buf, "einheit")) && (_has_word_lowered(buf, "convert") || _has_word_lowered(buf, "converter") || _has_word_lowered(buf, "umrechnen") || _has_word_lowered(buf, "umwandeln")))
         task->has_unit_converter = 1;
 
-    if (has_word(buf, "rock") && has_word(buf, "paper") && has_word(buf, "scissors"))
+    if (_has_word_lowered(buf, "rock") && _has_word_lowered(buf, "paper") && _has_word_lowered(buf, "scissors"))
         task->has_rock_paper_scissors = 1;
 
-    if ((has_word(buf, "pyramid") || has_word(buf, "pyramide")) && (has_word(buf, "number") || has_word(buf, "zahl") || has_word(buf, "pattern") || has_word(buf, "muster") || has_word(buf, "height") || has_word(buf, "hoehe") || has_word(buf, "rows") || has_word(buf, "zeilen")))
+    if ((_has_word_lowered(buf, "pyramid") || _has_word_lowered(buf, "pyramide")) && (_has_word_lowered(buf, "number") || _has_word_lowered(buf, "zahl") || _has_word_lowered(buf, "pattern") || _has_word_lowered(buf, "muster") || _has_word_lowered(buf, "height") || _has_word_lowered(buf, "hoehe") || _has_word_lowered(buf, "rows") || _has_word_lowered(buf, "zeilen")))
         task->has_pyramid = 1;
 
-    if ((has_word(buf, "temperature") || has_word(buf, "temperatur")) && (has_word(buf, "convert") || has_word(buf, "converter") || has_word(buf, "umrechnen")))
+    if ((_has_word_lowered(buf, "temperature") || _has_word_lowered(buf, "temperatur")) && (_has_word_lowered(buf, "convert") || _has_word_lowered(buf, "converter") || _has_word_lowered(buf, "umrechnen")))
         task->has_temp_converter_menu = 1;
 
-    if (has_word(buf, "sort") && (has_word(buf, "stats") || has_word(buf, "statistics") || has_word(buf, "statistik") || has_word(buf, "analyze") || has_word(buf, "analyse") || has_word(buf, "min") || has_word(buf, "max") || has_word(buf, "average") || has_word(buf, "avg")))
+    if (_has_word_lowered(buf, "sort") && (_has_word_lowered(buf, "stats") || _has_word_lowered(buf, "statistics") || _has_word_lowered(buf, "statistik") || _has_word_lowered(buf, "analyze") || _has_word_lowered(buf, "analyse") || _has_word_lowered(buf, "min") || _has_word_lowered(buf, "max") || _has_word_lowered(buf, "average") || _has_word_lowered(buf, "avg")))
         task->has_sort_stats = 1;
 
-    if ((has_word(buf, "analyze") || has_word(buf, "analyse")) && (has_word(buf, "string") || has_word(buf, "text") || has_word(buf, "zeichenkette")))
+    if ((_has_word_lowered(buf, "analyze") || _has_word_lowered(buf, "analyse")) && (_has_word_lowered(buf, "string") || _has_word_lowered(buf, "text") || _has_word_lowered(buf, "zeichenkette")))
         task->has_string_analyzer = 1;
 
-    if ((has_word(buf, "analyze") || has_word(buf, "analyse") || has_word(buf, "analyzer") || has_word(buf, "analyser")) && (has_word(buf, "number") || has_word(buf, "zahl")))
+    if ((_has_word_lowered(buf, "analyze") || _has_word_lowered(buf, "analyse") || _has_word_lowered(buf, "analyzer") || _has_word_lowered(buf, "analyser")) && (_has_word_lowered(buf, "number") || _has_word_lowered(buf, "zahl")))
         task->has_number_analyzer = 1;
 
-    if (has_word(buf, "filter") && (has_word(buf, "number") || has_word(buf, "numbers") || has_word(buf, "zahlen") || has_word(buf, "values") || has_word(buf, "werte")))
+    if (_has_word_lowered(buf, "filter") && (_has_word_lowered(buf, "number") || _has_word_lowered(buf, "numbers") || _has_word_lowered(buf, "zahlen") || _has_word_lowered(buf, "values") || _has_word_lowered(buf, "werte")))
         task->has_filter_numbers = 1;
 
-    if ((has_word(buf, "random") || has_word(buf, "zufall")) && (has_word(buf, "generator") || has_word(buf, "generieren")))
+    if ((_has_word_lowered(buf, "random") || _has_word_lowered(buf, "zufall")) && (_has_word_lowered(buf, "generator") || _has_word_lowered(buf, "generieren")))
         task->has_random_generator = 1;
     if (task->has_random_generator)
         task->has_random = 0;
 
-    if ((has_word(buf, "math") || has_word(buf, "mathe")) && (has_word(buf, "menu") || has_word(buf, "menue") || has_word(buf, "rechner")))
+    if ((_has_word_lowered(buf, "math") || _has_word_lowered(buf, "mathe")) && (_has_word_lowered(buf, "menu") || _has_word_lowered(buf, "menue") || _has_word_lowered(buf, "rechner")))
         task->has_math_menu = 1;
 
-    if ((has_word(buf, "quiz") || has_word(buf, "frage")) && (has_word(buf, "game") || has_word(buf, "spiel")))
+    if ((_has_word_lowered(buf, "quiz") || _has_word_lowered(buf, "frage")) && (_has_word_lowered(buf, "game") || _has_word_lowered(buf, "spiel")))
         task->has_quiz_game = 1;
 
-    if (has_word(buf, "bmi") || ((has_word(buf, "body") || has_word(buf, "koerper")) && has_word(buf, "mass") && has_word(buf, "index")))
+    if (_has_word_lowered(buf, "bmi") || ((_has_word_lowered(buf, "body") || _has_word_lowered(buf, "koerper")) && _has_word_lowered(buf, "mass") && _has_word_lowered(buf, "index")))
         task->has_bmi_calculator = 1;
 
-    if ((has_word(buf, "statistics") || has_word(buf, "statistik")) && (has_word(buf, "all") || has_word(buf, "suite") || has_word(buf, "alle") || has_word(buf, "full") || has_word(buf, "komplett")))
+    if ((_has_word_lowered(buf, "statistics") || _has_word_lowered(buf, "statistik")) && (_has_word_lowered(buf, "all") || _has_word_lowered(buf, "suite") || _has_word_lowered(buf, "alle") || _has_word_lowered(buf, "full") || _has_word_lowered(buf, "komplett")))
         task->has_statistics_suite = 1;
 
-    if (has_word(buf, "linked") && has_word(buf, "list"))
+    if (_has_word_lowered(buf, "linked") && _has_word_lowered(buf, "list"))
         task->has_linked_list = 1;
-    if ((has_word(buf, "binary") || has_word(buf, "binaer")) && has_word(buf, "tree") && has_word(buf, "search"))
+    if ((_has_word_lowered(buf, "binary") || _has_word_lowered(buf, "binaer")) && _has_word_lowered(buf, "tree") && _has_word_lowered(buf, "search"))
         task->has_binary_search_tree = 1;
-    if (has_word(buf, "tree") && (has_word(buf, "traversal") || has_word(buf, "inorder") || has_word(buf, "preorder") || has_word(buf, "postorder")))
+    if (_has_word_lowered(buf, "tree") && (_has_word_lowered(buf, "traversal") || _has_word_lowered(buf, "inorder") || _has_word_lowered(buf, "preorder") || _has_word_lowered(buf, "postorder")))
         task->has_tree_traversal = 1;
-    if ((has_word(buf, "graph") || has_word(buf, "graf")) && (has_word(buf, "bfs") || has_word(buf, "dfs") || has_word(buf, "traverse") || has_word(buf, "durchlauf")))
+    if ((_has_word_lowered(buf, "graph") || _has_word_lowered(buf, "graf")) && (_has_word_lowered(buf, "bfs") || _has_word_lowered(buf, "dfs") || _has_word_lowered(buf, "traverse") || _has_word_lowered(buf, "durchlauf")))
         task->has_graph_bfs_dfs = 1;
-    if ((has_word(buf, "n") || has_word(buf, "eight") || has_word(buf, "acht")) && has_word(buf, "queen"))
+    if ((_has_word_lowered(buf, "n") || _has_word_lowered(buf, "eight") || _has_word_lowered(buf, "acht")) && _has_word_lowered(buf, "queen"))
         task->has_n_queens = 1;
-    if (has_word(buf, "sudoku") || (has_word(buf, "sodoku") && has_word(buf, "solver")))
+    if (_has_word_lowered(buf, "sudoku") || (_has_word_lowered(buf, "sodoku") && _has_word_lowered(buf, "solver")))
         task->has_sudoku = 1;
-    if ((has_word(buf, "levenshtein") || has_word(buf, "edit")) && has_word(buf, "distance"))
+    if ((_has_word_lowered(buf, "levenshtein") || _has_word_lowered(buf, "edit")) && _has_word_lowered(buf, "distance"))
         task->has_levenshtein = 1;
-    if ((has_word(buf, "maze") || has_word(buf, "labyrinth") || has_word(buf, "irrgarten")) && (has_word(buf, "generate") || has_word(buf, "generieren") || has_word(buf, "erzeugen")))
+    if ((_has_word_lowered(buf, "maze") || _has_word_lowered(buf, "labyrinth") || _has_word_lowered(buf, "irrgarten")) && (_has_word_lowered(buf, "generate") || _has_word_lowered(buf, "generieren") || _has_word_lowered(buf, "erzeugen")))
         task->has_maze_generator = 1;
-    if ((has_word(buf, "maze") || has_word(buf, "labyrinth") || has_word(buf, "irrgarten")) && (has_word(buf, "solve") || has_word(buf, "solver") || has_word(buf, "loesen") || has_word(buf, "lösung")))
+    if ((_has_word_lowered(buf, "maze") || _has_word_lowered(buf, "labyrinth") || _has_word_lowered(buf, "irrgarten")) && (_has_word_lowered(buf, "solve") || _has_word_lowered(buf, "solver") || _has_word_lowered(buf, "loesen") || _has_word_lowered(buf, "lösung")))
         task->has_maze_solver = 1;
-    if ((has_word(buf, "monte") && has_word(buf, "carlo")) || (has_word(buf, "pi") && has_word(buf, "estimate")))
+    if ((_has_word_lowered(buf, "monte") && _has_word_lowered(buf, "carlo")) || (_has_word_lowered(buf, "pi") && _has_word_lowered(buf, "estimate")))
         task->has_monte_carlo = 1;
-    if ((has_word(buf, "matrix") || has_word(buf, "matrize")) && has_word(buf, "multiply"))
+    if ((_has_word_lowered(buf, "matrix") || _has_word_lowered(buf, "matrize")) && _has_word_lowered(buf, "multiply"))
         task->has_matrix_mul = 1;
-    if (has_word(buf, "matrix") && (has_word(buf, "transpose") || has_word(buf, "transponieren")))
+    if (_has_word_lowered(buf, "matrix") && (_has_word_lowered(buf, "transpose") || _has_word_lowered(buf, "transponieren")))
         task->has_matrix_transpose = 1;
-    if ((has_word(buf, "numerical") || has_word(buf, "numerisch") || has_word(buf, "numeric")) && (has_word(buf, "integrate") || has_word(buf, "integration") || has_word(buf, "integral")))
+    if ((_has_word_lowered(buf, "numerical") || _has_word_lowered(buf, "numerisch") || _has_word_lowered(buf, "numeric")) && (_has_word_lowered(buf, "integrate") || _has_word_lowered(buf, "integration") || _has_word_lowered(buf, "integral")))
         task->has_numerical_integration = 1;
-    if ((has_word(buf, "complex") || has_word(buf, "komplex")) && has_word(buf, "number"))
+    if ((_has_word_lowered(buf, "complex") || _has_word_lowered(buf, "komplex")) && _has_word_lowered(buf, "number"))
         task->has_complex_numbers = 1;
-    if ((has_word(buf, "linear") || has_word(buf, "linreg")) && (has_word(buf, "regression") || has_word(buf, "regress")))
+    if ((_has_word_lowered(buf, "linear") || _has_word_lowered(buf, "linreg")) && (_has_word_lowered(buf, "regression") || _has_word_lowered(buf, "regress")))
         task->has_linear_regression = 1;
-    if ((has_word(buf, "base") || has_word(buf, "basis")) && (has_word(buf, "convert") || has_word(buf, "converter") || has_word(buf, "umwandeln") || has_word(buf, "konvert")))
+    if ((_has_word_lowered(buf, "base") || _has_word_lowered(buf, "basis")) && (_has_word_lowered(buf, "convert") || _has_word_lowered(buf, "converter") || _has_word_lowered(buf, "umwandeln") || _has_word_lowered(buf, "konvert")))
         task->has_base_converter = 1;
-    if ((has_word(buf, "frequency") || has_word(buf, "haeufigkeit") || has_word(buf, "frequenz") || has_word(buf, "freq")) && (has_word(buf, "analyze") || has_word(buf, "analyse") || has_word(buf, "count") || has_word(buf, "zaehle") || has_word(buf, "analysis")))
+    if ((_has_word_lowered(buf, "frequency") || _has_word_lowered(buf, "haeufigkeit") || _has_word_lowered(buf, "frequenz") || _has_word_lowered(buf, "freq")) && (_has_word_lowered(buf, "analyze") || _has_word_lowered(buf, "analyse") || _has_word_lowered(buf, "count") || _has_word_lowered(buf, "zaehle") || _has_word_lowered(buf, "analysis")))
         task->has_freq_analysis = 1;
-    if (has_word(buf, "shuffle") || has_word(buf, "mischen") || (has_word(buf, "random") && has_word(buf, "permute")))
+    if (_has_word_lowered(buf, "shuffle") || _has_word_lowered(buf, "mischen") || (_has_word_lowered(buf, "random") && _has_word_lowered(buf, "permute")))
         task->has_shuffle = 1;
-    if ((has_word(buf, "weighted") || has_word(buf, "gewichtet")) && (has_word(buf, "random") || has_word(buf, "zufall")))
+    if ((_has_word_lowered(buf, "weighted") || _has_word_lowered(buf, "gewichtet")) && (_has_word_lowered(buf, "random") || _has_word_lowered(buf, "zufall")))
         task->has_weighted_random = 1;
-    if (has_word(buf, "ascii") && (has_word(buf, "table") || has_word(buf, "tabelle") || has_word(buf, "format")))
+    if (_has_word_lowered(buf, "ascii") && (_has_word_lowered(buf, "table") || _has_word_lowered(buf, "tabelle") || _has_word_lowered(buf, "format")))
         task->has_ascii_table = 1;
 
-    if ((has_word(buf, "password") || has_word(buf, "passwort") || has_word(buf, "passwd")) && (has_word(buf, "card") || has_word(buf, "karte") || has_word(buf, "generate") || has_word(buf, "generator")))
+    if ((_has_word_lowered(buf, "password") || _has_word_lowered(buf, "passwort") || _has_word_lowered(buf, "passwd")) && (_has_word_lowered(buf, "card") || _has_word_lowered(buf, "karte") || _has_word_lowered(buf, "generate") || _has_word_lowered(buf, "generator")))
         task->has_password_card = 1;
-    if ((has_word(buf, "chess") || has_word(buf, "schach") || has_word(buf, "rice") || has_word(buf, "reis")) && (has_word(buf, "problem") || has_word(buf, "board") || has_word(buf, "brett") || has_word(buf, "exponential")))
+    if ((_has_word_lowered(buf, "chess") || _has_word_lowered(buf, "schach") || _has_word_lowered(buf, "rice") || _has_word_lowered(buf, "reis")) && (_has_word_lowered(buf, "problem") || _has_word_lowered(buf, "board") || _has_word_lowered(buf, "brett") || _has_word_lowered(buf, "exponential")))
         task->has_chess_problem = 1;
-    if ((has_word(buf, "repl") || has_word(buf, "terminal")) && (has_word(buf, "run") || has_word(buf, "execute") || has_word(buf, "ausfuehren") || has_word(buf, "ausführen")))
+    if ((_has_word_lowered(buf, "repl") || _has_word_lowered(buf, "terminal")) && (_has_word_lowered(buf, "run") || _has_word_lowered(buf, "execute") || _has_word_lowered(buf, "ausfuehren") || _has_word_lowered(buf, "ausführen")))
         task->has_shell_repl = 1;
-    if ((has_word(buf, "shell") || has_word(buf, "interactive")) && (has_word(buf, "run") || has_word(buf, "running") || has_word(buf, "execute") || has_word(buf, "command") || has_word(buf, "ausfuehren") || has_word(buf, "ausführen") || has_word(buf, "befehl")))
+    if ((_has_word_lowered(buf, "shell") || _has_word_lowered(buf, "interactive")) && (_has_word_lowered(buf, "run") || _has_word_lowered(buf, "running") || _has_word_lowered(buf, "execute") || _has_word_lowered(buf, "command") || _has_word_lowered(buf, "ausfuehren") || _has_word_lowered(buf, "ausführen") || _has_word_lowered(buf, "befehl")))
         task->has_shell_repl = 1;
 
-    if (has_word(buf, "webserver") || has_word(buf, "http") || (has_word(buf, "web") && has_word(buf, "server")))
+    if (_has_word_lowered(buf, "webserver") || _has_word_lowered(buf, "http") || (_has_word_lowered(buf, "web") && _has_word_lowered(buf, "server")))
         task->has_webserver = 1;
-    if ((has_word(buf, "sdl") || has_word(buf, "screen") || has_word(buf, "bildschirm")) && (has_word(buf, "open") || has_word(buf, "window") || has_word(buf, "fenster") || has_word(buf, "pixel") || has_word(buf, "grafik") || has_word(buf, "graphics")))
+    if ((_has_word_lowered(buf, "sdl") || _has_word_lowered(buf, "screen") || _has_word_lowered(buf, "bildschirm")) && (_has_word_lowered(buf, "open") || _has_word_lowered(buf, "window") || _has_word_lowered(buf, "fenster") || _has_word_lowered(buf, "pixel") || _has_word_lowered(buf, "grafik") || _has_word_lowered(buf, "graphics")))
         task->has_sdl_window = 1;
-    if ((has_word(buf, "sdl") || has_word(buf, "gui") || has_word(buf, "gadget")) && (has_word(buf, "button") || has_word(buf, "knopf") || has_word(buf, "click")))
+    if ((_has_word_lowered(buf, "sdl") || _has_word_lowered(buf, "gui") || _has_word_lowered(buf, "gadget")) && (_has_word_lowered(buf, "button") || _has_word_lowered(buf, "knopf") || _has_word_lowered(buf, "click")))
         task->has_sdl_button = 1;
-    if (has_word(buf, "thread") || has_word(buf, "nebenlauf") || (has_word(buf, "parallel") && has_word(buf, "run")))
+    if (_has_word_lowered(buf, "thread") || _has_word_lowered(buf, "nebenlauf") || (_has_word_lowered(buf, "parallel") && _has_word_lowered(buf, "run")))
         task->has_thread = 1;
-    if (has_word(buf, "scheduler") || has_word(buf, "planer") || (has_word(buf, "task") && has_word(buf, "schedule")))
+    if (_has_word_lowered(buf, "scheduler") || _has_word_lowered(buf, "planer") || (_has_word_lowered(buf, "task") && _has_word_lowered(buf, "schedule")))
         task->has_scheduler = 1;
-    if ((has_word(buf, "shell") || has_word(buf, "command") || has_word(buf, "befehl") || has_word(buf, "kommando")) && (has_word(buf, "exec") || has_word(buf, "run") || has_word(buf, "ausführen") || has_word(buf, "ausfuehren")))
+    if ((_has_word_lowered(buf, "shell") || _has_word_lowered(buf, "command") || _has_word_lowered(buf, "befehl") || _has_word_lowered(buf, "kommando")) && (_has_word_lowered(buf, "exec") || _has_word_lowered(buf, "run") || _has_word_lowered(buf, "ausführen") || _has_word_lowered(buf, "ausfuehren")))
         task->has_shell_exec = 1;
-    if (has_word(buf, "json") || has_word(buf, "javascript") || (has_word(buf, "parse") && has_word(buf, "json")))
+    if (_has_word_lowered(buf, "json") || _has_word_lowered(buf, "javascript") || (_has_word_lowered(buf, "parse") && _has_word_lowered(buf, "json")))
         task->has_json = 1;
-    if (has_word(buf, "crypto") || has_word(buf, "encrypt") || has_word(buf, "decrypt") || has_word(buf, "verschlüssel") || has_word(buf, "chiffre") || has_word(buf, "cipher"))
+    if (_has_word_lowered(buf, "crypto") || _has_word_lowered(buf, "encrypt") || _has_word_lowered(buf, "decrypt") || _has_word_lowered(buf, "verschlüssel") || _has_word_lowered(buf, "chiffre") || _has_word_lowered(buf, "cipher"))
         task->has_crypto = 1;
-    if (has_word(buf, "bluetooth") || has_word(buf, "ble") || (has_word(buf, "bluetooth") && has_word(buf, "low")))
+    if (_has_word_lowered(buf, "bluetooth") || _has_word_lowered(buf, "ble") || (_has_word_lowered(buf, "bluetooth") && _has_word_lowered(buf, "low")))
         task->has_bluetooth_ble = 1;
-    if ((has_word(buf, "serial") || has_word(buf, "rs232") || has_word(buf, "seriell")) && (has_word(buf, "port") || has_word(buf, "schnittstelle") || has_word(buf, "interface")))
+    if ((_has_word_lowered(buf, "serial") || _has_word_lowered(buf, "rs232") || _has_word_lowered(buf, "seriell")) && (_has_word_lowered(buf, "port") || _has_word_lowered(buf, "schnittstelle") || _has_word_lowered(buf, "interface")))
         task->has_serial_rs232 = 1;
-    if (has_word(buf, "gpio") || (has_word(buf, "general") && has_word(buf, "purpose")))
+    if (_has_word_lowered(buf, "gpio") || (_has_word_lowered(buf, "general") && _has_word_lowered(buf, "purpose")))
         task->has_gpio = 1;
-    if (has_word(buf, "gps") || has_word(buf, "navigation") || (has_word(buf, "global") && has_word(buf, "position")))
+    if (_has_word_lowered(buf, "gps") || _has_word_lowered(buf, "navigation") || (_has_word_lowered(buf, "global") && _has_word_lowered(buf, "position")))
         task->has_gps = 1;
-    if ((has_word(buf, "date") || has_word(buf, "datum") || has_word(buf, "kalender") || has_word(buf, "calendar")) && (has_word(buf, "time") || has_word(buf, "zeit") || has_word(buf, "uhr") || has_word(buf, "clock")))
+    if ((_has_word_lowered(buf, "date") || _has_word_lowered(buf, "datum") || _has_word_lowered(buf, "kalender") || _has_word_lowered(buf, "calendar")) && (_has_word_lowered(buf, "time") || _has_word_lowered(buf, "zeit") || _has_word_lowered(buf, "uhr") || _has_word_lowered(buf, "clock")))
         task->has_timer_date = 1;
-    if ((has_word(buf, "sdl") || has_word(buf, "sound") || has_word(buf, "audio") || has_word(buf, "ton")) && (has_word(buf, "play") || has_word(buf, "spielen") || has_word(buf, "abspielen") || has_word(buf, "wiedergabe")))
+    if ((_has_word_lowered(buf, "sdl") || _has_word_lowered(buf, "sound") || _has_word_lowered(buf, "audio") || _has_word_lowered(buf, "ton")) && (_has_word_lowered(buf, "play") || _has_word_lowered(buf, "spielen") || _has_word_lowered(buf, "abspielen") || _has_word_lowered(buf, "wiedergabe")))
         task->has_sdl_sound = 1;
-    if ((has_word(buf, "sdl") || has_word(buf, "joystick") || has_word(buf, "gamepad") || has_word(buf, "controller")) && (has_word(buf, "joystick") || has_word(buf, "axis") || has_word(buf, "achse") || has_word(buf, "button")))
+    if ((_has_word_lowered(buf, "sdl") || _has_word_lowered(buf, "joystick") || _has_word_lowered(buf, "gamepad") || _has_word_lowered(buf, "controller")) && (_has_word_lowered(buf, "joystick") || _has_word_lowered(buf, "axis") || _has_word_lowered(buf, "achse") || _has_word_lowered(buf, "button")))
         task->has_sdl_joystick = 1;
-    if ((has_word(buf, "sdl") || has_word(buf, "mouse") || has_word(buf, "maus")) && (has_word(buf, "mouse") || has_word(buf, "maus") || has_word(buf, "pointer") || has_word(buf, "cursor")))
+    if ((_has_word_lowered(buf, "sdl") || _has_word_lowered(buf, "mouse") || _has_word_lowered(buf, "maus")) && (_has_word_lowered(buf, "mouse") || _has_word_lowered(buf, "maus") || _has_word_lowered(buf, "pointer") || _has_word_lowered(buf, "cursor")))
         task->has_sdl_mouse = 1;
-    if (has_word(buf, "fractal") || has_word(buf, "mandelbrot") || has_word(buf, "julia") || (has_word(buf, "fraktal") && has_word(buf, "set")))
+    if (_has_word_lowered(buf, "fractal") || _has_word_lowered(buf, "mandelbrot") || _has_word_lowered(buf, "julia") || (_has_word_lowered(buf, "fraktal") && _has_word_lowered(buf, "set")))
         task->has_fractal = 1;
-    if ((has_word(buf, "cluster") || has_word(buf, "worker") || has_word(buf, "verteilt") || has_word(buf, "distributed")) && (has_word(buf, "compute") || has_word(buf, "rechnen") || has_word(buf, "3x1") || has_word(buf, "arbeit")))
+    if ((_has_word_lowered(buf, "cluster") || _has_word_lowered(buf, "worker") || _has_word_lowered(buf, "verteilt") || _has_word_lowered(buf, "distributed")) && (_has_word_lowered(buf, "compute") || _has_word_lowered(buf, "rechnen") || _has_word_lowered(buf, "3x1") || _has_word_lowered(buf, "arbeit")))
         task->has_cluster_3x1 = 1;
-    if (has_word(buf, "reload") || has_word(buf, "module") || (has_word(buf, "hot") && has_word(buf, "swap")) || (has_word(buf, "neu") && has_word(buf, "laden")))
+    if (_has_word_lowered(buf, "reload") || _has_word_lowered(buf, "module") || (_has_word_lowered(buf, "hot") && _has_word_lowered(buf, "swap")) || (_has_word_lowered(buf, "neu") && _has_word_lowered(buf, "laden")))
         task->has_reload = 1;
-    if ((has_word(buf, "coordinate") || has_word(buf, "koordinate") || has_word(buf, "grid") || has_word(buf, "gitter")) && (has_word(buf, "xy") || has_word(buf, "2d") || has_word(buf, "position") || has_word(buf, "raster")))
+    if ((_has_word_lowered(buf, "coordinate") || _has_word_lowered(buf, "koordinate") || _has_word_lowered(buf, "grid") || _has_word_lowered(buf, "gitter")) && (_has_word_lowered(buf, "xy") || _has_word_lowered(buf, "2d") || _has_word_lowered(buf, "position") || _has_word_lowered(buf, "raster")))
         task->has_coordinate_grid = 1;
-    if (has_word(buf, "turmite") || (has_word(buf, "turmite") && has_word(buf, "ant")))
+    if (_has_word_lowered(buf, "turmite") || (_has_word_lowered(buf, "turmite") && _has_word_lowered(buf, "ant")))
         task->has_turmite = 1;
-    if (has_word(buf, "crossword") || has_word(buf, "kreuzwort") || has_word(buf, "rätsel") || (has_word(buf, "word") && has_word(buf, "puzzle")))
+    if (_has_word_lowered(buf, "crossword") || _has_word_lowered(buf, "kreuzwort") || _has_word_lowered(buf, "rätsel") || (_has_word_lowered(buf, "word") && _has_word_lowered(buf, "puzzle")))
         task->has_crossword = 1;
-    if (has_word(buf, "linter") || has_word(buf, "lint") || (has_word(buf, "code") && has_word(buf, "check")) || (has_word(buf, "static") && has_word(buf, "analyze")))
+    if (_has_word_lowered(buf, "linter") || _has_word_lowered(buf, "lint") || (_has_word_lowered(buf, "code") && _has_word_lowered(buf, "check")) || (_has_word_lowered(buf, "static") && _has_word_lowered(buf, "analyze")))
         task->has_linter = 1;
 
     // new small emitters
-    if (has_word(buf, "hello") && has_word(buf, "world"))
+    if (_has_word_lowered(buf, "hello") && _has_word_lowered(buf, "world"))
         task->has_hello_world = 1;
-    if (has_word(buf, "string") && has_word(buf, "find") && !has_word(buf, "max") && !has_word(buf, "largest"))
+    if (_has_word_lowered(buf, "string") && _has_word_lowered(buf, "find") && !_has_word_lowered(buf, "max") && !_has_word_lowered(buf, "largest"))
         task->has_string_find = 1;
-    if ((has_word(buf, "string") || has_word(buf, "text")) && has_word(buf, "split"))
+    if ((_has_word_lowered(buf, "string") || _has_word_lowered(buf, "text")) && _has_word_lowered(buf, "split"))
         task->has_string_split = 1;
-    if (has_word(buf, "switch") && !has_word(buf, "string"))
+    if (_has_word_lowered(buf, "switch") && !_has_word_lowered(buf, "string"))
         task->has_switch_demo = 1;
-    if (has_word(buf, "type") && (has_word(buf, "convert") || has_word(buf, "conversion")
-        || has_word(buf, "umwandeln") || has_word(buf, "cast")))
+    if (_has_word_lowered(buf, "type") && (_has_word_lowered(buf, "convert") || _has_word_lowered(buf, "conversion")
+        || _has_word_lowered(buf, "umwandeln") || _has_word_lowered(buf, "cast")))
         task->has_type_convert = 1;
-    if ((has_word(buf, "factorial") || has_word(buf, "fakult")) && (has_word(buf, "loop") || has_word(buf, "iterative") || has_word(buf, "schleife") || has_word(buf, "while")))
+    if ((_has_word_lowered(buf, "factorial") || _has_word_lowered(buf, "fakult")) && (_has_word_lowered(buf, "loop") || _has_word_lowered(buf, "iterative") || _has_word_lowered(buf, "schleife") || _has_word_lowered(buf, "while")))
         task->has_iterative_factorial = 1;
-    if (has_word(buf, "random") && has_word(buf, "walk"))
+    if (_has_word_lowered(buf, "random") && _has_word_lowered(buf, "walk"))
         task->has_random_walk = 1;
-    if (has_word(buf, "bar") && (has_word(buf, "chart") || has_word(buf, "graph") || has_word(buf, "diagramm")))
+    if (_has_word_lowered(buf, "bar") && (_has_word_lowered(buf, "chart") || _has_word_lowered(buf, "graph") || _has_word_lowered(buf, "diagramm")))
         task->has_bar_chart = 1;
-    if (has_word(buf, "hanoi") || (has_word(buf, "tower") && has_word(buf, "hanoi"))
-        || (has_word(buf, "turm") && has_word(buf, "hanoi")))
+    if (_has_word_lowered(buf, "hanoi") || (_has_word_lowered(buf, "tower") && _has_word_lowered(buf, "hanoi"))
+        || (_has_word_lowered(buf, "turm") && _has_word_lowered(buf, "hanoi")))
         task->has_hanoi_tower = 1;
-    if (has_word(buf, "ascii") && has_word(buf, "art"))
+    if (_has_word_lowered(buf, "ascii") && _has_word_lowered(buf, "art"))
         task->has_ascii_art = 1;
-    if ((has_word(buf, "number") || has_word(buf, "zahl")) && (has_word(buf, "word") || has_word(buf, "words") || has_word(buf, "wort") || has_word(buf, "worter") || has_word(buf, "text")))
+    if ((_has_word_lowered(buf, "number") || _has_word_lowered(buf, "zahl")) && (_has_word_lowered(buf, "word") || _has_word_lowered(buf, "words") || _has_word_lowered(buf, "wort") || _has_word_lowered(buf, "worter") || _has_word_lowered(buf, "text")))
         task->has_number_to_words = 1;
-    if ((has_word(buf, "temperature") || has_word(buf, "temperatur")) && (has_word(buf, "table") || has_word(buf, "tabelle")))
+    if ((_has_word_lowered(buf, "temperature") || _has_word_lowered(buf, "temperatur")) && (_has_word_lowered(buf, "table") || _has_word_lowered(buf, "tabelle")))
         task->has_temperature_table = 1;
-    if (has_word(buf, "loop") && (has_word(buf, "demo") || has_word(buf, "beispiel") || has_word(buf, "example")))
+    if (_has_word_lowered(buf, "loop") && (_has_word_lowered(buf, "demo") || _has_word_lowered(buf, "beispiel") || _has_word_lowered(buf, "example")))
         task->has_loop_demo = 1;
-    if ((has_word(buf, "time") || has_word(buf, "zeit") || has_word(buf, "uhr") || has_word(buf, "clock"))
-        && (has_word(buf, "demo") || has_word(buf, "beispiel") || has_word(buf, "example") || has_word(buf, "current")))
+    if ((_has_word_lowered(buf, "time") || _has_word_lowered(buf, "zeit") || _has_word_lowered(buf, "uhr") || _has_word_lowered(buf, "clock"))
+        && (_has_word_lowered(buf, "demo") || _has_word_lowered(buf, "beispiel") || _has_word_lowered(buf, "example") || _has_word_lowered(buf, "current")))
         task->has_time = 1;
-    if (has_word(buf, "shell") && (has_word(buf, "arg") || has_word(buf, "parameter") || has_word(buf, "command") || has_word(buf, "befehl")))
+    if (_has_word_lowered(buf, "shell") && (_has_word_lowered(buf, "arg") || _has_word_lowered(buf, "parameter") || _has_word_lowered(buf, "command") || _has_word_lowered(buf, "befehl")))
         task->has_shell_args = 1;
 
-    if (has_word(buf, "fann") || has_word(buf, "neural") || (has_word(buf, "network") && has_word(buf, "ai"))) {
-        if (has_word(buf, "train") || has_word(buf, "learn")) {
+    if (_has_word_lowered(buf, "fann") || _has_word_lowered(buf, "neural") || (_has_word_lowered(buf, "network") && _has_word_lowered(buf, "ai"))) {
+        if (_has_word_lowered(buf, "train") || _has_word_lowered(buf, "learn")) {
             task->has_fann_create = 1;
             task->has_fann_train = 1;
             task->has_algorithm = 0;
-        } else if (has_word(buf, "run") || has_word(buf, "predict") || has_word(buf, "infer")) {
+        } else if (_has_word_lowered(buf, "run") || _has_word_lowered(buf, "predict") || _has_word_lowered(buf, "infer")) {
             task->has_fann_run = 1;
             task->has_algorithm = 0;
-        } else if (has_word(buf, "create") || has_word(buf, "make") || has_word(buf, "generate")) {
+        } else if (_has_word_lowered(buf, "create") || _has_word_lowered(buf, "make") || _has_word_lowered(buf, "generate")) {
             task->has_fann_create = 1;
             task->has_algorithm = 0;
         } else {
@@ -1671,15 +1685,15 @@ int parse_task(const char *prompt, TaskProfile *task) {
     SNPRINTF_CHECK(task->title, sizeof(task->title), "%s", prompt);
 
     // Negation post-processing: clear flags if keyword is negated
-    if (task->has_sort && is_negated(buf, "sort")) task->has_sort = 0;
-    if (task->has_loop && is_negated(buf, "loop")) task->has_loop = 0;
-    if (task->has_condition && is_negated(buf, "if")) task->has_condition = 0;
-    if (task->has_input && is_negated(buf, "input")) task->has_input = 0;
-    if (task->has_output && is_negated(buf, "print")) task->has_output = 0;
-    if (task->has_sum && is_negated(buf, "sum")) task->has_sum = 0;
-    if (task->has_average && is_negated(buf, "average")) task->has_average = 0;
-    if (task->has_power && is_negated(buf, "power")) task->has_power = 0;
-    if (task->has_gcd && is_negated(buf, "gcd")) task->has_gcd = 0;
+    if (task->has_sort && _is_negated_lowered(buf, "sort")) task->has_sort = 0;
+    if (task->has_loop && _is_negated_lowered(buf, "loop")) task->has_loop = 0;
+    if (task->has_condition && _is_negated_lowered(buf, "if")) task->has_condition = 0;
+    if (task->has_input && _is_negated_lowered(buf, "input")) task->has_input = 0;
+    if (task->has_output && _is_negated_lowered(buf, "print")) task->has_output = 0;
+    if (task->has_sum && _is_negated_lowered(buf, "sum")) task->has_sum = 0;
+    if (task->has_average && _is_negated_lowered(buf, "average")) task->has_average = 0;
+    if (task->has_power && _is_negated_lowered(buf, "power")) task->has_power = 0;
+    if (task->has_gcd && _is_negated_lowered(buf, "gcd")) task->has_gcd = 0;
 
     return has_any;
 }
@@ -2128,7 +2142,11 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
                     continue;
                 }
             }
-            nums[num_count++] = (int)strtol(p, NULL, 10);
+            {
+                long lv = strtol(p, NULL, 10);
+                if (lv >= INT_MIN && lv <= INT_MAX)
+                    nums[num_count++] = (int)lv;
+            }
             while (*p && isdigit(*p)) p++;
             continue;
         }
@@ -2966,7 +2984,14 @@ int main(int argc, char *argv[]) {
             else { fprintf(stderr, "Usage: ... --out-dir <directory>\n"); return 1; }
         }
         else if (strcmp(argv[arg_idx], "--l1vm-root") == 0) {
-            if (arg_idx + 1 < argc) { SNPRINTF_CHECK(l1vm_root, sizeof(l1vm_root), "%s", argv[arg_idx + 1]); arg_idx += 2; }
+            if (arg_idx + 1 < argc) {
+                SNPRINTF_CHECK(l1vm_root, sizeof(l1vm_root), "%s", argv[arg_idx + 1]); arg_idx += 2;
+                struct stat st;
+                if (stat(l1vm_root, &st) != 0 || !S_ISDIR(st.st_mode)) {
+                    fprintf(stderr, "Error: --l1vm-root '%s' is not a valid directory\n", l1vm_root);
+                    return 1;
+                }
+            }
             else { fprintf(stderr, "Usage: ... --l1vm-root <path>\n"); return 1; }
         }
         else if (strcmp(argv[arg_idx], "--validate") == 0 || strcmp(argv[arg_idx], "-v") == 0) { validate_flag = 1; arg_idx++; }
@@ -3027,8 +3052,15 @@ int main(int argc, char *argv[]) {
     if (arg_idx < argc) {
         SNPRINTF_CHECK(fname, sizeof(fname), "%s", argv[arg_idx]);
         // block path traversal in filename
-        if (strstr(fname, "..")) {
-            c_printf(ANSI_RED, "Error: Filename must not contain '..' (path traversal blocked)\n");
+        if (strstr(fname, "..") && (
+            fname[0] == '.' ||
+            strstr(fname, "/..") ||
+            strstr(fname, "\\..") ||
+            strstr(fname, "..\\") ||
+            strstr(fname, "../") ||
+            (strlen(fname) >= 2 && strcmp(fname + strlen(fname) - 2, "..") == 0)
+        )) {
+            c_printf(ANSI_RED, "Error: Filename must not contain '..' path components (path traversal blocked)\n");
             return 1;
         }
         if (!strstr(fname, ".l1com")) strncat(fname, ".l1com", sizeof(fname) - strlen(fname) - 1);

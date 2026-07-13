@@ -474,7 +474,7 @@ int validate_code(const char *filename);
 // Learned patterns
 int init_learned_pattern(LearnedPattern *lp);
 void free_learned_pattern(LearnedPattern *lp);
-char* learned_dir_path(void);
+char* learned_dir_path(char *buf, int bufsize);
 void ensure_learned_dir(void);
 int learn_from_file(const char *path, const char *keywords, const char *description);
 int save_learned_pattern(LearnedPattern *lp);

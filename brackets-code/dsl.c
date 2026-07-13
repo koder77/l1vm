@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
 #include <dirent.h>
 #include <sys/stat.h>
 
@@ -1045,7 +1046,12 @@ static void update_token_from_prompt(Function *f, const char *prompt) {
     while (*p && num_count < 8) {
         if (*p >= '0' && *p <= '9') {
             int val = 0;
-            while (*p >= '0' && *p <= '9') { val = val * 10 + (*p - '0'); p++; }
+            while (*p >= '0' && *p <= '9') {
+                int digit = *p - '0';
+                if (val > (INT_MAX - digit) / 10) { while (*p >= '0' && *p <= '9') p++; break; }
+                val = val * 10 + digit;
+                p++;
+            }
             nums[num_count++] = val;
         } else { p++; }
     }
