@@ -21,10 +21,6 @@
 
 // ==================== TINY LLM INFERENCE ENGINE ====================
 
-#define EMBED_DIM 32
-#define VOCAB_SIZE 72
-#define TEMPERATURE 0.8
-#define MAX_STEPS 32
 WordEmbedding word_embeddings[VOCAB_SIZE];
 float attention_weights[NUM_EMITTERS];
 const char *EMITTER_NAMES[NUM_EMITTERS] = {"math","input_loop","loop","for_sum","print_even","find_max","countdown","fib_seq","input_sort","median","string_cat","string_compare","array_assign","array_reverse","array_find","input_fact","array_vmath","read_file","write_file","string_to_num","timer","factorial","fizzbuzz","primes","even_odd","power","mult_table","guess","gcd","hello_name","random","array_min_max","bool_demo","bit_check","fann_create","fann_train","fann_run","average","selection_sort","palindrome","lcm","collatz","sum_of_digits","reverse_string","armstrong","perfect_number","count_vowels","anagram_check","string_to_upper","string_to_lower","caesar_cipher","palindrome_string","bubble_sort","binary_search","square_root","prime_factorization","standard_deviation","compound_interest","decimal_to_binary","dice_roll","double_math","double_circle_area","double_average","double_compound_interest","double_pythagoras","double_temp_convert","double_sqrt","function","string_length","stack","queue","insertion_sort","calculator","unit_converter","rock_paper_scissors","pyramid","temp_converter_menu","sort_stats","string_analyzer","number_analyzer","filter_numbers","random_generator","math_menu","quiz_game","bmi_calculator","statistics_suite","linked_list","binary_search_tree","tree_traversal","graph_bfs_dfs","n_queens","sudoku","levenshtein_distance","maze_generator","maze_solver","monte_carlo_pi","matrix_multiplication","matrix_transpose","numerical_integration","complex_numbers","linear_regression","base_converter","freq_analysis","shuffle","weighted_random","ascii_table","bignum_math","password_card","chess_problem","shell_repl","webserver","sdl_window","sdl_button","thread","scheduler","shell_exec","json","crypto","bluetooth_ble","serial_rs232","gpio","gps","timer_date","sdl_sound","sdl_joystick","sdl_mouse","fractal","cluster_3x1","reload","coordinate_grid","turmite","crossword","linter","double_power","double_volume_sphere","double_discount","double_simple_interest","double_bmi","double_standard_deviation","double_kinetic_energy","add","sub","mul","div","double_add","double_sub","double_mul","double_div",
@@ -39,13 +35,8 @@ int vs_boost_tokens[64];
 int vs_boost_count = 0;
 
 // Vector search data structures
-#define MAX_EXAMPLES 512
-#define MAX_TOP_K 10
-#define EXAMPLE_DIR "l1vm-example-code"
-#define EXAMPLE_SUBDIRS 3
 const char *example_subdirs[EXAMPLE_SUBDIRS] = {"prog", "include", "lib"};
 static const char *example_exts[] = {".l1com", ".l1h", ".l1asm"};
-#define EXAMPLE_EXTS 3
 
 ExampleDoc example_docs[MAX_EXAMPLES];
 int num_examples = 0;
@@ -54,7 +45,7 @@ int examples_indexed = 0;
 void index_examples(void);
 int search_examples(const char *query, int top_k, int *indices, float *scores);
 
-unsigned long hash_word(const char *s) {
+static unsigned long hash_word(const char *s) {
     unsigned long hash = 5381;
     int c;
     while ((c = *s++))
@@ -232,7 +223,7 @@ int tokenize(const char *text, int *tokens, int max_tokens) {
     return count;
 }
 
-void softmax(float *x, int n) {
+static void softmax(float *x, int n) {
     if (n <= 0) return;
     float max = x[0], sum = 0;
     for (int i = 1; i < n; i++) if (x[i] > max) max = x[i];
@@ -240,7 +231,7 @@ void softmax(float *x, int n) {
     for (int i = 0; i < n; i++) x[i] /= sum;
 }
 
-void apply_token_boosts(float *scores, const int *tokens, int count,
+static void apply_token_boosts(float *scores, const int *tokens, int count,
                                 float fann_34, float fann_35, float fann_36,
                                 float train_34, float train_35,
                                 float predict_36,
@@ -289,176 +280,106 @@ int llm_select_emitter(const char *prompt, TaskProfile *task) {
     float emitter_scores[NUM_EMITTERS];
     for (int i = 0; i < NUM_EMITTERS; i++) emitter_scores[i] = 0;
 
-    if (task->has_operation && task->has_literals) emitter_scores[0] = 1.5f;
-    if (task->has_input && !task->has_operation) emitter_scores[1] = 1.5f;
-    if (task->has_input && task->has_operation) emitter_scores[1] += 1.0f;
-    if (task->has_loop && !task->has_operation && !task->has_input) emitter_scores[2] = 1.5f;
-    if (task->has_sum_range) emitter_scores[3] = 2.0f;
-    if (task->has_print_even) emitter_scores[4] = 2.0f;
-    if (task->has_find_max) emitter_scores[5] = 2.0f;
-    if (task->has_countdown_from) emitter_scores[6] = 2.0f;
-    if (task->has_fib_seq) emitter_scores[7] = 2.0f;
-    if (task->has_input_sort) emitter_scores[8] = 2.0f;
-    if (task->has_median) emitter_scores[9] = 2.0f;
-    if (task->has_string_cat) emitter_scores[10] = 2.0f;
-    if (task->has_string_compare) emitter_scores[11] = 2.0f;
-    if (task->has_array_assign) emitter_scores[12] = 2.0f;
-    if (task->has_array_reverse) emitter_scores[13] = 2.0f;
-    if (task->has_array_find) emitter_scores[14] = 2.0f;
-    if (task->has_array_access) emitter_scores[14] = 2.0f;
-    if (task->has_array_write) emitter_scores[12] = 2.0f;
-    if (task->has_input_fact) emitter_scores[15] = 2.0f;
-    if (task->has_array_vmath) emitter_scores[16] = 2.0f;
-    if (task->has_read_file) emitter_scores[17] = 2.0f;
-    if (task->has_write_file) emitter_scores[18] = 2.0f;
-    if (task->has_string_to_num) emitter_scores[19] = 2.0f;
-    if (task->has_timer) emitter_scores[20] = 2.0f;
-    if (task->has_factorial && !task->has_input) emitter_scores[21] = 2.0f;
-    if (task->has_fizzbuzz) emitter_scores[22] = 2.0f;
-    if (task->has_primes) emitter_scores[23] = 2.0f;
-    if (task->has_even_odd && !task->has_print_even) emitter_scores[24] = 2.0f;
-    if (task->has_power) emitter_scores[25] = 2.0f;
-    if (task->has_mult_table) emitter_scores[26] = 2.0f;
-    if (task->has_guess) emitter_scores[27] = 2.0f;
-    if (task->has_gcd) emitter_scores[28] = 2.0f;
-    if (task->has_hello_name) emitter_scores[29] = 2.0f;
-    if (task->has_random) emitter_scores[30] = 2.0f;
-    if (task->has_array_min_max) emitter_scores[31] = 2.0f;
-    if (task->has_bool_demo) emitter_scores[32] = 2.0f;
-    if (task->has_bit_check) emitter_scores[33] = 2.0f;
-    if (task->has_fann_create && task->has_fann_train) emitter_scores[35] = 2.5f;
-    if (task->has_fann_create && !task->has_fann_train) emitter_scores[34] = 2.0f;
-    if (task->has_fann_run) emitter_scores[36] = 2.0f;
-    if (task->has_average && task->has_input) emitter_scores[37] = 2.0f;
-    if (task->has_sort && !task->has_input) emitter_scores[38] = 2.0f;
-    if (task->has_palindrome) emitter_scores[39] = 2.0f;
-    if (task->has_lcm) emitter_scores[40] = 2.0f;
-    if (task->has_collatz) emitter_scores[41] = 2.0f;
-    if (task->has_sum_of_digits) emitter_scores[42] = 2.0f;
-    if (task->has_reverse_string) emitter_scores[43] = 2.0f;
-    if (task->has_armstrong) emitter_scores[44] = 2.0f;
-    if (task->has_perfect_number) emitter_scores[45] = 2.0f;
-    if (task->has_count_vowels) emitter_scores[46] = 2.0f;
-    if (task->has_anagram_check) emitter_scores[47] = 2.0f;
-    if (task->has_string_to_upper) emitter_scores[48] = 2.0f;
-    if (task->has_string_to_lower) emitter_scores[49] = 2.0f;
-    if (task->has_caesar_cipher) emitter_scores[50] = 2.0f;
-    if (task->has_palindrome_string) emitter_scores[51] = 2.0f;
-    if (task->has_bubble_sort) emitter_scores[52] = 2.0f;
-    if (task->has_binary_search) emitter_scores[53] = 2.0f;
-    if (task->has_square_root) emitter_scores[54] = 2.0f;
-    if (task->has_prime_factorization) emitter_scores[55] = 2.0f;
-    if (task->has_standard_deviation) emitter_scores[56] = 2.0f;
-    if (task->has_compound_interest) emitter_scores[57] = 2.0f;
-    if (task->has_decimal_to_binary) emitter_scores[58] = 2.0f;
-    if (task->has_dice_roll) emitter_scores[59] = 2.0f;
-    if (task->has_double_math) emitter_scores[60] = 2.0f;
-    if (task->has_double_circle_area) emitter_scores[61] = 2.0f;
-    if (task->has_double_average) emitter_scores[62] = 2.0f;
-    if (task->has_double_compound_interest) emitter_scores[63] = 2.0f;
-    if (task->has_double_pythagoras) emitter_scores[64] = 2.0f;
-    if (task->has_double_temp_convert) emitter_scores[65] = 2.0f;
-    if (task->has_double_sqrt) emitter_scores[66] = 2.0f;
-    if (task->has_function) emitter_scores[67] = 2.0f;
-    if (task->has_string_length) emitter_scores[68] = 2.0f;
-    if (task->has_stack) emitter_scores[69] = 2.0f;
-    if (task->has_queue) emitter_scores[70] = 2.0f;
-    if (task->has_insertion_sort) emitter_scores[71] = 2.0f;
-    if (task->has_calculator) emitter_scores[72] = 2.0f;
-    if (task->has_unit_converter) emitter_scores[73] = 2.0f;
-    if (task->has_rock_paper_scissors) emitter_scores[74] = 2.0f;
-    if (task->has_pyramid) emitter_scores[75] = 2.0f;
-    if (task->has_temp_converter_menu) emitter_scores[76] = 2.0f;
-    if (task->has_sort_stats) emitter_scores[77] = 2.0f;
-    if (task->has_string_analyzer) emitter_scores[78] = 2.0f;
-    if (task->has_number_analyzer) emitter_scores[79] = 2.0f;
-    if (task->has_filter_numbers) emitter_scores[80] = 2.0f;
-    if (task->has_random_generator) emitter_scores[81] = 2.0f;
-    if (task->has_math_menu) emitter_scores[82] = 2.0f;
-    if (task->has_quiz_game) emitter_scores[83] = 2.0f;
-    if (task->has_bmi_calculator) emitter_scores[84] = 2.0f;
-    if (task->has_statistics_suite) emitter_scores[85] = 2.0f;
-    if (task->has_linked_list) emitter_scores[86] = 2.0f;
-    if (task->has_binary_search_tree) emitter_scores[87] = 2.0f;
-    if (task->has_tree_traversal) emitter_scores[88] = 2.0f;
-    if (task->has_graph_bfs_dfs) emitter_scores[89] = 2.0f;
-    if (task->has_n_queens) emitter_scores[90] = 2.0f;
-    if (task->has_sudoku) emitter_scores[91] = 2.0f;
-    if (task->has_levenshtein) emitter_scores[92] = 2.0f;
-    if (task->has_maze_generator) emitter_scores[93] = 2.0f;
-    if (task->has_maze_solver) emitter_scores[94] = 2.0f;
-    if (task->has_monte_carlo) emitter_scores[95] = 2.0f;
-    if (task->has_matrix_mul) emitter_scores[96] = 2.0f;
-    if (task->has_matrix_transpose) emitter_scores[97] = 2.0f;
-    if (task->has_numerical_integration) emitter_scores[98] = 2.0f;
-    if (task->has_complex_numbers) emitter_scores[99] = 2.0f;
-    if (task->has_linear_regression) emitter_scores[100] = 2.0f;
-    if (task->has_base_converter) emitter_scores[101] = 2.0f;
-    if (task->has_freq_analysis) emitter_scores[102] = 2.0f;
-    if (task->has_shuffle) emitter_scores[103] = 2.0f;
-    if (task->has_weighted_random) emitter_scores[104] = 2.0f;
-    if (task->has_ascii_table) emitter_scores[105] = 3.0f;
-    if (task->has_bignum_math) emitter_scores[106] = 2.5f;
-    if (task->has_password_card) emitter_scores[107] = 2.5f;
-    if (task->has_chess_problem) emitter_scores[108] = 2.5f;
-    if (task->has_shell_repl) emitter_scores[109] = 2.5f;
-    if (task->has_webserver) emitter_scores[110] = 2.5f;
-    if (task->has_sdl_window) emitter_scores[111] = 2.5f;
-    if (task->has_sdl_button) emitter_scores[112] = 2.5f;
-    if (task->has_thread) emitter_scores[113] = 2.0f;
-    if (task->has_scheduler) emitter_scores[114] = 2.0f;
-    if (task->has_shell_exec) emitter_scores[115] = 2.5f;
-    if (task->has_json) emitter_scores[116] = 2.5f;
-    if (task->has_crypto) emitter_scores[117] = 2.5f;
-    if (task->has_bluetooth_ble) emitter_scores[118] = 2.5f;
-    if (task->has_serial_rs232) emitter_scores[119] = 2.5f;
-    if (task->has_gpio) emitter_scores[120] = 2.5f;
-    if (task->has_gps) emitter_scores[121] = 2.5f;
-    if (task->has_timer_date) emitter_scores[122] = 2.0f;
-    if (task->has_sdl_sound) emitter_scores[123] = 2.5f;
-    if (task->has_sdl_joystick) emitter_scores[124] = 2.5f;
-    if (task->has_sdl_mouse) emitter_scores[125] = 2.5f;
-    if (task->has_fractal) emitter_scores[126] = 2.5f;
-    if (task->has_cluster_3x1) emitter_scores[127] = 2.5f;
-    if (task->has_reload) emitter_scores[128] = 2.0f;
-    if (task->has_coordinate_grid) emitter_scores[129] = 2.0f;
-    if (task->has_turmite) emitter_scores[130] = 2.5f;
-    if (task->has_crossword) emitter_scores[131] = 2.5f;
-    if (task->has_linter) emitter_scores[132] = 2.0f;
-    if (task->has_double_power) emitter_scores[133] = 2.0f;
-    if (task->has_double_volume_sphere) emitter_scores[134] = 2.0f;
-    if (task->has_double_discount) emitter_scores[135] = 2.0f;
-    if (task->has_double_simple_interest) emitter_scores[136] = 2.0f;
-    if (task->has_double_bmi) emitter_scores[137] = 2.0f;
-    if (task->has_double_standard_deviation) emitter_scores[138] = 2.0f;
-    if (task->has_double_kinetic_energy) emitter_scores[139] = 2.0f;
-    if (task->has_add && task->has_literals && !task->has_input) { emitter_scores[140] = 2.0f; }
-    if (task->has_sub && task->has_literals && !task->has_input) { emitter_scores[141] = 2.0f; }
-    if (task->has_mul && task->has_literals && !task->has_input) { emitter_scores[142] = 2.0f; }
-    if (task->has_div && task->has_literals && !task->has_input) { emitter_scores[143] = 2.0f; }
-    if (task->has_add && task->has_literals && !task->has_input && strcmp(task->type, "double") == 0) { emitter_scores[144] = 2.5f; }
-    if (task->has_sub && task->has_literals && !task->has_input && strcmp(task->type, "double") == 0) { emitter_scores[145] = 2.5f; }
-    if (task->has_mul && task->has_literals && !task->has_input && strcmp(task->type, "double") == 0) { emitter_scores[146] = 2.5f; }
-    if (task->has_div && task->has_literals && !task->has_input && strcmp(task->type, "double") == 0) { emitter_scores[147] = 2.5f; }
-
-    if (task->has_hello_world) { emitter_scores[148] = 2.0f; }
-    if (task->has_string_find) { emitter_scores[149] = 2.0f; }
-    if (task->has_string_split) { emitter_scores[150] = 2.0f; }
-    if (task->has_switch_demo) { emitter_scores[151] = 2.0f; }
-    if (task->has_type_convert) { emitter_scores[152] = 2.0f; }
-    if (task->has_iterative_factorial) { emitter_scores[153] = 2.0f; }
-    if (task->has_random_walk) { emitter_scores[154] = 2.0f; }
-    if (task->has_bar_chart) { emitter_scores[155] = 2.0f; }
-    if (task->has_hanoi_tower) { emitter_scores[156] = 2.0f; }
-    if (task->has_ascii_art) { emitter_scores[157] = 2.0f; }
-    if (task->has_number_to_words) { emitter_scores[158] = 2.0f; }
-    if (task->has_temperature_table) { emitter_scores[159] = 2.0f; }
-    if (task->has_loop_demo) { emitter_scores[160] = 2.0f; }
-    if (task->has_pointer) { emitter_scores[161] = 2.0f; }
-    if (task->has_struct) { emitter_scores[162] = 2.0f; }
-    if (task->has_hex_binary) { emitter_scores[163] = 2.0f; }
-    if (task->has_shell_args) { emitter_scores[164] = 2.0f; }
-    if (task->has_time) { emitter_scores[165] = 2.0f; }
+    // Macro-based table: SET(idx, flag, score) — sets emitter score if flag is true
+    #define SET(idx, flag, score) do { if (TF_ISSET(task, FLAG_ ## flag)) emitter_scores[idx] = (score); } while(0)
+    // Conditional scores (depend on multiple flags)
+    if (TF_ISSET(task, FLAG_operation) && TF_ISSET(task, FLAG_literals)) emitter_scores[0] = 1.5f;
+    if (TF_ISSET(task, FLAG_input) && !TF_ISSET(task, FLAG_operation)) emitter_scores[1] = 1.5f;
+    if (TF_ISSET(task, FLAG_input) && TF_ISSET(task, FLAG_operation)) emitter_scores[1] += 1.0f;
+    if (TF_ISSET(task, FLAG_loop) && !TF_ISSET(task, FLAG_operation) && !TF_ISSET(task, FLAG_input)) emitter_scores[2] = 1.5f;
+    if (TF_ISSET(task, FLAG_even_odd) && !TF_ISSET(task, FLAG_print_even)) emitter_scores[24] = 2.0f;
+    if (TF_ISSET(task, FLAG_sort) && !TF_ISSET(task, FLAG_input)) emitter_scores[38] = 2.0f;
+    if (TF_ISSET(task, FLAG_average) && TF_ISSET(task, FLAG_input)) emitter_scores[37] = 2.0f;
+    if (TF_ISSET(task, FLAG_factorial) && !TF_ISSET(task, FLAG_input)) emitter_scores[21] = 2.0f;
+    if (TF_ISSET(task, FLAG_fann_create) && TF_ISSET(task, FLAG_fann_train)) emitter_scores[35] = 2.5f;
+    if (TF_ISSET(task, FLAG_fann_create) && !TF_ISSET(task, FLAG_fann_train)) emitter_scores[34] = 2.0f;
+    if (TF_ISSET(task, FLAG_fann_run)) emitter_scores[36] = 2.0f;
+    if (TF_ISSET(task, FLAG_add) && TF_ISSET(task, FLAG_literals) && !TF_ISSET(task, FLAG_input)) emitter_scores[140] = 2.0f;
+    if (TF_ISSET(task, FLAG_sub) && TF_ISSET(task, FLAG_literals) && !TF_ISSET(task, FLAG_input)) emitter_scores[141] = 2.0f;
+    if (TF_ISSET(task, FLAG_mul) && TF_ISSET(task, FLAG_literals) && !TF_ISSET(task, FLAG_input)) emitter_scores[142] = 2.0f;
+    if (TF_ISSET(task, FLAG_div) && TF_ISSET(task, FLAG_literals) && !TF_ISSET(task, FLAG_input)) emitter_scores[143] = 2.0f;
+    if (TF_ISSET(task, FLAG_add) && TF_ISSET(task, FLAG_literals) && !TF_ISSET(task, FLAG_input) && strcmp(task->type, "double") == 0) emitter_scores[144] = 2.5f;
+    if (TF_ISSET(task, FLAG_sub) && TF_ISSET(task, FLAG_literals) && !TF_ISSET(task, FLAG_input) && strcmp(task->type, "double") == 0) emitter_scores[145] = 2.5f;
+    if (TF_ISSET(task, FLAG_mul) && TF_ISSET(task, FLAG_literals) && !TF_ISSET(task, FLAG_input) && strcmp(task->type, "double") == 0) emitter_scores[146] = 2.5f;
+    if (TF_ISSET(task, FLAG_div) && TF_ISSET(task, FLAG_literals) && !TF_ISSET(task, FLAG_input) && strcmp(task->type, "double") == 0) emitter_scores[147] = 2.5f;
+    // Simple flag-to-score mappings (each flag maps to exactly one emitter)
+    SET(3, sum_range, 2.0f); SET(4, print_even, 2.0f);
+    SET(5, find_max, 2.0f); SET(6, countdown_from, 2.0f);
+    SET(7, fib_seq, 2.0f); SET(8, input_sort, 2.0f);
+    SET(9, median, 2.0f); SET(10, string_cat, 2.0f);
+    SET(11, string_compare, 2.0f); SET(12, array_assign, 2.0f);
+    SET(13, array_reverse, 2.0f); SET(14, array_find, 2.0f);
+    SET(14, array_access, 2.0f); SET(12, array_write, 2.0f);
+    SET(15, input_fact, 2.0f); SET(16, array_vmath, 2.0f);
+    SET(17, read_file, 2.0f); SET(18, write_file, 2.0f);
+    SET(19, string_to_num, 2.0f); SET(20, timer, 2.0f);
+    SET(22, fizzbuzz, 2.0f); SET(23, primes, 2.0f);
+    SET(25, power, 2.0f); SET(26, mult_table, 2.0f);
+    SET(27, guess, 2.0f); SET(28, gcd, 2.0f);
+    SET(29, hello_name, 2.0f); SET(30, random, 2.0f);
+    SET(31, array_min_max, 2.0f); SET(32, bool_demo, 2.0f);
+    SET(33, bit_check, 2.0f);
+    SET(39, palindrome, 2.0f); SET(40, lcm, 2.0f);
+    SET(41, collatz, 2.0f); SET(42, sum_of_digits, 2.0f);
+    SET(43, reverse_string, 2.0f); SET(44, armstrong, 2.0f);
+    SET(45, perfect_number, 2.0f); SET(46, count_vowels, 2.0f);
+    SET(47, anagram_check, 2.0f); SET(48, string_to_upper, 2.0f);
+    SET(49, string_to_lower, 2.0f); SET(50, caesar_cipher, 2.0f);
+    SET(51, palindrome_string, 2.0f); SET(52, bubble_sort, 2.0f);
+    SET(53, binary_search, 2.0f); SET(54, square_root, 2.0f);
+    SET(55, prime_factorization, 2.0f); SET(56, standard_deviation, 2.0f);
+    SET(57, compound_interest, 2.0f); SET(58, decimal_to_binary, 2.0f);
+    SET(59, dice_roll, 2.0f); SET(60, double_math, 2.0f);
+    SET(61, double_circle_area, 2.0f); SET(62, double_average, 2.0f);
+    SET(63, double_compound_interest, 2.0f); SET(64, double_pythagoras, 2.0f);
+    SET(65, double_temp_convert, 2.0f); SET(66, double_sqrt, 2.0f);
+    SET(67, function, 2.0f); SET(68, string_length, 2.0f);
+    SET(69, stack, 2.0f); SET(70, queue, 2.0f);
+    SET(71, insertion_sort, 2.0f); SET(72, calculator, 2.0f);
+    SET(73, unit_converter, 2.0f); SET(74, rock_paper_scissors, 2.0f);
+    SET(75, pyramid, 2.0f); SET(76, temp_converter_menu, 2.0f);
+    SET(77, sort_stats, 2.0f); SET(78, string_analyzer, 2.0f);
+    SET(79, number_analyzer, 2.0f); SET(80, filter_numbers, 2.0f);
+    SET(81, random_generator, 2.0f); SET(82, math_menu, 2.0f);
+    SET(83, quiz_game, 2.0f); SET(84, bmi_calculator, 2.0f);
+    SET(85, statistics_suite, 2.0f); SET(86, linked_list, 2.0f);
+    SET(87, binary_search_tree, 2.0f); SET(88, tree_traversal, 2.0f);
+    SET(89, graph_bfs_dfs, 2.0f); SET(90, n_queens, 2.0f);
+    SET(91, sudoku, 2.0f); SET(92, levenshtein, 2.0f);
+    SET(93, maze_generator, 2.0f); SET(94, maze_solver, 2.0f);
+    SET(95, monte_carlo, 2.0f); SET(96, matrix_mul, 2.0f);
+    SET(97, matrix_transpose, 2.0f); SET(98, numerical_integration, 2.0f);
+    SET(99, complex_numbers, 2.0f); SET(100, linear_regression, 2.0f);
+    SET(101, base_converter, 2.0f); SET(102, freq_analysis, 2.0f);
+    SET(103, shuffle, 2.0f); SET(104, weighted_random, 2.0f);
+    SET(105, ascii_table, 3.0f); SET(106, bignum_math, 2.5f);
+    SET(107, password_card, 2.5f); SET(108, chess_problem, 2.5f);
+    SET(109, shell_repl, 2.5f); SET(110, webserver, 2.5f);
+    SET(111, sdl_window, 2.5f); SET(112, sdl_button, 2.5f);
+    SET(113, thread, 2.0f); SET(114, scheduler, 2.0f);
+    SET(115, shell_exec, 2.5f); SET(116, json, 2.5f);
+    SET(117, crypto, 2.5f); SET(118, bluetooth_ble, 2.5f);
+    SET(119, serial_rs232, 2.5f); SET(120, gpio, 2.5f);
+    SET(121, gps, 2.5f); SET(122, timer_date, 2.0f);
+    SET(123, sdl_sound, 2.5f); SET(124, sdl_joystick, 2.5f);
+    SET(125, sdl_mouse, 2.5f); SET(126, fractal, 2.5f);
+    SET(127, cluster_3x1, 2.5f); SET(128, reload, 2.0f);
+    SET(129, coordinate_grid, 2.0f); SET(130, turmite, 2.5f);
+    SET(131, crossword, 2.5f); SET(132, linter, 2.0f);
+    SET(133, double_power, 2.0f); SET(134, double_volume_sphere, 2.0f);
+    SET(135, double_discount, 2.0f); SET(136, double_simple_interest, 2.0f);
+    SET(137, double_bmi, 2.0f); SET(138, double_standard_deviation, 2.0f);
+    SET(139, double_kinetic_energy, 2.0f);
+    SET(148, hello_world, 2.0f); SET(149, string_find, 2.0f);
+    SET(150, string_split, 2.0f); SET(151, switch_demo, 2.0f);
+    SET(152, type_convert, 2.0f); SET(153, iterative_factorial, 2.0f);
+    SET(154, random_walk, 2.0f); SET(155, bar_chart, 2.0f);
+    SET(156, hanoi_tower, 2.0f); SET(157, ascii_art, 2.0f);
+    SET(158, number_to_words, 2.0f); SET(159, temperature_table, 2.0f);
+    SET(160, loop_demo, 2.0f); SET(161, pointer, 2.0f);
+    SET(162, struct, 2.0f); SET(163, hex_binary, 2.0f);
+    SET(164, shell_args, 2.0f); SET(165, time, 2.0f);
+    #undef SET
 
     // Phase 2a: prompt token boosts
     apply_token_boosts(emitter_scores, tokens, num_tokens,
@@ -602,7 +523,7 @@ int llm_select_emitter(const char *prompt, TaskProfile *task) {
     return best;
 }
 
-int has_actionable_keyword(const char *text) {
+static int has_actionable_keyword(const char *text) {
     // arithmetic
     if (has_word(text, "add") || has_word(text, "sum") || has_word(text, "summe")
         || has_word(text, "plus") || has_word(text, "berechne") || has_word(text, "ermittle")
@@ -733,11 +654,6 @@ int has_actionable_keyword(const char *text) {
         || has_word(text, "timer") || has_word(text, "benchmark") || has_word(text, "measure")
         || has_word(text, "mess") || has_word(text, "dauer") || has_word(text, "execution")
         || has_word(text, "ausführ") || has_word(text, "lauf"))
-        return 1;
-
-    // hello / misc
-    if (has_word(text, "hello") || has_word(text, "hallo") || has_word(text, "hello")
-        || has_word(text, "hi") || has_word(text, "name"))
         return 1;
 
     // general action verbs
@@ -1069,7 +985,7 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
     if (strlen(remaining) > 0) { SNPRINTF_CHECK(steps[num_steps], MAX_PROMPT, "%s", remaining); num_steps++; }
 
     if (verbose_flag) {
-        fprintf(stderr, "DEBUG split: num_steps=%d steps:", num_steps);
+        fprintf(stderr, "Split steps: num_steps=%d steps:", num_steps);
         for (int d = 0; d < num_steps; d++) fprintf(stderr, " [%d]='%s'", d, steps[d]);
         fprintf(stderr, "\n");
     }
@@ -1228,7 +1144,7 @@ void embed_text(const char *text, float *out) {
     }
 }
 
-void filename_stem(const char *path, char *stem) {
+static void filename_stem(const char *path, char *stem) {
     const char *p = strrchr(path, '/');
     p = p ? p + 1 : path;
     char buf[256];

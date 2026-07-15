@@ -30,7 +30,6 @@
 #define MAX_DSL_INCLUDES_POST 16
 #define DSL_LINE_SIZE 1024
 #define MAX_DSL_KEYWORDS 32
-#define MAX_DSL_ARRAY_RULES 64
 
 typedef enum {
     DSL_TOKEN_INT64,

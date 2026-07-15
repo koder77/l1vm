@@ -36,14 +36,6 @@
 #include "brackets-code.h"
 #include "dsl.h"
 
-#define MAX_LINE 4096
-#define MAX_VARS 48
-#define MAX_FUNCS 24
-#define MAX_PROMPT 8192
-#define MAX_CODE 65536
-#define MAX_OUTPUT 4096
-#define MAX_VALUES 16
-
 int validate_flag = 0;
 int retry_seed = 0;
 int verbose_flag = 0;
@@ -54,17 +46,10 @@ char l1vm_root[512] = "";
 static const char *current_prompt = "";
 
 int use_color = 1;
-#define c_printf(color, ...) do { if (use_color) { printf(color); printf(__VA_ARGS__); printf(ANSI_RESET); } else printf(__VA_ARGS__); } while(0)
 
 LearnedPattern learned_patterns[MAX_LEARNED];
 int num_learned = 0;
 int learned_loaded = 0;
-
-// Dynamic allocation helpers
-#define INIT_VARS_CAP 8
-#define INIT_BODY_CAP 4096
-#define INIT_FUNCS_CAP 4
-#define INIT_INCLUDES_CAP 4
 
 static int resize_vars(Function *f, int new_cap) {
     Variable *p = realloc(f->vars, (size_t)new_cap * sizeof(Variable));
@@ -535,9 +520,9 @@ static const SynonymEntry SYNONYM_TABLE[] = {
     {"repeat", "loop"}, {"rest", "mod"}, {"series", "loop"}, {"sortieren", "sort"},
     {"sortiert", "sort"}, {"subtrahieren", "sub"}, {"subtraktion", "sub"}, {"tally", "sum"},
     {"total", "sum"}, {"vermindern", "sub"}, {"zusammenzaehlen", "sum"}, {"zusammenzählen", "sum"},
-    {"auffangen", "input"}, {"capture", "input"}, {"collect", "input"}, {"eingabe", "input"},
+    {"auffangen", "input"}, {"capture", "input"}, {"eingabe", "input"},
     {"einlesen", "read"}, {"erfassen", "input"}, {"erfasse", "input"}, {"erhalten", "input"},
-    {"fetch", "read"}, {"gather", "input"}, {"gib ein", "input"}, {"import", "read"},
+    {"fetch", "read"}, {"gib ein", "input"}, {"import", "read"},
     {"importieren", "read"}, {"laden", "read"}, {"lade", "read"}, {"load", "read"},
     {"obtain", "input"}, {"oeffnen", "read"}, {"öffnen", "read"}, {"prompt", "input"},
     {"receive", "input"}, {"retrieve", "read"}, {"take", "input"}, {"uebernehmen", "input"},
@@ -572,7 +557,7 @@ static const SynonymEntry SYNONYM_TABLE[] = {
     {"durchschnittlich", "average"}, {"middle", "median"}, {"midpoint", "median"}, {"mitte", "median"},
     {"mittel", "median"}, {"mittelwert", "average"}, {"normal", "average"}, {"standard", "average"},
     {"typical", "average"}, {"typisch", "average"}, {"zentral", "median"}, {"zentrum", "median"},
-    {"bedingung", "if"}, {"condition", "if"}, {"falls", "if"}, {"repeat", "for"},
+    {"bedingung", "if"}, {"condition", "if"}, {"falls", "if"}, {"repeat", "loop"},
     {"repetition", "for"}, {"schleife", "loop"}, {"wenn", "if"}, {"byte", "byte"},
     {"count", "number"}, {"decimal", "double"}, {"floating point", "double"}, {"ganzzahl", "int64"},
     {"integer", "int64"}, {"kommazahl", "double"}, {"natuerlich", "int64"}, {"natürlich", "int64"},
@@ -616,22 +601,21 @@ static const SynonymEntry SYNONYM_TABLE[] = {
     {"schreib", "write"},
     {"primes", "prime"}, {"numbers", "num"}, {"values", "value"},
     {"demo", "show"}, {"example", "show"},
-    {"benchmark", "time"}, {"clock", "time"}, {"performance", "time"},
+    {"benchmark", "timer"}, {"clock", "timer"}, {"performance", "timer"},
     {"network", "data"}, {"crypto", "data"}, {"encrypt", "data"},
     {"json", "data"}, {"config", "data"},
     {"graphics", "show"}, {"render", "show"},
     {"game", "guess"}, {"play", "guess"},
     {"float", "num"}, {"bignum", "num"}, {"big", "num"},
     {"include", "file"}, {"header", "file"},
-    {"list", "array"}, {"vector", "array"}, {"collection", "array"},
-    {"search", "find"}, {"locate", "find"}, {"lookup", "find"},
+    {"vector", "array"}, {"collection", "array"},
+    {"lookup", "find"},
     {"copy", "assign"}, {"duplicate", "assign"}, {"clone", "assign"},
     {"delete", "remove"}, {"clear", "remove"}, {"erase", "remove"},
-    {"insert", "add"}, {"append", "add"}, {"push", "add"},
     {"pop", "remove"}, {"extract", "remove"},
     {"call", "run"}, {"invoke", "run"}, {"execute", "run"},
-    {"text", "string"}, {"word", "string"},
-    {"fann", "fann"}, {"neural", "fann"}, {"netz", "fann"}, {"network", "fann"},
+    {"word", "string"},
+    {"fann", "fann"}, {"neural", "fann"}, {"netz", "fann"}, {"network", "data"},
     {"neuronal", "fann"}, {"neuron", "fann"}, {"ki", "fann"}, {"ai", "fann"},
     {"machine learning", "fann"}, {"deep", "fann"}, {"training", "train"},
     {"trainieren", "train"}, {"trainiere", "train"}, {"lernen", "train"},
@@ -757,8 +741,6 @@ static int _is_negated_lowered(const char *lowered_text, const char *keyword) {
 
 // ==================== TASK PROFILE ====================
 
-#define MAX_NUMS 8
-
 
 static int word_to_num(const char *word);
 
@@ -815,25 +797,19 @@ int parse_task(const char *prompt, TaskProfile *task);
 int generate_from_task(Program *prog, TaskProfile *task, int last_step);
 
 
-int parse_task(const char *prompt, TaskProfile *task) {
-    char buf[MAX_PROMPT];
-    SNPRINTF_CHECK(buf, sizeof(buf), "%s", prompt);
-    to_lowercase(buf);
-    SNPRINTF_CHECK(task->prompt, sizeof(task->prompt), "%s", prompt);
 
-    // default type
-    SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "int64");
+/* ── parse_task helpers ─────────────────────────────────────────────────── */
 
-    // detect type
+static void parse_task_detect_type(const char *buf, TaskProfile *task) {
     if (strstr(buf, "byte") || strstr(buf, "int8")) SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "byte");
     else if (strstr(buf, "int16") || strstr(buf, "short")) SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "int16");
     else if (strstr(buf, "int32")) SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "int32");
     else if (strstr(buf, "int64") || _has_word_lowered(buf, "int") || strstr(buf, "long")) SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "int64");
     else if (strstr(buf, "double") || strstr(buf, "float") || strstr(buf, "real") || strstr(buf, "komma")) SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "double");
+}
 
-    // extract numbers
+static void parse_task_detect_literals(const char *prompt, const char *buf, TaskProfile *task) {
     task->num_literals = extract_numbers(prompt, task->literals, MAX_NUMS);
-    // also extract double literals (decimal numbers)
     int has_decimals = 0;
     for (int di = 0; di < task->num_literals && di < MAX_NUMS; di++)
         task->double_literals[di] = (double)task->literals[di];
@@ -859,15 +835,16 @@ int parse_task(const char *prompt, TaskProfile *task) {
             }
             dp++;
         }
-        // override num_literals with count from this pass (handles decimals as single values)
         if (has_decimals) {
             task->num_literals = di;
             SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "double");
         }
     }
-    task->has_literals = (task->num_literals > 0);
+    if (task->num_literals > 0) TF_SET(task, FLAG_literals); else TF_CLR(task, FLAG_literals);
+}
 
-    // count detection: word before "numbers/werte/zahlen/values"
+static void parse_task_detect_io(char *buf, TaskProfile *task) {
+    /* count detection: word before "numbers/werte/zahlen/values" */
     char *p = buf;
     while (*p) {
         if (strncmp(p, "numbers", 7) == 0 || strncmp(p, "werte", 5) == 0 || strncmp(p, "zahlen", 6) == 0 || strncmp(p, "values", 6) == 0) {
@@ -877,9 +854,8 @@ int parse_task(const char *prompt, TaskProfile *task) {
             q++;
             if (q < p && isdigit(*q)) {
                 task->input_count = (int)strtol(q, NULL, 10);
-                task->has_input = 1;
+                TF_SET(task, FLAG_input);
             } else {
-                // check for spelled-out number before "numbers"
                 q = p - 1;
                 while (q >= buf && isspace(*q)) q--;
                 char *end = q + 1;
@@ -890,65 +866,62 @@ int parse_task(const char *prompt, TaskProfile *task) {
                     while (q < end && wi < 31) w[wi++] = *q++;
                     w[wi] = '\0';
                     int n = word_to_num(w);
-                    if (n > 0) { task->input_count = n; task->has_input = 1; }
+                    if (n > 0) { task->input_count = n; TF_SET(task, FLAG_input); }
                 }
             }
             break;
         }
         p++;
     }
-    // detect input keywords
+
+    /* detect input keywords */
     if (_has_word_lowered(buf, "lies") || _has_word_lowered(buf, "lese") || _has_word_lowered(buf, "read") || _has_word_lowered(buf, "input")
         || _has_word_lowered(buf, "gib") || _has_word_lowered(buf, "enter") || _has_word_lowered(buf, "erfasse")
         || _has_word_lowered(buf, "collect") || _has_word_lowered(buf, "eingabe") || _has_word_lowered(buf, "einlesen"))
-        task->has_input = 1;
+        TF_SET(task, FLAG_input);
 
-    // detect output
+    /* detect output */
     if (_has_word_lowered(buf, "print") || _has_word_lowered(buf, "druck") || _has_word_lowered(buf, "ausg")
         || _has_word_lowered(buf, "show") || _has_word_lowered(buf, "display") || _has_word_lowered(buf, "zeig")
         || _has_word_lowered(buf, "output") || _has_word_lowered(buf, "schreib"))
-        task->has_output = 1;
+        TF_SET(task, FLAG_output);
 
-    // detect print variable
-    if (task->has_output && strstr(buf, "variable"))
-        task->has_print_var = 1;
+    /* detect print variable */
+    if (TF_ISSET(task, FLAG_output) && strstr(buf, "variable"))
+        TF_SET(task, FLAG_print_var);
 
-    // detect operation
+    /* detect operation */
     const char *op = find_operation(buf);
     if (op) {
-        task->has_operation = 1;
+        TF_SET(task, FLAG_operation);
         SNPRINTF_CHECK(task->op, sizeof(task->op), "%s", op);
-        if (strcmp(op, "add") == 0) task->has_add = 1;
-        else if (strcmp(op, "sub") == 0) task->has_sub = 1;
-        else if (strcmp(op, "mul") == 0) task->has_mul = 1;
-        else if (strcmp(op, "div") == 0) task->has_div = 1;
+        if (strcmp(op, "add") == 0) TF_SET(task, FLAG_add);
+        else if (strcmp(op, "sub") == 0) TF_SET(task, FLAG_sub);
+        else if (strcmp(op, "mul") == 0) TF_SET(task, FLAG_mul);
+        else if (strcmp(op, "div") == 0) TF_SET(task, FLAG_div);
     }
-    // also detect each operation independently via strstr (like find_operation)
     for (int oi = 0; oi < (int)(sizeof(ops)/sizeof(ops[0])); oi++) {
         if (strstr(buf, ops[oi].op)) {
-            if (strcmp(ops[oi].rpn_op, "add") == 0) task->has_add = 1;
-            else if (strcmp(ops[oi].rpn_op, "sub") == 0) task->has_sub = 1;
-            else if (strcmp(ops[oi].rpn_op, "mul") == 0) task->has_mul = 1;
-            else if (strcmp(ops[oi].rpn_op, "div") == 0) task->has_div = 1;
+            if (strcmp(ops[oi].rpn_op, "add") == 0) TF_SET(task, FLAG_add);
+            else if (strcmp(ops[oi].rpn_op, "sub") == 0) TF_SET(task, FLAG_sub);
+            else if (strcmp(ops[oi].rpn_op, "mul") == 0) TF_SET(task, FLAG_mul);
+            else if (strcmp(ops[oi].rpn_op, "div") == 0) TF_SET(task, FLAG_div);
         }
     }
 
-    // build operation sequence in prompt order (left-to-right)
+    /* build operation sequence in prompt order */
     task->num_ops = 0;
     {
-        // Find all operation keywords via strstr (mirrors the old detection loop)
-        // Record position and sort by position to maintain prompt order
         int found_ops = 0;
         int op_positions[32];
         char op_names[32][64];
         for (int oi = 0; oi < (int)(sizeof(ops)/sizeof(ops[0])); oi++) {
-            char *p = buf;
-            while ((p = strstr(p, ops[oi].op)) != NULL && found_ops < 32) {
-                // word-boundary check (before only, matching strstr-loop behavior)
-                int at_start = (p == buf);
-                int before_ok = at_start || !isalpha((unsigned char)*(p - 1));
+            char *pp = buf;
+            while ((pp = strstr(pp, ops[oi].op)) != NULL && found_ops < 32) {
+                int at_start = (pp == buf);
+                int before_ok = at_start || !isalpha((unsigned char)*(pp - 1));
                 if (before_ok) {
-                    int pos = (int)(p - buf);
+                    int pos = (int)(pp - buf);
                     int dup = 0;
                     for (int di = 0; di < found_ops; di++) {
                         if (op_positions[di] == pos) { dup = 1; break; }
@@ -959,10 +932,9 @@ int parse_task(const char *prompt, TaskProfile *task) {
                         found_ops++;
                     }
                 }
-                p++;
+                pp++;
             }
         }
-        // Sort by position to restore prompt order
         for (int i = 0; i < found_ops - 1; i++) {
             for (int j = i + 1; j < found_ops; j++) {
                 if (op_positions[j] < op_positions[i]) {
@@ -973,7 +945,6 @@ int parse_task(const char *prompt, TaskProfile *task) {
                 }
             }
         }
-        // Pair operations with literals in prompt order
         int lit_idx = 0;
         for (int oi = 0; oi < found_ops && lit_idx < task->num_literals; oi++) {
             SNPRINTF_CHECK(task->op_seq[task->num_ops], sizeof(task->op_seq[0]), "%.*s", (int)sizeof(task->op_seq[0]) - 1, op_names[oi]);
@@ -982,720 +953,617 @@ int parse_task(const char *prompt, TaskProfile *task) {
         }
     }
 
-    // if count not yet set and single literal could be a count (only when no operation present)
-    if (!task->has_input && task->num_literals == 1 && task->has_literals && !task->has_operation) {
+    /* if count not yet set and single literal could be a count */
+    if (!TF_ISSET(task, FLAG_input) && task->num_literals == 1 && TF_ISSET(task, FLAG_literals) && !TF_ISSET(task, FLAG_operation)) {
         int lit = task->literals[0];
         if (lit >= 1 && lit <= 1000) {
             task->input_count = lit;
-            task->has_input = 1;
+            TF_SET(task, FLAG_input);
+        }
+    }
+}
+
+static void parse_task_detect_flags(const char *buf, TaskProfile *task) {
+    /* Table-driven simple OR-pattern rules: each entry is a flag + NULL-terminated word list */
+    static const struct { int flag; const char *words[8]; } flag_rules[] = {
+        { FLAG_loop,          {"loop", "schleife", "for", "while", "wiederhol", "iterate", NULL} },
+        { FLAG_condition,     {"if", "bedingung", "wenn", "condition", "falls", NULL} },
+        { FLAG_sort,          {"sort", "bubble", "sortiere", NULL} },
+        { FLAG_descending,    {"descending", "desc", "absteigend", NULL} },
+        { FLAG_power,         {"power", "potenz", "exponent", "square", "quadrat", "cube", NULL} },
+        { FLAG_max,           {"max", "largest", "greatest", "highest", "maximum", NULL} },
+        { FLAG_min,           {"min", "kleinste", "smallest", "least", "lowest", "minimum", NULL} },
+        { FLAG_countdown,     {"countdown", "count down", NULL} },
+        { FLAG_guess,         {"guess", "rate", "raten", NULL} },
+        { FLAG_random,        {"random", "zufall", "rand", NULL} },
+        { FLAG_pointer,       {"point", "zeiger", "adresse", "address", "memory", "mem", NULL} },
+        { FLAG_struct,        {"struct", "dotted", "punkt", "struktur", "record", NULL} },
+        { FLAG_function,      {"function", "funktion", "subroutine", NULL} },
+        { FLAG_hex_binary,    {"hex", "binary", "binaer", NULL} },
+        { FLAG_average,       {"average", "durchschnitt", "mean", NULL} },
+        { FLAG_fizzbuzz,      {"fizzbuzz", "fizz buzz", "fizz", NULL} },
+        { FLAG_primes,        {"prime", "prim", NULL} },
+        { FLAG_sum,           {"sum", "summe", "add", NULL} },
+        { FLAG_factorial,     {"factorial", "fakult", NULL} },
+        { FLAG_fibonacci,     {"fib", "fibonacci", NULL} },
+        { FLAG_median,        {"median", "mitte", NULL} },
+        { FLAG_string_compare,{"compare", "vergleich", "cmp", NULL} },
+        { FLAG_timer,         {"timer", "zeit", "time", "benchmark", "measure", "mess", "dauer", NULL} },
+        { FLAG_even_odd,      {"even", "odd", "gerade", "ungerade", NULL} },
+    };
+    for (size_t i = 0; i < sizeof(flag_rules)/sizeof(flag_rules[0]); i++) {
+        for (int j = 0; flag_rules[i].words[j]; j++) {
+            if (_has_word_lowered(buf, flag_rules[i].words[j])) {
+                TF_SET(task, flag_rules[i].flag);
+                break;
+            }
         }
     }
 
-    // detect loops
-    if (_has_word_lowered(buf, "loop") || _has_word_lowered(buf, "schleife") || _has_word_lowered(buf, "for")
-        || _has_word_lowered(buf, "while") || _has_word_lowered(buf, "wiederhol") || _has_word_lowered(buf, "iterate"))
-        task->has_loop = 1;
-
-    // detect condition
-    if (_has_word_lowered(buf, "if") || _has_word_lowered(buf, "bedingung") || _has_word_lowered(buf, "wenn")
-        || _has_word_lowered(buf, "condition") || _has_word_lowered(buf, "falls"))
-        task->has_condition = 1;
-
-    // algorithm detection
-    if (_has_word_lowered(buf, "sort") || _has_word_lowered(buf, "bubble") || _has_word_lowered(buf, "sortiere"))
-        task->has_sort = 1;
-
-    if (_has_word_lowered(buf, "descending") || _has_word_lowered(buf, "descendig") || _has_word_lowered(buf, "desc") || _has_word_lowered(buf, "absteigend"))
-        task->has_descending = 1;
-
-    if ((_has_word_lowered(buf, "bignum") || (_has_word_lowered(buf, "big") && _has_word_lowered(buf, "number")) || _has_word_lowered(buf, "mpfr")) && (_has_word_lowered(buf, "power") || _has_word_lowered(buf, "pow") || _has_word_lowered(buf, "potenz") || _has_word_lowered(buf, "calculate") || _has_word_lowered(buf, "^")))
-        task->has_bignum_math = 1;
-
-    if (_has_word_lowered(buf, "power") || _has_word_lowered(buf, "potenz") || _has_word_lowered(buf, "exponent")
-        || _has_word_lowered(buf, "square") || _has_word_lowered(buf, "quadrat") || _has_word_lowered(buf, "cube"))
-        task->has_power = 1;
-
-    if (_has_word_lowered(buf, "max") || _has_word_lowered(buf, "größt") || _has_word_lowered(buf, "largest")
-        || _has_word_lowered(buf, "greatest") || _has_word_lowered(buf, "highest") || _has_word_lowered(buf, "maximum"))
-        task->has_max = 1;
-
-    if (_has_word_lowered(buf, "min") || _has_word_lowered(buf, "kleinste") || _has_word_lowered(buf, "smallest")
-        || _has_word_lowered(buf, "least") || _has_word_lowered(buf, "lowest") || _has_word_lowered(buf, "minimum"))
-        task->has_min = 1;
+    /* Special cases: compound conditions, multi-flag, or negative checks */
+    if ((_has_word_lowered(buf, "bignum") || (_has_word_lowered(buf, "big") && _has_word_lowered(buf, "number")) || _has_word_lowered(buf, "mpfr"))
+        && (_has_word_lowered(buf, "power") || _has_word_lowered(buf, "pow") || _has_word_lowered(buf, "potenz") || _has_word_lowered(buf, "calculate") || _has_word_lowered(buf, "^")))
+        TF_SET(task, FLAG_bignum_math);
 
     if (_has_word_lowered(buf, "gcd") || _has_word_lowered(buf, "ggt") || _has_word_lowered(buf, "gcm") || strstr(buf, "common divisor") || strstr(buf, "greatest common"))
-        task->has_gcd = 1;
-
-    if (_has_word_lowered(buf, "countdown") || _has_word_lowered(buf, "count down"))
-        task->has_countdown = 1;
+        TF_SET(task, FLAG_gcd);
 
     if (!_has_word_lowered(buf, "ascii") && (_has_word_lowered(buf, "table") || _has_word_lowered(buf, "einmaleins") || _has_word_lowered(buf, "multiplication")))
-        task->has_mult_table = 1;
-
-    if (_has_word_lowered(buf, "guess") || _has_word_lowered(buf, "rate") || _has_word_lowered(buf, "raten"))
-        task->has_guess = 1;
-
-    if (_has_word_lowered(buf, "random") || _has_word_lowered(buf, "zufall") || _has_word_lowered(buf, "rand"))
-        task->has_random = 1;
-
-    if (_has_word_lowered(buf, "point") || _has_word_lowered(buf, "zeiger") || _has_word_lowered(buf, "adresse")
-        || _has_word_lowered(buf, "address") || _has_word_lowered(buf, "memory") || _has_word_lowered(buf, "mem"))
-        task->has_pointer = 1;
-
-    if (_has_word_lowered(buf, "struct") || _has_word_lowered(buf, "dotted") || _has_word_lowered(buf, "punkt")
-        || _has_word_lowered(buf, "struktur") || _has_word_lowered(buf, "record"))
-        task->has_struct = 1;
-
-    if (_has_word_lowered(buf, "function") || _has_word_lowered(buf, "funktion") || _has_word_lowered(buf, "subroutine"))
-        task->has_function = 1;
-
-    if (_has_word_lowered(buf, "hex") || _has_word_lowered(buf, "binary") || _has_word_lowered(buf, "binaer"))
-        task->has_hex_binary = 1;
-
-    if (_has_word_lowered(buf, "average") || _has_word_lowered(buf, "durchschnitt") || _has_word_lowered(buf, "mean"))
-        task->has_average = 1;
-
-    if (_has_word_lowered(buf, "fizzbuzz") || _has_word_lowered(buf, "fizz buzz") || _has_word_lowered(buf, "fizz"))
-        task->has_fizzbuzz = 1;
-
-    if (_has_word_lowered(buf, "prime") || _has_word_lowered(buf, "prim"))
-        task->has_primes = 1;
-
-    if (_has_word_lowered(buf, "sum") || _has_word_lowered(buf, "summe") || _has_word_lowered(buf, "add"))
-        task->has_sum = 1;
-
-    if (strcmp(task->op, "add") == 0) task->has_sum = 1;
-
-    if (_has_word_lowered(buf, "factorial") || _has_word_lowered(buf, "fakult"))
-        task->has_factorial = 1;
-
-    if (_has_word_lowered(buf, "fib") || _has_word_lowered(buf, "fibonacci"))
-        task->has_fibonacci = 1;
-
-    if (_has_word_lowered(buf, "median") || _has_word_lowered(buf, "mitte"))
-        task->has_median = 1;
+        TF_SET(task, FLAG_mult_table);
 
     if ((_has_word_lowered(buf, "string") || strstr(buf, "strings") || strstr(buf, "string ")
         || _has_word_lowered(buf, "zeichen") || _has_word_lowered(buf, "text")
         || _has_word_lowered(buf, "wort"))
         && !_has_word_lowered(buf, "length") && !_has_word_lowered(buf, "laenge"))
-        task->has_string_cat = 1;
-
-    if (_has_word_lowered(buf, "compare") || _has_word_lowered(buf, "vergleich") || _has_word_lowered(buf, "cmp"))
-        task->has_string_compare = 1;
+        TF_SET(task, FLAG_string_cat);
 
     if (_has_word_lowered(buf, "file") || _has_word_lowered(buf, "datei"))
-        { task->has_read_file = 1; task->has_write_file = 1; }
+        { TF_SET(task, FLAG_read_file); TF_SET(task, FLAG_write_file); }
 
-    if (_has_word_lowered(buf, "timer") || _has_word_lowered(buf, "zeit") || _has_word_lowered(buf, "time")
-        || _has_word_lowered(buf, "benchmark") || _has_word_lowered(buf, "measure") || _has_word_lowered(buf, "mess")
-        || _has_word_lowered(buf, "dauer") || _has_word_lowered(buf, "execution") || _has_word_lowered(buf, "lauf"))
-        task->has_timer = 1;
+    if (strcmp(task->op, "add") == 0) TF_SET(task, FLAG_sum);
 
-    if (_has_word_lowered(buf, "hello") || _has_word_lowered(buf, "hallo") || _has_word_lowered(buf, "name")
-        || (_has_word_lowered(buf, "what") && _has_word_lowered(buf, "your")))
-        task->has_hello_name = 1;
+    if ((_has_word_lowered(buf, "hello") || _has_word_lowered(buf, "hallo") || _has_word_lowered(buf, "name")
+        || (_has_word_lowered(buf, "what") && _has_word_lowered(buf, "your"))))
+        TF_SET(task, FLAG_hello_name);
+}
 
-    if ((_has_word_lowered(buf, "even") || _has_word_lowered(buf, "odd") || _has_word_lowered(buf, "gerade") || _has_word_lowered(buf, "ungerade")))
-        task->has_even_odd = 1;
-
-    // enhanced pattern detection
-    if ((_has_word_lowered(buf, "sum") || _has_word_lowered(buf, "summe")) && _has_word_lowered(buf, "to") && task->has_literals) {
-        task->has_sum_range = 1;
+static void parse_task_detect_enhanced_patterns(const char *prompt, const char *buf, TaskProfile *task) {
+    if ((_has_word_lowered(buf, "sum") || _has_word_lowered(buf, "summe")) && _has_word_lowered(buf, "to") && TF_ISSET(task, FLAG_literals)) {
+        TF_SET(task, FLAG_sum_range);
         if (task->num_literals >= 1) task->sum_range_n = task->literals[0];
         else task->sum_range_n = 100;
-        // override generic flags
-        task->has_algorithm = 0;
-        task->has_operation = 0;
+        TF_CLR(task, FLAG_algorithm);
+        TF_CLR(task, FLAG_operation);
     }
 
-    // "count from 1 to 20" → treat as sum_range (prints numbers in range)
-    if ((_has_word_lowered(buf, "count") || _has_word_lowered(buf, "zähle") || _has_word_lowered(buf, "zaehle"))
-        && _has_word_lowered(buf, "to") && task->has_literals) {
-        task->has_sum_range = 1;
+    if ((_has_word_lowered(buf, "count") || _has_word_lowered(buf, "z\u00e4hle") || _has_word_lowered(buf, "zaehle"))
+        && _has_word_lowered(buf, "to") && TF_ISSET(task, FLAG_literals)) {
+        TF_SET(task, FLAG_sum_range);
         if (task->num_literals >= 2) task->sum_range_n = task->literals[1];
         else if (task->num_literals >= 1) task->sum_range_n = task->literals[0];
         else task->sum_range_n = 100;
-        task->has_algorithm = 0;
-        task->has_operation = 0;
+        TF_CLR(task, FLAG_algorithm);
+        TF_CLR(task, FLAG_operation);
     }
 
-    if ((_has_word_lowered(buf, "even") || _has_word_lowered(buf, "gerade")) && task->has_literals
+    if ((_has_word_lowered(buf, "even") || _has_word_lowered(buf, "gerade")) && TF_ISSET(task, FLAG_literals)
         && !_has_word_lowered(buf, "ungerade") && !_has_word_lowered(buf, "odd")) {
-        task->has_print_even = 1;
+        TF_SET(task, FLAG_print_even);
         if (task->num_literals >= 1) task->print_even_n = task->literals[0];
         else task->print_even_n = 100;
-        task->has_algorithm = 0;
+        TF_CLR(task, FLAG_algorithm);
     }
 
-    if (_has_word_lowered(buf, "find") && (_has_word_lowered(buf, "max") || _has_word_lowered(buf, "largest") || _has_word_lowered(buf, "greatest") || _has_word_lowered(buf, "größt"))) {
-        task->has_find_max = 1;
+    if (_has_word_lowered(buf, "find") && (_has_word_lowered(buf, "max") || _has_word_lowered(buf, "largest") || _has_word_lowered(buf, "greatest") || _has_word_lowered(buf, "gr\u00f6\u00dft"))) {
+        TF_SET(task, FLAG_find_max);
         if (task->num_literals >= 1) task->find_max_count = task->literals[0];
         else task->find_max_count = 5;
-        task->has_input = 1;
-        task->has_algorithm = 0;
+        TF_SET(task, FLAG_input);
+        TF_CLR(task, FLAG_algorithm);
     }
 
-    if (_has_word_lowered(buf, "fib") && task->has_literals) {
-        task->has_fib_seq = 1;
+    if (_has_word_lowered(buf, "fib") && TF_ISSET(task, FLAG_literals)) {
+        TF_SET(task, FLAG_fib_seq);
         if (task->num_literals >= 1) task->fib_seq_n = task->literals[0];
         else task->fib_seq_n = 10;
-        task->has_algorithm = 0;
+        TF_CLR(task, FLAG_algorithm);
     }
 
-    if ((_has_word_lowered(buf, "countdown") || strstr(buf, "count down")) && task->has_literals) {
-        task->has_countdown_from = 1;
+    if ((_has_word_lowered(buf, "countdown") || strstr(buf, "count down")) && TF_ISSET(task, FLAG_literals)) {
+        TF_SET(task, FLAG_countdown_from);
         if (task->num_literals >= 1) task->countdown_start = task->literals[0];
         else task->countdown_start = 10;
-        task->has_algorithm = 0;
+        TF_CLR(task, FLAG_algorithm);
     }
 
-    if (task->has_sort && (task->has_input || task->has_descending)) {
-        task->has_input_sort = 1;
+    if (TF_ISSET(task, FLAG_sort) && (TF_ISSET(task, FLAG_input) || TF_ISSET(task, FLAG_descending))) {
+        TF_SET(task, FLAG_input_sort);
         if (task->input_count > 0) task->input_sort_count = task->input_count;
         else if (task->num_literals >= 1) task->input_sort_count = task->literals[0];
         else task->input_sort_count = 5;
-        task->has_algorithm = 0;
+        TF_CLR(task, FLAG_algorithm);
     }
 
-    if (task->has_median && task->has_input) {
+    if (TF_ISSET(task, FLAG_median) && TF_ISSET(task, FLAG_input)) {
         if (task->input_count > 0) task->median_count = task->input_count;
         else if (task->num_literals >= 1) task->median_count = task->literals[0];
         else task->median_count = 5;
-        task->has_algorithm = 0;
+        TF_CLR(task, FLAG_algorithm);
     }
 
-    // "first N primes", "first N fibonacci" patterns
-    if (task->has_primes && !task->has_input && task->num_literals == 0) {
+    if (TF_ISSET(task, FLAG_primes) && !TF_ISSET(task, FLAG_input) && task->num_literals == 0) {
         if (_has_word_lowered(buf, "first") || _has_word_lowered(buf, "erste") || _has_word_lowered(buf, "ersten")) {
-            // need to find the number after "first" - extract from raw prompt
             int nums2[MAX_NUMS];
             int n2 = extract_numbers(prompt, nums2, MAX_NUMS);
-            if (n2 > 0) { task->num_literals = n2; task->has_literals = 1; task->literals[0] = nums2[0]; }
+            if (n2 > 0) { task->num_literals = n2; TF_SET(task, FLAG_literals); task->literals[0] = nums2[0]; }
         }
     }
-    if (task->has_primes && (_has_word_lowered(buf, "up") || _has_word_lowered(buf, "bis")) && _has_word_lowered(buf, "to") && task->num_literals == 0) {
+    if (TF_ISSET(task, FLAG_primes) && (_has_word_lowered(buf, "up") || _has_word_lowered(buf, "bis")) && _has_word_lowered(buf, "to") && task->num_literals == 0) {
         int nums2[MAX_NUMS];
         int n2 = extract_numbers(prompt, nums2, MAX_NUMS);
-        if (n2 > 0) { task->num_literals = n2; task->has_literals = 1; task->literals[0] = nums2[0]; }
+        if (n2 > 0) { task->num_literals = n2; TF_SET(task, FLAG_literals); task->literals[0] = nums2[0]; }
     }
-    if (task->has_fib_seq && task->num_literals == 0 &&
+    if (TF_ISSET(task, FLAG_fib_seq) && task->num_literals == 0 &&
         (_has_word_lowered(buf, "first") || _has_word_lowered(buf, "erste") || _has_word_lowered(buf, "ersten"))) {
         int nums2[MAX_NUMS];
         int n2 = extract_numbers(prompt, nums2, MAX_NUMS);
-        if (n2 > 0) { task->num_literals = n2; task->has_literals = 1; task->literals[0] = nums2[0]; }
+        if (n2 > 0) { task->num_literals = n2; TF_SET(task, FLAG_literals); task->literals[0] = nums2[0]; }
         if (task->num_literals >= 1) task->fib_seq_n = task->literals[0];
         else task->fib_seq_n = 10;
     }
 
-    // "from X to Y" pattern for sum_range
     if (_has_word_lowered(buf, "from") || _has_word_lowered(buf, "von")) {
-        if (task->has_sum_range && task->num_literals >= 2) {
-            task->has_sum_range = 1;
+        if (TF_ISSET(task, FLAG_sum_range) && task->num_literals >= 2) {
+            TF_SET(task, FLAG_sum_range);
             task->sum_range_n = task->literals[1];
         }
     }
 
-    // "up to N" / "bis N" for countdown
-    if (task->has_countdown_from && task->num_literals == 0 &&
+    if (TF_ISSET(task, FLAG_countdown_from) && task->num_literals == 0 &&
         (_has_word_lowered(buf, "up") || _has_word_lowered(buf, "bis"))) {
         int nums2[MAX_NUMS];
         int n2 = extract_numbers(prompt, nums2, MAX_NUMS);
-        if (n2 > 0) { task->num_literals = n2; task->has_literals = 1; task->literals[0] = nums2[0]; }
+        if (n2 > 0) { task->num_literals = n2; TF_SET(task, FLAG_literals); task->literals[0] = nums2[0]; }
         if (task->num_literals >= 1) task->countdown_start = task->literals[0];
         else task->countdown_start = 10;
     }
 
-    if (task->has_input && task->has_factorial) {
-        task->has_input_fact = 1;
-        task->has_algorithm = 0;
-    }
-
-    if (task->has_string_cat && !_has_word_lowered(buf, "compare") && !_has_word_lowered(buf, "vergleich")) {
-        /* string_cat unless compare is explicit (intentionally empty) */
+    if (TF_ISSET(task, FLAG_input) && TF_ISSET(task, FLAG_factorial)) {
+        TF_SET(task, FLAG_input_fact);
+        TF_CLR(task, FLAG_algorithm);
     }
 
     if (_has_word_lowered(buf, "array") && _has_word_lowered(buf, "reverse")) {
-        task->has_array_reverse = 1;
-        task->has_algorithm = 0;
+        TF_SET(task, FLAG_array_reverse);
+        TF_CLR(task, FLAG_algorithm);
     }
     if (_has_word_lowered(buf, "reverse") && (_has_word_lowered(buf, "element") || _has_word_lowered(buf, "list") || _has_word_lowered(buf, "array") || _has_word_lowered(buf, "order") || _has_word_lowered(buf, "reihenfolge"))) {
-        task->has_array_reverse = 1;
-        task->has_algorithm = 0;
+        TF_SET(task, FLAG_array_reverse);
+        TF_CLR(task, FLAG_algorithm);
     }
 
     if ((_has_word_lowered(buf, "array") && (_has_word_lowered(buf, "find") || _has_word_lowered(buf, "search") || _has_word_lowered(buf, "suche"))) || (_has_word_lowered(buf, "search") && _has_word_lowered(buf, "array"))) {
-        task->has_array_find = 1;
-        task->has_algorithm = 0;
+        TF_SET(task, FLAG_array_find);
+        TF_CLR(task, FLAG_algorithm);
     }
 
     if (_has_word_lowered(buf, "array") && _has_word_lowered(buf, "assign")) {
-        task->has_array_assign = 1;
-        task->has_algorithm = 0;
+        TF_SET(task, FLAG_array_assign);
+        TF_CLR(task, FLAG_algorithm);
     }
 
     if (_has_word_lowered(buf, "array") && (_has_word_lowered(buf, "access") || _has_word_lowered(buf, "read") || _has_word_lowered(buf, "get") || _has_word_lowered(buf, "element") || _has_word_lowered(buf, "index"))) {
-        task->has_array_access = 1;
-        task->has_algorithm = 0;
+        TF_SET(task, FLAG_array_access);
+        TF_CLR(task, FLAG_algorithm);
     }
 
     if (_has_word_lowered(buf, "array") && (_has_word_lowered(buf, "write") || _has_word_lowered(buf, "set") || _has_word_lowered(buf, "store"))) {
-        task->has_array_write = 1;
-        task->has_algorithm = 0;
+        TF_SET(task, FLAG_array_write);
+        TF_CLR(task, FLAG_algorithm);
     }
 
     if ((_has_word_lowered(buf, "array") && (_has_word_lowered(buf, "min") || _has_word_lowered(buf, "max") || _has_word_lowered(buf, "average") || _has_word_lowered(buf, "vmath"))) || (_has_word_lowered(buf, "stat") && _has_word_lowered(buf, "array"))) {
-        task->has_array_vmath = 1;
-        task->has_algorithm = 0;
+        TF_SET(task, FLAG_array_vmath);
+        TF_CLR(task, FLAG_algorithm);
     }
 
     if (_has_word_lowered(buf, "read") && _has_word_lowered(buf, "file")) {
-        task->has_read_file = 1;
-        task->has_algorithm = 0;
+        TF_SET(task, FLAG_read_file);
+        TF_CLR(task, FLAG_algorithm);
     }
 
     if (_has_word_lowered(buf, "write") && _has_word_lowered(buf, "file")) {
-        task->has_write_file = 1;
-        task->has_algorithm = 0;
+        TF_SET(task, FLAG_write_file);
+        TF_CLR(task, FLAG_algorithm);
     }
 
     if (_has_word_lowered(buf, "string") && (_has_word_lowered(buf, "to") || _has_word_lowered(buf, "parse") || _has_word_lowered(buf, "convert")) && _has_word_lowered(buf, "number")) {
-        task->has_string_to_num = 1;
-        task->has_algorithm = 0;
+        TF_SET(task, FLAG_string_to_num);
+        TF_CLR(task, FLAG_algorithm);
     }
 
     if (_has_word_lowered(buf, "min") && _has_word_lowered(buf, "max") && _has_word_lowered(buf, "array")) {
-        task->has_array_min_max = 1;
-        task->has_algorithm = 0;
+        TF_SET(task, FLAG_array_min_max);
+        TF_CLR(task, FLAG_algorithm);
     }
 
     if (_has_word_lowered(buf, "bool") || strstr(buf, "boolean")) {
-        task->has_bool_demo = 1;
-        task->has_algorithm = 0;
+        TF_SET(task, FLAG_bool_demo);
+        TF_CLR(task, FLAG_algorithm);
     }
 
     if ((_has_word_lowered(buf, "bit") || _has_word_lowered(buf, "check")) && (_has_word_lowered(buf, "check") || _has_word_lowered(buf, "set") || _has_word_lowered(buf, "clear"))) {
-        task->has_bit_check = 1;
-        task->has_algorithm = 0;
+        TF_SET(task, FLAG_bit_check);
+        TF_CLR(task, FLAG_algorithm);
     }
 
     if ((_has_word_lowered(buf, "leap") || _has_word_lowered(buf, "schalt")) && (_has_word_lowered(buf, "year") || _has_word_lowered(buf, "jahr"))) {
-        task->has_leap_year = 1;
-        task->has_algorithm = 0;
+        TF_SET(task, FLAG_leap_year);
+        TF_CLR(task, FLAG_algorithm);
     }
 
     if ((_has_word_lowered(buf, "celsius") || _has_word_lowered(buf, "fahrenheit") || _has_word_lowered(buf, "temperature")) && (_has_word_lowered(buf, "convert") || _has_word_lowered(buf, "umrechnen") || _has_word_lowered(buf, "to"))) {
-        task->has_temp_convert = 1;
-        task->has_algorithm = 0;
+        TF_SET(task, FLAG_temp_convert);
+        TF_CLR(task, FLAG_algorithm);
     }
 
-    if ((_has_word_lowered(buf, "circle") || _has_word_lowered(buf, "kreis")) && (_has_word_lowered(buf, "area") || _has_word_lowered(buf, "fläche") || _has_word_lowered(buf, "flaeche"))) {
-        task->has_circle_area = 1;
-        task->has_algorithm = 0;
+    if ((_has_word_lowered(buf, "circle") || _has_word_lowered(buf, "kreis")) && (_has_word_lowered(buf, "area") || _has_word_lowered(buf, "fl\u00e4che") || _has_word_lowered(buf, "flaeche"))) {
+        TF_SET(task, FLAG_circle_area);
+        TF_CLR(task, FLAG_algorithm);
     }
 
     if (_has_word_lowered(buf, "palindrome") || (_has_word_lowered(buf, "reverse") && _has_word_lowered(buf, "number")))
-        task->has_palindrome = 1;
+        TF_SET(task, FLAG_palindrome);
 
     if (_has_word_lowered(buf, "lcm") || (_has_word_lowered(buf, "least") && _has_word_lowered(buf, "multiple")))
-        task->has_lcm = 1;
+        TF_SET(task, FLAG_lcm);
 
     if (_has_word_lowered(buf, "collatz") || (_has_word_lowered(buf, "3n") && _has_word_lowered(buf, "1")))
-        task->has_collatz = 1;
+        TF_SET(task, FLAG_collatz);
 
     if (_has_word_lowered(buf, "sum") && _has_word_lowered(buf, "digit"))
-        task->has_sum_of_digits = 1;
+        TF_SET(task, FLAG_sum_of_digits);
 
     if (_has_word_lowered(buf, "reverse") && (_has_word_lowered(buf, "string") || _has_word_lowered(buf, "text") || _has_word_lowered(buf, "wort")))
-        task->has_reverse_string = 1;
+        TF_SET(task, FLAG_reverse_string);
 
     if (_has_word_lowered(buf, "armstrong"))
-        task->has_armstrong = 1;
+        TF_SET(task, FLAG_armstrong);
 
     if ((_has_word_lowered(buf, "perfect") || _has_word_lowered(buf, "vollkommen")) && _has_word_lowered(buf, "number"))
-        task->has_perfect_number = 1;
+        TF_SET(task, FLAG_perfect_number);
 
     if (_has_word_lowered(buf, "vowel") || _has_word_lowered(buf, "vokale") || _has_word_lowered(buf, "selbstlaut"))
-        task->has_count_vowels = 1;
+        TF_SET(task, FLAG_count_vowels);
 
     if (_has_word_lowered(buf, "anagram"))
-        task->has_anagram_check = 1;
+        TF_SET(task, FLAG_anagram_check);
 
     if ((_has_word_lowered(buf, "string") || _has_word_lowered(buf, "zeichen") || _has_word_lowered(buf, "text")) && _has_word_lowered(buf, "upper"))
-        task->has_string_to_upper = 1;
+        TF_SET(task, FLAG_string_to_upper);
 
     if ((_has_word_lowered(buf, "string") || _has_word_lowered(buf, "zeichen") || _has_word_lowered(buf, "text")) && _has_word_lowered(buf, "lower"))
-        task->has_string_to_lower = 1;
+        TF_SET(task, FLAG_string_to_lower);
 
     if (_has_word_lowered(buf, "caesar") || (_has_word_lowered(buf, "shift") && _has_word_lowered(buf, "cipher")))
-        task->has_caesar_cipher = 1;
+        TF_SET(task, FLAG_caesar_cipher);
 
     if (_has_word_lowered(buf, "palindrome") && (_has_word_lowered(buf, "string") || _has_word_lowered(buf, "text") || _has_word_lowered(buf, "wort")))
-        task->has_palindrome_string = 1;
+        TF_SET(task, FLAG_palindrome_string);
 
     if (_has_word_lowered(buf, "bubble") && _has_word_lowered(buf, "sort"))
-        task->has_bubble_sort = 1;
+        TF_SET(task, FLAG_bubble_sort);
 
     if (_has_word_lowered(buf, "binary") && _has_word_lowered(buf, "search") && !_has_word_lowered(buf, "tree"))
-        task->has_binary_search = 1;
+        TF_SET(task, FLAG_binary_search);
 
     if (_has_word_lowered(buf, "square") && _has_word_lowered(buf, "root"))
-        task->has_square_root = 1;
+        TF_SET(task, FLAG_square_root);
 
     if (_has_word_lowered(buf, "prime") && (_has_word_lowered(buf, "factor") || _has_word_lowered(buf, "teil")))
-        task->has_prime_factorization = 1;
+        TF_SET(task, FLAG_prime_factorization);
 
     if (_has_word_lowered(buf, "standard") && _has_word_lowered(buf, "deviation"))
-        task->has_standard_deviation = 1;
+        TF_SET(task, FLAG_standard_deviation);
 
     if (_has_word_lowered(buf, "compound") && _has_word_lowered(buf, "interest"))
-        task->has_compound_interest = 1;
+        TF_SET(task, FLAG_compound_interest);
 
     if (_has_word_lowered(buf, "binary") && (_has_word_lowered(buf, "decimal") || _has_word_lowered(buf, "convert") || _has_word_lowered(buf, "base")))
-        task->has_decimal_to_binary = 1;
+        TF_SET(task, FLAG_decimal_to_binary);
 
-    if (_has_word_lowered(buf, "dice") || _has_word_lowered(buf, "würfel") || (_has_word_lowered(buf, "roll") && _has_word_lowered(buf, "die")))
-        task->has_dice_roll = 1;
+    if (_has_word_lowered(buf, "dice") || _has_word_lowered(buf, "w\u00fcrfel") || (_has_word_lowered(buf, "roll") && _has_word_lowered(buf, "die")))
+        TF_SET(task, FLAG_dice_roll);
 
     if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "math"))
-        task->has_double_math = 1;
+        TF_SET(task, FLAG_double_math);
 
     if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "circle"))
-        task->has_double_circle_area = 1;
+        TF_SET(task, FLAG_double_circle_area);
 
     if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "average"))
-        task->has_double_average = 1;
+        TF_SET(task, FLAG_double_average);
 
     if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "interest"))
-        task->has_double_compound_interest = 1;
+        TF_SET(task, FLAG_double_compound_interest);
 
     if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "pythagoras"))
-        task->has_double_pythagoras = 1;
+        TF_SET(task, FLAG_double_pythagoras);
 
     if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "temp"))
-        task->has_double_temp_convert = 1;
+        TF_SET(task, FLAG_double_temp_convert);
 
     if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "sqrt"))
-        task->has_double_sqrt = 1;
+        TF_SET(task, FLAG_double_sqrt);
 
     if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "power"))
-        task->has_double_power = 1;
+        TF_SET(task, FLAG_double_power);
 
     if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "volume") && _has_word_lowered(buf, "sphere"))
-        task->has_double_volume_sphere = 1;
+        TF_SET(task, FLAG_double_volume_sphere);
 
     if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "discount"))
-        task->has_double_discount = 1;
+        TF_SET(task, FLAG_double_discount);
 
     if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "simple") && _has_word_lowered(buf, "interest"))
-        task->has_double_simple_interest = 1;
+        TF_SET(task, FLAG_double_simple_interest);
 
     if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "bmi"))
-        task->has_double_bmi = 1;
+        TF_SET(task, FLAG_double_bmi);
 
     if ((_has_word_lowered(buf, "double") && _has_word_lowered(buf, "stddev")) || (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "standard") && _has_word_lowered(buf, "deviation")))
-        task->has_double_standard_deviation = 1;
+        TF_SET(task, FLAG_double_standard_deviation);
 
     if (_has_word_lowered(buf, "double") && (_has_word_lowered(buf, "kinetic") || _has_word_lowered(buf, "energy")))
-        task->has_double_kinetic_energy = 1;
+        TF_SET(task, FLAG_double_kinetic_energy);
 
-    /* Clear integer flags when double variant is detected to prevent
-       both integer and double rules from generating conflicting code */
-    if (task->has_double_circle_area) task->has_circle_area = 0;
-    if (task->has_double_temp_convert) task->has_temp_convert = 0;
+    if (TF_ISSET(task, FLAG_double_circle_area)) TF_CLR(task, FLAG_circle_area);
+    if (TF_ISSET(task, FLAG_double_temp_convert)) TF_CLR(task, FLAG_temp_convert);
 
     if ((_has_word_lowered(buf, "string") && _has_word_lowered(buf, "length"))
         || (_has_word_lowered(buf, "string") && _has_word_lowered(buf, "laenge"))
         || (_has_word_lowered(buf, "zeichen") && _has_word_lowered(buf, "laenge")))
-        task->has_string_length = 1;
+        TF_SET(task, FLAG_string_length);
 
     if (_has_word_lowered(buf, "stack") || (_has_word_lowered(buf, "push") && _has_word_lowered(buf, "pop")))
-        task->has_stack = 1;
+        TF_SET(task, FLAG_stack);
 
     if (_has_word_lowered(buf, "queue") || (_has_word_lowered(buf, "enqueue") && _has_word_lowered(buf, "dequeue")))
-        task->has_queue = 1;
+        TF_SET(task, FLAG_queue);
 
     if (_has_word_lowered(buf, "insertion") && _has_word_lowered(buf, "sort"))
-        task->has_insertion_sort = 1;
+        TF_SET(task, FLAG_insertion_sort);
 
     if (_has_word_lowered(buf, "calculator") || (_has_word_lowered(buf, "calc") && _has_word_lowered(buf, "repl")))
-        task->has_calculator = 1;
+        TF_SET(task, FLAG_calculator);
 
     if ((_has_word_lowered(buf, "unit") || _has_word_lowered(buf, "einheit")) && (_has_word_lowered(buf, "convert") || _has_word_lowered(buf, "converter") || _has_word_lowered(buf, "umrechnen") || _has_word_lowered(buf, "umwandeln")))
-        task->has_unit_converter = 1;
+        TF_SET(task, FLAG_unit_converter);
 
     if (_has_word_lowered(buf, "rock") && _has_word_lowered(buf, "paper") && _has_word_lowered(buf, "scissors"))
-        task->has_rock_paper_scissors = 1;
+        TF_SET(task, FLAG_rock_paper_scissors);
 
     if ((_has_word_lowered(buf, "pyramid") || _has_word_lowered(buf, "pyramide")) && (_has_word_lowered(buf, "number") || _has_word_lowered(buf, "zahl") || _has_word_lowered(buf, "pattern") || _has_word_lowered(buf, "muster") || _has_word_lowered(buf, "height") || _has_word_lowered(buf, "hoehe") || _has_word_lowered(buf, "rows") || _has_word_lowered(buf, "zeilen")))
-        task->has_pyramid = 1;
+        TF_SET(task, FLAG_pyramid);
 
     if ((_has_word_lowered(buf, "temperature") || _has_word_lowered(buf, "temperatur")) && (_has_word_lowered(buf, "convert") || _has_word_lowered(buf, "converter") || _has_word_lowered(buf, "umrechnen")))
-        task->has_temp_converter_menu = 1;
+        TF_SET(task, FLAG_temp_converter_menu);
 
     if (_has_word_lowered(buf, "sort") && (_has_word_lowered(buf, "stats") || _has_word_lowered(buf, "statistics") || _has_word_lowered(buf, "statistik") || _has_word_lowered(buf, "analyze") || _has_word_lowered(buf, "analyse") || _has_word_lowered(buf, "min") || _has_word_lowered(buf, "max") || _has_word_lowered(buf, "average") || _has_word_lowered(buf, "avg")))
-        task->has_sort_stats = 1;
+        TF_SET(task, FLAG_sort_stats);
 
     if ((_has_word_lowered(buf, "analyze") || _has_word_lowered(buf, "analyse")) && (_has_word_lowered(buf, "string") || _has_word_lowered(buf, "text") || _has_word_lowered(buf, "zeichenkette")))
-        task->has_string_analyzer = 1;
+        TF_SET(task, FLAG_string_analyzer);
 
     if ((_has_word_lowered(buf, "analyze") || _has_word_lowered(buf, "analyse") || _has_word_lowered(buf, "analyzer") || _has_word_lowered(buf, "analyser")) && (_has_word_lowered(buf, "number") || _has_word_lowered(buf, "zahl")))
-        task->has_number_analyzer = 1;
+        TF_SET(task, FLAG_number_analyzer);
 
     if (_has_word_lowered(buf, "filter") && (_has_word_lowered(buf, "number") || _has_word_lowered(buf, "numbers") || _has_word_lowered(buf, "zahlen") || _has_word_lowered(buf, "values") || _has_word_lowered(buf, "werte")))
-        task->has_filter_numbers = 1;
+        TF_SET(task, FLAG_filter_numbers);
 
     if ((_has_word_lowered(buf, "random") || _has_word_lowered(buf, "zufall")) && (_has_word_lowered(buf, "generator") || _has_word_lowered(buf, "generieren")))
-        task->has_random_generator = 1;
-    if (task->has_random_generator)
-        task->has_random = 0;
+        TF_SET(task, FLAG_random_generator);
+    if (TF_ISSET(task, FLAG_random_generator))
+        TF_CLR(task, FLAG_random);
 
     if ((_has_word_lowered(buf, "math") || _has_word_lowered(buf, "mathe")) && (_has_word_lowered(buf, "menu") || _has_word_lowered(buf, "menue") || _has_word_lowered(buf, "rechner")))
-        task->has_math_menu = 1;
+        TF_SET(task, FLAG_math_menu);
 
     if ((_has_word_lowered(buf, "quiz") || _has_word_lowered(buf, "frage")) && (_has_word_lowered(buf, "game") || _has_word_lowered(buf, "spiel")))
-        task->has_quiz_game = 1;
+        TF_SET(task, FLAG_quiz_game);
 
     if (_has_word_lowered(buf, "bmi") || ((_has_word_lowered(buf, "body") || _has_word_lowered(buf, "koerper")) && _has_word_lowered(buf, "mass") && _has_word_lowered(buf, "index")))
-        task->has_bmi_calculator = 1;
+        TF_SET(task, FLAG_bmi_calculator);
 
     if ((_has_word_lowered(buf, "statistics") || _has_word_lowered(buf, "statistik")) && (_has_word_lowered(buf, "all") || _has_word_lowered(buf, "suite") || _has_word_lowered(buf, "alle") || _has_word_lowered(buf, "full") || _has_word_lowered(buf, "komplett")))
-        task->has_statistics_suite = 1;
+        TF_SET(task, FLAG_statistics_suite);
 
     if (_has_word_lowered(buf, "linked") && _has_word_lowered(buf, "list"))
-        task->has_linked_list = 1;
+        TF_SET(task, FLAG_linked_list);
     if ((_has_word_lowered(buf, "binary") || _has_word_lowered(buf, "binaer")) && _has_word_lowered(buf, "tree") && _has_word_lowered(buf, "search"))
-        task->has_binary_search_tree = 1;
+        TF_SET(task, FLAG_binary_search_tree);
     if (_has_word_lowered(buf, "tree") && (_has_word_lowered(buf, "traversal") || _has_word_lowered(buf, "inorder") || _has_word_lowered(buf, "preorder") || _has_word_lowered(buf, "postorder")))
-        task->has_tree_traversal = 1;
+        TF_SET(task, FLAG_tree_traversal);
     if ((_has_word_lowered(buf, "graph") || _has_word_lowered(buf, "graf")) && (_has_word_lowered(buf, "bfs") || _has_word_lowered(buf, "dfs") || _has_word_lowered(buf, "traverse") || _has_word_lowered(buf, "durchlauf")))
-        task->has_graph_bfs_dfs = 1;
+        TF_SET(task, FLAG_graph_bfs_dfs);
     if ((_has_word_lowered(buf, "n") || _has_word_lowered(buf, "eight") || _has_word_lowered(buf, "acht")) && _has_word_lowered(buf, "queen"))
-        task->has_n_queens = 1;
+        TF_SET(task, FLAG_n_queens);
     if (_has_word_lowered(buf, "sudoku") || (_has_word_lowered(buf, "sodoku") && _has_word_lowered(buf, "solver")))
-        task->has_sudoku = 1;
+        TF_SET(task, FLAG_sudoku);
     if ((_has_word_lowered(buf, "levenshtein") || _has_word_lowered(buf, "edit")) && _has_word_lowered(buf, "distance"))
-        task->has_levenshtein = 1;
+        TF_SET(task, FLAG_levenshtein);
     if ((_has_word_lowered(buf, "maze") || _has_word_lowered(buf, "labyrinth") || _has_word_lowered(buf, "irrgarten")) && (_has_word_lowered(buf, "generate") || _has_word_lowered(buf, "generieren") || _has_word_lowered(buf, "erzeugen")))
-        task->has_maze_generator = 1;
-    if ((_has_word_lowered(buf, "maze") || _has_word_lowered(buf, "labyrinth") || _has_word_lowered(buf, "irrgarten")) && (_has_word_lowered(buf, "solve") || _has_word_lowered(buf, "solver") || _has_word_lowered(buf, "loesen") || _has_word_lowered(buf, "lösung")))
-        task->has_maze_solver = 1;
+        TF_SET(task, FLAG_maze_generator);
+    if ((_has_word_lowered(buf, "maze") || _has_word_lowered(buf, "labyrinth") || _has_word_lowered(buf, "irrgarten")) && (_has_word_lowered(buf, "solve") || _has_word_lowered(buf, "solver") || _has_word_lowered(buf, "loesen") || _has_word_lowered(buf, "l\u00f6sung")))
+        TF_SET(task, FLAG_maze_solver);
     if ((_has_word_lowered(buf, "monte") && _has_word_lowered(buf, "carlo")) || (_has_word_lowered(buf, "pi") && _has_word_lowered(buf, "estimate")))
-        task->has_monte_carlo = 1;
+        TF_SET(task, FLAG_monte_carlo);
     if ((_has_word_lowered(buf, "matrix") || _has_word_lowered(buf, "matrize")) && _has_word_lowered(buf, "multiply"))
-        task->has_matrix_mul = 1;
+        TF_SET(task, FLAG_matrix_mul);
     if (_has_word_lowered(buf, "matrix") && (_has_word_lowered(buf, "transpose") || _has_word_lowered(buf, "transponieren")))
-        task->has_matrix_transpose = 1;
+        TF_SET(task, FLAG_matrix_transpose);
     if ((_has_word_lowered(buf, "numerical") || _has_word_lowered(buf, "numerisch") || _has_word_lowered(buf, "numeric")) && (_has_word_lowered(buf, "integrate") || _has_word_lowered(buf, "integration") || _has_word_lowered(buf, "integral")))
-        task->has_numerical_integration = 1;
+        TF_SET(task, FLAG_numerical_integration);
     if ((_has_word_lowered(buf, "complex") || _has_word_lowered(buf, "komplex")) && _has_word_lowered(buf, "number"))
-        task->has_complex_numbers = 1;
+        TF_SET(task, FLAG_complex_numbers);
     if ((_has_word_lowered(buf, "linear") || _has_word_lowered(buf, "linreg")) && (_has_word_lowered(buf, "regression") || _has_word_lowered(buf, "regress")))
-        task->has_linear_regression = 1;
+        TF_SET(task, FLAG_linear_regression);
     if ((_has_word_lowered(buf, "base") || _has_word_lowered(buf, "basis")) && (_has_word_lowered(buf, "convert") || _has_word_lowered(buf, "converter") || _has_word_lowered(buf, "umwandeln") || _has_word_lowered(buf, "konvert")))
-        task->has_base_converter = 1;
+        TF_SET(task, FLAG_base_converter);
     if ((_has_word_lowered(buf, "frequency") || _has_word_lowered(buf, "haeufigkeit") || _has_word_lowered(buf, "frequenz") || _has_word_lowered(buf, "freq")) && (_has_word_lowered(buf, "analyze") || _has_word_lowered(buf, "analyse") || _has_word_lowered(buf, "count") || _has_word_lowered(buf, "zaehle") || _has_word_lowered(buf, "analysis")))
-        task->has_freq_analysis = 1;
+        TF_SET(task, FLAG_freq_analysis);
     if (_has_word_lowered(buf, "shuffle") || _has_word_lowered(buf, "mischen") || (_has_word_lowered(buf, "random") && _has_word_lowered(buf, "permute")))
-        task->has_shuffle = 1;
+        TF_SET(task, FLAG_shuffle);
     if ((_has_word_lowered(buf, "weighted") || _has_word_lowered(buf, "gewichtet")) && (_has_word_lowered(buf, "random") || _has_word_lowered(buf, "zufall")))
-        task->has_weighted_random = 1;
+        TF_SET(task, FLAG_weighted_random);
     if (_has_word_lowered(buf, "ascii") && (_has_word_lowered(buf, "table") || _has_word_lowered(buf, "tabelle") || _has_word_lowered(buf, "format")))
-        task->has_ascii_table = 1;
+        TF_SET(task, FLAG_ascii_table);
 
     if ((_has_word_lowered(buf, "password") || _has_word_lowered(buf, "passwort") || _has_word_lowered(buf, "passwd")) && (_has_word_lowered(buf, "card") || _has_word_lowered(buf, "karte") || _has_word_lowered(buf, "generate") || _has_word_lowered(buf, "generator")))
-        task->has_password_card = 1;
+        TF_SET(task, FLAG_password_card);
     if ((_has_word_lowered(buf, "chess") || _has_word_lowered(buf, "schach") || _has_word_lowered(buf, "rice") || _has_word_lowered(buf, "reis")) && (_has_word_lowered(buf, "problem") || _has_word_lowered(buf, "board") || _has_word_lowered(buf, "brett") || _has_word_lowered(buf, "exponential")))
-        task->has_chess_problem = 1;
-    if ((_has_word_lowered(buf, "repl") || _has_word_lowered(buf, "terminal")) && (_has_word_lowered(buf, "run") || _has_word_lowered(buf, "execute") || _has_word_lowered(buf, "ausfuehren") || _has_word_lowered(buf, "ausführen")))
-        task->has_shell_repl = 1;
-    if ((_has_word_lowered(buf, "shell") || _has_word_lowered(buf, "interactive")) && (_has_word_lowered(buf, "run") || _has_word_lowered(buf, "running") || _has_word_lowered(buf, "execute") || _has_word_lowered(buf, "command") || _has_word_lowered(buf, "ausfuehren") || _has_word_lowered(buf, "ausführen") || _has_word_lowered(buf, "befehl")))
-        task->has_shell_repl = 1;
+        TF_SET(task, FLAG_chess_problem);
+    if ((_has_word_lowered(buf, "repl") || _has_word_lowered(buf, "terminal")) && (_has_word_lowered(buf, "run") || _has_word_lowered(buf, "execute") || _has_word_lowered(buf, "ausfuehren") || _has_word_lowered(buf, "ausf\u00fchren")))
+        TF_SET(task, FLAG_shell_repl);
+    if ((_has_word_lowered(buf, "shell") || _has_word_lowered(buf, "interactive")) && (_has_word_lowered(buf, "run") || _has_word_lowered(buf, "running") || _has_word_lowered(buf, "execute") || _has_word_lowered(buf, "command") || _has_word_lowered(buf, "ausfuehren") || _has_word_lowered(buf, "ausf\u00fchren") || _has_word_lowered(buf, "befehl")))
+        TF_SET(task, FLAG_shell_repl);
 
     if (_has_word_lowered(buf, "webserver") || _has_word_lowered(buf, "http") || (_has_word_lowered(buf, "web") && _has_word_lowered(buf, "server")))
-        task->has_webserver = 1;
+        TF_SET(task, FLAG_webserver);
     if ((_has_word_lowered(buf, "sdl") || _has_word_lowered(buf, "screen") || _has_word_lowered(buf, "bildschirm")) && (_has_word_lowered(buf, "open") || _has_word_lowered(buf, "window") || _has_word_lowered(buf, "fenster") || _has_word_lowered(buf, "pixel") || _has_word_lowered(buf, "grafik") || _has_word_lowered(buf, "graphics")))
-        task->has_sdl_window = 1;
+        TF_SET(task, FLAG_sdl_window);
     if ((_has_word_lowered(buf, "sdl") || _has_word_lowered(buf, "gui") || _has_word_lowered(buf, "gadget")) && (_has_word_lowered(buf, "button") || _has_word_lowered(buf, "knopf") || _has_word_lowered(buf, "click")))
-        task->has_sdl_button = 1;
+        TF_SET(task, FLAG_sdl_button);
     if (_has_word_lowered(buf, "thread") || _has_word_lowered(buf, "nebenlauf") || (_has_word_lowered(buf, "parallel") && _has_word_lowered(buf, "run")))
-        task->has_thread = 1;
+        TF_SET(task, FLAG_thread);
     if (_has_word_lowered(buf, "scheduler") || _has_word_lowered(buf, "planer") || (_has_word_lowered(buf, "task") && _has_word_lowered(buf, "schedule")))
-        task->has_scheduler = 1;
-    if ((_has_word_lowered(buf, "shell") || _has_word_lowered(buf, "command") || _has_word_lowered(buf, "befehl") || _has_word_lowered(buf, "kommando")) && (_has_word_lowered(buf, "exec") || _has_word_lowered(buf, "run") || _has_word_lowered(buf, "ausführen") || _has_word_lowered(buf, "ausfuehren")))
-        task->has_shell_exec = 1;
+        TF_SET(task, FLAG_scheduler);
+    if ((_has_word_lowered(buf, "shell") || _has_word_lowered(buf, "command") || _has_word_lowered(buf, "befehl") || _has_word_lowered(buf, "kommando")) && (_has_word_lowered(buf, "exec") || _has_word_lowered(buf, "run") || _has_word_lowered(buf, "ausf\u00fchren") || _has_word_lowered(buf, "ausfuehren")))
+        TF_SET(task, FLAG_shell_exec);
     if (_has_word_lowered(buf, "json") || _has_word_lowered(buf, "javascript") || (_has_word_lowered(buf, "parse") && _has_word_lowered(buf, "json")))
-        task->has_json = 1;
-    if (_has_word_lowered(buf, "crypto") || _has_word_lowered(buf, "encrypt") || _has_word_lowered(buf, "decrypt") || _has_word_lowered(buf, "verschlüssel") || _has_word_lowered(buf, "chiffre") || _has_word_lowered(buf, "cipher"))
-        task->has_crypto = 1;
+        TF_SET(task, FLAG_json);
+    if (_has_word_lowered(buf, "crypto") || _has_word_lowered(buf, "encrypt") || _has_word_lowered(buf, "decrypt") || _has_word_lowered(buf, "verschl\u00fcssel") || _has_word_lowered(buf, "chiffre") || _has_word_lowered(buf, "cipher"))
+        TF_SET(task, FLAG_crypto);
     if (_has_word_lowered(buf, "bluetooth") || _has_word_lowered(buf, "ble") || (_has_word_lowered(buf, "bluetooth") && _has_word_lowered(buf, "low")))
-        task->has_bluetooth_ble = 1;
+        TF_SET(task, FLAG_bluetooth_ble);
     if ((_has_word_lowered(buf, "serial") || _has_word_lowered(buf, "rs232") || _has_word_lowered(buf, "seriell")) && (_has_word_lowered(buf, "port") || _has_word_lowered(buf, "schnittstelle") || _has_word_lowered(buf, "interface")))
-        task->has_serial_rs232 = 1;
+        TF_SET(task, FLAG_serial_rs232);
     if (_has_word_lowered(buf, "gpio") || (_has_word_lowered(buf, "general") && _has_word_lowered(buf, "purpose")))
-        task->has_gpio = 1;
+        TF_SET(task, FLAG_gpio);
     if (_has_word_lowered(buf, "gps") || _has_word_lowered(buf, "navigation") || (_has_word_lowered(buf, "global") && _has_word_lowered(buf, "position")))
-        task->has_gps = 1;
+        TF_SET(task, FLAG_gps);
     if ((_has_word_lowered(buf, "date") || _has_word_lowered(buf, "datum") || _has_word_lowered(buf, "kalender") || _has_word_lowered(buf, "calendar")) && (_has_word_lowered(buf, "time") || _has_word_lowered(buf, "zeit") || _has_word_lowered(buf, "uhr") || _has_word_lowered(buf, "clock")))
-        task->has_timer_date = 1;
+        TF_SET(task, FLAG_timer_date);
     if ((_has_word_lowered(buf, "sdl") || _has_word_lowered(buf, "sound") || _has_word_lowered(buf, "audio") || _has_word_lowered(buf, "ton")) && (_has_word_lowered(buf, "play") || _has_word_lowered(buf, "spielen") || _has_word_lowered(buf, "abspielen") || _has_word_lowered(buf, "wiedergabe")))
-        task->has_sdl_sound = 1;
+        TF_SET(task, FLAG_sdl_sound);
     if ((_has_word_lowered(buf, "sdl") || _has_word_lowered(buf, "joystick") || _has_word_lowered(buf, "gamepad") || _has_word_lowered(buf, "controller")) && (_has_word_lowered(buf, "joystick") || _has_word_lowered(buf, "axis") || _has_word_lowered(buf, "achse") || _has_word_lowered(buf, "button")))
-        task->has_sdl_joystick = 1;
+        TF_SET(task, FLAG_sdl_joystick);
     if ((_has_word_lowered(buf, "sdl") || _has_word_lowered(buf, "mouse") || _has_word_lowered(buf, "maus")) && (_has_word_lowered(buf, "mouse") || _has_word_lowered(buf, "maus") || _has_word_lowered(buf, "pointer") || _has_word_lowered(buf, "cursor")))
-        task->has_sdl_mouse = 1;
+        TF_SET(task, FLAG_sdl_mouse);
     if (_has_word_lowered(buf, "fractal") || _has_word_lowered(buf, "mandelbrot") || _has_word_lowered(buf, "julia") || (_has_word_lowered(buf, "fraktal") && _has_word_lowered(buf, "set")))
-        task->has_fractal = 1;
+        TF_SET(task, FLAG_fractal);
     if ((_has_word_lowered(buf, "cluster") || _has_word_lowered(buf, "worker") || _has_word_lowered(buf, "verteilt") || _has_word_lowered(buf, "distributed")) && (_has_word_lowered(buf, "compute") || _has_word_lowered(buf, "rechnen") || _has_word_lowered(buf, "3x1") || _has_word_lowered(buf, "arbeit")))
-        task->has_cluster_3x1 = 1;
+        TF_SET(task, FLAG_cluster_3x1);
     if (_has_word_lowered(buf, "reload") || _has_word_lowered(buf, "module") || (_has_word_lowered(buf, "hot") && _has_word_lowered(buf, "swap")) || (_has_word_lowered(buf, "neu") && _has_word_lowered(buf, "laden")))
-        task->has_reload = 1;
+        TF_SET(task, FLAG_reload);
     if ((_has_word_lowered(buf, "coordinate") || _has_word_lowered(buf, "koordinate") || _has_word_lowered(buf, "grid") || _has_word_lowered(buf, "gitter")) && (_has_word_lowered(buf, "xy") || _has_word_lowered(buf, "2d") || _has_word_lowered(buf, "position") || _has_word_lowered(buf, "raster")))
-        task->has_coordinate_grid = 1;
+        TF_SET(task, FLAG_coordinate_grid);
     if (_has_word_lowered(buf, "turmite") || (_has_word_lowered(buf, "turmite") && _has_word_lowered(buf, "ant")))
-        task->has_turmite = 1;
-    if (_has_word_lowered(buf, "crossword") || _has_word_lowered(buf, "kreuzwort") || _has_word_lowered(buf, "rätsel") || (_has_word_lowered(buf, "word") && _has_word_lowered(buf, "puzzle")))
-        task->has_crossword = 1;
+        TF_SET(task, FLAG_turmite);
+    if (_has_word_lowered(buf, "crossword") || _has_word_lowered(buf, "kreuzwort") || _has_word_lowered(buf, "r\u00e4tsel") || (_has_word_lowered(buf, "word") && _has_word_lowered(buf, "puzzle")))
+        TF_SET(task, FLAG_crossword);
     if (_has_word_lowered(buf, "linter") || _has_word_lowered(buf, "lint") || (_has_word_lowered(buf, "code") && _has_word_lowered(buf, "check")) || (_has_word_lowered(buf, "static") && _has_word_lowered(buf, "analyze")))
-        task->has_linter = 1;
+        TF_SET(task, FLAG_linter);
 
-    // new small emitters
+    /* new small emitters */
     if (_has_word_lowered(buf, "hello") && _has_word_lowered(buf, "world"))
-        task->has_hello_world = 1;
+        TF_SET(task, FLAG_hello_world);
     if (_has_word_lowered(buf, "string") && _has_word_lowered(buf, "find") && !_has_word_lowered(buf, "max") && !_has_word_lowered(buf, "largest"))
-        task->has_string_find = 1;
+        TF_SET(task, FLAG_string_find);
     if ((_has_word_lowered(buf, "string") || _has_word_lowered(buf, "text")) && _has_word_lowered(buf, "split"))
-        task->has_string_split = 1;
+        TF_SET(task, FLAG_string_split);
     if (_has_word_lowered(buf, "switch") && !_has_word_lowered(buf, "string"))
-        task->has_switch_demo = 1;
+        TF_SET(task, FLAG_switch_demo);
     if (_has_word_lowered(buf, "type") && (_has_word_lowered(buf, "convert") || _has_word_lowered(buf, "conversion")
         || _has_word_lowered(buf, "umwandeln") || _has_word_lowered(buf, "cast")))
-        task->has_type_convert = 1;
+        TF_SET(task, FLAG_type_convert);
     if ((_has_word_lowered(buf, "factorial") || _has_word_lowered(buf, "fakult")) && (_has_word_lowered(buf, "loop") || _has_word_lowered(buf, "iterative") || _has_word_lowered(buf, "schleife") || _has_word_lowered(buf, "while")))
-        task->has_iterative_factorial = 1;
+        TF_SET(task, FLAG_iterative_factorial);
     if (_has_word_lowered(buf, "random") && _has_word_lowered(buf, "walk"))
-        task->has_random_walk = 1;
+        TF_SET(task, FLAG_random_walk);
     if (_has_word_lowered(buf, "bar") && (_has_word_lowered(buf, "chart") || _has_word_lowered(buf, "graph") || _has_word_lowered(buf, "diagramm")))
-        task->has_bar_chart = 1;
+        TF_SET(task, FLAG_bar_chart);
     if (_has_word_lowered(buf, "hanoi") || (_has_word_lowered(buf, "tower") && _has_word_lowered(buf, "hanoi"))
         || (_has_word_lowered(buf, "turm") && _has_word_lowered(buf, "hanoi")))
-        task->has_hanoi_tower = 1;
+        TF_SET(task, FLAG_hanoi_tower);
     if (_has_word_lowered(buf, "ascii") && _has_word_lowered(buf, "art"))
-        task->has_ascii_art = 1;
+        TF_SET(task, FLAG_ascii_art);
     if ((_has_word_lowered(buf, "number") || _has_word_lowered(buf, "zahl")) && (_has_word_lowered(buf, "word") || _has_word_lowered(buf, "words") || _has_word_lowered(buf, "wort") || _has_word_lowered(buf, "worter") || _has_word_lowered(buf, "text")))
-        task->has_number_to_words = 1;
+        TF_SET(task, FLAG_number_to_words);
     if ((_has_word_lowered(buf, "temperature") || _has_word_lowered(buf, "temperatur")) && (_has_word_lowered(buf, "table") || _has_word_lowered(buf, "tabelle")))
-        task->has_temperature_table = 1;
+        TF_SET(task, FLAG_temperature_table);
     if (_has_word_lowered(buf, "loop") && (_has_word_lowered(buf, "demo") || _has_word_lowered(buf, "beispiel") || _has_word_lowered(buf, "example")))
-        task->has_loop_demo = 1;
+        TF_SET(task, FLAG_loop_demo);
     if ((_has_word_lowered(buf, "time") || _has_word_lowered(buf, "zeit") || _has_word_lowered(buf, "uhr") || _has_word_lowered(buf, "clock"))
         && (_has_word_lowered(buf, "demo") || _has_word_lowered(buf, "beispiel") || _has_word_lowered(buf, "example") || _has_word_lowered(buf, "current")))
-        task->has_time = 1;
+        TF_SET(task, FLAG_time);
     if (_has_word_lowered(buf, "shell") && (_has_word_lowered(buf, "arg") || _has_word_lowered(buf, "parameter") || _has_word_lowered(buf, "command") || _has_word_lowered(buf, "befehl")))
-        task->has_shell_args = 1;
+        TF_SET(task, FLAG_shell_args);
 
     if (_has_word_lowered(buf, "fann") || _has_word_lowered(buf, "neural") || (_has_word_lowered(buf, "network") && _has_word_lowered(buf, "ai"))) {
         if (_has_word_lowered(buf, "train") || _has_word_lowered(buf, "learn")) {
-            task->has_fann_create = 1;
-            task->has_fann_train = 1;
-            task->has_algorithm = 0;
+            TF_SET(task, FLAG_fann_create);
+            TF_SET(task, FLAG_fann_train);
+            TF_CLR(task, FLAG_algorithm);
         } else if (_has_word_lowered(buf, "run") || _has_word_lowered(buf, "predict") || _has_word_lowered(buf, "infer")) {
-            task->has_fann_run = 1;
-            task->has_algorithm = 0;
+            TF_SET(task, FLAG_fann_run);
+            TF_CLR(task, FLAG_algorithm);
         } else if (_has_word_lowered(buf, "create") || _has_word_lowered(buf, "make") || _has_word_lowered(buf, "generate")) {
-            task->has_fann_create = 1;
-            task->has_algorithm = 0;
+            TF_SET(task, FLAG_fann_create);
+            TF_CLR(task, FLAG_algorithm);
         } else {
-            task->has_fann_create = 1;
-            task->has_fann_train = 1;
-            task->has_fann_run = 1;
-            task->has_algorithm = 0;
+            TF_SET(task, FLAG_fann_create);
+            TF_SET(task, FLAG_fann_train);
+            TF_SET(task, FLAG_fann_run);
+            TF_CLR(task, FLAG_algorithm);
         }
     }
+}
 
-    // build title
-    { SNPRINTF_CHECK(task->title, sizeof(task->title), "%s", prompt); }
-
-    // has action if any flag set
-    int has_any = task->has_input || task->has_output || task->has_operation || task->has_algorithm
-        || task->has_loop || task->has_condition || task->has_sort || task->has_power
-        || task->has_max || task->has_gcd || task->has_countdown || task->has_mult_table
-        || task->has_guess || task->has_random || task->has_hello_name || task->has_time || task->has_pointer
-        || task->has_struct || task->has_hex_binary || task->has_shell_args || task->has_array
-        || task->has_function || task->has_average || task->has_fizzbuzz || task->has_even_odd
-        || task->has_primes || task->has_sum || task->has_factorial || task->has_fibonacci
-        || task->has_median || task->has_string_cat || task->has_string_compare
-        || task->has_array_assign || task->has_array_reverse || task->has_array_find
-        || task->has_array_access || task->has_array_write
-        || task->has_sum_range || task->has_print_even || task->has_find_max
-        || task->has_fib_seq || task->has_countdown_from || task->has_input_sort
-        || task->has_input_fact || task->has_read_file || task->has_write_file
-        || task->has_array_vmath || task->has_string_to_num || task->has_timer
-        || task->has_array_min_max || task->has_bool_demo || task->has_print_var || task->has_bit_check
-        || task->has_leap_year || task->has_temp_convert || task->has_circle_area
-        || task->has_fann_create || task->has_fann_train || task->has_fann_run
-        || task->has_palindrome || task->has_lcm || task->has_collatz
-        || task->has_sum_of_digits || task->has_reverse_string || task->has_armstrong
-        || task->has_perfect_number || task->has_count_vowels || task->has_anagram_check
-        || task->has_string_to_upper || task->has_string_to_lower || task->has_caesar_cipher
-        || task->has_palindrome_string || task->has_bubble_sort || task->has_binary_search
-        || task->has_square_root || task->has_prime_factorization || task->has_standard_deviation
-        || task->has_compound_interest || task->has_decimal_to_binary || task->has_dice_roll
-        || task->has_double_math || task->has_double_circle_area || task->has_double_average
-        || task->has_double_compound_interest || task->has_double_pythagoras
-         || task->has_double_temp_convert || task->has_double_sqrt
-        || task->has_double_power || task->has_double_volume_sphere
-        || task->has_double_discount || task->has_double_simple_interest
-        || task->has_double_bmi || task->has_double_standard_deviation
-        || task->has_double_kinetic_energy
-        || task->has_string_length || task->has_stack || task->has_queue
-        || task->has_insertion_sort || task->has_calculator || task->has_unit_converter
-        || task->has_rock_paper_scissors || task->has_pyramid
-        || task->has_temp_converter_menu || task->has_sort_stats
-        || task->has_string_analyzer || task->has_number_analyzer
-        || task->has_filter_numbers || task->has_random_generator
-        || task->has_math_menu || task->has_quiz_game
-        || task->has_bmi_calculator || task->has_statistics_suite
-        || task->has_linked_list || task->has_binary_search_tree
-        || task->has_tree_traversal || task->has_graph_bfs_dfs
-        || task->has_n_queens || task->has_sudoku
-        || task->has_levenshtein || task->has_maze_generator
-        || task->has_maze_solver || task->has_monte_carlo
-        || task->has_matrix_mul || task->has_matrix_transpose
-        || task->has_numerical_integration || task->has_complex_numbers
-        || task->has_linear_regression || task->has_base_converter
-        || task->has_freq_analysis || task->has_shuffle
-        || task->has_weighted_random || task->has_ascii_table
-        || task->has_bignum_math || task->has_password_card
-        || task->has_chess_problem || task->has_shell_repl
-        || task->has_webserver || task->has_sdl_window || task->has_sdl_button
-        || task->has_thread || task->has_scheduler || task->has_shell_exec
-        || task->has_json || task->has_crypto || task->has_bluetooth_ble
-        || task->has_serial_rs232 || task->has_gpio || task->has_gps
-        || task->has_timer_date || task->has_sdl_sound || task->has_sdl_joystick
-        || task->has_sdl_mouse || task->has_fractal || task->has_cluster_3x1
-        || task->has_reload || task->has_coordinate_grid || task->has_turmite
-         || task->has_crossword || task->has_linter
-         || task->has_hello_world || task->has_string_find || task->has_string_split
-         || task->has_switch_demo || task->has_type_convert || task->has_iterative_factorial
-         || task->has_random_walk || task->has_bar_chart || task->has_hanoi_tower
-         || task->has_ascii_art || task->has_number_to_words || task->has_temperature_table
-         || task->has_loop_demo;
-
+static int parse_task_finalize(const char *prompt, const char *buf, TaskProfile *task) {
     SNPRINTF_CHECK(task->title, sizeof(task->title), "%s", prompt);
 
-    // Negation post-processing: clear flags if keyword is negated
-    if (task->has_sort && _is_negated_lowered(buf, "sort")) task->has_sort = 0;
-    if (task->has_loop && _is_negated_lowered(buf, "loop")) task->has_loop = 0;
-    if (task->has_condition && _is_negated_lowered(buf, "if")) task->has_condition = 0;
-    if (task->has_input && _is_negated_lowered(buf, "input")) task->has_input = 0;
-    if (task->has_output && _is_negated_lowered(buf, "print")) task->has_output = 0;
-    if (task->has_sum && _is_negated_lowered(buf, "sum")) task->has_sum = 0;
-    if (task->has_average && _is_negated_lowered(buf, "average")) task->has_average = 0;
-    if (task->has_power && _is_negated_lowered(buf, "power")) task->has_power = 0;
-    if (task->has_gcd && _is_negated_lowered(buf, "gcd")) task->has_gcd = 0;
+    int has_any = 0;
+    for (int i = 0; i < TF_WORDS; i++)
+        has_any |= (task->flags[i] != 0);
+
+    /* Negation post-processing: clear flags if keyword is negated */
+    if (TF_ISSET(task, FLAG_sort) && _is_negated_lowered(buf, "sort")) TF_CLR(task, FLAG_sort);
+    if (TF_ISSET(task, FLAG_loop) && _is_negated_lowered(buf, "loop")) TF_CLR(task, FLAG_loop);
+    if (TF_ISSET(task, FLAG_condition) && _is_negated_lowered(buf, "if")) TF_CLR(task, FLAG_condition);
+    if (TF_ISSET(task, FLAG_input) && _is_negated_lowered(buf, "input")) TF_CLR(task, FLAG_input);
+    if (TF_ISSET(task, FLAG_output) && _is_negated_lowered(buf, "print")) TF_CLR(task, FLAG_output);
+    if (TF_ISSET(task, FLAG_sum) && _is_negated_lowered(buf, "sum")) TF_CLR(task, FLAG_sum);
+    if (TF_ISSET(task, FLAG_average) && _is_negated_lowered(buf, "average")) TF_CLR(task, FLAG_average);
+    if (TF_ISSET(task, FLAG_power) && _is_negated_lowered(buf, "power")) TF_CLR(task, FLAG_power);
+    if (TF_ISSET(task, FLAG_gcd) && _is_negated_lowered(buf, "gcd")) TF_CLR(task, FLAG_gcd);
 
     return has_any;
+}
+
+int parse_task(const char *prompt, TaskProfile *task) {
+    char buf[MAX_PROMPT];
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", prompt);
+    to_lowercase(buf);
+    SNPRINTF_CHECK(task->prompt, sizeof(task->prompt), "%s", prompt);
+    SNPRINTF_CHECK(task->type, sizeof(task->type), "%s", "int64");
+
+    parse_task_detect_type(buf, task);
+    parse_task_detect_literals(prompt, buf, task);
+    parse_task_detect_io(buf, task);
+    parse_task_detect_flags(buf, task);
+    parse_task_detect_enhanced_patterns(prompt, buf, task);
+    return parse_task_finalize(prompt, buf, task);
 }
 static void ensure_exit(Function *f, int last_step) {
     if (!last_step) return;
@@ -1724,7 +1592,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     }
 
     // Handle "sort them" when an array was inherited from a prior step
-    if (task->has_sort && task->inherit_var[0]) {
+    if (TF_ISSET(task, FLAG_sort) && task->inherit_var[0]) {
         const char *zv[] = {"0"};
         const char *ov[] = {"1"};
         add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
@@ -1775,7 +1643,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     }
 
     // Handle "print them" when an array was inherited from a prior step
-    if (task->has_output && task->inherit_var[0] && !task->has_max && !task->has_min) {
+    if (TF_ISSET(task, FLAG_output) && task->inherit_var[0] && !TF_ISSET(task, FLAG_max) && !TF_ISSET(task, FLAG_min)) {
         const char *zv[] = {"0"};
         const char *ov[] = {"1"};
         add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
@@ -1806,7 +1674,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     }
 
     // Handle "print the largest" when an array was inherited from a prior step
-    if (task->has_max && task->inherit_var[0]) {
+    if (TF_ISSET(task, FLAG_max) && task->inherit_var[0]) {
         const char *zv[] = {"0"};
         const char *ov[] = {"1"};
         add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
@@ -1833,7 +1701,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     }
 
     // Handle "print the smallest" when an array was inherited from a prior step
-    if (task->has_min && task->inherit_var[0]) {
+    if (TF_ISSET(task, FLAG_min) && task->inherit_var[0]) {
         const char *zv[] = {"0"};
         add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
         add_var_to_func(f, "int64", "realind", 1, zv, 1);
@@ -1851,7 +1719,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         return 1;
     }
 
-    if (task->has_print_var) {
+    if (TF_ISSET(task, FLAG_print_var)) {
         add_include(prog, "intr-func.l1h");
         const char *zv[] = {"0"};
         const char *mv[] = {"42"};
@@ -2566,7 +2434,6 @@ int generate_code(const char *prompt, const char *filename) {
     if (!prog) { c_printf(ANSI_RED, "Out of memory\n"); return 0; }
     if (!init_program(prog)) { free_program(prog); free(prog); c_printf(ANSI_RED, "Out of memory\n"); return 0; }
     SNPRINTF_CHECK(prog->filename, sizeof(prog->filename), "%s", filename);
-    // (temp/func counters removed)
 
     // Try exact keyword template match first (most reliable)
     // Skip for multi-step prompts (e.g. "input numbers then sort them then print them")

@@ -85,29 +85,19 @@ const char* dsl_token_l1vm_type(DslTokenType type)
     }
 }
 
-static void trim_line(char *s)
-{
-    if (!s || !*s) return;
-    char *p = s;
-    int l = (int)strlen(p);
-    while (l > 0 && isspace((unsigned char)p[l-1])) p[--l] = 0;
-    while (*p && isspace((unsigned char)*p)) ++p;
-    if (p != s) memmove(s, p, (size_t)(l - (p - s) + 1));
-}
-
 static int parse_token_decl(const char *line, DslToken *token)
 {
     char buf[512];
     SNPRINTF_CHECK(buf, sizeof(buf), "%s", line);
-    trim_line(buf);
+    trim(buf);
 
     char *space = strchr(buf, ' ');
     if (!space) return 0;
     *space = '\0';
     char *type_str = buf;
     char *name_str = space + 1;
-    trim_line(type_str);
-    trim_line(name_str);
+    trim(type_str);
+    trim(name_str);
 
     int is_array = 0;
     int array_size = 1;
@@ -124,7 +114,7 @@ static int parse_token_decl(const char *line, DslToken *token)
     }
 
     SNPRINTF_CHECK(token->name, sizeof(token->name), "%s", name_str);
-        SNPRINTF_CHECK(token->l1vm_type, sizeof(token->l1vm_type), "%.31s", type_str);
+    SNPRINTF_CHECK(token->l1vm_type, sizeof(token->l1vm_type), "%.31s", type_str);
     token->type = parse_token_type(type_str);
     token->is_array = is_array;
     token->array_size = array_size;
@@ -150,7 +140,7 @@ static int parse_var_decl(const char *line, DslVarDecl *vd)
 {
     char buf[512];
     SNPRINTF_CHECK(buf, sizeof(buf), "%s", line);
-    trim_line(buf);
+    trim(buf);
 
     char type[64], name[64];
     int count = 1;
@@ -163,7 +153,7 @@ static int parse_var_decl(const char *line, DslVarDecl *vd)
     SNPRINTF_CHECK(vd->name, sizeof(vd->name), "%s", name);
     vd->count = (n >= 3) ? count : 1;
     if (n >= 4) {
-        trim_line(value);
+        trim(value);
         SNPRINTF_CHECK(vd->value, sizeof(vd->value), "%s", value);
     } else {
         vd->value[0] = '\0';
@@ -195,7 +185,7 @@ static int parse_dsl_line(const char *line, const char *key, char *value, int va
     p++;
     while (*p && isspace((unsigned char)*p)) p++;
     SNPRINTF_CHECK(value, val_size, "%s", p);
-    trim_line(value);
+    trim(value);
     int vlen = strlen(value);
     if (vlen >= 2 && value[0] == '"' && value[vlen-1] == '"') {
         memmove(value, value+1, vlen-1);
@@ -219,7 +209,7 @@ int dsl_load_rule_file(const char *path)
     int code_line_count = 0;
 
     while (fgets(line, sizeof(line), f)) {
-        trim_line(line);
+        trim(line);
         if (line[0] == '\0') continue;
 
         if (strcmp(line, "code:") == 0 || strcmp(line, "code:|") == 0) {
@@ -313,7 +303,7 @@ int dsl_parse_raw(DslRawRule *raw, DslRule *rule)
         char *mctx = NULL;
         char *mtok = strtok_r(mcopy, ", ", &mctx);
         while (mtok && rule->num_match_flags < MAX_DSL_TOKENS) {
-            trim_line(mtok);
+            trim(mtok);
             if (strlen(mtok) > 0) {
                 SNPRINTF_CHECK(rule->match_flags[rule->num_match_flags], sizeof(rule->match_flags[0]), "%s", mtok);
                 rule->num_match_flags++;
@@ -335,7 +325,7 @@ int dsl_parse_raw(DslRawRule *raw, DslRule *rule)
     if (comma) {
         *comma = '\0';
         char *k = keyword_buf;
-        trim_line(k);
+        trim(k);
         SNPRINTF_CHECK(rule->keyword, sizeof(rule->keyword), "%.63s", k);
     } else {
         SNPRINTF_CHECK(rule->keyword, sizeof(rule->keyword), "%.63s", keyword_buf);
@@ -348,7 +338,7 @@ int dsl_parse_raw(DslRawRule *raw, DslRule *rule)
     char *saveptr_t;
     char *tline = strtok_r(tbuf, "\n", &saveptr_t);
     while (tline && nt < 32) {
-        trim_line(tline);
+        trim(tline);
         if (strlen(tline) > 0) {
             tlines[nt] = tline;
             nt++;
@@ -361,7 +351,7 @@ int dsl_parse_raw(DslRawRule *raw, DslRule *rule)
         while (*comma_pos) {
             if (*comma_pos == ',') {
                 *comma_pos = '\0';
-                trim_line(token_start);
+                trim(token_start);
                 if (strlen(token_start) > 0) {
                     parse_token_decl(token_start, &rule->tokens[rule->num_tokens]);
                     rule->num_tokens++;
@@ -372,7 +362,7 @@ int dsl_parse_raw(DslRawRule *raw, DslRule *rule)
                 comma_pos++;
             }
         }
-        trim_line(token_start);
+        trim(token_start);
         if (strlen(token_start) > 0 && rule->num_tokens < MAX_DSL_TOKENS) {
             parse_token_decl(token_start, &rule->tokens[rule->num_tokens]);
             rule->num_tokens++;
@@ -391,7 +381,7 @@ int dsl_parse_raw(DslRawRule *raw, DslRule *rule)
     char *saveptr_i;
     char *iline = strtok_r(ibuf, "\n", &saveptr_i);
     while (iline && ni < 16) {
-        trim_line(iline);
+        trim(iline);
         if (strlen(iline) > 0) {
             ilines[ni] = iline;
             ni++;
@@ -410,7 +400,7 @@ int dsl_parse_raw(DslRawRule *raw, DslRule *rule)
     char *saveptr_ip;
     char *ipost_line = strtok_r(ipost_buf, "\n", &saveptr_ip);
     while (ipost_line && nip < 16) {
-        trim_line(ipost_line);
+        trim(ipost_line);
         if (strlen(ipost_line) > 0) {
             ipost_lines[nip] = ipost_line;
             nip++;
@@ -429,7 +419,7 @@ int dsl_parse_raw(DslRawRule *raw, DslRule *rule)
     char *saveptr_v;
     char *vline = strtok_r(vbuf, "\n", &saveptr_v);
     while (vline && nv < 32) {
-        trim_line(vline);
+        trim(vline);
         if (strlen(vline) > 0) {
             vlines[nv] = vline;
             nv++;
@@ -448,7 +438,7 @@ int dsl_parse_raw(DslRawRule *raw, DslRule *rule)
     char *saveptr_c;
     char *cline = strtok_r(cbuf, "\n", &saveptr_c);
     while (cline && nc < MAX_DSL_CODE_LINES) {
-        trim_line(cline);
+        trim(cline);
         if (strlen(cline) > 0) {
             clines[nc] = cline;
             nc++;
@@ -541,61 +531,11 @@ int dsl_match_all_rules(const char *prompt, DslRule **rules, float *scores, int 
 
 int dsl_match_rule(const char *prompt, DslRule **rule, float *score)
 {
-    if (dsl_num_rules == 0) return 0;
-
-    char prompt_lower[1024];
-    SNPRINTF_CHECK(prompt_lower, sizeof(prompt_lower), "%s", prompt);
-    for (int i = 0; prompt_lower[i]; i++)
-        prompt_lower[i] = tolower((unsigned char)prompt_lower[i]);
-
-    int best_idx = -1;
+    DslRule *best_rule = NULL;
     float best_score = 0.0f;
-
-    for (int i = 0; i < dsl_num_rules; i++) {
-        char keyword_lower[256];
-        SNPRINTF_CHECK(keyword_lower, sizeof(keyword_lower), "%.255s", dsl_rules[i].keyword);
-        for (int j = 0; keyword_lower[j]; j++)
-            keyword_lower[j] = tolower((unsigned char)keyword_lower[j]);
-
-        float match = 0.0f;
-        int num_keywords = 0;
-
-        char *saveptr;
-        char kw_copy[256];
-        SNPRINTF_CHECK(kw_copy, sizeof(kw_copy), "%s", keyword_lower);
-        char *kw = strtok_r(kw_copy, ",", &saveptr);
-        while (kw) {
-            while (*kw == ' ') kw++;
-            char *end = kw + strlen(kw) - 1;
-            while (end > kw && *end == ' ') end--;
-            *(end+1) = '\0';
-            if (strlen(kw) > 0) {
-                num_keywords++;
-                if (strstr(prompt_lower, kw))
-                    match += 1.0f;
-            }
-            kw = strtok_r(NULL, ",", &saveptr);
-        }
-
-        int min_match = (num_keywords >= 3) ? 2 : 1;
-        if (match >= (float)min_match) {
-            float word_ratio = match;
-            int prompt_words = 1;
-            for (int j = 0; prompt_lower[j]; j++)
-                if (prompt_lower[j] == ' ') prompt_words++;
-            if (prompt_words > 0)
-                word_ratio = match / (float)prompt_words;
-
-            float score_val = match + word_ratio * 0.5f;
-            if (score_val > best_score) {
-                best_score = score_val;
-                best_idx = i;
-            }
-        }
-    }
-
-    if (best_idx >= 0) {
-        *rule = &dsl_rules[best_idx];
+    int count = dsl_match_all_rules(prompt, &best_rule, &best_score, 1, 0.0f);
+    if (count > 0 && best_rule) {
+        *rule = best_rule;
         *score = best_score;
         return 1;
     }
@@ -617,7 +557,8 @@ static void substitute_template(char *out, int out_size, const char *template_st
         }
         size_t before_len = (size_t)(brace - p);
         if (before_len > 0) {
-            strncat(result, p, before_len);
+            size_t avail = sizeof(result) - strlen(result) - 1;
+            strncat(result, p, before_len < avail ? before_len : avail);
         }
         p = brace + 1;
         const char *close = strchr(p, '}');
@@ -897,144 +838,65 @@ int dsl_match_task_flags(DslRule *rule, TaskProfile *task)
 {
     if (rule->num_match_flags == 0) return 0;
 
+    #define CHECK(f) if (strcmp(flag, "has_" #f) == 0 && TF_ISSET(task, FLAG_ ## f)) return 1;
     for (int i = 0; i < rule->num_match_flags; i++) {
         const char *flag = rule->match_flags[i];
 
-        if (strcmp(flag, "has_fib_seq") == 0 && task->has_fib_seq) return 1;
-        if (strcmp(flag, "has_factorial") == 0 && task->has_factorial && !task->has_input) return 1;
-        if (strcmp(flag, "has_fizzbuzz") == 0 && task->has_fizzbuzz) return 1;
-        if (strcmp(flag, "has_even_odd") == 0 && task->has_even_odd && !task->has_print_even) return 1;
-        if (strcmp(flag, "has_power") == 0 && task->has_power) return 1;
-        if (strcmp(flag, "has_gcd") == 0 && task->has_gcd) return 1;
-        if (strcmp(flag, "has_hello_name") == 0 && task->has_hello_name) return 1;
-        if (strcmp(flag, "has_bool_demo") == 0 && task->has_bool_demo) return 1;
-        if (strcmp(flag, "has_bit_check") == 0 && task->has_bit_check) return 1;
-        if (strcmp(flag, "has_leap_year") == 0 && task->has_leap_year) return 1;
-        if (strcmp(flag, "has_temp_convert") == 0 && task->has_temp_convert) return 1;
-        if (strcmp(flag, "has_circle_area") == 0 && task->has_circle_area) return 1;
-        if (strcmp(flag, "has_palindrome") == 0 && task->has_palindrome) return 1;
-        if (strcmp(flag, "has_lcm") == 0 && task->has_lcm) return 1;
-        if (strcmp(flag, "has_collatz") == 0 && task->has_collatz) return 1;
-        if (strcmp(flag, "has_sum_of_digits") == 0 && task->has_sum_of_digits) return 1;
-        if (strcmp(flag, "has_reverse_string") == 0 && task->has_reverse_string) return 1;
-        if (strcmp(flag, "has_armstrong") == 0 && task->has_armstrong) return 1;
-        if (strcmp(flag, "has_perfect_number") == 0 && task->has_perfect_number) return 1;
-        if (strcmp(flag, "has_count_vowels") == 0 && task->has_count_vowels) return 1;
-        if (strcmp(flag, "has_anagram_check") == 0 && task->has_anagram_check) return 1;
-        if (strcmp(flag, "has_string_to_upper") == 0 && task->has_string_to_upper) return 1;
-        if (strcmp(flag, "has_string_to_lower") == 0 && task->has_string_to_lower) return 1;
-        if (strcmp(flag, "has_caesar_cipher") == 0 && task->has_caesar_cipher) return 1;
-        if (strcmp(flag, "has_palindrome_string") == 0 && task->has_palindrome_string) return 1;
-        if (strcmp(flag, "has_string_cat") == 0 && task->has_string_cat) return 1;
-        if (strcmp(flag, "has_string_compare") == 0 && task->has_string_compare) return 1;
-        if (strcmp(flag, "has_string_to_num") == 0 && task->has_string_to_num) return 1;
-        if (strcmp(flag, "has_timer") == 0 && task->has_timer) return 1;
-        if (strcmp(flag, "has_hello_world") == 0 && task->has_hello_world) return 1;
-        if (strcmp(flag, "has_mult_table") == 0 && task->has_mult_table) return 1;
-        if (strcmp(flag, "has_guess") == 0 && task->has_guess) return 1;
-        if (strcmp(flag, "has_random") == 0 && task->has_random) return 1;
-        if (strcmp(flag, "has_stack") == 0 && task->has_stack) return 1;
-        if (strcmp(flag, "has_queue") == 0 && task->has_queue) return 1;
-        if (strcmp(flag, "has_binary_search") == 0 && task->has_binary_search) return 1;
-        if (strcmp(flag, "has_square_root") == 0 && task->has_square_root) return 1;
-        if (strcmp(flag, "has_prime_factorization") == 0 && task->has_prime_factorization) return 1;
-        if (strcmp(flag, "has_compound_interest") == 0 && task->has_compound_interest) return 1;
-        if (strcmp(flag, "has_decimal_to_binary") == 0 && task->has_decimal_to_binary) return 1;
-        if (strcmp(flag, "has_dice_roll") == 0 && task->has_dice_roll) return 1;
-        if (strcmp(flag, "has_double_circle_area") == 0 && task->has_double_circle_area) return 1;
-        if (strcmp(flag, "has_double_pythagoras") == 0 && task->has_double_pythagoras) return 1;
-        if (strcmp(flag, "has_double_temp_convert") == 0 && task->has_double_temp_convert) return 1;
-        if (strcmp(flag, "has_double_sqrt") == 0 && task->has_double_sqrt) return 1;
-        if (strcmp(flag, "has_double_power") == 0 && task->has_double_power) return 1;
-        if (strcmp(flag, "has_double_volume_sphere") == 0 && task->has_double_volume_sphere) return 1;
-        if (strcmp(flag, "has_double_discount") == 0 && task->has_double_discount) return 1;
-        if (strcmp(flag, "has_double_simple_interest") == 0 && task->has_double_simple_interest) return 1;
-        if (strcmp(flag, "has_double_bmi") == 0 && task->has_double_bmi) return 1;
-        if (strcmp(flag, "has_double_kinetic_energy") == 0 && task->has_double_kinetic_energy) return 1;
-        if (strcmp(flag, "has_double_standard_deviation") == 0 && task->has_double_standard_deviation) return 1;
-        if (strcmp(flag, "has_double_compound_interest") == 0 && task->has_double_compound_interest) return 1;
-        if (strcmp(flag, "has_string_length") == 0 && task->has_string_length) return 1;
-        if (strcmp(flag, "has_function") == 0 && task->has_function) return 1;
-        if (strcmp(flag, "has_print_var") == 0 && task->has_print_var) return 1;
-        if (strcmp(flag, "has_for_sum") == 0 && task->has_sum_range) return 1;
-        if (strcmp(flag, "has_print_even") == 0 && task->has_print_even) return 1;
-        if (strcmp(flag, "has_countdown_from") == 0 && task->has_countdown_from) return 1;
-        if (strcmp(flag, "has_find_max") == 0 && task->has_find_max) return 1;
-        if (strcmp(flag, "has_primes") == 0 && task->has_primes) return 1;
-        if (strcmp(flag, "has_array_assign") == 0 && task->has_array_assign) return 1;
-        if (strcmp(flag, "has_input_fact") == 0 && task->has_input_fact) return 1;
-        if (strcmp(flag, "has_read_file") == 0 && task->has_read_file) return 1;
-        if (strcmp(flag, "has_write_file") == 0 && task->has_write_file) return 1;
-        if (strcmp(flag, "has_array_min_max") == 0 && task->has_array_min_max) return 1;
-        if (strcmp(flag, "has_string_find") == 0 && task->has_string_find) return 1;
-        if (strcmp(flag, "has_string_split") == 0 && task->has_string_split) return 1;
-        if (strcmp(flag, "has_switch_demo") == 0 && task->has_switch_demo) return 1;
-        if (strcmp(flag, "has_type_convert") == 0 && task->has_type_convert) return 1;
-        if (strcmp(flag, "has_iterative_factorial") == 0 && task->has_iterative_factorial) return 1;
-        if (strcmp(flag, "has_random_walk") == 0 && task->has_random_walk) return 1;
-        if (strcmp(flag, "has_bar_chart") == 0 && task->has_bar_chart) return 1;
-        if (strcmp(flag, "has_hanoi_tower") == 0 && task->has_hanoi_tower) return 1;
-        if (strcmp(flag, "has_ascii_art") == 0 && task->has_ascii_art) return 1;
-        if (strcmp(flag, "has_number_to_words") == 0 && task->has_number_to_words) return 1;
-        if (strcmp(flag, "has_temperature_table") == 0 && task->has_temperature_table) return 1;
-        if (strcmp(flag, "has_loop_demo") == 0 && task->has_loop_demo) return 1;
-        if (strcmp(flag, "has_pointer") == 0 && task->has_pointer) return 1;
-        if (strcmp(flag, "has_struct") == 0 && task->has_struct) return 1;
-        if (strcmp(flag, "has_hex_binary") == 0 && task->has_hex_binary) return 1;
-        if (strcmp(flag, "has_shell_args") == 0 && task->has_shell_args) return 1;
-        if (strcmp(flag, "has_time") == 0 && task->has_time) return 1;
-        if (strcmp(flag, "has_pyramid") == 0 && task->has_pyramid) return 1;
-        if (strcmp(flag, "has_filter_numbers") == 0 && task->has_filter_numbers) return 1;
-        if (strcmp(flag, "has_random_generator") == 0 && task->has_random_generator) return 1;
-        if (strcmp(flag, "has_ascii_table") == 0 && task->has_ascii_table) return 1;
-        if (strcmp(flag, "has_bignum_math") == 0 && task->has_bignum_math) return 1;
-        if (strcmp(flag, "has_password_card") == 0 && task->has_password_card) return 1;
-        if (strcmp(flag, "has_calculator") == 0 && task->has_calculator) return 1;
-        if (strcmp(flag, "has_unit_converter") == 0 && task->has_unit_converter) return 1;
-        if (strcmp(flag, "has_sort_stats") == 0 && task->has_sort_stats) return 1;
-        if (strcmp(flag, "has_string_analyzer") == 0 && task->has_string_analyzer) return 1;
-        if (strcmp(flag, "has_number_analyzer") == 0 && task->has_number_analyzer) return 1;
-        if (strcmp(flag, "has_math_menu") == 0 && task->has_math_menu) return 1;
-        if (strcmp(flag, "has_quiz_game") == 0 && task->has_quiz_game) return 1;
-        if (strcmp(flag, "has_bmi_calculator") == 0 && task->has_bmi_calculator) return 1;
-        if (strcmp(flag, "has_base_converter") == 0 && task->has_base_converter) return 1;
-        if (strcmp(flag, "has_freq_analysis") == 0 && task->has_freq_analysis) return 1;
-        if (strcmp(flag, "has_shuffle") == 0 && task->has_shuffle) return 1;
-        if (strcmp(flag, "has_weighted_random") == 0 && task->has_weighted_random) return 1;
-        if (strcmp(flag, "has_chess_problem") == 0 && task->has_chess_problem) return 1;
-        if (strcmp(flag, "has_shell_repl") == 0 && task->has_shell_repl) return 1;
-        if (strcmp(flag, "has_array_access") == 0 && task->has_array_access) return 1;
-        if (strcmp(flag, "has_array_write") == 0 && task->has_array_write) return 1;
-        if (strcmp(flag, "has_array_iterate") == 0 && task->has_array_iterate) return 1;
-        if (strcmp(flag, "has_array_sum") == 0 && task->has_array_sum) return 1;
-        if (strcmp(flag, "has_array_average") == 0 && task->has_array_average) return 1;
-        if (strcmp(flag, "has_double_array_access") == 0 && task->has_double_array_access) return 1;
-        if (strcmp(flag, "has_double_array_write") == 0 && task->has_double_array_write) return 1;
-        if (strcmp(flag, "has_double_array_iterate") == 0 && task->has_double_array_iterate) return 1;
-        if (strcmp(flag, "has_double_array_sum") == 0 && task->has_double_array_sum) return 1;
-        if (strcmp(flag, "has_double_array_min_max") == 0 && task->has_double_array_min_max) return 1;
-        if (strcmp(flag, "has_double_array_reverse") == 0 && task->has_double_array_reverse) return 1;
-        if (strcmp(flag, "has_double_array_average") == 0 && task->has_double_array_average) return 1;
-        if (strcmp(flag, "has_bubble_sort") == 0 && task->has_bubble_sort && !task->has_descending && !task->has_input_sort) return 1;
-        if (strcmp(flag, "has_descending") == 0 && task->has_descending) return 1;
-        if (strcmp(flag, "has_input_sort") == 0 && task->has_input_sort) return 1;
-        if (strcmp(flag, "has_median") == 0 && task->has_median) return 1;
-        if (strcmp(flag, "has_array_reverse") == 0 && task->has_array_reverse) return 1;
-        if (strcmp(flag, "has_array_find") == 0 && task->has_array_find) return 1;
-        if (strcmp(flag, "has_array_vmath") == 0 && task->has_array_vmath) return 1;
-        if (strcmp(flag, "has_average") == 0 && task->has_average) return 1;
-        if (strcmp(flag, "has_sort") == 0 && task->has_sort) return 1;
-        if (strcmp(flag, "has_fann_create") == 0 && task->has_fann_create) return 1;
-        if (strcmp(flag, "has_fann_train") == 0 && task->has_fann_train) return 1;
-        if (strcmp(flag, "has_fann_run") == 0 && task->has_fann_run) return 1;
-        if (strcmp(flag, "has_standard_deviation") == 0 && task->has_standard_deviation) return 1;
-        if (strcmp(flag, "has_double_math") == 0 && task->has_double_math) return 1;
-        if (strcmp(flag, "has_double_average") == 0 && task->has_double_average) return 1;
-        if (strcmp(flag, "has_insertion_sort") == 0 && task->has_insertion_sort) return 1;
-        if (strcmp(flag, "has_add") == 0 && task->has_add) return 1;
-        if (strcmp(flag, "has_sub") == 0 && task->has_sub) return 1;
-        if (strcmp(flag, "has_mul") == 0 && task->has_mul) return 1;
-        if (strcmp(flag, "has_div") == 0 && task->has_div) return 1;
+        // Simple flag-to-flag mappings
+        CHECK(fib_seq) CHECK(fizzbuzz) CHECK(power) CHECK(gcd)
+        CHECK(hello_name) CHECK(bool_demo) CHECK(bit_check)
+        CHECK(leap_year) CHECK(temp_convert) CHECK(circle_area)
+        CHECK(palindrome) CHECK(lcm) CHECK(collatz)
+        CHECK(sum_of_digits) CHECK(reverse_string) CHECK(armstrong)
+        CHECK(perfect_number) CHECK(count_vowels) CHECK(anagram_check)
+        CHECK(string_to_upper) CHECK(string_to_lower) CHECK(caesar_cipher)
+        CHECK(palindrome_string) CHECK(string_cat) CHECK(string_compare)
+        CHECK(string_to_num) CHECK(timer) CHECK(hello_world)
+        CHECK(mult_table) CHECK(guess) CHECK(random)
+        CHECK(stack) CHECK(queue) CHECK(binary_search)
+        CHECK(square_root) CHECK(prime_factorization) CHECK(compound_interest)
+        CHECK(decimal_to_binary) CHECK(dice_roll)
+        CHECK(double_circle_area) CHECK(double_pythagoras)
+        CHECK(double_temp_convert) CHECK(double_sqrt) CHECK(double_power)
+        CHECK(double_volume_sphere) CHECK(double_discount)
+        CHECK(double_simple_interest) CHECK(double_bmi)
+        CHECK(double_kinetic_energy) CHECK(double_standard_deviation)
+        CHECK(double_compound_interest) CHECK(string_length)
+        CHECK(function) CHECK(print_var) CHECK(print_even)
+        CHECK(countdown_from) CHECK(find_max) CHECK(primes)
+        CHECK(array_assign) CHECK(input_fact) CHECK(read_file)
+        CHECK(write_file) CHECK(array_min_max) CHECK(string_find)
+        CHECK(string_split) CHECK(switch_demo) CHECK(type_convert)
+        CHECK(iterative_factorial) CHECK(random_walk) CHECK(bar_chart)
+        CHECK(hanoi_tower) CHECK(ascii_art) CHECK(number_to_words)
+        CHECK(temperature_table) CHECK(loop_demo) CHECK(pointer)
+        CHECK(struct) CHECK(hex_binary) CHECK(shell_args)
+        CHECK(time) CHECK(pyramid) CHECK(filter_numbers)
+        CHECK(random_generator) CHECK(ascii_table) CHECK(bignum_math)
+        CHECK(password_card) CHECK(calculator) CHECK(unit_converter)
+        CHECK(sort_stats) CHECK(string_analyzer) CHECK(number_analyzer)
+        CHECK(math_menu) CHECK(quiz_game) CHECK(bmi_calculator)
+        CHECK(base_converter) CHECK(freq_analysis) CHECK(shuffle)
+        CHECK(weighted_random) CHECK(chess_problem) CHECK(shell_repl)
+        CHECK(array_access) CHECK(array_write) CHECK(array_iterate)
+        CHECK(array_sum) CHECK(array_average)
+        CHECK(double_array_access) CHECK(double_array_write)
+        CHECK(double_array_iterate) CHECK(double_array_sum)
+        CHECK(double_array_min_max) CHECK(double_array_reverse)
+        CHECK(double_array_average) CHECK(descending) CHECK(input_sort)
+        CHECK(median) CHECK(array_reverse) CHECK(array_find)
+        CHECK(array_vmath) CHECK(average) CHECK(sort)
+        CHECK(fann_create) CHECK(fann_train) CHECK(fann_run)
+        CHECK(standard_deviation) CHECK(double_math) CHECK(double_average)
+        CHECK(insertion_sort) CHECK(add) CHECK(sub)
+        CHECK(mul) CHECK(div)
+        #undef CHECK
+
+        // Special cases: flag name differs from task field or has extra conditions
+        if (strcmp(flag, "has_for_sum") == 0 && TF_ISSET(task, FLAG_sum_range)) return 1;
+        if (strcmp(flag, "has_factorial") == 0 && TF_ISSET(task, FLAG_factorial) && !TF_ISSET(task, FLAG_input)) return 1;
+        if (strcmp(flag, "has_even_odd") == 0 && TF_ISSET(task, FLAG_even_odd) && !TF_ISSET(task, FLAG_print_even)) return 1;
+        if (strcmp(flag, "has_bubble_sort") == 0 && TF_ISSET(task, FLAG_bubble_sort) && !TF_ISSET(task, FLAG_descending) && !TF_ISSET(task, FLAG_input_sort)) return 1;
     }
     return 0;
 }

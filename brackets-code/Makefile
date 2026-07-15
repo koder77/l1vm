@@ -27,7 +27,10 @@ TEST_SH = tests/run_tests.sh
 
 all: $(BINARY)
 
-%.o: %.c $(HEADER) $(DSL_H)
+%.o: %.c $(HEADER)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+dsl.o: dsl.c $(HEADER) $(DSL_H)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # embed.o and learn.o compile clean with -Wall -Wextra
@@ -48,11 +51,11 @@ lint: $(SOURCE)
 # Check for common issues
 check: $(SOURCE)
 	@echo "=== Checking for unsafe functions ==="
-	@! grep -n 'sprintf(\|strcpy(\|strcat(' $(SOURCE) || echo "WARNING: unsafe functions found"
+	@! grep -En 'sprintf\(|strcpy\(|strcat\(' $(SOURCE) || echo "WARNING: unsafe functions found"
 	@echo "=== Checking for goto ==="
-	@! grep -n 'goto ' $(SOURCE) | grep -v '//\|#\|fprintf\|printf' || echo "WARNING: goto found"
+	@! grep -En 'goto ' $(SOURCE) | grep -Ev '//|#|fprintf|printf' || echo "WARNING: goto found"
 	@echo "=== Checking global non-static functions ==="
-	@grep -n '^int \|^void \|^char \|^float \|^const.*\*' $(SOURCE) | grep -v 'static \|main\|//\|/\*\|#define\|typedef\|struct ' || echo "OK"
+	@grep -En '^int |^void |^char |^float |^const.*\*' $(SOURCE) | grep -Ev 'static |main|//|/\*|#define|typedef|struct ' || echo "OK"
 	@echo "=== Done ==="
 
 test: $(BINARY)
@@ -83,6 +86,9 @@ install: $(BINARY) $(SYNONYM) $(MANPAGE) $(HEADER) $(DSL_H)
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/$(BINARY)
 	rm -f $(DESTDIR)$(PREFIX)/share/brackets-code/$(SYNONYM)
+	rm -f $(DESTDIR)$(PREFIX)/share/brackets-code/$(HEADER)
+	rm -f $(DESTDIR)$(PREFIX)/share/brackets-code/$(DSL_H)
+	rm -rf $(DESTDIR)$(PREFIX)/share/brackets-code/dsl
 	rm -f $(DESTDIR)$(PREFIX)/share/man/man1/$(MANPAGE)
 
 # Source distribution tarball

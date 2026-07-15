@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdint.h>
 #include <time.h>
 #include <math.h>
 #include <dirent.h>
@@ -32,7 +33,7 @@
 #include <sys/wait.h>
 #include <spawn.h>
 
-#define VERSION_TXT "0.6.7"
+#define VERSION_TXT "0.6.8"
 
 #define MAX_LINE 4096
 #define MAX_VARS 48
@@ -85,6 +86,209 @@
         fprintf(stderr, "snprintf trunc/error at %s:%d\n", __FILE__, __LINE__); \
     _snr; \
 })
+
+
+/* ── TaskProfile bit-flag constants ──────────────────────────────────── */
+
+enum {
+    FLAG_input = 0,
+    FLAG_literals = 1,
+    FLAG_operation = 2,
+    FLAG_add = 3,
+    FLAG_sub = 4,
+    FLAG_mul = 5,
+    FLAG_div = 6,
+    FLAG_algorithm = 7,
+    FLAG_loop = 8,
+    FLAG_condition = 9,
+    FLAG_output = 10,
+    FLAG_sort = 11,
+    FLAG_power = 12,
+    FLAG_max = 13,
+    FLAG_min = 14,
+    FLAG_descending = 15,
+    FLAG_gcd = 16,
+    FLAG_countdown = 17,
+    FLAG_mult_table = 18,
+    FLAG_guess = 19,
+    FLAG_random = 20,
+    FLAG_hello_name = 21,
+    FLAG_time = 22,
+    FLAG_pointer = 23,
+    FLAG_struct = 24,
+    FLAG_hex_binary = 25,
+    FLAG_shell_args = 26,
+    FLAG_array = 27,
+    FLAG_function = 28,
+    FLAG_average = 29,
+    FLAG_fizzbuzz = 30,
+    FLAG_even_odd = 31,
+    FLAG_primes = 32,
+    FLAG_sum = 33,
+    FLAG_factorial = 34,
+    FLAG_fibonacci = 35,
+    FLAG_median = 36,
+    FLAG_string_cat = 37,
+    FLAG_string_compare = 38,
+    FLAG_array_assign = 39,
+    FLAG_array_reverse = 40,
+    FLAG_array_find = 41,
+    FLAG_sum_range = 42,
+    FLAG_print_even = 43,
+    FLAG_find_max = 44,
+    FLAG_fib_seq = 45,
+    FLAG_input_sort = 46,
+    FLAG_input_fact = 47,
+    FLAG_countdown_from = 48,
+    FLAG_read_file = 49,
+    FLAG_write_file = 50,
+    FLAG_array_vmath = 51,
+    FLAG_string_to_num = 52,
+    FLAG_timer = 53,
+    FLAG_array_min_max = 54,
+    FLAG_bool_demo = 55,
+    FLAG_print_var = 56,
+    FLAG_bit_check = 57,
+    FLAG_leap_year = 58,
+    FLAG_temp_convert = 59,
+    FLAG_circle_area = 60,
+    FLAG_fann_create = 61,
+    FLAG_fann_train = 62,
+    FLAG_fann_run = 63,
+    FLAG_palindrome = 64,
+    FLAG_lcm = 65,
+    FLAG_collatz = 66,
+    FLAG_sum_of_digits = 67,
+    FLAG_reverse_string = 68,
+    FLAG_armstrong = 69,
+    FLAG_perfect_number = 70,
+    FLAG_count_vowels = 71,
+    FLAG_anagram_check = 72,
+    FLAG_string_to_upper = 73,
+    FLAG_string_to_lower = 74,
+    FLAG_caesar_cipher = 75,
+    FLAG_palindrome_string = 76,
+    FLAG_bubble_sort = 77,
+    FLAG_binary_search = 78,
+    FLAG_square_root = 79,
+    FLAG_prime_factorization = 80,
+    FLAG_standard_deviation = 81,
+    FLAG_compound_interest = 82,
+    FLAG_decimal_to_binary = 83,
+    FLAG_dice_roll = 84,
+    FLAG_double_math = 85,
+    FLAG_double_circle_area = 86,
+    FLAG_double_average = 87,
+    FLAG_double_compound_interest = 88,
+    FLAG_double_pythagoras = 89,
+    FLAG_double_temp_convert = 90,
+    FLAG_double_sqrt = 91,
+    FLAG_double_power = 92,
+    FLAG_double_volume_sphere = 93,
+    FLAG_double_discount = 94,
+    FLAG_double_simple_interest = 95,
+    FLAG_double_bmi = 96,
+    FLAG_double_standard_deviation = 97,
+    FLAG_double_kinetic_energy = 98,
+    FLAG_string_length = 99,
+    FLAG_stack = 100,
+    FLAG_queue = 101,
+    FLAG_insertion_sort = 102,
+    FLAG_calculator = 103,
+    FLAG_unit_converter = 104,
+    FLAG_rock_paper_scissors = 105,
+    FLAG_pyramid = 106,
+    FLAG_temp_converter_menu = 107,
+    FLAG_sort_stats = 108,
+    FLAG_string_analyzer = 109,
+    FLAG_number_analyzer = 110,
+    FLAG_filter_numbers = 111,
+    FLAG_random_generator = 112,
+    FLAG_math_menu = 113,
+    FLAG_quiz_game = 114,
+    FLAG_bmi_calculator = 115,
+    FLAG_statistics_suite = 116,
+    FLAG_linked_list = 117,
+    FLAG_binary_search_tree = 118,
+    FLAG_tree_traversal = 119,
+    FLAG_graph_bfs_dfs = 120,
+    FLAG_n_queens = 121,
+    FLAG_sudoku = 122,
+    FLAG_levenshtein = 123,
+    FLAG_maze_generator = 124,
+    FLAG_maze_solver = 125,
+    FLAG_monte_carlo = 126,
+    FLAG_matrix_mul = 127,
+    FLAG_matrix_transpose = 128,
+    FLAG_numerical_integration = 129,
+    FLAG_complex_numbers = 130,
+    FLAG_linear_regression = 131,
+    FLAG_base_converter = 132,
+    FLAG_freq_analysis = 133,
+    FLAG_shuffle = 134,
+    FLAG_weighted_random = 135,
+    FLAG_ascii_table = 136,
+    FLAG_bignum_math = 137,
+    FLAG_password_card = 138,
+    FLAG_chess_problem = 139,
+    FLAG_shell_repl = 140,
+    FLAG_webserver = 141,
+    FLAG_sdl_window = 142,
+    FLAG_sdl_button = 143,
+    FLAG_thread = 144,
+    FLAG_scheduler = 145,
+    FLAG_shell_exec = 146,
+    FLAG_json = 147,
+    FLAG_crypto = 148,
+    FLAG_bluetooth_ble = 149,
+    FLAG_serial_rs232 = 150,
+    FLAG_gpio = 151,
+    FLAG_gps = 152,
+    FLAG_timer_date = 153,
+    FLAG_sdl_sound = 154,
+    FLAG_sdl_joystick = 155,
+    FLAG_sdl_mouse = 156,
+    FLAG_fractal = 157,
+    FLAG_cluster_3x1 = 158,
+    FLAG_reload = 159,
+    FLAG_coordinate_grid = 160,
+    FLAG_turmite = 161,
+    FLAG_crossword = 162,
+    FLAG_linter = 163,
+    FLAG_hello_world = 164,
+    FLAG_string_find = 165,
+    FLAG_string_split = 166,
+    FLAG_switch_demo = 167,
+    FLAG_type_convert = 168,
+    FLAG_iterative_factorial = 169,
+    FLAG_random_walk = 170,
+    FLAG_bar_chart = 171,
+    FLAG_hanoi_tower = 172,
+    FLAG_ascii_art = 173,
+    FLAG_number_to_words = 174,
+    FLAG_temperature_table = 175,
+    FLAG_loop_demo = 176,
+    FLAG_array_access = 177,
+    FLAG_array_write = 178,
+    FLAG_array_iterate = 179,
+    FLAG_array_sum = 180,
+    FLAG_array_average = 181,
+    FLAG_double_array_access = 182,
+    FLAG_double_array_write = 183,
+    FLAG_double_array_iterate = 184,
+    FLAG_double_array_sum = 185,
+    FLAG_double_array_min_max = 186,
+    FLAG_double_array_reverse = 187,
+    FLAG_double_array_average = 188,
+    FLAG_COUNT = 189
+};
+
+#define TF_WORDS   ((FLAG_COUNT + 63) / 64)
+#define TF_SET(tf, n)    ((tf)->flags[(n) / 64] |=  (1ULL << ((n) % 64)))
+#define TF_CLR(tf, n)    ((tf)->flags[(n) / 64] &= ~(1ULL << ((n) % 64)))
+#define TF_ISSET(tf, n)  ((tf)->flags[(n) / 64] &  (1ULL << ((n) % 64)))
+#define TF_CLEAR(tf)     (memset((tf)->flags, 0, sizeof((tf)->flags)))
+
 
 // ==================== DATA STRUCTURES ====================
 
@@ -139,211 +343,23 @@ typedef struct {
 } LearnedPattern;
 
 typedef struct {
-    int has_input;
+    uint64_t flags[TF_WORDS]; /* bit-flags (FLAG_xxx enum) */
     int input_count;
     int count_value;
-    int has_literals;
     int literals[MAX_NUMS];
     double double_literals[MAX_NUMS];
     int num_literals;
-    int has_operation;
     char op[16];
-    int has_add;
-    int has_sub;
-    int has_mul;
-    int has_div;
-    int has_algorithm;
     char algorithm[32];
     int algo_param;
-    int has_loop;
     int loop_start, loop_end;
-    int has_condition;
-    int has_output;
-    int has_sort;
-    int has_power;
-    int has_max;
-    int has_min;
-    int has_descending;
-    int has_gcd;
-    int has_countdown;
-    int has_mult_table;
-    int has_guess;
-    int has_random;
-    int has_hello_name;
-    int has_time;
-    int has_pointer;
-    int has_struct;
-    int has_hex_binary;
-    int has_shell_args;
-    int has_array;
-    int has_function;
-    int has_average;
-    int has_fizzbuzz;
-    int has_even_odd;
-    int has_primes;
-    int has_sum;
-    int has_factorial;
-    int has_fibonacci;
-    int has_median;
     int median_count;
-    int has_string_cat;
-    int has_string_compare;
-    int has_array_assign;
-    int has_array_reverse;
-    int has_array_find;
-    int has_sum_range;
     int sum_range_n;
-    int has_print_even;
     int print_even_n;
-    int has_find_max;
     int find_max_count;
-    int has_fib_seq;
     int fib_seq_n;
-    int has_input_sort;
     int input_sort_count;
-    int has_input_fact;
-    int has_countdown_from;
     int countdown_start;
-    int has_read_file;
-    int has_write_file;
-    int has_array_vmath;
-    int has_string_to_num;
-    int has_timer;
-    int has_array_min_max;
-    int has_bool_demo;
-    int has_print_var;
-    int has_bit_check;
-    int has_leap_year;
-    int has_temp_convert;
-    int has_circle_area;
-    int has_fann_create;
-    int has_fann_train;
-    int has_fann_run;
-    int has_palindrome;
-    int has_lcm;
-    int has_collatz;
-    int has_sum_of_digits;
-    int has_reverse_string;
-    int has_armstrong;
-    int has_perfect_number;
-    int has_count_vowels;
-    int has_anagram_check;
-    int has_string_to_upper;
-    int has_string_to_lower;
-    int has_caesar_cipher;
-    int has_palindrome_string;
-    int has_bubble_sort;
-    int has_binary_search;
-    int has_square_root;
-    int has_prime_factorization;
-    int has_standard_deviation;
-    int has_compound_interest;
-    int has_decimal_to_binary;
-    int has_dice_roll;
-    int has_double_math;
-    int has_double_circle_area;
-    int has_double_average;
-    int has_double_compound_interest;
-    int has_double_pythagoras;
-    int has_double_temp_convert;
-    int has_double_sqrt;
-    int has_double_power;
-    int has_double_volume_sphere;
-    int has_double_discount;
-    int has_double_simple_interest;
-    int has_double_bmi;
-    int has_double_standard_deviation;
-    int has_double_kinetic_energy;
-    int has_string_length;
-    int has_stack;
-    int has_queue;
-    int has_insertion_sort;
-    int has_calculator;
-    int has_unit_converter;
-    int has_rock_paper_scissors;
-    int has_pyramid;
-    int has_temp_converter_menu;
-    int has_sort_stats;
-    int has_string_analyzer;
-    int has_number_analyzer;
-    int has_filter_numbers;
-    int has_random_generator;
-    int has_math_menu;
-    int has_quiz_game;
-    int has_bmi_calculator;
-    int has_statistics_suite;
-    int has_linked_list;
-    int has_binary_search_tree;
-    int has_tree_traversal;
-    int has_graph_bfs_dfs;
-    int has_n_queens;
-    int has_sudoku;
-    int has_levenshtein;
-    int has_maze_generator;
-    int has_maze_solver;
-    int has_monte_carlo;
-    int has_matrix_mul;
-    int has_matrix_transpose;
-    int has_numerical_integration;
-    int has_complex_numbers;
-    int has_linear_regression;
-    int has_base_converter;
-    int has_freq_analysis;
-    int has_shuffle;
-    int has_weighted_random;
-    int has_ascii_table;
-    int has_bignum_math;
-    int has_password_card;
-    int has_chess_problem;
-    int has_shell_repl;
-    int has_webserver;
-    int has_sdl_window;
-    int has_sdl_button;
-    int has_thread;
-    int has_scheduler;
-    int has_shell_exec;
-    int has_json;
-    int has_crypto;
-    int has_bluetooth_ble;
-    int has_serial_rs232;
-    int has_gpio;
-    int has_gps;
-    int has_timer_date;
-    int has_sdl_sound;
-    int has_sdl_joystick;
-    int has_sdl_mouse;
-    int has_fractal;
-    int has_cluster_3x1;
-    int has_reload;
-    int has_coordinate_grid;
-    int has_turmite;
-    int has_crossword;
-    int has_linter;
-    int has_hello_world;
-    int has_string_find;
-    int has_string_split;
-    int has_switch_demo;
-    int has_type_convert;
-    int has_iterative_factorial;
-    int has_random_walk;
-    int has_bar_chart;
-    int has_hanoi_tower;
-    int has_ascii_art;
-    int has_number_to_words;
-    int has_temperature_table;
-    int has_loop_demo;
-    int has_array_access;
-    int has_array_write;
-    int has_array_iterate;
-    int has_array_sum;
-    int has_array_average;
-    int has_double_array_access;
-    int has_double_array_write;
-    int has_double_array_iterate;
-    int has_double_array_sum;
-    int has_double_array_min_max;
-    int has_double_array_reverse;
-    int has_double_array_average;
     int suppress_output;
     char result_var[64];
     int skip_input;
@@ -362,6 +378,7 @@ typedef struct {
     char type[16];
     char title[256];
 } TaskProfile;
+
 
 typedef struct {
     char word[256];
