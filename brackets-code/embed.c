@@ -199,10 +199,10 @@ int tokenize(const char *text, int *tokens, int max_tokens) {
     int count = 0;
     char *p = buf;
     while (*p && count < max_tokens) {
-        while (*p && !isalpha(*p)) p++;
+        while (*p && !isalpha((unsigned char)*p)) p++;
         if (!*p) break;
         char *start = p;
-        while (*p && isalpha(*p)) p++;
+        while (*p && isalpha((unsigned char)*p)) p++;
         char saved = *p;
         *p = '\0';
         int found = -1;
@@ -818,22 +818,22 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                     SNPRINTF_CHECK(steps[num_steps], MAX_PROMPT, "%s", current);
                     num_steps++;
                 }
-                p += 2; while (*p && isspace(*p)) p++;
+                p += 2; while (*p && isspace((unsigned char)*p)) p++;
                 SNPRINTF_CHECK(current, sizeof(current), "%s", p);
                 collecting = 1;
                 step_found = 1;
             } else if ((p[0] == '(') && (p[1] >= '1' && p[1] <= '9') && p[2] == ')') {
                 if (collecting && strlen(current) > 0) {
                     for (char *cp = current + 1; *cp; cp++) {
-                        if (((cp[0] >= '1' && cp[0] <= '9') && (cp[1] == ')' || (cp[1] == '.' && cp[2] != '.' && !(cp[2] >= '0' && cp[2] <= '9'))))
+                        if (((cp[0] >= '1' && cp[0] <= '9') && (cp[1] == ')' || (cp[1] == '.' && cp[2] != '.' && !(cp[2] >= '0' && cp[2] <= '9')))
                             || (cp[0] == '(' && cp[1] >= '1' && cp[1] <= '9' && cp[2] == ')')
-                            || strncmp(cp, "step ", 5) == 0 || strncmp(cp, "schritt ", 8) == 0) { *cp = '\0'; break; }
+                            || strncmp(cp, "step ", 5) == 0 || strncmp(cp, "schritt ", 8) == 0)) { *cp = '\0'; break; }
                     }
                     trim(current);
                     SNPRINTF_CHECK(steps[num_steps], MAX_PROMPT, "%s", current);
                     num_steps++;
                 }
-                p += 3; while (*p && isspace(*p)) p++;
+                p += 3; while (*p && isspace((unsigned char)*p)) p++;
                 SNPRINTF_CHECK(current, sizeof(current), "%s", p);
                 collecting = 1;
                 step_found = 1;
@@ -850,9 +850,9 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
                     SNPRINTF_CHECK(steps[num_steps], MAX_PROMPT, "%s", current);
                     num_steps++;
                 }
-                p += prefix_len; while (*p && isspace(*p)) p++;
+                p += prefix_len; while (*p && isspace((unsigned char)*p)) p++;
                 if (*p == ':') p++;
-                while (*p && isspace(*p)) p++;
+                while (*p && isspace((unsigned char)*p)) p++;
                 SNPRINTF_CHECK(current, sizeof(current), "%s", p);
                 collecting = 1;
                 step_found = 1;
@@ -873,7 +873,7 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
             for (int si = 0; si < num_steps; si++) {
                 char *s = steps[si];
                 while (*s && ((*s >= '0' && *s <= '9') || *s == ')' || *s == '(' || *s == '.')) s++;
-                while (*s && isspace(*s)) s++;
+                while (*s && isspace((unsigned char)*s)) s++;
                 if (s > steps[si]) memmove(steps[si], s, strlen(s) + 1);
             }
             return num_steps;
@@ -1079,10 +1079,10 @@ void embed_text(const char *text, float *out) {
     float total_weight = 0;
     char *p = buf;
     while (*p) {
-        while (*p && !isalpha(*p)) p++;
+        while (*p && !isalpha((unsigned char)*p)) p++;
         if (!*p) break;
         char *start = p;
-        while (*p && isalpha(*p)) p++;
+        while (*p && isalpha((unsigned char)*p)) p++;
         char saved = *p;
         *p = '\0';
 

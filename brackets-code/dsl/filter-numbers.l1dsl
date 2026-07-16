@@ -1,8 +1,6 @@
 // filter-numbers.l1dsl
 parser: "keywords for matching"
 match: has_filter_numbers
-token: token type and name
-result: result type and name
 include: intr-func.l1h
 include: vars.l1h
 desc: "filter numbers greater than threshold"

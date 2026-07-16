@@ -41,9 +41,8 @@ int retry_seed = 0;
 int verbose_flag = 0;
 int dry_run_flag = 0;
 int dataflow_quiet_mode = 0;
-char out_dir[512] = "";
-char l1vm_root[512] = "";
-static const char *current_prompt = "";
+char out_dir[PATH_BUF_SIZE] = "";
+char l1vm_root[PATH_BUF_SIZE] = "";
 
 int use_color = 1;
 
@@ -139,17 +138,17 @@ int ensure_funcs_cap(Function **pfuncs, int *cap, int needed) {
     return resize_funcs_array(pfuncs, cap, new_cap);
 }
 
-static int resize_includes_arr(char (**pinc)[256], int *cap, int new_cap) {
-    char (*p)[256] = realloc(*pinc, (size_t)new_cap * sizeof(char[256]));
+static int resize_includes_arr(char (**pinc)[WORD_BUF_SIZE], int *cap, int new_cap) {
+    char (*p)[WORD_BUF_SIZE] = realloc(*pinc, (size_t)new_cap * sizeof(char[WORD_BUF_SIZE]));
     if (!p) return 0;
     *pinc = p;
     if (new_cap > *cap)
-        memset(&(*pinc)[*cap], 0, (size_t)(new_cap - *cap) * sizeof(char[256]));
+        memset(&(*pinc)[*cap], 0, (size_t)(new_cap - *cap) * sizeof(char[WORD_BUF_SIZE]));
     *cap = new_cap;
     return 1;
 }
 
-int ensure_includes_cap(char (**pinc)[256], int *cap, int needed) {
+int ensure_includes_cap(char (**pinc)[WORD_BUF_SIZE], int *cap, int needed) {
     if (needed <= *cap) return 1;
     if (*cap > INT_MAX / 2) return 0;
     int new_cap = *cap ? *cap * 2 : INIT_INCLUDES_CAP;
@@ -206,8 +205,8 @@ void trim(char *s) {
     char *p = s;
     int l = strlen(p);
     if (l == 0) return;
-    while (isspace(p[l-1])) p[--l] = 0;
-    while (*p && isspace(*p)) ++p;
+    while (isspace((unsigned char)p[l-1])) p[--l] = 0;
+    while (*p && isspace((unsigned char)*p)) ++p;
     memmove(s, p, l - (p - s) + 1);
 }
 
@@ -216,10 +215,10 @@ int str_contains_word(const char *str, const char *word) {
     SNPRINTF_CHECK(buf, sizeof(buf), "%s", str);
     char *p = buf;
     while (*p) {
-        while (*p && !isalpha(*p)) p++;
+        while (*p && !isalpha((unsigned char)*p)) p++;
         if (!*p) break;
         char *start = p;
-        while (*p && isalpha(*p)) p++;
+        while (*p && isalpha((unsigned char)*p)) p++;
         char saved = *p;
         *p = '\0';
         if (strcasecmp(start, word) == 0) { *p = saved; return 1; }
@@ -229,7 +228,7 @@ int str_contains_word(const char *str, const char *word) {
 }
 
 void to_lowercase(char *s) {
-    for (; *s; s++) *s = tolower(*s);
+    for (; *s; s++) *s = (char)tolower((unsigned char)*s);
 }
 
 void add_include(Program *prog, const char *inc) {
@@ -457,13 +456,13 @@ static FILE *open_synonym_file(void) {
     if (f) return f;
     const char *home = getenv("HOME");
     if (home) {
-        char path[1024];
+        char path[FULLPATH_BUF_SIZE];
         SNPRINTF_CHECK(path, sizeof(path), "%s/%s/%s", home, SYNONYM_DIR, SYNONYM_FILE);
         f = fopen(path, "r");
         if (f) return f;
     }
     // Try next to the executable
-    char self_path[1024];
+    char self_path[FULLPATH_BUF_SIZE];
     ssize_t len = readlink("/proc/self/exe", self_path, sizeof(self_path) - 1);
     if (len > 0) {
         self_path[len] = '\0';
@@ -482,7 +481,7 @@ void load_synonyms(void) {
     synonyms_loaded = 1;
     FILE *f = open_synonym_file();
     if (!f) return;
-    char line[256];
+    char line[WORD_BUF_SIZE];
     while (fgets(line, sizeof(line), f) && num_dyn_synonyms < MAX_DYN_SYNONYMS) {
         trim(line);
         if (line[0] == '#' || line[0] == '\0') continue;
@@ -642,10 +641,10 @@ void expand_query(const char *query, char *expanded, int max_len) {
     to_lowercase(buf);
     char *p = buf;
     while (*p) {
-        while (*p && !isalpha(*p)) p++;
+        while (*p && !isalpha((unsigned char)*p)) p++;
         if (!*p) break;
         char *start = p;
-        while (*p && isalpha(*p)) p++;
+        while (*p && isalpha((unsigned char)*p)) p++;
         char saved = *p;
         *p = '\0';
         const char *canonical = resolve_synonym(start);
@@ -679,13 +678,13 @@ static int _has_word_lowered(const char *lowered_text, const char *keyword) {
     }
     p = lowered_text;
     while (*p) {
-        while (*p && !isalpha(*p)) p++;
+        while (*p && !isalpha((unsigned char)*p)) p++;
         if (!*p) break;
-        const char *start = p;
-        while (*p && isalpha(*p)) p++;
+        char *start = p;
+        while (*p && isalpha((unsigned char)*p)) p++;
         int len = (int)(p - start);
-        if (len >= 256) len = 255;
-        char word_buf[256];
+        if (len >= WORD_BUF_SIZE) len = WORD_BUF_SIZE - 1;
+        char word_buf[WORD_BUF_SIZE];
         memcpy(word_buf, start, len);
         word_buf[len] = '\0';
         const char *canonical = resolve_synonym(word_buf);
@@ -751,9 +750,9 @@ static int extract_numbers(const char *prompt, int *nums, int max_nums) {
     int count = 0;
     char *p = buf;
     while (*p && count < max_nums) {
-        if (isalpha(*p)) {
+        if (isalpha((unsigned char)*p)) {
             char word[32]; int wi = 0;
-            while (*p && isalpha(*p) && wi < 31) word[wi++] = *p++;
+            while (*p && isalpha((unsigned char)*p) && wi < 31) word[wi++] = *p++;
             word[wi] = '\0';
             int n = word_to_num(word);
             if (n >= 0) nums[count++] = n;
@@ -763,20 +762,20 @@ static int extract_numbers(const char *prompt, int *nums, int max_nums) {
     }
     p = buf;
     while (*p && count < max_nums) {
-        if (isdigit(*p)) {
+        if (isdigit((unsigned char)*p)) {
             char *prev = p - 1;
-            while (prev >= buf && (isalpha(*prev) || *prev == '_')) prev--;
+            while (prev >= buf && (isalpha((unsigned char)*prev) || *prev == '_')) prev--;
             prev++;
             if (prev < p) {
                 char prefix[16]; int pi = 0;
                 while (prev < p && pi < 15) prefix[pi++] = *prev++;
                 prefix[pi] = '\0';
                 if (prefix[0] == 'i' && prefix[1] == 'n' && prefix[2] == 't') {
-                    while (*p && isdigit(*p)) p++;
+                    while (*p && isdigit((unsigned char)*p)) p++;
                     continue;
                 }
                 if (strcmp(prefix, "const") == 0) {
-                    while (*p && isdigit(*p)) p++;
+                    while (*p && isdigit((unsigned char)*p)) p++;
                     continue;
                 }
             }
@@ -784,7 +783,7 @@ static int extract_numbers(const char *prompt, int *nums, int max_nums) {
             long val = strtol(p, &endptr, 10);
             if (endptr != p && val >= INT_MIN && val <= INT_MAX)
                 nums[count++] = (int)val;
-            while (*p && isdigit(*p)) p++;
+            while (*p && isdigit((unsigned char)*p)) p++;
             continue;
         }
         p++;
@@ -819,9 +818,9 @@ static void parse_task_detect_literals(const char *prompt, const char *buf, Task
         char *dp = dscan;
         int di = 0;
         while (*dp && di < MAX_NUMS) {
-            if (isdigit(*dp)) {
+            if (isdigit((unsigned char)*dp)) {
                 char *start = dp;
-                while (*dp && (isdigit(*dp) || *dp == '.')) dp++;
+                while (*dp && (isdigit((unsigned char)*dp) || *dp == '.')) dp++;
                 if (strchr(start, '.') != NULL) {
                     char *endptr_d = NULL;
                     task->double_literals[di] = strtod(start, &endptr_d);
@@ -849,17 +848,17 @@ static void parse_task_detect_io(char *buf, TaskProfile *task) {
     while (*p) {
         if (strncmp(p, "numbers", 7) == 0 || strncmp(p, "werte", 5) == 0 || strncmp(p, "zahlen", 6) == 0 || strncmp(p, "values", 6) == 0) {
             char *q = p - 1;
-            while (q >= buf && isspace(*q)) q--;
-            while (q >= buf && isdigit(*q)) q--;
+            while (q >= buf && isspace((unsigned char)*q)) q--;
+            while (q >= buf && isdigit((unsigned char)*q)) q--;
             q++;
-            if (q < p && isdigit(*q)) {
+            if (q < p && isdigit((unsigned char)*q)) {
                 task->input_count = (int)strtol(q, NULL, 10);
                 TF_SET(task, FLAG_input);
             } else {
                 q = p - 1;
-                while (q >= buf && isspace(*q)) q--;
+                while (q >= buf && isspace((unsigned char)*q)) q--;
                 char *end = q + 1;
-                while (q >= buf && isalpha(*q)) q--;
+                while (q >= buf && isalpha((unsigned char)*q)) q--;
                 q++;
                 if (q < end) {
                     char w[32]; int wi = 0;
@@ -1027,7 +1026,697 @@ static void parse_task_detect_flags(const char *buf, TaskProfile *task) {
         TF_SET(task, FLAG_hello_name);
 }
 
-static void parse_task_detect_enhanced_patterns(const char *prompt, const char *buf, TaskProfile *task) {
+/* ── Pattern table for keyword→flag mapping ──────────────────────────── */
+
+static const PatternTableEntry pattern_table[] = {
+    /* array operations */
+    { {"array"},    {"reverse"}, {NULL}, FLAG_array_reverse, 1 },
+    { {"reverse"}, {"element"}, {NULL}, FLAG_array_reverse, 1 },
+    { {"reverse"},    {"list"}, {NULL}, FLAG_array_reverse, 1 },
+    { {"reverse"},   {"order"}, {NULL}, FLAG_array_reverse, 1 },
+    { {"reverse"}, {"reihenfolge"}, {NULL}, FLAG_array_reverse, 1 },
+    { {"array"},      {"find"}, {NULL}, FLAG_array_find, 1 },
+    { {"array"},    {"search"}, {NULL}, FLAG_array_find, 1 },
+    { {"array"},     {"suche"}, {NULL}, FLAG_array_find, 1 },
+    { {"array"},    {"assign"}, {NULL}, FLAG_array_assign, 1 },
+    { {"array"},    {"access"}, {NULL}, FLAG_array_access, 1 },
+    { {"array"},      {"read"}, {NULL}, FLAG_array_access, 1 },
+    { {"array"},       {"get"}, {NULL}, FLAG_array_access, 1 },
+    { {"array"},   {"element"}, {NULL}, FLAG_array_access, 1 },
+    { {"array"},     {"index"}, {NULL}, FLAG_array_access, 1 },
+    { {"array"},     {"write"}, {NULL}, FLAG_array_write, 1 },
+    { {"array"},       {"set"}, {NULL}, FLAG_array_write, 1 },
+    { {"array"},     {"store"}, {NULL}, FLAG_array_write, 1 },
+    { {"array"},       {"min"}, {NULL}, FLAG_array_vmath, 1 },
+    { {"array"},       {"max"}, {NULL}, FLAG_array_vmath, 1 },
+    { {"array"},   {"average"}, {NULL}, FLAG_array_vmath, 1 },
+    { {"array"},     {"vmath"}, {NULL}, FLAG_array_vmath, 1 },
+    { {"stat"},      {"array"}, {NULL}, FLAG_array_vmath, 1 },
+    { {"min"},{"max", "array"}, {NULL}, FLAG_array_min_max, 1 },
+
+    /* I/O */
+    { {"read"},       {"file"}, {NULL}, FLAG_read_file, 1 },
+    { {"write"},      {"file"}, {NULL}, FLAG_write_file, 1 },
+
+    /* string / number */
+    { {"string"},   {"to", "number"}, {NULL}, FLAG_string_to_num, 1 },
+    { {"string"},{"parse", "number"}, {NULL}, FLAG_string_to_num, 1 },
+    { {"string"},{"convert", "number"}, {NULL}, FLAG_string_to_num, 1 },
+    { {"string"},      {"to", "num"}, {NULL}, FLAG_string_to_num, 1 },
+
+    /* misc */
+    { {"bool"},               {NULL}, {NULL}, FLAG_bool_demo, 1 },
+    { {"boolean"},            {NULL}, {NULL}, FLAG_bool_demo, 1 },
+    { {"check"},              {NULL}, {NULL}, FLAG_bit_check, 1 },
+    { {"bit"},         {"set"}, {NULL}, FLAG_bit_check, 1 },
+    { {"bit"},       {"clear"}, {NULL}, FLAG_bit_check, 1 },
+    { {"leap"},       {"year"}, {NULL}, FLAG_leap_year, 1 },
+    { {"schalt"},     {"jahr"}, {NULL}, FLAG_leap_year, 1 },
+    { {"celsius"}, {"convert"}, {NULL}, FLAG_temp_convert, 1 },
+    { {"celsius"},{"umrechnen"},{NULL}, FLAG_temp_convert, 1 },
+    { {"celsius"},      {"to"}, {NULL}, FLAG_temp_convert, 1 },
+    { {"fahrenheit"},{"convert"},{NULL}, FLAG_temp_convert, 1 },
+    { {"fahrenheit"},{"umrechnen"},{NULL},FLAG_temp_convert, 1 },
+    { {"fahrenheit"},   {"to"}, {NULL}, FLAG_temp_convert, 1 },
+    { {"temperature"},{"convert"},{NULL},FLAG_temp_convert, 1 },
+    { {"temperature"},{"umrechnen"},{NULL},FLAG_temp_convert, 1 },
+    { {"temperature"},  {"to"}, {NULL}, FLAG_temp_convert, 1 },
+    { {"circle"},     {"area"}, {NULL}, FLAG_circle_area, 1 },
+    { {"circle"},   {"fläche"}, {NULL}, FLAG_circle_area, 1 },
+    { {"circle"},  {"flaeche"}, {NULL}, FLAG_circle_area, 1 },
+    { {"kreis"},      {"area"}, {NULL}, FLAG_circle_area, 1 },
+    { {"kreis"},    {"fläche"}, {NULL}, FLAG_circle_area, 1 },
+    { {"kreis"},   {"flaeche"}, {NULL}, FLAG_circle_area, 1 },
+
+    /* palindrome / math */
+    { {"palindrome"},         {NULL}, {NULL}, FLAG_palindrome, 0 },
+    { {"reverse"},  {"number"}, {NULL}, FLAG_palindrome, 0 },
+    { {"lcm"},                {NULL}, {NULL}, FLAG_lcm, 0 },
+    { {"least"},  {"multiple"}, {NULL}, FLAG_lcm, 0 },
+    { {"collatz"},            {NULL}, {NULL}, FLAG_collatz, 0 },
+    { {"3n"},            {"1"}, {NULL}, FLAG_collatz, 0 },
+    { {"sum"},       {"digit"}, {NULL}, FLAG_sum_of_digits, 0 },
+    { {"reverse"},  {"string"}, {NULL}, FLAG_reverse_string, 0 },
+    { {"reverse"},    {"text"}, {NULL}, FLAG_reverse_string, 0 },
+    { {"reverse"},    {"wort"}, {NULL}, FLAG_reverse_string, 0 },
+    { {"armstrong"},          {NULL}, {NULL}, FLAG_armstrong, 0 },
+    { {"perfect"},  {"number"}, {NULL}, FLAG_perfect_number, 0 },
+    { {"vollkommen"},{"number"},{NULL}, FLAG_perfect_number, 0 },
+    { {"vowel"},              {NULL}, {NULL}, FLAG_count_vowels, 0 },
+    { {"vokale"},             {NULL}, {NULL}, FLAG_count_vowels, 0 },
+    { {"selbstlaut"},         {NULL}, {NULL}, FLAG_count_vowels, 0 },
+    { {"anagram"},            {NULL}, {NULL}, FLAG_anagram_check, 0 },
+
+    /* string ops */
+    { {"string"},    {"upper"}, {NULL}, FLAG_string_to_upper, 0 },
+    { {"zeichen"},   {"upper"}, {NULL}, FLAG_string_to_upper, 0 },
+    { {"text"},      {"upper"}, {NULL}, FLAG_string_to_upper, 0 },
+    { {"string"},    {"lower"}, {NULL}, FLAG_string_to_lower, 0 },
+    { {"zeichen"},   {"lower"}, {NULL}, FLAG_string_to_lower, 0 },
+    { {"text"},      {"lower"}, {NULL}, FLAG_string_to_lower, 0 },
+    { {"caesar"},             {NULL}, {NULL}, FLAG_caesar_cipher, 0 },
+    { {"shift"},    {"cipher"}, {NULL}, FLAG_caesar_cipher, 0 },
+    { {"palindrome"},{"string"},{NULL}, FLAG_palindrome_string, 0 },
+    { {"palindrome"}, {"text"}, {NULL}, FLAG_palindrome_string, 0 },
+    { {"palindrome"}, {"wort"}, {NULL}, FLAG_palindrome_string, 0 },
+
+    /* sort / search */
+    { {"bubble"},     {"sort"}, {NULL}, FLAG_bubble_sort, 0 },
+    { {"binary"},   {"search"}, {"tree"}, FLAG_binary_search, 0 },
+    { {"square"},     {"root"}, {NULL}, FLAG_square_root, 0 },
+    { {"prime"},    {"factor"}, {NULL}, FLAG_prime_factorization, 0 },
+    { {"prime"},      {"teil"}, {NULL}, FLAG_prime_factorization, 0 },
+    { {"standard"},{"deviation"},{NULL},FLAG_standard_deviation, 0 },
+    { {"compound"},{"interest"},{NULL}, FLAG_compound_interest, 0 },
+    { {"binary"},  {"decimal"}, {NULL}, FLAG_decimal_to_binary, 0 },
+    { {"binary"},  {"convert"}, {NULL}, FLAG_decimal_to_binary, 0 },
+    { {"binary"},     {"base"}, {NULL}, FLAG_decimal_to_binary, 0 },
+
+    /* dice / double */
+    { {"dice"},               {NULL}, {NULL}, FLAG_dice_roll, 0 },
+    { {"würfel"},             {NULL}, {NULL}, FLAG_dice_roll, 0 },
+    { {"roll"},        {"die"}, {NULL}, FLAG_dice_roll, 0 },
+    { {"double"},     {"math"}, {NULL}, FLAG_double_math, 0 },
+    { {"double"},   {"circle"}, {NULL}, FLAG_double_circle_area, 0 },
+    { {"double"},  {"average"}, {NULL}, FLAG_double_average, 0 },
+    { {"double"}, {"interest"}, {NULL}, FLAG_double_compound_interest, 0 },
+    { {"double"},{"pythagoras"},{NULL}, FLAG_double_pythagoras, 0 },
+    { {"double"},     {"temp"}, {NULL}, FLAG_double_temp_convert, 0 },
+    { {"double"},     {"sqrt"}, {NULL}, FLAG_double_sqrt, 0 },
+    { {"double"},    {"power"}, {NULL}, FLAG_double_power, 0 },
+    { {"double"},{"volume", "sphere"},{NULL},FLAG_double_volume_sphere, 0 },
+    { {"double"}, {"discount"}, {NULL}, FLAG_double_discount, 0 },
+    { {"double"},{"simple", "interest"},{NULL},FLAG_double_simple_interest, 0 },
+    { {"double"},      {"bmi"}, {NULL}, FLAG_double_bmi, 0 },
+    { {"double"},   {"stddev"}, {NULL}, FLAG_double_standard_deviation, 0 },
+    { {"double"},{"standard", "deviation"},{NULL},FLAG_double_standard_deviation, 0 },
+    { {"double"},  {"kinetic"}, {NULL}, FLAG_double_kinetic_energy, 0 },
+    { {"double"},   {"energy"}, {NULL}, FLAG_double_kinetic_energy, 0 },
+
+    /* string length / data structures */
+    { {"string"},   {"length"}, {NULL}, FLAG_string_length, 0 },
+    { {"string"},   {"laenge"}, {NULL}, FLAG_string_length, 0 },
+    { {"zeichen"},  {"laenge"}, {NULL}, FLAG_string_length, 0 },
+    { {"stack"},              {NULL}, {NULL}, FLAG_stack, 0 },
+    { {"push"},        {"pop"}, {NULL}, FLAG_stack, 0 },
+    { {"queue"},              {NULL}, {NULL}, FLAG_queue, 0 },
+    { {"enqueue"}, {"dequeue"}, {NULL}, FLAG_queue, 0 },
+    { {"insertion"},  {"sort"}, {NULL}, FLAG_insertion_sort, 0 },
+
+    /* tools / converters */
+    { {"calculator"},         {NULL}, {NULL}, FLAG_calculator, 0 },
+    { {"calc"},       {"repl"}, {NULL}, FLAG_calculator, 0 },
+    { {"unit"},    {"convert"}, {NULL}, FLAG_unit_converter, 0 },
+    { {"unit"},  {"converter"}, {NULL}, FLAG_unit_converter, 0 },
+    { {"unit"},  {"umrechnen"}, {NULL}, FLAG_unit_converter, 0 },
+    { {"unit"},  {"umwandeln"}, {NULL}, FLAG_unit_converter, 0 },
+    { {"einheit"}, {"convert"}, {NULL}, FLAG_unit_converter, 0 },
+    { {"einheit"},{"converter"},{NULL}, FLAG_unit_converter, 0 },
+    { {"einheit"},{"umrechnen"},{NULL},FLAG_unit_converter, 0 },
+    { {"einheit"},{"umwandeln"},{NULL},FLAG_unit_converter, 0 },
+    { {"rock"},{"paper", "scissors"},{NULL},FLAG_rock_paper_scissors, 0 },
+
+    /* patterns / pyramids */
+    { {"pyramid"},  {"number"}, {NULL}, FLAG_pyramid, 0 },
+    { {"pyramid"},    {"zahl"}, {NULL}, FLAG_pyramid, 0 },
+    { {"pyramid"}, {"pattern"}, {NULL}, FLAG_pyramid, 0 },
+    { {"pyramid"},  {"muster"}, {NULL}, FLAG_pyramid, 0 },
+    { {"pyramid"},  {"height"}, {NULL}, FLAG_pyramid, 0 },
+    { {"pyramid"},   {"hoehe"}, {NULL}, FLAG_pyramid, 0 },
+    { {"pyramid"},    {"rows"}, {NULL}, FLAG_pyramid, 0 },
+    { {"pyramid"},  {"zeilen"}, {NULL}, FLAG_pyramid, 0 },
+    { {"pyramide"}, {"number"}, {NULL}, FLAG_pyramid, 0 },
+    { {"pyramide"},   {"zahl"}, {NULL}, FLAG_pyramid, 0 },
+    { {"pyramide"},{"pattern"}, {NULL}, FLAG_pyramid, 0 },
+    { {"pyramide"}, {"muster"}, {NULL}, FLAG_pyramid, 0 },
+    { {"pyramide"}, {"height"}, {NULL}, FLAG_pyramid, 0 },
+    { {"pyramide"},  {"hoehe"}, {NULL}, FLAG_pyramid, 0 },
+    { {"pyramide"},   {"rows"}, {NULL}, FLAG_pyramid, 0 },
+    { {"pyramide"}, {"zeilen"}, {NULL}, FLAG_pyramid, 0 },
+    { {"temperature"},{"table"},{NULL}, FLAG_temperature_table, 0 },
+    { {"temperature"},{"tabelle"},{NULL},FLAG_temperature_table, 0 },
+    { {"temperatur"},{"table"}, {NULL}, FLAG_temperature_table, 0 },
+    { {"temperatur"},{"tabelle"},{NULL},FLAG_temperature_table, 0 },
+
+    /* temp converter menu / sort stats */
+    { {"temperature"},{"converter"},{NULL},FLAG_temp_converter_menu, 0 },
+    { {"temperature"},{"umrechnen"},{NULL},FLAG_temp_converter_menu, 0 },
+    { {"temperatur"},{"convert"},{NULL},FLAG_temp_converter_menu, 0 },
+    { {"temperatur"},{"converter"},{NULL},FLAG_temp_converter_menu, 0 },
+    { {"temperatur"},{"umrechnen"},{NULL},FLAG_temp_converter_menu, 0 },
+    { {"sort"},      {"stats"}, {NULL}, FLAG_sort_stats, 0 },
+    { {"sort"}, {"statistics"}, {NULL}, FLAG_sort_stats, 0 },
+    { {"sort"},  {"statistik"}, {NULL}, FLAG_sort_stats, 0 },
+    { {"sort"},    {"analyze"}, {NULL}, FLAG_sort_stats, 0 },
+    { {"sort"},    {"analyse"}, {NULL}, FLAG_sort_stats, 0 },
+    { {"sort"},        {"min"}, {NULL}, FLAG_sort_stats, 0 },
+    { {"sort"},        {"max"}, {NULL}, FLAG_sort_stats, 0 },
+    { {"sort"},    {"average"}, {NULL}, FLAG_sort_stats, 0 },
+    { {"sort"},        {"avg"}, {NULL}, FLAG_sort_stats, 0 },
+
+    /* analyzers */
+    { {"analyze"},  {"string"}, {NULL}, FLAG_string_analyzer, 0 },
+    { {"analyze"},    {"text"}, {NULL}, FLAG_string_analyzer, 0 },
+    { {"analyze"},{"zeichenkette"},{NULL},FLAG_string_analyzer, 0 },
+    { {"analyse"},  {"string"}, {NULL}, FLAG_string_analyzer, 0 },
+    { {"analyse"},    {"text"}, {NULL}, FLAG_string_analyzer, 0 },
+    { {"analyse"},{"zeichenkette"},{NULL},FLAG_string_analyzer, 0 },
+    { {"analyze"},  {"number"}, {NULL}, FLAG_number_analyzer, 0 },
+    { {"analyze"},    {"zahl"}, {NULL}, FLAG_number_analyzer, 0 },
+    { {"analyse"},  {"number"}, {NULL}, FLAG_number_analyzer, 0 },
+    { {"analyse"},    {"zahl"}, {NULL}, FLAG_number_analyzer, 0 },
+    { {"analyzer"}, {"number"}, {NULL}, FLAG_number_analyzer, 0 },
+    { {"analyzer"},   {"zahl"}, {NULL}, FLAG_number_analyzer, 0 },
+    { {"analyser"}, {"number"}, {NULL}, FLAG_number_analyzer, 0 },
+    { {"analyser"},   {"zahl"}, {NULL}, FLAG_number_analyzer, 0 },
+
+    /* filter / generator / menu */
+    { {"filter"},   {"number"}, {NULL}, FLAG_filter_numbers, 0 },
+    { {"filter"},  {"numbers"}, {NULL}, FLAG_filter_numbers, 0 },
+    { {"filter"},   {"zahlen"}, {NULL}, FLAG_filter_numbers, 0 },
+    { {"filter"},   {"values"}, {NULL}, FLAG_filter_numbers, 0 },
+    { {"filter"},    {"werte"}, {NULL}, FLAG_filter_numbers, 0 },
+    { {"random"},{"generator"}, {NULL}, FLAG_random_generator, 0 },
+    { {"random"},{"generieren"},{NULL}, FLAG_random_generator, 0 },
+    { {"zufall"},{"generator"}, {NULL}, FLAG_random_generator, 0 },
+    { {"zufall"},{"generieren"},{NULL}, FLAG_random_generator, 0 },
+    { {"math"},       {"menu"}, {NULL}, FLAG_math_menu, 0 },
+    { {"math"},      {"menue"}, {NULL}, FLAG_math_menu, 0 },
+    { {"math"},    {"rechner"}, {NULL}, FLAG_math_menu, 0 },
+    { {"mathe"},      {"menu"}, {NULL}, FLAG_math_menu, 0 },
+    { {"mathe"},     {"menue"}, {NULL}, FLAG_math_menu, 0 },
+    { {"mathe"},   {"rechner"}, {NULL}, FLAG_math_menu, 0 },
+    { {"quiz"},       {"game"}, {NULL}, FLAG_quiz_game, 0 },
+    { {"quiz"},      {"spiel"}, {NULL}, FLAG_quiz_game, 0 },
+    { {"frage"},      {"game"}, {NULL}, FLAG_quiz_game, 0 },
+    { {"frage"},     {"spiel"}, {NULL}, FLAG_quiz_game, 0 },
+
+    /* bmi / statistics */
+    { {"bmi"},                {NULL}, {NULL}, FLAG_bmi_calculator, 0 },
+    { {"body"},{"mass", "index"},{NULL},FLAG_bmi_calculator, 0 },
+    { {"koerper"},{"mass", "index"},{NULL},FLAG_bmi_calculator, 0 },
+    { {"statistics"},  {"all"}, {NULL}, FLAG_statistics_suite, 0 },
+    { {"statistics"},{"suite"}, {NULL}, FLAG_statistics_suite, 0 },
+    { {"statistics"}, {"alle"}, {NULL}, FLAG_statistics_suite, 0 },
+    { {"statistics"}, {"full"}, {NULL}, FLAG_statistics_suite, 0 },
+    { {"statistics"},{"komplett"},{NULL},FLAG_statistics_suite, 0 },
+    { {"statistik"},   {"all"}, {NULL}, FLAG_statistics_suite, 0 },
+    { {"statistik"}, {"suite"}, {NULL}, FLAG_statistics_suite, 0 },
+    { {"statistik"},  {"alle"}, {NULL}, FLAG_statistics_suite, 0 },
+    { {"statistik"},  {"full"}, {NULL}, FLAG_statistics_suite, 0 },
+    { {"statistik"},{"komplett"},{NULL},FLAG_statistics_suite, 0 },
+
+    /* data structures */
+    { {"linked"},     {"list"}, {NULL}, FLAG_linked_list, 0 },
+    { {"binary"},{"tree", "search"},{NULL},FLAG_binary_search_tree, 0 },
+    { {"binaer"},{"tree", "search"},{NULL},FLAG_binary_search_tree, 0 },
+    { {"tree"},  {"traversal"}, {NULL}, FLAG_tree_traversal, 0 },
+    { {"tree"},    {"inorder"}, {NULL}, FLAG_tree_traversal, 0 },
+    { {"tree"},   {"preorder"}, {NULL}, FLAG_tree_traversal, 0 },
+    { {"tree"},  {"postorder"}, {NULL}, FLAG_tree_traversal, 0 },
+    { {"graph"},       {"bfs"}, {NULL}, FLAG_graph_bfs_dfs, 0 },
+    { {"graph"},       {"dfs"}, {NULL}, FLAG_graph_bfs_dfs, 0 },
+    { {"graph"},  {"traverse"}, {NULL}, FLAG_graph_bfs_dfs, 0 },
+    { {"graph"}, {"durchlauf"}, {NULL}, FLAG_graph_bfs_dfs, 0 },
+    { {"graf"},        {"bfs"}, {NULL}, FLAG_graph_bfs_dfs, 0 },
+    { {"graf"},        {"dfs"}, {NULL}, FLAG_graph_bfs_dfs, 0 },
+    { {"graf"},   {"traverse"}, {NULL}, FLAG_graph_bfs_dfs, 0 },
+    { {"graf"},  {"durchlauf"}, {NULL}, FLAG_graph_bfs_dfs, 0 },
+    { {"n"},         {"queen"}, {NULL}, FLAG_n_queens, 0 },
+    { {"eight"},     {"queen"}, {NULL}, FLAG_n_queens, 0 },
+    { {"acht"},      {"queen"}, {NULL}, FLAG_n_queens, 0 },
+    { {"sudoku"},             {NULL}, {NULL}, FLAG_sudoku, 0 },
+    { {"sodoku"},   {"solver"}, {NULL}, FLAG_sudoku, 0 },
+    { {"levenshtein"},{"distance"},{NULL},FLAG_levenshtein, 0 },
+    { {"edit"},   {"distance"}, {NULL}, FLAG_levenshtein, 0 },
+
+    /* maze */
+    { {"maze"},   {"generate"}, {NULL}, FLAG_maze_generator, 0 },
+    { {"maze"}, {"generieren"}, {NULL}, FLAG_maze_generator, 0 },
+    { {"maze"},   {"erzeugen"}, {NULL}, FLAG_maze_generator, 0 },
+    { {"labyrinth"},{"generate"},{NULL}, FLAG_maze_generator, 0 },
+    { {"labyrinth"},{"generieren"},{NULL},FLAG_maze_generator, 0 },
+    { {"labyrinth"},{"erzeugen"},{NULL},FLAG_maze_generator, 0 },
+    { {"irrgarten"},{"generate"},{NULL},FLAG_maze_generator, 0 },
+    { {"irrgarten"},{"generieren"},{NULL},FLAG_maze_generator, 0 },
+    { {"irrgarten"},{"erzeugen"},{NULL},FLAG_maze_generator, 0 },
+    { {"maze"},      {"solve"}, {NULL}, FLAG_maze_solver, 0 },
+    { {"maze"},     {"solver"}, {NULL}, FLAG_maze_solver, 0 },
+    { {"maze"},     {"loesen"}, {NULL}, FLAG_maze_solver, 0 },
+    { {"maze"},     {"lösung"}, {NULL}, FLAG_maze_solver, 0 },
+    { {"labyrinth"}, {"solve"}, {NULL}, FLAG_maze_solver, 0 },
+    { {"labyrinth"},{"solver"}, {NULL}, FLAG_maze_solver, 0 },
+    { {"labyrinth"},{"loesen"}, {NULL}, FLAG_maze_solver, 0 },
+    { {"labyrinth"},{"lösung"}, {NULL}, FLAG_maze_solver, 0 },
+    { {"irrgarten"}, {"solve"}, {NULL}, FLAG_maze_solver, 0 },
+    { {"irrgarten"},{"solver"}, {NULL}, FLAG_maze_solver, 0 },
+    { {"irrgarten"},{"loesen"}, {NULL}, FLAG_maze_solver, 0 },
+    { {"irrgarten"},{"lösung"}, {NULL}, FLAG_maze_solver, 0 },
+
+    /* math / science */
+    { {"monte"},     {"carlo"}, {NULL}, FLAG_monte_carlo, 0 },
+    { {"pi"},     {"estimate"}, {NULL}, FLAG_monte_carlo, 0 },
+    { {"matrix"}, {"multiply"}, {NULL}, FLAG_matrix_mul, 0 },
+    { {"matrize"},{"multiply"}, {NULL}, FLAG_matrix_mul, 0 },
+    { {"matrix"},{"transpose"}, {NULL}, FLAG_matrix_transpose, 0 },
+    { {"matrix"},{"transponieren"},{NULL},FLAG_matrix_transpose, 0 },
+    { {"numerical"},{"integrate"},{NULL},FLAG_numerical_integration, 0 },
+    { {"numerical"},{"integration"},{NULL},FLAG_numerical_integration, 0 },
+    { {"numerical"},{"integral"},{NULL},FLAG_numerical_integration, 0 },
+    { {"numerisch"},{"integrate"},{NULL},FLAG_numerical_integration, 0 },
+    { {"numerisch"},{"integration"},{NULL},FLAG_numerical_integration, 0 },
+    { {"numerisch"},{"integral"},{NULL},FLAG_numerical_integration, 0 },
+    { {"numeric"},{"integrate"},{NULL},FLAG_numerical_integration, 0 },
+    { {"numeric"},{"integration"},{NULL},FLAG_numerical_integration, 0 },
+    { {"numeric"},{"integral"},{NULL},FLAG_numerical_integration, 0 },
+    { {"complex"},  {"number"}, {NULL}, FLAG_complex_numbers, 0 },
+    { {"komplex"},  {"number"}, {NULL}, FLAG_complex_numbers, 0 },
+    { {"linear"},{"regression"},{NULL}, FLAG_linear_regression, 0 },
+    { {"linear"},  {"regress"}, {NULL}, FLAG_linear_regression, 0 },
+    { {"linreg"},{"regression"},{NULL},FLAG_linear_regression, 0 },
+    { {"linreg"},  {"regress"}, {NULL}, FLAG_linear_regression, 0 },
+    { {"base"},    {"convert"}, {NULL}, FLAG_base_converter, 0 },
+    { {"base"},  {"converter"}, {NULL}, FLAG_base_converter, 0 },
+    { {"base"},  {"umwandeln"}, {NULL}, FLAG_base_converter, 0 },
+    { {"base"},    {"konvert"}, {NULL}, FLAG_base_converter, 0 },
+    { {"basis"},   {"convert"}, {NULL}, FLAG_base_converter, 0 },
+    { {"basis"}, {"converter"}, {NULL}, FLAG_base_converter, 0 },
+    { {"basis"}, {"umwandeln"}, {NULL}, FLAG_base_converter, 0 },
+    { {"basis"},   {"konvert"}, {NULL}, FLAG_base_converter, 0 },
+    { {"frequency"},{"analyze"},{NULL}, FLAG_freq_analysis, 0 },
+    { {"frequency"},{"analyse"},{NULL},FLAG_freq_analysis, 0 },
+    { {"frequency"}, {"count"}, {NULL}, FLAG_freq_analysis, 0 },
+    { {"frequency"},{"zaehle"}, {NULL}, FLAG_freq_analysis, 0 },
+    { {"frequency"},{"analysis"},{NULL},FLAG_freq_analysis, 0 },
+    { {"haeufigkeit"},{"analyze"},{NULL},FLAG_freq_analysis, 0 },
+    { {"haeufigkeit"},{"analyse"},{NULL},FLAG_freq_analysis, 0 },
+    { {"haeufigkeit"},{"count"},{NULL},FLAG_freq_analysis, 0 },
+    { {"haeufigkeit"},{"zaehle"},{NULL},FLAG_freq_analysis, 0 },
+    { {"haeufigkeit"},{"analysis"},{NULL},FLAG_freq_analysis, 0 },
+    { {"frequenz"},{"analyze"}, {NULL}, FLAG_freq_analysis, 0 },
+    { {"frequenz"},{"analyse"}, {NULL}, FLAG_freq_analysis, 0 },
+    { {"frequenz"},  {"count"}, {NULL}, FLAG_freq_analysis, 0 },
+    { {"frequenz"}, {"zaehle"}, {NULL}, FLAG_freq_analysis, 0 },
+    { {"frequenz"},{"analysis"},{NULL}, FLAG_freq_analysis, 0 },
+    { {"freq"},    {"analyze"}, {NULL}, FLAG_freq_analysis, 0 },
+    { {"freq"},    {"analyse"}, {NULL}, FLAG_freq_analysis, 0 },
+    { {"freq"},      {"count"}, {NULL}, FLAG_freq_analysis, 0 },
+    { {"freq"},     {"zaehle"}, {NULL}, FLAG_freq_analysis, 0 },
+    { {"freq"},   {"analysis"}, {NULL}, FLAG_freq_analysis, 0 },
+
+    /* shuffle / random */
+    { {"shuffle"},            {NULL}, {NULL}, FLAG_shuffle, 0 },
+    { {"mischen"},            {NULL}, {NULL}, FLAG_shuffle, 0 },
+    { {"random"},  {"permute"}, {NULL}, FLAG_shuffle, 0 },
+    { {"weighted"}, {"random"}, {NULL}, FLAG_weighted_random, 0 },
+    { {"weighted"}, {"zufall"}, {NULL}, FLAG_weighted_random, 0 },
+    { {"gewichtet"},{"random"}, {NULL}, FLAG_weighted_random, 0 },
+    { {"gewichtet"},{"zufall"}, {NULL}, FLAG_weighted_random, 0 },
+    { {"ascii"},     {"table"}, {NULL}, FLAG_ascii_table, 0 },
+    { {"ascii"},   {"tabelle"}, {NULL}, FLAG_ascii_table, 0 },
+    { {"ascii"},    {"format"}, {NULL}, FLAG_ascii_table, 0 },
+
+    /* tools / apps */
+    { {"password"},   {"card"}, {NULL}, FLAG_password_card, 0 },
+    { {"password"},  {"karte"}, {NULL}, FLAG_password_card, 0 },
+    { {"password"},{"generate"},{NULL}, FLAG_password_card, 0 },
+    { {"password"},{"generator"},{NULL},FLAG_password_card, 0 },
+    { {"passwort"},   {"card"}, {NULL}, FLAG_password_card, 0 },
+    { {"passwort"},  {"karte"}, {NULL}, FLAG_password_card, 0 },
+    { {"passwort"},{"generate"},{NULL},FLAG_password_card, 0 },
+    { {"passwort"},{"generator"},{NULL},FLAG_password_card, 0 },
+    { {"passwd"},     {"card"}, {NULL}, FLAG_password_card, 0 },
+    { {"passwd"},    {"karte"}, {NULL}, FLAG_password_card, 0 },
+    { {"passwd"}, {"generate"}, {NULL}, FLAG_password_card, 0 },
+    { {"passwd"},{"generator"}, {NULL}, FLAG_password_card, 0 },
+    { {"chess"},   {"problem"}, {NULL}, FLAG_chess_problem, 0 },
+    { {"chess"},     {"board"}, {NULL}, FLAG_chess_problem, 0 },
+    { {"chess"},     {"brett"}, {NULL}, FLAG_chess_problem, 0 },
+    { {"chess"},{"exponential"},{NULL}, FLAG_chess_problem, 0 },
+    { {"schach"},  {"problem"}, {NULL}, FLAG_chess_problem, 0 },
+    { {"schach"},    {"board"}, {NULL}, FLAG_chess_problem, 0 },
+    { {"schach"},    {"brett"}, {NULL}, FLAG_chess_problem, 0 },
+    { {"schach"},{"exponential"},{NULL},FLAG_chess_problem, 0 },
+    { {"rice"},    {"problem"}, {NULL}, FLAG_chess_problem, 0 },
+    { {"rice"},      {"board"}, {NULL}, FLAG_chess_problem, 0 },
+    { {"rice"},      {"brett"}, {NULL}, FLAG_chess_problem, 0 },
+    { {"rice"},{"exponential"}, {NULL}, FLAG_chess_problem, 0 },
+    { {"reis"},    {"problem"}, {NULL}, FLAG_chess_problem, 0 },
+    { {"reis"},      {"board"}, {NULL}, FLAG_chess_problem, 0 },
+    { {"reis"},      {"brett"}, {NULL}, FLAG_chess_problem, 0 },
+    { {"reis"},{"exponential"}, {NULL}, FLAG_chess_problem, 0 },
+    { {"repl"},        {"run"}, {NULL}, FLAG_shell_repl, 0 },
+    { {"repl"},    {"execute"}, {NULL}, FLAG_shell_repl, 0 },
+    { {"repl"}, {"ausfuehren"}, {NULL}, FLAG_shell_repl, 0 },
+    { {"repl"},  {"ausführen"}, {NULL}, FLAG_shell_repl, 0 },
+    { {"terminal"},    {"run"}, {NULL}, FLAG_shell_repl, 0 },
+    { {"terminal"},{"execute"}, {NULL}, FLAG_shell_repl, 0 },
+    { {"terminal"},{"ausfuehren"},{NULL},FLAG_shell_repl, 0 },
+    { {"terminal"},{"ausführen"},{NULL},FLAG_shell_repl, 0 },
+    { {"shell"},       {"run"}, {NULL}, FLAG_shell_repl, 0 },
+    { {"shell"},   {"running"}, {NULL}, FLAG_shell_repl, 0 },
+    { {"shell"},   {"execute"}, {NULL}, FLAG_shell_repl, 0 },
+    { {"shell"},   {"command"}, {NULL}, FLAG_shell_repl, 0 },
+    { {"shell"},{"ausfuehren"}, {NULL}, FLAG_shell_repl, 0 },
+    { {"shell"}, {"ausführen"}, {NULL}, FLAG_shell_repl, 0 },
+    { {"shell"},    {"befehl"}, {NULL}, FLAG_shell_repl, 0 },
+    { {"interactive"}, {"run"}, {NULL}, FLAG_shell_repl, 0 },
+    { {"interactive"},{"running"},{NULL},FLAG_shell_repl, 0 },
+    { {"interactive"},{"execute"},{NULL},FLAG_shell_repl, 0 },
+    { {"interactive"},{"command"},{NULL},FLAG_shell_repl, 0 },
+    { {"interactive"},{"ausfuehren"},{NULL},FLAG_shell_repl, 0 },
+    { {"interactive"},{"ausführen"},{NULL},FLAG_shell_repl, 0 },
+    { {"interactive"},{"befehl"},{NULL},FLAG_shell_repl, 0 },
+
+    /* web / SDL / system */
+    { {"webserver"},          {NULL}, {NULL}, FLAG_webserver, 0 },
+    { {"http"},               {NULL}, {NULL}, FLAG_webserver, 0 },
+    { {"web"},      {"server"}, {NULL}, FLAG_webserver, 0 },
+    { {"sdl"},        {"open"}, {NULL}, FLAG_sdl_window, 0 },
+    { {"sdl"},      {"window"}, {NULL}, FLAG_sdl_window, 0 },
+    { {"sdl"},     {"fenster"}, {NULL}, FLAG_sdl_window, 0 },
+    { {"sdl"},       {"pixel"}, {NULL}, FLAG_sdl_window, 0 },
+    { {"sdl"},      {"grafik"}, {NULL}, FLAG_sdl_window, 0 },
+    { {"sdl"},    {"graphics"}, {NULL}, FLAG_sdl_window, 0 },
+    { {"screen"},     {"open"}, {NULL}, FLAG_sdl_window, 0 },
+    { {"screen"},   {"window"}, {NULL}, FLAG_sdl_window, 0 },
+    { {"screen"},  {"fenster"}, {NULL}, FLAG_sdl_window, 0 },
+    { {"screen"},    {"pixel"}, {NULL}, FLAG_sdl_window, 0 },
+    { {"screen"},   {"grafik"}, {NULL}, FLAG_sdl_window, 0 },
+    { {"screen"}, {"graphics"}, {NULL}, FLAG_sdl_window, 0 },
+    { {"bildschirm"}, {"open"}, {NULL}, FLAG_sdl_window, 0 },
+    { {"bildschirm"},{"window"},{NULL}, FLAG_sdl_window, 0 },
+    { {"bildschirm"},{"fenster"},{NULL},FLAG_sdl_window, 0 },
+    { {"bildschirm"},{"pixel"}, {NULL}, FLAG_sdl_window, 0 },
+    { {"bildschirm"},{"grafik"},{NULL},FLAG_sdl_window, 0 },
+    { {"bildschirm"},{"graphics"},{NULL},FLAG_sdl_window, 0 },
+    { {"sdl"},      {"button"}, {NULL}, FLAG_sdl_button, 0 },
+    { {"sdl"},       {"knopf"}, {NULL}, FLAG_sdl_button, 0 },
+    { {"sdl"},       {"click"}, {NULL}, FLAG_sdl_button, 0 },
+    { {"gui"},      {"button"}, {NULL}, FLAG_sdl_button, 0 },
+    { {"gui"},       {"knopf"}, {NULL}, FLAG_sdl_button, 0 },
+    { {"gui"},       {"click"}, {NULL}, FLAG_sdl_button, 0 },
+    { {"gadget"},   {"button"}, {NULL}, FLAG_sdl_button, 0 },
+    { {"gadget"},    {"knopf"}, {NULL}, FLAG_sdl_button, 0 },
+    { {"gadget"},    {"click"}, {NULL}, FLAG_sdl_button, 0 },
+    { {"thread"},             {NULL}, {NULL}, FLAG_thread, 0 },
+    { {"nebenlauf"},          {NULL}, {NULL}, FLAG_thread, 0 },
+    { {"parallel"},    {"run"}, {NULL}, FLAG_thread, 0 },
+    { {"scheduler"},          {NULL}, {NULL}, FLAG_scheduler, 0 },
+    { {"planer"},             {NULL}, {NULL}, FLAG_scheduler, 0 },
+    { {"task"},   {"schedule"}, {NULL}, FLAG_scheduler, 0 },
+    { {"shell"},      {"exec"}, {NULL}, FLAG_shell_exec, 0 },
+    { {"command"},    {"exec"}, {NULL}, FLAG_shell_exec, 0 },
+    { {"command"},     {"run"}, {NULL}, FLAG_shell_exec, 0 },
+    { {"command"},{"ausführen"},{NULL}, FLAG_shell_exec, 0 },
+    { {"command"},{"ausfuehren"},{NULL},FLAG_shell_exec, 0 },
+    { {"befehl"},     {"exec"}, {NULL}, FLAG_shell_exec, 0 },
+    { {"befehl"},      {"run"}, {NULL}, FLAG_shell_exec, 0 },
+    { {"befehl"},{"ausführen"}, {NULL}, FLAG_shell_exec, 0 },
+    { {"befehl"},{"ausfuehren"},{NULL},FLAG_shell_exec, 0 },
+    { {"kommando"},   {"exec"}, {NULL}, FLAG_shell_exec, 0 },
+    { {"kommando"},    {"run"}, {NULL}, FLAG_shell_exec, 0 },
+    { {"kommando"},{"ausführen"},{NULL},FLAG_shell_exec, 0 },
+    { {"kommando"},{"ausfuehren"},{NULL},FLAG_shell_exec, 0 },
+
+    /* json / crypto / bluetooth */
+    { {"json"},               {NULL}, {NULL}, FLAG_json, 0 },
+    { {"javascript"},         {NULL}, {NULL}, FLAG_json, 0 },
+    { {"parse"},      {"json"}, {NULL}, FLAG_json, 0 },
+    { {"crypto"},             {NULL}, {NULL}, FLAG_crypto, 0 },
+    { {"encrypt"},            {NULL}, {NULL}, FLAG_crypto, 0 },
+    { {"decrypt"},            {NULL}, {NULL}, FLAG_crypto, 0 },
+    { {"verschlüssel"},       {NULL}, {NULL}, FLAG_crypto, 0 },
+    { {"chiffre"},            {NULL}, {NULL}, FLAG_crypto, 0 },
+    { {"cipher"},             {NULL}, {NULL}, FLAG_crypto, 0 },
+    { {"bluetooth"},          {NULL}, {NULL}, FLAG_bluetooth_ble, 0 },
+    { {"ble"},                {NULL}, {NULL}, FLAG_bluetooth_ble, 0 },
+    { {"bluetooth"},   {"low"}, {NULL}, FLAG_bluetooth_ble, 0 },
+
+    /* serial / GPIO / GPS */
+    { {"serial"},     {"port"}, {NULL}, FLAG_serial_rs232, 0 },
+    { {"serial"},{"schnittstelle"},{NULL},FLAG_serial_rs232, 0 },
+    { {"serial"},{"interface"}, {NULL}, FLAG_serial_rs232, 0 },
+    { {"rs232"},      {"port"}, {NULL}, FLAG_serial_rs232, 0 },
+    { {"rs232"},{"schnittstelle"},{NULL},FLAG_serial_rs232, 0 },
+    { {"rs232"}, {"interface"}, {NULL}, FLAG_serial_rs232, 0 },
+    { {"seriell"},    {"port"}, {NULL}, FLAG_serial_rs232, 0 },
+    { {"seriell"},{"schnittstelle"},{NULL},FLAG_serial_rs232, 0 },
+    { {"seriell"},{"interface"},{NULL},FLAG_serial_rs232, 0 },
+    { {"gpio"},               {NULL}, {NULL}, FLAG_gpio, 0 },
+    { {"general"}, {"purpose"}, {NULL}, FLAG_gpio, 0 },
+    { {"gps"},                {NULL}, {NULL}, FLAG_gps, 0 },
+    { {"navigation"},         {NULL}, {NULL}, FLAG_gps, 0 },
+    { {"global"}, {"position"}, {NULL}, FLAG_gps, 0 },
+
+    /* timer / sound / joystick / mouse */
+    { {"date"},       {"time"}, {NULL}, FLAG_timer_date, 0 },
+    { {"date"},       {"zeit"}, {NULL}, FLAG_timer_date, 0 },
+    { {"date"},        {"uhr"}, {NULL}, FLAG_timer_date, 0 },
+    { {"date"},      {"clock"}, {NULL}, FLAG_timer_date, 0 },
+    { {"datum"},      {"time"}, {NULL}, FLAG_timer_date, 0 },
+    { {"datum"},      {"zeit"}, {NULL}, FLAG_timer_date, 0 },
+    { {"datum"},       {"uhr"}, {NULL}, FLAG_timer_date, 0 },
+    { {"datum"},     {"clock"}, {NULL}, FLAG_timer_date, 0 },
+    { {"kalender"},   {"time"}, {NULL}, FLAG_timer_date, 0 },
+    { {"kalender"},   {"zeit"}, {NULL}, FLAG_timer_date, 0 },
+    { {"kalender"},    {"uhr"}, {NULL}, FLAG_timer_date, 0 },
+    { {"kalender"},  {"clock"}, {NULL}, FLAG_timer_date, 0 },
+    { {"calendar"},   {"time"}, {NULL}, FLAG_timer_date, 0 },
+    { {"calendar"},   {"zeit"}, {NULL}, FLAG_timer_date, 0 },
+    { {"calendar"},    {"uhr"}, {NULL}, FLAG_timer_date, 0 },
+    { {"calendar"},  {"clock"}, {NULL}, FLAG_timer_date, 0 },
+    { {"sdl"},        {"play"}, {NULL}, FLAG_sdl_sound, 0 },
+    { {"sdl"},     {"spielen"}, {NULL}, FLAG_sdl_sound, 0 },
+    { {"sdl"},   {"abspielen"}, {NULL}, FLAG_sdl_sound, 0 },
+    { {"sdl"},  {"wiedergabe"}, {NULL}, FLAG_sdl_sound, 0 },
+    { {"sound"},      {"play"}, {NULL}, FLAG_sdl_sound, 0 },
+    { {"sound"},   {"spielen"}, {NULL}, FLAG_sdl_sound, 0 },
+    { {"sound"}, {"abspielen"}, {NULL}, FLAG_sdl_sound, 0 },
+    { {"sound"},{"wiedergabe"}, {NULL}, FLAG_sdl_sound, 0 },
+    { {"audio"},      {"play"}, {NULL}, FLAG_sdl_sound, 0 },
+    { {"audio"},   {"spielen"}, {NULL}, FLAG_sdl_sound, 0 },
+    { {"audio"}, {"abspielen"}, {NULL}, FLAG_sdl_sound, 0 },
+    { {"audio"},{"wiedergabe"}, {NULL}, FLAG_sdl_sound, 0 },
+    { {"ton"},        {"play"}, {NULL}, FLAG_sdl_sound, 0 },
+    { {"ton"},     {"spielen"}, {NULL}, FLAG_sdl_sound, 0 },
+    { {"ton"},   {"abspielen"}, {NULL}, FLAG_sdl_sound, 0 },
+    { {"ton"},  {"wiedergabe"}, {NULL}, FLAG_sdl_sound, 0 },
+    { {"sdl"},    {"joystick"}, {NULL}, FLAG_sdl_joystick, 0 },
+    { {"sdl"},        {"axis"}, {NULL}, FLAG_sdl_joystick, 0 },
+    { {"sdl"},       {"achse"}, {NULL}, FLAG_sdl_joystick, 0 },
+    { {"sdl"},      {"button"}, {NULL}, FLAG_sdl_joystick, 0 },
+    { {"gamepad"},{"joystick"}, {NULL}, FLAG_sdl_joystick, 0 },
+    { {"gamepad"},    {"axis"}, {NULL}, FLAG_sdl_joystick, 0 },
+    { {"gamepad"},   {"achse"}, {NULL}, FLAG_sdl_joystick, 0 },
+    { {"gamepad"},  {"button"}, {NULL}, FLAG_sdl_joystick, 0 },
+    { {"controller"},{"joystick"},{NULL},FLAG_sdl_joystick, 0 },
+    { {"controller"}, {"axis"}, {NULL}, FLAG_sdl_joystick, 0 },
+    { {"controller"},{"achse"}, {NULL}, FLAG_sdl_joystick, 0 },
+    { {"controller"},{"button"},{NULL}, FLAG_sdl_joystick, 0 },
+    { {"sdl"},       {"mouse"}, {NULL}, FLAG_sdl_mouse, 0 },
+    { {"sdl"},        {"maus"}, {NULL}, FLAG_sdl_mouse, 0 },
+    { {"sdl"},     {"pointer"}, {NULL}, FLAG_sdl_mouse, 0 },
+    { {"sdl"},      {"cursor"}, {NULL}, FLAG_sdl_mouse, 0 },
+    { {"mouse"},     {"mouse"}, {NULL}, FLAG_sdl_mouse, 0 },
+    { {"mouse"},      {"maus"}, {NULL}, FLAG_sdl_mouse, 0 },
+    { {"mouse"},   {"pointer"}, {NULL}, FLAG_sdl_mouse, 0 },
+    { {"mouse"},    {"cursor"}, {NULL}, FLAG_sdl_mouse, 0 },
+    { {"maus"},      {"mouse"}, {NULL}, FLAG_sdl_mouse, 0 },
+    { {"maus"},       {"maus"}, {NULL}, FLAG_sdl_mouse, 0 },
+    { {"maus"},    {"pointer"}, {NULL}, FLAG_sdl_mouse, 0 },
+    { {"maus"},     {"cursor"}, {NULL}, FLAG_sdl_mouse, 0 },
+
+    /* fractal / cluster / misc */
+    { {"fractal"},            {NULL}, {NULL}, FLAG_fractal, 0 },
+    { {"mandelbrot"},         {NULL}, {NULL}, FLAG_fractal, 0 },
+    { {"julia"},              {NULL}, {NULL}, FLAG_fractal, 0 },
+    { {"fraktal"},     {"set"}, {NULL}, FLAG_fractal, 0 },
+    { {"cluster"}, {"compute"}, {NULL}, FLAG_cluster_3x1, 0 },
+    { {"cluster"}, {"rechnen"}, {NULL}, FLAG_cluster_3x1, 0 },
+    { {"cluster"},     {"3x1"}, {NULL}, FLAG_cluster_3x1, 0 },
+    { {"cluster"},  {"arbeit"}, {NULL}, FLAG_cluster_3x1, 0 },
+    { {"worker"},  {"compute"}, {NULL}, FLAG_cluster_3x1, 0 },
+    { {"worker"},  {"rechnen"}, {NULL}, FLAG_cluster_3x1, 0 },
+    { {"worker"},      {"3x1"}, {NULL}, FLAG_cluster_3x1, 0 },
+    { {"worker"},   {"arbeit"}, {NULL}, FLAG_cluster_3x1, 0 },
+    { {"verteilt"},{"compute"}, {NULL}, FLAG_cluster_3x1, 0 },
+    { {"verteilt"},{"rechnen"}, {NULL}, FLAG_cluster_3x1, 0 },
+    { {"verteilt"},    {"3x1"}, {NULL}, FLAG_cluster_3x1, 0 },
+    { {"verteilt"}, {"arbeit"}, {NULL}, FLAG_cluster_3x1, 0 },
+    { {"distributed"},{"compute"},{NULL},FLAG_cluster_3x1, 0 },
+    { {"distributed"},{"rechnen"},{NULL},FLAG_cluster_3x1, 0 },
+    { {"distributed"}, {"3x1"}, {NULL}, FLAG_cluster_3x1, 0 },
+    { {"distributed"},{"arbeit"},{NULL},FLAG_cluster_3x1, 0 },
+    { {"reload"},             {NULL}, {NULL}, FLAG_reload, 0 },
+    { {"module"},             {NULL}, {NULL}, FLAG_reload, 0 },
+    { {"hot"},        {"swap"}, {NULL}, FLAG_reload, 0 },
+    { {"neu"},       {"laden"}, {NULL}, FLAG_reload, 0 },
+    { {"coordinate"},   {"xy"}, {NULL}, FLAG_coordinate_grid, 0 },
+    { {"coordinate"},   {"2d"}, {NULL}, FLAG_coordinate_grid, 0 },
+    { {"coordinate"},{"position"},{NULL},FLAG_coordinate_grid, 0 },
+    { {"coordinate"},{"raster"},{NULL},FLAG_coordinate_grid, 0 },
+    { {"koordinate"},   {"xy"}, {NULL}, FLAG_coordinate_grid, 0 },
+    { {"koordinate"},   {"2d"}, {NULL}, FLAG_coordinate_grid, 0 },
+    { {"koordinate"},{"position"},{NULL},FLAG_coordinate_grid, 0 },
+    { {"koordinate"},{"raster"},{NULL},FLAG_coordinate_grid, 0 },
+    { {"grid"},         {"xy"}, {NULL}, FLAG_coordinate_grid, 0 },
+    { {"grid"},         {"2d"}, {NULL}, FLAG_coordinate_grid, 0 },
+    { {"grid"},   {"position"}, {NULL}, FLAG_coordinate_grid, 0 },
+    { {"grid"},     {"raster"}, {NULL}, FLAG_coordinate_grid, 0 },
+    { {"gitter"},       {"xy"}, {NULL}, FLAG_coordinate_grid, 0 },
+    { {"gitter"},       {"2d"}, {NULL}, FLAG_coordinate_grid, 0 },
+    { {"gitter"}, {"position"}, {NULL}, FLAG_coordinate_grid, 0 },
+    { {"gitter"},   {"raster"}, {NULL}, FLAG_coordinate_grid, 0 },
+    { {"turmite"},            {NULL}, {NULL}, FLAG_turmite, 0 },
+    { {"turmite"},     {"ant"}, {NULL}, FLAG_turmite, 0 },
+    { {"crossword"},          {NULL}, {NULL}, FLAG_crossword, 0 },
+    { {"kreuzwort"},          {NULL}, {NULL}, FLAG_crossword, 0 },
+    { {"rätsel"},             {NULL}, {NULL}, FLAG_crossword, 0 },
+    { {"word"},     {"puzzle"}, {NULL}, FLAG_crossword, 0 },
+    { {"linter"},             {NULL}, {NULL}, FLAG_linter, 0 },
+    { {"lint"},               {NULL}, {NULL}, FLAG_linter, 0 },
+    { {"code"},      {"check"}, {NULL}, FLAG_linter, 0 },
+    { {"static"},  {"analyze"}, {NULL}, FLAG_linter, 0 },
+
+    /* small emitters */
+    { {"hello"},     {"world"}, {NULL}, FLAG_hello_world, 0 },
+    { {"string"},     {"find"}, {"max", "largest"}, FLAG_string_find, 0 },
+    { {"string"},    {"split"}, {NULL}, FLAG_string_split, 0 },
+    { {"text"},      {"split"}, {NULL}, FLAG_string_split, 0 },
+    { {"switch"},             {NULL}, {"string"}, FLAG_switch_demo, 0 },
+    { {"type"},    {"convert"}, {NULL}, FLAG_type_convert, 0 },
+    { {"type"}, {"conversion"}, {NULL}, FLAG_type_convert, 0 },
+    { {"type"},  {"umwandeln"}, {NULL}, FLAG_type_convert, 0 },
+    { {"type"},       {"cast"}, {NULL}, FLAG_type_convert, 0 },
+    { {"factorial"},  {"loop"}, {NULL}, FLAG_iterative_factorial, 0 },
+    { {"factorial"},{"iterative"},{NULL},FLAG_iterative_factorial, 0 },
+    { {"factorial"},{"schleife"},{NULL},FLAG_iterative_factorial, 0 },
+    { {"factorial"}, {"while"}, {NULL}, FLAG_iterative_factorial, 0 },
+    { {"fakult"},     {"loop"}, {NULL}, FLAG_iterative_factorial, 0 },
+    { {"fakult"},{"iterative"}, {NULL}, FLAG_iterative_factorial, 0 },
+    { {"fakult"}, {"schleife"}, {NULL}, FLAG_iterative_factorial, 0 },
+    { {"fakult"},    {"while"}, {NULL}, FLAG_iterative_factorial, 0 },
+    { {"random"},     {"walk"}, {NULL}, FLAG_random_walk, 0 },
+    { {"bar"},       {"chart"}, {NULL}, FLAG_bar_chart, 0 },
+    { {"bar"},       {"graph"}, {NULL}, FLAG_bar_chart, 0 },
+    { {"bar"},    {"diagramm"}, {NULL}, FLAG_bar_chart, 0 },
+    { {"hanoi"},              {NULL}, {NULL}, FLAG_hanoi_tower, 0 },
+    { {"tower"},     {"hanoi"}, {NULL}, FLAG_hanoi_tower, 0 },
+    { {"turm"},      {"hanoi"}, {NULL}, FLAG_hanoi_tower, 0 },
+    { {"ascii"},       {"art"}, {NULL}, FLAG_ascii_art, 0 },
+    { {"number"},     {"word"}, {NULL}, FLAG_number_to_words, 0 },
+    { {"number"},    {"words"}, {NULL}, FLAG_number_to_words, 0 },
+    { {"number"},     {"wort"}, {NULL}, FLAG_number_to_words, 0 },
+    { {"number"},   {"worter"}, {NULL}, FLAG_number_to_words, 0 },
+    { {"number"},     {"text"}, {NULL}, FLAG_number_to_words, 0 },
+    { {"zahl"},       {"word"}, {NULL}, FLAG_number_to_words, 0 },
+    { {"zahl"},      {"words"}, {NULL}, FLAG_number_to_words, 0 },
+    { {"zahl"},       {"wort"}, {NULL}, FLAG_number_to_words, 0 },
+    { {"zahl"},     {"worter"}, {NULL}, FLAG_number_to_words, 0 },
+    { {"zahl"},       {"text"}, {NULL}, FLAG_number_to_words, 0 },
+    { {"temperature"},{"table"},{NULL}, FLAG_temperature_table, 0 },
+    { {"temperature"},{"tabelle"},{NULL},FLAG_temperature_table, 0 },
+    { {"temperatur"},{"table"}, {NULL}, FLAG_temperature_table, 0 },
+    { {"temperatur"},{"tabelle"},{NULL},FLAG_temperature_table, 0 },
+    { {"loop"},       {"demo"}, {NULL}, FLAG_loop_demo, 0 },
+    { {"loop"},   {"beispiel"}, {NULL}, FLAG_loop_demo, 0 },
+    { {"loop"},    {"example"}, {NULL}, FLAG_loop_demo, 0 },
+    { {"time"},       {"demo"}, {NULL}, FLAG_time, 0 },
+    { {"time"},   {"beispiel"}, {NULL}, FLAG_time, 0 },
+    { {"time"},    {"example"}, {NULL}, FLAG_time, 0 },
+    { {"time"},    {"current"}, {NULL}, FLAG_time, 0 },
+    { {"zeit"},       {"demo"}, {NULL}, FLAG_time, 0 },
+    { {"zeit"},   {"beispiel"}, {NULL}, FLAG_time, 0 },
+    { {"zeit"},    {"example"}, {NULL}, FLAG_time, 0 },
+    { {"zeit"},    {"current"}, {NULL}, FLAG_time, 0 },
+    { {"uhr"},        {"demo"}, {NULL}, FLAG_time, 0 },
+    { {"uhr"},    {"beispiel"}, {NULL}, FLAG_time, 0 },
+    { {"uhr"},     {"example"}, {NULL}, FLAG_time, 0 },
+    { {"uhr"},     {"current"}, {NULL}, FLAG_time, 0 },
+    { {"clock"},      {"demo"}, {NULL}, FLAG_time, 0 },
+    { {"clock"},  {"beispiel"}, {NULL}, FLAG_time, 0 },
+    { {"clock"},   {"example"}, {NULL}, FLAG_time, 0 },
+    { {"clock"},   {"current"}, {NULL}, FLAG_time, 0 },
+    { {"shell"},       {"arg"}, {NULL}, FLAG_shell_args, 0 },
+    { {"shell"}, {"parameter"}, {NULL}, FLAG_shell_args, 0 },
+    { {"shell"},   {"command"}, {NULL}, FLAG_shell_args, 0 },
+    { {"shell"},    {"befehl"}, {NULL}, FLAG_shell_args, 0 },
+};
+
+#define PATTERN_TABLE_SIZE (sizeof(pattern_table) / sizeof(pattern_table[0]))
+
+static int match_pattern_entry(const char *buf, const PatternTableEntry *e) {
+    if (e->any_of[0] == NULL) return 0;
+    int any_match = 0;
+    for (int i = 0; i < PATTERN_MAX_KEYWORDS && e->any_of[i]; i++) {
+        if (_has_word_lowered(buf, e->any_of[i])) { any_match = 1; break; }
+    }
+    if (!any_match) return 0;
+    if (e->must_have[0] != NULL) {
+        for (int i = 0; i < PATTERN_MAX_KEYWORDS && e->must_have[i]; i++) {
+            if (!_has_word_lowered(buf, e->must_have[i])) return 0;
+        }
+    }
+    for (int i = 0; i < PATTERN_MAX_EXCLUDES && e->excludes[i]; i++) {
+        if (_has_word_lowered(buf, e->excludes[i])) return 0;
+    }
+    return 1;
+}
+
+static void match_pattern_table(const char *buf, TaskProfile *task) {
+    for (size_t i = 0; i < PATTERN_TABLE_SIZE; i++) {
+        const PatternTableEntry *e = &pattern_table[i];
+        if (match_pattern_entry(buf, e)) {
+            TF_SET(task, e->flag);
+            if (e->clear_algorithm) TF_CLR(task, FLAG_algorithm);
+        }
+    }
+}
+
+/* ── Helper functions for complex patterns ────────────────────────────── */
+
+static void detect_sum_range_pattern(const char *prompt, const char *buf, TaskProfile *task) {
     if ((_has_word_lowered(buf, "sum") || _has_word_lowered(buf, "summe")) && _has_word_lowered(buf, "to") && TF_ISSET(task, FLAG_literals)) {
         TF_SET(task, FLAG_sum_range);
         if (task->num_literals >= 1) task->sum_range_n = task->literals[0];
@@ -1035,7 +1724,6 @@ static void parse_task_detect_enhanced_patterns(const char *prompt, const char *
         TF_CLR(task, FLAG_algorithm);
         TF_CLR(task, FLAG_operation);
     }
-
     if ((_has_word_lowered(buf, "count") || _has_word_lowered(buf, "z\u00e4hle") || _has_word_lowered(buf, "zaehle"))
         && _has_word_lowered(buf, "to") && TF_ISSET(task, FLAG_literals)) {
         TF_SET(task, FLAG_sum_range);
@@ -1045,7 +1733,9 @@ static void parse_task_detect_enhanced_patterns(const char *prompt, const char *
         TF_CLR(task, FLAG_algorithm);
         TF_CLR(task, FLAG_operation);
     }
+}
 
+static void detect_print_even_pattern(const char *buf, TaskProfile *task) {
     if ((_has_word_lowered(buf, "even") || _has_word_lowered(buf, "gerade")) && TF_ISSET(task, FLAG_literals)
         && !_has_word_lowered(buf, "ungerade") && !_has_word_lowered(buf, "odd")) {
         TF_SET(task, FLAG_print_even);
@@ -1053,44 +1743,56 @@ static void parse_task_detect_enhanced_patterns(const char *prompt, const char *
         else task->print_even_n = 100;
         TF_CLR(task, FLAG_algorithm);
     }
+}
 
+static void detect_find_max_pattern(const char *buf, TaskProfile *task) {
     if (_has_word_lowered(buf, "find") && (_has_word_lowered(buf, "max") || _has_word_lowered(buf, "largest") || _has_word_lowered(buf, "greatest") || _has_word_lowered(buf, "gr\u00f6\u00dft"))) {
         TF_SET(task, FLAG_find_max);
         if (task->num_literals >= 1) task->find_max_count = task->literals[0];
-        else task->find_max_count = 5;
+        else task->find_max_count = DEFAULT_ELEMENT_COUNT;
         TF_SET(task, FLAG_input);
         TF_CLR(task, FLAG_algorithm);
     }
+}
 
+static void detect_fib_seq_pattern(const char *buf, TaskProfile *task) {
     if (_has_word_lowered(buf, "fib") && TF_ISSET(task, FLAG_literals)) {
         TF_SET(task, FLAG_fib_seq);
         if (task->num_literals >= 1) task->fib_seq_n = task->literals[0];
         else task->fib_seq_n = 10;
         TF_CLR(task, FLAG_algorithm);
     }
+}
 
+static void detect_countdown_pattern(const char *buf, TaskProfile *task) {
     if ((_has_word_lowered(buf, "countdown") || strstr(buf, "count down")) && TF_ISSET(task, FLAG_literals)) {
         TF_SET(task, FLAG_countdown_from);
         if (task->num_literals >= 1) task->countdown_start = task->literals[0];
         else task->countdown_start = 10;
         TF_CLR(task, FLAG_algorithm);
     }
+}
 
+static void detect_input_sort_pattern(const char *buf, TaskProfile *task) {
     if (TF_ISSET(task, FLAG_sort) && (TF_ISSET(task, FLAG_input) || TF_ISSET(task, FLAG_descending))) {
         TF_SET(task, FLAG_input_sort);
         if (task->input_count > 0) task->input_sort_count = task->input_count;
         else if (task->num_literals >= 1) task->input_sort_count = task->literals[0];
-        else task->input_sort_count = 5;
+        else task->input_sort_count = DEFAULT_ELEMENT_COUNT;
         TF_CLR(task, FLAG_algorithm);
     }
+}
 
+static void detect_median_pattern(const char *buf, TaskProfile *task) {
     if (TF_ISSET(task, FLAG_median) && TF_ISSET(task, FLAG_input)) {
         if (task->input_count > 0) task->median_count = task->input_count;
         else if (task->num_literals >= 1) task->median_count = task->literals[0];
-        else task->median_count = 5;
+        else task->median_count = DEFAULT_ELEMENT_COUNT;
         TF_CLR(task, FLAG_algorithm);
     }
+}
 
+static void detect_primes_pattern(const char *prompt, const char *buf, TaskProfile *task) {
     if (TF_ISSET(task, FLAG_primes) && !TF_ISSET(task, FLAG_input) && task->num_literals == 0) {
         if (_has_word_lowered(buf, "first") || _has_word_lowered(buf, "erste") || _has_word_lowered(buf, "ersten")) {
             int nums2[MAX_NUMS];
@@ -1103,6 +1805,9 @@ static void parse_task_detect_enhanced_patterns(const char *prompt, const char *
         int n2 = extract_numbers(prompt, nums2, MAX_NUMS);
         if (n2 > 0) { task->num_literals = n2; TF_SET(task, FLAG_literals); task->literals[0] = nums2[0]; }
     }
+}
+
+static void detect_fib_first_pattern(const char *prompt, const char *buf, TaskProfile *task) {
     if (TF_ISSET(task, FLAG_fib_seq) && task->num_literals == 0 &&
         (_has_word_lowered(buf, "first") || _has_word_lowered(buf, "erste") || _has_word_lowered(buf, "ersten"))) {
         int nums2[MAX_NUMS];
@@ -1111,14 +1816,18 @@ static void parse_task_detect_enhanced_patterns(const char *prompt, const char *
         if (task->num_literals >= 1) task->fib_seq_n = task->literals[0];
         else task->fib_seq_n = 10;
     }
+}
 
+static void detect_from_sum_pattern(const char *buf, TaskProfile *task) {
     if (_has_word_lowered(buf, "from") || _has_word_lowered(buf, "von")) {
         if (TF_ISSET(task, FLAG_sum_range) && task->num_literals >= 2) {
             TF_SET(task, FLAG_sum_range);
             task->sum_range_n = task->literals[1];
         }
     }
+}
 
+static void detect_countdown_from_pattern(const char *prompt, const char *buf, TaskProfile *task) {
     if (TF_ISSET(task, FLAG_countdown_from) && task->num_literals == 0 &&
         (_has_word_lowered(buf, "up") || _has_word_lowered(buf, "bis"))) {
         int nums2[MAX_NUMS];
@@ -1127,389 +1836,16 @@ static void parse_task_detect_enhanced_patterns(const char *prompt, const char *
         if (task->num_literals >= 1) task->countdown_start = task->literals[0];
         else task->countdown_start = 10;
     }
+}
 
+static void detect_input_fact_pattern(TaskProfile *task) {
     if (TF_ISSET(task, FLAG_input) && TF_ISSET(task, FLAG_factorial)) {
         TF_SET(task, FLAG_input_fact);
         TF_CLR(task, FLAG_algorithm);
     }
+}
 
-    if (_has_word_lowered(buf, "array") && _has_word_lowered(buf, "reverse")) {
-        TF_SET(task, FLAG_array_reverse);
-        TF_CLR(task, FLAG_algorithm);
-    }
-    if (_has_word_lowered(buf, "reverse") && (_has_word_lowered(buf, "element") || _has_word_lowered(buf, "list") || _has_word_lowered(buf, "array") || _has_word_lowered(buf, "order") || _has_word_lowered(buf, "reihenfolge"))) {
-        TF_SET(task, FLAG_array_reverse);
-        TF_CLR(task, FLAG_algorithm);
-    }
-
-    if ((_has_word_lowered(buf, "array") && (_has_word_lowered(buf, "find") || _has_word_lowered(buf, "search") || _has_word_lowered(buf, "suche"))) || (_has_word_lowered(buf, "search") && _has_word_lowered(buf, "array"))) {
-        TF_SET(task, FLAG_array_find);
-        TF_CLR(task, FLAG_algorithm);
-    }
-
-    if (_has_word_lowered(buf, "array") && _has_word_lowered(buf, "assign")) {
-        TF_SET(task, FLAG_array_assign);
-        TF_CLR(task, FLAG_algorithm);
-    }
-
-    if (_has_word_lowered(buf, "array") && (_has_word_lowered(buf, "access") || _has_word_lowered(buf, "read") || _has_word_lowered(buf, "get") || _has_word_lowered(buf, "element") || _has_word_lowered(buf, "index"))) {
-        TF_SET(task, FLAG_array_access);
-        TF_CLR(task, FLAG_algorithm);
-    }
-
-    if (_has_word_lowered(buf, "array") && (_has_word_lowered(buf, "write") || _has_word_lowered(buf, "set") || _has_word_lowered(buf, "store"))) {
-        TF_SET(task, FLAG_array_write);
-        TF_CLR(task, FLAG_algorithm);
-    }
-
-    if ((_has_word_lowered(buf, "array") && (_has_word_lowered(buf, "min") || _has_word_lowered(buf, "max") || _has_word_lowered(buf, "average") || _has_word_lowered(buf, "vmath"))) || (_has_word_lowered(buf, "stat") && _has_word_lowered(buf, "array"))) {
-        TF_SET(task, FLAG_array_vmath);
-        TF_CLR(task, FLAG_algorithm);
-    }
-
-    if (_has_word_lowered(buf, "read") && _has_word_lowered(buf, "file")) {
-        TF_SET(task, FLAG_read_file);
-        TF_CLR(task, FLAG_algorithm);
-    }
-
-    if (_has_word_lowered(buf, "write") && _has_word_lowered(buf, "file")) {
-        TF_SET(task, FLAG_write_file);
-        TF_CLR(task, FLAG_algorithm);
-    }
-
-    if (_has_word_lowered(buf, "string") && (_has_word_lowered(buf, "to") || _has_word_lowered(buf, "parse") || _has_word_lowered(buf, "convert")) && _has_word_lowered(buf, "number")) {
-        TF_SET(task, FLAG_string_to_num);
-        TF_CLR(task, FLAG_algorithm);
-    }
-
-    if (_has_word_lowered(buf, "min") && _has_word_lowered(buf, "max") && _has_word_lowered(buf, "array")) {
-        TF_SET(task, FLAG_array_min_max);
-        TF_CLR(task, FLAG_algorithm);
-    }
-
-    if (_has_word_lowered(buf, "bool") || strstr(buf, "boolean")) {
-        TF_SET(task, FLAG_bool_demo);
-        TF_CLR(task, FLAG_algorithm);
-    }
-
-    if ((_has_word_lowered(buf, "bit") || _has_word_lowered(buf, "check")) && (_has_word_lowered(buf, "check") || _has_word_lowered(buf, "set") || _has_word_lowered(buf, "clear"))) {
-        TF_SET(task, FLAG_bit_check);
-        TF_CLR(task, FLAG_algorithm);
-    }
-
-    if ((_has_word_lowered(buf, "leap") || _has_word_lowered(buf, "schalt")) && (_has_word_lowered(buf, "year") || _has_word_lowered(buf, "jahr"))) {
-        TF_SET(task, FLAG_leap_year);
-        TF_CLR(task, FLAG_algorithm);
-    }
-
-    if ((_has_word_lowered(buf, "celsius") || _has_word_lowered(buf, "fahrenheit") || _has_word_lowered(buf, "temperature")) && (_has_word_lowered(buf, "convert") || _has_word_lowered(buf, "umrechnen") || _has_word_lowered(buf, "to"))) {
-        TF_SET(task, FLAG_temp_convert);
-        TF_CLR(task, FLAG_algorithm);
-    }
-
-    if ((_has_word_lowered(buf, "circle") || _has_word_lowered(buf, "kreis")) && (_has_word_lowered(buf, "area") || _has_word_lowered(buf, "fl\u00e4che") || _has_word_lowered(buf, "flaeche"))) {
-        TF_SET(task, FLAG_circle_area);
-        TF_CLR(task, FLAG_algorithm);
-    }
-
-    if (_has_word_lowered(buf, "palindrome") || (_has_word_lowered(buf, "reverse") && _has_word_lowered(buf, "number")))
-        TF_SET(task, FLAG_palindrome);
-
-    if (_has_word_lowered(buf, "lcm") || (_has_word_lowered(buf, "least") && _has_word_lowered(buf, "multiple")))
-        TF_SET(task, FLAG_lcm);
-
-    if (_has_word_lowered(buf, "collatz") || (_has_word_lowered(buf, "3n") && _has_word_lowered(buf, "1")))
-        TF_SET(task, FLAG_collatz);
-
-    if (_has_word_lowered(buf, "sum") && _has_word_lowered(buf, "digit"))
-        TF_SET(task, FLAG_sum_of_digits);
-
-    if (_has_word_lowered(buf, "reverse") && (_has_word_lowered(buf, "string") || _has_word_lowered(buf, "text") || _has_word_lowered(buf, "wort")))
-        TF_SET(task, FLAG_reverse_string);
-
-    if (_has_word_lowered(buf, "armstrong"))
-        TF_SET(task, FLAG_armstrong);
-
-    if ((_has_word_lowered(buf, "perfect") || _has_word_lowered(buf, "vollkommen")) && _has_word_lowered(buf, "number"))
-        TF_SET(task, FLAG_perfect_number);
-
-    if (_has_word_lowered(buf, "vowel") || _has_word_lowered(buf, "vokale") || _has_word_lowered(buf, "selbstlaut"))
-        TF_SET(task, FLAG_count_vowels);
-
-    if (_has_word_lowered(buf, "anagram"))
-        TF_SET(task, FLAG_anagram_check);
-
-    if ((_has_word_lowered(buf, "string") || _has_word_lowered(buf, "zeichen") || _has_word_lowered(buf, "text")) && _has_word_lowered(buf, "upper"))
-        TF_SET(task, FLAG_string_to_upper);
-
-    if ((_has_word_lowered(buf, "string") || _has_word_lowered(buf, "zeichen") || _has_word_lowered(buf, "text")) && _has_word_lowered(buf, "lower"))
-        TF_SET(task, FLAG_string_to_lower);
-
-    if (_has_word_lowered(buf, "caesar") || (_has_word_lowered(buf, "shift") && _has_word_lowered(buf, "cipher")))
-        TF_SET(task, FLAG_caesar_cipher);
-
-    if (_has_word_lowered(buf, "palindrome") && (_has_word_lowered(buf, "string") || _has_word_lowered(buf, "text") || _has_word_lowered(buf, "wort")))
-        TF_SET(task, FLAG_palindrome_string);
-
-    if (_has_word_lowered(buf, "bubble") && _has_word_lowered(buf, "sort"))
-        TF_SET(task, FLAG_bubble_sort);
-
-    if (_has_word_lowered(buf, "binary") && _has_word_lowered(buf, "search") && !_has_word_lowered(buf, "tree"))
-        TF_SET(task, FLAG_binary_search);
-
-    if (_has_word_lowered(buf, "square") && _has_word_lowered(buf, "root"))
-        TF_SET(task, FLAG_square_root);
-
-    if (_has_word_lowered(buf, "prime") && (_has_word_lowered(buf, "factor") || _has_word_lowered(buf, "teil")))
-        TF_SET(task, FLAG_prime_factorization);
-
-    if (_has_word_lowered(buf, "standard") && _has_word_lowered(buf, "deviation"))
-        TF_SET(task, FLAG_standard_deviation);
-
-    if (_has_word_lowered(buf, "compound") && _has_word_lowered(buf, "interest"))
-        TF_SET(task, FLAG_compound_interest);
-
-    if (_has_word_lowered(buf, "binary") && (_has_word_lowered(buf, "decimal") || _has_word_lowered(buf, "convert") || _has_word_lowered(buf, "base")))
-        TF_SET(task, FLAG_decimal_to_binary);
-
-    if (_has_word_lowered(buf, "dice") || _has_word_lowered(buf, "w\u00fcrfel") || (_has_word_lowered(buf, "roll") && _has_word_lowered(buf, "die")))
-        TF_SET(task, FLAG_dice_roll);
-
-    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "math"))
-        TF_SET(task, FLAG_double_math);
-
-    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "circle"))
-        TF_SET(task, FLAG_double_circle_area);
-
-    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "average"))
-        TF_SET(task, FLAG_double_average);
-
-    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "interest"))
-        TF_SET(task, FLAG_double_compound_interest);
-
-    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "pythagoras"))
-        TF_SET(task, FLAG_double_pythagoras);
-
-    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "temp"))
-        TF_SET(task, FLAG_double_temp_convert);
-
-    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "sqrt"))
-        TF_SET(task, FLAG_double_sqrt);
-
-    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "power"))
-        TF_SET(task, FLAG_double_power);
-
-    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "volume") && _has_word_lowered(buf, "sphere"))
-        TF_SET(task, FLAG_double_volume_sphere);
-
-    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "discount"))
-        TF_SET(task, FLAG_double_discount);
-
-    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "simple") && _has_word_lowered(buf, "interest"))
-        TF_SET(task, FLAG_double_simple_interest);
-
-    if (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "bmi"))
-        TF_SET(task, FLAG_double_bmi);
-
-    if ((_has_word_lowered(buf, "double") && _has_word_lowered(buf, "stddev")) || (_has_word_lowered(buf, "double") && _has_word_lowered(buf, "standard") && _has_word_lowered(buf, "deviation")))
-        TF_SET(task, FLAG_double_standard_deviation);
-
-    if (_has_word_lowered(buf, "double") && (_has_word_lowered(buf, "kinetic") || _has_word_lowered(buf, "energy")))
-        TF_SET(task, FLAG_double_kinetic_energy);
-
-    if (TF_ISSET(task, FLAG_double_circle_area)) TF_CLR(task, FLAG_circle_area);
-    if (TF_ISSET(task, FLAG_double_temp_convert)) TF_CLR(task, FLAG_temp_convert);
-
-    if ((_has_word_lowered(buf, "string") && _has_word_lowered(buf, "length"))
-        || (_has_word_lowered(buf, "string") && _has_word_lowered(buf, "laenge"))
-        || (_has_word_lowered(buf, "zeichen") && _has_word_lowered(buf, "laenge")))
-        TF_SET(task, FLAG_string_length);
-
-    if (_has_word_lowered(buf, "stack") || (_has_word_lowered(buf, "push") && _has_word_lowered(buf, "pop")))
-        TF_SET(task, FLAG_stack);
-
-    if (_has_word_lowered(buf, "queue") || (_has_word_lowered(buf, "enqueue") && _has_word_lowered(buf, "dequeue")))
-        TF_SET(task, FLAG_queue);
-
-    if (_has_word_lowered(buf, "insertion") && _has_word_lowered(buf, "sort"))
-        TF_SET(task, FLAG_insertion_sort);
-
-    if (_has_word_lowered(buf, "calculator") || (_has_word_lowered(buf, "calc") && _has_word_lowered(buf, "repl")))
-        TF_SET(task, FLAG_calculator);
-
-    if ((_has_word_lowered(buf, "unit") || _has_word_lowered(buf, "einheit")) && (_has_word_lowered(buf, "convert") || _has_word_lowered(buf, "converter") || _has_word_lowered(buf, "umrechnen") || _has_word_lowered(buf, "umwandeln")))
-        TF_SET(task, FLAG_unit_converter);
-
-    if (_has_word_lowered(buf, "rock") && _has_word_lowered(buf, "paper") && _has_word_lowered(buf, "scissors"))
-        TF_SET(task, FLAG_rock_paper_scissors);
-
-    if ((_has_word_lowered(buf, "pyramid") || _has_word_lowered(buf, "pyramide")) && (_has_word_lowered(buf, "number") || _has_word_lowered(buf, "zahl") || _has_word_lowered(buf, "pattern") || _has_word_lowered(buf, "muster") || _has_word_lowered(buf, "height") || _has_word_lowered(buf, "hoehe") || _has_word_lowered(buf, "rows") || _has_word_lowered(buf, "zeilen")))
-        TF_SET(task, FLAG_pyramid);
-
-    if ((_has_word_lowered(buf, "temperature") || _has_word_lowered(buf, "temperatur")) && (_has_word_lowered(buf, "convert") || _has_word_lowered(buf, "converter") || _has_word_lowered(buf, "umrechnen")))
-        TF_SET(task, FLAG_temp_converter_menu);
-
-    if (_has_word_lowered(buf, "sort") && (_has_word_lowered(buf, "stats") || _has_word_lowered(buf, "statistics") || _has_word_lowered(buf, "statistik") || _has_word_lowered(buf, "analyze") || _has_word_lowered(buf, "analyse") || _has_word_lowered(buf, "min") || _has_word_lowered(buf, "max") || _has_word_lowered(buf, "average") || _has_word_lowered(buf, "avg")))
-        TF_SET(task, FLAG_sort_stats);
-
-    if ((_has_word_lowered(buf, "analyze") || _has_word_lowered(buf, "analyse")) && (_has_word_lowered(buf, "string") || _has_word_lowered(buf, "text") || _has_word_lowered(buf, "zeichenkette")))
-        TF_SET(task, FLAG_string_analyzer);
-
-    if ((_has_word_lowered(buf, "analyze") || _has_word_lowered(buf, "analyse") || _has_word_lowered(buf, "analyzer") || _has_word_lowered(buf, "analyser")) && (_has_word_lowered(buf, "number") || _has_word_lowered(buf, "zahl")))
-        TF_SET(task, FLAG_number_analyzer);
-
-    if (_has_word_lowered(buf, "filter") && (_has_word_lowered(buf, "number") || _has_word_lowered(buf, "numbers") || _has_word_lowered(buf, "zahlen") || _has_word_lowered(buf, "values") || _has_word_lowered(buf, "werte")))
-        TF_SET(task, FLAG_filter_numbers);
-
-    if ((_has_word_lowered(buf, "random") || _has_word_lowered(buf, "zufall")) && (_has_word_lowered(buf, "generator") || _has_word_lowered(buf, "generieren")))
-        TF_SET(task, FLAG_random_generator);
-    if (TF_ISSET(task, FLAG_random_generator))
-        TF_CLR(task, FLAG_random);
-
-    if ((_has_word_lowered(buf, "math") || _has_word_lowered(buf, "mathe")) && (_has_word_lowered(buf, "menu") || _has_word_lowered(buf, "menue") || _has_word_lowered(buf, "rechner")))
-        TF_SET(task, FLAG_math_menu);
-
-    if ((_has_word_lowered(buf, "quiz") || _has_word_lowered(buf, "frage")) && (_has_word_lowered(buf, "game") || _has_word_lowered(buf, "spiel")))
-        TF_SET(task, FLAG_quiz_game);
-
-    if (_has_word_lowered(buf, "bmi") || ((_has_word_lowered(buf, "body") || _has_word_lowered(buf, "koerper")) && _has_word_lowered(buf, "mass") && _has_word_lowered(buf, "index")))
-        TF_SET(task, FLAG_bmi_calculator);
-
-    if ((_has_word_lowered(buf, "statistics") || _has_word_lowered(buf, "statistik")) && (_has_word_lowered(buf, "all") || _has_word_lowered(buf, "suite") || _has_word_lowered(buf, "alle") || _has_word_lowered(buf, "full") || _has_word_lowered(buf, "komplett")))
-        TF_SET(task, FLAG_statistics_suite);
-
-    if (_has_word_lowered(buf, "linked") && _has_word_lowered(buf, "list"))
-        TF_SET(task, FLAG_linked_list);
-    if ((_has_word_lowered(buf, "binary") || _has_word_lowered(buf, "binaer")) && _has_word_lowered(buf, "tree") && _has_word_lowered(buf, "search"))
-        TF_SET(task, FLAG_binary_search_tree);
-    if (_has_word_lowered(buf, "tree") && (_has_word_lowered(buf, "traversal") || _has_word_lowered(buf, "inorder") || _has_word_lowered(buf, "preorder") || _has_word_lowered(buf, "postorder")))
-        TF_SET(task, FLAG_tree_traversal);
-    if ((_has_word_lowered(buf, "graph") || _has_word_lowered(buf, "graf")) && (_has_word_lowered(buf, "bfs") || _has_word_lowered(buf, "dfs") || _has_word_lowered(buf, "traverse") || _has_word_lowered(buf, "durchlauf")))
-        TF_SET(task, FLAG_graph_bfs_dfs);
-    if ((_has_word_lowered(buf, "n") || _has_word_lowered(buf, "eight") || _has_word_lowered(buf, "acht")) && _has_word_lowered(buf, "queen"))
-        TF_SET(task, FLAG_n_queens);
-    if (_has_word_lowered(buf, "sudoku") || (_has_word_lowered(buf, "sodoku") && _has_word_lowered(buf, "solver")))
-        TF_SET(task, FLAG_sudoku);
-    if ((_has_word_lowered(buf, "levenshtein") || _has_word_lowered(buf, "edit")) && _has_word_lowered(buf, "distance"))
-        TF_SET(task, FLAG_levenshtein);
-    if ((_has_word_lowered(buf, "maze") || _has_word_lowered(buf, "labyrinth") || _has_word_lowered(buf, "irrgarten")) && (_has_word_lowered(buf, "generate") || _has_word_lowered(buf, "generieren") || _has_word_lowered(buf, "erzeugen")))
-        TF_SET(task, FLAG_maze_generator);
-    if ((_has_word_lowered(buf, "maze") || _has_word_lowered(buf, "labyrinth") || _has_word_lowered(buf, "irrgarten")) && (_has_word_lowered(buf, "solve") || _has_word_lowered(buf, "solver") || _has_word_lowered(buf, "loesen") || _has_word_lowered(buf, "l\u00f6sung")))
-        TF_SET(task, FLAG_maze_solver);
-    if ((_has_word_lowered(buf, "monte") && _has_word_lowered(buf, "carlo")) || (_has_word_lowered(buf, "pi") && _has_word_lowered(buf, "estimate")))
-        TF_SET(task, FLAG_monte_carlo);
-    if ((_has_word_lowered(buf, "matrix") || _has_word_lowered(buf, "matrize")) && _has_word_lowered(buf, "multiply"))
-        TF_SET(task, FLAG_matrix_mul);
-    if (_has_word_lowered(buf, "matrix") && (_has_word_lowered(buf, "transpose") || _has_word_lowered(buf, "transponieren")))
-        TF_SET(task, FLAG_matrix_transpose);
-    if ((_has_word_lowered(buf, "numerical") || _has_word_lowered(buf, "numerisch") || _has_word_lowered(buf, "numeric")) && (_has_word_lowered(buf, "integrate") || _has_word_lowered(buf, "integration") || _has_word_lowered(buf, "integral")))
-        TF_SET(task, FLAG_numerical_integration);
-    if ((_has_word_lowered(buf, "complex") || _has_word_lowered(buf, "komplex")) && _has_word_lowered(buf, "number"))
-        TF_SET(task, FLAG_complex_numbers);
-    if ((_has_word_lowered(buf, "linear") || _has_word_lowered(buf, "linreg")) && (_has_word_lowered(buf, "regression") || _has_word_lowered(buf, "regress")))
-        TF_SET(task, FLAG_linear_regression);
-    if ((_has_word_lowered(buf, "base") || _has_word_lowered(buf, "basis")) && (_has_word_lowered(buf, "convert") || _has_word_lowered(buf, "converter") || _has_word_lowered(buf, "umwandeln") || _has_word_lowered(buf, "konvert")))
-        TF_SET(task, FLAG_base_converter);
-    if ((_has_word_lowered(buf, "frequency") || _has_word_lowered(buf, "haeufigkeit") || _has_word_lowered(buf, "frequenz") || _has_word_lowered(buf, "freq")) && (_has_word_lowered(buf, "analyze") || _has_word_lowered(buf, "analyse") || _has_word_lowered(buf, "count") || _has_word_lowered(buf, "zaehle") || _has_word_lowered(buf, "analysis")))
-        TF_SET(task, FLAG_freq_analysis);
-    if (_has_word_lowered(buf, "shuffle") || _has_word_lowered(buf, "mischen") || (_has_word_lowered(buf, "random") && _has_word_lowered(buf, "permute")))
-        TF_SET(task, FLAG_shuffle);
-    if ((_has_word_lowered(buf, "weighted") || _has_word_lowered(buf, "gewichtet")) && (_has_word_lowered(buf, "random") || _has_word_lowered(buf, "zufall")))
-        TF_SET(task, FLAG_weighted_random);
-    if (_has_word_lowered(buf, "ascii") && (_has_word_lowered(buf, "table") || _has_word_lowered(buf, "tabelle") || _has_word_lowered(buf, "format")))
-        TF_SET(task, FLAG_ascii_table);
-
-    if ((_has_word_lowered(buf, "password") || _has_word_lowered(buf, "passwort") || _has_word_lowered(buf, "passwd")) && (_has_word_lowered(buf, "card") || _has_word_lowered(buf, "karte") || _has_word_lowered(buf, "generate") || _has_word_lowered(buf, "generator")))
-        TF_SET(task, FLAG_password_card);
-    if ((_has_word_lowered(buf, "chess") || _has_word_lowered(buf, "schach") || _has_word_lowered(buf, "rice") || _has_word_lowered(buf, "reis")) && (_has_word_lowered(buf, "problem") || _has_word_lowered(buf, "board") || _has_word_lowered(buf, "brett") || _has_word_lowered(buf, "exponential")))
-        TF_SET(task, FLAG_chess_problem);
-    if ((_has_word_lowered(buf, "repl") || _has_word_lowered(buf, "terminal")) && (_has_word_lowered(buf, "run") || _has_word_lowered(buf, "execute") || _has_word_lowered(buf, "ausfuehren") || _has_word_lowered(buf, "ausf\u00fchren")))
-        TF_SET(task, FLAG_shell_repl);
-    if ((_has_word_lowered(buf, "shell") || _has_word_lowered(buf, "interactive")) && (_has_word_lowered(buf, "run") || _has_word_lowered(buf, "running") || _has_word_lowered(buf, "execute") || _has_word_lowered(buf, "command") || _has_word_lowered(buf, "ausfuehren") || _has_word_lowered(buf, "ausf\u00fchren") || _has_word_lowered(buf, "befehl")))
-        TF_SET(task, FLAG_shell_repl);
-
-    if (_has_word_lowered(buf, "webserver") || _has_word_lowered(buf, "http") || (_has_word_lowered(buf, "web") && _has_word_lowered(buf, "server")))
-        TF_SET(task, FLAG_webserver);
-    if ((_has_word_lowered(buf, "sdl") || _has_word_lowered(buf, "screen") || _has_word_lowered(buf, "bildschirm")) && (_has_word_lowered(buf, "open") || _has_word_lowered(buf, "window") || _has_word_lowered(buf, "fenster") || _has_word_lowered(buf, "pixel") || _has_word_lowered(buf, "grafik") || _has_word_lowered(buf, "graphics")))
-        TF_SET(task, FLAG_sdl_window);
-    if ((_has_word_lowered(buf, "sdl") || _has_word_lowered(buf, "gui") || _has_word_lowered(buf, "gadget")) && (_has_word_lowered(buf, "button") || _has_word_lowered(buf, "knopf") || _has_word_lowered(buf, "click")))
-        TF_SET(task, FLAG_sdl_button);
-    if (_has_word_lowered(buf, "thread") || _has_word_lowered(buf, "nebenlauf") || (_has_word_lowered(buf, "parallel") && _has_word_lowered(buf, "run")))
-        TF_SET(task, FLAG_thread);
-    if (_has_word_lowered(buf, "scheduler") || _has_word_lowered(buf, "planer") || (_has_word_lowered(buf, "task") && _has_word_lowered(buf, "schedule")))
-        TF_SET(task, FLAG_scheduler);
-    if ((_has_word_lowered(buf, "shell") || _has_word_lowered(buf, "command") || _has_word_lowered(buf, "befehl") || _has_word_lowered(buf, "kommando")) && (_has_word_lowered(buf, "exec") || _has_word_lowered(buf, "run") || _has_word_lowered(buf, "ausf\u00fchren") || _has_word_lowered(buf, "ausfuehren")))
-        TF_SET(task, FLAG_shell_exec);
-    if (_has_word_lowered(buf, "json") || _has_word_lowered(buf, "javascript") || (_has_word_lowered(buf, "parse") && _has_word_lowered(buf, "json")))
-        TF_SET(task, FLAG_json);
-    if (_has_word_lowered(buf, "crypto") || _has_word_lowered(buf, "encrypt") || _has_word_lowered(buf, "decrypt") || _has_word_lowered(buf, "verschl\u00fcssel") || _has_word_lowered(buf, "chiffre") || _has_word_lowered(buf, "cipher"))
-        TF_SET(task, FLAG_crypto);
-    if (_has_word_lowered(buf, "bluetooth") || _has_word_lowered(buf, "ble") || (_has_word_lowered(buf, "bluetooth") && _has_word_lowered(buf, "low")))
-        TF_SET(task, FLAG_bluetooth_ble);
-    if ((_has_word_lowered(buf, "serial") || _has_word_lowered(buf, "rs232") || _has_word_lowered(buf, "seriell")) && (_has_word_lowered(buf, "port") || _has_word_lowered(buf, "schnittstelle") || _has_word_lowered(buf, "interface")))
-        TF_SET(task, FLAG_serial_rs232);
-    if (_has_word_lowered(buf, "gpio") || (_has_word_lowered(buf, "general") && _has_word_lowered(buf, "purpose")))
-        TF_SET(task, FLAG_gpio);
-    if (_has_word_lowered(buf, "gps") || _has_word_lowered(buf, "navigation") || (_has_word_lowered(buf, "global") && _has_word_lowered(buf, "position")))
-        TF_SET(task, FLAG_gps);
-    if ((_has_word_lowered(buf, "date") || _has_word_lowered(buf, "datum") || _has_word_lowered(buf, "kalender") || _has_word_lowered(buf, "calendar")) && (_has_word_lowered(buf, "time") || _has_word_lowered(buf, "zeit") || _has_word_lowered(buf, "uhr") || _has_word_lowered(buf, "clock")))
-        TF_SET(task, FLAG_timer_date);
-    if ((_has_word_lowered(buf, "sdl") || _has_word_lowered(buf, "sound") || _has_word_lowered(buf, "audio") || _has_word_lowered(buf, "ton")) && (_has_word_lowered(buf, "play") || _has_word_lowered(buf, "spielen") || _has_word_lowered(buf, "abspielen") || _has_word_lowered(buf, "wiedergabe")))
-        TF_SET(task, FLAG_sdl_sound);
-    if ((_has_word_lowered(buf, "sdl") || _has_word_lowered(buf, "joystick") || _has_word_lowered(buf, "gamepad") || _has_word_lowered(buf, "controller")) && (_has_word_lowered(buf, "joystick") || _has_word_lowered(buf, "axis") || _has_word_lowered(buf, "achse") || _has_word_lowered(buf, "button")))
-        TF_SET(task, FLAG_sdl_joystick);
-    if ((_has_word_lowered(buf, "sdl") || _has_word_lowered(buf, "mouse") || _has_word_lowered(buf, "maus")) && (_has_word_lowered(buf, "mouse") || _has_word_lowered(buf, "maus") || _has_word_lowered(buf, "pointer") || _has_word_lowered(buf, "cursor")))
-        TF_SET(task, FLAG_sdl_mouse);
-    if (_has_word_lowered(buf, "fractal") || _has_word_lowered(buf, "mandelbrot") || _has_word_lowered(buf, "julia") || (_has_word_lowered(buf, "fraktal") && _has_word_lowered(buf, "set")))
-        TF_SET(task, FLAG_fractal);
-    if ((_has_word_lowered(buf, "cluster") || _has_word_lowered(buf, "worker") || _has_word_lowered(buf, "verteilt") || _has_word_lowered(buf, "distributed")) && (_has_word_lowered(buf, "compute") || _has_word_lowered(buf, "rechnen") || _has_word_lowered(buf, "3x1") || _has_word_lowered(buf, "arbeit")))
-        TF_SET(task, FLAG_cluster_3x1);
-    if (_has_word_lowered(buf, "reload") || _has_word_lowered(buf, "module") || (_has_word_lowered(buf, "hot") && _has_word_lowered(buf, "swap")) || (_has_word_lowered(buf, "neu") && _has_word_lowered(buf, "laden")))
-        TF_SET(task, FLAG_reload);
-    if ((_has_word_lowered(buf, "coordinate") || _has_word_lowered(buf, "koordinate") || _has_word_lowered(buf, "grid") || _has_word_lowered(buf, "gitter")) && (_has_word_lowered(buf, "xy") || _has_word_lowered(buf, "2d") || _has_word_lowered(buf, "position") || _has_word_lowered(buf, "raster")))
-        TF_SET(task, FLAG_coordinate_grid);
-    if (_has_word_lowered(buf, "turmite") || (_has_word_lowered(buf, "turmite") && _has_word_lowered(buf, "ant")))
-        TF_SET(task, FLAG_turmite);
-    if (_has_word_lowered(buf, "crossword") || _has_word_lowered(buf, "kreuzwort") || _has_word_lowered(buf, "r\u00e4tsel") || (_has_word_lowered(buf, "word") && _has_word_lowered(buf, "puzzle")))
-        TF_SET(task, FLAG_crossword);
-    if (_has_word_lowered(buf, "linter") || _has_word_lowered(buf, "lint") || (_has_word_lowered(buf, "code") && _has_word_lowered(buf, "check")) || (_has_word_lowered(buf, "static") && _has_word_lowered(buf, "analyze")))
-        TF_SET(task, FLAG_linter);
-
-    /* new small emitters */
-    if (_has_word_lowered(buf, "hello") && _has_word_lowered(buf, "world"))
-        TF_SET(task, FLAG_hello_world);
-    if (_has_word_lowered(buf, "string") && _has_word_lowered(buf, "find") && !_has_word_lowered(buf, "max") && !_has_word_lowered(buf, "largest"))
-        TF_SET(task, FLAG_string_find);
-    if ((_has_word_lowered(buf, "string") || _has_word_lowered(buf, "text")) && _has_word_lowered(buf, "split"))
-        TF_SET(task, FLAG_string_split);
-    if (_has_word_lowered(buf, "switch") && !_has_word_lowered(buf, "string"))
-        TF_SET(task, FLAG_switch_demo);
-    if (_has_word_lowered(buf, "type") && (_has_word_lowered(buf, "convert") || _has_word_lowered(buf, "conversion")
-        || _has_word_lowered(buf, "umwandeln") || _has_word_lowered(buf, "cast")))
-        TF_SET(task, FLAG_type_convert);
-    if ((_has_word_lowered(buf, "factorial") || _has_word_lowered(buf, "fakult")) && (_has_word_lowered(buf, "loop") || _has_word_lowered(buf, "iterative") || _has_word_lowered(buf, "schleife") || _has_word_lowered(buf, "while")))
-        TF_SET(task, FLAG_iterative_factorial);
-    if (_has_word_lowered(buf, "random") && _has_word_lowered(buf, "walk"))
-        TF_SET(task, FLAG_random_walk);
-    if (_has_word_lowered(buf, "bar") && (_has_word_lowered(buf, "chart") || _has_word_lowered(buf, "graph") || _has_word_lowered(buf, "diagramm")))
-        TF_SET(task, FLAG_bar_chart);
-    if (_has_word_lowered(buf, "hanoi") || (_has_word_lowered(buf, "tower") && _has_word_lowered(buf, "hanoi"))
-        || (_has_word_lowered(buf, "turm") && _has_word_lowered(buf, "hanoi")))
-        TF_SET(task, FLAG_hanoi_tower);
-    if (_has_word_lowered(buf, "ascii") && _has_word_lowered(buf, "art"))
-        TF_SET(task, FLAG_ascii_art);
-    if ((_has_word_lowered(buf, "number") || _has_word_lowered(buf, "zahl")) && (_has_word_lowered(buf, "word") || _has_word_lowered(buf, "words") || _has_word_lowered(buf, "wort") || _has_word_lowered(buf, "worter") || _has_word_lowered(buf, "text")))
-        TF_SET(task, FLAG_number_to_words);
-    if ((_has_word_lowered(buf, "temperature") || _has_word_lowered(buf, "temperatur")) && (_has_word_lowered(buf, "table") || _has_word_lowered(buf, "tabelle")))
-        TF_SET(task, FLAG_temperature_table);
-    if (_has_word_lowered(buf, "loop") && (_has_word_lowered(buf, "demo") || _has_word_lowered(buf, "beispiel") || _has_word_lowered(buf, "example")))
-        TF_SET(task, FLAG_loop_demo);
-    if ((_has_word_lowered(buf, "time") || _has_word_lowered(buf, "zeit") || _has_word_lowered(buf, "uhr") || _has_word_lowered(buf, "clock"))
-        && (_has_word_lowered(buf, "demo") || _has_word_lowered(buf, "beispiel") || _has_word_lowered(buf, "example") || _has_word_lowered(buf, "current")))
-        TF_SET(task, FLAG_time);
-    if (_has_word_lowered(buf, "shell") && (_has_word_lowered(buf, "arg") || _has_word_lowered(buf, "parameter") || _has_word_lowered(buf, "command") || _has_word_lowered(buf, "befehl")))
-        TF_SET(task, FLAG_shell_args);
-
+static void detect_fann_pattern(const char *buf, TaskProfile *task) {
     if (_has_word_lowered(buf, "fann") || _has_word_lowered(buf, "neural") || (_has_word_lowered(buf, "network") && _has_word_lowered(buf, "ai"))) {
         if (_has_word_lowered(buf, "train") || _has_word_lowered(buf, "learn")) {
             TF_SET(task, FLAG_fann_create);
@@ -1528,6 +1864,181 @@ static void parse_task_detect_enhanced_patterns(const char *prompt, const char *
             TF_CLR(task, FLAG_algorithm);
         }
     }
+}
+
+/* ── Refactored enhanced pattern detection ────────────────────────────── */
+
+static void parse_task_detect_enhanced_patterns(const char *prompt, const char *buf, TaskProfile *task) {
+    detect_sum_range_pattern(prompt, buf, task);
+    detect_print_even_pattern(buf, task);
+    detect_find_max_pattern(buf, task);
+    detect_fib_seq_pattern(buf, task);
+    detect_countdown_pattern(buf, task);
+    detect_input_sort_pattern(buf, task);
+    detect_median_pattern(buf, task);
+    detect_primes_pattern(prompt, buf, task);
+    detect_fib_first_pattern(prompt, buf, task);
+    detect_from_sum_pattern(buf, task);
+    detect_countdown_from_pattern(prompt, buf, task);
+    detect_input_fact_pattern(task);
+
+    match_pattern_table(buf, task);
+
+    if (TF_ISSET(task, FLAG_double_circle_area)) TF_CLR(task, FLAG_circle_area);
+    if (TF_ISSET(task, FLAG_double_temp_convert)) TF_CLR(task, FLAG_temp_convert);
+    if (TF_ISSET(task, FLAG_random_generator)) TF_CLR(task, FLAG_random);
+
+    detect_fann_pattern(buf, task);
+}
+
+static void add_standard_constants(Function *f) {
+    const char *zv[] = {"0"};
+    const char *ov[] = {"1"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "const-int64", "one", 1, ov, 1);
+}
+
+static int try_learned_pattern(Program *prog, const char *prompt, char *desc, int desc_size) {
+    int lscore;
+    int lidx = match_learned_pattern(prompt, &lscore);
+    if (lidx >= 0 && emit_learned_pattern(prog, lidx)) {
+        if (desc) SNPRINTF_CHECK(desc, desc_size, "learned pattern: %s (score: %d)", learned_patterns[lidx].id, lscore);
+        return 1;
+    }
+    return 0;
+}
+
+static int try_learned_pattern_info(Program *prog, const char *prompt, const char **out_id, int *out_score) {
+    int lscore;
+    int lidx = match_learned_pattern(prompt, &lscore);
+    if (lidx >= 0 && emit_learned_pattern(prog, lidx)) {
+        if (out_id) *out_id = learned_patterns[lidx].id;
+        if (out_score) *out_score = lscore;
+        return 1;
+    }
+    return 0;
+}
+
+static void ensure_exit(Function *f, int last_step);
+
+/* ── Inherited array operations for multi-step generation ─────────────── */
+
+static int emit_sort_inherited_array(Function *f, TaskProfile *task, int last_step) {
+    const char *zv[] = {"0"};
+    add_standard_constants(f);
+    char cvs[16];
+    SNPRINTF_CHECK(cvs, sizeof(cvs), "%d", task->inherit_count > 0 ? task->inherit_count : DEFAULT_ELEMENT_COUNT);
+    const char *cv[] = {cvs};
+    add_var_to_func(f, "int64", "count", 1, cv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "j", 1, zv, 1);
+    add_var_to_func(f, "int64", "temp", 1, zv, 1);
+    add_var_to_func(f, "int64", "realind", 1, zv, 1);
+    add_var_to_func(f, "int64", "realind2", 1, zv, 1);
+    add_var_to_func(f, "int64", "a", 1, zv, 1);
+    add_var_to_func(f, "int64", "b", 1, zv, 1);
+    add_var_to_func(f, "int64", "x", 1, zv, 1);
+    add_var_to_func(f, "int64", "y", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    func_append(f, "\t// bubble sort");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i count <) f :=) f for)");
+    func_append(f, "\t\t(zero j :=)");
+    func_append(f, "\t\t(count one - temp :=)");
+    func_append(f, "\t\t(for-loop)");
+    func_append(f, "\t\t(((j temp <) f :=) f for)");
+    func_append(f, "\t\t\t(j * int64_size realind :=)");
+    func_append(f, "\t\t\t((j + one) * int64_size realind2 :=)");
+    char ln[PATH_BUF_SIZE];
+    SNPRINTF_CHECK(ln, sizeof(ln), "\t\t\t(%s [ realind ] a =)", task->inherit_var);
+    func_append(f, ln);
+    func_append(f, "\t\t\t(a x :=)");
+    SNPRINTF_CHECK(ln, sizeof(ln), "\t\t\t(%s [ realind2 ] b =)", task->inherit_var);
+    func_append(f, ln);
+    func_append(f, "\t\t\t(b y :=)");
+    func_append(f, "\t\t\t(((x y >) f :=) f if)");
+    SNPRINTF_CHECK(ln, sizeof(ln), "\t\t\t\t(y %s [ realind ] =)", task->inherit_var);
+    func_append(f, ln);
+    SNPRINTF_CHECK(ln, sizeof(ln), "\t\t\t\t(x %s [ realind2 ] =)", task->inherit_var);
+    func_append(f, ln);
+    func_append(f, "\t\t\t(endif)");
+    func_append(f, "\t\t\t(j + one j :=)");
+    func_append(f, "\t\t(next)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    ensure_exit(f, last_step);
+    return 1;
+}
+
+static int emit_print_inherited_array(Function *f, TaskProfile *task, int last_step) {
+    const char *zv[] = {"0"};
+    add_standard_constants(f);
+    char cvs[16];
+    SNPRINTF_CHECK(cvs, sizeof(cvs), "%d", task->inherit_count > 0 ? task->inherit_count : DEFAULT_ELEMENT_COUNT);
+    const char *cv[] = {cvs};
+    add_var_to_func(f, "int64", "count", 1, cv, 1);
+    add_var_to_func(f, "int64", "i", 1, zv, 1);
+    add_var_to_func(f, "int64", "realind", 1, zv, 1);
+    add_var_to_func(f, "int64", "a", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    func_append(f, "\t// print array");
+    func_append(f, "\t(zero i :=)");
+    func_append(f, "\t(for-loop)");
+    func_append(f, "\t(((i count <) f :=) f for)");
+    func_append(f, "\t\t(i * int64_size realind :=)");
+    char ln[PATH_BUF_SIZE];
+    SNPRINTF_CHECK(ln, sizeof(ln), "\t\t(%s [ realind ] a =)", task->inherit_var);
+    func_append(f, ln);
+    func_append(f, "\t\t(a + zero a :=)");
+    func_append(f, "\t\t(a :print_i !)");
+    func_append(f, "\t\t(:print_n !)");
+    func_append(f, "\t\t(i + one i :=)");
+    func_append(f, "\t(next)");
+    ensure_exit(f, last_step);
+    return 1;
+}
+
+static int emit_print_max_inherited(Function *f, TaskProfile *task, int last_step) {
+    const char *zv[] = {"0"};
+    add_standard_constants(f);
+    char cvs[16];
+    SNPRINTF_CHECK(cvs, sizeof(cvs), "%d", task->inherit_count > 0 ? task->inherit_count : DEFAULT_ELEMENT_COUNT);
+    const char *cv[] = {cvs};
+    add_var_to_func(f, "int64", "count", 1, cv, 1);
+    add_var_to_func(f, "int64", "temp", 1, zv, 1);
+    add_var_to_func(f, "int64", "f", 1, zv, 1);
+    add_var_to_func(f, "int64", "realind", 1, zv, 1);
+    add_var_to_func(f, "int64", "a", 1, zv, 1);
+    func_append(f, "\t// print largest");
+    func_append(f, "\t(count one - temp :=)");
+    func_append(f, "\t(temp * int64_size realind :=)");
+    char ln[PATH_BUF_SIZE];
+    SNPRINTF_CHECK(ln, sizeof(ln), "\t(%s [ realind ] a =)", task->inherit_var);
+    func_append(f, ln);
+    func_append(f, "\t(a + zero a :=)");
+    func_append(f, "\t(a :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    ensure_exit(f, last_step);
+    return 1;
+}
+
+static int emit_print_min_inherited(Function *f, TaskProfile *task, int last_step) {
+    const char *zv[] = {"0"};
+    add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
+    add_var_to_func(f, "int64", "realind", 1, zv, 1);
+    add_var_to_func(f, "int64", "a", 1, zv, 1);
+    char ln[PATH_BUF_SIZE];
+    SNPRINTF_CHECK(ln, sizeof(ln), "\t(zero * int64_size realind :=)");
+    func_append(f, ln);
+    func_append(f, "\t// print smallest");
+    SNPRINTF_CHECK(ln, sizeof(ln), "\t(%s [ realind ] a =)", task->inherit_var);
+    func_append(f, ln);
+    func_append(f, "\t(a + zero a :=)");
+    func_append(f, "\t(a :print_i !)");
+    func_append(f, "\t(:print_n !)");
+    ensure_exit(f, last_step);
+    return 1;
 }
 
 static int parse_task_finalize(const char *prompt, const char *buf, TaskProfile *task) {
@@ -1591,133 +2102,17 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
         return 1;
     }
 
-    // Handle "sort them" when an array was inherited from a prior step
-    if (TF_ISSET(task, FLAG_sort) && task->inherit_var[0]) {
-        const char *zv[] = {"0"};
-        const char *ov[] = {"1"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        add_var_to_func(f, "const-int64", "one", 1, ov, 1);
-        char cvs[16];
-        SNPRINTF_CHECK(cvs, sizeof(cvs), "%d", task->inherit_count > 0 ? task->inherit_count : 5);
-        const char *cv[] = {cvs};
-        add_var_to_func(f, "int64", "count", 1, cv, 1);
-        add_var_to_func(f, "int64", "i", 1, zv, 1);
-        add_var_to_func(f, "int64", "j", 1, zv, 1);
-        add_var_to_func(f, "int64", "temp", 1, zv, 1);
-        add_var_to_func(f, "int64", "realind", 1, zv, 1);
-        add_var_to_func(f, "int64", "realind2", 1, zv, 1);
-        add_var_to_func(f, "int64", "a", 1, zv, 1);
-        add_var_to_func(f, "int64", "b", 1, zv, 1);
-        add_var_to_func(f, "int64", "x", 1, zv, 1);
-        add_var_to_func(f, "int64", "y", 1, zv, 1);
-        add_var_to_func(f, "int64", "f", 1, zv, 1);
-        func_append(f, "\t// bubble sort");
-        func_append(f, "\t(zero i :=)");
-        func_append(f, "\t(for-loop)");
-        func_append(f, "\t(((i count <) f :=) f for)");
-        func_append(f, "\t\t(zero j :=)");
-        func_append(f, "\t\t(count one - temp :=)");
-        func_append(f, "\t\t(for-loop)");
-        func_append(f, "\t\t(((j temp <) f :=) f for)");
-        func_append(f, "\t\t\t(j * int64_size realind :=)");
-        func_append(f, "\t\t\t((j + one) * int64_size realind2 :=)");
-        char ln[512];
-        SNPRINTF_CHECK(ln, sizeof(ln), "\t\t\t(%s [ realind ] a =)", task->inherit_var);
-        func_append(f, ln);
-        func_append(f, "\t\t\t(a x :=)");
-        SNPRINTF_CHECK(ln, sizeof(ln), "\t\t\t(%s [ realind2 ] b =)", task->inherit_var);
-        func_append(f, ln);
-        func_append(f, "\t\t\t(b y :=)");
-        func_append(f, "\t\t\t(((x y >) f :=) f if)");
-        SNPRINTF_CHECK(ln, sizeof(ln), "\t\t\t\t(y %s [ realind ] =)", task->inherit_var);
-        func_append(f, ln);
-        SNPRINTF_CHECK(ln, sizeof(ln), "\t\t\t\t(x %s [ realind2 ] =)", task->inherit_var);
-        func_append(f, ln);
-        func_append(f, "\t\t\t(endif)");
-        func_append(f, "\t\t\t(j + one j :=)");
-        func_append(f, "\t\t(next)");
-        func_append(f, "\t\t(i + one i :=)");
-        func_append(f, "\t(next)");
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    if (TF_ISSET(task, FLAG_sort) && task->inherit_var[0])
+        return emit_sort_inherited_array(f, task, last_step);
 
-    // Handle "print them" when an array was inherited from a prior step
-    if (TF_ISSET(task, FLAG_output) && task->inherit_var[0] && !TF_ISSET(task, FLAG_max) && !TF_ISSET(task, FLAG_min)) {
-        const char *zv[] = {"0"};
-        const char *ov[] = {"1"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        add_var_to_func(f, "const-int64", "one", 1, ov, 1);
-        char cvs[16];
-        SNPRINTF_CHECK(cvs, sizeof(cvs), "%d", task->inherit_count > 0 ? task->inherit_count : 5);
-        const char *cv[] = {cvs};
-        add_var_to_func(f, "int64", "count", 1, cv, 1);
-        add_var_to_func(f, "int64", "i", 1, zv, 1);
-        add_var_to_func(f, "int64", "realind", 1, zv, 1);
-        add_var_to_func(f, "int64", "a", 1, zv, 1);
-        add_var_to_func(f, "int64", "f", 1, zv, 1);
-        func_append(f, "\t// print array");
-        func_append(f, "\t(zero i :=)");
-        func_append(f, "\t(for-loop)");
-        func_append(f, "\t(((i count <) f :=) f for)");
-        func_append(f, "\t\t(i * int64_size realind :=)");
-        char ln[512];
-        SNPRINTF_CHECK(ln, sizeof(ln), "\t\t(%s [ realind ] a =)", task->inherit_var);
-        func_append(f, ln);
-        func_append(f, "\t\t(a + zero a :=)");
-        func_append(f, "\t\t(a :print_i !)");
-        func_append(f, "\t\t(:print_n !)");
-        func_append(f, "\t\t(i + one i :=)");
-        func_append(f, "\t(next)");
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    if (TF_ISSET(task, FLAG_output) && task->inherit_var[0] && !TF_ISSET(task, FLAG_max) && !TF_ISSET(task, FLAG_min))
+        return emit_print_inherited_array(f, task, last_step);
 
-    // Handle "print the largest" when an array was inherited from a prior step
-    if (TF_ISSET(task, FLAG_max) && task->inherit_var[0]) {
-        const char *zv[] = {"0"};
-        const char *ov[] = {"1"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        add_var_to_func(f, "const-int64", "one", 1, ov, 1);
-        char cvs[16];
-        SNPRINTF_CHECK(cvs, sizeof(cvs), "%d", task->inherit_count > 0 ? task->inherit_count : 5);
-        const char *cv[] = {cvs};
-        add_var_to_func(f, "int64", "count", 1, cv, 1);
-    add_var_to_func(f, "int64", "temp", 1, zv, 1);
-    add_var_to_func(f, "int64", "f", 1, zv, 1);
-        add_var_to_func(f, "int64", "realind", 1, zv, 1);
-        add_var_to_func(f, "int64", "a", 1, zv, 1);
-        func_append(f, "\t// print largest");
-        func_append(f, "\t(count one - temp :=)");
-        func_append(f, "\t(temp * int64_size realind :=)");
-        char ln[512];
-        SNPRINTF_CHECK(ln, sizeof(ln), "\t(%s [ realind ] a =)", task->inherit_var);
-        func_append(f, ln);
-        func_append(f, "\t(a + zero a :=)");
-        func_append(f, "\t(a :print_i !)");
-        func_append(f, "\t(:print_n !)");
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    if (TF_ISSET(task, FLAG_max) && task->inherit_var[0])
+        return emit_print_max_inherited(f, task, last_step);
 
-    // Handle "print the smallest" when an array was inherited from a prior step
-    if (TF_ISSET(task, FLAG_min) && task->inherit_var[0]) {
-        const char *zv[] = {"0"};
-        add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
-        add_var_to_func(f, "int64", "realind", 1, zv, 1);
-        add_var_to_func(f, "int64", "a", 1, zv, 1);
-        char ln[512];
-        SNPRINTF_CHECK(ln, sizeof(ln), "\t(zero * int64_size realind :=)");
-        func_append(f, ln);
-        func_append(f, "\t// print smallest");
-        SNPRINTF_CHECK(ln, sizeof(ln), "\t(%s [ realind ] a =)", task->inherit_var);
-        func_append(f, ln);
-        func_append(f, "\t(a + zero a :=)");
-        func_append(f, "\t(a :print_i !)");
-        func_append(f, "\t(:print_n !)");
-        ensure_exit(f, last_step);
-        return 1;
-    }
+    if (TF_ISSET(task, FLAG_min) && task->inherit_var[0])
+        return emit_print_min_inherited(f, task, last_step);
 
     if (TF_ISSET(task, FLAG_print_var)) {
         add_include(prog, "intr-func.l1h");
@@ -1749,7 +2144,7 @@ void gen_arithmetic(Program *prog, const char *op, const char *type, const int *
     else if (strcmp(op, "div") == 0) sym = "/";
     else if (strcmp(op, "mod") == 0) sym = "%";
 
-    char line[256], vname[64], vstr[16];
+    char line[WORD_BUF_SIZE], vname[64], vstr[16];
     const char *r_v[] = {"0"};
 
     for (int i = 0; i < num_vals; i++) {
@@ -1810,146 +2205,99 @@ static int word_to_num(const char *word) {
     return -1;
 }
 
-int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size) {
-    init_embeddings();
-    index_examples();
-
-    // load learned patterns
-    load_learned_patterns();
-
-    // Full-prompt learned pattern match (takes priority)
-    {
-        int lscore;
-        int lidx = match_learned_pattern(prompt, &lscore);
-        if (lidx >= 0) {
-            if (emit_learned_pattern(prog, lidx)) {
-                SNPRINTF_CHECK(desc, desc_size, "learned pattern: %s (score: %d)", learned_patterns[lidx].id, lscore);
-                return 1;
-            }
-        }
-    }
-
-    // Multi-step support
+static int try_smart_multi_step(Program *prog, const char *prompt, char *desc, int desc_size) {
     char steps[MAX_STEPS][MAX_PROMPT];
     int num_steps = split_prompt_steps(prompt, steps);
+    if (num_steps <= 1) return 0;
 
-    if (num_steps > 1) {
-        char inherited_names[64][256] = {{0}};
-        char inherited_types[64][64] = {{0}};
-        int inherited_counts[64] = {0};
-        int num_inherited = 0;
-        for (int i = 0; i < num_steps; i++) {
-            c_printf(ANSI_CYAN, "  Step %d/%d: %s\n", i + 1, num_steps, steps[i]);
-            int learned_emitted = 0;
-            // Try per-step learned pattern match
-            {
-                int lscore;
-                int lidx = match_learned_pattern(steps[i], &lscore);
-                if (lidx >= 0) {
-                    if (emit_learned_step(prog, lidx)) {
-                        learned_emitted = 1;
+    char inherited_names[64][WORD_BUF_SIZE] = {{0}};
+    char inherited_types[64][64] = {{0}};
+    int inherited_counts[64] = {0};
+    int num_inherited = 0;
+    for (int i = 0; i < num_steps; i++) {
+        c_printf(ANSI_CYAN, "  Step %d/%d: %s\n", i + 1, num_steps, steps[i]);
+        int learned_emitted = 0;
+        {
+            int lscore;
+            int lidx = match_learned_pattern(steps[i], &lscore);
+            if (lidx >= 0) {
+                if (emit_learned_step(prog, lidx)) {
+                    learned_emitted = 1;
+                }
+            }
+        }
+        if (!learned_emitted) {
+            TaskProfile task;
+            memset(&task, 0, sizeof(task));
+            if (!parse_task(steps[i], &task)) {
+                c_printf(ANSI_RED, "Error: Could not understand step %d: \"%s\"\n", i + 1, steps[i]);
+                c_printf(ANSI_YELLOW, "  Hint: Try rephrasing with clearer keywords (e.g., 'sort numbers', 'print result')\n");
+                dataflow_quiet_mode = 0;
+                return 0;
+            }
+            task.skip_input = (i > 0);
+            task.suppress_output = (i < num_steps - 1);
+            dataflow_quiet_mode = task.suppress_output;
+            for (int iv = 0; iv < num_inherited; iv++) {
+                SNPRINTF_CHECK(task.inherit_var_names[task.num_inherit_vars], sizeof(task.inherit_var_names[task.num_inherit_vars]), "%.*s", (int)sizeof(task.inherit_var_names[task.num_inherit_vars]) - 1, inherited_names[iv]);
+                SNPRINTF_CHECK(task.inherit_var_types[task.num_inherit_vars], sizeof(task.inherit_var_types[task.num_inherit_vars]), "%.*s", (int)sizeof(task.inherit_var_types[task.num_inherit_vars]) - 1, inherited_types[iv]);
+                task.inherit_var_counts[task.num_inherit_vars] = inherited_counts[iv];
+                task.num_inherit_vars++;
+            }
+            if (i > 0) {
+                for (int iv = 0; iv < num_inherited; iv++) {
+                    if (inherited_counts[iv] > 1 && !task.inherit_var[0]) {
+                        SNPRINTF_CHECK(task.inherit_var, sizeof(task.inherit_var), "%.*s", (int)sizeof(task.inherit_var) - 1, inherited_names[iv]);
+                        task.inherit_count = inherited_counts[iv];
                     }
                 }
             }
-            if (!learned_emitted) {
-                TaskProfile task;
-                memset(&task, 0, sizeof(task));
-                if (!parse_task(steps[i], &task)) {
-                    c_printf(ANSI_RED, "Error: Could not understand step %d: \"%s\"\n", i + 1, steps[i]);
-                    c_printf(ANSI_YELLOW, "  Hint: Try rephrasing with clearer keywords (e.g., 'sort numbers', 'print result')\n");
-                    dataflow_quiet_mode = 0;
-                    return 0;
+            if (num_steps > 0) {
+                int vs_indices2[3];
+                float vs_scores2[3];
+                int vs_count2 = search_examples(steps[i], 3, vs_indices2, vs_scores2);
+                if (vs_count2 > 0 && vs_scores2[0] > 0.3f) {
+                    vs_boost_count = tokenize(example_docs[vs_indices2[0]].stem, vs_boost_tokens, 64);
                 }
-                task.skip_input = (i > 0);
-                task.suppress_output = (i < num_steps - 1);
-                dataflow_quiet_mode = task.suppress_output;
-                    // populate inherited vars from previous steps
-                    for (int iv = 0; iv < num_inherited; iv++) {
-                        SNPRINTF_CHECK(task.inherit_var_names[task.num_inherit_vars], sizeof(task.inherit_var_names[task.num_inherit_vars]), "%.*s", (int)sizeof(task.inherit_var_names[task.num_inherit_vars]) - 1, inherited_names[iv]);
-                        SNPRINTF_CHECK(task.inherit_var_types[task.num_inherit_vars], sizeof(task.inherit_var_types[task.num_inherit_vars]), "%.*s", (int)sizeof(task.inherit_var_types[task.num_inherit_vars]) - 1, inherited_types[iv]);
-                        task.inherit_var_counts[task.num_inherit_vars] = inherited_counts[iv];
-                        task.num_inherit_vars++;
-                    }
-                    // backward compat: first array var
-                    if (i > 0) {
-                        for (int iv = 0; iv < num_inherited; iv++) {
-                            if (inherited_counts[iv] > 1 && !task.inherit_var[0]) {
-                                SNPRINTF_CHECK(task.inherit_var, sizeof(task.inherit_var), "%.*s", (int)sizeof(task.inherit_var) - 1, inherited_names[iv]);
-                                task.inherit_count = inherited_counts[iv];
-                            }
-                        }
-                    }
-                    // Also try LLM emitter selection for this step to get extra emitters
-                    // The LLM scores all 133 emitters and selects strongly-scored secondaries
-                    if (num_steps > 0) {
-                        current_prompt = steps[i];
-                        int vs_indices2[3];
-                        float vs_scores2[3];
-                        int vs_count2 = search_examples(steps[i], 3, vs_indices2, vs_scores2);
-                        if (vs_count2 > 0 && vs_scores2[0] > 0.3f) {
-                            vs_boost_count = tokenize(example_docs[vs_indices2[0]].stem, vs_boost_tokens, 64);
-                        }
-                        llm_select_emitter(steps[i], &task);
-                    }
-                    // generate_from_task runs primary emitter(s) AND extra emitters in sequence
-                    generate_from_task(prog, &task, (i == num_steps - 1));
+                llm_select_emitter(steps[i], &task);
             }
-            // collect inherited variables from the main function for next steps
-            // Now also collects scalar variables (not just arrays) for data flow
-            Function *fcur = NULL;
-            for (int fi = 0; fi < prog->num_funcs; fi++)
-                if (strcmp(prog->funcs[fi].name, "main") == 0) { fcur = &prog->funcs[fi]; break; }
-            if (fcur) {
-                for (int vi = 0; vi < fcur->num_vars && num_inherited < 64; vi++) {
-                    int is_const = (strstr(fcur->vars[vi].type, "const") != NULL);
-                    int is_standard_constant = (strcmp(fcur->vars[vi].name, "zero") == 0 || strcmp(fcur->vars[vi].name, "one") == 0
-                        || strcmp(fcur->vars[vi].name, "two") == 0 || strcmp(fcur->vars[vi].name, "three") == 0
-                        || strcmp(fcur->vars[vi].name, "four") == 0 || strcmp(fcur->vars[vi].name, "five") == 0);
-                    int is_input_prompt = (strcmp(fcur->vars[vi].name, "input_prompt") == 0);
-                    // Skip const types, standard constants (zero-one-five), and input_prompt
-                    // Keep arrays AND scalars — let the emitter handle dedup
-                    if (!is_const && !is_standard_constant && !is_input_prompt) {
-                        int already = 0;
-                        for (int ck = 0; ck < num_inherited; ck++) {
-                            if (strcmp(inherited_names[ck], fcur->vars[vi].name) == 0) already = 1;
-                        }
-                        if (!already) {
-                            SNPRINTF_CHECK(inherited_names[num_inherited], sizeof(inherited_names[num_inherited]), "%s", fcur->vars[vi].name);
-                            SNPRINTF_CHECK(inherited_types[num_inherited], sizeof(inherited_types[num_inherited]), "%s", fcur->vars[vi].type);
-                            inherited_counts[num_inherited] = fcur->vars[vi].count;
-                            num_inherited++;
-                        }
+            generate_from_task(prog, &task, (i == num_steps - 1));
+        }
+        Function *fcur = NULL;
+        for (int fi = 0; fi < prog->num_funcs; fi++)
+            if (strcmp(prog->funcs[fi].name, "main") == 0) { fcur = &prog->funcs[fi]; break; }
+        if (fcur) {
+            for (int vi = 0; vi < fcur->num_vars && num_inherited < 64; vi++) {
+                int is_const = (strstr(fcur->vars[vi].type, "const") != NULL);
+                int is_standard_constant = (strcmp(fcur->vars[vi].name, "zero") == 0 || strcmp(fcur->vars[vi].name, "one") == 0
+                    || strcmp(fcur->vars[vi].name, "two") == 0 || strcmp(fcur->vars[vi].name, "three") == 0
+                    || strcmp(fcur->vars[vi].name, "four") == 0 || strcmp(fcur->vars[vi].name, "five") == 0);
+                int is_input_prompt = (strcmp(fcur->vars[vi].name, "input_prompt") == 0);
+                if (!is_const && !is_standard_constant && !is_input_prompt) {
+                    int already = 0;
+                    for (int ck = 0; ck < num_inherited; ck++) {
+                        if (strcmp(inherited_names[ck], fcur->vars[vi].name) == 0) already = 1;
+                    }
+                    if (!already) {
+                        SNPRINTF_CHECK(inherited_names[num_inherited], sizeof(inherited_names[num_inherited]), "%s", fcur->vars[vi].name);
+                        SNPRINTF_CHECK(inherited_types[num_inherited], sizeof(inherited_types[num_inherited]), "%s", fcur->vars[vi].type);
+                        inherited_counts[num_inherited] = fcur->vars[vi].count;
+                        num_inherited++;
                     }
                 }
             }
         }
-        // Exits are now handled by ensure_exit in generate_from_task, which only
-        // adds :exit ! for the last step. No post-processing needed.
-        dataflow_quiet_mode = 0;
-        SNPRINTF_CHECK(desc, desc_size, "multi-step generation (%d steps)", num_steps);
-        return 1;
     }
+    dataflow_quiet_mode = 0;
+    SNPRINTF_CHECK(desc, desc_size, "multi-step generation (%d steps)", num_steps);
+    return 1;
+}
 
-    // Single-step: try learned pattern match first
-    {
-        int lscore;
-        int lidx = match_learned_pattern(prompt, &lscore);
-        if (lidx >= 0) {
-            if (emit_learned_pattern(prog, lidx)) {
-                SNPRINTF_CHECK(desc, desc_size, "learned pattern: %s (score: %d)", learned_patterns[lidx].id, lscore);
-                return 1;
-            }
-        }
-    }
-
-    // Single-step: parse task and use LLM to select emitter
+static int try_smart_single_step(Program *prog, const char *prompt, char *desc, int desc_size) {
     TaskProfile task;
     memset(&task, 0, sizeof(task));
-    current_prompt = prompt;
-    int parsed = parse_task(prompt, &task);
-    if (!parsed) return 0;
+    if (!parse_task(prompt, &task)) return 0;
 
-    // Vector search over example codebase
     vs_boost_count = 0;
     int vs_indices[3];
     float vs_scores[3];
@@ -1967,8 +2315,10 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
             return 1;
         }
     }
+    return 0;
+}
 
-    // Fallback: old arithmetic generator for simple math prompts
+static int try_fallback_arithmetic(Program *prog, const char *prompt, char *desc, int desc_size) {
     char buf[MAX_PROMPT];
     SNPRINTF_CHECK(buf, sizeof(buf), "%s", prompt);
     to_lowercase(buf);
@@ -1982,44 +2332,7 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
     else if (strstr(buf, "int64") || strstr(buf, "int") || strstr(buf, "long")) type = "int64";
 
     int nums[4];
-    int num_count = 0;
-    char *p = buf;
-    while (*p && num_count < 4) {
-        if (isalpha(*p)) {
-            char word[32]; int wi = 0;
-            while (*p && isalpha(*p) && wi < 31) word[wi++] = *p++;
-            word[wi] = '\0';
-            int n = word_to_num(word);
-            if (n >= 0) nums[num_count++] = n;
-            continue;
-        }
-        p++;
-    }
-    p = buf;
-    while (*p && num_count < 4) {
-        if (isdigit(*p)) {
-            char *prev = p - 1;
-            while (prev >= buf && (isalpha(*prev) || *prev == '_')) prev--;
-            prev++;
-            if (prev < p) {
-                char prefix[16]; int pi = 0;
-                while (prev < p && pi < 15) prefix[pi++] = *prev++;
-                prefix[pi] = '\0';
-                if (strcmp(prefix, "int") == 0 || strcmp(prefix, "const") == 0) {
-                    while (*p && isdigit(*p)) p++;
-                    continue;
-                }
-            }
-            {
-                long lv = strtol(p, NULL, 10);
-                if (lv >= INT_MIN && lv <= INT_MAX)
-                    nums[num_count++] = (int)lv;
-            }
-            while (*p && isdigit(*p)) p++;
-            continue;
-        }
-        p++;
-    }
+    int num_count = extract_numbers(buf, nums, 4);
     int n_vals = num_count < 2 ? 2 : (num_count > 3 ? 3 : num_count);
     int avals[3] = {10, 3, 5};
     if (num_count >= 1) avals[0] = nums[0];
@@ -2041,19 +2354,24 @@ int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size)
     return 1;
 }
 
-void write_program(Program *prog, const char *filename) {
-    FILE *f = NULL;
-    if (dry_run_flag) {
-        f = stdout;
-    } else {
-        f = fopen(filename, "w");
-        if (!f) {
-            c_printf(ANSI_RED, "Error: Cannot write to file: %s\n", filename);
-            c_printf(ANSI_YELLOW, "  Hint: Check if the directory exists and you have write permissions\n");
-            return;
-        }
-    }
+int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size) {
+    init_embeddings();
+    index_examples();
+    load_learned_patterns();
 
+    if (try_learned_pattern(prog, prompt, desc, desc_size))
+        return 1;
+
+    if (try_smart_multi_step(prog, prompt, desc, desc_size))
+        return 1;
+
+    if (try_smart_single_step(prog, prompt, desc, desc_size))
+        return 1;
+
+    return try_fallback_arithmetic(prog, prompt, desc, desc_size);
+}
+
+static void write_prog_header(FILE *f, const char *filename, Program *prog) {
     time_t t = time(NULL);
     struct tm *tm = localtime(&t);
     char date[64];
@@ -2073,112 +2391,126 @@ void write_program(Program *prog, const char *filename) {
 
     if (strlen(prog->globals) > 0)
         fprintf(f, "%s\n\n", prog->globals);
+}
+
+static void sync_vars_from_body(Function *fn) {
+    const char *bp = fn->body;
+    while (*bp) {
+        const char *nl = strchr(bp, '\n');
+        size_t llen = nl ? (size_t)(nl - bp) : strlen(bp);
+        if (llen > 0 && llen < 4096) {
+            char line[4096];
+            memcpy(line, bp, llen);
+            line[llen] = '\0';
+            const char *p = line;
+            while (*p == ' ' || *p == '\t') p++;
+            if (strncmp(p, "(set ", 5) == 0) {
+                char type_buf[64], count_buf[64], name_buf[WORD_BUF_SIZE];
+                char rest[4096];
+                int n = sscanf(p + 5, "%63s %63s %255s %4095[^\n)]", type_buf, count_buf, name_buf, rest);
+                if (n >= 3) {
+                    for (int vi = 0; vi < fn->num_vars; vi++) {
+                        if (strcmp(fn->vars[vi].name, name_buf) == 0 && n >= 4) {
+                            char vals[16][64];
+                            int nv = 0;
+                            char *rp = rest;
+                            char *tok;
+                            while ((tok = strtok_r(rp, " ", &rp)) && nv < 16)
+                                SNPRINTF_CHECK(vals[nv++], sizeof(vals[0]), "%s", tok);
+                            if (nv > 0) {
+                                fn->vars[vi].num_values = nv;
+                                for (int vj = 0; vj < nv; vj++)
+                                    SNPRINTF_CHECK(fn->vars[vi].values[vj], sizeof(fn->vars[vi].values[0]), "%.*s", (int)sizeof(fn->vars[vi].values[0]) - 1, vals[vj]);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (!nl) break;
+        bp = nl + 1;
+    }
+}
+
+static void write_function_body(FILE *f, Function *fn) {
+    char emitted_names[4096] = " ";
+    for (int vi = 0; vi < fn->num_vars; vi++) {
+        Variable *v = &fn->vars[vi];
+        fprintf(f, "\t(set %s %d %s", v->type, v->count, v->name);
+        for (int vj = 0; vj < v->num_values; vj++)
+            fprintf(f, " %s", v->values[vj]);
+        fprintf(f, ")\n");
+        size_t en_len = strlen(emitted_names);
+        if (en_len + strlen(v->name) + 2 < sizeof(emitted_names)) {
+            strncat(emitted_names, v->name, sizeof(emitted_names) - en_len - 1);
+            en_len = strlen(emitted_names);
+            strncat(emitted_names, " ", sizeof(emitted_names) - en_len - 1);
+        }
+    }
+    const char *bp = fn->body;
+    while (*bp) {
+        const char *nl = strchr(bp, '\n');
+        size_t llen = nl ? (size_t)(nl - bp) : strlen(bp);
+        int skip = 0;
+        char line[4096];
+        if (llen > 0 && llen < sizeof(line)) {
+            memcpy(line, bp, llen);
+            line[llen] = '\0';
+            const char *p = line;
+            while (*p == ' ' || *p == '\t') p++;
+            if (strncmp(p, "(set ", 5) == 0) {
+                const char *sp = p + 5;
+                while (*sp && *sp != ' ') sp++;
+                if (*sp) { sp++; while (*sp && *sp != ' ') sp++; }
+                if (*sp) { sp++; while (*sp == ' ') sp++; }
+                char vn[WORD_BUF_SIZE]; int vni = 0;
+                while (*sp && *sp != ' ' && *sp != ')' && vni < 255)
+                    vn[vni++] = *sp++;
+                vn[vni] = '\0';
+                if (vni > 0) {
+                    char check[384];
+                    SNPRINTF_CHECK(check, sizeof(check), " %s ", vn);
+                    if (strstr(emitted_names, check) != NULL) {
+                        skip = 1;
+                    } else if (strlen(emitted_names) + vni + 2 < sizeof(emitted_names)) {
+                        size_t en2_len = strlen(emitted_names);
+                        strncat(emitted_names, vn, sizeof(emitted_names) - en2_len - 1);
+                        en2_len = strlen(emitted_names);
+                        strncat(emitted_names, " ", sizeof(emitted_names) - en2_len - 1);
+                    }
+                }
+            }
+        }
+        if (!skip)
+            fprintf(f, "%.*s\n", (int)llen, bp);
+        if (!nl) break;
+        bp = nl + 1;
+    }
+}
+
+void write_program(Program *prog, const char *filename) {
+    FILE *f = NULL;
+    if (dry_run_flag) {
+        f = stdout;
+    } else {
+        f = fopen(filename, "w");
+        if (!f) {
+            c_printf(ANSI_RED, "Error: Cannot write to file: %s\n", filename);
+            c_printf(ANSI_YELLOW, "  Hint: Check if the directory exists and you have write permissions\n");
+            return;
+        }
+    }
+
+    write_prog_header(f, filename, prog);
 
     for (int fi = 0; fi < prog->num_funcs; fi++) {
         Function *fn = &prog->funcs[fi];
         fprintf(f, "(%s func)\n", fn->name);
         if (fn->has_vardef)
             fprintf(f, "\t#var ~ %s\n", fn->vardef_name);
-        // Pre-scan body (set ...) lines to update f->vars values when body overrides
-        // the default value set by token declarations (e.g. token count=0, body (set int64 1 count 5))
-        {
-            const char *bp = fn->body;
-            while (*bp) {
-                const char *nl = strchr(bp, '\n');
-                size_t llen = nl ? (size_t)(nl - bp) : strlen(bp);
-                if (llen > 0 && llen < 4096) {
-                    char line[4096];
-                    memcpy(line, bp, llen);
-                    line[llen] = '\0';
-                    const char *p = line;
-                    while (*p == ' ' || *p == '\t') p++;
-                    if (strncmp(p, "(set ", 5) == 0) {
-                        char type_buf[64], count_buf[64], name_buf[256];
-                        char rest[4096];
-                        int n = sscanf(p + 5, "%63s %63s %255s %4095[^\n)]", type_buf, count_buf, name_buf, rest);
-                        if (n >= 3) {
-                            for (int vi = 0; vi < fn->num_vars; vi++) {
-                                if (strcmp(fn->vars[vi].name, name_buf) == 0 && n >= 4) {
-                                    // parse values from rest
-                                    char vals[16][64];
-                                    int nv = 0;
-                                    char *rp = rest;
-                                    char *tok;
-                                    while ((tok = strtok_r(rp, " ", &rp)) && nv < 16)
-                                        SNPRINTF_CHECK(vals[nv++], sizeof(vals[0]), "%s", tok);
-                                    if (nv > 0) {
-                                        fn->vars[vi].num_values = nv;
-                                        for (int vj = 0; vj < nv; vj++)
-                                            SNPRINTF_CHECK(fn->vars[vi].values[vj], sizeof(fn->vars[vi].values[0]), "%.*s", (int)sizeof(fn->vars[vi].values[0]) - 1, vals[vj]);
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (!nl) break;
-                bp = nl + 1;
-            }
-        }
-        // Track all variable names already emitted as (set ...) in the output
-        char emitted_names[4096] = " ";
-        for (int vi = 0; vi < fn->num_vars; vi++) {
-            Variable *v = &fn->vars[vi];
-            fprintf(f, "\t(set %s %d %s", v->type, v->count, v->name);
-            for (int vj = 0; vj < v->num_values; vj++)
-                fprintf(f, " %s", v->values[vj]);
-            fprintf(f, ")\n");
-            size_t en_len = strlen(emitted_names);
-            if (en_len + strlen(v->name) + 2 < sizeof(emitted_names)) {
-                strncat(emitted_names, v->name, sizeof(emitted_names) - en_len - 1);
-                en_len = strlen(emitted_names);
-                strncat(emitted_names, " ", sizeof(emitted_names) - en_len - 1);
-            }
-        }
-        {
-            // Filter duplicate (set ...) lines from body whose variable name
-            // already appeared in fn->vars[] or a prior body (set ...) line
-            const char *bp = fn->body;
-            while (*bp) {
-                const char *nl = strchr(bp, '\n');
-                size_t llen = nl ? (size_t)(nl - bp) : strlen(bp);
-                int skip = 0;
-                char line[4096];
-                if (llen > 0 && llen < sizeof(line)) {
-                    memcpy(line, bp, llen);
-                    line[llen] = '\0';
-                    const char *p = line;
-                    while (*p == ' ' || *p == '\t') p++;
-                    if (strncmp(p, "(set ", 5) == 0) {
-                        const char *sp = p + 5;
-                        while (*sp && *sp != ' ') sp++;
-                        if (*sp) { sp++; while (*sp && *sp != ' ') sp++; }
-                        if (*sp) { sp++; while (*sp == ' ') sp++; }
-                        char vn[256]; int vni = 0;
-                        while (*sp && *sp != ' ' && *sp != ')' && vni < 255)
-                            vn[vni++] = *sp++;
-                        vn[vni] = '\0';
-                        if (vni > 0) {
-                            char check[384];
-                            SNPRINTF_CHECK(check, sizeof(check), " %s ", vn);
-                            if (strstr(emitted_names, check) != NULL) {
-                                skip = 1;
-                            } else if (strlen(emitted_names) + vni + 2 < sizeof(emitted_names)) {
-                                size_t en2_len = strlen(emitted_names);
-                                strncat(emitted_names, vn, sizeof(emitted_names) - en2_len - 1);
-                                en2_len = strlen(emitted_names);
-                                strncat(emitted_names, " ", sizeof(emitted_names) - en2_len - 1);
-                            }
-                        }
-                    }
-                }
-                if (!skip)
-                    fprintf(f, "%.*s\n", (int)llen, bp);
-                if (!nl) break;
-                bp = nl + 1;
-            }
-        }
+        sync_vars_from_body(fn);
+        write_function_body(f, fn);
         fprintf(f, "(funcend)\n\n");
     }
 
@@ -2298,13 +2630,13 @@ int match_template(const char *prompt, int *best_score) {
     }
 
     for (int i = 0; i < num_templates; i++) {
-        char kwbuf[512];
+        char kwbuf[PATH_BUF_SIZE];
         SNPRINTF_CHECK(kwbuf, sizeof(kwbuf), "%s", templates[i].keywords);
         to_lowercase(kwbuf);
 
         int score = 0;
         int num_kw = 0;
-        char kwcopy[512];
+        char kwcopy[PATH_BUF_SIZE];
         SNPRINTF_CHECK(kwcopy, sizeof(kwcopy), "%s", kwbuf);
         char *saveptr2;
         char *kw = strtok_r(kwcopy, " ,/", &saveptr2);
@@ -2362,7 +2694,7 @@ static int run_cmd(const char **argv) {
 }
 
 int validate_code(const char *filename) {
-    char ppname[512];
+    char ppname[PATH_BUF_SIZE];
     const char *dot = strrchr(filename, '.');
     if (dot) {
         int len = dot - filename;
@@ -2372,7 +2704,7 @@ int validate_code(const char *filename) {
     }
     const char *include_dir = getenv("L1VM_INCLUDE");
     if (!include_dir) {
-        static char fallback[1024];
+        static char fallback[FULLPATH_BUF_SIZE];
         if (l1vm_root[0]) {
             SNPRINTF_CHECK(fallback, sizeof(fallback), "%s/include/", l1vm_root);
         } else {
@@ -2385,8 +2717,8 @@ int validate_code(const char *filename) {
 
     const char *l1pre_bin = "l1pre";
     const char *l1com_bin = "l1com";
-    char l1pre_path[1024];
-    char l1com_path[1024];
+    char l1pre_path[FULLPATH_BUF_SIZE];
+    char l1com_path[FULLPATH_BUF_SIZE];
     if (l1vm_root[0]) {
         SNPRINTF_CHECK(l1pre_path, sizeof(l1pre_path), "%s/bin/l1pre", l1vm_root);
         l1pre_bin = l1pre_path;
@@ -2402,7 +2734,7 @@ int validate_code(const char *filename) {
         return 0;
     }
 
-    char compname[512];
+    char compname[PATH_BUF_SIZE];
     SNPRINTF_CHECK(compname, sizeof(compname), "%.*s_pp", (int)(dot ? dot - filename : (int)strlen(filename)), filename);
     const char *l1com_argv[] = {l1com_bin, compname, NULL};
     ret = run_cmd(l1com_argv);
@@ -2462,10 +2794,9 @@ int generate_code(const char *prompt, const char *filename) {
     }
 
     // Smart generation via LLM emitter system
-    char desc[512] = {0};
+    char desc[PATH_BUF_SIZE] = {0};
     if (smart_generate(prog, prompt, desc, sizeof(desc))) {
-        if (is_q) c_printf(ANSI_CYAN, "Code example written to: %s\n", filename);
-        else c_printf(ANSI_GREEN, "Smart generated (plan): %s\n", desc);
+        c_printf(ANSI_GREEN, "Smart generated (plan): %s\n", desc);
         write_program(prog, filename);
         free_program(prog); free(prog);
         return 1;
@@ -2474,19 +2805,15 @@ int generate_code(const char *prompt, const char *filename) {
     // Learned patterns as fallback emitter
     load_learned_patterns();
     {
-        int lscore;
-        int lidx = match_learned_pattern(prompt, &lscore);
-        if (lidx >= 0) {
-            if (emit_learned_pattern(prog, lidx)) {
-                c_printf(ANSI_GREEN, "Using learned pattern: %s (score: %d)\n", learned_patterns[lidx].id, lscore);
-                write_program(prog, filename);
-                free_program(prog); free(prog);
-                return 1;
-            }
+        const char *lid; int lsc;
+        if (try_learned_pattern_info(prog, prompt, &lid, &lsc)) {
+            c_printf(ANSI_GREEN, "Using learned pattern: %s (score: %d)\n", lid, lsc);
+            write_program(prog, filename);
+            free_program(prog); free(prog);
+            return 1;
         }
     }
 
-    // Nearest-neighbor fallback: use vector search to find closest example
     init_embeddings();
     index_examples();
     int nn_indices[1];
@@ -2539,7 +2866,7 @@ int self_test(void) {
     int passed = 0, failed = 0;
     printf("Self-test: running %d prompts through full pipeline + validation\n\n", np);
     for (int i = 0; i < np; i++) {
-        char fname[256];
+        char fname[WORD_BUF_SIZE];
         prompt_to_filename(test_prompts[i], fname, sizeof(fname));
         printf("[%3d/%3d] %-40s ", i + 1, np, test_prompts[i]);
         fflush(stdout);
@@ -2554,7 +2881,7 @@ int self_test(void) {
         }
         if (ok) { c_printf(ANSI_GREEN, "  PASS\n"); passed++; }
         else    { c_printf(ANSI_RED,   "  FAIL\n"); failed++; }
-        char fullpath[1024];
+        char fullpath[FULLPATH_BUF_SIZE];
         prepend_out_dir(fname, fullpath, sizeof(fullpath));
         (void)remove(fullpath);
     }
@@ -2626,7 +2953,7 @@ static char **cmd_completion(const char *text, int start, int end) {
 
 void interactive_mode(void) {
     char prompt[MAX_PROMPT];
-    char last_fname[256] = {0};
+    char last_fname[WORD_BUF_SIZE] = {0};
     int has_last = 0;
 
     printf("Brackets Code Generator %s\n", VERSION_TXT);
@@ -2636,7 +2963,7 @@ void interactive_mode(void) {
     rl_attempted_completion_function = cmd_completion;
     using_history();
     const char *histfile = getenv("HOME");
-    char histpath[512] = "";
+    char histpath[PATH_BUF_SIZE] = "";
     if (histfile) { SNPRINTF_CHECK(histpath, sizeof(histpath), "%s/.brackets-code_history", histfile); read_history(histpath); }
     char *rl_line;
     while ((rl_line = readline("> ")) != NULL) {
@@ -2682,7 +3009,7 @@ void interactive_mode(void) {
         }
 
         if (strncmp(prompt, "/learn", 6) == 0) {
-            char lpath[1024] = {0}, lkeywords[512] = {0}, ldesc[512] = {0};
+            char lpath[FULLPATH_BUF_SIZE] = {0}, lkeywords[PATH_BUF_SIZE] = {0}, ldesc[PATH_BUF_SIZE] = {0};
             int n = sscanf(prompt + 6, " %1023s %511[^\"] \"%255[^\"]\"", lpath, lkeywords, ldesc);
             if (n == 0) {
                 printf("Usage: /learn <file.l1com> [keywords] [\"description\"]\n");
@@ -2741,7 +3068,7 @@ void interactive_mode(void) {
             continue;
         }
 
-        char fname[256];
+        char fname[WORD_BUF_SIZE];
         prompt_to_filename(prompt, fname, sizeof(fname));
         generate_code(prompt, fname);
         SNPRINTF_CHECK(last_fname, sizeof(last_fname), "%s", fname);
@@ -2751,74 +3078,45 @@ void interactive_mode(void) {
 #ifdef HAVE_READLINE
     {
         const char *hf = getenv("HOME");
-        if (hf) { char hp[512]; SNPRINTF_CHECK(hp, sizeof(hp), "%s/.brackets-code_history", hf); write_history(hp); }
+        if (hf) { char hp[PATH_BUF_SIZE]; SNPRINTF_CHECK(hp, sizeof(hp), "%s/.brackets-code_history", hf); write_history(hp); }
     }
 #endif
 }
 
-int main(int argc, char *argv[]) {
-    use_color = isatty(STDOUT_FILENO);
-    load_synonyms();
-    dsl_load_rules("dsl");
-    if (argc == 1) {
-        interactive_mode();
-        return 0;
-    }
-
+static int dispatch_subcommands(int argc, char *argv[]) {
     if (argc >= 2 && (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0)) {
         show_help();
         return 0;
     }
-
     if (argc >= 2 && (strcmp(argv[1], "--list") == 0 || strcmp(argv[1], "-l") == 0)) {
         printf("Available templates:\n");
         for (int i = 0; i < num_templates; i++)
             printf("  %-25s %s\n", templates[i].keywords, templates[i].desc);
         return 0;
     }
-
     if (argc >= 2 && strcmp(argv[1], "--learn") == 0) {
-        if (argc < 3) {
-            fprintf(stderr, "Usage: %s --learn <file.l1com> [keywords] [description]\n", argv[0]);
-            return 1;
-        }
-        const char *lpath = argv[2];
-        const char *lkeywords = (argc > 3) ? argv[3] : "";
-        const char *ldesc = (argc > 4) ? argv[4] : "";
+        if (argc < 3) { fprintf(stderr, "Usage: %s --learn <file.l1com> [keywords] [description]\n", argv[0]); return 1; }
         ensure_learned_dir();
-        return learn_from_file(lpath, lkeywords, ldesc) ? 0 : 1;
+        return learn_from_file(argv[2], (argc > 3) ? argv[3] : "", (argc > 4) ? argv[4] : "") ? 0 : 1;
     }
-
     if (argc >= 2 && strcmp(argv[1], "--forget") == 0) {
-        if (argc < 3) {
-            fprintf(stderr, "Usage: %s --forget <pattern-id>\n", argv[0]);
-            return 1;
-        }
+        if (argc < 3) { fprintf(stderr, "Usage: %s --forget <pattern-id>\n", argv[0]); return 1; }
         ensure_learned_dir();
         load_learned_patterns();
         return forget_learned(argv[2]) ? 0 : 1;
     }
-
     if (argc >= 2 && (strcmp(argv[1], "--list-learned") == 0 || strcmp(argv[1], "-L") == 0)) {
         ensure_learned_dir();
         load_learned_patterns();
         list_learned();
         return 0;
     }
-
     if (argc >= 2 && (strcmp(argv[1], "--search") == 0 || strcmp(argv[1], "-s") == 0)) {
-        if (argc < 3) {
-            fprintf(stderr, "Usage: %s --search <query>\n", argv[0]);
-            return 1;
-        }
+        if (argc < 3) { fprintf(stderr, "Usage: %s --search <query>\n", argv[0]); return 1; }
         init_embeddings();
         index_examples();
-        if (num_examples == 0) {
-            printf("No examples indexed (directory '%s' not found).\n", EXAMPLE_DIR);
-            return 1;
-        }
-        int indices[MAX_TOP_K];
-        float scores[MAX_TOP_K];
+        if (num_examples == 0) { printf("No examples indexed (directory '%s' not found).\n", EXAMPLE_DIR); return 1; }
+        int indices[MAX_TOP_K]; float scores[MAX_TOP_K];
         int n = search_examples(argv[2], MAX_TOP_K, indices, scores);
         printf("Vector search results for: \"%s\"\n", argv[2]);
         printf("  Found %d matches in %d examples\n", n, num_examples);
@@ -2826,8 +3124,6 @@ int main(int argc, char *argv[]) {
             printf("  %2d. %-40s (%.2f)\n", i+1, example_docs[indices[i]].stem, scores[i]);
         return 0;
     }
-
-    int arg_idx = 1;
     if (argc >= 2 && (strcmp(argv[1], "--self-test") == 0 || strcmp(argv[1], "-t") == 0)) {
         validate_flag = 1;
         return self_test() ? 0 : 1;
@@ -2841,31 +3137,34 @@ int main(int argc, char *argv[]) {
         printf("complete -F _brackets_code_completions brackets-code\n");
         return 0;
     }
+    return -1;
+}
 
-    // Scan for global flags before positional args
-    while (arg_idx < argc) {
-        if (strcmp(argv[arg_idx], "--verbose") == 0) { verbose_flag = 1; arg_idx++; }
-        else if (strcmp(argv[arg_idx], "--dry-run") == 0) { dry_run_flag = 1; arg_idx++; }
-        else if (strcmp(argv[arg_idx], "--out-dir") == 0) {
-            if (arg_idx + 1 < argc) { SNPRINTF_CHECK(out_dir, sizeof(out_dir), "%s", argv[arg_idx + 1]); arg_idx += 2; }
+static int parse_global_flags(int argc, char *argv[], int *arg_idx) {
+    while (*arg_idx < argc) {
+        if (strcmp(argv[*arg_idx], "--verbose") == 0) { verbose_flag = 1; (*arg_idx)++; }
+        else if (strcmp(argv[*arg_idx], "--dry-run") == 0) { dry_run_flag = 1; (*arg_idx)++; }
+        else if (strcmp(argv[*arg_idx], "--out-dir") == 0) {
+            if (*arg_idx + 1 < argc) { SNPRINTF_CHECK(out_dir, sizeof(out_dir), "%s", argv[*arg_idx + 1]); *arg_idx += 2; }
             else { fprintf(stderr, "Usage: ... --out-dir <directory>\n"); return 1; }
         }
-        else if (strcmp(argv[arg_idx], "--l1vm-root") == 0) {
-            if (arg_idx + 1 < argc) {
-                SNPRINTF_CHECK(l1vm_root, sizeof(l1vm_root), "%s", argv[arg_idx + 1]); arg_idx += 2;
+        else if (strcmp(argv[*arg_idx], "--l1vm-root") == 0) {
+            if (*arg_idx + 1 < argc) {
+                SNPRINTF_CHECK(l1vm_root, sizeof(l1vm_root), "%s", argv[*arg_idx + 1]); *arg_idx += 2;
                 struct stat st;
                 if (stat(l1vm_root, &st) != 0 || !S_ISDIR(st.st_mode)) {
                     fprintf(stderr, "Error: --l1vm-root '%s' is not a valid directory\n", l1vm_root);
                     return 1;
                 }
-            }
-            else { fprintf(stderr, "Usage: ... --l1vm-root <path>\n"); return 1; }
+            } else { fprintf(stderr, "Usage: ... --l1vm-root <path>\n"); return 1; }
         }
-        else if (strcmp(argv[arg_idx], "--validate") == 0 || strcmp(argv[arg_idx], "-v") == 0) { validate_flag = 1; arg_idx++; }
+        else if (strcmp(argv[*arg_idx], "--validate") == 0 || strcmp(argv[*arg_idx], "-v") == 0) { validate_flag = 1; (*arg_idx)++; }
         else break;
     }
+    return 0;
+}
 
-    // Batch mode: consumes all remaining flags, expects batch-file right after --batch
+static int run_single_prompt(int argc, char *argv[], int arg_idx) {
     if (argc >= arg_idx + 2 && (strcmp(argv[arg_idx], "--batch") == 0)) {
         const char *batch_file = argv[arg_idx + 1];
         FILE *bf = fopen(batch_file, "r");
@@ -2880,15 +3179,14 @@ int main(int argc, char *argv[]) {
             trim(bline);
             if (strlen(bline) == 0) continue;
             total++;
-            char bfname[512];
+            char bfname[PATH_BUF_SIZE];
             prompt_to_filename(bline, bfname, sizeof(bfname));
-            char bfull[1024];
+            char bfull[FULLPATH_BUF_SIZE];
             prepend_out_dir(bfname, bfull, sizeof(bfull));
             int bgen = generate_code(bline, bfull);
             int bok = 0;
-            if (bgen && validate_flag) {
-                if (validate_code(bfull)) { bok = 1; }
-            } else if (bgen) { bok = 1; }
+            if (bgen && validate_flag) { if (validate_code(bfull)) bok = 1; }
+            else if (bgen) bok = 1;
             if (bok) { c_printf(ANSI_GREEN, "[batch] %s -> %s OK\n", bline, bfull); good++; }
             else     { c_printf(ANSI_RED,   "[batch] %s -> %s FAIL\n", bline, bfull); }
         }
@@ -2904,7 +3202,6 @@ int main(int argc, char *argv[]) {
     }
 
     const char *prompt = argv[arg_idx++];
-    // Pipe mode: prompt "-" reads from stdin
     char pipe_buf[MAX_PROMPT];
     if (strcmp(prompt, "-") == 0) {
         size_t nread = 0;
@@ -2914,17 +3211,13 @@ int main(int argc, char *argv[]) {
         pipe_buf[nread] = '\0';
         prompt = pipe_buf;
     }
-    char fname[256];
-
+    char fname[WORD_BUF_SIZE];
     if (arg_idx < argc) {
         SNPRINTF_CHECK(fname, sizeof(fname), "%s", argv[arg_idx]);
-        // block path traversal in filename
         if (strstr(fname, "..") && (
             fname[0] == '.' ||
-            strstr(fname, "/..") ||
-            strstr(fname, "\\..") ||
-            strstr(fname, "..\\") ||
-            strstr(fname, "../") ||
+            strstr(fname, "/..") || strstr(fname, "\\..") ||
+            strstr(fname, "..\\") || strstr(fname, "../") ||
             (strlen(fname) >= 2 && strcmp(fname + strlen(fname) - 2, "..") == 0)
         )) {
             c_printf(ANSI_RED, "Error: Filename must not contain '..' path components (path traversal blocked)\n");
@@ -2934,7 +3227,7 @@ int main(int argc, char *argv[]) {
     } else {
         prompt_to_filename(prompt, fname, sizeof(fname));
     }
-    char fullpath[1024];
+    char fullpath[FULLPATH_BUF_SIZE];
     prepend_out_dir(fname, fullpath, sizeof(fullpath));
 
     int validated = 0;
@@ -2943,18 +3236,9 @@ int main(int argc, char *argv[]) {
         retry_seed = retry;
         int gen_ok = generate_code(prompt, fullpath);
         if (gen_ok && validate_flag) {
-            if (validate_code(fullpath)) {
-                validated = 1;
-                exit_code = 0;
-                break;
-            } else {
-                c_printf(ANSI_YELLOW, "Validation failed, retrying with different code generation (attempt %d/3)...\n", retry + 1);
-            }
-        } else if (gen_ok) {
-            validated = 1;
-            exit_code = 0;
-            break;
-        }
+            if (validate_code(fullpath)) { validated = 1; exit_code = 0; break; }
+            else c_printf(ANSI_YELLOW, "Validation failed, retrying with different code generation (attempt %d/3)...\n", retry + 1);
+        } else if (gen_ok) { validated = 1; exit_code = 0; break; }
     }
     if (!validated && validate_flag) {
         c_printf(ANSI_RED, "Warning: Code could not be validated after 3 attempts.\n");
@@ -2964,4 +3248,20 @@ int main(int argc, char *argv[]) {
         exit_code = 1;
     }
     return exit_code;
+}
+
+int main(int argc, char *argv[]) {
+    use_color = isatty(STDOUT_FILENO);
+    load_synonyms();
+    dsl_load_rules("dsl");
+    if (argc == 1) { interactive_mode(); return 0; }
+
+    int sc = dispatch_subcommands(argc, argv);
+    if (sc >= 0) return sc;
+
+    int arg_idx = 1;
+    if (parse_global_flags(argc, argv, &arg_idx) != 0)
+        return 1;
+
+    return run_single_prompt(argc, argv, arg_idx);
 }

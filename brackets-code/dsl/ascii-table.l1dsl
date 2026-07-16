@@ -1,8 +1,6 @@
 // ascii-table.l1dsl
 parser: "keywords for matching"
 match: has_ascii_table
-token: token type and name
-result: result type and name
 include: intr-func.l1h
 desc: "print ASCII table from 32 to 127"
 code:

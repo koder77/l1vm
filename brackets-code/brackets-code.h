@@ -33,7 +33,7 @@
 #include <sys/wait.h>
 #include <spawn.h>
 
-#define VERSION_TXT "0.6.8"
+#define VERSION_TXT "0.6.7"
 
 #define MAX_LINE 4096
 #define MAX_VARS 48
@@ -42,6 +42,11 @@
 #define MAX_CODE 65536
 #define MAX_OUTPUT 4096
 #define MAX_VALUES 16
+
+#define PATH_BUF_SIZE 512
+#define WORD_BUF_SIZE 256
+#define FULLPATH_BUF_SIZE 1024
+#define DEFAULT_ELEMENT_COUNT 5
 
 #define EMBED_DIM 32
 #define VOCAB_SIZE 72
@@ -289,6 +294,17 @@ enum {
 #define TF_ISSET(tf, n)  ((tf)->flags[(n) / 64] &  (1ULL << ((n) % 64)))
 #define TF_CLEAR(tf)     (memset((tf)->flags, 0, sizeof((tf)->flags)))
 
+#define PATTERN_MAX_KEYWORDS 4
+#define PATTERN_MAX_EXCLUDES 4
+
+typedef struct {
+    const char *any_of[PATTERN_MAX_KEYWORDS];
+    const char *must_have[PATTERN_MAX_KEYWORDS];
+    const char *excludes[PATTERN_MAX_EXCLUDES];
+    int flag;
+    int clear_algorithm;
+} PatternTableEntry;
+
 
 // ==================== DATA STRUCTURES ====================
 
@@ -502,152 +518,6 @@ int emit_learned_step(Program *prog, int learned_idx);
 int has_learned_id(const char *id);
 int forget_learned(const char *id);
 void list_learned(void);
-
-// Emitters
-void emit_math(Program *prog, Function *f, const char *type, const char *op, const int *vals, int n, int last_step);
-void emit_input_loop(Program *prog, Function *f, int count, const char *type, const char *op);
-void emit_for_sum(Program *prog, Function *f, int n);
-void emit_print_even(Program *prog, Function *f, int n);
-void emit_input_find_max(Program *prog, Function *f, int count);
-void emit_countdown_from(Program *prog, Function *f, int start);
-void emit_fib_seq(Program *prog, Function *f, int n);
-void emit_input_sort(Program *prog, Function *f, int count, int skip_input, int descending, const char *type);
-void emit_median(Program *prog, Function *f, int count, int skip_input);
-void emit_string_cat(Program *prog, Function *f);
-void emit_string_compare(Program *prog, Function *f);
-void emit_array_assign(Program *prog, Function *f);
-void emit_array_reverse(Program *prog, Function *f, int skip_input, int array_count);
-void emit_array_find(Program *prog, Function *f, int skip_input);
-void emit_input_factorial(Program *prog, Function *f);
-void emit_array_vmath(Program *prog, Function *f, int skip_input);
-void emit_read_file(Program *prog, Function *f);
-void emit_write_file(Program *prog, Function *f);
-void emit_string_to_num(Program *prog, Function *f);
-void emit_timer(Program *prog, Function *f);
-void emit_factorial(Program *prog, Function *f);
-void emit_fizzbuzz(Program *prog, Function *f);
-void emit_primes(Program *prog, Function *f, int max_val);
-void emit_even_odd(Program *prog, Function *f);
-void emit_power(Program *prog, Function *f);
-void emit_multiplication_table(Program *prog, Function *f);
-void emit_guess_number(Program *prog, Function *f);
-void emit_gcd(Program *prog, Function *f);
-void emit_random_number(Program *prog, Function *f);
-void emit_hello_name(Program *prog, Function *f);
-void emit_array_min_max(Program *prog, Function *f);
-void emit_bool_demo(Program *prog, Function *f);
-void emit_bit_check(Program *prog, Function *f);
-void emit_leap_year(Program *prog, Function *f);
-void emit_temp_convert(Program *prog, Function *f);
-void emit_circle_area(Program *prog, Function *f);
-void emit_average(Program *prog, Function *f, int skip_input);
-void emit_selection_sort(Program *prog, Function *f, int count, int skip_input);
-void emit_fann_create(Program *prog, Function *f);
-void emit_fann_train(Program *prog, Function *f);
-void emit_fann_run(Program *prog, Function *f);
-void emit_palindrome(Program *prog, Function *f);
-void emit_lcm(Program *prog, Function *f);
-void emit_collatz(Program *prog, Function *f);
-void emit_sum_of_digits(Program *prog, Function *f);
-void emit_function(Program *prog, Function *f);
-void emit_reverse_string(Program *prog, Function *f);
-void emit_armstrong(Program *prog, Function *f);
-void emit_perfect_number(Program *prog, Function *f);
-void emit_count_vowels(Program *prog, Function *f);
-void emit_anagram_check(Program *prog, Function *f);
-void emit_string_to_upper(Program *prog, Function *f);
-void emit_string_to_lower(Program *prog, Function *f);
-void emit_caesar_cipher(Program *prog, Function *f);
-void emit_palindrome_string(Program *prog, Function *f);
-void emit_binary_search(Program *prog, Function *f);
-void emit_square_root(Program *prog, Function *f);
-void emit_prime_factorization(Program *prog, Function *f);
-void emit_standard_deviation(Program *prog, Function *f, int skip_input);
-void emit_compound_interest(Program *prog, Function *f);
-void emit_decimal_to_binary(Program *prog, Function *f);
-void emit_dice_roll(Program *prog, Function *f);
-void emit_double_math(Program *prog, Function *f, const char *op);
-void emit_double_circle_area(Program *prog, Function *f);
-void emit_double_average(Program *prog, Function *f, int skip_input);
-void emit_double_compound_interest(Program *prog, Function *f);
-void emit_double_pythagoras(Program *prog, Function *f);
-void emit_double_temp_convert(Program *prog, Function *f);
-void emit_double_sqrt(Program *prog, Function *f);
-void emit_double_power(Program *prog, Function *f);
-void emit_double_volume_sphere(Program *prog, Function *f);
-void emit_double_discount(Program *prog, Function *f);
-void emit_double_simple_interest(Program *prog, Function *f);
-void emit_double_bmi(Program *prog, Function *f);
-void emit_double_standard_deviation(Program *prog, Function *f, int skip_input);
-void emit_double_kinetic_energy(Program *prog, Function *f);
-void emit_add(Program *prog, Function *f);
-void emit_sub(Program *prog, Function *f);
-void emit_mul(Program *prog, Function *f);
-void emit_div(Program *prog, Function *f);
-void emit_double_add(Program *prog, Function *f);
-void emit_double_sub(Program *prog, Function *f);
-void emit_double_mul(Program *prog, Function *f);
-void emit_double_div(Program *prog, Function *f);
-void emit_hello_world(Program *prog, Function *f);
-void emit_string_find(Program *prog, Function *f);
-void emit_string_split(Program *prog, Function *f);
-void emit_switch_demo(Program *prog, Function *f);
-void emit_type_convert(Program *prog, Function *f);
-void emit_iterative_factorial(Program *prog, Function *f);
-void emit_random_walk(Program *prog, Function *f);
-void emit_bar_chart(Program *prog, Function *f);
-void emit_hanoi_tower(Program *prog, Function *f);
-void emit_ascii_art(Program *prog, Function *f);
-void emit_number_to_words(Program *prog, Function *f);
-void emit_temperature_table(Program *prog, Function *f);
-void emit_loop_demo(Program *prog, Function *f);
-void emit_pointer_demo(Program *prog, Function *f);
-void emit_struct_demo(Program *prog, Function *f);
-void emit_hex_binary(Program *prog, Function *f);
-void emit_shell_args(Program *prog, Function *f);
-void emit_time_demo(Program *prog, Function *f);
-void emit_string_length(Program *prog, Function *f);
-void emit_stack(Program *prog, Function *f);
-void emit_queue(Program *prog, Function *f);
-void emit_insertion_sort(Program *prog, Function *f, int count, int skip_input);
-void emit_calculator(Program *prog, Function *f);
-void emit_unit_converter(Program *prog, Function *f);
-void emit_rock_paper_scissors(Program *prog, Function *f);
-void emit_pyramid(Program *prog, Function *f);
-void emit_temp_converter_menu(Program *prog, Function *f);
-void emit_sort_stats(Program *prog, Function *f);
-void emit_string_analyzer(Program *prog, Function *f);
-void emit_number_analyzer(Program *prog, Function *f);
-void emit_filter_numbers(Program *prog, Function *f);
-void emit_random_generator(Program *prog, Function *f);
-void emit_math_menu(Program *prog, Function *f);
-void emit_quiz_game(Program *prog, Function *f);
-void emit_bmi_calculator(Program *prog, Function *f);
-void emit_statistics_suite(Program *prog, Function *f);
-void emit_linked_list(Program *prog, Function *f);
-void emit_binary_search_tree(Program *prog, Function *f);
-void emit_tree_traversal(Program *prog, Function *f);
-void emit_graph_bfs_dfs(Program *prog, Function *f);
-void emit_n_queens(Program *prog, Function *f);
-void emit_sudoku(Program *prog, Function *f);
-void emit_levenshtein_distance(Program *prog, Function *f);
-void emit_maze_generator(Program *prog, Function *f);
-void emit_maze_solver(Program *prog, Function *f);
-void emit_monte_carlo_pi(Program *prog, Function *f);
-void emit_matrix_multiplication(Program *prog, Function *f);
-void emit_matrix_transpose(Program *prog, Function *f);
-void emit_numerical_integration(Program *prog, Function *f);
-void emit_complex_numbers(Program *prog, Function *f);
-void emit_linear_regression(Program *prog, Function *f);
-void emit_base_converter(Program *prog, Function *f);
-void emit_freq_analysis(Program *prog, Function *f);
-void emit_shuffle(Program *prog, Function *f);
-void emit_weighted_random(Program *prog, Function *f);
-void emit_ascii_table(Program *prog, Function *f);
-void emit_bignum_math(Program *prog, Function *f);
-void emit_password_card(Program *prog, Function *f);
-void emit_chess_problem(Program *prog, Function *f);
-void emit_shell_repl(Program *prog, Function *f);
 
 // Template generators
 void gen_from_dsl_keyword(Program *prog, const char *dsl_keyword);

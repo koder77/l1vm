@@ -1,8 +1,6 @@
 // shell-args.l1dsl
 parser: "keywords for matching"
 match: has_shell_args
-token: token type and name
-result: result type and name
 include: intr-func.l1h
 desc: "command-line args demo"
 code:

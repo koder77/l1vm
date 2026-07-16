@@ -1,8 +1,6 @@
 // bignum-math.l1dsl
 parser: "keywords for matching"
 match: has_bignum_math
-token: token type and name
-result: result type and name
 include: intr-func.l1h
 desc: "compute 2^4096 using bignum math"
 code:
