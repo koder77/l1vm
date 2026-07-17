@@ -63,14 +63,12 @@ zusammenzaehlen:sum
 zusammenzählen:sum
 auffangen:input
 capture:input
-collect:input
 eingabe:input
 einlesen:read
 erfassen:input
 erfasse:input
 erhalten:input
 fetch:read
-gather:input
 gib ein:input
 import:read
 importieren:read
@@ -389,9 +387,8 @@ big:num
 include:file
 header:file
 vector:array
-collection:array
-locate:find
-lookup:find
+ collection:array
+ lookup:find
 copy:assign
 duplicate:assign
 clone:assign

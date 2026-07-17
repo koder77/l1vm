@@ -47,7 +47,7 @@ code:
     (((prod_a prod_b !=) f :=) f if)
         (one f :=)
     (endif)
-    (((f zero ==) f :=) f if)
+    (((f zero ==) f :=) f if+)
         (result_yes :print_s !)
     (else)
         (result_no :print_s !)

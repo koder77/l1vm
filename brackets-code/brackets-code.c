@@ -36,11 +36,16 @@
 #include "brackets-code.h"
 #include "dsl.h"
 
+/* Suppress clang static analyzer false positives for safe memset/snprintf/strncat usage */
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 int validate_flag = 0;
 int retry_seed = 0;
 int verbose_flag = 0;
 int dry_run_flag = 0;
-int dataflow_quiet_mode = 0;
 char out_dir[PATH_BUF_SIZE] = "";
 char l1vm_root[PATH_BUF_SIZE] = "";
 
@@ -680,7 +685,7 @@ static int _has_word_lowered(const char *lowered_text, const char *keyword) {
     while (*p) {
         while (*p && !isalpha((unsigned char)*p)) p++;
         if (!*p) break;
-        char *start = p;
+        const char *start = p;
         while (*p && isalpha((unsigned char)*p)) p++;
         int len = (int)(p - start);
         if (len >= WORD_BUF_SIZE) len = WORD_BUF_SIZE - 1;
@@ -792,10 +797,6 @@ static int extract_numbers(const char *prompt, int *nums, int max_nums) {
 }
 
 // Forward declarations for plan-based generator
-int parse_task(const char *prompt, TaskProfile *task);
-int generate_from_task(Program *prog, TaskProfile *task, int last_step);
-
-
 
 /* ── parse_task helpers ─────────────────────────────────────────────────── */
 
@@ -1067,7 +1068,7 @@ static const PatternTableEntry pattern_table[] = {
     /* misc */
     { {"bool"},               {NULL}, {NULL}, FLAG_bool_demo, 1 },
     { {"boolean"},            {NULL}, {NULL}, FLAG_bool_demo, 1 },
-    { {"check"},              {NULL}, {NULL}, FLAG_bit_check, 1 },
+    { {"bit"},       {"check"}, {NULL}, FLAG_bit_check, 1 },
     { {"bit"},         {"set"}, {NULL}, FLAG_bit_check, 1 },
     { {"bit"},       {"clear"}, {NULL}, FLAG_bit_check, 1 },
     { {"leap"},       {"year"}, {NULL}, FLAG_leap_year, 1 },
@@ -1717,6 +1718,7 @@ static void match_pattern_table(const char *buf, TaskProfile *task) {
 /* ── Helper functions for complex patterns ────────────────────────────── */
 
 static void detect_sum_range_pattern(const char *prompt, const char *buf, TaskProfile *task) {
+    (void)prompt;
     if ((_has_word_lowered(buf, "sum") || _has_word_lowered(buf, "summe")) && _has_word_lowered(buf, "to") && TF_ISSET(task, FLAG_literals)) {
         TF_SET(task, FLAG_sum_range);
         if (task->num_literals >= 1) task->sum_range_n = task->literals[0];
@@ -1774,6 +1776,7 @@ static void detect_countdown_pattern(const char *buf, TaskProfile *task) {
 }
 
 static void detect_input_sort_pattern(const char *buf, TaskProfile *task) {
+    (void)buf;
     if (TF_ISSET(task, FLAG_sort) && (TF_ISSET(task, FLAG_input) || TF_ISSET(task, FLAG_descending))) {
         TF_SET(task, FLAG_input_sort);
         if (task->input_count > 0) task->input_sort_count = task->input_count;
@@ -1784,6 +1787,7 @@ static void detect_input_sort_pattern(const char *buf, TaskProfile *task) {
 }
 
 static void detect_median_pattern(const char *buf, TaskProfile *task) {
+    (void)buf;
     if (TF_ISSET(task, FLAG_median) && TF_ISSET(task, FLAG_input)) {
         if (task->input_count > 0) task->median_count = task->input_count;
         else if (task->num_literals >= 1) task->median_count = task->literals[0];
@@ -2232,12 +2236,10 @@ static int try_smart_multi_step(Program *prog, const char *prompt, char *desc, i
             if (!parse_task(steps[i], &task)) {
                 c_printf(ANSI_RED, "Error: Could not understand step %d: \"%s\"\n", i + 1, steps[i]);
                 c_printf(ANSI_YELLOW, "  Hint: Try rephrasing with clearer keywords (e.g., 'sort numbers', 'print result')\n");
-                dataflow_quiet_mode = 0;
                 return 0;
             }
             task.skip_input = (i > 0);
             task.suppress_output = (i < num_steps - 1);
-            dataflow_quiet_mode = task.suppress_output;
             for (int iv = 0; iv < num_inherited; iv++) {
                 SNPRINTF_CHECK(task.inherit_var_names[task.num_inherit_vars], sizeof(task.inherit_var_names[task.num_inherit_vars]), "%.*s", (int)sizeof(task.inherit_var_names[task.num_inherit_vars]) - 1, inherited_names[iv]);
                 SNPRINTF_CHECK(task.inherit_var_types[task.num_inherit_vars], sizeof(task.inherit_var_types[task.num_inherit_vars]), "%.*s", (int)sizeof(task.inherit_var_types[task.num_inherit_vars]) - 1, inherited_types[iv]);
@@ -2288,7 +2290,6 @@ static int try_smart_multi_step(Program *prog, const char *prompt, char *desc, i
             }
         }
     }
-    dataflow_quiet_mode = 0;
     SNPRINTF_CHECK(desc, desc_size, "multi-step generation (%d steps)", num_steps);
     return 1;
 }
@@ -2668,8 +2669,6 @@ int match_template(const char *prompt, int *best_score) {
     return best_idx;
 }
 
-void prepend_out_dir(const char *fname, char *buf, int bufsize);
-
 extern char **environ;
 
 static int run_cmd(const char **argv) {
@@ -3000,10 +2999,32 @@ void interactive_mode(void) {
                 trim(fname);
             }
             if (strlen(fname) == 0) {
-                printf("Please specify a filename.\n");
+                printf("Usage: /save <filename>\n");
                 printf("Last generated was: %s\n", has_last ? last_fname : "(none)");
+            } else if (!has_last) {
+                printf("No code generated yet. Generate something first.\n");
             } else {
-                printf("Use one-shot mode to generate specific code.\n");
+                char src[FULLPATH_BUF_SIZE], dst[FULLPATH_BUF_SIZE];
+                SNPRINTF_CHECK(src, sizeof(src), "%s", last_fname);
+                prepend_out_dir(fname, dst, sizeof(dst));
+                FILE *sf = fopen(src, "r");
+                if (!sf) {
+                    printf("Cannot read source: %s\n", src);
+                } else {
+                    FILE *df = fopen(dst, "w");
+                    if (!df) {
+                        printf("Cannot write to: %s\n", dst);
+                        fclose(sf);
+                    } else {
+                        char buf[4096];
+                        size_t n;
+                        while ((n = fread(buf, 1, sizeof(buf), sf)) > 0)
+                            fwrite(buf, 1, n, df);
+                        fclose(df);
+                        fclose(sf);
+                        printf("Saved: %s\n", dst);
+                    }
+                }
             }
             continue;
         }
@@ -3083,6 +3104,7 @@ void interactive_mode(void) {
 #endif
 }
 
+#ifndef TEST_MODE
 static int dispatch_subcommands(int argc, char *argv[]) {
     if (argc >= 2 && (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0)) {
         show_help();
@@ -3265,3 +3287,8 @@ int main(int argc, char *argv[]) {
 
     return run_single_prompt(argc, argv, arg_idx);
 }
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif

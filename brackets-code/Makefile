@@ -23,7 +23,7 @@ SYNONYM = synonyms.txt
 MANPAGE = brackets-code.1
 TEST_SH = tests/run_tests.sh
 
-.PHONY: all test clean install uninstall dist lint check
+.PHONY: all test clean install uninstall dist lint check unit-test
 
 all: $(BINARY)
 
@@ -65,11 +65,18 @@ test: $(BINARY)
 		echo "Test suite not found at $(TEST_SH)"; exit 1; \
 	fi
 
+unit-test: $(BINARY)
+	@echo "Building unit tests..."
+	$(CC) $(CFLAGS) -c -o tests/brackets-code-nomain.o -DTEST_MODE $(SOURCE)
+	$(CC) $(CFLAGS) -o tests/test_unit tests/test_unit.c tests/brackets-code-nomain.o $(DSL:.c=.o) $(EMBED:.c=.o) $(LEARN:.c=.o) $(LDFLAGS)
+	@echo "Running unit tests..."
+	@tests/test_unit
+
 clean:
 	rm -f $(BINARY)
 	rm -f ./*.l1com ./*.l1asm ./*.l1dbg ./*.l1obj
 	rm -f tests/saved-failures/*.l1com tests/saved-failures/*_pp.l1com
-	rm -f ./*.o
+	rm -f ./*.o tests/*.o
 
 install: $(BINARY) $(SYNONYM) $(MANPAGE) $(HEADER) $(DSL_H)
 	install -d $(DESTDIR)$(PREFIX)/bin

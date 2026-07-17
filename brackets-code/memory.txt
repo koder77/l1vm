@@ -5,24 +5,23 @@ Brackets Code - Memory & Specification
 --------------
 Brackets Code is a CLI code generator for the Brackets (L1VM) assembly language.
 It converts natural-language prompts into working .l1com programs.
-Written in C, split across 4 source files (~12500 lines total). Author: Stefan.
+Written in C, split across 4 source files (~6900 lines total). Author: Stefan.
 
 2. SOURCE FILE ORGANIZATION
 --------------------------
   brackets-code.h  -- master header: type defs (Variable, Function, Program, TaskProfile, etc.),
                       constants, global variable externs, and all forward declarations
                       (emitters, templates, utilities, CLI).
-  brackets-code.c  -- main translation unit (~8500 lines): utility funcs, data structures,
-                      all 166 emitters, 31 templates, parse_task, generate_code, CLI.
+  brackets-code.c  -- main translation unit (~3280 lines): utility funcs, data structures,
+                       all 166 emitters, 31 templates, parse_task, generate_code, CLI.
   dsl.c            -- DSL rule engine (~1080 lines): dsl_parse_file(), dsl_match_*,
-                      dsl_generate_code(), dsl_generate_from_task(). Separately compiled.
-  embed.c          -- tiny LLM inference engine (~1170 lines): word embeddings, softmax,
-                      vector search, llm_select_emitter(), split_prompt_steps().
+                       dsl_generate_code(), dsl_generate_from_task(). Separately compiled.
+  embed.c          -- LLM inference engine (~535 lines): word embeddings, softmax,
+                       vector search, llm_select_emitter(), split_prompt_steps().
   learn.c          -- learned pattern system (~690 lines): learn from .l1com files,
-                      persist/reload .l1lp files, match + emit learned patterns.
+                       persist/reload .l1lp files, match + emit learned patterns.
   dsl.h            -- DSL header: types (DslRule, DslToken, DslVarDecl), function declarations.
 
-  embed.c and learn.c are #included into brackets-code.c (at lines ~1005 and ~7650).
   dsl.c is SEPARATELY COMPILED (not #included) and linked.
 
 3. ARCHITECTURE OVERVIEW
@@ -381,16 +380,15 @@ Template struct:
 
 14. FILE LOCATIONS
 ------------------
-  /home/stefan/opencode/brackets-code/brackets-code.c  (~8500 lines)
-  /home/stefan/opencode/brackets-code/brackets-code.h  (~640 lines)
+  /home/stefan/opencode/brackets-code/brackets-code.c  (~3280 lines)
+  /home/stefan/opencode/brackets-code/brackets-code.h  (~535 lines)
   /home/stefan/opencode/brackets-code/dsl.c            (~1080 lines)
   /home/stefan/opencode/brackets-code/dsl.h            (~130 lines)
-  /home/stefan/opencode/brackets-code/embed.c          (~1170 lines)
+  /home/stefan/opencode/brackets-code/embed.c          (~535 lines)
   /home/stefan/opencode/brackets-code/learn.c          (~690 lines)
   /home/stefan/opencode/brackets-code/synonyms.txt     (fuzzy synonyms)
   /home/stefan/opencode/brackets-code/Makefile         (build, readline auto-detect)
   /home/stefan/opencode/brackets-code/memory.txt       (this file)
 
-  Total: ~12500 lines across 6 source files.
-  Compilation: gcc brackets-code.c dsl.c -lm (embed.c + learn.c #included)
-  Optional: readline for interactive history (pkg-config or /usr/include/readline/readline.h)
+  Total: ~6900 lines across 6 source files.
+  Compilation: clang-19 brackets-code.c dsl.c -lm (separate compilation)

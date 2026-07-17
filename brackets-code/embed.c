@@ -825,9 +825,9 @@ int split_prompt_steps(const char *prompt, char steps[MAX_STEPS][MAX_PROMPT]) {
             } else if ((p[0] == '(') && (p[1] >= '1' && p[1] <= '9') && p[2] == ')') {
                 if (collecting && strlen(current) > 0) {
                     for (char *cp = current + 1; *cp; cp++) {
-                        if (((cp[0] >= '1' && cp[0] <= '9') && (cp[1] == ')' || (cp[1] == '.' && cp[2] != '.' && !(cp[2] >= '0' && cp[2] <= '9')))
+                        if (((cp[0] >= '1' && cp[0] <= '9') && (cp[1] == ')' || (cp[1] == '.' && cp[2] != '.' && !(cp[2] >= '0' && cp[2] <= '9'))))
                             || (cp[0] == '(' && cp[1] >= '1' && cp[1] <= '9' && cp[2] == ')')
-                            || strncmp(cp, "step ", 5) == 0 || strncmp(cp, "schritt ", 8) == 0)) { *cp = '\0'; break; }
+                            || strncmp(cp, "step ", 5) == 0 || strncmp(cp, "schritt ", 8) == 0) { *cp = '\0'; break; }
                     }
                     trim(current);
                     SNPRINTF_CHECK(steps[num_steps], MAX_PROMPT, "%s", current);

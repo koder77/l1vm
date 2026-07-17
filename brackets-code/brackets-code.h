@@ -426,7 +426,6 @@ extern int validate_flag;
 extern int retry_seed;
 extern int verbose_flag;
 extern int dry_run_flag;
-extern int dataflow_quiet_mode;
 extern char out_dir[512];
 extern char l1vm_root[512];
 extern int use_color;

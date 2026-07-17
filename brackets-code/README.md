@@ -13,7 +13,7 @@ Converts natural-language prompts into working `.l1com` programs.
 
 ## Requirements
 
-- GCC with math library (`-lm`)
+- Clang or GCC with math library (`-lm`)
 - L1VM toolchain: `l1pre`, `l1com`, `l1asm`, l1vm from L1VM_ROOT environment variable pointing to the L1VM installation.
 
 ## Build
@@ -22,7 +22,7 @@ Converts natural-language prompts into working `.l1com` programs.
 
 Or manually:
 
-    gcc -o brackets-code brackets-code.c -lm
+    clang -O2 -Wall -Wextra -o brackets-code brackets-code.c dsl.c -lm
 
 ## Usage
 
@@ -93,18 +93,22 @@ Or:
 
 ## Project structure
 
-    brackets-code.c        Main source (11963 lines)
-    brackets-code.h        Header file with types and declarations (631 lines)
+    brackets-code.c        Main source (~3280 lines)
+    brackets-code.h        Header file with types and declarations (535 lines)
     brackets-code          Compiled binary
-    embed.c                Tiny LLM inference engine + vector search (#included, 1262 lines)
-    learn.c                Learned pattern system (#included, 687 lines)
+    dsl.c                  DSL rule engine (separately compiled, linked)
+    dsl.h                  DSL header
+    embed.c                Tiny LLM inference engine + vector search (separately compiled, linked)
+    learn.c                Learned pattern system (separately compiled, linked)
     synonyms.txt           External synonym table (edit without recompilation)
     brackets-code.1        Man page
+    dsl/                   162 .l1dsl DSL rule files
     l1vm-example-code/     Reference L1VM programs (pattern source)
     tests/run_tests.sh     Test suite
+    tests/test_dsl_rules.sh DSL rule test pipeline
+    tests/test_unit.c      Unit tests for C functions
     tests/saved-failures/  Saved failing test outputs
     memory.txt             Architecture documentation
-    .github/workflows/     CI configuration
 
 ## License
 

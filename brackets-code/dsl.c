@@ -935,6 +935,17 @@ int dsl_generate_from_task(Program *prog, TaskProfile *task, Function *f)
 
     for (int i = 0; i < dsl_num_rules; i++) {
         if (dsl_match_task_flags(&dsl_rules[i], task)) {
+            // Skip if a longer (more specific) rule also matches this task
+            int skip = 0;
+            for (int j = 0; j < dsl_num_rules; j++) {
+                if (j != i && dsl_match_task_flags(&dsl_rules[j], task) &&
+                    strlen(dsl_rules[j].keyword) > strlen(dsl_rules[i].keyword) &&
+                    strstr(dsl_rules[j].keyword, dsl_rules[i].keyword) != NULL) {
+                    skip = 1;
+                    break;
+                }
+            }
+            if (skip) continue;
             if (verbose_flag) {
                 printf("DSL: matched rule '%s' (%s)\n", dsl_rules[i].keyword, dsl_rules[i].filename);
             }
@@ -958,12 +969,25 @@ int dsl_generate_from_task(Program *prog, TaskProfile *task, Function *f)
             if (idx >= 0 && dsl_rules[idx].num_match_flags > 0 && !dsl_match_task_flags(&dsl_rules[idx], task))
                 continue;
             // Skip if rule's primary keyword overlaps with an already-applied rule
+            // (substring match: skip "compound interest" if "double compound interest" already applied)
             if (generated && idx >= 0) {
                 int skip_kw = 0;
                 for (int a = 0; a < dsl_num_rules; a++) {
-                    if (applied[a] && strcmp(dsl_rules[a].keyword, kw_rules[i]->keyword) == 0) {
-                        skip_kw = 1;
-                        break;
+                    if (applied[a]) {
+                        const char *applied_kw = dsl_rules[a].keyword;
+                        const char *new_kw = kw_rules[i]->keyword;
+                        if (strcmp(applied_kw, new_kw) == 0) {
+                            skip_kw = 1;
+                            break;
+                        }
+                        if (strstr(applied_kw, new_kw) != NULL) {
+                            skip_kw = 1;
+                            break;
+                        }
+                        if (strstr(new_kw, applied_kw) != NULL) {
+                            skip_kw = 1;
+                            break;
+                        }
                     }
                 }
                 if (skip_kw) continue;
