@@ -85,7 +85,7 @@ const char* dsl_token_l1vm_type(DslTokenType type)
     }
 }
 
-static int parse_token_decl(const char *line, DslToken *token)
+int parse_token_decl(const char *line, DslToken *token)
 {
     char buf[512];
     SNPRINTF_CHECK(buf, sizeof(buf), "%s", line);
@@ -831,6 +831,104 @@ int dsl_save_rule(DslRule *rule, const char *path)
     }
 
     fclose(f);
+    return 1;
+}
+
+static void sanitize_filename(const char *in, char *out, int out_size)
+{
+    int j = 0;
+    for (const char *p = in; *p && j < out_size - 5; p++) {
+        if (*p == ' ') { out[j++] = '-'; }
+        else if (isalnum((unsigned char)*p) || *p == '-' || *p == '_') { out[j++] = *p; }
+    }
+    out[j] = '\0';
+}
+
+int learn_dsl(const char *keyword, const char *out_dir, DslRule *new_rule)
+{
+    if (!keyword || !*keyword) return 0;
+
+    DslRule *rule = NULL;
+
+    if (new_rule) {
+        rule = new_rule;
+    } else {
+        for (int i = 0; i < dsl_num_rules; i++) {
+            if (strcmp(dsl_rules[i].keyword, keyword) == 0) {
+                rule = &dsl_rules[i];
+                break;
+            }
+        }
+        if (!rule) {
+            printf("DSL rule '%s' not found. Available rules:\n", keyword);
+            for (int i = 0; i < dsl_num_rules; i++)
+                printf("  %s\n", dsl_rules[i].keyword);
+            return 0;
+        }
+    }
+
+    char safe_name[256];
+    sanitize_filename(keyword, safe_name, sizeof(safe_name));
+    if (strlen(safe_name) == 0) {
+        printf("Error: cannot create filename from keyword '%s'\n", keyword);
+        return 0;
+    }
+
+    char path[1024];
+    SNPRINTF_CHECK(path, sizeof(path), "%s/%s.l1dsl", out_dir, safe_name);
+
+    if (dsl_save_rule(rule, path)) {
+        printf("Saved DSL rule '%s' to %s\n", keyword, path);
+        return 1;
+    }
+    printf("Error: failed to write %s\n", path);
+    return 0;
+}
+
+int learn_dsl_load_code_file(const char *code_file, DslRule *rule)
+{
+    FILE *f = fopen(code_file, "r");
+    if (!f) {
+        printf("Error: cannot open code file '%s'\n", code_file);
+        return 0;
+    }
+
+    char line[DSL_LINE_SIZE];
+    int in_code = 0;
+
+    while (fgets(line, sizeof(line), f)) {
+        trim(line);
+        if (strlen(line) == 0) continue;
+
+        if (strcmp(line, "code:") == 0 || strcmp(line, "code:|") == 0) {
+            in_code = 1;
+            continue;
+        }
+
+        if (in_code) {
+            if (strncmp(line, "parser:", 7) == 0 ||
+                strncmp(line, "token:", 6) == 0 ||
+                strncmp(line, "result:", 7) == 0 ||
+                strncmp(line, "include:", 8) == 0 ||
+                strncmp(line, "include-post:", 13) == 0 ||
+                strncmp(line, "var:", 4) == 0 ||
+                strncmp(line, "desc:", 5) == 0 ||
+                strncmp(line, "match:", 6) == 0 ||
+                strncmp(line, "array:", 6) == 0) {
+                break;
+            }
+            if (rule->num_code_lines < MAX_DSL_CODE_LINES) {
+                SNPRINTF_CHECK(rule->code[rule->num_code_lines], DSL_LINE_SIZE, "%s", line);
+                rule->num_code_lines++;
+            }
+        }
+    }
+    fclose(f);
+
+    if (rule->num_code_lines == 0) {
+        printf("Error: no code block found in '%s'\n", code_file);
+        return 0;
+    }
     return 1;
 }
 

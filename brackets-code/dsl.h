@@ -118,7 +118,10 @@ int dsl_generate_code(Program *prog, DslRule *rule, Function *f);
 
 int dsl_add_array_rule(const char *name, const char *index_var, const char *element_type);
 int dsl_parse_raw(DslRawRule *raw, DslRule *rule);
+int parse_token_decl(const char *line, DslToken *token);
 int dsl_save_rule(DslRule *rule, const char *path);
+int learn_dsl(const char *keyword, const char *out_dir, DslRule *new_rule);
+int learn_dsl_load_code_file(const char *code_file, DslRule *rule);
 void dsl_print_rule(DslRule *rule);
 
 int dsl_generate_from_task(Program *prog, TaskProfile *task, Function *f);

@@ -2898,6 +2898,8 @@ void show_help(void) {
     printf("  Batch mode:             brackets-code --batch prompts.txt\n");
     printf("  Vector search:          brackets-code --search \"<query>\"\n");
     printf("  Learn from file:        brackets-code --learn <file.l1com> [keywords] [\"description\"]\n");
+    printf("  Save DSL rule:          brackets-code --learn-dsl <keyword> [options]\n");
+    printf("                          Options: --token <type> <name> --include <file> --desc <text> --code <file.l1com>\n");
     printf("  Forget pattern:         brackets-code --forget <pattern-id>\n");
     printf("  List learned patterns:  brackets-code --list-learned\n");
     printf("  List templates:         brackets-code --list\n\n");
@@ -3127,6 +3129,84 @@ static int dispatch_subcommands(int argc, char *argv[]) {
         list_learned();
         return 0;
     }
+    if (argc >= 2 && strcmp(argv[1], "--learn-dsl") == 0) {
+        if (argc < 3) {
+            fprintf(stderr, "Usage: %s --learn-dsl <keyword> [options] [out-dir]\n", argv[0]);
+            fprintf(stderr, "  Options:\n");
+            fprintf(stderr, "    --token <type> <name>   Add a token (e.g. --token int64 n)\n");
+            fprintf(stderr, "    --include <file>        Add an include (e.g. --include intr-func.l1h)\n");
+            fprintf(stderr, "    --desc <text>           Set description\n");
+            fprintf(stderr, "    --code <file>           Read code from .l1com file\n");
+            fprintf(stderr, "  If no options given, saves an existing in-memory rule.\n");
+            return 1;
+        }
+        const char *keyword = argv[2];
+        const char *out_dir = "dsl";
+
+        // Check if this is a new rule creation (has --token or --code)
+        int has_flags = 0;
+        for (int i = 3; i < argc; i++) {
+            if (strcmp(argv[i], "--token") == 0 || strcmp(argv[i], "--code") == 0 ||
+                strcmp(argv[i], "--include") == 0 || strcmp(argv[i], "--desc") == 0) {
+                has_flags = 1;
+                break;
+            }
+        }
+
+        if (!has_flags) {
+            // Legacy mode: save existing in-memory rule
+            if (argc > 3) out_dir = argv[3];
+            return learn_dsl(keyword, out_dir, NULL) ? 0 : 1;
+        }
+
+        // New rule creation mode
+        DslRule new_rule;
+        memset(&new_rule, 0, sizeof(DslRule));
+        SNPRINTF_CHECK(new_rule.keyword, sizeof(new_rule.keyword), "%s", keyword);
+
+        int i = 3;
+        while (i < argc) {
+            if (strcmp(argv[i], "--token") == 0 && i + 2 < argc) {
+                if (new_rule.num_tokens < MAX_DSL_TOKENS) {
+                    DslToken *tok = &new_rule.tokens[new_rule.num_tokens];
+                    char tok_line[256];
+                    SNPRINTF_CHECK(tok_line, sizeof(tok_line), "%s %s", argv[i+1], argv[i+2]);
+                    if (parse_token_decl(tok_line, tok)) {
+                        new_rule.num_tokens++;
+                    } else {
+                        fprintf(stderr, "Error: invalid token '%s %s'\n", argv[i+1], argv[i+2]);
+                        return 1;
+                    }
+                }
+                i += 3;
+            } else if (strcmp(argv[i], "--include") == 0 && i + 1 < argc) {
+                if (new_rule.num_includes < MAX_DSL_INCLUDES) {
+                    SNPRINTF_CHECK(new_rule.includes[new_rule.num_includes],
+                        sizeof(new_rule.includes[0]), "%s", argv[i+1]);
+                    new_rule.num_includes++;
+                }
+                i += 2;
+            } else if (strcmp(argv[i], "--desc") == 0 && i + 1 < argc) {
+                SNPRINTF_CHECK(new_rule.desc, sizeof(new_rule.desc), "%s", argv[i+1]);
+                i += 2;
+            } else if (strcmp(argv[i], "--code") == 0 && i + 1 < argc) {
+                if (!learn_dsl_load_code_file(argv[i+1], &new_rule)) return 1;
+                i += 2;
+            } else if (strcmp(argv[i], "--out-dir") == 0 && i + 1 < argc) {
+                out_dir = argv[i+1];
+                i += 2;
+            } else {
+                i++;
+            }
+        }
+
+        if (new_rule.num_code_lines == 0) {
+            fprintf(stderr, "Error: no code provided. Use --code <file> to supply code.\n");
+            return 1;
+        }
+
+        return learn_dsl(keyword, out_dir, &new_rule) ? 0 : 1;
+    }
     if (argc >= 2 && (strcmp(argv[1], "--search") == 0 || strcmp(argv[1], "-s") == 0)) {
         if (argc < 3) { fprintf(stderr, "Usage: %s --search <query>\n", argv[0]); return 1; }
         init_embeddings();
@@ -3147,7 +3227,7 @@ static int dispatch_subcommands(int argc, char *argv[]) {
     if (argc >= 2 && (strcmp(argv[1], "--bash-completion") == 0 || strcmp(argv[1], "--completion") == 0)) {
         printf("_brackets_code_completions() {\n");
         printf("  local cur=\"${COMP_WORDS[COMP_CWORD]}\"\n");
-        printf("            opts=\"--help -h --list -l --search --validate -v --self-test -t --verbose --dry-run --out-dir --l1vm-root --batch --bash-completion --learn --forget --list-learned\"\n");
+        printf("            opts=\"--help -h --list -l --search --validate -v --self-test -t --verbose --dry-run --out-dir --l1vm-root --batch --bash-completion --learn --learn-dsl --forget --list-learned\"\n");
         printf("  COMPREPLY=($(compgen -W \"${opts}\" -- \"$cur\"))\n");
         printf("}\n");
         printf("complete -F _brackets_code_completions brackets-code\n");
