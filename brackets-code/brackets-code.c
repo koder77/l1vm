@@ -36,12 +36,6 @@
 #include "brackets-code.h"
 #include "dsl.h"
 
-/* Suppress clang static analyzer false positives for safe memset/snprintf/strncat usage */
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
 int validate_flag = 0;
 int retry_seed = 0;
 int verbose_flag = 0;
@@ -3287,8 +3281,4 @@ int main(int argc, char *argv[]) {
 
     return run_single_prompt(argc, argv, arg_idx);
 }
-#endif
-
-#ifdef __clang__
-#pragma clang diagnostic pop
 #endif

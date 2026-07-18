@@ -371,24 +371,22 @@ Template struct:
   Tests generation + L1VM pipeline (l1pre → l1com).
   Two modes: --quick (22 tests) and full (87 tests).
   Categories: template tests, emitter tests, multi-step tests.
-  Known failures (4 total):
-    em_array_min_max: LLM smart-gen emits arr as scalar but used as array
-    em_base_converter: interactive :input_i not testable with pipe
-    em_binary_search_tree: interactive menu loop not testable with pipe
-    multi_sort_desc: LLM smart-gen emits missing f variable in conditional
-  Latest run: 82 passed, 1 failed, 4 skipped.
+  Known failures: none
+  Latest run: 192 passed, 0 failed, 0 skipped.
 
 14. FILE LOCATIONS
 ------------------
-  /home/stefan/opencode/brackets-code/brackets-code.c  (~3280 lines)
-  /home/stefan/opencode/brackets-code/brackets-code.h  (~535 lines)
-  /home/stefan/opencode/brackets-code/dsl.c            (~1080 lines)
-  /home/stefan/opencode/brackets-code/dsl.h            (~130 lines)
-  /home/stefan/opencode/brackets-code/embed.c          (~535 lines)
-  /home/stefan/opencode/brackets-code/learn.c          (~690 lines)
+  /home/stefan/opencode/brackets-code/brackets-code.c  (~3294 lines)
+  /home/stefan/opencode/brackets-code/brackets-code.h  (~534 lines)
+  /home/stefan/opencode/brackets-code/dsl.c            (~1008 lines)
+  /home/stefan/opencode/brackets-code/dsl.h            (~131 lines)
+  /home/stefan/opencode/brackets-code/embed.c          (~1276 lines)
+  /home/stefan/opencode/brackets-code/learn.c          (~712 lines)
   /home/stefan/opencode/brackets-code/synonyms.txt     (fuzzy synonyms)
   /home/stefan/opencode/brackets-code/Makefile         (build, readline auto-detect)
   /home/stefan/opencode/brackets-code/memory.txt       (this file)
+  /home/stefan/opencode/brackets-code/tests/test_unit.c (~417 lines, 40 tests)
+  /home/stefan/opencode/brackets-code/tests/run_tests.sh (~405 lines, 192 tests)
 
-  Total: ~6900 lines across 6 source files.
+  Total: ~7800 lines across 8 source files.
   Compilation: clang-19 brackets-code.c dsl.c -lm (separate compilation)

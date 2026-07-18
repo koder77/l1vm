@@ -282,6 +282,68 @@ static void test_has_word_not_found(void) {
     PASS();
 }
 
+/* ── has_sequential_pattern tests ─────────────────────────────── */
+
+static void test_seq_numbered_steps(void) {
+    TEST("has_sequential_pattern numbered steps");
+    ASSERT(has_sequential_pattern("1) do this 2) do that") == 1);
+    PASS();
+}
+
+static void test_seq_bullet_points(void) {
+    TEST("has_sequential_pattern bullet points");
+    ASSERT(has_sequential_pattern("- first task\n- second task") == 1);
+    PASS();
+}
+
+static void test_seq_english_adverbs(void) {
+    TEST("has_sequential_pattern English adverbs (first...then)");
+    ASSERT(has_sequential_pattern("first calculate sum then print result") == 1);
+    PASS();
+}
+
+static void test_seq_german_adverbs(void) {
+    TEST("has_sequential_pattern German adverbs (zuerst...dann)");
+    ASSERT(has_sequential_pattern("zuerst sortiere dann drucke ab") == 1);
+    PASS();
+}
+
+static void test_seq_compound_und_dann(void) {
+    TEST("has_sequential_pattern compound 'und dann'");
+    ASSERT(has_sequential_pattern("sort 5 numbers und dann reverse array") == 1);
+    PASS();
+}
+
+static void test_seq_compound_und_danach(void) {
+    TEST("has_sequential_pattern compound 'und danach'");
+    ASSERT(has_sequential_pattern("sort 5 numbers und danach sort descending") == 1);
+    PASS();
+}
+
+static void test_seq_compound_and_then(void) {
+    TEST("has_sequential_pattern compound 'and then'");
+    ASSERT(has_sequential_pattern("calculate factorial and then print result") == 1);
+    PASS();
+}
+
+static void test_seq_compound_und_anschlussend(void) {
+    TEST("has_sequential_pattern compound 'und anschließend'");
+    ASSERT(has_sequential_pattern("zähle bis 10 und anschließend faktorielle") == 1);
+    PASS();
+}
+
+static void test_seq_single_word_no_trigger(void) {
+    TEST("has_sequential_pattern single word does not trigger");
+    ASSERT(has_sequential_pattern("sort 5 numbers") == 0);
+    PASS();
+}
+
+static void test_seq_empty_string(void) {
+    TEST("has_sequential_pattern empty string");
+    ASSERT(has_sequential_pattern("") == 0);
+    PASS();
+}
+
 /* ── Main ──────────────────────────────────────────────────────── */
 
 int main(void) {
@@ -334,6 +396,18 @@ int main(void) {
     printf("\nhas_word tests:\n");
     test_has_word_basic();
     test_has_word_not_found();
+
+    printf("\nhas_sequential_pattern tests:\n");
+    test_seq_numbered_steps();
+    test_seq_bullet_points();
+    test_seq_english_adverbs();
+    test_seq_german_adverbs();
+    test_seq_compound_und_dann();
+    test_seq_compound_und_danach();
+    test_seq_compound_and_then();
+    test_seq_compound_und_anschlussend();
+    test_seq_single_word_no_trigger();
+    test_seq_empty_string();
 
     printf("\n========================================\n");
     printf("  Results: %d/%d passed\n", tests_passed, tests_run);

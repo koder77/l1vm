@@ -80,9 +80,6 @@ run_test() {
 
 # ── known failures (emitters that use :input_i and cannot be tested with piped stdin) ─
 declare -A KNOWN_FAILURES=(
-    [em_base_converter]="interactive :input_i not testable with pipe"
-    [em_binary_search_tree]="interactive menu loop not testable with pipe"
-
 )
 
 # ── test definitions ─────────────────────────────────────────────────────

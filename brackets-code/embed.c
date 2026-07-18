@@ -719,6 +719,12 @@ int has_sequential_pattern(const char *text) {
     { const char *tp = text; while ((tp = strstr(tp, "then")) != NULL) { seq_count++; tp++; } }
     { const char *tp = text; while ((tp = strstr(tp, "dann")) != NULL) { seq_count++; tp++; } }
     if (has_word(text, "next") || has_word(text, "als nächstes") || has_word(text, "danach")) seq_count++;
+    // Compound conjunctions ("und danach", "and then") inherently imply multi-step
+    if (strstr(text, "und dann")) seq_count += 2;
+    if (strstr(text, "und danach")) seq_count += 2;
+    if (strstr(text, "und anschließend")) seq_count += 2;
+    if (strstr(text, "and then")) seq_count += 2;
+    if (strstr(text, "and after")) seq_count += 2;
     if (seq_count >= 2) return 1;
     return 0;
 }
