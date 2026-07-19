@@ -860,7 +860,8 @@ S2 run (void *arg)
 		printf ("CPU %lli ready\n", cpu_ind);
 		show_code_data_size (code_size, data_mem_size);
 		printf ("ep: %lli\n\n", startpos);
-		printf ("Donate at: https://ko-fi.com/P5P2Y3KP\nThank you!\n\n");
+		printf ("Donate at: https://ko-fi.com/P5P2Y3KP\n");
+		printf ("Talk to me: https://midnight-coding.de/blog/chat\nThank you!\n");
 	}
 #if DEBUG
 	printf ("stack pointer sp: %lli\n", (S8) sp);
@@ -3490,7 +3491,8 @@ void show_info (void)
 	printf ("-p : set run priority, -20 = highest, 19 = lowest priority\n\n");
 	printf ("program arguments for the program must be set by '-args':\n");
 	printf ("l1vm programname -args foo bar\n");
-    printf ("\nDonate at: https://ko-fi.com/P5P2Y3KP\nThank you!\n\n");
+    printf ("\nDonate at: https://ko-fi.com/P5P2Y3KP\n");
+	printf ("Talk to me: https://midnight-coding.de/blog/chat\nThank you!\n");
 }
 
 S2 run_main_loop_thread (void *arg)
