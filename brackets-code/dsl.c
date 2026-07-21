@@ -161,6 +161,119 @@ static int parse_var_decl(const char *line, DslVarDecl *vd)
     return 1;
 }
 
+static int parse_param_decl(const char *line, DslParam *param)
+{
+    char buf[512];
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", line);
+    trim(buf);
+
+    char type[32], name[64];
+    int n = sscanf(buf, "%31s %63s", type, name);
+    if (n < 2) return 0;
+
+    SNPRINTF_CHECK(param->type, sizeof(param->type), "%s", type);
+    SNPRINTF_CHECK(param->name, sizeof(param->name), "%s", name);
+    param->desc[0] = '\0';
+    param->default_value[0] = '\0';
+    param->min[0] = '\0';
+    param->max[0] = '\0';
+    param->pattern[0] = '\0';
+    param->required = 0;
+
+    char *p = buf;
+    while (*p && !isspace((unsigned char)*p)) p++;
+    while (*p && isspace((unsigned char)*p)) p++;
+    while (*p && !isspace((unsigned char)*p)) p++;
+    while (*p && isspace((unsigned char)*p)) p++;
+
+    if (*p == '"') {
+        p++;
+        char *end = strchr(p, '"');
+        if (end) {
+            size_t len = (size_t)(end - p);
+            if (len >= sizeof(param->desc)) len = sizeof(param->desc) - 1;
+            strncpy(param->desc, p, len);
+            param->desc[len] = '\0';
+            p = end + 1;
+            while (*p && isspace((unsigned char)*p)) p++;
+        }
+    }
+
+    while (*p) {
+        if (strncmp(p, "required", 8) == 0 && (p[8] == '\0' || isspace((unsigned char)p[8]))) {
+            param->required = 1;
+            while (*p && !isspace((unsigned char)*p)) p++;
+            while (*p && isspace((unsigned char)*p)) p++;
+            continue;
+        }
+        char key[64] = {0};
+        char value[256] = {0};
+        int ki = 0;
+        while (*p && *p != '=' && !isspace((unsigned char)*p) && ki < 63) {
+            key[ki++] = *p++;
+        }
+        key[ki] = '\0';
+        if (*p == '=') {
+            p++;
+            int vi = 0;
+            if (*p == '"') {
+                p++;
+                while (*p && *p != '"' && vi < 255) value[vi++] = *p++;
+                if (*p == '"') p++;
+            } else {
+                while (*p && !isspace((unsigned char)*p) && vi < 255) value[vi++] = *p++;
+            }
+            value[vi] = '\0';
+            if (strcmp(key, "min") == 0) SNPRINTF_CHECK(param->min, sizeof(param->min), "%s", value);
+            else if (strcmp(key, "max") == 0) SNPRINTF_CHECK(param->max, sizeof(param->max), "%s", value);
+            else if (strcmp(key, "default") == 0) SNPRINTF_CHECK(param->default_value, sizeof(param->default_value), "%s", value);
+            else if (strcmp(key, "pattern") == 0) SNPRINTF_CHECK(param->pattern, sizeof(param->pattern), "%s", value);
+            else if (strcmp(key, "desc") == 0) SNPRINTF_CHECK(param->desc, sizeof(param->desc), "%s", value);
+        } else {
+            break;
+        }
+        while (*p && isspace((unsigned char)*p)) p++;
+    }
+    return 1;
+}
+
+static int parse_test_decl(const char *line, DslTest *test)
+{
+    char buf[512];
+    SNPRINTF_CHECK(buf, sizeof(buf), "%s", line);
+    trim(buf);
+
+    test->input[0] = '\0';
+    test->expect[0] = '\0';
+
+    if (*buf != '"') return 0;
+    char *p = buf + 1;
+    char *end = strchr(p, '"');
+    if (!end) return 0;
+    size_t len = (size_t)(end - p);
+    if (len >= sizeof(test->input)) len = sizeof(test->input) - 1;
+    strncpy(test->input, p, len);
+    test->input[len] = '\0';
+    p = end + 1;
+    while (*p && isspace((unsigned char)*p)) p++;
+
+    if (strncmp(p, "expect:", 7) == 0) {
+        p += 7;
+        while (*p && isspace((unsigned char)*p)) p++;
+        if (*p == '"') {
+            p++;
+            end = strchr(p, '"');
+            if (end) {
+                len = (size_t)(end - p);
+                if (len >= sizeof(test->expect)) len = sizeof(test->expect) - 1;
+                strncpy(test->expect, p, len);
+                test->expect[len] = '\0';
+            }
+        }
+    }
+    return 1;
+}
+
 void dsl_free_rules(void)
 {
     dsl_num_rules = 0;
@@ -217,15 +330,39 @@ int dsl_load_rule_file(const char *path)
             code_line_count = 0;
             continue;
         }
+        if (strcmp(line, "init:") == 0 || strcmp(line, "init:|") == 0) {
+            in_code_block = 2;
+            code_line_count = 0;
+            continue;
+        }
+        if (strcmp(line, "cleanup:") == 0 || strcmp(line, "cleanup:|") == 0) {
+            in_code_block = 3;
+            code_line_count = 0;
+            continue;
+        }
 
         if (in_code_block) {
             if (is_dsl_comment(line)) {
-                strncat(raw.code_lines, line, sizeof(raw.code_lines) - strlen(raw.code_lines) - 1);
-                strncat(raw.code_lines, "\n", sizeof(raw.code_lines) - strlen(raw.code_lines) - 1);
+                if (in_code_block == 1) {
+                    strncat(raw.code_lines, line, sizeof(raw.code_lines) - strlen(raw.code_lines) - 1);
+                    strncat(raw.code_lines, "\n", sizeof(raw.code_lines) - strlen(raw.code_lines) - 1);
+                } else if (in_code_block == 2) {
+                    strncat(raw.init_code_lines, line, sizeof(raw.init_code_lines) - strlen(raw.init_code_lines) - 1);
+                    strncat(raw.init_code_lines, "\n", sizeof(raw.init_code_lines) - strlen(raw.init_code_lines) - 1);
+                } else {
+                    strncat(raw.cleanup_code_lines, line, sizeof(raw.cleanup_code_lines) - strlen(raw.cleanup_code_lines) - 1);
+                    strncat(raw.cleanup_code_lines, "\n", sizeof(raw.cleanup_code_lines) - strlen(raw.cleanup_code_lines) - 1);
+                }
                 continue;
             }
             if (line[0] == '\0') {
-                strncat(raw.code_lines, "\n", sizeof(raw.code_lines) - strlen(raw.code_lines) - 1);
+                if (in_code_block == 1) {
+                    strncat(raw.code_lines, "\n", sizeof(raw.code_lines) - strlen(raw.code_lines) - 1);
+                } else if (in_code_block == 2) {
+                    strncat(raw.init_code_lines, "\n", sizeof(raw.init_code_lines) - strlen(raw.init_code_lines) - 1);
+                } else {
+                    strncat(raw.cleanup_code_lines, "\n", sizeof(raw.cleanup_code_lines) - strlen(raw.cleanup_code_lines) - 1);
+                }
                 continue;
             }
             if (strncmp(line, "parser:", 7) == 0 ||
@@ -236,11 +373,30 @@ int dsl_load_rule_file(const char *path)
                 strncmp(line, "var:", 4) == 0 ||
                 strncmp(line, "desc:", 5) == 0 ||
                 strncmp(line, "array:", 6) == 0 ||
+                strncmp(line, "param:", 6) == 0 ||
+                strncmp(line, "require:", 8) == 0 ||
+                strncmp(line, "example:", 8) == 0 ||
+                strncmp(line, "category:", 9) == 0 ||
+                strncmp(line, "version:", 8) == 0 ||
+                strncmp(line, "complexity:", 11) == 0 ||
+                strncmp(line, "alias:", 6) == 0 ||
+                strncmp(line, "test:", 5) == 0 ||
+                strncmp(line, "help:", 5) == 0 ||
+                strncmp(line, "validate:", 9) == 0 ||
+                strncmp(line, "compose:", 8) == 0 ||
                 (strncmp(line, "//", 2) == 0 && line[2] != '/' && code_line_count == 0)) {
                 in_code_block = 0;
             } else {
-                strncat(raw.code_lines, line, sizeof(raw.code_lines) - strlen(raw.code_lines) - 1);
-                strncat(raw.code_lines, "\n", sizeof(raw.code_lines) - strlen(raw.code_lines) - 1);
+                if (in_code_block == 1) {
+                    strncat(raw.code_lines, line, sizeof(raw.code_lines) - strlen(raw.code_lines) - 1);
+                    strncat(raw.code_lines, "\n", sizeof(raw.code_lines) - strlen(raw.code_lines) - 1);
+                } else if (in_code_block == 2) {
+                    strncat(raw.init_code_lines, line, sizeof(raw.init_code_lines) - strlen(raw.init_code_lines) - 1);
+                    strncat(raw.init_code_lines, "\n", sizeof(raw.init_code_lines) - strlen(raw.init_code_lines) - 1);
+                } else {
+                    strncat(raw.cleanup_code_lines, line, sizeof(raw.cleanup_code_lines) - strlen(raw.cleanup_code_lines) - 1);
+                    strncat(raw.cleanup_code_lines, "\n", sizeof(raw.cleanup_code_lines) - strlen(raw.cleanup_code_lines) - 1);
+                }
                 code_line_count++;
                 continue;
             }
@@ -278,6 +434,35 @@ int dsl_load_rule_file(const char *path)
                     else
                         SNPRINTF_CHECK(raw.array_rule_elem_type, sizeof(raw.array_rule_elem_type), "int64");
                 }
+            } else if (parse_dsl_line(line, "param", val, sizeof(val))) {
+                strncat(raw.param_decls, val, sizeof(raw.param_decls) - strlen(raw.param_decls) - 1);
+                strncat(raw.param_decls, "\n", sizeof(raw.param_decls) - strlen(raw.param_decls) - 1);
+            } else if (parse_dsl_line(line, "require", val, sizeof(val))) {
+                strncat(raw.include_list, val, sizeof(raw.include_list) - strlen(raw.include_list) - 1);
+                strncat(raw.include_list, "\n", sizeof(raw.include_list) - strlen(raw.include_list) - 1);
+            } else if (parse_dsl_line(line, "example", val, sizeof(val))) {
+                strncat(raw.example_lines, val, sizeof(raw.example_lines) - strlen(raw.example_lines) - 1);
+                strncat(raw.example_lines, "\n", sizeof(raw.example_lines) - strlen(raw.example_lines) - 1);
+            } else if (parse_dsl_line(line, "category", val, sizeof(val))) {
+                SNPRINTF_CHECK(raw.category_text, sizeof(raw.category_text), "%.255s", val);
+            } else if (parse_dsl_line(line, "version", val, sizeof(val))) {
+                SNPRINTF_CHECK(raw.version_text, sizeof(raw.version_text), "%.31s", val);
+            } else if (parse_dsl_line(line, "complexity", val, sizeof(val))) {
+                SNPRINTF_CHECK(raw.complexity_text, sizeof(raw.complexity_text), "%.31s", val);
+            } else if (parse_dsl_line(line, "alias", val, sizeof(val))) {
+                strncat(raw.alias_text, val, sizeof(raw.alias_text) - strlen(raw.alias_text) - 1);
+                strncat(raw.alias_text, "\n", sizeof(raw.alias_text) - strlen(raw.alias_text) - 1);
+            } else if (parse_dsl_line(line, "test", val, sizeof(val))) {
+                strncat(raw.test_lines, val, sizeof(raw.test_lines) - strlen(raw.test_lines) - 1);
+                strncat(raw.test_lines, "\n", sizeof(raw.test_lines) - strlen(raw.test_lines) - 1);
+            } else if (parse_dsl_line(line, "help", val, sizeof(val))) {
+                SNPRINTF_CHECK(raw.help_text, sizeof(raw.help_text), "%.2047s", val);
+            } else if (parse_dsl_line(line, "validate", val, sizeof(val))) {
+                strncat(raw.validate_text, val, sizeof(raw.validate_text) - strlen(raw.validate_text) - 1);
+                strncat(raw.validate_text, "\n", sizeof(raw.validate_text) - strlen(raw.validate_text) - 1);
+            } else if (parse_dsl_line(line, "compose", val, sizeof(val))) {
+                strncat(raw.compose_text, val, sizeof(raw.compose_text) - strlen(raw.compose_text) - 1);
+                strncat(raw.compose_text, "\n", sizeof(raw.compose_text) - strlen(raw.compose_text) - 1);
             }
         }
     }
@@ -450,6 +635,147 @@ int dsl_parse_raw(DslRawRule *raw, DslRule *rule)
         rule->num_code_lines++;
     }
 
+    if (strlen(raw->param_decls) > 0) {
+        char pbuf[4096];
+        SNPRINTF_CHECK(pbuf, sizeof(pbuf), "%s", raw->param_decls);
+        char *saveptr_p;
+        char *pline = strtok_r(pbuf, "\n", &saveptr_p);
+        while (pline && rule->num_params < MAX_DSL_PARAMS) {
+            trim(pline);
+            if (strlen(pline) > 0) {
+                parse_param_decl(pline, &rule->params[rule->num_params]);
+                rule->num_params++;
+            }
+            pline = strtok_r(NULL, "\n", &saveptr_p);
+        }
+    }
+
+    if (strlen(raw->alias_text) > 0) {
+        char abuf[1024];
+        SNPRINTF_CHECK(abuf, sizeof(abuf), "%s", raw->alias_text);
+        char *saveptr_a;
+        char *atok = strtok_r(abuf, ",\n", &saveptr_a);
+        while (atok && rule->num_aliases < MAX_DSL_ALIASES) {
+            trim(atok);
+            if (strlen(atok) > 0) {
+                SNPRINTF_CHECK(rule->aliases[rule->num_aliases], sizeof(rule->aliases[0]), "%s", atok);
+                rule->num_aliases++;
+            }
+            atok = strtok_r(NULL, ",\n", &saveptr_a);
+        }
+    }
+
+    if (strlen(raw->category_text) > 0)
+        SNPRINTF_CHECK(rule->category, sizeof(rule->category), "%s", raw->category_text);
+    if (strlen(raw->version_text) > 0)
+        SNPRINTF_CHECK(rule->version, sizeof(rule->version), "%s", raw->version_text);
+    if (strlen(raw->complexity_text) > 0)
+        SNPRINTF_CHECK(rule->complexity, sizeof(rule->complexity), "%s", raw->complexity_text);
+    if (strlen(raw->help_text) > 0)
+        SNPRINTF_CHECK(rule->help, sizeof(rule->help), "%s", raw->help_text);
+
+    if (strlen(raw->example_lines) > 0) {
+        char ebuf[4096];
+        SNPRINTF_CHECK(ebuf, sizeof(ebuf), "%s", raw->example_lines);
+        char *saveptr_e;
+        char *eline = strtok_r(ebuf, "\n", &saveptr_e);
+        while (eline && rule->num_examples < MAX_DSL_EXAMPLES) {
+            trim(eline);
+            if (strlen(eline) > 0) {
+                parse_test_decl(eline, (DslTest *)&rule->examples[rule->num_examples]);
+                rule->num_examples++;
+            }
+            eline = strtok_r(NULL, "\n", &saveptr_e);
+        }
+    }
+
+    if (strlen(raw->test_lines) > 0) {
+        char tbuf2[4096];
+        SNPRINTF_CHECK(tbuf2, sizeof(tbuf2), "%s", raw->test_lines);
+        char *saveptr_t2;
+        char *tline2 = strtok_r(tbuf2, "\n", &saveptr_t2);
+        while (tline2 && rule->num_tests < MAX_DSL_TESTS) {
+            trim(tline2);
+            if (strlen(tline2) > 0) {
+                parse_test_decl(tline2, &rule->tests[rule->num_tests]);
+                rule->num_tests++;
+            }
+            tline2 = strtok_r(NULL, "\n", &saveptr_t2);
+        }
+    }
+
+    if (strlen(raw->validate_text) > 0) {
+        char vbuf2[1024];
+        SNPRINTF_CHECK(vbuf2, sizeof(vbuf2), "%s", raw->validate_text);
+        char *saveptr_v2;
+        char *vtok = strtok_r(vbuf2, ",\n", &saveptr_v2);
+        while (vtok && rule->num_validate < MAX_DSL_VALIDATE) {
+            trim(vtok);
+            if (strlen(vtok) > 0) {
+                SNPRINTF_CHECK(rule->validate_names[rule->num_validate], sizeof(rule->validate_names[0]), "%s", vtok);
+                rule->num_validate++;
+            }
+            vtok = strtok_r(NULL, ",\n", &saveptr_v2);
+        }
+    }
+
+    if (strlen(raw->compose_text) > 0) {
+        char cobuf[1024];
+        SNPRINTF_CHECK(cobuf, sizeof(cobuf), "%s", raw->compose_text);
+        char *saveptr_co;
+        char *cotok = strtok_r(cobuf, ",\n", &saveptr_co);
+        while (cotok && rule->num_compose < MAX_DSL_COMPOSE) {
+            trim(cotok);
+            if (strlen(cotok) > 0) {
+                SNPRINTF_CHECK(rule->compose_names[rule->num_compose], sizeof(rule->compose_names[0]), "%s", cotok);
+                rule->num_compose++;
+            }
+            cotok = strtok_r(NULL, ",\n", &saveptr_co);
+        }
+    }
+
+    if (strlen(raw->init_code_lines) > 0) {
+        char *ilines2[MAX_DSL_CODE_LINES];
+        int ni2 = 0;
+        char ibuf2[4096];
+        SNPRINTF_CHECK(ibuf2, sizeof(ibuf2), "%s", raw->init_code_lines);
+        char *saveptr_i2;
+        char *iline2 = strtok_r(ibuf2, "\n", &saveptr_i2);
+        while (iline2 && ni2 < MAX_DSL_CODE_LINES) {
+            trim(iline2);
+            if (strlen(iline2) > 0) {
+                ilines2[ni2] = iline2;
+                ni2++;
+            }
+            iline2 = strtok_r(NULL, "\n", &saveptr_i2);
+        }
+        for (int i = 0; i < ni2 && rule->num_init_lines < MAX_DSL_CODE_LINES; i++) {
+            SNPRINTF_CHECK(rule->init_code[rule->num_init_lines], sizeof(rule->init_code[0]), "%s", ilines2[i]);
+            rule->num_init_lines++;
+        }
+    }
+
+    if (strlen(raw->cleanup_code_lines) > 0) {
+        char *clines2[MAX_DSL_CODE_LINES];
+        int nc2 = 0;
+        char cbuf2[4096];
+        SNPRINTF_CHECK(cbuf2, sizeof(cbuf2), "%s", raw->cleanup_code_lines);
+        char *saveptr_c2;
+        char *cline2 = strtok_r(cbuf2, "\n", &saveptr_c2);
+        while (cline2 && nc2 < MAX_DSL_CODE_LINES) {
+            trim(cline2);
+            if (strlen(cline2) > 0) {
+                clines2[nc2] = cline2;
+                nc2++;
+            }
+            cline2 = strtok_r(NULL, "\n", &saveptr_c2);
+        }
+        for (int i = 0; i < nc2 && rule->num_cleanup_lines < MAX_DSL_CODE_LINES; i++) {
+            SNPRINTF_CHECK(rule->cleanup_code[rule->num_cleanup_lines], sizeof(rule->cleanup_code[0]), "%s", clines2[i]);
+            rule->num_cleanup_lines++;
+        }
+    }
+
     return 1;
 }
 
@@ -598,7 +924,7 @@ static void substitute_template(char *out, int out_size, const char *template_st
     SNPRINTF_CHECK(out, out_size, "%s", result);
 }
 
-int dsl_generate_code(Program *prog, DslRule *rule, Function *f)
+int dsl_generate_code(Program *prog, DslRule *rule, L1vmFunction *f)
 {
     if (!rule || !prog || !f) return 0;
 
@@ -671,6 +997,15 @@ int dsl_generate_code(Program *prog, DslRule *rule, Function *f)
         add_var_to_func(f, res->l1vm_type, res->name, count, rv, 1);
     }
 
+    for (int i = 0; i < rule->num_init_lines; i++) {
+        char substituted[4096];
+        substitute_template(substituted, sizeof(substituted),
+            rule->init_code[i], rule, NULL, NULL);
+        char indented[4100];
+        SNPRINTF_CHECK(indented, sizeof(indented), "\t%s", substituted);
+        func_append(f, indented);
+    }
+
     for (int i = 0; i < rule->num_code_lines; i++) {
         char substituted[4096];
         substitute_template(substituted, sizeof(substituted),
@@ -682,6 +1017,15 @@ int dsl_generate_code(Program *prog, DslRule *rule, Function *f)
         // Skip duplicate (set ...) lines already in body (common in matching DSL rules)
         if (strncmp(substituted, "(set ", 5) == 0 && strstr(f->body, substituted) != NULL)
             continue;
+        func_append(f, indented);
+    }
+
+    for (int i = 0; i < rule->num_cleanup_lines; i++) {
+        char substituted[4096];
+        substitute_template(substituted, sizeof(substituted),
+            rule->cleanup_code[i], rule, NULL, NULL);
+        char indented[4100];
+        SNPRINTF_CHECK(indented, sizeof(indented), "\t%s", substituted);
         func_append(f, indented);
     }
 
@@ -768,9 +1112,37 @@ void dsl_print_rule(DslRule *rule)
     printf("DSL Rule: %s\n", rule->keyword);
     printf("  File: %s\n", rule->filename);
     printf("  Description: %s\n", rule->desc);
+    if (strlen(rule->category) > 0)
+        printf("  Category: %s\n", rule->category);
+    if (strlen(rule->version) > 0)
+        printf("  Version: %s\n", rule->version);
+    if (strlen(rule->complexity) > 0)
+        printf("  Complexity: %s\n", rule->complexity);
+    if (strlen(rule->help) > 0)
+        printf("  Help: %s\n", rule->help);
+    if (rule->num_aliases > 0) {
+        printf("  Aliases: ");
+        for (int i = 0; i < rule->num_aliases; i++) {
+            if (i > 0) printf(", ");
+            printf("%s", rule->aliases[i]);
+        }
+        printf("\n");
+    }
     printf("  Tokens: %d\n", rule->num_tokens);
     for (int i = 0; i < rule->num_tokens; i++) {
         printf("    %s: %s\n", dsl_token_type_to_string(rule->tokens[i].type), rule->tokens[i].name);
+    }
+    if (rule->num_params > 0) {
+        printf("  Params: %d\n", rule->num_params);
+        for (int i = 0; i < rule->num_params; i++) {
+            printf("    %s %s", rule->params[i].type, rule->params[i].name);
+            if (strlen(rule->params[i].desc) > 0) printf(" \"%s\"", rule->params[i].desc);
+            if (strlen(rule->params[i].min) > 0) printf(" min=%s", rule->params[i].min);
+            if (strlen(rule->params[i].max) > 0) printf(" max=%s", rule->params[i].max);
+            if (strlen(rule->params[i].default_value) > 0) printf(" default=%s", rule->params[i].default_value);
+            if (rule->params[i].required) printf(" required");
+            printf("\n");
+        }
     }
     if (rule->has_result) {
         printf("  Result: %s %s\n", dsl_token_type_to_string(rule->result.type), rule->result.name);
@@ -780,10 +1152,43 @@ void dsl_print_rule(DslRule *rule)
         printf("    %s\n", rule->includes[i]);
     printf("  Includes-post: %d\n", rule->num_includes_post);
     printf("  Vars: %d\n", rule->num_vars);
-    printf("  Code lines: %d\n", rule->num_code_lines);
     if (rule->has_array_rule) {
         printf("  Array rule: %s[%s] type=%s\n", rule->array_name, rule->array_index, rule->array_element_type);
     }
+    if (rule->num_examples > 0) {
+        printf("  Examples: %d\n", rule->num_examples);
+        for (int i = 0; i < rule->num_examples; i++) {
+            printf("    \"%s\"", rule->examples[i].prompt);
+            if (strlen(rule->examples[i].expected) > 0)
+                printf(" expect: \"%s\"", rule->examples[i].expected);
+            printf("\n");
+        }
+    }
+    if (rule->num_tests > 0) {
+        printf("  Tests: %d\n", rule->num_tests);
+        for (int i = 0; i < rule->num_tests; i++) {
+            printf("    \"%s\" expect: \"%s\"\n", rule->tests[i].input, rule->tests[i].expect);
+        }
+    }
+    if (rule->num_validate > 0) {
+        printf("  Validate: ");
+        for (int i = 0; i < rule->num_validate; i++) {
+            if (i > 0) printf(", ");
+            printf("%s", rule->validate_names[i]);
+        }
+        printf("\n");
+    }
+    if (rule->num_compose > 0) {
+        printf("  Compose: ");
+        for (int i = 0; i < rule->num_compose; i++) {
+            if (i > 0) printf(", ");
+            printf("%s", rule->compose_names[i]);
+        }
+        printf("\n");
+    }
+    printf("  Init code lines: %d\n", rule->num_init_lines);
+    printf("  Code lines: %d\n", rule->num_code_lines);
+    printf("  Cleanup code lines: %d\n", rule->num_cleanup_lines);
 }
 
 int dsl_save_rule(DslRule *rule, const char *path)
@@ -793,7 +1198,35 @@ int dsl_save_rule(DslRule *rule, const char *path)
 
     fprintf(f, "// %s\n", rule->keyword);
     fprintf(f, "parser: \"%s\"\n", rule->keyword);
+
+    if (rule->num_aliases > 0) {
+        fprintf(f, "alias: \"");
+        for (int i = 0; i < rule->num_aliases; i++) {
+            if (i > 0) fprintf(f, ", ");
+            fprintf(f, "%s", rule->aliases[i]);
+        }
+        fprintf(f, "\"\n");
+    }
+
     fprintf(f, "desc: \"%s\"\n", rule->desc);
+
+    if (strlen(rule->category) > 0)
+        fprintf(f, "category: %s\n", rule->category);
+    if (strlen(rule->version) > 0)
+        fprintf(f, "version: %s\n", rule->version);
+    if (strlen(rule->complexity) > 0)
+        fprintf(f, "complexity: %s\n", rule->complexity);
+    if (strlen(rule->help) > 0)
+        fprintf(f, "help: \"%s\"\n", rule->help);
+
+    if (rule->num_match_flags > 0) {
+        fprintf(f, "match: ");
+        for (int i = 0; i < rule->num_match_flags; i++) {
+            if (i > 0) fprintf(f, ", ");
+            fprintf(f, "%s", rule->match_flags[i]);
+        }
+        fprintf(f, "\n");
+    }
 
     if (rule->num_tokens > 0) {
         fprintf(f, "token: ");
@@ -801,6 +1234,23 @@ int dsl_save_rule(DslRule *rule, const char *path)
             if (i > 0) fprintf(f, ", ");
             fprintf(f, "%s %s", dsl_token_type_to_string(rule->tokens[i].type), rule->tokens[i].name);
         }
+        fprintf(f, "\n");
+    }
+
+    for (int i = 0; i < rule->num_params; i++) {
+        fprintf(f, "param: %s %s", rule->params[i].type, rule->params[i].name);
+        if (strlen(rule->params[i].desc) > 0)
+            fprintf(f, " desc=\"%s\"", rule->params[i].desc);
+        if (strlen(rule->params[i].min) > 0)
+            fprintf(f, " min=%s", rule->params[i].min);
+        if (strlen(rule->params[i].max) > 0)
+            fprintf(f, " max=%s", rule->params[i].max);
+        if (strlen(rule->params[i].default_value) > 0)
+            fprintf(f, " default=%s", rule->params[i].default_value);
+        if (strlen(rule->params[i].pattern) > 0)
+            fprintf(f, " pattern=%s", rule->params[i].pattern);
+        if (rule->params[i].required)
+            fprintf(f, " required");
         fprintf(f, "\n");
     }
 
@@ -825,9 +1275,53 @@ int dsl_save_rule(DslRule *rule, const char *path)
         fprintf(f, "array: %s %s %s\n", rule->array_name, rule->array_index, rule->array_element_type);
     }
 
+    for (int i = 0; i < rule->num_examples; i++) {
+        fprintf(f, "example: \"%s\"", rule->examples[i].prompt);
+        if (strlen(rule->examples[i].expected) > 0)
+            fprintf(f, " expect: \"%s\"", rule->examples[i].expected);
+        fprintf(f, "\n");
+    }
+
+    for (int i = 0; i < rule->num_tests; i++) {
+        fprintf(f, "test: \"%s\"", rule->tests[i].input);
+        if (strlen(rule->tests[i].expect) > 0)
+            fprintf(f, " expect: \"%s\"", rule->tests[i].expect);
+        fprintf(f, "\n");
+    }
+
+    if (rule->num_validate > 0) {
+        fprintf(f, "validate: ");
+        for (int i = 0; i < rule->num_validate; i++) {
+            if (i > 0) fprintf(f, ", ");
+            fprintf(f, "%s", rule->validate_names[i]);
+        }
+        fprintf(f, "\n");
+    }
+
+    if (rule->num_compose > 0) {
+        fprintf(f, "compose: ");
+        for (int i = 0; i < rule->num_compose; i++) {
+            if (i > 0) fprintf(f, ", ");
+            fprintf(f, "%s", rule->compose_names[i]);
+        }
+        fprintf(f, "\n");
+    }
+
+    if (rule->num_init_lines > 0) {
+        fprintf(f, "\ninit:\n");
+        for (int i = 0; i < rule->num_init_lines; i++)
+            fprintf(f, "%s\n", rule->init_code[i]);
+    }
+
     fprintf(f, "\ncode:\n");
     for (int i = 0; i < rule->num_code_lines; i++) {
         fprintf(f, "%s\n", rule->code[i]);
+    }
+
+    if (rule->num_cleanup_lines > 0) {
+        fprintf(f, "\ncleanup:\n");
+        for (int i = 0; i < rule->num_cleanup_lines; i++)
+            fprintf(f, "%s\n", rule->cleanup_code[i]);
     }
 
     fclose(f);
@@ -999,7 +1493,7 @@ int dsl_match_task_flags(DslRule *rule, TaskProfile *task)
     return 0;
 }
 
-static void update_token_from_prompt(Function *f, const char *prompt) {
+static void update_token_from_prompt(L1vmFunction *f, const char *prompt) {
     int nums[8];
     int num_count = 0;
     const char *p = prompt;
@@ -1026,7 +1520,7 @@ static void update_token_from_prompt(Function *f, const char *prompt) {
     }
 }
 
-int dsl_generate_from_task(Program *prog, TaskProfile *task, Function *f)
+int dsl_generate_from_task(Program *prog, TaskProfile *task, L1vmFunction *f)
 {
     int generated = 0;
     int applied[MAX_DSL_RULES] = {0};
@@ -1103,4 +1597,34 @@ int dsl_generate_from_task(Program *prog, TaskProfile *task, Function *f)
         update_token_from_prompt(f, task->prompt);
 
     return generated;
+}
+
+DslParam* dsl_find_param(DslRule *rule, const char *name)
+{
+    if (!rule || !name) return NULL;
+    for (int i = 0; i < rule->num_params; i++) {
+        if (strcmp(rule->params[i].name, name) == 0)
+            return &rule->params[i];
+    }
+    return NULL;
+}
+
+int dsl_has_alias(DslRule *rule, const char *alias)
+{
+    if (!rule || !alias) return 0;
+    for (int i = 0; i < rule->num_aliases; i++) {
+        if (strcmp(rule->aliases[i], alias) == 0)
+            return 1;
+    }
+    return 0;
+}
+
+int dsl_find_rule_by_keyword(const char *keyword)
+{
+    if (!keyword) return -1;
+    for (int i = 0; i < dsl_num_rules; i++) {
+        if (strcmp(dsl_rules[i].keyword, keyword) == 0)
+            return i;
+    }
+    return -1;
 }

@@ -30,6 +30,12 @@
 #define MAX_DSL_INCLUDES_POST 16
 #define DSL_LINE_SIZE 1024
 #define MAX_DSL_KEYWORDS 32
+#define MAX_DSL_PARAMS 16
+#define MAX_DSL_EXAMPLES 8
+#define MAX_DSL_ALIASES 16
+#define MAX_DSL_TESTS 8
+#define MAX_DSL_COMPOSE 8
+#define MAX_DSL_VALIDATE 8
 
 typedef enum {
     DSL_TOKEN_INT64,
@@ -64,6 +70,27 @@ typedef struct {
 } DslVarDecl;
 
 typedef struct {
+    char type[32];
+    char name[64];
+    char desc[256];
+    char default_value[256];
+    char min[64];
+    char max[64];
+    char pattern[256];
+    int required;
+} DslParam;
+
+typedef struct {
+    char prompt[256];
+    char expected[256];
+} DslExample;
+
+typedef struct {
+    char input[256];
+    char expect[256];
+} DslTest;
+
+typedef struct {
     char keyword[64];
     DslToken tokens[MAX_DSL_TOKENS];
     int num_tokens;
@@ -89,6 +116,27 @@ typedef struct {
 
     char filename[512];
     int is_learned;
+
+    DslParam params[MAX_DSL_PARAMS];
+    int num_params;
+    char aliases[MAX_DSL_ALIASES][64];
+    int num_aliases;
+    char category[256];
+    char version[32];
+    char complexity[32];
+    DslExample examples[MAX_DSL_EXAMPLES];
+    int num_examples;
+    DslTest tests[MAX_DSL_TESTS];
+    int num_tests;
+    char help[2048];
+    char validate_names[MAX_DSL_VALIDATE][128];
+    int num_validate;
+    char compose_names[MAX_DSL_COMPOSE][64];
+    int num_compose;
+    char init_code[MAX_DSL_CODE_LINES][DSL_LINE_SIZE];
+    int num_init_lines;
+    char cleanup_code[MAX_DSL_CODE_LINES][DSL_LINE_SIZE];
+    int num_cleanup_lines;
 } DslRule;
 
 typedef struct {
@@ -104,6 +152,18 @@ typedef struct {
     char array_rule_index[64];
     char array_rule_elem_type[32];
     char match_text[1024];
+    char param_decls[4096];
+    char alias_text[1024];
+    char category_text[256];
+    char version_text[32];
+    char complexity_text[32];
+    char example_lines[4096];
+    char test_lines[4096];
+    char help_text[2048];
+    char validate_text[1024];
+    char compose_text[1024];
+    char init_code_lines[4096];
+    char cleanup_code_lines[4096];
 } DslRawRule;
 
 extern DslRule dsl_rules[MAX_DSL_RULES];
@@ -114,7 +174,7 @@ int dsl_load_rule_file(const char *path);
 void dsl_free_rules(void);
 int dsl_match_rule(const char *prompt, DslRule **rule, float *score);
 int dsl_match_all_rules(const char *prompt, DslRule **rules, float *scores, int max_rules, float min_score);
-int dsl_generate_code(Program *prog, DslRule *rule, Function *f);
+int dsl_generate_code(Program *prog, DslRule *rule, L1vmFunction *f);
 
 int dsl_add_array_rule(const char *name, const char *index_var, const char *element_type);
 int dsl_parse_raw(DslRawRule *raw, DslRule *rule);
@@ -124,8 +184,12 @@ int learn_dsl(const char *keyword, const char *out_dir, DslRule *new_rule);
 int learn_dsl_load_code_file(const char *code_file, DslRule *rule);
 void dsl_print_rule(DslRule *rule);
 
-int dsl_generate_from_task(Program *prog, TaskProfile *task, Function *f);
+int dsl_generate_from_task(Program *prog, TaskProfile *task, L1vmFunction *f);
 int dsl_match_task_flags(DslRule *rule, TaskProfile *task);
+
+DslParam* dsl_find_param(DslRule *rule, const char *name);
+int dsl_has_alias(DslRule *rule, const char *alias);
+int dsl_find_rule_by_keyword(const char *keyword);
 
 DslTokenType dsl_token_type_from_string(const char *str);
 const char *dsl_token_type_to_string(DslTokenType type);

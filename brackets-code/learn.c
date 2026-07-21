@@ -95,7 +95,7 @@ int learn_from_file(const char *path, const char *keywords, const char *descript
 
     // Parse the .l1com file into includes, globals and function structs
     char line[MAX_LINE];
-    Function *cur_func = NULL;
+    L1vmFunction *cur_func = NULL;
     int in_func = 0;
 
     while (fgets(line, sizeof(line), f)) {
@@ -275,7 +275,7 @@ int save_learned_pattern(LearnedPattern *lp) {
         fprintf(f, "%s\n", lp->globals);
 
     for (int fi = 0; fi < lp->num_funcs; fi++) {
-        Function *fn = &lp->funcs[fi];
+        L1vmFunction *fn = &lp->funcs[fi];
         fprintf(f, "(%s func)\n", fn->name);
         if (fn->has_vardef)
             fprintf(f, "\t#var ~ %s\n", fn->vardef_name);
@@ -325,7 +325,7 @@ void load_learned_patterns(void) {
 
         char line[MAX_LINE];
         int in_source = 0;
-        Function *cur_func = NULL;
+        L1vmFunction *cur_func = NULL;
 
         while (fgets(line, sizeof(line), f)) {
             trim(line);
@@ -536,9 +536,9 @@ int emit_learned_pattern(Program *prog, int learned_idx) {
 
     // Copy functions
     for (int fi = 0; fi < lp->num_funcs; fi++) {
-        Function *src = &lp->funcs[fi];
+        L1vmFunction *src = &lp->funcs[fi];
         add_func(prog, src->name);
-        Function *dst = &prog->funcs[prog->num_funcs - 1];
+        L1vmFunction *dst = &prog->funcs[prog->num_funcs - 1];
 
         dst->is_local = src->is_local;
         dst->has_vars = src->has_vars;
@@ -585,14 +585,14 @@ int emit_learned_step(Program *prog, int learned_idx) {
 
     // Copy functions - for existing main, append body & vars
     for (int fi = 0; fi < lp->num_funcs; fi++) {
-        Function *src = &lp->funcs[fi];
+        L1vmFunction *src = &lp->funcs[fi];
 
         int existing = -1;
         for (int i = 0; i < prog->num_funcs; i++)
             if (strcmp(prog->funcs[i].name, src->name) == 0) { existing = i; break; }
 
         if (existing >= 0) {
-            Function *dst = &prog->funcs[existing];
+            L1vmFunction *dst = &prog->funcs[existing];
             size_t needed = strlen(dst->body) + strlen(src->body) + 1;
             if (ensure_body_cap(dst, (int)needed + 1))
                 strncat(dst->body, src->body, (size_t)dst->body_cap - strlen(dst->body) - 1);
@@ -614,7 +614,7 @@ int emit_learned_step(Program *prog, int learned_idx) {
             }
         } else {
             add_func(prog, src->name);
-            Function *dst = &prog->funcs[prog->num_funcs - 1];
+            L1vmFunction *dst = &prog->funcs[prog->num_funcs - 1];
             dst->is_local = src->is_local;
             dst->has_vars = src->has_vars;
             dst->has_vardef = src->has_vardef;

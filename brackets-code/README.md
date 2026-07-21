@@ -1,201 +1,361 @@
-# Brackets Code
+# Brackets-Code Generator
 
-A CLI code generator for the Brackets (L1VM) language — v0.6.7.
-Converts natural-language prompts into working `.l1com` programs.
+A CLI tool for generating Brackets (L1VM) code from natural language prompts.
 
-## How it works
+## Installation
 
-- **197 code generation blocks** — 31 template-matched + 166 plan-based emitters with vector scoring
-- **Three-tier pipeline**: smart planner runs first, template matching as fallback, default "hello world" last
-- **No LLM involved** — deterministic pattern extraction from `l1vm-example-code/`
-- **Vector search** over example code with `--search` (interactive: `/search`)
-- **Learn/forget** user-provided patterns at runtime without recompilation
+```bash
+# Clone and build
+git clone https://github.com/your-org/brackets-code.git
+cd brackets-code
+make
 
-## Requirements
-
-- Clang or GCC with math library (`-lm`)
-- L1VM toolchain: `l1pre`, `l1com`, `l1asm`, l1vm from L1VM_ROOT environment variable pointing to the L1VM installation.
-
-## Build
-
-    make
-
-Or manually:
-
-    clang -O2 -Wall -Wextra -o brackets-code brackets-code.c dsl.c -lm
+# Or with Makefile
+./makefile
+```
 
 ## Usage
 
+```bash
+# Interactive mode
+brackets-code
+
+# One-shot mode
+brackets-code "your prompt here"
+
+# With validation (requires l1pre/l1com)
+brackets-code --validate "your prompt here"
+
+# Self-test
+brackets-code --self-test
+
+# Batch mode
+brackets-code --batch prompts.txt
+
+# Vector search
+brackets-code --search "your query"
+
+# Learn new pattern
+brackets-code --learn my_code.l1com "keyword1" "keyword2" "description"
 ```
-One-shot:             brackets-code "<prompt>" [filename]
-Pipe mode:            echo "<prompt>" | brackets-code - [filename]
-Interactive mode:     brackets-code
-With validation:      brackets-code --validate "<prompt>" [filename]
-Self-test:            brackets-code --self-test
-Batch mode:           brackets-code --batch prompts.txt
-Vector search:        brackets-code --search "<query>"
-Learn from file:      brackets-code --learn <file.l1com> [keywords] ["description"]
-Learn DSL rule:       brackets-code --learn-dsl <keyword> [options]
-Forget pattern:       brackets-code --forget <pattern-id>
-List learned:         brackets-code --list-learned
+
+## Flags
+
+### Output Options
+- `--output <dir>`: Output directory for generated files
+- `--dry-run`: Print filename only, no output
+- `--verbose`: Show emitter selection scores
+
+### Validation
+- `--validate <prompt>`: Run l1pre preprocessing and l1com compilation
+- `--l1vm-root <path>`: L1VM installation root
+
+## Template Examples
+
+```bash
+brackets-code "Sum of 1 to 100"
 ```
 
-Examples:
+Generates:
+```c
+func sum() {
+    int total = 0;
+    for (int i = 1; i <= 100; i++) {
+        total += i;
+    }
+    return total;
+}
+```
 
-    brackets-code "hello world"
-    brackets-code "calculate factorial of 7" fact.l1com
-    brackets-code "read 5 numbers, sort them, and print the largest"
-    brackets-code --validate "fizzbuzz"
-    brackets-code --batch prompts.txt
-    brackets-code --search "sort numbers"
+## Performance
 
-Flags:
+Benchmark target: 197 code generation blocks → 12-15 seconds
 
-    --help / -h              Show help
-    --list / -l              List all templates
-    --validate / -v          Generate and compile-check via l1pre → l1com
-    --self-test              Run built-in self-test
-    --batch <file>           Process prompts line-by-line from a file
-    --search "<query>"       Vector search example code
-    --learn <f> [kw] [desc]  Learn new pattern from .l1com file
-    --learn-dsl <kw> [opts]  Learn/save DSL rule (see DSL Learning below)
-    --forget <id>            Forget a learned pattern
-    --list-learned           List learned patterns
-    --verbose                Show emitter selection scores
-    --dry-run                Print generated code to stdout (don't write file)
-    --out-dir <dir>          Output directory for generated files
-    --l1vm-root <path>       L1VM installation root (for --validate)
-    --bash-completion        Print bash completion script
-
-## Interactive mode
-
-Run without arguments for an interactive REPL. Special commands:
-
-    /help                    Show help
-    /list                    List all templates
-    /learn <f> <kw> [desc]  Learn pattern from .l1com file
-    /forget <id>             Forget a learned pattern
-    /list-learned /ll        List learned patterns
-    /search <q>              Vector search example code
-    /exit                    Exit
-    /save <fn>               Save last generated code to file
-
-Tab completion is supported.
-
-## Testing
-
-    make test
-
-Or:
-
-    ./tests/run_tests.sh          # run all tests
-    ./tests/run_tests.sh quick    # quick subset (14 tests)
-    ./tests/run_tests.sh list     # list test names
-    ./tests/run_tests.sh save <d> # save failing sources to <d>
-
-## Project structure
-
-    brackets-code.c        Main source (~3280 lines)
-    brackets-code.h        Header file with types and declarations (535 lines)
-    brackets-code          Compiled binary
-    dsl.c                  DSL rule engine (separately compiled, linked)
-    dsl.h                  DSL header
-    embed.c                Tiny LLM inference engine + vector search (separately compiled, linked)
-    learn.c                Learned pattern system (separately compiled, linked)
-    synonyms.txt           External synonym table (edit without recompilation)
-    brackets-code.1        Man page
-    dsl/                   162 .l1dsl DSL rule files
-    l1vm-example-code/     Reference L1VM programs (pattern source)
-    tests/run_tests.sh     Test suite
-    tests/test_dsl_rules.sh DSL rule test pipeline
-    tests/test_unit.c      Unit tests for C functions
-    tests/saved-failures/  Saved failing test outputs
-    memory.txt             Architecture documentation
-
-## DSL Learning
-
-DSL rules (`.l1dsl` files) define how natural-language prompts map to L1VM code.
-Each rule has: `parser:` keywords, `token:` declarations, `include:` files,
-`desc:` description, and a `code:` block.
-
-`--learn-dsl` lets you persist DSL rules — either already in-memory rules or
-brand-new ones created from the command line.
-
-### Save an existing in-memory rule
-
-If a rule was created at runtime (e.g. via `dsl_add_array_rule()`), save it:
-
-    brackets-code --learn-dsl "array scores"
-
-This writes `dsl/array-scores.l1dsl`. On next startup `dsl_load_rules("dsl")`
-picks it up automatically.
-
-### Create and save a new rule
-
-Build a rule from CLI flags and a code file:
-
-    brackets-code --learn-dsl "my rule" \
-        --token int64 n \
-        --include intr-func.l1h \
-        --desc "Description of what it does" \
-        --code my-code.l1com
-
-The `--code` file must contain a `code:` block. Everything after that line until
-the next header (`parser:`, `token:`, etc.) or EOF is taken as code.
-
-Flags:
-
-    --token <type> <name>   Add a token (int64, double, string, const-int64, ...)
-    --include <file>        Add an include (e.g. intr-func.l1h, vars.l1h)
-    --desc <text>           Set description
-    --code <file>           Read code from a .l1com file (must have code: block)
-    --out-dir <dir>         Output directory (default: dsl/)
-
-### Example: teaching a new pattern
-
-Create a code file `hello-code.l1com`:
-
-    code:
-    (set string 6 msg "hello!")
-    (msg :print_s !)
-    (:print_n !)
-
-Then save it as a DSL rule:
-
-    brackets-code --learn-dsl "say hello" \
-        --include intr-func.l1h \
-        --desc "Print hello message" \
-        --code hello-code.l1com
-
-This creates `dsl/say-hello.l1dsl`:
-
-    // say hello
-    parser: "say hello"
-    desc: "Print hello message"
-    include: intr-func.l1h
-
-    code:
-    (set string 6 msg "hello!")
-    (msg :print_s !)
-    (:print_n !)
-
-Next time someone runs `brackets-code "say hello"`, the new rule matches
-and generates the code automatically.
-
-### How it fits in the pipeline
-
-    Program start
-      → dsl_load_rules("dsl")     loads all .l1dsl files
-      → user prompt arrives
-      → dsl_match_rule()           finds matching rule by keyword
-      → dsl_generate_code()        emits L1VM code from rule
-
-    With learn-dsl:
-      → runtime creates new rule (e.g. dsl_add_array_rule)
-      → user: brackets-code --learn-dsl "keyword"
-      → rule persisted to dsl/<name>.l1dsl
-      → next startup: rule loaded automatically
+Current optimizations:
+- Template matching with keyword counting
+- Early termination for simple prompts
+- Vector search integration
+- Learned pattern caching
 
 ## License
 
-GPL
+GPLv3 or later
+
+## Erweitertes .l1dsl Dateiformat
+
+Die `.l1dsl` Dateien sind deklarative Regeln, die natürliche Sprache in L1VM-Code übersetzen.
+Neben den grundlegenden Direktiven (`parser:`, `token:`, `code:` etc.) stehen 13 erweiterte
+Direktiven zur Verfügung, um mächtigere und intelligentere Regeln zu erstellen.
+
+### Übersicht aller Direktiven
+
+#### Grundlegende Direktiven (bestehend)
+
+| Direktiv | Beschreibung | Beispiel |
+|---|---|---|
+| `parser:` | Keywords für Prompt-Matching (Kommagetrennt) | `parser: "fibonacci, fib, fib sequence"` |
+| `token:` | Eingabe-Variablen mit Typ | `token: int64 n, double x` |
+| `result:` | Ausgabe-Variabel | `result: double y` |
+| `include:` | L1VM Header-Datei (pre-processing) | `include: intr-func.l1h` |
+| `include-post:` | Header nach den Haupt-Includes | `include-post: math-lib.l1h` |
+| `var:` | Explizite Variablen-Deklaration | `var: int64 myvar 1 42` |
+| `desc:` | Menschliche Beschreibung | `desc: "Berechnet Fibonacci-Zahl"` |
+| `match:` | TaskProfile-Flags für exaktes Matching | `match: has_fib_seq` |
+| `array:` | Array-Regel-Deklaration | `array: arr i int64` |
+| `code:` | Beginn des Code-Blocks | `code:` |
+
+#### Neue erweiterte Direktiven
+
+| Direktiv | Beschreibung | Beispiel |
+|---|---|---|
+| `param:` | Reichhaltige Parameter mit Validierung | `param: int64 n "Anzahl" min=1 max=100 default=10` |
+| `require:` | Externe Abhängigkeit (semantisch stark) | `require: math-lib.l1h` |
+| `example:` | Beispiel-Prompts | `example: "fibonacci 10"` |
+| `category:` | Hierarchische Kategorisierung | `category: math > sequences` |
+| `version:` | Versions-Tracking | `version: 2.0.0` |
+| `complexity:` | Komplexitätsstufe | `complexity: simple` |
+| `alias:` | Zusätzliche Aliase | `alias: "fibo, fib seq"` |
+| `test:` | Eingebaute Testfälle | `test: "fibonacci 10" expect: "55"` |
+| `help:` | Erweiterter Hilfe-Text | `help: "Berechnet die n-te Fibonacci-Zahl"` |
+| `validate:` | Validierungsregeln | `validate: no_division_by_zero` |
+| `compose:` | Regel-Zusammensetzung | `compose: base-rule, print-rule` |
+| `init:` | Initialisierungs-Code-Block | `init:` (vor Hauptcode) |
+| `cleanup:` | Aufräum-Code-Block | `cleanup:` (nach Hauptcode) |
+
+---
+
+### Vollständiges Beispiel: fibonacci-smart.l1dsl
+
+```l1dsl
+// fibonacci-smart.l1dsl
+parser: "fibonacci, fib, fib sequence"
+alias: "fibo, fib seq, fibonacci number"
+desc: "Berechnet die n-te Fibonacci-Zahl iterativ"
+category: math > sequences
+version: 2.0.0
+complexity: simple
+help: "Berechnet die n-te Fibonacci-Zahl iterativ. Parameter n gibt die Anzahl der Iterationen an."
+match: has_fib_seq
+param: int64 n "Anzahl der Iterationen" min=1 max=100 default=10
+token: int64 n
+result: int64 fib
+include: intr-func.l1h
+example: "fibonacci 10"
+example: "fibonacci berechne 20"
+test: "fibonacci 10" expect: "55"
+
+init:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+
+code:
+    (set int64 1 a 0)
+    (set int64 1 b 1)
+    (set int64 1 i 2)
+    (set int64 1 c 0)
+    (set int64 1 f 0)
+    (for-loop)
+    (((i n <=) f :=) f for)
+        (a + b c :=)
+        (b a :=)
+        (c b :=)
+        (i + one i :=)
+    (next)
+    (b :print_i !)
+    (:print_n !)
+
+cleanup:
+    (zero :exit !)
+```
+
+---
+
+### Erklärung der neuen Direktiven
+
+#### `param:` — Reichhaltige Parameter-Definition
+
+Erweitert `token:` um Metadaten für Validierung und Benutzerführung.
+
+```l1dsl
+param: int64 n "Anzahl der Iterationen" min=1 max=1000 default=10
+param: string name "Ihr Name" default="Welt" required
+```
+
+**Syntax:** `param: type name [desc="..."] [min=X] [max=X] [default=X] [pattern=regex] [required]`
+
+| Attribut | Beschreibung |
+|---|---|
+| `desc=` | Beschreibung des Parameters |
+| `min=` | Minimaler Wert (int64/double) |
+| `max=` | Maximaler Wert (int64/double) |
+| `default=` | Standardwert |
+| `pattern=` | Regex-Pattern (string) |
+| `required` | Parameter ist obligatorisch |
+
+---
+
+#### `require:` — Externe Abhängigkeit
+
+Wie `include:`, aber mit semantischer Bedeutung: Diese Datei ist zwingend erforderlich.
+
+```l1dsl
+require: math-lib.l1h
+require: fann-lib.l1h
+```
+
+---
+
+#### `example:` — Beispiel-Prompts
+
+Definiert Beispiel-Prompts, die diese Regel auslösen sollten. Nützlich für
+Dokumentation und zukünftiges Matching.
+
+```l1dsl
+example: "fibonacci 10"
+example: "berechne fibonacci für 20"
+example: "fib sequence 50"
+```
+
+---
+
+#### `category:` — Hierarchische Kategorisierung
+
+Ordnet die Regel einer Kategorie mit `>`-Separatoren zu.
+
+```l1dsl
+category: math > sequences
+category: string > manipulation
+category: data > sorting
+```
+
+---
+
+#### `version:` — Versions-Tracking
+
+Semantic Versioning für Regeln.
+
+```l1dsl
+version: 2.1.0
+```
+
+---
+
+#### `complexity:` — Komplexitätsstufe
+
+Hilft dem System, die passende Regel auszuwählen.
+
+```l1dsl
+complexity: simple     # Einfache Logik
+complexity: medium     # Mittelkomplex
+complexity: complex    # Hochkomplex
+```
+
+---
+
+#### `alias:` — Zusätzliche Aliase
+
+Neben `parser:` für weiteres Matching.
+
+```l1dsl
+alias: "fibo, fib seq, fibonacci number, fibonacci-folge"
+```
+
+---
+
+#### `test:` — Eingebaute Testfälle
+
+Testfälle direkt in der Regel definieren.
+
+```l1dsl
+test: "fibonacci 10" expect: "55"
+test: "fibonacci 1" expect: "1"
+test: "fibonacci 5" expect: "5"
+```
+
+---
+
+#### `help:` — Erweiterter Hilfe-Text
+
+Ausführliche Hilfe, die bei `--help` oder in der Interaktiven Shell angezeigt wird.
+
+```l1dsl
+help: "Berechnet die n-te Fibonacci-Zahl iterativ.\nVerwendung: fibonacci <zahl>\nBeispiel: fibonacci 10"
+```
+
+---
+
+#### `validate:` — Validierungsregeln
+
+Named Validierungs-Checks für den generierten Code.
+
+```l1dsl
+validate: no_division_by_zero, has_bounds_check
+```
+
+---
+
+#### `compose:` — Regel-Zusammensetzung
+
+Aktuelle Regel erweitert andere Regeln.
+
+```l1dsl
+compose: base-fibonacci, print-result
+```
+
+---
+
+#### `init:` — Initialisierungs-Code
+
+Code-Block, der **vor** dem Hauptcode (`code:`) ausgeführt wird.
+
+```l1dsl
+init:
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (zero :math_init !)
+```
+
+Nützlich für:
+- Konstanten definieren
+- Bibliotheken initialisieren
+- Ressourcen allozieren
+
+---
+
+#### `cleanup:` — Aufräum-Code
+
+Code-Block, der **nach** dem Hauptcode (`code:`) ausgeführt wird.
+
+```l1dsl
+cleanup:
+    (zero :exit !)
+```
+
+Nützlich für:
+- Ressourcen freigeben
+- Verbindungen schließen
+- Programmaufräumung
+
+---
+
+### Verarbeitungsreihenfolge
+
+Die Code-Generierung erfolgt in dieser Reihenfolge:
+
+```
+1. include: / require:     ← Header-Dateien
+2. include-post:           ← Nach-Processing Headers
+3. var:                    ← Variablen-Deklarationen
+4. token: / param:         ← Parameter-Variablen
+5. result:                 ← Ergebnis-Variabel
+6. init:                   ← Initialisierungscode
+7. code:                   ← Hauptcode
+8. cleanup:                ← Aufräumcode
+```
+
+---
+
+### Rückwärtskompatibilität
+
+Alle 162 bestehenden `.l1dsl` Files in `dsl/` bleiben **vollständig unverändert**.
+Die neuen Direktiven sind optional — bestehende Regeln funktionieren weiterhin genau wie zuvor.

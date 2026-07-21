@@ -36,20 +36,82 @@
 #include "brackets-code.h"
 #include "dsl.h"
 
+#ifdef HAVE_READLINE
+#include <readline/readline.h>
+#include <readline/history.h>
+#endif
+
 int validate_flag = 0;
 int retry_seed = 0;
 int verbose_flag = 0;
 int dry_run_flag = 0;
-char out_dir[PATH_BUF_SIZE] = "";
-char l1vm_root[PATH_BUF_SIZE] = "";
-
 int use_color = 1;
+char out_dir[512] = "";
+char l1vm_root[512] = "";
+
+#define MAX_ARGS 1024
+#define MAX_LINE_LEN 4096
+#define MAX_VARS_CAP 64
+#define INIT_VARS_CAP 8
+#define INIT_BODY_CAP 4096
+#define INIT_FUNCS_CAP 4
+#define INIT_INCLUDES_CAP 4
+#define MAX_LEARNED 4096
+#define MAX_PROMPT 8192
+#define MAX_CODE 65536
+#define MAX_OUTPUT 4096
+#define PATH_BUF_SIZE 512
+#define WORD_BUF_SIZE 256
+#define FULLPATH_BUF_SIZE 1024
+
+#define ANSI_RESET   "\033[0m"
+#define ANSI_RED     "\033[31m"
+#define ANSI_GREEN   "\033[32m"
+#define ANSI_YELLOW  "\033[33m"
+#define ANSI_CYAN    "\033[36m"
+#define ANSI_BOLD    "\033[1m"
+
+#define MAX_EXAMPLES 512
+#define TEMPERATURE 0.8
+#define MAX_STEPS 32
+#define NUM_EMITTERS 166
+#define EMBED_DIM 32
+#define VOCAB_SIZE 72
+#define MAX_LEARNED 4096
+#define LEARNED_DIR ".brackets-code/learned"
+#define MAX_NUMS 8
+#define INIT_VARS_CAP 8
+#define INIT_BODY_CAP 4096
+#define INIT_FUNCS_CAP 4
+#define INIT_INCLUDES_CAP 4
+
+#define MAX_EXAMPLES 512
+#define MAX_TOP_K 10
+#define EXAMPLE_DIR "l1vm-example-code"
+#define EXAMPLE_SUBDIRS 3
+#define EXAMPLE_EXTS 3
+
+#define MAX_NUMS 8
+#define MAX_ARGS 1024
+#define MAX_LINE_LEN 4096
+#define MAX_VARS_CAP 64
+#define INIT_VARS_CAP 8
+#define INIT_BODY_CAP 4096
+#define INIT_FUNCS_CAP 4
+#define INIT_INCLUDES_CAP 4
+#define MAX_LEARNED 4096
+#define MAX_PROMPT 8192
+#define MAX_CODE 65536
+#define MAX_OUTPUT 4096
+#define PATH_BUF_SIZE 512
+#define WORD_BUF_SIZE 256
+#define FULLPATH_BUF_SIZE 1024
 
 LearnedPattern learned_patterns[MAX_LEARNED];
 int num_learned = 0;
 int learned_loaded = 0;
 
-static int resize_vars(Function *f, int new_cap) {
+static int resize_vars(L1vmFunctionf, int new_cap) {
     Variable *p = realloc(f->vars, (size_t)new_cap * sizeof(Variable));
     if (!p) return 0;
     f->vars = p;
@@ -59,7 +121,7 @@ static int resize_vars(Function *f, int new_cap) {
     return 1;
 }
 
-int ensure_vars_cap(Function *f, int needed) {
+int ensure_vars_cap(L1vmFunctionf, int needed) {
     if (needed <= f->vars_cap) return 1;
     if (f->vars_cap > INT_MAX / 2) return 0;
     int new_cap = f->vars_cap ? f->vars_cap * 2 : INIT_VARS_CAP;
@@ -70,7 +132,7 @@ int ensure_vars_cap(Function *f, int needed) {
     return resize_vars(f, new_cap);
 }
 
-static int resize_body(Function *f, int new_cap) {
+static int resize_body(L1vmFunctionf, int new_cap) {
     char *p = realloc(f->body, (size_t)new_cap);
     if (!p) return 0;
     f->body = p;
@@ -80,7 +142,7 @@ static int resize_body(Function *f, int new_cap) {
     return 1;
 }
 
-int ensure_body_cap(Function *f, int needed) {
+int ensure_body_cap(L1vmFunctionf, int needed) {
     if (needed <= f->body_cap) return 1;
     if (f->body_cap > INT_MAX / 2) return 0;
     int new_cap = f->body_cap ? f->body_cap * 2 : INIT_BODY_CAP;
@@ -91,8 +153,8 @@ int ensure_body_cap(Function *f, int needed) {
     return resize_body(f, new_cap);
 }
 
-int init_function(Function *f) {
-    memset(f, 0, sizeof(Function));
+int init_function(L1vmFunctionf) {
+    memset(f, 0, sizeof(L1vmFunction));
     f->vars = NULL; f->vars_cap = 0;
     f->body = NULL; f->body_cap = 0;
     if (!resize_vars(f, INIT_VARS_CAP)) return 0;
@@ -104,14 +166,14 @@ int init_function(Function *f) {
     return 1;
 }
 
-void free_function(Function *f) {
+void free_function(L1vmFunctionf) {
     free(f->vars); f->vars = NULL; f->vars_cap = 0;
     free(f->body); f->body = NULL; f->body_cap = 0;
     f->num_vars = 0;
 }
 
-static int resize_funcs_array(Function **pfuncs, int *cap, int new_cap) {
-    Function *p = realloc(*pfuncs, (size_t)new_cap * sizeof(Function));
+static int resize_funcs_array(L1vmFunction **pfuncs, int *cap, int new_cap) {
+    L1vmFunction *p = realloc(*pfuncs, (size_t)new_cap * sizeof(L1vmFunction));
     if (!p) return 0;
     *pfuncs = p;
     if (new_cap > *cap) {
@@ -126,7 +188,7 @@ static int resize_funcs_array(Function **pfuncs, int *cap, int new_cap) {
     return 1;
 }
 
-int ensure_funcs_cap(Function **pfuncs, int *cap, int needed) {
+int ensure_funcs_cap(L1vmFunction **pfuncs, int *cap, int needed) {
     if (needed <= *cap) return 1;
     if (*cap > INT_MAX / 2) return 0;
     int new_cap = *cap ? *cap * 2 : INIT_FUNCS_CAP;
@@ -137,17 +199,17 @@ int ensure_funcs_cap(Function **pfuncs, int *cap, int needed) {
     return resize_funcs_array(pfuncs, cap, new_cap);
 }
 
-static int resize_includes_arr(char (**pinc)[WORD_BUF_SIZE], int *cap, int new_cap) {
-    char (*p)[WORD_BUF_SIZE] = realloc(*pinc, (size_t)new_cap * sizeof(char[WORD_BUF_SIZE]));
+static int resize_includes_arr(char (**pinc)[256], int *cap, int new_cap) {
+    char (*p)[256] = realloc(*pinc, (size_t)new_cap * sizeof(char[256]));
     if (!p) return 0;
     *pinc = p;
     if (new_cap > *cap)
-        memset(&(*pinc)[*cap], 0, (size_t)(new_cap - *cap) * sizeof(char[WORD_BUF_SIZE]));
+        memset(&(*pinc)[*cap], 0, (size_t)(new_cap - *cap) * sizeof(char[256]));
     *cap = new_cap;
     return 1;
 }
 
-int ensure_includes_cap(char (**pinc)[WORD_BUF_SIZE], int *cap, int needed) {
+int ensure_includes_cap(char (**pinc)[256], int *cap, int needed) {
     if (needed <= *cap) return 1;
     if (*cap > INT_MAX / 2) return 0;
     int new_cap = *cap ? *cap * 2 : INIT_INCLUDES_CAP;
@@ -250,7 +312,7 @@ void add_func(Program *prog, const char *name) {
     for (int i = 0; i < prog->num_funcs; i++)
         if (strcmp(prog->funcs[i].name, name) == 0) return;
     if (!ensure_funcs_cap(&prog->funcs, &prog->funcs_cap, prog->num_funcs + 1)) return;
-    Function *f = &prog->funcs[prog->num_funcs];
+    L1vmFunctionf = &prog->funcs[prog->num_funcs];
     init_function(f);
     SNPRINTF_CHECK(f->name, sizeof(f->name), "%s", name);
     f->is_local = 0;
@@ -261,7 +323,7 @@ void add_func(Program *prog, const char *name) {
     prog->num_funcs++;
 }
 
-void add_var_to_func(Function *f, const char *type, const char *name, int count, const char **values, int num_values) {
+void add_var_to_func(L1vmFunctionf, const char *type, const char *name, int count, const char **values, int num_values) {
     // Skip if variable with same name already exists (prevents duplicate declarations)
     for (int i = 0; i < f->num_vars; i++)
         if (strcmp(f->vars[i].name, name) == 0) return;
@@ -275,14 +337,14 @@ void add_var_to_func(Function *f, const char *type, const char *name, int count,
         SNPRINTF_CHECK(v->values[i], sizeof(v->values[i]), "%s", values[i]);
 }
 
-void func_append(Function *f, const char *line) {
+void func_append(L1vmFunctionf, const char *line) {
     size_t needed = strlen(f->body) + strlen(line) + 2;
     if (!ensure_body_cap(f, (int)needed + 1)) return;
     strncat(f->body, line, (size_t)f->body_cap - strlen(f->body) - 1);
     strncat(f->body, "\n", (size_t)f->body_cap - strlen(f->body) - 1);
 }
 
-void func_vardef(Function *f, const char *scope) {
+void func_vardef(L1vmFunctionf, const char *scope) {
     if (f->has_vardef) return;
     f->has_vardef = 1;
     f->is_local = 1;
@@ -348,7 +410,7 @@ void answer_question(const char *prompt) {
         printf("  (arr [ realind ] val =)            - read element\n");
         printf("  (val arr [ realind ] =)            - write element\n");
     } else if (strstr(buf, "function") || strstr(buf, "funktion") || strstr(buf, "sub") || strstr(buf, "unter")) {
-        printf("Function definition in Brackets:\n");
+        printf(" L1vmFunction definition in Brackets:\n");
         printf("  (myfunc func)\n");
         printf("      #var ~ myfunc      - local scope\n");
         printf("      (set int64 1 x~ 0)  - local variable\n");
@@ -1889,7 +1951,7 @@ static void parse_task_detect_enhanced_patterns(const char *prompt, const char *
     detect_fann_pattern(buf, task);
 }
 
-static void add_standard_constants(Function *f) {
+static void add_standard_constants(L1vmFunctionf) {
     const char *zv[] = {"0"};
     const char *ov[] = {"1"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
@@ -1917,11 +1979,11 @@ static int try_learned_pattern_info(Program *prog, const char *prompt, const cha
     return 0;
 }
 
-static void ensure_exit(Function *f, int last_step);
+static void ensure_exit(L1vmFunctionf, int last_step);
 
 /* ── Inherited array operations for multi-step generation ─────────────── */
 
-static int emit_sort_inherited_array(Function *f, TaskProfile *task, int last_step) {
+static int emit_sort_inherited_array(L1vmFunctionf, TaskProfile *task, int last_step) {
     const char *zv[] = {"0"};
     add_standard_constants(f);
     char cvs[16];
@@ -1969,7 +2031,7 @@ static int emit_sort_inherited_array(Function *f, TaskProfile *task, int last_st
     return 1;
 }
 
-static int emit_print_inherited_array(Function *f, TaskProfile *task, int last_step) {
+static int emit_print_inherited_array(L1vmFunctionf, TaskProfile *task, int last_step) {
     const char *zv[] = {"0"};
     add_standard_constants(f);
     char cvs[16];
@@ -1997,7 +2059,7 @@ static int emit_print_inherited_array(Function *f, TaskProfile *task, int last_s
     return 1;
 }
 
-static int emit_print_max_inherited(Function *f, TaskProfile *task, int last_step) {
+static int emit_print_max_inherited(L1vmFunctionf, TaskProfile *task, int last_step) {
     const char *zv[] = {"0"};
     add_standard_constants(f);
     char cvs[16];
@@ -2021,7 +2083,7 @@ static int emit_print_max_inherited(Function *f, TaskProfile *task, int last_ste
     return 1;
 }
 
-static int emit_print_min_inherited(Function *f, TaskProfile *task, int last_step) {
+static int emit_print_min_inherited(L1vmFunctionf, TaskProfile *task, int last_step) {
     const char *zv[] = {"0"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
     add_var_to_func(f, "int64", "realind", 1, zv, 1);
@@ -2074,7 +2136,7 @@ int parse_task(const char *prompt, TaskProfile *task) {
     parse_task_detect_enhanced_patterns(prompt, buf, task);
     return parse_task_finalize(prompt, buf, task);
 }
-static void ensure_exit(Function *f, int last_step) {
+static void ensure_exit(L1vmFunctionf, int last_step) {
     if (!last_step) return;
     const char *zv[] = {"0"};
     add_var_to_func(f, "const-int64", "zero", 1, zv, 1);
@@ -2083,7 +2145,7 @@ static void ensure_exit(Function *f, int last_step) {
 
 int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
     // check if main function already exists
-    Function *f = NULL;
+    L1vmFunctionf = NULL;
     int found = 0;
     for (int i = 0; i < prog->num_funcs; i++) {
         if (strcmp(prog->funcs[i].name, "main") == 0) { f = &prog->funcs[i]; found = 1; break; }
@@ -2131,7 +2193,7 @@ int generate_from_task(Program *prog, TaskProfile *task, int last_step) {
 void gen_arithmetic(Program *prog, const char *op, const char *type, const int *vals, int num_vals) {
     add_include(prog, "intr-func.l1h");
     add_func(prog, "main");
-    Function *f = &prog->funcs[prog->num_funcs - 1];
+    L1vmFunctionf = &prog->funcs[prog->num_funcs - 1];
 
     const char *zero_v[] = {"0"};
     add_var_to_func(f, "const-int64", "zero", 1, zero_v, 1);
@@ -2259,7 +2321,7 @@ static int try_smart_multi_step(Program *prog, const char *prompt, char *desc, i
             }
             generate_from_task(prog, &task, (i == num_steps - 1));
         }
-        Function *fcur = NULL;
+        L1vmFunctionfcur = NULL;
         for (int fi = 0; fi < prog->num_funcs; fi++)
             if (strcmp(prog->funcs[fi].name, "main") == 0) { fcur = &prog->funcs[fi]; break; }
         if (fcur) {
@@ -2350,6 +2412,38 @@ static int try_fallback_arithmetic(Program *prog, const char *prompt, char *desc
 }
 
 int smart_generate(Program *prog, const char *prompt, char *desc, int desc_size) {
+
+// Early exit: very simple prompts already have basic templates
+if (strlen(prompt) < 3) {
+    char desc[PATH_BUF_SIZE] = {0};
+    if (try_learned_pattern(prog, prompt, desc, sizeof(desc))) return 1;
+    return try_fallback_arithmetic(prog, prompt, desc, sizeof(desc));
+}
+
+// Skip multi-step prompts (handled by LLM)
+if (strstr(prompt, "input") && strstr(prompt, "sort") && strstr(prompt, "print")) {
+    return try_smart_multi_step(prog, prompt, desc, sizeof(desc));
+}
+
+// Skip single-step arithmetic (basic math)
+if (strstr(prompt, "plus") || strstr(prompt, "minus") || strstr(prompt, "times") || strstr(prompt, "div") || strstr(prompt, "mod") || strstr(prompt, "sqrt") || strstr(prompt, "power")) {
+    return try_smart_single_step(prog, prompt, desc, sizeof(desc));
+
+// Skip learned patterns for very simple prompts
+if (strlen(prompt) < 4) {
+    init_embeddings();
+    index_examples();
+    load_learned_patterns();
+    { const char *lid; int lsc;
+        if (try_learned_pattern_info(prog, prompt, &lid, &lsc)) {
+            return 1;
+        }
+    }
+    return try_fallback_arithmetic(prog, prompt, desc, sizeof(desc));
+}
+
+}
+
     init_embeddings();
     index_examples();
     load_learned_patterns();
@@ -2388,7 +2482,7 @@ static void write_prog_header(FILE *f, const char *filename, Program *prog) {
         fprintf(f, "%s\n\n", prog->globals);
 }
 
-static void sync_vars_from_body(Function *fn) {
+static void sync_vars_from_body(L1vmFunctionfn) {
     const char *bp = fn->body;
     while (*bp) {
         const char *nl = strchr(bp, '\n');
@@ -2428,7 +2522,7 @@ static void sync_vars_from_body(Function *fn) {
     }
 }
 
-static void write_function_body(FILE *f, Function *fn) {
+static void write_function_body(FILE *f, L1vmFunctionfn) {
     char emitted_names[4096] = " ";
     for (int vi = 0; vi < fn->num_vars; vi++) {
         Variable *v = &fn->vars[vi];
@@ -2500,7 +2594,7 @@ void write_program(Program *prog, const char *filename) {
     write_prog_header(f, filename, prog);
 
     for (int fi = 0; fi < prog->num_funcs; fi++) {
-        Function *fn = &prog->funcs[fi];
+        L1vmFunctionfn = &prog->funcs[fi];
         fprintf(f, "(%s func)\n", fn->name);
         if (fn->has_vardef)
             fprintf(f, "\t#var ~ %s\n", fn->vardef_name);
@@ -2520,7 +2614,7 @@ void write_program(Program *prog, const char *filename) {
 
 // ==================== TEMPLATES ====================
 
-int dsl_apply_to_func(Program *prog, Function *f, const char *keyword) {
+int dsl_apply_to_func(Program *prog, L1vmFunctionf, const char *keyword) {
     for (int i = 0; i < dsl_num_rules; i++)
         if (strcmp(dsl_rules[i].keyword, keyword) == 0)
             return dsl_generate_code(prog, &dsl_rules[i], f);
@@ -2537,7 +2631,7 @@ void gen_from_dsl_keyword(Program *prog, const char *dsl_keyword) {
     }
     if (!rule) return;
     add_func(prog, "main");
-    Function *f = &prog->funcs[prog->num_funcs - 1];
+    L1vmFunctionf = &prog->funcs[prog->num_funcs - 1];
     dsl_generate_code(prog, rule, f);
     if (!strstr(f->body, ":exit !"))
         func_append(f, "\t(zero :exit !)");
@@ -2576,7 +2670,7 @@ Template templates[] = {
     {"sum", "Sum of numbers from 1 to N", NULL, "sum"},
     {"primes", "Print prime numbers up to N", NULL, "primes"},
     {"prime", "Print prime numbers up to N", NULL, "primes"},
-    {"function", "Function definition example", NULL, "function"},
+    {"function", " L1vmFunction definition example", NULL, "function"},
     {"guess", "Number guessing game", NULL, "guess number"},
     {"guess number", "Number guessing game", NULL, "guess number"},
     {"sort", "Sort numbers using bubble sort", NULL, "bubble sort"},
@@ -2614,7 +2708,6 @@ int match_template(const char *prompt, int *best_score) {
     int best_idx = -1;
     *best_score = 0;
 
-    // Count total words in prompt (to avoid matching generic templates against complex prompts)
     int total_words = 0;
     {
         char wc_buf[MAX_PROMPT];
@@ -2625,13 +2718,13 @@ int match_template(const char *prompt, int *best_score) {
     }
 
     for (int i = 0; i < num_templates; i++) {
-        char kwbuf[PATH_BUF_SIZE];
+        char kwbuf[512];
         SNPRINTF_CHECK(kwbuf, sizeof(kwbuf), "%s", templates[i].keywords);
         to_lowercase(kwbuf);
 
         int score = 0;
         int num_kw = 0;
-        char kwcopy[PATH_BUF_SIZE];
+        char kwcopy[512];
         SNPRINTF_CHECK(kwcopy, sizeof(kwcopy), "%s", kwbuf);
         char *saveptr2;
         char *kw = strtok_r(kwcopy, " ,/", &saveptr2);
@@ -2649,11 +2742,7 @@ int match_template(const char *prompt, int *best_score) {
             kw = strtok_r(NULL, " ,/", &saveptr2);
         }
         if (all_match && score > 0) {
-            // Avoid matching generic short-keyword templates against complex prompts.
-            // If the prompt has more than 3x the template's keyword count, it likely
-            // contains additional intent (e.g. "read", "minimum") that the simple
-            // template handler would ignore.
-            if (total_words > num_kw * 8) continue;
+            if (total_words > num_kw * 3) continue;
             if (score > *best_score) {
                 *best_score = score;
                 best_idx = i;
@@ -2662,7 +2751,6 @@ int match_template(const char *prompt, int *best_score) {
     }
     return best_idx;
 }
-
 extern char **environ;
 
 static int run_cmd(const char **argv) {
@@ -2820,7 +2908,7 @@ int generate_code(const char *prompt, const char *filename) {
         c_printf(ANSI_YELLOW, "  Nearest neighbor: \"%s\" (similarity: %.2f)\n",
                example_docs[nn_indices[0]].stem, nn_scores[0]);
         gen_from_dsl_keyword(prog, "hello world");
-        Function *f = NULL;
+        L1vmFunctionf = NULL;
         for (int i = 0; i < prog->num_funcs; i++)
             if (strcmp(prog->funcs[i].name, "main") == 0) { f = &prog->funcs[i]; break; }
         if (f) {
