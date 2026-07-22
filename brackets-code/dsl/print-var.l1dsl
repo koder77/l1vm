@@ -1,9 +1,0 @@
-// print-var.l1dsl
-parser: "print var"
-include: intr-func.l1h
-desc: "Print a variable"
-code:
-    (set const-int64 1 zero 0)
-    (set int64 1 x 42)
-    (x :print_i !)
-    (:print_n !)

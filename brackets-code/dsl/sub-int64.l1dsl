@@ -1,6 +1,0 @@
-// sub-int64.l1dsl
-parser: "subtract"
-token: int64 x, int64 y
-result: int64 z
-
-code: "(x - y z :=)"
