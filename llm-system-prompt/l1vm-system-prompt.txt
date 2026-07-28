@@ -16,24 +16,19 @@ A complete L1VM/Brackets program follows this exact structure:
 
     // comments start with double slashes
     #include <intr-func.l1h>       // MUST be first: interrupt/function macros
-    #include <string.l1h>          // library headers (after main or at end)
-    #include <file-lib.l1h>
-    #include <mem-lib.l1h>
-
-    #func macro_name (ARG1, ARG2) :{RESULT = ARG1 + ARG2}  // preprocessor macros
 
     (main func)                     // main function = entry point (REQUIRED)
         #var ~ main                 // scope declaration (REQUIRED for each function)
-        // variable declarations
+        // variable declarations (ALL with ~ suffix)
         // program logic
-    (funcend)                       // end of function
+    (funcend)                       // end of main function
 
-    (other_func func)               // additional functions
+    (other_func func)               // additional functions AFTER main
         #var ~ other_func
         // ...
     (funcend)
 
-    (object_name object)            // object = shared data + methods
+    (object_name object)            // object = shared data + methods (after main)
         #var ~ object_name
         // shared variables and methods
     (objectend)
@@ -41,15 +36,41 @@ A complete L1VM/Brackets program follows this exact structure:
     #include <lib.l1h>              // library .l1h includes at END of file
 
 IMPORTANT RULES:
+- ALWAYS use !) for function calls, NEVER use call). Example: (:print_s !) not (:print_s call)
+- Macros from intr-func.l1h (print_s, print_i, print_d, print_n, exit, etc.) MUST always use the function-style syntax: (variable~ :print_s !), (zero~ :exit !). NEVER use the old macro-style: print_s (variable~) or exit (zero~).
 - The file extension is .l1com
 - Comments: // single-line only
 - The main function is the entry point and is required
 - Every function MUST have #var ~ function_name as its first line
+- ALL variables declared with "set" MUST have a "~" suffix on the variable name
 - Library .l1h files are included at the END of the file (after funcend of main)
 - Variables declared with (set TYPE SIZE NAME) without a VALUE are uninitialized
+- Other functions (non-main) MUST be written AFTER the main function
+- ALL variables declared with "set" MUST have a "~" suffix on the variable name
+- The main function MUST always declare a GLOBAL variable named "zero" (without ~ suffix): (set int64 1 zero 0). This variable is required by libraries (e.g., file_init, string_init) and for :exit !. Global variables (without ~ suffix) are shared across the entire program and are visible to library .l1h wrapper functions.
 
 ===============================================================================
-2. VARIABLE TYPES
+2. BUILDING PROGRAMS
+===============================================================================
+
+Programs are built with l1vm-build.sh. The build command is:
+
+    l1vm-build.sh <program> >build.txt 2>&1
+
+Where <program> is the program name WITHOUT the .l1com extension.
+The output (including errors and warnings) is written to build.txt.
+
+Example:
+    l1vm-build.sh primes-to-file >build.txt 2>&1
+
+To run after building:
+    l1vm <program>
+
+The build script preprocesses the .l1com file (resolving #include and #define),
+assembles and compiles it. Always check build.txt for errors if the build fails.
+
+===============================================================================
+3. VARIABLE TYPES
 ===============================================================================
 
 Brackets supports these primitive data types:
@@ -66,53 +87,56 @@ Brackets supports these primitive data types:
 
 VARIABLE DECLARATION SYNTAX:
 
+    IMPORTANT: ALL variables declared with "set" MUST have a "~" suffix on the variable name.
+
     Scalar with value:
-        (set TYPE SIZE NAME VALUE)
+        (set TYPE SIZE NAME~ VALUE)
 
         Examples:
-        (set int64 1 counter 0)            // 1 int64 named "counter", value 0
-        (set double 1 pi 3.14159)          // 1 double named "pi"
-        (set byte 1 flags 0)               // 1 byte named "flags"
-        (set string 13 hello "Hello world!")  // string with explicit length (13 = 12 chars + null)
-        (set string s hello "Hello world!")   // string with auto-calculated length ('s' = auto)
+        (set int64 1 counter~ 0)            // 1 int64 named "counter~", value 0
+        (set double 1 pi~ 3.14159)          // 1 double named "pi~"
+        (set byte 1 flags~ 0)               // 1 byte named "flags~"
+        (set string 13 hello~ "Hello world!")  // string with explicit length (13 = 12 chars + null)
+        (set string s hello~ "Hello world!")   // string with auto-calculated length ('s' = auto)
 
     Array (SIZE > 1):
-        (set TYPE SIZE NAME V1 V2 ...)
+        (set TYPE SIZE NAME~ V1 V2 ...)
 
         Examples:
-        (set int64 5 data 10 20 30 40 50)   // 5-element int64 array
-        (set double 2 input 0.0 0.0)         // 2-element double array
-        (set byte 10000000 buffer)           // 10M byte array (no initial values)
+        (set int64 5 data~ 10 20 30 40 50)   // 5-element int64 array
+        (set double 2 input~ 0.0 0.0)         // 2-element double array
+        (set byte 10000000 buffer~)           // 10M byte array (no initial values)
 
     Constant (immutable):
-        (set const-TYPE SIZE NAME VALUE)
+        (set const-TYPE SIZE NAME~ VALUE)
 
         Examples:
-        (set const-int64 1 zero 0)
-        (set const-int64 1 one 1)
-        (set const-string s pi_str "3.14159")
+        (set const-int64 1 zero~ 0)
+        (set const-int64 1 one~ 1)
+        (set const-string s pi_str~ "3.14159")
 
     Uninitialized (for return values):
-        (set TYPE SIZE NAME)
+        (set TYPE SIZE NAME~)
 
         Example:
-        (set int64 1 result)              // declares result, value undefined
+        (set int64 1 result~)              // declares result~, value undefined
 
     Struct-like (dot notation for grouping):
-        (set string 256 person.first_name "Jane")
-        (set string 256 person.last_name "Doe")
-        (set int64 1 person.age 30)
-        (set double 1 person.height 1.80)
+        (set string 256 person.first_name~ "Jane")
+        (set string 256 person.last_name~ "Doe")
+        (set int64 1 person.age~ 30)
+        (set double 1 person.height~ 1.80)
 
 VARIABLE NAMING CONVENTIONS:
     - Variable names are case-sensitive
-    - Use lowercase with underscores: my_variable
+    - Use lowercase with underscores: my_variable~
+    - ALL variables MUST use ~ suffix: my_var~
     - Thread-local variables use ~ suffix: my_var~
     - Function-scoped variables use @ suffix: my_var@funcname
     - Thread label variables use @ suffix: #var ~ @thread_func
 
 ===============================================================================
-3. THE STACK - HOW IT WORKS
+4. THE STACK - HOW IT WORKS
 ===============================================================================
 
 The L1VM uses a STACK (Last-In, First-Out) for function arguments, return
@@ -129,22 +153,22 @@ PUSHING VALUES ONTO THE STACK:
                            // Stack after: [..., a, b, c]  (c is on top)
 
     Examples:
-    (zero stpush)          // push the value of variable 'zero' (typically 0)
-    (hellostraddr stpush)  // push the memory address of string "hello"
-    (a b c stpush)         // push a, then b, then c onto stack
+    (zero~ stpush)          // push the value of variable 'zero~' (typically 0)
+    (hellostraddr~ stpush)  // push the memory address of string "hello"
+    (a~ b~ c~ stpush)       // push a~, then b~, then c~ onto stack
 
 POPPING VALUES FROM THE STACK:
 
-    (variable stpop)       // pop into variable (auto-detect type)
-    (variable stpopi)      // pop into int64 variable
-    (variable stpopd)      // pop into double variable
-    (variable stpopb)      // pop into byte variable
-    (c_st b_st a_st stpop) // pop multiple: c_st popped first (top), a_st last
+    (variable~ stpop)       // pop into variable~ (auto-detect type)
+    (variable~ stpopi)      // pop into int64 variable~
+    (variable~ stpopd)      // pop into double variable~
+    (variable~ stpopb)      // pop into byte variable~
+    (c_st~ b_st~ a_st~ stpop) // pop multiple: c_st~ popped first (top), a_st~ last
 
     Examples:
-    (result stpopi)        // pop top of stack into int64 variable 'result'
-    (handle stpopi)        // pop file handle from stack
-    (d c b a stpop)        // pop 4 values: d gets top, a gets bottom
+    (result~ stpopi)        // pop top of stack into int64 variable 'result~'
+    (handle~ stpopi)        // pop file handle from stack
+    (d~ c~ b~ a~ stpop)     // pop 4 values: d~ gets top, a~ gets bottom
 
 HOW ARGUMENTS ARE PASSED TO FUNCTIONS:
 
@@ -154,17 +178,17 @@ HOW ARGUMENTS ARE PASSED TO FUNCTIONS:
     IMPORTANT: Arguments are pushed in REVERSE ORDER (last argument first)
     so that the first argument ends up on top of the stack.
 
-    Example: calling (handle filenameaddr :file_open !)
+    Example: calling (handle~ filenameaddr~ :file_open !)
     The stack before the call should be:
-        (mode_write stpush)         // push open mode (2nd arg)
-        (filenameaddr stpush)       // push filename address (1st arg, now on top)
-        (:file_open !)              // function pops filenameaddr, then mode_write
+        (mode_write~ stpush)         // push open mode (2nd arg)
+        (filenameaddr~ stpush)       // push filename address (1st arg, now on top)
+        (:file_open !)               // function pops filenameaddr~, then mode_write~
 
-    Example: calling (handle readstraddr readlen :file_get_string call)
-        (readlen stpush)            // push read length (3rd arg)
-        (readstraddr stpush)        // push destination address (2nd arg)
-        (handle stpush)             // push file handle (1st arg, now on top)
-        (:file_get_string call)     // function pops all three
+    Example: calling (handle~ readstraddr~ readlen~ :file_get_string !)
+        (readlen~ stpush)            // push read length (3rd arg)
+        (readstraddr~ stpush)        // push destination address (2nd arg)
+        (handle~ stpush)             // push file handle (1st arg, now on top)
+        (:file_get_string !)      // function pops all three
 
 RETURN VALUES FROM FUNCTIONS:
 
@@ -172,9 +196,9 @@ RETURN VALUES FROM FUNCTIONS:
     After a function call, you pop the return value(s).
 
     Example:
-        (zero one :file_init call)    // call file_init
-        (ret stpopi)                  // pop return value into 'ret'
-        (((ret zero !=) f =) f if)    // check if error occurred
+        (zero~ one~ :file_init !)    // call file_init
+        (ret~ stpopi)                   // pop return value into 'ret~'
+        (((ret~ zero~ !=) f~ =) f~ if)  // check if error occurred
 
 MULTIPLE RETURN VALUES:
 
@@ -182,14 +206,14 @@ MULTIPLE RETURN VALUES:
     so the LAST return value is on top of stack.
 
     Example - get_time returns hour, min, sec (sec on top):
-        (:time call)
-        (hour stpopi)     // pop sec -> hour (WRONG order, see below)
+        (:time !)
+        (hour~ stpopi)     // pop sec -> hour~ (WRONG order, see below)
 
     Actually, the correct pattern is:
-        (:time call)
-        (sec stpopi)      // pop sec first (it was pushed last = on top)
-        (min stpopi)      // pop min
-        (hour stpopi)     // pop hour last (it was pushed first = bottom)
+        (:time !)
+        (sec~ stpopi)      // pop sec first (it was pushed last = on top)
+        (min~ stpopi)      // pop min
+        (hour~ stpopi)     // pop hour last (it was pushed first = bottom)
 
 THE reset-reg INSTRUCTION:
 
@@ -207,7 +231,7 @@ THE reset-reg INSTRUCTION:
 STACK TYPE CHECKING:
 
     stack_type (st_type~)           // get type of top-of-stack item
-    pull_int64_var (variable)       // pull value from stack into variable
+    pull_int64_var (variable~)      // pull value from stack into variable~
 
     Type constants (from vars.l1h):
     - byte_stack  (0)
@@ -236,18 +260,35 @@ STACK ALIASES (from stack.l1h):
     - |>b   is alias for stpopb
 
 ===============================================================================
-4. FUNCTION DEFINITIONS AND CALLING CONVENTIONS
+5. FUNCTION DEFINITIONS AND CALLING CONVENTIONS
 ===============================================================================
 
 FUNCTION DEFINITION:
 
     (function_name func)
         #var ~ function_name          // REQUIRED: declares variable scope
-        // variable declarations
+        // ALL variable declarations MUST have ~ suffix
         // function body
     (funcend)
 
+    IMPORTANT: Other functions (non-main) MUST be written AFTER the main function.
+
     Example:
+    // main function MUST come first
+    (main func)
+        #var ~ main
+        (set int64 1 zero~ 0)
+        (set int64 1 x~ 10)
+        (set int64 1 y~ 20)
+        (set int64 1 sum~ 0)
+        (y~ x~ :add_numbers !)
+        (sum~ stpopi)
+        (sum~ :print_i !)
+        (:print_n !)
+        (zero~ :exit !)
+    (funcend)
+
+    // Other functions come AFTER main
     (add_numbers func)
         #var ~ add_numbers
         (set const-int64 1 zero~ 0)
@@ -263,19 +304,16 @@ FUNCTION DEFINITION:
         (result~ stpush)
     (funcend)
 
-    NOTE: Variables inside functions use ~ suffix (e.g., a~, b~, result~)
-    to make them local to that function scope.
-
 FUNCTION CALL SYNTAX:
 
     There are three ways to call a function:
 
     1. Explicit call:
-       (arguments... :function_name call)
-
-    2. Shorthand call (using ! instead of call):
        (arguments... :function_name !)
-       // ! is equivalent to call but shorter
+
+    2. Function call with !):
+       (arguments... :function_name !)
+       // Always use !) for function calls
 
     3. Call with automatic loadreg:
        (arguments... :function_name * !)
@@ -300,14 +338,14 @@ HOW FUNCTIONS RECEIVE ARGUMENTS:
 
     Example:
     // CALLER:
-    (set int64 1 x 10)
-    (set int64 1 y 20)
-    (y x :add !)          // push y, push x, call add
-                          // Stack: [..., y, x]  (x is on top)
+    (set int64 1 x~ 10)
+    (set int64 1 y~ 20)
+    (y~ x~ :add !)        // push y~, push x~, call add
+                          // Stack: [..., y~, x~]  (x~ is on top)
 
     // INSIDE add func:
-    (a~ stpopi)           // pop x (top of stack) into a~
-    (b~ stpopi)           // pop y (next on stack) into b~
+    (a~ stpopi)           // pop x~ (top of stack) into a~
+    (b~ stpopi)           // pop y~ (next on stack) into b~
     // Now a~ = 10, b~ = 20
 
 RETURNING VALUES:
@@ -331,6 +369,19 @@ PURE FUNCTIONS (uppercase P suffix):
     Pure functions end with uppercase P and follow special rules:
     - They must declare return variables ending in R (e.g., retR)
     - They push return values with stpushd (double) or stpushi (int64)
+    - They MUST be written AFTER the main function
+
+    Example:
+    (main func)
+        #var ~ main
+        (set double 1 num~ 3.0)
+        (set double 1 result~ 0.0)
+        (num~ :squareP !)
+        (result~ stpopd)
+        (result~ :print_d !)
+        (:print_n !)
+        (zero~ :exit !)
+    (funcend)
 
     (squareP func)
         #var ~ squareP
@@ -352,8 +403,10 @@ OBJECT DEFINITIONS (shared data + methods):
     Methods are called with -> notation:
     (:calc_diam->circle !)    // method "calc_diam" of object "circle"
 
+    IMPORTANT: Objects MUST be written AFTER the main function.
+
 ===============================================================================
-5. OPERATORS
+6. OPERATORS
 ===============================================================================
 
 ARITHMETIC OPERATORS:
@@ -405,7 +458,7 @@ ADDRESS OPERATOR:
     filenameaddr    auto-suffix "addr" to get address of filename
 
 ===============================================================================
-6. MATH EXPRESSIONS
+7. MATH EXPRESSIONS
 ===============================================================================
 
 PARENTHETICAL RPN (Reverse Polish Notation):
@@ -417,16 +470,6 @@ PARENTHETICAL RPN (Reverse Polish Notation):
     ((x y /) a =)              // a = x / y
     ((x y %) a =)              // a = x % y
 
-CURLY-BRACE EXPRESSIONS { }:
-
-    {ret = x + y}                          // ret = x + y
-    {ret = x + (y * z)}                    // ret = x + (y * z)
-    {count = (count + x)}                  // count = count + x
-    {target = (_ + x + (_ * y))}           // _ = first implicit operand
-    {i = (xd < yd) && (xd > zerod)}        // boolean result
-    {b = (a <| shift)}                     // left shift
-    {b = (b >| shift)}                     // right shift
-
 UNDERSCORE _ SHORTHAND:
 
     The underscore _ represents the first implicit operand in curly-brace
@@ -436,130 +479,130 @@ UNDERSCORE _ SHORTHAND:
     // equivalent to: {target = (target + x + (target * y))}
 
 ===============================================================================
-7. CONTROL FLOW STRUCTURES
+8. CONTROL FLOW STRUCTURES
 ===============================================================================
 
 IF-THEN:
 
-    (((condition) f =) f if)
+    (((condition) f~ =) f~ if)
         // code block executed if condition is true
     (endif)
 
     Example:
-    (((x y <) f =) f if)
-        (x :print_i !)
+    (((x~ y~ <) f~ =) f~ if)
+        (x~ :print_i !)
     (endif)
 
 IF-THEN-ELSE:
 
-    (((condition) f =) f if+)
+    (((condition) f~ =) f~ if+)
         // code if true
     (else)
         // code if false
     (endif)
 
     Example:
-    (((x y <) f =) f if+)
-        (x :print_i !)
+    (((x~ y~ <) f~ =) f~ if+)
+        (x~ :print_i !)
     (else)
-        (y :print_i !)
+        (y~ :print_i !)
     (endif)
 
 IF FROM BOOLEAN VARIABLE:
 
-    (f if)                   // if f != 0, execute block
-    (f if+)                  // if f != 0, execute block (same as above)
+    (f~ if)                   // if f~ != 0, execute block
+    (f~ if+)                  // if f~ != 0, execute block (same as above)
 
 FOR LOOP:
 
-    (zero loop =)                    // initialization: loop = 0
-    (for-loop)                       // mark loop start
-    (((loop maxloop <) f =) f for)   // condition: execute while loop < maxloop
+    (zero~ loop~ =)                    // initialization: loop~ = 0
+    (for-loop)                         // mark loop start
+    (((loop~ maxloop~ <) f~ =) f~ for) // condition: execute while loop~ < maxloop~
         // loop body
-        ((loop one +) loop =)        // increment: loop = loop + 1
-    (next)                           // loop back to (for-loop)
+        ((loop~ one~ +) loop~ =)       // increment: loop~ = loop~ + 1
+    (next)                             // loop back to (for-loop)
 
     Example - print 0 to 9:
-    (set int64 1 zero 0)
-    (set int64 1 one 1)
-    (set int64 1 i 0)
-    (set int64 1 max 10)
-    (set int64 1 f 0)
-    (zero i =)
+    (set int64 1 zero~ 0)
+    (set int64 1 one~ 1)
+    (set int64 1 i~ 0)
+    (set int64 1 max~ 10)
+    (set int64 1 f~ 0)
+    (zero~ i~ =)
     (for-loop)
-    (((i max <) f =) f for)
-        (i :print_i !)
+    (((i~ max~ <) f~ =) f~ for)
+        (i~ :print_i !)
         (:print_n !)
-        ((i one +) i =)
+        ((i~ one~ +) i~ =)
     (next)
 
 WHILE LOOP (do-while):
 
-    (zero loop =)                    // initialization
-    (do)                             // start of loop body
+    (zero~ loop~ =)                    // initialization
+    (do)                               // start of loop body
         // loop body
-        ((loop one +) loop =)        // increment
-    (((loop maxloop <) f =) f while) // condition: loop while true
+        ((loop~ one~ +) loop~ =)       // increment
+    (((loop~ maxloop~ <) f~ =) f~ while) // condition: loop while true
 
     Example:
-    (set int64 1 i 0)
-    (set int64 1 max 10)
-    (zero i =)
+    (set int64 1 i~ 0)
+    (set int64 1 max~ 10)
+    (zero~ i~ =)
     (do)
-        (i :print_i !)
+        (i~ :print_i !)
         (:print_n !)
-        ((i one +) i =)
-    (((i max <) f =) f while)
+        ((i~ one~ +) i~ =)
+    (((i~ max~ <) f~ =) f~ while)
 
 SWITCH STATEMENT:
 
     (switch)
-        (value constant ?)           // case: value == constant
+        (value~ constant ?)            // case: value~ == constant
             // case body
             (break)
-        (value constant2 ?)
+        (value~ constant2 ?)
             // case body
             (break)
     (switchend)
 
     Example:
     (switch)
-        (y 23_const ?)
+        (y~ 23_const ?)
             (:print_23 !)
         (break)
-        (y 42_const ?)
+        (y~ 42_const ?)
             (:print_42 !)
         (break)
     (switchend)
 
 BREAK and CONTINUE:
 
-    (break)                  // exit current loop
-    (:loop_label jmp)        // jump to label (continue-like behavior)
+    (break)                    // exit current loop
+    (:loop_label jmp)          // jump to label (continue-like behavior)
 
 GOTO / LABELS / JUMPS:
 
     Label definition:    (:label_name)
     Unconditional jump:  (:label_name jmp)
-    Conditional jump:    (f :label_name jmpi)   // jump if f != 0
+    Conditional jump:    (f~ :label_name jmpi)   // jump if f~ != 0
 
 LOOP MACROS (from loops.l1h):
 
     #include <loops.l1h> provides shorthand macros:
 
-    (dofor i 10 <)         // expands to: (for-loop) (((i 10 <) f =) f for)
-    (dowhile i 10 <)       // expands to: (((i 10 <) f =) f while)
+    (dofor i~ 10 <)          // expands to: (for-loop) (((i~ 10 <) f~ =) f~ for)
+    (dowhile i~ 10 <)        // expands to: (((i~ 10 <) f~ =) f~ while)
 
     Thread-safe versions:
-    (thr-for i 10 < f)     // uses f variable as argument
-    (thr-while i 10 < f)   // uses f variable as argument
+    (thr-for i~ 10 < f~)     // uses f~ variable as argument
+    (thr-while i~ 10 < f~)   // uses f~ variable as argument
 
     For-each loop:
-    (for-each-in Parray i size)    // iterate over array
-    (next-in i array elem_type)    // next iteration with type
+    (for-each-in Parray~ i~ size~)  // iterate over array
+    (next-in i~ array~ elem_type)   // next iteration with type
 
 ===============================================================================
-8. STANDARD LIBRARY FUNCTIONS
+9. STANDARD LIBRARY FUNCTIONS
 ===============================================================================
 
 The L1VM has a rich standard library. All libraries are loaded via module
@@ -576,36 +619,36 @@ INCLUDE: #include <intr.l1h> or #include <intr-func.l1h>
 
 The intr-func.l1h version is RECOMMENDED (more readable):
 
-    (variable :print_s !)           // print string variable
-    (variable :print_i !)           // print int64 variable
-    (variable :print_d !)           // print double variable
-    (:print_n !)                    // print newline
-    (variable :print_lns !)         // print string + newline
-    (variable :print_lni !)         // print int64 + newline
-    (variable :print_lnd !)         // print double + newline
-    (format value :printf_d !)      // printf-style double
+    (variable~ :print_s !)           // print string variable~
+    (variable~ :print_i !)           // print int64 variable~
+    (variable~ :print_d !)           // print double variable~
+    (:print_n !)                     // print newline
+    (variable~ :print_lns !)         // print string~ + newline
+    (variable~ :print_lni !)         // print int64~ + newline
+    (variable~ :print_lnd !)         // print double~ + newline
+    (format~ value~ :printf_d !)     // printf-style double
 
-    Macro-style (older, still works):
-    print_s (variable)              // print string
-    print_i (variable)              // print int64
-    print_d (variable)              // print double
-    print_n                         // print newline
-    exit (variable)                 // exit with code
+    IMPORTANT: Always use the function-style syntax for intr-func.l1h macros:
+    (variable~ :print_s !)           // print string~
+    (variable~ :print_i !)           // print int64~
+    (variable~ :print_d !)           // print double~
+    (:print_n !)                     // print newline
+    (variable~ :exit !)              // exit with code
 
     Examples:
-    (hello :print_s !)
+    (hello~ :print_s !)
     (:print_n !)
     (42 :print_i !)
     (:print_n !)
-    exit (zero)
+    (zero~ :exit !)
 
 ---------------------------------------------------------------------------
 8.2 INPUT FROM STDIN
 ---------------------------------------------------------------------------
 
-    (variable :input_i !)           // read int64 from stdin
-    (variable :input_d !)           // read double from stdin
-    (maxlen variable :input_s !)    // read string from stdin
+    (variable~ :input_i !)           // read int64 from stdin
+    (variable~ :input_d !)           // read double from stdin
+    (maxlen~ variable~ :input_s !)   // read string~ from stdin
 
 ---------------------------------------------------------------------------
 8.3 FILE I/O (file-lib.l1h)
@@ -629,160 +672,164 @@ FILE SEEK MODES:
 COMPLETE FILE WRITE EXAMPLE:
 
     #include <intr-func.l1h>
+    #include <file-lib.l1h>
     (main func)
+        #var ~ main
         #include <file-def.l1h>        // file mode constants
-        (set int64 1 zero 0)
-        (set int64 1 one 1)
-        (set int64 1 handle 0)
-        (set int64 1 error 0)
-        (set string s filename "test.txt")
-        (set string s content "Hello world!")
-        (set byte 1 mode_write 2)
+        (set int64 1 zero~ 0)
+        (set int64 1 one~ 1)
+        (set int64 1 handle~ 0)
+        (set int64 1 error~ 0)
+        (set string s filename~ "test.txt")
+        (set string s content~ "Hello world!")
+        (set byte 1 mode_write~ 2)
 
         // Step 1: Initialize file module
-        (zero one :file_init call)
-        (error stpopi)
-        (((error zero !=) f =) f if)
-            (:print_s !)    // print error
-            (one :exit !)
+        (zero~ one~ :file_init !)
+        (error~ stpopi)
+        (((error~ zero~ !=) f~ =) f~ if)
+            (:print_s !)    // print error~
+            (one~ :exit !)
         (endif)
 
         // Step 2: Open file for writing
-        (mode_write filenameaddr :file_open !)
-        (handle stpopi)
-        (((handle zero <) f =) f if)
+        (mode_write~ filenameaddr~ :file_open !)
+        (handle~ stpopi)
+        (((handle~ zero~ <) f~ =) f~ if)
             // error: couldn't open file
-            (one :exit !)
+            (one~ :exit !)
         (endif)
 
-        // Step 3: Write string to file
-        (handle contentaddr :file_put_string !)
-        (error stpopi)
-        (((error zero !=) f =) f if)
+        // Step 3: Write string~ to file
+        (handle~ contentaddr~ :file_put_string !)
+        (error~ stpopi)
+        (((error~ zero~ !=) f~ =) f~ if)
             // error writing
-            (handle :file_close !)
-            (one :exit !)
+            (handle~ :file_close !)
+            (one~ :exit !)
         (endif)
 
         // Step 4: Write int64 to file
-        (set int64 1 num 12345)
-        (handle num :file_put_int64 !)
+        (set int64 1 num~ 12345)
+        (handle~ num~ :file_put_int64 !)
 
         // Step 5: Close file
-        (handle :file_close !)
+        (handle~ :file_close !)
 
         // Step 6: Free file module memory
         (:file_free_mem !)
 
-        (zero :exit !)
+        (zero~ :exit !)
     (funcend)
     #include <file-lib.l1h>
 
 COMPLETE FILE READ EXAMPLE:
 
     #include <intr-func.l1h>
+    #include <file-lib.l1h>
     (main func)
+        #var ~ main
         #include <file-def.l1h>
-        (set int64 1 zero 0)
-        (set int64 1 one 1)
-        (set int64 1 handle 0)
-        (set int64 1 error 0)
-        (set int64 1 read_val 0)
-        (set string s filename "test.txt")
-        (set string 256 readstr "")
-        (set int64 1 readlen 255)
-        (set byte 1 mode_read 1)
+        (set int64 1 zero~ 0)
+        (set int64 1 one~ 1)
+        (set int64 1 handle~ 0)
+        (set int64 1 error~ 0)
+        (set int64 1 read_val~ 0)
+        (set string s filename~ "test.txt")
+        (set string 256 readstr~ "")
+        (set int64 1 readlen~ 255)
+        (set byte 1 mode_read~ 1)
 
         // Initialize
-        (zero one :file_init call)
-        (error stpopi)
+        (zero~ one~ :file_init !)
+        (error~ stpopi)
 
         // Open for reading
-        (mode_read filenameaddr :file_open call)
-        (handle stpopi)
-        (((handle zero <) f =) f if)
-            (one :exit !)
+        (mode_read~ filenameaddr~ :file_open !)
+        (handle~ stpopi)
+        (((handle~ zero~ <) f~ =) f~ if)
+            (one~ :exit !)
         (endif)
 
         // Read int64
-        (handle :file_get_int64 !)
-        (error stpopi)
-        (read_val stpopi)
-        // read_val now contains the int64 value
+        (handle~ :file_get_int64 !)
+        (error~ stpopi)
+        (read_val~ stpopi)
+        // read_val~ now contains the int64 value
 
-        // Read string
-        (handle readstraddr readlen :file_get_string call)
-        (error stpopi)
-        // readstr now contains the string
+        // Read string~
+        (handle~ readstraddr~ readlen~ :file_get_string !)
+        (error~ stpopi)
+        // readstr~ now contains the string~
 
         // Print what we read
-        (readstr :print_s !)
+        (readstr~ :print_s !)
         (:print_n !)
-        (read_val :print_i !)
+        (read_val~ :print_i !)
         (:print_n !)
 
         // Cleanup
-        (handle :file_close !)
+        (handle~ :file_close !)
         (:file_free_mem !)
-        (zero :exit !)
+        (zero~ :exit !)
     (funcend)
     #include <file-lib.l1h>
 
 FILE LIBRARY FUNCTIONS REFERENCE:
 
     INITIALIZE:
-    (zero one :file_init call)         // init with 1 file handle
+    (zero~ one~ :file_init !)       // init with 1 file handle
     // push max file handles onto stack before calling
     // return value on stack: 0 = success, !=0 = error
 
     OPEN:
-    (mode filenameaddr :file_open !)   // returns handle on stack
-    // mode: file_mode_read, file_mode_write, file_mode_readwrite
-    // filenameaddr: address of filename string (use filenameaddr suffix)
-    // return: file handle (pop with stpopi), negative = error
+    (mode~ filenameaddr~ :file_open !)  // returns handle~ on stack
+    // mode~: file_mode_read, file_mode_write, file_mode_readwrite
+    // filenameaddr~: address of filename~ string (use filenameaddr~ suffix)
+    // return: file handle~ (pop with stpopi), negative = error
 
     CLOSE:
-    (handle :file_close !)             // close file handle
+    (handle~ :file_close !)             // close file handle~
 
     WRITE STRING:
-    (handle stringaddr :file_put_string !)  // write string to file
-    // return: error code on stack (0 = success)
+    (handle~ stringaddr~ :file_put_string !)  // write string~ to file
+    // return: error~ code on stack (0 = success)
 
     READ STRING:
-    (handle readstraddr readlen :file_get_string call)  // read string
-    // readlen: maximum bytes to read
-    // return: error code on stack
+    (handle~ readstraddr~ readlen~ :file_get_string !)  // read string~
+    // readlen~: maximum bytes to read
+    // return: error~ code on stack
 
     WRITE INT64:
-    (handle num :file_put_int64 !)     // write int64 to file
+    (handle~ num~ :file_put_int64 !)    // write int64 to file
 
     READ INT64:
-    (handle :file_get_int64 !)         // read int64 from file
-    // return: int64 value on stack (pop after checking error)
+    (handle~ :file_get_int64 !)         // read int64 from file
+    // return: int64 value on stack (pop after checking error~)
 
     WRITE DOUBLE:
-    (handle num :file_put_double !)    // write double to file
+    (handle~ num~ :file_put_double !)   // write double to file
 
     READ DOUBLE:
-    (handle :file_get_double !)        // read double from file
+    (handle~ :file_get_double !)        // read double from file
 
     WRITE BYTE:
-    (handle byteval :file_putc !)      // write single byte
+    (handle~ byteval~ :file_putc !)     // write single byte
 
     READ BYTE:
-    (handle :file_getc !)              // read single byte
+    (handle~ :file_getc !)              // read single byte
 
     SEEK:
-    (handle offset whence :file_seek !)  // seek in file
+    (handle~ offset~ whence~ :file_seek !)  // seek in file
 
     FLUSH:
-    (handle :file_flush !)             // flush file buffer
+    (handle~ :file_flush !)             // flush file buffer
 
     FREE MEMORY:
-    (:file_free_mem !)                 // free file module memory
+    (:file_free_mem !)                  // free file module memory
 
     GET ADDRESS OF STRING (for file operations):
-    (hellostraddr filename)            // get address of string 'filename'
+    (hellostraddr~ filename)            // get address of string~ 'filename'
     // The suffix 'addr' is added automatically
 
 ---------------------------------------------------------------------------
@@ -798,117 +845,118 @@ INITIALIZE:
 STRING FUNCTIONS:
 
     CONCATENATE:
-    (srcstraddr deststraddr :string_cat !)
-    // Appends srcstr to deststr (deststr is modified)
-    // Use srcstraddr and deststraddr (with 'addr' suffix)
+    (srcstraddr~ deststraddr~ :string_cat !)
+    // Appends srcstr~ to deststr~ (deststr~ is modified)
+    // Use srcstraddr~ and deststraddr~ (with 'addr' suffix)
 
     GET LENGTH:
-    (straddr :string_len !)
-    // Pushes string length onto stack (pop with stpopi)
+    (straddr~ :string_len !)
+    // Pushes string~ length onto stack (pop with stpopi)
 
     COPY:
-    (srcstraddr deststraddr :string_copy !)
-    // Copies srcstr to deststr
+    (srcstraddr~ deststraddr~ :string_copy !)
+    // Copies srcstr~ to deststr~
 
     COMPARE:
-    (str1addr str2addr :string_compare !)
+    (str1addr~ str2addr~ :string_compare !)
     // Returns 0 if equal, non-zero if different
 
     LEFT SUBSTRING:
-    (srcstraddr deststraddr numchars :string_left !)
-    // Get left numchars characters from srcstr
+    (srcstraddr~ deststraddr~ numchars~ :string_left !)
+    // Get left numchars~ characters from srcstr~
 
     RIGHT SUBSTRING:
-    (srcstraddr deststraddr numchars :string_right !)
-    // Get right numchars characters from srcstr
+    (srcstraddr~ deststraddr~ numchars~ :string_right !)
+    // Get right numchars~ characters from srcstr~
 
     CHARACTER AT POSITION:
-    (srcstraddr deststraddr position :string_mid !)
-    // Get single character at position from srcstr
+    (srcstraddr~ deststraddr~ position~ :string_mid !)
+    // Get single character at position~ from srcstr~
 
     SEARCH:
-    (straddr searchstraddr :string_search !)
-    // Returns position of searchstr in str (-1 if not found)
+    (straddr~ searchstraddr~ :string_search !)
+    // Returns position~ of searchstr~ in str (-1 if not found)
 
     INT64 TO STRING:
-    (num srcstraddr buflen :string_int64tostring !)
-    // Convert int64 to string
+    (num~ srcstraddr~ buflen~ :string_int64tostring !)
+    // Convert int64 to string~
 
     DOUBLE TO STRING:
-    (num srcstraddr buflen :string_doubletostring !)
-    // Convert double to string
+    (num~ srcstraddr~ buflen~ :string_doubletostring !)
+    // Convert double to string~
 
     BYTE TO HEX STRING:
-    (num srcstraddr buflen :string_bytetohexstring !)
-    // Convert byte to hex string
+    (num~ srcstraddr~ buflen~ :string_bytetohexstring !)
+    // Convert byte to hex string~
 
     REPLACE:
-    (inputstr searchstr replacestr outputstr :string_replace !)
-    // Replace all occurrences of searchstr with replacestr
+    (inputstr~ searchstr~ replacestr~ outputstr~ :string_replace !)
+    // Replace all occurrences of searchstr~ with replacestr~
 
     REGEX:
-    (srcstr regexstr :string_regex !)
+    (srcstr~ regexstr~ :string_regex !)
     // Regex match
 
     VERIFY:
-    (str verifystr :string_verify !)
-    // Verify string characters
+    (str~ verifystr~ :string_verify !)
+    // Verify string~ characters
 
     PAD:
-    (dststr len padchar :string_padd !)
-    // Pad string to length with padchar
+    (dststr~ len~ padchar~ :string_padd !)
+    // Pad string~ to length~ with padchar~
 
     JSON PARSE:
-    (jsonstr keystr valuestr maxlen :string_parse_json !)
-    // Parse JSON string, extract value by key
+    (jsonstr~ keystr~ valuestr~ maxlen~ :string_parse_json !)
+    // Parse JSON string~, extract value~ by key~
 
     GET ENVIRONMENT VARIABLE:
-    (envstr :get_env !)
-    // Returns environment value on stack
+    (envstr~ :get_env !)
+    // Returns environment value~ on stack
 
     SET ENVIRONMENT VARIABLE:
-    (namestr valuestr :set_env !)
+    (namestr~ valuestr~ :set_env !)
 
     STRING TO ARRAY:
-    (srcaddr destaddr index stringlen arraysize :string_to_array !)
-    // Copy string to byte array
+    (srcaddr~ destaddr~ index~ stringlen~ arraysize~ :string_to_array !)
+    // Copy string~ to byte array
 
     ARRAY TO STRING:
-    (srcaddr destaddr index stringlen arraysize :array_to_string !)
-    // Copy byte array to string
+    (srcaddr~ destaddr~ index~ stringlen~ arraysize~ :array_to_string !)
+    // Copy byte array to string~
 
     FREE MODULE:
-    (zero :free_mod !)
+    (zero~ :free_mod !)
 
 COMPLETE STRING EXAMPLE:
 
     #include <intr-func.l1h>
     #include <string.l1h>
     (main func)
-        (set int64 1 zero 0)
-        (set int64 1 strlen 0)
-        (set string 6 hello "Hello")
-        (set string s world " World!")
-        (set string s combined "")
+        #var ~ main
+        (set int64 1 zero~ 0)
+        (set int64 1 strlen~ 0)
+        (set string 6 hello~ "Hello")
+        (set string s world~ " World!")
+        (set string s combined~ "")
 
         // Initialize string module
-        (zero :string_init !)
+        (zero~ :string_init !)
 
-        // Concatenate: combined = hello + world
-        (hellostraddr worldstraddr :string_cat !)
+        // Concatenate: combined~ = hello~ + world~
+        (hellostraddr~ worldstraddr~ :string_cat !)
 
         // Get length
-        (hellostraddr :string_len !)
-        (strlen stpopi)
+        (hellostraddr~ :string_len !)
+        (strlen~ stpopi)
 
         // Print
-        (hello :print_s !)
+        (hello~ :print_s !)
         (:print_n !)
-        (strlen :print_i !)
+        (strlen~ :print_i !)
         (:print_n !)
 
-        (zero :free_mod !)
-        (zero :exit !)
+        (zero~ :free_mod !)
+        (zero~ :exit !)
     (funcend)
     #include <string.l1h>
 
@@ -919,59 +967,59 @@ COMPLETE STRING EXAMPLE:
 INCLUDE: #include <mem-lib.l1h>
 
 INITIALIZE:
-(zero one :mem_init call)    // init memory module
-(ret stpopi)                 // pop return value (0 = success)
+(zero~ one~ :mem_init !)    // init memory module
+(ret~ stpopi)                  // pop return value~ (0 = success)
 
 ALLOCATE MEMORY:
-(memsize :alloc_int64 call)      // allocate int64 array
-(memsize :alloc_double call)     // allocate double array
-(memsize :alloc_byte call)       // allocate byte array
-(memaddr stpopi)                 // pop memory address (negative = error)
+(memsize~ :alloc_int64 !)       // allocate int64 array
+(memsize~ :alloc_double !)      // allocate double array
+(memsize~ :alloc_byte !)        // allocate byte array
+(memaddr~ stpopi)                  // pop memory address~ (negative = error)
 
 WRITE TO MEMORY:
-(memaddr index value :int_to_array !)      // write int64 to array
-(memaddr index value :double_to_array !)   // write double to array
+(memaddr~ index~ value~ :int_to_array !)      // write int64 to array
+(memaddr~ index~ value~ :double_to_array !)   // write double to array
 
 READ FROM MEMORY:
-(memaddr index :array_to_int call)         // read int64 from array
-// returns value on stack
+(memaddr~ index~ :array_to_int !)          // read int64 from array
+// returns value~ on stack
 
 DEALLOCATE MEMORY:
-(memaddr :dealloc call)            // free allocated memory
-(:free_mem call)                   // free memory module
+(memaddr~ :dealloc !)             // free allocated memory
+(:free_mem !)                     // free memory module
 
 MEMORY LIBRARY FUNCTIONS:
 
     ALLOCATE:
-    (size :alloc_byte call)        // allocate byte array
-    (size :alloc_int16 call)       // allocate int16 array
-    (size :alloc_int32 call)       // allocate int32 array
-    (size :alloc_int64 call)       // allocate int64 array
-    (size :alloc_double call)      // allocate double array
-    // return: memory address on stack (negative = error)
+    (size~ :alloc_byte !)         // allocate byte array
+    (size~ :alloc_int16 !)        // allocate int16 array
+    (size~ :alloc_int32 !)        // allocate int32 array
+    (size~ :alloc_int64 !)        // allocate int64 array
+    (size~ :alloc_double !)       // allocate double array
+    // return: memory address~ on stack (negative = error)
 
     DEALLOCATE:
-    (memaddr :dealloc call)        // free allocated memory
+    (memaddr~ :dealloc !)         // free allocated memory
 
     WRITE:
-    (memaddr index value :int_to_array !)       // write int64
-    (memaddr index value :double_to_array !)    // write double
+    (memaddr~ index~ value~ :int_to_array !)       // write int64
+    (memaddr~ index~ value~ :double_to_array !)    // write double
 
     READ:
-    (memaddr index :array_to_int call)          // read int64
-    (memaddr index :array_to_double call)       // read double
+    (memaddr~ index~ :array_to_int !)           // read int64
+    (memaddr~ index~ :array_to_double !)        // read double
 
     FREE MODULE:
-    (:free_mem call)
+    (:free_mem !)
 
 VECTOR FUNCTIONS (dynamic arrays):
 
-    (size :alloc_int64_vect call)          // allocate int64 vector
-    (size :alloc_double_vect call)         // allocate double vector
-    (memaddr index value :int_to_vect !)   // insert into vector
-    (memaddr index :vect_to_int call)      // read from vector
-    (memaddr :vect_erase !)               // erase vector element
-    (memaddr :get_vect_size call)          // get vector size
+    (size~ :alloc_int64_vect !)           // allocate int64 vector
+    (size~ :alloc_double_vect !)          // allocate double vector
+    (memaddr~ index~ value~ :int_to_vect !)  // insert into vector
+    (memaddr~ index~ :vect_to_int !)      // read from vector
+    (memaddr~ :vect_erase !)                 // erase vector element
+    (memaddr~ :get_vect_size !)           // get vector size
 
 ---------------------------------------------------------------------------
 8.6 MEMORY OBJECT LIBRARY (mem-obj-lib.l1h)
@@ -988,32 +1036,32 @@ TYPE CONSTANTS (from mem-obj-lib-types.l1h):
     s_type      = 3    // string type
 
 INITIALIZE:
-(zero one :mem_obj_init call)    // init memory object module
-(ret stpopi)
+(zero~ one~ :mem_obj_init !)     // init memory object module
+(ret~ stpopi)
 
 ALLOCATE:
-(variables memsize :alloc_obj_memobj !)
-// variables = number of variables to store
-// memsize = size per variable (usually 1)
-// return: memory address on stack
+(variables~ memsize~ :alloc_obj_memobj !)
+// variables~ = number of variables to store
+// memsize~ = size per variable (usually 1)
+// return: memory address~ on stack
 
 SAVE DATA:
-(value s_type value i_type ... variables zero memaddr :save_obj_memobj !)
-// Push values with their types, then variables count, zero, and memaddr
-// return: error code on stack
+(value~ s_type value~ i_type ... variables~ zero~ memaddr~ :save_obj_memobj !)
+// Push values~ with their types, then variables~ count, zero~, and memaddr~
+// return: error~ code on stack
 
 LOAD STRING:
-(index memaddr deststr :load_obj_string_memobj !)
-// Load string at index from memory object
-// return: error code on stack
+(index~ memaddr~ deststr~ :load_obj_string_memobj !)
+// Load string~ at index~ from memory object
+// return: error~ code on stack
 
 LOAD INT64/DOUBLE:
-(index1 index2 memaddr :load_obj_memobj call)
-// Load int64/double values
-// return: values on stack (pop in reverse order)
+(index1~ index2~ memaddr~ :load_obj_memobj !)
+// Load int64/double values~
+// return: values~ on stack (pop in reverse order)
 
 FREE:
-(memaddr :free_obj_memobj !)    // free memory object
+(memaddr~ :free_obj_memobj !)       // free memory object
 
 ---------------------------------------------------------------------------
 8.7 MATH LIBRARY (math-lib.l1h)
@@ -1022,15 +1070,15 @@ FREE:
 INCLUDE: #include <math-lib.l1h>
 
 INITIALIZE:
-(zero :math_init !)
+(zero~ :math_init !)
 
 FUNCTIONS:
-    (randstart :math_randinit !)           // seed random number generator
-    (:math_randint !)                      // get random int
-    (not_num :math_not !)                  // logical NOT
-    (angle :math_degree_to_rad !)          // degrees to radians
-    (rad :math_sindouble !)                // sine of radians
-    (m_pimath :print_d !)                  // print pi constant
+    (randstart~ :math_randinit !)           // seed random number generator
+    (:math_randint !)                       // get random int
+    (not_num~ :math_not !)                  // logical NOT
+    (angle~ :math_degree_to_rad !)          // degrees to radians
+    (rad~ :math_sindouble !)                // sine of radians
+    (m_pimath :print_d !)                   // print pi constant
 
 MATH CONSTANTS (math-const.l1h):
     m_pimath    // pi = 3.14159265358979...
@@ -1042,14 +1090,14 @@ MATH CONSTANTS (math-const.l1h):
 INCLUDE: #include <net-lib.l1h>
 
 INITIALIZE:
-(mod_net one :net_init !)
+(mod_net~ one~ :net_init !)
 
 SERVER:
-    (ipaddr bufaddr :get_hostbyname !)          // resolve hostname
-    (bufaddr portnum :open_server_socket !)     // open server socket
-    (socket_handle :open_accept_server !)       // accept connection
-    (server_accept buf_str bufsize :socket_read_string !)  // read data
-    (socket_handle :close_server_socket !)      // close server
+    (ipaddr~ bufaddr~ :get_hostbyname !)           // resolve hostname
+    (bufaddr~ portnum~ :open_server_socket !)      // open server socket
+    (socket_handle~ :open_accept_server !)         // accept connection
+    (server_accept~ buf_str~ bufsize~ :socket_read_string !)  // read data
+    (socket_handle~ :close_server_socket !)        // close server
 
 ---------------------------------------------------------------------------
 8.9 SDL GRAPHICS LIBRARY (sdl-lib.l1h)
@@ -1057,13 +1105,13 @@ SERVER:
 
 INCLUDE: #include <sdl-lib.l1h>
 
-    (zero width height bit zero :sdl_open_screen !)    // open screen
-    (fontnameaddr fontsize :sdl_font_ttf !)            // load font
-    (zero zero wb hb r g b a :sdl_rectangle_fill !)    // fill rectangle
-    (x y text status :set_gadget_button !)             // set button
-    (x y text value status :set_gadget_string !)       // set text input
-    (:sdl_update !)                                    // update screen
-    (x y r g b straddr :sdl_text_ttf !)               // draw text
+    (zero~ width~ height~ bit~ zero~ :sdl_open_screen !)    // open screen
+    (fontnameaddr~ fontsize~ :sdl_font_ttf !)               // load font
+    (zero~ zero~ wb~ hb~ r~ g~ b~ a~ :sdl_rectangle_fill !) // fill rectangle
+    (x~ y~ text~ status~ :set_gadget_button !)              // set button
+    (x~ y~ text~ value~ status~ :set_gadget_string !)       // set text input
+    (:sdl_update !)                                         // update screen
+    (x~ y~ r~ g~ b~ straddr~ :sdl_text_ttf !)              // draw text
 
 ---------------------------------------------------------------------------
 8.10 PROCESS LIBRARY (process-lib.l1h)
@@ -1072,17 +1120,17 @@ INCLUDE: #include <sdl-lib.l1h>
 INCLUDE: #include <process-lib.l1h>
 
 INITIALIZE:
-(zero :process_init !)
+(zero~ :process_init !)
 
 RUN SHELL COMMAND:
-(procstr :run_shell !)
-(ret stpopi)                 // return value from shell
+(procstr~ :run_shell !)
+(ret~ stpopi)                  // return value~ from shell
 
 Example:
-    (set string s cmd "ls")
-    (zero :process_init !)
-    (cmd :run_shell !)
-    (ret stpopi)
+    (set string s cmd~ "ls")
+    (zero~ :process_init !)
+    (cmd~ :run_shell !)
+    (ret~ stpopi)
 
 ---------------------------------------------------------------------------
 8.11 CRYPTOGRAPHY LIBRARY (crypto.l1h)
@@ -1090,8 +1138,8 @@ Example:
 
 INCLUDE: #include <crypto.l1h>
 
-(zero :crypto_init !)
-(Pinarray size Poutarray Pkeystr Pnoncearray gen mode :encrypt !)
+(zero~ :crypto_init !)
+(Pinarray~ size~ Poutarray~ Pkeystr~ Pnoncearray~ gen~ mode~ :encrypt !)
 
 ---------------------------------------------------------------------------
 8.12 JSON LIBRARY (json.l1h)
@@ -1099,8 +1147,8 @@ INCLUDE: #include <crypto.l1h>
 
 INCLUDE: #include <json.l1h>
 
-(zero :parse_json !)
-(cityv_str cityk_str ... entries json :create_json !)
+(zero~ :parse_json !)
+(cityv_str~ cityk_str~ ... entries~ json~ :create_json !)
 
 ---------------------------------------------------------------------------
 8.13 MESSAGES LIBRARY (messages-lib.l1h)
@@ -1109,8 +1157,8 @@ INCLUDE: #include <json.l1h>
 INCLUDE: #include <messages-lib.l1h>
 
 (:msg_init !)
-(memaddr message lock :msg_put_message !)      // send message
-(memaddr message lock :msg_wait_message !)     // receive message (blocking)
+(memaddr~ message~ lock~ :msg_put_message !)      // send message
+(memaddr~ message~ lock~ :msg_wait_message !)     // receive message (blocking)
 
 ---------------------------------------------------------------------------
 8.14 HOST DETECTION (host.l1h)
@@ -1118,32 +1166,32 @@ INCLUDE: #include <messages-lib.l1h>
 
 INCLUDE: #include <host.l1h>
 
-(host_cpu :get_host_cpu !)     // get CPU type
-(host_os :get_host_os !)       // get OS type
+(host_cpu~ :get_host_cpu !)     // get CPU type
+(host_os~ :get_host_os !)       // get OS type
 
 ---------------------------------------------------------------------------
 8.15 SHELL ARGUMENTS
 ---------------------------------------------------------------------------
 
-    (args :shell_args !)                   // get argument count
-    (i shell_arg :get_shell_arg !)         // get argument i
+    (args~ :shell_args !)                    // get argument count~
+    (i~ shell_arg~ :get_shell_arg !)         // get argument i~
 
 ---------------------------------------------------------------------------
 8.16 TIME FUNCTIONS
 ---------------------------------------------------------------------------
 
-    (:time call)                           // get current time
-    // returns: hour, min, sec on stack (sec on top)
+    (:time !)                            // get current time
+    // returns: hour~, min~, sec~ on stack (sec~ on top)
 
-    (:date call)                           // get current date
-    // returns: year, month, day on stack (day on top)
+    (:date !)                            // get current date
+    // returns: year~, month~, day~ on stack (day~ on top)
 
-    (:start_timer !)                       // start timer
-    (time :stop_timer !)                   // stop timer, get elapsed ms
+    (:start_timer !)                        // start timer
+    (time~ :stop_timer !)                   // stop timer, get elapsed ms
 
-    (detime :detime !)                     // delay/sleep in milliseconds
+    (detime~ :detime !)                     // delay/sleep in milliseconds
 
-    (epchmstm :epochms !)                 // milliseconds since epoch
+    (epchmstm~ :epochms !)                 // milliseconds since epoch
 
 ---------------------------------------------------------------------------
 8.17 VARIABLE HELPERS (misc-macros.l1h)
@@ -1152,11 +1200,11 @@ INCLUDE: #include <host.l1h>
 INCLUDE: #include <misc-macros.l1h>
 (Requires #include <zero.l1h> first for zero_byte, zero_int16, etc.)
 
-    pull_int64_var (variable)    // pull value from stack into variable
-    pull_double_var (variable)   // pull double from stack
-    pull_byte_var (variable)     // pull byte from stack
-    inc (variable)               // increment by 1
-    dec (variable)               // decrement by 1
+    pull_int64_var (variable~)     // pull value~ from stack into variable~
+    pull_double_var (variable~)    // pull double~ from stack
+    pull_byte_var (variable~)      // pull byte~ from stack
+    inc (variable~)                // increment by 1
+    dec (variable~)                // decrement by 1
 
 ---------------------------------------------------------------------------
 8.18 BOOL DEFINITIONS (bool.l1h)
@@ -1164,8 +1212,8 @@ INCLUDE: #include <misc-macros.l1h>
 
 INCLUDE: #include <bool.l1h>
 
-    (set const-byte 1 false 0)
-    (set const-byte 1 true 1)
+    (set const-byte 1 false~ 0)
+    (set const-byte 1 true~ 1)
 
 ---------------------------------------------------------------------------
 8.19 VARIABLE SIZE CONSTANTS (vars.l1h)
@@ -1221,66 +1269,66 @@ INCLUDE: #include <number-limits.l1h>
 Provides min/max constants for numeric types.
 
 ===============================================================================
-9. ARRAYS AND POINTERS
+10. ARRAYS AND POINTERS
 ===============================================================================
 
 ARRAY DECLARATION:
 
-    (set TYPE SIZE NAME V1 V2 ...)
+    (set TYPE SIZE NAME~ V1 V2 ...)
     // SIZE > 1 makes it an array
 
     Examples:
-    (set int64 5 data 10 20 30 40 50)    // 5-element int64 array
-    (set double 2 input 0.0 0.0)          // 2-element double array
-    (set byte 10000000 buffer)            // 10M byte array
-    (set int64 4 arr)                     // 4-element uninitialized
+    (set int64 5 data~ 10 20 30 40 50)    // 5-element int64 array
+    (set double 2 input~ 0.0 0.0)          // 2-element double array
+    (set byte 10000000 buffer~)            // 10M byte array
+    (set int64 4 arr~)                     // 4-element uninitialized
 
 ARRAY ELEMENT ACCESS:
 
-    READ: (variable = array [ offset ])
-    WRITE: (array [ offset ] variable =)
+    READ: (variable~ = array~ [ offset~ ])
+    WRITE: (array~ [ offset~ ] variable~ =)
 
     Examples:
-    (a = array [ zero ])       // a = array[0]
-    (array [ zero ] a =)       // array[0] = a
-    (array [ i ] val =)        // array[i] = val
+    (a~ = array~ [ zero~ ])       // a~ = array[0]
+    (array~ [ zero~ ] a~ =)       // array[0] = a~
+    (array~ [ i~ ] val~ =)        // array[i~] = val~
 
 MULTILINE ARRAY INITIALIZATION:
 
-    (set int64 8 array 10 5 /)
+    (set int64 8 array~ 10 5 /)
     @, 23, 42,
     @, 64, 1234567890, 4, 3, ;
 
 POINTER OPERATIONS:
 
     GET ADDRESS OF VARIABLE:
-    (variable Pointeraddr pointer)
-    // Pointeraddr gets the memory address of variable
+    (variable~ Pointeraddr~ pointer)
+    // Pointeraddr~ gets the memory address~ of variable~
 
     GET ADDRESS OF ARRAY:
-    (array Parray pointer)
-    // Parray gets the base address of array
+    (array~ Parray~ pointer)
+    // Parray~ gets the base address~ of array~
 
     GET ADDRESS OF STRING:
-    (hello Pvar pointer)
-    // Pvar gets the address of string "hello"
+    (hello~ Pvar~ pointer)
+    // Pvar~ gets the address~ of string~ "hello"
 
     Examples:
-    (set int64 1 x 42)
-    (set int64 1 Px 0)
-    (x Px pointer)            // Px now holds address of x
+    (set int64 1 x~ 42)
+    (set int64 1 Px~ 0)
+    (x~ Px~ pointer)             // Px~ now holds address~ of x~
 
-    (set int64 5 arr)
-    (set int64 1 Parr 0)
-    (arr Parr pointer)        // Parr holds base address of arr
+    (set int64 5 arr~)
+    (set int64 1 Parr~ 0)
+    (arr~ Parr~ pointer)         // Parr~ holds base address~ of arr~
 
 ARRAY RANGE CHECKING:
 
-    (x x_min x_max range)       // compile-time range check for int64
-    (xd x_mind x_maxd range)   // compile-time range check for double
+    (x~ x_min~ x_max~ range)        // compile-time range check for int64
+    (xd~ x_mind~ x_maxd~ range)    // compile-time range check for double
 
 ===============================================================================
-10. PREPROCESSOR DIRECTIVES
+11. PREPROCESSOR DIRECTIVES
 ===============================================================================
 
 INCLUDE FILES:
@@ -1349,7 +1397,7 @@ INCLUDE FILES:
     #func inside_coord (MX, MY, X, Y, X2, Y2) :{f~ = ((MX > X) && (MX < X2)) && ((MY > Y) && (MY < Y2))}
 
     Usage:
-    (y sq :square !)      // sq = y * y
+    (y~ sq~ :square !)      // sq~ = y~ * y~
 
     VARIABLE SCOPE DIRECTIVE (#var):
 
@@ -1357,9 +1405,10 @@ INCLUDE FILES:
     #var ~ @function_name         // thread-safe version
 
     This MUST be the first line inside every function definition.
+    ALL variables declared with "set" MUST have a "~" suffix on the variable name.
 
 ===============================================================================
-11. INLINE ASSEMBLY
+12. INLINE ASSEMBLY
 ===============================================================================
 
 Assembly blocks allow writing raw L1VM assembly instructions.
@@ -1416,16 +1465,16 @@ STACK OPERATIONS IN ASM:
 EXAMPLE - inline assembly for fast array access:
 
     (ASM)
-        loada array, 0, I1           // I1 = &array
-        load index, 0, I2            // I2 = index
-        muli I2, 8, I2              // I2 = index * 8 (offset for int64)
-        addi I1, I2, I1             // I1 = &array[index]
-        load result, 0, I2           // I2 = result
-        stpushi 2                    // push result
+        loada array~, 0, I1           // I1 = &array~
+        load index~, 0, I2            // I2 = index~
+        muli I2, 8, I2               // I2 = index~ * 8 (offset for int64)
+        addi I1, I2, I1              // I1 = &array~[index~]
+        load result~, 0, I2           // I2 = result~
+        stpushi 2                     // push result~
     (ASM_END)
 
 ===============================================================================
-12. THREADING
+13. THREADING
 ===============================================================================
 
 L1VM supports multi-threading via interrupt 1 functions.
@@ -1433,19 +1482,19 @@ L1VM supports multi-threading via interrupt 1 functions.
 THREAD MANAGEMENT:
 
     THREAD START:
-    (label_variable thread)          // start new thread at label_variable
+    (label_variable~ thread)           // start new thread at label_variable~
     // or function style:
-    (:label_variable :thread !)
+    (:label_variable~ :thread !)
 
     THREAD JOIN:
-    (join)                           // wait for all threads to finish
+    (join)                             // wait for all threads to finish
 
     THREAD EXIT:
-    (variable threadexit)            // exit current thread with return code
+    (variable~ threadexit)             // exit current thread with return code~
 
     THREAD LOCKS:
-    (variable globallock)            // acquire global lock
-    (variable globalunlock)          // release global lock
+    (variable~ globallock)             // acquire global lock
+    (variable~ globalunlock)           // release global lock
 
     THREAD LOCKS (macro style):
     (:threadlock !)                  // acquire thread lock
@@ -1471,42 +1520,42 @@ DATA-LOCAL THREADING:
 
 VIRTUAL CPU (SCHEDULER):
 
-    (vcpu_label vcpu :vcpu_RUN !)    // run function on vcpu
-    (:vcpu_JOIN !)                   // join vcpu execution
-    (:vcpu_EXIT !)                   // exit vcpu function
-    (scheduler_max :vcpu_SCHEDULERMAX !)  // set scheduler max
-    (number vcpu_get_free_cores)     // get free vcpu cores
+    (vcpu_label~ vcpu :vcpu_RUN !)    // run function~ on vcpu
+    (:vcpu_JOIN !)                     // join vcpu execution
+    (:vcpu_EXIT !)                     // exit vcpu function~
+    (scheduler_max~ :vcpu_SCHEDULERMAX !)  // set scheduler max
+    (number~ vcpu_get_free_cores)      // get free vcpu cores
 
 THREAD-SAFE VARIABLE NAMING:
 
     Variables local to threads use special naming conventions:
-    - ~ suffix for local variables: (set string s hellostr~ "Hello world!")
+    - ALL variables MUST use ~ suffix: (set string s hellostr~ "Hello world!")
     - @ suffix for thread label registration: #var ~ @thread_func
     - @function_name suffix for function-scoped variables
 
 EXAMPLE - simple thread:
 
-    (set int64 1 zero 0)
-    (set string s hello "Hello from thread!")
-
-    // Define thread function
-    (thread_hello func)
-        #var ~ thread_hello
-        (hello :print_s !)
-        (:print_n !)
-        (zero threadexit)
-    (funcend)
+    (set int64 1 zero~ 0)
+    (set string s hello~ "Hello from thread!")
 
     // Start thread
     (main func)
         #var ~ main
         (:thread_hello thread)
-        (join)                   // wait for thread
-        (zero :exit !)
+        (join)                     // wait for thread
+        (zero~ :exit !)
+    (funcend)
+
+    // Define thread function~ (AFTER main)
+    (thread_hello func)
+        #var ~ thread_hello
+        (hello~ :print_s !)
+        (:print_n !)
+        (zero~ threadexit)
     (funcend)
 
 ===============================================================================
-13. VARIABLE MODIFIER DIRECTIVES
+14. VARIABLE MODIFIER DIRECTIVES
 ===============================================================================
 
 IMMUTABILITY:
@@ -1515,7 +1564,7 @@ IMMUTABILITY:
 
 MUTABILITY:
 
-    (set mut-int64 1 a 0)     // explicitly mutable variable
+    (set mut-int64 1 a~ 0)     // explicitly mutable variable~
 
 VARIABLE LOCAL SCOPE CONTROL:
 
@@ -1538,19 +1587,19 @@ UNSAFE / MEMORY BOUNDS:
     (unsafe-end)               // exit unsafe mode
 
 ===============================================================================
-14. TYPE SYSTEM FEATURES
+15. TYPE SYSTEM FEATURES
 ===============================================================================
 
 TYPE PREFIXES (distance types):
 
     Variables with \prefix\ are type-checked at compile time:
-    (set int64 1 \distance\x 2)
-    (\distance\x + y \distance\z :=)     // ERROR: y is not \distance\ type
+    (set int64 1 \distance\x~ 2)
+    (\distance\x~ + y~ \distance\z~ :=)     // ERROR: y~ is not \distance\ type
 
 TYPE CASTING:
 
-    (cast source dest =)                  // cast source type to dest type
-    (cast y a =)                          // cast y to type of a
+    (cast source~ dest~ =)                   // cast source~ type to dest~ type
+    (cast y~ a~ =)                           // cast y~ to type of a~
 
 STACK TYPE DISPATCH:
 
@@ -1563,7 +1612,7 @@ STACK TYPE DISPATCH:
     (endif)
 
 ===============================================================================
-15. LINTER / CONTRACTS SYSTEM
+16. LINTER / CONTRACTS SYSTEM
 ===============================================================================
 
 LINTER DECLARATION:
@@ -1589,55 +1638,55 @@ CONTRACTS:
 
 VARIABLE VALIDITY:
 
-    (remove foo)                // mark variable as invalid
+    (remove foo~)                 // mark variable~ as invalid
 
 RETURN VALUE CONVENTION:
 
     - Variables ending in R are return values (e.g., retR, incxR)
     - They are forbidden as function call arguments
+    - ALL variables MUST use ~ suffix when declared with "set"
 
 ===============================================================================
-16. COMPLETE SYNTAX PATTERNS SUMMARY
+17. COMPLETE SYNTAX PATTERNS SUMMARY
 ===============================================================================
 
     | Pattern           | Syntax                                          | Purpose                    |
     |-------------------|-------------------------------------------------|----------------------------|
-    | Variable          | (set TYPE SIZE NAME VALUE)                      | Declare variable           |
-    | Array             | (set TYPE SIZE NAME V1 V2 ...)                 | Declare array              |
-    | Constant          | (set const-TYPE SIZE NAME VALUE)                | Declare constant           |
-    | String auto       | (set string s NAME "text")                      | String auto-length         |
-    | String explicit   | (set string N NAME "text")                      | String with length N       |
-    | Assignment        | (src dest =) or (src dest :=)                   | Assign value               |
-    | RPN math          | ((a b OP) dest =)                               | Math expression            |
-    | Infix math        | {dest = expr}                                   | Curly-brace math           |
-    | Function def      | (name func) ... (funcend)                       | Define function            |
-    | Function call     | (:name !) or (:name call)                       | Call function              |
-    | If                | (((cond) f =) f if) ... (endif)                 | Conditional                |
-    | If-else           | (((cond) f =) f if+) ... (else) ... (endif)    | If-else                    |
-    | For               | (for-loop) ... (((cond) f =) f for) ... (next) | For loop                   |
-    | While             | (do) ... (((cond) f =) f while)                 | Do-while                   |
+    | Variable          | (set TYPE SIZE NAME~ VALUE)                     | Declare variable           |
+    | Array             | (set TYPE SIZE NAME~ V1 V2 ...)                 | Declare array              |
+    | Constant          | (set const-TYPE SIZE NAME~ VALUE)               | Declare constant           |
+    | String auto       | (set string s NAME~ "text")                     | String auto-length         |
+    | String explicit   | (set string N NAME~ "text")                     | String with length N       |
+    | Assignment        | (src~ dest~ =) or (src~ dest~ :=)              | Assign value               |
+    | RPN math          | ((a~ b~ OP) dest~ =)                           | Math expression            |
+    | Function def      | (name func) ... (funcend)                       | Define function (after main) |
+    | Function call     | (:name !) or (:name !)                       | Call function              |
+    | If                | (((cond) f~ =) f~ if) ... (endif)              | Conditional                |
+    | If-else           | (((cond) f~ =) f~ if+) ... (else) ... (endif) | If-else                    |
+    | For               | (for-loop) ... (((cond) f~ =) f~ for) ... (next) | For loop                 |
+    | While             | (do) ... (((cond) f~ =) f~ while)              | Do-while                   |
     | Switch            | (switch) ... (val const ?) ... (switchend)      | Switch                     |
     | Break             | (break)                                         | Exit loop                  |
     | Label             | (:name) or :name (in ASM)                       | Define label               |
-    | Jump              | (:name jmp) or (f :name jmpi)                   | Jump                       |
+    | Jump              | (:name jmp) or (f~ :name jmpi)                  | Jump                       |
     | Comment           | // text                                         | Comment                    |
     | Include           | #include <file.l1h>                             | Include file               |
     | Macro             | #func name (ARGS) :BODY                         | Preprocessor macro         |
     | Scope             | #var ~ name                                     | Variable scope             |
-    | Push              | (val stpush) / (val stpushi) / (val stpushd)   | Push to stack              |
-    | Pop               | (var stpop) / (var stpopi) / (var stpopd)      | Pop from stack             |
-    | Pointer           | (src dest pointer)                              | Get address                |
-    | Array access      | (arr [ idx ] var =)                             | Read/write array           |
+    | Push              | (val~ stpush) / (val~ stpushi) / (val~ stpushd) | Push to stack             |
+    | Pop               | (var~ stpop) / (var~ stpopi) / (var~ stpopd)   | Pop from stack            |
+    | Pointer           | (src~ dest~ pointer)                            | Get address                |
+    | Array access      | (arr~ [ idx~ ] var~ =)                          | Read/write array           |
     | ASM block         | (ASM) ... (ASM_END)                             | Inline assembly            |
-    | Thread start      | (label_var thread)                              | Start thread               |
-    | Thread exit       | (val threadexit)                                | Exit thread                |
+    | Thread start      | (label_var~ thread)                             | Start thread               |
+    | Thread exit       | (val~ threadexit)                               | Exit thread                |
     | Join              | (join)                                          | Wait for threads           |
     | Unsafe            | (unsafe) ... (unsafe-end)                       | Disable bounds checks      |
     | Contracts         | (precondition) ... (precondition-end)           | Design by contract         |
     | Reset registers   | (reset-reg)                                     | Reset all registers        |
 
 ===============================================================================
-17. FEW-SHOT GOLDEN EXAMPLES
+18. FEW-SHOT GOLDEN EXAMPLES
 ===============================================================================
 
 Example 1: Hello World
@@ -1647,11 +1696,12 @@ Code:
 // hello.l1com
 #include <intr-func.l1h>
 (main func)
-    (set int64 1 zero 0)
-    (set string 13 hello "Hello world!")
-    (hello :print_s !)
+    #var ~ main
+    (set int64 1 zero~ 0)
+    (set string 13 hello~ "Hello world!")
+    (hello~ :print_s !)
     (:print_n !)
-    (zero :exit !)
+    (zero~ :exit !)
 (funcend)
 
 Example 2: Hello World with Loop
@@ -1661,19 +1711,20 @@ Code:
 // hello-loop.l1com
 #include <intr-func.l1h>
 (main func)
-    (set int64 1 zero 0)
-    (set int64 1 one 1)
-    (set int64 1 loop 0)
-    (set int64 1 maxloop 10)
-    (set string 13 hello "Hello world!")
-    (zero loop =)
+    #var ~ main
+    (set int64 1 zero~ 0)
+    (set int64 1 one~ 1)
+    (set int64 1 loop~ 0)
+    (set int64 1 maxloop~ 10)
+    (set string 13 hello~ "Hello world!")
+    (zero~ loop~ =)
     (for-loop)
-        (((loop maxloop <) f =) f for)
-            (hello :print_s !)
+        (((loop~ maxloop~ <) f~ =) f~ for)
+            (hello~ :print_s !)
             (:print_n !)
-            ((loop one +) loop =)
+            ((loop~ one~ +) loop~ =)
         (next)
-    (zero :exit !)
+    (zero~ :exit !)
 (funcend)
 
 Example 3: While Loop
@@ -1683,18 +1734,19 @@ Code:
 // hello-dowhile.l1com
 #include <intr-func.l1h>
 (main func)
-    (set int64 1 zero 0)
-    (set int64 1 one 1)
-    (set int64 1 loop 0)
-    (set int64 1 maxloop 10)
-    (set string 13 hello "Hello world!")
-    (zero loop =)
+    #var ~ main
+    (set int64 1 zero~ 0)
+    (set int64 1 one~ 1)
+    (set int64 1 loop~ 0)
+    (set int64 1 maxloop~ 10)
+    (set string 13 hello~ "Hello world!")
+    (zero~ loop~ =)
     (do)
-        (hello :print_s !)
+        (hello~ :print_s !)
         (:print_n !)
-        ((loop one +) loop =)
-    (((loop maxloop <) f =) f while)
-    (zero :exit !)
+        ((loop~ one~ +) loop~ =)
+    (((loop~ maxloop~ <) f~ =) f~ while)
+    (zero~ :exit !)
 (funcend)
 
 Example 4: Function Call
@@ -1707,21 +1759,22 @@ Code:
 #func square (X, SQUARE) :{SQUARE = X * X}
 
 (main func)
-    (set int64 1 zero 0)
-    (set int64 1 x 23)
-    (set int64 1 y 42)
-    (set int64 1 a 0)
-    (set int64 1 sq 0)
-    (set string s hello "Hello world!")
-    (hello :print_s !)
+    #var ~ main
+    (set int64 1 zero~ 0)
+    (set int64 1 x~ 23)
+    (set int64 1 y~ 42)
+    (set int64 1 a~ 0)
+    (set int64 1 sq~ 0)
+    (set string s hello~ "Hello world!")
+    (hello~ :print_s !)
     (:print_n !)
-    ((x y *) a =)
-    (a :print_i !)
+    ((x~ y~ *) a~ =)
+    (a~ :print_i !)
     (:print_n !)
-    (y sq :square !)
-    (sq :print_i !)
+    (y~ sq~ :square !)
+    (sq~ :print_i !)
     (:print_n !)
-    (zero :exit !)
+    (zero~ :exit !)
 (funcend)
 
 Example 5: File Write
@@ -1732,29 +1785,30 @@ Code:
 #include <intr-func.l1h>
 #include <file-lib.l1h>
 (main func)
+    #var ~ main
     #include <file-def.l1h>
-    (set int64 1 zero 0)
-    (set int64 1 one 1)
-    (set int64 1 handle 0)
-    (set int64 1 error 0)
-    (set string s filename "hello.txt")
-    (set string 13 content "Hello world!")
-    (set byte 1 mode_write 2)
-    (zero one :file_init call)
-    (error stpopi)
-    (((error zero !=) f =) f if)
-        (one :exit !)
+    (set int64 1 zero~ 0)
+    (set int64 1 one~ 1)
+    (set int64 1 handle~ 0)
+    (set int64 1 error~ 0)
+    (set string s filename~ "hello.txt")
+    (set string 13 content~ "Hello world!")
+    (set byte 1 mode_write~ 2)
+    (zero~ one~ :file_init !)
+    (error~ stpopi)
+    (((error~ zero~ !=) f~ =) f~ if)
+        (one~ :exit !)
     (endif)
-    (mode_write filenameaddr :file_open !)
-    (handle stpopi)
-    (((handle zero <) f =) f if)
-        (one :exit !)
+    (mode_write~ filenameaddr~ :file_open !)
+    (handle~ stpopi)
+    (((handle~ zero~ <) f~ =) f~ if)
+        (one~ :exit !)
     (endif)
-    (handle contentaddr :file_put_string !)
-    (error stpopi)
-    (handle :file_close !)
+    (handle~ contentaddr~ :file_put_string !)
+    (error~ stpopi)
+    (handle~ :file_close !)
     (:file_free_mem !)
-    (zero :exit !)
+    (zero~ :exit !)
 (funcend)
 #include <file-lib.l1h>
 
@@ -1765,44 +1819,45 @@ Code:
 // fizz-buzz.l1com
 #include <intr-func.l1h>
 (main func)
-    (set const-int64 1 zero 0)
-    (set const-int64 1 one 1)
-    (set const-int64 1 fizz 3)
-    (set const-int64 1 buzz 5)
-    (set const-string s fizzstr "fizz")
-    (set const-string s buzzstr "buzz")
-    (set const-int64 1 max 100)
-    (set int64 1 i 1)
-    (set int64 1 f 0)
-    (set int64 1 modfizz 0)
-    (set int64 1 modbuzz 0)
-    (((i max <=) f :=) f for)
-        (i % fizz modfizz :=)
-        (i % buzz modbuzz :=)
-        ((modfizz == zero) && (modbuzz == zero) f :=)
-        (f if+)
-            (fizzstr :print_s !)
-            (buzzstr :print_s !)
+    #var ~ main
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set const-int64 1 fizz~ 3)
+    (set const-int64 1 buzz~ 5)
+    (set const-string s fizzstr~ "fizz")
+    (set const-string s buzzstr~ "buzz")
+    (set const-int64 1 max~ 100)
+    (set int64 1 i~ 1)
+    (set int64 1 f~ 0)
+    (set int64 1 modfizz~ 0)
+    (set int64 1 modbuzz~ 0)
+    (((i~ max~ <=) f~ :=) f~ for)
+        (i~ % fizz~ modfizz~ :=)
+        (i~ % buzz~ modbuzz~ :=)
+        ((modfizz~ == zero~) && (modbuzz~ == zero~) f~ :=)
+        (f~ if+)
+            (fizzstr~ :print_s !)
+            (buzzstr~ :print_s !)
             (:print_n !)
             (:skip jmp)
         (else)
-            (((modfizz zero ==) f =) f if)
-                (fizzstr :print_s !)
+            (((modfizz~ zero~ ==) f~ =) f~ if)
+                (fizzstr~ :print_s !)
                 (:print_n !)
                 (:skip jmp)
             (endif)
-            (((modbuzz zero ==) f =) f if)
-                (buzzstr :print_s !)
+            (((modbuzz~ zero~ ==) f~ =) f~ if)
+                (buzzstr~ :print_s !)
                 (:print_n !)
                 (:skip jmp)
             (endif)
-            (i :print_i !)
+            (i~ :print_i !)
             (:print_n !)
             (:skip)
-            (i + one i :=)
+            (i~ + one~ i~ :=)
         (endif)
     (next)
-    (zero :exit !)
+    (zero~ :exit !)
 (funcend)
 
 Example 7: Switch Statement
@@ -1812,26 +1867,27 @@ Code:
 // switch.l1com
 #include <intr-func.l1h>
 (main func)
-    (set int64 1 zero 0)
-    (set int64 1 y 42)
-    (set string s 23_str "y = 23")
-    (set string s 42_str "y = 42")
-    (set const-int64 1 23_const 23)
-    (set const-int64 1 42_const 42)
-    (set string s hello_str "Hello world!")
-    (hello_str :print_s !)
+    #var ~ main
+    (set int64 1 zero~ 0)
+    (set int64 1 y~ 42)
+    (set string s 23_str~ "y = 23")
+    (set string s 42_str~ "y = 42")
+    (set const-int64 1 23_const~ 23)
+    (set const-int64 1 42_const~ 42)
+    (set string s hello_str~ "Hello world!")
+    (hello_str~ :print_s !)
     (:print_n !)
     (switch)
-        (y 23_const ?)
-            (23_str :print_s !)
+        (y~ 23_const~ ?)
+            (23_str~ :print_s !)
             (:print_n !)
         (break)
-        (y 42_const ?)
-            (42_str :print_s !)
+        (y~ 42_const~ ?)
+            (42_str~ :print_s !)
             (:print_n !)
         (break)
     (switchend)
-    (zero :exit !)
+    (zero~ :exit !)
 (funcend)
 
 Example 8: String Operations
@@ -1842,20 +1898,21 @@ Code:
 #include <intr-func.l1h>
 #include <string.l1h>
 (main func)
-    (set int64 1 zero 0)
-    (set int64 1 strlen 0)
-    (set string 6 hello "Hello")
-    (set string s world " World!")
-    (zero :string_init !)
-    (hellostraddr worldstraddr :string_cat !)
-    (hello :print_s !)
+    #var ~ main
+    (set int64 1 zero~ 0)
+    (set int64 1 strlen~ 0)
+    (set string 6 hello~ "Hello")
+    (set string s world~ " World!")
+    (zero~ :string_init !)
+    (hellostraddr~ worldstraddr~ :string_cat !)
+    (hello~ :print_s !)
     (:print_n !)
-    (hellostraddr :string_len !)
-    (strlen stpopi)
-    (strlen :print_i !)
+    (hellostraddr~ :string_len !)
+    (strlen~ stpopi)
+    (strlen~ :print_i !)
     (:print_n !)
-    (zero :free_mod !)
-    (zero :exit !)
+    (zero~ :free_mod !)
+    (zero~ :exit !)
 (funcend)
 #include <string.l1h>
 
@@ -1867,34 +1924,35 @@ Code:
 #include <intr-func.l1h>
 #include <mem-lib.l1h>
 (main func)
-    (set int64 1 zero 0)
-    (set int64 1 one 1)
-    (set int64 1 memaddr 0)
-    (set int64 1 ret 0)
-    (set int64 1 val 0)
-    (set string s err "ERROR: can't allocate memory!")
-    (zero one :mem_init call)
-    (ret stpopi)
-    (((ret zero !=) f =) f if)
-        (err :print_s !)
+    #var ~ main
+    (set int64 1 zero~ 0)
+    (set int64 1 one~ 1)
+    (set int64 1 memaddr~ 0)
+    (set int64 1 ret~ 0)
+    (set int64 1 val~ 0)
+    (set string s err~ "ERROR: can't allocate memory!")
+    (zero~ one~ :mem_init !)
+    (ret~ stpopi)
+    (((ret~ zero~ !=) f~ =) f~ if)
+        (err~ :print_s !)
         (:print_n !)
-        (one :exit !)
+        (one~ :exit !)
     (endif)
-    (10 :alloc_int64 call)
-    (memaddr stpopi)
-    (((memaddr zero <) f =) f if)
-        (err :print_s !)
+    (10 :alloc_int64 !)
+    (memaddr~ stpopi)
+    (((memaddr~ zero~ <) f~ =) f~ if)
+        (err~ :print_s !)
         (:print_n !)
-        (one :exit !)
+        (one~ :exit !)
     (endif)
-    (memaddr 0 42 :int_to_array !)
-    (memaddr 0 :array_to_int call)
-    (val stpopi)
-    (val :print_i !)
+    (memaddr~ 0 42 :int_to_array !)
+    (memaddr~ 0 :array_to_int !)
+    (val~ stpopi)
+    (val~ :print_i !)
     (:print_n !)
-    (memaddr :dealloc call)
-    (:free_mem call)
-    (zero :exit !)
+    (memaddr~ :dealloc !)
+    (:free_mem !)
+    (zero~ :exit !)
 (funcend)
 #include <mem-lib.l1h>
 
@@ -1904,6 +1962,19 @@ User: "Write a function that takes two int64 arguments and returns their sum."
 Code:
 // add-func.l1com
 #include <intr-func.l1h>
+
+(main func)
+    #var ~ main
+    (set int64 1 zero~ 0)
+    (set int64 1 x~ 10)
+    (set int64 1 y~ 20)
+    (set int64 1 sum~ 0)
+    (y~ x~ :add !)
+    (sum~ stpopi)
+    (sum~ :print_i !)
+    (:print_n !)
+    (zero~ :exit !)
+(funcend)
 
 (add func)
     #var ~ add
@@ -1916,24 +1987,17 @@ Code:
     (result~ stpush)
 (funcend)
 
-(main func)
-    (set int64 1 zero 0)
-    (set int64 1 x 10)
-    (set int64 1 y 20)
-    (set int64 1 sum 0)
-    (y x :add !)
-    (sum stpopi)
-    (sum :print_i !)
-    (:print_n !)
-    (zero :exit !)
-(funcend)
-
 ===============================================================================
 INSTRUCTION
 ===============================================================================
 Generate for the user's request exclusively syntactically exact Brackets code
-according to this specification. Always use the function-style macros from
-intr-func.l1h (e.g., :print_s !, :print_i !, :print_n !, :exit !). Always
-include #include <intr-func.l1h> as the first include. Always end programs
-with (zero :exit !) or exit (zero). Library .l1h files go at the END of the
-file after the main function's (funcend).
+according to this specification. ALWAYS use "~" suffix on ALL variable names
+declared with "set". Other functions (non-main) MUST be written AFTER the main
+function. ALWAYS use !) for function calls, NEVER use call). All macros from
+intr-func.l1h (print_s, print_i, print_d, print_n, exit, etc.) MUST use the
+function-style syntax: (variable~ :print_s !), (zero~ :exit !). NEVER use the
+old macro-style syntax like print_s (variable~) or exit (zero~), regardless of
+what appears in any bracket example code. Always include
+#include <intr-func.l1h> as the first include. Always end programs with
+(zero~ :exit !). Library .l1h files go at the END of the file after the main
+function's (funcend).
