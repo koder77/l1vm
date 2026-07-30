@@ -900,154 +900,110 @@ S2 run (void *arg)
 	EXE_NEXT();
 
 	pushw:
-	#if DEBUG
-	printf ("%lli PUSHW\n", cpu_core);
-	#endif
-	arg1 = regi[code[ep + 1]];
-	arg2 = regi[code[ep + 2]];
-	arg3 = code[ep + 3];
+    #if DEBUG
+    printf ("%lli PUSHW\n", cpu_core);
+    #endif
+    arg1 = regi[code[ep + 1]];
+    arg2 = regi[code[ep + 2]];
+    arg3 = code[ep + 3];
 
-	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
-	{
-	if (memory_bounds (arg1, arg2) != 0)
-	{
-		PRINT_EPOS();
-		free (jumpoffs);
-		loop_stop ();
-        pthread_exit ((void *) 1);
-	}
-	}
-	#endif
+    #if BOUNDSCHECK
+    if (do_memory_bounds_check == 1)
+    {
+        if (memory_bounds (arg1, arg2) != 0)
+        {
+            PRINT_EPOS();
+            free (jumpoffs);
+            loop_stop ();
+            pthread_exit ((void *) 1);
+        }
+    }
+    #endif
 
-	regi[arg3] = 0;		// set to zero, before loading data
-	bptr = (U1 *) &regi[arg3];
+    regi[arg3] = 0;
+    memcpy(&regi[arg3], &data[arg1 + arg2], sizeof(uint16_t));
 
-	*bptr = data[arg1 + arg2];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 1];
+    eoffs = 4;
+    EXE_NEXT();
 
-	eoffs = 4;
-	EXE_NEXT();
+    pushdw:
+    #if DEBUG
+    printf ("%lli PUSHDW\n", cpu_core);
+    #endif
+    arg1 = regi[code[ep + 1]];
+    arg2 = regi[code[ep + 2]];
+    arg3 = code[ep + 3];
 
-	pushdw:
-	#if DEBUG
-	printf ("%lli PUSHDW\n", cpu_core);
-	#endif
-	arg1 = regi[code[ep + 1]];
-	arg2 = regi[code[ep + 2]];
-	arg3 = code[ep + 3];
+    #if BOUNDSCHECK
+    if (do_memory_bounds_check == 1)
+    {
+        if (memory_bounds (arg1, arg2) != 0)
+        {
+            PRINT_EPOS();
+            free (jumpoffs);
+            loop_stop ();
+            pthread_exit ((void *) 1);
+        }
+    }
+    #endif
 
-	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
-	{
-	if (memory_bounds (arg1, arg2) != 0)
-	{
-		PRINT_EPOS();
-		free (jumpoffs);
-		loop_stop ();
-        pthread_exit ((void *) 1);
-	}
-	}
-	#endif
+    regi[arg3] = 0;
+    memcpy(&regi[arg3], &data[arg1 + arg2], sizeof(uint32_t));
 
-	regi[arg3] = 0;		// set to zero, before loading data
-	bptr = (U1 *) &regi[arg3];
+    eoffs = 4;
+    EXE_NEXT();
 
-	*bptr = data[arg1 + arg2];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 1];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 2];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 3];
+    pushqw:
+    #if DEBUG
+    printf ("%lli PUSHQW\n", cpu_core);
+    #endif
+    arg1 = regi[code[ep + 1]];
+    arg2 = regi[code[ep + 2]];
+    arg3 = code[ep + 3];
 
-	eoffs = 4;
-	EXE_NEXT();
+    #if BOUNDSCHECK
+    if (do_memory_bounds_check == 1)
+    {
+        if (memory_bounds (arg1, arg2) != 0)
+        {
+            PRINT_EPOS();
+            free (jumpoffs);
+            loop_stop ();
+            pthread_exit ((void *) 1);
+        }
+    }
+    #endif
 
-	pushqw:
-	#if DEBUG
-	printf ("%lli PUSHQW\n", cpu_core);
-	#endif
-	arg1 = regi[code[ep + 1]];
-	arg2 = regi[code[ep + 2]];
-	arg3 = code[ep + 3];
+    memcpy(&regi[arg3], &data[arg1 + arg2], sizeof(uint64_t));
 
-	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
-	{
-	if (memory_bounds (arg1, arg2) != 0)
-	{
-		PRINT_EPOS();
-		free (jumpoffs);
-		loop_stop ();
-        pthread_exit ((void *) 1);
-	}
-	}
-	#endif
+    eoffs = 4;
+    EXE_NEXT();
 
-	bptr = (U1 *) &regi[arg3];
+    pushd:
+    #if DEBUG
+    printf ("%lli PUSHD\n", cpu_core);
+    #endif
+    arg1 = regi[code[ep + 1]];
+    arg2 = regi[code[ep + 2]];
+    arg3 = code[ep + 3];
 
-	*bptr = data[arg1 + arg2];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 1];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 2];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 3];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 4];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 5];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 6];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 7];
+    #if BOUNDSCHECK
+    if (do_memory_bounds_check == 1)
+    {
+        if (memory_bounds (arg1, arg2) != 0)
+        {
+            PRINT_EPOS();
+            free (jumpoffs);
+            loop_stop ();
+            pthread_exit ((void *) 1);
+        }
+    }
+    #endif
 
-	eoffs = 4;
-	EXE_NEXT();
+    memcpy(&regd[arg3], &data[arg1 + arg2], sizeof(double));
 
-	pushd:
-	#if DEBUG
-	printf ("%lli PUSHD\n", cpu_core);
-	#endif
-	arg1 = regi[code[ep + 1]];
-	arg2 = regi[code[ep + 2]];
-	arg3 = code[ep + 3];
-
-	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
-	{
-	if (memory_bounds (arg1, arg2) != 0)
-	{
-		PRINT_EPOS();
-		free (jumpoffs);
-		loop_stop ();
-        pthread_exit ((void *) 1);
-	}
-	}
-	#endif
-
-	bptr = (U1 *) &regd[arg3];
-
-	*bptr = data[arg1 + arg2];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 1];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 2];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 3];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 4];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 5];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 6];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 7];
-
-	eoffs = 4;
-	EXE_NEXT();
+    eoffs = 4;
+    EXE_NEXT();
 
 
 	pullb:
@@ -1077,152 +1033,108 @@ S2 run (void *arg)
 	EXE_NEXT();
 
 	pullw:
-	#if DEBUG
-	printf ("%lli PULLW\n", cpu_core);
-	#endif
-	arg1 = code[ep + 1];
-	arg2 = regi[code[ep + 2]];
-	arg3 = regi[code[ep + 3]];
+    #if DEBUG
+    printf ("%lli PULLW\n", cpu_core);
+    #endif
+    arg1 = code[ep + 1];
+    arg2 = regi[code[ep + 2]];
+    arg3 = regi[code[ep + 3]];
 
-	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
-	{
-	if (memory_bounds (arg2, arg3) != 0)
-	{
-		PRINT_EPOS();
-		free (jumpoffs);
-		loop_stop ();
-        pthread_exit ((void *) 1);
-	}
-	}
-	#endif
+    #if BOUNDSCHECK
+    if (do_memory_bounds_check == 1)
+    {
+        if (memory_bounds (arg2, arg3) != 0)
+        {
+            PRINT_EPOS();
+            free (jumpoffs);
+            loop_stop ();
+            pthread_exit ((void *) 1);
+        }
+    }
+    #endif
 
-	bptr = (U1 *) &regi[arg1];
+    memcpy(&data[arg2 + arg3], &regi[arg1], sizeof(uint16_t));
 
-	data[arg2 + arg3] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 1] = *bptr;
+    eoffs = 4;
+    EXE_NEXT();
 
-	eoffs = 4;
-	EXE_NEXT();
+    pulldw:
+    #if DEBUG
+    printf ("%lli PULLDW\n", cpu_core);
+    #endif
+    arg1 = code[ep + 1];
+    arg2 = regi[code[ep + 2]];
+    arg3 = regi[code[ep + 3]];
 
-	pulldw:
-	#if DEBUG
-	printf ("%lli PULLDW\n", cpu_core);
-	#endif
-	arg1 = code[ep + 1];
-	arg2 = regi[code[ep + 2]];
-	arg3 = regi[code[ep + 3]];
+    #if BOUNDSCHECK
+    if (do_memory_bounds_check == 1)
+    {
+        if (memory_bounds (arg2, arg3) != 0)
+        {
+            PRINT_EPOS();
+            free (jumpoffs);
+            loop_stop ();
+            pthread_exit ((void *) 1);
+        }
+    }
+    #endif
 
-	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
-	{
-	if (memory_bounds (arg2, arg3) != 0)
-	{
-		PRINT_EPOS();
-		free (jumpoffs);
-		loop_stop ();
-        pthread_exit ((void *) 1);
-	}
-	}
-	#endif
+    memcpy(&data[arg2 + arg3], &regi[arg1], sizeof(uint32_t));
 
-	bptr = (U1 *) &regi[arg1];
+    eoffs = 4;
+    EXE_NEXT();
 
-	data[arg2 + arg3] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 1] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 2] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 3] = *bptr;
+    pullqw:
+    #if DEBUG
+    printf ("%lli PULLQW\n", cpu_core);
+    #endif
+    arg1 = code[ep + 1];
+    arg2 = regi[code[ep + 2]];
+    arg3 = regi[code[ep + 3]];
 
-	eoffs = 4;
-	EXE_NEXT();
+    #if BOUNDSCHECK
+    if (do_memory_bounds_check == 1)
+    {
+        if (memory_bounds (arg2, arg3) != 0)
+        {
+            PRINT_EPOS();
+            free (jumpoffs);
+            loop_stop ();
+            pthread_exit ((void *) 1);
+        }
+    }
+    #endif
 
-	pullqw:
-	#if DEBUG
-	printf ("%lli PULLQW\n", cpu_core);
-	#endif
-	arg1 = code[ep + 1];
-	arg2 = regi[code[ep + 2]];
-	arg3 = regi[code[ep + 3]];
+    memcpy(&data[arg2 + arg3], &regi[arg1], sizeof(uint64_t));
 
-	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
-	{
-	if (memory_bounds (arg2, arg3) != 0)
-	{
-		PRINT_EPOS();
-		free (jumpoffs);
-		loop_stop ();
-        pthread_exit ((void *) 1);
-	}
-	}
-	#endif
+    eoffs = 4;
+    EXE_NEXT();
 
-	bptr = (U1 *) &regi[arg1];
+    pulld:
+    #if DEBUG
+    printf ("%lli PULLD\n", cpu_core);
+    #endif
+    arg1 = code[ep + 1];
+    arg2 = regi[code[ep + 2]];
+    arg3 = regi[code[ep + 3]];
 
-	data[arg2 + arg3] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 1] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 2] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 3] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 4] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 5] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 6] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 7] = *bptr;
+    #if BOUNDSCHECK
+    if (do_memory_bounds_check == 1)
+    {
+        if (memory_bounds (arg2, arg3) != 0)
+        {
+            PRINT_EPOS();
+            free (jumpoffs);
+            loop_stop ();
+            pthread_exit ((void *) 1);
+        }
+    }
+    #endif
 
-	eoffs = 4;
-	EXE_NEXT();
+    memcpy(&data[arg2 + arg3], &regd[arg1], sizeof(double));
 
-	pulld:
-	#if DEBUG
-	printf ("%lli PULLD\n", cpu_core);
-	#endif
-	arg1 = code[ep + 1];
-	arg2 = regi[code[ep + 2]];
-	arg3 = regi[code[ep + 3]];
-
-	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
-	{
-	if (memory_bounds (arg2, arg3) != 0)
-	{
-		PRINT_EPOS();
-		free (jumpoffs);
-		loop_stop ();
-        pthread_exit ((void *) 1);
-	}
-	}
-	#endif
-
-	bptr = (U1 *) &regd[arg1];
-
-	data[arg2 + arg3] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 1] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 2] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 3] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 4] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 5] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 6] = *bptr;
-	bptr++;
-	data[arg2 + arg3 + 7] = *bptr;
-
-	eoffs = 4;
-	EXE_NEXT();
+    eoffs = 4;
+    EXE_NEXT();
 
 
 	addi:
@@ -1914,168 +1826,63 @@ S2 run (void *arg)
 	EXE_NEXT();
 
 	loada:
-	#if DEBUG
-	printf ("%lli LOADA\n", cpu_core);
-	#endif
-	// data
-	bptr = (U1 *) &arg1;
+    #if DEBUG
+	printf("%lli LOADA\n", cpu_core);
+    #endif
 
-	*bptr = code[ep + 1];
-	bptr++;
-	*bptr = code[ep + 2];
-	bptr++;
-	*bptr = code[ep + 3];
-	bptr++;
-	*bptr = code[ep + 4];
-	bptr++;
-	*bptr = code[ep + 5];
-	bptr++;
-	*bptr = code[ep + 6];
-	bptr++;
-	*bptr = code[ep + 7];
-	bptr++;
-	*bptr = code[ep + 8];
+	memcpy(&arg1, &code[ep + 1], sizeof(uint64_t));
+	memcpy(&arg2, &code[ep + 9], sizeof(uint64_t));
 
-	// offset
-
-	//printf ("arg1: %li\n", arg1);
-
-	bptr = (U1 *) &arg2;
-
-	*bptr = code[ep + 9];
-	bptr++;
-	*bptr = code[ep + 10];
-	bptr++;
-	*bptr = code[ep + 11];
-	bptr++;
-	*bptr = code[ep + 12];
-	bptr++;
-	*bptr = code[ep + 13];
-	bptr++;
-	*bptr = code[ep + 14];
-	bptr++;
-	*bptr = code[ep + 15];
-	bptr++;
-	*bptr = code[ep + 16];
-
-	//printf ("arg2: %li\n", arg2);
-
-	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
+    #if BOUNDSCHECK
+    if (do_memory_bounds_check == 1)
 	{
-	if (memory_bounds (arg1, arg2) != 0)
-	{
-		PRINT_EPOS();
-		free (jumpoffs);
-		loop_stop ();
-		pthread_exit ((void *) 1);
+       if (memory_bounds(arg1, arg2) != 0)
+	   {
+		   PRINT_EPOS();
+		   free(jumpoffs);
+		   loop_stop();
+		   pthread_exit((void *) 1);
+	   }
 	}
-	}
-	#endif
+    #endif
 
 	arg3 = code[ep + 17];
 
-	bptr = (U1 *) &regi[arg3];
-
-	*bptr = data[arg1 + arg2];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 1];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 2];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 3];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 4];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 5];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 6];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 7];
+	memcpy(&regi[arg3], &data[arg1 + arg2], sizeof(uint64_t));
 
 	eoffs = 18;
 	EXE_NEXT();
 
 	loadd:
-	#if DEBUG
-	printf ("%lli LOADD\n", cpu_core);
-	#endif
-	// data
-	bptr = (U1 *) &arg1;
+    #if DEBUG
+	printf("%lli LOADD\n", cpu_core);
+    #endif
 
-	*bptr = code[ep + 1];
-	bptr++;
-	*bptr = code[ep + 2];
-	bptr++;
-	*bptr = code[ep + 3];
-	bptr++;
-	*bptr = code[ep + 4];
-	bptr++;
-	*bptr = code[ep + 5];
-	bptr++;
-	*bptr = code[ep + 6];
-	bptr++;
-	*bptr = code[ep + 7];
-	bptr++;
-	*bptr = code[ep + 8];
+	memcpy(&arg1, &code[ep + 1], sizeof(uint64_t));
+	memcpy(&arg2, &code[ep + 9], sizeof(uint64_t));
 
-	// offset
-	bptr = (U1 *) &arg2;
-
-	*bptr = code[ep + 9];
-	bptr++;
-	*bptr = code[ep + 10];
-	bptr++;
-	*bptr = code[ep + 11];
-	bptr++;
-	*bptr = code[ep + 12];
-	bptr++;
-	*bptr = code[ep + 13];
-	bptr++;
-	*bptr = code[ep + 14];
-	bptr++;
-	*bptr = code[ep + 15];
-	bptr++;
-	*bptr = code[ep + 16];
-
-	#if BOUNDSCHECK
-	if (do_memory_bounds_check == 1)
+    #if BOUNDSCHECK
+    if (do_memory_bounds_check == 1)
 	{
-	if (memory_bounds (arg1, arg2) != 0)
-	{
-		PRINT_EPOS();
-		free (jumpoffs);
-		loop_stop ();
-		pthread_exit ((void *) 1);
+       if (memory_bounds(arg1, arg2) != 0)
+	   {
+		   PRINT_EPOS();
+		   free(jumpoffs);
+		   loop_stop();
+		   pthread_exit((void *) 1);
+	   }
 	}
-	}
-	#endif
+    #endif
 
 	arg3 = code[ep + 17];
 
-	bptr = (U1 *) &regd[arg3];
-
-	*bptr = data[arg1 + arg2];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 1];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 2];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 3];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 4];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 5];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 6];
-	bptr++;
-	*bptr = data[arg1 + arg2 + 7];
+	memcpy(&regd[arg3], &data[arg1 + arg2], sizeof(uint64_t));
 
 	eoffs = 18;
 	EXE_NEXT();
 
-	intr0:
 
+	intr0:
 	arg1 = code[ep + 1];
 	#if DEBUG
 	printf ("%lli INTR0: %lli\n", cpu_core, arg1);
@@ -3226,34 +3033,18 @@ S2 run (void *arg)
 	eoffs = 3;
 	EXE_NEXT();
 
-	loadl:
-	#if DEBUG
-	printf ("%lli LOADL\n", cpu_core);
-	#endif
-	// data
-	bptr = (U1 *) &arg1;
-	arg2 = code[ep + 9];
+    loadl:
+    #if DEBUG
+    printf ("%lli LOADL\n", cpu_core);
+    #endif
 
-	*bptr = code[ep + 1];
-	bptr++;
-	*bptr = code[ep + 2];
-	bptr++;
-	*bptr = code[ep + 3];
-	bptr++;
-	*bptr = code[ep + 4];
-	bptr++;
-	*bptr = code[ep + 5];
-	bptr++;
-	*bptr = code[ep + 6];
-	bptr++;
-	*bptr = code[ep + 7];
-	bptr++;
-	*bptr = code[ep + 8];
+    memcpy(&arg1, &code[ep + 1], sizeof(uint64_t));
+    arg2 = code[ep + 9];
 
-	regi[arg2] = arg1;
+    regi[arg2] = arg1;
 
-	eoffs = 10;
-	EXE_NEXT();
+    eoffs = 10;
+    EXE_NEXT();
 
 	jmpa:
 	#if DEBUG
@@ -3361,58 +3152,19 @@ S2 run (void *arg)
 	EXE_NEXT();
 
 	load:
-	#if DEBUG
-	printf ("%lli LOAD\n", cpu_core);
-	#endif
+    #if DEBUG
+    printf ("%lli LOAD\n", cpu_core);
+    #endif
 
-	// data
-	bptr = (U1 *) &arg1;
+    memcpy(&arg1, &code[ep + 1], sizeof(uint64_t));
+    memcpy(&arg2, &code[ep + 9], sizeof(uint64_t));
 
-	*bptr = code[ep + 1];
-	bptr++;
-	*bptr = code[ep + 2];
-	bptr++;
-	*bptr = code[ep + 3];
-	bptr++;
-	*bptr = code[ep + 4];
-	bptr++;
-	*bptr = code[ep + 5];
-	bptr++;
-	*bptr = code[ep + 6];
-	bptr++;
-	*bptr = code[ep + 7];
-	bptr++;
-	*bptr = code[ep + 8];
+    arg3 = code[ep + 17];
 
-	// offset
+    regi[arg3] = arg1 + arg2;
 
-	bptr = (U1 *) &arg2;
-
-	*bptr = code[ep + 9];
-	bptr++;
-	*bptr = code[ep + 10];
-	bptr++;
-	*bptr = code[ep + 11];
-	bptr++;
-	*bptr = code[ep + 12];
-	bptr++;
-	*bptr = code[ep + 13];
-	bptr++;
-	*bptr = code[ep + 14];
-	bptr++;
-	*bptr = code[ep + 15];
-	bptr++;
-	*bptr = code[ep + 16];
-
-	//printf ("arg2: %li\n", arg2);
-
-	arg3 = code[ep + 17];
-
-	regi[arg3] = arg1 + arg2;
-
-	eoffs = 18;
-	EXE_NEXT();
-
+    eoffs = 18;
+    EXE_NEXT();
 
     noti:
 	#if DEBUG
