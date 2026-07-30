@@ -132,8 +132,6 @@ VARIABLE NAMING CONVENTIONS:
     - Use lowercase with underscores: my_variable~
     - ALL variables MUST use ~ suffix: my_var~
     - Thread-local variables use ~ suffix: my_var~
-    - Function-scoped variables use @ suffix: my_var@funcname
-    - Thread label variables use @ suffix: #var ~ @thread_func
 
 ===============================================================================
 4. THE STACK - HOW IT WORKS
@@ -178,10 +176,10 @@ HOW ARGUMENTS ARE PASSED TO FUNCTIONS:
     IMPORTANT: Arguments are pushed in REVERSE ORDER (last argument first)
     so that the first argument ends up on top of the stack.
 
-    Example: calling (handle~ filenameaddr~ :file_open !)
+    Example: calling (mode_write~ filenameaddr~ :file_open !)
     The stack before the call should be:
-        (mode_write~ stpush)         // push open mode (2nd arg)
-        (filenameaddr~ stpush)       // push filename address (1st arg, now on top)
+        (mode_write~ stpushb)         // push open mode (2nd arg) byte variable
+        (filenameaddr~ stpushi)       // push filename address (1st arg, now on top)
         (:file_open !)               // function pops filenameaddr~, then mode_write~
 
     Example: calling (handle~ readstraddr~ readlen~ :file_get_string !)
@@ -575,31 +573,11 @@ SWITCH STATEMENT:
         (break)
     (switchend)
 
-BREAK and CONTINUE:
-
-    (break)                    // exit current loop
-    (:loop_label jmp)          // jump to label (continue-like behavior)
-
 GOTO / LABELS / JUMPS:
 
     Label definition:    (:label_name)
     Unconditional jump:  (:label_name jmp)
     Conditional jump:    (f~ :label_name jmpi)   // jump if f~ != 0
-
-LOOP MACROS (from loops.l1h):
-
-    #include <loops.l1h> provides shorthand macros:
-
-    (dofor i~ 10 <)          // expands to: (for-loop) (((i~ 10 <) f~ =) f~ for)
-    (dowhile i~ 10 <)        // expands to: (((i~ 10 <) f~ =) f~ while)
-
-    Thread-safe versions:
-    (thr-for i~ 10 < f~)     // uses f~ variable as argument
-    (thr-while i~ 10 < f~)   // uses f~ variable as argument
-
-    For-each loop:
-    (for-each-in Parray~ i~ size~)  // iterate over array
-    (next-in i~ array~ elem_type)   // next iteration with type
 
 ===============================================================================
 9. STANDARD LIBRARY FUNCTIONS
@@ -1402,7 +1380,6 @@ INCLUDE FILES:
     VARIABLE SCOPE DIRECTIVE (#var):
 
     #var ~ function_name          // declare variable scope for function
-    #var ~ @function_name         // thread-safe version
 
     This MUST be the first line inside every function definition.
     ALL variables declared with "set" MUST have a "~" suffix on the variable name.
@@ -1530,8 +1507,6 @@ THREAD-SAFE VARIABLE NAMING:
 
     Variables local to threads use special naming conventions:
     - ALL variables MUST use ~ suffix: (set string s hellostr~ "Hello world!")
-    - @ suffix for thread label registration: #var ~ @thread_func
-    - @function_name suffix for function-scoped variables
 
 EXAMPLE - simple thread:
 
@@ -1666,7 +1641,7 @@ RETURN VALUE CONVENTION:
     | For               | (for-loop) ... (((cond) f~ =) f~ for) ... (next) | For loop                 |
     | While             | (do) ... (((cond) f~ =) f~ while)              | Do-while                   |
     | Switch            | (switch) ... (val const ?) ... (switchend)      | Switch                     |
-    | Break             | (break)                                         | Exit loop                  |
+    | break             | (break)                                         | end switch case            |
     | Label             | (:name) or :name (in ASM)                       | Define label               |
     | Jump              | (:name jmp) or (f~ :name jmpi)                  | Jump                       |
     | Comment           | // text                                         | Comment                    |
