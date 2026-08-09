@@ -6,7 +6,7 @@ L1VM (3.6.5)
 
 	Added the "l1vm" base directory here!
 
-	NEW: mqtt module: this is a WIP. And does not work! But I will try to fix this later.
+	NEW: mqtt module: if you try the example programs and find a bug: contact me.
 
 -- Stefan Pietzonke <info@midnight-coding.de> Sun 9 August 2026 13:43 +020
 
