@@ -128,7 +128,7 @@ int msgarrvd (void *context, char *topicName, int topicLen, MQTTClient_message *
     }
 
     payloadptr = message->payload;
-    for(i = 0; i <message->payloadlen; i++)
+    for(i = 0; i < message->payloadlen; i++)
     {
         mqtt_client[handle].payload[i] = *payloadptr++;
     }
@@ -137,6 +137,13 @@ int msgarrvd (void *context, char *topicName, int topicLen, MQTTClient_message *
     address = mqtt_client[handle].data_address;
 
     data = mqtt_client[handle].data;
+
+    if (memory_bounds (address, message->payloadlen - 1) != 0)
+	{
+		printf ("mqtt msgarrvd: ERROR: return string overflow!\n");
+	    return 0;
+	}
+
     strcpy ((char *) &data[address], (const char *) mqtt_client[handle].payload);
 
     mqtt_client[handle].message_arrived = MSG_REC;
@@ -148,7 +155,7 @@ int msgarrvd (void *context, char *topicName, int topicLen, MQTTClient_message *
 
 void connlost (void *context, char *cause)
 {
-    printf("\nmqtt: onnection lost\n");
+    printf("\nmqtt: connection lost\n");
     printf("     cause: %s\n", cause);
 }
 
@@ -163,6 +170,8 @@ U1 *mqtt_open_client (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 rc ALIGN;
 
     S8 err ALIGN;
+
+    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
 
     sp = stpopi ((U1 *) &retstr_address, sp, sp_top);
     if (sp == NULL)
@@ -288,13 +297,16 @@ U1 *mqtt_open_client (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
        return (sp);
     }
 
-    mqtt_client[handle].conn_opts.keepAliveInterval = 20;
-    mqtt_client[handle].conn_opts.cleansession = 1;
+    conn_opts.keepAliveInterval = 20;
+    conn_opts.cleansession = 1;
+
+    mqtt_client[handle].conn_opts = conn_opts;
+
     mqtt_client[handle].data_address = retstr_address;
     mqtt_client[handle].data = data;
 
     MQTTClient_setCallbacks ((void *) mqtt_client[handle].client, (void *) handle, connlost, msgarrvd, delivered);
-    if ((rc = MQTTClient_connect (mqtt_client[handle].client, &mqtt_client[handle].conn_opts)) != MQTTCLIENT_SUCCESS)
+    if ((rc = MQTTClient_connect (mqtt_client[handle].client, &mqtt_client[handle].conn_opts) != MQTTCLIENT_SUCCESS)
     {
         printf("mqtt_open_client: failed to connect, return code %lli\n", rc);
 
@@ -312,6 +324,8 @@ U1 *mqtt_open_client (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     MQTTClient_subscribe (mqtt_client[handle].client, (const char *) mqtt_client[handle].topic, mqtt_client[handle].qos);
 
     mqtt_client[handle].message_arrived = MSG_EMPTY;
+
+    mqtt_client[handle].status = STATUS_OPEN;
 
     sp = stpushi (handle, sp, sp_bottom); // ok
     if (sp == NULL)
@@ -352,7 +366,7 @@ U1 *mqtt_get_msg (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     if (mqtt_client[handle].status != STATUS_OPEN)
     {
-        printf ("mqtt_get_msg: error: handle not open!");
+        printf ("mqtt_get_msg: error: handle %lli not open!", handle);
 
         sp = stpushi (1, sp, sp_bottom); // error
         if (sp == NULL)
@@ -410,7 +424,7 @@ U1 *mqtt_close_client (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     if (mqtt_client[handle].status != STATUS_OPEN)
     {
-        printf ("mqtt_close_client: error: handle not open!");
+        printf ("mqtt_close_client: error: handle %lli not open!\n", handle);
 
         sp = stpushi (1, sp, sp_bottom); // error
         if (sp == NULL)
@@ -610,7 +624,7 @@ U1 *mqtt_send_msg (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
     if (mqtt_client[handle].status != STATUS_OPEN)
     {
-        printf ("mqtt_send_msg: error: handle not open!\n");
+        printf ("mqtt_send_msg: error: handle %lli not open!\n", handle);
 
         sp = stpushi (1, sp, sp_bottom); // error
         if (sp == NULL)
