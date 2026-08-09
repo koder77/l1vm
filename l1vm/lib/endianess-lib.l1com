@@ -1,0 +1,4 @@
+(main func)
+    (set int64 1 zero 0)
+(funcend)
+#include <endianess-lib.l1h>

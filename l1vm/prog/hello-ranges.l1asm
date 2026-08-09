@@ -1,0 +1,59 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, x
+@, 8Q, 23
+Q, 1, y
+@, 16Q, 42
+Q, 1, x_min
+@, 24Q, 0
+Q, 1, x_max
+@, 32Q, 2000
+F, 1, xd
+@, 40Q, 23.0
+F, 1, yd
+@, 48Q, 42.0
+F, 1, x_mind
+@, 56Q, 0.0
+F, 1, x_maxd
+@, 64Q, 42.0
+Q, 1, z
+@, 72Q, 43
+F, 1, zd
+@, 80Q, 43.0
+B, 13, hello
+@, 88Q, "Hello world!"
+Q, 1, helloaddr
+@, 101Q, 88Q
+.dend
+.code
+:main
+loada zero, 0, 0
+loada helloaddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+loada y, 0, 2
+loada z, 0, 3
+muli 2, 3, 4
+load x, 0, 5
+pullqw 4, 5, 0
+loada x, 0, 4
+loada x_min, 0, 5
+loada x_max, 0, 6
+intr0, 28, 4, 5, 6
+intr0 4, 4, 0, 0
+intr0 7, 0, 0, 0
+loadd yd, 0, 1
+loadd zd, 0, 2
+muld 1, 2, 3
+load xd, 0, 4
+pulld 3, 4, 0
+loadd xd, 0, 3
+loadd x_mind, 0, 4
+loadd x_maxd, 0, 5
+intr0, 29, 3, 4, 5
+intr0 5, 3, 0, 0
+intr0 7, 0, 0, 0
+intr0 255, 0, 0, 0
+rts
+.cend

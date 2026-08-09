@@ -1,0 +1,707 @@
+.data
+F, 1, m_emath
+@, 0Q, 2.7182818284590452354
+F, 1, m_log2emath
+@, 8Q, 1.4426950408889634074
+F, 1, m_log10emath
+@, 16Q, 0.43429448190325182765
+F, 1, m_ln2math
+@, 24Q, 0.69314718055994530942
+F, 1, m_ln1math
+@, 32Q, 2.30258509299404568402
+F, 1, m_pimath
+@, 40Q, 3.14159265358979323846
+F, 1, m_pi_2math
+@, 48Q, 1.57079632679489661923
+F, 1, m_pi_4math
+@, 56Q, 0.78539816339744830962
+F, 1, m_1_pimath
+@, 64Q, 0.31830988618379067154
+F, 1, m_2_pimath
+@, 72Q, 0.63661977236758134308
+F, 1, m_2_sqrtpimath
+@, 80Q, 1.12837916709551257390
+F, 1, m_sqrt2math
+@, 88Q, 1.41421356237309504880
+F, 1, m_sqrt1_2math
+@, 96Q, 0.70710678118654752440
+Q, 1, zero
+@, 104Q, 0
+Q, 1, randstart
+@, 112Q, 2003
+Q, 1, random
+@, 120Q, 0
+Q, 1, digits
+@, 128Q, 3
+Q, 1, numstr_len
+@, 136Q, 30
+Q, 1, not_num
+@, 144Q, 0
+Q, 1, not_ret
+@, 152Q, 
+F, 1, angle
+@, 160Q, 45.0
+F, 1, rad
+@, 168Q, 
+F, 1, angle_sin
+@, 176Q, 
+B, 30, numstr
+@, 184Q, ""
+Q, 1, numstraddr
+@, 214Q, 184Q
+B, 12, anglestr
+@, 222Q, "angle sin: "
+Q, 1, anglestraddr
+@, 234Q, 222Q
+B, 4, anglestr_2
+@, 242Q, " = "
+Q, 1, anglestr_2addr
+@, 246Q, 242Q
+B, 12, modulestr@math
+@, 254Q, "libl1vmmath"
+Q, 1, modulestr@mathaddr
+@, 266Q, 254Q
+B, 11, int2doublestr@math
+@, 274Q, "int2double"
+Q, 1, int2doublestr@mathaddr
+@, 285Q, 274Q
+B, 11, double2intstr@math
+@, 293Q, "double2int"
+Q, 1, double2intstr@mathaddr
+@, 304Q, 293Q
+B, 11, sqrtdoublestr@math
+@, 312Q, "sqrtdouble"
+Q, 1, sqrtdoublestr@mathaddr
+@, 323Q, 312Q
+B, 10, logdoublestr@math
+@, 331Q, "logdouble"
+Q, 1, logdoublestr@mathaddr
+@, 341Q, 331Q
+B, 11, log2doublestr@math
+@, 349Q, "log2double"
+Q, 1, log2doublestr@mathaddr
+@, 360Q, 349Q
+B, 10, randinitstr@math
+@, 368Q, "rand_init"
+Q, 1, randinitstr@mathaddr
+@, 378Q, 368Q
+B, 9, randintstr@math
+@, 386Q, "rand_int"
+Q, 1, randintstr@mathaddr
+@, 395Q, 386Q
+B, 12, randdoublestr@math
+@, 403Q, "rand_double"
+Q, 1, randdoublestr@mathaddr
+@, 415Q, 403Q
+B, 13, randintmaxstr@math
+@, 423Q, "rand_int_max"
+Q, 1, randintmaxstr@mathaddr
+@, 436Q, 423Q
+B, 10, randombytestr@math
+@, 444Q, "rand_byte"
+Q, 1, randombytestr@mathaddr
+@, 454Q, 444Q
+B, 22, doubleroundedstringstr@math
+@, 462Q, "double_rounded_string"
+Q, 1, doubleroundedstringstr@mathaddr
+@, 484Q, 462Q
+B, 14, stringtointstr@math
+@, 492Q, "string_to_int"
+Q, 1, stringtointstr@mathaddr
+@, 506Q, 492Q
+B, 17, stringtodoublestr@math
+@, 514Q, "string_to_double"
+Q, 1, stringtodoublestr@mathaddr
+@, 531Q, 514Q
+B, 11, acosdoublestr@math
+@, 539Q, "acosdouble"
+Q, 1, acosdoublestr@mathaddr
+@, 550Q, 539Q
+B, 11, asindoublestr@math
+@, 558Q, "asindouble"
+Q, 1, asindoublestr@mathaddr
+@, 569Q, 558Q
+B, 11, atandoublestr@math
+@, 577Q, "atandouble"
+Q, 1, atandoublestr@mathaddr
+@, 588Q, 577Q
+B, 12, atan2doublestr@math
+@, 596Q, "atan2double"
+Q, 1, atan2doublestr@mathaddr
+@, 608Q, 596Q
+B, 10, cosdoublestr@math
+@, 616Q, "cosdouble"
+Q, 1, cosdoublestr@mathaddr
+@, 626Q, 616Q
+B, 11, coshdoublestr@math
+@, 634Q, "coshdouble"
+Q, 1, coshdoublestr@mathaddr
+@, 645Q, 634Q
+B, 10, sindoublestr@math
+@, 653Q, "sindouble"
+Q, 1, sindoublestr@mathaddr
+@, 663Q, 653Q
+B, 11, sinhdoublestr@math
+@, 671Q, "sinhdouble"
+Q, 1, sinhdoublestr@mathaddr
+@, 682Q, 671Q
+B, 10, tandoublestr@math
+@, 690Q, "tandouble"
+Q, 1, tandoublestr@mathaddr
+@, 700Q, 690Q
+B, 11, tanhdoublestr@math
+@, 708Q, "tanhdouble"
+Q, 1, tanhdoublestr@mathaddr
+@, 719Q, 708Q
+B, 10, expdoublestr@math
+@, 727Q, "expdouble"
+Q, 1, expdoublestr@mathaddr
+@, 737Q, 727Q
+B, 12, frexpdoublestr@math
+@, 745Q, "frexpdouble"
+Q, 1, frexpdoublestr@mathaddr
+@, 757Q, 745Q
+B, 12, ldexpdoublestr@math
+@, 765Q, "ldexpdouble"
+Q, 1, ldexpdoublestr@mathaddr
+@, 777Q, 765Q
+B, 12, log10doublestr@math
+@, 785Q, "log10double"
+Q, 1, log10doublestr@mathaddr
+@, 797Q, 785Q
+B, 11, modfdoublestr@math
+@, 805Q, "modfdouble"
+Q, 1, modfdoublestr@mathaddr
+@, 816Q, 805Q
+B, 10, powdoublestr@math
+@, 824Q, "powdouble"
+Q, 1, powdoublestr@mathaddr
+@, 834Q, 824Q
+B, 11, ceildoublestr@math
+@, 842Q, "ceildouble"
+Q, 1, ceildoublestr@mathaddr
+@, 853Q, 842Q
+B, 11, fabsdoublestr@math
+@, 861Q, "fabsdouble"
+Q, 1, fabsdoublestr@mathaddr
+@, 872Q, 861Q
+B, 12, floordoublestr@math
+@, 880Q, "floordouble"
+Q, 1, floordoublestr@mathaddr
+@, 892Q, 880Q
+B, 11, fmoddoublestr@math
+@, 900Q, "fmoddouble"
+Q, 1, fmoddoublestr@mathaddr
+@, 911Q, 900Q
+B, 9, byte2intstr@math
+@, 919Q, "byte2int"
+Q, 1, byte2intstr@mathaddr
+@, 928Q, 919Q
+Q, 1, int2double@math
+@, 936Q, 0
+Q, 1, double2int@math
+@, 944Q, 1
+Q, 1, sqrtdouble@math
+@, 952Q, 2
+Q, 1, logdouble@math
+@, 960Q, 3
+Q, 1, log2double@math
+@, 968Q, 4
+Q, 1, randinit@math
+@, 976Q, 5
+Q, 1, randint@math
+@, 984Q, 6
+Q, 1, randdouble@math
+@, 992Q, 7
+Q, 1, randintmax@math
+@, 1000Q, 8
+Q, 1, doubleroundedstring@math
+@, 1008Q, 9
+Q, 1, stringtoint@math
+@, 1016Q, 10
+Q, 1, stringtodouble@math
+@, 1024Q, 11
+Q, 1, acosdouble@math
+@, 1032Q, 12
+Q, 1, asindouble@math
+@, 1040Q, 13
+Q, 1, atandouble@math
+@, 1048Q, 14
+Q, 1, atan2double@math
+@, 1056Q, 15
+Q, 1, cosdouble@math
+@, 1064Q, 16
+Q, 1, coshdouble@math
+@, 1072Q, 17
+Q, 1, sindouble@math
+@, 1080Q, 18
+Q, 1, sinhdouble@math
+@, 1088Q, 19
+Q, 1, tanhdouble@math
+@, 1096Q, 20
+Q, 1, expdouble@math
+@, 1104Q, 21
+Q, 1, frexpdouble@math
+@, 1112Q, 22
+Q, 1, ldexpdouble@math
+@, 1120Q, 23
+Q, 1, log10double@math
+@, 1128Q, 24
+Q, 1, modfdouble@math
+@, 1136Q, 25
+Q, 1, powdouble@math
+@, 1144Q, 26
+Q, 1, ceildouble@math
+@, 1152Q, 27
+Q, 1, fabsdouble@math
+@, 1160Q, 28
+Q, 1, floordouble@math
+@, 1168Q, 29
+Q, 1, fmoddouble@math
+@, 1176Q, 30
+Q, 1, tandouble@math
+@, 1184Q, 31
+Q, 1, randombyte@math
+@, 1192Q, 32
+Q, 1, byte2int@math
+@, 1200Q, 33
+Q, 1, mod@math
+@, 1208Q, 0
+F, 1, degreemath_degree_to_rad
+@, 1216Q, 0.0
+F, 1, radmath_degree_to_rad
+@, 1224Q, 0.0
+F, 1, half_circlemath_degree_to_rad
+@, 1232Q, 180.0
+F, 1, degreemath_rad_to_degree
+@, 1240Q, 0.0
+F, 1, radmath_rad_to_degree
+@, 1248Q, 0.0
+F, 1, half_circlemath_rad_to_degree
+@, 1256Q, 180.0
+.dend
+.code
+:main
+loada zero, 0, 0
+stpushi 0
+loada zero, 0, 1
+stpushi 1
+jsr :math_init
+stpopi 0
+loada randstart, 0, 1
+stpushi 1
+jsr :math_randinit
+jsr :math_randint
+stpopi 1
+load random, 0, 2
+pullqw 1, 2, 0
+loada random, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+loadd m_pimath, 0, 1
+intr0 5, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushd 1
+loadd m_pimath, 0, 2
+stpushd 2
+loada digits, 0, 2
+stpushi 2
+loada numstraddr, 0, 3
+stpushi 3
+loada numstr_len, 0, 4
+stpushi 4
+jsr :double_rounded_string
+stpopd 1
+stpopi 1
+loada numstraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada not_num, 0, 2
+stpushi 2
+jsr :math_not
+stpopi 3
+load not_ret, 0, 4
+pullqw 3, 4, 0
+stpopi 1
+loada not_ret, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loadd angle, 0, 1
+stpushd 1
+jsr :math_degree_to_rad
+stpopd 2
+load rad, 0, 3
+pulld 2, 3, 0
+stpopi 1
+loadd rad, 0, 1
+stpushd 1
+jsr :math_sindouble
+stpopd 1
+load rad, 0, 2
+pulld 1, 2, 0
+loada anglestraddr, 0, 1
+intr0 6, 1, 0, 0
+loadd angle, 0, 1
+intr0 5, 1, 0, 0
+loada anglestr_2addr, 0, 2
+intr0 6, 2, 0, 0
+loadd rad, 0, 2
+intr0 5, 2, 0, 0
+intr0 7, 0, 0, 0
+loada zero, 0, 3
+intr0 1, 3, 0, 0
+intr0 255, 3, 0, 0
+rts
+:math_init
+loada zero, 0, 0
+stpopi 1
+load mod@math, 0, 2
+pullqw 1, 2, 0
+loada modulestr@mathaddr, 0, 2
+intr0 0, 2, 1, 0
+loada int2double@math, 0, 3
+loada int2doublestr@mathaddr, 0, 4
+intr0 2, 1, 3, 4
+loada double2int@math, 0, 5
+loada double2intstr@mathaddr, 0, 6
+intr0 2, 1, 5, 6
+loada sqrtdouble@math, 0, 7
+loada sqrtdoublestr@mathaddr, 0, 8
+intr0 2, 1, 7, 8
+loada logdouble@math, 0, 9
+loada logdoublestr@mathaddr, 0, 10
+intr0 2, 1, 9, 10
+loada log2double@math, 0, 11
+loada log2doublestr@mathaddr, 0, 12
+intr0 2, 1, 11, 12
+loada randinit@math, 0, 13
+loada randinitstr@mathaddr, 0, 14
+intr0 2, 1, 13, 14
+loada randint@math, 0, 15
+loada randintstr@mathaddr, 0, 16
+intr0 2, 1, 15, 16
+loada randdouble@math, 0, 17
+loada randdoublestr@mathaddr, 0, 18
+intr0 2, 1, 17, 18
+loada randintmax@math, 0, 19
+loada randintmaxstr@mathaddr, 0, 20
+intr0 2, 1, 19, 20
+loada randombyte@math, 0, 21
+loada randombytestr@mathaddr, 0, 22
+intr0 2, 1, 21, 22
+loada doubleroundedstring@math, 0, 23
+loada doubleroundedstringstr@mathaddr, 0, 24
+intr0 2, 1, 23, 24
+loada stringtoint@math, 0, 25
+loada stringtointstr@mathaddr, 0, 26
+intr0 2, 1, 25, 26
+loada stringtodouble@math, 0, 27
+loada stringtodoublestr@mathaddr, 0, 28
+intr0 2, 1, 27, 28
+loada acosdouble@math, 0, 29
+loada acosdoublestr@mathaddr, 0, 30
+intr0 2, 1, 29, 30
+loada asindouble@math, 0, 31
+loada asindoublestr@mathaddr, 0, 32
+intr0 2, 1, 31, 32
+loada atandouble@math, 0, 33
+loada atandoublestr@mathaddr, 0, 34
+intr0 2, 1, 33, 34
+loada atan2double@math, 0, 35
+loada atan2doublestr@mathaddr, 0, 36
+intr0 2, 1, 35, 36
+loada cosdouble@math, 0, 37
+loada cosdoublestr@mathaddr, 0, 38
+intr0 2, 1, 37, 38
+loada coshdouble@math, 0, 39
+loada coshdoublestr@mathaddr, 0, 40
+intr0 2, 1, 39, 40
+loada sindouble@math, 0, 41
+loada sindoublestr@mathaddr, 0, 42
+intr0 2, 1, 41, 42
+loada sinhdouble@math, 0, 43
+loada sinhdoublestr@mathaddr, 0, 44
+intr0 2, 1, 43, 44
+loada tanhdouble@math, 0, 45
+loada tanhdoublestr@mathaddr, 0, 46
+intr0 2, 1, 45, 46
+loada expdouble@math, 0, 47
+loada expdoublestr@mathaddr, 0, 48
+intr0 2, 1, 47, 48
+loada frexpdouble@math, 0, 49
+loada frexpdoublestr@mathaddr, 0, 50
+intr0 2, 1, 49, 50
+loada ldexpdouble@math, 0, 51
+loada ldexpdoublestr@mathaddr, 0, 52
+intr0 2, 1, 51, 52
+loada log10double@math, 0, 53
+loada log10doublestr@mathaddr, 0, 54
+intr0 2, 1, 53, 54
+loada modfdouble@math, 0, 55
+loada modfdoublestr@mathaddr, 0, 56
+intr0 2, 1, 55, 56
+loada powdouble@math, 0, 57
+loada powdoublestr@mathaddr, 0, 58
+intr0 2, 1, 57, 58
+loada ceildouble@math, 0, 59
+loada ceildoublestr@mathaddr, 0, 60
+intr0 2, 1, 59, 60
+loada fabsdouble@math, 0, 61
+loada fabsdoublestr@mathaddr, 0, 62
+intr0 2, 1, 61, 62
+loada floordouble@math, 0, 63
+loada floordoublestr@mathaddr, 0, 64
+intr0 2, 1, 63, 64
+loada tandouble@math, 0, 65
+loada tandoublestr@mathaddr, 0, 66
+intr0 2, 1, 65, 66
+loada byte2int@math, 0, 67
+loada byte2intstr@mathaddr, 0, 68
+intr0 2, 1, 67, 68
+loada fmoddouble@math, 0, 69
+loada fmoddoublestr@mathaddr, 0, 70
+intr0 2, 1, 69, 70
+rts
+:math_int2double
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada int2double@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_double2int
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada double2int@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_sqrtdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada sqrtdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_logdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada logdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_log2double
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada log2double@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_randinit
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada randinit@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_randint
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada randint@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_randdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada randdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_randintmax
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada randintmax@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_randbyte
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada randombyte@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:double_rounded_string
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada doubleroundedstring@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_to_int
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada stringtoint@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_to_double
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada stringtodouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_byte2int
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada byte2int@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_not
+loada zero, 0, 0
+ stpopi 1
+ noti 1, 2
+ stpushi 2
+ rts
+rts
+:math_acosdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada acosdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_asindouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada asindouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_atandouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada atandouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_atan2double
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada atan2double@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_cosdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada cosdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_coshdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada coshdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_sindouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada sindouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_sinhdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada sinhdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_tanhdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada tanhdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_tandouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada tandouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_expdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada expdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_frexpdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada frexpdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_ldexpdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada ldexpdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_log10double
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada log10double@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_modfdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada modfdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_powdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada powdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_ceildouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada ceildouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_fabsdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada fabsdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_floordouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada floordouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_fmoddouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada fmoddouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_degree_to_rad
+loada zero, 0, 0
+stpopd 1
+load degreemath_degree_to_rad, 0, 2
+pulld 1, 2, 0
+loadd m_pimath, 0, 2
+muld 1, 2, 3
+loadd half_circlemath_degree_to_rad, 0, 4
+divd 3, 4, 5
+load radmath_degree_to_rad, 0, 6
+pulld 5, 6, 0
+loadd radmath_degree_to_rad, 0, 5
+stpushd 5
+rts
+:math_rad_to_degree
+loada zero, 0, 0
+stpopd 1
+load radmath_rad_to_degree, 0, 2
+pulld 1, 2, 0
+loadd half_circlemath_rad_to_degree, 0, 2
+muld 1, 2, 3
+loadd m_pimath, 0, 4
+divd 3, 4, 5
+load degreemath_rad_to_degree, 0, 6
+pulld 5, 6, 0
+loadd degreemath_rad_to_degree, 0, 5
+stpushd 5
+rts
+.cend

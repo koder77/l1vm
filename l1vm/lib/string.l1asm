@@ -1,0 +1,1429 @@
+.data
+Q, 1, byte_size
+@, 0Q, 1
+Q, 1, int16_size
+@, 8Q, 2
+Q, 1, int32_size
+@, 16Q, 4
+Q, 1, int64_size
+@, 24Q, 8
+Q, 1, double_size
+@, 32Q, 8
+Q, 1, byte_ptr
+@, 40Q, 8
+Q, 1, int16_ptr
+@, 48Q, 9
+Q, 1, int32_ptr
+@, 56Q, 10
+Q, 1, int64_ptr
+@, 64Q, 11
+Q, 1, double_ptr
+@, 72Q, 12
+Q, 1, mem_obj_empty
+@, 80Q, 0
+Q, 1, mem_obj_int64
+@, 88Q, 1
+Q, 1, mem_obj_double
+@, 96Q, 2
+Q, 1, mem_obj_string
+@, 104Q, 3
+Q, 1, byte_stack
+@, 112Q, 0
+Q, 1, int64_stack
+@, 120Q, 1
+Q, 1, double_stack
+@, 128Q, 2
+Q, 1, sort_string_asc
+@, 136Q, 0
+Q, 1, sort_string_desc
+@, 144Q, 1
+Q, 1, zero
+@, 152Q, 0
+Q, 1, one
+@, 160Q, 1
+B, 14, hellostr
+@, 168Q, "Hello"
+Q, 1, hellostraddr
+@, 182Q, 168Q
+B, 8, worldstr
+@, 190Q, " world!"
+Q, 1, worldstraddr
+@, 198Q, 190Q
+B, 15, hellostr2
+@, 206Q, ""
+Q, 1, hellostr2addr
+@, 221Q, 206Q
+B, 15, worldstr2
+@, 229Q, ""
+Q, 1, worldstr2addr
+@, 244Q, 229Q
+B, 2, dotstr
+@, 252Q, ","
+Q, 1, dotstraddr
+@, 254Q, 252Q
+Q, 1, slen
+@, 262Q, 0
+B, 30, bufstr
+@, 270Q, ""
+Q, 1, bufstraddr
+@, 300Q, 270Q
+Q, 1, buflen
+@, 308Q, 29
+Q, 1, bytenum
+@, 316Q, 42
+Q, 1, hello_len
+@, 324Q, 5
+Q, 1, world_len
+@, 332Q, 6
+Q, 1, mid_pos
+@, 340Q, 6
+Q, 1, dot_pos
+@, 348Q, 5
+B, 30, arraystr
+@, 356Q, ""
+Q, 1, arraystraddr
+@, 386Q, 356Q
+Q, 1, array_size
+@, 394Q, 30
+Q, 1, string_len
+@, 402Q, 15
+B, 6, regexstr
+@, 410Q, "[A-Z]"
+Q, 1, regexstraddr
+@, 416Q, 410Q
+B, 9, regexsrcstr
+@, 424Q, "Abcdefgh"
+Q, 1, regexsrcstraddr
+@, 433Q, 424Q
+B, 22, regex_foundstr
+@, 441Q, "regex: pattern found!"
+Q, 1, regex_foundstraddr
+@, 463Q, 441Q
+B, 26, regex_notfoundstr
+@, 471Q, "regex: pattern not found!"
+Q, 1, regex_notfoundstraddr
+@, 497Q, 471Q
+B, 17, json_infostr
+@, 505Q, "JSON get values:"
+Q, 1, json_infostraddr
+@, 522Q, 505Q
+B, 23, jsonstr
+@, 530Q, "@@qtest@@q: 12345.6789"
+Q, 1, jsonstraddr
+@, 553Q, 530Q
+B, 256, keystr
+@, 561Q, ""
+Q, 1, keystraddr
+@, 817Q, 561Q
+B, 256, valuestr
+@, 825Q, ""
+Q, 1, valuestraddr
+@, 1081Q, 825Q
+Q, 1, maxlen
+@, 1089Q, 255
+Q, 1, ret
+@, 1097Q, 0
+Q, 1, f
+@, 1105Q, 0
+B, 11, rep_in_str
+@, 1113Q, "Hello 123!"
+Q, 1, rep_in_straddr
+@, 1124Q, 1113Q
+B, 4097, rep_out_str
+@, 1132Q, ""
+Q, 1, rep_out_straddr
+@, 5229Q, 1132Q
+B, 4, search_rep_str
+@, 5237Q, "123"
+Q, 1, search_rep_straddr
+@, 5241Q, 5237Q
+B, 6, rep_str
+@, 5249Q, "world"
+Q, 1, rep_straddr
+@, 5255Q, 5249Q
+B, 4, sortastr
+@, 5263Q, "xyz"
+Q, 1, sortastraddr
+@, 5267Q, 5263Q
+B, 6, sortbstr
+@, 5275Q, "abcde"
+Q, 1, sortbstraddr
+@, 5281Q, 5275Q
+B, 4, searchstr
+@, 5289Q, "cde"
+Q, 1, searchstraddr
+@, 5293Q, 5289Q
+B, 15, sortedastr
+@, 5301Q, ""
+Q, 1, sortedastraddr
+@, 5316Q, 5301Q
+B, 15, sortedbstr
+@, 5324Q, ""
+Q, 1, sortedbstraddr
+@, 5339Q, 5324Q
+Q, 1, pos
+@, 5347Q, -1
+Q, 1, index
+@, 5355Q, -1
+B, 27, verify_charstr
+@, 5363Q, "range: 0-9 range: A-F-+/&*"
+Q, 1, verify_charstraddr
+@, 5390Q, 5363Q
+B, 16, verifystr
+@, 5398Q, "01234567890FEA+"
+Q, 1, verifystraddr
+@, 5414Q, 5398Q
+B, 18, verify_okstr
+@, 5422Q, "string verify ok!"
+Q, 1, verify_okstraddr
+@, 5440Q, 5422Q
+B, 22, verify_failstr
+@, 5448Q, "string verify failed!"
+Q, 1, verify_failstraddr
+@, 5470Q, 5448Q
+B, 14, modulestr@string
+@, 5478Q, "libl1vmstring"
+Q, 1, modulestr@stringaddr
+@, 5492Q, 5478Q
+B, 11, lenstr@string
+@, 5500Q, "string_len"
+Q, 1, lenstr@stringaddr
+@, 5511Q, 5500Q
+B, 12, copystr@string
+@, 5519Q, "string_copy"
+Q, 1, copystr@stringaddr
+@, 5531Q, 5519Q
+B, 11, catstr@string
+@, 5539Q, "string_cat"
+Q, 1, catstr@stringaddr
+@, 5550Q, 5539Q
+B, 23, int64tostringstr@string
+@, 5558Q, "string_int64_to_string"
+Q, 1, int64tostringstr@stringaddr
+@, 5581Q, 5558Q
+B, 25, bytetohexstringstr@string
+@, 5589Q, "string_byte_to_hexstring"
+Q, 1, bytetohexstringstr@stringaddr
+@, 5614Q, 5589Q
+B, 24, doubletostringstr@string
+@, 5622Q, "string_double_to_string"
+Q, 1, doubletostringstr@stringaddr
+@, 5646Q, 5622Q
+B, 25, bytenumtostringstr@string
+@, 5654Q, "string_bytenum_to_string"
+Q, 1, bytenumtostringstr@stringaddr
+@, 5679Q, 5654Q
+B, 23, stringtoarraystr@string
+@, 5687Q, "string_string_to_array"
+Q, 1, stringtoarraystr@stringaddr
+@, 5710Q, 5687Q
+B, 23, arraytostringstr@string
+@, 5718Q, "string_array_to_string"
+Q, 1, arraytostringstr@stringaddr
+@, 5741Q, 5718Q
+B, 12, stringleftstr@string
+@, 5749Q, "string_left"
+Q, 1, stringleftstr@stringaddr
+@, 5761Q, 5749Q
+B, 13, stringrightstr@string
+@, 5769Q, "string_right"
+Q, 1, stringrightstr@stringaddr
+@, 5782Q, 5769Q
+B, 11, stringmidstr@string
+@, 5790Q, "string_mid"
+Q, 1, stringmidstr@stringaddr
+@, 5801Q, 5790Q
+B, 17, stringtostringstr@string
+@, 5809Q, "string_to_string"
+Q, 1, stringtostringstr@stringaddr
+@, 5826Q, 5809Q
+B, 15, stringcomparestr@string
+@, 5834Q, "string_compare"
+Q, 1, stringcomparestr@stringaddr
+@, 5849Q, 5834Q
+B, 20, stringmemtostringstr@string
+@, 5857Q, "stringmem_to_string"
+Q, 1, stringmemtostringstr@stringaddr
+@, 5877Q, 5857Q
+B, 24, stringmemsearchstr@string
+@, 5885Q, "stringmem_search_string"
+Q, 1, stringmemsearchstr@stringaddr
+@, 5909Q, 5885Q
+B, 13, stringregexstr@string
+@, 5917Q, "string_regex"
+Q, 1, stringregexstr@stringaddr
+@, 5930Q, 5917Q
+B, 14, stringsearchstr@string
+@, 5938Q, "string_search"
+Q, 1, stringsearchstr@stringaddr
+@, 5952Q, 5938Q
+B, 18, string_array_sortstr@string
+@, 5960Q, "string_array_sort"
+Q, 1, string_array_sortstr@stringaddr
+@, 5978Q, 5960Q
+B, 20, string_array_searchstr@string
+@, 5986Q, "string_array_search"
+Q, 1, string_array_searchstr@stringaddr
+@, 6006Q, 5986Q
+B, 19, string_mid_to_bytestr@string
+@, 6014Q, "string_mid_to_byte"
+Q, 1, string_mid_to_bytestr@stringaddr
+@, 6033Q, 6014Q
+B, 22, bytenumbytetostringstr@string
+@, 6041Q, "string_byte_to_string"
+Q, 1, bytenumbytetostringstr@stringaddr
+@, 6063Q, 6041Q
+B, 14, stringverifystr@string
+@, 6071Q, "string_verify"
+Q, 1, stringverifystr@stringaddr
+@, 6085Q, 6071Q
+B, 8, get_envstr@string
+@, 6093Q, "get_env"
+Q, 1, get_envstr@stringaddr
+@, 6101Q, 6093Q
+B, 8, set_envstr@string
+@, 6109Q, "set_env"
+Q, 1, set_envstr@stringaddr
+@, 6117Q, 6109Q
+B, 18, stringparsejsonstr@string
+@, 6125Q, "string_parse_json"
+Q, 1, stringparsejsonstr@stringaddr
+@, 6143Q, 6125Q
+Q, 1, len@string
+@, 6151Q, 0
+Q, 1, copy@string
+@, 6159Q, 1
+Q, 1, cat@string
+@, 6167Q, 2
+Q, 1, int64tostring@string
+@, 6175Q, 3
+Q, 1, bytetohexstring@string
+@, 6183Q, 4
+Q, 1, doubletostring@string
+@, 6191Q, 5
+Q, 1, bytenumtostring@string
+@, 6199Q, 6
+Q, 1, stringtoarray@string
+@, 6207Q, 7
+Q, 1, arraytostring@string
+@, 6215Q, 8
+Q, 1, stringleft@string
+@, 6223Q, 9
+Q, 1, stringright@string
+@, 6231Q, 10
+Q, 1, stringmid@string
+@, 6239Q, 11
+Q, 1, stringtostring@string
+@, 6247Q, 12
+Q, 1, stringcompare@string
+@, 6255Q, 13
+Q, 1, stringmemtostring@string
+@, 6263Q, 14
+Q, 1, stringmemsearch@string
+@, 6271Q, 15
+Q, 1, stringregex@string
+@, 6279Q, 16
+Q, 1, stringsearch@string
+@, 6287Q, 17
+Q, 1, get_env@string
+@, 6295Q, 18
+Q, 1, set_env@string
+@, 6303Q, 19
+Q, 1, stringparsejson@string
+@, 6311Q, 20
+Q, 1, string_array_sort@string
+@, 6319Q, 21
+Q, 1, string_array_search@string
+@, 6327Q, 22
+Q, 1, string_mid_to_byte@string
+@, 6335Q, 23
+Q, 1, bytenumbytetostring@string
+@, 6343Q, 24
+Q, 1, stringverify@string
+@, 6351Q, 25
+Q, 1, mod@string
+@, 6359Q, 0
+Q, 1, zerostring_split_to_array
+@, 6367Q, 0
+Q, 1, onestring_split_to_array
+@, 6375Q, 1
+Q, 1, inputstraddrstring_split_to_array
+@, 6383Q, 0
+Q, 1, arraystraddrstring_split_to_array
+@, 6391Q, 0
+Q, 1, array_strlenstring_split_to_array
+@, 6399Q, 0
+Q, 1, array_sizestring_split_to_array
+@, 6407Q, 0
+Q, 1, separatorstrstring_split_to_array
+@, 6415Q, 0
+Q, 1, fstring_split_to_array
+@, 6423Q, 0
+B, 2, chstrstring_split_to_array
+@, 6431Q, ""
+Q, 1, chstrstring_split_to_arrayaddr
+@, 6433Q, 6431Q
+Q, 1, inputstr_lenstring_split_to_array
+@, 6441Q, 0
+Q, 1, inputstr_indstring_split_to_array
+@, 6449Q, 0
+Q, 1, array_indstring_split_to_array
+@, 6457Q, 0
+Q, 1, posstring_split_to_array
+@, 6465Q, 0
+B, 4097, partstrstring_split_to_array
+@, 6473Q, ""
+Q, 1, partstrstring_split_to_arrayaddr
+@, 10570Q, 6473Q
+B, 1, emptystrstring_split_to_array
+@, 10578Q, ""
+Q, 1, emptystrstring_split_to_arrayaddr
+@, 10579Q, 10578Q
+Q, 1, retstring_split_to_array
+@, 10587Q, 0
+Q, 1, numbersstring_split_to_array
+@, 10595Q, 0
+Q, 1, zerostring_replace
+@, 10603Q, 0
+Q, 1, onestring_replace
+@, 10611Q, 1
+Q, 1, stringaddrstring_replace
+@, 10619Q, 0
+Q, 1, stringsearchaddrstring_replace
+@, 10627Q, 0
+Q, 1, stringreplaceaddrstring_replace
+@, 10635Q, 0
+Q, 1, stringretaddrstring_replace
+@, 10643Q, 0
+Q, 1, fstring_replace
+@, 10651Q, 0
+Q, 1, posstring_replace
+@, 10659Q, 0
+Q, 1, istring_replace
+@, 10667Q, 0
+B, 4097, bufstrstring_replace
+@, 10675Q, ""
+Q, 1, bufstrstring_replaceaddr
+@, 14772Q, 10675Q
+B, 4097, repstrstring_replace
+@, 14780Q, ""
+Q, 1, repstrstring_replaceaddr
+@, 18877Q, 14780Q
+B, 4097, rightstrstring_replace
+@, 18885Q, ""
+Q, 1, rightstrstring_replaceaddr
+@, 22982Q, 18885Q
+B, 2, emptystrstring_replace
+@, 22990Q, ""
+Q, 1, emptystrstring_replaceaddr
+@, 22992Q, 22990Q
+B, 2, chstrstring_replace
+@, 23000Q, ""
+Q, 1, chstrstring_replaceaddr
+@, 23002Q, 23000Q
+Q, 1, string_lenstring_replace
+@, 23010Q, 0
+Q, 1, stringsearch_lenstring_replace
+@, 23018Q, 0
+Q, 1, left_stringstring_replace
+@, 23026Q, 0
+Q, 1, right_stringstring_replace
+@, 23034Q, 0
+Q, 1, zerostring_cat_multi
+@, 23042Q, 0
+Q, 1, onestring_cat_multi
+@, 23050Q, 1
+Q, 1, stringaddrstring_cat_multi
+@, 23058Q, 0
+Q, 1, string_numstring_cat_multi
+@, 23066Q, 0
+Q, 1, nstring_cat_multi
+@, 23074Q, 1
+Q, 1, stringcataddrstring_cat_multi
+@, 23082Q, 0
+Q, 1, fstring_cat_multi
+@, 23090Q, 0
+.dend
+.code
+:main
+loada zero, 0, 0
+stpushi 0
+loada zero, 0, 1
+stpushi 1
+jsr :string_init
+stpopi 0
+loada hellostraddr, 0, 1
+stpushi 1
+loada arraystraddr, 0, 2
+stpushi 2
+loada zero, 0, 3
+stpushi 3
+loada string_len, 0, 4
+stpushi 4
+loada array_size, 0, 5
+stpushi 5
+jsr :string_to_array
+loada worldstraddr, 0, 1
+stpushi 1
+loada arraystraddr, 0, 2
+stpushi 2
+loada one, 0, 3
+stpushi 3
+loada string_len, 0, 4
+stpushi 4
+loada array_size, 0, 5
+stpushi 5
+jsr :string_to_array
+loada arraystraddr, 0, 1
+stpushi 1
+loada hellostr2addr, 0, 2
+stpushi 2
+loada zero, 0, 3
+stpushi 3
+loada string_len, 0, 4
+stpushi 4
+loada array_size, 0, 5
+stpushi 5
+jsr :array_to_string
+loada arraystraddr, 0, 1
+stpushi 1
+loada worldstr2addr, 0, 2
+stpushi 2
+loada one, 0, 3
+stpushi 3
+loada string_len, 0, 4
+stpushi 4
+loada array_size, 0, 5
+stpushi 5
+jsr :array_to_string
+loada hellostr2addr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+loada worldstr2addr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushi 2
+loada hellostraddr, 0, 3
+stpushi 3
+loada worldstraddr, 0, 4
+stpushi 4
+jsr :string_cat
+stpopi 2
+stpopi 1
+loada hellostraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada hellostraddr, 0, 2
+stpushi 2
+jsr :string_len
+stpopi 3
+load slen, 0, 4
+pullqw 3, 4, 0
+stpopi 1
+loada slen, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada hellostraddr, 0, 2
+stpushi 2
+loada hellostr2addr, 0, 3
+stpushi 3
+loada hello_len, 0, 4
+stpushi 4
+jsr :string_left
+stpopi 1
+loada hellostr2addr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada hellostraddr, 0, 2
+stpushi 2
+loada worldstr2addr, 0, 3
+stpushi 3
+loada world_len, 0, 4
+stpushi 4
+jsr :string_right
+stpopi 1
+loada worldstr2addr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada slen, 0, 2
+stpushi 2
+loada bufstraddr, 0, 3
+stpushi 3
+loada buflen, 0, 4
+stpushi 4
+jsr :string_int64tostring
+stpopi 1
+loada bufstraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada bytenum, 0, 2
+stpushi 2
+loada bufstraddr, 0, 1
+stpushi 1
+loada buflen, 0, 3
+stpushi 3
+jsr :string_bytetohexstring
+stpopi 1
+loada bufstraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada hellostraddr, 0, 2
+stpushi 2
+loada bufstraddr, 0, 1
+stpushi 1
+loada mid_pos, 0, 3
+stpushi 3
+jsr :string_mid
+stpopi 1
+loada bufstraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada dotstraddr, 0, 2
+stpushi 2
+loada hellostraddr, 0, 3
+stpushi 3
+loada dot_pos, 0, 4
+stpushi 4
+jsr :string_to_string
+stpopi 1
+loada hellostraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada regexsrcstraddr, 0, 2
+stpushi 2
+loada regexstraddr, 0, 3
+stpushi 3
+jsr :string_regex
+stpopi 4
+load ret, 0, 5
+pullqw 4, 5, 0
+stpopi 1
+loada ret, 0, 1
+loada zero, 0, 2
+eqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_0
+jmp :else_0
+:if_0
+loada regex_foundstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+jmp :endif_0
+:else_0
+loada regex_notfoundstraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+:endif_0
+loada json_infostraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+loada jsonstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushi 2
+loada jsonstraddr, 0, 2
+stpushi 2
+loada keystraddr, 0, 3
+stpushi 3
+loada valuestraddr, 0, 4
+stpushi 4
+loada maxlen, 0, 5
+stpushi 5
+jsr :string_parse_json
+stpopi 6
+load ret, 0, 7
+pullqw 6, 7, 0
+stpopi 2
+stpopi 1
+loada ret, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+loada keystraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada valuestraddr, 0, 3
+intr0 6, 3, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushi 2
+stpushi 3
+loada rep_in_straddr, 0, 4
+stpushi 4
+loada search_rep_straddr, 0, 5
+stpushi 5
+loada rep_straddr, 0, 6
+stpushi 6
+loada rep_out_straddr, 0, 7
+stpushi 7
+jsr :string_replace
+stpopi 3
+stpopi 2
+stpopi 1
+loada rep_out_straddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada sortastraddr, 0, 2
+stpushi 2
+loada arraystraddr, 0, 3
+stpushi 3
+loada zero, 0, 4
+stpushi 4
+loada string_len, 0, 5
+stpushi 5
+loada array_size, 0, 6
+stpushi 6
+jsr :string_to_array
+stpopi 1
+loada sortbstraddr, 0, 1
+stpushi 1
+loada arraystraddr, 0, 2
+stpushi 2
+loada one, 0, 3
+stpushi 3
+loada string_len, 0, 4
+stpushi 4
+loada array_size, 0, 5
+stpushi 5
+jsr :string_to_array
+loada arraystraddr, 0, 1
+stpushi 1
+loada zero, 0, 2
+stpushi 2
+loada string_len, 0, 3
+stpushi 3
+loada array_size, 0, 4
+stpushi 4
+loada sort_string_asc, 0, 5
+stpushi 5
+jsr :string_array_sort
+stpopi 6
+load ret, 0, 7
+pullqw 6, 7, 0
+loada arraystraddr, 0, 1
+stpushi 1
+loada sortedastraddr, 0, 2
+stpushi 2
+loada zero, 0, 3
+stpushi 3
+loada string_len, 0, 4
+stpushi 4
+loada array_size, 0, 5
+stpushi 5
+jsr :array_to_string
+loada arraystraddr, 0, 1
+stpushi 1
+loada sortedbstraddr, 0, 2
+stpushi 2
+loada one, 0, 3
+stpushi 3
+loada string_len, 0, 4
+stpushi 4
+loada array_size, 0, 5
+stpushi 5
+jsr :array_to_string
+loada sortedastraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+loada sortedbstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushi 2
+loada arraystraddr, 0, 3
+stpushi 3
+loada searchstraddr, 0, 4
+stpushi 4
+loada zero, 0, 5
+stpushi 5
+loada string_len, 0, 6
+stpushi 6
+loada array_size, 0, 7
+stpushi 7
+jsr :string_array_search
+stpopi 8
+load index, 0, 9
+pullqw 8, 9, 0
+stpopi 9
+load pos, 0, 10
+pullqw 9, 10, 0
+stpopi 2
+stpopi 1
+loada index, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+loada pos, 0, 2
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushi 2
+loada verifystraddr, 0, 3
+stpushi 3
+loada verify_charstraddr, 0, 4
+stpushi 4
+jsr :string_verify
+stpopi 5
+load ret, 0, 6
+pullqw 5, 6, 0
+stpopi 2
+stpopi 1
+loada ret, 0, 1
+loada zero, 0, 2
+eqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_1
+jmp :else_1
+:if_1
+loada verify_okstraddr, 0, 2
+intr0 6, 2, 0, 0
+jmp :endif_1
+:else_1
+loada verify_failstraddr, 0, 1
+intr0 6, 1, 0, 0
+:endif_1
+intr0 7, 0, 0, 0
+loada zero, 0, 1
+intr0 1, 1, 0, 0
+intr0 255, 1, 0, 0
+rts
+:string_init
+loada zero, 0, 0
+stpopi 1
+load mod@string, 0, 2
+pullqw 1, 2, 0
+loada modulestr@stringaddr, 0, 2
+intr0 0, 2, 1, 0
+loada len@string, 0, 3
+loada lenstr@stringaddr, 0, 4
+intr0 2, 1, 3, 4
+loada copy@string, 0, 5
+loada copystr@stringaddr, 0, 6
+intr0 2, 1, 5, 6
+loada cat@string, 0, 7
+loada catstr@stringaddr, 0, 8
+intr0 2, 1, 7, 8
+loada int64tostring@string, 0, 9
+loada int64tostringstr@stringaddr, 0, 10
+intr0 2, 1, 9, 10
+loada bytetohexstring@string, 0, 11
+loada bytetohexstringstr@stringaddr, 0, 12
+intr0 2, 1, 11, 12
+loada doubletostring@string, 0, 13
+loada doubletostringstr@stringaddr, 0, 14
+intr0 2, 1, 13, 14
+loada bytenumtostring@string, 0, 15
+loada bytenumtostringstr@stringaddr, 0, 16
+intr0 2, 1, 15, 16
+loada stringtoarray@string, 0, 17
+loada stringtoarraystr@stringaddr, 0, 18
+intr0 2, 1, 17, 18
+loada arraytostring@string, 0, 19
+loada arraytostringstr@stringaddr, 0, 20
+intr0 2, 1, 19, 20
+loada stringleft@string, 0, 21
+loada stringleftstr@stringaddr, 0, 22
+intr0 2, 1, 21, 22
+loada stringright@string, 0, 23
+loada stringrightstr@stringaddr, 0, 24
+intr0 2, 1, 23, 24
+loada stringmid@string, 0, 25
+loada stringmidstr@stringaddr, 0, 26
+intr0 2, 1, 25, 26
+loada stringtostring@string, 0, 27
+loada stringtostringstr@stringaddr, 0, 28
+intr0 2, 1, 27, 28
+loada stringcompare@string, 0, 29
+loada stringcomparestr@stringaddr, 0, 30
+intr0 2, 1, 29, 30
+loada stringmemtostring@string, 0, 31
+loada stringmemtostringstr@stringaddr, 0, 32
+intr0 2, 1, 31, 32
+loada stringmemsearch@string, 0, 33
+loada stringmemsearchstr@stringaddr, 0, 34
+intr0 2, 1, 33, 34
+loada stringregex@string, 0, 35
+loada stringregexstr@stringaddr, 0, 36
+intr0 2, 1, 35, 36
+loada stringsearch@string, 0, 37
+loada stringsearchstr@stringaddr, 0, 38
+intr0 2, 1, 37, 38
+loada get_env@string, 0, 39
+loada get_envstr@stringaddr, 0, 40
+intr0 2, 1, 39, 40
+loada set_env@string, 0, 41
+loada set_envstr@stringaddr, 0, 42
+intr0 2, 1, 41, 42
+loada stringparsejson@string, 0, 43
+loada stringparsejsonstr@stringaddr, 0, 44
+intr0 2, 1, 43, 44
+loada string_array_sort@string, 0, 45
+loada string_array_sortstr@stringaddr, 0, 46
+intr0 2, 1, 45, 46
+loada string_array_search@string, 0, 47
+loada string_array_searchstr@stringaddr, 0, 48
+intr0 2, 1, 47, 48
+loada string_mid_to_byte@string, 0, 49
+loada string_mid_to_bytestr@stringaddr, 0, 50
+intr0 2, 1, 49, 50
+loada bytenumbytetostring@string, 0, 51
+loada bytenumbytetostringstr@stringaddr, 0, 52
+intr0 2, 1, 51, 52
+loada stringverify@string, 0, 53
+loada stringverifystr@stringaddr, 0, 54
+intr0 2, 1, 53, 54
+rts
+:string_len
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada len@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_copy
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada copy@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_cat
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada cat@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_int64tostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada int64tostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_bytetohexstring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada bytetohexstring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_doubletostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada doubletostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_bytenumtostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada bytenumtostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_to_array
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringtoarray@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:array_to_string
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada arraytostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_left
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringleft@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_right
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringright@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_mid
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringmid@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_mid_to_byte
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada string_mid_to_byte@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_to_string
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringtostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_compare
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringcompare@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_memtostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringmemtostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_memsearch
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringmemsearch@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_regex
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringregex@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_search
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringsearch@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_env
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada get_env@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_env
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada set_env@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_parse_json
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringparsejson@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_array_sort
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada string_array_sort@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_array_search
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada string_array_search@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_bytetostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada bytenumbytetostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_verify
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringverify@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_split_to_array
+loada zero, 0, 0
+stpopi 1
+load separatorstrstring_split_to_array, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load array_sizestring_split_to_array, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load array_strlenstring_split_to_array, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load arraystraddrstring_split_to_array, 0, 5
+pullqw 4, 5, 0
+stpopi 5
+load inputstraddrstring_split_to_array, 0, 6
+pullqw 5, 6, 0
+load inputstr_indstring_split_to_array, 0, 6
+loada zerostring_split_to_array, 0, 7
+pullqw 7, 6, 0
+load posstring_split_to_array, 0, 6
+loada zerostring_split_to_array, 0, 7
+pullqw 7, 6, 0
+load array_indstring_split_to_array, 0, 6
+loada zerostring_split_to_array, 0, 7
+pullqw 7, 6, 0
+load numbersstring_split_to_array, 0, 6
+loada zerostring_split_to_array, 0, 7
+pullqw 7, 6, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+loada inputstraddrstring_split_to_array, 0, 5
+stpushi 5
+loada separatorstrstring_split_to_array, 0, 1
+stpushi 1
+jsr :string_cat
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada inputstraddrstring_split_to_array, 0, 1
+stpushi 1
+jsr :string_len
+stpopi 2
+load inputstr_lenstring_split_to_array, 0, 3
+pullqw 2, 3, 0
+loada partstrstring_split_to_arrayaddr, 0, 1
+stpushi 1
+loada emptystrstring_split_to_arrayaddr, 0, 2
+stpushi 2
+jsr :string_copy
+loada inputstr_lenstring_split_to_array, 0, 1
+loada zerostring_split_to_array, 0, 2
+eqi 1, 2, 3
+load fstring_split_to_array, 0, 4
+pullqw 3, 4, 0
+loada fstring_split_to_array, 0, 1
+jmpi 1, :if_2
+jmp :endif_2
+:if_2
+jmp :string_split_to_array_end
+:endif_2
+:while_0
+loada inputstraddrstring_split_to_array, 0, 1
+stpushi 1
+loada chstrstring_split_to_arrayaddr, 0, 2
+stpushi 2
+loada inputstr_indstring_split_to_array, 0, 3
+stpushi 3
+jsr :string_mid
+loada chstrstring_split_to_arrayaddr, 0, 1
+stpushi 1
+loada separatorstrstring_split_to_array, 0, 2
+stpushi 2
+jsr :string_compare
+stpopi 3
+load retstring_split_to_array, 0, 4
+pullqw 3, 4, 0
+loada retstring_split_to_array, 0, 1
+loada zerostring_split_to_array, 0, 2
+neqi 1, 2, 3
+load fstring_split_to_array, 0, 4
+pullqw 3, 4, 0
+loada fstring_split_to_array, 0, 1
+jmpi 1, :if_3
+jmp :else_3
+:if_3
+stpushi 1
+loada partstrstring_split_to_arrayaddr, 0, 2
+stpushi 2
+loada chstrstring_split_to_arrayaddr, 0, 3
+stpushi 3
+jsr :string_cat
+stpopi 1
+jmp :endif_3
+:else_3
+loada partstrstring_split_to_arrayaddr, 0, 1
+stpushi 1
+loada arraystraddrstring_split_to_array, 0, 2
+stpushi 2
+loada array_indstring_split_to_array, 0, 3
+stpushi 3
+loada array_strlenstring_split_to_array, 0, 4
+stpushi 4
+loada array_sizestring_split_to_array, 0, 5
+stpushi 5
+jsr :string_to_array
+loada array_indstring_split_to_array, 0, 1
+loada onestring_split_to_array, 0, 2
+addi 1, 2, 3
+load array_indstring_split_to_array, 0, 4
+pullqw 3, 4, 0
+stpushi 2
+stpushi 3
+stpushi 4
+loada partstrstring_split_to_arrayaddr, 0, 1
+stpushi 1
+loada emptystrstring_split_to_arrayaddr, 0, 5
+stpushi 5
+jsr :string_copy
+stpopi 4
+stpopi 3
+stpopi 2
+loada numbersstring_split_to_array, 0, 1
+loada onestring_split_to_array, 0, 2
+addi 1, 2, 3
+load numbersstring_split_to_array, 0, 4
+pullqw 3, 4, 0
+:endif_3
+loada inputstr_indstring_split_to_array, 0, 1
+loada onestring_split_to_array, 0, 2
+addi 1, 2, 3
+load inputstr_indstring_split_to_array, 0, 4
+pullqw 3, 4, 0
+loada inputstr_indstring_split_to_array, 0, 1
+loada inputstr_lenstring_split_to_array, 0, 5
+lsi 1, 5, 6
+load fstring_split_to_array, 0, 7
+pullqw 6, 7, 0
+loada fstring_split_to_array, 0, 8
+jmpi 8, :while_0
+:string_split_to_array_end
+loada numbersstring_split_to_array, 0, 1
+stpushi 1
+rts
+:string_replace
+loada zero, 0, 0
+stpopi 1
+load stringretaddrstring_replace, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load stringreplaceaddrstring_replace, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load stringsearchaddrstring_replace, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load stringaddrstring_replace, 0, 5
+pullqw 4, 5, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+loada bufstrstring_replaceaddr, 0, 5
+stpushi 5
+loada stringaddrstring_replace, 0, 4
+stpushi 4
+jsr :string_copy
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada repstrstring_replaceaddr, 0, 1
+stpushi 1
+loada emptystrstring_replaceaddr, 0, 2
+stpushi 2
+jsr :string_copy
+loada stringaddrstring_replace, 0, 1
+stpushi 1
+jsr :string_len
+stpopi 2
+load string_lenstring_replace, 0, 3
+pullqw 2, 3, 0
+loada stringsearchaddrstring_replace, 0, 1
+stpushi 1
+jsr :string_len
+stpopi 2
+load stringsearch_lenstring_replace, 0, 3
+pullqw 2, 3, 0
+:while_1
+loada repstrstring_replaceaddr, 0, 1
+stpushi 1
+loada emptystrstring_replaceaddr, 0, 2
+stpushi 2
+jsr :string_copy
+loada bufstrstring_replaceaddr, 0, 1
+stpushi 1
+jsr :string_len
+stpopi 2
+load string_lenstring_replace, 0, 3
+pullqw 2, 3, 0
+loada bufstrstring_replaceaddr, 0, 1
+stpushi 1
+loada stringsearchaddrstring_replace, 0, 2
+stpushi 2
+jsr :string_search
+stpopi 3
+load posstring_replace, 0, 4
+pullqw 3, 4, 0
+loada posstring_replace, 0, 1
+loada zerostring_replace, 0, 2
+greqi 1, 2, 3
+load fstring_replace, 0, 4
+pullqw 3, 4, 0
+loada fstring_replace, 0, 1
+jmpi 1, :if_4
+jmp :endif_4
+:if_4
+loada posstring_replace, 0, 2
+loada zerostring_replace, 0, 3
+neqi 2, 3, 4
+load fstring_replace, 0, 5
+pullqw 4, 5, 0
+loada fstring_replace, 0, 1
+jmpi 1, :if_5
+jmp :endif_5
+:if_5
+load left_stringstring_replace, 0, 2
+loada posstring_replace, 0, 3
+pullqw 3, 2, 0
+stpushi 1
+loada bufstrstring_replaceaddr, 0, 2
+stpushi 2
+loada repstrstring_replaceaddr, 0, 3
+stpushi 3
+loada left_stringstring_replace, 0, 4
+stpushi 4
+jsr :string_left
+stpopi 1
+:endif_5
+loada repstrstring_replaceaddr, 0, 1
+stpushi 1
+loada stringreplaceaddrstring_replace, 0, 2
+stpushi 2
+jsr :string_cat
+loada posstring_replace, 0, 1
+loada string_lenstring_replace, 0, 2
+lsi 1, 2, 3
+load fstring_replace, 0, 4
+pullqw 3, 4, 0
+loada fstring_replace, 0, 1
+jmpi 1, :if_6
+jmp :endif_6
+:if_6
+loada posstring_replace, 0, 2
+loada stringsearch_lenstring_replace, 0, 3
+addi 2, 3, 4
+load istring_replace, 0, 5
+pullqw 4, 5, 0
+loada string_lenstring_replace, 0, 6
+loada istring_replace, 0, 7
+subi 6, 7, 8
+load right_stringstring_replace, 0, 9
+pullqw 8, 9, 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+stpushi 6
+stpushi 7
+stpushi 8
+stpushi 9
+loada bufstrstring_replaceaddr, 0, 10
+stpushi 10
+loada rightstrstring_replaceaddr, 0, 11
+stpushi 11
+loada right_stringstring_replace, 0, 12
+stpushi 12
+jsr :string_right
+stpopi 9
+stpopi 8
+stpopi 7
+stpopi 6
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+loada repstrstring_replaceaddr, 0, 1
+stpushi 1
+loada rightstrstring_replaceaddr, 0, 2
+stpushi 2
+jsr :string_cat
+:endif_6
+loada bufstrstring_replaceaddr, 0, 1
+stpushi 1
+loada repstrstring_replaceaddr, 0, 2
+stpushi 2
+jsr :string_copy
+:endif_4
+loada posstring_replace, 0, 1
+loada zerostring_replace, 0, 2
+greqi 1, 2, 3
+load fstring_replace, 0, 4
+pullqw 3, 4, 0
+loada fstring_replace, 0, 5
+jmpi 5, :while_1
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+loada stringretaddrstring_replace, 0, 6
+stpushi 6
+loada bufstrstring_replaceaddr, 0, 7
+stpushi 7
+jsr :string_copy
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+rts
+:string_cat_multi
+loada zero, 0, 0
+stpopi 1
+load string_numstring_cat_multi, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load stringcataddrstring_cat_multi, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load stringaddrstring_cat_multi, 0, 4
+pullqw 3, 4, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+loada stringaddrstring_cat_multi, 0, 3
+stpushi 3
+loada stringcataddrstring_cat_multi, 0, 2
+stpushi 2
+jsr :string_copy
+loada onestring_cat_multi, 0, 4
+load nstring_cat_multi, 0, 5
+pullqw 4, 5, 0
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+:while_2
+stpopi 1
+load stringcataddrstring_cat_multi, 0, 2
+pullqw 1, 2, 0
+stpushi 1
+loada stringaddrstring_cat_multi, 0, 2
+stpushi 2
+loada stringcataddrstring_cat_multi, 0, 1
+stpushi 1
+jsr :string_cat
+loada nstring_cat_multi, 0, 3
+loada onestring_cat_multi, 0, 4
+addi 3, 4, 5
+load nstring_cat_multi, 0, 6
+pullqw 5, 6, 0
+stpopi 1
+loada nstring_cat_multi, 0, 1
+loada string_numstring_cat_multi, 0, 2
+lsi 1, 2, 3
+load fstring_cat_multi, 0, 4
+pullqw 3, 4, 0
+loada fstring_cat_multi, 0, 5
+jmpi 5, :while_2
+rts
+.cend

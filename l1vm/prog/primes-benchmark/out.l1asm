@@ -1,0 +1,634 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+B, 100000000, primes
+@, 8Q, 
+Q, 1, limit
+@, 100000008Q, 100000000
+Q, 1, one
+@, 100000016Q, 1
+Q, 1, two
+@, 100000024Q, 2
+Q, 1, i
+@, 100000032Q, 2
+Q, 1, j
+@, 100000040Q, 0
+Q, 1, z
+@, 100000048Q, 1
+Q, 1, f
+@, 100000056Q, 0
+Q, 1, a
+@, 100000064Q, 0
+Q, 1, k
+@, 100000072Q, 0
+Q, 1, n
+@, 100000080Q, 0
+Q, 1, timer
+@, 100000088Q, 0
+B, 7, timestr
+@, 100000096Q, "time: "
+Q, 1, timestraddr
+@, 100000103Q, 100000096Q
+B, 1, oneb
+@, 100000111Q, 1
+Q, 1, limit_low
+@, 100000112Q, 99999999
+Q, 1, mod_vect
+@, 100000120Q, 0
+Q, 1, Pprimesptr
+@, 100000128Q, 0
+B, 16, modulestr@mathvect
+@, 100000136Q, "libl1vmmathvect"
+Q, 1, modulestr@mathvectaddr
+@, 100000152Q, 100000136Q
+B, 14, mvect_add_intstr@mathvect
+@, 100000160Q, "mvect_add_int"
+Q, 1, mvect_add_intstr@mathvectaddr
+@, 100000174Q, 100000160Q
+B, 14, mvect_sub_intstr@mathvect
+@, 100000182Q, "mvect_sub_int"
+Q, 1, mvect_sub_intstr@mathvectaddr
+@, 100000196Q, 100000182Q
+B, 14, mvect_mul_intstr@mathvect
+@, 100000204Q, "mvect_mul_int"
+Q, 1, mvect_mul_intstr@mathvectaddr
+@, 100000218Q, 100000204Q
+B, 14, mvect_div_intstr@mathvect
+@, 100000226Q, "mvect_div_int"
+Q, 1, mvect_div_intstr@mathvectaddr
+@, 100000240Q, 100000226Q
+B, 20, mvect_add_int_arraystr@mathvect
+@, 100000248Q, "mvect_add_int_array"
+Q, 1, mvect_add_int_arraystr@mathvectaddr
+@, 100000268Q, 100000248Q
+B, 20, mvect_sub_int_arraystr@mathvect
+@, 100000276Q, "mvect_sub_int_array"
+Q, 1, mvect_sub_int_arraystr@mathvectaddr
+@, 100000296Q, 100000276Q
+B, 20, mvect_mul_int_arraystr@mathvect
+@, 100000304Q, "mvect_mul_int_array"
+Q, 1, mvect_mul_int_arraystr@mathvectaddr
+@, 100000324Q, 100000304Q
+B, 20, mvect_div_int_arraystr@mathvect
+@, 100000332Q, "mvect_div_int_array"
+Q, 1, mvect_div_int_arraystr@mathvectaddr
+@, 100000352Q, 100000332Q
+B, 17, mvect_add_doublestr@mathvect
+@, 100000360Q, "mvect_add_double"
+Q, 1, mvect_add_doublestr@mathvectaddr
+@, 100000377Q, 100000360Q
+B, 17, mvect_sub_doublestr@mathvect
+@, 100000385Q, "mvect_sub_double"
+Q, 1, mvect_sub_doublestr@mathvectaddr
+@, 100000402Q, 100000385Q
+B, 17, mvect_mul_doublestr@mathvect
+@, 100000410Q, "mvect_mul_double"
+Q, 1, mvect_mul_doublestr@mathvectaddr
+@, 100000427Q, 100000410Q
+B, 17, mvect_div_doublestr@mathvect
+@, 100000435Q, "mvect_div_double"
+Q, 1, mvect_div_doublestr@mathvectaddr
+@, 100000452Q, 100000435Q
+B, 23, mvect_add_double_arraystr@mathvect
+@, 100000460Q, "mvect_add_double_array"
+Q, 1, mvect_add_double_arraystr@mathvectaddr
+@, 100000483Q, 100000460Q
+B, 23, mvect_sub_double_arraystr@mathvect
+@, 100000491Q, "mvect_sub_double_array"
+Q, 1, mvect_sub_double_arraystr@mathvectaddr
+@, 100000514Q, 100000491Q
+B, 23, mvect_mul_double_arraystr@mathvect
+@, 100000522Q, "mvect_mul_double_array"
+Q, 1, mvect_mul_double_arraystr@mathvectaddr
+@, 100000545Q, 100000522Q
+B, 23, mvect_div_double_arraystr@mathvect
+@, 100000553Q, "mvect_div_double_array"
+Q, 1, mvect_div_double_arraystr@mathvectaddr
+@, 100000576Q, 100000553Q
+B, 14, mvect_min_intstr@mathvect
+@, 100000584Q, "mvect_min_int"
+Q, 1, mvect_min_intstr@mathvectaddr
+@, 100000598Q, 100000584Q
+B, 14, mvect_max_intstr@mathvect
+@, 100000606Q, "mvect_max_int"
+Q, 1, mvect_max_intstr@mathvectaddr
+@, 100000620Q, 100000606Q
+B, 17, mvect_min_doublestr@mathvect
+@, 100000628Q, "mvect_min_double"
+Q, 1, mvect_min_doublestr@mathvectaddr
+@, 100000645Q, 100000628Q
+B, 17, mvect_max_doublestr@mathvect
+@, 100000653Q, "mvect_max_double"
+Q, 1, mvect_max_doublestr@mathvectaddr
+@, 100000670Q, 100000653Q
+B, 19, mvect_sort_int_incstr@mathvect
+@, 100000678Q, "mvect_sort_int_inc"
+Q, 1, mvect_sort_int_incstr@mathvectaddr
+@, 100000697Q, 100000678Q
+B, 19, mvect_sort_int_decstr@mathvect
+@, 100000705Q, "mvect_sort_int_dec"
+Q, 1, mvect_sort_int_decstr@mathvectaddr
+@, 100000724Q, 100000705Q
+B, 22, mvect_sort_double_incstr@mathvect
+@, 100000732Q, "mvect_sort_double_inc"
+Q, 1, mvect_sort_double_incstr@mathvectaddr
+@, 100000754Q, 100000732Q
+B, 22, mvect_sort_double_decstr@mathvect
+@, 100000762Q, "mvect_sort_double_dec"
+Q, 1, mvect_sort_double_decstr@mathvectaddr
+@, 100000784Q, 100000762Q
+B, 18, mvect_average_intstr@mathvect
+@, 100000792Q, "mvect_average_int"
+Q, 1, mvect_average_intstr@mathvectaddr
+@, 100000810Q, 100000792Q
+B, 21, mvect_average_doublestr@mathvect
+@, 100000818Q, "mvect_average_double"
+Q, 1, mvect_average_doublestr@mathvectaddr
+@, 100000839Q, 100000818Q
+B, 17, mvect_array_copystr@mathvect
+@, 100000847Q, "mvect_array_copy"
+Q, 1, mvect_array_copystr@mathvectaddr
+@, 100000864Q, 100000847Q
+B, 18, mvect_array_clearstr@mathvect
+@, 100000872Q, "mvect_array_clear"
+Q, 1, mvect_array_clearstr@mathvectaddr
+@, 100000890Q, 100000872Q
+B, 23, mvect_array_search_intstr@mathvect
+@, 100000898Q, "mvect_array_search_int"
+Q, 1, mvect_array_search_intstr@mathvectaddr
+@, 100000921Q, 100000898Q
+B, 26, mvect_array_search_doublestr@mathvect
+@, 100000929Q, "mvect_array_search_double"
+Q, 1, mvect_array_search_doublestr@mathvectaddr
+@, 100000955Q, 100000929Q
+B, 22, mvect_array_init_bytestr@mathvect
+@, 100000963Q, "mvect_array_init_byte"
+Q, 1, mvect_array_init_bytestr@mathvectaddr
+@, 100000985Q, 100000963Q
+B, 23, mvect_array_init_int64str@mathvect
+@, 100000993Q, "mvect_array_init_int64"
+Q, 1, mvect_array_init_int64str@mathvectaddr
+@, 100001016Q, 100000993Q
+Q, 1, mvect_add_int@mathvect
+@, 100001024Q, 0
+Q, 1, mvect_sub_int@mathvect
+@, 100001032Q, 1
+Q, 1, mvect_mul_int@mathvect
+@, 100001040Q, 2
+Q, 1, mvect_div_int@mathvect
+@, 100001048Q, 3
+Q, 1, mvect_add_int_array@mathvect
+@, 100001056Q, 4
+Q, 1, mvect_sub_int_array@mathvect
+@, 100001064Q, 5
+Q, 1, mvect_mul_int_array@mathvect
+@, 100001072Q, 6
+Q, 1, mvect_div_int_array@mathvect
+@, 100001080Q, 7
+Q, 1, mvect_add_double@mathvect
+@, 100001088Q, 8
+Q, 1, mvect_sub_double@mathvect
+@, 100001096Q, 9
+Q, 1, mvect_mul_double@mathvect
+@, 100001104Q, 10
+Q, 1, mvect_div_double@mathvect
+@, 100001112Q, 11
+Q, 1, mvect_add_double_array@mathvect
+@, 100001120Q, 12
+Q, 1, mvect_sub_double_array@mathvect
+@, 100001128Q, 13
+Q, 1, mvect_mul_double_array@mathvect
+@, 100001136Q, 14
+Q, 1, mvect_div_double_array@mathvect
+@, 100001144Q, 15
+Q, 1, mvect_min_int@mathvect
+@, 100001152Q, 16
+Q, 1, mvect_max_int@mathvect
+@, 100001160Q, 17
+Q, 1, mvect_min_double@mathvect
+@, 100001168Q, 18
+Q, 1, mvect_max_double@mathvect
+@, 100001176Q, 19
+Q, 1, mvect_sort_int_inc@mathvect
+@, 100001184Q, 20
+Q, 1, mvect_sort_int_dec@mathvect
+@, 100001192Q, 21
+Q, 1, mvect_sort_double_inc@mathvect
+@, 100001200Q, 22
+Q, 1, mvect_sort_double_dec@mathvect
+@, 100001208Q, 23
+Q, 1, mvect_average_int@mathvect
+@, 100001216Q, 24
+Q, 1, mvect_average_double@mathvect
+@, 100001224Q, 25
+Q, 1, mvect_array_copy@mathvect
+@, 100001232Q, 26
+Q, 1, mvect_array_clear@mathvect
+@, 100001240Q, 27
+Q, 1, mvect_array_search_int@mathvect
+@, 100001248Q, 28
+Q, 1, mvect_array_search_double@mathvect
+@, 100001256Q, 29
+Q, 1, mvect_array_init_byte@mathvect
+@, 100001264Q, 30
+Q, 1, mvect_array_init_int64@mathvect
+@, 100001272Q, 31
+Q, 1, mod@mathvect
+@, 100001280Q, 0
+.dend
+.code
+:main
+loada zero, 0, 0
+stpushi 0
+loada mod_vect, 0, 1
+stpushi 1
+jsr :math_vect_init
+stpopi 0
+load primes, 0, 1
+load Pprimesptr, 0, 2
+pullqw 1, 2, 0
+intr0 40, 0, 0, 0
+intr0 24, 0, 0, 0
+load i, 0, 2
+loada two, 0, 3
+pullqw 3, 2, 0
+:search_primes
+loada i, 0, 1
+muli 1, 1, 2
+load n, 0, 3
+pullqw 2, 3, 0
+loada n, 0, 4
+loada limit, 0, 5
+lsi 4, 5, 6
+jmpi 6, :if_0
+jmp :endif_0
+:if_0
+loada a, 0, 1
+loada i, 0, 2
+load primes, 0, 3
+pushb 3, 2, 1
+loada zero, 0, 3
+eqi 1, 3, 4
+jmpi 4, :if_1
+jmp :endif_1
+:if_1
+load j, 0, 1
+loada i, 0, 2
+pullqw 2, 1, 0
+loada i, 0, 1
+loada j, 0, 2
+muli 1, 2, 3
+load k, 0, 4
+pullqw 3, 4, 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+loada Pprimesptr, 0, 5
+stpushi 5
+loada k, 0, 6
+stpushi 6
+loada limit_low, 0, 7
+stpushi 7
+loada i, 0, 1
+stpushi 1
+loada one, 0, 8
+stpushi 8
+jsr :vmath_array_init_byte
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+:endif_1
+loada i, 0, 1
+loada one, 0, 2
+addi 1, 2, 3
+load i, 0, 4
+pullqw 3, 4, 0
+jmp :search_primes
+:endif_0
+loada timer, 0, 1
+intr0 25, 1, 0, 0
+loada timestraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+load i, 0, 3
+loada two, 0, 4
+pullqw 4, 3, 0
+:print_primes
+loada i, 0, 1
+loada limit, 0, 2
+lsi 1, 2, 3
+jmpi 3, :if_2
+jmp :endif_2
+:if_2
+loada a, 0, 1
+loada i, 0, 2
+load primes, 0, 3
+pushb 3, 2, 1
+loada zero, 0, 3
+eqi 1, 3, 4
+jmpi 4, :if_3
+jmp :endif_3
+:if_3
+loada i, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+:endif_3
+loada i, 0, 1
+loada one, 0, 2
+addi 1, 2, 3
+load i, 0, 4
+pullqw 3, 4, 0
+jmp :print_primes
+:endif_2
+loada zero, 0, 1
+intr0 255, 1, 0, 0
+intr0 39, 0, 0, 0
+rts
+:math_vect_init
+loada zero, 0, 0
+stpopi 1
+load mod@mathvect, 0, 2
+pullqw 1, 2, 0
+loada modulestr@mathvectaddr, 0, 2
+intr0 0, 2, 1, 0
+loada mvect_add_int@mathvect, 0, 3
+loada mvect_add_intstr@mathvectaddr, 0, 4
+intr0 2, 1, 3, 4
+loada mvect_sub_int@mathvect, 0, 5
+loada mvect_sub_intstr@mathvectaddr, 0, 6
+intr0 2, 1, 5, 6
+loada mvect_mul_int@mathvect, 0, 7
+loada mvect_mul_intstr@mathvectaddr, 0, 8
+intr0 2, 1, 7, 8
+loada mvect_div_int@mathvect, 0, 9
+loada mvect_div_intstr@mathvectaddr, 0, 10
+intr0 2, 1, 9, 10
+loada mvect_add_int_array@mathvect, 0, 11
+loada mvect_add_int_arraystr@mathvectaddr, 0, 12
+intr0 2, 1, 11, 12
+loada mvect_sub_int_array@mathvect, 0, 13
+loada mvect_sub_int_arraystr@mathvectaddr, 0, 14
+intr0 2, 1, 13, 14
+loada mvect_mul_int_array@mathvect, 0, 15
+loada mvect_mul_int_arraystr@mathvectaddr, 0, 16
+intr0 2, 1, 15, 16
+loada mvect_div_int_array@mathvect, 0, 17
+loada mvect_div_int_arraystr@mathvectaddr, 0, 18
+intr0 2, 1, 17, 18
+loada mvect_add_double@mathvect, 0, 19
+loada mvect_add_doublestr@mathvectaddr, 0, 20
+intr0 2, 1, 19, 20
+loada mvect_sub_double@mathvect, 0, 21
+loada mvect_sub_doublestr@mathvectaddr, 0, 22
+intr0 2, 1, 21, 22
+loada mvect_mul_double@mathvect, 0, 23
+loada mvect_mul_doublestr@mathvectaddr, 0, 24
+intr0 2, 1, 23, 24
+loada mvect_div_double@mathvect, 0, 25
+loada mvect_div_doublestr@mathvectaddr, 0, 26
+intr0 2, 1, 25, 26
+loada mvect_add_double_array@mathvect, 0, 27
+loada mvect_add_double_arraystr@mathvectaddr, 0, 28
+intr0 2, 1, 27, 28
+loada mvect_sub_double_array@mathvect, 0, 29
+loada mvect_sub_double_arraystr@mathvectaddr, 0, 30
+intr0 2, 1, 29, 30
+loada mvect_mul_double_array@mathvect, 0, 31
+loada mvect_mul_double_arraystr@mathvectaddr, 0, 32
+intr0 2, 1, 31, 32
+loada mvect_div_double_array@mathvect, 0, 33
+loada mvect_div_double_arraystr@mathvectaddr, 0, 34
+intr0 2, 1, 33, 34
+loada mvect_min_int@mathvect, 0, 35
+loada mvect_min_intstr@mathvectaddr, 0, 36
+intr0 2, 1, 35, 36
+loada mvect_max_int@mathvect, 0, 37
+loada mvect_max_intstr@mathvectaddr, 0, 38
+intr0 2, 1, 37, 38
+loada mvect_min_double@mathvect, 0, 39
+loada mvect_min_doublestr@mathvectaddr, 0, 40
+intr0 2, 1, 39, 40
+loada mvect_max_double@mathvect, 0, 41
+loada mvect_max_doublestr@mathvectaddr, 0, 42
+intr0 2, 1, 41, 42
+loada mvect_sort_int_inc@mathvect, 0, 43
+loada mvect_sort_int_incstr@mathvectaddr, 0, 44
+intr0 2, 1, 43, 44
+loada mvect_sort_int_dec@mathvect, 0, 45
+loada mvect_sort_int_decstr@mathvectaddr, 0, 46
+intr0 2, 1, 45, 46
+loada mvect_sort_double_inc@mathvect, 0, 47
+loada mvect_sort_double_incstr@mathvectaddr, 0, 48
+intr0 2, 1, 47, 48
+loada mvect_sort_double_dec@mathvect, 0, 49
+loada mvect_sort_double_decstr@mathvectaddr, 0, 50
+intr0 2, 1, 49, 50
+loada mvect_average_int@mathvect, 0, 51
+loada mvect_average_intstr@mathvectaddr, 0, 52
+intr0 2, 1, 51, 52
+loada mvect_average_double@mathvect, 0, 53
+loada mvect_average_doublestr@mathvectaddr, 0, 54
+intr0 2, 1, 53, 54
+loada mvect_array_copy@mathvect, 0, 55
+loada mvect_array_copystr@mathvectaddr, 0, 56
+intr0 2, 1, 55, 56
+loada mvect_array_clear@mathvect, 0, 57
+loada mvect_array_clearstr@mathvectaddr, 0, 58
+intr0 2, 1, 57, 58
+loada mvect_array_search_int@mathvect, 0, 59
+loada mvect_array_search_intstr@mathvectaddr, 0, 60
+intr0 2, 1, 59, 60
+loada mvect_array_search_double@mathvect, 0, 61
+loada mvect_array_search_doublestr@mathvectaddr, 0, 62
+intr0 2, 1, 61, 62
+loada mvect_array_init_byte@mathvect, 0, 63
+loada mvect_array_init_bytestr@mathvectaddr, 0, 64
+intr0 2, 1, 63, 64
+loada mvect_array_init_int64@mathvect, 0, 65
+loada mvect_array_init_int64str@mathvectaddr, 0, 66
+intr0 2, 1, 65, 66
+rts
+:vmath_add_int
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_add_int@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_sub_int
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_sub_int@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_mul_int
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_mul_int@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_div_int
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_div_int@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_add_int_array
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_add_int_array@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_sub_int_array
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_sub_int_array@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_mul_int_array
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_mul_int_array@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_div_int_array
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_div_int_array@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_add_double
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_add_double@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_sub_double
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_sub_double@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_mul_double
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_mul_double@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_div_double
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_div_double@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_add_double_array
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_add_double_array@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_sub_double_array
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_sub_double_array@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_mul_double_array
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_mul_double_array@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_div_double_array
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_div_double_array@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_min_int
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_min_int@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_max_int
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_max_int@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_min_double
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_min_double@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_max_double
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_max_double@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_sort_int_inc
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_sort_int_inc@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_sort_int_dec
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_sort_int_dec@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_average_int
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_average_int@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_average_double
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_average_double@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_array_copy
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_array_copy@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_array_clear
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_array_clear@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_array_search_int
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_array_search_int@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_array_search_double
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_array_search_double@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_array_init_byte
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_array_init_byte@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vmath_array_init_int64
+loada zero, 0, 0
+loada mod@mathvect, 0, 1
+loada mvect_array_init_int64@mathvect, 0, 2
+intr0 3, 1, 2, 0
+rts
+.cend

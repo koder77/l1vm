@@ -4,7 +4,11 @@ L1VM (3.6.5)
 
 	Replaced byte read/write code in the VM with memcpy() to speed up things!
 
--- Stefan Pietzonke <info@midnight-coding.de> Thu 30 July 2026 19:17 +020
+	Added the "l1vm" base directory here!
+
+	NEW: mqtt module: this is a WIP. And does not work! But I will try to fix this later.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sun 9 August 2026 13:43 +020
 
 L1VM (3.6.3)
 	Bugfixes in some modules. Marked return stpush for the new linter function tool.

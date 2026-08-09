@@ -1,0 +1,52 @@
+// mqtt-lib.l1com - mqtt send message demo
+//
+//
+#include <intr-func.l1h>
+(main func)
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 mqtt_mod 0)
+    (set const-string s clientaddressstr "tcp://localhost:1883")
+    (set const-string s clientidstr "ExampleClientPub")
+    (set const-string s topicstr "MQTT Examples")
+    (set const-string s messagestr "Hello world!")
+    (set const-string s error_open_clientstr "error: can't open mqtt client")
+    (set const-string s msg_module_loadstr "mqtt module load!")
+    (set const-string s error_send_msgstr "error: can't send message!")
+    (set const-string s msg_client_openstr "client socket opened")
+    (set const-string s msg_sentstr "message sent!")
+    (set int64 1 mqtt_handle 0)
+    (set int64 1 qos 1)
+    (set int64 1 ret 0)
+    (set int64 1 f 0)
+
+    (mqtt_mod :mqtt_init !)
+
+    (msg_module_loadstr :print_s !)
+    (:print_n !)
+
+    (clientaddressstr clientidstr :mqtt_open_client_pub_msg !)
+    (mqtt_handle stpop)
+    (((mqtt_handle zero <) f :=)n f if)
+       (error_open_clientstr :print_s !)
+       (:print_n !)
+       (one :exit !)
+    (endif)
+
+    (msg_client_openstr :print_s !)
+    (:print_n !)
+
+    (mqtt_handle topicstr messagestr qos :mqtt_send_msg !)
+    (ret stpop)
+    (((ret zero !=) f :=) f if)
+        (error_send_msgstr :print_s !)
+        (:print_n !)
+        (one :exit !)
+    (endif)
+
+    (msg_sentstr :print_s !)
+    (:print_n !)
+
+    (zero :exit !)
+(funcend)
+#include <mqtt.l1h>

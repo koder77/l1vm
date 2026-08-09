@@ -1,0 +1,142 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, one
+@, 8Q, 1
+Q, 1, x
+@, 16Q, 42
+Q, 1, incxR
+@, 24Q, 0
+Q, 1, f
+@, 32Q, 0
+Q, 1, retR
+@, 40Q, 0
+Q, 1, Px
+@, 48Q, 0
+B, 12, error_inc_str
+@, 56Q, "inc: error!"
+Q, 1, error_inc_straddr
+@, 68Q, 56Q
+Q, 1, foo
+@, 76Q, 42
+Q, 1, numincP
+@, 84Q, 0
+Q, 1, retincP
+@, 92Q, 0
+Q, 1, checkincP
+@, 100Q, 0
+Q, 1, zeroincP
+@, 108Q, 0
+Q, 1, oneincP
+@, 116Q, 1
+Q, 1, fincP
+@, 124Q, 0
+Q, 1, int64-maxincP
+@, 132Q, 9223372036854775807
+B, 28, overflow_strincP
+@, 140Q, "inc: error number overflow!"
+Q, 1, overflow_strincPaddr
+@, 168Q, 140Q
+B, 21, error_int_strincP
+@, 176Q, "inc: error internal!"
+Q, 1, error_int_strincPaddr
+@, 197Q, 176Q
+.dend
+.code
+:main
+loada zero, 0, 0
+loada error_inc_straddr, 0, 1
+intr0 34, 1, 0, 0
+stpushi 0
+stpushi 1
+loada x, 0, 2
+stpushi 2
+jsr :incP
+stpopi 3
+load retR, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load incxR, 0, 5
+pullqw 4, 5, 0
+stpopi 1
+stpopi 0
+loada retR, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_0
+jmp :endif_0
+:if_0
+loada error_inc_straddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_0
+loada incxR, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+loada zero, 0, 2
+intr0 255, 2, 0, 0
+rts
+:incP
+loada zero, 0, 0
+loada overflow_strincPaddr, 0, 1
+intr0 34, 1, 0, 0
+loada error_int_strincPaddr, 0, 2
+intr0 34, 2, 0, 0
+stpopi 3
+load numincP, 0, 4
+pullqw 3, 4, 0
+loada int64-maxincP, 0, 4
+eqi 3, 4, 5
+load fincP, 0, 6
+pullqw 5, 6, 0
+loada fincP, 0, 1
+jmpi 1, :if_1
+jmp :endif_1
+:if_1
+loada overflow_strincPaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada zeroincP, 0, 3
+stpushi 3
+loada oneincP, 0, 4
+stpushi 4
+rts
+:endif_1
+loada numincP, 0, 1
+loada oneincP, 0, 2
+addi 1, 2, 3
+load retincP, 0, 4
+pullqw 3, 4, 0
+loada retincP, 0, 3
+subi 3, 2, 4
+load checkincP, 0, 5
+pullqw 4, 5, 0
+loada checkincP, 0, 4
+neqi 4, 1, 5
+load fincP, 0, 6
+pullqw 5, 6, 0
+loada fincP, 0, 1
+jmpi 1, :if_2
+jmp :endif_2
+:if_2
+loada error_int_strincPaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada zeroincP, 0, 3
+stpushi 3
+loada oneincP, 0, 4
+stpushi 4
+rts
+:endif_2
+loada retincP, 0, 1
+stpushi 1
+loada zeroincP, 0, 2
+stpushi 2
+rts
+rts
+.cend

@@ -1,0 +1,47 @@
+// GPS library GPSD
+(gps_init func)
+	(set string s modulestrgps "libl1vmgps")
+	(set string s setupstrgps "gps_setup")
+	(set string s quitstrgps "gps_quit")
+	(set string s readstrgps "gps_read_data")
+
+    (set string s distancestrgps "gps_haversine_distance")
+    (set string s bearingstrgps "gps_bearing")
+
+	(set int64 1 setupgps 0)
+	(set int64 1 quitgps 1)
+	(set int64 1 readgps 2)
+
+    (set int64 1 distancegps 3)
+    (set int64 1 bearinggps 4)
+
+	(set int64 1 modgps 0)
+    // get arguments from stack
+	(modgps stpopi)
+	// load gpio module
+    (0 modulestrgps modgps 0 intr0)
+	// set functions
+    (2 modgps setupgps setupstrgps intr0)
+    (2 modgps quitgps quitstrgps intr0)
+	(2 modgps readgps readstrgps intr0)
+
+    (2 modgps distancegps distancestrgps intr0)
+    (2 modgps bearinggps bearingstrgps intr0)
+(funcend)
+// wrapper functions
+(gps_setup func)
+	(3 modgps setupgps 0 intr0)
+(funcend)
+(gps_quit func)
+	(3 modgps quitgps 0 intr0)
+(funcend)
+(gps_read func)
+	(3 modgps readgps 0 intr0)
+(funcend)
+
+(gps_distance func)
+	(3 modgps distancegps 0 intr0)
+(funcend)
+(gps_bearing func)
+	(3 modgps bearinggps 0 intr0)
+(funcend)

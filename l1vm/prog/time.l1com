@@ -1,0 +1,53 @@
+// Hello world! and time!!
+//
+#include <intr-func.l1h>
+#include <misc-macros.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set string s hellostr "Hello world!")
+    (set string s epochstr "ms after epoch: ")
+	(set string 2 colon ":")
+	(set int64 1 hour 0)
+	(set int64 1 min 0)
+	(set int64 1 sec 0)
+	(set int64 1 ten 10)
+	(set int64 1 f 0)
+    (set int64 1 epchmstm 0)
+  
+	// print string
+	(hellostr :print_s !)
+    (:print_n !)
+	(hour min sec :get_time !)
+    (hour :pull_int64_var !)
+    (min :pull_int64_var !)
+    (sec :pull_int64_var !)
+  
+	(((hour ten <) f =) f if)
+		(zero :print_i !)
+	(endif)
+    (hour :print_i !)
+    (colon :print_s !)
+  
+	(((min ten <) f =) f if)
+		(zero :print_i !)
+	(endif)
+    (min :print_i !)
+    (colon :print_s !)
+  
+	(((sec ten <) f =) f if)
+		(zero :print_i !)
+	(endif)
+	(sec :print_i !)
+    (:print_n !)
+    (:print_n !)
+
+    (epochstr :print_s !)
+    
+    (epchmstm :epochms !)
+    (epchmstm :pull_int64_var !)
+    (epchmstm :print_i !)
+    (:print_n !)
+
+	(zero :exit !)
+(funcend)
+

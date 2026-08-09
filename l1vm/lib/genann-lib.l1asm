@@ -1,0 +1,449 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, one
+@, 8Q, 1
+Q, 1, genann_mod
+@, 16Q, 0
+Q, 1, i
+@, 24Q, 1000
+Q, 1, f
+@, 32Q, 0
+Q, 1, ret
+@, 40Q, 0
+F, 2, input1
+@, 48Q, 0.0, 0.0, ;
+F, 2, input2
+@, 64Q, 0.0, 1.0, ;
+F, 2, input3
+@, 80Q, 1.0, 0.0, ;
+F, 2, input4
+@, 96Q, 1.0, 1.0, ;
+F, 1, des_output_null
+@, 112Q, 0.0
+F, 1, des_output_one
+@, 120Q, 1.0
+F, 1, output
+@, 128Q, 1.0
+Q, 1, Pinput1_addr
+@, 136Q, 0
+Q, 1, Pinput2_addr
+@, 144Q, 0
+Q, 1, Pinput3_addr
+@, 152Q, 0
+Q, 1, Pinput4_addr
+@, 160Q, 0
+Q, 1, Pdes_output_null_addr
+@, 168Q, 0
+Q, 1, Pdes_output_one_addr
+@, 176Q, 0
+Q, 1, Poutput_addr
+@, 184Q, 0
+Q, 1, two
+@, 192Q, 2
+B, 16, learning
+@, 200Q, "learning xor..."
+Q, 1, learningaddr
+@, 216Q, 200Q
+B, 10, txt_1
+@, 224Q, "0 xor 0: "
+Q, 1, txt_1addr
+@, 234Q, 224Q
+B, 10, txt_2
+@, 242Q, "0 xor 1: "
+Q, 1, txt_2addr
+@, 252Q, 242Q
+B, 10, txt_3
+@, 260Q, "1 xor 0: "
+Q, 1, txt_3addr
+@, 270Q, 260Q
+B, 10, txt_4
+@, 278Q, "1 xor 1: "
+Q, 1, txt_4addr
+@, 288Q, 278Q
+B, 11, run
+@, 296Q, "running..."
+Q, 1, runaddr
+@, 307Q, 296Q
+Q, 1, handle
+@, 315Q, 0
+Q, 1, three
+@, 323Q, 3
+B, 14, modulestr@genann
+@, 331Q, "libl1vmgenann"
+Q, 1, modulestr@genannaddr
+@, 345Q, 331Q
+B, 16, readstr@genann
+@, 353Q, "genann_read_ann"
+Q, 1, readstr@genannaddr
+@, 369Q, 353Q
+B, 17, writestr@genann
+@, 377Q, "genann_write_ann"
+Q, 1, writestr@genannaddr
+@, 394Q, 377Q
+B, 16, initstr@genann
+@, 402Q, "genann_init_ann"
+Q, 1, initstr@genannaddr
+@, 418Q, 402Q
+B, 17, trainstr@genann
+@, 426Q, "genann_train_ann"
+Q, 1, trainstr@genannaddr
+@, 443Q, 426Q
+B, 15, runstr@genann
+@, 451Q, "genann_run_ann"
+Q, 1, runstr@genannaddr
+@, 466Q, 451Q
+B, 16, freestr@genann
+@, 474Q, "genann_free_ann"
+Q, 1, freestr@genannaddr
+@, 490Q, 474Q
+B, 9, freegenannsstr@genann
+@, 498Q, "free_mem"
+Q, 1, freegenannsstr@genannaddr
+@, 507Q, 498Q
+B, 18, genanninitstr@genann
+@, 515Q, "genann_init_state"
+Q, 1, genanninitstr@genannaddr
+@, 533Q, 515Q
+B, 45, alloc_err_str@genann
+@, 541Q, "genann: ERROR allocating memory for genanns!"
+Q, 1, alloc_err_str@genannaddr
+@, 586Q, 541Q
+Q, 1, read@genann
+@, 594Q, 0
+Q, 1, write@genann
+@, 602Q, 1
+Q, 1, init@genann
+@, 610Q, 2
+Q, 1, train@genann
+@, 618Q, 3
+Q, 1, run@genann
+@, 626Q, 4
+Q, 1, free@genann
+@, 634Q, 5
+Q, 1, freegenanns@genann
+@, 642Q, 6
+Q, 1, genanninit@genann
+@, 650Q, 7
+Q, 1, mod@genann
+@, 658Q, 0
+Q, 1, maxind@genann
+@, 666Q, 0
+Q, 1, ret@genann
+@, 674Q, 0
+Q, 1, f@genann
+@, 682Q, 0
+.dend
+.code
+:main
+loada zero, 0, 0
+load input1, 0, 1
+load Pinput1_addr, 0, 2
+pullqw 1, 2, 0
+load input2, 0, 2
+load Pinput2_addr, 0, 3
+pullqw 2, 3, 0
+load input3, 0, 3
+load Pinput3_addr, 0, 4
+pullqw 3, 4, 0
+load input4, 0, 4
+load Pinput4_addr, 0, 5
+pullqw 4, 5, 0
+load des_output_null, 0, 5
+load Pdes_output_null_addr, 0, 6
+pullqw 5, 6, 0
+load des_output_one, 0, 6
+load Pdes_output_one_addr, 0, 7
+pullqw 6, 7, 0
+load output, 0, 7
+load Poutput_addr, 0, 8
+pullqw 7, 8, 0
+loada Pinput1_addr, 0, 8
+intr0 4, 8, 0, 0
+intr0 7, 0, 0, 0
+intr0 7, 0, 0, 0
+loada genann_mod, 0, 1
+stpushi 1
+loada one, 0, 2
+stpushi 2
+jsr :genann_init_lib
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_0
+jmp :endif_0
+:if_0
+loada zero, 0, 2
+intr0 1, 2, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_0
+intr0 26, 0, 0, 0
+loada two, 0, 1
+stpushi 1
+loada one, 0, 2
+stpushi 2
+loada two, 0, 1
+stpushi 1
+loada one, 0, 2
+stpushi 2
+jsr :genann_init
+stpopi 3
+load handle, 0, 4
+pullqw 3, 4, 0
+loada learningaddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+:learn
+loada handle, 0, 1
+stpushi 1
+loada Pinput2_addr, 0, 2
+stpushi 2
+loada Pdes_output_one_addr, 0, 3
+stpushi 3
+loada three, 0, 4
+stpushi 4
+jsr :genann_train
+loada handle, 0, 1
+stpushi 1
+loada Pinput3_addr, 0, 2
+stpushi 2
+loada Pdes_output_one_addr, 0, 3
+stpushi 3
+loada three, 0, 4
+stpushi 4
+jsr :genann_train
+loada handle, 0, 1
+stpushi 1
+loada Pinput1_addr, 0, 2
+stpushi 2
+loada Pdes_output_null_addr, 0, 3
+stpushi 3
+loada three, 0, 4
+stpushi 4
+jsr :genann_train
+loada handle, 0, 1
+stpushi 1
+loada Pinput4_addr, 0, 2
+stpushi 2
+loada Pdes_output_null_addr, 0, 3
+stpushi 3
+loada three, 0, 4
+stpushi 4
+jsr :genann_train
+loada i, 0, 1
+loada one, 0, 2
+subi 1, 2, 3
+load i, 0, 4
+pullqw 3, 4, 0
+loada i, 0, 1
+loada zero, 0, 5
+gri 1, 5, 6
+load f, 0, 7
+pullqw 6, 7, 0
+loada f, 0, 8
+jmpi 8, :learn
+loada runaddr, 0, 9
+intr0 6, 9, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+stpushi 6
+stpushi 7
+stpushi 8
+stpushi 9
+loada handle, 0, 10
+stpushi 10
+loada Pinput1_addr, 0, 11
+stpushi 11
+loada Poutput_addr, 0, 12
+stpushi 12
+loada one, 0, 2
+stpushi 2
+jsr :genann_run
+stpopi 9
+stpopi 8
+stpopi 7
+stpopi 6
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+loada txt_1addr, 0, 1
+intr0 6, 1, 0, 0
+loadd output, 0, 1
+intr0 5, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushd 1
+loada handle, 0, 2
+stpushi 2
+loada Pinput2_addr, 0, 3
+stpushi 3
+loada Poutput_addr, 0, 4
+stpushi 4
+loada one, 0, 5
+stpushi 5
+jsr :genann_run
+stpopd 1
+stpopi 1
+loada txt_2addr, 0, 1
+intr0 6, 1, 0, 0
+loadd output, 0, 1
+intr0 5, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushd 1
+loada handle, 0, 2
+stpushi 2
+loada Pinput3_addr, 0, 3
+stpushi 3
+loada Poutput_addr, 0, 4
+stpushi 4
+loada one, 0, 5
+stpushi 5
+jsr :genann_run
+stpopd 1
+stpopi 1
+loada txt_3addr, 0, 1
+intr0 6, 1, 0, 0
+loadd output, 0, 1
+intr0 5, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushd 1
+loada handle, 0, 2
+stpushi 2
+loada Pinput4_addr, 0, 3
+stpushi 3
+loada Poutput_addr, 0, 4
+stpushi 4
+loada one, 0, 5
+stpushi 5
+jsr :genann_run
+stpopd 1
+stpopi 1
+loada txt_4addr, 0, 1
+intr0 6, 1, 0, 0
+loadd output, 0, 1
+intr0 5, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushd 1
+loada handle, 0, 2
+stpushi 2
+jsr :genann_free
+stpopd 1
+stpopi 1
+jsr :free_genanns
+loada genann_mod, 0, 1
+intr0 1, 1, 0, 0
+loada zero, 0, 2
+intr0 255, 2, 0, 0
+rts
+:genann_init_lib
+loada zero, 0, 0
+stpopi 1
+load maxind@genann, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load mod@genann, 0, 3
+pullqw 2, 3, 0
+loada modulestr@genannaddr, 0, 3
+intr0 0, 3, 2, 0
+loada read@genann, 0, 4
+loada readstr@genannaddr, 0, 5
+intr0 2, 2, 4, 5
+loada write@genann, 0, 6
+loada writestr@genannaddr, 0, 7
+intr0 2, 2, 6, 7
+loada init@genann, 0, 8
+loada initstr@genannaddr, 0, 9
+intr0 2, 2, 8, 9
+loada train@genann, 0, 10
+loada trainstr@genannaddr, 0, 11
+intr0 2, 2, 10, 11
+loada run@genann, 0, 12
+loada runstr@genannaddr, 0, 13
+intr0 2, 2, 12, 13
+loada free@genann, 0, 14
+loada freestr@genannaddr, 0, 15
+intr0 2, 2, 14, 15
+loada freegenanns@genann, 0, 16
+loada freegenannsstr@genannaddr, 0, 17
+intr0 2, 2, 16, 17
+loada genanninit@genann, 0, 18
+loada genanninitstr@genannaddr, 0, 19
+intr0 2, 2, 18, 19
+stpushi 1
+intr0 3, 2, 18, 0
+stpopi 20
+load ret@genann, 0, 21
+pullqw 20, 21, 0
+neqi 20, 0, 21
+load f@genann, 0, 22
+pullqw 21, 22, 0
+loada f@genann, 0, 1
+jmpi 1, :if_1
+jmp :endif_1
+:if_1
+loada alloc_err_str@genannaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+:endif_1
+loada ret@genann, 0, 1
+stpushi 1
+rts
+:genann_read
+loada zero, 0, 0
+loada mod@genann, 0, 1
+loada read@genann, 0, 2
+intr0 3, 1, 2, 0
+rts
+:genann_write
+loada zero, 0, 0
+loada mod@genann, 0, 1
+loada write@genann, 0, 2
+intr0 3, 1, 2, 0
+rts
+:genann_init
+loada zero, 0, 0
+loada mod@genann, 0, 1
+loada init@genann, 0, 2
+intr0 3, 1, 2, 0
+rts
+:genann_train
+loada zero, 0, 0
+loada mod@genann, 0, 1
+loada train@genann, 0, 2
+intr0 3, 1, 2, 0
+rts
+:genann_run
+loada zero, 0, 0
+loada mod@genann, 0, 1
+loada run@genann, 0, 2
+intr0 3, 1, 2, 0
+rts
+:genann_free
+loada zero, 0, 0
+loada mod@genann, 0, 1
+loada free@genann, 0, 2
+intr0 3, 1, 2, 0
+rts
+:free_genanns
+loada zero, 0, 0
+loada mod@genann, 0, 1
+loada freegenanns@genann, 0, 2
+intr0 3, 1, 2, 0
+rts
+.cend

@@ -1,0 +1,29 @@
+// coord-xy.l1com
+// preprocessor function demo
+//
+#include <intr.l1h>
+
+#func inside_coord (MX, MY, X, Y, X2, Y2) :{f~ = ((MX > X) && (MX < X2)) && ((MY > Y) && (MY < Y2))}
+
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 one 1)
+	(set int64 1 x 100)
+	(set int64 1 x2 200)
+	(set int64 1 y 50)
+	(set int64 1 y2 100)
+	(set int64 1 mx 110)
+	(set int64 1 my 60)
+	(set int64 1 f~ 0)
+	(set string s insidestr "m position inside!")
+	(set string s outsidestr "m position outside!")
+	inside_coord (mx, my, x, y, x2, y2)
+	(f~ if+)
+		print_s (insidestr)
+		print_n
+	(else)
+		print_s (outsidestr)
+		print_n
+	(endif)
+	exit (zero)
+(funcend)

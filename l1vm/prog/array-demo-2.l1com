@@ -1,0 +1,28 @@
+// array-demo-2.l1com
+// array with values demo
+// shows how to set up an array
+// and how to access the elements
+//
+#include <intr.l1h>
+(main func)
+	(set int64 1 zero 0)
+    (set int64 1 one 1)
+	(set const-int64 1 offset 8)
+    (set int64 1 ind 0)
+    (set int64 1 f 0)
+    (set int64 1 num 0)
+    (set int64 1 realind 0)
+	// set array data using comma as elements separator
+	(set int64 10 array 10, 5, 8, 4, 3, 2, 7, 23, 45, 30)
+    (set int64 1 maxarray 10)
+    // print array 
+    (for-loop)
+    (((ind maxarray <) f =) f for)
+        ((ind offset *) realind =)
+        (array [ realind ] num =)
+        print_i (num)
+        print_n
+        ((ind one +) ind =)
+    (next)
+	exit (zero)
+(funcend)

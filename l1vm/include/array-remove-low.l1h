@@ -1,0 +1,152 @@
+// array-remove-low.l1h
+// remove an element from a array and store the rest in a new array
+
+// byte
+(array_byte_remove func)
+    #var ~ array_byte_remove
+
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+
+    (set int64 1 Parraya~ 0)
+    (set int64 1 Parrayb~ 0)
+
+    (set int64 1 arraya_size~ 0)
+    (set int64 1 arrayb_size~ 0)
+    (set int64 1 index~ 0)
+    (set int64 1 bindex~ 0)
+    (set const-int64 1 offset~ 1)
+    (set int64 1 f~ 0)
+    (set byte 1 var~ 0)
+    (set int64 1 remove_ind~ 0)
+    (set int64 1 ind~ 0)
+
+    (remove_ind~ stpop)
+    (Parrayb~ stpop)
+    (Parraya~ stpop)
+
+    (zero~ index~ :=)
+    (zero~ bindex~ :=)
+    (zero~ ind~ :=)
+
+    // remove element, and copy the rest to new array
+    (Parraya~ arraya_size~ :get_size !)
+    (arraya_size~ :pull_int64_var !)
+
+    (:copy_a_array_byte_remove)
+        (((ind~ remove_ind~ !=) f~ :=) f~ if)
+            (Parraya~ [ index~ ] var~ :=)
+            (var~ :pull_byte_var !)
+
+            (var~ Parrayb~ [ bindex~ ] :=)
+        (endif)
+
+        (index~ + offset~ index~ :=)
+        (bindex~ + offset~ bindex~ :=)
+        (ind~ + one~ ind~ :=)
+
+        (index~ < arraya_size~ f~ :=)
+        (f~ if)
+            (:copy_a_array_byte_remove jmp)
+        (endif)
+(funcend)
+
+// int16
+(array_int16_remove func)
+    #var ~ array_int16_remove
+
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+
+    (set int64 1 Parraya~ 0)
+    (set int64 1 Parrayb~ 0)
+
+    (set int64 1 arraya_size~ 0)
+    (set int64 1 arrayb_size~ 0)
+    (set int64 1 index~ 0)
+    (set int64 1 bindex~ 0)
+    (set const-int64 1 offset~ 2)
+    (set int64 1 f~ 0)
+    (set int16 1 var~ 0)
+    (set int64 1 remove_ind~ 0)
+    (set int64 1 ind~ 0)
+
+    (remove_ind~ stpop)
+    (Parrayb~ stpop)
+    (Parraya~ stpop)
+
+    (zero~ index~ :=)
+    (zero~ bindex~ :=)
+    (zero~ ind~ :=)
+
+    // remove element, and copy the rest to new array
+    (Parraya~ arraya_size~ :get_size !)
+    (arraya_size~ :pull_int64_var !)
+
+    (:copy_a_array_int16_remove)
+        (((ind~ remove_ind~ !=) f~ :=) f~ if)
+            (Parraya~ [ index~ ] var~ :=)
+            (var~ :pull_int16_var !)
+
+            (var~ Parrayb~ [ bindex~ ] :=)
+        (endif)
+
+        (index~ + offset~ index~ :=)
+        (bindex~ + offset~ bindex~ :=)
+        (ind~ + one~ ind~ :=)
+
+        (index~ < arraya_size~ f~ :=)
+        (f~ if)
+            (:copy_a_array_int16_remove jmp)
+        (endif)
+(funcend)
+
+// int32
+(array_int32_remove func)
+    #var ~ array_int32_remove
+
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+
+    (set int64 1 Parraya~ 0)
+    (set int64 1 Parrayb~ 0)
+
+    (set int64 1 arraya_size~ 0)
+    (set int64 1 arrayb_size~ 0)
+    (set int64 1 index~ 0)
+    (set int64 1 bindex~ 0)
+    (set const-int64 1 offset~ 4)
+    (set int64 1 f~ 0)
+    (set int32 1 var~ 0)
+    (set int64 1 remove_ind~ 0)
+    (set int64 1 ind~ 0)
+
+    (remove_ind~ stpop)
+    (Parrayb~ stpop)
+    (Parraya~ stpop)
+
+    (zero~ index~ :=)
+    (zero~ bindex~ :=)
+    (zero~ ind~ :=)
+
+    // remove element, and copy the rest to new array
+    (Parraya~ arraya_size~ :get_size !)
+    (arraya_size~ :pull_int64_var !)
+
+    (:copy_a_array_int32_remove)
+        (((ind~ remove_ind~ !=) f~ :=) f~ if)
+            (Parraya~ [ index~ ] var~ :=)
+            (var~ :pull_int32_var !)
+
+            (var~ Parrayb~ [ bindex~ ] :=)
+        (endif)
+
+        (index~ + offset~ index~ :=)
+        (bindex~ + offset~ bindex~ :=)
+        (ind~ + one~ ind~ :=)
+
+        (index~ < arraya_size~ f~ :=)
+        (f~ if)
+            (:copy_a_array_int32_remove jmp)
+        (endif)
+(funcend)

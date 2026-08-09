@@ -1,0 +1,36 @@
+// byte-array.l1com
+// Brackets - Hello world!
+//
+#include <intr-func.l1h>
+(main func)
+	(set const-int64 1 zero 0)
+	(set const-int64 1 one 1)
+	(set byte 2 barray 42 23)
+	(set int64 1 a 0)
+	(set int64 1 b 0)
+	(set int64 1 bi 0)
+
+	(barray [ zero ] a =)
+	(barray [ one  ] b =)
+
+	(a + zero a :=)
+	(b + zero b :=)
+
+	(a :print_i !)
+	(:print_n !)
+
+	(b :print_i !)
+	(:print_n !)
+
+	(b bi :=)
+	(bi :print_i !)
+	(:print_n !)
+
+	(a :print_i !)
+	(:print_n !)
+
+	(b :print_i !)
+	(:print_n !)
+
+	(zero :exit !)
+(funcend)

@@ -1,0 +1,2889 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, one
+@, 8Q, 1
+Q, 1, portnum
+@, 16Q, 2000Q
+Q, 1, error
+@, 24Q, 0
+Q, 1, f
+@, 32Q, 0
+B, 10, ip
+@, 40Q, "127.0.0.1"
+Q, 1, ipaddr
+@, 50Q, 40Q
+B, 256, hoststr
+@, 58Q, 
+Q, 1, hoststraddr
+@, 314Q, 58Q
+Q, 1, ip_len
+@, 322Q, 10
+Q, 1, ret
+@, 330Q, 0
+Q, 1, socket_handle
+@, 338Q, 0
+Q, 1, mod_net
+@, 346Q, 0
+Q, 1, mod_string
+@, 354Q, 1
+B, 38, netinitstr
+@, 362Q, "error: can't init networking sockets!"
+Q, 1, netinitstraddr
+@, 400Q, 362Q
+B, 30, addressstr
+@, 408Q, "error can't get host address!"
+Q, 1, addressstraddr
+@, 438Q, 408Q
+B, 32, connectstr
+@, 446Q, "error: can't connect to server!"
+Q, 1, connectstraddr
+@, 478Q, 446Q
+B, 37, storestr
+@, 486Q, "error can't store data in data base!"
+Q, 1, storestraddr
+@, 523Q, 486Q
+B, 13, dataokstr
+@, 531Q, "data stored!"
+Q, 1, dataokstraddr
+@, 544Q, 531Q
+B, 25, dataerrstr
+@, 552Q, "error: can't store data!"
+Q, 1, dataerrstraddr
+@, 577Q, 552Q
+B, 30, autherrstr
+@, 585Q, "error: authentication failed!"
+Q, 1, autherrstraddr
+@, 615Q, 585Q
+B, 27, close_socketstr
+@, 623Q, "error: can't close socket!"
+Q, 1, close_socketstraddr
+@, 650Q, 623Q
+B, 4, key
+@, 658Q, "foo"
+Q, 1, keyaddr
+@, 662Q, 658Q
+B, 7, value
+@, 670Q, "foobar"
+Q, 1, valueaddr
+@, 677Q, 670Q
+B, 3, okstr
+@, 685Q, "OK"
+Q, 1, okstraddr
+@, 688Q, 685Q
+B, 4097, retstr
+@, 696Q, ""
+Q, 1, retstraddr
+@, 4793Q, 696Q
+B, 11, modulestr@net
+@, 4801Q, "libl1vmnet"
+Q, 1, modulestr@netaddr
+@, 4812Q, 4801Q
+B, 13, initstr@net
+@, 4820Q, "init_sockets"
+Q, 1, initstr@netaddr
+@, 4833Q, 4820Q
+B, 19, open_server_socketstr@net
+@, 4841Q, "open_server_socket"
+Q, 1, open_server_socketstr@netaddr
+@, 4860Q, 4841Q
+B, 19, open_accept_serverstr@net
+@, 4868Q, "open_accept_server"
+Q, 1, open_accept_serverstr@netaddr
+@, 4887Q, 4868Q
+B, 19, open_client_socketstr@net
+@, 4895Q, "open_client_socket"
+Q, 1, open_client_socketstr@netaddr
+@, 4914Q, 4895Q
+B, 20, close_server_socketstr@net
+@, 4922Q, "close_server_socket"
+Q, 1, close_server_socketstr@netaddr
+@, 4942Q, 4922Q
+B, 20, close_accept_serverstr@net
+@, 4950Q, "close_accept_server"
+Q, 1, close_accept_serverstr@netaddr
+@, 4970Q, 4950Q
+B, 20, close_client_socketstr@net
+@, 4978Q, "close_client_socket"
+Q, 1, close_client_socketstr@netaddr
+@, 4998Q, 4978Q
+B, 15, get_clientaddrstr@net
+@, 5006Q, "get_clientaddr"
+Q, 1, get_clientaddrstr@netaddr
+@, 5021Q, 5006Q
+B, 13, get_hostnamestr@net
+@, 5029Q, "get_hostname"
+Q, 1, get_hostnamestr@netaddr
+@, 5042Q, 5029Q
+B, 15, get_hostbynamestr@net
+@, 5050Q, "get_hostbyname"
+Q, 1, get_hostbynamestr@netaddr
+@, 5065Q, 5050Q
+B, 15, get_hostbyaddrstr@net
+@, 5073Q, "get_hostbyaddr"
+Q, 1, get_hostbyaddrstr@netaddr
+@, 5088Q, 5073Q
+B, 17, socket_read_bytestr@net
+@, 5096Q, "socket_read_byte"
+Q, 1, socket_read_bytestr@netaddr
+@, 5113Q, 5096Q
+B, 18, socket_read_int64str@net
+@, 5121Q, "socket_read_int64"
+Q, 1, socket_read_int64str@netaddr
+@, 5139Q, 5121Q
+B, 19, socket_read_doublestr@net
+@, 5147Q, "socket_read_double"
+Q, 1, socket_read_doublestr@netaddr
+@, 5166Q, 5147Q
+B, 19, socket_read_stringstr@net
+@, 5174Q, "socket_read_string"
+Q, 1, socket_read_stringstr@netaddr
+@, 5193Q, 5174Q
+B, 18, socket_write_bytestr@net
+@, 5201Q, "socket_write_byte"
+Q, 1, socket_write_bytestr@netaddr
+@, 5219Q, 5201Q
+B, 19, socket_write_int64str@net
+@, 5227Q, "socket_write_int64"
+Q, 1, socket_write_int64str@netaddr
+@, 5246Q, 5227Q
+B, 20, socket_write_doublestr@net
+@, 5254Q, "socket_write_double"
+Q, 1, socket_write_doublestr@netaddr
+@, 5274Q, 5254Q
+B, 20, socket_write_stringstr@net
+@, 5282Q, "socket_write_string"
+Q, 1, socket_write_stringstr@netaddr
+@, 5302Q, 5282Q
+B, 19, data_store_int64str@net
+@, 5310Q, "socket_store_int64"
+Q, 1, data_store_int64str@netaddr
+@, 5329Q, 5310Q
+B, 20, data_store_doublestr@net
+@, 5337Q, "socket_store_double"
+Q, 1, data_store_doublestr@netaddr
+@, 5357Q, 5337Q
+B, 20, data_store_stringstr@net
+@, 5365Q, "socket_store_string"
+Q, 1, data_store_stringstr@netaddr
+@, 5385Q, 5365Q
+B, 17, data_get_int64str@net
+@, 5393Q, "socket_get_int64"
+Q, 1, data_get_int64str@netaddr
+@, 5410Q, 5393Q
+B, 18, data_get_doublestr@net
+@, 5418Q, "socket_get_double"
+Q, 1, data_get_doublestr@netaddr
+@, 5436Q, 5418Q
+B, 18, data_get_stringstr@net
+@, 5444Q, "socket_get_string"
+Q, 1, data_get_stringstr@netaddr
+@, 5462Q, 5444Q
+B, 20, data_remove_int64str@net
+@, 5470Q, "socket_remove_int64"
+Q, 1, data_remove_int64str@netaddr
+@, 5490Q, 5470Q
+B, 21, data_remove_doublestr@net
+@, 5498Q, "socket_remove_double"
+Q, 1, data_remove_doublestr@netaddr
+@, 5519Q, 5498Q
+B, 21, data_remove_stringstr@net
+@, 5527Q, "socket_remove_string"
+Q, 1, data_remove_stringstr@netaddr
+@, 5548Q, 5527Q
+B, 16, data_get_infostr@net
+@, 5556Q, "socket_get_info"
+Q, 1, data_get_infostr@netaddr
+@, 5572Q, 5556Q
+B, 9, free@netstr
+@, 5580Q, "free_mem"
+Q, 1, free@netstraddr
+@, 5589Q, 5580Q
+B, 27, get_mimetype_from_filenamestr@net
+@, 5597Q, "get_mimetype_from_filename"
+Q, 1, get_mimetype_from_filenamestr@netaddr
+@, 5624Q, 5597Q
+B, 17, socket_send_filestr@net
+@, 5632Q, "socket_send_file"
+Q, 1, socket_send_filestr@netaddr
+@, 5649Q, 5632Q
+B, 18, socket_handle_getstr@net
+@, 5657Q, "socket_handle_get"
+Q, 1, socket_handle_getstr@netaddr
+@, 5675Q, 5657Q
+B, 16, socket_get_filestr@net
+@, 5683Q, "socket_get_file"
+Q, 1, socket_get_filestr@netaddr
+@, 5699Q, 5683Q
+B, 23, socket_read_byte_arraystr@net
+@, 5707Q, "socket_read_byte_array"
+Q, 1, socket_read_byte_arraystr@netaddr
+@, 5730Q, 5707Q
+B, 24, socket_write_byte_arraystr@net
+@, 5738Q, "socket_write_byte_array"
+Q, 1, socket_write_byte_arraystr@netaddr
+@, 5762Q, 5738Q
+Q, 1, init@net
+@, 5770Q, 0
+Q, 1, open_server_socket@net
+@, 5778Q, 1
+Q, 1, open_accept_server@net
+@, 5786Q, 2
+Q, 1, open_client_socket@net
+@, 5794Q, 3
+Q, 1, close_server_socket@net
+@, 5802Q, 4
+Q, 1, close_accept_server@net
+@, 5810Q, 5
+Q, 1, close_client_socket@net
+@, 5818Q, 6
+Q, 1, get_clientaddr@net
+@, 5826Q, 7
+Q, 1, get_hostname@net
+@, 5834Q, 8
+Q, 1, get_hostbyname@net
+@, 5842Q, 9
+Q, 1, get_hostbyaddr@net
+@, 5850Q, 10
+Q, 1, socket_read_byte@net
+@, 5858Q, 11
+Q, 1, socket_read_int64@net
+@, 5866Q, 12
+Q, 1, socket_read_double@net
+@, 5874Q, 13
+Q, 1, socket_read_string@net
+@, 5882Q, 14
+Q, 1, socket_write_byte@net
+@, 5890Q, 15
+Q, 1, socket_write_int64@net
+@, 5898Q, 16
+Q, 1, socket_write_double@net
+@, 5906Q, 17
+Q, 1, socket_write_string@net
+@, 5914Q, 18
+Q, 1, free@net
+@, 5922Q, 19
+Q, 1, get_mimetype_from_filename@net
+@, 5930Q, 20
+Q, 1, socket_send_file@net
+@, 5938Q, 21
+Q, 1, socket_handle_get@net
+@, 5946Q, 22
+Q, 1, data_store_int64@net
+@, 5954Q, 23
+Q, 1, data_store_double@net
+@, 5962Q, 24
+Q, 1, data_store_string@net
+@, 5970Q, 25
+Q, 1, data_get_int64@net
+@, 5978Q, 26
+Q, 1, data_get_double@net
+@, 5986Q, 27
+Q, 1, data_get_string@net
+@, 5994Q, 28
+Q, 1, data_remove_int64@net
+@, 6002Q, 29
+Q, 1, data_remove_double@net
+@, 6010Q, 30
+Q, 1, data_remove_string@net
+@, 6018Q, 31
+Q, 1, data_get_info@net
+@, 6026Q, 32
+Q, 1, socket_get_file@net
+@, 6034Q, 33
+Q, 1, socket_read_byte_array@net
+@, 6042Q, 34
+Q, 1, socket_write_byte_array@net
+@, 6050Q, 35
+Q, 1, mod@net
+@, 6058Q, 0
+Q, 1, maxind@net
+@, 6066Q, 0
+B, 14, modulestr@string
+@, 6074Q, "libl1vmstring"
+Q, 1, modulestr@stringaddr
+@, 6088Q, 6074Q
+B, 11, lenstr@string
+@, 6096Q, "string_len"
+Q, 1, lenstr@stringaddr
+@, 6107Q, 6096Q
+B, 12, copystr@string
+@, 6115Q, "string_copy"
+Q, 1, copystr@stringaddr
+@, 6127Q, 6115Q
+B, 11, catstr@string
+@, 6135Q, "string_cat"
+Q, 1, catstr@stringaddr
+@, 6146Q, 6135Q
+B, 23, int64tostringstr@string
+@, 6154Q, "string_int64_to_string"
+Q, 1, int64tostringstr@stringaddr
+@, 6177Q, 6154Q
+B, 25, bytetohexstringstr@string
+@, 6185Q, "string_byte_to_hexstring"
+Q, 1, bytetohexstringstr@stringaddr
+@, 6210Q, 6185Q
+B, 24, doubletostringstr@string
+@, 6218Q, "string_double_to_string"
+Q, 1, doubletostringstr@stringaddr
+@, 6242Q, 6218Q
+B, 25, bytenumtostringstr@string
+@, 6250Q, "string_bytenum_to_string"
+Q, 1, bytenumtostringstr@stringaddr
+@, 6275Q, 6250Q
+B, 23, stringtoarraystr@string
+@, 6283Q, "string_string_to_array"
+Q, 1, stringtoarraystr@stringaddr
+@, 6306Q, 6283Q
+B, 23, arraytostringstr@string
+@, 6314Q, "string_array_to_string"
+Q, 1, arraytostringstr@stringaddr
+@, 6337Q, 6314Q
+B, 12, stringleftstr@string
+@, 6345Q, "string_left"
+Q, 1, stringleftstr@stringaddr
+@, 6357Q, 6345Q
+B, 13, stringrightstr@string
+@, 6365Q, "string_right"
+Q, 1, stringrightstr@stringaddr
+@, 6378Q, 6365Q
+B, 11, stringmidstr@string
+@, 6386Q, "string_mid"
+Q, 1, stringmidstr@stringaddr
+@, 6397Q, 6386Q
+B, 17, stringtostringstr@string
+@, 6405Q, "string_to_string"
+Q, 1, stringtostringstr@stringaddr
+@, 6422Q, 6405Q
+B, 15, stringcomparestr@string
+@, 6430Q, "string_compare"
+Q, 1, stringcomparestr@stringaddr
+@, 6445Q, 6430Q
+B, 20, stringmemtostringstr@string
+@, 6453Q, "stringmem_to_string"
+Q, 1, stringmemtostringstr@stringaddr
+@, 6473Q, 6453Q
+B, 24, stringmemsearchstr@string
+@, 6481Q, "stringmem_search_string"
+Q, 1, stringmemsearchstr@stringaddr
+@, 6505Q, 6481Q
+B, 13, stringregexstr@string
+@, 6513Q, "string_regex"
+Q, 1, stringregexstr@stringaddr
+@, 6526Q, 6513Q
+B, 14, stringsearchstr@string
+@, 6534Q, "string_search"
+Q, 1, stringsearchstr@stringaddr
+@, 6548Q, 6534Q
+B, 18, string_array_sortstr@string
+@, 6556Q, "string_array_sort"
+Q, 1, string_array_sortstr@stringaddr
+@, 6574Q, 6556Q
+B, 20, string_array_searchstr@string
+@, 6582Q, "string_array_search"
+Q, 1, string_array_searchstr@stringaddr
+@, 6602Q, 6582Q
+B, 19, string_mid_to_bytestr@string
+@, 6610Q, "string_mid_to_byte"
+Q, 1, string_mid_to_bytestr@stringaddr
+@, 6629Q, 6610Q
+B, 22, bytenumbytetostringstr@string
+@, 6637Q, "string_byte_to_string"
+Q, 1, bytenumbytetostringstr@stringaddr
+@, 6659Q, 6637Q
+B, 8, get_envstr@string
+@, 6667Q, "get_env"
+Q, 1, get_envstr@stringaddr
+@, 6675Q, 6667Q
+B, 8, set_envstr@string
+@, 6683Q, "set_env"
+Q, 1, set_envstr@stringaddr
+@, 6691Q, 6683Q
+B, 18, stringparsejsonstr@string
+@, 6699Q, "string_parse_json"
+Q, 1, stringparsejsonstr@stringaddr
+@, 6717Q, 6699Q
+Q, 1, len@string
+@, 6725Q, 0
+Q, 1, copy@string
+@, 6733Q, 1
+Q, 1, cat@string
+@, 6741Q, 2
+Q, 1, int64tostring@string
+@, 6749Q, 3
+Q, 1, bytetohexstring@string
+@, 6757Q, 4
+Q, 1, doubletostring@string
+@, 6765Q, 5
+Q, 1, bytenumtostring@string
+@, 6773Q, 6
+Q, 1, stringtoarray@string
+@, 6781Q, 7
+Q, 1, arraytostring@string
+@, 6789Q, 8
+Q, 1, stringleft@string
+@, 6797Q, 9
+Q, 1, stringright@string
+@, 6805Q, 10
+Q, 1, stringmid@string
+@, 6813Q, 11
+Q, 1, stringtostring@string
+@, 6821Q, 12
+Q, 1, stringcompare@string
+@, 6829Q, 13
+Q, 1, stringmemtostring@string
+@, 6837Q, 14
+Q, 1, stringmemsearch@string
+@, 6845Q, 15
+Q, 1, stringregex@string
+@, 6853Q, 16
+Q, 1, stringsearch@string
+@, 6861Q, 17
+Q, 1, get_env@string
+@, 6869Q, 18
+Q, 1, set_env@string
+@, 6877Q, 19
+Q, 1, stringparsejson@string
+@, 6885Q, 20
+Q, 1, string_array_sort@string
+@, 6893Q, 21
+Q, 1, string_array_search@string
+@, 6901Q, 22
+Q, 1, string_mid_to_byte@string
+@, 6909Q, 23
+Q, 1, bytenumbytetostring@string
+@, 6917Q, 24
+Q, 1, mod@string
+@, 6925Q, 0
+Q, 1, shandlego_data_store
+@, 6933Q, 0
+Q, 1, Pkeystraddrgo_data_store
+@, 6941Q, 
+Q, 1, Pdatastraddrgo_data_store
+@, 6949Q, 
+Q, 1, Pretstraddrgo_data_store
+@, 6957Q, 
+B, 12, commstrgo_data_store
+@, 6965Q, "store data "
+Q, 1, commstrgo_data_storeaddr
+@, 6977Q, 6965Q
+B, 2, colonstrgo_data_store
+@, 6985Q, ":"
+Q, 1, colonstrgo_data_storeaddr
+@, 6987Q, 6985Q
+B, 2, quotestrgo_data_store
+@, 6995Q, "'"
+Q, 1, quotestrgo_data_storeaddr
+@, 6997Q, 6995Q
+B, 2, spacestrgo_data_store
+@, 7005Q, " "
+Q, 1, spacestrgo_data_storeaddr
+@, 7007Q, 7005Q
+Q, 1, twolengo_data_store
+@, 7015Q, 2
+B, 4097, commandstrgo_data_store
+@, 7023Q, ""
+Q, 1, commandstrgo_data_storeaddr
+@, 11120Q, 7023Q
+Q, 1, retlengo_data_store
+@, 11128Q, 4096
+Q, 1, retgo_data_store
+@, 11136Q, 0
+Q, 1, zerogo_data_store
+@, 11144Q, 0
+Q, 1, onego_data_store
+@, 11152Q, 1
+Q, 1, fgo_data_store
+@, 11160Q, 0
+B, 29, errorstrgo_data_store
+@, 11168Q, "go_data_store: socket error!"
+Q, 1, errorstrgo_data_storeaddr
+@, 11197Q, 11168Q
+Q, 1, shandlego_data_get_key
+@, 11205Q, 0
+Q, 1, Pkeystraddrgo_data_get_key
+@, 11213Q, 
+Q, 1, Pdatastraddrgo_data_get_key
+@, 11221Q, 
+B, 9, commstrgo_data_get_key
+@, 11229Q, "get key "
+Q, 1, commstrgo_data_get_keyaddr
+@, 11238Q, 11229Q
+B, 2, colonstrgo_data_get_key
+@, 11246Q, ":"
+Q, 1, colonstrgo_data_get_keyaddr
+@, 11248Q, 11246Q
+B, 2, spacesstrgo_data_get_key
+@, 11256Q, " "
+Q, 1, spacesstrgo_data_get_keyaddr
+@, 11258Q, 11256Q
+B, 4097, commandstrgo_data_get_key
+@, 11266Q, ""
+Q, 1, commandstrgo_data_get_keyaddr
+@, 15363Q, 11266Q
+Q, 1, retlengo_data_get_key
+@, 15371Q, 4096
+Q, 1, retgo_data_get_key
+@, 15379Q, 0
+Q, 1, zerogo_data_get_key
+@, 15387Q, 0
+Q, 1, onego_data_get_key
+@, 15395Q, 1
+Q, 1, fgo_data_get_key
+@, 15403Q, 0
+B, 31, errorstrgo_data_get_key
+@, 15411Q, "go_data_get_key: socket error!"
+Q, 1, errorstrgo_data_get_keyaddr
+@, 15442Q, 15411Q
+Q, 1, shandlego_data_get_value
+@, 15450Q, 0
+Q, 1, Pkeystraddrgo_data_get_value
+@, 15458Q, 
+Q, 1, Pdatastraddrgo_data_get_value
+@, 15466Q, 
+B, 11, commstrgo_data_get_value
+@, 15474Q, "get value "
+Q, 1, commstrgo_data_get_valueaddr
+@, 15485Q, 15474Q
+B, 2, colonstrgo_data_get_value
+@, 15493Q, ":"
+Q, 1, colonstrgo_data_get_valueaddr
+@, 15495Q, 15493Q
+B, 2, quotestrgo_data_get_value
+@, 15503Q, "'"
+Q, 1, quotestrgo_data_get_valueaddr
+@, 15505Q, 15503Q
+B, 2, spacesstrgo_data_get_value
+@, 15513Q, " "
+Q, 1, spacesstrgo_data_get_valueaddr
+@, 15515Q, 15513Q
+B, 4097, commandstrgo_data_get_value
+@, 15523Q, ""
+Q, 1, commandstrgo_data_get_valueaddr
+@, 19620Q, 15523Q
+B, 4096, bufstrgo_data_get_value
+@, 19628Q, ""
+Q, 1, bufstrgo_data_get_valueaddr
+@, 23724Q, 19628Q
+Q, 1, buflengo_data_get_value
+@, 23732Q, 4095
+Q, 1, quotechgo_data_get_value
+@, 23740Q, 34
+Q, 1, twolengo_data_get_value
+@, 23748Q, 2
+Q, 1, retlengo_data_get_value
+@, 23756Q, 4096
+Q, 1, retgo_data_get_value
+@, 23764Q, 0
+Q, 1, zerogo_data_get_value
+@, 23772Q, 0
+Q, 1, onego_data_get_value
+@, 23780Q, 1
+Q, 1, fgo_data_get_value
+@, 23788Q, 0
+B, 33, errorstrgo_data_get_value
+@, 23796Q, "go_data_get_value: socket error!"
+Q, 1, errorstrgo_data_get_valueaddr
+@, 23829Q, 23796Q
+Q, 1, shandlego_data_remove
+@, 23837Q, 0
+Q, 1, Pkeystraddrgo_data_remove
+@, 23845Q, 
+Q, 1, Pdatastraddrgo_data_remove
+@, 23853Q, 
+B, 8, commstrgo_data_remove
+@, 23861Q, "remove "
+Q, 1, commstrgo_data_removeaddr
+@, 23869Q, 23861Q
+B, 2, colonstrgo_data_remove
+@, 23877Q, ":"
+Q, 1, colonstrgo_data_removeaddr
+@, 23879Q, 23877Q
+B, 2, spacesstrgo_data_remove
+@, 23887Q, " "
+Q, 1, spacesstrgo_data_removeaddr
+@, 23889Q, 23887Q
+B, 4097, commandstrgo_data_remove
+@, 23897Q, ""
+Q, 1, commandstrgo_data_removeaddr
+@, 27994Q, 23897Q
+Q, 1, retlengo_data_remove
+@, 28002Q, 4096
+Q, 1, retgo_data_remove
+@, 28010Q, 0
+Q, 1, zerogo_data_remove
+@, 28018Q, 0
+Q, 1, onego_data_remove
+@, 28026Q, 1
+Q, 1, fgo_data_remove
+@, 28034Q, 0
+B, 29, errorstrgo_data_remove
+@, 28042Q, "go_data_remove socket error!"
+Q, 1, errorstrgo_data_removeaddr
+@, 28071Q, 28042Q
+B, 6, commandstrgo_data_close
+@, 28079Q, "close"
+Q, 1, commandstrgo_data_closeaddr
+@, 28085Q, 28079Q
+Q, 1, shandlego_data_close
+@, 28093Q, 0
+B, 256, retstrgo_data_close
+@, 28101Q, ""
+Q, 1, retstrgo_data_closeaddr
+@, 28357Q, 28101Q
+Q, 1, retstrlengo_data_close
+@, 28365Q, 255
+Q, 1, retlengo_data_close
+@, 28373Q, 4096
+Q, 1, retgo_data_close
+@, 28381Q, 0
+Q, 1, zerogo_data_close
+@, 28389Q, 0
+Q, 1, onego_data_close
+@, 28397Q, 1
+Q, 1, fgo_data_close
+@, 28405Q, 0
+B, 28, errorstrgo_data_close
+@, 28413Q, "go_data_close socket error!"
+Q, 1, errorstrgo_data_closeaddr
+@, 28441Q, 28413Q
+Q, 1, shandlego_data_save
+@, 28449Q, 0
+Q, 1, Pnamestraddrgo_data_save
+@, 28457Q, 
+B, 2, quotestrgo_data_save
+@, 28465Q, "'"
+Q, 1, quotestrgo_data_saveaddr
+@, 28467Q, 28465Q
+B, 12, commstrgo_data_save
+@, 28475Q, "save :save "
+Q, 1, commstrgo_data_saveaddr
+@, 28487Q, 28475Q
+Q, 1, Pretstraddrgo_data_save
+@, 28495Q, 0
+B, 4097, commandstrgo_data_save
+@, 28503Q, ""
+Q, 1, commandstrgo_data_saveaddr
+@, 32600Q, 28503Q
+Q, 1, retlengo_data_save
+@, 32608Q, 4096
+Q, 1, twolengo_data_save
+@, 32616Q, 2
+Q, 1, retgo_data_save
+@, 32624Q, 0
+Q, 1, zerogo_data_save
+@, 32632Q, 0
+Q, 1, onego_data_save
+@, 32640Q, 1
+Q, 1, fgo_data_save
+@, 32648Q, 0
+B, 27, errorstrgo_data_save
+@, 32656Q, "go_data_save socket error!"
+Q, 1, errorstrgo_data_saveaddr
+@, 32683Q, 32656Q
+Q, 1, shandlego_data_load
+@, 32691Q, 0
+Q, 1, Pnamestraddrgo_data_load
+@, 32699Q, 
+B, 2, quotestrgo_data_load
+@, 32707Q, "'"
+Q, 1, quotestrgo_data_loadaddr
+@, 32709Q, 32707Q
+B, 12, commstrgo_data_load
+@, 32717Q, "load :load "
+Q, 1, commstrgo_data_loadaddr
+@, 32729Q, 32717Q
+Q, 1, Pretstraddrgo_data_load
+@, 32737Q, 0
+B, 4097, commandstrgo_data_load
+@, 32745Q, ""
+Q, 1, commandstrgo_data_loadaddr
+@, 36842Q, 32745Q
+Q, 1, retlengo_data_load
+@, 36850Q, 4096
+Q, 1, twolengo_data_load
+@, 36858Q, 2
+Q, 1, retgo_data_load
+@, 36866Q, 0
+Q, 1, zerogo_data_load
+@, 36874Q, 0
+Q, 1, onego_data_load
+@, 36882Q, 1
+Q, 1, fgo_data_load
+@, 36890Q, 0
+B, 27, errorstrgo_data_load
+@, 36898Q, "go_data_load socket error!"
+Q, 1, errorstrgo_data_loadaddr
+@, 36925Q, 36898Q
+Q, 1, shandlego_data_usage
+@, 36933Q, 0
+B, 6, usagestrgo_data_usage
+@, 36941Q, "usage"
+Q, 1, usagestrgo_data_usageaddr
+@, 36947Q, 36941Q
+B, 28, errorstrgo_data_usage
+@, 36955Q, "go_data_usage socket error!"
+Q, 1, errorstrgo_data_usageaddr
+@, 36983Q, 36955Q
+Q, 1, Pusagestraddrgo_data_usage
+@, 36991Q, 
+Q, 1, retgo_data_usage
+@, 36999Q, 0
+Q, 1, zerogo_data_usage
+@, 37007Q, 0
+Q, 1, onego_data_usage
+@, 37015Q, 1
+Q, 1, fgo_data_usage
+@, 37023Q, 0
+Q, 1, retlengo_data_usage
+@, 37031Q, 4096
+Q, 1, shandlego_data_set_link
+@, 37039Q, 0
+Q, 1, Pkeystraddrgo_data_set_link
+@, 37047Q, 
+Q, 1, Pdatastraddrgo_data_set_link
+@, 37055Q, 
+Q, 1, Pretstraddrgo_data_set_link
+@, 37063Q, 
+B, 10, commstrgo_data_set_link
+@, 37071Q, "set-link "
+Q, 1, commstrgo_data_set_linkaddr
+@, 37081Q, 37071Q
+B, 2, colonstrgo_data_set_link
+@, 37089Q, ":"
+Q, 1, colonstrgo_data_set_linkaddr
+@, 37091Q, 37089Q
+B, 2, quotestrgo_data_set_link
+@, 37099Q, "'"
+Q, 1, quotestrgo_data_set_linkaddr
+@, 37101Q, 37099Q
+B, 2, spacestrgo_data_set_link
+@, 37109Q, " "
+Q, 1, spacestrgo_data_set_linkaddr
+@, 37111Q, 37109Q
+Q, 1, twolengo_data_set_link
+@, 37119Q, 2
+B, 4097, commandstrgo_data_set_link
+@, 37127Q, ""
+Q, 1, commandstrgo_data_set_linkaddr
+@, 41224Q, 37127Q
+Q, 1, retlengo_data_set_link
+@, 41232Q, 4096
+Q, 1, retgo_data_set_link
+@, 41240Q, 0
+Q, 1, zerogo_data_set_link
+@, 41248Q, 0
+Q, 1, onego_data_set_link
+@, 41256Q, 1
+Q, 1, fgo_data_set_link
+@, 41264Q, 0
+B, 32, errorstrgo_data_set_link
+@, 41272Q, "go_data_set_link: socket error!"
+Q, 1, errorstrgo_data_set_linkaddr
+@, 41304Q, 41272Q
+Q, 1, shandlego_data_remove_link
+@, 41312Q, 0
+Q, 1, Pkeystraddrgo_data_remove_link
+@, 41320Q, 
+Q, 1, Pdatastraddrgo_data_remove_link
+@, 41328Q, 
+Q, 1, Pretstraddrgo_data_remove_link
+@, 41336Q, 
+B, 13, commstrgo_data_remove_link
+@, 41344Q, "remove-link "
+Q, 1, commstrgo_data_remove_linkaddr
+@, 41357Q, 41344Q
+B, 2, colonstrgo_data_remove_link
+@, 41365Q, ":"
+Q, 1, colonstrgo_data_remove_linkaddr
+@, 41367Q, 41365Q
+B, 2, quotestrgo_data_remove_link
+@, 41375Q, "'"
+Q, 1, quotestrgo_data_remove_linkaddr
+@, 41377Q, 41375Q
+B, 2, spacestrgo_data_remove_link
+@, 41385Q, " "
+Q, 1, spacestrgo_data_remove_linkaddr
+@, 41387Q, 41385Q
+Q, 1, twolengo_data_remove_link
+@, 41395Q, 2
+B, 4097, commandstrgo_data_remove_link
+@, 41403Q, ""
+Q, 1, commandstrgo_data_remove_linkaddr
+@, 45500Q, 41403Q
+Q, 1, retlengo_data_remove_link
+@, 45508Q, 4096
+Q, 1, retgo_data_remove_link
+@, 45516Q, 0
+Q, 1, zerogo_data_remove_link
+@, 45524Q, 0
+Q, 1, onego_data_remove_link
+@, 45532Q, 1
+Q, 1, fgo_data_remove_link
+@, 45540Q, 0
+B, 35, errorstrgo_data_remove_link
+@, 45548Q, "go_data_remove_link: socket error!"
+Q, 1, errorstrgo_data_remove_linkaddr
+@, 45583Q, 45548Q
+Q, 1, shandlego_data_get_linknum
+@, 45591Q, 0
+Q, 1, Pkeystraddrgo_data_get_linknum
+@, 45599Q, 
+Q, 1, Pdatastraddrgo_data_get_linknum
+@, 45607Q, 
+Q, 1, Pretstraddrgo_data_get_linknum
+@, 45615Q, 
+B, 18, commstrgo_data_get_linknum
+@, 45623Q, "get-links-number "
+Q, 1, commstrgo_data_get_linknumaddr
+@, 45641Q, 45623Q
+B, 2, colonstrgo_data_get_linknum
+@, 45649Q, ":"
+Q, 1, colonstrgo_data_get_linknumaddr
+@, 45651Q, 45649Q
+B, 2, quotestrgo_data_get_linknum
+@, 45659Q, "'"
+Q, 1, quotestrgo_data_get_linknumaddr
+@, 45661Q, 45659Q
+B, 2, spacestrgo_data_get_linknum
+@, 45669Q, " "
+Q, 1, spacestrgo_data_get_linknumaddr
+@, 45671Q, 45669Q
+Q, 1, twolengo_data_get_linknum
+@, 45679Q, 2
+B, 4097, commandstrgo_data_get_linknum
+@, 45687Q, ""
+Q, 1, commandstrgo_data_get_linknumaddr
+@, 49784Q, 45687Q
+Q, 1, retlengo_data_get_linknum
+@, 49792Q, 4096
+Q, 1, retgo_data_get_linknum
+@, 49800Q, 0
+Q, 1, zerogo_data_get_linknum
+@, 49808Q, 0
+Q, 1, onego_data_get_linknum
+@, 49816Q, 1
+Q, 1, fgo_data_get_linknum
+@, 49824Q, 0
+B, 35, errorstrgo_data_get_linknum
+@, 49832Q, "go_data_get_linknum: socket error!"
+Q, 1, errorstrgo_data_get_linknumaddr
+@, 49867Q, 49832Q
+Q, 1, shandlego_data_get_link_name
+@, 49875Q, 0
+Q, 1, Pkeystraddrgo_data_get_link_name
+@, 49883Q, 
+Q, 1, Pdatastraddrgo_data_get_link_name
+@, 49891Q, 
+Q, 1, Pretstraddrgo_data_get_link_name
+@, 49899Q, 
+B, 15, commstrgo_data_get_link_name
+@, 49907Q, "get-link-name "
+Q, 1, commstrgo_data_get_link_nameaddr
+@, 49922Q, 49907Q
+B, 2, colonstrgo_data_get_link_name
+@, 49930Q, ":"
+Q, 1, colonstrgo_data_get_link_nameaddr
+@, 49932Q, 49930Q
+B, 2, quotestrgo_data_get_link_name
+@, 49940Q, "'"
+Q, 1, quotestrgo_data_get_link_nameaddr
+@, 49942Q, 49940Q
+B, 2, spacestrgo_data_get_link_name
+@, 49950Q, " "
+Q, 1, spacestrgo_data_get_link_nameaddr
+@, 49952Q, 49950Q
+Q, 1, twolengo_data_get_link_name
+@, 49960Q, 2
+B, 4097, commandstrgo_data_get_link_name
+@, 49968Q, ""
+Q, 1, commandstrgo_data_get_link_nameaddr
+@, 54065Q, 49968Q
+Q, 1, retlengo_data_get_link_name
+@, 54073Q, 4096
+Q, 1, retgo_data_get_link_name
+@, 54081Q, 0
+Q, 1, zerogo_data_get_link_name
+@, 54089Q, 0
+Q, 1, onego_data_get_link_name
+@, 54097Q, 1
+Q, 1, fgo_data_get_link_name
+@, 54105Q, 0
+B, 37, errorstrgo_data_get_link_name
+@, 54113Q, "go_data_get_link_name: socket error!"
+Q, 1, errorstrgo_data_get_link_nameaddr
+@, 54150Q, 54113Q
+Q, 1, zeroauthenticate
+@, 54158Q, 0
+Q, 1, oneauthenticate
+@, 54166Q, 1
+B, 1, xorbauthenticate
+@, 54174Q, 8
+B, 32, keyauthenticate
+@, 54175Q, 12, 200, 6, 45, 234, 0, 10, 88, 197, 11, 78, 91, 34, 67, 221, 119, 170, 157, 43, 45, 9, 2, 33, 100, 109, 238, 22, 7, 200, 234, 254, 99, ;
+B, 32, server_dataauthenticate
+@, 54207Q, 
+B, 32, encrypt_dataauthenticate
+@, 54239Q, 
+B, 32, decrypt_dataauthenticate
+@, 54271Q, 
+Q, 1, iauthenticate
+@, 54303Q, 0
+Q, 1, shandleauthenticate
+@, 54311Q, 0
+Q, 1, retlenauthenticate
+@, 54319Q, 0
+Q, 1, retauthenticate
+@, 54327Q, 0
+Q, 1, charauthenticate
+@, 54335Q, 0
+B, 1, chbauthenticate
+@, 54343Q, 0
+B, 1, keybauthenticate
+@, 54344Q, 0
+B, 1, enbauthenticate
+@, 54345Q, 0
+B, 1, decbauthenticate
+@, 54346Q, 0
+Q, 1, sendbauthenticate
+@, 54347Q, 0
+Q, 1, fauthenticate
+@, 54355Q, 0
+Q, 1, lenauthenticate
+@, 54363Q, 32
+Q, 1, Pserver_dataauthenticate
+@, 54371Q, 
+Q, 1, Pencrypt_dataauthenticate
+@, 54379Q, 
+B, 48, error_readstrauthenticate
+@, 54387Q, "authenticate ERROR can't read data from server!"
+Q, 1, error_readstrauthenticateaddr
+@, 54435Q, 54387Q
+B, 46, error_writestrauthenticate
+@, 54443Q, "authenticate ERROR can't send data to server!"
+Q, 1, error_writestrauthenticateaddr
+@, 54489Q, 54443Q
+B, 3, okstrauthenticate
+@, 54497Q, "OK"
+Q, 1, okstrauthenticateaddr
+@, 54500Q, 54497Q
+B, 35, error_authstrauthenticate
+@, 54508Q, "authenticate ERROR, access denied!"
+Q, 1, error_authstrauthenticateaddr
+@, 54543Q, 54508Q
+B, 256, answerstrauthenticate
+@, 54551Q, ""
+Q, 1, answerstrauthenticateaddr
+@, 54807Q, 54551Q
+Q, 1, answerstr_lenauthenticate
+@, 54815Q, 255
+Q, 1, delayauthenticate
+@, 54823Q, 5000
+Q, 1, Panswerstrauthenticate
+@, 54831Q, 
+.dend
+.code
+:main
+loada zero, 0, 0
+stpushi 0
+loada mod_net, 0, 1
+stpushi 1
+loada one, 0, 2
+stpushi 2
+jsr :net_init
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+stpopi 0
+loada mod_string, 0, 1
+stpushi 1
+jsr :string_init
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_0
+jmp :endif_0
+:if_0
+loada netinitstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_0
+loada ipaddr, 0, 1
+stpushi 1
+loada portnum, 0, 2
+stpushi 2
+jsr :open_client_socket
+stpopi 3
+load socket_handle, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load ret, 0, 5
+pullqw 4, 5, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_1
+jmp :endif_1
+:if_1
+loada connectstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_1
+loada socket_handle, 0, 1
+stpushi 1
+jsr :authenticate
+stpopi 2
+load ret, 0, 3
+pullqw 2, 3, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_2
+jmp :endif_2
+:if_2
+loada autherrstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_2
+loada socket_handle, 0, 1
+stpushi 1
+jsr :go_data_close
+stpopi 2
+load ret, 0, 3
+pullqw 2, 3, 0
+loada socket_handle, 0, 1
+stpushi 1
+jsr :close_client_socket
+stpopi 2
+load ret, 0, 3
+pullqw 2, 3, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_3
+jmp :endif_3
+:if_3
+loada close_socketstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_3
+loada ipaddr, 0, 1
+stpushi 1
+loada portnum, 0, 2
+stpushi 2
+jsr :open_client_socket
+stpopi 3
+load socket_handle, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load ret, 0, 5
+pullqw 4, 5, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_4
+jmp :endif_4
+:if_4
+loada connectstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_4
+loada socket_handle, 0, 1
+stpushi 1
+loada keyaddr, 0, 2
+stpushi 2
+loada valueaddr, 0, 3
+stpushi 3
+loada retstraddr, 0, 4
+stpushi 4
+jsr :go_data_store
+stpopi 5
+load ret, 0, 6
+pullqw 5, 6, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_5
+jmp :endif_5
+:if_5
+loada storestraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_5
+loada retstraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada retstraddr, 0, 1
+stpushi 1
+loada okstraddr, 0, 2
+stpushi 2
+jsr :string_compare
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+stpopi 1
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_6
+jmp :else_6
+:if_6
+loada dataerrstraddr, 0, 2
+intr0 6, 2, 0, 0
+jmp :endif_6
+:else_6
+loada dataokstraddr, 0, 1
+intr0 6, 1, 0, 0
+:endif_6
+intr0 7, 0, 0, 0
+loada socket_handle, 0, 1
+stpushi 1
+jsr :go_data_close
+stpopi 2
+load ret, 0, 3
+pullqw 2, 3, 0
+loada socket_handle, 0, 1
+stpushi 1
+jsr :close_client_socket
+stpopi 2
+load ret, 0, 3
+pullqw 2, 3, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_7
+jmp :endif_7
+:if_7
+loada close_socketstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_7
+loada zero, 0, 1
+intr0 255, 1, 0, 0
+rts
+:net_init
+loada zero, 0, 0
+stpopi 1
+load maxind@net, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load mod@net, 0, 3
+pullqw 2, 3, 0
+loada modulestr@netaddr, 0, 3
+intr0 0, 3, 2, 0
+loada init@net, 0, 4
+loada initstr@netaddr, 0, 5
+intr0 2, 2, 4, 5
+loada open_server_socket@net, 0, 6
+loada open_server_socketstr@netaddr, 0, 7
+intr0 2, 2, 6, 7
+loada open_accept_server@net, 0, 8
+loada open_accept_serverstr@netaddr, 0, 9
+intr0 2, 2, 8, 9
+loada open_client_socket@net, 0, 10
+loada open_client_socketstr@netaddr, 0, 11
+intr0 2, 2, 10, 11
+loada close_server_socket@net, 0, 12
+loada close_server_socketstr@netaddr, 0, 13
+intr0 2, 2, 12, 13
+loada close_accept_server@net, 0, 14
+loada close_accept_serverstr@netaddr, 0, 15
+intr0 2, 2, 14, 15
+loada close_client_socket@net, 0, 16
+loada close_client_socketstr@netaddr, 0, 17
+intr0 2, 2, 16, 17
+loada get_clientaddr@net, 0, 18
+loada get_clientaddrstr@netaddr, 0, 19
+intr0 2, 2, 18, 19
+loada get_hostname@net, 0, 20
+loada get_hostnamestr@netaddr, 0, 21
+intr0 2, 2, 20, 21
+loada get_hostbyname@net, 0, 22
+loada get_hostbynamestr@netaddr, 0, 23
+intr0 2, 2, 22, 23
+loada get_hostbyaddr@net, 0, 24
+loada get_hostbyaddrstr@netaddr, 0, 25
+intr0 2, 2, 24, 25
+loada socket_read_byte@net, 0, 26
+loada socket_read_bytestr@netaddr, 0, 27
+intr0 2, 2, 26, 27
+loada socket_read_int64@net, 0, 28
+loada socket_read_int64str@netaddr, 0, 29
+intr0 2, 2, 28, 29
+loada socket_read_double@net, 0, 30
+loada socket_read_doublestr@netaddr, 0, 31
+intr0 2, 2, 30, 31
+loada socket_read_string@net, 0, 32
+loada socket_read_stringstr@netaddr, 0, 33
+intr0 2, 2, 32, 33
+loada socket_write_byte@net, 0, 34
+loada socket_write_bytestr@netaddr, 0, 35
+intr0 2, 2, 34, 35
+loada socket_write_int64@net, 0, 36
+loada socket_write_int64str@netaddr, 0, 37
+intr0 2, 2, 36, 37
+loada socket_write_double@net, 0, 38
+loada socket_write_doublestr@netaddr, 0, 39
+intr0 2, 2, 38, 39
+loada socket_write_string@net, 0, 40
+loada socket_write_stringstr@netaddr, 0, 41
+intr0 2, 2, 40, 41
+loada free@net, 0, 42
+loada free@netstraddr, 0, 43
+intr0 2, 2, 42, 43
+loada get_mimetype_from_filename@net, 0, 44
+loada get_mimetype_from_filenamestr@netaddr, 0, 45
+intr0 2, 2, 44, 45
+loada socket_send_file@net, 0, 46
+loada socket_send_filestr@netaddr, 0, 47
+intr0 2, 2, 46, 47
+loada socket_handle_get@net, 0, 48
+loada socket_handle_getstr@netaddr, 0, 49
+intr0 2, 2, 48, 49
+loada data_store_int64@net, 0, 50
+loada data_store_int64str@netaddr, 0, 51
+intr0 2, 2, 50, 51
+loada data_store_double@net, 0, 52
+loada data_store_doublestr@netaddr, 0, 53
+intr0 2, 2, 52, 53
+loada data_store_string@net, 0, 54
+loada data_store_stringstr@netaddr, 0, 55
+intr0 2, 2, 54, 55
+loada data_get_int64@net, 0, 56
+loada data_get_int64str@netaddr, 0, 57
+intr0 2, 2, 56, 57
+loada data_get_double@net, 0, 58
+loada data_get_doublestr@netaddr, 0, 59
+intr0 2, 2, 58, 59
+loada data_get_string@net, 0, 60
+loada data_get_stringstr@netaddr, 0, 61
+intr0 2, 2, 60, 61
+loada data_remove_int64@net, 0, 62
+loada data_remove_int64str@netaddr, 0, 63
+intr0 2, 2, 62, 63
+loada data_remove_double@net, 0, 64
+loada data_remove_doublestr@netaddr, 0, 65
+intr0 2, 2, 64, 65
+loada data_remove_string@net, 0, 66
+loada data_remove_stringstr@netaddr, 0, 67
+intr0 2, 2, 66, 67
+loada data_get_info@net, 0, 68
+loada data_get_infostr@netaddr, 0, 69
+intr0 2, 2, 68, 69
+loada socket_get_file@net, 0, 70
+loada socket_get_filestr@netaddr, 0, 71
+intr0 2, 2, 70, 71
+loada socket_read_byte_array@net, 0, 72
+loada socket_read_byte_arraystr@netaddr, 0, 73
+intr0 2, 2, 72, 73
+loada socket_write_byte_array@net, 0, 74
+loada socket_write_byte_arraystr@netaddr, 0, 75
+intr0 2, 2, 74, 75
+stpushi 1
+intr0 3, 2, 4, 0
+rts
+:open_server_socket
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada open_server_socket@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:open_accept_server
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada open_accept_server@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:open_client_socket
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada open_client_socket@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:close_server_socket
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada close_server_socket@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:close_accept_server
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada close_accept_server@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:close_client_socket
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada close_client_socket@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_clientaddr
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada get_clientaddr@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_hostname
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada get_hostname@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_hostbyname
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada get_hostbyname@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_hostbyaddr
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada get_hostbyaddr@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_read_byte
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_read_byte@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_read_int64
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_read_int64@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_read_double
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_read_double@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_read_string
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_read_string@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_write_byte
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_write_byte@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_write_int64
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_write_int64@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_write_double
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_write_double@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_write_string
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_write_string@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_free_mem
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada free@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_mimetype_from_filename
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada get_mimetype_from_filename@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_send_file
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_send_file@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_get_file
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_get_file@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_handle_get
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_handle_get@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_store_int64
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_store_int64@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_store_double
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_store_double@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_store_string
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_store_string@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_get_int64
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_get_int64@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_get_double
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_get_double@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_get_string
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_get_string@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_remove_int64
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_remove_int64@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_remove_double
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_remove_double@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_remove_string
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_remove_string@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_get_info
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_get_info@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_read_byte_array
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_read_byte_array@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_write_byte_array
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_write_byte_array@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_init
+loada zero, 0, 0
+stpopi 1
+load mod@string, 0, 2
+pullqw 1, 2, 0
+loada modulestr@stringaddr, 0, 2
+intr0 0, 2, 1, 0
+loada len@string, 0, 3
+loada lenstr@stringaddr, 0, 4
+intr0 2, 1, 3, 4
+loada copy@string, 0, 5
+loada copystr@stringaddr, 0, 6
+intr0 2, 1, 5, 6
+loada cat@string, 0, 7
+loada catstr@stringaddr, 0, 8
+intr0 2, 1, 7, 8
+loada int64tostring@string, 0, 9
+loada int64tostringstr@stringaddr, 0, 10
+intr0 2, 1, 9, 10
+loada bytetohexstring@string, 0, 11
+loada bytetohexstringstr@stringaddr, 0, 12
+intr0 2, 1, 11, 12
+loada doubletostring@string, 0, 13
+loada doubletostringstr@stringaddr, 0, 14
+intr0 2, 1, 13, 14
+loada bytenumtostring@string, 0, 15
+loada bytenumtostringstr@stringaddr, 0, 16
+intr0 2, 1, 15, 16
+loada stringtoarray@string, 0, 17
+loada stringtoarraystr@stringaddr, 0, 18
+intr0 2, 1, 17, 18
+loada arraytostring@string, 0, 19
+loada arraytostringstr@stringaddr, 0, 20
+intr0 2, 1, 19, 20
+loada stringleft@string, 0, 21
+loada stringleftstr@stringaddr, 0, 22
+intr0 2, 1, 21, 22
+loada stringright@string, 0, 23
+loada stringrightstr@stringaddr, 0, 24
+intr0 2, 1, 23, 24
+loada stringmid@string, 0, 25
+loada stringmidstr@stringaddr, 0, 26
+intr0 2, 1, 25, 26
+loada stringtostring@string, 0, 27
+loada stringtostringstr@stringaddr, 0, 28
+intr0 2, 1, 27, 28
+loada stringcompare@string, 0, 29
+loada stringcomparestr@stringaddr, 0, 30
+intr0 2, 1, 29, 30
+loada stringmemtostring@string, 0, 31
+loada stringmemtostringstr@stringaddr, 0, 32
+intr0 2, 1, 31, 32
+loada stringmemsearch@string, 0, 33
+loada stringmemsearchstr@stringaddr, 0, 34
+intr0 2, 1, 33, 34
+loada stringregex@string, 0, 35
+loada stringregexstr@stringaddr, 0, 36
+intr0 2, 1, 35, 36
+loada stringsearch@string, 0, 37
+loada stringsearchstr@stringaddr, 0, 38
+intr0 2, 1, 37, 38
+loada get_env@string, 0, 39
+loada get_envstr@stringaddr, 0, 40
+intr0 2, 1, 39, 40
+loada set_env@string, 0, 41
+loada set_envstr@stringaddr, 0, 42
+intr0 2, 1, 41, 42
+loada stringparsejson@string, 0, 43
+loada stringparsejsonstr@stringaddr, 0, 44
+intr0 2, 1, 43, 44
+loada string_array_sort@string, 0, 45
+loada string_array_sortstr@stringaddr, 0, 46
+intr0 2, 1, 45, 46
+loada string_array_search@string, 0, 47
+loada string_array_searchstr@stringaddr, 0, 48
+intr0 2, 1, 47, 48
+loada string_mid_to_byte@string, 0, 49
+loada string_mid_to_bytestr@stringaddr, 0, 50
+intr0 2, 1, 49, 50
+loada bytenumbytetostring@string, 0, 51
+loada bytenumbytetostringstr@stringaddr, 0, 52
+intr0 2, 1, 51, 52
+rts
+:string_len
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada len@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_copy
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada copy@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_cat
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada cat@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_int64tostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada int64tostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_bytetohexstring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada bytetohexstring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_doubletostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada doubletostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_bytenumtostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada bytenumtostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_to_array
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringtoarray@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:array_to_string
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada arraytostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_left
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringleft@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_right
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringright@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_mid
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringmid@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_mid_to_byte
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada string_mid_to_byte@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_to_string
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringtostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_compare
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringcompare@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_memtostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringmemtostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_memsearch
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringmemsearch@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_regex
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringregex@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_search
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringsearch@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_env
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada get_env@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_env
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada set_env@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_parse_json
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringparsejson@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_array_sort
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada string_array_sort@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_array_search
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada string_array_search@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_bytetostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada bytenumbytetostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:go_data_store
+loada zero, 0, 0
+stpopi 1
+load Pretstraddrgo_data_store, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Pdatastraddrgo_data_store, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load Pkeystraddrgo_data_store, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load shandlego_data_store, 0, 5
+pullqw 4, 5, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+loada commandstrgo_data_storeaddr, 0, 5
+stpushi 5
+loada commstrgo_data_storeaddr, 0, 6
+stpushi 6
+jsr :string_copy
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada commandstrgo_data_storeaddr, 0, 1
+stpushi 1
+loada colonstrgo_data_storeaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_storeaddr, 0, 1
+stpushi 1
+loada Pkeystraddrgo_data_store, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_storeaddr, 0, 1
+stpushi 1
+loada spacestrgo_data_storeaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_storeaddr, 0, 1
+stpushi 1
+loada quotestrgo_data_storeaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_storeaddr, 0, 1
+stpushi 1
+loada Pdatastraddrgo_data_store, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_storeaddr, 0, 1
+stpushi 1
+loada quotestrgo_data_storeaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada shandlego_data_store, 0, 1
+stpushi 1
+loada commandstrgo_data_storeaddr, 0, 2
+stpushi 2
+jsr :socket_write_string
+stpopi 3
+load retgo_data_store, 0, 4
+pullqw 3, 4, 0
+loada retgo_data_store, 0, 1
+loada zerogo_data_store, 0, 2
+neqi 1, 2, 3
+load fgo_data_store, 0, 4
+pullqw 3, 4, 0
+loada fgo_data_store, 0, 1
+jmpi 1, :if_8
+jmp :endif_8
+:if_8
+loada errorstrgo_data_storeaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada onego_data_store, 0, 3
+stpushi 3
+        rts
+:endif_8
+loada shandlego_data_store, 0, 1
+stpushi 1
+loada Pretstraddrgo_data_store, 0, 2
+stpushi 2
+loada retlengo_data_store, 0, 3
+stpushi 3
+jsr :socket_read_string
+rts
+:go_data_get_key
+loada zero, 0, 0
+stpopi 1
+load Pdatastraddrgo_data_get_key, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Pkeystraddrgo_data_get_key, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load shandlego_data_get_key, 0, 4
+pullqw 3, 4, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+loada commandstrgo_data_get_keyaddr, 0, 4
+stpushi 4
+loada commstrgo_data_get_keyaddr, 0, 5
+stpushi 5
+jsr :string_copy
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada commandstrgo_data_get_keyaddr, 0, 1
+stpushi 1
+loada colonstrgo_data_get_keyaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_get_keyaddr, 0, 1
+stpushi 1
+loada Pkeystraddrgo_data_get_key, 0, 2
+stpushi 2
+jsr :string_cat
+loada shandlego_data_get_key, 0, 1
+stpushi 1
+loada commandstrgo_data_get_keyaddr, 0, 2
+stpushi 2
+jsr :socket_write_string
+stpopi 3
+load retgo_data_get_key, 0, 4
+pullqw 3, 4, 0
+loada retgo_data_get_key, 0, 1
+loada zerogo_data_get_key, 0, 2
+neqi 1, 2, 3
+load fgo_data_get_key, 0, 4
+pullqw 3, 4, 0
+loada fgo_data_get_key, 0, 1
+jmpi 1, :if_9
+jmp :endif_9
+:if_9
+loada errorstrgo_data_get_keyaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada onego_data_get_key, 0, 3
+stpushi 3
+        rts
+:endif_9
+loada shandlego_data_get_key, 0, 1
+stpushi 1
+loada Pdatastraddrgo_data_get_key, 0, 2
+stpushi 2
+loada retlengo_data_get_key, 0, 3
+stpushi 3
+jsr :socket_read_string
+rts
+:go_data_get_value
+loada zero, 0, 0
+stpopi 1
+load Pdatastraddrgo_data_get_value, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Pkeystraddrgo_data_get_value, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load shandlego_data_get_value, 0, 4
+pullqw 3, 4, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+loada commandstrgo_data_get_valueaddr, 0, 4
+stpushi 4
+loada commstrgo_data_get_valueaddr, 0, 5
+stpushi 5
+jsr :string_copy
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada commandstrgo_data_get_valueaddr, 0, 1
+stpushi 1
+loada quotestrgo_data_get_valueaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_get_valueaddr, 0, 1
+stpushi 1
+loada Pdatastraddrgo_data_get_value, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_get_valueaddr, 0, 1
+stpushi 1
+loada quotestrgo_data_get_valueaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada shandlego_data_get_value, 0, 1
+stpushi 1
+loada commandstrgo_data_get_valueaddr, 0, 2
+stpushi 2
+jsr :socket_write_string
+stpopi 3
+load retgo_data_get_value, 0, 4
+pullqw 3, 4, 0
+loada retgo_data_get_value, 0, 1
+loada zerogo_data_get_value, 0, 2
+neqi 1, 2, 3
+load fgo_data_get_value, 0, 4
+pullqw 3, 4, 0
+loada fgo_data_get_value, 0, 1
+jmpi 1, :if_10
+jmp :endif_10
+:if_10
+loada errorstrgo_data_get_valueaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada onego_data_get_value, 0, 3
+stpushi 3
+        rts
+:endif_10
+loada shandlego_data_get_value, 0, 1
+stpushi 1
+loada Pkeystraddrgo_data_get_value, 0, 2
+stpushi 2
+loada retlengo_data_get_value, 0, 3
+stpushi 3
+jsr :socket_read_string
+rts
+:go_data_remove
+loada zero, 0, 0
+stpopi 1
+load Pdatastraddrgo_data_remove, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Pkeystraddrgo_data_remove, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load shandlego_data_remove, 0, 4
+pullqw 3, 4, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+loada commandstrgo_data_removeaddr, 0, 4
+stpushi 4
+loada commstrgo_data_removeaddr, 0, 5
+stpushi 5
+jsr :string_copy
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada commandstrgo_data_removeaddr, 0, 1
+stpushi 1
+loada colonstrgo_data_removeaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_removeaddr, 0, 1
+stpushi 1
+loada Pkeystraddrgo_data_remove, 0, 2
+stpushi 2
+jsr :string_cat
+loada shandlego_data_remove, 0, 1
+stpushi 1
+loada commandstrgo_data_removeaddr, 0, 2
+stpushi 2
+jsr :socket_write_string
+stpopi 3
+load retgo_data_remove, 0, 4
+pullqw 3, 4, 0
+loada retgo_data_remove, 0, 1
+loada zerogo_data_remove, 0, 2
+neqi 1, 2, 3
+load fgo_data_remove, 0, 4
+pullqw 3, 4, 0
+loada fgo_data_remove, 0, 1
+jmpi 1, :if_11
+jmp :endif_11
+:if_11
+loada errorstrgo_data_removeaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada onego_data_remove, 0, 3
+stpushi 3
+        rts
+:endif_11
+loada shandlego_data_remove, 0, 1
+stpushi 1
+loada Pdatastraddrgo_data_remove, 0, 2
+stpushi 2
+loada retlengo_data_remove, 0, 3
+stpushi 3
+jsr :socket_read_string
+rts
+:go_data_close
+loada zero, 0, 0
+stpopi 1
+load shandlego_data_close, 0, 2
+pullqw 1, 2, 0
+stpushi 0
+stpushi 1
+loada shandlego_data_close, 0, 1
+stpushi 1
+loada commandstrgo_data_closeaddr, 0, 2
+stpushi 2
+jsr :socket_write_string
+stpopi 3
+load retgo_data_close, 0, 4
+pullqw 3, 4, 0
+stpopi 1
+stpopi 0
+loada retgo_data_close, 0, 1
+loada zerogo_data_close, 0, 2
+neqi 1, 2, 3
+load fgo_data_close, 0, 4
+pullqw 3, 4, 0
+loada fgo_data_close, 0, 1
+jmpi 1, :if_12
+jmp :endif_12
+:if_12
+loada errorstrgo_data_closeaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada onego_data_close, 0, 3
+stpushi 3
+        rts
+:endif_12
+loada shandlego_data_close, 0, 1
+stpushi 1
+loada retstrgo_data_closeaddr, 0, 2
+stpushi 2
+loada retlengo_data_close, 0, 3
+stpushi 3
+jsr :socket_read_string
+rts
+:go_data_save
+loada zero, 0, 0
+stpopi 1
+load Pretstraddrgo_data_save, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Pnamestraddrgo_data_save, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load shandlego_data_save, 0, 4
+pullqw 3, 4, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+loada commandstrgo_data_saveaddr, 0, 4
+stpushi 4
+loada commstrgo_data_saveaddr, 0, 5
+stpushi 5
+jsr :string_copy
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada commandstrgo_data_saveaddr, 0, 1
+stpushi 1
+loada quotestrgo_data_saveaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_saveaddr, 0, 1
+stpushi 1
+loada Pnamestraddrgo_data_save, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_saveaddr, 0, 1
+stpushi 1
+loada quotestrgo_data_saveaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada shandlego_data_save, 0, 1
+stpushi 1
+loada commandstrgo_data_saveaddr, 0, 2
+stpushi 2
+jsr :socket_write_string
+stpopi 3
+load retgo_data_save, 0, 4
+pullqw 3, 4, 0
+loada retgo_data_save, 0, 1
+loada zerogo_data_save, 0, 2
+neqi 1, 2, 3
+load fgo_data_save, 0, 4
+pullqw 3, 4, 0
+loada fgo_data_save, 0, 1
+jmpi 1, :if_13
+jmp :endif_13
+:if_13
+loada errorstrgo_data_saveaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada onego_data_save, 0, 3
+stpushi 3
+        rts
+:endif_13
+loada shandlego_data_save, 0, 1
+stpushi 1
+loada Pretstraddrgo_data_save, 0, 2
+stpushi 2
+loada retlengo_data_save, 0, 3
+stpushi 3
+jsr :socket_read_string
+rts
+:go_data_load
+loada zero, 0, 0
+stpopi 1
+load Pretstraddrgo_data_load, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Pnamestraddrgo_data_load, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load shandlego_data_load, 0, 4
+pullqw 3, 4, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+loada commandstrgo_data_loadaddr, 0, 4
+stpushi 4
+loada commstrgo_data_loadaddr, 0, 5
+stpushi 5
+jsr :string_copy
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada commandstrgo_data_loadaddr, 0, 1
+stpushi 1
+loada quotestrgo_data_loadaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_loadaddr, 0, 1
+stpushi 1
+loada Pnamestraddrgo_data_load, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_loadaddr, 0, 1
+stpushi 1
+loada quotestrgo_data_loadaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada shandlego_data_load, 0, 1
+stpushi 1
+loada commandstrgo_data_loadaddr, 0, 2
+stpushi 2
+jsr :socket_write_string
+stpopi 3
+load retgo_data_load, 0, 4
+pullqw 3, 4, 0
+loada retgo_data_load, 0, 1
+loada zerogo_data_load, 0, 2
+neqi 1, 2, 3
+load fgo_data_load, 0, 4
+pullqw 3, 4, 0
+loada fgo_data_load, 0, 1
+jmpi 1, :if_14
+jmp :endif_14
+:if_14
+loada errorstrgo_data_loadaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada onego_data_load, 0, 3
+stpushi 3
+        rts
+:endif_14
+loada shandlego_data_load, 0, 1
+stpushi 1
+loada Pretstraddrgo_data_load, 0, 2
+stpushi 2
+loada retlengo_data_load, 0, 3
+stpushi 3
+jsr :socket_read_string
+rts
+:go_data_usage
+loada zero, 0, 0
+stpopi 1
+load Pusagestraddrgo_data_usage, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load shandlego_data_usage, 0, 3
+pullqw 2, 3, 0
+stpushi 0
+stpushi 1
+stpushi 2
+loada shandlego_data_usage, 0, 2
+stpushi 2
+loada usagestrgo_data_usageaddr, 0, 3
+stpushi 3
+jsr :socket_write_string
+stpopi 4
+load retgo_data_usage, 0, 5
+pullqw 4, 5, 0
+stpopi 2
+stpopi 1
+stpopi 0
+loada retgo_data_usage, 0, 1
+loada zerogo_data_usage, 0, 2
+neqi 1, 2, 3
+load fgo_data_usage, 0, 4
+pullqw 3, 4, 0
+loada fgo_data_usage, 0, 1
+jmpi 1, :if_15
+jmp :endif_15
+:if_15
+loada errorstrgo_data_usageaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada onego_data_usage, 0, 3
+stpushi 3
+        rts
+:endif_15
+loada shandlego_data_usage, 0, 1
+stpushi 1
+loada Pusagestraddrgo_data_usage, 0, 2
+stpushi 2
+loada retlengo_data_usage, 0, 3
+stpushi 3
+jsr :socket_read_string
+rts
+:go_data_set_link
+loada zero, 0, 0
+stpopi 1
+load Pretstraddrgo_data_set_link, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Pdatastraddrgo_data_set_link, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load Pkeystraddrgo_data_set_link, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load shandlego_data_set_link, 0, 5
+pullqw 4, 5, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+loada commandstrgo_data_set_linkaddr, 0, 5
+stpushi 5
+loada commstrgo_data_set_linkaddr, 0, 6
+stpushi 6
+jsr :string_copy
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada commandstrgo_data_set_linkaddr, 0, 1
+stpushi 1
+loada colonstrgo_data_set_linkaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_set_linkaddr, 0, 1
+stpushi 1
+loada Pkeystraddrgo_data_set_link, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_set_linkaddr, 0, 1
+stpushi 1
+loada spacestrgo_data_set_linkaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_set_linkaddr, 0, 1
+stpushi 1
+loada quotestrgo_data_set_linkaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_set_linkaddr, 0, 1
+stpushi 1
+loada Pdatastraddrgo_data_set_link, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_set_linkaddr, 0, 1
+stpushi 1
+loada quotestrgo_data_set_linkaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada shandlego_data_set_link, 0, 1
+stpushi 1
+loada commandstrgo_data_set_linkaddr, 0, 2
+stpushi 2
+jsr :socket_write_string
+stpopi 3
+load retgo_data_set_link, 0, 4
+pullqw 3, 4, 0
+loada retgo_data_set_link, 0, 1
+loada zerogo_data_set_link, 0, 2
+neqi 1, 2, 3
+load fgo_data_set_link, 0, 4
+pullqw 3, 4, 0
+loada fgo_data_set_link, 0, 1
+jmpi 1, :if_16
+jmp :endif_16
+:if_16
+loada errorstrgo_data_set_linkaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada onego_data_set_link, 0, 3
+stpushi 3
+        rts
+:endif_16
+loada shandlego_data_set_link, 0, 1
+stpushi 1
+loada Pretstraddrgo_data_set_link, 0, 2
+stpushi 2
+loada retlengo_data_set_link, 0, 3
+stpushi 3
+jsr :socket_read_string
+rts
+:go_data_remove_link
+loada zero, 0, 0
+stpopi 1
+load Pretstraddrgo_data_remove_link, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Pdatastraddrgo_data_remove_link, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load Pkeystraddrgo_data_remove_link, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load shandlego_data_remove_link, 0, 5
+pullqw 4, 5, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+loada commandstrgo_data_remove_linkaddr, 0, 5
+stpushi 5
+loada commstrgo_data_remove_linkaddr, 0, 6
+stpushi 6
+jsr :string_copy
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada commandstrgo_data_remove_linkaddr, 0, 1
+stpushi 1
+loada colonstrgo_data_remove_linkaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_remove_linkaddr, 0, 1
+stpushi 1
+loada Pkeystraddrgo_data_remove_link, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_remove_linkaddr, 0, 1
+stpushi 1
+loada spacestrgo_data_remove_linkaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_remove_linkaddr, 0, 1
+stpushi 1
+loada quotestrgo_data_remove_linkaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_remove_linkaddr, 0, 1
+stpushi 1
+loada Pdatastraddrgo_data_remove_link, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_remove_linkaddr, 0, 1
+stpushi 1
+loada quotestrgo_data_remove_linkaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada shandlego_data_remove_link, 0, 1
+stpushi 1
+loada commandstrgo_data_remove_linkaddr, 0, 2
+stpushi 2
+jsr :socket_write_string
+stpopi 3
+load retgo_data_remove_link, 0, 4
+pullqw 3, 4, 0
+loada retgo_data_remove_link, 0, 1
+loada zerogo_data_remove_link, 0, 2
+neqi 1, 2, 3
+load fgo_data_remove_link, 0, 4
+pullqw 3, 4, 0
+loada fgo_data_remove_link, 0, 1
+jmpi 1, :if_17
+jmp :endif_17
+:if_17
+loada errorstrgo_data_remove_linkaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada onego_data_remove_link, 0, 3
+stpushi 3
+        rts
+:endif_17
+loada shandlego_data_remove_link, 0, 1
+stpushi 1
+loada Pretstraddrgo_data_remove_link, 0, 2
+stpushi 2
+loada retlengo_data_remove_link, 0, 3
+stpushi 3
+jsr :socket_read_string
+rts
+:go_data_get_linknum
+loada zero, 0, 0
+stpopi 1
+load Pretstraddrgo_data_get_linknum, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Pkeystraddrgo_data_get_linknum, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load shandlego_data_get_linknum, 0, 4
+pullqw 3, 4, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+loada commandstrgo_data_get_linknumaddr, 0, 4
+stpushi 4
+loada commstrgo_data_get_linknumaddr, 0, 5
+stpushi 5
+jsr :string_copy
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada commandstrgo_data_get_linknumaddr, 0, 1
+stpushi 1
+loada colonstrgo_data_get_linknumaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_get_linknumaddr, 0, 1
+stpushi 1
+loada Pkeystraddrgo_data_get_linknum, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_get_linknumaddr, 0, 1
+stpushi 1
+loada spacestrgo_data_get_linknumaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_get_linknumaddr, 0, 1
+stpushi 1
+loada quotestrgo_data_get_linknumaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_get_linknumaddr, 0, 1
+stpushi 1
+loada Pdatastraddrgo_data_get_linknum, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_get_linknumaddr, 0, 1
+stpushi 1
+loada quotestrgo_data_get_linknumaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada shandlego_data_get_linknum, 0, 1
+stpushi 1
+loada commandstrgo_data_get_linknumaddr, 0, 2
+stpushi 2
+jsr :socket_write_string
+stpopi 3
+load retgo_data_get_linknum, 0, 4
+pullqw 3, 4, 0
+loada retgo_data_get_linknum, 0, 1
+loada zerogo_data_get_linknum, 0, 2
+neqi 1, 2, 3
+load fgo_data_get_linknum, 0, 4
+pullqw 3, 4, 0
+loada fgo_data_get_linknum, 0, 1
+jmpi 1, :if_18
+jmp :endif_18
+:if_18
+loada errorstrgo_data_get_linknumaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada onego_data_get_linknum, 0, 3
+stpushi 3
+        rts
+:endif_18
+loada shandlego_data_get_linknum, 0, 1
+stpushi 1
+loada Pretstraddrgo_data_get_linknum, 0, 2
+stpushi 2
+loada retlengo_data_get_linknum, 0, 3
+stpushi 3
+jsr :socket_read_string
+rts
+:go_data_get_link_name
+loada zero, 0, 0
+stpopi 1
+load Pretstraddrgo_data_get_link_name, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Pdatastraddrgo_data_get_link_name, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load Pkeystraddrgo_data_get_link_name, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load shandlego_data_get_link_name, 0, 5
+pullqw 4, 5, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+loada commandstrgo_data_get_link_nameaddr, 0, 5
+stpushi 5
+loada commstrgo_data_get_link_nameaddr, 0, 6
+stpushi 6
+jsr :string_copy
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada commandstrgo_data_get_link_nameaddr, 0, 1
+stpushi 1
+loada colonstrgo_data_get_link_nameaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_get_link_nameaddr, 0, 1
+stpushi 1
+loada Pkeystraddrgo_data_get_link_name, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_get_link_nameaddr, 0, 1
+stpushi 1
+loada spacestrgo_data_get_link_nameaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_get_link_nameaddr, 0, 1
+stpushi 1
+loada quotestrgo_data_get_link_nameaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_get_link_nameaddr, 0, 1
+stpushi 1
+loada Pdatastraddrgo_data_get_link_name, 0, 2
+stpushi 2
+jsr :string_cat
+loada commandstrgo_data_get_link_nameaddr, 0, 1
+stpushi 1
+loada quotestrgo_data_get_link_nameaddr, 0, 2
+stpushi 2
+jsr :string_cat
+loada shandlego_data_get_link_name, 0, 1
+stpushi 1
+loada commandstrgo_data_get_link_nameaddr, 0, 2
+stpushi 2
+jsr :socket_write_string
+stpopi 3
+load retgo_data_get_link_name, 0, 4
+pullqw 3, 4, 0
+loada retgo_data_get_link_name, 0, 1
+loada zerogo_data_get_link_name, 0, 2
+neqi 1, 2, 3
+load fgo_data_get_link_name, 0, 4
+pullqw 3, 4, 0
+loada fgo_data_get_link_name, 0, 1
+jmpi 1, :if_19
+jmp :endif_19
+:if_19
+loada errorstrgo_data_get_link_nameaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada onego_data_get_link_name, 0, 3
+stpushi 3
+        rts
+:endif_19
+loada shandlego_data_get_link_name, 0, 1
+stpushi 1
+loada Pretstraddrgo_data_get_link_name, 0, 2
+stpushi 2
+loada retlengo_data_get_link_name, 0, 3
+stpushi 3
+jsr :socket_read_string
+rts
+:authenticate
+loada zero, 0, 0
+stpopi 1
+load shandleauthenticate, 0, 2
+pullqw 1, 2, 0
+load server_dataauthenticate, 0, 2
+load Pserver_dataauthenticate, 0, 3
+pullqw 2, 3, 0
+load encrypt_dataauthenticate, 0, 3
+load Pencrypt_dataauthenticate, 0, 4
+pullqw 3, 4, 0
+load answerstrauthenticate, 0, 4
+load Panswerstrauthenticate, 0, 5
+pullqw 4, 5, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+loada shandleauthenticate, 0, 1
+stpushi 1
+loada Pserver_dataauthenticate, 0, 5
+stpushi 5
+loada lenauthenticate, 0, 6
+stpushi 6
+jsr :socket_read_byte_array
+stpopi 7
+load retauthenticate, 0, 8
+pullqw 7, 8, 0
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada retauthenticate, 0, 1
+loada zeroauthenticate, 0, 2
+neqi 1, 2, 3
+load fauthenticate, 0, 4
+pullqw 3, 4, 0
+loada fauthenticate, 0, 1
+jmpi 1, :if_20
+jmp :endif_20
+:if_20
+loada error_readstrauthenticateaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada oneauthenticate, 0, 3
+stpushi 3
+jmp :authenticate_end
+:endif_20
+load iauthenticate, 0, 1
+loada zeroauthenticate, 0, 2
+pullqw 2, 1, 0
+:for_0
+loada iauthenticate, 0, 1
+loada lenauthenticate, 0, 2
+lsi 1, 2, 3
+load fauthenticate, 0, 4
+pullqw 3, 4, 0
+loada fauthenticate, 0, 1
+jmpi 1, :for2_0
+jmp :forend_0
+:for2_0
+loada chbauthenticate, 0, 2
+loada iauthenticate, 0, 3
+load server_dataauthenticate, 0, 4
+pushb 4, 3, 2
+loada keybauthenticate, 0, 4
+load keyauthenticate, 0, 5
+pushb 5, 3, 4
+loada keyauthenticate, 0, 5
+bxori 2, 5, 6
+load decbauthenticate, 0, 7
+pullb 6, 7, 0
+load decbauthenticate, 0, 8
+pushb 8, 0, 9
+load decrypt_dataauthenticate, 0, 10
+pullb 9, 10, 3
+loada oneauthenticate, 0, 10
+addi 3, 10, 11
+load iauthenticate, 0, 12
+pullqw 11, 12, 0
+jmp :for_0
+:forend_0
+load iauthenticate, 0, 1
+loada zeroauthenticate, 0, 2
+pullqw 2, 1, 0
+:for_1
+loada iauthenticate, 0, 1
+loada lenauthenticate, 0, 2
+lsi 1, 2, 3
+load fauthenticate, 0, 4
+pullqw 3, 4, 0
+loada fauthenticate, 0, 1
+jmpi 1, :for2_1
+jmp :forend_1
+:for2_1
+loada chbauthenticate, 0, 2
+loada iauthenticate, 0, 3
+load decrypt_dataauthenticate, 0, 4
+pushb 4, 3, 2
+loada xorbauthenticate, 0, 4
+bxori 2, 4, 5
+load decbauthenticate, 0, 6
+pullb 5, 6, 0
+load decbauthenticate, 0, 7
+pushb 7, 0, 8
+load decrypt_dataauthenticate, 0, 9
+pullb 8, 9, 3
+loada oneauthenticate, 0, 9
+addi 3, 9, 10
+load iauthenticate, 0, 11
+pullqw 10, 11, 0
+jmp :for_1
+:forend_1
+load iauthenticate, 0, 1
+loada zeroauthenticate, 0, 2
+pullqw 2, 1, 0
+:for_2
+loada iauthenticate, 0, 1
+loada lenauthenticate, 0, 2
+lsi 1, 2, 3
+load fauthenticate, 0, 4
+pullqw 3, 4, 0
+loada fauthenticate, 0, 1
+jmpi 1, :for2_2
+jmp :forend_2
+:for2_2
+loada chbauthenticate, 0, 2
+loada iauthenticate, 0, 3
+load decrypt_dataauthenticate, 0, 4
+pushb 4, 3, 2
+loada keybauthenticate, 0, 4
+load keyauthenticate, 0, 5
+pushb 5, 3, 4
+loada keyauthenticate, 0, 5
+bxori 2, 5, 6
+load decbauthenticate, 0, 7
+pullb 6, 7, 0
+load decbauthenticate, 0, 8
+pushb 8, 0, 9
+load encrypt_dataauthenticate, 0, 10
+pullb 9, 10, 3
+loada oneauthenticate, 0, 10
+addi 3, 10, 11
+load iauthenticate, 0, 12
+pullqw 11, 12, 0
+jmp :for_2
+:forend_2
+loada shandleauthenticate, 0, 1
+stpushi 1
+loada Pencrypt_dataauthenticate, 0, 2
+stpushi 2
+loada lenauthenticate, 0, 3
+stpushi 3
+jsr :socket_write_byte_array
+stpopi 4
+load retauthenticate, 0, 5
+pullqw 4, 5, 0
+loada retauthenticate, 0, 1
+loada zeroauthenticate, 0, 2
+neqi 1, 2, 3
+load fauthenticate, 0, 4
+pullqw 3, 4, 0
+loada fauthenticate, 0, 1
+jmpi 1, :if_21
+jmp :endif_21
+:if_21
+loada error_readstrauthenticateaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada oneauthenticate, 0, 3
+stpushi 3
+jmp :authenticate_end
+:endif_21
+loada delayauthenticate, 0, 1
+intr0 8, 1, 0, 0
+jmp :skip
+stpushi 1
+loada shandleauthenticate, 0, 2
+stpushi 2
+loada Panswerstrauthenticate, 0, 3
+stpushi 3
+loada answerstr_lenauthenticate, 0, 4
+stpushi 4
+jsr :socket_read_string
+stpopi 5
+load retauthenticate, 0, 6
+pullqw 5, 6, 0
+stpopi 1
+loada retauthenticate, 0, 1
+loada zeroauthenticate, 0, 2
+neqi 1, 2, 3
+load fauthenticate, 0, 4
+pullqw 3, 4, 0
+loada fauthenticate, 0, 1
+jmpi 1, :if_22
+jmp :endif_22
+:if_22
+loada error_readstrauthenticateaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada oneauthenticate, 0, 3
+stpushi 3
+jmp :authenticate_end
+:endif_22
+loada answerstrauthenticateaddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada answerstrauthenticateaddr, 0, 1
+stpushi 1
+loada okstrauthenticateaddr, 0, 2
+stpushi 2
+jsr :string_compare
+stpopi 3
+load retauthenticate, 0, 4
+pullqw 3, 4, 0
+stpopi 1
+loada retauthenticate, 0, 1
+loada zeroauthenticate, 0, 2
+neqi 1, 2, 3
+load fauthenticate, 0, 4
+pullqw 3, 4, 0
+loada fauthenticate, 0, 1
+jmpi 1, :if_23
+jmp :endif_23
+:if_23
+loada error_authstrauthenticateaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada oneauthenticate, 0, 3
+stpushi 3
+jmp :authenticate_end
+:endif_23
+:skip
+loada zeroauthenticate, 0, 1
+stpushi 1
+:authenticate_end
+rts
+.cend

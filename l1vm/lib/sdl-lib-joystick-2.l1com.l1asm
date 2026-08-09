@@ -1,0 +1,1056 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, one
+@, 8Q, 1
+Q, 1, two
+@, 16Q, 2
+Q, 1, f
+@, 24Q, 0
+Q, 1, width
+@, 32Q, 300
+Q, 1, height
+@, 40Q, 200
+Q, 1, bit
+@, 48Q, 32
+Q, 1, ret
+@, 56Q, 0
+Q, 1, x
+@, 64Q, 0
+Q, 1, y
+@, 72Q, 0
+Q, 1, joy_x_axis
+@, 80Q, 0
+Q, 1, joy_y_axis
+@, 88Q, 0
+Q, 1, joy_x2_axis
+@, 96Q, 0
+Q, 1, joy_y2_axis
+@, 104Q, 0
+Q, 1, joy_axis_max
+@, 112Q, 0
+Q, 1, joy_buttons_max
+@, 120Q, 0
+B, 256, joy_namestr
+@, 128Q, ""
+Q, 1, joy_namestraddr
+@, 384Q, 128Q
+Q, 1, joy_name_len
+@, 392Q, 255
+Q, 1, joy_button
+@, 400Q, 0
+Q, 1, joy_button_state
+@, 408Q, 
+Q, 1, f
+@, 416Q, 0
+B, 18, joy_x_axisstr
+@, 424Q, "joystick x axis: "
+Q, 1, joy_x_axisstraddr
+@, 442Q, 424Q
+B, 18, joy_y_axisstr
+@, 450Q, "joystick y axis: "
+Q, 1, joy_y_axisstraddr
+@, 468Q, 450Q
+B, 19, joy_x2_axisstr
+@, 476Q, "joystick x2 axis: "
+Q, 1, joy_x2_axisstraddr
+@, 495Q, 476Q
+B, 19, joy_y2_axisstr
+@, 503Q, "joystick y2 axis: "
+Q, 1, joy_y2_axisstraddr
+@, 522Q, 503Q
+B, 9, button_str
+@, 530Q, "button: "
+Q, 1, button_straddr
+@, 539Q, 530Q
+B, 4, button_c_str
+@, 547Q, " : "
+Q, 1, button_c_straddr
+@, 551Q, 547Q
+B, 16, joy_name_infostr
+@, 559Q, "joystick name: "
+Q, 1, joy_name_infostraddr
+@, 575Q, 559Q
+Q, 1, zero
+@, 583Q, 0
+B, 14, modulestr@sdl
+@, 591Q, "libl1vmsdl.so"
+Q, 1, modulestr@sdladdr
+@, 605Q, 591Q
+B, 16, openstr@sdl
+@, 613Q, "sdl_open_screen"
+Q, 1, openstr@sdladdr
+@, 629Q, 613Q
+B, 9, quitstr@sdl
+@, 637Q, "sdl_quit"
+Q, 1, quitstr@sdladdr
+@, 646Q, 637Q
+B, 16, pixelstr@sdl
+@, 654Q, "sdl_pixel_alpha"
+Q, 1, pixelstr@sdladdr
+@, 670Q, 654Q
+B, 15, linestr@sdl
+@, 678Q, "sdl_line_alpha"
+Q, 1, linestr@sdladdr
+@, 693Q, 678Q
+B, 20, rectanglestr@sdl
+@, 701Q, "sdl_rectangle_alpha"
+Q, 1, rectanglestr@sdladdr
+@, 721Q, 701Q
+B, 25, rectangle_fillstr@sdl
+@, 729Q, "sdl_rectangle_fill_alpha"
+Q, 1, rectangle_fillstr@sdladdr
+@, 754Q, 729Q
+B, 17, circlestr@sdl
+@, 762Q, "sdl_circle_alpha"
+Q, 1, circlestr@sdladdr
+@, 779Q, 762Q
+B, 22, circle_fillstr@sdl
+@, 787Q, "sdl_circle_fill_alpha"
+Q, 1, circle_fillstr@sdladdr
+@, 809Q, 787Q
+B, 18, ellipsestr@sdl
+@, 817Q, "sdl_ellipse_alpha"
+Q, 1, ellipsestr@sdladdr
+@, 835Q, 817Q
+B, 23, ellipse_fillstr@sdl
+@, 843Q, "sdl_ellipse_fill_alpha"
+Q, 1, ellipse_fillstr@sdladdr
+@, 866Q, 843Q
+B, 14, piestr@sdl
+@, 874Q, "sdl_pie_alpha"
+Q, 1, piestr@sdladdr
+@, 888Q, 874Q
+B, 19, pie_fillstr@sdl
+@, 896Q, "sdl_pie_fill_alpha"
+Q, 1, pie_fillstr@sdladdr
+@, 915Q, 896Q
+B, 17, trigonstr@sdl
+@, 923Q, "sdl_trigon_alpha"
+Q, 1, trigonstr@sdladdr
+@, 940Q, 923Q
+B, 22, trigon_fillstr@sdl
+@, 948Q, "sdl_trigon_fill_alpha"
+Q, 1, trigon_fillstr@sdladdr
+@, 970Q, 948Q
+B, 13, font_ttfstr@sdl
+@, 978Q, "sdl_font_ttf"
+Q, 1, font_ttfstr@sdladdr
+@, 991Q, 978Q
+B, 13, text_ttfstr@sdl
+@, 999Q, "sdl_text_ttf"
+Q, 1, text_ttfstr@sdladdr
+@, 1012Q, 999Q
+B, 19, get_pixelcolorstr@sdl
+@, 1020Q, "sdl_get_pixelcolor"
+Q, 1, get_pixelcolorstr@sdladdr
+@, 1039Q, 1020Q
+B, 11, updatestr@sdl
+@, 1047Q, "sdl_update"
+Q, 1, updatestr@sdladdr
+@, 1058Q, 1047Q
+B, 15, play_soundstr@sdl
+@, 1066Q, "sdl_play_sound"
+Q, 1, play_soundstr@sdladdr
+@, 1081Q, 1066Q
+B, 16, get_mouse_statestr@sdl
+@, 1089Q, "get_mouse_state"
+Q, 1, get_mouse_statestr@sdladdr
+@, 1105Q, 1089Q
+B, 15, close_joystickstr@sdl
+@, 1113Q, "close_joystick"
+Q, 1, close_joystickstr@sdladdr
+@, 1128Q, 1113Q
+B, 20, get_joystick_x_axisstr@sdl
+@, 1136Q, "get_joystick_x_axis"
+Q, 1, get_joystick_x_axisstr@sdladdr
+@, 1156Q, 1136Q
+B, 20, get_joystick_y_axisstr@sdl
+@, 1164Q, "get_joystick_y_axis"
+Q, 1, get_joystick_y_axisstr@sdladdr
+@, 1184Q, 1164Q
+B, 21, get_joystick_x2_axisstr@sdl
+@, 1192Q, "get_joystick_x2_axis"
+Q, 1, get_joystick_x2_axisstr@sdladdr
+@, 1213Q, 1192Q
+B, 21, get_joystick_y2_axisstr@sdl
+@, 1221Q, "get_joystick_y2_axis"
+Q, 1, get_joystick_y2_axisstr@sdladdr
+@, 1242Q, 1221Q
+B, 21, get_joystick_buttonsstr@sdl
+@, 1250Q, "get_joystick_buttons"
+Q, 1, get_joystick_buttonsstr@sdladdr
+@, 1271Q, 1250Q
+B, 20, get_joystick_buttonstr@sdl
+@, 1279Q, "get_joystick_button"
+Q, 1, get_joystick_buttonstr@sdladdr
+@, 1299Q, 1279Q
+B, 18, get_joystick_infostr@sdl
+@, 1307Q, "get_joystick_info"
+Q, 1, get_joystick_infostr@sdladdr
+@, 1325Q, 1307Q
+B, 13, init_gadgetsstr@sdl
+@, 1333Q, "init_gadgets"
+Q, 1, init_gadgetsstr@sdladdr
+@, 1346Q, 1333Q
+B, 18, set_gadget_buttonstr@sdl
+@, 1354Q, "set_gadget_button"
+Q, 1, set_gadget_buttonstr@sdladdr
+@, 1372Q, 1354Q
+B, 24, set_gadget_progressstr@sdl
+@, 1380Q, "set_gadget_progress_bar"
+Q, 1, set_gadget_progressstr@sdladdr
+@, 1404Q, 1380Q
+B, 20, set_gadget_checkboxstr@sdl
+@, 1412Q, "set_gadget_checkbox"
+Q, 1, set_gadget_checkboxstr@sdladdr
+@, 1432Q, 1412Q
+B, 17, set_gadget_cyclestr@sdl
+@, 1440Q, "set_gadget_cycle"
+Q, 1, set_gadget_cyclestr@sdladdr
+@, 1457Q, 1440Q
+B, 18, set_gadget_stringstr@sdl
+@, 1465Q, "set_gadget_string"
+Q, 1, set_gadget_stringstr@sdladdr
+@, 1483Q, 1465Q
+B, 15, set_gadget_boxstr@sdl
+@, 1491Q, "set_gadget_box"
+Q, 1, set_gadget_boxstr@sdladdr
+@, 1506Q, 1491Q
+B, 20, set_gadget_box_gridstr@sdl
+@, 1514Q, "set_gadget_box_grid"
+Q, 1, set_gadget_box_gridstr@sdladdr
+@, 1534Q, 1514Q
+B, 18, set_gadget_sliderstr@sdl
+@, 1542Q, "set_gadget_slider"
+Q, 1, set_gadget_sliderstr@sdladdr
+@, 1560Q, 1542Q
+B, 23, set_gadget_slider_vertstr@sdl
+@, 1568Q, "set_gadget_slider_vert"
+Q, 1, set_gadget_slider_vertstr@sdladdr
+@, 1591Q, 1568Q
+B, 23, change_gadget_checkboxstr@sdl
+@, 1599Q, "change_gadget_checkbox"
+Q, 1, change_gadget_checkboxstr@sdladdr
+@, 1622Q, 1599Q
+B, 20, change_gadget_cyclestr@sdl
+@, 1630Q, "change_gadget_cycle"
+Q, 1, change_gadget_cyclestr@sdladdr
+@, 1650Q, 1630Q
+B, 21, change_gadget_stringstr@sdl
+@, 1658Q, "change_gadget_string"
+Q, 1, change_gadget_stringstr@sdladdr
+@, 1679Q, 1658Q
+B, 18, change_gadget_boxstr@sdl
+@, 1687Q, "change_gadget_box"
+Q, 1, change_gadget_boxstr@sdladdr
+@, 1705Q, 1687Q
+B, 23, change_gadget_box_gridstr@sdl
+@, 1713Q, "change_gadget_box_grid"
+Q, 1, change_gadget_box_gridstr@sdladdr
+@, 1736Q, 1713Q
+B, 20, get_gadget_box_gridstr@sdl
+@, 1744Q, "get_gadget_box_grid"
+Q, 1, get_gadget_box_gridstr@sdladdr
+@, 1764Q, 1744Q
+B, 27, change_gadget_progressstr@sdl
+@, 1772Q, "change_gadget_progress_bar"
+Q, 1, change_gadget_progressstr@sdladdr
+@, 1799Q, 1772Q
+B, 21, change_gadget_sliderstr@sdl
+@, 1807Q, "change_gadget_slider"
+Q, 1, change_gadget_sliderstr@sdladdr
+@, 1828Q, 1807Q
+B, 16, get_gadget_x2y2str@sdl
+@, 1836Q, "get_gadget_x2y2"
+Q, 1, get_gadget_x2y2str@sdladdr
+@, 1852Q, 1836Q
+B, 13, gadget_eventstr@sdl
+@, 1860Q, "gadget_event"
+Q, 1, gadget_eventstr@sdladdr
+@, 1873Q, 1860Q
+B, 17, load_picturestr@sdl
+@, 1881Q, "sdl_load_picture"
+Q, 1, load_picturestr@sdladdr
+@, 1898Q, 1881Q
+B, 17, save_picturestr@sdl
+@, 1906Q, "sdl_save_picture"
+Q, 1, save_picturestr@sdladdr
+@, 1923Q, 1906Q
+B, 10, delaystr@sdl
+@, 1931Q, "sdl_delay"
+Q, 1, delaystr@sdladdr
+@, 1941Q, 1931Q
+Q, 1, open@sdl
+@, 1949Q, 0
+Q, 1, quit@sdl
+@, 1957Q, 1
+Q, 1, update@sdl
+@, 1965Q, 2
+Q, 1, pixel@sdl
+@, 1973Q, 3
+Q, 1, line@sdl
+@, 1981Q, 4
+Q, 1, rectangle@sdl
+@, 1989Q, 5
+Q, 1, rectangle_fill@sdl
+@, 1997Q, 6
+Q, 1, circle@sdl
+@, 2005Q, 7
+Q, 1, circle_fill@sdl
+@, 2013Q, 8
+Q, 1, ellipse@sdl
+@, 2021Q, 9
+Q, 1, ellipse_fill@sdl
+@, 2029Q, 10
+Q, 1, pie@sdl
+@, 2037Q, 11
+Q, 1, pie_fill@sdl
+@, 2045Q, 12
+Q, 1, trigon@sdl
+@, 2053Q, 13
+Q, 1, trigon_fill@sdl
+@, 2061Q, 14
+Q, 1, font_ttf@sdl
+@, 2069Q, 15
+Q, 1, text_ttf@sdl
+@, 2077Q, 16
+Q, 1, get_pixelcolor@sdl
+@, 2085Q, 17
+Q, 1, init_gadgets@sdl
+@, 2093Q, 18
+Q, 1, set_gadget_button@sdl
+@, 2101Q, 19
+Q, 1, set_gadget_progress@sdl
+@, 2109Q, 20
+Q, 1, set_gadget_checkbox@sdl
+@, 2117Q, 21
+Q, 1, set_gadget_cycle@sdl
+@, 2125Q, 22
+Q, 1, set_gadget_string@sdl
+@, 2133Q, 23
+Q, 1, set_gadget_box@sdl
+@, 2141Q, 24
+Q, 1, change_gadget_checkbox@sdl
+@, 2149Q, 25
+Q, 1, change_gadget_cycle@sdl
+@, 2157Q, 26
+Q, 1, change_gadget_string@sdl
+@, 2165Q, 27
+Q, 1, change_gadget_box@sdl
+@, 2173Q, 28
+Q, 1, change_gadget_progress@sdl
+@, 2181Q, 29
+Q, 1, get_gadget_x2y2@sdl
+@, 2189Q, 30
+Q, 1, gadget_event@sdl
+@, 2197Q, 31
+Q, 1, load_picture@sdl
+@, 2205Q, 32
+Q, 1, save_picture@sdl
+@, 2213Q, 33
+Q, 1, delay@sdl
+@, 2221Q, 34
+Q, 1, set_gadget_slider@sdl
+@, 2229Q, 35
+Q, 1, set_gadget_slider_vert@sdl
+@, 2237Q, 36
+Q, 1, change_gadget_slider@sdl
+@, 2245Q, 37
+Q, 1, set_gadget_box_grid@sdl
+@, 2253Q, 38
+Q, 1, change_gadget_box_grid@sdl
+@, 2261Q, 39
+Q, 1, get_gadget_box_grid@sdl
+@, 2269Q, 40
+Q, 1, play_sound@sdl
+@, 2277Q, 41
+Q, 1, get_mouse_state@sdl
+@, 2285Q, 42
+Q, 1, close_joystick@sdl
+@, 2293Q, 43
+Q, 1, get_joystick_x_axis@sdl
+@, 2301Q, 44
+Q, 1, get_joystick_y_axis@sdl
+@, 2309Q, 45
+Q, 1, get_joystick_x2_axis@sdl
+@, 2317Q, 46
+Q, 1, get_joystick_y2_axis@sdl
+@, 2325Q, 47
+Q, 1, get_joystick_buttons@sdl
+@, 2333Q, 48
+Q, 1, get_joystick_button@sdl
+@, 2341Q, 49
+Q, 1, get_joystick_info@sdl
+@, 2349Q, 50
+Q, 1, get@sdl
+@, 2357Q, 0
+Q, 1, width@sdl
+@, 2365Q, 0
+Q, 1, height@sdl
+@, 2373Q, 0
+Q, 1, bit@sdl
+@, 2381Q, 0
+Q, 1, mod@sdl
+@, 2389Q, 0
+.dend
+.code
+:main
+loada zero, 0, 0
+stpushi 0
+loada zero, 0, 1
+stpushi 1
+loada width, 0, 2
+stpushi 2
+loada height, 0, 3
+stpushi 3
+loada bit, 0, 4
+stpushi 4
+jsr :sdl_open_screen
+stpopi 5
+load ret, 0, 6
+pullqw 5, 6, 0
+stpopi 0
+loada joy_namestraddr, 0, 1
+stpushi 1
+loada joy_name_len, 0, 2
+stpushi 2
+jsr :sdl_get_joystick_info
+stpopi 3
+load joy_axis_max, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load joy_buttons_max, 0, 5
+pullqw 4, 5, 0
+loada joy_name_infostraddr, 0, 1
+intr0 6, 1, 0, 0
+loada joy_namestraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+:loop
+stpushi 1
+stpushi 2
+jsr :sdl_get_joystick_x_axis
+stpopi 3
+load joy_x_axis, 0, 4
+pullqw 3, 4, 0
+stpopi 2
+stpopi 1
+jsr :sdl_get_joystick_y_axis
+stpopi 1
+load joy_y_axis, 0, 2
+pullqw 1, 2, 0
+loada joy_axis_max, 0, 1
+loada two, 0, 2
+gri 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 5
+jmpi 5, :if_0
+jmp :endif_0
+:if_0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+jsr :sdl_get_joystick_x2_axis
+stpopi 6
+load joy_x2_axis, 0, 7
+pullqw 6, 7, 0
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+jsr :sdl_get_joystick_y2_axis
+stpopi 1
+load joy_y2_axis, 0, 2
+pullqw 1, 2, 0
+:endif_0
+loada joy_x_axisstraddr, 0, 1
+intr0 6, 1, 0, 0
+loada joy_x_axis, 0, 2
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+loada joy_y_axisstraddr, 0, 3
+intr0 6, 3, 0, 0
+loada joy_y_axis, 0, 4
+intr0 4, 4, 0, 0
+intr0 7, 0, 0, 0
+loada joy_axis_max, 0, 5
+loada two, 0, 6
+gri 5, 6, 7
+load f, 0, 8
+pullqw 7, 8, 0
+loada f, 0, 9
+jmpi 9, :if_1
+jmp :endif_1
+:if_1
+loada joy_x2_axisstraddr, 0, 10
+intr0 6, 10, 0, 0
+loada joy_x2_axis, 0, 11
+intr0 4, 11, 0, 0
+intr0 7, 0, 0, 0
+loada joy_y2_axisstraddr, 0, 12
+intr0 6, 12, 0, 0
+loada joy_y2_axis, 0, 13
+intr0 4, 13, 0, 0
+intr0 7, 0, 0, 0
+:endif_1
+load joy_button, 0, 14
+loada zero, 0, 15
+pullqw 15, 14, 0
+:for_0
+loada joy_button, 0, 14
+loada joy_buttons_max, 0, 15
+lsi 14, 15, 16
+load f, 0, 17
+pullqw 16, 17, 0
+loada f, 0, 9
+jmpi 9, :for2_0
+jmp :forend_0
+:for2_0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+stpushi 6
+stpushi 7
+stpushi 8
+stpushi 9
+stpushi 10
+stpushi 11
+stpushi 12
+stpushi 13
+stpushi 14
+stpushi 15
+stpushi 16
+stpushi 17
+loada joy_button, 0, 14
+stpushi 14
+jsr :sdl_get_joystick_button
+stpopi 18
+load joy_button_state, 0, 19
+pullqw 18, 19, 0
+stpopi 17
+stpopi 16
+stpopi 15
+stpopi 14
+stpopi 13
+stpopi 12
+stpopi 11
+stpopi 10
+stpopi 9
+stpopi 8
+stpopi 7
+stpopi 6
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+loada joy_button_state, 0, 1
+loada one, 0, 2
+eqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 5
+jmpi 5, :if_2
+jmp :endif_2
+:if_2
+loada button_straddr, 0, 6
+intr0 6, 6, 0, 0
+loada joy_button, 0, 7
+intr0 4, 7, 0, 0
+loada button_c_straddr, 0, 8
+intr0 6, 8, 0, 0
+intr0 4, 1, 0, 0
+:endif_2
+intr0 4, 7, 0, 0
+intr0 7, 0, 0, 0
+addi 7, 2, 9
+load joy_button, 0, 10
+pullqw 9, 10, 0
+jmp :for_0
+:forend_0
+intr0 7, 0, 0, 0
+intr0 7, 0, 0, 0
+jmp :loop
+rts
+:sdl_open_screen
+loada zero, 0, 0
+stpopi 1
+load bit@sdl, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load height@sdl, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load width@sdl, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load mod@sdl, 0, 5
+pullqw 4, 5, 0
+loada modulestr@sdladdr, 0, 5
+intr0 0, 5, 4, 0
+loada open@sdl, 0, 6
+loada openstr@sdladdr, 0, 7
+intr0 2, 4, 6, 7
+loada quit@sdl, 0, 8
+loada quitstr@sdladdr, 0, 9
+intr0 2, 4, 8, 9
+loada pixel@sdl, 0, 10
+loada pixelstr@sdladdr, 0, 11
+intr0 2, 4, 10, 11
+loada line@sdl, 0, 12
+loada linestr@sdladdr, 0, 13
+intr0 2, 4, 12, 13
+loada rectangle@sdl, 0, 14
+loada rectanglestr@sdladdr, 0, 15
+intr0 2, 4, 14, 15
+loada rectangle_fill@sdl, 0, 16
+loada rectangle_fillstr@sdladdr, 0, 17
+intr0 2, 4, 16, 17
+loada circle@sdl, 0, 18
+loada circlestr@sdladdr, 0, 19
+intr0 2, 4, 18, 19
+loada circle_fill@sdl, 0, 20
+loada circle_fillstr@sdladdr, 0, 21
+intr0 2, 4, 20, 21
+loada ellipse@sdl, 0, 22
+loada ellipsestr@sdladdr, 0, 23
+intr0 2, 4, 22, 23
+loada ellipse_fill@sdl, 0, 24
+loada ellipse_fillstr@sdladdr, 0, 25
+intr0 2, 4, 24, 25
+loada pie@sdl, 0, 26
+loada piestr@sdladdr, 0, 27
+intr0 2, 4, 26, 27
+loada pie_fill@sdl, 0, 28
+loada pie_fillstr@sdladdr, 0, 29
+intr0 2, 4, 28, 29
+loada trigon@sdl, 0, 30
+loada trigonstr@sdladdr, 0, 31
+intr0 2, 4, 30, 31
+loada trigon_fill@sdl, 0, 32
+loada trigon_fillstr@sdladdr, 0, 33
+intr0 2, 4, 32, 33
+loada update@sdl, 0, 34
+loada updatestr@sdladdr, 0, 35
+intr0 2, 4, 34, 35
+loada font_ttf@sdl, 0, 36
+loada font_ttfstr@sdladdr, 0, 37
+intr0 2, 4, 36, 37
+loada text_ttf@sdl, 0, 38
+loada text_ttfstr@sdladdr, 0, 39
+intr0 2, 4, 38, 39
+loada get_pixelcolor@sdl, 0, 40
+loada get_pixelcolorstr@sdladdr, 0, 41
+intr0 2, 4, 40, 41
+loada init_gadgets@sdl, 0, 42
+loada init_gadgetsstr@sdladdr, 0, 43
+intr0 2, 4, 42, 43
+loada set_gadget_button@sdl, 0, 44
+loada set_gadget_buttonstr@sdladdr, 0, 45
+intr0 2, 4, 44, 45
+loada set_gadget_progress@sdl, 0, 46
+loada set_gadget_progressstr@sdladdr, 0, 47
+intr0 2, 4, 46, 47
+loada set_gadget_checkbox@sdl, 0, 48
+loada set_gadget_checkboxstr@sdladdr, 0, 49
+intr0 2, 4, 48, 49
+loada set_gadget_cycle@sdl, 0, 50
+loada set_gadget_cyclestr@sdladdr, 0, 51
+intr0 2, 4, 50, 51
+loada set_gadget_string@sdl, 0, 52
+loada set_gadget_stringstr@sdladdr, 0, 53
+intr0 2, 4, 52, 53
+loada set_gadget_box@sdl, 0, 54
+loada set_gadget_boxstr@sdladdr, 0, 55
+intr0 2, 4, 54, 55
+loada set_gadget_box_grid@sdl, 0, 56
+loada set_gadget_box_gridstr@sdladdr, 0, 57
+intr0 2, 4, 56, 57
+loada change_gadget_checkbox@sdl, 0, 58
+loada change_gadget_checkboxstr@sdladdr, 0, 59
+intr0 2, 4, 58, 59
+loada change_gadget_cycle@sdl, 0, 60
+loada change_gadget_cyclestr@sdladdr, 0, 61
+intr0 2, 4, 60, 61
+loada change_gadget_string@sdl, 0, 62
+loada change_gadget_stringstr@sdladdr, 0, 63
+intr0 2, 4, 62, 63
+loada change_gadget_box@sdl, 0, 64
+loada change_gadget_boxstr@sdladdr, 0, 65
+intr0 2, 4, 64, 65
+loada change_gadget_box_grid@sdl, 0, 66
+loada change_gadget_box_gridstr@sdladdr, 0, 67
+intr0 2, 4, 66, 67
+loada get_gadget_box_grid@sdl, 0, 68
+loada get_gadget_box_gridstr@sdladdr, 0, 69
+intr0 2, 4, 68, 69
+loada change_gadget_progress@sdl, 0, 70
+loada change_gadget_progressstr@sdladdr, 0, 71
+intr0 2, 4, 70, 71
+loada get_gadget_x2y2@sdl, 0, 72
+loada get_gadget_x2y2str@sdladdr, 0, 73
+intr0 2, 4, 72, 73
+loada gadget_event@sdl, 0, 74
+loada gadget_eventstr@sdladdr, 0, 75
+intr0 2, 4, 74, 75
+loada load_picture@sdl, 0, 76
+loada load_picturestr@sdladdr, 0, 77
+intr0 2, 4, 76, 77
+loada save_picture@sdl, 0, 78
+loada save_picturestr@sdladdr, 0, 79
+intr0 2, 4, 78, 79
+loada delay@sdl, 0, 80
+loada delaystr@sdladdr, 0, 81
+intr0 2, 4, 80, 81
+loada set_gadget_slider@sdl, 0, 82
+loada set_gadget_sliderstr@sdladdr, 0, 83
+intr0 2, 4, 82, 83
+loada set_gadget_slider_vert@sdl, 0, 84
+loada set_gadget_slider_vertstr@sdladdr, 0, 85
+intr0 2, 4, 84, 85
+loada change_gadget_slider@sdl, 0, 86
+loada change_gadget_sliderstr@sdladdr, 0, 87
+intr0 2, 4, 86, 87
+loada play_sound@sdl, 0, 88
+loada play_soundstr@sdladdr, 0, 89
+intr0 2, 4, 88, 89
+loada get_mouse_state@sdl, 0, 90
+loada get_mouse_statestr@sdladdr, 0, 91
+intr0 2, 4, 90, 91
+loada close_joystick@sdl, 0, 92
+loada close_joystickstr@sdladdr, 0, 93
+intr0 2, 4, 92, 93
+loada get_joystick_x_axis@sdl, 0, 94
+loada get_joystick_x_axisstr@sdladdr, 0, 95
+intr0 2, 4, 94, 95
+loada get_joystick_y_axis@sdl, 0, 96
+loada get_joystick_y_axisstr@sdladdr, 0, 97
+intr0 2, 4, 96, 97
+loada get_joystick_x2_axis@sdl, 0, 98
+loada get_joystick_x2_axisstr@sdladdr, 0, 99
+intr0 2, 4, 98, 99
+loada get_joystick_y2_axis@sdl, 0, 100
+loada get_joystick_y2_axisstr@sdladdr, 0, 101
+intr0 2, 4, 100, 101
+loada get_joystick_buttons@sdl, 0, 102
+loada get_joystick_buttonsstr@sdladdr, 0, 103
+intr0 2, 4, 102, 103
+loada get_joystick_button@sdl, 0, 104
+loada get_joystick_buttonstr@sdladdr, 0, 105
+intr0 2, 4, 104, 105
+loada get_joystick_info@sdl, 0, 106
+loada get_joystick_infostr@sdladdr, 0, 107
+intr0 2, 4, 106, 107
+stpushi 3
+stpushi 2
+stpushi 1
+intr0 3, 4, 6, 0
+rts
+:sdl_font_ttf
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada font_ttf@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_text_ttf
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada text_ttf@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_pixel
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada pixel@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_line
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada line@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_rectangle
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada rectangle@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_rectangle_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada rectangle_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_circle
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada circle@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_circle_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada circle_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_ellipse
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada ellipse@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_ellipse_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada ellipse_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_pie
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada pie@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_pie_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada pie_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_trigon
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada trigon@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_trigon_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada trigon_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_pixelcolor
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_pixelcolor@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_update
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada update@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_quit
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada quit@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:init_gui
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada init_gadgets@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_button
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_button@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_progress
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_progress@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_checkbox
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_checkbox@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_cycle
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_cycle@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_string
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_string@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_box
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_box@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_box_grid
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_box_grid@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_slider
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_slider@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_slider_vert
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_slider_vert@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_checkbox
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_checkbox@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_cycle
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_cycle@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_string
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_string@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_box
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_box@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_box_grid
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_box_grid@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_gadget_box_grid
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_gadget_box_grid@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_progress
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_progress@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_slider
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_slider@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_gadget_x2y2
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_gadget_x2y2@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:gadget_event
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada gadget_event@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_load_picture
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada load_picture@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_save_picture
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada save_picture@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_delay
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada delay@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_play_sound
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada play_sound@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_mouse_state
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_mouse_state@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_close_joystick
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada close_joystick@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_joystick_x_axis
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_joystick_x_axis@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_joystick_y_axis
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_joystick_y_axis@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_joystick_x2_axis
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_joystick_x2_axis@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_joystick_y2_axis
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_joystick_y2_axis@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_joystick_buttons
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_joystick_buttons@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_joystick_button
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_joystick_button@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_joystick_info
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_joystick_info@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+.cend

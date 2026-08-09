@@ -1,0 +1,40 @@
+// math-gcd.l1com
+//
+//
+#include <intr.l1h>
+(main func)
+    #var ~ main
+    (set const-int64 1 zero 0)
+    (set int64 1 ret~ 0)
+    (set int64 1 a~ 42)
+    (set int64 1 b~ 9)
+    (set int64 1 gcd_ret 0)
+    (a~ b~ :gcd !)
+    print_i (gcd_ret)
+    print_n
+
+    exit (zero)
+(funcend)
+
+(gcd func)
+// calc gcd recursive
+
+    #var ~ gcd
+    (set int64 1 zero~ 0)
+    (set int64 1 a~ 0)
+    (set int64 1 b~ 0)
+    (set int64 1 mod~ 0)
+    (set int64 1 f~ 0)
+
+    (b~ stpopi)
+    (a~ stpopi)
+
+    (((b~ zero~ ==) f~ =) f~ if)
+        // save gcd to global variable
+        (a~ gcd_ret =)
+        (return)
+    (endif)
+
+    ((a~ b~ %) mod~ =)
+    (b~ mod~ :gcd !)
+(funcend)

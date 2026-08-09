@@ -1,0 +1,129 @@
+// bluetooth-ble library
+//
+(bluetoothble_init func)
+    #var ~ bluetooth_ble
+    (set string s modulestr~ "libl1vmbluetooth-ble")
+    (set string s get_adapterstr~ "bluetooth_get_adapter")
+    (set string s set_adapterstr~ "bluetooth_set_adapter")
+    (set string s open_adapterstr~ "bluetooth_open_adapter")
+    (set string s get_peripheralstr~ "bluetooth_get_peripheral")
+    (set string s connectstr~ "bluetooth_connect")
+    (set string s get_characteristicstr~ "bluetooth_get_characteristic")
+    (set string s writestr~ "bluetooth_write")
+    (set string s readstr~ "bluetooth_read")
+    (set string s disconnectstr~ "bluetooth_disconnect")
+    (set string s endstr~ "bluetooth_end")
+    (set string s set_adapter_by_macstr~ "bluetooth_set_adapter_by_mac")
+    (set string s set_callbackstr~ "bluetooth_set_callback")
+    (set string s unset_callbackstr~ "bluetooth_remove_callback")
+    (set string s unset_callbackptrstr~ "bluetooth_remove_callback_ptr")
+    (set string s lock_readstr~ "bluetooth_lock_read")
+    (set string s unlock_readstr~ "bluetooth_unlock_read")
+
+    (set int64 1 mod~ 0)
+    (set int64 1 get_adapter~ 0)
+    (set int64 1 set_adapter~ 1)
+    (set int64 1 open_adapter~ 2)
+    (set int64 1 get_peripheral~ 3)
+    (set int64 1 connect~ 4)
+    (set int64 1 get_characteristic~ 5)
+    (set int64 1 write~ 6)
+    (set int64 1 read~ 7)
+    (set int64 1 disconnect~ 8)
+    (set int64 1 end~ 9)
+    (set int64 1 set_adapter_by_mac~ 10)
+    (set int64 1 set_callback~ 11)
+    (set int64 1 unset_callback~ 12)
+    (set int64 1 unset_callbackptr~ 13)
+    (set int64 1 lock_read~ 14)
+    (set int64 1 unlock_read~ 15)
+
+    // get module number
+    (mod~ stpopi)
+
+    // load bluetooth-ble module
+    (0 modulestr~ mod~ 0 intr0)
+    // set functions
+    (2 mod~ get_adapter~ get_adapterstr~ intr0)
+    (2 mod~ set_adapter~ set_adapterstr~ intr0)
+    (2 mod~ open_adapter~ open_adapterstr~ intr0)
+    (2 mod~ get_peripheral~ get_peripheralstr~ intr0)
+    (2 mod~ connect~ connectstr~ intr0)
+    (2 mod~ get_characteristic~ get_characteristicstr~ intr0)
+    (2 mod~ write~ writestr~ intr0)
+    (2 mod~ read~ readstr~ intr0)
+    (2 mod~ disconnect~ disconnectstr~ intr0)
+    (2 mod~ end~ endstr~ intr0)
+    (2 mod~ set_adapter_by_mac~ set_adapter_by_macstr~ intr0)
+    (2 mod~ set_callback~ set_callbackstr~ intr0)
+    (2 mod~ unset_callback~ unset_callbackstr~ intr0)
+    (2 mod~ unset_callbackptr~ unset_callbackptrstr~ intr0)
+    (2 mod~ lock_read~ lock_readstr~ intr0)
+    (2 mod~ unlock_read~ unlock_readstr~ intr0)
+ (funcend)
+
+// wrapper functions
+(bluetoothble_get_adapter func)
+    #var ~ bluetooth_ble
+    (3 mod~ get_adapter~ 0 intr0)
+(funcend)
+(bluetoothble_set_adapter func)
+    #var ~ bluetooth_ble
+    (3 mod~ set_adapter~ 0 intr0)
+(funcend)
+(bluetoothble_open_adapter func)
+    #var ~ bluetooth_ble
+    (3 mod~ open_adapter~ 0 intr0)
+(funcend)
+(bluetoothble_get_peripheral func)
+    #var ~ bluetooth_ble
+    (3 mod~ get_peripheral~ 0 intr0)
+(funcend)
+(bluetoothble_connect func)
+    #var ~ bluetooth_ble
+    (3 mod~ connect~ 0 intr0)
+(funcend)
+(bluetoothble_get_characteristic func)
+    #var ~ bluetooth_ble
+    (3 mod~ get_characteristic~ 0 intr0)
+(funcend)
+(bluetoothble_write func)
+    #var ~ bluetooth_ble
+    (3 mod~ write~ 0 intr0)
+(funcend)
+(bluetoothble_read func)
+    #var ~ bluetooth_ble
+    (3 mod~ read~ 0 intr0)
+(funcend)
+(bluetoothble_disconnect func)
+    #var ~ bluetooth_ble
+    (3 mod~ disconnect~ 0 intr0)
+(funcend)
+(bluetoothble_end func)
+    #var ~ bluetooth_ble
+    (3 mod~ end~ 0 intr0)
+(funcend)
+(bluetoothble_set_adapter_by_mac func)
+    #var ~ bluetooth_ble
+    (3 mod~ set_adapter_by_mac~ 0 intr0)
+(funcend)
+(bluetoothble_set_callback func)
+    #var ~ bluetooth_ble
+    (3 mod~ set_callback~ 0 intr0)
+(funcend)
+(bluetoothble_unset_callback func)
+    #var ~ bluetooth_ble
+    (3 mod~ unset_callback~ 0 intr0)
+(funcend)
+(bluetoothble_unset_callback_ptr func)
+    #var ~ bluetooth_ble
+    (3 mod~ unset_callbackptr~ 0 intr0)
+(funcend)
+(bluetoothble_lock_read func)
+    #var ~ bluetooth_ble
+    (3 mod~ lock_read~ 0 intr0)
+(funcend)
+(bluetoothble_unlock_read func)
+    #var ~ bluetooth_ble
+    (3 mod~ unlock_read~ 0 intr0)
+(funcend)

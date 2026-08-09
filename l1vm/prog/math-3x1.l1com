@@ -1,0 +1,115 @@
+// math-3x1.l1com
+// mpfr 3x1 program
+// 
+//
+#include <intr.l1h>
+(main func)
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+	(set const-int64 1 numaddr 0)
+	(set const-int64 1 oneaddr 1)
+	(set const-int64 1 maxaddr 2)
+    (set const-int64 1 twoaddr 3)
+    (set const-int64 1 threeaddr 4)
+    (set const-int64 1 remaddr 5)
+    (set const-int64 1 zeroaddr 6)
+    (set int64 1 f 0)
+    (set int64 1 fset 0)
+
+	(set string 1048576 numstr "")
+    (set string 1048576 outstr "")
+    (set string s onestr "1.0")
+    (set string s twostr "2.0")
+    (set string s threestr "3.0")
+    (set string s zerostr "0.0")
+	(set string s formatstr "%.20Ff")
+
+    (set string s evenstr "even")
+    (set string s oddstr "odd")
+    (set string s commastr "@@c ")
+
+	(set const-int64 1 outstr_len 1048575)
+	(set const-int64 1 base 10)
+	(set const-int64 1 precision 0)
+    (set int64 1 args 0)
+    (set string s argsinfostr "l1vm math-3x1 -args number")
+
+	(zero :mp_math_init call)
+   
+    shell_args (args)
+    (((args zero ==) f =) f if)
+	// no arguments, exit!
+		print_s (argsinfostr)
+        print_n
+        exit (one)
+	(endif)
+
+    // get shell arg number
+    get_shell_arg (zero, numstr)
+
+    // set variable num
+    (numstr base numaddr :mp_set_float !)
+
+    // set variable one
+    (onestr base oneaddr :mp_set_float !)
+
+    // set variable two 
+    (twostr base twoaddr :mp_set_float !)
+    
+    // set variable three
+    (threestr base threeaddr :mp_set_float !)
+
+    // set variable zero
+    (zerostr base zeroaddr :mp_set_float !)
+
+    (numaddr formatstr precision :mp_print_float !)
+    print_s (commastr)
+
+    (:loop)
+    // check if number one 
+    (numaddr oneaddr :mp_equal !)
+    (f stpopi)
+    (((f one ==) f =) f if)
+        // number = one, break loop
+        (:endloop jmp)
+    (endif)
+
+    // check if number is even 
+    (numaddr twoaddr remaddr :mp_fmod_float !)
+
+    (remaddr oneaddr :mp_equal !)
+    (f stpopi)
+    (((f zero ==) fset =) fset if+)
+        // print_s (evenstr)
+        // print_n
+
+        // even: divide number by two 
+        (numaddr twoaddr numaddr :mp_div_float !)
+    (else)
+        // print_s (oddstr)
+        // print_n
+
+        // odd: multiply by 3 and add 1
+        (numaddr threeaddr numaddr :mp_mul_float !)
+        (numaddr oneaddr numaddr :mp_add_float !)
+    (endif)
+
+    // print number
+    (numaddr outstraddr outstr_len formatstr precision :mp_prints_float !)
+
+    print_s (outstr)
+
+    // check if number one 
+    (numaddr oneaddr :mp_equal !)
+    (f stpopi)
+    (((f one !=) f =) f if)
+         print_s (commastr)
+    (endif)
+
+    (:loop jmp)
+
+    (:endloop)
+    print_n
+    exit (zero)
+(funcend)
+#include <mpfr-lib-auto.l1h>

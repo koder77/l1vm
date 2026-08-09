@@ -1,0 +1,81 @@
+// test.l1com
+//
+// contracts: precondition/postcondition demo
+// Define function as strict. With the "S" flag.
+// Only variable with an "R" ending are alowed as return values.
+// They are forbidden as function call arguments.
+//
+//
+// (func args S incP int64)
+// (return args incP int64 int64)
+//
+// NEW:
+// remove foo > to remove variable
+//
+// Marks variable foo as invalid. It can't be used again after this line!
+(linter)
+
+#include <intr-func.l1h>
+
+(main func)
+	(set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set int64 1 x 42)
+    (set int64 1 incxR 0)
+    (set int64 1 f 0)
+    (set const-int64 1 retR 0)
+    (set const-int64 1 Px 0)
+    (set const-string s error_inc_str "inc: error!")
+    (set int64 1 foo 42)
+
+    (x :incP !) (retR incxR stpop)
+    (((retR zero !=) f :=) f if)
+        (error_inc_str :print_s !)
+        (:print_n !)
+        (one :exit !)
+    (endif)
+
+    (incxR :print_i !)
+    (:print_n !)
+
+    (zero :exit !)
+(funcend)
+
+(contracts-on)
+(variable-local-only-on)
+
+(incP func)
+    #var ~ incP
+    (set int64 1 num~ 0)
+    (set int64 1 ret~ 0)
+    (set int64 1 check~ 0)
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 f~ 0)
+    (set const-int64 1 int64-max~ 9223372036854775807)
+    (set const-string s overflow_str~ "inc: error number overflow!")
+    (set const-string s error_int_str~ "inc: error internal!")
+
+    (num~ stpop)
+
+    (precondition)
+    (((num~ int64-max~ ==) f~ :=) f~ if)
+        (overflow_str~ :print_s !)
+        (:print_n !)
+        (zero~ one~ stpush) (return)
+    (endif)
+    (precondition-end)
+
+    (num~ + one~ ret~ :=)
+
+    (postcondition)
+    (ret~ - one~ check~ :=)
+    (((check~ num~ !=) f~ :=) f~ if)
+        (error_int_str~ :print_s !)
+        (:print_n !)
+        (zero~ one~ stpush) (return)
+    (endif)
+    (postcondition-end)
+
+    (ret~ zero~ stpush) (return)
+(funcend)

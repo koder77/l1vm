@@ -1,0 +1,38 @@
+// math-bignum.l1com
+// mpfr math bignum library demo
+//
+// 2 ^ 4096 = 
+//
+#include <intr.l1h>
+(main func)
+    (set int64 1 zero 0)
+	(set int64 1 baseaddr 0)
+	(set int64 1 potaddr 1)
+	(set int64 1 resaddr 2)
+	(set int64 1 outaddr 3)
+	(set string s basestr "2.0")
+	(set string s potstr "4096.0")
+	(set string s resstr "0.0")
+	(set string s formatstr "%.20Ff")
+	(set string 4096 outstr "")
+    (set string s mathcalcstr "2 ^ 4096 =")
+	(set int64 1 outstr_len 4095)
+	(set int64 1 one 1)
+	(set int64 1 base 10)
+	(set int64 1 precision 50)
+	(set int64 1 f 0)
+	(zero :mp_math_init call)
+    print_s (mathcalcstr)
+    print_n
+    // set variable base
+    (basestr base baseaddr :mp_set_float !)
+    // set pot num
+    (potstr base potaddr :mp_set_float !)
+    (baseaddr potaddr resaddr :mp_pow_float !)
+    // convert result to string 
+    (resaddr outstraddr outstr_len formatstr precision :mp_prints_float !)
+    print_s (outstr)
+    print_n
+    exit (zero)
+(funcend)
+#include <mpfr-lib-auto.l1h>

@@ -1,0 +1,36 @@
+// range-new.l1com - Brackets - ranges
+//
+#include <intr.l1h>
+#include <ranges.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 x 23)
+	(set int64 1 y 42)
+	(set int64 1 r 40)
+	(set int64 1 f~ 0)
+	(set double 1 xd 23.0)
+	(set double 1 yd 42.0)
+	(set double 1 rd 40.0)
+	(set string s out_of_rangestr "variable r is out of range!")
+	(set string s out_of_rangedstr "variable rd is out of range!")
+	(set string s in_rangestr "variable r is in range!")
+	(set string s in_rangedstr "variable rd is in range!")
+
+	int_out_of_range (r, x, y)
+	(f~ if+)
+		print_s (out_of_rangestr)
+	(else)
+		print_s (in_rangestr)
+	(endif)
+	print_n
+
+	double_out_of_range (rd, xd, yd)
+	(f~ if+)
+		print_s (out_of_rangedstr)
+	(else)
+		print_s (in_rangedstr)
+	(endif)
+	print_n
+
+	exit (zero)
+(funcend)

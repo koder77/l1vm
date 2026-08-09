@@ -1,0 +1,166 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, one
+@, 8Q, 1
+Q, 1, x
+@, 16Q, 42
+Q, 1, incxR
+@, 24Q, 0
+Q, 1, f
+@, 32Q, 0
+Q, 1, retR
+@, 40Q, 0
+B, 12, error_inc_str
+@, 48Q, "inc: error!"
+Q, 1, error_inc_straddr
+@, 60Q, 48Q
+Q, 1, numincP
+@, 68Q, 0
+Q, 1, retincP
+@, 76Q, 0
+Q, 1, checkincP
+@, 84Q, 0
+Q, 1, zeroincP
+@, 92Q, 0
+Q, 1, oneincP
+@, 100Q, 1
+Q, 1, fincP
+@, 108Q, 0
+Q, 1, int64-maxincP
+@, 116Q, 9223372036854775807
+B, 28, overflow_strincP
+@, 124Q, "inc: error number overflow!"
+Q, 1, overflow_strincPaddr
+@, 152Q, 124Q
+B, 21, error_int_strincP
+@, 160Q, "inc: error internal!"
+Q, 1, error_int_strincPaddr
+@, 181Q, 160Q
+Q, 1, numtestP
+@, 189Q, 0
+Q, 1, rettestP
+@, 197Q, 0
+Q, 1, checktestP
+@, 205Q, 0
+Q, 1, zerotestP
+@, 213Q, 0
+Q, 1, onetestP
+@, 221Q, 1
+Q, 1, ftestP
+@, 229Q, 0
+Q, 1, int64-maxtestP
+@, 237Q, 9223372036854775807
+B, 28, overflow_strtestP
+@, 245Q, "inc: error number overflow!"
+Q, 1, overflow_strtestPaddr
+@, 273Q, 245Q
+B, 21, error_int_strtestP
+@, 281Q, "inc: error internal!"
+Q, 1, error_int_strtestPaddr
+@, 302Q, 281Q
+.dend
+.code
+:main
+loada zero, 0, 0
+loada error_inc_straddr, 0, 1
+intr0 34, 1, 0, 0
+stpushi 0
+stpushi 1
+loada x, 0, 2
+stpushi 2
+jsr :incP
+stpopi 3
+load retR, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load incxR, 0, 5
+pullqw 4, 5, 0
+stpopi 1
+stpopi 0
+loada retR, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_0
+jmp :endif_0
+:if_0
+loada error_inc_straddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_0
+loada incxR, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada x, 0, 2
+stpushi 2
+jsr :testP
+stpopi 3
+load retR, 0, 4
+pullqw 3, 4, 0
+stpopi 1
+load incxR, 0, 4
+pullqw 1, 4, 0
+stpopi 1
+loada retR, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_1
+jmp :endif_1
+:if_1
+loada error_inc_straddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_1
+loada zero, 0, 1
+intr0 255, 1, 0, 0
+rts
+:incP
+loada zero, 0, 0
+loada overflow_strincPaddr, 0, 1
+intr0 34, 1, 0, 0
+loada error_int_strincPaddr, 0, 2
+intr0 34, 2, 0, 0
+stpopi 3
+load numincP, 0, 4
+pullqw 3, 4, 0
+loada oneincP, 0, 4
+addi 3, 4, 5
+load retincP, 0, 6
+pullqw 5, 6, 0
+loada retincP, 0, 5
+stpushi 5
+loada zeroincP, 0, 6
+stpushi 6
+rts
+rts
+:testP
+loada zero, 0, 0
+loada overflow_strtestPaddr, 0, 1
+intr0 34, 1, 0, 0
+loada error_int_strtestPaddr, 0, 2
+intr0 34, 2, 0, 0
+stpopi 3
+load numtestP, 0, 4
+pullqw 3, 4, 0
+loada onetestP, 0, 4
+addi 3, 4, 5
+load rettestP, 0, 6
+pullqw 5, 6, 0
+loada rettestP, 0, 5
+stpushi 5
+loada zerotestP, 0, 6
+stpushi 6
+rts
+rts
+.cend

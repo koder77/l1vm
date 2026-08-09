@@ -1,0 +1,48 @@
+// pthread.l1com
+// threading test
+#include <intr-func.l1h>
+#include <misc-macros.l1h>
+#include <math-const.l1h>
+(main func)
+    (set int64 1 zero 0)
+    (set int64 1 one 1)
+    (set int64 1 two 2)
+    (set int64 1 ret 0)
+    (set int64 1 f 0)
+    (set int64 1 thralab 0)
+    (set int64 1 thrblab 0)
+
+    (zero :print_i !)
+    (:print_n !)
+
+    (:thra thralab loadl)
+    (:thrb thrblab loadl)
+    (thralab + zero thralab :=)
+    (thrblab + zero thrblab :=)
+
+    (thralab :thread !)
+    (thrblab :thread !)
+
+    (:join !)
+
+    (zero :exit !)
+(funcend)
+
+(thra func)
+    #var ~ thra
+    (set int64 1 retcode~ 0)
+    (set string s hellostr~ "Hello from a!")
+    (hellostr~ :print_s !)
+    (:print_n !)
+
+    (retcode~ :threadexit !)
+(funcend)
+(thrb func)
+    #var ~ thrb
+    (set int64 1 retcode~ 0)
+    (set string s hellostr~ "Hello from b!")
+    (hellostr~ :print_s !)
+    (:print_n !)
+
+    (retcode~ :threadexit !)
+(funcend)

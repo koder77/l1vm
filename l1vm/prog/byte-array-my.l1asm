@@ -1,0 +1,51 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, one
+@, 8Q, 1
+B, 2, barray
+@, 16Q, 42, 23, ;
+B, 1, a
+@, 18Q, 0
+B, 1, b
+@, 19Q, 0
+B, 1, bi
+@, 20Q, 0
+.dend
+.code
+:main
+loada zero, 0, 0
+loada a, 0, 1
+load barray, 0, 2
+pushb 2, 0, 1
+loada b, 0, 2
+loada one, 0, 3
+load barray, 0, 4
+pushb 4, 3, 2
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+load b, 0, 4
+pushb 4, 0, 5
+
+intr0 4, 5, 0, 0
+intr0 7, 0, 0, 0
+
+load bi, 0, 6
+pullb 5, 6, 0
+
+intr0 4, 6, 0, 0
+intr0 7, 0, 0, 0
+
+load bi, 0, 4
+pushb 4, 0, 5
+intr0 4, 5, 0, 0
+intr0 7, 0, 0, 0
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+intr0 255, 0, 0, 0
+rts
+.cend

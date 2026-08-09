@@ -1,0 +1,90 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, mod_nanoid
+@, 8Q, 0
+B, 65, idstr
+@, 16Q, 
+Q, 1, idstraddr
+@, 81Q, 16Q
+B, 70, custom_alphabetstr
+@, 89Q, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-*#.:@"
+Q, 1, custom_alphabetstraddr
+@, 159Q, 89Q
+Q, 1, custom_len
+@, 167Q, 64
+Q, 1, modnanoid
+@, 175Q, 0
+B, 14, modulestrnanoid
+@, 183Q, "libl1vmnanoid"
+Q, 1, modulestrnanoidaddr
+@, 197Q, 183Q
+B, 14, create_nanoidstrnanoid
+@, 205Q, "nanoid_create"
+Q, 1, create_nanoidstrnanoidaddr
+@, 219Q, 205Q
+B, 21, create_nanoid_customstrnanoid
+@, 227Q, "nanoid_create_custom"
+Q, 1, create_nanoid_customstrnanoidaddr
+@, 248Q, 227Q
+Q, 1, create_nanoidnanoid
+@, 256Q, 0
+Q, 1, create_nanoid_customnanoid
+@, 264Q, 1
+.dend
+.code
+:main
+loada zero, 0, 0
+stpushi 0
+loada mod_nanoid, 0, 1
+stpushi 1
+jsr :nanoid_init
+stpopi 0
+loada idstraddr, 0, 1
+stpushi 1
+jsr :nanoid_create
+loada idstraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada idstraddr, 0, 1
+stpushi 1
+loada custom_alphabetstraddr, 0, 2
+stpushi 2
+loada custom_len, 0, 3
+stpushi 3
+jsr :nanoid_create_custom
+stpopi 1
+loada idstraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+loada zero, 0, 2
+intr0 255, 2, 0, 0
+rts
+:nanoid_init
+loada zero, 0, 0
+stpopi 1
+load modnanoid, 0, 2
+pullqw 1, 2, 0
+loada modulestrnanoidaddr, 0, 2
+intr0 0, 2, 1, 0
+loada create_nanoidnanoid, 0, 3
+loada create_nanoidstrnanoidaddr, 0, 4
+intr0 2, 1, 3, 4
+loada create_nanoid_customnanoid, 0, 5
+loada create_nanoid_customstrnanoidaddr, 0, 6
+intr0 2, 1, 5, 6
+rts
+:nanoid_create
+loada zero, 0, 0
+loada modnanoid, 0, 1
+loada create_nanoidnanoid, 0, 2
+intr0 3, 1, 2, 0
+rts
+:nanoid_create_custom
+loada zero, 0, 0
+loada modnanoid, 0, 1
+loada create_nanoid_customnanoid, 0, 2
+intr0 3, 1, 2, 0
+rts
+.cend

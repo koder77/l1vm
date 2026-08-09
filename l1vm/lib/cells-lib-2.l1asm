@@ -1,0 +1,812 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, one
+@, 8Q, 1
+Q, 1, two
+@, 16Q, 2
+Q, 1, ret
+@, 24Q, 0
+Q, 1, max_cells
+@, 32Q, 1
+Q, 1, cell
+@, 40Q, 0
+Q, 1, node_xor
+@, 48Q, 0
+Q, 1, node_or
+@, 56Q, 1
+Q, 1, node_and
+@, 64Q, 2
+Q, 1, inputs
+@, 72Q, 2
+Q, 1, outputs
+@, 80Q, 1
+Q, 1, max_layers
+@, 88Q, 1
+Q, 1, cell_neurons
+@, 96Q, 3
+Q, 1, links
+@, 104Q, 1
+F, 2, node_xor_inputsf
+@, 112Q, 1.0, 0.0, ;
+F, 1, node_xor_outputsf
+@, 128Q, 0.0
+Q, 1, Pnode_xor_inputsfaddr
+@, 136Q, 0
+Q, 1, Pnode_xor_outputsfaddr
+@, 144Q, 0
+F, 2, node_or_inputsf
+@, 152Q, 1.0, 0.0, ;
+F, 1, node_or_outputsf
+@, 168Q, 0.0
+Q, 1, Pnode_or_inputsfaddr
+@, 176Q, 0
+Q, 1, Pnode_or_outputsfaddr
+@, 184Q, 0
+F, 2, node_and_inputsf
+@, 192Q, 0.0, 0.0, ;
+F, 1, node_and_outputsf
+@, 208Q, 0.0
+Q, 1, Pnode_and_inputsfaddr
+@, 216Q, 0
+Q, 1, Pnode_and_outputsfaddr
+@, 224Q, 0
+F, 1, outputf
+@, 232Q, 0.0
+Q, 1, Poutputfaddr
+@, 240Q, 120
+Q, 1, layer_zero
+@, 248Q, 0
+Q, 1, layer_one
+@, 256Q, 1
+F, 1, zerof
+@, 264Q, 0.0
+F, 1, onef
+@, 272Q, 1.0
+Q, 1, offset
+@, 280Q, 8
+Q, 1, f
+@, 288Q, 0
+Q, 1, max_layer_readout
+@, 296Q, 0
+Q, 1, Pmax_layer_readoutaddr
+@, 304Q, 0
+B, 19, node_xor_filestr
+@, 312Q, "fann/xor_float.net"
+Q, 1, node_xor_filestraddr
+@, 331Q, 312Q
+B, 18, node_or_filestr
+@, 339Q, "fann/or_float.net"
+Q, 1, node_or_filestraddr
+@, 357Q, 339Q
+B, 19, node_and_filestr
+@, 365Q, "fann/and_float.net"
+Q, 1, node_and_filestraddr
+@, 384Q, 365Q
+B, 19, and_outputstr
+@, 392Q, "AND layer output: "
+Q, 1, and_outputstraddr
+@, 411Q, 392Q
+Q, 1, ret_code
+@, 419Q, 0
+B, 13, modulestr@cells
+@, 427Q, "libl1vmcells"
+Q, 1, modulestr@cellsaddr
+@, 440Q, 427Q
+B, 26, alloc_neurons_equalstr@cells
+@, 448Q, "cells_alloc_neurons_equal"
+Q, 1, alloc_neurons_equalstr@cellsaddr
+@, 474Q, 448Q
+B, 20, alloc_neuronsstr@cells
+@, 482Q, "cells_alloc_neurons"
+Q, 1, alloc_neuronsstr@cellsaddr
+@, 502Q, 482Q
+B, 22, dealloc_neuronsstr@cells
+@, 510Q, "cells_dealloc_neurons"
+Q, 1, dealloc_neuronsstr@cellsaddr
+@, 532Q, 510Q
+B, 25, fann_do_update_annstr@cells
+@, 540Q, "cells_fann_do_update_ann"
+Q, 1, fann_do_update_annstr@cellsaddr
+@, 565Q, 540Q
+B, 20, fann_read_annstr@cells
+@, 573Q, "cells_fann_read_ann"
+Q, 1, fann_read_annstr@cellsaddr
+@, 593Q, 573Q
+B, 19, fann_run_annstr@cells
+@, 601Q, "cells_fann_run_ann"
+Q, 1, fann_run_annstr@cellsaddr
+@, 620Q, 601Q
+B, 22, fann_get_ouputstr@cells
+@, 628Q, "cells_fann_get_output"
+Q, 1, fann_get_ouputstr@cellsaddr
+@, 650Q, 628Q
+B, 23, alloc_node_linksstr@cells
+@, 658Q, "cells_alloc_node_links"
+Q, 1, alloc_node_linksstr@cellsaddr
+@, 681Q, 658Q
+B, 20, set_node_linkstr@cells
+@, 689Q, "cells_set_node_link"
+Q, 1, set_node_linkstr@cellsaddr
+@, 709Q, 689Q
+B, 25, fann_get_max_layerstr@cells
+@, 717Q, "cells_fann_get_max_layer"
+Q, 1, fann_get_max_layerstr@cellsaddr
+@, 742Q, 717Q
+B, 25, fann_get_max_nodesstr@cells
+@, 750Q, "cells_fann_get_max_nodes"
+Q, 1, fann_get_max_nodesstr@cellsaddr
+@, 775Q, 750Q
+B, 28, fann_run_ann_go_linksstr@cells
+@, 783Q, "cells_fann_run_ann_go_links"
+Q, 1, fann_run_ann_go_linksstr@cellsaddr
+@, 811Q, 783Q
+B, 12, cells_allocstr@cells
+@, 819Q, "cells_alloc"
+Q, 1, cells_allocstr@cellsaddr
+@, 831Q, 819Q
+B, 14, cells_deallocstr@cells
+@, 839Q, "cells_dealloc"
+Q, 1, cells_deallocstr@cellsaddr
+@, 853Q, 839Q
+B, 22, cells_fann_save_cellsstr@cells
+@, 861Q, "cells_fann_save_cells"
+Q, 1, cells_fann_save_cellsstr@cellsaddr
+@, 883Q, 861Q
+B, 22, cells_fann_load_cellsstr@cells
+@, 891Q, "cells_fann_load_cells"
+Q, 1, cells_fann_load_cellsstr@cellsaddr
+@, 913Q, 891Q
+B, 25, dealloc_node_linksstr@cells
+@, 921Q, "cells_dealloc_node_links"
+Q, 1, dealloc_node_linksstr@cellsaddr
+@, 946Q, 921Q
+Q, 1, alloc_neurons_equal@cells
+@, 954Q, 0
+Q, 1, alloc_neurons@cells
+@, 962Q, 1
+Q, 1, dealloc_neurons@cells
+@, 970Q, 2
+Q, 1, fann_do_update_ann@cells
+@, 978Q, 3
+Q, 1, fann_read_ann@cells
+@, 986Q, 4
+Q, 1, fann_run_ann@cells
+@, 994Q, 5
+Q, 1, fann_get_output@cells
+@, 1002Q, 6
+Q, 1, alloc_node_links@cells
+@, 1010Q, 7
+Q, 1, set_node_link@cells
+@, 1018Q, 8
+Q, 1, fann_get_max_layer@cells
+@, 1026Q, 9
+Q, 1, fann_get_max_nodes@cells
+@, 1034Q, 10
+Q, 1, fann_run_ann_go_links@cells
+@, 1042Q, 11
+Q, 1, cells_alloc@cells
+@, 1050Q, 12
+Q, 1, cells_dealloc@cells
+@, 1058Q, 13
+Q, 1, cells_fann_save_cells@cells
+@, 1066Q, 14
+Q, 1, cells_fann_load_cells@cells
+@, 1074Q, 15
+Q, 1, dealloc_node_links@cells
+@, 1082Q, 16
+Q, 1, mod@cells
+@, 1090Q, 0
+Q, 1, ret@cells
+@, 1098Q, 0
+Q, 1, cells_num@cells
+@, 1106Q, 
+Q, 1, f@cells
+@, 1114Q, 0
+B, 42, alloc_err_str@cells
+@, 1122Q, "Cells: ERROR allocating memory for Cells!"
+Q, 1, alloc_err_str@cellsaddr
+@, 1164Q, 1122Q
+.dend
+.code
+:main
+loada zero, 0, 0
+load node_xor_inputsf, 0, 1
+load Pnode_xor_inputsfaddr, 0, 2
+pullqw 1, 2, 0
+load node_xor_outputsf, 0, 2
+load Pnode_xor_outputsfaddr, 0, 3
+pullqw 2, 3, 0
+load node_or_inputsf, 0, 3
+load Pnode_or_inputsfaddr, 0, 4
+pullqw 3, 4, 0
+load node_or_outputsf, 0, 4
+load Pnode_or_outputsfaddr, 0, 5
+pullqw 4, 5, 0
+load node_and_inputsf, 0, 5
+load Pnode_and_inputsfaddr, 0, 6
+pullqw 5, 6, 0
+load node_and_outputsf, 0, 6
+load Pnode_and_outputsfaddr, 0, 7
+pullqw 6, 7, 0
+load max_layer_readout, 0, 7
+load Pmax_layer_readoutaddr, 0, 8
+pullqw 7, 8, 0
+load outputf, 0, 8
+load Poutputfaddr, 0, 9
+pullqw 8, 9, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+stpushi 6
+stpushi 7
+stpushi 8
+loada zero, 0, 9
+stpushi 9
+loada max_cells, 0, 10
+stpushi 10
+jsr :cells_init_lib
+stpopi 11
+load ret, 0, 12
+pullqw 11, 12, 0
+stpopi 8
+stpopi 7
+stpopi 6
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_0
+jmp :endif_0
+:if_0
+loada one, 0, 2
+intr0 255, 2, 0, 0
+:endif_0
+loada max_cells, 0, 1
+stpushi 1
+loada cell_neurons, 0, 2
+stpushi 2
+jsr :cells_alloc_neurons_equal
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_1
+jmp :endif_1
+:if_1
+stpushi 1
+jsr :cells_dealloc
+stpopi 1
+loada one, 0, 1
+intr0 255, 1, 0, 0
+:endif_1
+loada cell, 0, 1
+stpushi 1
+loada node_xor, 0, 2
+stpushi 2
+loada node_xor_filestraddr, 0, 3
+stpushi 3
+loada inputs, 0, 4
+stpushi 4
+loada outputs, 0, 5
+stpushi 5
+loada Pnode_xor_inputsfaddr, 0, 6
+stpushi 6
+loada Pnode_xor_outputsfaddr, 0, 7
+stpushi 7
+loada layer_zero, 0, 8
+stpushi 8
+loada one, 0, 9
+stpushi 9
+jsr :cells_fann_read_ann
+stpopi 10
+load ret, 0, 11
+pullqw 10, 11, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_2
+jmp :endif_2
+:if_2
+stpushi 1
+loada max_cells, 0, 2
+stpushi 2
+jsr :cells_dealloc_neurons
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+stpopi 1
+jsr :cells_dealloc
+loada one, 0, 1
+intr0 255, 1, 0, 0
+:endif_2
+loada cell, 0, 1
+stpushi 1
+loada node_or, 0, 2
+stpushi 2
+loada node_or_filestraddr, 0, 3
+stpushi 3
+loada inputs, 0, 4
+stpushi 4
+loada outputs, 0, 5
+stpushi 5
+loada Pnode_or_inputsfaddr, 0, 6
+stpushi 6
+loada Pnode_or_outputsfaddr, 0, 7
+stpushi 7
+loada layer_zero, 0, 8
+stpushi 8
+loada one, 0, 9
+stpushi 9
+jsr :cells_fann_read_ann
+stpopi 10
+load ret, 0, 11
+pullqw 10, 11, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_3
+jmp :endif_3
+:if_3
+stpushi 1
+loada max_cells, 0, 2
+stpushi 2
+jsr :cells_dealloc_neurons
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+stpopi 1
+jsr :cells_dealloc
+loada one, 0, 1
+intr0 255, 1, 0, 0
+:endif_3
+loada cell, 0, 1
+stpushi 1
+loada node_and, 0, 2
+stpushi 2
+loada node_and_filestraddr, 0, 3
+stpushi 3
+loada inputs, 0, 4
+stpushi 4
+loada outputs, 0, 5
+stpushi 5
+loada Pnode_and_inputsfaddr, 0, 6
+stpushi 6
+loada Pnode_and_outputsfaddr, 0, 7
+stpushi 7
+loada layer_one, 0, 8
+stpushi 8
+loada one, 0, 9
+stpushi 9
+jsr :cells_fann_read_ann
+stpopi 10
+load ret, 0, 11
+pullqw 10, 11, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_4
+jmp :endif_4
+:if_4
+stpushi 1
+loada max_cells, 0, 2
+stpushi 2
+jsr :cells_dealloc_neurons
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+stpopi 1
+jsr :cells_dealloc
+loada one, 0, 1
+intr0 255, 1, 0, 0
+:endif_4
+loada cell, 0, 1
+stpushi 1
+loada node_xor, 0, 2
+stpushi 2
+loada links, 0, 3
+stpushi 3
+jsr :cells_alloc_node_links
+stpopi 4
+load ret, 0, 5
+pullqw 4, 5, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_5
+jmp :endif_5
+:if_5
+stpushi 1
+loada max_cells, 0, 2
+stpushi 2
+jsr :cells_dealloc_neurons
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+stpopi 1
+jsr :cells_dealloc
+loada one, 0, 1
+intr0 255, 1, 0, 0
+:endif_5
+loada cell, 0, 1
+stpushi 1
+loada node_or, 0, 2
+stpushi 2
+loada links, 0, 3
+stpushi 3
+jsr :cells_alloc_node_links
+stpopi 4
+load ret, 0, 5
+pullqw 4, 5, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_6
+jmp :endif_6
+:if_6
+stpushi 1
+loada max_cells, 0, 2
+stpushi 2
+jsr :cells_dealloc_neurons
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+stpopi 1
+jsr :cells_dealloc
+loada one, 0, 1
+intr0 255, 1, 0, 0
+:endif_6
+loada cell, 0, 1
+stpushi 1
+loada node_xor, 0, 2
+stpushi 2
+loada zero, 0, 3
+stpushi 3
+loada node_and, 0, 4
+stpushi 4
+loada zero, 0, 3
+stpushi 3
+loada zero, 0, 3
+stpushi 3
+jsr :cells_set_node_link
+stpopi 5
+load ret, 0, 6
+pullqw 5, 6, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_7
+jmp :endif_7
+:if_7
+loada one, 0, 2
+load ret_code, 0, 3
+pullqw 2, 3, 0
+jmp :end
+:endif_7
+loada cell, 0, 1
+stpushi 1
+loada node_or, 0, 2
+stpushi 2
+loada zero, 0, 3
+stpushi 3
+loada node_and, 0, 4
+stpushi 4
+loada one, 0, 5
+stpushi 5
+loada zero, 0, 3
+stpushi 3
+jsr :cells_set_node_link
+stpopi 6
+load ret, 0, 7
+pullqw 6, 7, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_8
+jmp :endif_8
+:if_8
+loada one, 0, 2
+load ret_code, 0, 3
+pullqw 2, 3, 0
+jmp :end
+:endif_8
+loada cell, 0, 1
+stpushi 1
+loada zero, 0, 2
+stpushi 2
+loada zero, 0, 2
+stpushi 2
+loada zero, 0, 2
+stpushi 2
+loada max_layers, 0, 3
+stpushi 3
+jsr :cells_fann_run_ann_go_links
+stpopi 4
+load ret, 0, 5
+pullqw 4, 5, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_9
+jmp :endif_9
+:if_9
+loada one, 0, 2
+load ret_code, 0, 3
+pullqw 2, 3, 0
+jmp :end
+:endif_9
+loada cell, 0, 1
+stpushi 1
+loada node_and, 0, 2
+stpushi 2
+loada zero, 0, 3
+stpushi 3
+loada Pnode_and_outputsfaddr, 0, 4
+stpushi 4
+jsr :cells_fann_get_output
+stpopi 5
+load ret, 0, 6
+pullqw 5, 6, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_10
+jmp :endif_10
+:if_10
+loada one, 0, 2
+load ret_code, 0, 3
+pullqw 2, 3, 0
+jmp :end
+:endif_10
+loada and_outputstraddr, 0, 1
+intr0 6, 1, 0, 0
+loadd node_and_outputsf, 0, 1
+intr0 5, 1, 0, 0
+intr0 7, 0, 0, 0
+:end
+loada cell, 0, 1
+stpushi 1
+loada node_xor, 0, 2
+stpushi 2
+jsr :cells_dealloc_node_links
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+loada cell, 0, 1
+stpushi 1
+loada node_or, 0, 2
+stpushi 2
+jsr :cells_dealloc_node_links
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+loada max_cells, 0, 1
+stpushi 1
+jsr :cells_dealloc_neurons
+stpopi 2
+load ret, 0, 3
+pullqw 2, 3, 0
+jsr :cells_dealloc
+loada ret_code, 0, 1
+intr0 255, 1, 0, 0
+rts
+:cells_init_lib
+loada zero, 0, 0
+stpopi 1
+load cells_num@cells, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load mod@cells, 0, 3
+pullqw 2, 3, 0
+loada modulestr@cellsaddr, 0, 3
+intr0 0, 3, 2, 0
+loada alloc_neurons_equal@cells, 0, 4
+loada alloc_neurons_equalstr@cellsaddr, 0, 5
+intr0 2, 2, 4, 5
+loada alloc_neurons@cells, 0, 6
+loada alloc_neuronsstr@cellsaddr, 0, 7
+intr0 2, 2, 6, 7
+loada dealloc_neurons@cells, 0, 8
+loada dealloc_neuronsstr@cellsaddr, 0, 9
+intr0 2, 2, 8, 9
+loada fann_do_update_ann@cells, 0, 10
+loada fann_do_update_annstr@cellsaddr, 0, 11
+intr0 2, 2, 10, 11
+loada fann_read_ann@cells, 0, 12
+loada fann_read_annstr@cellsaddr, 0, 13
+intr0 2, 2, 12, 13
+loada fann_run_ann@cells, 0, 14
+loada fann_run_annstr@cellsaddr, 0, 15
+intr0 2, 2, 14, 15
+loada fann_get_output@cells, 0, 16
+loada fann_get_ouputstr@cellsaddr, 0, 17
+intr0 2, 2, 16, 17
+loada alloc_node_links@cells, 0, 18
+loada alloc_node_linksstr@cellsaddr, 0, 19
+intr0 2, 2, 18, 19
+loada set_node_link@cells, 0, 20
+loada set_node_linkstr@cellsaddr, 0, 21
+intr0 2, 2, 20, 21
+loada fann_get_max_layer@cells, 0, 22
+loada fann_get_max_layerstr@cellsaddr, 0, 23
+intr0 2, 2, 22, 23
+loada fann_get_max_nodes@cells, 0, 24
+loada fann_get_max_nodesstr@cellsaddr, 0, 25
+intr0 2, 2, 24, 25
+loada fann_run_ann_go_links@cells, 0, 26
+loada fann_run_ann_go_linksstr@cellsaddr, 0, 27
+intr0 2, 2, 26, 27
+loada cells_alloc@cells, 0, 28
+loada cells_allocstr@cellsaddr, 0, 29
+intr0 2, 2, 28, 29
+loada cells_dealloc@cells, 0, 30
+loada cells_deallocstr@cellsaddr, 0, 31
+intr0 2, 2, 30, 31
+loada cells_fann_save_cells@cells, 0, 32
+loada cells_fann_save_cellsstr@cellsaddr, 0, 33
+intr0 2, 2, 32, 33
+loada cells_fann_load_cells@cells, 0, 34
+loada cells_fann_load_cellsstr@cellsaddr, 0, 35
+intr0 2, 2, 34, 35
+loada dealloc_node_links@cells, 0, 36
+loada dealloc_node_linksstr@cellsaddr, 0, 37
+intr0 2, 2, 36, 37
+stpushi 1
+intr0 3, 2, 28, 0
+stpopi 38
+load ret@cells, 0, 39
+pullqw 38, 39, 0
+neqi 38, 0, 39
+load f@cells, 0, 40
+pullqw 39, 40, 0
+loada f@cells, 0, 1
+jmpi 1, :if_11
+jmp :endif_11
+:if_11
+loada alloc_err_str@cellsaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+:endif_11
+loada ret, 0, 1
+stpushi 1
+rts
+:cells_alloc_neurons_equal
+loada zero, 0, 0
+loada mod@cells, 0, 1
+loada alloc_neurons_equal@cells, 0, 2
+intr0 3, 1, 2, 0
+rts
+:cells_alloc_neurons
+loada zero, 0, 0
+loada mod@cells, 0, 1
+loada alloc_neurons@cells, 0, 2
+intr0 3, 1, 2, 0
+rts
+:cells_dealloc_neurons
+loada zero, 0, 0
+loada mod@cells, 0, 1
+loada dealloc_neurons@cells, 0, 2
+intr0 3, 1, 2, 0
+rts
+:cells_fann_do_update_ann
+loada zero, 0, 0
+loada mod@cells, 0, 1
+loada fann_do_update_ann@cells, 0, 2
+intr0 3, 1, 2, 0
+rts
+:cells_fann_read_ann
+loada zero, 0, 0
+loada mod@cells, 0, 1
+loada fann_read_ann@cells, 0, 2
+intr0 3, 1, 2, 0
+rts
+:cells_fann_run_ann
+loada zero, 0, 0
+loada mod@cells, 0, 1
+loada fann_run_ann@cells, 0, 2
+intr0 3, 1, 2, 0
+rts
+:cells_fann_get_output
+loada zero, 0, 0
+loada mod@cells, 0, 1
+loada fann_get_output@cells, 0, 2
+intr0 3, 1, 2, 0
+rts
+:cells_alloc_node_links
+loada zero, 0, 0
+loada mod@cells, 0, 1
+loada alloc_node_links@cells, 0, 2
+intr0 3, 1, 2, 0
+rts
+:cells_dealloc_node_links
+loada zero, 0, 0
+loada mod@cells, 0, 1
+loada dealloc_node_links@cells, 0, 2
+intr0 3, 1, 2, 0
+rts
+:cells_set_node_link
+loada zero, 0, 0
+loada mod@cells, 0, 1
+loada set_node_link@cells, 0, 2
+intr0 3, 1, 2, 0
+rts
+:cells_fann_get_max_layer
+loada zero, 0, 0
+loada mod@cells, 0, 1
+loada fann_get_max_layer@cells, 0, 2
+intr0 3, 1, 2, 0
+rts
+:cells_fann_get_max_nodes
+loada zero, 0, 0
+loada mod@cells, 0, 1
+loada fann_get_max_nodes@cells, 0, 2
+intr0 3, 1, 2, 0
+rts
+:cells_fann_run_ann_go_links
+loada zero, 0, 0
+loada mod@cells, 0, 1
+loada fann_run_ann_go_links@cells, 0, 2
+intr0 3, 1, 2, 0
+rts
+:cells_dealloc
+loada zero, 0, 0
+loada mod@cells, 0, 1
+loada cells_dealloc@cells, 0, 2
+intr0 3, 1, 2, 0
+rts
+:cells_fann_save_cells
+loada zero, 0, 0
+loada mod@cells, 0, 1
+loada cells_fann_save_cells@cells, 0, 2
+intr0 3, 1, 2, 0
+rts
+:cells_fann_load_cells
+loada zero, 0, 0
+loada mod@cells, 0, 1
+loada cells_fann_load_cells@cells, 0, 2
+intr0 3, 1, 2, 0
+rts
+.cend

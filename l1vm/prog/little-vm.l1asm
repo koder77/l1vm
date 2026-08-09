@@ -1,0 +1,1642 @@
+.data
+F, 1, m_emath
+@, 0Q, 2.7182818284590452354
+F, 1, m_log2emath
+@, 8Q, 1.4426950408889634074
+F, 1, m_log10emath
+@, 16Q, 0.43429448190325182765
+F, 1, m_ln2math
+@, 24Q, 0.69314718055994530942
+F, 1, m_ln1math
+@, 32Q, 2.30258509299404568402
+F, 1, m_pimath
+@, 40Q, 3.14159265358979323846
+F, 1, m_pi_2math
+@, 48Q, 1.57079632679489661923
+F, 1, m_pi_4math
+@, 56Q, 0.78539816339744830962
+F, 1, m_1_pimath
+@, 64Q, 0.31830988618379067154
+F, 1, m_2_pimath
+@, 72Q, 0.63661977236758134308
+F, 1, m_2_sqrtpimath
+@, 80Q, 1.12837916709551257390
+F, 1, m_sqrt2math
+@, 88Q, 1.41421356237309504880
+F, 1, m_sqrt1_2math
+@, 96Q, 0.70710678118654752440
+Q, 1, zero
+@, 104Q, 0
+Q, 1, one
+@, 112Q, 1
+B, 14, bytecode
+@, 120Q, 10, 0, 1, 0, 29, 0, 2, 5, 39, 5, 0, 40, 0, 41, ;
+Q, 256, regi
+@, 134Q, 
+F, 256, regd
+@, 2182Q, 
+Q, 1, arg1
+@, 4230Q, 0
+Q, 1, arg2
+@, 4238Q, 0
+Q, 1, arg3
+@, 4246Q, 0
+Q, 1, ep
+@, 4254Q, 0
+Q, 1, bp
+@, 4262Q, 0
+Q, 1, offset
+@, 4270Q, 8
+Q, 1, ind
+@, 4278Q, 0
+Q, 1, time_ms_i
+@, 4286Q, 0
+B, 12, messagestr
+@, 4294Q, "starting..."
+Q, 1, messagestraddr
+@, 4306Q, 4294Q
+Q, 1, maxloop
+@, 4314Q, 100000000
+F, 1, time_ms_d
+@, 4322Q, 0.0
+F, 1, opcodes_loop_d
+@, 4330Q, 195.0
+F, 1, maxloop_d
+@, 4338Q, 0.0
+F, 1, opcodes_sec_d
+@, 4346Q, 0.0
+F, 1, ticks_per_sec_d
+@, 4354Q, 1000.0
+F, 1, points_ref_d
+@, 4362Q, 37469016.0
+F, 1, points_d
+@, 4370Q, 0.0
+Q, 1, points_i
+@, 4378Q, 0
+F, 1, thousand_d
+@, 4386Q, 1000.0
+B, 18, opcodes_str
+@, 4394Q, "opcodes per sec: "
+Q, 1, opcodes_straddr
+@, 4412Q, 4394Q
+B, 9, points_str
+@, 4420Q, "points: "
+Q, 1, points_straddr
+@, 4429Q, 4420Q
+B, 256, opcodes_str_s
+@, 4437Q, ""
+Q, 1, opcodes_str_saddr
+@, 4693Q, 4437Q
+B, 256, opcodes_str_form
+@, 4701Q, ""
+Q, 1, opcodes_str_formaddr
+@, 4957Q, 4701Q
+Q, 1, opcodes_str_len
+@, 4965Q, 255
+Q, 1, bp@addi
+@, 4973Q, 0
+Q, 1, r1@addi
+@, 4981Q, 
+Q, 1, r2@addi
+@, 4989Q, 
+Q, 1, r3@addi
+@, 4997Q, 
+Q, 1, four@addi
+@, 5005Q, 4
+Q, 1, offset@addi
+@, 5013Q, 8
+Q, 1, bp_offset@addi
+@, 5021Q, 32
+Q, 1, bp@lsi
+@, 5029Q, 0
+Q, 1, r1@lsi
+@, 5037Q, 
+Q, 1, r2@lsi
+@, 5045Q, 
+Q, 1, r3@lsi
+@, 5053Q, 
+Q, 1, four@lsi
+@, 5061Q, 4
+Q, 1, offset@lsi
+@, 5069Q, 8
+Q, 1, bp_offset@lsi
+@, 5077Q, 32
+Q, 1, f
+@, 5085Q, 0
+Q, 1, bp@jmpi
+@, 5093Q, 0
+Q, 1, r1@jmpi
+@, 5101Q, 
+Q, 1, r2@jmpi
+@, 5109Q, 
+Q, 1, r3@jmpi
+@, 5117Q, 
+Q, 1, three@jmpi
+@, 5125Q, 3
+Q, 1, offset@jmpi
+@, 5133Q, 8
+Q, 1, bp_offset@jmpi
+@, 5141Q, 24
+Q, 1, f@jmpi
+@, 5149Q, 0
+Q, 1, bp@printi
+@, 5157Q, 0
+Q, 1, r1@printi
+@, 5165Q, 
+Q, 1, r2@printi
+@, 5173Q, 
+Q, 1, r3@printi
+@, 5181Q, 
+Q, 1, two@printi
+@, 5189Q, 2
+Q, 1, offset@printi
+@, 5197Q, 8
+Q, 1, bp_offset@printi
+@, 5205Q, 16
+Q, 1, f@printi
+@, 5213Q, 0
+Q, 1, lsi_pos
+@, 5221Q, 32
+Q, 1, jmpi_pos
+@, 5229Q, 64
+Q, 1, printi_pos
+@, 5237Q, 88
+Q, 1, end_pos
+@, 5245Q, 104
+Q, 1, lab_addi
+@, 5253Q, 0
+Q, 1, lab_lsi
+@, 5261Q, 0
+Q, 1, lab_jmpi
+@, 5269Q, 0
+Q, 1, lab_printi
+@, 5277Q, 0
+Q, 1, lab_end
+@, 5285Q, 0
+Q, 14, jmp_array
+@, 5293Q, 0
+Q, 1, i
+@, 5405Q, 0
+Q, 1, op_label
+@, 5413Q, 0
+B, 12, modulestr@math
+@, 5421Q, "libl1vmmath"
+Q, 1, modulestr@mathaddr
+@, 5433Q, 5421Q
+B, 11, int2doublestr@math
+@, 5441Q, "int2double"
+Q, 1, int2doublestr@mathaddr
+@, 5452Q, 5441Q
+B, 11, double2intstr@math
+@, 5460Q, "double2int"
+Q, 1, double2intstr@mathaddr
+@, 5471Q, 5460Q
+B, 11, sqrtdoublestr@math
+@, 5479Q, "sqrtdouble"
+Q, 1, sqrtdoublestr@mathaddr
+@, 5490Q, 5479Q
+B, 10, logdoublestr@math
+@, 5498Q, "logdouble"
+Q, 1, logdoublestr@mathaddr
+@, 5508Q, 5498Q
+B, 11, log2doublestr@math
+@, 5516Q, "log2double"
+Q, 1, log2doublestr@mathaddr
+@, 5527Q, 5516Q
+B, 10, randinitstr@math
+@, 5535Q, "rand_init"
+Q, 1, randinitstr@mathaddr
+@, 5545Q, 5535Q
+B, 9, randintstr@math
+@, 5553Q, "rand_int"
+Q, 1, randintstr@mathaddr
+@, 5562Q, 5553Q
+B, 12, randdoublestr@math
+@, 5570Q, "rand_double"
+Q, 1, randdoublestr@mathaddr
+@, 5582Q, 5570Q
+B, 13, randintmaxstr@math
+@, 5590Q, "rand_int_max"
+Q, 1, randintmaxstr@mathaddr
+@, 5603Q, 5590Q
+B, 10, randombytestr@math
+@, 5611Q, "rand_byte"
+Q, 1, randombytestr@mathaddr
+@, 5621Q, 5611Q
+B, 22, doubleroundedstringstr@math
+@, 5629Q, "double_rounded_string"
+Q, 1, doubleroundedstringstr@mathaddr
+@, 5651Q, 5629Q
+B, 14, stringtointstr@math
+@, 5659Q, "string_to_int"
+Q, 1, stringtointstr@mathaddr
+@, 5673Q, 5659Q
+B, 17, stringtodoublestr@math
+@, 5681Q, "string_to_double"
+Q, 1, stringtodoublestr@mathaddr
+@, 5698Q, 5681Q
+B, 11, acosdoublestr@math
+@, 5706Q, "acosdouble"
+Q, 1, acosdoublestr@mathaddr
+@, 5717Q, 5706Q
+B, 11, asindoublestr@math
+@, 5725Q, "asindouble"
+Q, 1, asindoublestr@mathaddr
+@, 5736Q, 5725Q
+B, 11, atandoublestr@math
+@, 5744Q, "atandouble"
+Q, 1, atandoublestr@mathaddr
+@, 5755Q, 5744Q
+B, 12, atan2doublestr@math
+@, 5763Q, "atan2double"
+Q, 1, atan2doublestr@mathaddr
+@, 5775Q, 5763Q
+B, 10, cosdoublestr@math
+@, 5783Q, "cosdouble"
+Q, 1, cosdoublestr@mathaddr
+@, 5793Q, 5783Q
+B, 11, coshdoublestr@math
+@, 5801Q, "coshdouble"
+Q, 1, coshdoublestr@mathaddr
+@, 5812Q, 5801Q
+B, 10, sindoublestr@math
+@, 5820Q, "sindouble"
+Q, 1, sindoublestr@mathaddr
+@, 5830Q, 5820Q
+B, 11, sinhdoublestr@math
+@, 5838Q, "sinhdouble"
+Q, 1, sinhdoublestr@mathaddr
+@, 5849Q, 5838Q
+B, 10, tandoublestr@math
+@, 5857Q, "tandouble"
+Q, 1, tandoublestr@mathaddr
+@, 5867Q, 5857Q
+B, 11, tanhdoublestr@math
+@, 5875Q, "tanhdouble"
+Q, 1, tanhdoublestr@mathaddr
+@, 5886Q, 5875Q
+B, 10, expdoublestr@math
+@, 5894Q, "expdouble"
+Q, 1, expdoublestr@mathaddr
+@, 5904Q, 5894Q
+B, 12, frexpdoublestr@math
+@, 5912Q, "frexpdouble"
+Q, 1, frexpdoublestr@mathaddr
+@, 5924Q, 5912Q
+B, 12, ldexpdoublestr@math
+@, 5932Q, "ldexpdouble"
+Q, 1, ldexpdoublestr@mathaddr
+@, 5944Q, 5932Q
+B, 12, log10doublestr@math
+@, 5952Q, "log10double"
+Q, 1, log10doublestr@mathaddr
+@, 5964Q, 5952Q
+B, 11, modfdoublestr@math
+@, 5972Q, "modfdouble"
+Q, 1, modfdoublestr@mathaddr
+@, 5983Q, 5972Q
+B, 10, powdoublestr@math
+@, 5991Q, "powdouble"
+Q, 1, powdoublestr@mathaddr
+@, 6001Q, 5991Q
+B, 11, ceildoublestr@math
+@, 6009Q, "ceildouble"
+Q, 1, ceildoublestr@mathaddr
+@, 6020Q, 6009Q
+B, 11, fabsdoublestr@math
+@, 6028Q, "fabsdouble"
+Q, 1, fabsdoublestr@mathaddr
+@, 6039Q, 6028Q
+B, 12, floordoublestr@math
+@, 6047Q, "floordouble"
+Q, 1, floordoublestr@mathaddr
+@, 6059Q, 6047Q
+B, 11, fmoddoublestr@math
+@, 6067Q, "fmoddouble"
+Q, 1, fmoddoublestr@mathaddr
+@, 6078Q, 6067Q
+B, 9, byte2intstr@math
+@, 6086Q, "byte2int"
+Q, 1, byte2intstr@mathaddr
+@, 6095Q, 6086Q
+Q, 1, int2double@math
+@, 6103Q, 0
+Q, 1, double2int@math
+@, 6111Q, 1
+Q, 1, sqrtdouble@math
+@, 6119Q, 2
+Q, 1, logdouble@math
+@, 6127Q, 3
+Q, 1, log2double@math
+@, 6135Q, 4
+Q, 1, randinit@math
+@, 6143Q, 5
+Q, 1, randint@math
+@, 6151Q, 6
+Q, 1, randdouble@math
+@, 6159Q, 7
+Q, 1, randintmax@math
+@, 6167Q, 8
+Q, 1, doubleroundedstring@math
+@, 6175Q, 9
+Q, 1, stringtoint@math
+@, 6183Q, 10
+Q, 1, stringtodouble@math
+@, 6191Q, 11
+Q, 1, acosdouble@math
+@, 6199Q, 12
+Q, 1, asindouble@math
+@, 6207Q, 13
+Q, 1, atandouble@math
+@, 6215Q, 14
+Q, 1, atan2double@math
+@, 6223Q, 15
+Q, 1, cosdouble@math
+@, 6231Q, 16
+Q, 1, coshdouble@math
+@, 6239Q, 17
+Q, 1, sindouble@math
+@, 6247Q, 18
+Q, 1, sinhdouble@math
+@, 6255Q, 19
+Q, 1, tanhdouble@math
+@, 6263Q, 20
+Q, 1, expdouble@math
+@, 6271Q, 21
+Q, 1, frexpdouble@math
+@, 6279Q, 22
+Q, 1, ldexpdouble@math
+@, 6287Q, 23
+Q, 1, log10double@math
+@, 6295Q, 24
+Q, 1, modfdouble@math
+@, 6303Q, 25
+Q, 1, powdouble@math
+@, 6311Q, 26
+Q, 1, ceildouble@math
+@, 6319Q, 27
+Q, 1, fabsdouble@math
+@, 6327Q, 28
+Q, 1, floordouble@math
+@, 6335Q, 29
+Q, 1, fmoddouble@math
+@, 6343Q, 30
+Q, 1, tandouble@math
+@, 6351Q, 31
+Q, 1, randombyte@math
+@, 6359Q, 32
+Q, 1, byte2int@math
+@, 6367Q, 33
+Q, 1, mod@math
+@, 6375Q, 0
+F, 1, degreemath_degree_to_rad
+@, 6383Q, 0.0
+F, 1, radmath_degree_to_rad
+@, 6391Q, 0.0
+F, 1, half_circlemath_degree_to_rad
+@, 6399Q, 180.0
+F, 1, degreemath_rad_to_degree
+@, 6407Q, 0.0
+F, 1, radmath_rad_to_degree
+@, 6415Q, 0.0
+F, 1, half_circlemath_rad_to_degree
+@, 6423Q, 180.0
+B, 14, modulestr@string
+@, 6431Q, "libl1vmstring"
+Q, 1, modulestr@stringaddr
+@, 6445Q, 6431Q
+B, 11, lenstr@string
+@, 6453Q, "string_len"
+Q, 1, lenstr@stringaddr
+@, 6464Q, 6453Q
+B, 12, copystr@string
+@, 6472Q, "string_copy"
+Q, 1, copystr@stringaddr
+@, 6484Q, 6472Q
+B, 11, catstr@string
+@, 6492Q, "string_cat"
+Q, 1, catstr@stringaddr
+@, 6503Q, 6492Q
+B, 23, int64tostringstr@string
+@, 6511Q, "string_int64_to_string"
+Q, 1, int64tostringstr@stringaddr
+@, 6534Q, 6511Q
+B, 25, bytetohexstringstr@string
+@, 6542Q, "string_byte_to_hexstring"
+Q, 1, bytetohexstringstr@stringaddr
+@, 6567Q, 6542Q
+B, 24, doubletostringstr@string
+@, 6575Q, "string_double_to_string"
+Q, 1, doubletostringstr@stringaddr
+@, 6599Q, 6575Q
+B, 25, bytenumtostringstr@string
+@, 6607Q, "string_bytenum_to_string"
+Q, 1, bytenumtostringstr@stringaddr
+@, 6632Q, 6607Q
+B, 23, stringtoarraystr@string
+@, 6640Q, "string_string_to_array"
+Q, 1, stringtoarraystr@stringaddr
+@, 6663Q, 6640Q
+B, 23, arraytostringstr@string
+@, 6671Q, "string_array_to_string"
+Q, 1, arraytostringstr@stringaddr
+@, 6694Q, 6671Q
+B, 12, stringleftstr@string
+@, 6702Q, "string_left"
+Q, 1, stringleftstr@stringaddr
+@, 6714Q, 6702Q
+B, 13, stringrightstr@string
+@, 6722Q, "string_right"
+Q, 1, stringrightstr@stringaddr
+@, 6735Q, 6722Q
+B, 11, stringmidstr@string
+@, 6743Q, "string_mid"
+Q, 1, stringmidstr@stringaddr
+@, 6754Q, 6743Q
+B, 17, stringtostringstr@string
+@, 6762Q, "string_to_string"
+Q, 1, stringtostringstr@stringaddr
+@, 6779Q, 6762Q
+B, 15, stringcomparestr@string
+@, 6787Q, "string_compare"
+Q, 1, stringcomparestr@stringaddr
+@, 6802Q, 6787Q
+B, 20, stringmemtostringstr@string
+@, 6810Q, "stringmem_to_string"
+Q, 1, stringmemtostringstr@stringaddr
+@, 6830Q, 6810Q
+B, 24, stringmemsearchstr@string
+@, 6838Q, "stringmem_search_string"
+Q, 1, stringmemsearchstr@stringaddr
+@, 6862Q, 6838Q
+B, 13, stringregexstr@string
+@, 6870Q, "string_regex"
+Q, 1, stringregexstr@stringaddr
+@, 6883Q, 6870Q
+B, 14, stringsearchstr@string
+@, 6891Q, "string_search"
+Q, 1, stringsearchstr@stringaddr
+@, 6905Q, 6891Q
+B, 18, string_array_sortstr@string
+@, 6913Q, "string_array_sort"
+Q, 1, string_array_sortstr@stringaddr
+@, 6931Q, 6913Q
+B, 20, string_array_searchstr@string
+@, 6939Q, "string_array_search"
+Q, 1, string_array_searchstr@stringaddr
+@, 6959Q, 6939Q
+B, 19, string_mid_to_bytestr@string
+@, 6967Q, "string_mid_to_byte"
+Q, 1, string_mid_to_bytestr@stringaddr
+@, 6986Q, 6967Q
+B, 22, bytenumbytetostringstr@string
+@, 6994Q, "string_byte_to_string"
+Q, 1, bytenumbytetostringstr@stringaddr
+@, 7016Q, 6994Q
+B, 14, stringverifystr@string
+@, 7024Q, "string_verify"
+Q, 1, stringverifystr@stringaddr
+@, 7038Q, 7024Q
+B, 8, get_envstr@string
+@, 7046Q, "get_env"
+Q, 1, get_envstr@stringaddr
+@, 7054Q, 7046Q
+B, 8, set_envstr@string
+@, 7062Q, "set_env"
+Q, 1, set_envstr@stringaddr
+@, 7070Q, 7062Q
+B, 18, stringparsejsonstr@string
+@, 7078Q, "string_parse_json"
+Q, 1, stringparsejsonstr@stringaddr
+@, 7096Q, 7078Q
+B, 18, string_format_numstr@string
+@, 7104Q, "string_format_num"
+Q, 1, string_format_numstr@stringaddr
+@, 7122Q, 7104Q
+B, 12, string_paddstr@string
+@, 7130Q, "string_padd"
+Q, 1, string_paddstr@stringaddr
+@, 7142Q, 7130Q
+Q, 1, len@string
+@, 7150Q, 0
+Q, 1, copy@string
+@, 7158Q, 1
+Q, 1, cat@string
+@, 7166Q, 2
+Q, 1, int64tostring@string
+@, 7174Q, 3
+Q, 1, bytetohexstring@string
+@, 7182Q, 4
+Q, 1, doubletostring@string
+@, 7190Q, 5
+Q, 1, bytenumtostring@string
+@, 7198Q, 6
+Q, 1, stringtoarray@string
+@, 7206Q, 7
+Q, 1, arraytostring@string
+@, 7214Q, 8
+Q, 1, stringleft@string
+@, 7222Q, 9
+Q, 1, stringright@string
+@, 7230Q, 10
+Q, 1, stringmid@string
+@, 7238Q, 11
+Q, 1, stringtostring@string
+@, 7246Q, 12
+Q, 1, stringcompare@string
+@, 7254Q, 13
+Q, 1, stringmemtostring@string
+@, 7262Q, 14
+Q, 1, stringmemsearch@string
+@, 7270Q, 15
+Q, 1, stringregex@string
+@, 7278Q, 16
+Q, 1, stringsearch@string
+@, 7286Q, 17
+Q, 1, get_env@string
+@, 7294Q, 18
+Q, 1, set_env@string
+@, 7302Q, 19
+Q, 1, stringparsejson@string
+@, 7310Q, 20
+Q, 1, string_array_sort@string
+@, 7318Q, 21
+Q, 1, string_array_search@string
+@, 7326Q, 22
+Q, 1, string_mid_to_byte@string
+@, 7334Q, 23
+Q, 1, bytenumbytetostring@string
+@, 7342Q, 24
+Q, 1, stringverify@string
+@, 7350Q, 25
+Q, 1, string_format_num@string
+@, 7358Q, 26
+Q, 1, string_padd@string
+@, 7366Q, 27
+Q, 1, mod@string
+@, 7374Q, 0
+.dend
+.code
+:main
+loada zero, 0, 0
+stpushi 0
+loada zero, 0, 1
+stpushi 1
+jsr :math_init
+stpopi 0
+loada one, 0, 1
+stpushi 1
+jsr :string_init
+load zero, 0, 1
+pushqw 1, 0, 2
+loada ind, 0, 3
+load regi, 0, 4
+pullqw 2, 4, 3
+loada offset, 0, 4
+addi 3, 4, 5
+load ind, 0, 6
+pullqw 5, 6, 0
+load one, 0, 1
+pushqw 1, 0, 2
+loada ind, 0, 3
+load regi, 0, 4
+pullqw 2, 4, 3
+loada offset, 0, 4
+addi 3, 4, 5
+load ind, 0, 6
+pullqw 5, 6, 0
+load maxloop, 0, 1
+pushqw 1, 0, 2
+loada ind, 0, 3
+load regi, 0, 4
+pullqw 2, 4, 3
+loada messagestraddr, 0, 4
+intr0 6, 4, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+jsr :start
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+loada zero, 0, 1
+intr0 255, 1, 0, 0
+rts
+:opcodes_per_sec
+loada zero, 0, 0
+stpushi 0
+loada time_ms_i, 0, 1
+stpushi 1
+jsr :math_int2double
+stpopd 1
+load time_ms_d, 0, 2
+pulld 1, 2, 0
+stpopi 0
+loada maxloop, 0, 1
+stpushi 1
+jsr :math_int2double
+stpopd 1
+load maxloop_d, 0, 2
+pulld 1, 2, 0
+loadd opcodes_loop_d, 0, 2
+muld 1, 2, 3
+loadd ticks_per_sec_d, 0, 4
+muld 3, 4, 5
+loadd time_ms_d, 0, 6
+divd 5, 6, 7
+load opcodes_sec_d, 0, 8
+pulld 7, 8, 0
+loada opcodes_straddr, 0, 1
+intr0 6, 1, 0, 0
+stpushi 1
+loadd opcodes_sec_d, 0, 1
+stpushd 1
+loada opcodes_str_saddr, 0, 2
+stpushi 2
+loada opcodes_str_len, 0, 3
+stpushi 3
+jsr :string_doubletostring
+stpopi 1
+loada opcodes_str_formaddr, 0, 1
+stpushi 1
+loada opcodes_str_saddr, 0, 2
+stpushi 2
+jsr :string_format_num
+loada opcodes_str_formaddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+loadd thousand_d, 0, 1
+loadd points_ref_d, 0, 2
+divd 1, 2, 3
+loadd opcodes_sec_d, 0, 4
+muld 3, 4, 5
+load points_d, 0, 6
+pulld 5, 6, 0
+stpushi 1
+stpushd 1
+stpushd 2
+stpushd 3
+stpushd 4
+loadd points_d, 0, 5
+stpushd 5
+jsr :math_double2int
+stpopi 2
+load points_i, 0, 3
+pullqw 2, 3, 0
+stpopd 4
+stpopd 3
+stpopd 2
+stpopd 1
+stpopi 1
+intr0 7, 0, 0, 0
+loada points_straddr, 0, 1
+intr0 6, 1, 0, 0
+loada points_i, 0, 2
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+rts
+:addi
+loada zero, 0, 0
+loada ep, 0, 1
+loada one, 0, 2
+addi 1, 2, 3
+load bp@addi, 0, 4
+pullqw 3, 4, 0
+loada arg1, 0, 5
+loada bp@addi, 0, 6
+load bytecode, 0, 7
+pushb 7, 6, 5
+addi 6, 2, 7
+load bp@addi, 0, 8
+pullqw 7, 8, 0
+loada arg2, 0, 6
+loada bp@addi, 0, 9
+load bytecode, 0, 10
+pushb 10, 9, 6
+addi 9, 2, 10
+load bp@addi, 0, 11
+pullqw 10, 11, 0
+loada arg3, 0, 9
+loada bp@addi, 0, 12
+load bytecode, 0, 13
+pushb 13, 12, 9
+loada offset@addi, 0, 13
+muli 5, 13, 14
+load arg1, 0, 15
+pullqw 14, 15, 0
+muli 6, 13, 5
+load arg2, 0, 16
+pullqw 5, 16, 0
+muli 9, 13, 6
+load arg3, 0, 17
+pullqw 6, 17, 0
+loada r1@addi, 0, 9
+loada arg1, 0, 18
+load regi, 0, 19
+pushqw 19, 18, 9
+loada r2@addi, 0, 19
+loada arg2, 0, 20
+load regi, 0, 21
+pushqw 21, 20, 19
+addi 9, 19, 21
+load r3@addi, 0, 22
+pullqw 21, 22, 0
+load r3@addi, 0, 1
+pushqw 1, 0, 2
+loada arg3, 0, 3
+load regi, 0, 4
+pullqw 2, 4, 3
+loada ep, 0, 4
+loada four@addi, 0, 5
+addi 4, 5, 6
+load ep, 0, 7
+pullqw 6, 7, 0
+loada bp, 0, 4
+loada bp_offset@addi, 0, 8
+addi 4, 8, 9
+load bp, 0, 10
+pullqw 9, 10, 0
+rts
+:lsi
+loada zero, 0, 0
+loada ep, 0, 1
+loada one, 0, 2
+addi 1, 2, 3
+load bp@lsi, 0, 4
+pullqw 3, 4, 0
+loada arg1, 0, 5
+loada bp@lsi, 0, 6
+load bytecode, 0, 7
+pushb 7, 6, 5
+addi 5, 0, 7
+load arg1, 0, 8
+pullqw 7, 8, 0
+addi 6, 2, 5
+load bp@lsi, 0, 9
+pullqw 5, 9, 0
+loada arg2, 0, 6
+loada bp@lsi, 0, 10
+load bytecode, 0, 11
+pushb 11, 10, 6
+addi 6, 0, 11
+load arg2, 0, 12
+pullqw 11, 12, 0
+addi 10, 2, 6
+load bp@lsi, 0, 13
+pullqw 6, 13, 0
+loada arg3, 0, 10
+loada bp@lsi, 0, 14
+load bytecode, 0, 15
+pushb 15, 14, 10
+addi 10, 0, 15
+load arg3, 0, 16
+pullqw 15, 16, 0
+loada arg1, 0, 1
+loada offset@lsi, 0, 2
+muli 1, 2, 3
+load arg1, 0, 4
+pullqw 3, 4, 0
+loada arg2, 0, 1
+muli 1, 2, 5
+load arg2, 0, 6
+pullqw 5, 6, 0
+loada arg3, 0, 1
+muli 1, 2, 7
+load arg3, 0, 8
+pullqw 7, 8, 0
+loada r1@lsi, 0, 1
+loada arg1, 0, 2
+load regi, 0, 3
+pushqw 3, 2, 1
+loada r2@lsi, 0, 3
+loada arg2, 0, 4
+load regi, 0, 5
+pushqw 5, 4, 3
+lsi 1, 3, 5
+load f, 0, 6
+pullqw 5, 6, 0
+loada f, 0, 1
+jmpi 1, :if_0
+jmp :else_0
+:if_0
+load one, 0, 1
+pushqw 1, 0, 2
+loada arg3, 0, 3
+load regi, 0, 4
+pullqw 2, 4, 3
+jmp :endif_0
+:else_0
+load zero, 0, 1
+pushqw 1, 0, 2
+loada arg3, 0, 3
+load regi, 0, 4
+pullqw 2, 4, 3
+:endif_0
+loada ep, 0, 1
+loada four@lsi, 0, 2
+addi 1, 2, 3
+load ep, 0, 4
+pullqw 3, 4, 0
+loada bp, 0, 1
+loada bp_offset@lsi, 0, 5
+addi 1, 5, 6
+load bp, 0, 7
+pullqw 6, 7, 0
+rts
+:jmpi
+loada zero, 0, 0
+loada ep, 0, 1
+loada one, 0, 2
+addi 1, 2, 3
+load bp@jmpi, 0, 4
+pullqw 3, 4, 0
+loada arg1, 0, 5
+loada bp@jmpi, 0, 6
+load bytecode, 0, 7
+pushb 7, 6, 5
+addi 5, 0, 7
+load arg1, 0, 8
+pullqw 7, 8, 0
+addi 6, 2, 5
+load bp@jmpi, 0, 9
+pullqw 5, 9, 0
+loada arg2, 0, 6
+loada bp@jmpi, 0, 10
+load bytecode, 0, 11
+pushb 11, 10, 6
+addi 6, 0, 11
+load arg2, 0, 12
+pullqw 11, 12, 0
+loada arg1, 0, 6
+loada offset@jmpi, 0, 13
+muli 6, 13, 14
+load arg1, 0, 15
+pullqw 14, 15, 0
+loada r1@jmpi, 0, 6
+loada arg1, 0, 16
+load regi, 0, 17
+pushqw 17, 16, 6
+neqi 6, 0, 17
+load f, 0, 18
+pullqw 17, 18, 0
+loada f, 0, 1
+jmpi 1, :if_1
+jmp :else_1
+:if_1
+load ep, 0, 1
+loada arg2, 0, 2
+pullqw 2, 1, 0
+load bp, 0, 1
+loada arg2, 0, 2
+pullqw 2, 1, 0
+loada bp, 0, 1
+loada offset@jmpi, 0, 2
+muli 1, 2, 3
+load bp, 0, 4
+pullqw 3, 4, 0
+jmp :endif_1
+:else_1
+loada ep, 0, 1
+loada three@jmpi, 0, 2
+addi 1, 2, 3
+load ep, 0, 4
+pullqw 3, 4, 0
+loada bp, 0, 1
+loada bp_offset@jmpi, 0, 5
+addi 1, 5, 6
+load bp, 0, 7
+pullqw 6, 7, 0
+:endif_1
+rts
+:printi
+loada zero, 0, 0
+loada ep, 0, 1
+loada one, 0, 2
+addi 1, 2, 3
+load bp@printi, 0, 4
+pullqw 3, 4, 0
+loada arg1, 0, 5
+loada bp@printi, 0, 6
+load bytecode, 0, 7
+pushb 7, 6, 5
+addi 5, 0, 7
+load arg1, 0, 8
+pullqw 7, 8, 0
+loada arg1, 0, 5
+loada offset@printi, 0, 9
+muli 5, 9, 10
+load arg1, 0, 11
+pullqw 10, 11, 0
+loada r1@printi, 0, 5
+loada arg1, 0, 12
+load regi, 0, 13
+pushqw 13, 12, 5
+intr0 4, 5, 0, 0
+intr0 7, 0, 0, 0
+loada two@printi, 0, 13
+addi 1, 13, 14
+load ep, 0, 15
+pullqw 14, 15, 0
+loada bp, 0, 1
+loada bp_offset@printi, 0, 16
+addi 1, 16, 17
+load bp, 0, 18
+pullqw 17, 18, 0
+rts
+:end
+loada zero, 0, 0
+loada time_ms_i, 0, 1
+intr0 25, 1, 0, 0
+addi 1, 0, 2
+load time_ms_i, 0, 3
+pullqw 2, 3, 0
+stpushi 0
+jsr :opcodes_per_sec
+stpopi 0
+loada zero, 0, 1
+intr0 255, 1, 0, 0
+rts
+:start
+loada zero, 0, 0
+intr0 40, 0, 0, 0
+:set_labels
+loada lab_addi, 0, 1
+loadl :addi, 1
+loada zero, 0, 3
+addi 1, 3, 4
+load lab_addi, 0, 5
+pullqw 4, 5, 0
+loada lab_lsi, 0, 1
+loadl :lsi, 1
+addi 1, 3, 5
+load lab_lsi, 0, 6
+pullqw 5, 6, 0
+loada lab_jmpi, 0, 1
+loadl :jmpi, 1
+addi 1, 3, 6
+load lab_jmpi, 0, 7
+pullqw 6, 7, 0
+loada lab_printi, 0, 1
+loadl :printi, 1
+addi 1, 3, 7
+load lab_printi, 0, 8
+pullqw 7, 8, 0
+loada lab_end, 0, 1
+loadl :end, 1
+addi 1, 3, 8
+load lab_end, 0, 9
+pullqw 8, 9, 0
+load i, 0, 1
+loada zero, 0, 2
+pullqw 2, 1, 0
+load lab_addi, 0, 1
+pushqw 1, 0, 2
+loada i, 0, 3
+load jmp_array, 0, 4
+pullqw 2, 4, 3
+load lab_lsi, 0, 1
+pushqw 1, 0, 2
+loada lsi_pos, 0, 3
+load jmp_array, 0, 4
+pullqw 2, 4, 3
+load lab_jmpi, 0, 1
+pushqw 1, 0, 2
+loada jmpi_pos, 0, 3
+load jmp_array, 0, 4
+pullqw 2, 4, 3
+load lab_printi, 0, 1
+pushqw 1, 0, 2
+loada printi_pos, 0, 3
+load jmp_array, 0, 4
+pullqw 2, 4, 3
+load lab_end, 0, 1
+pushqw 1, 0, 2
+loada end_pos, 0, 3
+load jmp_array, 0, 4
+pullqw 2, 4, 3
+load bp, 0, 4
+loada zero, 0, 5
+pullqw 5, 4, 0
+intr0 24, 0, 0, 0
+:load_opcode
+loada op_label, 0, 1
+loada bp, 0, 2
+load jmp_array, 0, 3
+pushqw 3, 2, 1
+jsra 1
+jmp :load_opcode
+intr0 39, 0, 0, 0
+rts
+:math_init
+loada zero, 0, 0
+stpopi 1
+load mod@math, 0, 2
+pullqw 1, 2, 0
+loada modulestr@mathaddr, 0, 2
+intr0 0, 2, 1, 0
+loada int2double@math, 0, 3
+loada int2doublestr@mathaddr, 0, 4
+intr0 2, 1, 3, 4
+loada double2int@math, 0, 5
+loada double2intstr@mathaddr, 0, 6
+intr0 2, 1, 5, 6
+loada sqrtdouble@math, 0, 7
+loada sqrtdoublestr@mathaddr, 0, 8
+intr0 2, 1, 7, 8
+loada logdouble@math, 0, 9
+loada logdoublestr@mathaddr, 0, 10
+intr0 2, 1, 9, 10
+loada log2double@math, 0, 11
+loada log2doublestr@mathaddr, 0, 12
+intr0 2, 1, 11, 12
+loada randinit@math, 0, 13
+loada randinitstr@mathaddr, 0, 14
+intr0 2, 1, 13, 14
+loada randint@math, 0, 15
+loada randintstr@mathaddr, 0, 16
+intr0 2, 1, 15, 16
+loada randdouble@math, 0, 17
+loada randdoublestr@mathaddr, 0, 18
+intr0 2, 1, 17, 18
+loada randintmax@math, 0, 19
+loada randintmaxstr@mathaddr, 0, 20
+intr0 2, 1, 19, 20
+loada randombyte@math, 0, 21
+loada randombytestr@mathaddr, 0, 22
+intr0 2, 1, 21, 22
+loada doubleroundedstring@math, 0, 23
+loada doubleroundedstringstr@mathaddr, 0, 24
+intr0 2, 1, 23, 24
+loada stringtoint@math, 0, 25
+loada stringtointstr@mathaddr, 0, 26
+intr0 2, 1, 25, 26
+loada stringtodouble@math, 0, 27
+loada stringtodoublestr@mathaddr, 0, 28
+intr0 2, 1, 27, 28
+loada acosdouble@math, 0, 29
+loada acosdoublestr@mathaddr, 0, 30
+intr0 2, 1, 29, 30
+loada asindouble@math, 0, 31
+loada asindoublestr@mathaddr, 0, 32
+intr0 2, 1, 31, 32
+loada atandouble@math, 0, 33
+loada atandoublestr@mathaddr, 0, 34
+intr0 2, 1, 33, 34
+loada atan2double@math, 0, 35
+loada atan2doublestr@mathaddr, 0, 36
+intr0 2, 1, 35, 36
+loada cosdouble@math, 0, 37
+loada cosdoublestr@mathaddr, 0, 38
+intr0 2, 1, 37, 38
+loada coshdouble@math, 0, 39
+loada coshdoublestr@mathaddr, 0, 40
+intr0 2, 1, 39, 40
+loada sindouble@math, 0, 41
+loada sindoublestr@mathaddr, 0, 42
+intr0 2, 1, 41, 42
+loada sinhdouble@math, 0, 43
+loada sinhdoublestr@mathaddr, 0, 44
+intr0 2, 1, 43, 44
+loada tanhdouble@math, 0, 45
+loada tanhdoublestr@mathaddr, 0, 46
+intr0 2, 1, 45, 46
+loada expdouble@math, 0, 47
+loada expdoublestr@mathaddr, 0, 48
+intr0 2, 1, 47, 48
+loada frexpdouble@math, 0, 49
+loada frexpdoublestr@mathaddr, 0, 50
+intr0 2, 1, 49, 50
+loada ldexpdouble@math, 0, 51
+loada ldexpdoublestr@mathaddr, 0, 52
+intr0 2, 1, 51, 52
+loada log10double@math, 0, 53
+loada log10doublestr@mathaddr, 0, 54
+intr0 2, 1, 53, 54
+loada modfdouble@math, 0, 55
+loada modfdoublestr@mathaddr, 0, 56
+intr0 2, 1, 55, 56
+loada powdouble@math, 0, 57
+loada powdoublestr@mathaddr, 0, 58
+intr0 2, 1, 57, 58
+loada ceildouble@math, 0, 59
+loada ceildoublestr@mathaddr, 0, 60
+intr0 2, 1, 59, 60
+loada fabsdouble@math, 0, 61
+loada fabsdoublestr@mathaddr, 0, 62
+intr0 2, 1, 61, 62
+loada floordouble@math, 0, 63
+loada floordoublestr@mathaddr, 0, 64
+intr0 2, 1, 63, 64
+loada tandouble@math, 0, 65
+loada tandoublestr@mathaddr, 0, 66
+intr0 2, 1, 65, 66
+loada byte2int@math, 0, 67
+loada byte2intstr@mathaddr, 0, 68
+intr0 2, 1, 67, 68
+loada fmoddouble@math, 0, 69
+loada fmoddoublestr@mathaddr, 0, 70
+intr0 2, 1, 69, 70
+rts
+:math_int2double
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada int2double@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_double2int
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada double2int@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_sqrtdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada sqrtdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_logdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada logdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_log2double
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada log2double@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_randinit
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada randinit@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_randint
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada randint@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_randdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada randdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_randintmax
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada randintmax@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_randbyte
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada randombyte@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:double_rounded_string
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada doubleroundedstring@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_to_int
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada stringtoint@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_to_double
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada stringtodouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_byte2int
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada byte2int@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_not
+loada zero, 0, 0
+ stpopi 1
+ noti 1, 2
+ stpushi 2
+ rts
+rts
+:math_acosdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada acosdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_asindouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada asindouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_atandouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada atandouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_atan2double
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada atan2double@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_cosdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada cosdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_coshdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada coshdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_sindouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada sindouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_sinhdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada sinhdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_tanhdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada tanhdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_tandouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada tandouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_expdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada expdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_frexpdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada frexpdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_ldexpdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada ldexpdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_log10double
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada log10double@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_modfdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada modfdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_powdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada powdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_ceildouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada ceildouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_fabsdouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada fabsdouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_floordouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada floordouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_fmoddouble
+loada zero, 0, 0
+loada mod@math, 0, 1
+loada fmoddouble@math, 0, 2
+intr0 3, 1, 2, 0
+rts
+:math_degree_to_rad
+loada zero, 0, 0
+stpopd 1
+load degreemath_degree_to_rad, 0, 2
+pulld 1, 2, 0
+loadd m_pimath, 0, 2
+muld 1, 2, 3
+loadd half_circlemath_degree_to_rad, 0, 4
+divd 3, 4, 5
+load radmath_degree_to_rad, 0, 6
+pulld 5, 6, 0
+loadd radmath_degree_to_rad, 0, 5
+stpushd 5
+rts
+:math_rad_to_degree
+loada zero, 0, 0
+stpopd 1
+load radmath_rad_to_degree, 0, 2
+pulld 1, 2, 0
+loadd half_circlemath_rad_to_degree, 0, 2
+muld 1, 2, 3
+loadd m_pimath, 0, 4
+divd 3, 4, 5
+load degreemath_rad_to_degree, 0, 6
+pulld 5, 6, 0
+loadd degreemath_rad_to_degree, 0, 5
+stpushd 5
+rts
+:string_init
+loada zero, 0, 0
+stpopi 1
+load mod@string, 0, 2
+pullqw 1, 2, 0
+loada modulestr@stringaddr, 0, 2
+intr0 0, 2, 1, 0
+loada len@string, 0, 3
+loada lenstr@stringaddr, 0, 4
+intr0 2, 1, 3, 4
+loada copy@string, 0, 5
+loada copystr@stringaddr, 0, 6
+intr0 2, 1, 5, 6
+loada cat@string, 0, 7
+loada catstr@stringaddr, 0, 8
+intr0 2, 1, 7, 8
+loada int64tostring@string, 0, 9
+loada int64tostringstr@stringaddr, 0, 10
+intr0 2, 1, 9, 10
+loada bytetohexstring@string, 0, 11
+loada bytetohexstringstr@stringaddr, 0, 12
+intr0 2, 1, 11, 12
+loada doubletostring@string, 0, 13
+loada doubletostringstr@stringaddr, 0, 14
+intr0 2, 1, 13, 14
+loada bytenumtostring@string, 0, 15
+loada bytenumtostringstr@stringaddr, 0, 16
+intr0 2, 1, 15, 16
+loada stringtoarray@string, 0, 17
+loada stringtoarraystr@stringaddr, 0, 18
+intr0 2, 1, 17, 18
+loada arraytostring@string, 0, 19
+loada arraytostringstr@stringaddr, 0, 20
+intr0 2, 1, 19, 20
+loada stringleft@string, 0, 21
+loada stringleftstr@stringaddr, 0, 22
+intr0 2, 1, 21, 22
+loada stringright@string, 0, 23
+loada stringrightstr@stringaddr, 0, 24
+intr0 2, 1, 23, 24
+loada stringmid@string, 0, 25
+loada stringmidstr@stringaddr, 0, 26
+intr0 2, 1, 25, 26
+loada stringtostring@string, 0, 27
+loada stringtostringstr@stringaddr, 0, 28
+intr0 2, 1, 27, 28
+loada stringcompare@string, 0, 29
+loada stringcomparestr@stringaddr, 0, 30
+intr0 2, 1, 29, 30
+loada stringmemtostring@string, 0, 31
+loada stringmemtostringstr@stringaddr, 0, 32
+intr0 2, 1, 31, 32
+loada stringmemsearch@string, 0, 33
+loada stringmemsearchstr@stringaddr, 0, 34
+intr0 2, 1, 33, 34
+loada stringregex@string, 0, 35
+loada stringregexstr@stringaddr, 0, 36
+intr0 2, 1, 35, 36
+loada stringsearch@string, 0, 37
+loada stringsearchstr@stringaddr, 0, 38
+intr0 2, 1, 37, 38
+loada get_env@string, 0, 39
+loada get_envstr@stringaddr, 0, 40
+intr0 2, 1, 39, 40
+loada set_env@string, 0, 41
+loada set_envstr@stringaddr, 0, 42
+intr0 2, 1, 41, 42
+loada stringparsejson@string, 0, 43
+loada stringparsejsonstr@stringaddr, 0, 44
+intr0 2, 1, 43, 44
+loada string_array_sort@string, 0, 45
+loada string_array_sortstr@stringaddr, 0, 46
+intr0 2, 1, 45, 46
+loada string_array_search@string, 0, 47
+loada string_array_searchstr@stringaddr, 0, 48
+intr0 2, 1, 47, 48
+loada string_mid_to_byte@string, 0, 49
+loada string_mid_to_bytestr@stringaddr, 0, 50
+intr0 2, 1, 49, 50
+loada bytenumbytetostring@string, 0, 51
+loada bytenumbytetostringstr@stringaddr, 0, 52
+intr0 2, 1, 51, 52
+loada stringverify@string, 0, 53
+loada stringverifystr@stringaddr, 0, 54
+intr0 2, 1, 53, 54
+loada string_format_num@string, 0, 55
+loada string_format_numstr@stringaddr, 0, 56
+intr0 2, 1, 55, 56
+loada string_padd@string, 0, 57
+loada string_paddstr@stringaddr, 0, 58
+intr0 2, 1, 57, 58
+rts
+:string_len
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada len@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_copy
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada copy@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_cat
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada cat@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_int64tostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada int64tostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_bytetohexstring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada bytetohexstring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_doubletostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada doubletostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_bytenumtostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada bytenumtostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_to_array
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringtoarray@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:array_to_string
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada arraytostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_left
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringleft@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_right
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringright@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_mid
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringmid@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_mid_to_byte
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada string_mid_to_byte@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_to_string
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringtostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_compare
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringcompare@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_memtostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringmemtostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_memsearch
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringmemsearch@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_regex
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringregex@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_search
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringsearch@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_env
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada get_env@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_env
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada set_env@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_parse_json
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringparsejson@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_array_sort
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada string_array_sort@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_array_search
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada string_array_search@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_bytetostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada bytenumbytetostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_verify
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringverify@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_format_num
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada string_format_num@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_padd
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada string_padd@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+.cend

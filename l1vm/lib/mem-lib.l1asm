@@ -1,0 +1,596 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, one
+@, 8Q, 1
+Q, 1, memaddr
+@, 16Q, 0
+Q, 1, memsize
+@, 24Q, 10000
+Q, 1, i
+@, 32Q, 0
+Q, 1, j
+@, 40Q, 0
+Q, 1, f
+@, 48Q, 0
+Q, 1, read
+@, 56Q, 0
+Q, 1, write
+@, 64Q, 0
+Q, 1, ret
+@, 72Q, 0
+B, 24, meminitstr
+@, 80Q, "ERROR can't init memory"
+Q, 1, meminitstraddr
+@, 104Q, 80Q
+B, 29, memerrstr
+@, 112Q, "ERROR can't allocate memory!"
+Q, 1, memerrstraddr
+@, 141Q, 112Q
+B, 10, writing
+@, 149Q, "writing: "
+Q, 1, writingaddr
+@, 159Q, 149Q
+B, 10, reading
+@, 167Q, "reading: "
+Q, 1, readingaddr
+@, 177Q, 167Q
+B, 11, modulestr@mem
+@, 185Q, "libl1vmmem"
+Q, 1, modulestr@memaddr
+@, 196Q, 185Q
+B, 9, initstr@mem
+@, 204Q, "init_mem"
+Q, 1, initstr@memaddr
+@, 213Q, 204Q
+B, 11, allocbytestr@mem
+@, 221Q, "alloc_byte"
+Q, 1, allocbytestr@memaddr
+@, 232Q, 221Q
+B, 12, allocint16str@mem
+@, 240Q, "alloc_int16"
+Q, 1, allocint16str@memaddr
+@, 252Q, 240Q
+B, 12, allocint32str@mem
+@, 260Q, "alloc_int32"
+Q, 1, allocint32str@memaddr
+@, 272Q, 260Q
+B, 12, allocint64str@mem
+@, 280Q, "alloc_int64"
+Q, 1, allocint64str@memaddr
+@, 292Q, 280Q
+B, 13, allocdoublestr@mem
+@, 300Q, "alloc_double"
+Q, 1, allocdoublestr@memaddr
+@, 313Q, 300Q
+B, 12, deallocstr@mem
+@, 321Q, "dealloc_mem"
+Q, 1, deallocstr@memaddr
+@, 333Q, 321Q
+B, 13, int_to_arraystr@mem
+@, 341Q, "int_to_array"
+Q, 1, int_to_arraystr@memaddr
+@, 354Q, 341Q
+B, 13, array_to_instr@mod
+@, 362Q, "array_to_int"
+Q, 1, array_to_instr@modaddr
+@, 375Q, 362Q
+B, 16, double_to_arraystr@mem
+@, 383Q, "double_to_array"
+Q, 1, double_to_arraystr@memaddr
+@, 399Q, 383Q
+B, 16, array_to_doublestr@mem
+@, 407Q, "array_to_double"
+Q, 1, array_to_doublestr@memaddr
+@, 423Q, 407Q
+B, 9, free@memstr
+@, 431Q, "free_mem"
+Q, 1, free@memstraddr
+@, 440Q, 431Q
+B, 16, stringtoarraystr@mem
+@, 448Q, "string_to_array"
+Q, 1, stringtoarraystr@memaddr
+@, 464Q, 448Q
+B, 16, arraytostringstr@mem
+@, 472Q, "array_to_string"
+Q, 1, arraytostringstr@memaddr
+@, 488Q, 472Q
+B, 16, allocbytevectstr@mem
+@, 496Q, "alloc_byte_vect"
+Q, 1, allocbytevectstr@memaddr
+@, 512Q, 496Q
+B, 17, allocint16vectstr@mem
+@, 520Q, "alloc_int16_vect"
+Q, 1, allocint16vectstr@memaddr
+@, 537Q, 520Q
+B, 17, allocint32vectstr@mem
+@, 545Q, "alloc_int32_vect"
+Q, 1, allocint32vectstr@memaddr
+@, 562Q, 545Q
+B, 17, allocint64vectstr@mem
+@, 570Q, "alloc_int64_vect"
+Q, 1, allocint64vectstr@memaddr
+@, 587Q, 570Q
+B, 18, allocdoublevectstr@mem
+@, 595Q, "alloc_double_vect"
+Q, 1, allocdoublevectstr@memaddr
+@, 613Q, 595Q
+B, 17, deallocvectstr@mem
+@, 621Q, "dealloc_mem_vect"
+Q, 1, deallocvectstr@memaddr
+@, 638Q, 621Q
+B, 12, int_to_vectstr@mem
+@, 646Q, "int_to_vect"
+Q, 1, int_to_vectstr@memaddr
+@, 658Q, 646Q
+B, 15, double_to_vectstr@mem
+@, 666Q, "double_to_vect"
+Q, 1, double_to_vectstr@memaddr
+@, 681Q, 666Q
+B, 12, vect_to_intstr@mem
+@, 689Q, "vect_to_int"
+Q, 1, vect_to_intstr@memaddr
+@, 701Q, 689Q
+B, 15, vect_to_doublestr@mem
+@, 709Q, "vect_to_double"
+Q, 1, vect_to_doublestr@memaddr
+@, 724Q, 709Q
+B, 11, vect_erasestr@mem
+@, 732Q, "vect_erase"
+Q, 1, vect_erasestr@memaddr
+@, 743Q, 732Q
+B, 19, insert_int_to_vectstr@mem
+@, 751Q, "insert_int_to_vect"
+Q, 1, insert_int_to_vectstr@memaddr
+@, 770Q, 751Q
+B, 22, insert_double_to_vectstr@mem
+@, 778Q, "insert_double_to_vect"
+Q, 1, insert_double_to_vectstr@memaddr
+@, 800Q, 778Q
+B, 14, get_vect_sizestr@mem
+@, 808Q, "get_vect_size"
+Q, 1, get_vect_sizestr@memaddr
+@, 822Q, 808Q
+Q, 1, init@mem
+@, 830Q, 0
+Q, 1, allocbyte@mem
+@, 838Q, 1
+Q, 1, allocint16@mem
+@, 846Q, 2
+Q, 1, allocint32@mem
+@, 854Q, 3
+Q, 1, allocint64@mem
+@, 862Q, 4
+Q, 1, allocdouble@mem
+@, 870Q, 5
+Q, 1, dealloc@mem
+@, 878Q, 6
+Q, 1, int_to_array@mem
+@, 886Q, 7
+Q, 1, array_to_int@mem
+@, 894Q, 8
+Q, 1, double_to_array@mem
+@, 902Q, 9
+Q, 1, array_to_double@mem
+@, 910Q, 10
+Q, 1, stringtoarray@mem
+@, 918Q, 11
+Q, 1, arraytostring@mem
+@, 926Q, 12
+Q, 1, free@mem
+@, 934Q, 13
+Q, 1, allocbytevect@mem
+@, 942Q, 14
+Q, 1, allocint16vect@mem
+@, 950Q, 15
+Q, 1, allocint32vect@mem
+@, 958Q, 16
+Q, 1, allocint64vect@mem
+@, 966Q, 17
+Q, 1, allocdoublevect@mem
+@, 974Q, 18
+Q, 1, deallocvect@mem
+@, 982Q, 19
+Q, 1, int_to_vect@mem
+@, 990Q, 20
+Q, 1, double_to_vect@mem
+@, 998Q, 21
+Q, 1, vect_to_int@mem
+@, 1006Q, 22
+Q, 1, vect_to_double@mem
+@, 1014Q, 23
+Q, 1, vect_erase@mem
+@, 1022Q, 24
+Q, 1, insert_int_to_vect@mem
+@, 1030Q, 25
+Q, 1, insert_double_to_vect@mem
+@, 1038Q, 26
+Q, 1, get_vect_size@mem
+@, 1046Q, 27
+Q, 1, mod@mem
+@, 1054Q, 0
+Q, 1, maxind@mem
+@, 1062Q, 0
+.dend
+.code
+:main
+loada zero, 0, 0
+stpushi 0
+loada zero, 0, 1
+stpushi 1
+loada one, 0, 2
+stpushi 2
+jsr :mem_init
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+stpopi 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_0
+jmp :endif_0
+:if_0
+loada meminitstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_0
+loada memsize, 0, 1
+stpushi 1
+jsr :alloc_int64
+stpopi 2
+load memaddr, 0, 3
+pullqw 2, 3, 0
+loada memaddr, 0, 1
+loada zero, 0, 2
+lsi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_1
+jmp :endif_1
+:if_1
+loada memerrstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_1
+:write_loop
+loada writingaddr, 0, 1
+intr0 6, 1, 0, 0
+loada i, 0, 2
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushi 2
+loada memaddr, 0, 3
+stpushi 3
+loada i, 0, 2
+stpushi 2
+loada i, 0, 2
+stpushi 2
+jsr :int_to_array
+stpopi 2
+stpopi 1
+loada i, 0, 1
+loada one, 0, 2
+addi 1, 2, 3
+load i, 0, 4
+pullqw 3, 4, 0
+loada i, 0, 1
+loada memsize, 0, 5
+lsi 1, 5, 6
+load f, 0, 7
+pullqw 6, 7, 0
+loada f, 0, 1
+jmpi 1, :if_2
+jmp :endif_2
+:if_2
+jmp :write_loop
+:endif_2
+intr0 7, 0, 0, 0
+intr0 7, 0, 0, 0
+load j, 0, 1
+loada zero, 0, 2
+pullqw 2, 1, 0
+:read_loop
+loada memaddr, 0, 1
+stpushi 1
+loada j, 0, 2
+stpushi 2
+jsr :array_to_int
+stpopi 3
+load read, 0, 4
+pullqw 3, 4, 0
+loada readingaddr, 0, 1
+intr0 6, 1, 0, 0
+loada read, 0, 2
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+loada j, 0, 3
+loada one, 0, 4
+addi 3, 4, 5
+load j, 0, 6
+pullqw 5, 6, 0
+loada j, 0, 3
+loada memsize, 0, 7
+lsi 3, 7, 8
+load f, 0, 9
+pullqw 8, 9, 0
+loada f, 0, 1
+jmpi 1, :if_3
+jmp :endif_3
+:if_3
+jmp :read_loop
+:endif_3
+jsr :free_mem
+loada zero, 0, 1
+intr0 1, 1, 0, 0
+intr0 255, 1, 0, 0
+rts
+:mem_init
+loada zero, 0, 0
+stpopi 1
+load maxind@mem, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load mod@mem, 0, 3
+pullqw 2, 3, 0
+loada modulestr@memaddr, 0, 3
+intr0 0, 3, 2, 0
+loada init@mem, 0, 4
+loada initstr@memaddr, 0, 5
+intr0 2, 2, 4, 5
+loada allocbyte@mem, 0, 6
+loada allocbytestr@memaddr, 0, 7
+intr0 2, 2, 6, 7
+loada allocint16@mem, 0, 8
+loada allocint16str@memaddr, 0, 9
+intr0 2, 2, 8, 9
+loada allocint32@mem, 0, 10
+loada allocint32str@memaddr, 0, 11
+intr0 2, 2, 10, 11
+loada allocint64@mem, 0, 12
+loada allocint64str@memaddr, 0, 13
+intr0 2, 2, 12, 13
+loada allocdouble@mem, 0, 14
+loada allocdoublestr@memaddr, 0, 15
+intr0 2, 2, 14, 15
+loada dealloc@mem, 0, 16
+loada deallocstr@memaddr, 0, 17
+intr0 2, 2, 16, 17
+loada int_to_array@mem, 0, 18
+loada int_to_arraystr@memaddr, 0, 19
+intr0 2, 2, 18, 19
+loada array_to_int@mem, 0, 20
+loada array_to_instr@modaddr, 0, 21
+intr0 2, 2, 20, 21
+loada double_to_array@mem, 0, 22
+loada double_to_arraystr@memaddr, 0, 23
+intr0 2, 2, 22, 23
+loada array_to_double@mem, 0, 24
+loada array_to_doublestr@memaddr, 0, 25
+intr0 2, 2, 24, 25
+loada free@mem, 0, 26
+loada free@memstraddr, 0, 27
+intr0 2, 2, 26, 27
+loada stringtoarray@mem, 0, 28
+loada stringtoarraystr@memaddr, 0, 29
+intr0 2, 2, 28, 29
+loada arraytostring@mem, 0, 30
+loada arraytostringstr@memaddr, 0, 31
+intr0 2, 2, 30, 31
+loada allocbytevect@mem, 0, 32
+loada allocbytevectstr@memaddr, 0, 33
+intr0 2, 2, 32, 33
+loada allocint16vect@mem, 0, 34
+loada allocint16vectstr@memaddr, 0, 35
+intr0 2, 2, 34, 35
+loada allocint32vect@mem, 0, 36
+loada allocint32vectstr@memaddr, 0, 37
+intr0 2, 2, 36, 37
+loada allocint64vect@mem, 0, 38
+loada allocint64vectstr@memaddr, 0, 39
+intr0 2, 2, 38, 39
+loada allocdoublevect@mem, 0, 40
+loada allocdoublevectstr@memaddr, 0, 41
+intr0 2, 2, 40, 41
+loada deallocvect@mem, 0, 42
+loada deallocvectstr@memaddr, 0, 43
+intr0 2, 2, 42, 43
+loada int_to_vect@mem, 0, 44
+loada int_to_vectstr@memaddr, 0, 45
+intr0 2, 2, 44, 45
+loada double_to_vect@mem, 0, 46
+loada double_to_vectstr@memaddr, 0, 47
+intr0 2, 2, 46, 47
+loada vect_to_int@mem, 0, 48
+loada vect_to_intstr@memaddr, 0, 49
+intr0 2, 2, 48, 49
+loada vect_to_double@mem, 0, 50
+loada vect_to_doublestr@memaddr, 0, 51
+intr0 2, 2, 50, 51
+loada vect_erase@mem, 0, 52
+loada vect_erasestr@memaddr, 0, 53
+intr0 2, 2, 52, 53
+loada insert_int_to_vect@mem, 0, 54
+loada insert_int_to_vectstr@memaddr, 0, 55
+intr0 2, 2, 54, 55
+loada insert_double_to_vect@mem, 0, 56
+loada insert_double_to_vectstr@memaddr, 0, 57
+intr0 2, 2, 56, 57
+loada get_vect_size@mem, 0, 58
+loada get_vect_sizestr@memaddr, 0, 59
+intr0 2, 2, 58, 59
+stpushi 1
+intr0 3, 2, 4, 0
+rts
+:alloc_byte
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocbyte@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_int16
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocint16@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_int32
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocint32@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_int64
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocint64@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_double
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocdouble@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:dealloc
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada dealloc@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:int_to_array
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada int_to_array@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:array_to_int
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada array_to_int@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:double_to_array
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada double_to_array@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:array_to_double
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada array_to_double@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_to_array
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada stringtoarray@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:array_to_string
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada arraytostring@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:free_mem
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada free@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_byte_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocbytevect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_int16_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocint16vect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_int32_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocint32vect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_int64_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocint64vect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_double_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocdoublevect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:dealloc_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada deallocvect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:int_to_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada int_to_vect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:double_to_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada double_to_vect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vect_to_int
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada vect_to_int@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vect_to_double
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada vect_to_double@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vect_erase
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada vect_erase@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:insert_int_to_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada insert_int_to_vect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:insert_double_to_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada insert_double_to_vect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_vect_size
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada get_vect_size@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+.cend

@@ -1,0 +1,24 @@
+// text to speech
+//
+// needs "process-lib.l1h" and "string.l1h" included
+// And the "mbrola" voice pacakges installed
+//
+//
+#include <intr.l1h>
+(main func)
+    (set int64 1 zero 0)
+    (set int64 1 processmod 0)
+    (set int64 1 stringmod 1)
+    (set string s voicestr "mb-de5")
+    (set string s textstr "Hallo Du da! Wie geht es dir?")
+    (set int64 1 ret 0)
+    (processmod :process_init !)
+    (stringmod :string_init !)
+    (textstr voicestr :text2speech !)
+    (ret stpopi)
+    exit (zero)
+(funcend)
+
+#include <text2speech.l1h>
+#include <process-lib.l1h>
+#include <string.l1h>

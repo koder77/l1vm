@@ -1,0 +1,838 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, one
+@, 8Q, 1
+Q, 1, server
+@, 16Q, 0
+Q, 1, accept
+@, 24Q, 0
+Q, 1, portnum
+@, 32Q, 3000Q
+Q, 1, error
+@, 40Q, 0
+Q, 1, server_open
+@, 48Q, 0
+Q, 1, server_accept
+@, 56Q, 0
+Q, 1, f
+@, 64Q, 0
+B, 10, ip
+@, 72Q, "127.0.0.1"
+Q, 1, ipaddr
+@, 82Q, 72Q
+Q, 1, ip_len
+@, 90Q, 10
+Q, 1, ret
+@, 98Q, 0
+B, 265, bufaddr
+@, 106Q, ""
+Q, 1, bufaddraddr
+@, 371Q, 106Q
+B, 256, buf_str
+@, 379Q, ""
+Q, 1, buf_straddr
+@, 635Q, 379Q
+Q, 1, bufsize
+@, 643Q, 255
+Q, 1, socket_handle
+@, 651Q, 0
+Q, 1, mod_net
+@, 659Q, 0
+Q, 1, char
+@, 667Q, 0
+B, 11, waiting
+@, 675Q, "waiting..."
+Q, 1, waitingaddr
+@, 686Q, 675Q
+B, 38, netinitstr
+@, 694Q, "error: can't init networking sockets!"
+Q, 1, netinitstraddr
+@, 732Q, 694Q
+B, 11, modulestr@net
+@, 740Q, "libl1vmnet"
+Q, 1, modulestr@netaddr
+@, 751Q, 740Q
+B, 13, initstr@net
+@, 759Q, "init_sockets"
+Q, 1, initstr@netaddr
+@, 772Q, 759Q
+B, 19, open_server_socketstr@net
+@, 780Q, "open_server_socket"
+Q, 1, open_server_socketstr@netaddr
+@, 799Q, 780Q
+B, 19, open_accept_serverstr@net
+@, 807Q, "open_accept_server"
+Q, 1, open_accept_serverstr@netaddr
+@, 826Q, 807Q
+B, 19, open_client_socketstr@net
+@, 834Q, "open_client_socket"
+Q, 1, open_client_socketstr@netaddr
+@, 853Q, 834Q
+B, 20, close_server_socketstr@net
+@, 861Q, "close_server_socket"
+Q, 1, close_server_socketstr@netaddr
+@, 881Q, 861Q
+B, 20, close_accept_serverstr@net
+@, 889Q, "close_accept_server"
+Q, 1, close_accept_serverstr@netaddr
+@, 909Q, 889Q
+B, 20, close_client_socketstr@net
+@, 917Q, "close_client_socket"
+Q, 1, close_client_socketstr@netaddr
+@, 937Q, 917Q
+B, 15, get_clientaddrstr@net
+@, 945Q, "get_clientaddr"
+Q, 1, get_clientaddrstr@netaddr
+@, 960Q, 945Q
+B, 13, get_hostnamestr@net
+@, 968Q, "get_hostname"
+Q, 1, get_hostnamestr@netaddr
+@, 981Q, 968Q
+B, 15, get_hostbynamestr@net
+@, 989Q, "get_hostbyname"
+Q, 1, get_hostbynamestr@netaddr
+@, 1004Q, 989Q
+B, 15, get_hostbyaddrstr@net
+@, 1012Q, "get_hostbyaddr"
+Q, 1, get_hostbyaddrstr@netaddr
+@, 1027Q, 1012Q
+B, 17, socket_read_bytestr@net
+@, 1035Q, "socket_read_byte"
+Q, 1, socket_read_bytestr@netaddr
+@, 1052Q, 1035Q
+B, 18, socket_read_int64str@net
+@, 1060Q, "socket_read_int64"
+Q, 1, socket_read_int64str@netaddr
+@, 1078Q, 1060Q
+B, 19, socket_read_doublestr@net
+@, 1086Q, "socket_read_double"
+Q, 1, socket_read_doublestr@netaddr
+@, 1105Q, 1086Q
+B, 19, socket_read_stringstr@net
+@, 1113Q, "socket_read_string"
+Q, 1, socket_read_stringstr@netaddr
+@, 1132Q, 1113Q
+B, 18, socket_write_bytestr@net
+@, 1140Q, "socket_write_byte"
+Q, 1, socket_write_bytestr@netaddr
+@, 1158Q, 1140Q
+B, 19, socket_write_int64str@net
+@, 1166Q, "socket_write_int64"
+Q, 1, socket_write_int64str@netaddr
+@, 1185Q, 1166Q
+B, 20, socket_write_doublestr@net
+@, 1193Q, "socket_write_double"
+Q, 1, socket_write_doublestr@netaddr
+@, 1213Q, 1193Q
+B, 20, socket_write_stringstr@net
+@, 1221Q, "socket_write_string"
+Q, 1, socket_write_stringstr@netaddr
+@, 1241Q, 1221Q
+B, 19, data_store_int64str@net
+@, 1249Q, "socket_store_int64"
+Q, 1, data_store_int64str@netaddr
+@, 1268Q, 1249Q
+B, 20, data_store_doublestr@net
+@, 1276Q, "socket_store_double"
+Q, 1, data_store_doublestr@netaddr
+@, 1296Q, 1276Q
+B, 20, data_store_stringstr@net
+@, 1304Q, "socket_store_string"
+Q, 1, data_store_stringstr@netaddr
+@, 1324Q, 1304Q
+B, 17, data_get_int64str@net
+@, 1332Q, "socket_get_int64"
+Q, 1, data_get_int64str@netaddr
+@, 1349Q, 1332Q
+B, 18, data_get_doublestr@net
+@, 1357Q, "socket_get_double"
+Q, 1, data_get_doublestr@netaddr
+@, 1375Q, 1357Q
+B, 18, data_get_stringstr@net
+@, 1383Q, "socket_get_string"
+Q, 1, data_get_stringstr@netaddr
+@, 1401Q, 1383Q
+B, 20, data_remove_int64str@net
+@, 1409Q, "socket_remove_int64"
+Q, 1, data_remove_int64str@netaddr
+@, 1429Q, 1409Q
+B, 21, data_remove_doublestr@net
+@, 1437Q, "socket_remove_double"
+Q, 1, data_remove_doublestr@netaddr
+@, 1458Q, 1437Q
+B, 21, data_remove_stringstr@net
+@, 1466Q, "socket_remove_string"
+Q, 1, data_remove_stringstr@netaddr
+@, 1487Q, 1466Q
+B, 16, data_get_infostr@net
+@, 1495Q, "socket_get_info"
+Q, 1, data_get_infostr@netaddr
+@, 1511Q, 1495Q
+B, 9, free@netstr
+@, 1519Q, "free_mem"
+Q, 1, free@netstraddr
+@, 1528Q, 1519Q
+B, 27, get_mimetype_from_filenamestr@net
+@, 1536Q, "get_mimetype_from_filename"
+Q, 1, get_mimetype_from_filenamestr@netaddr
+@, 1563Q, 1536Q
+B, 17, socket_send_filestr@net
+@, 1571Q, "socket_send_file"
+Q, 1, socket_send_filestr@netaddr
+@, 1588Q, 1571Q
+B, 18, socket_handle_getstr@net
+@, 1596Q, "socket_handle_get"
+Q, 1, socket_handle_getstr@netaddr
+@, 1614Q, 1596Q
+B, 16, socket_get_filestr@net
+@, 1622Q, "socket_get_file"
+Q, 1, socket_get_filestr@netaddr
+@, 1638Q, 1622Q
+B, 23, socket_read_byte_arraystr@net
+@, 1646Q, "socket_read_byte_array"
+Q, 1, socket_read_byte_arraystr@netaddr
+@, 1669Q, 1646Q
+B, 24, socket_write_byte_arraystr@net
+@, 1677Q, "socket_write_byte_array"
+Q, 1, socket_write_byte_arraystr@netaddr
+@, 1701Q, 1677Q
+B, 23, open_server_socket_sslstr@net
+@, 1709Q, "open_server_socket_ssl"
+Q, 1, open_server_socket_sslstr@netaddr
+@, 1732Q, 1709Q
+B, 23, open_accept_server_sslstr@net
+@, 1740Q, "open_accept_server_ssl"
+Q, 1, open_accept_server_sslstr@netaddr
+@, 1763Q, 1740Q
+B, 23, open_client_socket_sslstr@net
+@, 1771Q, "open_client_socket_ssl"
+Q, 1, open_client_socket_sslstr@netaddr
+@, 1794Q, 1771Q
+B, 24, close_server_socket_sslstr@net
+@, 1802Q, "close_server_socket_ssl"
+Q, 1, close_server_socket_sslstr@netaddr
+@, 1826Q, 1802Q
+B, 24, close_accept_server_sslstr@net
+@, 1834Q, "close_accept_server_ssl"
+Q, 1, close_accept_server_sslstr@netaddr
+@, 1858Q, 1834Q
+B, 24, close_client_socket_sslstr@net
+@, 1866Q, "close_client_socket_ssl"
+Q, 1, close_client_socket_sslstr@netaddr
+@, 1890Q, 1866Q
+Q, 1, init@net
+@, 1898Q, 0
+Q, 1, open_server_socket@net
+@, 1906Q, 1
+Q, 1, open_accept_server@net
+@, 1914Q, 2
+Q, 1, open_client_socket@net
+@, 1922Q, 3
+Q, 1, close_server_socket@net
+@, 1930Q, 4
+Q, 1, close_accept_server@net
+@, 1938Q, 5
+Q, 1, close_client_socket@net
+@, 1946Q, 6
+Q, 1, get_clientaddr@net
+@, 1954Q, 7
+Q, 1, get_hostname@net
+@, 1962Q, 8
+Q, 1, get_hostbyname@net
+@, 1970Q, 9
+Q, 1, get_hostbyaddr@net
+@, 1978Q, 10
+Q, 1, socket_read_byte@net
+@, 1986Q, 11
+Q, 1, socket_read_int64@net
+@, 1994Q, 12
+Q, 1, socket_read_double@net
+@, 2002Q, 13
+Q, 1, socket_read_string@net
+@, 2010Q, 14
+Q, 1, socket_write_byte@net
+@, 2018Q, 15
+Q, 1, socket_write_int64@net
+@, 2026Q, 16
+Q, 1, socket_write_double@net
+@, 2034Q, 17
+Q, 1, socket_write_string@net
+@, 2042Q, 18
+Q, 1, free@net
+@, 2050Q, 19
+Q, 1, get_mimetype_from_filename@net
+@, 2058Q, 20
+Q, 1, socket_send_file@net
+@, 2066Q, 21
+Q, 1, socket_handle_get@net
+@, 2074Q, 22
+Q, 1, data_store_int64@net
+@, 2082Q, 23
+Q, 1, data_store_double@net
+@, 2090Q, 24
+Q, 1, data_store_string@net
+@, 2098Q, 25
+Q, 1, data_get_int64@net
+@, 2106Q, 26
+Q, 1, data_get_double@net
+@, 2114Q, 27
+Q, 1, data_get_string@net
+@, 2122Q, 28
+Q, 1, data_remove_int64@net
+@, 2130Q, 29
+Q, 1, data_remove_double@net
+@, 2138Q, 30
+Q, 1, data_remove_string@net
+@, 2146Q, 31
+Q, 1, data_get_info@net
+@, 2154Q, 32
+Q, 1, socket_get_file@net
+@, 2162Q, 33
+Q, 1, socket_read_byte_array@net
+@, 2170Q, 34
+Q, 1, socket_write_byte_array@net
+@, 2178Q, 35
+Q, 1, open_server_socket_ssl@net
+@, 2186Q, 36
+Q, 1, open_accept_server_ssl@net
+@, 2194Q, 37
+Q, 1, open_client_socket_ssl@net
+@, 2202Q, 38
+Q, 1, close_server_socket_ssl@net
+@, 2210Q, 39
+Q, 1, close_accept_server_ssl@net
+@, 2218Q, 40
+Q, 1, close_client_socket_ssl@net
+@, 2226Q, 41
+Q, 1, mod@net
+@, 2234Q, 0
+Q, 1, maxind@net
+@, 2242Q, 0
+.dend
+.code
+:main
+loada zero, 0, 0
+stpushi 0
+loada mod_net, 0, 1
+stpushi 1
+loada one, 0, 2
+stpushi 2
+jsr :net_init
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+stpopi 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_0
+jmp :endif_0
+:if_0
+loada netinitstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_0
+loada ipaddr, 0, 1
+stpushi 1
+loada bufaddraddr, 0, 2
+stpushi 2
+jsr :get_hostbyname
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 5
+jmpi 5, :try_hostbyaddr
+jmp :open_socket
+:try_hostbyaddr
+loada ipaddr, 0, 1
+stpushi 1
+loada bufaddraddr, 0, 2
+stpushi 2
+jsr :get_hostbyaddr
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 5
+jmpi 5, :end
+:open_socket
+loada portnum, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada bufaddraddr, 0, 2
+stpushi 2
+loada portnum, 0, 1
+stpushi 1
+jsr :open_server_socket
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load socket_handle, 0, 5
+pullqw 4, 5, 0
+stpopi 1
+loada bufaddraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+loada waitingaddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushi 2
+loada socket_handle, 0, 3
+stpushi 3
+jsr :open_accept_server
+stpopi 4
+load ret, 0, 5
+pullqw 4, 5, 0
+stpopi 5
+load server_accept, 0, 6
+pullqw 5, 6, 0
+stpopi 2
+stpopi 1
+loada portnum, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+:wait_conn
+loada server_accept, 0, 1
+stpushi 1
+loada buf_straddr, 0, 2
+stpushi 2
+loada bufsize, 0, 3
+stpushi 3
+jsr :socket_read_string
+stpopi 4
+load ret, 0, 5
+pullqw 4, 5, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_1
+jmp :endif_1
+:if_1
+jmp :wait_conn
+:endif_1
+loada buf_straddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada server_accept, 0, 2
+stpushi 2
+jsr :close_accept_server
+stpopi 1
+loada socket_handle, 0, 1
+stpushi 1
+jsr :close_server_socket
+intr0 7, 0, 0, 0
+jsr :socket_free_mem
+loada mod_net, 0, 1
+intr0 1, 1, 0, 0
+:end
+loada zero, 0, 1
+intr0 255, 1, 0, 0
+rts
+:net_init
+loada zero, 0, 0
+stpopi 1
+load maxind@net, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load mod@net, 0, 3
+pullqw 2, 3, 0
+loada modulestr@netaddr, 0, 3
+intr0 0, 3, 2, 0
+loada init@net, 0, 4
+loada initstr@netaddr, 0, 5
+intr0 2, 2, 4, 5
+loada open_server_socket@net, 0, 6
+loada open_server_socketstr@netaddr, 0, 7
+intr0 2, 2, 6, 7
+loada open_accept_server@net, 0, 8
+loada open_accept_serverstr@netaddr, 0, 9
+intr0 2, 2, 8, 9
+loada open_client_socket@net, 0, 10
+loada open_client_socketstr@netaddr, 0, 11
+intr0 2, 2, 10, 11
+loada close_server_socket@net, 0, 12
+loada close_server_socketstr@netaddr, 0, 13
+intr0 2, 2, 12, 13
+loada close_accept_server@net, 0, 14
+loada close_accept_serverstr@netaddr, 0, 15
+intr0 2, 2, 14, 15
+loada close_client_socket@net, 0, 16
+loada close_client_socketstr@netaddr, 0, 17
+intr0 2, 2, 16, 17
+loada get_clientaddr@net, 0, 18
+loada get_clientaddrstr@netaddr, 0, 19
+intr0 2, 2, 18, 19
+loada get_hostname@net, 0, 20
+loada get_hostnamestr@netaddr, 0, 21
+intr0 2, 2, 20, 21
+loada get_hostbyname@net, 0, 22
+loada get_hostbynamestr@netaddr, 0, 23
+intr0 2, 2, 22, 23
+loada get_hostbyaddr@net, 0, 24
+loada get_hostbyaddrstr@netaddr, 0, 25
+intr0 2, 2, 24, 25
+loada socket_read_byte@net, 0, 26
+loada socket_read_bytestr@netaddr, 0, 27
+intr0 2, 2, 26, 27
+loada socket_read_int64@net, 0, 28
+loada socket_read_int64str@netaddr, 0, 29
+intr0 2, 2, 28, 29
+loada socket_read_double@net, 0, 30
+loada socket_read_doublestr@netaddr, 0, 31
+intr0 2, 2, 30, 31
+loada socket_read_string@net, 0, 32
+loada socket_read_stringstr@netaddr, 0, 33
+intr0 2, 2, 32, 33
+loada socket_write_byte@net, 0, 34
+loada socket_write_bytestr@netaddr, 0, 35
+intr0 2, 2, 34, 35
+loada socket_write_int64@net, 0, 36
+loada socket_write_int64str@netaddr, 0, 37
+intr0 2, 2, 36, 37
+loada socket_write_double@net, 0, 38
+loada socket_write_doublestr@netaddr, 0, 39
+intr0 2, 2, 38, 39
+loada socket_write_string@net, 0, 40
+loada socket_write_stringstr@netaddr, 0, 41
+intr0 2, 2, 40, 41
+loada free@net, 0, 42
+loada free@netstraddr, 0, 43
+intr0 2, 2, 42, 43
+loada get_mimetype_from_filename@net, 0, 44
+loada get_mimetype_from_filenamestr@netaddr, 0, 45
+intr0 2, 2, 44, 45
+loada socket_send_file@net, 0, 46
+loada socket_send_filestr@netaddr, 0, 47
+intr0 2, 2, 46, 47
+loada socket_handle_get@net, 0, 48
+loada socket_handle_getstr@netaddr, 0, 49
+intr0 2, 2, 48, 49
+loada data_store_int64@net, 0, 50
+loada data_store_int64str@netaddr, 0, 51
+intr0 2, 2, 50, 51
+loada data_store_double@net, 0, 52
+loada data_store_doublestr@netaddr, 0, 53
+intr0 2, 2, 52, 53
+loada data_store_string@net, 0, 54
+loada data_store_stringstr@netaddr, 0, 55
+intr0 2, 2, 54, 55
+loada data_get_int64@net, 0, 56
+loada data_get_int64str@netaddr, 0, 57
+intr0 2, 2, 56, 57
+loada data_get_double@net, 0, 58
+loada data_get_doublestr@netaddr, 0, 59
+intr0 2, 2, 58, 59
+loada data_get_string@net, 0, 60
+loada data_get_stringstr@netaddr, 0, 61
+intr0 2, 2, 60, 61
+loada data_remove_int64@net, 0, 62
+loada data_remove_int64str@netaddr, 0, 63
+intr0 2, 2, 62, 63
+loada data_remove_double@net, 0, 64
+loada data_remove_doublestr@netaddr, 0, 65
+intr0 2, 2, 64, 65
+loada data_remove_string@net, 0, 66
+loada data_remove_stringstr@netaddr, 0, 67
+intr0 2, 2, 66, 67
+loada data_get_info@net, 0, 68
+loada data_get_infostr@netaddr, 0, 69
+intr0 2, 2, 68, 69
+loada socket_get_file@net, 0, 70
+loada socket_get_filestr@netaddr, 0, 71
+intr0 2, 2, 70, 71
+loada socket_read_byte_array@net, 0, 72
+loada socket_read_byte_arraystr@netaddr, 0, 73
+intr0 2, 2, 72, 73
+loada socket_write_byte_array@net, 0, 74
+loada socket_write_byte_arraystr@netaddr, 0, 75
+intr0 2, 2, 74, 75
+loada open_server_socket_ssl@net, 0, 76
+loada open_server_socket_sslstr@netaddr, 0, 77
+intr0 2, 2, 76, 77
+loada open_accept_server_ssl@net, 0, 78
+loada open_accept_server_sslstr@netaddr, 0, 79
+intr0 2, 2, 78, 79
+loada open_client_socket_ssl@net, 0, 80
+loada open_client_socket_sslstr@netaddr, 0, 81
+intr0 2, 2, 80, 81
+loada close_server_socket_ssl@net, 0, 82
+loada close_server_socket_sslstr@netaddr, 0, 83
+intr0 2, 2, 82, 83
+loada close_accept_server_ssl@net, 0, 84
+loada close_accept_server_sslstr@netaddr, 0, 85
+intr0 2, 2, 84, 85
+loada close_client_socket_ssl@net, 0, 86
+loada close_client_socket_sslstr@netaddr, 0, 87
+intr0 2, 2, 86, 87
+stpushi 1
+intr0 3, 2, 4, 0
+rts
+:open_server_socket
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada open_server_socket@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:open_accept_server
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada open_accept_server@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:open_client_socket
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada open_client_socket@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:close_server_socket
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada close_server_socket@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:close_accept_server
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada close_accept_server@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:close_client_socket
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada close_client_socket@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_clientaddr
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada get_clientaddr@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_hostname
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada get_hostname@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_hostbyname
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada get_hostbyname@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_hostbyaddr
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada get_hostbyaddr@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_read_byte
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_read_byte@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_read_int64
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_read_int64@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_read_double
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_read_double@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_read_string
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_read_string@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_write_byte
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_write_byte@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_write_int64
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_write_int64@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_write_double
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_write_double@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_write_string
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_write_string@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_free_mem
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada free@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_mimetype_from_filename
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada get_mimetype_from_filename@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_send_file
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_send_file@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_get_file
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_get_file@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_handle_get
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_handle_get@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_store_int64
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_store_int64@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_store_double
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_store_double@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_store_string
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_store_string@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_get_int64
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_get_int64@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_get_double
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_get_double@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_get_string
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_get_string@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_remove_int64
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_remove_int64@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_remove_double
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_remove_double@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_remove_string
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_remove_string@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:data_get_info
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada data_get_info@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_read_byte_array
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_read_byte_array@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:socket_write_byte_array
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada socket_write_byte_array@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:open_server_socket_ssl
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada open_server_socket_ssl@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:open_accept_server_ssl
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada open_accept_server_ssl@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:open_client_socket_ssl
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada open_client_socket_ssl@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:close_server_socket_ssl
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada close_server_socket_ssl@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:close_accept_server_ssl
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada close_accept_server_ssl@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+:close_client_socket_ssl
+loada zero, 0, 0
+loada mod@net, 0, 1
+loada close_client_socket_ssl@net, 0, 2
+intr0 3, 1, 2, 0
+rts
+.cend

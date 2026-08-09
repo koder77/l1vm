@@ -1,0 +1,334 @@
+.data
+Q, 1, msg_string
+@, 0Q, 1
+Q, 1, msg_int64
+@, 8Q, 2
+Q, 1, msg_double
+@, 16Q, 3
+Q, 1, zero
+@, 24Q, 0
+Q, 1, one
+@, 32Q, 1
+Q, 1, ret
+@, 40Q, 0
+Q, 1, memaddr
+@, 48Q, 0
+Q, 1, message
+@, 56Q, 2021
+Q, 1, id
+@, 64Q, 10
+Q, 1, message_read
+@, 72Q, 0
+Q, 1, handle
+@, 80Q, 0
+Q, 1, message_type
+@, 88Q, 0
+Q, 1, messages_max
+@, 96Q, 1
+B, 14, messagestr
+@, 104Q, "got message: "
+Q, 1, messagestraddr
+@, 118Q, 104Q
+B, 23, errsendstr
+@, 126Q, "error sending message!"
+Q, 1, errsendstraddr
+@, 149Q, 126Q
+B, 25, errstr
+@, 157Q, "error searching message!"
+Q, 1, errstraddr
+@, 182Q, 157Q
+B, 15, msg_typestr
+@, 190Q, "message type: "
+Q, 1, msg_typestraddr
+@, 205Q, 190Q
+Q, 1, f
+@, 213Q, 0
+B, 11, modulemsgstr
+@, 221Q, "libl1vmmsg"
+Q, 1, modulemsgstraddr
+@, 232Q, 221Q
+B, 14, set_intmsgstr
+@, 240Q, "msg_set_int64"
+Q, 1, set_intmsgstraddr
+@, 254Q, 240Q
+B, 15, set_doublemsgstr
+@, 262Q, "msg_set_double"
+Q, 1, set_doublemsgstraddr
+@, 277Q, 262Q
+B, 15, set_stringmsgstr
+@, 285Q, "msg_set_string"
+Q, 1, set_stringmsgstraddr
+@, 300Q, 285Q
+B, 14, searchidmsgstr
+@, 308Q, "msg_search_id"
+Q, 1, searchidmsgstraddr
+@, 322Q, 308Q
+B, 14, get_intmsgstr
+@, 330Q, "msg_get_int64"
+Q, 1, get_intmsgstraddr
+@, 344Q, 330Q
+B, 15, get_doublemsgstr
+@, 352Q, "msg_get_double"
+Q, 1, get_doublemsgstraddr
+@, 367Q, 352Q
+B, 15, get_stringmsgstr
+@, 375Q, "msg_get_string"
+Q, 1, get_stringmsgstraddr
+@, 390Q, 375Q
+B, 11, delete_msgstr
+@, 398Q, "msg_delete"
+Q, 1, delete_msgstraddr
+@, 409Q, 398Q
+B, 9, init_msgstr
+@, 417Q, "msg_init"
+Q, 1, init_msgstraddr
+@, 426Q, 417Q
+B, 13, free_msgstr
+@, 434Q, "msg_free_mem"
+Q, 1, free_msgstraddr
+@, 447Q, 434Q
+B, 13, get_type_msgstr
+@, 455Q, "msg_get_type"
+Q, 1, get_type_msgstraddr
+@, 468Q, 455Q
+Q, 1, set_intmsg
+@, 476Q, 0
+Q, 1, set_doublemsg
+@, 484Q, 1
+Q, 1, set_stringmsg
+@, 492Q, 2
+Q, 1, searchidmsg
+@, 500Q, 3
+Q, 1, get_intmsg
+@, 508Q, 4
+Q, 1, get_doublemsg
+@, 516Q, 5
+Q, 1, get_stringmsg
+@, 524Q, 6
+Q, 1, delete_msg
+@, 532Q, 7
+Q, 1, init_msg
+@, 540Q, 8
+Q, 1, free_msg
+@, 548Q, 9
+Q, 1, get_type_msg
+@, 556Q, 10
+Q, 1, modmsg
+@, 564Q, 0
+Q, 1, maxmsg
+@, 572Q, 0
+.dend
+.code
+:main
+loada zero, 0, 0
+loada messagestraddr, 0, 1
+intr0 34, 1, 0, 0
+loada errsendstraddr, 0, 2
+intr0 34, 2, 0, 0
+loada errstraddr, 0, 3
+intr0 34, 3, 0, 0
+loada msg_typestraddr, 0, 4
+intr0 34, 4, 0, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+loada zero, 0, 5
+stpushi 5
+loada messages_max, 0, 6
+stpushi 6
+jsr :msg_init
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada id, 0, 1
+stpushi 1
+loada message, 0, 2
+stpushi 2
+jsr :msg_set_int
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_0
+jmp :endif_0
+:if_0
+loada errsendstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_0
+loada id, 0, 1
+stpushi 1
+jsr :msg_search_id
+stpopi 2
+load handle, 0, 3
+pullqw 2, 3, 0
+loada handle, 0, 1
+loada zero, 0, 2
+lsi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_1
+jmp :endif_1
+:if_1
+loada errstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_1
+loada handle, 0, 1
+stpushi 1
+jsr :msg_get_int
+stpopi 2
+load ret, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load message_read, 0, 4
+pullqw 3, 4, 0
+loada messagestraddr, 0, 1
+intr0 6, 1, 0, 0
+loada message_read, 0, 2
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushi 2
+loada handle, 0, 3
+stpushi 3
+jsr :msg_get_type
+stpopi 4
+load message_type, 0, 5
+pullqw 4, 5, 0
+stpopi 2
+stpopi 1
+loada msg_typestraddr, 0, 1
+intr0 6, 1, 0, 0
+loada message_type, 0, 2
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushi 2
+jsr :msg_free
+stpopi 2
+stpopi 1
+loada zero, 0, 1
+intr0 255, 1, 0, 0
+rts
+:msg_init
+loada zero, 0, 0
+stpopi 1
+load maxmsg, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load modmsg, 0, 3
+pullqw 2, 3, 0
+loada modulemsgstraddr, 0, 3
+intr0 0, 3, 2, 0
+loada set_intmsg, 0, 4
+loada set_intmsgstraddr, 0, 5
+intr0 2, 2, 4, 5
+loada set_doublemsg, 0, 6
+loada set_doublemsgstraddr, 0, 7
+intr0 2, 2, 6, 7
+loada set_stringmsg, 0, 8
+loada set_stringmsgstraddr, 0, 9
+intr0 2, 2, 8, 9
+loada searchidmsg, 0, 10
+loada searchidmsgstraddr, 0, 11
+intr0 2, 2, 10, 11
+loada get_intmsg, 0, 12
+loada get_intmsgstraddr, 0, 13
+intr0 2, 2, 12, 13
+loada get_doublemsg, 0, 14
+loada get_doublemsgstraddr, 0, 15
+intr0 2, 2, 14, 15
+loada get_stringmsg, 0, 16
+loada get_stringmsgstraddr, 0, 17
+intr0 2, 2, 16, 17
+loada delete_msg, 0, 18
+loada delete_msgstraddr, 0, 19
+intr0 2, 2, 18, 19
+loada init_msg, 0, 20
+loada init_msgstraddr, 0, 21
+intr0 2, 2, 20, 21
+loada free_msg, 0, 22
+loada free_msgstraddr, 0, 23
+intr0 2, 2, 22, 23
+loada get_type_msg, 0, 24
+loada get_type_msgstraddr, 0, 25
+intr0 2, 2, 24, 25
+stpushi 1
+intr0 3, 2, 20, 0
+rts
+:msg_set_int
+loada zero, 0, 0
+loada modmsg, 0, 1
+loada set_intmsg, 0, 2
+intr0 3, 1, 2, 0
+rts
+:msg_set_double
+loada zero, 0, 0
+loada modmsg, 0, 1
+loada set_doublemsg, 0, 2
+intr0 3, 1, 2, 0
+rts
+:msg_set_string
+loada zero, 0, 0
+loada modmsg, 0, 1
+loada set_stringmsg, 0, 2
+intr0 3, 1, 2, 0
+rts
+:msg_get_int
+loada zero, 0, 0
+loada modmsg, 0, 1
+loada get_intmsg, 0, 2
+intr0 3, 1, 2, 0
+rts
+:msg_get_double
+loada zero, 0, 0
+loada modmsg, 0, 1
+loada get_doublemsg, 0, 2
+intr0 3, 1, 2, 0
+rts
+:msg_get_string
+loada zero, 0, 0
+loada modmsg, 0, 1
+loada get_stringmsg, 0, 2
+intr0 3, 1, 2, 0
+rts
+:msg_search_id
+loada zero, 0, 0
+loada modmsg, 0, 1
+loada searchidmsg, 0, 2
+intr0 3, 1, 2, 0
+rts
+:msg_delete
+loada zero, 0, 0
+loada modmsg, 0, 1
+loada delete_msg, 0, 2
+intr0 3, 1, 2, 0
+rts
+:msg_free
+loada zero, 0, 0
+loada modmsg, 0, 1
+loada free_msg, 0, 2
+intr0 3, 1, 2, 0
+rts
+:msg_get_type
+loada zero, 0, 0
+loada modmsg, 0, 1
+loada get_type_msg, 0, 2
+intr0 3, 1, 2, 0
+rts
+.cend

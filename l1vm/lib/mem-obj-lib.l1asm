@@ -1,0 +1,396 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, one
+@, 8Q, 1
+Q, 1, two
+@, 16Q, 2
+Q, 1, three
+@, 24Q, 3
+Q, 1, memaddr
+@, 32Q, 0
+Q, 1, memind
+@, 40Q, 0
+Q, 1, memsize
+@, 48Q, 1
+Q, 1, variables
+@, 56Q, 4
+Q, 1, a
+@, 64Q, 23
+Q, 1, b
+@, 72Q, 42
+F, 1, c
+@, 80Q, 3.1415
+Q, 1, aread
+@, 88Q, 
+Q, 1, bread
+@, 96Q, 
+F, 1, cread
+@, 104Q, 
+Q, 1, read
+@, 112Q, 0
+Q, 1, write
+@, 120Q, 0
+Q, 1, ret
+@, 128Q, 0
+Q, 1, f
+@, 136Q, 0
+B, 24, meminitstr
+@, 144Q, "ERROR can't init memory"
+Q, 1, meminitstraddr
+@, 168Q, 144Q
+B, 29, memerrstr
+@, 176Q, "ERROR can't allocate memory!"
+Q, 1, memerrstraddr
+@, 205Q, 176Q
+B, 35, saveerrstr
+@, 213Q, "ERROR can't save to memory object!"
+Q, 1, saveerrstraddr
+@, 248Q, 213Q
+B, 10, writing
+@, 256Q, "writing: "
+Q, 1, writingaddr
+@, 266Q, 256Q
+B, 10, reading
+@, 274Q, "reading: "
+Q, 1, readingaddr
+@, 284Q, 274Q
+B, 13, hellostr
+@, 292Q, "Hello world!"
+Q, 1, hellostraddr
+@, 305Q, 292Q
+B, 256, getstr
+@, 313Q, ""
+Q, 1, getstraddr
+@, 569Q, 313Q
+Q, 1, i_type
+@, 577Q, 1
+Q, 1, d_type
+@, 585Q, 2
+Q, 1, s_type
+@, 593Q, 3
+B, 14, modulestr@memobj
+@, 601Q, "libl1vmmemobj"
+Q, 1, modulestr@memobjaddr
+@, 615Q, 601Q
+B, 9, initstr@memobj
+@, 623Q, "init_mem"
+Q, 1, initstr@memobjaddr
+@, 632Q, 623Q
+B, 9, freestr@memobj
+@, 640Q, "free_mem"
+Q, 1, freestr@memobjaddr
+@, 649Q, 640Q
+B, 14, alloc_obj_memstr@memobj
+@, 657Q, "alloc_obj_mem"
+Q, 1, alloc_obj_memstr@memobjaddr
+@, 671Q, 657Q
+B, 13, free_obj_memstr@memobj
+@, 679Q, "free_obj_mem"
+Q, 1, free_obj_memstr@memobjaddr
+@, 692Q, 679Q
+B, 13, save_obj_memstr@memobj
+@, 700Q, "save_obj_mem"
+Q, 1, save_obj_memstr@memobjaddr
+@, 713Q, 700Q
+B, 13, load_obj_memstr@memobj
+@, 721Q, "load_obj_mem"
+Q, 1, load_obj_memstr@memobjaddr
+@, 734Q, 721Q
+B, 20, load_obj_string_memstr@memobj
+@, 742Q, "load_string_obj_mem"
+Q, 1, load_obj_string_memstr@memobjaddr
+@, 762Q, 742Q
+B, 19, load_obj_array_memstr@memobj
+@, 770Q, "load_obj_mem_array"
+Q, 1, load_obj_array_memstr@memobjaddr
+@, 789Q, 770Q
+B, 17, get_obj_mem_typestr@memobj
+@, 797Q, "get_obj_mem_type"
+Q, 1, get_obj_mem_typestr@memobjaddr
+@, 814Q, 797Q
+Q, 1, init@memobj
+@, 822Q, 0
+Q, 1, free@memobj
+@, 830Q, 1
+Q, 1, alloc_obj_mem@memobj
+@, 838Q, 2
+Q, 1, free_obj_mem@memobj
+@, 846Q, 3
+Q, 1, save_obj_mem@memobj
+@, 854Q, 4
+Q, 1, load_obj_mem@memobj
+@, 862Q, 5
+Q, 1, load_obj_string_mem@memobj
+@, 870Q, 6
+Q, 1, load_obj_array_mem@memobj
+@, 878Q, 7
+Q, 1, get_obj_mem_type@memobj
+@, 886Q, 8
+Q, 1, maxind@memobj
+@, 894Q, 0
+Q, 1, mod@memobj
+@, 902Q, 0
+.dend
+.code
+:main
+loada zero, 0, 0
+loada meminitstraddr, 0, 1
+intr0 34, 1, 0, 0
+loada memerrstraddr, 0, 2
+intr0 34, 2, 0, 0
+loada saveerrstraddr, 0, 3
+intr0 34, 3, 0, 0
+loada writingaddr, 0, 4
+intr0 34, 4, 0, 0
+loada readingaddr, 0, 5
+intr0 34, 5, 0, 0
+loada hellostraddr, 0, 6
+intr0 34, 6, 0, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+stpushi 6
+loada zero, 0, 7
+stpushi 7
+loada one, 0, 8
+stpushi 8
+jsr :mem_obj_init
+stpopi 9
+load ret, 0, 10
+pullqw 9, 10, 0
+stpopi 6
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_0
+jmp :endif_0
+:if_0
+loada meminitstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_0
+loada variables, 0, 1
+stpushi 1
+loada memsize, 0, 2
+stpushi 2
+jsr :alloc_obj_memobj
+stpopi 3
+load memaddr, 0, 4
+pullqw 3, 4, 0
+loada memaddr, 0, 1
+loada zero, 0, 2
+lsi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_1
+jmp :endif_1
+:if_1
+loada memerrstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_1
+loadd c, 0, 1
+stpushd 1
+loada d_type, 0, 1
+stpushi 1
+loada b, 0, 2
+stpushi 2
+loada i_type, 0, 3
+stpushi 3
+loada a, 0, 4
+stpushi 4
+loada i_type, 0, 3
+stpushi 3
+loada hellostraddr, 0, 5
+stpushi 5
+loada s_type, 0, 6
+stpushi 6
+loada variables, 0, 7
+stpushi 7
+loada zero, 0, 8
+stpushi 8
+loada memaddr, 0, 9
+stpushi 9
+jsr :save_obj_memobj
+stpopi 10
+load ret, 0, 11
+pullqw 10, 11, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_2
+jmp :endif_2
+:if_2
+loada saveerrstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_2
+loada zero, 0, 1
+stpushi 1
+loada memaddr, 0, 2
+stpushi 2
+loada getstraddr, 0, 3
+stpushi 3
+jsr :load_obj_string_memobj
+stpopi 4
+load ret, 0, 5
+pullqw 4, 5, 0
+loada getstraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada three, 0, 2
+stpushi 2
+loada one, 0, 3
+stpushi 3
+loada memaddr, 0, 4
+stpushi 4
+jsr :load_obj_memobj
+stpopi 5
+load ret, 0, 6
+pullqw 5, 6, 0
+stpopd 1
+load cread, 0, 2
+pulld 1, 2, 0
+stpopi 6
+load bread, 0, 7
+pullqw 6, 7, 0
+stpopi 7
+load aread, 0, 8
+pullqw 7, 8, 0
+stpopi 1
+loada aread, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+loada bread, 0, 2
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+loadd cread, 0, 1
+intr0 5, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushi 2
+stpushd 1
+loada memaddr, 0, 3
+stpushi 3
+jsr :free_obj_memobj
+stpopd 1
+stpopi 2
+stpopi 1
+jsr :free_memobj
+loada zero, 0, 1
+intr0 1, 1, 0, 0
+intr0 255, 1, 0, 0
+rts
+:mem_obj_init
+loada zero, 0, 0
+stpopi 1
+load maxind@memobj, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load mod@memobj, 0, 3
+pullqw 2, 3, 0
+loada modulestr@memobjaddr, 0, 3
+intr0 0, 3, 2, 0
+loada init@memobj, 0, 4
+loada initstr@memobjaddr, 0, 5
+intr0 2, 2, 4, 5
+loada free@memobj, 0, 6
+loada freestr@memobjaddr, 0, 7
+intr0 2, 2, 6, 7
+loada alloc_obj_mem@memobj, 0, 8
+loada alloc_obj_memstr@memobjaddr, 0, 9
+intr0 2, 2, 8, 9
+loada free_obj_mem@memobj, 0, 10
+loada free_obj_memstr@memobjaddr, 0, 11
+intr0 2, 2, 10, 11
+loada save_obj_mem@memobj, 0, 12
+loada save_obj_memstr@memobjaddr, 0, 13
+intr0 2, 2, 12, 13
+loada load_obj_mem@memobj, 0, 14
+loada load_obj_memstr@memobjaddr, 0, 15
+intr0 2, 2, 14, 15
+loada load_obj_string_mem@memobj, 0, 16
+loada load_obj_string_memstr@memobjaddr, 0, 17
+intr0 2, 2, 16, 17
+loada load_obj_array_mem@memobj, 0, 18
+loada load_obj_array_memstr@memobjaddr, 0, 19
+intr0 2, 2, 18, 19
+loada get_obj_mem_type@memobj, 0, 20
+loada get_obj_mem_typestr@memobjaddr, 0, 21
+intr0 2, 2, 20, 21
+stpushi 1
+intr0 3, 2, 4, 0
+rts
+:free_memobj
+loada zero, 0, 0
+loada mod@memobj, 0, 1
+loada free@memobj, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_obj_memobj
+loada zero, 0, 0
+loada mod@memobj, 0, 1
+loada alloc_obj_mem@memobj, 0, 2
+intr0 3, 1, 2, 0
+rts
+:free_obj_memobj
+loada zero, 0, 0
+loada mod@memobj, 0, 1
+loada free_obj_mem@memobj, 0, 2
+intr0 3, 1, 2, 0
+rts
+:save_obj_memobj
+loada zero, 0, 0
+loada mod@memobj, 0, 1
+loada save_obj_mem@memobj, 0, 2
+intr0 3, 1, 2, 0
+rts
+:load_obj_memobj
+loada zero, 0, 0
+loada mod@memobj, 0, 1
+loada load_obj_mem@memobj, 0, 2
+intr0 3, 1, 2, 0
+rts
+:load_obj_string_memobj
+loada zero, 0, 0
+loada mod@memobj, 0, 1
+loada load_obj_string_mem@memobj, 0, 2
+intr0 3, 1, 2, 0
+rts
+:load_obj_array_memobj
+loada zero, 0, 0
+loada mod@memobj, 0, 1
+loada load_obj_array_mem@memobj, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_obj_mem_type
+loada zero, 0, 0
+loada mod@memobj, 0, 1
+loada get_obj_mem_type@memobj, 0, 2
+intr0 3, 1, 2, 0
+rts
+.cend

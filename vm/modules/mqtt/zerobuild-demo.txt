@@ -1,0 +1,15 @@
+# zerobuild makefile
+
+[executable, name = demo]
+sources = demo.c
+
+includes = ../include, /usr/local/include
+
+ccompiler = $CC
+c++compiler = $CCPP
+
+linker = ld
+aflags = "cru"
+
+cflags = "-O3 -fomit-frame-pointer -Wall -g"
+lflags = "-lpaho-mqtt3c"

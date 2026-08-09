@@ -1,0 +1,5 @@
+>> include this at the top of your program
+>> this is needed by "gpio-lib.l1h" and "pigpio-lib.l1h"
+(set int64 1 xout@read_accel 0)
+(set int64 1 yout@read_accel 0)
+(set int64 1 zout@read_accel 0)

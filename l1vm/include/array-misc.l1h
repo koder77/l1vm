@@ -1,0 +1,197 @@
+// array-misc.l1h
+
+// add element to beginning of list
+(array_int64_push func)
+    #var ~ array_int64_push
+
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 Parraya~)
+    (set int64 1 array_size~ 0)
+    (set const-int64 1 offset~ 8)
+    (set int64 1 var~)
+    (set int64 1 new_var~)
+    (set int64 1 end_index~)
+    (set int64 1 copy_index~)
+    (set int64 1 i~ 0)
+    (set int64 1 f~ 0)
+
+    (new_var~ stpop)
+    (end_index~ stpop)
+    (Parraya~ stpop)
+
+    (Parraya~ array_size~ :get_size !)
+    (array_size~ :pull_int64_var !)
+    (array_size~ / offset~ array_size~ :=)
+    (array_size~ - one~ array_size~ :=)
+
+    (end_index~ copy_index~ :=)
+    (copy_index~ * offset~ copy_index~ :=)
+
+    (end_index~ + one~ end_index~ :=)
+    (end_index~ * offset~ end_index~ :=)
+
+    // loop from the end of array
+    (:copy_array_int64_push)
+        (Parraya~ [ copy_index~ ] var~ :=)
+        (var~ :pull_int64_var !)
+
+        (var~ Parraya~ [ end_index~ ] :=)
+
+        (copy_index~ - offset~ copy_index~ :=)
+        (end_index~ - offset~ end_index~ :=)
+
+        (((copy_index~ zero~ <) f :=) f if)
+           (:copy_array_int64_push_end jmp)
+        (endif)
+
+        (:copy_array_int64_push jmp)
+
+    (:copy_array_int64_push_end)
+    // copy new variable to array start
+    (new_var~ Parraya~ [ zero~ ] :=)
+
+    (:print_n !)
+    (:print_n !)
+(funcend)
+
+// remove first element from list and push it
+(array_int64_pop func)
+    #var ~ array_int64_pop
+
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 Parraya~)
+    (set int64 1 array_size~ 0)
+    (set const-int64 1 offset~ 8)
+    (set int64 1 var~)
+    (set int64 1 ret_var~)
+    (set int64 1 insert_index~)
+    (set int64 1 copy_index~)
+    (set int64 1 i~ 0)
+    (set int64 1 f~ 0)
+
+    (Parraya~ stpop)
+
+    (Parraya~ array_size~ :get_size !)
+    (array_size~ :pull_int64_var !)
+
+    (offset~ copy_index~ :=)
+    (zero~ insert_index~ :=)
+
+    (Parraya~ [ zero~ ] ret_var~ :=)
+
+    (:copy_array_int64_pop)
+        (Parraya~ [ copy_index~ ] var~ :=)
+        (var~ :pull_int64_var !)
+
+        (var~ Parraya~ [ insert_index~ ] :=)
+
+        (copy_index~ + offset~ copy_index~ :=)
+        (insert_index~ + offset~ insert_index~ :=)
+
+        (((copy_index~ array_size~ <) f :=) f if)
+            (:copy_array_int64_pop jmp)
+        (endif)
+
+    (zero~ Parraya~ [ insert_index~ ] :=)
+
+    (ret_var~ stpush)
+(funcend)
+
+// add element to beginning of list
+(array_double_push func)
+    #var ~ array_double_push
+
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 Parraya~)
+    (set int64 1 array_size~ 0)
+    (set const-int64 1 offset~ 8)
+    (set double 1 var~)
+    (set double 1 new_var~)
+    (set int64 1 end_index~)
+    (set int64 1 copy_index~)
+    (set int64 1 i~ 0)
+    (set int64 1 f~ 0)
+
+    (new_var~ stpop)
+    (end_index~ stpop)
+    (Parraya~ stpop)
+
+    (Parraya~ array_size~ :get_size !)
+    (array_size~ :pull_int64_var !)
+    (array_size~ / offset~ array_size~ :=)
+    (array_size~ - one~ array_size~ :=)
+
+    (end_index~ copy_index~ :=)
+    (copy_index~ * offset~ copy_index~ :=)
+
+    (end_index~ + one~ end_index~ :=)
+    (end_index~ * offset~ end_index~ :=)
+
+    // loop from the end of array
+    (:copy_array_double_push)
+        (Parraya~ [ copy_index~ ] var~ :=)
+        (var~ :pull_double_var !)
+
+        (var~ Parraya~ [ end_index~ ] :=)
+
+        (copy_index~ - offset~ copy_index~ :=)
+        (end_index~ -offset~ end_index~ :=)
+
+        (((copy_index~ zero~ ==) f :=) f if)
+           (:copy_array_double_push_end jmp)
+        (endif)
+
+        (:copy_array_double_push jmp)
+
+    (:copy_array_double_push_end)
+    // copy new variable to array start
+    (new_var~ Parraya~ [ zero~ ] :=)
+(funcend)
+
+// remove first element from list and push it
+(array_double_pop func)
+    #var ~ array_double_pop
+
+    (set const-int64 1 zero~ 0)
+    (set const-double 1 zerod~ 0.0)
+    (set const-int64 1 one~ 1)
+    (set int64 1 Parraya~)
+    (set int64 1 array_size~ 0)
+    (set const-int64 1 offset~ 8)
+    (set double 1 var~)
+    (set double 1 ret_var~)
+    (set int64 1 insert_index~)
+    (set int64 1 copy_index~)
+    (set int64 1 i~ 0)
+    (set int64 1 f~ 0)
+
+    (Parraya~ stpop)
+
+    (Parraya~ array_size~ :get_size !)
+    (array_size~ :pull_int64_var !)
+
+    (offset~ copy_index~ :=)
+    (zero~ insert_index~ :=)
+
+    (Parraya~ [ zero~ ] ret_var~ :=)
+
+    (:copy_array_double_pop)
+        (Parraya~ [ copy_index~ ] var~ :=)
+        (var~ :pull_double_var !)
+
+        (var~ Parraya~ [ insert_index~ ] :=)
+
+        (copy_index~ + offset~ copy_index~ :=)
+        (insert_index~ + offset~ insert_index~ :=)
+
+        (((copy_index~ array_size~ <) f :=) f if)
+            (:copy_array_double_pop jmp)
+        (endif)
+
+    (zerod~ Parraya~ [ insert_index~ ] :=)
+
+    (ret_var~ stpush)
+(funcend)

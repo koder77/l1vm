@@ -1,0 +1,33 @@
+// GPS distance/bearing demo
+#include <math-const.l1h>
+#include <intr-func.l1h>
+
+(main func)
+    #var ~ main
+
+    (set int64 1 zero 0)
+    (set int64 1 gps_mod 0)
+    (set double 1 lat1~ 49.99170)
+    (set double 1 lon1~ 8.413210)
+    (set double 1 lat2~ 50.00490)
+    (set double 1 lon2~ 8.421820)
+    (set double 1 distance~ 0.0)
+    (set double 1 bearing~ 0.0)
+
+    (gps_mod :gps_init !)
+
+    // get distance in km
+    (lat1~ lon1~ lat2~ lon2~ :gps_distance !)
+    (distance~ stpop)
+    (distance~ :print_d !)
+    (:print_n !)
+
+    (lat1~ lon1~ lat2~ lon2~ :gps_bearing !)
+    (bearing~ stpop)
+    (bearing~ :print_d !)
+    (:print_n !)
+
+    (zero :exit !)
+(funcend)
+
+#include <gps.l1h>

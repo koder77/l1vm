@@ -1,0 +1,2284 @@
+.data
+B, 1, zero_byte
+@, 0Q, 0
+W, 1, zero_int16
+@, 1Q, 0
+D, 1, zero_int32
+@, 3Q, 0
+F, 1, zero_double
+@, 7Q, 0.0
+Q, 1, zero
+@, 15Q, 0
+Q, 1, zeroadd_one_int64
+@, 23Q, 0
+Q, 1, oneadd_one_int64
+@, 31Q, 1
+Q, 1, Paadd_one_int64
+@, 39Q, 0
+Q, 1, Pretadd_one_int64
+@, 47Q, 0
+Q, 1, xadd_one_int64
+@, 55Q, 0
+Q, 1, offsetadd_one_int64
+@, 63Q, 8
+Q, 1, realindexadd_one_int64
+@, 71Q, 0
+Q, 1, asizeadd_one_int64
+@, 79Q, 0
+Q, 1, varadd_one_int64
+@, 87Q, 0
+Q, 1, fadd_one_int64
+@, 95Q, 0
+Q, 1, one
+@, 103Q, 1
+Q, 1, four
+@, 111Q, 4
+Q, 1, five
+@, 119Q, 5
+Q, 1, pushv
+@, 127Q, 0
+Q, 5, a
+@, 135Q, 23, 4, 10, 50, 100, ;
+Q, 6, b
+@, 175Q, 0, 10, 11, 23, 55, ;
+Q, 6, p
+@, 223Q, 1, 2, 3, 4, 5, ;
+Q, 4, r
+@, 271Q, 0, 0, 0, 0, ;
+Q, 10, c
+@, 303Q, 
+Q, 5, d
+@, 383Q, 
+Q, 5, e
+@, 423Q, 
+Q, 1, Pa
+@, 463Q, 0
+Q, 1, Pb
+@, 471Q, 0
+Q, 1, Pc
+@, 479Q, 0
+Q, 1, Pd
+@, 487Q, 0
+Q, 1, Pe
+@, 495Q, 0
+Q, 1, Pr
+@, 503Q, 0
+Q, 1, Pp
+@, 511Q, 0
+Q, 1, i
+@, 519Q, 0
+Q, 1, offset
+@, 527Q, 8
+Q, 1, f
+@, 535Q, 0
+Q, 1, maxarray
+@, 543Q, 10
+Q, 1, maxdarray
+@, 551Q, 4
+Q, 1, maxrarray
+@, 559Q, 3
+Q, 1, realindex
+@, 567Q, 0
+Q, 1, var
+@, 575Q, 0
+Q, 1, cons_var
+@, 583Q, 77
+Q, 1, Pcons_var
+@, 591Q, 0
+Q, 1, add_one_func
+@, 599Q, 0
+B, 7, Mapcarstr
+@, 607Q, "Mapcar"
+Q, 1, Mapcarstraddr
+@, 614Q, 607Q
+B, 20, Removestr
+@, 622Q, "Remove last element"
+Q, 1, Removestraddr
+@, 642Q, 622Q
+B, 13, Pushstr
+@, 650Q, "Push to list"
+Q, 1, Pushstraddr
+@, 663Q, 650Q
+B, 14, Popstr
+@, 671Q, "Pop from list"
+Q, 1, Popstraddr
+@, 685Q, 671Q
+Q, 1, zeroarray_int64_cat
+@, 693Q, 0
+Q, 1, Parrayaarray_int64_cat
+@, 701Q, 0
+Q, 1, Parraybarray_int64_cat
+@, 709Q, 0
+Q, 1, Parraycarray_int64_cat
+@, 717Q, 0
+Q, 1, vararray_int64_cat
+@, 725Q, 0
+Q, 1, arraya_sizearray_int64_cat
+@, 733Q, 0
+Q, 1, arrayb_sizearray_int64_cat
+@, 741Q, 0
+Q, 1, indexarray_int64_cat
+@, 749Q, 0
+Q, 1, cindexarray_int64_cat
+@, 757Q, 0
+Q, 1, offsetarray_int64_cat
+@, 765Q, 8
+Q, 1, farray_int64_cat
+@, 773Q, 0
+Q, 1, zeroarray_int64_cat_range
+@, 781Q, 0
+Q, 1, onearray_int64_cat_range
+@, 789Q, 1
+Q, 1, Parrayaarray_int64_cat_range
+@, 797Q, 0
+Q, 1, Parraybarray_int64_cat_range
+@, 805Q, 0
+Q, 1, Parraycarray_int64_cat_range
+@, 813Q, 0
+Q, 1, indexarray_int64_cat_range
+@, 821Q, 0
+Q, 1, cindexarray_int64_cat_range
+@, 829Q, 0
+Q, 1, ind_countarray_int64_cat_range
+@, 837Q, 0
+Q, 1, offsetarray_int64_cat_range
+@, 845Q, 8
+Q, 1, farray_int64_cat_range
+@, 853Q, 0
+Q, 1, vararray_int64_cat_range
+@, 861Q, 0
+Q, 1, arraya_minarray_int64_cat_range
+@, 869Q, 0
+Q, 1, arraya_maxarray_int64_cat_range
+@, 877Q, 0
+Q, 1, arrayb_minarray_int64_cat_range
+@, 885Q, 0
+Q, 1, arrayb_maxarray_int64_cat_range
+@, 893Q, 0
+Q, 1, zeroarray_double_cat
+@, 901Q, 0
+Q, 1, Parrayaarray_double_cat
+@, 909Q, 0
+Q, 1, Parraybarray_double_cat
+@, 917Q, 0
+Q, 1, Parraycarray_double_cat
+@, 925Q, 0
+Q, 1, arraya_sizearray_double_cat
+@, 933Q, 0
+Q, 1, arrayb_sizearray_double_cat
+@, 941Q, 0
+Q, 1, indexarray_double_cat
+@, 949Q, 0
+Q, 1, cindexarray_double_cat
+@, 957Q, 0
+Q, 1, offsetarray_double_cat
+@, 965Q, 8
+Q, 1, farray_double_cat
+@, 973Q, 0
+F, 1, vararray_double_cat
+@, 981Q, 0.0
+Q, 1, zeroarray_double_cat_range
+@, 989Q, 0
+Q, 1, onearray_double_cat_range
+@, 997Q, 1
+Q, 1, Parrayaarray_double_cat_range
+@, 1005Q, 0
+Q, 1, Parraybarray_double_cat_range
+@, 1013Q, 0
+Q, 1, Parraycarray_double_cat_range
+@, 1021Q, 0
+Q, 1, indexarray_double_cat_range
+@, 1029Q, 0
+Q, 1, cindexarray_double_cat_range
+@, 1037Q, 0
+Q, 1, ind_countarray_double_cat_range
+@, 1045Q, 0
+Q, 1, offsetarray_double_cat_range
+@, 1053Q, 8
+Q, 1, farray_double_cat_range
+@, 1061Q, 0
+F, 1, vararray_double_cat_range
+@, 1069Q, 0.0
+Q, 1, arraya_minarray_double_cat_range
+@, 1077Q, 0
+Q, 1, arraya_maxarray_double_cat_range
+@, 1085Q, 0
+Q, 1, arrayb_minarray_double_cat_range
+@, 1093Q, 0
+Q, 1, arrayb_maxarray_double_cat_range
+@, 1101Q, 0
+Q, 1, zeroarray_int64_first
+@, 1109Q, 0
+Q, 1, Parrayarray_int64_first
+@, 1117Q, 0
+Q, 1, vararray_int64_first
+@, 1125Q, 0
+Q, 1, zeroarray_double_first
+@, 1133Q, 0
+Q, 1, Parrayarray_double_first
+@, 1141Q, 0
+F, 1, vararray_double_first
+@, 1149Q, 0.0
+Q, 1, zeroarray_int64_rest
+@, 1157Q, 0
+Q, 1, onearray_int64_rest
+@, 1165Q, 1
+Q, 1, neg_onearray_int64_rest
+@, 1173Q, -1
+Q, 1, Parrayaarray_int64_rest
+@, 1181Q, 
+Q, 1, Parraybarray_int64_rest
+@, 1189Q, 
+Q, 1, array_sizearray_int64_rest
+@, 1197Q, 0
+Q, 1, offsetarray_int64_rest
+@, 1205Q, 8
+Q, 1, zeroarray_double_rest
+@, 1213Q, 0
+Q, 1, onearray_double_rest
+@, 1221Q, 1
+Q, 1, neg_onearray_double_rest
+@, 1229Q, -1
+Q, 1, Parrayaarray_double_rest
+@, 1237Q, 
+Q, 1, Parraybarray_double_rest
+@, 1245Q, 
+Q, 1, array_sizearray_double_rest
+@, 1253Q, 0
+Q, 1, offsetarray_double_rest
+@, 1261Q, 8
+Q, 1, zeroarray_int64_cons
+@, 1269Q, 0
+Q, 1, onearray_int64_cons
+@, 1277Q, 1
+Q, 1, Parrayaarray_int64_cons
+@, 1285Q, 
+Q, 1, Parraybarray_int64_cons
+@, 1293Q, 
+Q, 1, Parraycarray_int64_cons
+@, 1301Q, 
+Q, 1, vararray_int64_cons
+@, 1309Q, 
+Q, 1, array_sizearray_int64_cons
+@, 1317Q, 0
+Q, 1, offsetarray_int64_cons
+@, 1325Q, 8
+Q, 1, zeroarray_double_cons
+@, 1333Q, 0
+Q, 1, onearray_double_cons
+@, 1341Q, 1
+Q, 1, Parrayaarray_double_cons
+@, 1349Q, 
+Q, 1, Parraybarray_double_cons
+@, 1357Q, 
+Q, 1, Parraycarray_double_cons
+@, 1365Q, 
+Q, 1, vararray_double_cons
+@, 1373Q, 
+Q, 1, array_sizearray_double_cons
+@, 1381Q, 0
+Q, 1, offsetarray_double_cons
+@, 1389Q, 8
+Q, 1, zeroarray_int64_member
+@, 1397Q, 0
+Q, 1, onearray_int64_member
+@, 1405Q, 1
+Q, 1, neg_onearray_int64_member
+@, 1413Q, -1
+Q, 1, Parrayaarray_int64_member
+@, 1421Q, 0
+Q, 1, Parraybarray_int64_member
+@, 1429Q, 0
+Q, 1, Parraycarray_int64_member
+@, 1437Q, 0
+Q, 1, arraya_sizearray_int64_member
+@, 1445Q, 0
+Q, 1, array_sizearray_int64_member
+@, 1453Q, 0
+Q, 1, indexarray_int64_member
+@, 1461Q, 0
+Q, 1, offsetarray_int64_member
+@, 1469Q, 8
+Q, 1, farray_int64_member
+@, 1477Q, 0
+Q, 1, vararray_int64_member
+@, 1485Q, 0
+Q, 1, found_vararray_int64_member
+@, 1493Q, 0
+Q, 1, matcharray_int64_member
+@, 1501Q, 0
+Q, 1, zeroarray_double_member
+@, 1509Q, 0
+Q, 1, onearray_double_member
+@, 1517Q, 1
+Q, 1, neg_onearray_double_member
+@, 1525Q, -1
+Q, 1, Parrayaarray_double_member
+@, 1533Q, 0
+Q, 1, Parraybarray_double_member
+@, 1541Q, 0
+Q, 1, Parraycarray_double_member
+@, 1549Q, 0
+Q, 1, arraya_sizearray_double_member
+@, 1557Q, 0
+Q, 1, array_sizearray_double_member
+@, 1565Q, 0
+Q, 1, indexarray_double_member
+@, 1573Q, 0
+Q, 1, offsetarray_double_member
+@, 1581Q, 8
+Q, 1, farray_double_member
+@, 1589Q, 0
+F, 1, vararray_double_member
+@, 1597Q, 0.0
+Q, 1, found_vararray_double_member
+@, 1605Q, 0
+F, 1, matcharray_double_member
+@, 1613Q, 0.0
+Q, 1, zeroarray_int64_remove
+@, 1621Q, 0
+Q, 1, onearray_int64_remove
+@, 1629Q, 1
+Q, 1, Parrayaarray_int64_remove
+@, 1637Q, 0
+Q, 1, Parraybarray_int64_remove
+@, 1645Q, 0
+Q, 1, arraya_sizearray_int64_remove
+@, 1653Q, 0
+Q, 1, arrayb_sizearray_int64_remove
+@, 1661Q, 0
+Q, 1, indexarray_int64_remove
+@, 1669Q, 0
+Q, 1, bindexarray_int64_remove
+@, 1677Q, 0
+Q, 1, offsetarray_int64_remove
+@, 1685Q, 8
+Q, 1, farray_int64_remove
+@, 1693Q, 0
+Q, 1, vararray_int64_remove
+@, 1701Q, 0
+Q, 1, remove_indarray_int64_remove
+@, 1709Q, 0
+Q, 1, indarray_int64_remove
+@, 1717Q, 0
+Q, 1, zeroarray_double_remove
+@, 1725Q, 0
+Q, 1, onearray_double_remove
+@, 1733Q, 1
+Q, 1, Parrayaarray_double_remove
+@, 1741Q, 0
+Q, 1, Parraybarray_double_remove
+@, 1749Q, 0
+Q, 1, arraya_sizearray_double_remove
+@, 1757Q, 0
+Q, 1, arrayb_sizearray_double_remove
+@, 1765Q, 0
+Q, 1, indexarray_double_remove
+@, 1773Q, 0
+Q, 1, bindexarray_double_remove
+@, 1781Q, 0
+Q, 1, offsetarray_double_remove
+@, 1789Q, 8
+Q, 1, farray_double_remove
+@, 1797Q, 0
+F, 1, vararray_double_remove
+@, 1805Q, 0.0
+Q, 1, remove_indarray_double_remove
+@, 1813Q, 0
+Q, 1, indarray_double_remove
+@, 1821Q, 0
+Q, 1, zeroarray_int64_push
+@, 1829Q, 0
+Q, 1, onearray_int64_push
+@, 1837Q, 1
+Q, 1, Parrayaarray_int64_push
+@, 1845Q, 
+Q, 1, array_sizearray_int64_push
+@, 1853Q, 0
+Q, 1, offsetarray_int64_push
+@, 1861Q, 8
+Q, 1, vararray_int64_push
+@, 1869Q, 
+Q, 1, new_vararray_int64_push
+@, 1877Q, 
+Q, 1, end_indexarray_int64_push
+@, 1885Q, 
+Q, 1, copy_indexarray_int64_push
+@, 1893Q, 
+Q, 1, iarray_int64_push
+@, 1901Q, 0
+Q, 1, farray_int64_push
+@, 1909Q, 0
+Q, 1, zeroarray_int64_pop
+@, 1917Q, 0
+Q, 1, onearray_int64_pop
+@, 1925Q, 1
+Q, 1, Parrayaarray_int64_pop
+@, 1933Q, 
+Q, 1, array_sizearray_int64_pop
+@, 1941Q, 0
+Q, 1, offsetarray_int64_pop
+@, 1949Q, 8
+Q, 1, vararray_int64_pop
+@, 1957Q, 
+Q, 1, ret_vararray_int64_pop
+@, 1965Q, 
+Q, 1, insert_indexarray_int64_pop
+@, 1973Q, 
+Q, 1, copy_indexarray_int64_pop
+@, 1981Q, 
+Q, 1, iarray_int64_pop
+@, 1989Q, 0
+Q, 1, farray_int64_pop
+@, 1997Q, 0
+Q, 1, zeroarray_double_push
+@, 2005Q, 0
+Q, 1, onearray_double_push
+@, 2013Q, 1
+Q, 1, Parrayaarray_double_push
+@, 2021Q, 
+Q, 1, array_sizearray_double_push
+@, 2029Q, 0
+Q, 1, offsetarray_double_push
+@, 2037Q, 8
+F, 1, vararray_double_push
+@, 2045Q, 
+F, 1, new_vararray_double_push
+@, 2053Q, 
+Q, 1, end_indexarray_double_push
+@, 2061Q, 
+Q, 1, copy_indexarray_double_push
+@, 2069Q, 
+Q, 1, iarray_double_push
+@, 2077Q, 0
+Q, 1, farray_double_push
+@, 2085Q, 0
+Q, 1, zeroarray_double_pop
+@, 2093Q, 0
+F, 1, zerodarray_double_pop
+@, 2101Q, 0.0
+Q, 1, onearray_double_pop
+@, 2109Q, 1
+Q, 1, Parrayaarray_double_pop
+@, 2117Q, 
+Q, 1, array_sizearray_double_pop
+@, 2125Q, 0
+Q, 1, offsetarray_double_pop
+@, 2133Q, 8
+F, 1, vararray_double_pop
+@, 2141Q, 
+F, 1, ret_vararray_double_pop
+@, 2149Q, 
+Q, 1, insert_indexarray_double_pop
+@, 2157Q, 
+Q, 1, copy_indexarray_double_pop
+@, 2165Q, 
+Q, 1, iarray_double_pop
+@, 2173Q, 0
+Q, 1, farray_double_pop
+@, 2181Q, 0
+.dend
+.code
+jmp :main
+:add_one_int64
+loada zero, 0, 0
+stpopi 1
+load Pretadd_one_int64, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load xadd_one_int64, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load Paadd_one_int64, 0, 4
+pullqw 3, 4, 0
+loada asizeadd_one_int64, 0, 4
+intr0 33, 3, 4, 0
+addi 4, 0, 5
+load asizeadd_one_int64, 0, 6
+pullqw 5, 6, 0
+loada zeroadd_one_int64, 0, 4
+load realindexadd_one_int64, 0, 5
+pullqw 4, 5, 0
+:for_0
+loada realindexadd_one_int64, 0, 1
+loada asizeadd_one_int64, 0, 2
+lsi 1, 2, 3
+load fadd_one_int64, 0, 4
+pullqw 3, 4, 0
+loada fadd_one_int64, 0, 1
+jmpi 1, :for2_0
+jmp :forend_0
+:for2_0
+loada varadd_one_int64, 0, 2
+loada realindexadd_one_int64, 0, 3
+loada Paadd_one_int64, 0, 4
+pushqw 4, 3, 2
+loada oneadd_one_int64, 0, 4
+addi 2, 4, 5
+load varadd_one_int64, 0, 6
+pullqw 5, 6, 0
+load varadd_one_int64, 0, 1
+pushqw 1, 0, 2
+loada realindexadd_one_int64, 0, 3
+loada Pretadd_one_int64, 0, 4
+pullqw 2, 4, 3
+loada offsetadd_one_int64, 0, 4
+addi 3, 4, 5
+load realindexadd_one_int64, 0, 6
+pullqw 5, 6, 0
+jmp :for_0
+:forend_0
+rts
+:main
+loada zero, 0, 0
+load a, 0, 1
+load Pa, 0, 2
+pullqw 1, 2, 0
+loada Pa, 0, 2
+addi 2, 0, 3
+load Pa, 0, 4
+pullqw 3, 4, 0
+load b, 0, 2
+load Pb, 0, 3
+pullqw 2, 3, 0
+loada Pb, 0, 3
+addi 3, 0, 4
+load Pb, 0, 5
+pullqw 4, 5, 0
+load c, 0, 3
+load Pc, 0, 4
+pullqw 3, 4, 0
+loada Pc, 0, 4
+addi 4, 0, 5
+load Pc, 0, 6
+pullqw 5, 6, 0
+load d, 0, 4
+load Pd, 0, 5
+pullqw 4, 5, 0
+loada Pd, 0, 5
+addi 5, 0, 6
+load Pd, 0, 7
+pullqw 6, 7, 0
+load e, 0, 5
+load Pe, 0, 6
+pullqw 5, 6, 0
+loada Pe, 0, 6
+addi 6, 0, 7
+load Pe, 0, 8
+pullqw 7, 8, 0
+load r, 0, 6
+load Pr, 0, 7
+pullqw 6, 7, 0
+loada Pr, 0, 7
+addi 7, 0, 8
+load Pr, 0, 9
+pullqw 8, 9, 0
+load p, 0, 7
+load Pp, 0, 8
+pullqw 7, 8, 0
+loada Pp, 0, 8
+addi 8, 0, 9
+load Pp, 0, 10
+pullqw 9, 10, 0
+load cons_var, 0, 8
+load Pcons_var, 0, 9
+pullqw 8, 9, 0
+loada Pcons_var, 0, 9
+addi 9, 0, 10
+load Pcons_var, 0, 11
+pullqw 10, 11, 0
+loada add_one_func, 0, 9
+loadl :add_one_int64, 9
+addi 9, 0, 11
+load add_one_func, 0, 12
+pullqw 11, 12, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+stpushi 6
+stpushi 7
+stpushi 8
+stpushi 10
+loada Pa, 0, 9
+stpushi 9
+loada Pb, 0, 11
+stpushi 11
+loada Pc, 0, 12
+stpushi 12
+loada zero, 0, 13
+stpushi 13
+loada four, 0, 14
+stpushi 14
+loada zero, 0, 13
+stpushi 13
+loada four, 0, 14
+stpushi 14
+jsr :array_int64_cat_range
+stpopi 10
+stpopi 8
+stpopi 7
+stpopi 6
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+:for_1
+loada i, 0, 1
+loada maxarray, 0, 2
+lsi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :for2_1
+jmp :forend_1
+:for2_1
+loada var, 0, 2
+loada realindex, 0, 3
+load c, 0, 4
+pushqw 4, 3, 2
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+loada offset, 0, 4
+addi 3, 4, 5
+load realindex, 0, 6
+pullqw 5, 6, 0
+loada i, 0, 3
+loada one, 0, 5
+addi 3, 5, 6
+load i, 0, 7
+pullqw 6, 7, 0
+jmp :for_1
+:forend_1
+loada Pc, 0, 1
+stpushi 1
+jsr :array_int64_first
+stpopi 2
+load var, 0, 3
+pullqw 2, 3, 0
+intr0 7, 0, 0, 0
+loada var, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada Pa, 0, 2
+stpushi 2
+loada Pd, 0, 3
+stpushi 3
+jsr :array_int64_rest
+loada zero, 0, 4
+load i, 0, 5
+pullqw 4, 5, 0
+loada zero, 0, 4
+load realindex, 0, 5
+pullqw 4, 5, 0
+stpopi 1
+:for_2
+loada i, 0, 1
+loada maxdarray, 0, 2
+lsi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :for2_2
+jmp :forend_2
+:for2_2
+loada var, 0, 2
+loada realindex, 0, 3
+load d, 0, 4
+pushqw 4, 3, 2
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+loada offset, 0, 4
+addi 3, 4, 5
+load realindex, 0, 6
+pullqw 5, 6, 0
+loada i, 0, 3
+loada one, 0, 5
+addi 3, 5, 6
+load i, 0, 7
+pullqw 6, 7, 0
+jmp :for_2
+:forend_2
+intr0 7, 0, 0, 0
+intr0 7, 0, 0, 0
+loada Pcons_var, 0, 1
+stpushi 1
+loada Pa, 0, 2
+stpushi 2
+loada Pc, 0, 3
+stpushi 3
+jsr :array_int64_cons
+loada zero, 0, 4
+load i, 0, 5
+pullqw 4, 5, 0
+loada zero, 0, 4
+load realindex, 0, 5
+pullqw 4, 5, 0
+:for_3
+loada i, 0, 1
+loada maxarray, 0, 2
+lsi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :for2_3
+jmp :forend_3
+:for2_3
+loada var, 0, 2
+loada realindex, 0, 3
+load c, 0, 4
+pushqw 4, 3, 2
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+loada offset, 0, 4
+addi 3, 4, 5
+load realindex, 0, 6
+pullqw 5, 6, 0
+loada i, 0, 3
+loada one, 0, 5
+addi 3, 5, 6
+load i, 0, 7
+pullqw 6, 7, 0
+jmp :for_3
+:forend_3
+intr0 7, 0, 0, 0
+intr0 7, 0, 0, 0
+loada Mapcarstraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+loada Pa, 0, 2
+stpushi 2
+loada Pa, 0, 2
+stpushi 2
+loada Pe, 0, 3
+stpushi 3
+loada add_one_func, 0, 4
+jsra 4
+loada zero, 0, 5
+load i, 0, 6
+pullqw 5, 6, 0
+loada zero, 0, 5
+load realindex, 0, 6
+pullqw 5, 6, 0
+:for_4
+loada i, 0, 1
+loada maxdarray, 0, 2
+lseqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :for2_4
+jmp :forend_4
+:for2_4
+loada var, 0, 2
+loada realindex, 0, 3
+load e, 0, 4
+pushqw 4, 3, 2
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+loada offset, 0, 4
+addi 3, 4, 5
+load realindex, 0, 6
+pullqw 5, 6, 0
+loada i, 0, 3
+loada one, 0, 5
+addi 3, 5, 6
+load i, 0, 7
+pullqw 6, 7, 0
+jmp :for_4
+:forend_4
+intr0 7, 0, 0, 0
+loada Removestraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada Pe, 0, 2
+stpushi 2
+loada Pr, 0, 3
+stpushi 3
+loada four, 0, 4
+stpushi 4
+jsr :array_int64_remove
+loada zero, 0, 5
+load i, 0, 6
+pullqw 5, 6, 0
+loada zero, 0, 5
+load realindex, 0, 6
+pullqw 5, 6, 0
+stpopi 1
+:for_5
+loada i, 0, 1
+loada maxrarray, 0, 2
+lseqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :for2_5
+jmp :forend_5
+:for2_5
+loada var, 0, 2
+loada realindex, 0, 3
+load r, 0, 4
+pushqw 4, 3, 2
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+loada offset, 0, 4
+addi 3, 4, 5
+load realindex, 0, 6
+pullqw 5, 6, 0
+loada i, 0, 3
+loada one, 0, 5
+addi 3, 5, 6
+load i, 0, 7
+pullqw 6, 7, 0
+jmp :for_5
+:forend_5
+intr0 7, 0, 0, 0
+loada Pushstraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada Pp, 0, 2
+stpushi 2
+loada four, 0, 3
+stpushi 3
+loada pushv, 0, 4
+stpushi 4
+jsr :array_int64_push
+loada zero, 0, 5
+load i, 0, 6
+pullqw 5, 6, 0
+loada zero, 0, 5
+load realindex, 0, 6
+pullqw 5, 6, 0
+stpopi 1
+:for_6
+loada i, 0, 1
+loada five, 0, 2
+lseqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :for2_6
+jmp :forend_6
+:for2_6
+loada var, 0, 2
+loada realindex, 0, 3
+load p, 0, 4
+pushqw 4, 3, 2
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+loada offset, 0, 4
+addi 3, 4, 5
+load realindex, 0, 6
+pullqw 5, 6, 0
+loada i, 0, 3
+loada one, 0, 5
+addi 3, 5, 6
+load i, 0, 7
+pullqw 6, 7, 0
+jmp :for_6
+:forend_6
+intr0 7, 0, 0, 0
+loada Popstraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada Pp, 0, 2
+stpushi 2
+jsr :array_int64_pop
+stpopi 3
+load var, 0, 4
+pullqw 3, 4, 0
+stpopi 1
+loada var, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+intr0 7, 0, 0, 0
+loada zero, 0, 2
+load i, 0, 3
+pullqw 2, 3, 0
+loada zero, 0, 2
+load realindex, 0, 3
+pullqw 2, 3, 0
+:for_7
+loada i, 0, 1
+loada five, 0, 2
+lseqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :for2_7
+jmp :forend_7
+:for2_7
+loada var, 0, 2
+loada realindex, 0, 3
+load p, 0, 4
+pushqw 4, 3, 2
+intr0 4, 2, 0, 0
+intr0 7, 0, 0, 0
+loada offset, 0, 4
+addi 3, 4, 5
+load realindex, 0, 6
+pullqw 5, 6, 0
+loada i, 0, 3
+loada one, 0, 5
+addi 3, 5, 6
+load i, 0, 7
+pullqw 6, 7, 0
+jmp :for_7
+:forend_7
+loada zero, 0, 1
+intr0 255, 1, 0, 0
+rts
+:array_int64_cat
+loada zero, 0, 0
+stpopi 1
+load Parraycarray_int64_cat, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Parraybarray_int64_cat, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load Parrayaarray_int64_cat, 0, 4
+pullqw 3, 4, 0
+loada zeroarray_int64_cat, 0, 4
+load indexarray_int64_cat, 0, 5
+pullqw 4, 5, 0
+loada zeroarray_int64_cat, 0, 4
+load cindexarray_int64_cat, 0, 5
+pullqw 4, 5, 0
+loada arraya_sizearray_int64_cat, 0, 4
+intr0 33, 3, 4, 0
+addi 4, 0, 5
+load arraya_sizearray_int64_cat, 0, 6
+pullqw 5, 6, 0
+:copy_a_array_int64_cat
+loada vararray_int64_cat, 0, 1
+loada indexarray_int64_cat, 0, 2
+loada Parrayaarray_int64_cat, 0, 3
+pushqw 3, 2, 1
+loada zero, 0, 3
+addi 1, 3, 4
+load vararray_int64_cat, 0, 5
+pullqw 4, 5, 0
+load vararray_int64_cat, 0, 1
+pushqw 1, 0, 2
+loada cindexarray_int64_cat, 0, 3
+loada Parraycarray_int64_cat, 0, 4
+pullqw 2, 4, 3
+loada indexarray_int64_cat, 0, 4
+loada offsetarray_int64_cat, 0, 5
+addi 4, 5, 6
+load indexarray_int64_cat, 0, 7
+pullqw 6, 7, 0
+addi 3, 5, 4
+load cindexarray_int64_cat, 0, 6
+pullqw 4, 6, 0
+loada indexarray_int64_cat, 0, 3
+loada arraya_sizearray_int64_cat, 0, 4
+lsi 3, 4, 6
+load farray_int64_cat, 0, 7
+pullqw 6, 7, 0
+loada farray_int64_cat, 0, 1
+jmpi 1, :if_0
+jmp :endif_0
+:if_0
+jmp :copy_a_array_int64_cat
+:endif_0
+loada zeroarray_int64_cat, 0, 1
+load indexarray_int64_cat, 0, 2
+pullqw 1, 2, 0
+loada Parraybarray_int64_cat, 0, 1
+loada arrayb_sizearray_int64_cat, 0, 2
+intr0 33, 1, 2, 0
+loada zero, 0, 3
+addi 2, 3, 4
+load arrayb_sizearray_int64_cat, 0, 5
+pullqw 4, 5, 0
+:copy_b_array_int64_cat
+loada vararray_int64_cat, 0, 1
+loada indexarray_int64_cat, 0, 2
+loada Parraybarray_int64_cat, 0, 3
+pushqw 3, 2, 1
+loada zero, 0, 3
+addi 1, 3, 4
+load vararray_int64_cat, 0, 5
+pullqw 4, 5, 0
+load vararray_int64_cat, 0, 1
+pushqw 1, 0, 2
+loada cindexarray_int64_cat, 0, 3
+loada Parraycarray_int64_cat, 0, 4
+pullqw 2, 4, 3
+loada indexarray_int64_cat, 0, 4
+loada offsetarray_int64_cat, 0, 5
+addi 4, 5, 6
+load indexarray_int64_cat, 0, 7
+pullqw 6, 7, 0
+addi 3, 5, 4
+load cindexarray_int64_cat, 0, 6
+pullqw 4, 6, 0
+loada indexarray_int64_cat, 0, 3
+loada arraya_sizearray_int64_cat, 0, 4
+lsi 3, 4, 6
+load farray_int64_cat, 0, 7
+pullqw 6, 7, 0
+loada farray_int64_cat, 0, 1
+jmpi 1, :if_1
+jmp :endif_1
+:if_1
+jmp :copy_b_array_int64_cat
+:endif_1
+rts
+:array_int64_cat_range
+loada zero, 0, 0
+stpopi 1
+load arrayb_maxarray_int64_cat_range, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load arrayb_minarray_int64_cat_range, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load arraya_maxarray_int64_cat_range, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load arraya_minarray_int64_cat_range, 0, 5
+pullqw 4, 5, 0
+stpopi 5
+load Parraycarray_int64_cat_range, 0, 6
+pullqw 5, 6, 0
+stpopi 6
+load Parraybarray_int64_cat_range, 0, 7
+pullqw 6, 7, 0
+stpopi 7
+load Parrayaarray_int64_cat_range, 0, 8
+pullqw 7, 8, 0
+loada zeroarray_int64_cat_range, 0, 8
+load indexarray_int64_cat_range, 0, 9
+pullqw 8, 9, 0
+loada zeroarray_int64_cat_range, 0, 8
+load cindexarray_int64_cat_range, 0, 9
+pullqw 8, 9, 0
+load ind_countarray_int64_cat_range, 0, 8
+pullqw 4, 8, 0
+loada ind_countarray_int64_cat_range, 0, 4
+loada offsetarray_int64_cat_range, 0, 8
+muli 4, 8, 9
+load indexarray_int64_cat_range, 0, 10
+pullqw 9, 10, 0
+:copy_a_array_int64_cat_range
+loada vararray_int64_cat_range, 0, 1
+loada indexarray_int64_cat_range, 0, 2
+loada Parrayaarray_int64_cat_range, 0, 3
+pushqw 3, 2, 1
+loada zero, 0, 3
+addi 1, 3, 4
+load vararray_int64_cat_range, 0, 5
+pullqw 4, 5, 0
+load vararray_int64_cat_range, 0, 1
+pushqw 1, 0, 2
+loada cindexarray_int64_cat_range, 0, 3
+loada Parraycarray_int64_cat_range, 0, 4
+pullqw 2, 4, 3
+loada indexarray_int64_cat_range, 0, 4
+loada offsetarray_int64_cat_range, 0, 5
+addi 4, 5, 6
+load indexarray_int64_cat_range, 0, 7
+pullqw 6, 7, 0
+addi 3, 5, 4
+load cindexarray_int64_cat_range, 0, 6
+pullqw 4, 6, 0
+loada ind_countarray_int64_cat_range, 0, 3
+loada onearray_int64_cat_range, 0, 4
+addi 3, 4, 6
+load ind_countarray_int64_cat_range, 0, 7
+pullqw 6, 7, 0
+loada ind_countarray_int64_cat_range, 0, 3
+loada arraya_maxarray_int64_cat_range, 0, 6
+lseqi 3, 6, 7
+load farray_int64_cat_range, 0, 8
+pullqw 7, 8, 0
+loada farray_int64_cat_range, 0, 1
+jmpi 1, :if_2
+jmp :endif_2
+:if_2
+jmp :copy_a_array_int64_cat_range
+:endif_2
+loada arrayb_minarray_int64_cat_range, 0, 1
+loada zeroarray_int64_cat_range, 0, 2
+lsi 1, 2, 3
+load farray_int64_cat_range, 0, 4
+pullqw 3, 4, 0
+loada farray_int64_cat_range, 0, 1
+jmpi 1, :if_3
+jmp :endif_3
+:if_3
+rts
+:endif_3
+loada zeroarray_int64_cat_range, 0, 1
+load indexarray_int64_cat_range, 0, 2
+pullqw 1, 2, 0
+loada arrayb_minarray_int64_cat_range, 0, 1
+load ind_countarray_int64_cat_range, 0, 2
+pullqw 1, 2, 0
+loada ind_countarray_int64_cat_range, 0, 1
+loada offsetarray_int64_cat_range, 0, 2
+muli 1, 2, 3
+load indexarray_int64_cat_range, 0, 4
+pullqw 3, 4, 0
+:copy_b_array_int64_cat_range
+loada vararray_int64_cat_range, 0, 1
+loada indexarray_int64_cat_range, 0, 2
+loada Parraybarray_int64_cat_range, 0, 3
+pushqw 3, 2, 1
+loada zero, 0, 3
+addi 1, 3, 4
+load vararray_int64_cat_range, 0, 5
+pullqw 4, 5, 0
+load vararray_int64_cat_range, 0, 1
+pushqw 1, 0, 2
+loada cindexarray_int64_cat_range, 0, 3
+loada Parraycarray_int64_cat_range, 0, 4
+pullqw 2, 4, 3
+loada indexarray_int64_cat_range, 0, 4
+loada offsetarray_int64_cat_range, 0, 5
+addi 4, 5, 6
+load indexarray_int64_cat_range, 0, 7
+pullqw 6, 7, 0
+addi 3, 5, 4
+load cindexarray_int64_cat_range, 0, 6
+pullqw 4, 6, 0
+loada ind_countarray_int64_cat_range, 0, 3
+loada onearray_int64_cat_range, 0, 4
+addi 3, 4, 6
+load ind_countarray_int64_cat_range, 0, 7
+pullqw 6, 7, 0
+loada ind_countarray_int64_cat_range, 0, 3
+loada arrayb_maxarray_int64_cat_range, 0, 6
+lseqi 3, 6, 7
+load farray_int64_cat_range, 0, 8
+pullqw 7, 8, 0
+loada farray_int64_cat_range, 0, 1
+jmpi 1, :if_4
+jmp :endif_4
+:if_4
+jmp :copy_b_array_int64_cat_range
+:endif_4
+rts
+:array_double_cat
+loada zero, 0, 0
+stpopi 1
+load Parraycarray_double_cat, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Parraybarray_double_cat, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load Parrayaarray_double_cat, 0, 4
+pullqw 3, 4, 0
+loada zeroarray_double_cat, 0, 4
+load indexarray_double_cat, 0, 5
+pullqw 4, 5, 0
+loada zeroarray_double_cat, 0, 4
+load cindexarray_double_cat, 0, 5
+pullqw 4, 5, 0
+loada arraya_sizearray_double_cat, 0, 4
+intr0 33, 3, 4, 0
+addi 4, 0, 5
+load arraya_sizearray_double_cat, 0, 6
+pullqw 5, 6, 0
+:copy_a_array_double_cat
+loadd vararray_double_cat, 0, 1
+loada indexarray_double_cat, 0, 1
+loada Parrayaarray_double_cat, 0, 2
+pushd 2, 1, 1
+loadd zero_double, 0, 2
+addd 1, 2, 3
+load vararray_double_cat, 0, 4
+pulld 3, 4, 0
+loadd vararray_double_cat, 0, 1
+loada cindexarray_double_cat, 0, 1
+loada Parraycarray_double_cat, 0, 2
+pulld 1, 2, 1
+loada indexarray_double_cat, 0, 2
+loada offsetarray_double_cat, 0, 3
+addi 2, 3, 4
+load indexarray_double_cat, 0, 5
+pullqw 4, 5, 0
+addi 1, 3, 2
+load cindexarray_double_cat, 0, 4
+pullqw 2, 4, 0
+loada indexarray_double_cat, 0, 1
+loada arraya_sizearray_double_cat, 0, 2
+lsi 1, 2, 4
+load farray_double_cat, 0, 5
+pullqw 4, 5, 0
+loada farray_double_cat, 0, 1
+jmpi 1, :if_5
+jmp :endif_5
+:if_5
+jmp :copy_a_array_double_cat
+:endif_5
+loada zeroarray_double_cat, 0, 1
+load indexarray_double_cat, 0, 2
+pullqw 1, 2, 0
+loada Parraybarray_double_cat, 0, 1
+loada arrayb_sizearray_double_cat, 0, 2
+intr0 33, 1, 2, 0
+loada zero, 0, 3
+addi 2, 3, 4
+load arrayb_sizearray_double_cat, 0, 5
+pullqw 4, 5, 0
+:copy_b_array_double_cat
+loadd vararray_double_cat, 0, 1
+loada indexarray_double_cat, 0, 1
+loada Parraybarray_double_cat, 0, 2
+pushd 2, 1, 1
+loadd zero_double, 0, 2
+addd 1, 2, 3
+load vararray_double_cat, 0, 4
+pulld 3, 4, 0
+loadd vararray_double_cat, 0, 1
+loada cindexarray_double_cat, 0, 1
+loada Parraycarray_double_cat, 0, 2
+pulld 1, 2, 1
+loada indexarray_double_cat, 0, 2
+loada offsetarray_double_cat, 0, 3
+addi 2, 3, 4
+load indexarray_double_cat, 0, 5
+pullqw 4, 5, 0
+addi 1, 3, 2
+load cindexarray_double_cat, 0, 4
+pullqw 2, 4, 0
+loada indexarray_double_cat, 0, 1
+loada arraya_sizearray_double_cat, 0, 2
+lsi 1, 2, 4
+load farray_double_cat, 0, 5
+pullqw 4, 5, 0
+loada farray_double_cat, 0, 1
+jmpi 1, :if_6
+jmp :endif_6
+:if_6
+jmp :copy_b_array_double_cat
+:endif_6
+rts
+:array_double_cat_range
+loada zero, 0, 0
+stpopi 1
+load arrayb_maxarray_double_cat_range, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load arrayb_minarray_double_cat_range, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load arraya_maxarray_double_cat_range, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load arraya_minarray_double_cat_range, 0, 5
+pullqw 4, 5, 0
+stpopi 5
+load Parraycarray_double_cat_range, 0, 6
+pullqw 5, 6, 0
+stpopi 6
+load Parraybarray_double_cat_range, 0, 7
+pullqw 6, 7, 0
+stpopi 7
+load Parrayaarray_double_cat_range, 0, 8
+pullqw 7, 8, 0
+loada zeroarray_double_cat_range, 0, 8
+load indexarray_double_cat_range, 0, 9
+pullqw 8, 9, 0
+loada zeroarray_double_cat_range, 0, 8
+load cindexarray_double_cat_range, 0, 9
+pullqw 8, 9, 0
+load ind_countarray_double_cat_range, 0, 8
+pullqw 4, 8, 0
+loada ind_countarray_double_cat_range, 0, 4
+loada offsetarray_double_cat_range, 0, 8
+muli 4, 8, 9
+load indexarray_double_cat_range, 0, 10
+pullqw 9, 10, 0
+:copy_a_array_double_cat_range
+loadd vararray_double_cat_range, 0, 1
+loada indexarray_double_cat_range, 0, 1
+loada Parrayaarray_double_cat_range, 0, 2
+pushd 2, 1, 1
+loadd zero_double, 0, 2
+addd 1, 2, 3
+load vararray_double_cat_range, 0, 4
+pulld 3, 4, 0
+loadd vararray_double_cat_range, 0, 1
+loada cindexarray_double_cat_range, 0, 1
+loada Parraycarray_double_cat_range, 0, 2
+pulld 1, 2, 1
+loada indexarray_double_cat_range, 0, 2
+loada offsetarray_double_cat_range, 0, 3
+addi 2, 3, 4
+load indexarray_double_cat_range, 0, 5
+pullqw 4, 5, 0
+addi 1, 3, 2
+load cindexarray_double_cat_range, 0, 4
+pullqw 2, 4, 0
+loada ind_countarray_double_cat_range, 0, 1
+loada onearray_double_cat_range, 0, 2
+addi 1, 2, 4
+load ind_countarray_double_cat_range, 0, 5
+pullqw 4, 5, 0
+loada ind_countarray_double_cat_range, 0, 1
+loada arraya_maxarray_double_cat_range, 0, 4
+lseqi 1, 4, 5
+load farray_double_cat_range, 0, 6
+pullqw 5, 6, 0
+loada farray_double_cat_range, 0, 1
+jmpi 1, :if_7
+jmp :endif_7
+:if_7
+jmp :copy_a_array_double_cat_range
+:endif_7
+loada arrayb_minarray_double_cat_range, 0, 1
+loada zeroarray_double_cat_range, 0, 2
+lsi 1, 2, 3
+load farray_double_cat_range, 0, 4
+pullqw 3, 4, 0
+loada farray_double_cat_range, 0, 1
+jmpi 1, :if_8
+jmp :endif_8
+:if_8
+rts
+:endif_8
+loada zeroarray_double_cat_range, 0, 1
+load indexarray_double_cat_range, 0, 2
+pullqw 1, 2, 0
+loada arrayb_minarray_double_cat_range, 0, 1
+load ind_countarray_double_cat_range, 0, 2
+pullqw 1, 2, 0
+loada ind_countarray_double_cat_range, 0, 1
+loada offsetarray_double_cat_range, 0, 2
+muli 1, 2, 3
+load indexarray_double_cat_range, 0, 4
+pullqw 3, 4, 0
+:copy_b_array_double_cat_range
+loadd vararray_double_cat_range, 0, 1
+loada indexarray_double_cat_range, 0, 1
+loada Parraybarray_double_cat_range, 0, 2
+pushd 2, 1, 1
+loadd zero_double, 0, 2
+addd 1, 2, 3
+load vararray_double_cat_range, 0, 4
+pulld 3, 4, 0
+loadd vararray_double_cat_range, 0, 1
+loada cindexarray_double_cat_range, 0, 1
+loada Parraycarray_double_cat_range, 0, 2
+pulld 1, 2, 1
+loada indexarray_double_cat_range, 0, 2
+loada offsetarray_double_cat_range, 0, 3
+addi 2, 3, 4
+load indexarray_double_cat_range, 0, 5
+pullqw 4, 5, 0
+addi 1, 3, 2
+load cindexarray_double_cat_range, 0, 4
+pullqw 2, 4, 0
+loada ind_countarray_double_cat_range, 0, 1
+loada onearray_double_cat_range, 0, 2
+addi 1, 2, 4
+load ind_countarray_double_cat_range, 0, 5
+pullqw 4, 5, 0
+loada ind_countarray_double_cat_range, 0, 1
+loada arrayb_maxarray_double_cat_range, 0, 4
+lseqi 1, 4, 5
+load farray_double_cat_range, 0, 6
+pullqw 5, 6, 0
+loada farray_double_cat_range, 0, 1
+jmpi 1, :if_9
+jmp :endif_9
+:if_9
+jmp :copy_b_array_double_cat_range
+:endif_9
+rts
+:array_int64_first
+loada zero, 0, 0
+stpopi 1
+load Parrayarray_int64_first, 0, 2
+pullqw 1, 2, 0
+loada vararray_int64_first, 0, 2
+loada zeroarray_int64_first, 0, 3
+loada Parrayarray_int64_first, 0, 4
+pushqw 4, 3, 2
+addi 2, 0, 4
+load vararray_int64_first, 0, 5
+pullqw 4, 5, 0
+loada vararray_int64_first, 0, 2
+stpushi 2
+rts
+:array_double_first
+loada zero, 0, 0
+stpopi 1
+load Parrayarray_double_first, 0, 2
+pullqw 1, 2, 0
+loadd vararray_double_first, 0, 1
+loada zeroarray_double_first, 0, 2
+loada Parrayarray_double_first, 0, 2
+pushd 2, 2, 1
+loadd zero_double, 0, 2
+addd 1, 2, 3
+load vararray_double_first, 0, 4
+pulld 3, 4, 0
+loadd vararray_double_first, 0, 1
+stpushd 1
+rts
+:array_int64_rest
+loada zero, 0, 0
+stpopi 1
+load Parraybarray_int64_rest, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Parrayaarray_int64_rest, 0, 3
+pullqw 2, 3, 0
+loada array_sizearray_int64_rest, 0, 3
+intr0 33, 2, 3, 0
+addi 3, 0, 4
+load array_sizearray_int64_rest, 0, 5
+pullqw 4, 5, 0
+loada array_sizearray_int64_rest, 0, 3
+loada offsetarray_int64_rest, 0, 4
+divi 3, 4, 5
+load array_sizearray_int64_rest, 0, 6
+pullqw 5, 6, 0
+loada array_sizearray_int64_rest, 0, 3
+loada onearray_int64_rest, 0, 5
+subi 3, 5, 6
+load array_sizearray_int64_rest, 0, 7
+pullqw 6, 7, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 4
+stpushi 5
+loada Parrayaarray_int64_rest, 0, 2
+stpushi 2
+loada Parrayaarray_int64_rest, 0, 2
+stpushi 2
+loada Parraybarray_int64_rest, 0, 1
+stpushi 1
+loada onearray_int64_rest, 0, 3
+stpushi 3
+loada array_sizearray_int64_rest, 0, 5
+stpushi 5
+loada neg_onearray_int64_rest, 0, 6
+stpushi 6
+loada zeroarray_int64_rest, 0, 7
+stpushi 7
+jsr :array_int64_cat_range
+stpopi 5
+stpopi 4
+stpopi 2
+stpopi 1
+stpopi 0
+rts
+:array_double_rest
+loada zero, 0, 0
+stpopi 1
+load Parraybarray_double_rest, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Parrayaarray_double_rest, 0, 3
+pullqw 2, 3, 0
+loada array_sizearray_double_rest, 0, 3
+intr0 33, 2, 3, 0
+addi 3, 0, 4
+load array_sizearray_double_rest, 0, 5
+pullqw 4, 5, 0
+loada array_sizearray_double_rest, 0, 3
+loada offsetarray_double_rest, 0, 4
+divi 3, 4, 5
+load array_sizearray_double_rest, 0, 6
+pullqw 5, 6, 0
+loada array_sizearray_double_rest, 0, 3
+loada onearray_double_rest, 0, 5
+subi 3, 5, 6
+load array_sizearray_double_rest, 0, 7
+pullqw 6, 7, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 4
+stpushi 5
+loada Parrayaarray_double_rest, 0, 2
+stpushi 2
+loada Parrayaarray_double_rest, 0, 2
+stpushi 2
+loada Parraybarray_double_rest, 0, 1
+stpushi 1
+loada onearray_double_rest, 0, 3
+stpushi 3
+loada array_sizearray_double_rest, 0, 5
+stpushi 5
+loada neg_onearray_double_rest, 0, 6
+stpushi 6
+loada zeroarray_double_rest, 0, 7
+stpushi 7
+jsr :array_double_cat_range
+stpopi 5
+stpopi 4
+stpopi 2
+stpopi 1
+stpopi 0
+rts
+:array_int64_cons
+loada zero, 0, 0
+stpopi 1
+load Parraycarray_int64_cons, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Parraybarray_int64_cons, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load Parrayaarray_int64_cons, 0, 4
+pullqw 3, 4, 0
+loada array_sizearray_int64_cons, 0, 4
+intr0 33, 2, 4, 0
+addi 4, 0, 5
+load array_sizearray_int64_cons, 0, 6
+pullqw 5, 6, 0
+loada array_sizearray_int64_cons, 0, 4
+loada offsetarray_int64_cons, 0, 5
+divi 4, 5, 6
+load array_sizearray_int64_cons, 0, 7
+pullqw 6, 7, 0
+loada array_sizearray_int64_cons, 0, 4
+loada onearray_int64_cons, 0, 6
+subi 4, 6, 7
+load array_sizearray_int64_cons, 0, 8
+pullqw 7, 8, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 5
+stpushi 6
+loada Parrayaarray_int64_cons, 0, 3
+stpushi 3
+loada Parraybarray_int64_cons, 0, 2
+stpushi 2
+loada Parraycarray_int64_cons, 0, 1
+stpushi 1
+loada zeroarray_int64_cons, 0, 4
+stpushi 4
+loada zeroarray_int64_cons, 0, 4
+stpushi 4
+loada zeroarray_int64_cons, 0, 4
+stpushi 4
+loada array_sizearray_int64_cons, 0, 7
+stpushi 7
+jsr :array_int64_cat_range
+stpopi 6
+stpopi 5
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+rts
+:array_double_cons
+loada zero, 0, 0
+stpopi 1
+load Parraycarray_double_cons, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Parraybarray_double_cons, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load Parrayaarray_double_cons, 0, 4
+pullqw 3, 4, 0
+loada array_sizearray_double_cons, 0, 4
+intr0 33, 2, 4, 0
+addi 4, 0, 5
+load array_sizearray_double_cons, 0, 6
+pullqw 5, 6, 0
+loada array_sizearray_double_cons, 0, 4
+loada offsetarray_double_cons, 0, 5
+divi 4, 5, 6
+load array_sizearray_double_cons, 0, 7
+pullqw 6, 7, 0
+loada array_sizearray_double_cons, 0, 4
+loada onearray_double_cons, 0, 6
+subi 4, 6, 7
+load array_sizearray_double_cons, 0, 8
+pullqw 7, 8, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 5
+stpushi 6
+loada Parrayaarray_double_cons, 0, 3
+stpushi 3
+loada Parraybarray_double_cons, 0, 2
+stpushi 2
+loada Parraycarray_double_cons, 0, 1
+stpushi 1
+loada zeroarray_double_cons, 0, 4
+stpushi 4
+loada zeroarray_double_cons, 0, 4
+stpushi 4
+loada zeroarray_double_cons, 0, 4
+stpushi 4
+loada array_sizearray_double_cons, 0, 7
+stpushi 7
+jsr :array_int64_cat_range
+stpopi 6
+stpopi 5
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+rts
+:array_int64_member
+loada zero, 0, 0
+stpopi 1
+load Parraycarray_int64_member, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load matcharray_int64_member, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load Parrayaarray_int64_member, 0, 4
+pullqw 3, 4, 0
+loada zeroarray_int64_member, 0, 4
+load indexarray_int64_member, 0, 5
+pullqw 4, 5, 0
+loada zeroarray_int64_member, 0, 4
+load found_vararray_int64_member, 0, 5
+pullqw 4, 5, 0
+loada arraya_sizearray_int64_member, 0, 4
+intr0 33, 3, 4, 0
+addi 4, 0, 5
+load arraya_sizearray_int64_member, 0, 6
+pullqw 5, 6, 0
+loada arraya_sizearray_int64_member, 0, 4
+loada offsetarray_int64_member, 0, 5
+divi 4, 5, 6
+load array_sizearray_int64_member, 0, 7
+pullqw 6, 7, 0
+loada array_sizearray_int64_member, 0, 6
+loada onearray_int64_member, 0, 7
+subi 6, 7, 8
+load array_sizearray_int64_member, 0, 9
+pullqw 8, 9, 0
+:check_a_array_int64_member
+loada vararray_int64_member, 0, 1
+loada indexarray_int64_member, 0, 2
+loada Parrayaarray_int64_member, 0, 3
+pushqw 3, 2, 1
+loada zero, 0, 3
+addi 1, 3, 4
+load vararray_int64_member, 0, 5
+pullqw 4, 5, 0
+loada vararray_int64_member, 0, 1
+loada matcharray_int64_member, 0, 4
+eqi 1, 4, 5
+load farray_int64_member, 0, 6
+pullqw 5, 6, 0
+loada farray_int64_member, 0, 1
+jmpi 1, :if_10
+jmp :endif_10
+:if_10
+loada onearray_int64_member, 0, 2
+load found_vararray_int64_member, 0, 3
+pullqw 2, 3, 0
+jmp :check_a_array_end_int64_member
+:endif_10
+loada indexarray_int64_member, 0, 1
+loada offsetarray_int64_member, 0, 2
+addi 1, 2, 3
+load indexarray_int64_member, 0, 4
+pullqw 3, 4, 0
+loada indexarray_int64_member, 0, 1
+loada arraya_sizearray_int64_member, 0, 3
+lsi 1, 3, 4
+load farray_int64_member, 0, 5
+pullqw 4, 5, 0
+loada farray_int64_member, 0, 1
+jmpi 1, :if_11
+jmp :endif_11
+:if_11
+jmp :check_a_array_int64_member
+:endif_11
+:check_a_array_end_int64_member
+loada found_vararray_int64_member, 0, 1
+loada onearray_int64_member, 0, 2
+eqi 1, 2, 3
+load farray_int64_member, 0, 4
+pullqw 3, 4, 0
+loada farray_int64_member, 0, 1
+jmpi 1, :if_12
+jmp :else_12
+:if_12
+stpushi 1
+loada Parrayaarray_int64_member, 0, 2
+stpushi 2
+loada Parrayaarray_int64_member, 0, 2
+stpushi 2
+loada Parraycarray_int64_member, 0, 3
+stpushi 3
+loada zeroarray_int64_member, 0, 4
+stpushi 4
+loada array_sizearray_int64_member, 0, 5
+stpushi 5
+loada neg_onearray_int64_member, 0, 6
+stpushi 6
+loada zeroarray_int64_member, 0, 4
+stpushi 4
+jsr :array_int64_cat_range
+stpopi 1
+loada zeroarray_int64_member, 0, 1
+stpushi 1
+jmp :endif_12
+:else_12
+loada onearray_int64_member, 0, 1
+stpushi 1
+:endif_12
+rts
+:array_double_member
+loada zero, 0, 0
+stpopi 1
+load Parraycarray_double_member, 0, 2
+pullqw 1, 2, 0
+stpopd 1
+load matcharray_double_member, 0, 2
+pulld 1, 2, 0
+stpopi 2
+load Parrayaarray_double_member, 0, 3
+pullqw 2, 3, 0
+loada zeroarray_double_member, 0, 3
+load indexarray_double_member, 0, 4
+pullqw 3, 4, 0
+loada zeroarray_double_member, 0, 3
+load found_vararray_double_member, 0, 4
+pullqw 3, 4, 0
+loada arraya_sizearray_double_member, 0, 3
+intr0 33, 2, 3, 0
+addi 3, 0, 4
+load arraya_sizearray_double_member, 0, 5
+pullqw 4, 5, 0
+loada arraya_sizearray_double_member, 0, 3
+loada offsetarray_double_member, 0, 4
+divi 3, 4, 5
+load array_sizearray_double_member, 0, 6
+pullqw 5, 6, 0
+loada array_sizearray_double_member, 0, 5
+loada onearray_double_member, 0, 6
+subi 5, 6, 7
+load array_sizearray_double_member, 0, 8
+pullqw 7, 8, 0
+:check_a_array_double_member
+loadd vararray_double_member, 0, 1
+loada indexarray_double_member, 0, 1
+loada Parrayaarray_double_member, 0, 2
+pushd 2, 1, 1
+loadd zero_double, 0, 2
+addd 1, 2, 3
+load vararray_double_member, 0, 4
+pulld 3, 4, 0
+loadd vararray_double_member, 0, 1
+loadd matcharray_double_member, 0, 3
+eqd 1, 3, 2
+load farray_double_member, 0, 3
+pullqw 2, 3, 0
+loada farray_double_member, 0, 1
+jmpi 1, :if_13
+jmp :endif_13
+:if_13
+loada onearray_double_member, 0, 2
+load found_vararray_double_member, 0, 3
+pullqw 2, 3, 0
+jmp :check_a_array_end_double_member
+:endif_13
+loada indexarray_double_member, 0, 1
+loada offsetarray_double_member, 0, 2
+addi 1, 2, 3
+load indexarray_double_member, 0, 4
+pullqw 3, 4, 0
+loada indexarray_double_member, 0, 1
+loada arraya_sizearray_double_member, 0, 3
+lsi 1, 3, 4
+load farray_double_member, 0, 5
+pullqw 4, 5, 0
+loada farray_double_member, 0, 1
+jmpi 1, :if_14
+jmp :endif_14
+:if_14
+jmp :check_a_array_double_member
+:endif_14
+:check_a_array_end_double_member
+loada found_vararray_double_member, 0, 1
+loada onearray_double_member, 0, 2
+eqi 1, 2, 3
+load farray_double_member, 0, 4
+pullqw 3, 4, 0
+loada farray_double_member, 0, 1
+jmpi 1, :if_15
+jmp :else_15
+:if_15
+stpushi 1
+loada Parrayaarray_double_member, 0, 2
+stpushi 2
+loada Parrayaarray_double_member, 0, 2
+stpushi 2
+loada Parraycarray_double_member, 0, 3
+stpushi 3
+loada zeroarray_double_member, 0, 4
+stpushi 4
+loada array_sizearray_double_member, 0, 5
+stpushi 5
+loada neg_onearray_double_member, 0, 6
+stpushi 6
+loada zeroarray_double_member, 0, 4
+stpushi 4
+jsr :array_double_cat_range
+stpopi 1
+loada zeroarray_double_member, 0, 1
+stpushi 1
+jmp :endif_15
+:else_15
+loada onearray_double_member, 0, 1
+stpushi 1
+:endif_15
+rts
+:array_int64_remove
+loada zero, 0, 0
+stpopi 1
+load remove_indarray_int64_remove, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Parraybarray_int64_remove, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load Parrayaarray_int64_remove, 0, 4
+pullqw 3, 4, 0
+loada zeroarray_int64_remove, 0, 4
+load indexarray_int64_remove, 0, 5
+pullqw 4, 5, 0
+loada zeroarray_int64_remove, 0, 4
+load bindexarray_int64_remove, 0, 5
+pullqw 4, 5, 0
+loada zeroarray_int64_remove, 0, 4
+load indarray_int64_remove, 0, 5
+pullqw 4, 5, 0
+loada arraya_sizearray_int64_remove, 0, 4
+intr0 33, 3, 4, 0
+addi 4, 0, 5
+load arraya_sizearray_int64_remove, 0, 6
+pullqw 5, 6, 0
+:copy_a_array_int64_remove
+loada indarray_int64_remove, 0, 1
+loada remove_indarray_int64_remove, 0, 2
+neqi 1, 2, 3
+load farray_int64_remove, 0, 4
+pullqw 3, 4, 0
+loada farray_int64_remove, 0, 1
+jmpi 1, :if_16
+jmp :endif_16
+:if_16
+loada vararray_int64_remove, 0, 2
+loada indexarray_int64_remove, 0, 3
+loada Parrayaarray_int64_remove, 0, 4
+pushqw 4, 3, 2
+loada zero, 0, 4
+addi 2, 4, 5
+load vararray_int64_remove, 0, 6
+pullqw 5, 6, 0
+load vararray_int64_remove, 0, 1
+pushqw 1, 0, 2
+loada bindexarray_int64_remove, 0, 3
+loada Parraybarray_int64_remove, 0, 4
+pullqw 2, 4, 3
+:endif_16
+loada indexarray_int64_remove, 0, 1
+loada offsetarray_int64_remove, 0, 2
+addi 1, 2, 3
+load indexarray_int64_remove, 0, 4
+pullqw 3, 4, 0
+loada bindexarray_int64_remove, 0, 1
+addi 1, 2, 3
+load bindexarray_int64_remove, 0, 4
+pullqw 3, 4, 0
+loada indarray_int64_remove, 0, 1
+loada onearray_int64_remove, 0, 3
+addi 1, 3, 4
+load indarray_int64_remove, 0, 5
+pullqw 4, 5, 0
+loada indexarray_int64_remove, 0, 1
+loada arraya_sizearray_int64_remove, 0, 4
+lsi 1, 4, 5
+load farray_int64_remove, 0, 6
+pullqw 5, 6, 0
+loada farray_int64_remove, 0, 1
+jmpi 1, :if_17
+jmp :endif_17
+:if_17
+jmp :copy_a_array_int64_remove
+:endif_17
+rts
+:array_double_remove
+loada zero, 0, 0
+stpopi 1
+load remove_indarray_double_remove, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Parraybarray_double_remove, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load Parrayaarray_double_remove, 0, 4
+pullqw 3, 4, 0
+loada zeroarray_double_remove, 0, 4
+load indexarray_double_remove, 0, 5
+pullqw 4, 5, 0
+loada zeroarray_double_remove, 0, 4
+load bindexarray_double_remove, 0, 5
+pullqw 4, 5, 0
+loada zeroarray_double_remove, 0, 4
+load indarray_double_remove, 0, 5
+pullqw 4, 5, 0
+loada arraya_sizearray_double_remove, 0, 4
+intr0 33, 3, 4, 0
+addi 4, 0, 5
+load arraya_sizearray_double_remove, 0, 6
+pullqw 5, 6, 0
+:copy_a_array_double_remove
+loada indarray_double_remove, 0, 1
+loada remove_indarray_double_remove, 0, 2
+neqi 1, 2, 3
+load farray_double_remove, 0, 4
+pullqw 3, 4, 0
+loada farray_double_remove, 0, 1
+jmpi 1, :if_18
+jmp :endif_18
+:if_18
+loadd vararray_double_remove, 0, 1
+loada indexarray_double_remove, 0, 2
+loada Parrayaarray_double_remove, 0, 2
+pushd 2, 2, 1
+loadd zero_double, 0, 2
+addd 1, 2, 3
+load vararray_double_remove, 0, 4
+pulld 3, 4, 0
+loadd vararray_double_remove, 0, 1
+loada bindexarray_double_remove, 0, 1
+loada Parraybarray_double_remove, 0, 2
+pulld 1, 2, 1
+:endif_18
+loada indexarray_double_remove, 0, 1
+loada offsetarray_double_remove, 0, 2
+addi 1, 2, 3
+load indexarray_double_remove, 0, 4
+pullqw 3, 4, 0
+loada bindexarray_double_remove, 0, 1
+addi 1, 2, 3
+load bindexarray_double_remove, 0, 4
+pullqw 3, 4, 0
+loada indarray_double_remove, 0, 1
+loada onearray_double_remove, 0, 3
+addi 1, 3, 4
+load indarray_double_remove, 0, 5
+pullqw 4, 5, 0
+loada indexarray_double_remove, 0, 1
+loada arraya_sizearray_double_remove, 0, 4
+lsi 1, 4, 5
+load farray_double_remove, 0, 6
+pullqw 5, 6, 0
+loada farray_double_remove, 0, 1
+jmpi 1, :if_19
+jmp :endif_19
+:if_19
+jmp :copy_a_array_double_remove
+:endif_19
+rts
+:array_int64_push
+loada zero, 0, 0
+stpopi 1
+load new_vararray_int64_push, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load end_indexarray_int64_push, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load Parrayaarray_int64_push, 0, 4
+pullqw 3, 4, 0
+loada array_sizearray_int64_push, 0, 4
+intr0 33, 3, 4, 0
+addi 4, 0, 5
+load array_sizearray_int64_push, 0, 6
+pullqw 5, 6, 0
+loada array_sizearray_int64_push, 0, 4
+loada offsetarray_int64_push, 0, 5
+divi 4, 5, 6
+load array_sizearray_int64_push, 0, 7
+pullqw 6, 7, 0
+loada array_sizearray_int64_push, 0, 4
+loada onearray_int64_push, 0, 6
+subi 4, 6, 7
+load array_sizearray_int64_push, 0, 8
+pullqw 7, 8, 0
+load copy_indexarray_int64_push, 0, 4
+pullqw 2, 4, 0
+loada copy_indexarray_int64_push, 0, 2
+muli 2, 5, 4
+load copy_indexarray_int64_push, 0, 7
+pullqw 4, 7, 0
+loada end_indexarray_int64_push, 0, 2
+addi 2, 6, 4
+load end_indexarray_int64_push, 0, 7
+pullqw 4, 7, 0
+loada end_indexarray_int64_push, 0, 2
+muli 2, 5, 4
+load end_indexarray_int64_push, 0, 7
+pullqw 4, 7, 0
+:copy_array_int64_push
+loada vararray_int64_push, 0, 1
+loada copy_indexarray_int64_push, 0, 2
+loada Parrayaarray_int64_push, 0, 3
+pushqw 3, 2, 1
+loada zero, 0, 3
+addi 1, 3, 4
+load vararray_int64_push, 0, 5
+pullqw 4, 5, 0
+load vararray_int64_push, 0, 1
+pushqw 1, 0, 2
+loada end_indexarray_int64_push, 0, 3
+loada Parrayaarray_int64_push, 0, 4
+pullqw 2, 4, 3
+loada copy_indexarray_int64_push, 0, 4
+loada offsetarray_int64_push, 0, 5
+subi 4, 5, 6
+load copy_indexarray_int64_push, 0, 7
+pullqw 6, 7, 0
+subi 3, 5, 4
+load end_indexarray_int64_push, 0, 6
+pullqw 4, 6, 0
+loada copy_indexarray_int64_push, 0, 3
+loada zeroarray_int64_push, 0, 4
+lsi 3, 4, 6
+load f, 0, 7
+pullqw 6, 7, 0
+loada f, 0, 1
+jmpi 1, :if_20
+jmp :endif_20
+:if_20
+jmp :copy_array_int64_push_end
+:endif_20
+jmp :copy_array_int64_push
+:copy_array_int64_push_end
+load new_vararray_int64_push, 0, 1
+pushqw 1, 0, 2
+loada zeroarray_int64_push, 0, 3
+loada Parrayaarray_int64_push, 0, 4
+pullqw 2, 4, 3
+intr0 7, 0, 0, 0
+intr0 7, 0, 0, 0
+rts
+:array_int64_pop
+loada zero, 0, 0
+stpopi 1
+load Parrayaarray_int64_pop, 0, 2
+pullqw 1, 2, 0
+loada array_sizearray_int64_pop, 0, 2
+intr0 33, 1, 2, 0
+addi 2, 0, 3
+load array_sizearray_int64_pop, 0, 4
+pullqw 3, 4, 0
+loada offsetarray_int64_pop, 0, 2
+load copy_indexarray_int64_pop, 0, 3
+pullqw 2, 3, 0
+loada zeroarray_int64_pop, 0, 2
+load insert_indexarray_int64_pop, 0, 3
+pullqw 2, 3, 0
+loada ret_vararray_int64_pop, 0, 2
+loada zeroarray_int64_pop, 0, 3
+loada Parrayaarray_int64_pop, 0, 4
+pushqw 4, 3, 2
+:copy_array_int64_pop
+loada vararray_int64_pop, 0, 1
+loada copy_indexarray_int64_pop, 0, 2
+loada Parrayaarray_int64_pop, 0, 3
+pushqw 3, 2, 1
+loada zero, 0, 3
+addi 1, 3, 4
+load vararray_int64_pop, 0, 5
+pullqw 4, 5, 0
+load vararray_int64_pop, 0, 1
+pushqw 1, 0, 2
+loada insert_indexarray_int64_pop, 0, 3
+loada Parrayaarray_int64_pop, 0, 4
+pullqw 2, 4, 3
+loada copy_indexarray_int64_pop, 0, 4
+loada offsetarray_int64_pop, 0, 5
+addi 4, 5, 6
+load copy_indexarray_int64_pop, 0, 7
+pullqw 6, 7, 0
+addi 3, 5, 4
+load insert_indexarray_int64_pop, 0, 6
+pullqw 4, 6, 0
+loada copy_indexarray_int64_pop, 0, 3
+loada array_sizearray_int64_pop, 0, 4
+lsi 3, 4, 6
+load f, 0, 7
+pullqw 6, 7, 0
+loada f, 0, 1
+jmpi 1, :if_21
+jmp :endif_21
+:if_21
+jmp :copy_array_int64_pop
+:endif_21
+load zeroarray_int64_pop, 0, 1
+pushqw 1, 0, 2
+loada insert_indexarray_int64_pop, 0, 3
+loada Parrayaarray_int64_pop, 0, 4
+pullqw 2, 4, 3
+loada ret_vararray_int64_pop, 0, 4
+stpushi 4
+rts
+:array_double_push
+loada zero, 0, 0
+stpopd 1
+load new_vararray_double_push, 0, 2
+pulld 1, 2, 0
+stpopi 1
+load end_indexarray_double_push, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load Parrayaarray_double_push, 0, 3
+pullqw 2, 3, 0
+loada array_sizearray_double_push, 0, 3
+intr0 33, 2, 3, 0
+addi 3, 0, 4
+load array_sizearray_double_push, 0, 5
+pullqw 4, 5, 0
+loada array_sizearray_double_push, 0, 3
+loada offsetarray_double_push, 0, 4
+divi 3, 4, 5
+load array_sizearray_double_push, 0, 6
+pullqw 5, 6, 0
+loada array_sizearray_double_push, 0, 3
+loada onearray_double_push, 0, 5
+subi 3, 5, 6
+load array_sizearray_double_push, 0, 7
+pullqw 6, 7, 0
+load copy_indexarray_double_push, 0, 3
+pullqw 1, 3, 0
+loada copy_indexarray_double_push, 0, 1
+muli 1, 4, 3
+load copy_indexarray_double_push, 0, 6
+pullqw 3, 6, 0
+loada end_indexarray_double_push, 0, 1
+addi 1, 5, 3
+load end_indexarray_double_push, 0, 6
+pullqw 3, 6, 0
+loada end_indexarray_double_push, 0, 1
+muli 1, 4, 3
+load end_indexarray_double_push, 0, 6
+pullqw 3, 6, 0
+:copy_array_double_push
+loadd vararray_double_push, 0, 1
+loada copy_indexarray_double_push, 0, 1
+loada Parrayaarray_double_push, 0, 2
+pushd 2, 1, 1
+loadd zero_double, 0, 2
+addd 1, 2, 3
+load vararray_double_push, 0, 4
+pulld 3, 4, 0
+loadd vararray_double_push, 0, 1
+loada end_indexarray_double_push, 0, 1
+loada Parrayaarray_double_push, 0, 2
+pulld 1, 2, 1
+loada copy_indexarray_double_push, 0, 2
+loada offsetarray_double_push, 0, 3
+subi 2, 3, 4
+load copy_indexarray_double_push, 0, 5
+pullqw 4, 5, 0
+subi 1, 3, 2
+load end_indexarray_double_push, 0, 4
+pullqw 2, 4, 0
+loada copy_indexarray_double_push, 0, 1
+loada zeroarray_double_push, 0, 2
+eqi 1, 2, 4
+load f, 0, 5
+pullqw 4, 5, 0
+loada f, 0, 1
+jmpi 1, :if_22
+jmp :endif_22
+:if_22
+jmp :copy_array_double_push_end
+:endif_22
+jmp :copy_array_double_push
+:copy_array_double_push_end
+loadd new_vararray_double_push, 0, 1
+loada zeroarray_double_push, 0, 1
+loada Parrayaarray_double_push, 0, 2
+pulld 1, 2, 1
+rts
+:array_double_pop
+loada zero, 0, 0
+stpopi 1
+load Parrayaarray_double_pop, 0, 2
+pullqw 1, 2, 0
+loada array_sizearray_double_pop, 0, 2
+intr0 33, 1, 2, 0
+addi 2, 0, 3
+load array_sizearray_double_pop, 0, 4
+pullqw 3, 4, 0
+loada offsetarray_double_pop, 0, 2
+load copy_indexarray_double_pop, 0, 3
+pullqw 2, 3, 0
+loada zeroarray_double_pop, 0, 2
+load insert_indexarray_double_pop, 0, 3
+pullqw 2, 3, 0
+loadd ret_vararray_double_pop, 0, 1
+loada zeroarray_double_pop, 0, 2
+loada Parrayaarray_double_pop, 0, 2
+pushd 2, 2, 1
+:copy_array_double_pop
+loadd vararray_double_pop, 0, 1
+loada copy_indexarray_double_pop, 0, 1
+loada Parrayaarray_double_pop, 0, 2
+pushd 2, 1, 1
+loadd zero_double, 0, 2
+addd 1, 2, 3
+load vararray_double_pop, 0, 4
+pulld 3, 4, 0
+loadd vararray_double_pop, 0, 1
+loada insert_indexarray_double_pop, 0, 1
+loada Parrayaarray_double_pop, 0, 2
+pulld 1, 2, 1
+loada copy_indexarray_double_pop, 0, 2
+loada offsetarray_double_pop, 0, 3
+addi 2, 3, 4
+load copy_indexarray_double_pop, 0, 5
+pullqw 4, 5, 0
+addi 1, 3, 2
+load insert_indexarray_double_pop, 0, 4
+pullqw 2, 4, 0
+loada copy_indexarray_double_pop, 0, 1
+loada array_sizearray_double_pop, 0, 2
+lsi 1, 2, 4
+load f, 0, 5
+pullqw 4, 5, 0
+loada f, 0, 1
+jmpi 1, :if_23
+jmp :endif_23
+:if_23
+jmp :copy_array_double_pop
+:endif_23
+loadd zerodarray_double_pop, 0, 1
+loada insert_indexarray_double_pop, 0, 1
+loada Parrayaarray_double_pop, 0, 2
+pulld 1, 2, 1
+loadd ret_vararray_double_pop, 0, 2
+stpushd 2
+rts
+.cend

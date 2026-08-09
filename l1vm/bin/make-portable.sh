@@ -1,0 +1,23 @@
+#!/bin/bash
+./statify.sh disasm
+./statify.sh l1asm
+./statify.sh l1com
+./statify.sh l1pre
+./statify.sh l1vm
+./statify.sh zerobuild
+./statify.sh libl1vmcells.so
+./statify.sh libl1vmendianess.so
+./statify.sh libl1vmfann.so
+./statify.sh libl1vmfile.so
+./statify.sh ibl1vmgenann.so
+./statify.sh libl1vmmath.so
+./statify.sh libl1vmmathvect.so
+./statify.sh libl1vmmemobj.so
+./statify.sh libl1vmmem.so
+./statify.sh libl1vmmpfr.so
+./statify.sh libl1vmnet.so
+./statify.sh libl1vmprocess.so
+./statify.sh libl1vmrs232.so
+./statify.sh libl1vmsdl.so
+./statify.sh libl1vmstring.so
+./statify.sh libl1vmtime.so

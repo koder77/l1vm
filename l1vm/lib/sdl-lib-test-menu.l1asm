@@ -1,0 +1,1979 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, one
+@, 8Q, 1
+Q, 1, two
+@, 16Q, 2
+Q, 1, three
+@, 24Q, 3
+Q, 1, four
+@, 32Q, 4
+Q, 1, five
+@, 40Q, 5
+Q, 1, six
+@, 48Q, 6
+Q, 1, seven
+@, 56Q, 7
+Q, 1, width
+@, 64Q, 800
+Q, 1, height
+@, 72Q, 600
+Q, 1, width_b
+@, 80Q, 799
+Q, 1, height_b
+@, 88Q, 599
+Q, 1, bit
+@, 96Q, 32
+Q, 1, x
+@, 104Q, 20
+Q, 1, y
+@, 112Q, 20
+Q, 1, x_quit
+@, 120Q, 20
+Q, 1, y_quit
+@, 128Q, 80
+Q, 1, x_check
+@, 136Q, 20
+Q, 1, y_check
+@, 144Q, 140
+Q, 1, x_string
+@, 152Q, 20
+Q, 1, y_string
+@, 160Q, 200
+Q, 1, x_cycle
+@, 168Q, 100
+Q, 1, y_cycle
+@, 176Q, 350
+Q, 1, x_prog
+@, 184Q, 300
+Q, 1, y_prog
+@, 192Q, 80
+Q, 1, value_cycle
+@, 200Q, 0
+Q, 1, value_prog
+@, 208Q, 75
+Q, 1, visible_string
+@, 216Q, 13
+Q, 1, x_slider
+@, 224Q, 300
+Q, 1, y_slider
+@, 232Q, 120
+Q, 1, slider_min
+@, 240Q, 100
+Q, 1, slider_max
+@, 248Q, 150
+Q, 1, slider_value
+@, 256Q, 125
+Q, 1, x_slider_vert
+@, 264Q, 300
+Q, 1, y_slider_vert
+@, 272Q, 180
+Q, 1, slider_vert_width
+@, 280Q, 40
+Q, 1, slider_vert_height
+@, 288Q, 200
+Q, 1, gadgets
+@, 296Q, 8
+Q, 1, status
+@, 304Q, 1
+Q, 1, delay
+@, 312Q, 10000
+B, 13, screenshotstr
+@, 320Q, " screenshot "
+Q, 1, screenshotstraddr
+@, 333Q, 320Q
+B, 13, quitstr
+@, 341Q, "    Quit    "
+Q, 1, quitstraddr
+@, 354Q, 341Q
+B, 14, checkstr
+@, 362Q, "test checkbox"
+Q, 1, checkstraddr
+@, 376Q, 362Q
+B, 5, stringstr
+@, 384Q, "test"
+Q, 1, stringstraddr
+@, 389Q, 384Q
+B, 53, valuestr
+@, 397Q, "Hello world! Hello koder77!"
+Q, 1, valuestraddr
+@, 450Q, 397Q
+B, 53, gadget_valuestr
+@, 458Q, ""
+Q, 1, gadget_valuestraddr
+@, 511Q, 458Q
+B, 24, fontname
+@, 519Q, "fonts/free/FreeMono.ttf"
+Q, 1, fontnameaddr
+@, 543Q, 519Q
+B, 4, red_cyclestr
+@, 551Q, "red"
+Q, 1, red_cyclestraddr
+@, 555Q, 551Q
+B, 6, green_cyclestr
+@, 563Q, "green"
+Q, 1, green_cyclestraddr
+@, 569Q, 563Q
+B, 5, blue_cyclestr
+@, 577Q, "blue"
+Q, 1, blue_cyclestraddr
+@, 582Q, 577Q
+B, 6, text_cyclestr
+@, 590Q, "color"
+Q, 1, text_cyclestraddr
+@, 596Q, 590Q
+B, 9, text_progstr
+@, 604Q, "progress"
+Q, 1, text_progstraddr
+@, 613Q, 604Q
+B, 15, picture_namestr
+@, 621Q, "screenshot.bmp"
+Q, 1, picture_namestraddr
+@, 636Q, 621Q
+B, 29, picture_errstr
+@, 644Q, "ERROR can't save screenshot!"
+Q, 1, picture_errstraddr
+@, 673Q, 644Q
+B, 18, picture_okstr
+@, 681Q, "screenshot saved!"
+Q, 1, picture_okstraddr
+@, 699Q, 681Q
+B, 22, slider_str
+@, 707Q, "      set value      "
+Q, 1, slider_straddr
+@, 729Q, 707Q
+B, 5, slider_valuestr
+@, 737Q, ""
+Q, 1, slider_valuestraddr
+@, 742Q, 737Q
+Q, 1, x_slider_value
+@, 750Q, 600
+Q, 1, y_slider_value
+@, 758Q, 125
+Q, 1, slider_value_max
+@, 766Q, 4
+Q, 1, x_slider_box
+@, 774Q, 600
+Q, 1, y_slider_box
+@, 782Q, 120
+Q, 1, x2_slider_box
+@, 790Q, 650
+Q, 1, y2_slider_box
+@, 798Q, 150
+Q, 1, x_slider_vert_value
+@, 806Q, 300
+Q, 1, y_slider_vert_value
+@, 814Q, 400
+Q, 1, slider_vert_value_max
+@, 822Q, 4
+Q, 1, x_slider_vert_box
+@, 830Q, 300
+Q, 1, y_slider_vert_box
+@, 838Q, 400
+Q, 1, x2_slider_vert_box
+@, 846Q, 340
+Q, 1, y2_slider_vert_box
+@, 854Q, 450
+Q, 1, fontsize
+@, 862Q, 20
+B, 1, back_r
+@, 870Q, 143
+B, 1, back_g
+@, 871Q, 147
+B, 1, back_b
+@, 872Q, 151
+B, 1, alpha
+@, 873Q, 255
+B, 1, black
+@, 874Q, 0
+Q, 1, gadget_sel
+@, 875Q, 0
+B, 256, gadget_retstr
+@, 883Q, ""
+Q, 1, gadget_retstraddr
+@, 1139Q, 883Q
+Q, 1, ret
+@, 1147Q, 0
+Q, 1, value
+@, 1155Q, 0
+Q, 1, f
+@, 1163Q, 0
+Q, 1, text_lines
+@, 1171Q, 4
+Q, 1, value@draw_slider_value
+@, 1179Q, 0
+Q, 1, value@draw_slider_value_vert
+@, 1187Q, 0
+Q, 1, zero@sdl
+@, 1195Q, 0
+Q, 1, one@sdl
+@, 1203Q, 1
+Q, 1, f@sdl
+@, 1211Q, 0
+B, 11, modulestr@sdl
+@, 1219Q, "libl1vmsdl"
+Q, 1, modulestr@sdladdr
+@, 1230Q, 1219Q
+B, 16, openstr@sdl
+@, 1238Q, "sdl_open_screen"
+Q, 1, openstr@sdladdr
+@, 1254Q, 1238Q
+B, 21, openfullstr@sdl
+@, 1262Q, "sdl_open_screen_full"
+Q, 1, openfullstr@sdladdr
+@, 1283Q, 1262Q
+B, 9, quitstr@sdl
+@, 1291Q, "sdl_quit"
+Q, 1, quitstr@sdladdr
+@, 1300Q, 1291Q
+B, 16, pixelstr@sdl
+@, 1308Q, "sdl_pixel_alpha"
+Q, 1, pixelstr@sdladdr
+@, 1324Q, 1308Q
+B, 15, linestr@sdl
+@, 1332Q, "sdl_line_alpha"
+Q, 1, linestr@sdladdr
+@, 1347Q, 1332Q
+B, 20, rectanglestr@sdl
+@, 1355Q, "sdl_rectangle_alpha"
+Q, 1, rectanglestr@sdladdr
+@, 1375Q, 1355Q
+B, 25, rectangle_fillstr@sdl
+@, 1383Q, "sdl_rectangle_fill_alpha"
+Q, 1, rectangle_fillstr@sdladdr
+@, 1408Q, 1383Q
+B, 17, circlestr@sdl
+@, 1416Q, "sdl_circle_alpha"
+Q, 1, circlestr@sdladdr
+@, 1433Q, 1416Q
+B, 22, circle_fillstr@sdl
+@, 1441Q, "sdl_circle_fill_alpha"
+Q, 1, circle_fillstr@sdladdr
+@, 1463Q, 1441Q
+B, 18, ellipsestr@sdl
+@, 1471Q, "sdl_ellipse_alpha"
+Q, 1, ellipsestr@sdladdr
+@, 1489Q, 1471Q
+B, 23, ellipse_fillstr@sdl
+@, 1497Q, "sdl_ellipse_fill_alpha"
+Q, 1, ellipse_fillstr@sdladdr
+@, 1520Q, 1497Q
+B, 14, piestr@sdl
+@, 1528Q, "sdl_pie_alpha"
+Q, 1, piestr@sdladdr
+@, 1542Q, 1528Q
+B, 19, pie_fillstr@sdl
+@, 1550Q, "sdl_pie_fill_alpha"
+Q, 1, pie_fillstr@sdladdr
+@, 1569Q, 1550Q
+B, 17, trigonstr@sdl
+@, 1577Q, "sdl_trigon_alpha"
+Q, 1, trigonstr@sdladdr
+@, 1594Q, 1577Q
+B, 22, trigon_fillstr@sdl
+@, 1602Q, "sdl_trigon_fill_alpha"
+Q, 1, trigon_fillstr@sdladdr
+@, 1624Q, 1602Q
+B, 13, font_ttfstr@sdl
+@, 1632Q, "sdl_font_ttf"
+Q, 1, font_ttfstr@sdladdr
+@, 1645Q, 1632Q
+B, 13, text_ttfstr@sdl
+@, 1653Q, "sdl_text_ttf"
+Q, 1, text_ttfstr@sdladdr
+@, 1666Q, 1653Q
+B, 19, get_pixelcolorstr@sdl
+@, 1674Q, "sdl_get_pixelcolor"
+Q, 1, get_pixelcolorstr@sdladdr
+@, 1693Q, 1674Q
+B, 11, updatestr@sdl
+@, 1701Q, "sdl_update"
+Q, 1, updatestr@sdladdr
+@, 1712Q, 1701Q
+B, 15, play_soundstr@sdl
+@, 1720Q, "sdl_play_sound"
+Q, 1, play_soundstr@sdladdr
+@, 1735Q, 1720Q
+B, 16, get_mouse_statestr@sdl
+@, 1743Q, "get_mouse_state"
+Q, 1, get_mouse_statestr@sdladdr
+@, 1759Q, 1743Q
+B, 15, close_joystickstr@sdl
+@, 1767Q, "close_joystick"
+Q, 1, close_joystickstr@sdladdr
+@, 1782Q, 1767Q
+B, 20, get_joystick_x_axisstr@sdl
+@, 1790Q, "get_joystick_x_axis"
+Q, 1, get_joystick_x_axisstr@sdladdr
+@, 1810Q, 1790Q
+B, 20, get_joystick_y_axisstr@sdl
+@, 1818Q, "get_joystick_y_axis"
+Q, 1, get_joystick_y_axisstr@sdladdr
+@, 1838Q, 1818Q
+B, 21, get_joystick_x2_axisstr@sdl
+@, 1846Q, "get_joystick_x2_axis"
+Q, 1, get_joystick_x2_axisstr@sdladdr
+@, 1867Q, 1846Q
+B, 21, get_joystick_y2_axisstr@sdl
+@, 1875Q, "get_joystick_y2_axis"
+Q, 1, get_joystick_y2_axisstr@sdladdr
+@, 1896Q, 1875Q
+B, 21, get_joystick_buttonsstr@sdl
+@, 1904Q, "get_joystick_buttons"
+Q, 1, get_joystick_buttonsstr@sdladdr
+@, 1925Q, 1904Q
+B, 20, get_joystick_buttonstr@sdl
+@, 1933Q, "get_joystick_button"
+Q, 1, get_joystick_buttonstr@sdladdr
+@, 1953Q, 1933Q
+B, 18, get_joystick_infostr@sdl
+@, 1961Q, "get_joystick_info"
+Q, 1, get_joystick_infostr@sdladdr
+@, 1979Q, 1961Q
+B, 25, toggle_mouse_pointerstr@sdl
+@, 1987Q, "sdl_toggle_mouse_pointer"
+Q, 1, toggle_mouse_pointerstr@sdladdr
+@, 2012Q, 1987Q
+B, 13, init_gadgetsstr@sdl
+@, 2020Q, "init_gadgets"
+Q, 1, init_gadgetsstr@sdladdr
+@, 2033Q, 2020Q
+B, 18, set_gadget_buttonstr@sdl
+@, 2041Q, "set_gadget_button"
+Q, 1, set_gadget_buttonstr@sdladdr
+@, 2059Q, 2041Q
+B, 24, set_gadget_progressstr@sdl
+@, 2067Q, "set_gadget_progress_bar"
+Q, 1, set_gadget_progressstr@sdladdr
+@, 2091Q, 2067Q
+B, 20, set_gadget_checkboxstr@sdl
+@, 2099Q, "set_gadget_checkbox"
+Q, 1, set_gadget_checkboxstr@sdladdr
+@, 2119Q, 2099Q
+B, 17, set_gadget_cyclestr@sdl
+@, 2127Q, "set_gadget_cycle"
+Q, 1, set_gadget_cyclestr@sdladdr
+@, 2144Q, 2127Q
+B, 18, set_gadget_stringstr@sdl
+@, 2152Q, "set_gadget_string"
+Q, 1, set_gadget_stringstr@sdladdr
+@, 2170Q, 2152Q
+B, 15, set_gadget_boxstr@sdl
+@, 2178Q, "set_gadget_box"
+Q, 1, set_gadget_boxstr@sdladdr
+@, 2193Q, 2178Q
+B, 20, set_gadget_box_gridstr@sdl
+@, 2201Q, "set_gadget_box_grid"
+Q, 1, set_gadget_box_gridstr@sdladdr
+@, 2221Q, 2201Q
+B, 18, set_gadget_sliderstr@sdl
+@, 2229Q, "set_gadget_slider"
+Q, 1, set_gadget_sliderstr@sdladdr
+@, 2247Q, 2229Q
+B, 23, set_gadget_slider_vertstr@sdl
+@, 2255Q, "set_gadget_slider_vert"
+Q, 1, set_gadget_slider_vertstr@sdladdr
+@, 2278Q, 2255Q
+B, 23, change_gadget_checkboxstr@sdl
+@, 2286Q, "change_gadget_checkbox"
+Q, 1, change_gadget_checkboxstr@sdladdr
+@, 2309Q, 2286Q
+B, 20, change_gadget_cyclestr@sdl
+@, 2317Q, "change_gadget_cycle"
+Q, 1, change_gadget_cyclestr@sdladdr
+@, 2337Q, 2317Q
+B, 21, change_gadget_stringstr@sdl
+@, 2345Q, "change_gadget_string"
+Q, 1, change_gadget_stringstr@sdladdr
+@, 2366Q, 2345Q
+B, 18, change_gadget_boxstr@sdl
+@, 2374Q, "change_gadget_box"
+Q, 1, change_gadget_boxstr@sdladdr
+@, 2392Q, 2374Q
+B, 23, change_gadget_box_gridstr@sdl
+@, 2400Q, "change_gadget_box_grid"
+Q, 1, change_gadget_box_gridstr@sdladdr
+@, 2423Q, 2400Q
+B, 20, get_gadget_box_gridstr@sdl
+@, 2431Q, "get_gadget_box_grid"
+Q, 1, get_gadget_box_gridstr@sdladdr
+@, 2451Q, 2431Q
+B, 27, change_gadget_progressstr@sdl
+@, 2459Q, "change_gadget_progress_bar"
+Q, 1, change_gadget_progressstr@sdladdr
+@, 2486Q, 2459Q
+B, 21, change_gadget_sliderstr@sdl
+@, 2494Q, "change_gadget_slider"
+Q, 1, change_gadget_sliderstr@sdladdr
+@, 2515Q, 2494Q
+B, 16, get_gadget_x2y2str@sdl
+@, 2523Q, "get_gadget_x2y2"
+Q, 1, get_gadget_x2y2str@sdladdr
+@, 2539Q, 2523Q
+B, 13, gadget_eventstr@sdl
+@, 2547Q, "gadget_event"
+Q, 1, gadget_eventstr@sdladdr
+@, 2560Q, 2547Q
+B, 17, load_picturestr@sdl
+@, 2568Q, "sdl_load_picture"
+Q, 1, load_picturestr@sdladdr
+@, 2585Q, 2568Q
+B, 17, save_picturestr@sdl
+@, 2593Q, "sdl_save_picture"
+Q, 1, save_picturestr@sdladdr
+@, 2610Q, 2593Q
+B, 10, delaystr@sdl
+@, 2618Q, "sdl_delay"
+Q, 1, delaystr@sdladdr
+@, 2628Q, 2618Q
+B, 25, set_gadget_string_passwdstr@sdl
+@, 2636Q, "set_gadget_string_passwd"
+Q, 1, set_gadget_string_passwdstr@sdladdr
+@, 2661Q, 2636Q
+B, 28, set_gadget_string_multilinestr@sdl
+@, 2669Q, "set_gadget_string_multiline"
+Q, 1, set_gadget_string_multilinestr@sdladdr
+@, 2697Q, 2669Q
+B, 31, change_gadget_string_multilinestr@sdl
+@, 2705Q, "change_gadget_string_multiline"
+Q, 1, change_gadget_string_multilinestr@sdladdr
+@, 2736Q, 2705Q
+B, 28, get_gadget_string_multilinestr@sdl
+@, 2744Q, "get_gadget_string_multiline"
+Q, 1, get_gadget_string_multilinestr@sdladdr
+@, 2772Q, 2744Q
+B, 8, get_keystr@sdl
+@, 2780Q, "get_key"
+Q, 1, get_keystr@sdladdr
+@, 2788Q, 2780Q
+B, 17, free_all_gadgetsstr@sdl
+@, 2796Q, "free_all_gadgets"
+Q, 1, free_all_gadgetsstr@sdladdr
+@, 2813Q, 2796Q
+B, 21, set_window_titlestr@sdl
+@, 2821Q, "sdl_set_window_title"
+Q, 1, set_window_titlestr@sdladdr
+@, 2842Q, 2821Q
+B, 16, set_gadget_menustr@sdl
+@, 2850Q, "set_gadget_menu"
+Q, 1, set_gadget_menustr@sdladdr
+@, 2866Q, 2850Q
+B, 13, unset_gadgetstr@sdl
+@, 2874Q, "unset_gadget"
+Q, 1, unset_gadgetstr@sdladdr
+@, 2887Q, 2874Q
+Q, 1, open@sdl
+@, 2895Q, 0
+Q, 1, quit@sdl
+@, 2903Q, 1
+Q, 1, update@sdl
+@, 2911Q, 2
+Q, 1, pixel@sdl
+@, 2919Q, 3
+Q, 1, line@sdl
+@, 2927Q, 4
+Q, 1, rectangle@sdl
+@, 2935Q, 5
+Q, 1, rectangle_fill@sdl
+@, 2943Q, 6
+Q, 1, circle@sdl
+@, 2951Q, 7
+Q, 1, circle_fill@sdl
+@, 2959Q, 8
+Q, 1, ellipse@sdl
+@, 2967Q, 9
+Q, 1, ellipse_fill@sdl
+@, 2975Q, 10
+Q, 1, pie@sdl
+@, 2983Q, 11
+Q, 1, pie_fill@sdl
+@, 2991Q, 12
+Q, 1, trigon@sdl
+@, 2999Q, 13
+Q, 1, trigon_fill@sdl
+@, 3007Q, 14
+Q, 1, font_ttf@sdl
+@, 3015Q, 15
+Q, 1, text_ttf@sdl
+@, 3023Q, 16
+Q, 1, get_pixelcolor@sdl
+@, 3031Q, 17
+Q, 1, init_gadgets@sdl
+@, 3039Q, 18
+Q, 1, set_gadget_button@sdl
+@, 3047Q, 19
+Q, 1, set_gadget_progress@sdl
+@, 3055Q, 20
+Q, 1, set_gadget_checkbox@sdl
+@, 3063Q, 21
+Q, 1, set_gadget_cycle@sdl
+@, 3071Q, 22
+Q, 1, set_gadget_string@sdl
+@, 3079Q, 23
+Q, 1, set_gadget_box@sdl
+@, 3087Q, 24
+Q, 1, change_gadget_checkbox@sdl
+@, 3095Q, 25
+Q, 1, change_gadget_cycle@sdl
+@, 3103Q, 26
+Q, 1, change_gadget_string@sdl
+@, 3111Q, 27
+Q, 1, change_gadget_box@sdl
+@, 3119Q, 28
+Q, 1, change_gadget_progress@sdl
+@, 3127Q, 29
+Q, 1, get_gadget_x2y2@sdl
+@, 3135Q, 30
+Q, 1, gadget_event@sdl
+@, 3143Q, 31
+Q, 1, load_picture@sdl
+@, 3151Q, 32
+Q, 1, save_picture@sdl
+@, 3159Q, 33
+Q, 1, delay@sdl
+@, 3167Q, 34
+Q, 1, set_gadget_slider@sdl
+@, 3175Q, 35
+Q, 1, set_gadget_slider_vert@sdl
+@, 3183Q, 36
+Q, 1, change_gadget_slider@sdl
+@, 3191Q, 37
+Q, 1, set_gadget_box_grid@sdl
+@, 3199Q, 38
+Q, 1, change_gadget_box_grid@sdl
+@, 3207Q, 39
+Q, 1, get_gadget_box_grid@sdl
+@, 3215Q, 40
+Q, 1, play_sound@sdl
+@, 3223Q, 41
+Q, 1, get_mouse_state@sdl
+@, 3231Q, 42
+Q, 1, close_joystick@sdl
+@, 3239Q, 43
+Q, 1, get_joystick_x_axis@sdl
+@, 3247Q, 44
+Q, 1, get_joystick_y_axis@sdl
+@, 3255Q, 45
+Q, 1, get_joystick_x2_axis@sdl
+@, 3263Q, 46
+Q, 1, get_joystick_y2_axis@sdl
+@, 3271Q, 47
+Q, 1, get_joystick_buttons@sdl
+@, 3279Q, 48
+Q, 1, get_joystick_button@sdl
+@, 3287Q, 49
+Q, 1, get_joystick_info@sdl
+@, 3295Q, 50
+Q, 1, openfull@sdl
+@, 3303Q, 52
+Q, 1, toggle_mouse_pointer@sdl
+@, 3311Q, 53
+Q, 1, set_gadget_string_passwd@sdl
+@, 3319Q, 54
+Q, 1, set_gadget_string_multiline@sdl
+@, 3327Q, 55
+Q, 1, change_gadget_string_multiline@sdl
+@, 3335Q, 56
+Q, 1, get_gadget_string_multiline@sdl
+@, 3343Q, 57
+Q, 1, get_key@sdl
+@, 3351Q, 58
+Q, 1, free_all_gadgets@sdl
+@, 3359Q, 59
+Q, 1, set_window_title@sdl
+@, 3367Q, 60
+Q, 1, set_gadget_menu@sdl
+@, 3375Q, 61
+Q, 1, unset_gadget@sdl
+@, 3383Q, 62
+Q, 1, width@sdl
+@, 3391Q, 0
+Q, 1, height@sdl
+@, 3399Q, 0
+Q, 1, bit@sdl
+@, 3407Q, 0
+Q, 1, fullscreen@sdl
+@, 3415Q, 0
+Q, 1, mod@sdl
+@, 3423Q, 0
+B, 14, modulestr@string
+@, 3431Q, "libl1vmstring"
+Q, 1, modulestr@stringaddr
+@, 3445Q, 3431Q
+B, 11, lenstr@string
+@, 3453Q, "string_len"
+Q, 1, lenstr@stringaddr
+@, 3464Q, 3453Q
+B, 12, copystr@string
+@, 3472Q, "string_copy"
+Q, 1, copystr@stringaddr
+@, 3484Q, 3472Q
+B, 11, catstr@string
+@, 3492Q, "string_cat"
+Q, 1, catstr@stringaddr
+@, 3503Q, 3492Q
+B, 23, int64tostringstr@string
+@, 3511Q, "string_int64_to_string"
+Q, 1, int64tostringstr@stringaddr
+@, 3534Q, 3511Q
+B, 25, bytetohexstringstr@string
+@, 3542Q, "string_byte_to_hexstring"
+Q, 1, bytetohexstringstr@stringaddr
+@, 3567Q, 3542Q
+B, 24, doubletostringstr@string
+@, 3575Q, "string_double_to_string"
+Q, 1, doubletostringstr@stringaddr
+@, 3599Q, 3575Q
+B, 25, bytenumtostringstr@string
+@, 3607Q, "string_bytenum_to_string"
+Q, 1, bytenumtostringstr@stringaddr
+@, 3632Q, 3607Q
+B, 23, stringtoarraystr@string
+@, 3640Q, "string_string_to_array"
+Q, 1, stringtoarraystr@stringaddr
+@, 3663Q, 3640Q
+B, 23, arraytostringstr@string
+@, 3671Q, "string_array_to_string"
+Q, 1, arraytostringstr@stringaddr
+@, 3694Q, 3671Q
+B, 12, stringleftstr@string
+@, 3702Q, "string_left"
+Q, 1, stringleftstr@stringaddr
+@, 3714Q, 3702Q
+B, 13, stringrightstr@string
+@, 3722Q, "string_right"
+Q, 1, stringrightstr@stringaddr
+@, 3735Q, 3722Q
+B, 11, stringmidstr@string
+@, 3743Q, "string_mid"
+Q, 1, stringmidstr@stringaddr
+@, 3754Q, 3743Q
+B, 17, stringtostringstr@string
+@, 3762Q, "string_to_string"
+Q, 1, stringtostringstr@stringaddr
+@, 3779Q, 3762Q
+B, 15, stringcomparestr@string
+@, 3787Q, "string_compare"
+Q, 1, stringcomparestr@stringaddr
+@, 3802Q, 3787Q
+B, 20, stringmemtostringstr@string
+@, 3810Q, "stringmem_to_string"
+Q, 1, stringmemtostringstr@stringaddr
+@, 3830Q, 3810Q
+B, 24, stringmemsearchstr@string
+@, 3838Q, "stringmem_search_string"
+Q, 1, stringmemsearchstr@stringaddr
+@, 3862Q, 3838Q
+B, 13, stringregexstr@string
+@, 3870Q, "string_regex"
+Q, 1, stringregexstr@stringaddr
+@, 3883Q, 3870Q
+B, 14, stringsearchstr@string
+@, 3891Q, "string_search"
+Q, 1, stringsearchstr@stringaddr
+@, 3905Q, 3891Q
+B, 18, string_array_sortstr@string
+@, 3913Q, "string_array_sort"
+Q, 1, string_array_sortstr@stringaddr
+@, 3931Q, 3913Q
+B, 20, string_array_searchstr@string
+@, 3939Q, "string_array_search"
+Q, 1, string_array_searchstr@stringaddr
+@, 3959Q, 3939Q
+B, 19, string_mid_to_bytestr@string
+@, 3967Q, "string_mid_to_byte"
+Q, 1, string_mid_to_bytestr@stringaddr
+@, 3986Q, 3967Q
+B, 22, bytenumbytetostringstr@string
+@, 3994Q, "string_byte_to_string"
+Q, 1, bytenumbytetostringstr@stringaddr
+@, 4016Q, 3994Q
+B, 8, get_envstr@string
+@, 4024Q, "get_env"
+Q, 1, get_envstr@stringaddr
+@, 4032Q, 4024Q
+B, 8, set_envstr@string
+@, 4040Q, "set_env"
+Q, 1, set_envstr@stringaddr
+@, 4048Q, 4040Q
+B, 18, stringparsejsonstr@string
+@, 4056Q, "string_parse_json"
+Q, 1, stringparsejsonstr@stringaddr
+@, 4074Q, 4056Q
+Q, 1, len@string
+@, 4082Q, 0
+Q, 1, copy@string
+@, 4090Q, 1
+Q, 1, cat@string
+@, 4098Q, 2
+Q, 1, int64tostring@string
+@, 4106Q, 3
+Q, 1, bytetohexstring@string
+@, 4114Q, 4
+Q, 1, doubletostring@string
+@, 4122Q, 5
+Q, 1, bytenumtostring@string
+@, 4130Q, 6
+Q, 1, stringtoarray@string
+@, 4138Q, 7
+Q, 1, arraytostring@string
+@, 4146Q, 8
+Q, 1, stringleft@string
+@, 4154Q, 9
+Q, 1, stringright@string
+@, 4162Q, 10
+Q, 1, stringmid@string
+@, 4170Q, 11
+Q, 1, stringtostring@string
+@, 4178Q, 12
+Q, 1, stringcompare@string
+@, 4186Q, 13
+Q, 1, stringmemtostring@string
+@, 4194Q, 14
+Q, 1, stringmemsearch@string
+@, 4202Q, 15
+Q, 1, stringregex@string
+@, 4210Q, 16
+Q, 1, stringsearch@string
+@, 4218Q, 17
+Q, 1, get_env@string
+@, 4226Q, 18
+Q, 1, set_env@string
+@, 4234Q, 19
+Q, 1, stringparsejson@string
+@, 4242Q, 20
+Q, 1, string_array_sort@string
+@, 4250Q, 21
+Q, 1, string_array_search@string
+@, 4258Q, 22
+Q, 1, string_mid_to_byte@string
+@, 4266Q, 23
+Q, 1, bytenumbytetostring@string
+@, 4274Q, 24
+Q, 1, mod@string
+@, 4282Q, 0
+.dend
+.code
+:main
+loada zero, 0, 0
+stpushi 0
+loada zero, 0, 1
+stpushi 1
+loada width, 0, 2
+stpushi 2
+loada height, 0, 3
+stpushi 3
+loada bit, 0, 4
+stpushi 4
+loada zero, 0, 1
+stpushi 1
+jsr :sdl_open_screen
+stpopi 5
+load ret, 0, 6
+pullqw 5, 6, 0
+stpopi 0
+loada one, 0, 1
+stpushi 1
+jsr :string_init
+loada fontnameaddr, 0, 1
+stpushi 1
+loada fontsize, 0, 2
+stpushi 2
+jsr :sdl_font_ttf
+loada gadgets, 0, 1
+stpushi 1
+jsr :init_gui
+loada zero, 0, 1
+stpushi 1
+loada zero, 0, 1
+stpushi 1
+loada width_b, 0, 2
+stpushi 2
+loada height_b, 0, 3
+stpushi 3
+load back_r, 0, 4
+pushb 4, 0, 5
+stpushb 5
+load back_g, 0, 6
+pushb 6, 0, 7
+stpushb 7
+load back_b, 0, 8
+pushb 8, 0, 9
+stpushb 9
+load alpha, 0, 10
+pushb 10, 0, 11
+stpushb 11
+jsr :sdl_rectangle_fill
+loada zero, 0, 1
+stpushi 1
+loada x, 0, 2
+stpushi 2
+loada y, 0, 3
+stpushi 3
+loada screenshotstraddr, 0, 4
+stpushi 4
+loada status, 0, 5
+stpushi 5
+jsr :set_gadget_button
+loada one, 0, 1
+stpushi 1
+loada x_quit, 0, 2
+stpushi 2
+loada y_quit, 0, 3
+stpushi 3
+loada quitstraddr, 0, 4
+stpushi 4
+loada status, 0, 5
+stpushi 5
+jsr :set_gadget_button
+loada two, 0, 1
+stpushi 1
+loada x_check, 0, 2
+stpushi 2
+loada y_check, 0, 3
+stpushi 3
+loada checkstraddr, 0, 4
+stpushi 4
+loada one, 0, 5
+stpushi 5
+loada status, 0, 6
+stpushi 6
+jsr :set_gadget_checkbox
+loada three, 0, 1
+stpushi 1
+loada x_string, 0, 2
+stpushi 2
+loada y_string, 0, 3
+stpushi 3
+loada stringstraddr, 0, 4
+stpushi 4
+loada valuestraddr, 0, 5
+stpushi 5
+loada visible_string, 0, 6
+stpushi 6
+loada text_lines, 0, 7
+stpushi 7
+loada status, 0, 8
+stpushi 8
+jsr :set_gadget_string_multiline
+loada x_cycle, 0, 1
+stpushi 1
+loada y_cycle, 0, 2
+stpushi 2
+loada text_cyclestraddr, 0, 3
+stpushi 3
+loada value_cycle, 0, 4
+stpushi 4
+loada status, 0, 5
+stpushi 5
+loada blue_cyclestraddr, 0, 6
+stpushi 6
+loada green_cyclestraddr, 0, 7
+stpushi 7
+loada red_cyclestraddr, 0, 8
+stpushi 8
+loada three, 0, 9
+stpushi 9
+loada four, 0, 10
+stpushi 10
+jsr :set_gadget_menu
+loada five, 0, 1
+stpushi 1
+loada x_prog, 0, 2
+stpushi 2
+loada y_prog, 0, 3
+stpushi 3
+loada text_progstraddr, 0, 4
+stpushi 4
+loada value_prog, 0, 5
+stpushi 5
+loada status, 0, 6
+stpushi 6
+jsr :set_gadget_progress
+loada six, 0, 1
+stpushi 1
+loada x_slider, 0, 2
+stpushi 2
+loada y_slider, 0, 3
+stpushi 3
+loada slider_straddr, 0, 4
+stpushi 4
+loada slider_value, 0, 5
+stpushi 5
+loada slider_min, 0, 6
+stpushi 6
+loada slider_max, 0, 7
+stpushi 7
+loada status, 0, 8
+stpushi 8
+jsr :set_gadget_slider
+loada seven, 0, 1
+stpushi 1
+loada x_slider_vert, 0, 2
+stpushi 2
+loada y_slider_vert, 0, 3
+stpushi 3
+loada slider_vert_width, 0, 4
+stpushi 4
+loada slider_vert_height, 0, 5
+stpushi 5
+loada slider_value, 0, 6
+stpushi 6
+loada slider_min, 0, 7
+stpushi 7
+loada slider_max, 0, 8
+stpushi 8
+loada status, 0, 9
+stpushi 9
+jsr :set_gadget_slider_vert
+loada slider_value, 0, 1
+stpushi 1
+jsr :draw_slider_value
+loada slider_value, 0, 1
+stpushi 1
+jsr :draw_slider_value_vert
+:loop
+jsr :sdl_update
+loada gadget_retstraddr, 0, 1
+stpushi 1
+jsr :gadget_event
+stpopi 2
+load ret, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load value, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load gadget_sel, 0, 5
+pullqw 4, 5, 0
+loada gadget_sel, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 2
+eqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_0
+jmp :endif_0
+:if_0
+intr0 255, 0, 0, 0
+:endif_0
+loada gadget_sel, 0, 1
+loada zero, 0, 2
+eqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_1
+jmp :endif_1
+:if_1
+stpushi 1
+loada picture_namestraddr, 0, 2
+stpushi 2
+jsr :sdl_save_picture
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+stpopi 1
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_2
+jmp :else_2
+:if_2
+loada picture_errstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+jmp :endif_2
+:else_2
+loada picture_okstraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+:endif_2
+:endif_1
+loada gadget_sel, 0, 1
+loada six, 0, 2
+eqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_3
+jmp :endif_3
+:if_3
+stpushi 1
+loada value, 0, 2
+stpushi 2
+jsr :draw_slider_value
+stpopi 1
+:endif_3
+loada gadget_sel, 0, 1
+loada three, 0, 2
+eqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_4
+jmp :endif_4
+:if_4
+stpushi 1
+loada three, 0, 2
+stpushi 2
+loada gadget_valuestraddr, 0, 3
+stpushi 3
+jsr :get_gadget_string_multiline
+stpopi 1
+loada gadget_valuestraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+:endif_4
+loada gadget_sel, 0, 1
+loada seven, 0, 2
+eqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_5
+jmp :endif_5
+:if_5
+stpushi 1
+loada value, 0, 2
+stpushi 2
+jsr :draw_slider_value_vert
+stpopi 1
+:endif_5
+intr0 7, 0, 0, 0
+jmp :loop
+rts
+:draw_slider_value
+loada zero, 0, 0
+stpopi 1
+load value@draw_slider_value, 0, 2
+pullqw 1, 2, 0
+stpushi 0
+stpushi 1
+loada value@draw_slider_value, 0, 1
+stpushi 1
+loada slider_valuestraddr, 0, 2
+stpushi 2
+loada slider_value_max, 0, 3
+stpushi 3
+jsr :string_int64tostring
+stpopi 1
+stpopi 0
+loada x_slider_box, 0, 1
+stpushi 1
+loada y_slider_box, 0, 2
+stpushi 2
+loada x2_slider_box, 0, 3
+stpushi 3
+loada y2_slider_box, 0, 4
+stpushi 4
+load back_r, 0, 5
+pushb 5, 0, 6
+stpushb 6
+load back_g, 0, 7
+pushb 7, 0, 8
+stpushb 8
+load back_b, 0, 9
+pushb 9, 0, 10
+stpushb 10
+load alpha, 0, 11
+pushb 11, 0, 12
+stpushb 12
+jsr :sdl_rectangle_fill
+loada x_slider_value, 0, 1
+stpushi 1
+loada y_slider_value, 0, 2
+stpushi 2
+load black, 0, 3
+pushb 3, 0, 4
+stpushb 4
+load black, 0, 3
+pushb 3, 0, 5
+stpushb 5
+load black, 0, 3
+pushb 3, 0, 6
+stpushb 6
+loada slider_valuestraddr, 0, 7
+stpushi 7
+jsr :sdl_text_ttf
+rts
+:draw_slider_value_vert
+loada zero, 0, 0
+stpopi 1
+load value@draw_slider_value_vert, 0, 2
+pullqw 1, 2, 0
+stpushi 0
+stpushi 1
+loada value@draw_slider_value_vert, 0, 1
+stpushi 1
+loada slider_valuestraddr, 0, 2
+stpushi 2
+loada slider_value_max, 0, 3
+stpushi 3
+jsr :string_int64tostring
+stpopi 1
+stpopi 0
+loada x_slider_vert_box, 0, 1
+stpushi 1
+loada y_slider_vert_box, 0, 2
+stpushi 2
+loada x2_slider_vert_box, 0, 3
+stpushi 3
+loada y2_slider_vert_box, 0, 4
+stpushi 4
+load back_r, 0, 5
+pushb 5, 0, 6
+stpushb 6
+load back_g, 0, 7
+pushb 7, 0, 8
+stpushb 8
+load back_b, 0, 9
+pushb 9, 0, 10
+stpushb 10
+load alpha, 0, 11
+pushb 11, 0, 12
+stpushb 12
+jsr :sdl_rectangle_fill
+loada x_slider_vert_value, 0, 1
+stpushi 1
+loada y_slider_vert_value, 0, 2
+stpushi 2
+load black, 0, 3
+pushb 3, 0, 4
+stpushb 4
+load black, 0, 3
+pushb 3, 0, 5
+stpushb 5
+load black, 0, 3
+pushb 3, 0, 6
+stpushb 6
+loada slider_valuestraddr, 0, 7
+stpushi 7
+jsr :sdl_text_ttf
+rts
+:sdl_open_screen
+loada zero, 0, 0
+stpopi 1
+load fullscreen@sdl, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load bit@sdl, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load height@sdl, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load width@sdl, 0, 5
+pullqw 4, 5, 0
+stpopi 5
+load mod@sdl, 0, 6
+pullqw 5, 6, 0
+loada modulestr@sdladdr, 0, 6
+intr0 0, 6, 5, 0
+loada open@sdl, 0, 7
+loada openstr@sdladdr, 0, 8
+intr0 2, 5, 7, 8
+loada quit@sdl, 0, 9
+loada quitstr@sdladdr, 0, 10
+intr0 2, 5, 9, 10
+loada pixel@sdl, 0, 11
+loada pixelstr@sdladdr, 0, 12
+intr0 2, 5, 11, 12
+loada line@sdl, 0, 13
+loada linestr@sdladdr, 0, 14
+intr0 2, 5, 13, 14
+loada rectangle@sdl, 0, 15
+loada rectanglestr@sdladdr, 0, 16
+intr0 2, 5, 15, 16
+loada rectangle_fill@sdl, 0, 17
+loada rectangle_fillstr@sdladdr, 0, 18
+intr0 2, 5, 17, 18
+loada circle@sdl, 0, 19
+loada circlestr@sdladdr, 0, 20
+intr0 2, 5, 19, 20
+loada circle_fill@sdl, 0, 21
+loada circle_fillstr@sdladdr, 0, 22
+intr0 2, 5, 21, 22
+loada ellipse@sdl, 0, 23
+loada ellipsestr@sdladdr, 0, 24
+intr0 2, 5, 23, 24
+loada ellipse_fill@sdl, 0, 25
+loada ellipse_fillstr@sdladdr, 0, 26
+intr0 2, 5, 25, 26
+loada pie@sdl, 0, 27
+loada piestr@sdladdr, 0, 28
+intr0 2, 5, 27, 28
+loada pie_fill@sdl, 0, 29
+loada pie_fillstr@sdladdr, 0, 30
+intr0 2, 5, 29, 30
+loada trigon@sdl, 0, 31
+loada trigonstr@sdladdr, 0, 32
+intr0 2, 5, 31, 32
+loada trigon_fill@sdl, 0, 33
+loada trigon_fillstr@sdladdr, 0, 34
+intr0 2, 5, 33, 34
+loada update@sdl, 0, 35
+loada updatestr@sdladdr, 0, 36
+intr0 2, 5, 35, 36
+loada font_ttf@sdl, 0, 37
+loada font_ttfstr@sdladdr, 0, 38
+intr0 2, 5, 37, 38
+loada text_ttf@sdl, 0, 39
+loada text_ttfstr@sdladdr, 0, 40
+intr0 2, 5, 39, 40
+loada get_pixelcolor@sdl, 0, 41
+loada get_pixelcolorstr@sdladdr, 0, 42
+intr0 2, 5, 41, 42
+loada init_gadgets@sdl, 0, 43
+loada init_gadgetsstr@sdladdr, 0, 44
+intr0 2, 5, 43, 44
+loada set_gadget_button@sdl, 0, 45
+loada set_gadget_buttonstr@sdladdr, 0, 46
+intr0 2, 5, 45, 46
+loada set_gadget_progress@sdl, 0, 47
+loada set_gadget_progressstr@sdladdr, 0, 48
+intr0 2, 5, 47, 48
+loada set_gadget_checkbox@sdl, 0, 49
+loada set_gadget_checkboxstr@sdladdr, 0, 50
+intr0 2, 5, 49, 50
+loada set_gadget_cycle@sdl, 0, 51
+loada set_gadget_cyclestr@sdladdr, 0, 52
+intr0 2, 5, 51, 52
+loada set_gadget_string@sdl, 0, 53
+loada set_gadget_stringstr@sdladdr, 0, 54
+intr0 2, 5, 53, 54
+loada set_gadget_box@sdl, 0, 55
+loada set_gadget_boxstr@sdladdr, 0, 56
+intr0 2, 5, 55, 56
+loada set_gadget_box_grid@sdl, 0, 57
+loada set_gadget_box_gridstr@sdladdr, 0, 58
+intr0 2, 5, 57, 58
+loada change_gadget_checkbox@sdl, 0, 59
+loada change_gadget_checkboxstr@sdladdr, 0, 60
+intr0 2, 5, 59, 60
+loada change_gadget_cycle@sdl, 0, 61
+loada change_gadget_cyclestr@sdladdr, 0, 62
+intr0 2, 5, 61, 62
+loada change_gadget_string@sdl, 0, 63
+loada change_gadget_stringstr@sdladdr, 0, 64
+intr0 2, 5, 63, 64
+loada change_gadget_box@sdl, 0, 65
+loada change_gadget_boxstr@sdladdr, 0, 66
+intr0 2, 5, 65, 66
+loada change_gadget_box_grid@sdl, 0, 67
+loada change_gadget_box_gridstr@sdladdr, 0, 68
+intr0 2, 5, 67, 68
+loada get_gadget_box_grid@sdl, 0, 69
+loada get_gadget_box_gridstr@sdladdr, 0, 70
+intr0 2, 5, 69, 70
+loada change_gadget_progress@sdl, 0, 71
+loada change_gadget_progressstr@sdladdr, 0, 72
+intr0 2, 5, 71, 72
+loada get_gadget_x2y2@sdl, 0, 73
+loada get_gadget_x2y2str@sdladdr, 0, 74
+intr0 2, 5, 73, 74
+loada gadget_event@sdl, 0, 75
+loada gadget_eventstr@sdladdr, 0, 76
+intr0 2, 5, 75, 76
+loada load_picture@sdl, 0, 77
+loada load_picturestr@sdladdr, 0, 78
+intr0 2, 5, 77, 78
+loada save_picture@sdl, 0, 79
+loada save_picturestr@sdladdr, 0, 80
+intr0 2, 5, 79, 80
+loada delay@sdl, 0, 81
+loada delaystr@sdladdr, 0, 82
+intr0 2, 5, 81, 82
+loada set_gadget_slider@sdl, 0, 83
+loada set_gadget_sliderstr@sdladdr, 0, 84
+intr0 2, 5, 83, 84
+loada set_gadget_slider_vert@sdl, 0, 85
+loada set_gadget_slider_vertstr@sdladdr, 0, 86
+intr0 2, 5, 85, 86
+loada change_gadget_slider@sdl, 0, 87
+loada change_gadget_sliderstr@sdladdr, 0, 88
+intr0 2, 5, 87, 88
+loada play_sound@sdl, 0, 89
+loada play_soundstr@sdladdr, 0, 90
+intr0 2, 5, 89, 90
+loada get_mouse_state@sdl, 0, 91
+loada get_mouse_statestr@sdladdr, 0, 92
+intr0 2, 5, 91, 92
+loada close_joystick@sdl, 0, 93
+loada close_joystickstr@sdladdr, 0, 94
+intr0 2, 5, 93, 94
+loada get_joystick_x_axis@sdl, 0, 95
+loada get_joystick_x_axisstr@sdladdr, 0, 96
+intr0 2, 5, 95, 96
+loada get_joystick_y_axis@sdl, 0, 97
+loada get_joystick_y_axisstr@sdladdr, 0, 98
+intr0 2, 5, 97, 98
+loada get_joystick_x2_axis@sdl, 0, 99
+loada get_joystick_x2_axisstr@sdladdr, 0, 100
+intr0 2, 5, 99, 100
+loada get_joystick_y2_axis@sdl, 0, 101
+loada get_joystick_y2_axisstr@sdladdr, 0, 102
+intr0 2, 5, 101, 102
+loada get_joystick_buttons@sdl, 0, 103
+loada get_joystick_buttonsstr@sdladdr, 0, 104
+intr0 2, 5, 103, 104
+loada get_joystick_button@sdl, 0, 105
+loada get_joystick_buttonstr@sdladdr, 0, 106
+intr0 2, 5, 105, 106
+loada get_joystick_info@sdl, 0, 107
+loada get_joystick_infostr@sdladdr, 0, 108
+intr0 2, 5, 107, 108
+loada openfull@sdl, 0, 109
+loada openfullstr@sdladdr, 0, 110
+intr0 2, 5, 109, 110
+loada toggle_mouse_pointer@sdl, 0, 111
+loada toggle_mouse_pointerstr@sdladdr, 0, 112
+intr0 2, 5, 111, 112
+loada set_gadget_string_passwd@sdl, 0, 113
+loada set_gadget_string_passwdstr@sdladdr, 0, 114
+intr0 2, 5, 113, 114
+loada set_gadget_string_multiline@sdl, 0, 115
+loada set_gadget_string_multilinestr@sdladdr, 0, 116
+intr0 2, 5, 115, 116
+loada change_gadget_string_multiline@sdl, 0, 117
+loada change_gadget_string_multilinestr@sdladdr, 0, 118
+intr0 2, 5, 117, 118
+loada get_gadget_string_multiline@sdl, 0, 119
+loada get_gadget_string_multilinestr@sdladdr, 0, 120
+intr0 2, 5, 119, 120
+loada get_key@sdl, 0, 121
+loada get_keystr@sdladdr, 0, 122
+intr0 2, 5, 121, 122
+loada free_all_gadgets@sdl, 0, 123
+loada free_all_gadgetsstr@sdladdr, 0, 124
+intr0 2, 5, 123, 124
+loada set_window_title@sdl, 0, 125
+loada set_window_titlestr@sdladdr, 0, 126
+intr0 2, 5, 125, 126
+loada set_gadget_menu@sdl, 0, 127
+loada set_gadget_menustr@sdladdr, 0, 128
+intr0 2, 5, 127, 128
+loada unset_gadget@sdl, 0, 129
+loada unset_gadgetstr@sdladdr, 0, 130
+intr0 2, 5, 129, 130
+stpushi 4
+stpushi 3
+stpushi 2
+loada one@sdl, 0, 131
+eqi 1, 131, 132
+load f@sdl, 0, 133
+pullqw 132, 133, 0
+loada f@sdl, 0, 1
+jmpi 1, :if_6
+jmp :else_6
+:if_6
+loada mod@sdl, 0, 2
+loada openfull@sdl, 0, 3
+intr0 3, 2, 3, 0
+jmp :endif_6
+:else_6
+loada mod@sdl, 0, 1
+loada open@sdl, 0, 2
+intr0 3, 1, 2, 0
+:endif_6
+rts
+:sdl_font_ttf
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada font_ttf@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_text_ttf
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada text_ttf@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_pixel
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada pixel@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_line
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada line@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_rectangle
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada rectangle@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_rectangle_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada rectangle_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_circle
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada circle@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_circle_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada circle_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_ellipse
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada ellipse@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_ellipse_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada ellipse_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_pie
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada pie@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_pie_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada pie_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_trigon
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada trigon@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_trigon_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada trigon_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_pixelcolor
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_pixelcolor@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_update
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada update@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_quit
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada quit@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_toggle_mouse_pointer
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada toggle_mouse_pointer@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:init_gui
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada init_gadgets@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_button
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_button@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_progress
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_progress@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_checkbox
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_checkbox@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_cycle
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_cycle@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_string
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_string@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_box
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_box@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_box_grid
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_box_grid@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_slider
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_slider@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_slider_vert
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_slider_vert@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_menu
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_menu@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_checkbox
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_checkbox@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_cycle
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_cycle@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_string
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_string@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_box
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_box@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_box_grid
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_box_grid@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_gadget_box_grid
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_gadget_box_grid@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_progress
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_progress@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_slider
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_slider@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_gadget_x2y2
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_gadget_x2y2@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:gadget_event
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada gadget_event@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_string_passwd
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_string_passwd@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_string_multiline
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_string_multiline@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_string_multiline
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_string_multiline@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_gadget_string_multiline
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_gadget_string_multiline@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_load_picture
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada load_picture@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_save_picture
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada save_picture@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_delay
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada delay@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_play_sound
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada play_sound@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_mouse_state
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_mouse_state@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_close_joystick
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada close_joystick@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_joystick_x_axis
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_joystick_x_axis@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_joystick_y_axis
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_joystick_y_axis@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_joystick_x2_axis
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_joystick_x2_axis@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_joystick_y2_axis
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_joystick_y2_axis@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_joystick_buttons
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_joystick_buttons@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_joystick_button
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_joystick_button@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_joystick_info
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_joystick_info@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_key
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_key@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_free_all_gadgets
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada free_all_gadgets@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_set_window_title
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_window_title@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_unset_gadget
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada unset_gadget@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_init
+loada zero, 0, 0
+stpopi 1
+load mod@string, 0, 2
+pullqw 1, 2, 0
+loada modulestr@stringaddr, 0, 2
+intr0 0, 2, 1, 0
+loada len@string, 0, 3
+loada lenstr@stringaddr, 0, 4
+intr0 2, 1, 3, 4
+loada copy@string, 0, 5
+loada copystr@stringaddr, 0, 6
+intr0 2, 1, 5, 6
+loada cat@string, 0, 7
+loada catstr@stringaddr, 0, 8
+intr0 2, 1, 7, 8
+loada int64tostring@string, 0, 9
+loada int64tostringstr@stringaddr, 0, 10
+intr0 2, 1, 9, 10
+loada bytetohexstring@string, 0, 11
+loada bytetohexstringstr@stringaddr, 0, 12
+intr0 2, 1, 11, 12
+loada doubletostring@string, 0, 13
+loada doubletostringstr@stringaddr, 0, 14
+intr0 2, 1, 13, 14
+loada bytenumtostring@string, 0, 15
+loada bytenumtostringstr@stringaddr, 0, 16
+intr0 2, 1, 15, 16
+loada stringtoarray@string, 0, 17
+loada stringtoarraystr@stringaddr, 0, 18
+intr0 2, 1, 17, 18
+loada arraytostring@string, 0, 19
+loada arraytostringstr@stringaddr, 0, 20
+intr0 2, 1, 19, 20
+loada stringleft@string, 0, 21
+loada stringleftstr@stringaddr, 0, 22
+intr0 2, 1, 21, 22
+loada stringright@string, 0, 23
+loada stringrightstr@stringaddr, 0, 24
+intr0 2, 1, 23, 24
+loada stringmid@string, 0, 25
+loada stringmidstr@stringaddr, 0, 26
+intr0 2, 1, 25, 26
+loada stringtostring@string, 0, 27
+loada stringtostringstr@stringaddr, 0, 28
+intr0 2, 1, 27, 28
+loada stringcompare@string, 0, 29
+loada stringcomparestr@stringaddr, 0, 30
+intr0 2, 1, 29, 30
+loada stringmemtostring@string, 0, 31
+loada stringmemtostringstr@stringaddr, 0, 32
+intr0 2, 1, 31, 32
+loada stringmemsearch@string, 0, 33
+loada stringmemsearchstr@stringaddr, 0, 34
+intr0 2, 1, 33, 34
+loada stringregex@string, 0, 35
+loada stringregexstr@stringaddr, 0, 36
+intr0 2, 1, 35, 36
+loada stringsearch@string, 0, 37
+loada stringsearchstr@stringaddr, 0, 38
+intr0 2, 1, 37, 38
+loada get_env@string, 0, 39
+loada get_envstr@stringaddr, 0, 40
+intr0 2, 1, 39, 40
+loada set_env@string, 0, 41
+loada set_envstr@stringaddr, 0, 42
+intr0 2, 1, 41, 42
+loada stringparsejson@string, 0, 43
+loada stringparsejsonstr@stringaddr, 0, 44
+intr0 2, 1, 43, 44
+loada string_array_sort@string, 0, 45
+loada string_array_sortstr@stringaddr, 0, 46
+intr0 2, 1, 45, 46
+loada string_array_search@string, 0, 47
+loada string_array_searchstr@stringaddr, 0, 48
+intr0 2, 1, 47, 48
+loada string_mid_to_byte@string, 0, 49
+loada string_mid_to_bytestr@stringaddr, 0, 50
+intr0 2, 1, 49, 50
+loada bytenumbytetostring@string, 0, 51
+loada bytenumbytetostringstr@stringaddr, 0, 52
+intr0 2, 1, 51, 52
+rts
+:string_len
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada len@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_copy
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada copy@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_cat
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada cat@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_int64tostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada int64tostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_bytetohexstring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada bytetohexstring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_doubletostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada doubletostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_bytenumtostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada bytenumtostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_to_array
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringtoarray@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:array_to_string
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada arraytostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_left
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringleft@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_right
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringright@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_mid
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringmid@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_mid_to_byte
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada string_mid_to_byte@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_to_string
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringtostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_compare
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringcompare@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_memtostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringmemtostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_memsearch
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringmemsearch@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_regex
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringregex@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_search
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringsearch@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_env
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada get_env@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_env
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada set_env@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_parse_json
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringparsejson@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_array_sort
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada string_array_sort@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_array_search
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada string_array_search@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_bytetostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada bytenumbytetostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+.cend

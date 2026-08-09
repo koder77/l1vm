@@ -1,0 +1,235 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, one
+@, 8Q, 1
+Q, 1, btmod
+@, 16Q, 0
+Q, 1, devices_size
+@, 24Q, 2560
+Q, 1, devices_len
+@, 32Q, 256
+B, 2560, devicesstr
+@, 40Q, 
+Q, 1, devicesstraddr
+@, 2600Q, 40Q
+Q, 1, ret
+@, 2608Q, 0
+B, 17, modulestr@bt
+@, 2616Q, "libl1vmbluetooth"
+Q, 1, modulestr@btaddr
+@, 2633Q, 2616Q
+B, 16, list_devicesstr@bt
+@, 2641Q, "bt_list_devices"
+Q, 1, list_devicesstr@btaddr
+@, 2657Q, 2641Q
+B, 16, init_bt_socketsstr@bt
+@, 2665Q, "init_bt_sockets"
+Q, 1, init_bt_socketsstr@btaddr
+@, 2681Q, 2665Q
+B, 22, open_device_serverstr@bt
+@, 2689Q, "bt_open_device_server"
+Q, 1, open_device_serverstr@btaddr
+@, 2711Q, 2689Q
+B, 22, open_accept_serverstr@bt
+@, 2719Q, "bt_open_accept_server"
+Q, 1, open_accept_serverstr@btaddr
+@, 2741Q, 2719Q
+B, 22, open_device_clientstr@bt
+@, 2749Q, "bt_open_device_client"
+Q, 1, open_device_clientstr@btaddr
+@, 2771Q, 2749Q
+B, 23, close_device_serverstr@bt
+@, 2779Q, "bt_close_device_server"
+Q, 1, close_device_serverstr@btaddr
+@, 2802Q, 2779Q
+B, 23, close_accept_serverstr@bt
+@, 2810Q, "bt_close_accept_server"
+Q, 1, close_accept_serverstr@btaddr
+@, 2833Q, 2810Q
+B, 23, close_device_clientstr@bt
+@, 2841Q, "bt_close_device_client"
+Q, 1, close_device_clientstr@btaddr
+@, 2864Q, 2841Q
+B, 15, read_stringstr@bt
+@, 2872Q, "bt_read_string"
+Q, 1, read_stringstr@btaddr
+@, 2887Q, 2872Q
+B, 16, write_stringstr@bt
+@, 2895Q, "bt_write_string"
+Q, 1, write_stringstr@btaddr
+@, 2911Q, 2895Q
+B, 13, read_bytestr@bt
+@, 2919Q, "bt_read_byte"
+Q, 1, read_bytestr@btaddr
+@, 2932Q, 2919Q
+B, 14, write_bytestr@bt
+@, 2940Q, "bt_write_byte"
+Q, 1, write_bytestr@btaddr
+@, 2954Q, 2940Q
+Q, 1, list_devices@bt
+@, 2962Q, 0
+Q, 1, init_bt_sockets@bt
+@, 2970Q, 1
+Q, 1, open_device_server@bt
+@, 2978Q, 2
+Q, 1, open_accept_server@bt
+@, 2986Q, 3
+Q, 1, open_device_client@bt
+@, 2994Q, 4
+Q, 1, close_device_server@bt
+@, 3002Q, 5
+Q, 1, close_accept_server@bt
+@, 3010Q, 6
+Q, 1, close_device_client@bt
+@, 3018Q, 7
+Q, 1, read_string@bt
+@, 3026Q, 8
+Q, 1, write_string@bt
+@, 3034Q, 9
+Q, 1, read_byte@bt
+@, 3042Q, 10
+Q, 1, write_byte@bt
+@, 3050Q, 11
+Q, 1, mod@bt
+@, 3058Q, 0
+.dend
+.code
+:main
+loada zero, 0, 0
+stpushi 0
+loada btmod, 0, 1
+stpushi 1
+jsr :bluetooth_init
+stpopi 0
+loada devicesstraddr, 0, 1
+stpushi 1
+loada devices_len, 0, 2
+stpushi 2
+loada devices_size, 0, 3
+stpushi 3
+jsr :bt_list_devices
+stpopi 4
+load ret, 0, 5
+pullqw 4, 5, 0
+loada ret, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+loada devicesstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada zero, 0, 3
+intr0 255, 3, 0, 0
+rts
+:bluetooth_init
+loada zero, 0, 0
+stpopi 1
+load mod@bt, 0, 2
+pullqw 1, 2, 0
+loada modulestr@btaddr, 0, 2
+intr0 0, 2, 1, 0
+loada list_devices@bt, 0, 3
+loada list_devicesstr@btaddr, 0, 4
+intr0 2, 1, 3, 4
+loada init_bt_sockets@bt, 0, 5
+loada init_bt_socketsstr@btaddr, 0, 6
+intr0 2, 1, 5, 6
+loada open_device_server@bt, 0, 7
+loada open_device_serverstr@btaddr, 0, 8
+intr0 2, 1, 7, 8
+loada open_accept_server@bt, 0, 9
+loada open_accept_serverstr@btaddr, 0, 10
+intr0 2, 1, 9, 10
+loada open_device_client@bt, 0, 11
+loada open_device_clientstr@btaddr, 0, 12
+intr0 2, 1, 11, 12
+loada close_device_server@bt, 0, 13
+loada close_device_serverstr@btaddr, 0, 14
+intr0 2, 1, 13, 14
+loada close_accept_server@bt, 0, 15
+loada close_accept_serverstr@btaddr, 0, 16
+intr0 2, 1, 15, 16
+loada close_device_client@bt, 0, 17
+loada close_device_clientstr@btaddr, 0, 18
+intr0 2, 1, 17, 18
+loada read_string@bt, 0, 19
+loada read_stringstr@btaddr, 0, 20
+intr0 2, 1, 19, 20
+loada write_string@bt, 0, 21
+loada write_stringstr@btaddr, 0, 22
+intr0 2, 1, 21, 22
+loada read_byte@bt, 0, 23
+loada read_bytestr@btaddr, 0, 24
+intr0 2, 1, 23, 24
+loada write_byte@bt, 0, 25
+loada write_bytestr@btaddr, 0, 26
+intr0 2, 1, 25, 26
+intr0 3, 1, 5, 0
+rts
+:bt_list_devices
+loada zero, 0, 0
+loada mod@bt, 0, 1
+loada list_devices@bt, 0, 2
+intr0 3, 1, 2, 0
+rts
+:bt_open_device_server
+loada zero, 0, 0
+loada mod@bt, 0, 1
+loada open_device_server@bt, 0, 2
+intr0 3, 1, 2, 0
+rts
+:bt_open_accept_server
+loada zero, 0, 0
+loada mod@bt, 0, 1
+loada open_accept_server@bt, 0, 2
+intr0 3, 1, 2, 0
+rts
+:bt_open_device_client
+loada zero, 0, 0
+loada mod@bt, 0, 1
+loada open_device_client@bt, 0, 2
+intr0 3, 1, 2, 0
+rts
+:bt_close_device_server
+loada zero, 0, 0
+loada mod@bt, 0, 1
+loada close_device_server@bt, 0, 2
+intr0 3, 1, 2, 0
+rts
+:bt_close_accept_server
+loada zero, 0, 0
+loada mod@bt, 0, 1
+loada close_accept_server@bt, 0, 2
+intr0 3, 1, 2, 0
+rts
+:bt_close_device_client
+loada zero, 0, 0
+loada mod@bt, 0, 1
+loada open_device_client@bt, 0, 2
+intr0 3, 1, 2, 0
+rts
+:bt_read_string
+loada zero, 0, 0
+loada mod@bt, 0, 1
+loada read_string@bt, 0, 2
+intr0 3, 1, 2, 0
+rts
+:bt_write_string
+loada zero, 0, 0
+loada mod@bt, 0, 1
+loada write_string@bt, 0, 2
+intr0 3, 1, 2, 0
+rts
+:bt_read_byte
+loada zero, 0, 0
+loada mod@bt, 0, 1
+loada read_byte@bt, 0, 2
+intr0 3, 1, 2, 0
+rts
+:bt_write_byte
+loada zero, 0, 0
+loada mod@bt, 0, 1
+loada write_byte@bt, 0, 2
+intr0 3, 1, 2, 0
+rts
+.cend

@@ -1,0 +1,18 @@
+// messages-mod-func.l1h
+
+#func i-> (iID, iMSG) :(iID iMSG :msg_set_int !)
+#func d-> (iID, dMSG) :(iID dMSG :msg_set_double !)
+#func s-> (iID, sMSG) :(iID sMSG :msg_set_string !)
+
+#func ->i (iID) :(iID :msg_get_int !)
+#func ->d (iID) :(iID :msg_get_double !)
+#func ->s (iID, sSTR) :(iID sSTR :msg_get_string !)
+
+#func msg? (iID) :(iID :msg_search_id !)
+#func msgx (iID) :(iID :msg_delete !)
+#func msgtype? (iID) :(iID :msg_get_type !)
+
+// variable types
+(set const-int64 1 msg_string 1)
+(set const-int64 1 msg_int64 2)
+(set const-int64 1 msg_double 3)

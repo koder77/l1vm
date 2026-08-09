@@ -1,0 +1,28 @@
+// bluetooth library demo
+//
+//
+#include <intr.l1h>
+
+(main func)
+    (set const-int64 1 zero 0)
+    (set const-int64 1 one 1)
+    (set const-int64 1 btmod 0)
+    (set const-int64 1 devices_size 2560)
+    (set const-int64 1 devices_len 256)
+    (set string 2560 devicesstr)
+    (set int64 1 ret 0)
+
+    (btmod :bluetooth_init !)
+
+    (devicesstr devices_len devices_size :bt_list_devices !)
+    (ret stpopi)
+
+    print_i (ret)
+    print_n
+    print_s (devicesstr)
+    print_n
+
+    exit (zero)
+(funcend)
+
+#include <bluetooth.l1h>

@@ -1,0 +1,15 @@
+// vartypes-test.l1com
+//
+#include <intr.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 x 23)
+	(set int64 1 y 42)
+    (set int32 1 a 0)
+    {a = (x * y)}
+    ((x y *) a =)
+    (cast y a =)
+    print_i (a)
+    print_n
+    exit (zero)
+(funcend)

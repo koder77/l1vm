@@ -7480,6 +7480,44 @@ S2 check_file_ending (U1 *name)
 	return (0);
 }
 
+S2 check_comment (U1 *line)
+{
+	S4 slen, pos, i, j;
+
+	slen = strlen_safe ((const char *) line, MAXLINELEN);
+	if (slen == 0)
+	{
+		// lenght zero is not a comment!
+		return (0);
+	}
+
+	pos = searchstr (line, (U1 *) REM_SB, 0, 0, TRUE);
+    if (pos != -1)
+	{
+		// check if comment is after a quote
+
+		for (i = pos; i >= 0; i--)
+		{
+			if (line[i] == '"')
+			{
+				for (j = pos; j < slen - 1; j++)
+				{
+					if (line[j] == '"')
+					{
+						// comment // inside quotes: it is a string
+						return (0);
+					}
+				}
+			}
+		}
+		return (1);  // found real comment
+	}
+	else
+	{
+		return (0);
+	}
+}
+
 S2 parse (U1 *name)
 {
     FILE *fptr = NULL;
@@ -7562,8 +7600,8 @@ S2 parse (U1 *name)
 				}
 			}
 
-            pos = searchstr (rbuf, (U1 *) REM_SB, 0, 0, TRUE);
-            if (pos == -1)
+			pos = check_comment (rbuf);
+            if (pos == 0)
             {
 				code_lines++;
 

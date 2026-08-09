@@ -1,0 +1,100 @@
+// array-remove.l1h
+// remove an element from a array and store the rest in a new array
+
+(array_int64_remove func)
+    #var ~ array_int64_remove
+
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+
+	(set int64 1 Parraya~ 0)
+	(set int64 1 Parrayb~ 0)
+
+    (set int64 1 arraya_size~ 0)
+	(set int64 1 arrayb_size~ 0)
+	(set int64 1 index~ 0)
+	(set int64 1 bindex~ 0)
+    (set const-int64 1 offset~ 8)
+    (set int64 1 f~ 0)
+    (set int64 1 var~ 0)
+    (set int64 1 remove_ind~ 0)
+    (set int64 1 ind~ 0)
+
+    (remove_ind~ stpop)
+    (Parrayb~ stpop)
+    (Parraya~ stpop)
+
+    (zero~ index~ :=)
+    (zero~ bindex~ :=)
+    (zero~ ind~ :=)
+
+    // remove element, and copy the rest to new array
+    (Parraya~ arraya_size~ :get_size !)
+    (arraya_size~ :pull_int64_var !)
+
+    (:copy_a_array_int64_remove)
+        (((ind~ remove_ind~ !=) f~ :=) f~ if)
+            (Parraya~ [ index~ ] var~ :=)
+            (var~ :pull_int64_var !)
+
+            (var~ Parrayb~ [ bindex~ ] :=)
+        (endif)
+
+        (index~ + offset~ index~ :=)
+        (bindex~ + offset~ bindex~ :=)
+        (ind~ + one~ ind~ :=)
+
+        (index~ < arraya_size~ f~ :=)
+        (f~ if)
+            (:copy_a_array_int64_remove jmp)
+        (endif)
+(funcend)
+
+(array_double_remove func)
+    #var ~ array_double_remove
+
+    (set const-int64 1 zero~ 0)
+    (set const-int64 1 one~ 1)
+
+	(set int64 1 Parraya~ 0)
+	(set int64 1 Parrayb~ 0)
+
+    (set int64 1 arraya_size~ 0)
+	(set int64 1 arrayb_size~ 0)
+	(set int64 1 index~ 0)
+	(set int64 1 bindex~ 0)
+    (set const-int64 1 offset~ 8)
+    (set int64 1 f~ 0)
+    (set double 1 var~ 0.0)
+    (set int64 1 remove_ind~ 0)
+    (set int64 1 ind~ 0)
+
+    (remove_ind~ stpop)
+    (Parrayb~ stpop)
+    (Parraya~ stpop)
+
+    (zero~ index~ :=)
+    (zero~ bindex~ :=)
+    (zero~ ind~ :=)
+
+    // remove element, and copy the rest to new array
+    (Parraya~ arraya_size~ :get_size !)
+    (arraya_size~ :pull_int64_var !)
+
+    (:copy_a_array_double_remove)
+        (((ind~ remove_ind~ !=) f~ :=) f~ if)
+            (Parraya~ [ index~ ] var~ :=)
+            (var~ :pull_double_var !)
+
+            (var~ Parrayb~ [ bindex~ ] :=)
+        (endif)
+
+        (index~ + offset~ index~ :=)
+        (bindex~ + offset~ bindex~ :=)
+        (ind~ + one~ ind~ :=)
+
+        (index~ < arraya_size~ f~ :=)
+        (f~ if)
+            (:copy_a_array_double_remove jmp)
+        (endif)
+(funcend)

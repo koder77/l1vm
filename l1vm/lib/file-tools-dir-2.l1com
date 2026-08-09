@@ -1,0 +1,70 @@
+// file-tools-dir.l1com
+// file library module
+// test program
+//
+//
+#include <intr.l1h>
+(main func)
+    #include <file-def.l1h>
+    (set int64 1 zero 0)
+	(set int64 1 one 1)
+    (set string s directorystr "test")
+    (set string s filesstr " files: ")
+    (set string s error_files_overflowstr "ERROR: file max overflow!")
+    (set int64 1 files 0)
+    (set int64 1 ret 0)
+
+    (set int64 1 string_len 256)
+    (set int64 1 filesarraylen 2560)
+    (set string 256 file_entrystr)
+    (set string 2560 filesarraystr)
+    (set int64 1 files_max 10)
+    (set int64 1 files_ind_max 9)
+    (set int64 1 files_read_start 0)
+    (set int64 1 files_read_end 0)
+    (set int64 1 files_read_loops 0)
+    (set int64 1 files_read_rem 0)
+
+    (set int64 1 f 0)
+    (set int64 1 i 0)
+    (set int64 1 index 0)
+
+    (zero :file_tools_init !)
+    (one :string_init !)
+
+    // get number of files
+    (directorystr :file_tools_dir_entries !)
+    (files stpop)
+
+    print_s (directorystr)
+    print_s (filesstr)
+    print_i (files)
+    print_n
+
+    (((files zero ==) f =) f if)
+         exit (zero)
+    (endif)
+
+    // calculate read_loops
+    ((files files_max /) files_read_loops =)
+    ((files_read_loops files_max *) files_read_rem =)
+    ((files files_read_rem -) files_read_rem =)
+
+    // zero = file names array start index, files_ind_max = max index number of our filesarraystr array
+    (directorystr filesarraystr string_len filesarraylen zero files_ind_max :file_tools_dir_files !)
+    (files stpop)
+
+    // read string array
+    (for-loop)
+    (((i files <) f =) f for)
+         (filesarraystr file_entrystr index string_len filesarraylen :array_to_string !)
+         print_s (file_entrystr)
+         print_n
+         ((index one +) index =)
+         ((i one +) i =)
+    (next)
+    exit (zero)
+(funcend)
+
+#include <file-tools-lib.l1h>
+#include <string.l1h>

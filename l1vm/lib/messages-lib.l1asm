@@ -1,0 +1,939 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, one
+@, 8Q, 1
+Q, 1, memalloc
+@, 16Q, 1
+Q, 1, ret
+@, 24Q, 0
+Q, 1, memaddr
+@, 32Q, 0
+Q, 1, message
+@, 40Q, 2021
+Q, 1, message_read
+@, 48Q, 0
+B, 24, meminitstr
+@, 56Q, "ERROR can't init memory"
+Q, 1, meminitstraddr
+@, 80Q, 56Q
+B, 29, memerrstr
+@, 88Q, "ERROR can't allocate memory!"
+Q, 1, memerrstraddr
+@, 117Q, 88Q
+B, 13, messagestr
+@, 125Q, "got message!"
+Q, 1, messagestraddr
+@, 138Q, 125Q
+Q, 1, f
+@, 146Q, 0
+Q, 1, lock
+@, 154Q, 0
+B, 11, modulestr@mem
+@, 162Q, "libl1vmmem"
+Q, 1, modulestr@memaddr
+@, 173Q, 162Q
+B, 9, initstr@mem
+@, 181Q, "init_mem"
+Q, 1, initstr@memaddr
+@, 190Q, 181Q
+B, 11, allocbytestr@mem
+@, 198Q, "alloc_byte"
+Q, 1, allocbytestr@memaddr
+@, 209Q, 198Q
+B, 12, allocint16str@mem
+@, 217Q, "alloc_int16"
+Q, 1, allocint16str@memaddr
+@, 229Q, 217Q
+B, 12, allocint32str@mem
+@, 237Q, "alloc_int32"
+Q, 1, allocint32str@memaddr
+@, 249Q, 237Q
+B, 12, allocint64str@mem
+@, 257Q, "alloc_int64"
+Q, 1, allocint64str@memaddr
+@, 269Q, 257Q
+B, 13, allocdoublestr@mem
+@, 277Q, "alloc_double"
+Q, 1, allocdoublestr@memaddr
+@, 290Q, 277Q
+B, 12, deallocstr@mem
+@, 298Q, "dealloc_mem"
+Q, 1, deallocstr@memaddr
+@, 310Q, 298Q
+B, 13, int_to_arraystr@mem
+@, 318Q, "int_to_array"
+Q, 1, int_to_arraystr@memaddr
+@, 331Q, 318Q
+B, 13, array_to_instr@mod
+@, 339Q, "array_to_int"
+Q, 1, array_to_instr@modaddr
+@, 352Q, 339Q
+B, 16, double_to_arraystr@mem
+@, 360Q, "double_to_array"
+Q, 1, double_to_arraystr@memaddr
+@, 376Q, 360Q
+B, 16, array_to_doublestr@mem
+@, 384Q, "array_to_double"
+Q, 1, array_to_doublestr@memaddr
+@, 400Q, 384Q
+B, 9, free@memstr
+@, 408Q, "free_mem"
+Q, 1, free@memstraddr
+@, 417Q, 408Q
+B, 16, stringtoarraystr@mem
+@, 425Q, "string_to_array"
+Q, 1, stringtoarraystr@memaddr
+@, 441Q, 425Q
+B, 16, arraytostringstr@mem
+@, 449Q, "array_to_string"
+Q, 1, arraytostringstr@memaddr
+@, 465Q, 449Q
+B, 16, allocbytevectstr@mem
+@, 473Q, "alloc_byte_vect"
+Q, 1, allocbytevectstr@memaddr
+@, 489Q, 473Q
+B, 17, allocint16vectstr@mem
+@, 497Q, "alloc_int16_vect"
+Q, 1, allocint16vectstr@memaddr
+@, 514Q, 497Q
+B, 17, allocint32vectstr@mem
+@, 522Q, "alloc_int32_vect"
+Q, 1, allocint32vectstr@memaddr
+@, 539Q, 522Q
+B, 17, allocint64vectstr@mem
+@, 547Q, "alloc_int64_vect"
+Q, 1, allocint64vectstr@memaddr
+@, 564Q, 547Q
+B, 18, allocdoublevectstr@mem
+@, 572Q, "alloc_double_vect"
+Q, 1, allocdoublevectstr@memaddr
+@, 590Q, 572Q
+B, 17, deallocvectstr@mem
+@, 598Q, "dealloc_mem_vect"
+Q, 1, deallocvectstr@memaddr
+@, 615Q, 598Q
+B, 12, int_to_vectstr@mem
+@, 623Q, "int_to_vect"
+Q, 1, int_to_vectstr@memaddr
+@, 635Q, 623Q
+B, 15, double_to_vectstr@mem
+@, 643Q, "double_to_vect"
+Q, 1, double_to_vectstr@memaddr
+@, 658Q, 643Q
+B, 12, vect_to_intstr@mem
+@, 666Q, "vect_to_int"
+Q, 1, vect_to_intstr@memaddr
+@, 678Q, 666Q
+B, 15, vect_to_doublestr@mem
+@, 686Q, "vect_to_double"
+Q, 1, vect_to_doublestr@memaddr
+@, 701Q, 686Q
+B, 11, vect_erasestr@mem
+@, 709Q, "vect_erase"
+Q, 1, vect_erasestr@memaddr
+@, 720Q, 709Q
+B, 19, insert_int_to_vectstr@mem
+@, 728Q, "insert_int_to_vect"
+Q, 1, insert_int_to_vectstr@memaddr
+@, 747Q, 728Q
+B, 22, insert_double_to_vectstr@mem
+@, 755Q, "insert_double_to_vect"
+Q, 1, insert_double_to_vectstr@memaddr
+@, 777Q, 755Q
+B, 14, get_vect_sizestr@mem
+@, 785Q, "get_vect_size"
+Q, 1, get_vect_sizestr@memaddr
+@, 799Q, 785Q
+Q, 1, init@mem
+@, 807Q, 0
+Q, 1, allocbyte@mem
+@, 815Q, 1
+Q, 1, allocint16@mem
+@, 823Q, 2
+Q, 1, allocint32@mem
+@, 831Q, 3
+Q, 1, allocint64@mem
+@, 839Q, 4
+Q, 1, allocdouble@mem
+@, 847Q, 5
+Q, 1, dealloc@mem
+@, 855Q, 6
+Q, 1, int_to_array@mem
+@, 863Q, 7
+Q, 1, array_to_int@mem
+@, 871Q, 8
+Q, 1, double_to_array@mem
+@, 879Q, 9
+Q, 1, array_to_double@mem
+@, 887Q, 10
+Q, 1, stringtoarray@mem
+@, 895Q, 11
+Q, 1, arraytostring@mem
+@, 903Q, 12
+Q, 1, free@mem
+@, 911Q, 13
+Q, 1, allocbytevect@mem
+@, 919Q, 14
+Q, 1, allocint16vect@mem
+@, 927Q, 15
+Q, 1, allocint32vect@mem
+@, 935Q, 16
+Q, 1, allocint64vect@mem
+@, 943Q, 17
+Q, 1, allocdoublevect@mem
+@, 951Q, 18
+Q, 1, deallocvect@mem
+@, 959Q, 19
+Q, 1, int_to_vect@mem
+@, 967Q, 20
+Q, 1, double_to_vect@mem
+@, 975Q, 21
+Q, 1, vect_to_int@mem
+@, 983Q, 22
+Q, 1, vect_to_double@mem
+@, 991Q, 23
+Q, 1, vect_erase@mem
+@, 999Q, 24
+Q, 1, insert_int_to_vect@mem
+@, 1007Q, 25
+Q, 1, insert_double_to_vect@mem
+@, 1015Q, 26
+Q, 1, get_vect_size@mem
+@, 1023Q, 27
+Q, 1, mod@mem
+@, 1031Q, 0
+Q, 1, maxind@mem
+@, 1039Q, 0
+Q, 1, zero@msg
+@, 1047Q, 0
+Q, 1, one@msg
+@, 1055Q, 1
+Q, 1, err@msg
+@, 1063Q, -1
+Q, 1, msgs_addr@msg
+@, 1071Q, 
+B, 40, alloc_errorstr
+@, 1079Q, "ERROR: msg_init: can't allocate memory!"
+Q, 1, alloc_errorstraddr
+@, 1119Q, 1079Q
+Q, 1, ret@msg
+@, 1127Q, 0
+Q, 1, f@msg
+@, 1135Q, 0
+Q, 1, zero@msg_put_message
+@, 1143Q, 0
+Q, 1, one@msg_put_message
+@, 1151Q, 1
+Q, 1, msgs_addr@msg_put_message
+@, 1159Q, 
+Q, 1, msg_send@msg_put_message
+@, 1167Q, 0
+Q, 1, lock@msg_put_message
+@, 1175Q, 0
+Q, 1, zero@msg_poll_message
+@, 1183Q, 0
+Q, 1, one@msg_poll_message
+@, 1191Q, 1
+Q, 1, ind@msg_poll_message
+@, 1199Q, 
+Q, 1, f@msg_poll_message
+@, 1207Q, 0
+Q, 1, msg_addr@msg_poll_message
+@, 1215Q, 
+Q, 1, msg_search@msg_poll_message
+@, 1223Q, 0
+Q, 1, msg@msg_poll_message
+@, 1231Q, 0
+Q, 1, ret@msg_poll_message
+@, 1239Q, 1
+Q, 1, msg_max@msg_poll_message
+@, 1247Q, 0
+Q, 1, lock@msg_poll_message
+@, 1255Q, 0
+Q, 1, zero@msg_wait_message
+@, 1263Q, 0
+Q, 1, one@msg_wait_message
+@, 1271Q, 1
+Q, 1, ind@msg_wait_message
+@, 1279Q, 
+Q, 1, f@msg_wait_message
+@, 1287Q, 0
+Q, 1, msg_addr@msg_wait_message
+@, 1295Q, 
+Q, 1, msg_search@msg_wait_message
+@, 1303Q, 0
+Q, 1, msg@msg_wait_message
+@, 1311Q, 0
+Q, 1, ret@msg_wait_message
+@, 1319Q, 0
+Q, 1, msg_max@msg_wait_message
+@, 1327Q, 0
+Q, 1, time_ticks@msg_wait_message
+@, 1335Q, 500
+Q, 1, lock@msg_wait_message
+@, 1343Q, 0
+.dend
+.code
+:main
+loada zero, 0, 0
+stpushi 0
+loada zero, 0, 1
+stpushi 1
+loada memalloc, 0, 2
+stpushi 2
+jsr :mem_init
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+stpopi 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_0
+jmp :endif_0
+:if_0
+loada meminitstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_0
+jsr :msg_init
+stpopi 1
+load memaddr, 0, 2
+pullqw 1, 2, 0
+loada memaddr, 0, 1
+loada zero, 0, 2
+lsi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_1
+jmp :endif_1
+:if_1
+loada memerrstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+loada one, 0, 3
+intr0 255, 3, 0, 0
+:endif_1
+loada memaddr, 0, 1
+stpushi 1
+loada message, 0, 2
+stpushi 2
+loada lock, 0, 3
+stpushi 3
+jsr :msg_put_message
+loada memaddr, 0, 1
+stpushi 1
+loada message, 0, 2
+stpushi 2
+loada lock, 0, 3
+stpushi 3
+jsr :msg_wait_message
+stpopi 4
+load ret, 0, 5
+pullqw 4, 5, 0
+loada ret, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+loada zero, 0, 2
+eqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_2
+jmp :endif_2
+:if_2
+loada messagestraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+:endif_2
+loada memaddr, 0, 1
+stpushi 1
+loada message, 0, 2
+stpushi 2
+loada lock, 0, 3
+stpushi 3
+jsr :msg_put_message
+loada memaddr, 0, 1
+stpushi 1
+loada message, 0, 2
+stpushi 2
+loada lock, 0, 3
+stpushi 3
+jsr :msg_poll_message
+stpopi 4
+load ret, 0, 5
+pullqw 4, 5, 0
+loada ret, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+loada zero, 0, 2
+eqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_3
+jmp :endif_3
+:if_3
+loada messagestraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+:endif_3
+loada zero, 0, 1
+intr0 255, 1, 0, 0
+rts
+:mem_init
+loada zero, 0, 0
+stpopi 1
+load maxind@mem, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load mod@mem, 0, 3
+pullqw 2, 3, 0
+loada modulestr@memaddr, 0, 3
+intr0 0, 3, 2, 0
+loada init@mem, 0, 4
+loada initstr@memaddr, 0, 5
+intr0 2, 2, 4, 5
+loada allocbyte@mem, 0, 6
+loada allocbytestr@memaddr, 0, 7
+intr0 2, 2, 6, 7
+loada allocint16@mem, 0, 8
+loada allocint16str@memaddr, 0, 9
+intr0 2, 2, 8, 9
+loada allocint32@mem, 0, 10
+loada allocint32str@memaddr, 0, 11
+intr0 2, 2, 10, 11
+loada allocint64@mem, 0, 12
+loada allocint64str@memaddr, 0, 13
+intr0 2, 2, 12, 13
+loada allocdouble@mem, 0, 14
+loada allocdoublestr@memaddr, 0, 15
+intr0 2, 2, 14, 15
+loada dealloc@mem, 0, 16
+loada deallocstr@memaddr, 0, 17
+intr0 2, 2, 16, 17
+loada int_to_array@mem, 0, 18
+loada int_to_arraystr@memaddr, 0, 19
+intr0 2, 2, 18, 19
+loada array_to_int@mem, 0, 20
+loada array_to_instr@modaddr, 0, 21
+intr0 2, 2, 20, 21
+loada double_to_array@mem, 0, 22
+loada double_to_arraystr@memaddr, 0, 23
+intr0 2, 2, 22, 23
+loada array_to_double@mem, 0, 24
+loada array_to_doublestr@memaddr, 0, 25
+intr0 2, 2, 24, 25
+loada free@mem, 0, 26
+loada free@memstraddr, 0, 27
+intr0 2, 2, 26, 27
+loada stringtoarray@mem, 0, 28
+loada stringtoarraystr@memaddr, 0, 29
+intr0 2, 2, 28, 29
+loada arraytostring@mem, 0, 30
+loada arraytostringstr@memaddr, 0, 31
+intr0 2, 2, 30, 31
+loada allocbytevect@mem, 0, 32
+loada allocbytevectstr@memaddr, 0, 33
+intr0 2, 2, 32, 33
+loada allocint16vect@mem, 0, 34
+loada allocint16vectstr@memaddr, 0, 35
+intr0 2, 2, 34, 35
+loada allocint32vect@mem, 0, 36
+loada allocint32vectstr@memaddr, 0, 37
+intr0 2, 2, 36, 37
+loada allocint64vect@mem, 0, 38
+loada allocint64vectstr@memaddr, 0, 39
+intr0 2, 2, 38, 39
+loada allocdoublevect@mem, 0, 40
+loada allocdoublevectstr@memaddr, 0, 41
+intr0 2, 2, 40, 41
+loada deallocvect@mem, 0, 42
+loada deallocvectstr@memaddr, 0, 43
+intr0 2, 2, 42, 43
+loada int_to_vect@mem, 0, 44
+loada int_to_vectstr@memaddr, 0, 45
+intr0 2, 2, 44, 45
+loada double_to_vect@mem, 0, 46
+loada double_to_vectstr@memaddr, 0, 47
+intr0 2, 2, 46, 47
+loada vect_to_int@mem, 0, 48
+loada vect_to_intstr@memaddr, 0, 49
+intr0 2, 2, 48, 49
+loada vect_to_double@mem, 0, 50
+loada vect_to_doublestr@memaddr, 0, 51
+intr0 2, 2, 50, 51
+loada vect_erase@mem, 0, 52
+loada vect_erasestr@memaddr, 0, 53
+intr0 2, 2, 52, 53
+loada insert_int_to_vect@mem, 0, 54
+loada insert_int_to_vectstr@memaddr, 0, 55
+intr0 2, 2, 54, 55
+loada insert_double_to_vect@mem, 0, 56
+loada insert_double_to_vectstr@memaddr, 0, 57
+intr0 2, 2, 56, 57
+loada get_vect_size@mem, 0, 58
+loada get_vect_sizestr@memaddr, 0, 59
+intr0 2, 2, 58, 59
+stpushi 1
+intr0 3, 2, 4, 0
+rts
+:alloc_byte
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocbyte@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_int16
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocint16@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_int32
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocint32@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_int64
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocint64@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_double
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocdouble@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:dealloc
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada dealloc@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:int_to_array
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada int_to_array@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:array_to_int
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada array_to_int@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:double_to_array
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada double_to_array@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:array_to_double
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada array_to_double@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_to_array
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada stringtoarray@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:array_to_string
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada arraytostring@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:free_mem
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada free@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_byte_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocbytevect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_int16_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocint16vect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_int32_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocint32vect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_int64_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocint64vect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:alloc_double_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada allocdoublevect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:dealloc_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada deallocvect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:int_to_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada int_to_vect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:double_to_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada double_to_vect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vect_to_int
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada vect_to_int@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vect_to_double
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada vect_to_double@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:vect_erase
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada vect_erase@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:insert_int_to_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada insert_int_to_vect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:insert_double_to_vect
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada insert_double_to_vect@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_vect_size
+loada zero, 0, 0
+loada mod@mem, 0, 1
+loada get_vect_size@mem, 0, 2
+intr0 3, 1, 2, 0
+rts
+:msg_init
+loada zero, 0, 0
+stpushi 0
+jsr :alloc_int64_vect
+stpopi 1
+load msgs_addr@msg, 0, 2
+pullqw 1, 2, 0
+stpopi 0
+loada msgs_addr@msg, 0, 1
+loada zero, 0, 2
+lsi 1, 2, 3
+load f@msg, 0, 4
+pullqw 3, 4, 0
+loada f@msg, 0, 1
+jmpi 1, :if_4
+jmp :else_4
+:if_4
+loada alloc_errorstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+load ret@msg, 0, 3
+loada err@msg, 0, 4
+pullqw 4, 3, 0
+jmp :endif_4
+:else_4
+load ret@msg, 0, 1
+loada msgs_addr@msg, 0, 2
+pullqw 2, 1, 0
+:endif_4
+loada ret@msg, 0, 1
+stpushi 1
+rts
+:msg_put_message
+loada zero, 0, 0
+stpopi 1
+load lock@msg_put_message, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load msg_send@msg_put_message, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load msgs_addr@msg_put_message, 0, 4
+pullqw 3, 4, 0
+intr1 6, 1, 0, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+loada msgs_addr@msg_put_message, 0, 3
+stpushi 3
+loada msg_send@msg_put_message, 0, 2
+stpushi 2
+jsr :int_to_vect
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada lock@msg_put_message, 0, 1
+intr1 7, 1, 0, 0
+rts
+:msg_poll_message
+loada zero, 0, 0
+load ret@msg_poll_message, 0, 1
+loada one@msg_poll_message, 0, 2
+pullqw 2, 1, 0
+stpopi 1
+load lock@msg_poll_message, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load msg_search@msg_poll_message, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load msg_addr@msg_poll_message, 0, 4
+pullqw 3, 4, 0
+load ind@msg_poll_message, 0, 4
+loada zero@msg_poll_message, 0, 5
+pullqw 5, 4, 0
+load ret@msg_poll_message, 0, 4
+loada one@msg_poll_message, 0, 5
+pullqw 5, 4, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+loada msg_addr@msg_poll_message, 0, 3
+stpushi 3
+jsr :get_vect_size
+stpopi 4
+load msg_max@msg_poll_message, 0, 5
+pullqw 4, 5, 0
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+loada lock@msg_poll_message, 0, 1
+intr1 6, 1, 0, 0
+loada msg_max@msg_poll_message, 0, 2
+loada zero@msg_poll_message, 0, 3
+eqi 2, 3, 4
+load f, 0, 5
+pullqw 4, 5, 0
+loada f, 0, 1
+jmpi 1, :if_5
+jmp :endif_5
+:if_5
+loada lock@msg_poll_message, 0, 2
+intr1 7, 2, 0, 0
+loada ret@msg_poll_message, 0, 3
+stpushi 3
+  rts
+:endif_5
+:for_0
+loada ind@msg_poll_message, 0, 1
+loada msg_max@msg_poll_message, 0, 2
+lsi 1, 2, 3
+load f@msg_poll_message, 0, 4
+pullqw 3, 4, 0
+loada f@msg_poll_message, 0, 1
+jmpi 1, :for2_0
+jmp :forend_0
+:for2_0
+stpushi 1
+loada msg_addr@msg_poll_message, 0, 2
+stpushi 2
+loada ind@msg_poll_message, 0, 3
+stpushi 3
+jsr :vect_to_int
+stpopi 4
+load msg@msg_poll_message, 0, 5
+pullqw 4, 5, 0
+stpopi 1
+loada msg@msg_poll_message, 0, 1
+loada msg_search@msg_poll_message, 0, 2
+eqi 1, 2, 3
+load f@msg_poll_message, 0, 4
+pullqw 3, 4, 0
+loada f@msg_poll_message, 0, 1
+jmpi 1, :if_6
+jmp :endif_6
+:if_6
+stpushi 1
+loada msg_addr@msg_poll_message, 0, 2
+stpushi 2
+loada ind@msg_poll_message, 0, 3
+stpushi 3
+jsr :vect_erase
+stpopi 1
+load ret@msg_poll_message, 0, 1
+loada zero@msg_poll_message, 0, 2
+pullqw 2, 1, 0
+loada ret@msg_poll_message, 0, 1
+stpushi 1
+loada lock@msg_poll_message, 0, 2
+intr1 7, 2, 0, 0
+   rts
+:endif_6
+loada ind@msg_poll_message, 0, 1
+loada one@msg_poll_message, 0, 2
+addi 1, 2, 3
+load ind@msg_poll_message, 0, 4
+pullqw 3, 4, 0
+jmp :for_0
+:forend_0
+loada lock@msg_poll_message, 0, 1
+intr1 7, 1, 0, 0
+loada ret@msg_poll_message, 0, 2
+stpushi 2
+rts
+:msg_wait_message
+loada zero, 0, 0
+stpopi 1
+load lock@msg_wait_message, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load msg_search@msg_wait_message, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load msg_addr@msg_wait_message, 0, 4
+pullqw 3, 4, 0
+load ind@msg_wait_message, 0, 4
+loada zero@msg_wait_message, 0, 5
+pullqw 5, 4, 0
+load ret@msg_wait_message, 0, 4
+loada one@msg_wait_message, 0, 5
+pullqw 5, 4, 0
+:msg_wait_message_loop
+load ret@msg_wait_message, 0, 1
+loada one@msg_wait_message, 0, 2
+pullqw 2, 1, 0
+load ind@msg_wait_message, 0, 1
+loada zero@msg_wait_message, 0, 2
+pullqw 2, 1, 0
+loada lock@msg_wait_message, 0, 1
+intr1 6, 1, 0, 0
+stpushi 1
+loada msg_addr@msg_wait_message, 0, 2
+stpushi 2
+jsr :get_vect_size
+stpopi 3
+load msg_max@msg_wait_message, 0, 4
+pullqw 3, 4, 0
+stpopi 1
+loada msg_max@msg_wait_message, 0, 1
+loada zero@msg_wait_message, 0, 2
+eqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_7
+jmp :endif_7
+:if_7
+loada lock@msg_wait_message, 0, 2
+intr1 7, 2, 0, 0
+loada ret@msg_wait_message, 0, 3
+stpushi 3
+  rts
+:endif_7
+:for_1
+loada ind@msg_wait_message, 0, 1
+loada msg_max@msg_wait_message, 0, 2
+lsi 1, 2, 3
+load f@msg_wait_message, 0, 4
+pullqw 3, 4, 0
+loada f@msg_wait_message, 0, 1
+jmpi 1, :for2_1
+jmp :forend_1
+:for2_1
+stpushi 1
+loada msg_addr@msg_wait_message, 0, 2
+stpushi 2
+loada ind@msg_wait_message, 0, 3
+stpushi 3
+jsr :vect_to_int
+stpopi 4
+load msg@msg_wait_message, 0, 5
+pullqw 4, 5, 0
+stpopi 1
+loada msg@msg_wait_message, 0, 1
+loada msg_search@msg_wait_message, 0, 2
+eqi 1, 2, 3
+load f@msg_wait_message, 0, 4
+pullqw 3, 4, 0
+loada f@msg_wait_message, 0, 1
+jmpi 1, :if_8
+jmp :endif_8
+:if_8
+stpushi 1
+loada msg_addr@msg_wait_message, 0, 2
+stpushi 2
+loada ind@msg_wait_message, 0, 3
+stpushi 3
+jsr :vect_erase
+stpopi 1
+load ret@msg_wait_message, 0, 1
+loada zero@msg_wait_message, 0, 2
+pullqw 2, 1, 0
+loada ret@msg_wait_message, 0, 1
+stpushi 1
+loada lock@msg_wait_message, 0, 2
+intr1 7, 2, 0, 0
+   rts
+:endif_8
+loada ind@msg_wait_message, 0, 1
+loada one@msg_wait_message, 0, 2
+addi 1, 2, 3
+load ind@msg_wait_message, 0, 4
+pullqw 3, 4, 0
+jmp :for_1
+:forend_1
+loada ret@msg_wait_message, 0, 1
+loada one@msg_wait_message, 0, 2
+eqi 1, 2, 3
+load f@msg_wait_message, 0, 4
+pullqw 3, 4, 0
+loada f@msg_wait_message, 0, 1
+jmpi 1, :if_9
+jmp :endif_9
+:if_9
+loada lock@msg_wait_message, 0, 2
+intr1 7, 2, 0, 0
+loada time_ticks@msg_wait_message, 0, 3
+intr0 8, 3, 0, 0
+jmp :msg_wait_message_loop
+:endif_9
+loada lock@msg_wait_message, 0, 1
+intr1 7, 1, 0, 0
+loada ret@msg_wait_message, 0, 2
+stpushi 2
+rts
+.cend

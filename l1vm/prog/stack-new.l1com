@@ -1,0 +1,52 @@
+// stack-new.l1com - Brackets - stack check program
+// NEW: stpush and stpop : use multiple variables
+//
+#include <intr.l1h>
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 one 1)
+	(set byte 1 a 255)
+	(set int64 1 b 123456789000000012)
+	(set double 1 c 3.1415)
+	(set byte 1 a_st 0)
+	(set int64 1 b_st 0)
+	(set double 1 c_st 0.0)
+	(set int64 1 f 0)
+	(set string s byte_errstr "error reading byte from stack!")
+	(set string s int64_errstr "error reading int64 from stack!")
+	(set string s double_errstr "error reading double from stack!")
+	(set string s no_errstr "all stack checks passed as OK!")
+	(set int64 1 err 0)
+	show_st_p
+	(a b c stpush)
+	(c_st b_st a_st stpop)
+	show_st_p
+	(reset-reg)
+	// check st values!!!
+	(((a a_st !=) f =) f if)
+		(one err =)
+		print_s (byte_errstr)
+		print_n
+		print_i (a_st)
+		print_n
+	(endif)
+	(((b b_st !=) f =) f if)
+		(one err =)
+		print_s (int64_errstr)
+		print_n
+		print_i (b_st)
+		print_n
+	(endif)
+	(((c c_st !=d) f =) f if)
+		(one err =)
+		print_s (double_errstr)
+		print_n
+		print_d (c_st)
+		print_n
+	(endif)
+	(((err zero ==) f =) f if)
+		print_s (no_errstr)
+		print_n
+	(endif)
+	exit (zero)
+(funcend)

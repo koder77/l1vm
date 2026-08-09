@@ -1,0 +1,216 @@
+.data
+Q, 1, file_seek_set
+@, 0Q, 0
+Q, 1, file_seek_cur
+@, 8Q, 1
+Q, 1, file_seek_end
+@, 16Q, 2
+Q, 1, array_byte
+@, 24Q, 8
+Q, 1, array_int16
+@, 32Q, 9
+Q, 1, array_int32
+@, 40Q, 10
+Q, 1, array_int64
+@, 48Q, 11
+Q, 1, array_double
+@, 56Q, 12
+B, 1, file_mode_read
+@, 64Q, 1
+B, 1, file_mode_write
+@, 65Q, 2
+B, 1, file_mode_readwrite
+@, 66Q, 3
+B, 1, file_mode_writeread
+@, 67Q, 4
+B, 1, file_append
+@, 68Q, 5
+Q, 1, zero
+@, 69Q, 0
+Q, 1, one
+@, 77Q, 1
+B, 11, oldfilenamestr
+@, 85Q, "foobar.txt"
+Q, 1, oldfilenamestraddr
+@, 96Q, 85Q
+B, 10, newfilenamestr
+@, 104Q, "hello.txt"
+Q, 1, newfilenamestraddr
+@, 114Q, 104Q
+B, 54, error_renamestr
+@, 122Q, "error: can't rename file 'foobar.txt' to 'hello.txt'!"
+Q, 1, error_renamestraddr
+@, 176Q, 122Q
+Q, 1, ret
+@, 184Q, 0
+Q, 1, f
+@, 192Q, 0
+B, 17, modulestr@file_tools
+@, 200Q, "libl1vmfiletools"
+Q, 1, modulestr@file_toolsaddr
+@, 217Q, 200Q
+B, 10, copystr@file_tools
+@, 225Q, "file_copy"
+Q, 1, copystr@file_toolsaddr
+@, 235Q, 225Q
+B, 17, create_dirstr@file_tools
+@, 243Q, "directory_create"
+Q, 1, create_dirstr@file_toolsaddr
+@, 260Q, 243Q
+B, 11, remove_allstr@file_tools
+@, 268Q, "remove_all"
+Q, 1, remove_allstr@file_toolsaddr
+@, 279Q, 268Q
+B, 12, file_renamestr@file_tools
+@, 287Q, "file_rename"
+Q, 1, file_renamestr@file_toolsaddr
+@, 299Q, 287Q
+B, 16, file_sizestr@file_tools
+@, 307Q, "file_size_bytes"
+Q, 1, file_sizestr@file_toolsaddr
+@, 323Q, 307Q
+B, 12, file_existsstr@file_tools
+@, 331Q, "file_exists"
+Q, 1, file_existsstr@file_toolsaddr
+@, 343Q, 331Q
+B, 18, file_dir_entriesstr@file_tools
+@, 351Q, "directory_entries"
+Q, 1, file_dir_entriesstr@file_toolsaddr
+@, 369Q, 351Q
+B, 16, file_dir_filesstr@file_tools
+@, 377Q, "directory_files"
+Q, 1, file_dir_filesstr@file_toolsaddr
+@, 393Q, 377Q
+Q, 1, copy@file_tools
+@, 401Q, 0
+Q, 1, dir_create@file_tools
+@, 409Q, 1
+Q, 1, remove_all@file_tools
+@, 417Q, 2
+Q, 1, file_ren@file_tools
+@, 425Q, 3
+Q, 1, file_size@file_tools
+@, 433Q, 4
+Q, 1, file_exists@file_tools
+@, 441Q, 5
+Q, 1, file_dir_entries@file_tools
+@, 449Q, 6
+Q, 1, file_dir_files@file_tools
+@, 457Q, 7
+Q, 1, mod@file_tools
+@, 465Q, 0
+.dend
+.code
+:main
+loada zero, 0, 0
+stpushi 0
+loada zero, 0, 1
+stpushi 1
+jsr :file_tools_init
+stpopi 0
+loada oldfilenamestraddr, 0, 1
+stpushi 1
+loada newfilenamestraddr, 0, 2
+stpushi 2
+jsr :file_tools_rename
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+loada ret, 0, 1
+loada zero, 0, 2
+eqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_0
+jmp :endif_0
+:if_0
+loada error_renamestraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+:endif_0
+loada zero, 0, 1
+intr0 1, 1, 0, 0
+intr0 255, 1, 0, 0
+rts
+:file_tools_init
+loada zero, 0, 0
+stpopi 1
+load mod@file_tools, 0, 2
+pullqw 1, 2, 0
+loada modulestr@file_toolsaddr, 0, 2
+intr0 0, 2, 1, 0
+loada copy@file_tools, 0, 3
+loada copystr@file_toolsaddr, 0, 4
+intr0 2, 1, 3, 4
+loada dir_create@file_tools, 0, 5
+loada create_dirstr@file_toolsaddr, 0, 6
+intr0 2, 1, 5, 6
+loada remove_all@file_tools, 0, 7
+loada remove_allstr@file_toolsaddr, 0, 8
+intr0 2, 1, 7, 8
+loada file_ren@file_tools, 0, 9
+loada file_renamestr@file_toolsaddr, 0, 10
+intr0 2, 1, 9, 10
+loada file_size@file_tools, 0, 11
+loada file_sizestr@file_toolsaddr, 0, 12
+intr0 2, 1, 11, 12
+loada file_exists@file_tools, 0, 13
+loada file_existsstr@file_toolsaddr, 0, 14
+intr0 2, 1, 13, 14
+loada file_dir_entries@file_tools, 0, 15
+loada file_dir_entriesstr@file_toolsaddr, 0, 16
+intr0 2, 1, 15, 16
+loada file_dir_files@file_tools, 0, 17
+loada file_dir_filesstr@file_toolsaddr, 0, 18
+intr0 2, 1, 17, 18
+rts
+:file_tools_copy
+loada zero, 0, 0
+loada mod@file_tools, 0, 1
+loada copy@file_tools, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_tools_dir_create
+loada zero, 0, 0
+loada mod@file_tools, 0, 1
+loada dir_create@file_tools, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_tools_remove
+loada zero, 0, 0
+loada mod@file_tools, 0, 1
+loada remove_all@file_tools, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_tools_rename
+loada zero, 0, 0
+loada mod@file_tools, 0, 1
+loada file_ren@file_tools, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_tools_size
+loada zero, 0, 0
+loada mod@file_tools, 0, 1
+loada file_size@file_tools, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_tools_exists
+loada zero, 0, 0
+loada mod@file_tools, 0, 1
+loada file_exists@file_tools, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_tools_dir_entries
+loada zero, 0, 0
+loada mod@file_tools, 0, 1
+loada file_dir_entries@file_tools, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_tools_dir_files
+loada zero, 0, 0
+loada mod@file_tools, 0, 1
+loada file_dir_files@file_tools, 0, 2
+intr0 3, 1, 2, 0
+rts
+.cend

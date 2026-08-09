@@ -1,0 +1,5 @@
+>> ranges.l1h
+>> check if variable is out of range
+>>
+#func int_out_of_range (VAR, MIN, MAX) :(((VAR MIN <) (VAR MAX >) ||) f~ =)
+#func double_out_of_range (VAR, MIN, MAX) :(((VAR MIN <d) (VAR MAX >d) ||) f~ =)

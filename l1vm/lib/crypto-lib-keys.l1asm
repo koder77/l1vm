@@ -1,0 +1,530 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, one
+@, 8Q, 1
+B, 1, zerob
+@, 16Q, 0
+B, 1, oneb
+@, 17Q, 1
+B, 256, inarray
+@, 18Q, 
+B, 272, outarray
+@, 274Q, 
+B, 272, decryptarray
+@, 546Q, 
+B, 24, noncearray
+@, 818Q, 
+B, 32, alice_public_key
+@, 842Q, 
+B, 32, alice_private_key
+@, 874Q, 
+B, 32, bob_public_key
+@, 906Q, 
+B, 32, bob_private_key
+@, 938Q, 
+B, 32, key_test
+@, 970Q, 
+Q, 1, key_test_len
+@, 1002Q, 32
+B, 32, salt
+@, 1010Q, 
+Q, 1, Pkey_test
+@, 1042Q, 0
+Q, 1, Psalt
+@, 1050Q, 0
+Q, 1, count
+@, 1058Q, 0
+B, 1, i
+@, 1066Q, 0
+B, 1, c
+@, 1067Q, 0
+Q, 1, ret
+@, 1068Q, 0
+Q, 1, j
+@, 1076Q, 0
+Q, 1, size
+@, 1084Q, 256
+B, 1, maxnumb
+@, 1092Q, 255
+Q, 1, mode
+@, 1093Q, 0
+Q, 1, f
+@, 1101Q, 0
+Q, 1, Pinarray
+@, 1109Q, 0
+Q, 1, Poutarray
+@, 1117Q, 0
+Q, 1, Pkeystr
+@, 1125Q, 0
+Q, 1, Pdecryptarray
+@, 1133Q, 0
+Q, 1, Pnoncearray
+@, 1141Q, 0
+Q, 1, Palice_public_key
+@, 1149Q, 0
+Q, 1, Palice_private_key
+@, 1157Q, 0
+Q, 1, Pbob_public_key
+@, 1165Q, 0
+Q, 1, Pbob_private_key
+@, 1173Q, 0
+B, 26, okstr
+@, 1181Q, "crypt decrypt/encrypt ok!"
+Q, 1, okstraddr
+@, 1207Q, 1181Q
+B, 29, errstr
+@, 1215Q, "crypt decrypt/encrypt ERROR!"
+Q, 1, errstraddr
+@, 1244Q, 1215Q
+B, 38, genkeysstr
+@, 1252Q, "generate key pairs for alice and bob."
+Q, 1, genkeysstraddr
+@, 1290Q, 1252Q
+B, 26, error_encryptstr
+@, 1298Q, "ERROR encrypting message!"
+Q, 1, error_encryptstraddr
+@, 1324Q, 1298Q
+B, 26, error_decryptstr
+@, 1332Q, "ERROR decrypting message!"
+Q, 1, error_decryptstraddr
+@, 1358Q, 1332Q
+B, 20, error_gen_keystr
+@, 1366Q, "ERROR generate key!"
+Q, 1, error_gen_keystraddr
+@, 1386Q, 1366Q
+B, 3, sepstr
+@, 1394Q, ": "
+Q, 1, sepstraddr
+@, 1397Q, 1394Q
+B, 32, passwordstr
+@, 1405Q, "house ship eagle hill telephone"
+Q, 1, passwordstraddr
+@, 1437Q, 1405Q
+B, 128, passwordhash
+@, 1445Q, 
+Q, 1, Ppasswordstr
+@, 1573Q, 0
+Q, 1, Ppasswordhash
+@, 1581Q, 0
+B, 29, error_generate_hashstr
+@, 1589Q, "ERROR generate pasword hash!"
+Q, 1, error_generate_hashstraddr
+@, 1618Q, 1589Q
+B, 31, error_check_hashstr
+@, 1626Q, "ERROR check pasword with hash!"
+Q, 1, error_check_hashstraddr
+@, 1657Q, 1626Q
+B, 14, modulestr@crypto
+@, 1665Q, "libl1vmcrypto"
+Q, 1, modulestr@cryptoaddr
+@, 1679Q, 1665Q
+B, 15, encryptstr@crypto
+@, 1687Q, "encrypt_sodium"
+Q, 1, encryptstr@cryptoaddr
+@, 1702Q, 1687Q
+B, 14, generate_keysstr@crypto
+@, 1710Q, "generate_keys"
+Q, 1, generate_keysstr@cryptoaddr
+@, 1724Q, 1710Q
+B, 16, encrypt_messagestr@crypto
+@, 1732Q, "encrypt_message"
+Q, 1, encrypt_messagestr@cryptoaddr
+@, 1748Q, 1732Q
+B, 16, decrypt_messagestr@crypto
+@, 1756Q, "decrypt_message"
+Q, 1, decrypt_messagestr@cryptoaddr
+@, 1772Q, 1756Q
+B, 18, generate_key_hashstr@crypto
+@, 1780Q, "generate_key_hash"
+Q, 1, generate_key_hashstr@cryptoaddr
+@, 1798Q, 1780Q
+B, 15, check_key_hashstr@crypto
+@, 1806Q, "check_key_hash"
+Q, 1, check_key_hashstr@cryptoaddr
+@, 1821Q, 1806Q
+B, 13, generate_keystr@crypto
+@, 1829Q, "generate_key"
+Q, 1, generate_keystr@cryptoaddr
+@, 1842Q, 1829Q
+Q, 1, encrypt@crypto
+@, 1850Q, 0
+Q, 1, generate_keys@crypto
+@, 1858Q, 1
+Q, 1, encrypt_message@crypto
+@, 1866Q, 2
+Q, 1, decrypt_message@crypto
+@, 1874Q, 3
+Q, 1, generate_key_hash@crypto
+@, 1882Q, 4
+Q, 1, check_key_hash@crypto
+@, 1890Q, 5
+Q, 1, generate_key@crypto
+@, 1898Q, 6
+Q, 1, mod@crypto
+@, 1906Q, 0
+.dend
+.code
+:main
+loada zero, 0, 0
+load inarray, 0, 1
+load Pinarray, 0, 2
+pullqw 1, 2, 0
+load outarray, 0, 2
+load Poutarray, 0, 3
+pullqw 2, 3, 0
+load decryptarray, 0, 3
+load Pdecryptarray, 0, 4
+pullqw 3, 4, 0
+load noncearray, 0, 4
+load Pnoncearray, 0, 5
+pullqw 4, 5, 0
+load alice_public_key, 0, 5
+load Palice_public_key, 0, 6
+pullqw 5, 6, 0
+load alice_private_key, 0, 6
+load Palice_private_key, 0, 7
+pullqw 6, 7, 0
+load bob_public_key, 0, 7
+load Pbob_public_key, 0, 8
+pullqw 7, 8, 0
+load bob_private_key, 0, 8
+load Pbob_private_key, 0, 9
+pullqw 8, 9, 0
+load passwordstr, 0, 9
+load Ppasswordstr, 0, 10
+pullqw 9, 10, 0
+load passwordhash, 0, 10
+load Ppasswordhash, 0, 11
+pullqw 10, 11, 0
+load key_test, 0, 11
+load Pkey_test, 0, 12
+pullqw 11, 12, 0
+load salt, 0, 12
+load Psalt, 0, 13
+pullqw 12, 13, 0
+stpushi 0
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+stpushi 6
+stpushi 7
+stpushi 8
+stpushi 9
+stpushi 10
+stpushi 11
+stpushi 12
+loada zero, 0, 13
+stpushi 13
+jsr :crypto_init
+stpopi 12
+stpopi 11
+stpopi 10
+stpopi 9
+stpopi 8
+stpopi 7
+stpopi 6
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+stpopi 0
+load j, 0, 1
+loada zero, 0, 2
+pullqw 2, 1, 0
+load i, 0, 1
+loada zerob, 0, 2
+pullb 2, 1, 0
+:for_0
+loada j, 0, 1
+loada size, 0, 2
+lsi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :for2_0
+jmp :forend_0
+:for2_0
+loada j, 0, 2
+intr0 4, 2, 0, 0
+loada sepstraddr, 0, 3
+intr0 6, 3, 0, 0
+loada i, 0, 4
+load inarray, 0, 5
+pullb 4, 5, 2
+intr0 4, 4, 0, 0
+intr0 7, 0, 0, 0
+loada oneb, 0, 5
+addi 4, 5, 6
+load i, 0, 7
+pullb 6, 7, 0
+loada one, 0, 4
+addi 2, 4, 8
+load j, 0, 9
+pullqw 8, 9, 0
+jmp :for_0
+:forend_0
+intr0 7, 0, 0, 0
+loada genkeysstraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada Palice_public_key, 0, 2
+stpushi 2
+loada Palice_private_key, 0, 3
+stpushi 3
+jsr :generate_keys
+stpopi 1
+loada Pbob_public_key, 0, 1
+stpushi 1
+loada Pbob_private_key, 0, 2
+stpushi 2
+jsr :generate_keys
+loada Pinarray, 0, 1
+stpushi 1
+loada size, 0, 2
+stpushi 2
+loada Poutarray, 0, 3
+stpushi 3
+loada Pnoncearray, 0, 4
+stpushi 4
+loada Pbob_public_key, 0, 5
+stpushi 5
+loada Palice_private_key, 0, 6
+stpushi 6
+jsr :encrypt_message
+stpopi 7
+load ret, 0, 8
+pullqw 7, 8, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_0
+jmp :endif_0
+:if_0
+loada error_encryptstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+:endif_0
+loada Poutarray, 0, 1
+stpushi 1
+loada size, 0, 2
+stpushi 2
+loada Pdecryptarray, 0, 3
+stpushi 3
+loada Pnoncearray, 0, 4
+stpushi 4
+loada Palice_public_key, 0, 5
+stpushi 5
+loada Pbob_private_key, 0, 6
+stpushi 6
+jsr :decrypt_message
+stpopi 7
+load ret, 0, 8
+pullqw 7, 8, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_1
+jmp :endif_1
+:if_1
+loada error_decryptstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+:endif_1
+load i, 0, 1
+loada zerob, 0, 2
+pullb 2, 1, 0
+load j, 0, 1
+loada zero, 0, 2
+pullqw 2, 1, 0
+intr0 7, 0, 0, 0
+intr0 7, 0, 0, 0
+load j, 0, 1
+loada zero, 0, 2
+pullqw 2, 1, 0
+load i, 0, 1
+loada zerob, 0, 2
+pullb 2, 1, 0
+:for_1
+loada j, 0, 1
+loada size, 0, 2
+lsi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :for2_1
+jmp :forend_1
+:for2_1
+loada j, 0, 2
+intr0 4, 2, 0, 0
+loada sepstraddr, 0, 3
+intr0 6, 3, 0, 0
+loada c, 0, 4
+load decryptarray, 0, 5
+pushb 5, 2, 4
+intr0 4, 4, 0, 0
+intr0 7, 0, 0, 0
+loada i, 0, 1
+loada oneb, 0, 2
+addi 1, 2, 3
+load i, 0, 4
+pullb 3, 4, 0
+loada j, 0, 1
+loada one, 0, 5
+addi 1, 5, 6
+load j, 0, 7
+pullqw 6, 7, 0
+jmp :for_1
+:forend_1
+loada Ppasswordstr, 0, 1
+stpushi 1
+loada Ppasswordhash, 0, 2
+stpushi 2
+jsr :generate_key_hash
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_2
+jmp :endif_2
+:if_2
+loada error_generate_hashstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+:endif_2
+loada Ppasswordstr, 0, 1
+stpushi 1
+loada Ppasswordhash, 0, 2
+stpushi 2
+jsr :check_key_hash
+stpopi 3
+load ret, 0, 4
+pullqw 3, 4, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_3
+jmp :endif_3
+:if_3
+loada error_check_hashstraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+:endif_3
+loada Ppasswordstr, 0, 1
+stpushi 1
+loada Pkey_test, 0, 2
+stpushi 2
+loada key_test_len, 0, 3
+stpushi 3
+loada Psalt, 0, 4
+stpushi 4
+jsr :generate_key
+stpopi 5
+load ret, 0, 6
+pullqw 5, 6, 0
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+jmpi 1, :if_4
+jmp :endif_4
+:if_4
+loada error_gen_keystraddr, 0, 2
+intr0 6, 2, 0, 0
+intr0 7, 0, 0, 0
+:endif_4
+loada zero, 0, 1
+intr0 255, 1, 0, 0
+rts
+:crypto_init
+loada zero, 0, 0
+stpopi 1
+load mod@crypto, 0, 2
+pullqw 1, 2, 0
+loada modulestr@cryptoaddr, 0, 2
+intr0 0, 2, 1, 0
+loada encrypt@crypto, 0, 3
+loada encryptstr@cryptoaddr, 0, 4
+intr0 2, 1, 3, 4
+loada generate_keys@crypto, 0, 5
+loada generate_keysstr@cryptoaddr, 0, 6
+intr0 2, 1, 5, 6
+loada encrypt_message@crypto, 0, 7
+loada encrypt_messagestr@cryptoaddr, 0, 8
+intr0 2, 1, 7, 8
+loada decrypt_message@crypto, 0, 9
+loada decrypt_messagestr@cryptoaddr, 0, 10
+intr0 2, 1, 9, 10
+loada generate_key_hash@crypto, 0, 11
+loada generate_key_hashstr@cryptoaddr, 0, 12
+intr0 2, 1, 11, 12
+loada check_key_hash@crypto, 0, 13
+loada check_key_hashstr@cryptoaddr, 0, 14
+intr0 2, 1, 13, 14
+loada generate_key@crypto, 0, 15
+loada generate_keystr@cryptoaddr, 0, 16
+intr0 2, 1, 15, 16
+rts
+:encrypt
+loada zero, 0, 0
+loada mod@crypto, 0, 1
+loada encrypt@crypto, 0, 2
+intr0 3, 1, 2, 0
+rts
+:generate_keys
+loada zero, 0, 0
+loada mod@crypto, 0, 1
+loada generate_keys@crypto, 0, 2
+intr0 3, 1, 2, 0
+rts
+:encrypt_message
+loada zero, 0, 0
+loada mod@crypto, 0, 1
+loada encrypt_message@crypto, 0, 2
+intr0 3, 1, 2, 0
+rts
+:decrypt_message
+loada zero, 0, 0
+loada mod@crypto, 0, 1
+loada decrypt_message@crypto, 0, 2
+intr0 3, 1, 2, 0
+rts
+:generate_key_hash
+loada zero, 0, 0
+loada mod@crypto, 0, 1
+loada generate_key_hash@crypto, 0, 2
+intr0 3, 1, 2, 0
+rts
+:check_key_hash
+loada zero, 0, 0
+loada mod@crypto, 0, 1
+loada check_key_hash@crypto, 0, 2
+intr0 3, 1, 2, 0
+rts
+:generate_key
+loada zero, 0, 0
+loada mod@crypto, 0, 1
+loada generate_key@crypto, 0, 2
+intr0 3, 1, 2, 0
+rts
+.cend

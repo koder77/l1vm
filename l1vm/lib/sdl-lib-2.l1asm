@@ -1,0 +1,1478 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, one
+@, 8Q, 1
+Q, 1, two
+@, 16Q, 2
+Q, 1, three
+@, 24Q, 3
+Q, 1, four
+@, 32Q, 4
+Q, 1, five
+@, 40Q, 5
+Q, 1, six
+@, 48Q, 6
+Q, 1, seven
+@, 56Q, 7
+Q, 1, width
+@, 64Q, 800
+Q, 1, height
+@, 72Q, 600
+Q, 1, width_b
+@, 80Q, 799
+Q, 1, height_b
+@, 88Q, 599
+B, 1, bit
+@, 96Q, 32
+Q, 1, x
+@, 97Q, 20
+Q, 1, y
+@, 105Q, 20
+Q, 1, x_quit
+@, 113Q, 20
+Q, 1, y_quit
+@, 121Q, 80
+Q, 1, x_check
+@, 129Q, 20
+Q, 1, y_check
+@, 137Q, 140
+Q, 1, x_string
+@, 145Q, 20
+Q, 1, y_string
+@, 153Q, 200
+Q, 1, x_cycle
+@, 161Q, 100
+Q, 1, y_cycle
+@, 169Q, 260
+Q, 1, x_prog
+@, 177Q, 300
+Q, 1, y_prog
+@, 185Q, 80
+Q, 1, value_cycle
+@, 193Q, 0
+Q, 1, value_prog
+@, 201Q, 75
+Q, 1, visible_string
+@, 209Q, 13
+Q, 1, x_slider
+@, 217Q, 300
+Q, 1, y_slider
+@, 225Q, 120
+Q, 1, slider_min
+@, 233Q, 100
+Q, 1, slider_max
+@, 241Q, 150
+Q, 1, slider_value
+@, 249Q, 125
+Q, 1, x_slider_vert
+@, 257Q, 300
+Q, 1, y_slider_vert
+@, 265Q, 180
+Q, 1, slider_vert_width
+@, 273Q, 40
+Q, 1, slider_vert_height
+@, 281Q, 200
+Q, 1, gadgets
+@, 289Q, 8
+Q, 1, status
+@, 297Q, 1
+Q, 1, delay
+@, 305Q, 10000
+B, 13, screenshotstr
+@, 313Q, " screenshot "
+Q, 1, screenshotstraddr
+@, 326Q, 313Q
+B, 13, quitstr
+@, 334Q, "    Quit    "
+Q, 1, quitstraddr
+@, 347Q, 334Q
+B, 14, checkstr
+@, 355Q, "test checkbox"
+Q, 1, checkstraddr
+@, 369Q, 355Q
+B, 5, stringstr
+@, 377Q, "test"
+Q, 1, stringstraddr
+@, 382Q, 377Q
+B, 13, valuestr
+@, 390Q, "Hello world!"
+Q, 1, valuestraddr
+@, 403Q, 390Q
+B, 19, fontname
+@, 411Q, "fonts/FreeMono.ttf"
+Q, 1, fontnameaddr
+@, 430Q, 411Q
+B, 4, red_cyclestr
+@, 438Q, "red"
+Q, 1, red_cyclestraddr
+@, 442Q, 438Q
+B, 6, green_cyclestr
+@, 450Q, "green"
+Q, 1, green_cyclestraddr
+@, 456Q, 450Q
+B, 5, blue_cyclestr
+@, 464Q, "blue"
+Q, 1, blue_cyclestraddr
+@, 469Q, 464Q
+B, 6, text_cyclestr
+@, 477Q, "color"
+Q, 1, text_cyclestraddr
+@, 483Q, 477Q
+B, 9, text_progstr
+@, 491Q, "progress"
+Q, 1, text_progstraddr
+@, 500Q, 491Q
+B, 15, picture_namestr
+@, 508Q, "screenshot.bmp"
+Q, 1, picture_namestraddr
+@, 523Q, 508Q
+B, 29, picture_errstr
+@, 531Q, "ERROR can't save screenshot!"
+Q, 1, picture_errstraddr
+@, 560Q, 531Q
+B, 18, picture_okstr
+@, 568Q, "screenshot saved!"
+Q, 1, picture_okstraddr
+@, 586Q, 568Q
+B, 22, slider_str
+@, 594Q, "      set value      "
+Q, 1, slider_straddr
+@, 616Q, 594Q
+B, 5, slider_value
+@, 624Q, ""
+Q, 1, slider_valueaddr
+@, 629Q, 624Q
+Q, 1, x_slider_value
+@, 637Q, 600
+Q, 1, y_slider_value
+@, 645Q, 125
+Q, 1, slider_value_max
+@, 653Q, 4
+Q, 1, x_slider_box
+@, 661Q, 600
+Q, 1, y_slider_box
+@, 669Q, 120
+Q, 1, x2_slider_box
+@, 677Q, 650
+Q, 1, y2_slider_box
+@, 685Q, 150
+Q, 1, x_slider_vert_value
+@, 693Q, 300
+Q, 1, y_slider_vert_value
+@, 701Q, 400
+Q, 1, slider_vert_value_max
+@, 709Q, 4
+Q, 1, x_slider_vert_box
+@, 717Q, 300
+Q, 1, y_slider_vert_box
+@, 725Q, 400
+Q, 1, x2_slider_vert_box
+@, 733Q, 340
+Q, 1, y2_slider_vert_box
+@, 741Q, 450
+Q, 1, fontsize
+@, 749Q, 20
+B, 1, back_r
+@, 757Q, 143
+B, 1, back_g
+@, 758Q, 147
+B, 1, back_b
+@, 759Q, 151
+B, 1, alpha
+@, 760Q, 255
+B, 1, black
+@, 761Q, 0
+Q, 1, gadget_sel
+@, 762Q, 0
+B, 256, gadget_retstr
+@, 770Q, ""
+Q, 1, gadget_retstraddr
+@, 1026Q, 770Q
+Q, 1, ret
+@, 1034Q, 0
+Q, 1, value
+@, 1042Q, 0
+Q, 1, f
+@, 1050Q, 0
+Q, 1, value@draw_slider_value
+@, 1058Q, 0
+Q, 1, value@draw_slider_value_vert
+@, 1066Q, 0
+Q, 1, zero
+@, 1074Q, 0
+B, 14, modulestr@sdl
+@, 1082Q, "libl1vmsdl.so"
+Q, 1, modulestr@sdladdr
+@, 1096Q, 1082Q
+B, 16, openstr@sdl
+@, 1104Q, "sdl_open_screen"
+Q, 1, openstr@sdladdr
+@, 1120Q, 1104Q
+B, 9, quitstr@sdl
+@, 1128Q, "sdl_quit"
+Q, 1, quitstr@sdladdr
+@, 1137Q, 1128Q
+B, 16, pixelstr@sdl
+@, 1145Q, "sdl_pixel_alpha"
+Q, 1, pixelstr@sdladdr
+@, 1161Q, 1145Q
+B, 15, linestr@sdl
+@, 1169Q, "sdl_line_alpha"
+Q, 1, linestr@sdladdr
+@, 1184Q, 1169Q
+B, 20, rectanglestr@sdl
+@, 1192Q, "sdl_rectangle_alpha"
+Q, 1, rectanglestr@sdladdr
+@, 1212Q, 1192Q
+B, 25, rectangle_fillstr@sdl
+@, 1220Q, "sdl_rectangle_fill_alpha"
+Q, 1, rectangle_fillstr@sdladdr
+@, 1245Q, 1220Q
+B, 17, circlestr@sdl
+@, 1253Q, "sdl_circle_alpha"
+Q, 1, circlestr@sdladdr
+@, 1270Q, 1253Q
+B, 22, circle_fillstr@sdl
+@, 1278Q, "sdl_circle_fill_alpha"
+Q, 1, circle_fillstr@sdladdr
+@, 1300Q, 1278Q
+B, 18, ellipsestr@sdl
+@, 1308Q, "sdl_ellipse_alpha"
+Q, 1, ellipsestr@sdladdr
+@, 1326Q, 1308Q
+B, 23, ellipse_fillstr@sdl
+@, 1334Q, "sdl_ellipse_fill_alpha"
+Q, 1, ellipse_fillstr@sdladdr
+@, 1357Q, 1334Q
+B, 14, piestr@sdl
+@, 1365Q, "sdl_pie_alpha"
+Q, 1, piestr@sdladdr
+@, 1379Q, 1365Q
+B, 19, pie_fillstr@sdl
+@, 1387Q, "sdl_pie_fill_alpha"
+Q, 1, pie_fillstr@sdladdr
+@, 1406Q, 1387Q
+B, 17, trigonstr@sdl
+@, 1414Q, "sdl_trigon_alpha"
+Q, 1, trigonstr@sdladdr
+@, 1431Q, 1414Q
+B, 22, trigon_fillstr@sdl
+@, 1439Q, "sdl_trigon_fill_alpha"
+Q, 1, trigon_fillstr@sdladdr
+@, 1461Q, 1439Q
+B, 13, font_ttfstr@sdl
+@, 1469Q, "sdl_font_ttf"
+Q, 1, font_ttfstr@sdladdr
+@, 1482Q, 1469Q
+B, 13, text_ttfstr@sdl
+@, 1490Q, "sdl_text_ttf"
+Q, 1, text_ttfstr@sdladdr
+@, 1503Q, 1490Q
+B, 19, get_pixelcolorstr@sdl
+@, 1511Q, "sdl_get_pixelcolor"
+Q, 1, get_pixelcolorstr@sdladdr
+@, 1530Q, 1511Q
+B, 11, updatestr@sdl
+@, 1538Q, "sdl_update"
+Q, 1, updatestr@sdladdr
+@, 1549Q, 1538Q
+B, 13, init_gadgetsstr@sdl
+@, 1557Q, "init_gadgets"
+Q, 1, init_gadgetsstr@sdladdr
+@, 1570Q, 1557Q
+B, 18, set_gadget_buttonstr@sdl
+@, 1578Q, "set_gadget_button"
+Q, 1, set_gadget_buttonstr@sdladdr
+@, 1596Q, 1578Q
+B, 24, set_gadget_progressstr@sdl
+@, 1604Q, "set_gadget_progress_bar"
+Q, 1, set_gadget_progressstr@sdladdr
+@, 1628Q, 1604Q
+B, 20, set_gadget_checkboxstr@sdl
+@, 1636Q, "set_gadget_checkbox"
+Q, 1, set_gadget_checkboxstr@sdladdr
+@, 1656Q, 1636Q
+B, 17, set_gadget_cyclestr@sdl
+@, 1664Q, "set_gadget_cycle"
+Q, 1, set_gadget_cyclestr@sdladdr
+@, 1681Q, 1664Q
+B, 18, set_gadget_stringstr@sdl
+@, 1689Q, "set_gadget_string"
+Q, 1, set_gadget_stringstr@sdladdr
+@, 1707Q, 1689Q
+B, 15, set_gadget_boxstr@sdl
+@, 1715Q, "set_gadget_box"
+Q, 1, set_gadget_boxstr@sdladdr
+@, 1730Q, 1715Q
+B, 18, set_gadget_sliderstr@sdl
+@, 1738Q, "set_gadget_slider"
+Q, 1, set_gadget_sliderstr@sdladdr
+@, 1756Q, 1738Q
+B, 23, set_gadget_slider_vertstr@sdl
+@, 1764Q, "set_gadget_slider_vert"
+Q, 1, set_gadget_slider_vertstr@sdladdr
+@, 1787Q, 1764Q
+B, 23, change_gadget_checkboxstr@sdl
+@, 1795Q, "change_gadget_checkbox"
+Q, 1, change_gadget_checkboxstr@sdladdr
+@, 1818Q, 1795Q
+B, 20, change_gadget_cyclestr@sdl
+@, 1826Q, "change_gadget_cycle"
+Q, 1, change_gadget_cyclestr@sdladdr
+@, 1846Q, 1826Q
+B, 21, change_gadget_stringstr@sdl
+@, 1854Q, "change_gadget_string"
+Q, 1, change_gadget_stringstr@sdladdr
+@, 1875Q, 1854Q
+B, 18, change_gadget_boxstr@sdl
+@, 1883Q, "change_gadget_box"
+Q, 1, change_gadget_boxstr@sdladdr
+@, 1901Q, 1883Q
+B, 27, change_gadget_progressstr@sdl
+@, 1909Q, "change_gadget_progress_bar"
+Q, 1, change_gadget_progressstr@sdladdr
+@, 1936Q, 1909Q
+B, 21, change_gadget_sliderstr@sdl
+@, 1944Q, "change_gadget_slider"
+Q, 1, change_gadget_sliderstr@sdladdr
+@, 1965Q, 1944Q
+B, 16, get_gadget_x2y2str@sdl
+@, 1973Q, "get_gadget_x2y2"
+Q, 1, get_gadget_x2y2str@sdladdr
+@, 1989Q, 1973Q
+B, 13, gadget_eventstr@sdl
+@, 1997Q, "gadget_event"
+Q, 1, gadget_eventstr@sdladdr
+@, 2010Q, 1997Q
+B, 17, load_picturestr@sdl
+@, 2018Q, "sdl_load_picture"
+Q, 1, load_picturestr@sdladdr
+@, 2035Q, 2018Q
+B, 17, save_picturestr@sdl
+@, 2043Q, "sdl_save_picture"
+Q, 1, save_picturestr@sdladdr
+@, 2060Q, 2043Q
+B, 10, delaystr@sdl
+@, 2068Q, "sdl_delay"
+Q, 1, delaystr@sdladdr
+@, 2078Q, 2068Q
+Q, 1, open@sdl
+@, 2086Q, 0
+Q, 1, quit@sdl
+@, 2094Q, 1
+Q, 1, update@sdl
+@, 2102Q, 2
+Q, 1, pixel@sdl
+@, 2110Q, 3
+Q, 1, line@sdl
+@, 2118Q, 4
+Q, 1, rectangle@sdl
+@, 2126Q, 5
+Q, 1, rectangle_fill@sdl
+@, 2134Q, 6
+Q, 1, circle@sdl
+@, 2142Q, 7
+Q, 1, circle_fill@sdl
+@, 2150Q, 8
+Q, 1, ellipse@sdl
+@, 2158Q, 9
+Q, 1, ellipse_fill@sdl
+@, 2166Q, 10
+Q, 1, pie@sdl
+@, 2174Q, 11
+Q, 1, pie_fill@sdl
+@, 2182Q, 12
+Q, 1, trigon@sdl
+@, 2190Q, 13
+Q, 1, trigon_fill@sdl
+@, 2198Q, 14
+Q, 1, font_ttf@sdl
+@, 2206Q, 15
+Q, 1, text_ttf@sdl
+@, 2214Q, 16
+Q, 1, get_pixelcolor@sdl
+@, 2222Q, 17
+Q, 1, init_gadgets@sdl
+@, 2230Q, 18
+Q, 1, set_gadget_button@sdl
+@, 2238Q, 19
+Q, 1, set_gadget_progress@sdl
+@, 2246Q, 20
+Q, 1, set_gadget_checkbox@sdl
+@, 2254Q, 21
+Q, 1, set_gadget_cycle@sdl
+@, 2262Q, 22
+Q, 1, set_gadget_string@sdl
+@, 2270Q, 23
+Q, 1, set_gadget_box@sdl
+@, 2278Q, 24
+Q, 1, change_gadget_checkbox@sdl
+@, 2286Q, 25
+Q, 1, change_gadget_cycle@sdl
+@, 2294Q, 26
+Q, 1, change_gadget_string@sdl
+@, 2302Q, 27
+Q, 1, change_gadget_box@sdl
+@, 2310Q, 28
+Q, 1, change_gadget_progress@sdl
+@, 2318Q, 29
+Q, 1, get_gadget_x2y2@sdl
+@, 2326Q, 30
+Q, 1, gadget_event@sdl
+@, 2334Q, 31
+Q, 1, load_picture@sdl
+@, 2342Q, 32
+Q, 1, save_picture@sdl
+@, 2350Q, 33
+Q, 1, delay@sdl
+@, 2358Q, 34
+Q, 1, set_gadget_slider@sdl
+@, 2366Q, 35
+Q, 1, set_gadget_slider_vert@sdl
+@, 2374Q, 36
+Q, 1, change_gadget_slider@sdl
+@, 2382Q, 37
+Q, 1, get@sdl
+@, 2390Q, 0
+Q, 1, width@sdl
+@, 2398Q, 0
+Q, 1, height@sdl
+@, 2406Q, 0
+Q, 1, bit@sdl
+@, 2414Q, 0
+Q, 1, mod@sdl
+@, 2422Q, 0
+B, 17, modulestr@string
+@, 2430Q, "libl1vmstring.so"
+Q, 1, modulestr@stringaddr
+@, 2447Q, 2430Q
+B, 11, lenstr@string
+@, 2455Q, "string_len"
+Q, 1, lenstr@stringaddr
+@, 2466Q, 2455Q
+B, 12, copystr@string
+@, 2474Q, "string_copy"
+Q, 1, copystr@stringaddr
+@, 2486Q, 2474Q
+B, 11, catstr@string
+@, 2494Q, "string_cat"
+Q, 1, catstr@stringaddr
+@, 2505Q, 2494Q
+B, 23, int64tostringstr@string
+@, 2513Q, "string_int64_to_string"
+Q, 1, int64tostringstr@stringaddr
+@, 2536Q, 2513Q
+B, 25, bytetohexstringstr@string
+@, 2544Q, "string_byte_to_hexstring"
+Q, 1, bytetohexstringstr@stringaddr
+@, 2569Q, 2544Q
+B, 24, doubletostringstr@string
+@, 2577Q, "string_double_to_string"
+Q, 1, doubletostringstr@stringaddr
+@, 2601Q, 2577Q
+B, 25, bytenumtostringstr@string
+@, 2609Q, "string_bytenum_to_string"
+Q, 1, bytenumtostringstr@stringaddr
+@, 2634Q, 2609Q
+B, 23, stringtoarraystr@string
+@, 2642Q, "string_string_to_array"
+Q, 1, stringtoarraystr@stringaddr
+@, 2665Q, 2642Q
+B, 23, arraytostringstr@string
+@, 2673Q, "string_array_to_string"
+Q, 1, arraytostringstr@stringaddr
+@, 2696Q, 2673Q
+B, 12, stringleftstr@string
+@, 2704Q, "string_left"
+Q, 1, stringleftstr@stringaddr
+@, 2716Q, 2704Q
+B, 13, stringrightstr@string
+@, 2724Q, "string_right"
+Q, 1, stringrightstr@stringaddr
+@, 2737Q, 2724Q
+B, 11, stringmidstr@string
+@, 2745Q, "string_mid"
+Q, 1, stringmidstr@stringaddr
+@, 2756Q, 2745Q
+B, 17, stringtostringstr@string
+@, 2764Q, "string_to_string"
+Q, 1, stringtostringstr@stringaddr
+@, 2781Q, 2764Q
+B, 15, stringcomparestr@string
+@, 2789Q, "string_compare"
+Q, 1, stringcomparestr@stringaddr
+@, 2804Q, 2789Q
+B, 20, stringmemtostringstr@string
+@, 2812Q, "stringmem_to_string"
+Q, 1, stringmemtostringstr@stringaddr
+@, 2832Q, 2812Q
+B, 24, stringmemsearchstr@string
+@, 2840Q, "stringmem_search_string"
+Q, 1, stringmemsearchstr@stringaddr
+@, 2864Q, 2840Q
+Q, 1, len@string
+@, 2872Q, 0
+Q, 1, copy@string
+@, 2880Q, 1
+Q, 1, cat@string
+@, 2888Q, 2
+Q, 1, int64tostring@string
+@, 2896Q, 3
+Q, 1, bytetohexstring@string
+@, 2904Q, 4
+Q, 1, doubletostring@string
+@, 2912Q, 5
+Q, 1, bytenumtostring@string
+@, 2920Q, 6
+Q, 1, stringtoarray@string
+@, 2928Q, 7
+Q, 1, arraytostring@string
+@, 2936Q, 8
+Q, 1, stringleft@string
+@, 2944Q, 9
+Q, 1, stringright@string
+@, 2952Q, 10
+Q, 1, stringmid@string
+@, 2960Q, 11
+Q, 1, stringtostring@string
+@, 2968Q, 12
+Q, 1, stringcompare@string
+@, 2976Q, 13
+Q, 1, stringmemtostring@string
+@, 2984Q, 14
+Q, 1, stringmemsearch@string
+@, 2992Q, 15
+Q, 1, mod@string
+@, 3000Q, 0
+.dend
+.code
+:main
+loada zero, 0, 0
+stpushi 0
+loada zero, 0, 1
+stpushi 1
+loada width, 0, 2
+stpushi 2
+loada height, 0, 3
+stpushi 3
+load bit, 0, 4
+pushb 4, 0, 5
+stpushb 5
+jsr :sdl_open_screen
+stpopi 6
+load ret, 0, 7
+pullqw 6, 7, 0
+stpopi 0
+loada one, 0, 1
+stpushi 1
+jsr :string_init
+loada fontnameaddr, 0, 1
+stpushi 1
+loada fontsize, 0, 2
+stpushi 2
+jsr :sdl_font_ttf
+loada gadgets, 0, 1
+stpushi 1
+jsr :init_gui
+loada zero, 0, 1
+stpushi 1
+loada zero, 0, 1
+stpushi 1
+loada width_b, 0, 2
+stpushi 2
+loada height_b, 0, 3
+stpushi 3
+load back_r, 0, 4
+pushb 4, 0, 5
+stpushb 5
+load back_g, 0, 6
+pushb 6, 0, 7
+stpushb 7
+load back_b, 0, 8
+pushb 8, 0, 9
+stpushb 9
+load alpha, 0, 10
+pushb 10, 0, 11
+stpushb 11
+jsr :sdl_rectangle_fill
+loada zero, 0, 1
+stpushi 1
+loada x, 0, 2
+stpushi 2
+loada y, 0, 3
+stpushi 3
+loada screenshotstraddr, 0, 4
+stpushi 4
+loada status, 0, 5
+stpushi 5
+jsr :set_gadget_button
+loada one, 0, 1
+stpushi 1
+loada x_quit, 0, 2
+stpushi 2
+loada y_quit, 0, 3
+stpushi 3
+loada quitstraddr, 0, 4
+stpushi 4
+loada status, 0, 5
+stpushi 5
+jsr :set_gadget_button
+loada two, 0, 1
+stpushi 1
+loada x_check, 0, 2
+stpushi 2
+loada y_check, 0, 3
+stpushi 3
+loada checkstraddr, 0, 4
+stpushi 4
+loada one, 0, 5
+stpushi 5
+loada status, 0, 6
+stpushi 6
+jsr :set_gadget_checkbox
+loada three, 0, 1
+stpushi 1
+loada x_string, 0, 2
+stpushi 2
+loada y_string, 0, 3
+stpushi 3
+loada stringstraddr, 0, 4
+stpushi 4
+loada valuestraddr, 0, 5
+stpushi 5
+loada visible_string, 0, 6
+stpushi 6
+loada status, 0, 7
+stpushi 7
+jsr :set_gadget_string
+loada x_cycle, 0, 1
+stpushi 1
+loada y_cycle, 0, 2
+stpushi 2
+loada text_cyclestraddr, 0, 3
+stpushi 3
+loada value_cycle, 0, 4
+stpushi 4
+loada status, 0, 5
+stpushi 5
+loada blue_cyclestraddr, 0, 6
+stpushi 6
+loada green_cyclestraddr, 0, 7
+stpushi 7
+loada red_cyclestraddr, 0, 8
+stpushi 8
+loada three, 0, 9
+stpushi 9
+loada four, 0, 10
+stpushi 10
+jsr :set_gadget_cycle
+loada five, 0, 1
+stpushi 1
+loada x_prog, 0, 2
+stpushi 2
+loada y_prog, 0, 3
+stpushi 3
+loada text_progstraddr, 0, 4
+stpushi 4
+loada value_prog, 0, 5
+stpushi 5
+loada status, 0, 6
+stpushi 6
+jsr :set_gadget_progress
+loada six, 0, 1
+stpushi 1
+loada x_slider, 0, 2
+stpushi 2
+loada y_slider, 0, 3
+stpushi 3
+loada slider_straddr, 0, 4
+stpushi 4
+loada slider_value, 0, 5
+stpushi 5
+loada slider_min, 0, 6
+stpushi 6
+loada slider_max, 0, 7
+stpushi 7
+loada status, 0, 8
+stpushi 8
+jsr :set_gadget_slider
+loada seven, 0, 1
+stpushi 1
+loada x_slider_vert, 0, 2
+stpushi 2
+loada y_slider_vert, 0, 3
+stpushi 3
+loada slider_vert_width, 0, 4
+stpushi 4
+loada slider_vert_height, 0, 5
+stpushi 5
+loada slider_value, 0, 6
+stpushi 6
+loada slider_min, 0, 7
+stpushi 7
+loada slider_max, 0, 8
+stpushi 8
+loada status, 0, 9
+stpushi 9
+jsr :set_gadget_slider_vert
+loada slider_value, 0, 1
+stpushi 1
+jsr :draw_slider_value
+loada slider_value, 0, 1
+stpushi 1
+jsr :draw_slider_value_vert
+:loop
+jsr :sdl_update
+loada gadget_retstraddr, 0, 1
+stpushi 1
+jsr :gadget_event
+stpopi 2
+load ret, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load value, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load gadget_sel, 0, 5
+pullqw 4, 5, 0
+loada gadget_sel, 0, 1
+intr0 4, 1, 0, 0
+loada one, 0, 2
+eqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 5
+jmpi 5, :if_0
+jmp :endif_0
+:if_0
+intr0 255, 0, 0, 0
+:endif_0
+loada zero, 0, 6
+eqi 1, 6, 7
+load f, 0, 8
+pullqw 7, 8, 0
+loada f, 0, 5
+jmpi 5, :if_1
+jmp :endif_1
+:if_1
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+stpushi 6
+stpushi 7
+stpushi 8
+loada picture_namestraddr, 0, 9
+stpushi 9
+jsr :sdl_save_picture
+stpopi 10
+load ret, 0, 11
+pullqw 10, 11, 0
+stpopi 8
+stpopi 7
+stpopi 6
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+loada ret, 0, 1
+loada zero, 0, 2
+neqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 5
+jmpi 5, :if_2
+jmp :endif_2
+:if_2
+loada picture_errstraddr, 0, 6
+intr0 6, 6, 0, 0
+intr0 7, 0, 0, 0
+jmp :endif_2
+:else_2
+loada picture_okstraddr, 0, 7
+intr0 6, 7, 0, 0
+intr0 7, 0, 0, 0
+:endif_2
+:endif_1
+loada gadget_sel, 0, 8
+loada six, 0, 9
+eqi 8, 9, 10
+load f, 0, 11
+pullqw 10, 11, 0
+loada f, 0, 5
+jmpi 5, :if_3
+jmp :endif_3
+:if_3
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+stpushi 6
+stpushi 7
+stpushi 8
+stpushi 9
+stpushi 10
+stpushi 11
+loada value, 0, 12
+stpushi 12
+jsr :draw_slider_value
+stpopi 11
+stpopi 10
+stpopi 9
+stpopi 8
+stpopi 7
+stpopi 6
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+:endif_3
+loada gadget_sel, 0, 1
+loada seven, 0, 2
+eqi 1, 2, 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 5
+jmpi 5, :if_4
+jmp :endif_4
+:if_4
+stpushi 1
+stpushi 2
+stpushi 3
+stpushi 4
+stpushi 5
+loada value, 0, 6
+stpushi 6
+jsr :draw_slider_value_vert
+stpopi 5
+stpopi 4
+stpopi 3
+stpopi 2
+stpopi 1
+:endif_4
+intr0 7, 0, 0, 0
+jmp :loop
+rts
+:draw_slider_value
+loada zero, 0, 0
+stpopi 1
+load value@draw_slider_value, 0, 2
+pullqw 1, 2, 0
+stpushi 0
+stpushi 1
+loada value@draw_slider_value, 0, 1
+stpushi 1
+loada slider_valueaddr, 0, 2
+stpushi 2
+loada slider_value_max, 0, 3
+stpushi 3
+jsr :string_int64tostring
+stpopi 1
+stpopi 0
+loada x_slider_box, 0, 1
+stpushi 1
+loada y_slider_box, 0, 2
+stpushi 2
+loada x2_slider_box, 0, 3
+stpushi 3
+loada y2_slider_box, 0, 4
+stpushi 4
+load back_r, 0, 5
+pushb 5, 0, 6
+stpushb 6
+load back_g, 0, 7
+pushb 7, 0, 8
+stpushb 8
+load back_b, 0, 9
+pushb 9, 0, 10
+stpushb 10
+load alpha, 0, 11
+pushb 11, 0, 12
+stpushb 12
+jsr :sdl_rectangle_fill
+loada x_slider_value, 0, 1
+stpushi 1
+loada y_slider_value, 0, 2
+stpushi 2
+load black, 0, 3
+pushb 3, 0, 4
+stpushb 4
+load black, 0, 3
+pushb 3, 0, 5
+stpushb 5
+load black, 0, 3
+pushb 3, 0, 6
+stpushb 6
+loada slider_valueaddr, 0, 7
+stpushi 7
+jsr :sdl_text_ttf
+rts
+:draw_slider_value_vert
+loada zero, 0, 0
+stpopi 1
+load value@draw_slider_value_vert, 0, 2
+pullqw 1, 2, 0
+stpushi 0
+stpushi 1
+loada value@draw_slider_value_vert, 0, 1
+stpushi 1
+loada slider_valueaddr, 0, 2
+stpushi 2
+loada slider_value_max, 0, 3
+stpushi 3
+jsr :string_int64tostring
+stpopi 1
+stpopi 0
+loada x_slider_vert_box, 0, 1
+stpushi 1
+loada y_slider_vert_box, 0, 2
+stpushi 2
+loada x2_slider_vert_box, 0, 3
+stpushi 3
+loada y2_slider_vert_box, 0, 4
+stpushi 4
+load back_r, 0, 5
+pushb 5, 0, 6
+stpushb 6
+load back_g, 0, 7
+pushb 7, 0, 8
+stpushb 8
+load back_b, 0, 9
+pushb 9, 0, 10
+stpushb 10
+load alpha, 0, 11
+pushb 11, 0, 12
+stpushb 12
+jsr :sdl_rectangle_fill
+loada x_slider_vert_value, 0, 1
+stpushi 1
+loada y_slider_vert_value, 0, 2
+stpushi 2
+load black, 0, 3
+pushb 3, 0, 4
+stpushb 4
+load black, 0, 3
+pushb 3, 0, 5
+stpushb 5
+load black, 0, 3
+pushb 3, 0, 6
+stpushb 6
+loada slider_valueaddr, 0, 7
+stpushi 7
+jsr :sdl_text_ttf
+rts
+:sdl_open_screen
+loada zero, 0, 0
+stpopb 1
+load bit@sdl, 0, 2
+pullb 1, 2, 0
+stpopi 2
+load height@sdl, 0, 3
+pullqw 2, 3, 0
+stpopi 3
+load width@sdl, 0, 4
+pullqw 3, 4, 0
+stpopi 4
+load mod@sdl, 0, 5
+pullqw 4, 5, 0
+loada modulestr@sdladdr, 0, 5
+intr0 0, 5, 4, 0
+loada open@sdl, 0, 6
+loada openstr@sdladdr, 0, 7
+intr0 2, 4, 6, 7
+loada quit@sdl, 0, 8
+loada quitstr@sdladdr, 0, 9
+intr0 2, 4, 8, 9
+loada pixel@sdl, 0, 10
+loada pixelstr@sdladdr, 0, 11
+intr0 2, 4, 10, 11
+loada line@sdl, 0, 12
+loada linestr@sdladdr, 0, 13
+intr0 2, 4, 12, 13
+loada rectangle@sdl, 0, 14
+loada rectanglestr@sdladdr, 0, 15
+intr0 2, 4, 14, 15
+loada rectangle_fill@sdl, 0, 16
+loada rectangle_fillstr@sdladdr, 0, 17
+intr0 2, 4, 16, 17
+loada circle@sdl, 0, 18
+loada circlestr@sdladdr, 0, 19
+intr0 2, 4, 18, 19
+loada circle_fill@sdl, 0, 20
+loada circle_fillstr@sdladdr, 0, 21
+intr0 2, 4, 20, 21
+loada ellipse@sdl, 0, 22
+loada ellipsestr@sdladdr, 0, 23
+intr0 2, 4, 22, 23
+loada ellipse_fill@sdl, 0, 24
+loada ellipse_fillstr@sdladdr, 0, 25
+intr0 2, 4, 24, 25
+loada pie@sdl, 0, 26
+loada piestr@sdladdr, 0, 27
+intr0 2, 4, 26, 27
+loada pie_fill@sdl, 0, 28
+loada pie_fillstr@sdladdr, 0, 29
+intr0 2, 4, 28, 29
+loada trigon@sdl, 0, 30
+loada trigonstr@sdladdr, 0, 31
+intr0 2, 4, 30, 31
+loada trigon_fill@sdl, 0, 32
+loada trigon_fillstr@sdladdr, 0, 33
+intr0 2, 4, 32, 33
+loada update@sdl, 0, 34
+loada updatestr@sdladdr, 0, 35
+intr0 2, 4, 34, 35
+loada font_ttf@sdl, 0, 36
+loada font_ttfstr@sdladdr, 0, 37
+intr0 2, 4, 36, 37
+loada text_ttf@sdl, 0, 38
+loada text_ttfstr@sdladdr, 0, 39
+intr0 2, 4, 38, 39
+loada get_pixelcolor@sdl, 0, 40
+loada get_pixelcolorstr@sdladdr, 0, 41
+intr0 2, 4, 40, 41
+loada init_gadgets@sdl, 0, 42
+loada init_gadgetsstr@sdladdr, 0, 43
+intr0 2, 4, 42, 43
+loada set_gadget_button@sdl, 0, 44
+loada set_gadget_buttonstr@sdladdr, 0, 45
+intr0 2, 4, 44, 45
+loada set_gadget_progress@sdl, 0, 46
+loada set_gadget_progressstr@sdladdr, 0, 47
+intr0 2, 4, 46, 47
+loada set_gadget_checkbox@sdl, 0, 48
+loada set_gadget_checkboxstr@sdladdr, 0, 49
+intr0 2, 4, 48, 49
+loada set_gadget_cycle@sdl, 0, 50
+loada set_gadget_cyclestr@sdladdr, 0, 51
+intr0 2, 4, 50, 51
+loada set_gadget_string@sdl, 0, 52
+loada set_gadget_stringstr@sdladdr, 0, 53
+intr0 2, 4, 52, 53
+loada set_gadget_box@sdl, 0, 54
+loada set_gadget_boxstr@sdladdr, 0, 55
+intr0 2, 4, 54, 55
+loada change_gadget_checkbox@sdl, 0, 56
+loada change_gadget_checkboxstr@sdladdr, 0, 57
+intr0 2, 4, 56, 57
+loada change_gadget_cycle@sdl, 0, 58
+loada change_gadget_cyclestr@sdladdr, 0, 59
+intr0 2, 4, 58, 59
+loada change_gadget_string@sdl, 0, 60
+loada change_gadget_stringstr@sdladdr, 0, 61
+intr0 2, 4, 60, 61
+loada change_gadget_box@sdl, 0, 62
+loada change_gadget_boxstr@sdladdr, 0, 63
+intr0 2, 4, 62, 63
+loada change_gadget_progress@sdl, 0, 64
+loada change_gadget_progressstr@sdladdr, 0, 65
+intr0 2, 4, 64, 65
+loada get_gadget_x2y2@sdl, 0, 66
+loada get_gadget_x2y2str@sdladdr, 0, 67
+intr0 2, 4, 66, 67
+loada gadget_event@sdl, 0, 68
+loada gadget_eventstr@sdladdr, 0, 69
+intr0 2, 4, 68, 69
+loada load_picture@sdl, 0, 70
+loada load_picturestr@sdladdr, 0, 71
+intr0 2, 4, 70, 71
+loada save_picture@sdl, 0, 72
+loada save_picturestr@sdladdr, 0, 73
+intr0 2, 4, 72, 73
+loada delay@sdl, 0, 74
+loada delaystr@sdladdr, 0, 75
+intr0 2, 4, 74, 75
+loada set_gadget_slider@sdl, 0, 76
+loada set_gadget_sliderstr@sdladdr, 0, 77
+intr0 2, 4, 76, 77
+loada set_gadget_slider_vert@sdl, 0, 78
+loada set_gadget_slider_vertstr@sdladdr, 0, 79
+intr0 2, 4, 78, 79
+loada change_gadget_slider@sdl, 0, 80
+loada change_gadget_sliderstr@sdladdr, 0, 81
+intr0 2, 4, 80, 81
+stpushi 3
+stpushi 2
+stpushb 1
+intr0 3, 4, 6, 0
+rts
+:sdl_font_ttf
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada font_ttf@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_text_ttf
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada text_ttf@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_pixel
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada pixel@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_line
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada line@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_rectangle
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada rectangle@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_rectangle_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada rectangle_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_circle
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada circle@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_circle_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada circle_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_ellipse
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada ellipse@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_ellipse_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada ellipse_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_pie
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada pie@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_pie_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada pie_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_trigon
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada trigon@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_trigon_fill
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada trigon_fill@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_get_pixelcolor
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_pixelcolor@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_update
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada update@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_quit
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada quit@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:init_gui
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada init_gadgets@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_button
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_button@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_progress
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_progress@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_checkbox
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_checkbox@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_cycle
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_cycle@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_string
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_string@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_box
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_box@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_slider
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_slider@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:set_gadget_slider_vert
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada set_gadget_slider_vert@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_checkbox
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_checkbox@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_cycle
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_cycle@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_string
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_string@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_box
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_box@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_progress
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_progress@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:change_gadget_slider
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada change_gadget_slider@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:get_gadget_x2y2
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada get_gadget_x2y2@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:gadget_event
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada gadget_event@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_load_picture
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada load_picture@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_save_picture
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada save_picture@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:sdl_delay
+loada zero, 0, 0
+loada mod@sdl, 0, 1
+loada delay@sdl, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_init
+loada zero, 0, 0
+stpopi 1
+load mod@string, 0, 2
+pullqw 1, 2, 0
+loada modulestr@stringaddr, 0, 2
+intr0 0, 2, 1, 0
+loada len@string, 0, 3
+loada lenstr@stringaddr, 0, 4
+intr0 2, 1, 3, 4
+loada copy@string, 0, 5
+loada copystr@stringaddr, 0, 6
+intr0 2, 1, 5, 6
+loada cat@string, 0, 7
+loada catstr@stringaddr, 0, 8
+intr0 2, 1, 7, 8
+loada int64tostring@string, 0, 9
+loada int64tostringstr@stringaddr, 0, 10
+intr0 2, 1, 9, 10
+loada bytetohexstring@string, 0, 11
+loada bytetohexstringstr@stringaddr, 0, 12
+intr0 2, 1, 11, 12
+loada doubletostring@string, 0, 13
+loada doubletostringstr@stringaddr, 0, 14
+intr0 2, 1, 13, 14
+loada bytenumtostring@string, 0, 15
+loada bytenumtostringstr@stringaddr, 0, 16
+intr0 2, 1, 15, 16
+loada stringtoarray@string, 0, 17
+loada stringtoarraystr@stringaddr, 0, 18
+intr0 2, 1, 17, 18
+loada arraytostring@string, 0, 19
+loada arraytostringstr@stringaddr, 0, 20
+intr0 2, 1, 19, 20
+loada stringleft@string, 0, 21
+loada stringleftstr@stringaddr, 0, 22
+intr0 2, 1, 21, 22
+loada stringright@string, 0, 23
+loada stringrightstr@stringaddr, 0, 24
+intr0 2, 1, 23, 24
+loada stringmid@string, 0, 25
+loada stringmidstr@stringaddr, 0, 26
+intr0 2, 1, 25, 26
+loada stringtostring@string, 0, 27
+loada stringtostringstr@stringaddr, 0, 28
+intr0 2, 1, 27, 28
+loada stringcompare@string, 0, 29
+loada stringcomparestr@stringaddr, 0, 30
+intr0 2, 1, 29, 30
+loada stringmemtostring@string, 0, 31
+loada stringmemtostringstr@stringaddr, 0, 32
+intr0 2, 1, 31, 32
+loada stringmemsearch@string, 0, 33
+loada stringmemsearchstr@stringaddr, 0, 34
+intr0 2, 1, 33, 34
+rts
+:string_len
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada len@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_copy
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada copy@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_cat
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada cat@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_int64tostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada int64tostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_bytetohexstring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada bytetohexstring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_doubletostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada doubletostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_bytenumtostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada bytenumtostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_to_array
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringtoarray@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:array_to_string
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada arraytostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_left
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringleft@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_right
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringright@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_mid
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringmid@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_to_string
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringtostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_compare
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringcompare@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_memtostring
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringmemtostring@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_memsearch
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada stringmemsearch@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+.cend

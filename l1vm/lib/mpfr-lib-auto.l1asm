@@ -1,0 +1,1580 @@
+.data
+Q, 1, zero
+@, 0Q, 0
+Q, 1, xaddr
+@, 8Q, 0
+Q, 1, yaddr
+@, 16Q, 1
+Q, 1, resaddr
+@, 24Q, 2
+Q, 1, outaddr
+@, 32Q, 3
+B, 4, xstr
+@, 40Q, "0.0"
+Q, 1, xstraddr
+@, 44Q, 40Q
+B, 5, ystr
+@, 52Q, "42.0"
+Q, 1, ystraddr
+@, 57Q, 52Q
+B, 4, resstr
+@, 65Q, "0.0"
+Q, 1, resstraddr
+@, 69Q, 65Q
+B, 7, formatstr
+@, 77Q, "%.20Ff"
+Q, 1, formatstraddr
+@, 84Q, 77Q
+B, 512, outstr
+@, 92Q, ""
+Q, 1, outstraddr
+@, 604Q, 92Q
+Q, 1, outstr_len
+@, 612Q, 511
+Q, 1, one
+@, 620Q, 1
+Q, 1, base
+@, 628Q, 10
+Q, 1, precision
+@, 636Q, 50
+Q, 1, f
+@, 644Q, 0
+B, 12, modulestr@gmp
+@, 652Q, "libl1vmmpfr"
+Q, 1, modulestr@gmpaddr
+@, 664Q, 652Q
+B, 11, cleanupstr@gmp
+@, 672Q, "mp_cleanup"
+Q, 1, cleanupstr@gmpaddr
+@, 683Q, 672Q
+B, 13, setstr@gmp
+@, 691Q, "mp_set_float"
+Q, 1, setstr@gmpaddr
+@, 704Q, 691Q
+B, 18, setprecstr@gmp
+@, 712Q, "mp_set_float_prec"
+Q, 1, setprecstr@gmpaddr
+@, 730Q, 712Q
+B, 13, addstr@gmp
+@, 738Q, "mp_add_float"
+Q, 1, addstr@gmpaddr
+@, 751Q, 738Q
+B, 13, substr@gmp
+@, 759Q, "mp_sub_float"
+Q, 1, substr@gmpaddr
+@, 772Q, 759Q
+B, 13, mulstr@gmp
+@, 780Q, "mp_mul_float"
+Q, 1, mulstr@gmpaddr
+@, 793Q, 780Q
+B, 13, divstr@gmp
+@, 801Q, "mp_div_float"
+Q, 1, divstr@gmpaddr
+@, 814Q, 801Q
+B, 15, printstr@gmp
+@, 822Q, "mp_print_float"
+Q, 1, printstr@gmpaddr
+@, 837Q, 822Q
+B, 16, printsstr@gmp
+@, 845Q, "mp_prints_float"
+Q, 1, printsstr@gmpaddr
+@, 861Q, 845Q
+B, 14, lessstr@gmp
+@, 869Q, "mp_less_float"
+Q, 1, lessstr@gmpaddr
+@, 883Q, 869Q
+B, 20, less_equalstr@gmp
+@, 891Q, "mp_less_equal_float"
+Q, 1, less_equalstr@gmpaddr
+@, 911Q, 891Q
+B, 17, greaterstr@gmp
+@, 919Q, "mp_greater_float"
+Q, 1, greaterstr@gmpaddr
+@, 936Q, 919Q
+B, 23, greater_equalstr@gmp
+@, 944Q, "mp_greater_equal_float"
+Q, 1, greater_equalstr@gmpaddr
+@, 967Q, 944Q
+B, 15, equalstr@gmp
+@, 975Q, "mp_equal_float"
+Q, 1, equalstr@gmpaddr
+@, 990Q, 975Q
+B, 19, not_equalstr@gmp
+@, 998Q, "mp_not_equal_float"
+Q, 1, not_equalstr@gmpaddr
+@, 1017Q, 998Q
+B, 16, get_pistr@gmp
+@, 1025Q, "mp_get_pi_float"
+Q, 1, get_pistr@gmpaddr
+@, 1041Q, 1025Q
+B, 18, get_log2str@gmp
+@, 1049Q, "mp_get_log2_float"
+Q, 1, get_log2str@gmpaddr
+@, 1067Q, 1049Q
+B, 19, get_eulerstr@gmp
+@, 1075Q, "mp_get_euler_float"
+Q, 1, get_eulerstr@gmpaddr
+@, 1094Q, 1075Q
+B, 21, get_catalanstr@gmp
+@, 1102Q, "mp_get_catalan_float"
+Q, 1, get_catalanstr@gmpaddr
+@, 1123Q, 1102Q
+B, 28, setprecfilestr@gmp
+@, 1131Q, "mp_set_float_prec_from_file"
+Q, 1, setprecfilestr@gmpaddr
+@, 1159Q, 1131Q
+B, 22, get_precision_bitsstr@gmp
+@, 1167Q, "mp_get_precision_bits"
+Q, 1, get_precision_bitsstr@gmpaddr
+@, 1189Q, 1167Q
+Q, 1, cleanup@gmp
+@, 1197Q, 0
+Q, 1, set_float@gmp
+@, 1205Q, 1
+Q, 1, set_float_prec@gmp
+@, 1213Q, 93
+Q, 1, set_float_prec_file@gmp
+@, 1221Q, 94
+Q, 1, get_precision_bits@gmp
+@, 1229Q, 95
+Q, 1, add_float@gmp
+@, 1237Q, 2
+Q, 1, sub_float@gmp
+@, 1245Q, 3
+Q, 1, mul_float@gmp
+@, 1253Q, 4
+Q, 1, div_float@gmp
+@, 1261Q, 5
+Q, 1, print_float@gmp
+@, 1269Q, 6
+Q, 1, prints_float@gmp
+@, 1277Q, 7
+Q, 1, less@gmp
+@, 1285Q, 8
+Q, 1, less_equal@gmp
+@, 1293Q, 9
+Q, 1, greater@gmp
+@, 1301Q, 10
+Q, 1, greater_equal@gmp
+@, 1309Q, 11
+Q, 1, equal@gmp
+@, 1317Q, 12
+Q, 1, not_equal@gmp
+@, 1325Q, 13
+Q, 1, get_pi@gmp
+@, 1333Q, 14
+Q, 1, get_log2@gmp
+@, 1341Q, 15
+Q, 1, get_euler@gmp
+@, 1349Q, 16
+Q, 1, get_catalan@gmp
+@, 1357Q, 17
+Q, 1, mod@gmp
+@, 1365Q, 0
+B, 13, sqrstr@gmp
+@, 1373Q, "mp_sqr_float"
+Q, 1, sqrstr@gmpaddr
+@, 1386Q, 1373Q
+Q, 1, sqr@gmp
+@, 1394Q, 19
+B, 14, sqrtstr@gmp
+@, 1402Q, "mp_sqrt_float"
+Q, 1, sqrtstr@gmpaddr
+@, 1416Q, 1402Q
+Q, 1, sqrt@gmp
+@, 1424Q, 20
+B, 14, cbrtstr@gmp
+@, 1432Q, "mp_cbrt_float"
+Q, 1, cbrtstr@gmpaddr
+@, 1446Q, 1432Q
+Q, 1, cbrt@gmp
+@, 1454Q, 21
+B, 13, powstr@gmp
+@, 1462Q, "mp_pow_float"
+Q, 1, powstr@gmpaddr
+@, 1475Q, 1462Q
+Q, 1, pow@gmp
+@, 1483Q, 22
+B, 14, fabsstr@gmp
+@, 1491Q, "mp_fabs_float"
+Q, 1, fabsstr@gmpaddr
+@, 1505Q, 1491Q
+Q, 1, fabs@gmp
+@, 1513Q, 23
+B, 13, absstr@gmp
+@, 1521Q, "mp_abs_float"
+Q, 1, absstr@gmpaddr
+@, 1534Q, 1521Q
+Q, 1, abs@gmp
+@, 1542Q, 24
+B, 13, dimstr@gmp
+@, 1550Q, "mp_dim_float"
+Q, 1, dimstr@gmpaddr
+@, 1563Q, 1550Q
+Q, 1, dim@gmp
+@, 1571Q, 25
+B, 13, logstr@gmp
+@, 1579Q, "mp_log_float"
+Q, 1, logstr@gmpaddr
+@, 1592Q, 1579Q
+Q, 1, log@gmp
+@, 1600Q, 26
+B, 14, log2str@gmp
+@, 1608Q, "mp_log2_float"
+Q, 1, log2str@gmpaddr
+@, 1622Q, 1608Q
+Q, 1, log2@gmp
+@, 1630Q, 27
+B, 14, logbstr@gmp
+@, 1638Q, "mp_logb_float"
+Q, 1, logbstr@gmpaddr
+@, 1652Q, 1638Q
+Q, 1, logb@gmp
+@, 1660Q, 28
+B, 15, log10str@gmp
+@, 1668Q, "mp_log10_float"
+Q, 1, log10str@gmpaddr
+@, 1683Q, 1668Q
+Q, 1, log10@gmp
+@, 1691Q, 29
+B, 14, exp2str@gmp
+@, 1699Q, "mp_exp2_float"
+Q, 1, exp2str@gmpaddr
+@, 1713Q, 1699Q
+Q, 1, exp2@gmp
+@, 1721Q, 30
+B, 15, exp10str@gmp
+@, 1729Q, "mp_exp10_float"
+Q, 1, exp10str@gmpaddr
+@, 1744Q, 1729Q
+Q, 1, exp10@gmp
+@, 1752Q, 31
+B, 15, log1pstr@gmp
+@, 1760Q, "mp_log1p_float"
+Q, 1, log1pstr@gmpaddr
+@, 1775Q, 1760Q
+Q, 1, log1p@gmp
+@, 1783Q, 32
+B, 15, expm1str@gmp
+@, 1791Q, "mp_expm1_float"
+Q, 1, expm1str@gmpaddr
+@, 1806Q, 1791Q
+Q, 1, expm1@gmp
+@, 1814Q, 33
+B, 13, cosstr@gmp
+@, 1822Q, "mp_cos_float"
+Q, 1, cosstr@gmpaddr
+@, 1835Q, 1822Q
+Q, 1, cos@gmp
+@, 1843Q, 34
+B, 13, sinstr@gmp
+@, 1851Q, "mp_sin_float"
+Q, 1, sinstr@gmpaddr
+@, 1864Q, 1851Q
+Q, 1, sin@gmp
+@, 1872Q, 35
+B, 13, tanstr@gmp
+@, 1880Q, "mp_tan_float"
+Q, 1, tanstr@gmpaddr
+@, 1893Q, 1880Q
+Q, 1, tan@gmp
+@, 1901Q, 36
+B, 13, secstr@gmp
+@, 1909Q, "mp_sec_float"
+Q, 1, secstr@gmpaddr
+@, 1922Q, 1909Q
+Q, 1, sec@gmp
+@, 1930Q, 37
+B, 13, cscstr@gmp
+@, 1938Q, "mp_csc_float"
+Q, 1, cscstr@gmpaddr
+@, 1951Q, 1938Q
+Q, 1, csc@gmp
+@, 1959Q, 38
+B, 13, cotstr@gmp
+@, 1967Q, "mp_cot_float"
+Q, 1, cotstr@gmpaddr
+@, 1980Q, 1967Q
+Q, 1, cot@gmp
+@, 1988Q, 39
+B, 14, acosstr@gmp
+@, 1996Q, "mp_acos_float"
+Q, 1, acosstr@gmpaddr
+@, 2010Q, 1996Q
+Q, 1, acos@gmp
+@, 2018Q, 40
+B, 14, asinstr@gmp
+@, 2026Q, "mp_asin_float"
+Q, 1, asinstr@gmpaddr
+@, 2040Q, 2026Q
+Q, 1, asin@gmp
+@, 2048Q, 41
+B, 14, atanstr@gmp
+@, 2056Q, "mp_atan_float"
+Q, 1, atanstr@gmpaddr
+@, 2070Q, 2056Q
+Q, 1, atan@gmp
+@, 2078Q, 42
+B, 15, atan2str@gmp
+@, 2086Q, "mp_atan2_float"
+Q, 1, atan2str@gmpaddr
+@, 2101Q, 2086Q
+Q, 1, atan2@gmp
+@, 2109Q, 43
+B, 14, acotstr@gmp
+@, 2117Q, "mp_acot_float"
+Q, 1, acotstr@gmpaddr
+@, 2131Q, 2117Q
+Q, 1, acot@gmp
+@, 2139Q, 44
+B, 14, asecstr@gmp
+@, 2147Q, "mp_asec_float"
+Q, 1, asecstr@gmpaddr
+@, 2161Q, 2147Q
+Q, 1, asec@gmp
+@, 2169Q, 45
+B, 14, acscstr@gmp
+@, 2177Q, "mp_acsc_float"
+Q, 1, acscstr@gmpaddr
+@, 2191Q, 2177Q
+Q, 1, acsc@gmp
+@, 2199Q, 46
+B, 14, coshstr@gmp
+@, 2207Q, "mp_cosh_float"
+Q, 1, coshstr@gmpaddr
+@, 2221Q, 2207Q
+Q, 1, cosh@gmp
+@, 2229Q, 47
+B, 14, sinhstr@gmp
+@, 2237Q, "mp_sinh_float"
+Q, 1, sinhstr@gmpaddr
+@, 2251Q, 2237Q
+Q, 1, sinh@gmp
+@, 2259Q, 48
+B, 14, tanhstr@gmp
+@, 2267Q, "mp_tanh_float"
+Q, 1, tanhstr@gmpaddr
+@, 2281Q, 2267Q
+Q, 1, tanh@gmp
+@, 2289Q, 49
+B, 14, sechstr@gmp
+@, 2297Q, "mp_sech_float"
+Q, 1, sechstr@gmpaddr
+@, 2311Q, 2297Q
+Q, 1, sech@gmp
+@, 2319Q, 50
+B, 14, cschstr@gmp
+@, 2327Q, "mp_csch_float"
+Q, 1, cschstr@gmpaddr
+@, 2341Q, 2327Q
+Q, 1, csch@gmp
+@, 2349Q, 51
+B, 14, cothstr@gmp
+@, 2357Q, "mp_coth_float"
+Q, 1, cothstr@gmpaddr
+@, 2371Q, 2357Q
+Q, 1, coth@gmp
+@, 2379Q, 52
+B, 15, acoshstr@gmp
+@, 2387Q, "mp_acosh_float"
+Q, 1, acoshstr@gmpaddr
+@, 2402Q, 2387Q
+Q, 1, acosh@gmp
+@, 2410Q, 53
+B, 15, asinhstr@gmp
+@, 2418Q, "mp_asinh_float"
+Q, 1, asinhstr@gmpaddr
+@, 2433Q, 2418Q
+Q, 1, asinh@gmp
+@, 2441Q, 54
+B, 15, atanhstr@gmp
+@, 2449Q, "mp_atanh_float"
+Q, 1, atanhstr@gmpaddr
+@, 2464Q, 2449Q
+Q, 1, atanh@gmp
+@, 2472Q, 55
+B, 15, acothstr@gmp
+@, 2480Q, "mp_acoth_float"
+Q, 1, acothstr@gmpaddr
+@, 2495Q, 2480Q
+Q, 1, acoth@gmp
+@, 2503Q, 56
+B, 15, asechstr@gmp
+@, 2511Q, "mp_asech_float"
+Q, 1, asechstr@gmpaddr
+@, 2526Q, 2511Q
+Q, 1, asech@gmp
+@, 2534Q, 57
+B, 15, acschstr@gmp
+@, 2542Q, "mp_acsch_float"
+Q, 1, acschstr@gmpaddr
+@, 2557Q, 2542Q
+Q, 1, acsch@gmp
+@, 2565Q, 58
+B, 15, hypotstr@gmp
+@, 2573Q, "mp_hypot_float"
+Q, 1, hypotstr@gmpaddr
+@, 2588Q, 2573Q
+Q, 1, hypot@gmp
+@, 2596Q, 59
+B, 14, eintstr@gmp
+@, 2604Q, "mp_eint_float"
+Q, 1, eintstr@gmpaddr
+@, 2618Q, 2604Q
+Q, 1, eint@gmp
+@, 2626Q, 60
+B, 15, gammastr@gmp
+@, 2634Q, "mp_gamma_float"
+Q, 1, gammastr@gmpaddr
+@, 2649Q, 2634Q
+Q, 1, gamma@gmp
+@, 2657Q, 61
+B, 16, tgammastr@gmp
+@, 2665Q, "mp_tgamma_float"
+Q, 1, tgammastr@gmpaddr
+@, 2681Q, 2665Q
+Q, 1, tgamma@gmp
+@, 2689Q, 62
+B, 17, lngammastr@gmp
+@, 2697Q, "mp_lngamma_float"
+Q, 1, lngammastr@gmpaddr
+@, 2714Q, 2697Q
+Q, 1, lngamma@gmp
+@, 2722Q, 63
+B, 14, zetastr@gmp
+@, 2730Q, "mp_zeta_float"
+Q, 1, zetastr@gmpaddr
+@, 2744Q, 2730Q
+Q, 1, zeta@gmp
+@, 2752Q, 64
+B, 13, erfstr@gmp
+@, 2760Q, "mp_erf_float"
+Q, 1, erfstr@gmpaddr
+@, 2773Q, 2760Q
+Q, 1, erf@gmp
+@, 2781Q, 65
+B, 14, erfcstr@gmp
+@, 2789Q, "mp_erfc_float"
+Q, 1, erfcstr@gmpaddr
+@, 2803Q, 2789Q
+Q, 1, erfc@gmp
+@, 2811Q, 66
+B, 18, bessely0str@gmp
+@, 2819Q, "mp_bessely0_float"
+Q, 1, bessely0str@gmpaddr
+@, 2837Q, 2819Q
+Q, 1, bessely0@gmp
+@, 2845Q, 67
+B, 18, bessely1str@gmp
+@, 2853Q, "mp_bessely1_float"
+Q, 1, bessely1str@gmpaddr
+@, 2871Q, 2853Q
+Q, 1, bessely1@gmp
+@, 2879Q, 68
+B, 13, fmastr@gmp
+@, 2887Q, "mp_fma_float"
+Q, 1, fmastr@gmpaddr
+@, 2900Q, 2887Q
+Q, 1, fma@gmp
+@, 2908Q, 69
+B, 13, fmsstr@gmp
+@, 2916Q, "mp_fms_float"
+Q, 1, fmsstr@gmpaddr
+@, 2929Q, 2916Q
+Q, 1, fms@gmp
+@, 2937Q, 70
+B, 13, agmstr@gmp
+@, 2945Q, "mp_agm_float"
+Q, 1, agmstr@gmpaddr
+@, 2958Q, 2945Q
+Q, 1, agm@gmp
+@, 2966Q, 71
+B, 13, li2str@gmp
+@, 2974Q, "mp_li2_float"
+Q, 1, li2str@gmpaddr
+@, 2987Q, 2974Q
+Q, 1, li2@gmp
+@, 2995Q, 72
+B, 14, fmodstr@gmp
+@, 3003Q, "mp_fmod_float"
+Q, 1, fmodstr@gmpaddr
+@, 3017Q, 3003Q
+Q, 1, fmod@gmp
+@, 3025Q, 73
+B, 18, rec_sqrtstr@gmp
+@, 3033Q, "mp_rec_sqrt_float"
+Q, 1, rec_sqrtstr@gmpaddr
+@, 3051Q, 3033Q
+Q, 1, rec_sqrt@gmp
+@, 3059Q, 74
+B, 17, digammastr@gmp
+@, 3067Q, "mp_digamma_float"
+Q, 1, digammastr@gmpaddr
+@, 3084Q, 3067Q
+Q, 1, digamma@gmp
+@, 3092Q, 75
+B, 12, aistr@gmp
+@, 3100Q, "mp_ai_float"
+Q, 1, aistr@gmpaddr
+@, 3112Q, 3100Q
+Q, 1, ai@gmp
+@, 3120Q, 76
+B, 14, rintstr@gmp
+@, 3128Q, "mp_rint_float"
+Q, 1, rintstr@gmpaddr
+@, 3142Q, 3128Q
+Q, 1, rint@gmp
+@, 3150Q, 77
+B, 14, ceilstr@gmp
+@, 3158Q, "mp_ceil_float"
+Q, 1, ceilstr@gmpaddr
+@, 3172Q, 3158Q
+Q, 1, ceil@gmp
+@, 3180Q, 78
+B, 15, floorstr@gmp
+@, 3188Q, "mp_floor_float"
+Q, 1, floorstr@gmpaddr
+@, 3203Q, 3188Q
+Q, 1, floor@gmp
+@, 3211Q, 79
+B, 15, roundstr@gmp
+@, 3219Q, "mp_round_float"
+Q, 1, roundstr@gmpaddr
+@, 3234Q, 3219Q
+Q, 1, round@gmp
+@, 3242Q, 80
+B, 15, truncstr@gmp
+@, 3250Q, "mp_trunc_float"
+Q, 1, truncstr@gmpaddr
+@, 3265Q, 3250Q
+Q, 1, trunc@gmp
+@, 3273Q, 81
+B, 19, rint_ceilstr@gmp
+@, 3281Q, "mp_rint_ceil_float"
+Q, 1, rint_ceilstr@gmpaddr
+@, 3300Q, 3281Q
+Q, 1, rint_ceil@gmp
+@, 3308Q, 82
+B, 20, rint_floorstr@gmp
+@, 3316Q, "mp_rint_floor_float"
+Q, 1, rint_floorstr@gmpaddr
+@, 3336Q, 3316Q
+Q, 1, rint_floor@gmp
+@, 3344Q, 83
+B, 20, rint_roundstr@gmp
+@, 3352Q, "mp_rint_round_float"
+Q, 1, rint_roundstr@gmpaddr
+@, 3372Q, 3352Q
+Q, 1, rint_round@gmp
+@, 3380Q, 84
+B, 20, rint_truncstr@gmp
+@, 3388Q, "mp_rint_trunc_float"
+Q, 1, rint_truncstr@gmpaddr
+@, 3408Q, 3388Q
+Q, 1, rint_trunc@gmp
+@, 3416Q, 85
+B, 14, fracstr@gmp
+@, 3424Q, "mp_frac_float"
+Q, 1, fracstr@gmpaddr
+@, 3438Q, 3424Q
+Q, 1, frac@gmp
+@, 3446Q, 86
+B, 19, remainderstr@gmp
+@, 3454Q, "mp_remainder_float"
+Q, 1, remainderstr@gmpaddr
+@, 3473Q, 3454Q
+Q, 1, remainder@gmp
+@, 3481Q, 87
+B, 20, nexttowardstr@gmp
+@, 3489Q, "mp_nexttoward_float"
+Q, 1, nexttowardstr@gmpaddr
+@, 3509Q, 3489Q
+Q, 1, nexttoward@gmp
+@, 3517Q, 88
+B, 19, nextabovestr@gmp
+@, 3525Q, "mp_nextabove_float"
+Q, 1, nextabovestr@gmpaddr
+@, 3544Q, 3525Q
+Q, 1, nextabove@gmp
+@, 3552Q, 89
+B, 19, nextbelowstr@gmp
+@, 3560Q, "mp_nextbelow_float"
+Q, 1, nextbelowstr@gmpaddr
+@, 3579Q, 3560Q
+Q, 1, nextbelow@gmp
+@, 3587Q, 90
+B, 14, fmaxstr@gmp
+@, 3595Q, "mp_fmax_float"
+Q, 1, fmaxstr@gmpaddr
+@, 3609Q, 3595Q
+Q, 1, fmax@gmp
+@, 3617Q, 91
+B, 14, fminstr@gmp
+@, 3625Q, "mp_fmin_float"
+Q, 1, fminstr@gmpaddr
+@, 3639Q, 3625Q
+Q, 1, fmin@gmp
+@, 3647Q, 92
+.dend
+.code
+:main
+loada zero, 0, 0
+stpushi 0
+loada zero, 0, 1
+stpushi 1
+jsr :mp_math_init
+stpopi 0
+loada xstraddr, 0, 1
+stpushi 1
+loada base, 0, 2
+stpushi 2
+loada xaddr, 0, 3
+stpushi 3
+jsr :mp_set_float
+loada precision, 0, 1
+stpushi 1
+loada xaddr, 0, 2
+stpushi 2
+jsr :mp_get_pi
+loada ystraddr, 0, 1
+stpushi 1
+loada base, 0, 2
+stpushi 2
+loada yaddr, 0, 3
+stpushi 3
+jsr :mp_set_float
+loada resstraddr, 0, 1
+stpushi 1
+loada base, 0, 2
+stpushi 2
+loada resaddr, 0, 3
+stpushi 3
+jsr :mp_set_float
+loada xaddr, 0, 1
+stpushi 1
+loada yaddr, 0, 2
+stpushi 2
+loada resaddr, 0, 3
+stpushi 3
+jsr :mp_mul_float
+loada resaddr, 0, 1
+stpushi 1
+loada formatstraddr, 0, 2
+stpushi 2
+loada precision, 0, 3
+stpushi 3
+jsr :mp_print_float
+intr0 7, 0, 0, 0
+loada resaddr, 0, 1
+stpushi 1
+loada outstraddr, 0, 2
+stpushi 2
+loada outstr_len, 0, 3
+stpushi 3
+loada formatstraddr, 0, 4
+stpushi 4
+loada precision, 0, 5
+stpushi 5
+jsr :mp_prints_float
+loada outstraddr, 0, 1
+intr0 6, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+loada outstraddr, 0, 2
+stpushi 2
+loada base, 0, 3
+stpushi 3
+loada outaddr, 0, 4
+stpushi 4
+jsr :mp_set_float
+stpopi 1
+loada outaddr, 0, 1
+stpushi 1
+loada formatstraddr, 0, 2
+stpushi 2
+loada precision, 0, 3
+stpushi 3
+jsr :mp_print_float
+intr0 7, 0, 0, 0
+loada yaddr, 0, 1
+stpushi 1
+loada xaddr, 0, 2
+stpushi 2
+jsr :mp_greater
+stpopi 3
+load f, 0, 4
+pullqw 3, 4, 0
+loada f, 0, 1
+intr0 4, 1, 0, 0
+intr0 7, 0, 0, 0
+stpushi 1
+jsr :mp_cleanup
+stpopi 1
+loada zero, 0, 1
+intr0 1, 1, 0, 0
+intr0 255, 1, 0, 0
+rts
+:mp_math_init
+loada zero, 0, 0
+stpopi 1
+load mod@gmp, 0, 2
+pullqw 1, 2, 0
+loada modulestr@gmpaddr, 0, 2
+intr0 0, 2, 1, 0
+loada cleanup@gmp, 0, 3
+loada cleanupstr@gmpaddr, 0, 4
+intr0 2, 1, 3, 4
+loada set_float@gmp, 0, 5
+loada setstr@gmpaddr, 0, 6
+intr0 2, 1, 5, 6
+loada set_float_prec@gmp, 0, 7
+loada setprecstr@gmpaddr, 0, 8
+intr0 2, 1, 7, 8
+loada set_float_prec_file@gmp, 0, 9
+loada setprecfilestr@gmpaddr, 0, 10
+intr0 2, 1, 9, 10
+loada get_precision_bits@gmp, 0, 11
+loada get_precision_bitsstr@gmpaddr, 0, 12
+intr0 2, 1, 11, 12
+loada add_float@gmp, 0, 13
+loada addstr@gmpaddr, 0, 14
+intr0 2, 1, 13, 14
+loada sub_float@gmp, 0, 15
+loada substr@gmpaddr, 0, 16
+intr0 2, 1, 15, 16
+loada mul_float@gmp, 0, 17
+loada mulstr@gmpaddr, 0, 18
+intr0 2, 1, 17, 18
+loada div_float@gmp, 0, 19
+loada divstr@gmpaddr, 0, 20
+intr0 2, 1, 19, 20
+loada print_float@gmp, 0, 21
+loada printstr@gmpaddr, 0, 22
+intr0 2, 1, 21, 22
+loada prints_float@gmp, 0, 23
+loada printsstr@gmpaddr, 0, 24
+intr0 2, 1, 23, 24
+loada less@gmp, 0, 25
+loada lessstr@gmpaddr, 0, 26
+intr0 2, 1, 25, 26
+loada less_equal@gmp, 0, 27
+loada less_equalstr@gmpaddr, 0, 28
+intr0 2, 1, 27, 28
+loada greater@gmp, 0, 29
+loada greaterstr@gmpaddr, 0, 30
+intr0 2, 1, 29, 30
+loada greater_equal@gmp, 0, 31
+loada greater_equalstr@gmpaddr, 0, 32
+intr0 2, 1, 31, 32
+loada equal@gmp, 0, 33
+loada equalstr@gmpaddr, 0, 34
+intr0 2, 1, 33, 34
+loada not_equal@gmp, 0, 35
+loada not_equalstr@gmpaddr, 0, 36
+intr0 2, 1, 35, 36
+loada get_pi@gmp, 0, 37
+loada get_pistr@gmpaddr, 0, 38
+intr0 2, 1, 37, 38
+loada get_log2@gmp, 0, 39
+loada get_log2str@gmpaddr, 0, 40
+intr0 2, 1, 39, 40
+loada get_euler@gmp, 0, 41
+loada get_eulerstr@gmpaddr, 0, 42
+intr0 2, 1, 41, 42
+loada get_catalan@gmp, 0, 43
+loada get_catalanstr@gmpaddr, 0, 44
+intr0 2, 1, 43, 44
+loada sqr@gmp, 0, 45
+loada sqrstr@gmpaddr, 0, 46
+intr0 2, 1, 45, 46
+loada sqrt@gmp, 0, 47
+loada sqrtstr@gmpaddr, 0, 48
+intr0 2, 1, 47, 48
+loada cbrt@gmp, 0, 49
+loada cbrtstr@gmpaddr, 0, 50
+intr0 2, 1, 49, 50
+loada pow@gmp, 0, 51
+loada powstr@gmpaddr, 0, 52
+intr0 2, 1, 51, 52
+loada fabs@gmp, 0, 53
+loada fabsstr@gmpaddr, 0, 54
+intr0 2, 1, 53, 54
+loada abs@gmp, 0, 55
+loada absstr@gmpaddr, 0, 56
+intr0 2, 1, 55, 56
+loada dim@gmp, 0, 57
+loada dimstr@gmpaddr, 0, 58
+intr0 2, 1, 57, 58
+loada log@gmp, 0, 59
+loada logstr@gmpaddr, 0, 60
+intr0 2, 1, 59, 60
+loada log2@gmp, 0, 61
+loada log2str@gmpaddr, 0, 62
+intr0 2, 1, 61, 62
+loada logb@gmp, 0, 63
+loada logbstr@gmpaddr, 0, 64
+intr0 2, 1, 63, 64
+loada log10@gmp, 0, 65
+loada log10str@gmpaddr, 0, 66
+intr0 2, 1, 65, 66
+loada exp2@gmp, 0, 67
+loada exp2str@gmpaddr, 0, 68
+intr0 2, 1, 67, 68
+loada exp10@gmp, 0, 69
+loada exp10str@gmpaddr, 0, 70
+intr0 2, 1, 69, 70
+loada log1p@gmp, 0, 71
+loada log1pstr@gmpaddr, 0, 72
+intr0 2, 1, 71, 72
+loada expm1@gmp, 0, 73
+loada expm1str@gmpaddr, 0, 74
+intr0 2, 1, 73, 74
+loada cos@gmp, 0, 75
+loada cosstr@gmpaddr, 0, 76
+intr0 2, 1, 75, 76
+loada sin@gmp, 0, 77
+loada sinstr@gmpaddr, 0, 78
+intr0 2, 1, 77, 78
+loada tan@gmp, 0, 79
+loada tanstr@gmpaddr, 0, 80
+intr0 2, 1, 79, 80
+loada sec@gmp, 0, 81
+loada secstr@gmpaddr, 0, 82
+intr0 2, 1, 81, 82
+loada csc@gmp, 0, 83
+loada cscstr@gmpaddr, 0, 84
+intr0 2, 1, 83, 84
+loada cot@gmp, 0, 85
+loada cotstr@gmpaddr, 0, 86
+intr0 2, 1, 85, 86
+loada acos@gmp, 0, 87
+loada acosstr@gmpaddr, 0, 88
+intr0 2, 1, 87, 88
+loada asin@gmp, 0, 89
+loada asinstr@gmpaddr, 0, 90
+intr0 2, 1, 89, 90
+loada atan@gmp, 0, 91
+loada atanstr@gmpaddr, 0, 92
+intr0 2, 1, 91, 92
+loada atan2@gmp, 0, 93
+loada atan2str@gmpaddr, 0, 94
+intr0 2, 1, 93, 94
+loada acot@gmp, 0, 95
+loada acotstr@gmpaddr, 0, 96
+intr0 2, 1, 95, 96
+loada asec@gmp, 0, 97
+loada asecstr@gmpaddr, 0, 98
+intr0 2, 1, 97, 98
+loada acsc@gmp, 0, 99
+loada acscstr@gmpaddr, 0, 100
+intr0 2, 1, 99, 100
+loada cosh@gmp, 0, 101
+loada coshstr@gmpaddr, 0, 102
+intr0 2, 1, 101, 102
+loada sinh@gmp, 0, 103
+loada sinhstr@gmpaddr, 0, 104
+intr0 2, 1, 103, 104
+loada tanh@gmp, 0, 105
+loada tanhstr@gmpaddr, 0, 106
+intr0 2, 1, 105, 106
+loada sech@gmp, 0, 107
+loada sechstr@gmpaddr, 0, 108
+intr0 2, 1, 107, 108
+loada csch@gmp, 0, 109
+loada cschstr@gmpaddr, 0, 110
+intr0 2, 1, 109, 110
+loada coth@gmp, 0, 111
+loada cothstr@gmpaddr, 0, 112
+intr0 2, 1, 111, 112
+loada acosh@gmp, 0, 113
+loada acoshstr@gmpaddr, 0, 114
+intr0 2, 1, 113, 114
+loada asinh@gmp, 0, 115
+loada asinhstr@gmpaddr, 0, 116
+intr0 2, 1, 115, 116
+loada atanh@gmp, 0, 117
+loada atanhstr@gmpaddr, 0, 118
+intr0 2, 1, 117, 118
+loada acoth@gmp, 0, 119
+loada acothstr@gmpaddr, 0, 120
+intr0 2, 1, 119, 120
+loada asech@gmp, 0, 121
+loada asechstr@gmpaddr, 0, 122
+intr0 2, 1, 121, 122
+loada acsch@gmp, 0, 123
+loada acschstr@gmpaddr, 0, 124
+intr0 2, 1, 123, 124
+loada hypot@gmp, 0, 125
+loada hypotstr@gmpaddr, 0, 126
+intr0 2, 1, 125, 126
+loada eint@gmp, 0, 127
+loada eintstr@gmpaddr, 0, 128
+intr0 2, 1, 127, 128
+loada gamma@gmp, 0, 129
+loada gammastr@gmpaddr, 0, 130
+intr0 2, 1, 129, 130
+loada tgamma@gmp, 0, 131
+loada tgammastr@gmpaddr, 0, 132
+intr0 2, 1, 131, 132
+loada lngamma@gmp, 0, 133
+loada lngammastr@gmpaddr, 0, 134
+intr0 2, 1, 133, 134
+loada zeta@gmp, 0, 135
+loada zetastr@gmpaddr, 0, 136
+intr0 2, 1, 135, 136
+loada erf@gmp, 0, 137
+loada erfstr@gmpaddr, 0, 138
+intr0 2, 1, 137, 138
+loada erfc@gmp, 0, 139
+loada erfcstr@gmpaddr, 0, 140
+intr0 2, 1, 139, 140
+loada bessely0@gmp, 0, 141
+loada bessely0str@gmpaddr, 0, 142
+intr0 2, 1, 141, 142
+loada bessely1@gmp, 0, 143
+loada bessely1str@gmpaddr, 0, 144
+intr0 2, 1, 143, 144
+loada fma@gmp, 0, 145
+loada fmastr@gmpaddr, 0, 146
+intr0 2, 1, 145, 146
+loada fms@gmp, 0, 147
+loada fmsstr@gmpaddr, 0, 148
+intr0 2, 1, 147, 148
+loada agm@gmp, 0, 149
+loada agmstr@gmpaddr, 0, 150
+intr0 2, 1, 149, 150
+loada li2@gmp, 0, 151
+loada li2str@gmpaddr, 0, 152
+intr0 2, 1, 151, 152
+loada fmod@gmp, 0, 153
+loada fmodstr@gmpaddr, 0, 154
+intr0 2, 1, 153, 154
+loada rec_sqrt@gmp, 0, 155
+loada rec_sqrtstr@gmpaddr, 0, 156
+intr0 2, 1, 155, 156
+loada digamma@gmp, 0, 157
+loada digammastr@gmpaddr, 0, 158
+intr0 2, 1, 157, 158
+loada ai@gmp, 0, 159
+loada aistr@gmpaddr, 0, 160
+intr0 2, 1, 159, 160
+loada rint@gmp, 0, 161
+loada rintstr@gmpaddr, 0, 162
+intr0 2, 1, 161, 162
+loada ceil@gmp, 0, 163
+loada ceilstr@gmpaddr, 0, 164
+intr0 2, 1, 163, 164
+loada floor@gmp, 0, 165
+loada floorstr@gmpaddr, 0, 166
+intr0 2, 1, 165, 166
+loada round@gmp, 0, 167
+loada roundstr@gmpaddr, 0, 168
+intr0 2, 1, 167, 168
+loada trunc@gmp, 0, 169
+loada truncstr@gmpaddr, 0, 170
+intr0 2, 1, 169, 170
+loada rint_ceil@gmp, 0, 171
+loada rint_ceilstr@gmpaddr, 0, 172
+intr0 2, 1, 171, 172
+loada rint_floor@gmp, 0, 173
+loada rint_floorstr@gmpaddr, 0, 174
+intr0 2, 1, 173, 174
+loada rint_round@gmp, 0, 175
+loada rint_roundstr@gmpaddr, 0, 176
+intr0 2, 1, 175, 176
+loada rint_trunc@gmp, 0, 177
+loada rint_truncstr@gmpaddr, 0, 178
+intr0 2, 1, 177, 178
+loada frac@gmp, 0, 179
+loada fracstr@gmpaddr, 0, 180
+intr0 2, 1, 179, 180
+loada remainder@gmp, 0, 181
+loada remainderstr@gmpaddr, 0, 182
+intr0 2, 1, 181, 182
+loada nexttoward@gmp, 0, 183
+loada nexttowardstr@gmpaddr, 0, 184
+intr0 2, 1, 183, 184
+loada nextabove@gmp, 0, 185
+loada nextabovestr@gmpaddr, 0, 186
+intr0 2, 1, 185, 186
+loada nextbelow@gmp, 0, 187
+loada nextbelowstr@gmpaddr, 0, 188
+intr0 2, 1, 187, 188
+loada fmax@gmp, 0, 189
+loada fmaxstr@gmpaddr, 0, 190
+intr0 2, 1, 189, 190
+loada fmin@gmp, 0, 191
+loada fminstr@gmpaddr, 0, 192
+intr0 2, 1, 191, 192
+rts
+:mp_sqr_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada sqr@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_sqrt_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada sqrt@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_cbrt_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada cbrt@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_pow_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada pow@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_fabs_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada fabs@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_abs_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada abs@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_dim_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada dim@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_log_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada log@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_log2_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada log2@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_logb_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada logb@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_log10_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada log10@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_exp2_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada exp2@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_exp10_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada exp10@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_log1p_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada log1p@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_expm1_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada expm1@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_cos_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada cos@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_sin_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada sin@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_tan_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada tan@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_sec_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada sec@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_csc_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada csc@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_cot_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada cot@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_acos_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada acos@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_asin_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada asin@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_atan_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada atan@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_atan2_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada atan2@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_acot_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada acot@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_asec_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada asec@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_acsc_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada acsc@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_cosh_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada cosh@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_sinh_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada sinh@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_tanh_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada tanh@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_sech_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada sech@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_csch_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada csch@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_coth_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada coth@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_acosh_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada acosh@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_asinh_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada asinh@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_atanh_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada atanh@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_acoth_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada acoth@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_asech_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada asech@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_acsch_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada acsch@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_hypot_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada hypot@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_eint_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada eint@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_gamma_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada gamma@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_tgamma_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada tgamma@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_lngamma_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada lngamma@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_zeta_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada zeta@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_erf_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada erf@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_erfc_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada erfc@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_bessely0_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada bessely0@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_bessely1_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada bessely1@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_fma_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada fma@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_fms_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada fms@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_agm_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada agm@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_li2_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada li2@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_fmod_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada fmod@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_rec_sqrt_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada rec_sqrt@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_digamma_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada digamma@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_ai_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada ai@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_rint_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada rint@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_ceil_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada ceil@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_floor_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada floor@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_round_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada round@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_trunc_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada trunc@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_rint_ceil_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada rint_ceil@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_rint_floor_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada rint_floor@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_rint_round_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada rint_round@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_rint_trunc_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada rint_trunc@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_frac_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada frac@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_remainder_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada remainder@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_nexttoward_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada nexttoward@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_nextabove_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada nextabove@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_nextbelow_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada nextbelow@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_fmax_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada fmax@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_fmin_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada fmin@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_cleanup
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada cleanup@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_set_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada set_float@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_set_float_prec
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada set_float_prec@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_set_float_prec_file
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada set_float_prec_file@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_get_precision_bits
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada get_precision_bits@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_add_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada add_float@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_sub_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada sub_float@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_mul_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada mul_float@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_div_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada div_float@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_print_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada print_float@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_prints_float
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada prints_float@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_less
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada less@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_less_equal
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada less_equal@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_greater
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada greater@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_greater_equal
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada greater_equal@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_equal
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada equal@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_not_equal
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada not_equal@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_get_pi
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada get_pi@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_get_log2
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada get_log2@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_get_euler
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada get_euler@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+:mp_get_catalan
+loada zero, 0, 0
+loada mod@gmp, 0, 1
+loada get_catalan@gmp, 0, 2
+intr0 3, 1, 2, 0
+rts
+.cend
