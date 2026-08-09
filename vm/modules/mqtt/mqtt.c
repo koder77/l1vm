@@ -72,6 +72,8 @@ size_t strlen_safe (const char * str, S8  maxlen);
 struct data_info data_info[MAXDATAINFO];
 S8 data_info_ind;
 
+static pthread_mutex_t mqtt_delivered_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mqtt_read_lock = PTHREAD_MUTEX_INITIALIZER;
 
 S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
 {
@@ -105,24 +107,34 @@ S8 get_free_client (void)
 
 void delivered (void *context, MQTTClient_deliveryToken dt)
 {
-    S8 handle ALIGN = (S8) context;
+    S8 handle ALIGN;
 
-    printf("Message with token value %d delivery confirmed\n", dt);
-    printf ("delivered: handle: %lli\n", handle);
+    pthread_mutex_lock (&mqtt_delivered_lock);
+    handle = (S8) context;
+
+    // printf("Message with token value %d delivery confirmed\n", dt);
+    // printf ("delivered: handle: %lli\n", handle);
     mqtt_client[handle].deliveredtoken = dt;
+
+    pthread_mutex_unlock (&mqtt_delivered_lock);
 }
 
 int msgarrvd (void *context, char *topicName, int topicLen, MQTTClient_message *message)
 {
-    S8 handle ALIGN = (S8) context;
+    S8 handle ALIGN;
     S8 i ALIGN;
     S8 address ALIGN;
 
     char* payloadptr;
     U1 *data;
 
+    pthread_mutex_lock (&mqtt_delivered_lock);
+    handle = (S8) context;
+
     if (message->payloadlen >= MAXPAYLOAD)
     {
+        pthread_mutex_unlock (&mqtt_delivered_lock);
+
         printf ("mqtt_msgarrvd: error payload: %i too big! Must be below %i\n", message->payloadlen, MAXPAYLOAD);
         return 0;
     }
@@ -140,6 +152,8 @@ int msgarrvd (void *context, char *topicName, int topicLen, MQTTClient_message *
 
     if (memory_bounds (address, message->payloadlen - 1) != 0)
 	{
+        pthread_mutex_unlock (&mqtt_delivered_lock);
+
 		printf ("mqtt msgarrvd: ERROR: return string overflow!\n");
 	    return 0;
 	}
@@ -150,6 +164,8 @@ int msgarrvd (void *context, char *topicName, int topicLen, MQTTClient_message *
 
     MQTTClient_freeMessage(&message);
     MQTTClient_free(topicName);
+
+    pthread_mutex_unlock (&mqtt_delivered_lock);
     return 1;
 }
 
@@ -306,7 +322,7 @@ U1 *mqtt_open_client (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     mqtt_client[handle].data = data;
 
     MQTTClient_setCallbacks ((void *) mqtt_client[handle].client, (void *) handle, connlost, msgarrvd, delivered);
-    if ((rc = MQTTClient_connect (mqtt_client[handle].client, &mqtt_client[handle].conn_opts) != MQTTCLIENT_SUCCESS)
+    if (rc = MQTTClient_connect (mqtt_client[handle].client, &mqtt_client[handle].conn_opts) != MQTTCLIENT_SUCCESS)
     {
         printf("mqtt_open_client: failed to connect, return code %lli\n", rc);
 
