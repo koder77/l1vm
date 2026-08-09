@@ -17,6 +17,7 @@
     (set int64 1 mqtt_handle 0)
     (set int64 1 qos 1)
     (set int64 1 ret 0)
+    (set int64 1 del 500)
     (set int64 1 f 0)
 
     (mqtt_mod :mqtt_init !)
@@ -39,8 +40,7 @@
     (mqtt_handle :mqtt_get_msg !)
     (ret stpop)
     (((ret one !=) f :=) f if)
-        //(error_read_msgstr :print_s !)
-        //(:print_n !)
+        (del :detime !)
         (:read jmp)
     (endif)
 
