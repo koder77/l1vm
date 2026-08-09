@@ -281,7 +281,7 @@ U1 *mqtt_open_client (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     strcpy ((char *) mqtt_client[handle].topic, (char *) &data[topic]);
     mqtt_client[handle].qos = qos;
 
-    err = MQTTClient_create (mqtt_client[handle].client, (const char *) mqtt_client[handle].address, (const char *) mqtt_client[handle].client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+    err = MQTTClient_create (&mqtt_client[handle].client, (const char *) mqtt_client[handle].address, (const char *) mqtt_client[handle].client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
     if (err !=  MQTTCLIENT_SUCCESS)
     {
         printf ("mqtt_open_client: client create error: %lli !\n", err);
@@ -300,8 +300,8 @@ U1 *mqtt_open_client (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     mqtt_client[handle].data_address = retstr_address;
     mqtt_client[handle].data = data;
 
-    MQTTClient_setCallbacks ((S8 *) &handle, &handle, connlost, msgarrvd, delivered);
-    if ((rc = MQTTClient_connect ((S8 *) &handle, &mqtt_client[handle].conn_opts)) != MQTTCLIENT_SUCCESS)
+    MQTTClient_setCallbacks ((void *) mqtt_client[handle].client, (void *) handle, connlost, msgarrvd, delivered);
+    if ((rc = MQTTClient_connect (mqtt_client[handle].client, &mqtt_client[handle].conn_opts)) != MQTTCLIENT_SUCCESS)
     {
         printf("mqtt_open_client: failed to connect, return code %lli\n", rc);
 
@@ -316,7 +316,7 @@ U1 *mqtt_open_client (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     }
 
     // subscribe
-    MQTTClient_subscribe ((S8 *) &handle, (const char *) mqtt_client[handle].topic, mqtt_client[handle].qos);
+    MQTTClient_subscribe (mqtt_client[handle].client, (const char *) mqtt_client[handle].topic, mqtt_client[handle].qos);
 
     mqtt_client[handle].message_arrived = MSG_EMPTY;
 
@@ -513,51 +513,8 @@ U1 *mqtt_open_client_pub_msg (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
        return (sp);
     }
 
-    printf ("DEBUG: mqtt_open_client_pub_msg: handle: %lli\n", handle);
-
-    printf ("DEBUG: mqtt_open_client_pub_msg: memory address: %lli, client_id: %lli\n", address, client_id);
-    printf ("data: address: '%s', client:id: '%s'\n\n", (char *) &data[address], (char *) &data[client_id]);
-
     strcpy ((char *) mqtt_client[handle].address, (char *) &data[address]);
     strcpy ((char *) mqtt_client[handle].client_id, (char *) &data[client_id]);
-
-    printf ("DEBUG: mqtt_open_client_pub_msg: handle: %lli\nCreating client:\n", handle);
-    printf ("address: %s, client_id: %s\n\n", mqtt_client[handle].address, mqtt_client[handle].client_id);
-
-
-/*
-        MQTTClient client;
-    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
-    MQTTClient_message pubmsg = MQTTClient_message_initializer;
-    MQTTClient_deliveryToken token;
-    int rc;
-    MQTTClient_create(&client, ADDRESS, CLIENTID,
-        MQTTCLIENT_PERSISTENCE_NONE, NULL);
-    conn_opts.keepAliveInterval = 20;
-    conn_opts.cleansession = 1;
-    MQTTClient_setCallbacks(client, NULL, connlost, msgarrvd, delivered);
-    if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS)
-    {
-        printf("Failed to connect, return code %d\n", rc);
-        exit(EXIT_FAILURE);
-    }
-    pubmsg.payload = PAYLOAD;
-    pubmsg.payloadlen = strlen(PAYLOAD);
-    pubmsg.qos = QOS;
-    pubmsg.retained = 0;
-    deliveredtoken = 0;
-    MQTTClient_publishMessage(client, TOPIC, &pubmsg, &token);
-    printf("Waiting for publication of %s\n"
-            "on topic %s for client with ClientID: %s\n",
-            PAYLOAD, TOPIC, CLIENTID);
-    while(deliveredtoken != token);
-    MQTTClient_disconnect(client, 10000);
-    MQTTClient_destroy(&client);
-    return rc;
-*/
-
-
-
 
     err = MQTTClient_create (&mqtt_client[handle].client, (const char *) mqtt_client[handle].address, (const char*) mqtt_client[handle].client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
     if (err !=  MQTTCLIENT_SUCCESS)
@@ -573,17 +530,10 @@ U1 *mqtt_open_client_pub_msg (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
        return (sp);
     }
 
-    printf ("done!\n\n");
-
     conn_opts.keepAliveInterval = 20;
     conn_opts.cleansession = 1;
 
-    printf ("DEBUG: mqtt_open_client_pub_msg: set callbacks...\n");
-
-
-    MQTTClient_setCallbacks (mqtt_client[handle].client, &handle, connlost, msgarrvd, delivered);
-
-    printf ("done!\n");
+    MQTTClient_setCallbacks ((void *) mqtt_client[handle].client, (void *) handle, connlost, msgarrvd, delivered);
 
     if ((rc = MQTTClient_connect (mqtt_client[handle].client, &conn_opts)) != MQTTCLIENT_SUCCESS)
     {
@@ -598,8 +548,6 @@ U1 *mqtt_open_client_pub_msg (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         }
         return (sp);
     }
-
-    printf ("\nDEBUG: mqtt_open_client_pub_msg: all ok!\n");
 
     mqtt_client[handle].status = STATUS_OPEN;
 
@@ -624,8 +572,6 @@ U1 *mqtt_send_msg (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 ret ALIGN;
 
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
-
-	printf ("mqtt_send_msg: START...\n");
 
     sp = stpopi ((U1 *) &qos, sp, sp_top);
     if (sp == NULL)
@@ -687,8 +633,6 @@ U1 *mqtt_send_msg (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
         return (sp);
     }
 
-    printf ("mqtt_send_msg: INIT VARIABLES...\n");
-
     payloadlen = strlen_safe ((const char *) &data[msg], MAXPAYLOAD);
     if (payloadlen >= MAXPAYLOAD)
     {
@@ -710,9 +654,6 @@ U1 *mqtt_send_msg (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     pubmsg.retained = 0;
 
     mqtt_client[handle].deliveredtoken = 0;
-
-    printf ("DEBUG: mqtt_send_msg: handle: %lli\n", handle);
-
 
     ret = MQTTClient_publishMessage (mqtt_client[handle].client, (const char *) &data[topic], &pubmsg, &mqtt_client[handle].token);
     if (ret != MQTTCLIENT_SUCCESS)
