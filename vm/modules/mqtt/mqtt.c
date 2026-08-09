@@ -38,8 +38,6 @@
 #define MSG_EMPTY 0
 #define MSG_REC 1
 
-// volatile MQTTClient_deliveryToken deliveredtoken;
-
 struct mqtt_client
 {
     U1 status;
@@ -123,9 +121,6 @@ int msgarrvd (void *context, char *topicName, int topicLen, MQTTClient_message *
     char* payloadptr;
     U1 *data;
 
-    //printf("Message arrived\n");
-    //printf("     topic: %s\n", topicName);
-    //printf("   message: ");
     if (message->payloadlen >= MAXPAYLOAD)
     {
         printf ("mqtt_msgarrvd: error payload: %i too big! Must be below %i\n", message->payloadlen, MAXPAYLOAD);
@@ -136,7 +131,6 @@ int msgarrvd (void *context, char *topicName, int topicLen, MQTTClient_message *
     for(i = 0; i <message->payloadlen; i++)
     {
         mqtt_client[handle].payload[i] = *payloadptr++;
-        //putchar(*payloadptr++);
     }
 
     mqtt_client[handle].payload[i] = '\0';
@@ -147,7 +141,6 @@ int msgarrvd (void *context, char *topicName, int topicLen, MQTTClient_message *
 
     mqtt_client[handle].message_arrived = MSG_REC;
 
-    // putchar('\n');
     MQTTClient_freeMessage(&message);
     MQTTClient_free(topicName);
     return 1;
@@ -450,11 +443,7 @@ U1 *mqtt_open_client_pub_msg (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 handle ALIGN;
     S8 address ALIGN;
     S8 client_id ALIGN;
-    //S8 retstr_address;
-   // S8 topic;
-    //S8 qos;
     S8 rc ALIGN;
-
     S8 err ALIGN;
 
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
