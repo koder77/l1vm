@@ -1,6 +1,6 @@
 // mqtt.l1h - mqtt library
-(mqtt_init func)
-    #var ~ mqtt
+(mqtts_init func)
+    #var ~ mqtts
     (set string s modulestr~ "libl1vmmqtts")
     (set string s open_clientstr~ "mqtt_open_client")
     (set string s get_msgstr~ "mqtt_get_msg")
@@ -29,23 +29,23 @@
 (funcend)
 
 // wrapper functions
-(mqtt_open_client func)
-   #var ~ mqtt
+(mqtts_open_client func)
+   #var ~ mqtts
    (3 mod~ open_client~ 0 intr0)
 (funcend)
-(mqtt_get_msg func)
-    #var ~ mqtt
+(mqtts_get_msg func)
+    #var ~ mqtts
     (3 mod~ get_msg~ 0 intr0)
 (funcend)
-(mqtt_close_client func)
-    #var ~ mqtt
+(mqtts_close_client func)
+    #var ~ mqtts
     (3 mod~ close_client~ 0 intr0)
 (funcend)
-(mqtt_open_client_pub_msg func)
-    #var ~ mqtt
+(mqtts_open_client_pub_msg func)
+    #var ~ mqtts
     (3 mod~ open_client_pub_msg~ 0 intr0)
 (funcend)
-(mqtt_send_msg func)
-    #var ~ mqtt
+(mqtts_send_msg func)
+    #var ~ mqtts
     (3 mod~ send_msg~ 0 intr0)
 (funcend)
