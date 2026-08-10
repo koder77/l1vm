@@ -138,7 +138,7 @@
         (var~ Parraya~ [ end_index~ ] :=)
 
         (copy_index~ - offset~ copy_index~ :=)
-        (end_index~ -offset~ end_index~ :=)
+        (end_index~ - offset~ end_index~ :=)
 
         (((copy_index~ zero~ ==) f :=) f if)
            (:copy_array_double_push_end jmp)
