@@ -1,0 +1,15 @@
+# zerobuild makefile
+
+[executable, shared, name = libl1vmmqtts.so]
+sources = mqtts.c, file-sandbox.c, ../../../lib-func/string.c, ../lib/memory_bounds.c
+
+includes = ../include, /usr/local/include
+
+ccompiler = $CC
+c++compiler = $CCPP
+
+linker = ld
+aflags = "cru"
+
+cflags = "-fPIC -O0 -fomit-frame-pointer -Wall -g"
+lflags = "-lpaho-mqtt3cs -lssl -lcrypto -shared"

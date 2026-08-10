@@ -1,5 +1,5 @@
 /*
- * This mqtt.c is part of L1vm.
+ * This mqtts.c is part of L1vm.
  *
  * (c) Copyright Stefan Pietzonke (info@midnight-coding.de), 2026
  *
@@ -17,10 +17,16 @@
  * along with L1vm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// You need to create certificate files to use this functions!
+
 #include "../../../include/global.h"
 #include "../../../include/stack.h"
 
 #include "MQTTClient.h"
+
+// proto
+U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
+
 
 #define MAXCLIENTS 32
 
@@ -57,6 +63,12 @@ struct mqtt_client
     U1 message_arrived;
     U1 *data;
     S8 data_address;  // data array return message address, string must be at least PAYLOAD bytes long!
+
+    // certifcate:
+    U1 ca_cert_file[MAXSTR];
+    U1 client_cert_file[MAXSTR];
+    U1 client_key_file[MAXSTR];
+    U1 password[MAXSTR];
 };
 
 struct mqtt_client mqtt_client[MAXCLIENTS];
@@ -182,9 +194,52 @@ U1 *mqtt_open_client (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 qos ALIGN;
     S8 rc ALIGN;
 
+    S8 password ALIGN;
+    S8 client_key ALIGN;
+    S8 client_cert ALIGN;
+    S8 ca_cert ALIGN;
+
     S8 err ALIGN;
 
+    // certifcate:
+    U1 ca_cert_file[MAXSTR];
+    U1 client_cert_file[MAXSTR];
+    U1 client_key_file[MAXSTR];
+
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+    MQTTClient_SSLOptions ssl_opts = MQTTClient_SSLOptions_initializer;
+
+    sp = stpopi ((U1 *) &password, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+		printf ("mqtt_open_client: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &client_key, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+		printf ("mqtt_open_client: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &client_cert, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+		printf ("mqtt_open_client: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &ca_cert, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+		printf ("mqtt_open_client: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
     sp = stpopi ((U1 *) &retstr_address, sp, sp_top);
     if (sp == NULL)
@@ -290,6 +345,62 @@ U1 *mqtt_open_client (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
        return (sp);
     }
 
+    if (get_sandbox_filename (&data[ca_cert], ca_cert_file, MAXSTR - 1) != 0)
+    {
+        sp = stpushi (-1, sp, sp_bottom); // error
+        if (sp == NULL)
+        {
+            // error
+            printf ("mqtt_open_client: ERROR: stack corrupt!\n");
+            return (NULL);
+       }
+       return (sp);
+    }
+
+    if (get_sandbox_filename (&data[client_cert], client_cert_file, MAXSTR - 1) != 0)
+    {
+        sp = stpushi (-1, sp, sp_bottom); // error
+        if (sp == NULL)
+        {
+            // error
+            printf ("mqtt_open_client: ERROR: stack corrupt!\n");
+            return (NULL);
+       }
+       return (sp);
+    }
+
+    if (get_sandbox_filename (&data[client_key], client_key_file, MAXSTR - 1) != 0)
+    {
+        sp = stpushi (-1, sp, sp_bottom); // error
+        if (sp == NULL)
+        {
+            // error
+            printf ("mqtt_open_client: ERROR: stack corrupt!\n");
+            return (NULL);
+       }
+       return (sp);
+    }
+
+    if (strlen_safe ((const char *) &data[password], MAXSTR - 1) >= MAXSTR - 1)
+    {
+        printf ("mqtt_open_client: error password to long!\n");
+
+        sp = stpushi (-1, sp, sp_bottom); // error
+        if (sp == NULL)
+        {
+            // error
+            printf ("mqtt_open_client: ERROR: stack corrupt!\n");
+            return (NULL);
+        }
+        return (sp);
+    }
+
+    // certificate save data
+    strcpy ((char *) mqtt_client[handle].ca_cert_file, (char *) ca_cert_file);
+    strcpy ((char *) mqtt_client[handle].client_cert_file, (char *) client_cert_file);
+    strcpy ((char *) mqtt_client[handle].client_key_file, (char *) client_key_file);
+    strcpy ((char *) mqtt_client[handle].password, (char *) &data[password]);
+
     // save address & client_id
     strcpy ((char *) mqtt_client[handle].address, (char *) &data[address]);
     strcpy ((char *) mqtt_client[handle].client_id, (char *) &data[client_id]);
@@ -310,8 +421,16 @@ U1 *mqtt_open_client (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
        return (sp);
     }
 
+    ssl_opts.trustStore = (const char *) ca_cert_file;
+    ssl_opts.keyStore = (const char *) client_cert_file;
+    ssl_opts.privateKey = (const char *) client_key_file;
+    ssl_opts.privateKeyPassword = (const char *) &data[password];
+    ssl_opts.enableServerCertAuth = 1;
+
     conn_opts.keepAliveInterval = 20;
     conn_opts.cleansession = 1;
+
+    conn_opts.ssl = &ssl_opts;
 
     mqtt_client[handle].conn_opts = conn_opts;
 
@@ -473,7 +592,50 @@ U1 *mqtt_open_client_pub_msg (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
     S8 rc ALIGN;
     S8 err ALIGN;
 
+    S8 password ALIGN;
+    S8 client_key ALIGN;
+    S8 client_cert ALIGN;
+    S8 ca_cert ALIGN;
+
+    // certifcate:
+    U1 ca_cert_file[MAXSTR];
+    U1 client_cert_file[MAXSTR];
+    U1 client_key_file[MAXSTR];
+
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+    MQTTClient_SSLOptions ssl_opts = MQTTClient_SSLOptions_initializer;
+
+    sp = stpopi ((U1 *) &password, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+		printf ("mqtt_open_client: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &client_key, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+		printf ("mqtt_open_client: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &client_cert, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+		printf ("mqtt_open_client: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+    sp = stpopi ((U1 *) &ca_cert, sp, sp_top);
+    if (sp == NULL)
+    {
+        // error
+		printf ("mqtt_open_client: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
 
     sp = stpopi ((U1 *) &client_id, sp, sp_top);
     if (sp == NULL)
@@ -529,6 +691,62 @@ U1 *mqtt_open_client_pub_msg (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
        return (sp);
     }
 
+    if (get_sandbox_filename (&data[ca_cert], ca_cert_file, MAXSTR - 1) != 0)
+    {
+        sp = stpushi (-1, sp, sp_bottom); // error
+        if (sp == NULL)
+        {
+            // error
+            printf ("mqtt_open_client: ERROR: stack corrupt!\n");
+            return (NULL);
+       }
+       return (sp);
+    }
+
+    if (get_sandbox_filename (&data[client_cert], client_cert_file, MAXSTR - 1) != 0)
+    {
+        sp = stpushi (-1, sp, sp_bottom); // error
+        if (sp == NULL)
+        {
+            // error
+            printf ("mqtt_open_client: ERROR: stack corrupt!\n");
+            return (NULL);
+       }
+       return (sp);
+    }
+
+    if (get_sandbox_filename (&data[client_key], client_key_file, MAXSTR - 1) != 0)
+    {
+        sp = stpushi (-1, sp, sp_bottom); // error
+        if (sp == NULL)
+        {
+            // error
+            printf ("mqtt_open_client: ERROR: stack corrupt!\n");
+            return (NULL);
+       }
+       return (sp);
+    }
+
+    if (strlen_safe ((const char *) &data[password], MAXSTR - 1) >= MAXSTR - 1)
+    {
+        printf ("mqtt_open_client: error password to long!\n");
+
+        sp = stpushi (-1, sp, sp_bottom); // error
+        if (sp == NULL)
+        {
+            // error
+            printf ("mqtt_open_client: ERROR: stack corrupt!\n");
+            return (NULL);
+        }
+        return (sp);
+    }
+
+    // certificate save data
+    strcpy ((char *) mqtt_client[handle].ca_cert_file, (char *) ca_cert_file);
+    strcpy ((char *) mqtt_client[handle].client_cert_file, (char *) client_cert_file);
+    strcpy ((char *) mqtt_client[handle].client_key_file, (char *) client_key_file);
+    strcpy ((char *) mqtt_client[handle].password, (char *) &data[password]);
+
     strcpy ((char *) mqtt_client[handle].address, (char *) &data[address]);
     strcpy ((char *) mqtt_client[handle].client_id, (char *) &data[client_id]);
 
@@ -546,8 +764,15 @@ U1 *mqtt_open_client_pub_msg (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
        return (sp);
     }
 
+    ssl_opts.trustStore = (const char *) ca_cert_file;
+    ssl_opts.keyStore = (const char *) client_cert_file;
+    ssl_opts.privateKey = (const char *) client_key_file;
+    ssl_opts.privateKeyPassword = (const char *) &data[password];
+    ssl_opts.enableServerCertAuth = 1;
+
     conn_opts.keepAliveInterval = 20;
     conn_opts.cleansession = 1;
+    conn_opts.ssl = &ssl_opts;
 
     MQTTClient_setCallbacks ((void *) mqtt_client[handle].client, (void *) handle, connlost, msgarrvd, delivered);
 
