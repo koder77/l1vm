@@ -1,4 +1,4 @@
-// mqtt-lib.l1com - mqtt send message demo
+// mqtt-pub.l1com - mqtt send message demo
 //
 //
 #include <intr-func.l1h>
