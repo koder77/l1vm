@@ -1,0 +1,51 @@
+// mqtt.l1h - mqtt library
+(mqtt_init func)
+    #var ~ mqtt
+    (set string s modulestr~ "libl1vmmqtts")
+    (set string s open_clientstr~ "mqtt_open_client")
+    (set string s get_msgstr~ "mqtt_get_msg")
+    (set string s close_clientstr~ "mqtt_close_client")
+    (set string s open_client_pub_msgstr~ "mqtt_open_client_pub_msg")
+    (set string s send_msgstr~ "mqtt_send_msg")
+
+    (set int64 1 mod~ 0)
+    (set int64 1 open_client~ 0)
+    (set int64 1 get_msg~ 1)
+    (set int64 1 close_client~ 2)
+    (set int64 1 open_client_pub_msg~ 3)
+    (set int64 1 send_msg~ 4)
+
+    // get module number
+    (mod~ stpopi)
+
+    // load mqtt module
+    (0 modulestr~ mod~ 0 intr0)
+    // set functions
+    (2 mod~ open_client~ open_clientstr~ intr0)
+    (2 mod~ get_msg~ get_msgstr~ intr0)
+    (2 mod~ close_client~ close_clientstr~ intr0)
+    (2 mod~ open_client_pub_msg~ open_client_pub_msgstr~ intr0)
+    (2 mod~ send_msg~ send_msgstr~ intr0)
+(funcend)
+
+// wrapper functions
+(mqtt_open_client func)
+   #var ~ mqtt
+   (3 mod~ open_client~ 0 intr0)
+(funcend)
+(mqtt_get_msg func)
+    #var ~ mqtt
+    (3 mod~ get_msg~ 0 intr0)
+(funcend)
+(mqtt_close_client func)
+    #var ~ mqtt
+    (3 mod~ close_client~ 0 intr0)
+(funcend)
+(mqtt_open_client_pub_msg func)
+    #var ~ mqtt
+    (3 mod~ open_client_pub_msg~ 0 intr0)
+(funcend)
+(mqtt_send_msg func)
+    #var ~ mqtt
+    (3 mod~ send_msg~ 0 intr0)
+(funcend)
