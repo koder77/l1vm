@@ -199,15 +199,24 @@ U1 *gps_read_data (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
                     time_t rawtime = g_gpsdata.fix.time.tv_sec;
                     char time_buffer[30];
 
-                    strncpy(time_buffer, ctime(&rawtime), sizeof(time_buffer) - 1);
-                    if (time_buffer[strlen(time_buffer) - 1] == '\n')
+                    const char* time_str = ctime(&rawtime);
+                    if (time_str == NULL)
                     {
-                        time_buffer[strlen(time_buffer) - 1] = '\0';
+                        result = 4; // Invalid time
                     }
+                    else
+                    {
+                        strncpy(time_buffer, time_str, sizeof(time_buffer) - 1);
+                        time_buffer[sizeof(time_buffer) - 1] = '\0';
+                        if (time_buffer[strlen(time_buffer) - 1] == '\n')
+                        {
+                            time_buffer[strlen(time_buffer) - 1] = '\0';
+                        }
 
-                    memcpy((U1*) data + timestrptr, time_buffer, strlen(time_buffer) + 1);
+                        memcpy((U1*) data + timestrptr, time_buffer, strlen(time_buffer) + 1);
 
-                    result = 0; // success
+                        result = 0; // success
+                    }
                 }
                 else
                 {
