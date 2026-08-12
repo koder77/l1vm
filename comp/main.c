@@ -943,6 +943,13 @@ S2 parse_line (U1 *line)
 		return (1);
 	}
 
+	// EDIT VAR
+	if (check_varname_op (line) == 1)
+	{
+		printf ("error: line %lli: math operators not separated!\n", linenum);
+		return (1);
+	}
+
 	ret = get_ast (line, &parse_cont);
 	if (ret == 1)
 	{

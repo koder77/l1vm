@@ -1,3 +1,14 @@
+L1VM (3.6.6)
+	NEW: compiler: added check for not separated math operators:
+
+	(x *y z :=)
+
+	This will get an error message! It must be:
+
+	(x * y z :=)
+
+-- Stefan Pietzonke <info@midnight-coding.de> Wed 12 August 2026 20:35 +020
+
 L1VM (3.6.5)
 	Added brackets-code code generator.
 	See brackets-code directory!

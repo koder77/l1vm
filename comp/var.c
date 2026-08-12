@@ -223,9 +223,83 @@ S2 check_ascii_only (const char *str)
 
     for (const unsigned char *p = (const unsigned char *)str; *p != '\0'; p++)
 	{
-        if (!isalnum(*p) && *p != '_' && *p != '@') {
+        if (!isalnum(*p) && *p != '_' && *p != '@')
+		{
             return (1);
         }
+    }
+
+    return (0);
+}
+
+S2 check_varname_op (U1 *str)
+{
+	S8 i ALIGN = 0;
+	U1 *c;
+
+	if (searchstr (str, (U1 *) "set", 0, 0, 0) >= 0)
+	{
+		// set expression, can be: const-int64 which is legal!
+		return (0);
+	}
+
+	if (searchstr (str, (U1 *) "=", 0, 0, 0) < 0)
+	{
+		// set expression, can be: const-int64 which is legal!
+		return (0);
+	}
+
+
+	if (str == NULL || *str == '\0')
+	{
+        return (1);
+    }
+
+    for (U1 *p = (U1 *) str; *p != '\0'; p++)
+	{
+
+        if (*p == '+' || *p == '-' || *p == '*' || *p == '/')
+		{
+			if (i >= 2)
+			{
+				c = p - 2;
+				if (*c == 'i')
+				{
+					c++;
+					if (*c == 'f')
+					{
+						c++;
+						if (*c == '+')
+						{
+							return (0);
+						}
+					}
+				}
+			}
+			if (i > 0)
+			{
+				c = p - 1;
+				if (*c != ' ')
+				{
+					return (1);
+				}
+			}
+			c = p + 1;
+			if (*c != '\0')
+			{
+				if (*c != ' ')
+				{
+					if (*c != ')')
+					{
+						if (*c != '}')
+						{
+							return (1);
+						}
+					}
+				}
+			}
+        }
+		i++;
     }
 
     return (0);
@@ -268,7 +342,7 @@ S2 checkdef (U1 *name)
 
 	if (check_ascii == 1)
 	{
-		if (check_ascii_only (name) == 1)
+		if (check_ascii_only ((const char *) name) == 1)
 		{
 			printf ("error: check ASCII only variable name: not pure ASCII: '%s' !\n", name);
 			return (1);

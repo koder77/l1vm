@@ -78,6 +78,7 @@ U1 variable_prefix[MAXSTRLEN];
 void init_data_info_var (void);
 S2 get_unused_var (void);
 S2 set_variable_prefix (U1 *variable);
+S2 check_varname_op (U1 *str);
 
 
 // parse-rpolish.c
