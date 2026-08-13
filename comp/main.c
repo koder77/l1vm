@@ -1310,11 +1310,22 @@ S2 parse_line (U1 *line)
 						}
 
 						// name
-						if (checkset (ast[level].expr[j][3]) == 0)
 						{
-							// ERROR variable already defined!
-							printf ("error: line: %lli: variable '%s' already defined!\n", linenum, ast[level].expr[j][3]);
-							return (1);
+							S2 ret;
+
+							ret = checkset (ast[level].expr[j][3]);
+							if (ret == 0)
+							{
+								// ERROR variable already defined!
+								printf ("error: line: %lli: variable '%s' already defined!\n", linenum, ast[level].expr[j][3]);
+								return (1);
+							}
+
+							if (ret == 2)
+							{
+								// ERROR variable has math operator in name!
+								return (1);
+							}
 						}
 
 						strcpy ((char *) data_info[data_ind].name, (const char *) ast[level].expr[j][3]);

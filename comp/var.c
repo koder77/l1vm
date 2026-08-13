@@ -447,7 +447,7 @@ S2 checkset (U1 *name)
 		printf ("error: line: %lli: '%s'\n", linenum, rbuf_orig);
 		printf ("math operator in variable name!\n");
 
-		return (1);
+		return (2);
 	}
 
 	for (i = 0; i <= data_ind; i++)
