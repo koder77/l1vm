@@ -245,10 +245,70 @@ S2 check_varname_op (U1 *str)
 
 	if (searchstr (str, (U1 *) "=", 0, 0, 0) < 0)
 	{
-		// set expression, can be: const-int64 which is legal!
+		// no assign
 		return (0);
 	}
 
+
+	if (str == NULL || *str == '\0')
+	{
+        return (1);
+    }
+
+    for (U1 *p = (U1 *) str; *p != '\0'; p++)
+	{
+
+        if (*p == '+' || *p == '-' || *p == '*' || *p == '/')
+		{
+			if (i >= 2)
+			{
+				c = p - 2;
+				if (*c == 'i')
+				{
+					c++;
+					if (*c == 'f')
+					{
+						c++;
+						if (*c == '+')
+						{
+							return (0);
+						}
+					}
+				}
+			}
+			if (i > 0)
+			{
+				c = p - 1;
+				if (*c != ' ')
+				{
+					return (1);
+				}
+			}
+			c = p + 1;
+			if (*c != '\0')
+			{
+				if (*c != ' ')
+				{
+					if (*c != ')')
+					{
+						if (*c != '}')
+						{
+							return (1);
+						}
+					}
+				}
+			}
+        }
+		i++;
+    }
+
+    return (0);
+}
+
+S2 check_varname_op_var (U1 *str)
+{
+	S8 i ALIGN = 0;
+	U1 *c;
 
 	if (str == NULL || *str == '\0')
 	{
@@ -380,6 +440,14 @@ S2 checkset (U1 *name)
 			// is number not variable name: set checked
 			return (0);
 		}
+	}
+
+	if (check_varname_op_var (name) == 1)
+	{
+		printf ("error: line: %lli: '%s'\n", linenum, rbuf_orig);
+		printf ("math operator in variable name!\n");
+
+		return (1);
 	}
 
 	for (i = 0; i <= data_ind; i++)
