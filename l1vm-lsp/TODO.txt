@@ -1,0 +1,59 @@
+l1vm-lsp - TODO list
+====================
+
+Status / plan for the LSP server (Brackets language, L1VM).
+
+TODO
+----
+[ ] Nice-to-have: workspace symbols, signature help for user functions
+[ ] Nice-to-have: semanticTokens/full/delta streaming
+[ ] Compiler diagnostics for programs with `#include` (would need the
+    l1pre+l1com chain from l1vm-build.sh; line numbers shift after include
+    expansion, needs source<->expanded line mapping)
+
+DONE
+----
+[x] Snippet completions for control flow keywords (do/while/for/next/for-loop/
+    if/if+/else/endif) expand to real Brackets syntax from the language manual,
+    not C-style blocks; covered by a smoke-test check
+[x] README with build + editor setup (Doom Emacs/lsp-mode, Eglot, VS Code,
+    Neovim native LSP, generic LSP clients) + control flow syntax reference
+    + note on the full toolchain for include-based programs
+    + yas-dont-activate hint to avoid C snippets in l1com-mode
+[x] Incremental text sync (textDocumentSync.change = 2):
+    - range-based edits applied to the document text in lsp.c
+    - UTF-16 column handling consistent with the rest of the server
+    - covered by a smoke-test check (range edit -> new diagnostics)
+[x] Project skeleton (src/, Makefile)
+[x] String builder (src/sb.h, src/sb.c)
+[x] JSON parser/writer (src/json.h, src/json.c)
+[x] Language analysis (src/l1lang.c, src/l1lang.h):
+    - tokenizer (words, labels, strings, comments, operators, numbers)
+    - document model (functions, objects, variables, labels, macros)
+    - structural + semantic diagnostics (0 known issues on sample)
+[x] LSP features (all handled, verified via smoke test):
+    - completion (builtins, keywords, functions, variables, labels)
+    - hover
+    - definition / references
+    - documentSymbol
+    - foldingRange
+    - documentHighlight
+    - signatureHelp
+    - semanticTokens
+[x] l1com compiler integration for real diagnostics
+    - runs l1com on a temp file with the current buffer content
+    - parses l1com errors/warnings, including "checkdef:"-prefixed output
+    - no temp file leftovers (cleans .l1com/.l1asm/.l1dbg/.l1obj)
+[x] LSP protocol layer (src/lsp.c) and main loop (src/main.c)
+    - Content-Length framed JSON-RPC over stdio
+    - initialize/initialized/shutdown/exit/didChangeConfiguration/cancel
+    - didOpen/didChange/didClose, publishDiagnostics, -32601 for unknown
+[x] Build (make) - clean with gcc -std=c11 -Wall -Wextra -Werror
+[x] Tests (make test -> tests/smoke.py, 26 checks):
+    - JSON-RPC session over stdio (init, diag, symbol, folding, tokens,
+      completion, hover, definition, references, change, unknown method)
+    - l1com integration: broken file -> l1com diagnostics, valid file -> none
+[x] Memory: valgrind clean (0 errors, 0 definitely/indirectly/possibly lost)
+    on both the analyzer path and the l1com-on path
+[x] Example/test files: tests/sample.l1com, tests/valid.l1com,
+    tests/broken.l1com

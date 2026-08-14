@@ -1,0 +1,21 @@
+#include <intr-func.l1h>
+
+(hello func)
+    #var ~ hello
+    #var zero int64
+    #var counter int64
+
+    (set int64 1 counter~ 0)
+    (= counter~ 42)
+    (:print_n !)
+(funcend)
+
+(main func)
+    #var ~ main
+    (set int64 1 zero 0)
+    (set int64 1 total~ 0)
+    (set string s msg~ "Hello, World!")
+
+    (:hello !)
+    (zero~ :exit !)
+(funcend)

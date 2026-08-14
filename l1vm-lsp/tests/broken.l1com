@@ -1,0 +1,8 @@
+// broken sample - contains errors l1com should report
+(main func)
+	(set int64 1 zero 0)
+	(set int64 1 a 0)
+	(x a =)
+	(undefined_var~ a =)
+	(1 b 0 0 intr0)
+(funcend)

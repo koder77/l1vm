@@ -7,7 +7,13 @@ L1VM (3.6.6)
 
 	(x * y z :=)
 
--- Stefan Pietzonke <info@midnight-coding.de> Wed 12 August 2026 20:35 +020
+	NEW: added l1vm-lsp: it is a LSP for the Brackets language. Now you get auto complete in your text editor!
+	The LSP was written by opencode Big Pickle AI. And is now in beta phase.
+	If you find any bugs then let me know. It is written in C and should be able to build anywhere.
+	In the LSP README is the information how to set up the LSP in different text editors.
+	I use Doom Emacs and this section is detailed. If you have any questions about the LSP then feel free to ask!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Fri 14 August 2026 16:48 +020
 
 L1VM (3.6.5)
 	Added brackets-code code generator.
