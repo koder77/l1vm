@@ -3,14 +3,6 @@ l1vm-lsp - TODO list
 
 Status / plan for the LSP server (Brackets language, L1VM).
 
-TODO
-----
-[ ] Nice-to-have: workspace symbols, signature help for user functions
-[ ] Nice-to-have: semanticTokens/full/delta streaming
-[ ] Compiler diagnostics for programs with `#include` (would need the
-    l1pre+l1com chain from l1vm-build.sh; line numbers shift after include
-    expansion, needs source<->expanded line mapping)
-
 DONE
 ----
 [x] Snippet completions for control flow keywords (do/while/for/next/for-loop/
