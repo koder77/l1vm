@@ -656,7 +656,6 @@ static const char *l1_scope_at(const L1Doc *d, int line)
 static int l1_scope_visible(const char *var_scope, const char *cur_scope,
                             const L1Doc *d)
 {
-    (void)d;
     if (strcmp(var_scope, "") == 0)      /* file level */
         return 1;
     if (strcmp(var_scope, "lib") == 0)   /* from library includes */
@@ -665,6 +664,17 @@ static int l1_scope_visible(const char *var_scope, const char *cur_scope,
         return 1;
     if (strcmp(var_scope, "main") == 0)  /* globals in main */
         return 1;
+    /* Check if cur_scope is a function inside var_scope (object inheritance):
+     * variables declared in an object block are visible inside its methods */
+    if (d) {
+        int i;
+        for (i = 0; i < d->funcs.len; i++) {
+            if (d->funcs.data[i].parent &&
+                strcmp(d->funcs.data[i].name, cur_scope) == 0 &&
+                strcmp(d->funcs.data[i].parent, var_scope) == 0)
+                return 1;
+        }
+    }
     return 0;
 }
 
@@ -1153,6 +1163,26 @@ static void l1_analyze_usage(L1Doc *d, int li)
 
             if (is_method) {
                 int fidx = l1_find_method(d, namebuf, objbuf);
+                if (fidx == -1) {
+                    /* Fallback: method call might be a function/macro/label on the object */
+                    int fid = l1_find_func(d, namebuf);
+                    int mid = l1_find_macro(d, namebuf);
+                    int lid = l1_find_label(d, namebuf);
+                    if (fid != -1) fidx = fid;
+                    else if (mid != -1) fidx = mid;
+                    else if (lid != -1) fidx = lid;
+                }
+                /* Fallback: the full name (including ->) may be the actual
+                 * function/label name, e.g. (parse->compiler func) defines
+                 * label :parse->compiler */
+                if (fidx == -1) {
+                    fidx = l1_find_method(d, nm, objbuf);
+                }
+                if (fidx == -1) {
+                    int lid = l1_find_label(d, nm);
+                    if (lid != -1) fidx = lid;
+                }
+
                 u.kind = U_FUNC;
                 u.name = strdup(t->text + 1);
                 u.full = strdup(t->text + 1);
@@ -3008,6 +3038,13 @@ static int l1_resolve_at(const L1Doc *d, int line, int col, int *kind,
             snprintf(obuf, sizeof(obuf), "%s", psep + 2);
             *kind = 1;
             *ref = l1_find_method(d, mbuf, obuf);
+            if (*ref >= 0)
+                return 0;
+            /* Fallback: full name (including ->) may be the function name */
+            *ref = l1_find_method(d, nm, obuf);
+            if (*ref >= 0)
+                return 0;
+            *ref = l1_find_label(d, nm);
             return *ref >= 0 ? 0 : -1;
         }
         bf = l1_find_builtin(nm);
