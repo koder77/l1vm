@@ -2176,3 +2176,52 @@ U1 *string_padd (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	if (result_str != NULL) free (result_str);
 	return (sp);
 }
+
+
+U1 *string_tolower (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 strsourceaddr ALIGN;
+	S8 strlen ALIGN;
+	S8 i ALIGN;
+
+	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_tolower: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	strlen = strlen_safe ((const char *) &data[strsourceaddr], STRINGMOD_MAXSTRLEN);
+
+	for (i = 0; i < strlen; i++)
+	{
+		tolower ((int) &data[strsourceaddr + i]);
+	}
+
+    return (sp);
+}
+
+U1 *string_toupper (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	S8 strsourceaddr ALIGN;
+	S8 strlen ALIGN;
+	S8 i ALIGN;
+
+	sp = stpopi ((U1 *) &strsourceaddr, sp, sp_top);
+	if (sp == NULL)
+	{
+		// ERROR:
+		printf ("string_toupper: ERROR: stack corrupt!\n");
+		return (NULL);
+	}
+
+	strlen = strlen_safe ((const char *) &data[strsourceaddr], STRINGMOD_MAXSTRLEN);
+
+	for (i = 0; i < strlen; i++)
+	{
+		toupper ((int) &data[strsourceaddr + i]);
+	}
+
+    return (sp);
+}

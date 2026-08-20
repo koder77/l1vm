@@ -13,7 +13,9 @@ L1VM (3.6.6)
 	In the LSP README is the information how to set up the LSP in different text editors.
 	I use Doom Emacs and this section is detailed. If you have any questions about the LSP then feel free to ask!
 
--- Stefan Pietzonke <info@midnight-coding.de> Fri 14 August 2026 16:48 +020
+	Added: string module: tolower and toupper for string conversion.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Thu 20 August 2026 13:40 +020
 
 L1VM (3.6.5)
 	Added brackets-code code generator.

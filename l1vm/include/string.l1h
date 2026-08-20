@@ -34,6 +34,9 @@
     (set string s string_format_numstr@string "string_format_num")
     (set string s string_paddstr@string "string_padd")
 
+    (set string s tolowerstr@string "string_tolower")
+    (set string s toupperstr@string "string_toupper")
+
     (set int64 1 len@string 0)
     (set int64 1 copy@string 1)
     (set int64 1 cat@string 2)
@@ -62,6 +65,8 @@
     (set int64 1 stringverify@string 25)
     (set int64 1 string_format_num@string 26)
     (set int64 1 string_padd@string 27)
+    (set int64 1 tolower@string 28)
+    (set int64 1 toupper@string 29)
     (set int64 1 mod@string 0)
     // get argument from stack
     (mod@string stpopi)
@@ -96,6 +101,8 @@
     (2 mod@string stringverify@string stringverifystr@stringaddr intr0)
     (2 mod@string string_format_num@string string_format_numstr@string intr0)
     (2 mod@string string_padd@string string_paddstr@string intr0)
+    (2 mod@string tolower@string tolowerstr@string intr0)
+    (2 mod@string toupper@string toupperstr@string intr0)
 (funcend)
 (string_len func)
 // argument: int64 string address
@@ -200,4 +207,10 @@
 (funcend)
 (string_padd func)
     (3 mod@string string_padd@string 0 intr0)
+(funcend)
+(string_tolower func)
+    (3 mod@string tolower@string 0 intr0)
+(funcend)
+(string_toupper func)
+    (3 mod@string toupper@string 0 intr0)
 (funcend)
