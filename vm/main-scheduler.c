@@ -999,12 +999,8 @@ if (silent_run == 0)
 	}
 	#endif
 
-	cpu[cpuc].regi[arg3] = 0;		// set to zero, before loading data
-	bptr = (U1 *) &cpu[cpuc].regi[arg3];
-
-	*bptr = cpu[cpuc].data[arg1 + arg2];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 1];
+	cpu[cpuc].regi[arg3] = 0;
+	memcpy (&cpu[cpuc].regi[arg3], &cpu[cpuc].data[arg1 + arg2], sizeof (uint16_t));
 
 	cpu[cpuc].eoffs = 4;
 	SCHEXE_NEXT();
@@ -1031,16 +1027,8 @@ if (silent_run == 0)
 	}
 	#endif
 
-	cpu[cpuc].regi[arg3] = 0;		// set to zero, before loading data
-	bptr = (U1 *) &cpu[cpuc].regi[arg3];
-
-	*bptr = cpu[cpuc].data[arg1 + arg2];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 1];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 2];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 3];
+	cpu[cpuc].regi[arg3] = 0;
+	memcpy (&cpu[cpuc].regi[arg3], &cpu[cpuc].data[arg1 + arg2], sizeof (uint32_t));
 
 	cpu[cpuc].eoffs = 4;
 	SCHEXE_NEXT();
@@ -1067,23 +1055,7 @@ if (silent_run == 0)
 	}
 	#endif
 
-	bptr = (U1 *) &cpu[cpuc].regi[arg3];
-
-	*bptr = cpu[cpuc].data[arg1 + arg2];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 1];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 2];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 3];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 4];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 5];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 6];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 7];
+	memcpy (&cpu[cpuc].regi[arg3], &cpu[cpuc].data[arg1 + arg2], sizeof (uint64_t));
 
 	cpu[cpuc].eoffs = 4;
 	SCHEXE_NEXT();
@@ -1110,23 +1082,7 @@ if (silent_run == 0)
 	}
 	#endif
 
-	bptr = (U1 *) &cpu[cpuc].regd[arg3];
-
-	*bptr = cpu[cpuc].data[arg1 + arg2];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 1];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 2];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 3];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 4];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 5];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 6];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 7];
+	memcpy (&cpu[cpuc].regd[arg3], &cpu[cpuc].data[arg1 + arg2], sizeof (double));
 
 	cpu[cpuc].eoffs = 4;
 	SCHEXE_NEXT();
@@ -1181,11 +1137,7 @@ if (silent_run == 0)
 	}
 	#endif
 
-	bptr = (U1 *) &cpu[cpuc].regi[arg1];
-
-	cpu[cpuc].data[arg2 + arg3] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 1] = *bptr;
+	memcpy (&cpu[cpuc].data[arg2 + arg3], &cpu[cpuc].regi[arg1], sizeof (uint16_t));
 
 	cpu[cpuc].eoffs = 4;
 	SCHEXE_NEXT();
@@ -1212,15 +1164,7 @@ if (silent_run == 0)
 	}
 	#endif
 
-	bptr = (U1 *) &cpu[cpuc].regi[arg1];
-
-	cpu[cpuc].data[arg2 + arg3] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 1] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 2] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 3] = *bptr;
+	memcpy (&cpu[cpuc].data[arg2 + arg3], &cpu[cpuc].regi[arg1], sizeof (uint32_t));
 
 	cpu[cpuc].eoffs = 4;
 	SCHEXE_NEXT();
@@ -1247,23 +1191,7 @@ if (silent_run == 0)
 	}
 	#endif
 
-	bptr = (U1 *) &cpu[cpuc].regi[arg1];
-
-	cpu[cpuc].data[arg2 + arg3] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 1] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 2] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 3] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 4] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 5] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 6] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 7] = *bptr;
+	memcpy (&cpu[cpuc].data[arg2 + arg3], &cpu[cpuc].regi[arg1], sizeof (uint64_t));
 
 	cpu[cpuc].eoffs = 4;
 	SCHEXE_NEXT();
@@ -1290,23 +1218,7 @@ if (silent_run == 0)
 	}
 	#endif
 
-	bptr = (U1 *) &cpu[cpuc].regd[arg1];
-
-	cpu[cpuc].data[arg2 + arg3] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 1] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 2] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 3] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 4] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 5] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 6] = *bptr;
-	bptr++;
-	cpu[cpuc].data[arg2 + arg3 + 7] = *bptr;
+	memcpy (&cpu[cpuc].data[arg2 + arg3], &cpu[cpuc].regd[arg1], sizeof (double));
 
 	cpu[cpuc].eoffs = 4;
 	SCHEXE_NEXT();
@@ -2038,49 +1950,9 @@ if (silent_run == 0)
 	#if DEBUG
 	printf ("%lli LOADA\n", cpu_core);
 	#endif
-	// data
-    ep = cpu[cpuc].ep;
-	bptr = (U1 *) &arg1;
 
-	*bptr = code[ep + 1];
-	bptr++;
-	*bptr = code[ep + 2];
-	bptr++;
-	*bptr = code[ep + 3];
-	bptr++;
-	*bptr = code[ep + 4];
-	bptr++;
-	*bptr = code[ep + 5];
-	bptr++;
-	*bptr = code[ep + 6];
-	bptr++;
-	*bptr = code[ep + 7];
-	bptr++;
-	*bptr = code[ep + 8];
-
-	// offset
-
-	//printf ("arg1: %li\n", arg1);
-
-	bptr = (U1 *) &arg2;
-
-	*bptr = code[ep + 9];
-	bptr++;
-	*bptr = code[ep + 10];
-	bptr++;
-	*bptr = code[ep + 11];
-	bptr++;
-	*bptr = code[ep + 12];
-	bptr++;
-	*bptr = code[ep + 13];
-	bptr++;
-	*bptr = code[ep + 14];
-	bptr++;
-	*bptr = code[ep + 15];
-	bptr++;
-	*bptr = code[ep + 16];
-
-	//printf ("arg2: %li\n", arg2);
+	memcpy (&arg1, &code[ep + 1], sizeof (uint64_t));
+	memcpy (&arg2, &code[ep + 9], sizeof (uint64_t));
 
 	#if BOUNDSCHECK
 	if (cpu[cpuc].do_memory_bounds_check == 1)
@@ -2097,23 +1969,7 @@ if (silent_run == 0)
 
 	arg3 = code[ep + 17];
 
-	bptr = (U1 *) &cpu[cpuc].regi[arg3];
-
-	*bptr = cpu[cpuc].data[arg1 + arg2];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 1];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 2];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 3];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 4];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 5];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 6];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 7];
+	memcpy (&cpu[cpuc].regi[arg3], &cpu[cpuc].data[arg1 + arg2], sizeof (uint64_t));
 
 	cpu[cpuc].eoffs = 18;
 	SCHEXE_NEXT();
@@ -2122,44 +1978,9 @@ if (silent_run == 0)
 	#if DEBUG
 	printf ("%lli LOADD\n", cpu_core);
 	#endif
-	// data
-	ep = cpu[cpuc].ep;
-	bptr = (U1 *) &arg1;
 
-	*bptr = code[ep + 1];
-	bptr++;
-	*bptr = code[ep + 2];
-	bptr++;
-	*bptr = code[ep + 3];
-	bptr++;
-	*bptr = code[ep + 4];
-	bptr++;
-	*bptr = code[ep + 5];
-	bptr++;
-	*bptr = code[ep + 6];
-	bptr++;
-	*bptr = code[ep + 7];
-	bptr++;
-	*bptr = code[ep + 8];
-
-	// offset
-	bptr = (U1 *) &arg2;
-
-	*bptr = code[ep + 9];
-	bptr++;
-	*bptr = code[ep + 10];
-	bptr++;
-	*bptr = code[ep + 11];
-	bptr++;
-	*bptr = code[ep + 12];
-	bptr++;
-	*bptr = code[ep + 13];
-	bptr++;
-	*bptr = code[ep + 14];
-	bptr++;
-	*bptr = code[ep + 15];
-	bptr++;
-	*bptr = code[ep + 16];
+	memcpy(&arg1, &code[ep + 1], sizeof(uint64_t));
+	memcpy(&arg2, &code[ep + 9], sizeof(uint64_t));
 
 	#if BOUNDSCHECK
 	if (cpu[cpuc].do_memory_bounds_check == 1)
@@ -2176,23 +1997,7 @@ if (silent_run == 0)
 
 	arg3 = code[ep + 17];
 
-	bptr = (U1 *) &cpu[cpuc].regd[arg3];
-
-	*bptr = cpu[cpuc].data[arg1 + arg2];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 1];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 2];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 3];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 4];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 5];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 6];
-	bptr++;
-	*bptr = cpu[cpuc].data[arg1 + arg2 + 7];
+	memcpy (&cpu[cpuc].regd[arg3], &cpu[cpuc].data[arg1 + arg2], sizeof(uint64_t));
 
 	cpu[cpuc].eoffs = 18;
 	SCHEXE_NEXT();
@@ -3892,26 +3697,9 @@ if (silent_run == 0)
 	#if DEBUG
 	printf ("%lli LOADL\n", cpu_core);
 	#endif
-	// data
-	ep = cpu[cpuc].ep;
-	bptr = (U1 *) &arg1;
-	arg2 = code[ep + 9];
 
-	*bptr = code[ep + 1];
-	bptr++;
-	*bptr = code[ep + 2];
-	bptr++;
-	*bptr = code[ep + 3];
-	bptr++;
-	*bptr = code[ep + 4];
-	bptr++;
-	*bptr = code[ep + 5];
-	bptr++;
-	*bptr = code[ep + 6];
-	bptr++;
-	*bptr = code[ep + 7];
-	bptr++;
-	*bptr = code[ep + 8];
+	memcpy (&arg1, &code[ep + 1], sizeof (uint64_t));
+	arg2 = code[ep + 9];
 
 	cpu[cpuc].regi[arg2] = arg1;
 
@@ -4036,47 +3824,8 @@ if (silent_run == 0)
 	printf ("%lli LOAD\n", cpu_core);
 	#endif
 
-	// data
-	ep = cpu[cpuc].ep;
-	bptr = (U1 *) &arg1;
-
-	*bptr = code[ep + 1];
-	bptr++;
-	*bptr = code[ep + 2];
-	bptr++;
-	*bptr = code[ep + 3];
-	bptr++;
-	*bptr = code[ep + 4];
-	bptr++;
-	*bptr = code[ep + 5];
-	bptr++;
-	*bptr = code[ep + 6];
-	bptr++;
-	*bptr = code[ep + 7];
-	bptr++;
-	*bptr = code[ep + 8];
-
-	// offset
-
-	bptr = (U1 *) &arg2;
-
-	*bptr = code[ep + 9];
-	bptr++;
-	*bptr = code[ep + 10];
-	bptr++;
-	*bptr = code[ep + 11];
-	bptr++;
-	*bptr = code[ep + 12];
-	bptr++;
-	*bptr = code[ep + 13];
-	bptr++;
-	*bptr = code[ep + 14];
-	bptr++;
-	*bptr = code[ep + 15];
-	bptr++;
-	*bptr = code[ep + 16];
-
-	//printf ("arg2: %li\n", arg2);
+	memcpy(&arg1, &code[ep + 1], sizeof(uint64_t));
+    memcpy(&arg2, &code[ep + 9], sizeof(uint64_t));
 
 	arg3 = code[ep + 17];
 

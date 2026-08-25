@@ -15,7 +15,9 @@ L1VM (3.6.6)
 
 	Added: string module: tolower and toupper for string conversion.
 
--- Stefan Pietzonke <info@midnight-coding.de> Thu 20 August 2026 13:40 +020
+	Added: L1VMS: now with the memcpy() optimizations like in L1VM!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Tue 25 August 2026 21:31 +020
 
 L1VM (3.6.5)
 	Added brackets-code code generator.
