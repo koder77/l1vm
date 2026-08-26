@@ -56,7 +56,7 @@ B, 12, messagestr
 Q, 1, messagestraddr
 @, 4306Q, 4294Q
 Q, 1, maxloop
-@, 4314Q, 100000000
+@, 4314Q, 1000000000
 F, 1, time_ms_d
 @, 4322Q, 0.0
 F, 1, opcodes_loop_d
@@ -517,64 +517,76 @@ B, 12, string_paddstr@string
 @, 7130Q, "string_padd"
 Q, 1, string_paddstr@stringaddr
 @, 7142Q, 7130Q
+B, 15, tolowerstr@string
+@, 7150Q, "string_tolower"
+Q, 1, tolowerstr@stringaddr
+@, 7165Q, 7150Q
+B, 15, toupperstr@string
+@, 7173Q, "string_toupper"
+Q, 1, toupperstr@stringaddr
+@, 7188Q, 7173Q
 Q, 1, len@string
-@, 7150Q, 0
+@, 7196Q, 0
 Q, 1, copy@string
-@, 7158Q, 1
+@, 7204Q, 1
 Q, 1, cat@string
-@, 7166Q, 2
+@, 7212Q, 2
 Q, 1, int64tostring@string
-@, 7174Q, 3
+@, 7220Q, 3
 Q, 1, bytetohexstring@string
-@, 7182Q, 4
+@, 7228Q, 4
 Q, 1, doubletostring@string
-@, 7190Q, 5
+@, 7236Q, 5
 Q, 1, bytenumtostring@string
-@, 7198Q, 6
+@, 7244Q, 6
 Q, 1, stringtoarray@string
-@, 7206Q, 7
+@, 7252Q, 7
 Q, 1, arraytostring@string
-@, 7214Q, 8
+@, 7260Q, 8
 Q, 1, stringleft@string
-@, 7222Q, 9
+@, 7268Q, 9
 Q, 1, stringright@string
-@, 7230Q, 10
+@, 7276Q, 10
 Q, 1, stringmid@string
-@, 7238Q, 11
+@, 7284Q, 11
 Q, 1, stringtostring@string
-@, 7246Q, 12
+@, 7292Q, 12
 Q, 1, stringcompare@string
-@, 7254Q, 13
+@, 7300Q, 13
 Q, 1, stringmemtostring@string
-@, 7262Q, 14
+@, 7308Q, 14
 Q, 1, stringmemsearch@string
-@, 7270Q, 15
+@, 7316Q, 15
 Q, 1, stringregex@string
-@, 7278Q, 16
+@, 7324Q, 16
 Q, 1, stringsearch@string
-@, 7286Q, 17
+@, 7332Q, 17
 Q, 1, get_env@string
-@, 7294Q, 18
+@, 7340Q, 18
 Q, 1, set_env@string
-@, 7302Q, 19
+@, 7348Q, 19
 Q, 1, stringparsejson@string
-@, 7310Q, 20
+@, 7356Q, 20
 Q, 1, string_array_sort@string
-@, 7318Q, 21
+@, 7364Q, 21
 Q, 1, string_array_search@string
-@, 7326Q, 22
+@, 7372Q, 22
 Q, 1, string_mid_to_byte@string
-@, 7334Q, 23
+@, 7380Q, 23
 Q, 1, bytenumbytetostring@string
-@, 7342Q, 24
+@, 7388Q, 24
 Q, 1, stringverify@string
-@, 7350Q, 25
+@, 7396Q, 25
 Q, 1, string_format_num@string
-@, 7358Q, 26
+@, 7404Q, 26
 Q, 1, string_padd@string
-@, 7366Q, 27
+@, 7412Q, 27
+Q, 1, tolower@string
+@, 7420Q, 28
+Q, 1, toupper@string
+@, 7428Q, 29
 Q, 1, mod@string
-@, 7374Q, 0
+@, 7436Q, 0
 .dend
 .code
 :main
@@ -1470,6 +1482,12 @@ intr0 2, 1, 55, 56
 loada string_padd@string, 0, 57
 loada string_paddstr@stringaddr, 0, 58
 intr0 2, 1, 57, 58
+loada tolower@string, 0, 59
+loada tolowerstr@stringaddr, 0, 60
+intr0 2, 1, 59, 60
+loada toupper@string, 0, 61
+loada toupperstr@stringaddr, 0, 62
+intr0 2, 1, 61, 62
 rts
 :string_len
 loada zero, 0, 0
@@ -1637,6 +1655,18 @@ rts
 loada zero, 0, 0
 loada mod@string, 0, 1
 loada string_padd@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_tolower
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada tolower@string, 0, 2
+intr0 3, 1, 2, 0
+rts
+:string_toupper
+loada zero, 0, 0
+loada mod@string, 0, 1
+loada toupper@string, 0, 2
 intr0 3, 1, 2, 0
 rts
 .cend
