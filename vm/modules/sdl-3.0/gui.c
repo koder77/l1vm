@@ -25,7 +25,7 @@
 
 #include <SDL3/SDL.h>
 // #include <SDL3/SDL_byteorder.h>
-#include <SDL2/SDL2_gfxPrimitives.h>
+#include <SDL3_gfx/SDL3_gfxPrimitives.h>
 #include <SDL3/SDL_joystick.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3_image/SDL_image.h>

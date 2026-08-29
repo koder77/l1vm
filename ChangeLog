@@ -17,7 +17,9 @@ L1VM (3.6.6)
 
 	Added: L1VMS: now with the memcpy() optimizations like in L1VM!
 
--- Stefan Pietzonke <info@midnight-coding.de> Tue 25 August 2026 21:31 +020
+	SDL3 module: fixed gfx library headers. Fixed audio play code.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 29 August 2026 10:45 +020
 
 L1VM (3.6.5)
 	Added brackets-code code generator.

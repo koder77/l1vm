@@ -28,7 +28,7 @@
 
 #include <SDL3/SDL.h>
 //#include <SDL3/SDL_byteorder.h>
-#include <SDL2/SDL2_gfxPrimitives.h>
+#include <SDL3_gfx/SDL3_gfxPrimitives.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_mixer/SDL_mixer.h>
@@ -340,7 +340,7 @@ U1 *sdl_open_screen_full (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	int audio_rate = 44100; Uint16 audio_format = SDL_AUDIO_S16;
 	int audio_channels = 2; int audio_buffers = 4096;
 
-	if (! Mix_OpenAudio (0, NULL))
+	if (! MIX_Init ())
 	{
 		printf ("sdl_open_screen: ERROR: unable to initialize audio!\n");
 		return (sp);
@@ -1900,8 +1900,9 @@ U1 *sdl_play_sound (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 ALIGN nameaddr;
 	U1 sandbox_filename[256];
 
-	Mix_Chunk *sound = NULL;
-	int channel;
+	SDL_AudioSpec spec;
+    Uint8 *audio_buf = NULL;
+    Uint32 audio_len = 0;
 
 	sp = stpopi ((U1 *) &nameaddr, sp, sp_top);
 	if (sp == NULL)
@@ -1918,32 +1919,42 @@ U1 *sdl_play_sound (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			return (NULL);
 		}
 
-		sound = Mix_LoadWAV ((const char *) sandbox_filename);
-		if (sound == NULL)
+		if (! SDL_LoadWAV ((const char *) sandbox_filename, &spec, &audio_buf, &audio_len))
 		{
 			 printf ("sdl_play_sound: ERROR: Unable to load WAV file!\n");
 			 return (NULL);
 		}
 	#else
-		sound = Mix_LoadWAV (&data[nameaddr]);
-		if (sound == NULL)
+		if (! SDL_LoadWAV ((const char *) &data[nameadrr], &spec, &audio_buf, &audio_len))
 		{
-		 	printf ("sdl_play_sound: ERROR: Unable to load WAV file!\n");
-		 	return (NULL);
+			 printf ("sdl_play_sound: ERROR: Unable to load WAV file!\n");
+			 return (NULL);
 		}
 	#endif
 
-	channel = Mix_PlayChannel (-1, sound, 0);
-	if (channel == -1)
-	{
-		printf("sdl_play_sound: ERROR: Unable to play WAV file!\n");
-		return (NULL);
-	}
+	SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(
+        SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
+        &spec,
+        NULL,
+        NULL
+    );
 
-	// wait till sound play stops
-	while (Mix_Playing (channel) != 0);
-	Mix_FreeChunk (sound);
-	// Mix_CloseAudio ();
+    if (! stream)
+	{
+        SDL_Log("sdl_play_sound: ERROR: can't create sound stream: %s", SDL_GetError());
+        SDL_free(audio_buf);
+        return (NULL);
+    }
+
+    SDL_ResumeAudioStreamDevice(stream);
+    SDL_PutAudioStreamData(stream, audio_buf, audio_len);
+
+    while (SDL_GetAudioStreamQueued(stream) > 0)
+	{
+        SDL_Delay(10);
+    }
+    SDL_DestroyAudioStream(stream);
+    SDL_free(audio_buf);
 
 	return (sp);
 }
