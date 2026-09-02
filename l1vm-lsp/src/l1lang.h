@@ -56,6 +56,7 @@ typedef struct {
     int line, col, end_col;   /* 0-based line, UTF-16 columns */
     int is_const;
     int is_array;
+    int from_lib;             /* symbol comes from an included library header */
 } L1Var;
 
 typedef struct {

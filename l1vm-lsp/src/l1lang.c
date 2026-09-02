@@ -544,7 +544,8 @@ static char *l1_trim(char *s)
     while (*s == ' ' || *s == '\t')
         s++;
     e = s + strlen(s);
-    while (e > s && (e[-1] == ' ' || e[-1] == '\t' || e[-1] == '\r'))
+    while (e > s && (e[-1] == ' ' || e[-1] == '\t' || e[-1] == '\r' ||
+                     e[-1] == '\n'))
         e--;
     *e = '\0';
     return s;
@@ -563,7 +564,8 @@ static char *next_tok(const char **pp)
         return strdup("");
     }
     start = p;
-    while (*p && *p != ' ' && *p != '\t')
+    while (*p && *p != ' ' && *p != '\t' && *p != '(' && *p != ')' &&
+           *p != '{' && *p != '}')
         p++;
     n = (size_t)(p - start);
     *pp = p;
@@ -1566,10 +1568,16 @@ static void l1_static_diags(L1Doc *d)
         }
     }
 
-    /* duplicate variables in the same scope */
+    /* duplicate variables in the same scope (only symbols that belong to
+     * this document; library headers legitimately reuse names across
+     * functions and their positions don't map to this file) */
     for (i = 0; i < d->vars.len; i++) {
         int j;
+        if (d->vars.data[i].from_lib)
+            continue;
         for (j = i + 1; j < d->vars.len; j++) {
+            if (d->vars.data[j].from_lib)
+                continue;
             if (strcmp(d->vars.data[i].name, d->vars.data[j].name) == 0 &&
                 strcmp(d->vars.data[i].scope, d->vars.data[j].scope) == 0) {
                 snprintf(msg, sizeof(msg),
@@ -1829,6 +1837,13 @@ static void l1_static_diags(L1Doc *d)
         char valbuf[2048];
         char clean[2048];
 
+        /* library symbols live in another file: their line numbers do not
+         * map onto this document, and their names may legitimately be
+         * re-used inside separate library functions, so never diagnose
+         * them here */
+        if (v->from_lib)
+            continue;
+
         /* missing ~ suffix hint */
         if (l1_settings.missing_tilde_hint && nl > 0 &&
             v->name[nl - 1] != '~' && strcmp(v->name, "zero") != 0 &&
@@ -2012,6 +2027,10 @@ void l1_doc_analyze(L1Doc *d)
     for (li = 0; li < d->nlines; li++)
         l1_analyze_line(d, li);
 
+    /* library include symbols must be available before usage
+     * resolution and diagnostics (uses the persistent lib cache) */
+    l1_load_includes(d);
+
     /* signature comments */
     l1_parse_signature_comments(d);
 
@@ -2022,9 +2041,6 @@ void l1_doc_analyze(L1Doc *d)
     /* diagnostics */
     l1_doc_diagnostics(d);
     (void)i;
-
-    /* re-apply library include symbols (uses the persistent lib cache) */
-    l1_load_includes(d);
 }
 
 /* ==================== library include files ==================== */
@@ -2120,6 +2136,37 @@ static void l1_parse_lib_vars(const char *path, L1Vec_L1Var *vars,
             }
             continue;
         }
+        /* function alias declaration: "(name func)" */
+        if (p[0] == '(') {
+            char *e = strchr(p, ')');
+            if (e && e == p + strlen(p) - 1 && e > p + 2) {
+                char *name = p + 1;
+                char *tmp = strndup(name, (size_t)(e - name));
+                char *kw = tmp;
+                char *sp = strchr(kw, ' ');
+                int is_func_alias = 0;
+                if (sp) {
+                    char *k = sp;
+                    while (*k == ' ' || *k == '\t')
+                        k++;
+                    if (strcmp(k, "func") == 0)
+                        is_func_alias = 1;
+                    if (sp == kw)
+                        sp = NULL;
+                }
+                if (is_func_alias && sp) {
+                    *sp = '\0';
+                    L1Label lab;
+                    memset(&lab, 0, sizeof(lab));
+                    lab.name = strdup(kw);
+                    lab.line = li - 1;
+                    lab.col = 0;
+                    lab.end_col = (int)strlen(lab.name);
+                    VEC_PUSH(*labels, lab, L1Label);
+                }
+                free(tmp);
+            }
+        }
         /* set decl */
         {
             char *ptype = NULL, *psize = NULL, *pname = NULL;
@@ -2138,6 +2185,7 @@ static void l1_parse_lib_vars(const char *path, L1Vec_L1Var *vars,
                 v.is_const = (strncmp(ptype, "const-", 6) == 0);
                 v.is_array = (strcmp(psize, "1") != 0 &&
                               strcmp(psize, "s") != 0);
+                v.from_lib = 1;
                 VEC_PUSH(*vars, v, L1Var);
             }
             free(ptype);
@@ -2243,6 +2291,7 @@ static void l1_load_includes(L1Doc *d)
             nv.end_col = c->vars.data[j].end_col;
             nv.is_const = c->vars.data[j].is_const;
             nv.is_array = c->vars.data[j].is_array;
+            nv.from_lib = c->vars.data[j].from_lib;
             VEC_PUSH(d->vars, nv, L1Var);
         }
         for (j = 0; j < c->macros.len; j++) {
