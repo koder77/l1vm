@@ -3496,7 +3496,11 @@ int l1vm_run_program (char *program_name, int ac, char *av[])
 										cleanup ();
 										exit (1);
 									}
-									printf ("max_cpu: cores set to: %lli\n", max_cpu);
+
+									if (silent_run == 0)
+									{
+										printf ("max_cpu: cores set to: %lli\n", max_cpu);
+									}
 								}
 							}
 
@@ -3512,7 +3516,10 @@ int l1vm_run_program (char *program_name, int ac, char *av[])
 										cleanup ();
 										exit (1);
 									}
-									printf ("stack_size: stack size set to %lli\n", stack_size);
+									if (silent_run == 0)
+									{
+										printf ("stack_size: stack size set to %lli\n", stack_size);
+									}
 								}
 							}
 
@@ -3530,7 +3537,10 @@ int l1vm_run_program (char *program_name, int ac, char *av[])
 								run_priority = atoi (av[i + 1]);
 								if (run_priority < -20 || run_priority > 19)
 								{
-									printf ("Run priority out of legal range! Set to default 0!\n");
+									if (silent_run == 0)
+									{
+										printf ("Run priority out of legal range! Set to default 0!\n");
+									}
 									run_priority = 0;
 								}
 							}
@@ -3553,7 +3563,10 @@ int l1vm_run_program (char *program_name, int ac, char *av[])
 
                     				if (load_module (modules[modules_ind].name, modules_ind) == 0)
                     				{
-                        				printf ("module: %s loaded\n", modules[modules_ind].name);
+										if (silent_run == 0)
+										{
+											printf ("module: %s loaded\n", modules[modules_ind].name);
+										}
                     				}
                     				else
                     				{
@@ -3761,7 +3774,10 @@ int main (int ac, char *av[])
 										cleanup ();
 										exit (1);
 									}
-									printf ("max_cpu: cores set to: %lli\n", max_cpu);
+									if (silent_run == 0)
+									{
+										printf ("max_cpu: cores set to: %lli\n", max_cpu);
+									}
 								}
 							}
 
