@@ -146,6 +146,7 @@ fi
 FILE=~/l1vm/bin/zerobuild
 if test -f "$FILE"; then
     echo "$FILE exists!"
+	cd ..
 else
 	echo "zerobuild not installed into $FILE!"
 	echo "cloning and building it now..."
