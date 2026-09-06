@@ -1,3 +1,15 @@
+L1VM (3.7.0)
+	NEW: OpenCL vector math module. See "prog/math-opencl".
+	It has a "push" function to push arrays into the graphics card memory.
+	And a "pull" function to get the array back. The math functions run then on the graphics card.
+
+	The opencode Big Pickle AI helped to fix a bug in the assembler and in the VM. The assembler
+	calculated the data array size wrong. And made it sometimes 8 times huger as needed: fixed!
+	So every .l1obj file build now will be a lot smaller.
+	The VM had a bug handling the data array, this is fixed now!
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sun 6 September 2026 07:40 +020
+
 L1VM (3.6.6)
 	NEW: compiler: added check for not separated math operators:
 

@@ -2301,8 +2301,16 @@ S2 parse_line (U1 *line)
 
 												// variable is not in register, load it
 
+												// get destination register for the value (fixed by opencode Big Pickle AI)
+												reg4 = get_free_regi ();
+												set_regi (reg4, ast[level].expr[j][last_arg - 5]);
+
+												// get register for the variable address
+												// NOTE: do NOT bind this register to the variable name!
+												// it holds the ADDRESS of the variable, not the value.
+												// Binding it would make later get_regi (var) return the
+												// address register and corrupt the value semantics!
 												reg = get_free_regi ();
-												set_regi (reg, ast[level].expr[j][last_arg - 5]);
 
 												// set load opcode
 												strcpy ((char *) code[code_line], "load ");
@@ -2342,10 +2350,6 @@ S2 parse_line (U1 *line)
 												sprintf ((char *) str, "%i", reg);
 												strcat ((char *) code[code_line], (const char *) str);
 												strcat ((char *) code[code_line], ", 0, ");
-
-												// get free register
-												reg4 = get_free_regi ();
-												set_regi (reg4, ast[level].expr[j][last_arg - 5]);
 
 												sprintf ((char *) str, "%i", reg4);
 												strcat ((char *) code[code_line], (const char *) str);

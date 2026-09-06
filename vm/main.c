@@ -2226,7 +2226,10 @@ S2 run (void *arg)
 
 			timer_double = (double) (timer_end.tv_usec - timer_start.tv_usec) / 1000000 + (double) (timer_end.tv_sec - timer_start.tv_sec);
 			timer_double = timer_double * 1000.0; 	// get ms
-			printf ("TIMER ms: %.10lf\n", timer_double);
+			if (silent_run == 0)
+			{
+				printf ("TIMER ms: %.10lf\n", timer_double);
+			}
 			timer_int = ceil (timer_double);
 			regi[arg2] = timer_int;
 			eoffs = 5;
@@ -3636,7 +3639,7 @@ int l1vm_run_program (char *program_name, int ac, char *av[])
 
 	new_cpu = 0;
 
-	threaddata[new_cpu].sp = (U1 *) &data_global + (data_mem_size - ((max_cpu - 1) * stack_size) - 1);
+	threaddata[new_cpu].sp = (U1 *) data_global + (data_mem_size - ((max_cpu - 1) * stack_size) - 1);
 	threaddata[new_cpu].sp_top = threaddata[new_cpu].sp;
 	threaddata[new_cpu].sp_bottom = threaddata[new_cpu].sp_top - stack_size + 1;
 
@@ -3927,7 +3930,7 @@ int main (int ac, char *av[])
 
 	new_cpu = 0;
 
-	threaddata[new_cpu].sp = (U1 *) &data_global + (data_mem_size - ((max_cpu - 1) * stack_size) - 1);
+	threaddata[new_cpu].sp = (U1 *) data_global + (data_mem_size - ((max_cpu - 1) * stack_size) - 1);
 	threaddata[new_cpu].sp_top = threaddata[new_cpu].sp;
 	threaddata[new_cpu].sp_bottom = threaddata[new_cpu].sp_top - stack_size + 1;
 

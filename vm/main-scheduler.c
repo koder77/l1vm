@@ -4363,7 +4363,7 @@ int l1vm_run_program (char *program_name, int ac, char *av[])
 
 	new_cpu = 0;
 
-	threaddata[new_cpu].sp = (U1 *) &data_global + (data_mem_size - ((max_cpu - 1) * stack_size) - 1);
+	threaddata[new_cpu].sp = (U1 *) data_global + (data_mem_size - ((max_cpu - 1) * stack_size) - 1);
 	threaddata[new_cpu].sp_top = threaddata[new_cpu].sp;
 	threaddata[new_cpu].sp_bottom = threaddata[new_cpu].sp_top - stack_size + 1;
 
@@ -4671,7 +4671,7 @@ int main (int ac, char *av[])
 
 	new_cpu = 0;
 
-	threaddata[new_cpu].sp = (U1 *) &data_global + (data_mem_size - ((max_cpu - 1) * stack_size) - 1);
+	threaddata[new_cpu].sp = (U1 *) data_global + (data_mem_size - ((max_cpu - 1) * stack_size) - 1);
 	threaddata[new_cpu].sp_top = threaddata[new_cpu].sp;
 	threaddata[new_cpu].sp_bottom = threaddata[new_cpu].sp_top - stack_size + 1;
 

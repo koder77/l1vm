@@ -1098,7 +1098,7 @@ S2 parse_line (U1 *line)
                     return (1);
                 }
                 data_info[data_info_ind].offset = data_ind;
-                data_info[data_info_ind].end = data_ind + (data_size * data_info[data_info_ind].size);
+                data_info[data_info_ind].end = data_ind + data_info[data_info_ind].size;
 
                 // data name
                 strcpy ((char *) data_info[data_info_ind].name, (const char *) args[2]);
