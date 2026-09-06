@@ -14,4 +14,4 @@ archiver = ar
 
 cflags = "-O2 -fomit-frame-pointer -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wall -Wextra -fPIE"
 c++flags = "-std=c++17"
-lflags = "-lm -ldl -lpthread -lstdc++ -L../asmjit/build -lasmjit-l1vm -Wl,--export-dynamic"
+lflags = "-lm -ldl -lpthread -lbzip3 -lstdc++ -L../asmjit/build -lasmjit-l1vm -Wl,--export-dynamic"

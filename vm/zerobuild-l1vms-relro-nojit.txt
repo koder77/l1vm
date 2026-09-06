@@ -13,4 +13,4 @@ archiver = ar
 #cflags = "-O3 -march=native -fomit-frame-pointer -Wall -Wextra -fPIE"
 cflags = "-O3 -march=native -flto -fno-plt -fomit-frame-pointer -Wall -Wextra -fPIE"
 
-lflags = "-flto -lm -ldl -lpthread -Wl,--export-dynamic,-z,relro,-z,now"
+lflags = "-flto -lm -ldl -lpthread -lbzip3 -Wl,--export-dynamic,-z,relro,-z,now"

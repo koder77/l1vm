@@ -8,7 +8,10 @@ L1VM (3.7.0)
 	So every .l1obj file build now will be a lot smaller.
 	The VM had a bug handling the data array, this is fixed now!
 
--- Stefan Pietzonke <info@midnight-coding.de> Sun 6 September 2026 07:40 +020
+	NEW: the VM now loads .bz3 packed byte code and unpacks it in RAM. So it doesn't create an uncompressed file on disk.
+	Which was load and then removed.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sun 6 September 2026 10:31 +020
 
 L1VM (3.6.6)
 	NEW: compiler: added check for not separated math operators:

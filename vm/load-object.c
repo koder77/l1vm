@@ -21,6 +21,8 @@
 #include "../include/opcodes.h"
 #include "../include/home.h"
 
+#include <libbz3.h>
+
 #define BYTE_BUF 4096  // byte variable read buffer
 
 extern U1 *code;
@@ -137,12 +139,250 @@ S8 conv_quadword (S8 val)
 	return (ret);
 }
 
+// object code stream: reads from a file or from a RAM buffer
+// =========================================================
+static FILE *obj_fptr = NULL;
+static U1 *obj_mem_base = NULL;
+static U1 *obj_memptr = NULL;
+static S8 obj_mem_remaining = 0;
+
+static void obj_stream_open_file (FILE *fptr)
+{
+	obj_fptr = fptr;
+	obj_mem_base = NULL;
+	obj_memptr = NULL;
+	obj_mem_remaining = 0;
+}
+
+static void obj_stream_open_mem (U1 *buffer, S8 size)
+{
+	obj_fptr = NULL;
+	obj_mem_base = buffer;
+	obj_memptr = buffer;
+	obj_mem_remaining = size;
+}
+
+// reads like fread () from the file or from the RAM buffer
+static size_t obj_stream_read (void *ptr, size_t size, size_t nmemb)
+{
+	if (obj_memptr != NULL)
+	{
+		size_t bytes = size * nmemb;
+
+		if ((S8) bytes > obj_mem_remaining)
+		{
+			return (0);
+		}
+
+		memcpy (ptr, obj_memptr, bytes);
+		obj_memptr += bytes;
+		obj_mem_remaining -= bytes;
+		return (nmemb);
+	}
+
+	return (fread (ptr, size, nmemb, obj_fptr));
+}
+
+// closes the file or frees the RAM buffer
+static void obj_stream_close (void)
+{
+	if (obj_mem_base != NULL)
+	{
+		free (obj_mem_base);
+		obj_mem_base = NULL;
+		obj_memptr = NULL;
+		obj_mem_remaining = 0;
+	}
+	if (obj_fptr != NULL)
+	{
+		fclose (obj_fptr);
+		obj_fptr = NULL;
+	}
+}
+
+// read a little endian 32 bit integer from the buffer
+static S4 bz3_read_s32 (const U1 *buffer)
+{
+	return ((S4) buffer[0] | ((S4) buffer[1] << 8) | ((S4) buffer[2] << 16) | ((S4) buffer[3] << 24));
+}
+
+// load the uncompressed data of a bzip3 packed file into RAM
+// returns 0 on success, 1 on error
+// on success *outbuff points to the malloc'd uncompressed data and *outsize holds its size
+S2 bzip3_uncompress_file (const U1 *filename, U1 **outbuff, S8 *outsize)
+{
+	FILE *fptr;
+	U1 *inbuff = NULL;	// compressed data in RAM
+	U1 *unbuff = NULL;	// uncompressed data in RAM
+	U1 *block_buffer = NULL;
+	S8 insize = 0;
+	S8 unbsize = 0;
+	S8 pos = 0;
+	S8 outpos = 0;
+	S4 block_size = 0;
+	S4 blocksize = 0;
+	S4 origsize = 0;
+	struct bz3_state *state = NULL;
+	size_t block_buf_size = 0;
+	size_t readsize = 0;
+
+	fptr = fopen ((const char *) filename, "rb");
+	if (fptr == NULL)
+	{
+		printf ("bzip3_uncompress_file: ERROR: can't open file: '%s'!\n", filename);
+		return (1);
+	}
+
+	// get compressed file size
+	if (fseek (fptr, 0, SEEK_END) != 0)
+	{
+		printf ("bzip3_uncompress_file: ERROR: can't seek file: '%s'!\n", filename);
+		fclose (fptr);
+		return (1);
+	}
+	insize = ftell (fptr);
+	rewind (fptr);
+
+	if (insize < 17)
+	{
+		printf ("bzip3_uncompress_file: ERROR: file to small: '%s'!\n", filename);
+		fclose (fptr);
+		return (1);
+	}
+
+	inbuff = (U1 *) malloc ((size_t) insize);
+	if (inbuff == NULL)
+	{
+		printf ("bzip3_uncompress_file: ERROR: can't allocate %lli bytes for compressed data!\n", insize);
+		fclose (fptr);
+		return (1);
+	}
+
+	readsize = fread (inbuff, sizeof (U1), (size_t) insize, fptr);
+	fclose (fptr);
+	if (readsize != (size_t) insize)
+	{
+		printf ("bzip3_uncompress_file: ERROR: can't read file: '%s'!\n", filename);
+		free (inbuff);
+		return (1);
+	}
+
+	// check bzip3 signature
+	if (memcmp (inbuff, "BZ3v1", 5) != 0)
+	{
+		printf ("bzip3_uncompress_file: ERROR: no bzip3 signature in file: '%s'!\n", filename);
+		free (inbuff);
+		return (1);
+	}
+
+	block_size = bz3_read_s32 ((const U1 *) (inbuff + 5));
+	if (block_size < 65 * 1024 || block_size > 511 * 1024 * 1024)
+	{
+		printf ("bzip3_uncompress_file: ERROR: invalid bzip3 block size: %i in file: '%s'!\n", block_size, filename);
+		free (inbuff);
+		return (1);
+	}
+
+	// first pass: walk through the blocks and sum up the uncompressed size
+	pos = 9;
+	while (pos < insize)
+	{
+		if (insize - pos < 8)
+		{
+			printf ("bzip3_uncompress_file: ERROR: truncated block header in file: '%s'!\n", filename);
+			free (inbuff);
+			return (1);
+		}
+
+		blocksize = bz3_read_s32 ((const U1 *) (inbuff + pos));
+		origsize = bz3_read_s32 ((const U1 *) (inbuff + pos + 4));
+		pos += 8;
+
+		if (blocksize < 0 || origsize < 0 || (size_t) blocksize > bz3_bound (block_size) || (size_t) origsize > bz3_bound (block_size))
+		{
+			printf ("bzip3_uncompress_file: ERROR: invalid block sizes in file: '%s'!\n", filename);
+			free (inbuff);
+			return (1);
+		}
+
+		if (insize - pos < blocksize)
+		{
+			printf ("bzip3_uncompress_file: ERROR: truncated block data in file: '%s'!\n", filename);
+			free (inbuff);
+			return (1);
+		}
+		pos += blocksize;
+		unbsize += origsize;
+	}
+
+	unbuff = (U1 *) malloc ((size_t) unbsize);
+	if (unbuff == NULL)
+	{
+		printf ("bzip3_uncompress_file: ERROR: can't allocate %lli bytes for uncompressed data!\n", unbsize);
+		free (inbuff);
+		return (1);
+	}
+
+	state = bz3_new (block_size);
+	if (state == NULL)
+	{
+		printf ("bzip3_uncompress_file: ERROR: can't create bzip3 state!\n");
+		free (inbuff);
+		free (unbuff);
+		return (1);
+	}
+
+	block_buf_size = bz3_bound (block_size);
+	block_buffer = (U1 *) malloc ((size_t) block_buf_size);
+	if (block_buffer == NULL)
+	{
+		printf ("bzip3_uncompress_file: ERROR: can't allocate block buffer!\n");
+		bz3_free (state);
+		free (inbuff);
+		free (unbuff);
+		return (1);
+	}
+
+	// second pass: decode all blocks
+	pos = 9;
+	outpos = 0;
+	while (pos < insize)
+	{
+		blocksize = bz3_read_s32 ((const U1 *) (inbuff + pos));
+		origsize = bz3_read_s32 ((const U1 *) (inbuff + pos + 4));
+		pos += 8;
+
+		memcpy (block_buffer, inbuff + pos, (size_t) blocksize);
+		pos += blocksize;
+
+		if (bz3_decode_block (state, block_buffer, block_buf_size, blocksize, origsize) == -1)
+		{
+			printf ("bzip3_uncompress_file: ERROR: can't decode block: %s!\n", bz3_strerror (state));
+			bz3_free (state);
+			free (block_buffer);
+			free (inbuff);
+			free (unbuff);
+			return (1);
+		}
+
+		memcpy (unbuff + outpos, block_buffer, (size_t) origsize);
+		outpos += origsize;
+	}
+
+	bz3_free (state);
+	free (block_buffer);
+	free (inbuff);
+
+	*outbuff = unbuff;
+	*outsize = unbsize;
+	return (0);
+}
+
 S2 load_object (U1 *name, S2 load_code_only)
 {
 	FILE *fptr;
 	U1 objname[512];
 	U1 full_path[512];
-	U1 run_shell[512];
 	char *home;
 
 	S4 slen;
@@ -171,8 +411,9 @@ S2 load_object (U1 *name, S2 load_code_only)
 
 	U1 *bptr;
 
-	// bzip compressed file flag
-	U1 bzip2 = 0;
+	// RAM buffer with the decompressed object code, used for packed objects
+	U1 *objbuffer = NULL;
+	S8 objsize = 0;
 
 	slen = strlen_safe ((const char *) name, MAXLINELEN);
 	if (slen > 506)
@@ -246,67 +487,54 @@ S2 load_object (U1 *name, S2 load_code_only)
 			{
 				printf ("loading packed object file...\n");
 			}
-			// close archive
+			// close the .bz3 archive file
 			fclose (fptr);
-			// unpack archive by running bzip2 unpack
 
-			// bzip2 -d -k -f primes.l1obj.bz2  -c >/tmp/primes.l1obj
-
-			strcpy ((char *) run_shell, "bzip3 -d -k -f ");
+			// decompress the packed object code into RAM
 			if (object_root == 0)
 			{
-				strcat ((char *) run_shell, (const char *) objname);
+				if (bzip3_uncompress_file ((const U1 *) objname, &objbuffer, &objsize) != 0)
+				{
+					printf ("load_object: ERROR: can't decompress object code: '%s'!\n", objname);
+					return (1);
+				}
 			}
 			else
 			{
 				// object file in sandbox_root/prog
-				strcat ((char *) run_shell, (const char *) full_path);
+				if (bzip3_uncompress_file ((const U1 *) full_path, &objbuffer, &objsize) != 0)
+				{
+					printf ("load_object: ERROR: can't decompress object code: '%s'!\n", full_path);
+					return (1);
+				}
 			}
 
-			// printf ("shell unpack: '%s'\n", run_shell
-
-			if (system ((char *) run_shell) != 0)
+			if (silent_run == 0)
 			{
-				printf ("load_object: ERROR: can't run bzip3 to unpack object code: '%s'!\n", objname);
-				return (1);
+				printf ("decompressed %lli bytes object code into RAM\n", objsize);
 			}
 
-			if (object_root == 0)
-			{
-				strcpy ((char *) objname, (const char *) name);
-				strcat ((char *) objname, ".l1obj");
-			}
-			else
-			{
-				home = get_home ();
-				strcpy ((char *) full_path, (const char *) home);
-				strcpy ((char *) objname, SANDBOX_ROOT);
-				strcat ((char *) objname, (const char *) "prog/");
-				strcat ((char *) objname, (const char *) name);
-				strcat ((char *) objname, ".l1obj");
-			}
-
-			fptr = fopen ((const char *) objname, "rb");
-			if (fptr == NULL)
-			{
-				printf ("ERROR: can't open object file '%s'!\n", objname);
-				return (1);
-			}
-
-			bzip2 = 1;
+			obj_stream_open_mem (objbuffer, objsize);
+		}
+		else
+		{
+			// object code is not packed, read it from the opened file
+			obj_stream_open_file (fptr);
 		}
 	}
 
+	// object code is not packed, read it from the opened file
+	if (object_packed == 0)
+	{
+		obj_stream_open_file (fptr);
+	}
+
 	// check header
-	readsize = fread (&quadword, sizeof (S8), 1, fptr);
+	readsize = obj_stream_read (&quadword, sizeof (S8), 1);
 	if (readsize != 1)
 	{
 		printf ("error: can't load header!\n");
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 
@@ -314,24 +542,16 @@ S2 load_object (U1 *name, S2 load_code_only)
 	if (header != (S8) 0xC0DEBABE00002019)
 	{
 		printf ("ERROR: wrong header!\n");
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 
 	// codesize
-	readsize = fread (&quadword, sizeof (S8), 1, fptr);
+	readsize = obj_stream_read (&quadword, sizeof (S8), 1);
 	if (readsize != 1)
 	{
 		printf ("error: can't load codesize!\n");
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 
@@ -344,11 +564,7 @@ S2 load_object (U1 *name, S2 load_code_only)
 		if (code_size > max_code_size)
 		{
 			printf ("ERROR: code_size to big: %lli, must be less than: %lli!\n", code_size, max_code_size);
-			fclose (fptr);
-			if (bzip2)
-			{
-				remove ((const char *) objname);
-			}
+			obj_stream_close ();
 			return (1);
 		}
 	}
@@ -357,11 +573,7 @@ S2 load_object (U1 *name, S2 load_code_only)
 	if (code == NULL)
 	{
 		printf ("ERROR: can't allocate %lli bytes for code!\n", code_size);
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 
@@ -369,26 +581,18 @@ S2 load_object (U1 *name, S2 load_code_only)
 	while (! ok)
 	{
 		// opcode
-		readsize = fread (&op, sizeof (U1), 1, fptr);
+		readsize = obj_stream_read (&op, sizeof (U1), 1);
 		if (readsize != 1)
 		{
 			printf ("error: can't load opcode!\n");
-			fclose (fptr);
-			if (bzip2)
-			{
-				remove ((const char *) objname);
-			}
+			obj_stream_close ();
 			return (1);
 		}
 
 		if (op >= MAXOPCODES)
 		{
 			printf ("error: illegal opcode!\n");
-			fclose (fptr);
-			if (bzip2)
-			{
-				remove ((const char *) objname);
-			}
+			obj_stream_close ();
 			return (1);
 		}
 
@@ -408,15 +612,11 @@ S2 load_object (U1 *name, S2 load_code_only)
 				case I_REG:
 				case D_REG:
 					//printf ("LOAD CODE REG...\n");
-					readsize = fread (&byte, sizeof (U1), 1, fptr);
+					readsize = obj_stream_read (&byte, sizeof (U1), 1);
 					if (readsize != 1)
 					{
 						printf ("error: can't load opcode arg!\n");
-						fclose (fptr);
-						if (bzip2)
-						{
-							remove ((const char *) objname);
-						}
+						obj_stream_close ();
 						return (1);
 					}
 					code[i] = byte;
@@ -427,15 +627,11 @@ S2 load_object (U1 *name, S2 load_code_only)
 				case DATA_OFFS:
 				case LABEL:
 					//printf ("LOAD CODE QUADWORD...\n");
-					readsize = fread (&quadword, sizeof (S8), 1, fptr);
+					readsize = obj_stream_read (&quadword, sizeof (S8), 1);
 					if (readsize != 1)
 					{
 						printf ("error: can't load opcode arg!\n");
-						fclose (fptr);
-						if (bzip2)
-						{
-							remove ((const char *) objname);
-						}
+						obj_stream_close ();
 						return (1);
 					}
 					quadword = conv_quadword (quadword);
@@ -461,15 +657,11 @@ S2 load_object (U1 *name, S2 load_code_only)
 					break;
 
 				case ALL:
-					readsize = fread (&byte, sizeof (U1), 1, fptr);
+					readsize = obj_stream_read (&byte, sizeof (U1), 1);
 					if (readsize != 1)
 					{
 						printf ("error: can't load opcode arg!\n");
-						fclose (fptr);
-						if (bzip2)
-						{
-							remove ((const char *) objname);
-						}
+						obj_stream_close ();
 						return (1);
 					}
 					code[i] = byte;
@@ -487,6 +679,7 @@ S2 load_object (U1 *name, S2 load_code_only)
 	{
 		// leave data as is
 		// load new code only
+		obj_stream_close ();
 		return (0);
 	}
 
@@ -496,15 +689,11 @@ S2 load_object (U1 *name, S2 load_code_only)
 		printf ("%i\n", code[j]);
 	}
 	*/
-	readsize = fread (&byte, sizeof (U1), 1, fptr);
+	readsize = obj_stream_read (&byte, sizeof (U1), 1);
 	if (readsize != 1)
 	{
 		printf ("error: can't load info header!\n");
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
-		fclose (fptr);
+		obj_stream_close ();
 		return (1);
 	}
 
@@ -512,77 +701,49 @@ S2 load_object (U1 *name, S2 load_code_only)
 	{
 		printf ("ERROR: wrong info header!\n");
 		printf ("%i\n", byte);
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 
-	readsize = fread (&byte, sizeof (U1), 1, fptr);
+	readsize = obj_stream_read (&byte, sizeof (U1), 1);
 	if (readsize != 1)
 	{
 		printf ("error: can't load info header!\n");
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 	if (byte != 'n')
 	{
 		printf ("ERROR: wrong info header!\n");
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 
-	readsize = fread (&byte, sizeof (U1), 1, fptr);
+	readsize = obj_stream_read (&byte, sizeof (U1), 1);
 	if (readsize != 1)
 	{
 		printf ("error: can't load info header!\n");
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 	if (byte != 'f')
 	{
 		printf ("ERROR: wrong info header!\n");
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 
-	readsize = fread (&byte, sizeof (U1), 1, fptr);
+	readsize = obj_stream_read (&byte, sizeof (U1), 1);
 	if (readsize != 1)
 	{
 		printf ("error: can't load info header!\n");
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 	if (byte != 'o')
 	{
 		printf ("ERROR: wrong info header!\n");
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 
@@ -590,15 +751,11 @@ S2 load_object (U1 *name, S2 load_code_only)
 	ok = 0; data_mem_size = 0;
 	while (! ok)
 	{
-		readsize = fread (&byte, sizeof (U1), 1, fptr);
+		readsize = obj_stream_read (&byte, sizeof (U1), 1);
 		if (readsize != 1)
 		{
 			printf ("error: can't load data info!\n");
-			fclose (fptr);
-			if (bzip2)
-			{
-				remove ((const char *) objname);
-			}
+			obj_stream_close ();
 			return (1);
 		}
 
@@ -607,15 +764,11 @@ S2 load_object (U1 *name, S2 load_code_only)
 			data_info_ind++;
 			data_info[data_info_ind].type = byte;
 
-			readsize = fread (&quadword, sizeof (S8), 1, fptr);
+			readsize = obj_stream_read (&quadword, sizeof (S8), 1);
 			if (readsize != 1)
 			{
 				printf ("error: can't load data info!\n");
-				fclose (fptr);
-				if (bzip2)
-				{
-					remove ((const char *) objname);
-				}
+				obj_stream_close ();
 				return (1);
 			}
 			quadword = conv_quadword (quadword);
@@ -631,82 +784,54 @@ S2 load_object (U1 *name, S2 load_code_only)
 
 	// "ata"
 
-	readsize = fread (&byte, sizeof (U1), 1, fptr);
+	readsize = obj_stream_read (&byte, sizeof (U1), 1);
 	if (readsize != 1)
 	{
 		printf ("error: can't load data header!\n");
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 	if (byte != 'a')
 	{
 		printf ("ERROR: wrong data header!\n");
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 
-	readsize = fread (&byte, sizeof (U1), 1, fptr);
+	readsize = obj_stream_read (&byte, sizeof (U1), 1);
 	if (readsize != 1)
 	{
 		printf ("error: can't load data header!\n");
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 	if (byte != 't')
 	{
 		printf ("ERROR: wrong data header!\n");
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 
-	readsize = fread (&byte, sizeof (U1), 1, fptr);
+	readsize = obj_stream_read (&byte, sizeof (U1), 1);
 	if (readsize != 1)
 	{
 		printf ("error: can't data info header!\n");
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 	if (byte != 'a')
 	{
 		printf ("ERROR: wrong data header!\n");
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 
 	// data
-	readsize = fread (&quadword, sizeof (S8), 1, fptr);
+	readsize = obj_stream_read (&quadword, sizeof (S8), 1);
 	if (readsize != 1)
 	{
 		printf ("error: can't load data: SIZE!\n");
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 
@@ -722,11 +847,7 @@ S2 load_object (U1 *name, S2 load_code_only)
 		if (data_mem_size > max_data_size)
 		{
 			printf ("ERROR: data_mem_size to big: %lli, must be less than: %lli!\n", data_mem_size, max_data_size);
-			fclose (fptr);
-			if (bzip2)
-			{
-				remove ((const char *) objname);
-			}
+			obj_stream_close ();
 			return (1);
 		}
 	}
@@ -735,11 +856,7 @@ S2 load_object (U1 *name, S2 load_code_only)
 	if (data_global == NULL)
 	{
 		printf ("ERROR: can't allocate %lli bytes for data!\n", data_mem_size);
-		fclose (fptr);
-		if (bzip2)
-		{
-			remove ((const char *) objname);
-		}
+		obj_stream_close ();
 		return (1);
 	}
 
@@ -774,15 +891,11 @@ S2 load_object (U1 *name, S2 load_code_only)
 							todo = toread;
 						}
 
-						readsize = fread (read_buf, sizeof (U1), todo, fptr);
+						readsize = obj_stream_read (read_buf, sizeof (U1), todo);
 						if (readsize != todo)
 						{
 							printf ("error: can't load data: BYTE!\n");
-							fclose (fptr);
-							if (bzip2)
-							{
-								remove ((const char *) objname);
-							}
+							obj_stream_close ();
 							return (1);
 						}
 
@@ -804,15 +917,11 @@ S2 load_object (U1 *name, S2 load_code_only)
 				data_info[j].offset = i;
 				for (k = 1; k <= (S8) (data_info[j].size / sizeof (S2)); k++)
 				{
-					readsize = fread (&word, sizeof (S2), 1, fptr);
+					readsize = obj_stream_read (&word, sizeof (S2), 1);
 					if (readsize != 1)
 					{
 						printf ("error: can't load data: WORD!\n");
-						fclose (fptr);
-						if (bzip2)
-						{
-							remove ((const char *) objname);
-						}
+						obj_stream_close ();
 						return (1);
 					}
 
@@ -834,15 +943,11 @@ S2 load_object (U1 *name, S2 load_code_only)
 				data_info[j].offset = i;
 				for (k = 1; k <= (S8) (data_info[j].size / sizeof (S4)); k++)
 				{
-					readsize = fread (&doubleword, sizeof (S4), 1, fptr);
+					readsize = obj_stream_read (&doubleword, sizeof (S4), 1);
 					if (readsize != 1)
 					{
 						printf ("error: can't load data: DOUBLEWORD!\n");
-						fclose (fptr);
-						if (bzip2)
-						{
-							remove ((const char *) objname);
-						}
+						obj_stream_close ();
 						return (1);
 					}
 
@@ -868,15 +973,11 @@ S2 load_object (U1 *name, S2 load_code_only)
 				data_info[j].offset = i;
 				for (k = 1; k <= (S8) (data_info[j].size / sizeof (S8)); k++)
 				{
-					readsize = fread (&quadword, sizeof (S8), 1, fptr);
+					readsize = obj_stream_read (&quadword, sizeof (S8), 1);
 					if (readsize != 1)
 					{
 						printf ("error: can't load data: QUADWORD | DOUBLEFLOAT! index: %lli\n", j);
-						fclose (fptr);
-						if (bzip2)
-						{
-							remove ((const char *) objname);
-						}
+						obj_stream_close ();
 						return (1);
 					}
 
@@ -908,10 +1009,6 @@ S2 load_object (U1 *name, S2 load_code_only)
 				break;
 		}
 	}
-	fclose (fptr);
-	if (bzip2)
-	{
-		remove ((const char *) objname);
-	}
+	obj_stream_close ();
 	return (0);
 }

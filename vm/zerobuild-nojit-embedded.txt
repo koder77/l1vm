@@ -11,4 +11,4 @@ c++compiler = $CCPP
 archiver = ar
 
 cflags = "-fPIC -O2 -fomit-frame-pointer -Wall -Wextra"
-lflags = "-shared -lm -ldl -lpthread -Wl,--export-dynamic"
+lflags = "-shared -lm -ldl -lpthread -lbzip3 -Wl,--export-dynamic"
