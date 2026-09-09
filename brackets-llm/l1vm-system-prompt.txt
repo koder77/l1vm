@@ -416,10 +416,6 @@ ARITHMETIC OPERATORS:
         ((x y /) a =)          // a = x / y
         ((x y %) a =)          // a = x % y (modulo)
 
-    Double-specific:
-        ((count zerod +d) count =)    // double addition
-        ((xd yd *d) ad =)             // double multiplication
-
 COMPARISON OPERATORS:
 
     ==      equal
