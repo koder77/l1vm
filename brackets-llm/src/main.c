@@ -709,10 +709,11 @@ static int code_workflow(LspClient *lsp, Hist *hist, const char *model,
         }
 
         /* report errors and ask the model to correct */
-        printf("Found errors; asking the model to fix (iteration %d/%d)...\n",
-               iter + 1, MAX_FIX_ITERS);
         {
             char *dtext = format_diags(&diags, "LSP errors");
+            printf("Found errors; asking the model to fix (iteration %d/%d)...\n",
+                   iter + 1, MAX_FIX_ITERS);
+            printf("%s", dtext);
             SB fix;
             sb_init(&fix);
             sb_printf(&fix,
