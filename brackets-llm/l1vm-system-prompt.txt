@@ -407,15 +407,6 @@ OBJECT DEFINITIONS (shared data + methods):
 6. OPERATORS
 ===============================================================================
 
-ARITHMETIC OPERATORS:
-
-    In RPN (parenthetical) expressions:
-        ((x y +) a =)          // a = x + y
-        ((x y -) a =)          // a = x - y
-        ((x y *) a =)          // a = x * y
-        ((x y /) a =)          // a = x / y
-        ((x y %) a =)          // a = x % y (modulo)
-
 COMPARISON OPERATORS:
 
     ==      equal
@@ -446,19 +437,6 @@ ADDRESS OPERATOR:
 
     hellostraddr    auto-suffix "addr" to get address of hellostr
     filenameaddr    auto-suffix "addr" to get address of filename
-
-===============================================================================
-7. MATH EXPRESSIONS
-===============================================================================
-
-PARENTHETICAL RPN (Reverse Polish Notation):
-
-    ((x y +) a =)              // a = x + y
-    ((x y *) a =)              // a = x * y
-    ((x y + z x * *) a =)     // a = (x + y) * (z * x)
-    ((x y -) a =)              // a = x - y
-    ((x y /) a =)              // a = x / y
-    ((x y %) a =)              // a = x % y
 
 ===============================================================================
 8. CONTROL FLOW STRUCTURES
@@ -1617,7 +1595,6 @@ RETURN VALUE CONVENTION:
     | String auto       | (set string s NAME~ "text")                     | String auto-length         |
     | String explicit   | (set string N NAME~ "text")                     | String with length N       |
     | Assignment        | (src~ dest~ =) or (src~ dest~ :=)              | Assign value               |
-    | RPN math          | ((a~ b~ OP) dest~ =)                           | Math expression            |
     | Function def      | (name func) ... (funcend)                       | Define function (after main) |
     | Function call     | (:name !) or (:name !)                       | Call function              |
     | If                | (((cond) f~ =) f~ if) ... (endif)              | Conditional                |
@@ -1727,7 +1704,7 @@ Code:
     (set string s hello~ "Hello world!")
     (hello~ :print_s !)
     (:print_n !)
-    ((x~ y~ *) a~ =)
+    (x~ * y~ a~ :=)
     (a~ :print_i !)
     (:print_n !)
     (y~ sq~ :square !)
