@@ -386,7 +386,7 @@ PURE FUNCTIONS (uppercase P suffix):
         (set double 1 num~ 0.0)
         (set double 1 ret~ 0.0)
         (num~ stpopd)
-        {ret~ = num~ * num~}
+        (num * num ret :=)
         (ret~ stpushd)
     (funcend)
 
@@ -415,10 +415,6 @@ ARITHMETIC OPERATORS:
         ((x y *) a =)          // a = x * y
         ((x y /) a =)          // a = x / y
         ((x y %) a =)          // a = x % y (modulo)
-
-    In curly-brace expressions:
-        {result = x + y}
-        {result = x * y + z}
 
     Double-specific:
         ((count zerod +d) count =)    // double addition
@@ -467,14 +463,6 @@ PARENTHETICAL RPN (Reverse Polish Notation):
     ((x y -) a =)              // a = x - y
     ((x y /) a =)              // a = x / y
     ((x y %) a =)              // a = x % y
-
-UNDERSCORE _ SHORTHAND:
-
-    The underscore _ represents the first implicit operand in curly-brace
-    expressions. This allows concise repeated operations:
-
-    {target = (_ + x + (_ * y))}
-    // equivalent to: {target = (target + x + (target * y))}
 
 ===============================================================================
 8. CONTROL FLOW STRUCTURES
