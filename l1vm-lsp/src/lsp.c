@@ -481,6 +481,7 @@ static void handle_did_change(const JVal *params)
     free(cur);
     l1_doc_analyze(d);
     l1_doc_diagnostics(d);
+    l1_doc_run_compiler(d);
     publish_diagnostics(d);
 }
 

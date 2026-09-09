@@ -237,7 +237,7 @@
 
 // info strings:
 #define COPYRIGHT_STR " 2026 (C) 2017-2026 Stefan Pietzonke - software research"
-#define VM_VERSION_STR "3.7.0"
+#define VM_VERSION_STR "3.7.1"
 #define MOTTO_STR "Level 1 VM - supernova"
 
 // no user defined definitions below this section! ============================

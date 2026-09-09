@@ -37,7 +37,7 @@ A complete L1VM/Brackets program follows this exact structure:
 
 IMPORTANT RULES:
 - ALWAYS use !) for function calls, NEVER use call). Example: (:print_s !) not (:print_s call)
-- Macros from intr-func.l1h (print_s, print_i, print_d, print_n, exit, etc.) MUST always use the function-style syntax: (variable~ :print_s !), (zero~ :exit !). NEVER use the old macro-style: print_s (variable~) or exit (zero~).
+- Macros from intr-func.l1h (print_s, print_i, print_d, print_n, exit, etc.) MUST always use the function-style syntax: (variable~ :print_s !), (zero :exit !). NEVER use the old macro-style: print_s (variable~) or exit (zero).
 - The file extension is .l1com
 - Comments: // single-line only
 - The main function is the entry point and is required
@@ -111,7 +111,7 @@ VARIABLE DECLARATION SYNTAX:
         (set const-TYPE SIZE NAME~ VALUE)
 
         Examples:
-        (set const-int64 1 zero~ 0)
+        (set const-int64 1 zero 0)
         (set const-int64 1 one~ 1)
         (set const-string s pi_str~ "3.14159")
 
@@ -151,7 +151,7 @@ PUSHING VALUES ONTO THE STACK:
                            // Stack after: [..., a, b, c]  (c is on top)
 
     Examples:
-    (zero~ stpush)          // push the value of variable 'zero~' (typically 0)
+    (zero stpush)          // push the value of variable 'zero' (typically 0)
     (hellostraddr~ stpush)  // push the memory address of string "hello"
     (a~ b~ c~ stpush)       // push a~, then b~, then c~ onto stack
 
@@ -194,9 +194,9 @@ RETURN VALUES FROM FUNCTIONS:
     After a function call, you pop the return value(s).
 
     Example:
-        (zero~ one~ :file_init !)    // call file_init
+        (zero one~ :file_init !)    // call file_init
         (ret~ stpopi)                   // pop return value into 'ret~'
-        (((ret~ zero~ !=) f~ =) f~ if)  // check if error occurred
+        (((ret~ zero !=) f~ =) f~ if)  // check if error occurred
 
 MULTIPLE RETURN VALUES:
 
@@ -275,7 +275,7 @@ FUNCTION DEFINITION:
     // main function MUST come first
     (main func)
         #var ~ main
-        (set int64 1 zero~ 0)
+        (set int64 1 zero 0)
         (set int64 1 x~ 10)
         (set int64 1 y~ 20)
         (set int64 1 sum~ 0)
@@ -283,13 +283,13 @@ FUNCTION DEFINITION:
         (sum~ stpopi)
         (sum~ :print_i !)
         (:print_n !)
-        (zero~ :exit !)
+        (zero :exit !)
     (funcend)
 
     // Other functions come AFTER main
     (add_numbers func)
         #var ~ add_numbers
-        (set const-int64 1 zero~ 0)
+        (set const-int64 1 zero 0)
         (set int64 1 a~ 0)
         (set int64 1 b~ 0)
         (set int64 1 result~ 0)
@@ -378,7 +378,7 @@ PURE FUNCTIONS (uppercase P suffix):
         (result~ stpopd)
         (result~ :print_d !)
         (:print_n !)
-        (zero~ :exit !)
+        (zero :exit !)
     (funcend)
 
     (squareP func)
@@ -513,7 +513,7 @@ IF FROM BOOLEAN VARIABLE:
 
 FOR LOOP:
 
-    (zero~ loop~ =)                    // initialization: loop~ = 0
+    (zero loop~ =)                    // initialization: loop~ = 0
     (for-loop)                         // mark loop start
     (((loop~ maxloop~ <) f~ =) f~ for) // condition: execute while loop~ < maxloop~
         // loop body
@@ -521,12 +521,12 @@ FOR LOOP:
     (next)                             // loop back to (for-loop)
 
     Example - print 0 to 9:
-    (set int64 1 zero~ 0)
+    (set int64 1 zero 0)
     (set int64 1 one~ 1)
     (set int64 1 i~ 0)
     (set int64 1 max~ 10)
     (set int64 1 f~ 0)
-    (zero~ i~ =)
+    (zero i~ =)
     (for-loop)
     (((i~ max~ <) f~ =) f~ for)
         (i~ :print_i !)
@@ -536,7 +536,7 @@ FOR LOOP:
 
 WHILE LOOP (do-while):
 
-    (zero~ loop~ =)                    // initialization
+    (zero loop~ =)                    // initialization
     (do)                               // start of loop body
         // loop body
         ((loop~ one~ +) loop~ =)       // increment
@@ -545,7 +545,7 @@ WHILE LOOP (do-while):
     Example:
     (set int64 1 i~ 0)
     (set int64 1 max~ 10)
-    (zero~ i~ =)
+    (zero i~ =)
     (do)
         (i~ :print_i !)
         (:print_n !)
@@ -618,7 +618,7 @@ The intr-func.l1h version is RECOMMENDED (more readable):
     (:print_n !)
     (42 :print_i !)
     (:print_n !)
-    (zero~ :exit !)
+    (zero :exit !)
 
 ---------------------------------------------------------------------------
 8.2 INPUT FROM STDIN
@@ -654,7 +654,7 @@ COMPLETE FILE WRITE EXAMPLE:
     (main func)
         #var ~ main
         #include <file-def.l1h>        // file mode constants
-        (set int64 1 zero~ 0)
+        (set int64 1 zero 0)
         (set int64 1 one~ 1)
         (set int64 1 handle~ 0)
         (set int64 1 error~ 0)
@@ -663,9 +663,9 @@ COMPLETE FILE WRITE EXAMPLE:
         (set byte 1 mode_write~ 2)
 
         // Step 1: Initialize file module
-        (zero~ one~ :file_init !)
+        (zero one~ :file_init !)
         (error~ stpopi)
-        (((error~ zero~ !=) f~ =) f~ if)
+        (((error~ zero !=) f~ =) f~ if)
             (:print_s !)    // print error~
             (one~ :exit !)
         (endif)
@@ -673,7 +673,7 @@ COMPLETE FILE WRITE EXAMPLE:
         // Step 2: Open file for writing
         (mode_write~ filenameaddr~ :file_open !)
         (handle~ stpopi)
-        (((handle~ zero~ <) f~ =) f~ if)
+        (((handle~ zero <) f~ =) f~ if)
             // error: couldn't open file
             (one~ :exit !)
         (endif)
@@ -681,7 +681,7 @@ COMPLETE FILE WRITE EXAMPLE:
         // Step 3: Write string~ to file
         (handle~ contentaddr~ :file_put_string !)
         (error~ stpopi)
-        (((error~ zero~ !=) f~ =) f~ if)
+        (((error~ zero !=) f~ =) f~ if)
             // error writing
             (handle~ :file_close !)
             (one~ :exit !)
@@ -697,7 +697,7 @@ COMPLETE FILE WRITE EXAMPLE:
         // Step 6: Free file module memory
         (:file_free_mem !)
 
-        (zero~ :exit !)
+        (zero :exit !)
     (funcend)
     #include <file-lib.l1h>
 
@@ -708,7 +708,7 @@ COMPLETE FILE READ EXAMPLE:
     (main func)
         #var ~ main
         #include <file-def.l1h>
-        (set int64 1 zero~ 0)
+        (set int64 1 zero 0)
         (set int64 1 one~ 1)
         (set int64 1 handle~ 0)
         (set int64 1 error~ 0)
@@ -719,13 +719,13 @@ COMPLETE FILE READ EXAMPLE:
         (set byte 1 mode_read~ 1)
 
         // Initialize
-        (zero~ one~ :file_init !)
+        (zero one~ :file_init !)
         (error~ stpopi)
 
         // Open for reading
         (mode_read~ filenameaddr~ :file_open !)
         (handle~ stpopi)
-        (((handle~ zero~ <) f~ =) f~ if)
+        (((handle~ zero <) f~ =) f~ if)
             (one~ :exit !)
         (endif)
 
@@ -749,14 +749,14 @@ COMPLETE FILE READ EXAMPLE:
         // Cleanup
         (handle~ :file_close !)
         (:file_free_mem !)
-        (zero~ :exit !)
+        (zero :exit !)
     (funcend)
     #include <file-lib.l1h>
 
 FILE LIBRARY FUNCTIONS REFERENCE:
 
     INITIALIZE:
-    (zero~ one~ :file_init !)       // init with 1 file handle
+    (zero one~ :file_init !)       // init with 1 file handle
     // push max file handles onto stack before calling
     // return value on stack: 0 = success, !=0 = error
 
@@ -903,7 +903,7 @@ STRING FUNCTIONS:
     // Copy byte array to string~
 
     FREE MODULE:
-    (zero~ :free_mod !)
+    (zero :free_mod !)
 
 COMPLETE STRING EXAMPLE:
 
@@ -911,14 +911,14 @@ COMPLETE STRING EXAMPLE:
     #include <string.l1h>
     (main func)
         #var ~ main
-        (set int64 1 zero~ 0)
+        (set int64 1 zero 0)
         (set int64 1 strlen~ 0)
         (set string 6 hello~ "Hello")
         (set string s world~ " World!")
         (set string s combined~ "")
 
         // Initialize string module
-        (zero~ :string_init !)
+        (zero :string_init !)
 
         // Concatenate: combined~ = hello~ + world~
         (hellostraddr~ worldstraddr~ :string_cat !)
@@ -933,8 +933,8 @@ COMPLETE STRING EXAMPLE:
         (strlen~ :print_i !)
         (:print_n !)
 
-        (zero~ :free_mod !)
-        (zero~ :exit !)
+        (zero :free_mod !)
+        (zero :exit !)
     (funcend)
     #include <string.l1h>
 
@@ -945,7 +945,7 @@ COMPLETE STRING EXAMPLE:
 INCLUDE: #include <mem-lib.l1h>
 
 INITIALIZE:
-(zero~ one~ :mem_init !)    // init memory module
+(zero one~ :mem_init !)    // init memory module
 (ret~ stpopi)                  // pop return value~ (0 = success)
 
 ALLOCATE MEMORY:
@@ -1014,7 +1014,7 @@ TYPE CONSTANTS (from mem-obj-lib-types.l1h):
     s_type      = 3    // string type
 
 INITIALIZE:
-(zero~ one~ :mem_obj_init !)     // init memory object module
+(zero one~ :mem_obj_init !)     // init memory object module
 (ret~ stpopi)
 
 ALLOCATE:
@@ -1024,8 +1024,8 @@ ALLOCATE:
 // return: memory address~ on stack
 
 SAVE DATA:
-(value~ s_type value~ i_type ... variables~ zero~ memaddr~ :save_obj_memobj !)
-// Push values~ with their types, then variables~ count, zero~, and memaddr~
+(value~ s_type value~ i_type ... variables~ zero memaddr~ :save_obj_memobj !)
+// Push values~ with their types, then variables~ count, zero, and memaddr~
 // return: error~ code on stack
 
 LOAD STRING:
@@ -1048,7 +1048,7 @@ FREE:
 INCLUDE: #include <math-lib.l1h>
 
 INITIALIZE:
-(zero~ :math_init !)
+(zero :math_init !)
 
 FUNCTIONS:
     (randstart~ :math_randinit !)           // seed random number generator
@@ -1083,9 +1083,9 @@ SERVER:
 
 INCLUDE: #include <sdl-lib.l1h>
 
-    (zero~ width~ height~ bit~ zero~ :sdl_open_screen !)    // open screen
+    (zero width~ height~ bit~ zero :sdl_open_screen !)    // open screen
     (fontnameaddr~ fontsize~ :sdl_font_ttf !)               // load font
-    (zero~ zero~ wb~ hb~ r~ g~ b~ a~ :sdl_rectangle_fill !) // fill rectangle
+    (zero zero wb~ hb~ r~ g~ b~ a~ :sdl_rectangle_fill !) // fill rectangle
     (x~ y~ text~ status~ :set_gadget_button !)              // set button
     (x~ y~ text~ value~ status~ :set_gadget_string !)       // set text input
     (:sdl_update !)                                         // update screen
@@ -1098,7 +1098,7 @@ INCLUDE: #include <sdl-lib.l1h>
 INCLUDE: #include <process-lib.l1h>
 
 INITIALIZE:
-(zero~ :process_init !)
+(zero :process_init !)
 
 RUN SHELL COMMAND:
 (procstr~ :run_shell !)
@@ -1106,7 +1106,7 @@ RUN SHELL COMMAND:
 
 Example:
     (set string s cmd~ "ls")
-    (zero~ :process_init !)
+    (zero :process_init !)
     (cmd~ :run_shell !)
     (ret~ stpopi)
 
@@ -1116,7 +1116,7 @@ Example:
 
 INCLUDE: #include <crypto.l1h>
 
-(zero~ :crypto_init !)
+(zero :crypto_init !)
 (Pinarray~ size~ Poutarray~ Pkeystr~ Pnoncearray~ gen~ mode~ :encrypt !)
 
 ---------------------------------------------------------------------------
@@ -1125,7 +1125,7 @@ INCLUDE: #include <crypto.l1h>
 
 INCLUDE: #include <json.l1h>
 
-(zero~ :parse_json !)
+(zero :parse_json !)
 (cityv_str~ cityk_str~ ... entries~ json~ :create_json !)
 
 ---------------------------------------------------------------------------
@@ -1267,8 +1267,8 @@ ARRAY ELEMENT ACCESS:
     WRITE: (array~ [ offset~ ] variable~ =)
 
     Examples:
-    (a~ = array~ [ zero~ ])       // a~ = array[0]
-    (array~ [ zero~ ] a~ =)       // array[0] = a~
+    (a~ = array~ [ zero ])       // a~ = array[0]
+    (array~ [ zero ] a~ =)       // array[0] = a~
     (array~ [ i~ ] val~ =)        // array[i~] = val~
 
 MULTILINE ARRAY INITIALIZATION:
@@ -1510,7 +1510,7 @@ THREAD-SAFE VARIABLE NAMING:
 
 EXAMPLE - simple thread:
 
-    (set int64 1 zero~ 0)
+    (set int64 1 zero 0)
     (set string s hello~ "Hello from thread!")
 
     // Start thread
@@ -1518,7 +1518,7 @@ EXAMPLE - simple thread:
         #var ~ main
         (:thread_hello thread)
         (join)                     // wait for thread
-        (zero~ :exit !)
+        (zero :exit !)
     (funcend)
 
     // Define thread function~ (AFTER main)
@@ -1526,7 +1526,7 @@ EXAMPLE - simple thread:
         #var ~ thread_hello
         (hello~ :print_s !)
         (:print_n !)
-        (zero~ threadexit)
+        (zero threadexit)
     (funcend)
 
 ===============================================================================
@@ -1672,11 +1672,11 @@ Code:
 #include <intr-func.l1h>
 (main func)
     #var ~ main
-    (set int64 1 zero~ 0)
+    (set int64 1 zero 0)
     (set string 13 hello~ "Hello world!")
     (hello~ :print_s !)
     (:print_n !)
-    (zero~ :exit !)
+    (zero :exit !)
 (funcend)
 
 Example 2: Hello World with Loop
@@ -1687,19 +1687,19 @@ Code:
 #include <intr-func.l1h>
 (main func)
     #var ~ main
-    (set int64 1 zero~ 0)
+    (set int64 1 zero 0)
     (set int64 1 one~ 1)
     (set int64 1 loop~ 0)
     (set int64 1 maxloop~ 10)
     (set string 13 hello~ "Hello world!")
-    (zero~ loop~ =)
+    (zero loop~ =)
     (for-loop)
         (((loop~ maxloop~ <) f~ =) f~ for)
             (hello~ :print_s !)
             (:print_n !)
             ((loop~ one~ +) loop~ =)
         (next)
-    (zero~ :exit !)
+    (zero :exit !)
 (funcend)
 
 Example 3: While Loop
@@ -1710,18 +1710,18 @@ Code:
 #include <intr-func.l1h>
 (main func)
     #var ~ main
-    (set int64 1 zero~ 0)
+    (set int64 1 zero 0)
     (set int64 1 one~ 1)
     (set int64 1 loop~ 0)
     (set int64 1 maxloop~ 10)
     (set string 13 hello~ "Hello world!")
-    (zero~ loop~ =)
+    (zero loop~ =)
     (do)
         (hello~ :print_s !)
         (:print_n !)
         ((loop~ one~ +) loop~ =)
     (((loop~ maxloop~ <) f~ =) f~ while)
-    (zero~ :exit !)
+    (zero :exit !)
 (funcend)
 
 Example 4: Function Call
@@ -1735,7 +1735,7 @@ Code:
 
 (main func)
     #var ~ main
-    (set int64 1 zero~ 0)
+    (set int64 1 zero 0)
     (set int64 1 x~ 23)
     (set int64 1 y~ 42)
     (set int64 1 a~ 0)
@@ -1749,7 +1749,7 @@ Code:
     (y~ sq~ :square !)
     (sq~ :print_i !)
     (:print_n !)
-    (zero~ :exit !)
+    (zero :exit !)
 (funcend)
 
 Example 5: File Write
@@ -1762,28 +1762,28 @@ Code:
 (main func)
     #var ~ main
     #include <file-def.l1h>
-    (set int64 1 zero~ 0)
+    (set int64 1 zero 0)
     (set int64 1 one~ 1)
     (set int64 1 handle~ 0)
     (set int64 1 error~ 0)
     (set string s filename~ "hello.txt")
     (set string 13 content~ "Hello world!")
     (set byte 1 mode_write~ 2)
-    (zero~ one~ :file_init !)
+    (zero one~ :file_init !)
     (error~ stpopi)
-    (((error~ zero~ !=) f~ =) f~ if)
+    (((error~ zero !=) f~ =) f~ if)
         (one~ :exit !)
     (endif)
     (mode_write~ filenameaddr~ :file_open !)
     (handle~ stpopi)
-    (((handle~ zero~ <) f~ =) f~ if)
+    (((handle~ zero <) f~ =) f~ if)
         (one~ :exit !)
     (endif)
     (handle~ contentaddr~ :file_put_string !)
     (error~ stpopi)
     (handle~ :file_close !)
     (:file_free_mem !)
-    (zero~ :exit !)
+    (zero :exit !)
 (funcend)
 #include <file-lib.l1h>
 
@@ -1795,7 +1795,7 @@ Code:
 #include <intr-func.l1h>
 (main func)
     #var ~ main
-    (set const-int64 1 zero~ 0)
+    (set const-int64 1 zero 0)
     (set const-int64 1 one~ 1)
     (set const-int64 1 fizz~ 3)
     (set const-int64 1 buzz~ 5)
@@ -1809,19 +1809,19 @@ Code:
     (((i~ max~ <=) f~ :=) f~ for)
         (i~ % fizz~ modfizz~ :=)
         (i~ % buzz~ modbuzz~ :=)
-        ((modfizz~ == zero~) && (modbuzz~ == zero~) f~ :=)
+        ((modfizz~ == zero) && (modbuzz~ == zero) f~ :=)
         (f~ if+)
             (fizzstr~ :print_s !)
             (buzzstr~ :print_s !)
             (:print_n !)
             (:skip jmp)
         (else)
-            (((modfizz~ zero~ ==) f~ =) f~ if)
+            (((modfizz~ zero ==) f~ =) f~ if)
                 (fizzstr~ :print_s !)
                 (:print_n !)
                 (:skip jmp)
             (endif)
-            (((modbuzz~ zero~ ==) f~ =) f~ if)
+            (((modbuzz~ zero ==) f~ =) f~ if)
                 (buzzstr~ :print_s !)
                 (:print_n !)
                 (:skip jmp)
@@ -1832,7 +1832,7 @@ Code:
             (i~ + one~ i~ :=)
         (endif)
     (next)
-    (zero~ :exit !)
+    (zero :exit !)
 (funcend)
 
 Example 7: Switch Statement
@@ -1843,7 +1843,7 @@ Code:
 #include <intr-func.l1h>
 (main func)
     #var ~ main
-    (set int64 1 zero~ 0)
+    (set int64 1 zero 0)
     (set int64 1 y~ 42)
     (set string s 23_str~ "y = 23")
     (set string s 42_str~ "y = 42")
@@ -1862,7 +1862,7 @@ Code:
             (:print_n !)
         (break)
     (switchend)
-    (zero~ :exit !)
+    (zero :exit !)
 (funcend)
 
 Example 8: String Operations
@@ -1874,11 +1874,11 @@ Code:
 #include <string.l1h>
 (main func)
     #var ~ main
-    (set int64 1 zero~ 0)
+    (set int64 1 zero 0)
     (set int64 1 strlen~ 0)
     (set string 6 hello~ "Hello")
     (set string s world~ " World!")
-    (zero~ :string_init !)
+    (zero :string_init !)
     (hellostraddr~ worldstraddr~ :string_cat !)
     (hello~ :print_s !)
     (:print_n !)
@@ -1886,8 +1886,8 @@ Code:
     (strlen~ stpopi)
     (strlen~ :print_i !)
     (:print_n !)
-    (zero~ :free_mod !)
-    (zero~ :exit !)
+    (zero :free_mod !)
+    (zero :exit !)
 (funcend)
 #include <string.l1h>
 
@@ -1900,22 +1900,22 @@ Code:
 #include <mem-lib.l1h>
 (main func)
     #var ~ main
-    (set int64 1 zero~ 0)
+    (set int64 1 zero 0)
     (set int64 1 one~ 1)
     (set int64 1 memaddr~ 0)
     (set int64 1 ret~ 0)
     (set int64 1 val~ 0)
     (set string s err~ "ERROR: can't allocate memory!")
-    (zero~ one~ :mem_init !)
+    (zero one~ :mem_init !)
     (ret~ stpopi)
-    (((ret~ zero~ !=) f~ =) f~ if)
+    (((ret~ zero !=) f~ =) f~ if)
         (err~ :print_s !)
         (:print_n !)
         (one~ :exit !)
     (endif)
     (10 :alloc_int64 !)
     (memaddr~ stpopi)
-    (((memaddr~ zero~ <) f~ =) f~ if)
+    (((memaddr~ zero <) f~ =) f~ if)
         (err~ :print_s !)
         (:print_n !)
         (one~ :exit !)
@@ -1927,7 +1927,7 @@ Code:
     (:print_n !)
     (memaddr~ :dealloc !)
     (:free_mem !)
-    (zero~ :exit !)
+    (zero :exit !)
 (funcend)
 #include <mem-lib.l1h>
 
@@ -1940,7 +1940,7 @@ Code:
 
 (main func)
     #var ~ main
-    (set int64 1 zero~ 0)
+    (set int64 1 zero 0)
     (set int64 1 x~ 10)
     (set int64 1 y~ 20)
     (set int64 1 sum~ 0)
@@ -1948,7 +1948,7 @@ Code:
     (sum~ stpopi)
     (sum~ :print_i !)
     (:print_n !)
-    (zero~ :exit !)
+    (zero :exit !)
 (funcend)
 
 (add func)
@@ -1970,9 +1970,9 @@ according to this specification. ALWAYS use "~" suffix on ALL variable names
 declared with "set". Other functions (non-main) MUST be written AFTER the main
 function. ALWAYS use !) for function calls, NEVER use call). All macros from
 intr-func.l1h (print_s, print_i, print_d, print_n, exit, etc.) MUST use the
-function-style syntax: (variable~ :print_s !), (zero~ :exit !). NEVER use the
-old macro-style syntax like print_s (variable~) or exit (zero~), regardless of
+function-style syntax: (variable~ :print_s !), (zero :exit !). NEVER use the
+old macro-style syntax like print_s (variable~) or exit (zero), regardless of
 what appears in any bracket example code. Always include
 #include <intr-func.l1h> as the first include. Always end programs with
-(zero~ :exit !). Library .l1h files go at the END of the file after the main
+(zero :exit !). Library .l1h files go at the END of the file after the main
 function's (funcend).
