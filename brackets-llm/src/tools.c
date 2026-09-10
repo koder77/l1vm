@@ -26,6 +26,7 @@
  */
 
 #define _POSIX_C_SOURCE 200809L
+#define _XOPEN_SOURCE 700
 
 #include "tools.h"
 
@@ -60,6 +61,157 @@ char *tool_expand_path(const char *p)
     return strdup(p ? p : "");
 }
 
+/* Canonical absolute form of `path`: expands ~, resolves "." and ".." and
+ * prepends the working directory for relative paths. Symlinks are resolved
+ * with realpath() whenever the resulting path exists. Returns a heap-allocated
+ * string (caller frees) or NULL on allocation failure. */
+char *tool_canon_path(const char *path)
+{
+    char *exp = tool_expand_path(path);
+    char abs[4096];
+    char **stack = NULL;
+    size_t n = 0, cap = 0;
+    size_t i;
+    char *out = NULL;
+    SB b;
+    const char *p;
+
+    if (!exp)
+        return NULL;
+    if (exp[0] == '/') {
+        snprintf(abs, sizeof(abs), "%s", exp);
+    } else {
+        char cwd[4096];
+        if (!getcwd(cwd, sizeof(cwd)))
+            strcpy(cwd, ".");
+        snprintf(abs, sizeof(abs), "%s/%s", cwd, exp);
+    }
+    free(exp);
+
+    p = abs;
+    while (*p) {
+        const char *e;
+        size_t len;
+        while (*p == '/')
+            p++;
+        if (!*p)
+            break;
+        e = strchr(p, '/');
+        len = e ? (size_t)(e - p) : strlen(p);
+        if (len == 1 && p[0] == '.') {
+            /* current dir: skip */
+        } else if (len == 2 && p[0] == '.' && p[1] == '.') {
+            if (n > 0)
+                n--;   /* pop one component (never above root) */
+        } else {
+            if (n == cap) {
+                cap = cap ? cap * 2 : 8;
+                stack = realloc(stack, cap * sizeof(char *));
+                if (!stack)
+                    goto done;
+            }
+            stack[n] = strndup(p, len);
+            if (!stack[n]) {
+                free(stack[n]);
+                goto done;
+            }
+            n++;
+        }
+        p += len;
+    }
+
+    sb_init(&b);
+    if (n == 0) {
+        sb_add(&b, "/");
+    } else {
+        sb_add(&b, "/");
+        for (i = 0; i < n; i++) {
+            if (i > 0)
+                sb_add(&b, "/");
+            sb_add(&b, stack[i]);
+        }
+    }
+    out = strdup(sb_cstr(&b));
+    sb_free(&b);
+    {
+        char *rp = out ? realpath(out, NULL) : NULL;
+        if (rp) {
+            free(out);
+            out = rp;
+        }
+    }
+
+done:
+    for (i = 0; i < n; i++)
+        free(stack[i]);
+    free(stack);
+    return out;
+}
+
+/* 1 when `path` refers to the working directory itself or something inside
+ * it; 0 when it clearly points outside (including ".." or absolute paths). */
+int tool_path_inside_cwd(const char *path)
+{
+    char cwd[4096];
+    char *t;
+    size_t clen;
+    int inside;
+
+    if (!path || !*path)
+        return 1;
+    if (!getcwd(cwd, sizeof(cwd)))
+        strcpy(cwd, ".");
+    t = tool_canon_path(path);
+    if (!t)
+        return 1;      /* cannot resolve: be permissive */
+    clen = strlen(cwd);
+    inside = (strncmp(t, cwd, clen) == 0 &&
+              (t[clen] == '\0' || t[clen] == '/'));
+    free(t);
+    return inside;
+}
+
+/* Warn + ask the user for permission to access a path outside the working
+ * directory. Never prompts on piped/scripted input (always allows it then).
+ * Returns 1 to allow, 0 to deny. */
+int tool_ask_permission(const char *path)
+{
+    if (!isatty(STDIN_FILENO))
+        return 1;      /* piped/scripted input: cannot prompt */
+    printf("\n[WARNING] Access to '%s' is OUTSIDE the current working "
+           "directory.\nAllow? [y/N] ", path ? path : "");
+    fflush(stdout);
+    {
+        char line[64] = "";
+        if (!fgets(line, sizeof(line), stdin))
+            return 0;
+        return line[0] == 'y' || line[0] == 'Y';
+    }
+}
+
+/* Shared guard: require user permission before any file tool touches a path
+ * outside the working directory. Returns 0 after filling *out when denied,
+ * 1 when allowed. */
+static int tool_check_outside(const char *path, char **out)
+{
+    if (!tool_path_inside_cwd(path)) {
+        if (!tool_ask_permission(path)) {
+            SB m;
+            sb_init(&m);
+            sb_printf(&m, "denied: access to '%s' outside the working "
+                          "directory was not allowed by the user",
+                      path ? path : "");
+            {
+                char *r = strdup(sb_cstr(&m));
+                sb_free(&m);
+                *out = r;
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
 static int hasmsg_alloc(char **out, const char *msg)
 {
     *out = strdup(msg ? msg : "error");
@@ -68,13 +220,17 @@ static int hasmsg_alloc(char **out, const char *msg)
 
 static int tool_read(const char *path, long limit, long offset, char **out)
 {
-    char *p = tool_expand_path(path);
-    FILE *f = p ? fopen(p, "rb") : NULL;
+    char *p;
+    FILE *f;
     SB b;
     char *r;
     long lineno = 0, emitted = 0, total = 0;
 
     *out = NULL;
+    if (!tool_check_outside(path, out))
+        return -1;
+    p = tool_expand_path(path);
+    f = p ? fopen(p, "rb") : NULL;
     if (!f) {
         SB m;
         sb_init(&m);
@@ -120,8 +276,8 @@ static int tool_read(const char *path, long limit, long offset, char **out)
 static int tool_edit(const char *path, const char *old_str, const char *new_str,
                      char **out)
 {
-    char *p = tool_expand_path(path);
-    FILE *f = p ? fopen(p, "rb") : NULL;
+    char *p;
+    FILE *f;
     long n;
     char *buf = NULL;
     char *w;
@@ -131,6 +287,13 @@ static int tool_edit(const char *path, const char *old_str, const char *new_str,
     size_t outlen;
     size_t i, j;
     SB res;
+
+    if (!tool_check_outside(path, out))
+        return -1;
+    p = tool_expand_path(path);
+    f = p ? fopen(p, "rb") : NULL;
+    buf = NULL;
+    w = NULL;
 
     if (!p)
         return hasmsg_alloc(out, "error: no path given");
@@ -262,11 +425,14 @@ static int confirm_write(const char *path)
 
 static int tool_write(const char *path, const char *content, char **out)
 {
-    char *p = tool_expand_path(path);
+    char *p;
     SB m;
     size_t n;
     FILE *f;
 
+    if (!tool_check_outside(path, out))
+        return -1;
+    p = tool_expand_path(path);
     if (!p)
         return hasmsg_alloc(out, "error: no path given");
     if (!confirm_write(p)) {
@@ -312,22 +478,32 @@ static int tool_write(const char *path, const char *content, char **out)
 
 static int tool_list(const char *dir, char **out)
 {
-    char *p = tool_expand_path(dir && *dir ? dir : ".");
-    DIR *d = p ? opendir(p) : NULL;
+    const char *d = dir && *dir ? dir : ".";
+    char *p = tool_expand_path(d);
+    DIR *dd = p ? opendir(p) : NULL;
     SB b;
     struct dirent *e;
     size_t count = 0;
 
-    if (!d) {
+    if (!tool_path_inside_cwd(d) && !tool_ask_permission(d)) {
         SB m;
         sb_init(&m);
-        sb_printf(&m, "error: cannot list directory '%s'", dir && *dir ? dir : ".");
+        sb_printf(&m, "denied: access to '%s' outside the working directory "
+                      "was not allowed by the user", d);
+        free(p);
+        return hasmsg_alloc(out, sb_cstr(&m));
+    }
+
+    if (!dd) {
+        SB m;
+        sb_init(&m);
+        sb_printf(&m, "error: cannot list directory '%s'", d);
         free(p);
         return hasmsg_alloc(out, sb_cstr(&m));
     }
     sb_init(&b);
     sb_printf(&b, "directory %s:\n", p);
-    while ((e = readdir(d)) != NULL) {
+    while ((e = readdir(dd)) != NULL) {
         char fp[8192];
         struct stat st;
         if (strcmp(e->d_name, ".") == 0 || strcmp(e->d_name, "..") == 0)
@@ -345,7 +521,7 @@ static int tool_list(const char *dir, char **out)
         else
             sb_printf(&b, "  f %s\n", e->d_name);
     }
-    closedir(d);
+    closedir(dd);
     {
         char *r = strdup(sb_cstr(&b));
         sb_free(&b);

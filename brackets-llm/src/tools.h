@@ -38,4 +38,18 @@ int tool_run(const char *name, const char *args_json, char **out);
  * path (strdup of the input if there is no leading "~"). Caller frees. */
 char *tool_expand_path(const char *p);
 
+/* Canonical absolute form of `path`: expands ~, resolves "." and ".." and
+ * prepends the working directory for relative paths. Symlinks are resolved
+ * when the path exists. Returns a heap-allocated string. Caller frees. */
+char *tool_canon_path(const char *path);
+
+/* 1 when `path` refers to the working directory itself or something inside
+ * it; 0 when it points outside (including ".." or absolute paths). */
+int tool_path_inside_cwd(const char *path);
+
+/* Warn + ask the user for permission to access a path outside the working
+ * directory. Never prompts on piped/scripted input (always allows it then).
+ * Returns 1 to allow, 0 to deny. */
+int tool_ask_permission(const char *path);
+
 #endif

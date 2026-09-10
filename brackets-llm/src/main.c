@@ -1141,6 +1141,9 @@ static void print_help(void)
         "  /new             reset the conversation\n"
         "  /help            this help\n"
         "  /quit            exit\n"
+        "\n"
+        "When the model (or /read, /write, /save) wants to access a path\n"
+        "OUTSIDE the current directory, you are asked for permission first.\n"
         "\n");
 }
 
@@ -1226,6 +1229,13 @@ int main(int argc, char **argv)
                     char path[1024];
                     long limit, offset;
                     parse_read_spec(line + 6, path, sizeof(path), &limit, &offset);
+                    if (!tool_path_inside_cwd(path)) {
+                        if (!tool_ask_permission(path)) {
+                            printf("denied: %s is outside the current "
+                                   "directory.\n", path);
+                            continue;
+                        }
+                    }
                     {
                         char *f = read_file_part(path, limit, offset);
                         if (f) {
@@ -1252,6 +1262,13 @@ int main(int argc, char **argv)
                     char *part = NULL;
                     parse_read_spec(line + 6, path, sizeof(path),
                                     &limit, &offset);
+                    if (!tool_path_inside_cwd(path)) {
+                        if (!tool_ask_permission(path)) {
+                            printf("denied: %s is outside the current "
+                                   "directory.\n", path);
+                            continue;
+                        }
+                    }
                     if (limit >= 0 || offset > 1)
                         part = slice_lines(last_code, limit, offset);
                     if (write_file(path, part ? part : last_code) == 0) {
@@ -1290,6 +1307,13 @@ int main(int argc, char **argv)
                     parse_read_spec(line + 6, path, sizeof(path),
                                     &limit, &offset);
                     snprintf(fname, sizeof(fname), "%s.l1com", path);
+                    if (!tool_path_inside_cwd(path)) {
+                        if (!tool_ask_permission(path)) {
+                            printf("denied: %s is outside the current "
+                                   "directory.\n", path);
+                            continue;
+                        }
+                    }
                     if (limit >= 0 || offset > 1)
                         part = slice_lines(last_code, limit, offset);
                     if (write_file(fname, part ? part : last_code) == 0) {
