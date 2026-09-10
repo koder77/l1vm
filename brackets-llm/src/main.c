@@ -1132,6 +1132,8 @@ static void print_help(void)
         "  /write <file> [limit=N, offset=M]\n"
         "                 write the last generated code (or a line range) to <file>\n"
         "  /list            list files in the working directory\n"
+        "  /lsp             re-run the LSP on the last code; any errors are\n"
+        "                  sent to the model to fix (auto-correct loop)\n"
         "  /build <name>    build <name.l1com> with l1vm-build.sh\n"
         "  /run <name>      run <name> with l1vm\n"
         "  /code            re-extract/re-check the last code block\n"
@@ -1337,6 +1339,61 @@ int main(int argc, char **argv)
                         printf("save failed.\n");
                     }
                     free(part);
+                }
+                continue;
+            } else if (strcmp(line, "/lsp") == 0 || strncmp(line, "/lsp ", 5) == 0) {
+                if (!lsp) {
+                    printf("l1vm-lsp is not available (code checking "
+                           "disabled).\n");
+                    continue;
+                }
+                if (!last_code) {
+                    printf("no code to check yet.\n");
+                    continue;
+                }
+                {
+                    char fname[256];
+                    char *final = NULL;
+                    LspDiagVec diags = {0};
+                    int rc;
+                    if (last_name[0])
+                        snprintf(fname, sizeof(fname), "%s", last_name);
+                    else
+                        snprintf(fname, sizeof(fname), "program-%lu.l1com",
+                                 (unsigned long)hist.len);
+                    rc = code_workflow(lsp, &hist, model, url, fname,
+                                       last_code, &final, &diags);
+                    if (final) {
+                        free(last_code);
+                        last_code = strdup(final);
+                        free(final);
+                        snprintf(last_name, sizeof(last_name), "%s", fname);
+                    }
+                    if (rc == 0) {
+                        printf("saved %s (LSP check OK)\n", fname);
+                    } else if (rc == 1) {
+                        size_t i;
+                        int nerr = 0;
+                        for (i = 0; i < diags.len; i++)
+                            if (diags.items[i].severity == 1)
+                                nerr++;
+                        fprintf(stderr,
+                                "WARNING: %s still contains %d error(s) after "
+                                "%d fix attempts.\n",
+                                fname, nerr, MAX_FIX_ITERS);
+                        if (diags.len > 0) {
+                            char *d = format_diags(&diags, "remaining errors");
+                            fprintf(stderr, "%s", d);
+                            free(d);
+                        }
+                    } else if (rc == 2) {
+                        fprintf(stderr,
+                                "[WARNING] %s could not be verified by the "
+                                "LSP; build it with /build to check for "
+                                "errors.\n",
+                                fname);
+                    }
+                    lsp_diagvec_free(&diags);
                 }
                 continue;
             } else if (strncmp(line, "/build ", 7) == 0) {
