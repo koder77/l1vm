@@ -49,6 +49,16 @@ IMPORTANT RULES:
 - ALL variables declared with "set" MUST have a "~" suffix on the variable name
 - The main function MUST always declare a GLOBAL variable named "zero" (without ~ suffix): (set int64 1 zero 0). This variable is required by libraries (e.g., file_init, string_init) and for :exit !. Global variables (without ~ suffix) are shared across the entire program and are visible to library .l1h wrapper functions.
 
+Constants like string "foobar" or numbers like 42 are only allowed to be set by "set":
+(set string s foobarstr "foobar")
+(set int64 1 c42 42)
+
+THIS IS ILLEGAL;
+(" " :print_s !)
+(1 :print_i !)
+
+All interrupt functions and every other expression MUST USE VARIABLES NOT CONSTANTS!
+
 ===============================================================================
 2. BUILDING PROGRAMS
 ===============================================================================
