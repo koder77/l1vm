@@ -23,9 +23,9 @@
  * Speaks to a llama.cpp server (llama-server) via its OpenAI-compatible
  * /v1/chat/completions endpoint, feeds the L1VM system prompt, then lets
  * the user chat. The model can autonomously use file tools (read_file,
- * write_file, list_files) like opencode, and Brackets (.l1com) code in the
- * answer is checked/auto-corrected with the l1vm-lsp language server, then
- * can be built and run.
+ * write_file, edit_file, list_files) like opencode, and Brackets (.l1com)
+ * code in the answer is checked/auto-corrected with the l1vm-lsp language
+ * server, then can be built and run.
  */
 
 #define _POSIX_C_SOURCE 200809L
@@ -84,33 +84,130 @@ static void hist_free(Hist *h)
 
 /* ================== file helpers ================== */
 
-static char *read_file(const char *path)
+/* Read up to `limit` lines of a file starting at 1-based line `offset`.
+ * limit < 0 reads everything. Returns a heap-allocated NUL-terminated
+ * string, or NULL if the file cannot be opened. */
+static char *read_file_part(const char *path, long limit, long offset)
 {
     FILE *f = fopen(path, "rb");
-    long n;
-    char *buf;
+    SB b;
+    long lineno = 0, emitted = 0;
+    char buf[32768];
+    char *r;
+
     if (!f)
         return NULL;
-    fseek(f, 0, SEEK_END);
-    n = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    if (n < 0) {
-        fclose(f);
-        return NULL;
+    sb_init(&b);
+    while (fgets(buf, sizeof(buf), f) != NULL) {
+        lineno++;
+        if (offset > 1 && lineno < offset)
+            continue;
+        if (limit >= 0 && emitted >= limit)
+            break;
+        sb_add(&b, buf);
+        emitted++;
     }
-    buf = malloc((size_t)n + 1);
-    if (!buf) {
-        fclose(f);
-        return NULL;
-    }
-    if (fread(buf, 1, (size_t)n, f) != (size_t)n) {
-        free(buf);
-        fclose(f);
-        return NULL;
-    }
-    buf[n] = '\0';
     fclose(f);
-    return buf;
+    r = strdup(sb_cstr(&b));
+    sb_free(&b);
+    return r;
+}
+
+/* Read a whole file (private: whole-file form of read_file_part). */
+static char *read_file(const char *path)
+{
+    return read_file_part(path, -1, 1);
+}
+
+/* Return a heap-allocated copy of lines `offset`..`offset+limit-1`
+ * (1-based) of `text`. limit < 0 keeps everything from offsets on.
+ * Preserves the original line endings. */
+static char *slice_lines(const char *text, long limit, long offset)
+{
+    SB b;
+    long lineno = 0, emitted = 0;
+    const char *p = text;
+
+    sb_init(&b);
+    while (*p) {
+        const char *e = strchr(p, '\n');
+        size_t n = e ? (size_t)(e - p) + 1 : strlen(p);
+        lineno++;
+        if (offset > 1 && lineno < offset) {
+            p += n;
+            continue;
+        }
+        if (limit >= 0 && emitted >= limit)
+            break;
+        sb_addn(&b, p, n);
+        emitted++;
+        if (!e)
+            break;
+        p = e + 1;
+    }
+    {
+        char *r = strdup(sb_cstr(&b));
+        sb_free(&b);
+        return r;
+    }
+}
+
+/* Parse a signed integer after optional whitespace/'+'/'-'. */
+static long parse_read_int(const char *s)
+{
+    long v = 0;
+    int neg = 0;
+    while (*s == ' ' || *s == '\t')
+        s++;
+    if (*s == '-') { neg = 1; s++; }
+    else if (*s == '+') s++;
+    while (*s >= '0' && *s <= '9') {
+        v = v * 10 + (*s - '0');
+        s++;
+    }
+    return neg ? -v : v;
+}
+
+/* Parse an optional trailing "[limit=N, offset=M]" spec appended to a
+ * /read argument. Writes the file path (without the spec) into `path`.
+ * limit is stored non-negative when given (default -1 = unlimited);
+ * offset is 1-based (default 1). */
+static void parse_read_spec(const char *arg, char *path, size_t path_sz,
+                            long *limit, long *offset)
+{
+    const char *b = strchr(arg, '[');
+    size_t plen = b ? (size_t)(b - arg) : strlen(arg);
+    const char *q;
+
+    *limit = -1;
+    *offset = 1;
+    while (plen > 0 && (arg[plen - 1] == ' ' || arg[plen - 1] == '\t'))
+        plen--;
+    if (plen >= path_sz)
+        plen = path_sz - 1;
+    memcpy(path, arg, plen);
+    path[plen] = '\0';
+    if (!b)
+        return;
+
+    q = b + 1;
+    while (q && *q && *q != ']') {
+        const char *eq;
+        size_t keylen;
+        while (*q == ' ' || *q == '\t')
+            q++;
+        eq = strchr(q, '=');
+        if (!eq)
+            break;
+        keylen = (size_t)(eq - q);
+        if (keylen == 5 && strncmp(q, "limit", 5) == 0)
+            *limit = parse_read_int(eq + 1);
+        else if (keylen == 6 && strncmp(q, "offset", 6) == 0)
+            *offset = parse_read_int(eq + 1);
+        q = strchr(eq, ',');
+        if (q)
+            q++;
+    }
 }
 
 static int write_file(const char *path, const char *content)
@@ -681,7 +778,10 @@ static int code_workflow(LspClient *lsp, Hist *hist, const char *model,
         printf("\n[checking with l1vm-lsp...]\n");
         fflush(stdout);
         {
-            int ck = lsp_check(lsp, uri, checkpath, code, &diags);
+            char *diskcode = read_file_part(checkpath, -1, 1);
+            int ck = lsp_check(lsp, uri, checkpath,
+                               diskcode ? diskcode : code, &diags);
+            free(diskcode);
             unlink(checkpath);
             if (ck != 0) {
                 fprintf(stderr, "LSP check failed (is l1vm-lsp built/installed?)\n");
@@ -769,7 +869,12 @@ static int code_workflow(LspClient *lsp, Hist *hist, const char *model,
                  ++g_check_seq);
         snprintf(uri, sizeof(uri), "file://%s", checkpath);
         write_file(checkpath, code);
-        ck = lsp_check(lsp, uri, checkpath, code, &diags);
+        {
+            char *diskcode = read_file_part(checkpath, -1, 1);
+            ck = lsp_check(lsp, uri, checkpath, diskcode ? diskcode : code,
+                           &diags);
+            free(diskcode);
+        }
         unlink(checkpath);
         write_file(filename, code);
         *final_code = code;   /* caller owns */
@@ -856,7 +961,9 @@ static int handle_tool_calls(Hist *hist, const char *model, const char *url,
             if (!result)
                 result = strdup("tool execution produced no result");
             /* verify a freshly written .l1com file with l1vm-lsp */
-            if (lsp && strcmp(name, "write_file") == 0 &&
+            if (lsp &&
+                (strcmp(name, "write_file") == 0 ||
+                 strcmp(name, "edit_file") == 0) &&
                 args && strstr(args, ".l1com") &&
                 result && strncmp(result, "ok:", 3) == 0) {
                 JVal *aj = j_parse(args);
@@ -1015,18 +1122,21 @@ static void print_help(void)
         "brackets-llm - opencode-like Brackets (L1VM) environment\n"
         "\n"
         "  Just type a request. The model can use tools (read_file,\n"
-        "  write_file, list_files) to create and modify files on its own,\n"
-        "  like opencode. Brackets code in the answer is checked with\n"
-        "  l1vm-lsp and auto-corrected before it is saved to disk.\n"
+        "  write_file, edit_file, list_files) to create and modify files on\n"
+        "  its own, like opencode. Brackets code in the answer is checked\n"
+        "  with l1vm-lsp and auto-corrected before it is saved to disk.\n"
         "\n"
         "Commands:\n"
-        "  /read <file>     show file contents\n"
-        "  /write <file>    write the last generated code to <file>\n"
+        "  /read <file> [limit=N, offset=M]\n"
+        "                 show file contents (optional line range)\n"
+        "  /write <file> [limit=N, offset=M]\n"
+        "                 write the last generated code (or a line range) to <file>\n"
         "  /list            list files in the working directory\n"
         "  /build <name>    build <name.l1com> with l1vm-build.sh\n"
         "  /run <name>      run <name> with l1vm\n"
         "  /code            re-extract/re-check the last code block\n"
-        "  /save <name>     save the last code block to <name>.l1com\n"
+        "  /save <name> [limit=N, offset=M]\n"
+        "                 save the last code block (or a line range) to <name>.l1com\n"
         "  /compact         summarize + collapse old messages in the context\n"
         "  /new             reset the conversation\n"
         "  /help            this help\n"
@@ -1112,12 +1222,23 @@ int main(int argc, char **argv)
                 }
                 continue;
             } else if (strncmp(line, "/read ", 6) == 0) {
-                char *f = read_file(line + 6);
-                if (f) {
-                    printf("----- %s -----\n%s\n", line + 6, f);
-                    free(f);
-                } else {
-                    printf("cannot read: %s\n", line + 6);
+                {
+                    char path[1024];
+                    long limit, offset;
+                    parse_read_spec(line + 6, path, sizeof(path), &limit, &offset);
+                    {
+                        char *f = read_file_part(path, limit, offset);
+                        if (f) {
+                            if (limit >= 0)
+                                printf("----- %s (lines %ld-%ld) -----\n%s\n",
+                                       path, offset, offset + limit - 1, f);
+                            else
+                                printf("----- %s -----\n%s\n", path, f);
+                            free(f);
+                        } else {
+                            printf("cannot read: %s\n", path);
+                        }
+                    }
                 }
                 continue;
             } else if (strncmp(line, "/write ", 7) == 0) {
@@ -1125,17 +1246,35 @@ int main(int argc, char **argv)
                     printf("no code to write yet.\n");
                     continue;
                 }
-                if (write_file(line + 7, last_code) == 0) {
-                    printf("wrote %s\n", line + 7);
-                    if (lsp && strstr(line + 7, ".l1com")) {
-                        char *note = lsp_summary_for_write(lsp, line + 7);
-                        if (note) {
-                            printf("%s\n", note);
-                            free(note);
+                {
+                    char path[1024];
+                    long limit, offset;
+                    char *part = NULL;
+                    parse_read_spec(line + 6, path, sizeof(path),
+                                    &limit, &offset);
+                    if (limit >= 0 || offset > 1)
+                        part = slice_lines(last_code, limit, offset);
+                    if (write_file(path, part ? part : last_code) == 0) {
+                        if (part)
+                            printf("wrote %s (lines %ld-%ld)\n",
+                                   path, offset, offset + limit - 1);
+                        else
+                            printf("wrote %s\n", path);
+                        if (lsp && strstr(path, ".l1com")) {
+                            char *note = lsp_summary_for_write(lsp, path);
+                            if (note) {
+                                if (strstr(note, "LSP check: OK") == NULL)
+                                    printf("WARNING: %s has syntax errors (saved anyway):\n%s\n",
+                                           path, note);
+                                else
+                                    printf("%s\n", note);
+                                free(note);
+                            }
                         }
+                    } else {
+                        printf("write failed.\n");
                     }
-                } else {
-                    printf("write failed.\n");
+                    free(part);
                 }
                 continue;
             } else if (strncmp(line, "/save ", 6) == 0) {
@@ -1145,19 +1284,35 @@ int main(int argc, char **argv)
                 }
                 {
                     char fname[131072];
-                    snprintf(fname, sizeof(fname), "%s.l1com", line + 6);
-                    if (write_file(fname, last_code) == 0) {
-                        printf("saved %s\n", fname);
+                    char path[1024];
+                    long limit, offset;
+                    char *part = NULL;
+                    parse_read_spec(line + 6, path, sizeof(path),
+                                    &limit, &offset);
+                    snprintf(fname, sizeof(fname), "%s.l1com", path);
+                    if (limit >= 0 || offset > 1)
+                        part = slice_lines(last_code, limit, offset);
+                    if (write_file(fname, part ? part : last_code) == 0) {
+                        if (part)
+                            printf("saved %s (lines %ld-%ld)\n",
+                                   fname, offset, offset + limit - 1);
+                        else
+                            printf("saved %s\n", fname);
                         if (lsp) {
                             char *note = lsp_summary_for_write(lsp, fname);
                             if (note) {
-                                printf("%s\n", note);
+                                if (strstr(note, "LSP check: OK") == NULL)
+                                    printf("WARNING: %s has syntax errors (saved anyway):\n%s\n",
+                                           fname, note);
+                                else
+                                    printf("%s\n", note);
                                 free(note);
                             }
                         }
                     } else {
                         printf("save failed.\n");
                     }
+                    free(part);
                 }
                 continue;
             } else if (strncmp(line, "/build ", 7) == 0) {

@@ -18,7 +18,7 @@
  */
 
 /*
- * brackets-llm - agent tools: read_file / write_file / list_files
+ * brackets-llm - agent tools: read_file / write_file / edit_file / list_files
  *
  * Executes tool calls requested by the LLM, opencode-style. File writes are
  * allowed automatically; set BRACKETS_LLM_CONFIRM=1 to be asked for
@@ -40,6 +40,7 @@
 #include "sb.h"
 
 #define TOOL_READ_CAP 128000L
+#define TOOL_EDIT_CAP (4 * 1024 * 1024L)
 
 char *tool_expand_path(const char *p)
 {
@@ -65,12 +66,13 @@ static int hasmsg_alloc(char **out, const char *msg)
     return *out ? -1 : -1;
 }
 
-static int tool_read(const char *path, char **out)
+static int tool_read(const char *path, long limit, long offset, char **out)
 {
     char *p = tool_expand_path(path);
     FILE *f = p ? fopen(p, "rb") : NULL;
     SB b;
     char *r;
+    long lineno = 0, emitted = 0, total = 0;
 
     *out = NULL;
     if (!f) {
@@ -83,11 +85,16 @@ static int tool_read(const char *path, char **out)
     sb_init(&b);
     {
         char buf[32768];
-        size_t n;
-        long total = 0;
-        while ((n = fread(buf, 1, sizeof(buf), f)) > 0) {
+        while (fgets(buf, sizeof(buf), f) != NULL) {
+            size_t n;
+            lineno++;
+            if (offset > 1 && lineno < offset)
+                continue;
+            if (limit >= 0 && emitted >= limit)
+                break;
+            n = strlen(buf);
             if (total + (long)n <= TOOL_READ_CAP) {
-                sb_addn(&b, buf, n);
+                sb_add(&b, buf);
                 total += (long)n;
             } else {
                 size_t keep = (size_t)(TOOL_READ_CAP - (total > TOOL_READ_CAP ?
@@ -96,6 +103,7 @@ static int tool_read(const char *path, char **out)
                 sb_add(&b, "\n... [file truncated, content is larger than 128 KB]");
                 break;
             }
+            emitted++;
         }
     }
     fclose(f);
@@ -104,6 +112,134 @@ static int tool_read(const char *path, char **out)
     free(p);
     *out = r;
     return r ? 0 : -1;
+}
+
+/* opencode-style edit_file: replace every exact occurrence of old_str in the
+ * file with new_str. Returns an "ok:" result with the replacement count, or
+ * an error string when the oldString is not found. */
+static int tool_edit(const char *path, const char *old_str, const char *new_str,
+                     char **out)
+{
+    char *p = tool_expand_path(path);
+    FILE *f = p ? fopen(p, "rb") : NULL;
+    long n;
+    char *buf = NULL;
+    char *w;
+    size_t olen = strlen(old_str ? old_str : "");
+    size_t nlen = strlen(new_str ? new_str : "");
+    size_t count = 0;
+    size_t outlen;
+    size_t i, j;
+    SB res;
+
+    if (!p)
+        return hasmsg_alloc(out, "error: no path given");
+    if (!f) {
+        SB m;
+        sb_init(&m);
+        sb_printf(&m, "error: cannot read file '%s'", path ? path : "");
+        free(p);
+        return hasmsg_alloc(out, sb_cstr(&m));
+    }
+    if (olen == 0) {
+        fclose(f);
+        free(p);
+        return hasmsg_alloc(out,
+                            "error: oldString must not be empty");
+    }
+    fseek(f, 0, SEEK_END);
+    n = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    if (n < 0 || n > TOOL_EDIT_CAP) {
+        fclose(f);
+        free(p);
+        return hasmsg_alloc(out,
+                            "error: file too large to edit (limit 4 MB)");
+    }
+    buf = malloc((size_t)n + 1);
+    if (!buf) {
+        fclose(f);
+        free(p);
+        return hasmsg_alloc(out, "error: out of memory");
+    }
+    if (fread(buf, 1, (size_t)n, f) != (size_t)n) {
+        free(buf);
+        fclose(f);
+        free(p);
+        return hasmsg_alloc(out, "error: read failed");
+    }
+    fclose(f);
+    buf[n] = '\0';
+
+    for (i = 0; i + olen <= (size_t)n;) {
+        if (memcmp(buf + i, old_str, olen) == 0) {
+            count++;
+            i += olen;
+        } else {
+            i++;
+        }
+    }
+    if (count == 0) {
+        SB m;
+        sb_init(&m);
+        sb_printf(&m,
+                  "error: oldString not found in '%s'. The oldString must "
+                  "match the current file content exactly; read the file "
+                  "first.",
+                  path ? path : "");
+        free(buf);
+        free(p);
+        return hasmsg_alloc(out, sb_cstr(&m));
+    }
+
+    outlen = (size_t)n + count * (nlen > olen ? nlen - olen : 0);
+    w = malloc(outlen + 1);
+    if (!w) {
+        free(buf);
+        free(p);
+        return hasmsg_alloc(out, "error: out of memory");
+    }
+    j = 0;
+    for (i = 0; i < (size_t)n;) {
+        if (i + olen <= (size_t)n && memcmp(buf + i, old_str, olen) == 0) {
+            memcpy(w + j, new_str, nlen);
+            j += nlen;
+            i += olen;
+        } else {
+            w[j++] = buf[i++];
+        }
+    }
+    w[j] = '\0';
+
+    f = fopen(p, "wb");
+    if (!f) {
+        free(w);
+        free(buf);
+        free(p);
+        return hasmsg_alloc(out, "error: cannot open file for writing");
+    }
+    if (fwrite(w, 1, j, f) != j) {
+        fclose(f);
+        free(w);
+        free(buf);
+        free(p);
+        return hasmsg_alloc(out, "error: short write");
+    }
+    fclose(f);
+    free(buf);
+    free(p);
+
+    sb_init(&res);
+    sb_printf(&res,
+              "ok: replaced %zu occurrence%s of oldString in '%s' (wrote %zu "
+              "bytes)",
+              count, count == 1 ? "" : "s", path ? path : "", j);
+    {
+        char *r = strdup(sb_cstr(&res));
+        sb_free(&res);
+        *out = r;
+        return r ? 0 : -1;
+    }
 }
 
 static int confirm_write(const char *path)
@@ -231,9 +367,17 @@ static void add_param_string(JVal *props, const char *name, const char *desc)
     j_obj_set(props, name, p);
 }
 
+static void add_param_integer(JVal *props, const char *name, const char *desc)
+{
+    JVal *p = j_obj_new();
+    j_obj_set(p, "type", j_str_new("integer"));
+    j_obj_set(p, "description", j_str_new(desc));
+    j_obj_set(props, name, p);
+}
+
 static JVal *build_function(const char *name, const char *desc,
-                            const char *prop_names[], const char *prop_descs[],
-                            int nprops, int required_all)
+                            const char *prop_names[], const char *prop_types[],
+                            const char *prop_descs[], int nprops, int nrequired)
 {
     JVal *f = j_obj_new();
     JVal *params = j_obj_new();
@@ -243,13 +387,17 @@ static JVal *build_function(const char *name, const char *desc,
 
     j_obj_set(f, "name", j_str_new(name));
     j_obj_set(f, "description", j_str_new(desc));
-    for (i = 0; i < nprops; i++)
-        add_param_string(props, prop_names[i], prop_descs[i]);
+    for (i = 0; i < nprops; i++) {
+        if (strcmp(prop_types[i], "integer") == 0)
+            add_param_integer(props, prop_names[i], prop_descs[i]);
+        else
+            add_param_string(props, prop_names[i], prop_descs[i]);
+    }
     j_obj_set(params, "type", j_str_new("object"));
     j_obj_set(params, "properties", props);
-    if (nprops > 0 && required_all) {
+    if (nrequired > 0) {
         required = j_arr_new();
-        for (i = 0; i < nprops; i++)
+        for (i = 0; i < nrequired; i++)
             j_arr_push(required, j_str_new(prop_names[i]));
         j_obj_set(params, "required", required);
     }
@@ -264,23 +412,52 @@ char *tools_definitions_json(void)
     char *s;
 
     {
-        static const char *pn[] = { "path" };
+        static const char *pn[] = { "path", "limit", "offset" };
+        static const char *pt[] = { "string", "integer", "integer" };
         static const char *pd[] = {
             "Path of the file to read (may include ~ or be relative to the "
-            "working directory)." };
+            "working directory).",
+            "Maximum number of lines to return (optional; default: whole "
+            "file).",
+            "1-based line number to start reading from (optional; default: "
+            "1)." };
         JVal *f = j_obj_new();
         JVal *fn = build_function(
             "read_file",
             "Read a text or code file from disk and return its contents "
             "(truncated to ~128 KB). Use this whenever you need to inspect "
             "or edit an existing file.",
-            pn, pd, 1, 1);
+            pn, pt, pd, 3, 1);
+        j_obj_set(f, "type", j_str_new("function"));
+        j_obj_set(f, "function", fn);
+        j_arr_push(tools, f);
+    }
+    {
+        static const char *pn[] = { "path", "oldString", "newString" };
+        static const char *pt[] = { "string", "string", "string" };
+        static const char *pd[] = {
+            "Path of the file to edit (may include ~ or be relative to the "
+            "working directory).",
+            "The exact literal text currently in the file that should be "
+            "replaced.",
+            "The new text to put in place of oldString. Use an empty string "
+            "to delete oldString." };
+        JVal *f = j_obj_new();
+        JVal *fn = build_function(
+            "edit_file",
+            "Make a targeted change to a text file by replacing an exact "
+            "existing substring (oldString) with a new substring (newString). "
+            "Prefer edit_file over write_file for editing existing large "
+            "files: it only needs the changed fragments, not the whole file. "
+            "oldString must match the file content exactly.",
+            pn, pt, pd, 3, 3);
         j_obj_set(f, "type", j_str_new("function"));
         j_obj_set(f, "function", fn);
         j_arr_push(tools, f);
     }
     {
         static const char *pn[] = { "path", "content" };
+        static const char *pt[] = { "string", "string" };
         static const char *pd[] = {
             "Path of the file to write (may include ~ or be relative to the "
             "working directory).",
@@ -291,20 +468,21 @@ char *tools_definitions_json(void)
             "Create a new file or overwrite an existing file with the given "
             "contents. Use this when the user asks you to create, edit or "
             "modify files. Prefer saving Brackets programs as .l1com files.",
-            pn, pd, 2, 1);
+            pn, pt, pd, 2, 2);
         j_obj_set(f, "type", j_str_new("function"));
         j_obj_set(f, "function", fn);
         j_arr_push(tools, f);
     }
     {
         static const char *pn[] = { "dir" };
+        static const char *pt[] = { "string" };
         static const char *pd[] = {
             "Directory to list; defaults to the working directory." };
         JVal *f = j_obj_new();
         JVal *fn = build_function(
             "list_files",
             "List the files and sub-directories of a directory.",
-            pn, pd, 1, 0);
+            pn, pt, pd, 1, 0);
         j_obj_set(f, "type", j_str_new("function"));
         j_obj_set(f, "function", fn);
         j_arr_push(tools, f);
@@ -341,9 +519,36 @@ int tool_run(const char *name, const char *args_json, char **out)
             return hasmsg_alloc(out, "error: read_file requires \"path\"");
         }
         {
-            int rc = tool_read(path, out);
+            const JVal *vl = j_get(args, "limit");
+            const JVal *vo = j_get(args, "offset");
+            long limit = -1, offset = 1;
+            if (vl && j_is(vl, J_NUM) && j_num(vl) >= 0)
+                limit = (long)j_num(vl);
+            if (vo && j_is(vo, J_NUM) && j_num(vo) >= 1)
+                offset = (long)j_num(vo);
+            {
+                int rc = tool_read(path, limit, offset, out);
+                j_free(args);
+                return rc;
+            }
+        }
+    }
+    if (strcmp(name, "edit_file") == 0) {
+        const JVal *vp = j_get(args, "path");
+        const JVal *vo = j_get(args, "oldString");
+        const JVal *vn = j_get(args, "newString");
+        const char *path = vp ? j_str(vp) : NULL;
+        const char *oldstr = vo ? j_str(vo) : NULL;
+        const char *newstr = vn ? j_str(vn) : NULL;
+        if (!path || !oldstr) {
             j_free(args);
-            return rc;
+            return hasmsg_alloc(out, "error: edit_file requires \"path\" and "
+                                     "\"oldString\"");
+        }
+        {
+            int r = tool_edit(path, oldstr, newstr ? newstr : "", out);
+            j_free(args);
+            return r;
         }
     }
     if (strcmp(name, "write_file") == 0) {

@@ -18,7 +18,7 @@
  */
 
 /*
- * brackets-llm - agent tools (read_file / write_file / list_files)
+ * brackets-llm - agent tools (read_file / write_file / edit_file / list_files)
  */
 
 #ifndef BRACKETS_TOOLS_H
