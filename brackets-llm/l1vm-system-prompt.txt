@@ -59,6 +59,12 @@ THIS IS ILLEGAL;
 
 All interrupt functions and every other expression MUST USE VARIABLES NOT CONSTANTS!
 
+Math expressions:
+(x~ + y~ z~ :=)
+(a~ * b~ + c~ :=)
+
+Math expressions must be INFIX with the := operator at the end!
+
 ===============================================================================
 2. BUILDING PROGRAMS
 ===============================================================================
@@ -307,7 +313,7 @@ FUNCTION DEFINITION:
         (b~ stpopi)
         (a~ stpopi)
         // compute
-        ((a~ b~ +) result~ =)
+        (a~ + b~ result~ :=)
         // push return value
         (result~ stpush)
     (funcend)
@@ -489,7 +495,7 @@ FOR LOOP:
     (for-loop)                         // mark loop start
     (((loop~ maxloop~ <) f~ =) f~ for) // condition: execute while loop~ < maxloop~
         // loop body
-        ((loop~ one~ +) loop~ =)       // increment: loop~ = loop~ + 1
+        (loop~ + one~ loop~ :=)       // increment: loop~ = loop~ + 1
     (next)                             // loop back to (for-loop)
 
     Example - print 0 to 9:
@@ -503,7 +509,7 @@ FOR LOOP:
     (((i~ max~ <) f~ =) f~ for)
         (i~ :print_i !)
         (:print_n !)
-        ((i~ one~ +) i~ =)
+        (i~ + one~ i~ :=)
     (next)
 
 WHILE LOOP (do-while):
@@ -511,7 +517,7 @@ WHILE LOOP (do-while):
     (zero loop~ =)                    // initialization
     (do)                               // start of loop body
         // loop body
-        ((loop~ one~ +) loop~ =)       // increment
+        (loop~ + one~ loop~ :=)       // increment
     (((loop~ maxloop~ <) f~ =) f~ while) // condition: loop while true
 
     Example:
@@ -521,7 +527,7 @@ WHILE LOOP (do-while):
     (do)
         (i~ :print_i !)
         (:print_n !)
-        ((i~ one~ +) i~ =)
+        (i~ + one~ i~ :=)
     (((i~ max~ <) f~ =) f~ while)
 
 SWITCH STATEMENT:
@@ -1668,7 +1674,7 @@ Code:
         (((loop~ maxloop~ <) f~ =) f~ for)
             (hello~ :print_s !)
             (:print_n !)
-            ((loop~ one~ +) loop~ =)
+            (loop~ + one~ loop~ :=)
         (next)
     (zero :exit !)
 (funcend)
@@ -1929,7 +1935,7 @@ Code:
     (set int64 1 result~ 0)
     (b~ stpopi)
     (a~ stpopi)
-    ((a~ b~ +) result~ =)
+    (a~ + b~ result~ :=)
     (result~ stpush)
 (funcend)
 
