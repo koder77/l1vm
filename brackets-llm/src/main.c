@@ -607,7 +607,7 @@ static int run_cmd_capture(const char *cmd, char **out)
 
 /* ================== LSP check + auto-correct ================== */
 
-#define MAX_FIX_ITERS 32
+#define MAX_FIX_ITERS 5
 
 /*
  * Save `code` to path `name.l1com`, check with the LSP. If errors are found,
@@ -733,7 +733,7 @@ static int ask_continue(void)
     char buf[16];
     if (!isatty(0))
         return 1;
-    printf("Continue: y/n ");
+    printf("Continue? [y/N] ");
     fflush(stdout);
     if (fgets(buf, sizeof(buf), stdin) == NULL)
         return 1;
