@@ -32,6 +32,8 @@
 
 #include <ctype.h>
 #include <dirent.h>
+#include <setjmp.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1151,15 +1153,60 @@ static void print_help(void)
 
 /* ================== main ================== */
 
+/* ================== interrupt (Ctrl+C) support ================== */
+
+static sigjmp_buf g_repl_jmp;
+static volatile sig_atomic_t g_break_armed = 0;
+
+/* Ctrl+C: abort whatever is running (model call, LSP check, tool call)
+ * and jump straight back to the "You> " prompt. */
+static void sigint_handler(int sig)
+{
+    (void)sig;
+    if (g_break_armed)
+        siglongjmp(g_repl_jmp, 1);
+}
+
+/* Restart the LSP after an interrupt: an aborted LSP exchange can leave the
+ * server out of sync, so a fresh child process is the safe state. */
+static void lsp_restart(LspClient **lsp, const char *lsp_path,
+                        const char *l1com_path, const char *include_dir)
+{
+    if (*lsp) {
+        lsp_stop(*lsp);
+        *lsp = NULL;
+    }
+    *lsp = lsp_start(lsp_path, 1, l1com_path, include_dir);
+    if (!*lsp)
+        fprintf(stderr, "warning: could not restart l1vm-lsp (%s); code "
+                        "checking disabled.\n", lsp_path);
+}
+
+/* Remove leftover .brackets-check-*.l1com temp files from an interrupted
+ * LSP check. */
+static void cleanup_check_files(void)
+{
+    DIR *d = opendir(".");
+    struct dirent *e;
+    if (!d)
+        return;
+    while ((e = readdir(d)) != NULL) {
+        if (strncmp(e->d_name, ".brackets-check-", 16) == 0 &&
+            strstr(e->d_name, ".l1com") != NULL)
+            unlink(e->d_name);
+    }
+    closedir(d);
+}
+
 int main(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    const char *url = cfg_server_url();
-    const char *model = cfg_model();
-    const char *lsp_path = cfg_lsp_path();
-    const char *l1com_path = cfg_l1com_path();
-    const char *sysprompt_path = cfg_system_prompt_path();
+    const char *volatile url = cfg_server_url();
+    const char *volatile model = cfg_model();
+    const char *volatile lsp_path = cfg_lsp_path();
+    const char *volatile l1com_path = cfg_l1com_path();
+    const char *volatile sysprompt_path = cfg_system_prompt_path();
     char *sysprompt = read_file(sysprompt_path);
     char *last_code = NULL;
     char last_name[256] = "";
@@ -1189,7 +1236,27 @@ int main(int argc, char **argv)
 
     print_help();
 
+    /* Ctrl+C never kills the app: it aborts whatever is running and jumps
+     * back to the "You> " prompt. Installed with no SA_RESTART so blocking
+     * calls are interruptible. */
+    {
+        struct sigaction sa;
+        memset(&sa, 0, sizeof(sa));
+        sa.sa_handler = sigint_handler;
+        sigemptyset(&sa.sa_mask);
+        sa.sa_flags = 0;
+        sigaction(SIGINT, &sa, NULL);
+    }
+
     while (running) {
+        if (sigsetjmp(g_repl_jmp, 1) != 0) {
+            /* interrupted: whatever was running was aborted */
+            printf("\n(interrupted)\n");
+            lsp_restart(&lsp, lsp_path, l1com_path, cfg_include_dir());
+            cleanup_check_files();
+            continue;   /* back to the "You> " prompt */
+        }
+        g_break_armed = 1;
         printf("\nYou> ");
         fflush(stdout);
         if (!fgets(line, sizeof(line), stdin))
