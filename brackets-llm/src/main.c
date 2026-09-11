@@ -44,6 +44,7 @@
 
 #include "config.h"
 #include "http.h"
+#include "inputline.h"
 #include "json.h"
 #include "lspclient.h"
 #include "sb.h"
@@ -732,16 +733,7 @@ static char *lsp_summary_for_write(LspClient *lsp, const char *path)
  * continue, 0 to abort. Non-interactive sessions are never interrupted. */
 static int ask_continue(void)
 {
-    char buf[16];
-    if (!isatty(0))
-        return 1;
-    printf("Continue? [y/N] ");
-    fflush(stdout);
-    if (fgets(buf, sizeof(buf), stdin) == NULL)
-        return 1;
-    if (buf[0] == 'n' || buf[0] == 'N')
-        return 0;
-    return 1;
+    return input_confirm("Continue? [y/N] ", 1);
 }
 
 /* check + auto-correct a program. Returns 0 when the saved file is clean,
@@ -1257,12 +1249,13 @@ int main(int argc, char **argv)
             continue;   /* back to the "You> " prompt */
         }
         g_break_armed = 1;
-        printf("\nYou> ");
-        fflush(stdout);
-        if (!fgets(line, sizeof(line), stdin))
-            break;
-        /* strip trailing newline */
-        line[strcspn(line, "\r\n")] = '\0';
+        {
+            char *ln = input_line("\nYou> ");
+            if (!ln)
+                break;
+            snprintf(line, sizeof(line), "%s", ln);
+            free(ln);
+        }
 
         if (line[0] == '\0')
             continue;
@@ -1549,6 +1542,7 @@ int main(int argc, char **argv)
     hist_free(&hist);
     free(last_code);
     free(sysprompt);
+    input_shutdown();
     if (lsp)
         lsp_stop(lsp);
     return 0;

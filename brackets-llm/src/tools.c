@@ -37,6 +37,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "inputline.h"
 #include "json.h"
 #include "sb.h"
 
@@ -176,17 +177,14 @@ int tool_path_inside_cwd(const char *path)
  * Returns 1 to allow, 0 to deny. */
 int tool_ask_permission(const char *path)
 {
+    char prompt[1024];
+
     if (!isatty(STDIN_FILENO))
         return 1;      /* piped/scripted input: cannot prompt */
-    printf("\n[WARNING] Access to '%s' is OUTSIDE the current working "
-           "directory.\nAllow? [y/N] ", path ? path : "");
-    fflush(stdout);
-    {
-        char line[64] = "";
-        if (!fgets(line, sizeof(line), stdin))
-            return 0;
-        return line[0] == 'y' || line[0] == 'Y';
-    }
+    snprintf(prompt, sizeof(prompt),
+             "\n[WARNING] Access to '%s' is OUTSIDE the current working "
+             "directory.\nAllow? [y/N] ", path ? path : "");
+    return input_confirm(prompt, 0);
 }
 
 /* Shared guard: require user permission before any file tool touches a path
@@ -408,7 +406,7 @@ static int tool_edit(const char *path, const char *old_str, const char *new_str,
 static int confirm_write(const char *path)
 {
     const char *e = getenv("BRACKETS_LLM_CONFIRM");
-    char line[64] = "";
+    char prompt[1024];
     if (!e || !*e)
         return 1;   /* automatic by default (opencode-like) */
     if (!(strcmp(e, "1") == 0 || strcmp(e, "yes") == 0 ||
@@ -416,11 +414,9 @@ static int confirm_write(const char *path)
         return 1;
     if (!isatty(STDIN_FILENO))
         return 1;   /* piped/scripted input: cannot prompt */
-    printf("The model wants to write '%s'. Allow? [y/N] ", path);
-    fflush(stdout);
-    if (!fgets(line, sizeof(line), stdin))
-        return 0;
-    return line[0] == 'y' || line[0] == 'Y';
+    snprintf(prompt, sizeof(prompt),
+             "The model wants to write '%s'. Allow? [y/N] ", path);
+    return input_confirm(prompt, 0);
 }
 
 static int tool_write(const char *path, const char *content, char **out)
