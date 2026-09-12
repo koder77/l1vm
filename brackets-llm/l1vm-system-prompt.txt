@@ -583,8 +583,7 @@ The intr-func.l1h version is RECOMMENDED (more readable):
     (variable~ :print_lni !)         // print int64~ + newline
     (variable~ :print_lnd !)         // print double~ + newline
     (format~ value~ :printf_d !)     // printf-style double
-
-    IMPORTANT: Always use the function-style syntax for intr-func.l1h macros:
+    lu
     (variable~ :print_s !)           // print string~
     (variable~ :print_i !)           // print int64~
     (variable~ :print_d !)           // print double~
@@ -628,7 +627,6 @@ FILE SEEK MODES:
 COMPLETE FILE WRITE EXAMPLE:
 
     #include <intr-func.l1h>
-    #include <file-lib.l1h>
     (main func)
         #var ~ main
         #include <file-def.l1h>        // file mode constants
@@ -682,7 +680,6 @@ COMPLETE FILE WRITE EXAMPLE:
 COMPLETE FILE READ EXAMPLE:
 
     #include <intr-func.l1h>
-    #include <file-lib.l1h>
     (main func)
         #var ~ main
         #include <file-def.l1h>
@@ -1289,11 +1286,11 @@ ARRAY RANGE CHECKING:
 
 INCLUDE FILES:
 
-    #include <filename.l1h>     // include a header file
+    #include <filename.l1h>     // include a library header file AT THE END OF THE PROGRAM
 
     Available headers:
     intr.l1h                     // interrupt macros (raw style)
-    intr-func.l1h                // interrupt macros (function style) - RECOMMENDED
+    intr-func.l1h                // interrupt macros (function style) - RECOMMENDED AT THE TOP OF A PROGRAM
     vars.l1h                     // variable size constants
     string.l1h                   // string library
     string-tools.l1h             // string split/replace tools

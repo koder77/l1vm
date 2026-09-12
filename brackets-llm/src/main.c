@@ -744,16 +744,19 @@ static int ask_continue(void)
 }
 
 /* check + auto-correct a program. Returns 0 when the saved file is clean,
- * 1 when it was saved but still has errors (MAX_FIX_ITERS reached),
+ * 1 when it was saved but still has errors (max_iters reached),
  * 2 when the LSP could not verify it, -2 when the user aborted the
  * auto-fix loop (the file is NOT saved), -1 on early check failure. On every
- * 1 when it was saved but still has errors (MAX_FIX_ITERS reached),
- * 2 when the LSP could not verify it, -1 on early check failure. On every
  * return >= -1 the caller owns *final_code; *final_diags (if len > 0)
- * describes the last state. */
+ * describes the last state.
+ *
+ * `max_iters` > 0 bounds the check/fix iterations and asks "Continue?" after
+ * each failed iteration (the /lsp behaviour); `max_iters` <= 0 loops
+ * repeatedly until the code is clean, prompting nothing and aborting
+ * immediately on Ctrl+C (the /loop command). */
 static int code_workflow(LspClient *lsp, Hist *hist, const char *model,
                          const char *url, const char *filename,
-                         const char *initial_code,
+                         const char *initial_code, int max_iters,
                          char **final_code, LspDiagVec *final_diags)
 {
     char *code = strdup(initial_code);
@@ -765,7 +768,7 @@ static int code_workflow(LspClient *lsp, Hist *hist, const char *model,
     *final_code = NULL;
     *final_diags = (LspDiagVec){0};
 
-    for (iter = 0; iter < MAX_FIX_ITERS; iter++) {
+    for (iter = 0; max_iters <= 0 || iter < max_iters; iter++) {
         LspDiagVec diags = {0};
         char checkpath[131072];
         char uri[262144];
@@ -812,8 +815,12 @@ static int code_workflow(LspClient *lsp, Hist *hist, const char *model,
         /* report errors and ask the model to correct */
         {
             char *dtext = format_diags(&diags, "LSP errors");
-            printf("Found errors; asking the model to fix (iteration %d/%d)...\n",
-                   iter + 1, MAX_FIX_ITERS);
+            if (max_iters > 0)
+                printf("Found errors; asking the model to fix (iteration %d/%d)...\n",
+                       iter + 1, max_iters);
+            else
+                printf("Found errors; asking the model to fix (iteration %d, "
+                       "unlimited loop; Ctrl+C to stop)...\n", iter + 1);
             printf("%s", dtext);
             SB fix;
             sb_init(&fix);
@@ -850,7 +857,14 @@ static int code_workflow(LspClient *lsp, Hist *hist, const char *model,
             }
         }
         lsp_diagvec_free(&diags);
-        if (!ask_continue()) {
+        if (max_iters > 0) {
+            if (!ask_continue()) {
+                printf("\nAuto-fix aborted by user; %s was NOT saved.\n", filename);
+                *final_code = code;   /* caller still owns the last code */
+                return -2;
+            }
+        } else if (g_intr_request) {
+            /* /loop mode: a Ctrl+C stops the loop without asking */
             printf("\nAuto-fix aborted by user; %s was NOT saved.\n", filename);
             *final_code = code;   /* caller still owns the last code */
             return -2;
@@ -1045,7 +1059,7 @@ static void process_code_reply(const char *text, LspClient *lsp, Hist *hist,
         char *final = NULL;
         LspDiagVec diags = {0};
         int rc = code_workflow(lsp, hist, model, url, fname, code,
-                               &final, &diags);
+                               MAX_FIX_ITERS, &final, &diags);
         if (final) {
             *last_code = strdup(final);
             free(final);
@@ -1145,6 +1159,8 @@ static void print_help(void)
         "  /list            list files in the working directory\n"
         "  /lsp             re-run the LSP on the last code; any errors are\n"
         "                  sent to the model to fix (auto-correct loop)\n"
+        "  /loop            check + auto-fix the last code repeatedly until\n"
+        "                  all errors are fixed (unlimited; Ctrl+C stops)\n"
         "  /build <name>    build <name.l1com> with l1vm-build.sh\n"
         "  /run <name>      run <name> with l1vm\n"
         "  /code            re-extract/re-check the last code block\n"
@@ -1256,6 +1272,14 @@ int main(int argc, char **argv)
         sa.sa_flags = 0;
         sigaction(SIGINT, &sa, NULL);
     }
+
+    /* A Ctrl+C is delivered to the whole foreground process group, so a
+     * child (l1vm-lsp) may be killed by it. Writing the next LSP message to
+     * that child's pipe would then raise SIGPIPE and silently terminate the
+     * program (the "kicked back to your shell" symptom). Writes to pipes and
+     * sockets must instead fail with EPIPE so the error paths underneath
+     * (lsp_restart etc.) can recover. */
+    signal(SIGPIPE, SIG_IGN);
 
     while (running) {
         if (g_intr_request) {
@@ -1477,7 +1501,7 @@ int main(int argc, char **argv)
                         snprintf(fname, sizeof(fname), "program-%lu.l1com",
                                  (unsigned long)hist.len);
                     rc = code_workflow(lsp, &hist, model, url, fname,
-                                       last_code, &final, &diags);
+                                       last_code, MAX_FIX_ITERS, &final, &diags);
                     if (final) {
                         free(last_code);
                         last_code = strdup(final);
@@ -1507,6 +1531,44 @@ int main(int argc, char **argv)
                                 "LSP; build it with /build to check for "
                                 "errors.\n",
                                 fname);
+                    }
+                    lsp_diagvec_free(&diags);
+                }
+                continue;
+            } else if (strcmp(line, "/loop") == 0 || strncmp(line, "/loop ", 6) == 0) {
+                /* same as /lsp but unlimited: check + auto-fix again and
+                 * again until the LSP reports no errors (or Ctrl+C aborts) */
+                if (!lsp) {
+                    printf("l1vm-lsp is not available (code checking "
+                           "disabled).\n");
+                    continue;
+                }
+                if (!last_code) {
+                    printf("no code to check yet.\n");
+                    continue;
+                }
+                {
+                    char fname[256];
+                    char *final = NULL;
+                    LspDiagVec diags = {0};
+                    int rc;
+                    if (last_name[0])
+                        snprintf(fname, sizeof(fname), "%s", last_name);
+                    else
+                        snprintf(fname, sizeof(fname), "program-%lu.l1com",
+                                 (unsigned long)hist.len);
+                    rc = code_workflow(lsp, &hist, model, url, fname,
+                                       last_code, -1, &final, &diags);
+                    if (final) {
+                        free(last_code);
+                        last_code = strdup(final);
+                        free(final);
+                        snprintf(last_name, sizeof(last_name), "%s", fname);
+                    }
+                    if (rc == 0) {
+                        printf("saved %s (LSP check OK)\n", fname);
+                    } else if (rc == -1) {
+                        fprintf(stderr, "/loop aborted (LSP check failed).\n");
                     }
                     lsp_diagvec_free(&diags);
                 }

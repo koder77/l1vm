@@ -941,7 +941,23 @@ S2 replace_macro_normal (U1 *line_str)
 								// check variable types
 								if (check_define_type (defines[ind].args[arg_ind], arg) != 0)
 								{
-									printf ("ERROR: macro variable type mismatch: %s not of type: %s\n", arg, defines[ind].args[arg_ind]);
+									printf ("ERROR: macro variable type mismatch: %s not of type: %s: ", arg, defines[ind].args[arg_ind]);
+
+									if (defines[ind].args[arg_ind][0] == 's')
+									{
+										printf ("string\n");
+									}
+
+									if (defines[ind].args[arg_ind][0] == 'i')
+									{
+										printf ("int\n");
+									}
+
+									if (defines[ind].args[arg_ind][0] == 'd')
+									{
+										printf ("double\n");
+									}
+
 									printf ("line: '%s'\n\n", new_line);
 									return (1);
 								}
@@ -1094,7 +1110,23 @@ S2 replace_macro (U1 *line_str)
 								// check variable types
 								if (check_define_type (defines[ind].args[arg_ind], arg) != 0)
 								{
-									printf ("ERROR: macro variable type mismatch: %s not of type: %s\n", arg, defines[ind].args[arg_ind]);
+									printf ("ERROR: macro variable type mismatch: %s not of type: %s: ", arg, defines[ind].args[arg_ind]);
+
+									if (defines[ind].args[arg_ind][0] == 's')
+									{
+										printf ("string\n");
+									}
+
+									if (defines[ind].args[arg_ind][0] == 'i')
+									{
+										printf ("int\n");
+									}
+
+									if (defines[ind].args[arg_ind][0] == 'd')
+									{
+										printf ("double\n");
+									}
+
 									printf ("line: '%s'\n\n", new_line);
 									return (1);
 								}
