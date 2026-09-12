@@ -32,6 +32,7 @@
 
 #include <ctype.h>
 #include <dirent.h>
+#include <errno.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <stdio.h>
@@ -1287,11 +1288,26 @@ int main(int argc, char **argv)
                 /* readline returns NULL only on EOF (Ctrl+D). A Ctrl+C at
                  * the prompt is consumed by readline itself, and during any
                  * blocking I/O our handler sets g_intr_request so the loop
-                 * above reprompts. Never exit on a signal. */
-                if (g_intr_request)
-                    continue;   /* Ctrl+C during the prompt read */
+                 * above reprompts. Never exit on a signal: even if a
+                 * readline/stdio build fails to report the interrupt through
+                 * g_intr_request, an EINTR-driven NULL is not end of input
+                 * (stdin is not at EOF), so keep the program running. */
+                if (g_intr_request || (errno == EINTR && !feof(stdin))) {
+                    errno = 0;   /* a stale EINTR must not trap a later
+                                  * genuine Ctrl+D (EOF) into re-prompting */
+                    clearerr(stdin);
+                    continue;   /* Ctrl+C during the prompt read: the top of
+                                 * the loop sees g_intr_request and prints
+                                 * "(interrupted)" if a signal was involved */
+                }
                 break;          /* EOF (Ctrl+D or closed pipe) */
             }
+            /* A Ctrl+C while the prompt was being edited is consumed by the
+             * line editor itself; readline re-raises it into our handler, so
+             * g_intr_request is set even though nothing was running. Clear it
+             * here, otherwise the very next message the user submits would be
+             * silently discarded as "(interrupted)". */
+            g_intr_request = 0;
             snprintf(line, sizeof(line), "%s", ln);
             free(ln);
         }
