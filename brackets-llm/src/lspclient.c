@@ -35,6 +35,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "intr.h"
 #include "json.h"
 #include "sb.h"
 
@@ -60,8 +61,8 @@ static int wait_readable(int fd, int timeout_ms)
     int r;
     do {
         r = poll(&p, 1, timeout_ms);
-    } while (r < 0 && errno == EINTR);
-    return r > 0;
+    } while (r < 0 && errno == EINTR && !g_intr_request);
+    return r > 0 && !g_intr_request;
 }
 
 static char *read_message(int fd, int timeout_ms)

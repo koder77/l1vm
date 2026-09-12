@@ -45,10 +45,16 @@
 #include "config.h"
 #include "http.h"
 #include "inputline.h"
+#include "intr.h"
 #include "json.h"
 #include "lspclient.h"
 #include "sb.h"
 #include "tools.h"
+
+/* ANSI terminal colors. The "You> " prompt and everything the user types
+ * are shown in a different color than the Assistant> side. */
+#define COLOR_USER    "\033[1;36m"   /* bright cyan */
+#define COLOR_RESET   "\033[0m"
 
 /* ================== conversation ================== */
 
@@ -915,7 +921,9 @@ static int tool_calls_emitted(const JVal *r)
  * "tool" result message per call. Returns 0 if at least one call was handled.
  */
 static int handle_tool_calls(Hist *hist, const char *model, const char *url,
-                             const JVal *r, LspClient *lsp)
+                             const JVal *r, LspClient *lsp,
+                             char **last_code, char *last_name,
+                             size_t last_name_sz)
 {
     const JVal *choices = j_get(r, "choices");
     const JVal *msg = (choices && j_len(choices) > 0)
@@ -954,7 +962,8 @@ static int handle_tool_calls(Hist *hist, const char *model, const char *url,
             tool_run(name, args, &result);
             if (!result)
                 result = strdup("tool execution produced no result");
-            /* verify a freshly written .l1com file with l1vm-lsp */
+            /* verify a freshly written .l1com file with l1vm-lsp and keep it
+             * as the "last code" so that /lsp and /code work on it */
             if (lsp &&
                 (strcmp(name, "write_file") == 0 ||
                  strcmp(name, "edit_file") == 0) &&
@@ -963,8 +972,15 @@ static int handle_tool_calls(Hist *hist, const char *model, const char *url,
                 JVal *aj = j_parse(args);
                 const JVal *pv = aj ? j_get(aj, "path") : NULL;
                 const char *pp = pv ? j_str(pv) : NULL;
-                if (pp)
+                if (pp) {
+                    char *fc = read_file(pp);
+                    if (fc) {
+                        free(*last_code);
+                        *last_code = fc;
+                        snprintf(last_name, last_name_sz, "%s", pp);
+                    }
                     lspnote = lsp_summary_for_write(lsp, pp);
+                }
                 if (aj)
                     j_free(aj);
             }
@@ -1147,16 +1163,16 @@ static void print_help(void)
 
 /* ================== interrupt (Ctrl+C) support ================== */
 
-static sigjmp_buf g_repl_jmp;
-static volatile sig_atomic_t g_break_armed = 0;
-
-/* Ctrl+C: abort whatever is running (model call, LSP check, tool call)
- * and jump straight back to the "You> " prompt. */
+/* Ctrl+C: request a graceful abort of whatever is running (model call, LSP
+ * check, tool call). Blocking calls get EINTR, notice the flag and unwind
+ * normally (all heap state stays consistent); the REPL then prints
+ * "(interrupted)", restarts the LSP and continues. We never siglongjmp from
+ * a signal handler: jumping out of a malloc/realloc would corrupt glibc's
+ * heap ("double free or corruption"). */
 static void sigint_handler(int sig)
 {
     (void)sig;
-    if (g_break_armed)
-        siglongjmp(g_repl_jmp, 1);
+    g_intr_request = 1;
 }
 
 /* Restart the LSP after an interrupt: an aborted LSP exchange can leave the
@@ -1241,18 +1257,41 @@ int main(int argc, char **argv)
     }
 
     while (running) {
-        if (sigsetjmp(g_repl_jmp, 1) != 0) {
-            /* interrupted: whatever was running was aborted */
+        if (g_intr_request) {
+            /* an operation was aborted by Ctrl+C: the flag was set, the
+             * blocking calls returned early and unwound normally */
+            g_intr_request = 0;
             printf("\n(interrupted)\n");
             lsp_restart(&lsp, lsp_path, l1com_path, cfg_include_dir());
             cleanup_check_files();
             continue;   /* back to the "You> " prompt */
         }
-        g_break_armed = 1;
         {
-            char *ln = input_line("\nYou> ");
-            if (!ln)
-                break;
+            char youprom[128];
+            char *ln;
+            int tty = isatty(STDIN_FILENO) && isatty(STDOUT_FILENO);
+            if (tty)
+                /* \001/\002 wrap the invisible escape so readline counts
+                 * the prompt width correctly; the trailing color (no reset)
+                 * also colors everything the user types */
+                snprintf(youprom, sizeof(youprom),
+                         "\n\001" COLOR_USER "\002You> ");
+            else
+                snprintf(youprom, sizeof(youprom), "\nYou> ");
+            g_intr_request = 0;   /* a stray signal between operations must
+                                   * not abort the next model call */
+            ln = input_line(youprom);
+            if (tty)
+                printf(COLOR_RESET);   /* back to plain for Assistant> */
+            if (!ln) {
+                /* readline returns NULL only on EOF (Ctrl+D). A Ctrl+C at
+                 * the prompt is consumed by readline itself, and during any
+                 * blocking I/O our handler sets g_intr_request so the loop
+                 * above reprompts. Never exit on a signal. */
+                if (g_intr_request)
+                    continue;   /* Ctrl+C during the prompt read */
+                break;          /* EOF (Ctrl+D or closed pipe) */
+            }
             snprintf(line, sizeof(line), "%s", ln);
             free(ln);
         }
@@ -1490,9 +1529,16 @@ int main(int argc, char **argv)
             for (iter = 0; iter <= MAX_TOOL_ITERS; iter++) {
                 char *reply = NULL;
                 long tin = -1, tout = -1;
-                int rc = llm_call(&hist, model, url, tools, &reply,
-                                  &tin, &tout);
+                int rc;
+                if (g_intr_request)
+                    break;   /* Ctrl+C during a tool call */
+                rc = llm_call(&hist, model, url, tools, &reply,
+                              &tin, &tout);
                 print_token_usage(tin, tout);
+                if (g_intr_request) {
+                    free(reply);
+                    break;   /* Ctrl+C during the model call */
+                }
                 if (rc != 0 || !reply) {
                     printf("<error: could not reach llama-server at %s%s>\n",
                            url, " - is it running?");
@@ -1508,7 +1554,9 @@ int main(int argc, char **argv)
                             break;
                         }
                         printf("[tool] ");
-                        if (handle_tool_calls(&hist, model, url, r, lsp) == 0) {
+                        if (handle_tool_calls(&hist, model, url, r, lsp,
+                                              &last_code, last_name,
+                                              sizeof(last_name)) == 0) {
                             j_free(r);
                             free(reply);
                             continue;   /* loop: run the model again */

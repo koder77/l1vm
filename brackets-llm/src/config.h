@@ -86,6 +86,6 @@ static const char *cfg_system_prompt_path(void) {
     return "l1vm-system-prompt.txt";
 }
 
-#define BRACKETS_LLM_VERSION "0.1.0"
+#define BRACKETS_LLM_VERSION "0.2.0"
 
 #endif

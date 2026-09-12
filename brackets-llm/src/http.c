@@ -38,6 +38,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "intr.h"
 #include "sb.h"
 
 int http_parse_url(const char *url, char *host, size_t hostsz, int *port)
@@ -87,6 +88,8 @@ static int connect_host(const char *host, int port)
         return -1;
 
     for (rp = res; rp; rp = rp->ai_next) {
+        if (g_intr_request)
+            break;
         fd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
         if (fd < 0)
             continue;
@@ -150,11 +153,18 @@ int http_post_json(const char *url, const char *path,
     {
         char buf[32768];
         for (;;) {
-            n = read(fd, buf, sizeof(buf));
-            if (n > 0)
-                sb_addn(&out, buf, (size_t)n);
-            else
+            if (g_intr_request)
                 break;
+            n = read(fd, buf, sizeof(buf));
+            if (n > 0) {
+                sb_addn(&out, buf, (size_t)n);
+            } else if (n < 0 && errno == EINTR) {
+                if (g_intr_request)
+                    break;
+                continue;   /* unrelated signal: retry */
+            } else {
+                break;   /* EOF or error */
+            }
         }
     }
     close(fd);
