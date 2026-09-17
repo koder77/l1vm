@@ -13,9 +13,12 @@ can immediately understand and generate correct code.
 ===============================================================================
 
 A complete L1VM/Brackets program follows this exact structure:
+Includes ar at the TOP OF A PROGRAM, NOT AT THE END!
 
     // comments start with double slashes
+    (:main jmp)
     #include <intr-func.l1h>       // MUST be first: interrupt/function macros
+    #include <lib.l1h>
 
     (main func)                     // main function = entry point (REQUIRED)
         #var ~ main                 // scope declaration (REQUIRED for each function)
@@ -33,9 +36,11 @@ A complete L1VM/Brackets program follows this exact structure:
         // shared variables and methods
     (objectend)
 
-    #include <lib.l1h>              // library .l1h includes at END of file
-
 IMPORTANT RULES:
+THE FIRST LINE OF CODE MUST BE:
+(:main jmp)
+
+THEN THE INCLUDES FOLLOW, THEN THE main FUNCTION!
 - ALWAYS use !) for function calls, NEVER use call). Example: (:print_s !) not (:print_s call)
 - Macros from intr-func.l1h (print_s, print_i, print_d, print_n, exit, etc.) MUST always use the function-style syntax: (variable~ :print_s !), (zero :exit !). NEVER use the old macro-style: print_s (variable~) or exit (zero).
 - The file extension is .l1com
@@ -53,6 +58,9 @@ Constants like string "foobar" or numbers like 42 are only allowed to be set by 
 (set string s foobarstr "foobar")
 (set int64 1 c42 42)
 
+ALL VARIABLES MUST BE DECLARED WITH SET:
+(set int64 1 x 0)
+
 THIS IS ILLEGAL;
 (" " :print_s !)
 (1 :print_i !)
@@ -64,6 +72,10 @@ Math expressions:
 (a~ * b~ + c~ :=)
 
 Math expressions must be INFIX with the := operator at the end!
+
+INCLUDES:
+At top always:
+#include <intr-func.l1h>
 
 ===============================================================================
 2. BUILDING PROGRAMS
@@ -626,7 +638,9 @@ FILE SEEK MODES:
 
 COMPLETE FILE WRITE EXAMPLE:
 
+    (:main jmp)
     #include <intr-func.l1h>
+    #include <file-lib.l1h>
     (main func)
         #var ~ main
         #include <file-def.l1h>        // file mode constants
@@ -675,11 +689,12 @@ COMPLETE FILE WRITE EXAMPLE:
 
         (zero :exit !)
     (funcend)
-    #include <file-lib.l1h>
 
 COMPLETE FILE READ EXAMPLE:
 
+    (:main jmp)
     #include <intr-func.l1h>
+    #include <file-lib.l1h>
     (main func)
         #var ~ main
         #include <file-def.l1h>
@@ -726,7 +741,6 @@ COMPLETE FILE READ EXAMPLE:
         (:file_free_mem !)
         (zero :exit !)
     (funcend)
-    #include <file-lib.l1h>
 
 FILE LIBRARY FUNCTIONS REFERENCE:
 
@@ -882,6 +896,7 @@ STRING FUNCTIONS:
 
 COMPLETE STRING EXAMPLE:
 
+    (:main jmp)
     #include <intr-func.l1h>
     #include <string.l1h>
     (main func)
@@ -911,7 +926,6 @@ COMPLETE STRING EXAMPLE:
         (zero :free_mod !)
         (zero :exit !)
     (funcend)
-    #include <string.l1h>
 
 ---------------------------------------------------------------------------
 8.5 MEMORY OPERATIONS (mem-lib.l1h)
@@ -1731,6 +1745,7 @@ Example 5: File Write
 User: "Write Hello world! to file hello.txt"
 Code:
 // hello-file.l1com
+(:main jmp)
 #include <intr-func.l1h>
 #include <file-lib.l1h>
 (main func)
@@ -1759,7 +1774,6 @@ Code:
     (:file_free_mem !)
     (zero :exit !)
 (funcend)
-#include <file-lib.l1h>
 
 Example 6: FizzBuzz
 
@@ -1844,6 +1858,7 @@ Example 8: String Operations
 User: "Concatenate two strings and print the result."
 Code:
 // string-cat.l1com
+(:main jmp)
 #include <intr-func.l1h>
 #include <string.l1h>
 (main func)
@@ -1863,13 +1878,13 @@ Code:
     (zero :free_mod !)
     (zero :exit !)
 (funcend)
-#include <string.l1h>
 
 Example 9: Memory Allocation
 
 User: "Allocate memory, write to it, and read it back."
 Code:
 // mem-demo.l1com
+(:main jmp)
 #include <intr-func.l1h>
 #include <mem-lib.l1h>
 (main func)
@@ -1903,7 +1918,6 @@ Code:
     (:free_mem !)
     (zero :exit !)
 (funcend)
-#include <mem-lib.l1h>
 
 Example 10: User-defined Function with Stack Arguments
 

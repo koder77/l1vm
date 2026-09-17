@@ -1,0 +1,347 @@
+// raylib-demo-2.l1com
+//
+// raylib module demo 2: 2D interactive demo - a bouncing ball with
+// mouse crosshair, keyboard controls and various 2D primitives.
+//
+// Build:
+//     l1vm-build.sh raylib-demo-2
+// Run:
+//     l1vm raylib-demo-2
+//
+// Controls:
+//     Mouse move   : crosshair + small circle follow the pointer
+//     Mouse click  : teleport ball to pointer and give it a random velocity
+//     Space        : pause / unpause the ball
+//     C            : cycle ball color (red / gold / lime)
+//     R            : reset ball to screen center
+//     H            : toggle help text
+//     ESC / close  : quit
+//
+// IMPORTANT order requirements:
+//   1. zero must be the FIRST data entry of the program. If a string lands
+//      at data entry 0, the compiler fails to register its auto-generated
+//      "<name>addr" int64 companion and aborts with
+//      "checkdef: error: variable '<name>addr' not defined!".
+//   2. raylib.l1h must be preprocessed BEFORE intr-func.l1h. l1pre's macro
+//      replacer scans for intr-func macro names as substrings anywhere in a
+//      line, incl. inside string literals (e.g. "raylib_get_time" matches
+//      "get_time"), which corrupts the generated raylib.l1h wrapper names.
+//   3. Every color array passed to the module is declared as 5 bytes
+//      (rgba + 1 pad byte). The L1VM memory_bounds() check uses an inclusive
+//      end, so each struct must be one element larger than the data the
+//      module reads.
+//
+(:main jmp)
+(set int64 1 zero 0)
+#include <raylib.l1h>
+#include <intr-func.l1h>
+(main func)
+    #var ~ main
+    // general
+    (set int64 1 one~ 1)
+    (set int64 1 three~ 3)
+    (set int64 1 two~ 2)
+    (set int64 1 width~ 800)
+    (set int64 1 height~ 600)
+    (set int64 1 fps~ 60)
+    (set int64 1 halfx~ 400)
+    (set int64 1 halfy~ 300)
+    (set int64 1 ret~ 0)
+    (set int64 1 wsclose~ 0)
+    // ball state
+    (set int64 1 ballx~ 400)
+    (set int64 1 bally~ 300)
+    (set int64 1 vx~ 5)
+    (set int64 1 vy~ 3)
+    (set int64 1 nx~ 0)
+    (set int64 1 ny~ 0)
+    (set int64 1 er~ 0)
+    (set int64 1 el~ 0)
+    (set int64 1 eb~ 0)
+    (set int64 1 et~ 0)
+    (set int64 1 rint~ 25)
+    (set int64 1 paused~ 0)
+    (set int64 1 colorind~ 0)
+    (set int64 1 showhelp~ 1)
+    (set double 1 r~ 25.0)
+    // mouse + random velocity
+    (set int64 1 mousex~ 0)
+    (set int64 1 mousey~ 0)
+    (set int64 1 bret~ 0)
+    (set int64 1 kret~ 0)
+    (set int64 1 rngmin~ -6)
+    (set int64 1 rngmax~ 6)
+    (set int64 1 rngymin~ -4)
+    (set int64 1 rngymax~ 4)
+    (set int64 1 vxd~ 3)
+    (set int64 1 vyd~ 2)
+    // key codes (raylib KEY_*: letters use UPPERCASE ASCII)
+    (set int64 1 key_space~ 32)
+    (set int64 1 key_r~ 82)
+    (set int64 1 key_c~ 67)
+    (set int64 1 key_h~ 72)
+    (set int64 1 btn_left~ 0)
+    // flags
+    (set int64 1 f~ 0)
+    (set int64 1 fb~ 0)
+    (set int64 1 fc~ 0)
+    (set int64 1 fd~ 0)
+    (set int64 1 fe~ 0)
+    (set int64 1 fg~ 0)
+    (set int64 1 fg2~ 0)
+    (set int64 1 fg3~ 0)
+    (set int64 1 fh~ 0)
+    // layout / text positions
+    (set int64 1 fs14~ 14)
+    (set int64 1 fs18~ 18)
+    (set int64 1 fs22~ 22)
+    (set int64 1 fs30~ 30)
+    (set int64 1 bx0~ 4)
+    (set int64 1 by0~ 4)
+    (set int64 1 bw~ 792)
+    (set int64 1 bh~ 592)
+    (set int64 1 t1x~ 12)
+    (set int64 1 t1y~ 10)
+    (set int64 1 t2y~ 34)
+    (set int64 1 t3y~ 58)
+    (set int64 1 t4y~ 82)
+    (set int64 1 hintx~ 12)
+    (set int64 1 hinty~ 108)
+    (set int64 1 px~ 330)
+    (set int64 1 py~ 280)
+    (set int64 1 fpsx~ 12)
+    (set int64 1 fpsy~ 570)
+    // crosshair
+    (set int64 1 mq~ 15)
+    (set int64 1 cmx~ 0)
+    (set int64 1 cpx~ 0)
+    (set int64 1 cmy~ 0)
+    (set int64 1 cpy~ 0)
+    (set double 1 rm~ 12.0)
+    // decorative ellipse
+    (set int64 1 bex~ 690)
+    (set int64 1 bey~ 70)
+    (set double 1 rhe~ 60.0)
+    (set double 1 rve~ 30.0)
+    // colors (byte arrays, 5 bytes each = rgba + pad)
+    (set byte 5 cbg~ 10 20 40 255 0)
+    (set byte 5 ctext~ 200 200 200 255 0)
+    (set byte 5 cborder~ 80 90 120 255 0)
+    (set byte 5 cb0~ 230 41 55 255 0)
+    (set byte 5 cb1~ 253 249 0 255 0)
+    (set byte 5 cb2~ 0 228 48 255 0)
+    (set byte 5 cout~ 245 245 245 255 0)
+    (set byte 5 ccross~ 0 200 255 255 0)
+    (set byte 5 cpause~ 253 249 0 255 0)
+    (set byte 5 ccell~ 120 60 230 255 0)
+    // strings
+    (set string s title~ "L1VM raylib demo 2 - 2D bouncing ball")
+    (set string s h1~ "L1VM raylib module - 2D demo")
+    (set string s h2~ "Move mouse: crosshair + circle follow the pointer")
+    (set string s h3~ "Click: teleport ball + random velocity")
+    (set string s h4~ "Space: pause  C: color  R: reset  H: hide help")
+    (set string s hint~ "Press H for help")
+    (set string s pausedmsg~ "PAUSED")
+    // addresses
+    (set int64 1 Ptitle~ 0)
+    (set int64 1 Ph1~ 0)
+    (set int64 1 Ph2~ 0)
+    (set int64 1 Ph3~ 0)
+    (set int64 1 Ph4~ 0)
+    (set int64 1 Phint~ 0)
+    (set int64 1 Ppausedmsg~ 0)
+    (set int64 1 Pcbg~ 0)
+    (set int64 1 Pctext~ 0)
+    (set int64 1 Pcborder~ 0)
+    (set int64 1 Pcb0~ 0)
+    (set int64 1 Pcb1~ 0)
+    (set int64 1 Pcb2~ 0)
+    (set int64 1 Pcout~ 0)
+    (set int64 1 Pccross~ 0)
+    (set int64 1 Pcpause~ 0)
+    (set int64 1 Pccell~ 0)
+    (set int64 1 Pcball~ 0)
+
+    // raylib module init (push module index 0 first)
+    (zero :raylib_init !)
+
+    // addresses of byte arrays / strings used as module arguments
+    (title~ Ptitle~ pointer)
+    (h1~ Ph1~ pointer)
+    (h2~ Ph2~ pointer)
+    (h3~ Ph3~ pointer)
+    (h4~ Ph4~ pointer)
+    (hint~ Phint~ pointer)
+    (pausedmsg~ Ppausedmsg~ pointer)
+    (cbg~ Pcbg~ pointer)
+    (ctext~ Pctext~ pointer)
+    (cborder~ Pcborder~ pointer)
+    (cb0~ Pcb0~ pointer)
+    (cb1~ Pcb1~ pointer)
+    (cb2~ Pcb2~ pointer)
+    (cout~ Pcout~ pointer)
+    (ccross~ Pccross~ pointer)
+    (cpause~ Pcpause~ pointer)
+    (ccell~ Pccell~ pointer)
+    // ball starts red
+    (Pcb0~ Pcball~ =)
+
+    // create window
+    (width~ height~ Ptitle~ :raylib_init_window !)
+    (ret~ stpopi)
+    (((ret~ zero !=) f~ =) f~ if)
+        (zero :free_mod !)
+        (zero :exit !)
+    (endif)
+
+    (fps~ :raylib_set_target_fps !)
+
+    // main loop
+    (do)
+        // ----- input -----
+        (:raylib_get_mouse_x !)
+        (mousex~ stpopi)
+        (:raylib_get_mouse_y !)
+        (mousey~ stpopi)
+
+        // left mouse button: teleport ball + random velocity
+        (btn_left~ :raylib_is_mouse_button_pressed !)
+        (bret~ stpopi)
+        (((bret~ zero !=) fb~ =) fb~ if)
+            (mousex~ ballx~ =)
+            (mousey~ bally~ =)
+            (rngmin~ rngmax~ :raylib_get_random_value !)
+            (vx~ stpopi)
+            (((vx~ zero ==) fc~ =) fc~ if)
+                (vxd~ vx~ =)
+            (endif)
+            (rngymin~ rngymax~ :raylib_get_random_value !)
+            (vy~ stpopi)
+            (((vy~ zero ==) fc~ =) fc~ if)
+                (vyd~ vy~ =)
+            (endif)
+        (endif)
+
+        // space: pause toggle
+        (key_space~ :raylib_is_key_pressed !)
+        (kret~ stpopi)
+        (((kret~ zero !=) fb~ =) fb~ if)
+            (one~ paused~ - paused~ :=)
+        (endif)
+
+        // C: cycle ball color (0 red, 1 gold, 2 lime)
+        (key_c~ :raylib_is_key_pressed !)
+        (kret~ stpopi)
+        (((kret~ zero !=) fb~ =) fb~ if)
+            (colorind~ + one~ colorind~ :=)
+            (colorind~ three~ % colorind~ :=)
+        (endif)
+
+        // R: reset ball to screen center
+        (key_r~ :raylib_is_key_pressed !)
+        (kret~ stpopi)
+        (((kret~ zero !=) fb~ =) fb~ if)
+            (halfx~ ballx~ =)
+            (halfy~ bally~ =)
+            (one~ vx~ =)
+            (one~ vy~ =)
+        (endif)
+
+        // H: toggle help
+        (key_h~ :raylib_is_key_pressed !)
+        (kret~ stpopi)
+        (((kret~ zero !=) fb~ =) fb~ if)
+            (one~ showhelp~ - showhelp~ :=)
+        (endif)
+
+        // select ball color by colorind (0 red, 1 gold, 2 lime)
+        (((colorind~ zero ==) fg~ =) fg~ if)
+            (Pcb0~ Pcball~ =)
+        (endif)
+        (((colorind~ one~ ==) fg2~ =) fg2~ if)
+            (Pcb1~ Pcball~ =)
+        (endif)
+        (((colorind~ two~ ==) fg3~ =) fg3~ if)
+            (Pcb2~ Pcball~ =)
+        (endif)
+
+        // ----- physics (skipped while paused) -----
+        (((paused~ zero ==) fh~ =) fh~ if)
+            (ballx~ + vx~ nx~ :=)
+            (bally~ + vy~ ny~ :=)
+
+            // right wall
+            (nx~ + rint~ er~ :=)
+            (((er~ width~ >=) fd~ =) fd~ if)
+                (zero - vx~ vx~ :=)
+            (endif)
+            // left wall
+            (nx~ - rint~ el~ :=)
+            (((el~ zero <=) fd~ =) fd~ if)
+                (zero - vx~ vx~ :=)
+            (endif)
+            // bottom wall
+            (ny~ + rint~ eb~ :=)
+            (((eb~ height~ >=) fd~ =) fd~ if)
+                (zero - vy~ vy~ :=)
+            (endif)
+            // top wall
+            (ny~ - rint~ et~ :=)
+            (((et~ zero <=) fd~ =) fd~ if)
+                (zero - vy~ vy~ :=)
+            (endif)
+
+            (nx~ ballx~ =)
+            (ny~ bally~ =)
+        (endif)
+
+        // ----- drawing -----
+        (:raylib_begin_drawing !)
+        (Pcbg~ :raylib_clear_background !)
+
+        // border frame
+        (bx0~ by0~ bw~ bh~ Pcborder~ :raylib_draw_rectangle_lines !)
+
+        // decorative ellipse (top right corner)
+        (bex~ bey~ rhe~ rve~ Pccell~ :raylib_draw_ellipse !)
+
+        // ball (filled + outline)
+        (ballx~ bally~ r~ Pcball~ :raylib_draw_circle !)
+        (ballx~ bally~ r~ Pcout~ :raylib_draw_circle_lines !)
+
+        // mouse crosshair + small circle
+        (mousex~ mq~ - cmx~ :=)
+        (mousex~ + mq~ cpx~ :=)
+        (mousey~ mq~ - cmy~ :=)
+        (mousey~ + mq~ cpy~ :=)
+        (cmx~ mousey~ cpx~ mousey~ Pccross~ :raylib_draw_line !)
+        (mousex~ cmy~ mousex~ cpy~ Pccross~ :raylib_draw_line !)
+        (mousex~ mousey~ rm~ Pccross~ :raylib_draw_circle_lines !)
+
+        // help / status text
+        (((showhelp~ zero !=) fe~ =) fe~ if+)
+            (Ph1~ t1x~ t1y~ fs22~ Pctext~ :raylib_draw_text !)
+            (Ph2~ t1x~ t2y~ fs14~ Pctext~ :raylib_draw_text !)
+            (Ph3~ t1x~ t3y~ fs14~ Pctext~ :raylib_draw_text !)
+            (Ph4~ t1x~ t4y~ fs14~ Pctext~ :raylib_draw_text !)
+        (else)
+            (Phint~ hintx~ hinty~ fs18~ Pctext~ :raylib_draw_text !)
+        (endif)
+
+        // paused indicator
+        (((paused~ zero !=) fe~ =) fe~ if)
+            (Ppausedmsg~ px~ py~ fs30~ Pcpause~ :raylib_draw_text !)
+        (endif)
+
+        (fpsx~ fpsy~ :raylib_draw_fps !)
+
+        (:raylib_end_drawing !)
+
+        (:raylib_window_should_close !)
+        (wsclose~ stpopi)
+        (((wsclose~ zero ==) f~ =) f~ while)
+
+    (:raylib_close_window !)
+    (zero :free_mod !)
+    (zero :exit !)
+(funcend)

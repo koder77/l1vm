@@ -518,7 +518,7 @@ S2 get_ast (U1 *line, U1 *parse_cont)
 						ast[ast_ind].expr_max = exp_ind;
 						arg = 1;
 
-						// printf ("get_ast: string: '%s'\n", ast[ast_ind].expr[exp_ind][arg_ind]);
+						//printf ("DEBUG: get_ast: string: '%s'\n", ast[ast_ind].expr[exp_ind][arg_ind]);
 
 						break;
 					}
@@ -1084,7 +1084,9 @@ S2 parse_line (U1 *line)
 					if (strcmp ((const char *) ast[level].expr[j][0], "set") == 0)
 					{
 						// set data type of variable
-						// get variable type, size, name and value
+
+						// DEBUG SET
+						//printf ("set: '%s' last arg: '%s'\n", ast[level].expr[j][3], ast[level].expr[j][4]);
 
 						if (ast[level].expr_args[j] < 3)
 						{

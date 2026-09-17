@@ -1,0 +1,108 @@
+// raylib-demo.l1com
+//
+// raylib module demo: 3D rotating cube (orbital camera), grid,
+// text overlay and FPS counter.
+//
+// Build:
+//     l1vm-build.sh raylib-demo
+// Run:
+//     l1vm raylib-demo
+//
+// Controls:
+//     ESC or close window to quit
+//
+// IMPORTANT order requirements:
+//   1. zero must be the FIRST data entry of the program. If a string lands
+//      at data entry 0, the compiler fails to register its auto-generated
+//      "<name>addr" int64 companion and aborts with
+//      "checkdef: error: variable '<name>addr' not defined!".
+//   2. raylib.l1h must be preprocessed BEFORE intr-func.l1h. l1pre's macro
+//      replacer scans for intr-func macro names as substrings anywhere in a
+//      line, incl. inside string literals (e.g. "raylib_get_time" matches
+//      "get_time"), which corrupts the generated raylib.l1h wrapper names.
+//
+(:main jmp)
+(set int64 1 zero 0)
+#include <raylib.l1h>
+#include <intr-func.l1h>
+(main func)
+    #var ~ main
+    (set int64 1 one~ 1)
+    (set int64 1 width~ 800)
+    (set int64 1 height~ 600)
+    (set int64 1 fps~ 60)
+    (set int64 1 mode~ 2)
+    (set int64 1 ret~ 0)
+    (set int64 1 wsclose~ 0)
+    (set int64 1 f~ 0)
+    (set int64 1 text_x~ 10)
+    (set int64 1 text_y~ 10)
+    (set int64 1 fontsize~ 30)
+    (set int64 1 fps_x~ 10)
+    (set int64 1 fps_y~ 565)
+    (set int64 1 slices~ 10)
+    (set double 1 spacing~ 1.0)
+    (set string s title~ "L1VM raylib demo")
+    (set string s helpstr~ "ESC to quit - L1VM raylib 3D demo")
+    (set byte 5 darkgray~ 80 80 80 255 0)
+    (set byte 5 green~ 0 228 48 255 0)
+    (set byte 5 yellow~ 253 249 0 255 0)
+    (set double 4 pos~ 0.0 0.0 0.0 0.0)
+    (set double 4 size~ 1.0 1.0 1.0 0.0)
+    (set double 12 cam~ 10.0 10.0 10.0 0.0 0.0 0.0 0.0 1.0 0.0 45.0 0.0 0.0)
+    (set int64 1 Pcam~ 0)
+    (set int64 1 Ppos~ 0)
+    (set int64 1 Psize~ 0)
+    (set int64 1 Pdarkgray~ 0)
+    (set int64 1 Pgreen~ 0)
+    (set int64 1 Pyellow~ 0)
+    (set int64 1 Ptitle~ 0)
+    (set int64 1 Phelpstr~ 0)
+
+    // raylib module init (push module index 0 first)
+    (zero :raylib_init !)
+
+    // addresses of byte/double arrays used as module arguments
+    (cam~ Pcam~ pointer)
+    (pos~ Ppos~ pointer)
+    (size~ Psize~ pointer)
+    (darkgray~ Pdarkgray~ pointer)
+    (green~ Pgreen~ pointer)
+    (yellow~ Pyellow~ pointer)
+    (title~ Ptitle~ pointer)
+    (helpstr~ Phelpstr~ pointer)
+
+    // create window
+    (width~ height~ Ptitle~ :raylib_init_window !)
+    (ret~ stpopi)
+    (((ret~ zero !=) f~ =) f~ if)
+        (zero :free_mod !)
+        (zero :exit !)
+    (endif)
+
+    (fps~ :raylib_set_target_fps !)
+
+    // orbital camera around the cube
+    (mode~ :raylib_set_camera_mode !)
+    (Pcam~ :raylib_set_camera !)
+
+    // main loop
+    (do)
+        (:raylib_update_camera !)
+        (:raylib_begin_drawing !)
+        (Pdarkgray~ :raylib_clear_background !)
+        (:raylib_begin_mode_3d !)
+        (Ppos~ Psize~ Pgreen~ :raylib_draw_cube_v !)
+        (slices~ spacing~ :raylib_draw_grid !)
+        (:raylib_end_mode_3d !)
+        (Phelpstr~ text_x~ text_y~ fontsize~ Pyellow~ :raylib_draw_text !)
+        (fps_x~ fps_y~ :raylib_draw_fps !)
+        (:raylib_end_drawing !)
+        (:raylib_window_should_close !)
+        (wsclose~ stpopi)
+        (((wsclose~ zero ==) f~ =) f~ while)
+
+    (:raylib_close_window !)
+    (zero :free_mod !)
+    (zero :exit !)
+(funcend)

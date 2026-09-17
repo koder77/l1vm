@@ -495,7 +495,7 @@ S2 check_old_syntax_symbols (U1 *linestr)
 {
 	S2 pos;
 	S2 linestr_len;
-
+	S2 i;
 
 	linestr_len = strlen_safe ((const char *) linestr, MAXLINELEN);
 	pos = searchstr (linestr, (U1 *) ":=)", 0, 0, 0);
@@ -512,6 +512,21 @@ S2 check_old_syntax_symbols (U1 *linestr)
 		pos = searchstr (linestr, (U1 *) "[", 0, 0, 0);
 		if (pos != -1)
 		{
+			// check if inside of string: " "
+			for (i = pos - 1; i >= 0; i++)
+			{
+				if (linestr[i] == '"')
+				{
+					// check if [ is inside string
+					for (i = pos + 1; i < linestr_len; i++)
+					{
+						if (linestr[i] == '"')
+						{
+							return (0);
+						}
+					}
+				}
+			}
 			// got array assign expression, return 0
 			return (0);
 		}

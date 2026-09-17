@@ -1,0 +1,275 @@
+// raylib-demo-3.l1com
+//
+// raylib module demo 3: audio playback using the raylib L1vm module.
+//
+// Build:
+//     l1vm-build.sh raylib-demo-3
+// Run:
+//     l1vm raylib-demo-3
+//
+// Controls:
+//     Space : play the loaded sound (coin.wav)
+//     ESC   : quit
+//
+// The demo also plays a music stream (country.mp3) that updates every frame.
+//
+// IMPORTANT order requirements:
+//   1. zero must be the FIRST data entry of the program. If a string lands
+//      at data entry 0, the compiler fails to register its auto-generated
+//      "<name>addr" int64 companion and aborts with
+//      "checkdef: error: variable '<name>addr' not defined!".
+//   2. raylib.l1h must be preprocessed BEFORE intr-func.l1h. l1pre's macro
+//      replacer scans for intr-func macro names as substrings anywhere in a
+//      line, incl. inside string literals (e.g. "raylib_get_time" matches
+//      "get_time"), which corrupts the generated raylib.l1h wrapper names.
+//   3. Every color array passed to the module is declared as 5 bytes
+//      (rgba + 1 pad byte). The L1VM memory_bounds() check uses an inclusive
+//      end, so each struct must be one element larger than the data the
+//      module reads.
+//
+(:main jmp)
+(set int64 1 zero 0)
+#include <raylib.l1h>
+#include <intr-func.l1h>
+(main func)
+    #var ~ main
+    // general
+    (set int64 1 one~ 1)
+    (set int64 1 width~ 800)
+    (set int64 1 height~ 450)
+    (set int64 1 fps~ 60)
+    (set int64 1 ret~ 0)
+    (set int64 1 wsclose~ 0)
+    // audio device + handles
+    (set int64 1 aready~ 0)
+    (set int64 1 soundh~ 0)
+    (set int64 1 musich~ 0)
+    (set int64 1 soundok~ 0)
+    (set int64 1 musicok~ 0)
+    (set int64 1 splaying~ 0)
+    (set int64 1 mplaying~ 0)
+    (set double 1 mvol~ 0.8)
+    (set double 1 svol~ 1.0)
+    (set double 1 dlen~ 0.0)
+    (set double 1 dplayed~ 0.0)
+    // key + flags (each if/if+/else block uses its own flag var)
+    (set int64 1 key_space~ 32)
+    (set int64 1 fa~ 0)
+    (set int64 1 fb~ 0)
+    (set int64 1 fc~ 0)
+    (set int64 1 fd~ 0)
+    (set int64 1 fe~ 0)
+    (set int64 1 ff~ 0)
+    (set int64 1 fg~ 0)
+    (set int64 1 fh~ 0)
+    (set int64 1 fi~ 0)
+    (set int64 1 fj~ 0)
+    (set int64 1 fk~ 0)
+    (set int64 1 fl~ 0)
+    (set int64 1 fm~ 0)
+    (set int64 1 fn~ 0)
+    (set int64 1 fo~ 0)
+    (set int64 1 fp~ 0)
+    (set int64 1 fq~ 0)
+    (set int64 1 fr~ 0)
+    (set int64 1 fwhile~ 0)
+    // text layout
+    (set int64 1 fs20~ 20)
+    (set int64 1 t1x~ 12)
+    (set int64 1 t1y~ 40)
+    (set int64 1 t2x~ 12)
+    (set int64 1 t2y~ 70)
+    (set int64 1 t3x~ 12)
+    (set int64 1 t3y~ 100)
+    (set int64 1 t4x~ 12)
+    (set int64 1 t4y~ 130)
+    (set int64 1 t5x~ 12)
+    (set int64 1 t5y~ 160)
+    (set int64 1 t6x~ 12)
+    (set int64 1 t6y~ 190)
+    (set int64 1 fpsx~ 12)
+    (set int64 1 fpsy~ 420)
+    // colors (byte arrays, 5 bytes each = rgba + pad)
+    (set byte 5 cbg~ 10 20 40 255 0)
+    (set byte 5 ctext~ 200 200 200 255 0)
+    (set byte 5 cok~ 0 228 48 255 0)
+    (set byte 5 cfail~ 230 41 55 255 0)
+    // strings
+    (set string s title~ "L1VM raylib demo 3 - audio playback")
+    (set string s t1~ "Audio demo: music stream + sound playback")
+    (set string s t2~ "Press SPACE to play the WAV sound!")
+    (set string s t3~ "Press ESC to quit!")
+    (set string s tready~ "audio device ready: YES")
+    (set string s tnotready~ "audio device ready: NO")
+    (set string s tsound~ "sound loaded: YES")
+    (set string s tsoundno~ "sound loaded: NO")
+    (set string s tmusic~ "music loaded: YES")
+    (set string s tmusicno~ "music loaded: NO")
+    (set string s tplaying~ "sound playing: YES")
+    (set string s tplayingno~ "sound playing: NO")
+    (set string s soundfile~ "sounds/coin.wav")
+    (set string s musicfile~ "sounds/country.mp3")
+    // addresses
+    (set int64 1 Ptitle~ 0)
+    (set int64 1 Pt1~ 0)
+    (set int64 1 Pt2~ 0)
+    (set int64 1 Pt3~ 0)
+    (set int64 1 Ptready~ 0)
+    (set int64 1 Ptnotready~ 0)
+    (set int64 1 Ptsound~ 0)
+    (set int64 1 Ptsoundno~ 0)
+    (set int64 1 Ptmusic~ 0)
+    (set int64 1 Ptmusicno~ 0)
+    (set int64 1 Ptplaying~ 0)
+    (set int64 1 Ptplayingno~ 0)
+    (set int64 1 Psoundfile~ 0)
+    (set int64 1 Pmusicfile~ 0)
+    (set int64 1 Pcbg~ 0)
+    (set int64 1 Pctext~ 0)
+    (set int64 1 Pcok~ 0)
+    (set int64 1 Pcfail~ 0)
+
+    // raylib module init (push module index 0 first)
+    (zero :raylib_init !)
+
+    // addresses of byte arrays / strings used as module arguments
+    (title~ Ptitle~ pointer)
+    (t1~ Pt1~ pointer)
+    (t2~ Pt2~ pointer)
+    (t3~ Pt3~ pointer)
+    (tready~ Ptready~ pointer)
+    (tnotready~ Ptnotready~ pointer)
+    (tsound~ Ptsound~ pointer)
+    (tsoundno~ Ptsoundno~ pointer)
+    (tmusic~ Ptmusic~ pointer)
+    (tmusicno~ Ptmusicno~ pointer)
+    (tplaying~ Ptplaying~ pointer)
+    (tplayingno~ Ptplayingno~ pointer)
+    (soundfile~ Psoundfile~ pointer)
+    (musicfile~ Pmusicfile~ pointer)
+    (cbg~ Pcbg~ pointer)
+    (ctext~ Pctext~ pointer)
+    (cok~ Pcok~ pointer)
+    (cfail~ Pcfail~ pointer)
+
+    // create window
+    (width~ height~ Ptitle~ :raylib_init_window !)
+(ret~ stpopi)
+    (((ret~ zero !=) fa~ =) fa~ if)
+        (zero :free_mod !)
+        (zero :exit !)
+    (endif)
+
+    (fps~ :raylib_set_target_fps !)
+
+    // ----- audio device -----
+    (:raylib_init_audio_device !)
+    (aready~ :raylib_is_audio_device_ready !)
+    (aready~ stpopi)
+
+    // ----- load sound (WAV) and music stream (MP3) -----
+    (Psoundfile~ :raylib_load_sound !)
+    (soundh~ stpopi)
+    (((soundh~ zero >=) fb~ =) fb~ if+)
+        (one~ soundok~ =)
+    (else)
+        (zero soundok~ =)
+    (endif)
+
+    (Pmusicfile~ :raylib_load_music_stream !)
+    (musich~ stpopi)
+    (((musich~ zero >=) fc~ =) fc~ if+)
+        (one~ musicok~ =)
+    (else)
+        (zero musicok~ =)
+    (endif)
+
+// start the music stream
+    (((musicok~ zero !=) fd~ =) fd~ if)
+        (musich~ :raylib_play_music_stream !)
+    (endif)
+
+    (((soundok~ zero !=) fe~ =) fe~ if)
+        (soundh~ svol~ :raylib_set_sound_volume !)
+    (endif)
+
+    (mvol~ :raylib_set_master_volume !)
+
+    // ----- main loop -----
+    (do)
+        // keep the music stream buffers filled
+        (((musicok~ zero !=) ff~ =) ff~ if)
+            (musich~ :raylib_update_music_stream !)
+        (endif)
+
+        // space: play the sound
+        (key_space~ :raylib_is_key_pressed !)
+        (splaying~ stpopi)
+        (((splaying~ zero !=) fg~ =) fg~ if)
+            (((soundok~ zero !=) fh~ =) fh~ if)
+                (soundh~ :raylib_play_sound !)
+            (endif)
+        (endif)
+
+        // read music timing (seconds, doubles)
+        (((musicok~ zero !=) fi~ =) fi~ if)
+            (musich~ :raylib_get_music_time_length !)
+            (dlen~ stpopd)
+            (musich~ :raylib_get_music_time_played !)
+            (dplayed~ stpopd)
+        (endif)
+
+        // ----- drawing -----
+        (:raylib_begin_drawing !)
+        (Pcbg~ :raylib_clear_background !)
+
+        (Pt1~ t1x~ t1y~ fs20~ Pctext~ :raylib_draw_text !)
+        (Pt2~ t2x~ t2y~ fs20~ Pctext~ :raylib_draw_text !)
+        (Pt3~ t3x~ t3y~ fs20~ Pctext~ :raylib_draw_text !)
+
+        // audio device ready status
+        (((aready~ zero !=) fj~ =) fj~ if+)
+            (Ptready~ t4x~ t4y~ fs20~ Pcok~ :raylib_draw_text !)
+        (else)
+            (Ptnotready~ t4x~ t4y~ fs20~ Pcfail~ :raylib_draw_text !)
+        (endif)
+
+        // sound loaded status
+        (((soundok~ zero !=) fk~ =) fk~ if+)
+            (Ptsound~ t5x~ t5y~ fs20~ Pcok~ :raylib_draw_text !)
+        (else)
+            (Ptsoundno~ t5x~ t5y~ fs20~ Pcfail~ :raylib_draw_text !)
+        (endif)
+
+        // music loaded status
+        (((musicok~ zero !=) fl~ =) fl~ if+)
+            (Ptmusic~ t6x~ t6y~ fs20~ Pcok~ :raylib_draw_text !)
+        (else)
+            (Ptmusicno~ t6x~ t6y~ fs20~ Pcfail~ :raylib_draw_text !)
+        (endif)
+
+        (fpsx~ fpsy~ :raylib_draw_fps !)
+
+        (:raylib_end_drawing !)
+
+        (:raylib_window_should_close !)
+        (wsclose~ stpopi)
+        (((wsclose~ zero ==) fwhile~ =) fwhile~ while)
+
+    // ----- cleanup -----
+    (((musicok~ zero !=) fm~ =) fm~ if)
+        (musich~ :raylib_stop_music_stream !)
+    (endif)
+    (((musicok~ zero !=) fn~ =) fn~ if)
+        (musich~ :raylib_unload_music_stream !)
+    (endif)
+    (((soundok~ zero !=) fo~ =) fo~ if)
+        (soundh~ :raylib_unload_sound !)
+    (endif)
+
+    (:raylib_close_audio_device !)
+    (:raylib_close_window !)
+
+    (zero :free_mod !)
+    (zero :exit !)
+(funcend)
