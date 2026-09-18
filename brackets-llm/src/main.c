@@ -626,8 +626,9 @@ static int run_cmd_capture(const char *cmd, char **out)
  * non-empty if not fixed). On success (0 errors) returns the last code.
  */
 /* session-wide counter so every LSP check opens a genuinely fresh document:
- * l1vm-lsp ignores didOpen for already-open URIs (publishing nothing) and
- * runs the real l1com compiler only on didOpen, never on didChange. */
+ * l1vm-lsp ignores didOpen for an already-open URI (publishing nothing). The
+ * current server also runs the real l1com compiler on didChange, but a fresh
+ * URI per check keeps each document's state independent and cheap. */
 static unsigned long g_check_seq = 0;
 
 static int is_l1com_file(const char *p)
@@ -767,6 +768,14 @@ static int code_workflow(LspClient *lsp, Hist *hist, const char *model,
 
     *final_code = NULL;
     *final_diags = (LspDiagVec){0};
+
+    /* no language server available (start/restart failed): never crash on a
+     * NULL client. Save the code unverified and let the caller report it. */
+    if (!lsp) {
+        *final_code = code;
+        write_file(filename, code);
+        return 2;
+    }
 
     for (iter = 0; max_iters <= 0 || iter < max_iters; iter++) {
         LspDiagVec diags = {0};
@@ -1255,7 +1264,10 @@ int main(int argc, char **argv)
     lsp = lsp_start(lsp_path, 1, l1com_path, cfg_include_dir());
     if (!lsp) {
         fprintf(stderr, "warning: could not start l1vm-lsp (%s); code "
-                "checking disabled.\n", lsp_path);
+                "checking disabled.\n"
+                "(is it built/installed? point L1VM_LSP at it, or rebuild "
+                "from ~/develop/l1vm/l1vm-lsp)\n",
+                lsp_path);
         lsp = NULL;
     }
 

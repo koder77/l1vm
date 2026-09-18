@@ -317,6 +317,8 @@ int lsp_check(LspClient *c, const char *uri, const char *path,
     SB b;
     int ok = 0;
 
+    if (!c || !out)
+        return -1;
     (void)path;
     out->len = out->cap = 0;
     out->items = NULL;

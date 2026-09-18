@@ -321,6 +321,19 @@ rid = request("bogus/method", {})
 resp = recv()
 check(resp.get("error", {}).get("code") == -32601, "unknown method returns -32601")
 
+# malformed JSON with an unparseable array element ([<, y]) must not hang
+# the server: it has to keep parsing and answer this completion request
+mal_body = ('{"jsonrpc":"2.0","id":99,"method":"textDocument/completion",'
+            '"params":{"textDocument":{"uri":"%s"},'
+            '"position":{"line":0,"character":0},"extra":[<, y]}}' % URI)
+mb = mal_body.encode("utf-8")
+proc.stdin.write(b"Content-Length: %d\r\n\r\n" % len(mb))
+proc.stdin.write(mb)
+proc.stdin.flush()
+resp = recv(3)
+check(resp.get("id") == 99 and "result" in resp,
+      "server survives malformed JSON array element")
+
 # shutdown + exit
 rid = request("shutdown", None)
 resp = recv()

@@ -324,7 +324,15 @@ static JVal *jp_parse_array(JP *p)
             p->pos++;
             continue;
         }
-        j_arr_push(a, jp_parse_value(p));
+        {
+            size_t before = p->pos;
+            j_arr_push(a, jp_parse_value(p));
+            /* jp_parse_value returns without consuming anything for
+             * unparseable input (or when the nesting limit is hit):
+             * skip one byte so the loop always makes progress */
+            if (p->pos == before)
+                p->pos++;
+        }
     }
     return a;
 }

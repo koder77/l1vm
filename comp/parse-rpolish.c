@@ -513,7 +513,7 @@ S2 check_old_syntax_symbols (U1 *linestr)
 		if (pos != -1)
 		{
 			// check if inside of string: " "
-			for (i = pos - 1; i >= 0; i++)
+			for (i = pos - 1; i >= 0; i--)
 			{
 				if (linestr[i] == '"')
 				{

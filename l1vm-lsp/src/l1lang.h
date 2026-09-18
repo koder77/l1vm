@@ -138,6 +138,14 @@ typedef struct {
     char *text;
 } L1Tok;
 
+/* symbol index entry (per-document name hash, rebuilt each analysis) */
+typedef struct L1SymEntry L1SymEntry;
+struct L1SymEntry {
+    int kind;            /* 0 var, 1 func, 2 label, 3 macro, 4 obj */
+    int index;           /* index into the matching vec */
+    L1SymEntry *next;
+};
+
 /* simple vectors */
 #define L1_VEC(T) typedef struct { T *data; int len, cap; } L1Vec_##T
 
@@ -175,6 +183,11 @@ typedef struct {
     int compiler_diags;    /* diags came from l1com */
     int parse_error;       /* an internal parse error occurred */
     int inside_asm;        /* between (asm...asmend) while analyzing */
+
+    int *tok_start;        /* per-line first token index (size nlines+1) */
+    L1SymEntry **sym_buckets;   /* name hash, size L1_SYM_BUCKETS */
+    L1SymEntry *sym_pool;       /* arena backing the bucket nodes */
+    int sym_pool_len, sym_pool_cap;
 } L1Doc;
 
 /* ---------------- builtins ---------------- */

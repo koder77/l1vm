@@ -27,12 +27,16 @@
 #include "l1lang.h"
 
 #include <ctype.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <poll.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 /* ==================== settings ==================== */
@@ -680,10 +684,177 @@ static int l1_scope_visible(const char *var_scope, const char *cur_scope,
     return 0;
 }
 
-static int l1_find_var(const L1Doc *d, const char *name, const char *scope)
+/* ==================== symbol index (name hash) ==================== */
+
+#define L1_SYM_BUCKETS 4096
+
+static unsigned l1_str_hash(const char *s)
+{
+    unsigned h = 2166136261u;
+    while (*s) {
+        h ^= (unsigned char)*s++;
+        h *= 16777619u;
+    }
+    return h;
+}
+
+static const char *l1_sym_name(const L1Doc *d, const L1SymEntry *e)
+{
+    switch (e->kind) {
+    case 0: return d->vars.data[e->index].name;
+    case 1: return d->funcs.data[e->index].name;
+    case 2: return d->labels.data[e->index].name;
+    case 3: return d->macros.data[e->index].name;
+    case 4: return d->objs.data[e->index].name;
+    }
+    return "";
+}
+
+static void l1_sym_add(L1Doc *d, int kind, const char *name, int index)
+{
+    unsigned h;
+    L1SymEntry *e;
+    /* the pool is sized exactly by l1_sym_index_build and must never be
+     * realloc'ed here: the bucket heads hold pointers into it, so moving
+     * the arena would leave dangling entries behind (heap-use-after-free) */
+    if (!d->sym_buckets || !name || d->sym_pool_len >= d->sym_pool_cap)
+        return;
+    e = &d->sym_pool[d->sym_pool_len++];
+    e->kind = kind;
+    e->index = index;
+    h = l1_str_hash(name) & (L1_SYM_BUCKETS - 1);
+    e->next = d->sym_buckets[h];
+    d->sym_buckets[h] = e;
+}
+
+static void l1_sym_index_free(L1Doc *d)
+{
+    free(d->sym_pool);
+    free(d->sym_buckets);
+    d->sym_pool = NULL;
+    d->sym_buckets = NULL;
+    d->sym_pool_len = d->sym_pool_cap = 0;
+}
+
+static void l1_sym_index_build(L1Doc *d)
 {
     int i;
-    for (i = 0; i < d->vars.len; i++) {
+    int total;
+    l1_sym_index_free(d);
+    /* size the pool exactly for every symbol so l1_sym_add never has to
+     * grow (and thus move) it after bucket pointers start referring to it */
+    total = d->objs.len + d->labels.len + d->macros.len +
+            d->funcs.len + d->vars.len;
+    if (total > 0) {
+        d->sym_pool = malloc((size_t)total * sizeof(L1SymEntry));
+        if (!d->sym_pool)
+            return;
+        d->sym_pool_cap = total;
+    }
+    d->sym_buckets = calloc(L1_SYM_BUCKETS, sizeof(L1SymEntry *));
+    if (!d->sym_buckets) {
+        l1_sym_index_free(d);
+        return;
+    }
+    /* insert in reverse vec order so bucket lists end up in vec order,
+     * preserving the "first declared match wins" lookup semantics */
+    for (i = d->objs.len - 1; i >= 0; i--)
+        l1_sym_add(d, 4, d->objs.data[i].name, i);
+    for (i = d->labels.len - 1; i >= 0; i--)
+        l1_sym_add(d, 2, d->labels.data[i].name, i);
+    for (i = d->macros.len - 1; i >= 0; i--)
+        l1_sym_add(d, 3, d->macros.data[i].name, i);
+    for (i = d->funcs.len - 1; i >= 0; i--)
+        l1_sym_add(d, 1, d->funcs.data[i].name, i);
+    for (i = d->vars.len - 1; i >= 0; i--)
+        l1_sym_add(d, 0, d->vars.data[i].name, i);
+}
+
+static const L1SymEntry *l1_sym_find(const L1Doc *d, int kind,
+                                      const char *name)
+{
+    unsigned h;
+    const L1SymEntry *e;
+    if (!d->sym_buckets || !name)
+        return NULL;
+    h = l1_str_hash(name) & (L1_SYM_BUCKETS - 1);
+    for (e = d->sym_buckets[h]; e; e = e->next)
+        if (e->kind == kind && strcmp(l1_sym_name(d, e), name) == 0)
+            return e;
+    return NULL;
+}
+
+static int l1_sym_index_find_var(const L1Doc *d, const char *name,
+                                  const char *scope)
+{
+    const L1SymEntry *e;
+    if (!d->sym_buckets || !name)
+        return -1;
+    for (e = l1_sym_find(d, 0, name); e; e = e->next) {
+        const L1Var *v = &d->vars.data[e->index];
+        if (strcmp(v->name, name) == 0 && l1_scope_visible(v->scope, scope, d))
+            return (int)e->index;
+    }
+    return -1;
+}
+
+static int l1_sym_index_find_func(const L1Doc *d, const char *name)
+{
+    const L1SymEntry *e;
+    if (!d->sym_buckets || !name)
+        return -1;
+    for (e = l1_sym_find(d, 1, name); e; e = e->next) {
+        if (!d->funcs.data[e->index].parent)
+            return (int)e->index;
+    }
+    return -1;
+}
+
+static int l1_sym_index_find_method(const L1Doc *d, const char *name,
+                                     const char *parent)
+{
+    const L1SymEntry *e;
+    if (!d->sym_buckets || !name)
+        return -1;
+    for (e = l1_sym_find(d, 1, name); e; e = e->next) {
+        if (d->funcs.data[e->index].parent &&
+            strcmp(d->funcs.data[e->index].parent, parent) == 0)
+            return (int)e->index;
+    }
+    return -1;
+}
+
+static int l1_sym_index_find_label(const L1Doc *d, const char *name)
+{
+    const L1SymEntry *e;
+    if (!d->sym_buckets || !name)
+        return -1;
+    for (e = l1_sym_find(d, 2, name); e; e = e->next)
+        if (strcmp(d->labels.data[e->index].name, name) == 0)
+            return (int)e->index;
+    return -1;
+}
+
+static int l1_sym_index_find_macro(const L1Doc *d, const char *name)
+{
+    const L1SymEntry *e;
+    if (!d->sym_buckets || !name)
+        return -1;
+    for (e = l1_sym_find(d, 3, name); e; e = e->next)
+        if (strcmp(d->macros.data[e->index].name, name) == 0)
+            return (int)e->index;
+    return -1;
+}
+
+/* ==================== find helpers (with index fallback) ==================== */
+
+static int l1_find_var(const L1Doc *d, const char *name, const char *scope)
+{
+    int idx;
+    idx = l1_sym_index_find_var(d, name, scope);
+    if (idx != -1)
+        return idx;
+    for (int i = 0; i < d->vars.len; i++) {
         const L1Var *v = &d->vars.data[i];
         if (strcmp(v->name, name) == 0 && l1_scope_visible(v->scope, scope, d))
             return i;
@@ -693,8 +864,11 @@ static int l1_find_var(const L1Doc *d, const char *name, const char *scope)
 
 static int l1_find_func(const L1Doc *d, const char *name)
 {
-    int i;
-    for (i = 0; i < d->funcs.len; i++)
+    int idx;
+    idx = l1_sym_index_find_func(d, name);
+    if (idx != -1)
+        return idx;
+    for (int i = 0; i < d->funcs.len; i++)
         if (strcmp(d->funcs.data[i].name, name) == 0 &&
             !d->funcs.data[i].parent)
             return i;
@@ -703,8 +877,11 @@ static int l1_find_func(const L1Doc *d, const char *name)
 
 static int l1_find_method(const L1Doc *d, const char *name, const char *parent)
 {
-    int i;
-    for (i = 0; i < d->funcs.len; i++)
+    int idx;
+    idx = l1_sym_index_find_method(d, name, parent);
+    if (idx != -1)
+        return idx;
+    for (int i = 0; i < d->funcs.len; i++)
         if (d->funcs.data[i].parent &&
             strcmp(d->funcs.data[i].name, name) == 0 &&
             strcmp(d->funcs.data[i].parent, parent) == 0)
@@ -714,8 +891,11 @@ static int l1_find_method(const L1Doc *d, const char *name, const char *parent)
 
 static int l1_find_label(const L1Doc *d, const char *name)
 {
-    int i;
-    for (i = 0; i < d->labels.len; i++)
+    int idx;
+    idx = l1_sym_index_find_label(d, name);
+    if (idx != -1)
+        return idx;
+    for (int i = 0; i < d->labels.len; i++)
         if (strcmp(d->labels.data[i].name, name) == 0)
             return i;
     return -1;
@@ -723,8 +903,11 @@ static int l1_find_label(const L1Doc *d, const char *name)
 
 static int l1_find_macro(const L1Doc *d, const char *name)
 {
-    int i;
-    for (i = 0; i < d->macros.len; i++)
+    int idx;
+    idx = l1_sym_index_find_macro(d, name);
+    if (idx != -1)
+        return idx;
+    for (int i = 0; i < d->macros.len; i++)
         if (strcmp(d->macros.data[i].name, name) == 0)
             return i;
     return -1;
@@ -2034,6 +2217,9 @@ void l1_doc_analyze(L1Doc *d)
     /* signature comments */
     l1_parse_signature_comments(d);
 
+    /* build name hash index for use by pass 2 and diagnostics */
+    l1_sym_index_build(d);
+
     /* pass 2: usages */
     for (li = 0; li < d->nlines; li++)
         l1_analyze_usage(d, li);
@@ -2514,6 +2700,102 @@ cleanup:
     return map;
 }
 
+static long long l1_now_ms(void)
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (long long)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+}
+
+/*
+ * Run a shell command with a timeout. Captures stdout+stderr into out.
+ * If the child does not finish within timeout_ms it is killed (SIGKILL,
+ * including its whole process group). stdout/stderr go to the capture
+ * pipe, stdin comes from /dev/null so the compiler can never steal the
+ * LSP's JSON-RPC input.
+ * Returns the exit status (>= 0) or -1 on setup failure. Sets *timed_out
+ * if the run had to be killed.
+ */
+static int l1_run_with_timeout(const char *cmd, SB *out, long timeout_ms,
+                               int *timed_out)
+{
+    int pfd[2];
+    pid_t pid;
+    int st = -1;
+    long long deadline = l1_now_ms() + timeout_ms;
+
+    *timed_out = 0;
+    if (pipe(pfd) != 0)
+        return -1;
+    pid = fork();
+    if (pid < 0) {
+        close(pfd[0]);
+        close(pfd[1]);
+        return -1;
+    }
+    if (pid == 0) {
+        /* child: own process group, stdout+stderr -> pipe, stdin <- /dev/null */
+        int devnull;
+        setpgid(0, 0);
+        close(pfd[0]);
+        dup2(pfd[1], STDOUT_FILENO);
+        dup2(pfd[1], STDERR_FILENO);
+        devnull = open("/dev/null", O_RDONLY);
+        if (devnull >= 0) {
+            dup2(devnull, STDIN_FILENO);
+            close(devnull);
+        }
+        close(pfd[1]);
+        execl("/bin/sh", "sh", "-c", cmd, (char *)NULL);
+        _exit(127);
+    }
+    close(pfd[1]);
+    /* ensure the child's process group exists before a kill(-pid) */
+    setpgid(pid, pid);
+    sb_reset(out);
+    for (;;) {
+        struct pollfd pf = { .fd = pfd[0], .events = POLLIN };
+        long long now = l1_now_ms();
+        long remaining = (long)(deadline - now);
+        int r;
+        if (remaining > 2147483000)
+            remaining = 2147483000;
+        if (remaining <= 0)
+            r = 0;
+        else
+            r = poll(&pf, 1, (int)remaining);
+        if (r < 0 && errno == EINTR)
+            continue;
+        if (r <= 0) {
+            /* timeout: kill the whole process group of the child */
+            *timed_out = 1;
+            kill(-pid, SIGKILL);
+            waitpid(pid, &st, 0);
+            break;
+        }
+        {
+            char buf[4096];
+            ssize_t n = read(pfd[0], buf, sizeof(buf));
+            if (n > 0) {
+                sb_addn(out, buf, (size_t)n);
+            } else if (n == 0) {
+                waitpid(pid, &st, 0);
+                break;
+            } else if (n < 0 && errno != EINTR) {
+                break;
+            }
+        }
+    }
+    close(pfd[0]);
+    if (WIFEXITED(st))
+        return WEXITSTATUS(st);
+    if (WIFSIGNALED(st))
+        return -2;
+    return -3;
+}
+
+#define L1_L1COM_TIMEOUT_MS 30000
+
 void l1_doc_run_compiler(L1Doc *d)
 {
     char cmd[65536];
@@ -2524,8 +2806,7 @@ void l1_doc_run_compiler(L1Doc *d)
     char tmpl[8192];
     char srcpath[8200];
     char prepath[8240];
-    FILE *fp;
-    char line[4096];
+    prepath[0] = '\0';
     SB out;
     int l1com_missing = 0;
     int used_temp = 0;
@@ -2649,18 +2930,15 @@ void l1_doc_run_compiler(L1Doc *d)
             sb_free(&incs);
         }
         sb_init(&out);
-        fp = popen(cmd, "r");
-        if (fp) {
-            while (fgets(line, sizeof(line), fp))
-                sb_add(&out, line);
-            {
-                int st = pclose(fp);
-                pre_ok = (st != -1 && WIFEXITED(st) &&
-                          WEXITSTATUS(st) == 0);
+        {
+            int timed_out = 0;
+            int st = l1_run_with_timeout(cmd, &out, L1_L1COM_TIMEOUT_MS,
+                                         &timed_out);
+            if (st == -1) {
+                sb_free(&out);
+                goto cleanup;
             }
-        } else {
-            sb_free(&out);
-            goto cleanup;
+            pre_ok = (st == 0);
         }
         if (pre_ok) {
             /* build source<->expanded line map and compile the output */
@@ -2686,14 +2964,14 @@ void l1_doc_run_compiler(L1Doc *d)
             sb_reset(&out);
             snprintf(cmd, sizeof(cmd), "cd '%s' && %s '%s' 2>&1",
                      esc_dir, esc_l1com, esc_path);
-            fp = popen(cmd, "r");
-            if (fp) {
-                while (fgets(line, sizeof(line), fp))
-                    sb_add(&out, line);
-                pclose(fp);
-            } else {
-                sb_free(&out);
-                goto cleanup;
+            {
+                int timed_out = 0;
+                int st = l1_run_with_timeout(cmd, &out, L1_L1COM_TIMEOUT_MS,
+                                             &timed_out);
+                if (st == -1) {
+                    sb_free(&out);
+                    goto cleanup;
+                }
             }
         } else if (strstr(sb_cstr(&out), "not found") ||
                    strstr(sb_cstr(&out), "No such file")) {
@@ -2702,14 +2980,14 @@ void l1_doc_run_compiler(L1Doc *d)
         }
     } else {
         sb_init(&out);
-        fp = popen(cmd, "r");
-        if (fp) {
-            while (fgets(line, sizeof(line), fp))
-                sb_add(&out, line);
-            pclose(fp);
-        } else {
-            sb_free(&out);
-            goto cleanup;
+        {
+            int timed_out = 0;
+            int st = l1_run_with_timeout(cmd, &out, L1_L1COM_TIMEOUT_MS,
+                                         &timed_out);
+            if (st == -1) {
+                sb_free(&out);
+                goto cleanup;
+            }
         }
     }
 
