@@ -917,6 +917,219 @@ static int code_workflow(LspClient *lsp, Hist *hist, const char *model,
     }
 }
 
+/* ================== code diff display ================== */
+
+/* Count the lines (newlines + optional final unterminated line) in `s`. */
+static long line_count(const char *s)
+{
+    long n = 0;
+    if (!s || !*s)
+        return 0;
+    for (; *s; s++)
+        if (*s == '\n')
+            n++;
+    if (s[-1] != '\n')
+        n++;
+    return n;
+}
+
+/* Number width needed to right-align `n` (>= 1). */
+static int num_width(long n)
+{
+    int w = 1;
+    while (n >= 10) {
+        n /= 10;
+        w++;
+    }
+    return w;
+}
+
+/* Print a NUL-terminated string as a numbered listing, one line at a time
+ * with a "+" added marker, like opencode shows a newly created file. */
+static void print_added_numbered(const char *content, int width)
+{
+    long ln = 0;
+    const char *q = content ? content : "";
+    while (*q) {
+        const char *nl = strchr(q, '\n');
+        size_t n = nl ? (size_t)(nl - q) : strlen(q);
+        ln++;
+        printf("%*ld +%.*s\n", width, ln, (int)n, q);
+        if (!nl)
+            break;
+        q = nl + 1;
+    }
+}
+
+/* Parse a unified diff hunk header "  @@ -old[,cnt] +new[,cnt] @@" and set
+ * the old/new start line numbers. Returns 0 on success, -1 otherwise. */
+static int parse_hunk_header(const char *s, long *o_start, long *n_start)
+{
+    long o = 0, n = 0;
+    const char *p = s;
+    while (*p == ' ' || *p == '\t')
+        p++;
+    if (strncmp(p, "@@ -", 4) != 0)
+        return -1;
+    p += 4;
+    if (*p < '0' || *p > '9')
+        return -1;
+    o = 0;
+    while (*p >= '0' && *p <= '9') o = o * 10 + (*p++ - '0');
+    if (*p == ',') {
+        p++;
+        while (*p >= '0' && *p <= '9') p++;
+    }
+    while (*p == ' ' || *p == '\t')
+        p++;
+    if (*p != '+')
+        return -1;
+    p++;
+    if (*p < '0' || *p > '9')
+        return -1;
+    n = 0;
+    while (*p >= '0' && *p <= '9') n = n * 10 + (*p++ - '0');
+    *o_start = o;
+    *n_start = n;
+    return 0;
+}
+
+/* Show a generated/changed file in the shell with line numbers and "+"/"-"
+ * marks, like opencode does. When old_content is NULL the file is new/created
+ * and every line is shown as added ("+"). Otherwise a unified diff (removed
+ * lines "-", added lines "+") is produced with diff(1). Never crashes: on any
+ * temp-file or diff(1) failure it falls back to printing the new content as
+ * added. */
+static void print_file_diff(const char *path, const char *old_content,
+                            const char *new_content)
+{
+    char new_f[64] = "/tmp/brackets-new-XXXXXX";
+    int fd;
+    FILE *f;
+    char cmd[4096];
+    char *out = NULL;
+    char *p;
+    int width;
+
+    if (!new_content || !*new_content)
+        return;
+
+    /* number width so all line numbers right-align */
+    width = num_width(line_count(new_content));
+    if (old_content && line_count(old_content) > width)
+        width = num_width(line_count(old_content));
+    if (width < 5)
+        width = 5;
+
+    /* new file: nothing to compare against, show everything as added */
+    if (!old_content) {
+        printf("--- %s\n", path);
+        printf("+++ %s\n", path);
+        print_added_numbered(new_content, width);
+        return;
+    }
+
+    fd = mkstemp(new_f);
+    if (fd < 0)
+        goto fallback;
+    f = fdopen(fd, "w");
+    if (!f) {
+        close(fd);
+        unlink(new_f);
+        goto fallback;
+    }
+    fputs(new_content, f);
+    fclose(f);
+
+    {
+        char old_f[64] = "/tmp/brackets-old-XXXXXX";
+        fd = mkstemp(old_f);
+        if (fd < 0) {
+            unlink(new_f);
+            goto fallback;
+        }
+        f = fdopen(fd, "w");
+        if (!f) {
+            close(fd);
+            unlink(old_f);
+            unlink(new_f);
+            goto fallback;
+        }
+        fputs(old_content, f);
+        fclose(f);
+
+        snprintf(cmd, sizeof(cmd), "diff -u \"%s\" \"%s\"", old_f, new_f);
+        run_cmd_capture(cmd, &out);
+
+        printf("--- %s\n", path);
+        printf("+++ %s\n", path);
+
+        if (out && *out) {
+            /* walk the diff body line by line and add line numbers:
+             * skip the two temp-file header lines first, then track the
+             * old/new line numbers via the @@ hunk headers */
+            long oln = 0, nln = 0;
+            p = out;
+            {
+                int skipped = 0;
+                while (skipped < 2 && *p) {
+                    char *nl = strchr(p, '\n');
+                    if (!nl)
+                        break;
+                    p = nl + 1;
+                    skipped++;
+                }
+            }
+            while (*p) {
+                char *nl = strchr(p, '\n');
+                size_t len = nl ? (size_t)(nl - p) : strlen(p);
+                if (parse_hunk_header(p, &oln, &nln) == 0 ||
+                    strncmp(p, "@@ ", 3) == 0) {
+                    printf("%*s %.*s\n", width, "", (int)len, p);
+                } else if (p[0] == '-') {
+                    printf("%*ld -%.*s\n", width, oln, (int)(len - 1), p + 1);
+                    oln++;
+                } else if (p[0] == '+') {
+                    printf("%*ld +%.*s\n", width, nln, (int)(len - 1), p + 1);
+                    nln++;
+                } else if (p[0] == '\\') {
+                    /* "no newline at end of file" marker */
+                    printf("%*s %.*s\n", width, "", (int)len, p);
+                } else {
+                    /* context line: keep the leading space of the diff */
+                    printf("%*ld %.*s\n", width, nln, (int)len, p);
+                    oln++;
+                    nln++;
+                }
+                if (!nl)
+                    break;
+                p = nl + 1;
+            }
+            free(out);
+        } else {
+            /* diff(1) missing or failed: show the new content as added */
+            free(out);
+            print_added_numbered(new_content, width);
+        }
+        unlink(new_f);
+        unlink(old_f);
+        return;
+    }
+
+fallback:
+    /* could not diff: show the new content as added lines */
+    if (strlen(new_f) > 0 && access(new_f, R_OK) == 0)
+        unlink(new_f);
+    {
+        int w = num_width(line_count(new_content));
+        if (w < 5)
+            w = 5;
+        printf("--- %s\n", path);
+        printf("+++ %s\n", path);
+        print_added_numbered(new_content, w);
+    }
+}
+
 /* ================== agentic tool use ================== */
 
 #define MAX_TOOL_ITERS 8
@@ -983,31 +1196,55 @@ static int handle_tool_calls(Hist *hist, const char *model, const char *url,
         args = argv ? j_str(argv) : NULL;
 
         if (name) {
-            tool_run(name, args, &result);
-            if (!result)
-                result = strdup("tool execution produced no result");
-            /* verify a freshly written .l1com file with l1vm-lsp and keep it
-             * as the "last code" so that /lsp and /code work on it */
-            if (lsp &&
-                (strcmp(name, "write_file") == 0 ||
-                 strcmp(name, "edit_file") == 0) &&
-                args && strstr(args, ".l1com") &&
-                result && strncmp(result, "ok:", 3) == 0) {
+            int is_fwrite = (strcmp(name, "write_file") == 0 ||
+                             strcmp(name, "edit_file") == 0);
+            char *old_content = NULL;
+            char *path = NULL;   /* expanded path of the file being written */
+
+            /* For write_file / edit_file, capture the old file content before
+             * the tool runs so the change can be shown as a diff. */
+            if (is_fwrite && args) {
                 JVal *aj = j_parse(args);
                 const JVal *pv = aj ? j_get(aj, "path") : NULL;
                 const char *pp = pv ? j_str(pv) : NULL;
-                if (pp) {
-                    char *fc = read_file(pp);
-                    if (fc) {
-                        free(*last_code);
-                        *last_code = fc;
-                        snprintf(last_name, last_name_sz, "%s", pp);
-                    }
-                    lspnote = lsp_summary_for_write(lsp, pp);
+                char *exp = pp ? tool_expand_path(pp) : NULL;
+                if (exp) {
+                    path = exp;
+                    old_content = read_file(path);
                 }
                 if (aj)
                     j_free(aj);
             }
+
+            tool_run(name, args, &result);
+            if (!result)
+                result = strdup("tool execution produced no result");
+
+            /* after a successful write/edit, show the code change with
+             * "+"/"-" marks in the shell, like opencode does */
+            if (is_fwrite && path && result &&
+                strncmp(result, "ok:", 3) == 0) {
+                char *new_content = read_file(path);
+                if (new_content) {
+                    print_file_diff(path, old_content, new_content);
+                    free(new_content);
+                }
+            }
+            free(old_content);
+
+            /* verify a freshly written .l1com file with l1vm-lsp and keep it
+             * as the "last code" so that /lsp and /code work on it */
+            if (lsp && path && strstr(path, ".l1com") &&
+                result && strncmp(result, "ok:", 3) == 0) {
+                char *fc = read_file(path);
+                if (fc) {
+                    free(*last_code);
+                    *last_code = fc;
+                    snprintf(last_name, last_name_sz, "%s", path);
+                }
+                lspnote = lsp_summary_for_write(lsp, path);
+            }
+            free(path);
         }
         {
             SB t;
@@ -1064,6 +1301,7 @@ static void process_code_reply(const char *text, LspClient *lsp, Hist *hist,
         last_name[0] = '\0';
 
     printf("\n--- code artifact detected (%s) ---\n", fname);
+    print_file_diff(fname, NULL, code);
     {
         char *final = NULL;
         LspDiagVec diags = {0};
