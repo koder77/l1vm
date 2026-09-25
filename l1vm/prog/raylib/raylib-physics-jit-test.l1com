@@ -105,7 +105,7 @@
 	(set int64 1 paused~ 0)
 	(set int64 1 showhelp~ 1)
 
-	// particle arrays (int64, 150 elements)
+	// particle arrays (int64, 1000 elements)
 	(set int64 1000 px~)
 	(set int64 1000 py~)
 	(set int64 1000 pvx~)
