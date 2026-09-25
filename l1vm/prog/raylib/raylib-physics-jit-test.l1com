@@ -1,0 +1,563 @@
+// raylib-physics-jit.l1com
+//
+// raylib module demo: 2D physics particle system.
+//
+// Particles are emitted at the mouse position and then simulated each
+// frame with gravity, air damping and restitution bounces at the window
+// edges. All physics uses integer fixed-point values with a scale of 100
+// (one unit = 1/100 pixel), so no floating point cast is needed; only the
+// draw radius is a double as required by the raylib module wrapper.
+//
+// Build:
+//     l1vm-build.sh raylib-physics
+// Run:
+//     l1vm raylib-physics
+//
+// Controls:
+//     Move mouse  : emission origin
+//     Click       : burst of 30 particles at the pointer
+//     Space       : pause / unpause the simulation
+//     G           : cycle gravity (down / up / off)
+//     E           : cycle emission rate (slow / normal / fast)
+//     R           : reset the particle system
+//     H           : toggle help text
+//     ESC/close   : quit
+//
+// Brackets / raylib module requirements that this program follows:
+//   1. zero is the FIRST data entry of the program.
+//   2. raylib.l1h is included BEFORE intr-func.l1h (l1pre macro safety).
+//   3. Every color array is 5 bytes (rgba + 1 pad byte).
+//   4. Every interrupt argument is a variable (no inline constants).
+//   5. Module slots: raylib -> 0, string -> 1.
+//   6. Array indices are byte offsets: element i of an int64 array is at i * 8.
+
+(:main jmp)
+(set int64 1 zero 0)
+#include <raylib.l1h>
+#include <string.l1h>
+#include <intr-func.l1h>
+(main func)
+	#var ~ main
+
+	// basic constants
+	(set int64 1 one~ 1)
+	(set int64 1 two~ 2)
+	(set int64 1 three~ 3)
+	(set int64 1 four~ 4)
+	(set int64 1 eight~ 8)
+	(set int64 1 scale~ 100)
+	(set int64 1 div100~ 100)
+
+	// JIT compiler
+	(set int64 1 phys_jit_start~ 0)
+	(set int64 1 phys_jit_end~ 0)
+
+	(set int64 1 draw_jit_start~ 0)
+	(set int64 1 draw_jit_end~ 0)
+
+	// window / timing
+	(set int64 1 width~ 800)
+	(set int64 1 height~ 600)
+	(set int64 1 fps~ 60)
+	(set int64 1 wsclose~ 0)
+	(set int64 1 ret~ 0)
+
+	// physics tuning (fixed point, scale 100)
+	(set int64 1 maxparticles~ 1000)
+	(set int64 1 particlecount~ 0)
+	(set int64 1 burstqueued~ 0)
+	(set int64 1 damp~ 98)
+	(set int64 1 rest~ -75)
+	(set int64 1 grav~ 14)
+	(set int64 1 gravneg~ -14)
+	(set int64 1 gravdir~ 0)
+	(set int64 1 rads~ 300)
+	(set int64 1 xmaxs~ 79700)
+	(set int64 1 ymaxs~ 59700)
+	(set double 1 radiusd~ 3.0)
+
+	// emission
+	(set int64 1 emislevel~ 0)
+	(set int64 1 emissionrate~ 1)
+	(set int64 1 burst_amount~ 30)
+	(set int64 1 mousex~ 0)
+	(set int64 1 mousey~ 0)
+	(set int64 1 emitx~ 400)
+	(set int64 1 emity~ 300)
+	(set int64 1 emitxscaled~ 40000)
+	(set int64 1 emityscaled~ 30000)
+	(set int64 1 rngxmin~ -250)
+	(set int64 1 rngxmax~ 250)
+	(set int64 1 rngymin~ -350)
+	(set int64 1 rngymax~ 100)
+	(set int64 1 tospawn~ 0)
+	(set int64 1 tmpi~ 0)
+
+	// input
+	(set int64 1 btn_left~ 0)
+	(set int64 1 key_space~ 32)
+	(set int64 1 key_g~ 71)
+	(set int64 1 key_e~ 69)
+	(set int64 1 key_r~ 82)
+	(set int64 1 key_h~ 72)
+	(set int64 1 kret~ 0)
+	(set int64 1 bret~ 0)
+	(set int64 1 paused~ 0)
+	(set int64 1 showhelp~ 1)
+
+	// particle arrays (int64, 150 elements)
+	(set int64 1000 px~)
+	(set int64 1000 py~)
+	(set int64 1000 pvx~)
+	(set int64 1000 pvy~)
+
+	// math / loop temporaries
+	(set int64 1 tx~ 0)
+	(set int64 1 ty~ 0)
+	(set int64 1 tvx~ 0)
+	(set int64 1 tvy~ 0)
+	(set int64 1 tmp~ 0)
+	(set int64 1 idx~ 0)
+	(set int64 1 nvx~ 0)
+	(set int64 1 nvy~ 0)
+	(set int64 1 xpix~ 0)
+	(set int64 1 ypix~ 0)
+	(set int64 1 pc~ 0)
+	(set int64 1 ci~ 0)
+	(set int64 1 j~ 0)
+	(set int64 1 i~ 0)
+	(set int64 1 k~ 0)
+
+	// condition flags (one per if / loop block)
+	(set int64 1 fwin~ 0)
+	(set int64 1 fbtn~ 0)
+	(set int64 1 fspc~ 0)
+	(set int64 1 fgkey~ 0)
+	(set int64 1 fekey~ 0)
+	(set int64 1 frkey~ 0)
+	(set int64 1 fhkey~ 0)
+	(set int64 1 fpause~ 0)
+	(set int64 1 fcap~ 0)
+	(set int64 1 fspawn~ 0)
+	(set int64 1 fer0~ 0)
+	(set int64 1 fer1~ 0)
+	(set int64 1 fer2~ 0)
+	(set int64 1 fupd~ 0)
+	(set int64 1 fgon~ 0)
+	(set int64 1 fgupd~ 0)
+	(set int64 1 fleft~ 0)
+	(set int64 1 fright~ 0)
+	(set int64 1 ftop~ 0)
+	(set int64 1 fbot~ 0)
+	(set int64 1 fdraw~ 0)
+	(set int64 1 fc0~ 0)
+	(set int64 1 fc1~ 0)
+	(set int64 1 fc2~ 0)
+	(set int64 1 fgs0~ 0)
+	(set int64 1 fgs1~ 0)
+	(set int64 1 fes0~ 0)
+	(set int64 1 fes1~ 0)
+	(set int64 1 fhelp~ 0)
+	(set int64 1 fpaused~ 0)
+	(set int64 1 fwhile~ 0)
+
+	// colors (5 bytes: rgba + pad)
+	(set byte 5 cbg~ 8 8 18 255 0)
+	(set byte 5 ctext~ 230 230 235 255 0)
+	(set byte 5 chelp~ 170 170 190 255 0)
+	(set byte 5 cinfo~ 110 230 110 255 0)
+	(set byte 5 cmouse~ 0 200 255 255 0)
+	(set byte 5 c0~ 255 90 90 255 0)
+	(set byte 5 c1~ 255 190 60 255 0)
+	(set byte 5 c2~ 100 210 255 255 0)
+	(set byte 5 c3~ 253 249 0 255 0)
+
+	// text layout
+	(set int64 1 fs12~ 12)
+	(set int64 1 fs16~ 16)
+	(set int64 1 fs20~ 20)
+	(set int64 1 t1x~ 12)
+	(set int64 1 t1y~ 10)
+	(set int64 1 t2y~ 36)
+	(set int64 1 t3y~ 60)
+	(set int64 1 t4y~ 84)
+	(set int64 1 hinty~ 100)
+	(set int64 1 pcy~ 120)
+	(set int64 1 pnumx~ 110)
+	(set int64 1 gy~ 150)
+	(set int64 1 ey~ 174)
+	(set int64 1 ppx~ 330)
+	(set int64 1 ppy~ 280)
+	(set int64 1 fpsx~ 12)
+	(set int64 1 fpsy~ 570)
+	(set double 1 mrad~ 12.0)
+	(set double 1 mrad2~ 2.0)
+
+	// strings
+	(set string s title~ "L1VM raylib - physics particles")
+	(set string s h1~ "L1VM raylib - physics particle demo")
+	(set string s h2~ "Move mouse: emit   Click: burst 30")
+	(set string s h3~ "Space: pause  G: gravity  E: emission rate")
+	(set string s h4~ "R: reset  H: help  ESC: quit")
+	(set string s hint~ "Press H for help")
+	(set string s countpre~ "Particles: ")
+	(set string 32 countstr~ "")
+	(set int64 1 buflen~ 30)
+	(set string s gravdown~ "Gravity: DOWN")
+	(set string s gravup~ "Gravity: UP")
+	(set string s gravoff~ "Gravity: OFF")
+	(set string s emisslow~ "Emission: SLOW")
+	(set string s emisnorm~ "Emission: NORMAL")
+	(set string s emisfast~ "Emission: FAST")
+	(set string s pausedstr~ "PAUSED")
+
+	// pointers
+	(set int64 1 Ptitle~ 0)
+	(set int64 1 Ph1~ 0)
+	(set int64 1 Ph2~ 0)
+	(set int64 1 Ph3~ 0)
+	(set int64 1 Ph4~ 0)
+	(set int64 1 Phint~ 0)
+	(set int64 1 Pcountpre~ 0)
+	(set int64 1 Pcountstr~ 0)
+	(set int64 1 Pgravdown~ 0)
+	(set int64 1 Pgravup~ 0)
+	(set int64 1 Pgravoff~ 0)
+	(set int64 1 Pemisslow~ 0)
+	(set int64 1 Pemisnorm~ 0)
+	(set int64 1 Pemisfast~ 0)
+	(set int64 1 Ppausedstr~ 0)
+	(set int64 1 Pcbg~ 0)
+	(set int64 1 Pctext~ 0)
+	(set int64 1 Pchelp~ 0)
+	(set int64 1 Pcinfo~ 0)
+	(set int64 1 Pcmouse~ 0)
+	(set int64 1 Pc0~ 0)
+	(set int64 1 Pc1~ 0)
+	(set int64 1 Pc2~ 0)
+	(set int64 1 Pc3~ 0)
+
+	(optimize-if)
+
+	// ----- init modules (raylib slot 0, string slot 1) -----
+	(zero :raylib_init !)
+	(one~ :string_init !)
+
+	// JIT compiler
+	(:phys_jit_start phys_jit_start~ loadl)
+	(:phys_jit_end phys_jit_end~ loadl)
+	(phys_jit_start~ phys_jit_end~ zero :run_jit_comp !)
+
+	(:draw_jit_start draw_jit_start~ loadl)
+	(:draw_jit_end draw_jit_end~ loadl)
+	(draw_jit_start~ draw_jit_end~ one~ :run_jit_comp !)
+
+	// get addresses of colors and strings
+	(cbg~ Pcbg~ pointer)
+	(ctext~ Pctext~ pointer)
+	(chelp~ Pchelp~ pointer)
+	(cinfo~ Pcinfo~ pointer)
+	(cmouse~ Pcmouse~ pointer)
+	(c0~ Pc0~ pointer)
+	(c1~ Pc1~ pointer)
+	(c2~ Pc2~ pointer)
+	(c3~ Pc3~ pointer)
+	(title~ Ptitle~ pointer)
+	(h1~ Ph1~ pointer)
+	(h2~ Ph2~ pointer)
+	(h3~ Ph3~ pointer)
+	(h4~ Ph4~ pointer)
+	(hint~ Phint~ pointer)
+	(countpre~ Pcountpre~ pointer)
+	(countstr~ Pcountstr~ pointer)
+	(gravdown~ Pgravdown~ pointer)
+	(gravup~ Pgravup~ pointer)
+	(gravoff~ Pgravoff~ pointer)
+	(emisslow~ Pemisslow~ pointer)
+	(emisnorm~ Pemisnorm~ pointer)
+	(emisfast~ Pemisfast~ pointer)
+	(pausedstr~ Ppausedstr~ pointer)
+
+	// ----- init window -----
+	(width~ height~ Ptitle~ :raylib_init_window !)
+	(ret~ stpopi)
+	(((ret~ zero !=) fwin~ =) fwin~ if)
+		(one~ :free_mod !)
+		(zero :free_mod !)
+		(zero :exit !)
+	(endif)
+	(fps~ :raylib_set_target_fps !)
+
+	// ----- main loop -----
+	(do)
+
+		// input: mouse position
+		(:raylib_get_mouse_x !)
+		(mousex~ stpopi)
+		(:raylib_get_mouse_y !)
+		(mousey~ stpopi)
+		(mousex~ emitx~ =)
+		(mousey~ emity~ =)
+		((emitx~ scale~ *) emitxscaled~ =)
+		((emity~ scale~ *) emityscaled~ =)
+
+		// input: left click -> queue a burst
+		(btn_left~ :raylib_is_mouse_button_pressed !)
+		(bret~ stpopi)
+		(((bret~ zero !=) fbtn~ =) fbtn~ if)
+			((burstqueued~ burst_amount~ +) burstqueued~ =)
+		(endif)
+
+		// input: space toggles pause
+		(key_space~ :raylib_is_key_pressed !)
+		(kret~ stpopi)
+		(((kret~ zero !=) fspc~ =) fspc~ if)
+			((one~ paused~ -) paused~ =)
+		(endif)
+
+		// input: G cycles gravity down/up/off
+		(key_g~ :raylib_is_key_pressed !)
+		(kret~ stpopi)
+		(((kret~ zero !=) fgkey~ =) fgkey~ if)
+			((gravdir~ one~ +) gravdir~ =)
+			((gravdir~ three~ %) gravdir~ =)
+		(endif)
+
+		// input: E cycles emission rate
+		(key_e~ :raylib_is_key_pressed !)
+		(kret~ stpopi)
+		(((kret~ zero !=) fekey~ =) fekey~ if)
+			((emislevel~ one~ +) emislevel~ =)
+			((emislevel~ three~ %) emislevel~ =)
+		(endif)
+
+		// input: R resets the system
+		(key_r~ :raylib_is_key_pressed !)
+		(kret~ stpopi)
+		(((kret~ zero !=) frkey~ =) frkey~ if)
+			(zero particlecount~ =)
+			(zero burstqueued~ =)
+		(endif)
+
+		// input: H toggles help
+		(key_h~ :raylib_is_key_pressed !)
+		(kret~ stpopi)
+		(((kret~ zero !=) fhkey~ =) fhkey~ if)
+			((one~ showhelp~ -) showhelp~ =)
+		(endif)
+
+		// ----- simulation (skipped while paused) -----
+		(((paused~ zero ==) fpause~ =) fpause~ if)
+
+			// emission rate from level: 0 -> 1, 1 -> 3, 2 -> 8
+			(((emislevel~ zero ==) fer0~ =) fer0~ if)
+				(one~ emissionrate~ =)
+			(endif)
+			(((emislevel~ one~ ==) fer1~ =) fer1~ if)
+				(three~ emissionrate~ =)
+			(endif)
+			(((emislevel~ two~ ==) fer2~ =) fer2~ if)
+				(eight~ emissionrate~ =)
+			(endif)
+
+			// number of particles to spawn this frame: rate + queued burst
+			((emissionrate~ burstqueued~ +) tospawn~ =)
+			((particlecount~ tospawn~ +) tmpi~ =)
+			(((tmpi~ maxparticles~ >) fcap~ =) fcap~ if)
+				((maxparticles~ particlecount~ -) tospawn~ =)
+			(endif)
+			(zero burstqueued~ =)
+
+			// spawn loop
+			(zero j~ =)
+			(((j~ tospawn~ <) fspawn~ =) fspawn~ for)
+				((particlecount~ eight~ *) idx~ =)
+				(emitxscaled~ px~ [ idx~ ] =)
+				(emityscaled~ py~ [ idx~ ] =)
+				(rngxmin~ rngxmax~ :raylib_get_random_value !)
+				(nvx~ stpopi)
+				(nvx~ pvx~ [ idx~ ] =)
+				(rngymin~ rngymax~ :raylib_get_random_value !)
+				(nvy~ stpopi)
+				(nvy~ pvy~ [ idx~ ] =)
+				((particlecount~ one~ +) particlecount~ =)
+				((j~ one~ +) j~ =)
+			(next)
+
+			// physics update loop
+			(zero :run_jit_code !)
+			(:phys_cont jmp)
+			(:phys_jit_start)
+			(zero i~ =)
+			(((i~ particlecount~ <) fupd~ =) fupd~ for)
+				((i~ eight~ *) idx~ =)
+				(px~ [ idx~ ] tx~ =)
+				(pvx~ [ idx~ ] tvx~ =)
+				(py~ [ idx~ ] ty~ =)
+				(pvy~ [ idx~ ] tvy~ =)
+
+				// integrate position
+				((tx~ tvx~ +) tx~ =)
+				((ty~ tvy~ +) ty~ =)
+
+				// air damping
+				((tvx~ damp~ *) tmp~ =)
+				((tmp~ div100~ /) tvx~ =)
+				((tvy~ damp~ *) tmp~ =)
+				((tmp~ div100~ /) tvy~ =)
+
+				// gravity
+				(((gravdir~ zero ==) fgon~ =) fgon~ if)
+					((tvy~ grav~ +) tvy~ =)
+				(endif)
+				(((gravdir~ one~ ==) fgupd~ =) fgupd~ if)
+					((tvy~ gravneg~ +) tvy~ =)
+				(endif)
+
+				// wall bounces with restitution
+				(((tx~ rads~ <) fleft~ =) fleft~ if)
+					(rads~ tx~ =)
+					((tvx~ rest~ *) tmp~ =)
+					((tmp~ div100~ /) tvx~ =)
+				(endif)
+				(((tx~ xmaxs~ >) fright~ =) fright~ if)
+					(xmaxs~ tx~ =)
+					((tvx~ rest~ *) tmp~ =)
+					((tmp~ div100~ /) tvx~ =)
+				(endif)
+				(((ty~ rads~ <) ftop~ =) ftop~ if)
+					(rads~ ty~ =)
+					((tvy~ rest~ *) tmp~ =)
+					((tmp~ div100~ /) tvy~ =)
+				(endif)
+				(((ty~ ymaxs~ >) fbot~ =) fbot~ if)
+					(ymaxs~ ty~ =)
+					((tvy~ rest~ *) tmp~ =)
+					((tmp~ div100~ /) tvy~ =)
+				(endif)
+
+				// store back
+				(tx~ px~ [ idx~ ] =)
+				(ty~ py~ [ idx~ ] =)
+				(tvx~ pvx~ [ idx~ ] =)
+				(tvy~ pvy~ [ idx~ ] =)
+				((i~ one~ +) i~ =)
+			(next)
+			(:phys_jit_end)
+			(zero + zero zero :=)
+		(endif)
+
+		(:phys_cont)
+		// ----- draw -----
+		(:raylib_begin_drawing !)
+		(Pcbg~ :raylib_clear_background !)
+
+		// additive blend for a glow effect
+		(one~ :raylib_begin_blend_mode !)
+		(zero k~ =)
+		(((k~ particlecount~ <) fdraw~ =) fdraw~ for)
+		    (one~ :run_jit_code !)
+			(:draw_done jmp)
+            (:draw_jit_start)
+			((k~ eight~ *) idx~ =)
+			(px~ [ idx~ ] tx~ =)
+			(py~ [ idx~ ] ty~ =)
+			((tx~ div100~ /) xpix~ =)
+			((ty~ div100~ /) ypix~ =)
+
+			// palette color by index (4 colors)
+			((k~ four~ %) ci~ =)
+
+			(switch)
+			(ci~ zero ?)
+				 (Pc0~ pc~ =)
+				 (:draw_jit_end jmp)
+			(break)
+
+			(ci~ one~ ?)
+				 (Pc1~ pc~ =)
+				 (:draw_jit_end jmp)
+			(break)
+
+			(ci~ two~ ?)
+				 (Pc2~ pc~ =)
+				 (:draw_jit_end jmp)
+			(break)
+
+			(ci~ three~ ?)
+				 (Pc3~ pc~ =)
+				 (:draw_jit_end jmp)
+			(break)
+			(switchend)
+
+            (:draw_jit_end)
+			(zero + zero zero :=)
+
+			// draw
+			(:draw_done)
+			(xpix~ ypix~ radiusd~ pc~ :raylib_draw_circle !)
+
+			((k~ one~ +) k~ =)
+		(next)
+		(:raylib_end_blend_mode !)
+
+		// emission origin marker
+		(mousex~ mousey~ mrad~ Pcmouse~ :raylib_draw_circle_lines !)
+		(mousex~ mousey~ mrad2~ Pcmouse~ :raylib_draw_circle !)
+
+		// help / hint
+		(((showhelp~ zero !=) fhelp~ =) fhelp~ if+)
+			(Ph1~ t1x~ t1y~ fs20~ Pctext~ :raylib_draw_text !)
+			(Ph2~ t1x~ t2y~ fs12~ Pchelp~ :raylib_draw_text !)
+			(Ph3~ t1x~ t3y~ fs12~ Pchelp~ :raylib_draw_text !)
+			(Ph4~ t1x~ t4y~ fs12~ Pchelp~ :raylib_draw_text !)
+		(else)
+			(Phint~ t1x~ hinty~ fs16~ Pchelp~ :raylib_draw_text !)
+		(endif)
+
+		// particle count on screen
+		(Pcountpre~ t1x~ pcy~ fs12~ Pctext~ :raylib_draw_text !)
+		(particlecount~ Pcountstr~ buflen~ :string_int64tostring !)
+		(Pcountstr~ pnumx~ pcy~ fs12~ Pcinfo~ :raylib_draw_text !)
+
+		// gravity status
+		(((gravdir~ zero ==) fgs0~ =) fgs0~ if+)
+			(Pgravdown~ t1x~ gy~ fs12~ Pcinfo~ :raylib_draw_text !)
+		(else)
+			(((gravdir~ one~ ==) fgs1~ =) fgs1~ if+)
+				(Pgravup~ t1x~ gy~ fs12~ Pcinfo~ :raylib_draw_text !)
+			(else)
+				(Pgravoff~ t1x~ gy~ fs12~ Pcinfo~ :raylib_draw_text !)
+			(endif)
+		(endif)
+
+		// emission status
+		(((emislevel~ zero ==) fes0~ =) fes0~ if+)
+			(Pemisslow~ t1x~ ey~ fs12~ Pcinfo~ :raylib_draw_text !)
+		(else)
+			(((emislevel~ one~ ==) fes1~ =) fes1~ if+)
+				(Pemisnorm~ t1x~ ey~ fs12~ Pcinfo~ :raylib_draw_text !)
+			(else)
+				(Pemisfast~ t1x~ ey~ fs12~ Pcinfo~ :raylib_draw_text !)
+			(endif)
+		(endif)
+
+		// paused indicator
+		(((paused~ zero !=) fpaused~ =) fpaused~ if)
+			(Ppausedstr~ ppx~ ppy~ fs20~ Pctext~ :raylib_draw_text !)
+		(endif)
+
+		(fpsx~ fpsy~ :raylib_draw_fps !)
+		(:raylib_end_drawing !)
+
+		// exit condition
+		(:raylib_window_should_close !)
+		(wsclose~ stpopi)
+		(((wsclose~ zero ==) fwhile~ =) fwhile~ while)
+
+	// ----- cleanup -----
+	(:raylib_close_window !)
+	(one~ :free_mod !)
+	(zero :free_mod !)
+	(zero :exit !)
+(funcend)
