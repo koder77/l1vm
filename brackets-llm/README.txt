@@ -117,11 +117,12 @@ different model family, remove/adapt this option in src/main.c
   BRACKETS_LLM_CONFIRM      If set to 1/yes/y/true, the program asks you
                             (interactive mode) before the model writes any
                             file. By default writes are allowed automatically.
-  BRACKETS_LLM_NET_CONFIRM  If set to 1/yes/y/true, the program asks you
-                            (interactive mode) before the model fetches each
-                            URL. By default web_fetch runs automatically,
-                            like the file writes. Every request is printed as
-                            "[fetch] <status line>" in the terminal.
+  BRACKETS_LLM_NET_CONFIRM  Set to 0/no/n/false/off to turn the question off.
+                             By default the program asks you (interactive
+                             mode) before the model fetches each URL, and a
+                             refused request is never sent. Every request is
+                             printed as "[fetch] <status line>" in the
+                             terminal.
 
 Example:
 
@@ -220,6 +221,8 @@ the model may call web_fetch, read the page, and then answer.
 
   * Only absolute http:// and https:// URLs are accepted; file://, ftp://
     and similar schemes are rejected.
+  * The user is asked before every request and can refuse it. A refused URL
+    is not requested at all; the model gets "denied: ..." instead. See below.
   * Redirects are followed (up to 5 hops), chunked responses are decoded, and
     the final URL after the redirects is reported back, so the model knows
     where the text actually came from.
@@ -253,10 +256,23 @@ Every outgoing request is printed in the terminal as:
 
     [fetch] HTTP 200 https://example.com/page.html  [content-type: ...]
 
-Like the file writes, network access is allowed automatically. To be asked
-for confirmation before each URL (interactive mode):
+Internet access is asked for before each URL, so nothing is downloaded
+behind your back. In interactive mode the model has to get your consent
+first:
 
-    export BRACKETS_LLM_NET_CONFIRM=1
+    The model wants to download this file from the internet:
+        https://example.com/page.html
+    Allow this request? [y/N]
+
+Only "y" (or "Y") allows it. An empty answer, "n", or Ctrl+D refuses the
+request, and a refused URL is never requested from the network - the model
+just gets "denied: user did not allow fetching ...". To let the model fetch
+without asking (scripts, trusted models):
+
+    export BRACKETS_LLM_NET_CONFIRM=0
+
+When stdin is not a terminal there is nobody to ask, so the request runs
+unattended, exactly like before.
 
 
 ===============================================================================
@@ -381,9 +397,9 @@ PROBLEM: web_fetch returns "error: ... https is not supported" / no TLS
      Plain http:// URLs work without any of this.
 
 PROBLEM: web_fetch returns "denied: ..."
-  -> The request needed confirmation and was not allowed: either answer "y"
-     at the prompt, or unset BRACKETS_LLM_NET_CONFIRM (and run
-     non-interactively with stdin not a terminal).
+  -> The request was refused. Answer "y" at the "Allow this request?"
+     prompt to allow it, or set BRACKETS_LLM_NET_CONFIRM=0 to stop asking
+     (also needed when stdin is not a terminal).
 
 PROBLEM: web_fetch returns "error: connection refused" / "unknown host"
   -> The URL host/port does not exist or is blocked (firewall, no route,

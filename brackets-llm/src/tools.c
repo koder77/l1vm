@@ -21,8 +21,10 @@
  * brackets-llm - agent tools: read_file / write_file / edit_file / list_files
  *                 and web_fetch
  *
- * Executes tool calls requested by the LLM, opencode-style. File writes are
- * allowed automatically; set BRACKETS_LLM_CONFIRM=1 to be asked for
+ * Executes tool calls requested by the LLM, opencode-style. Internet access
+ * is asked for before every URL (web_fetch), so no file is downloaded without
+ * the user's consent; BRACKETS_LLM_NET_CONFIRM=0 skips that question. File
+ * writes are allowed automatically; set BRACKETS_LLM_CONFIRM=1 to be asked for
  * confirmation on every write (in interactive mode).
  */
 
@@ -537,23 +539,44 @@ static int tool_list(const char *dir, char **out)
 /* web_fetch                                                        */
 /* ---------------------------------------------------------------- */
 
-/* Ask before any outgoing request. Off by default, like the file writes.
- * BRACKETS_LLM_NET_CONFIRM=1 asks the user for every URL. */
+/* Copy `s` into `dst` keeping only printable ASCII, so text that comes from
+ * the model (a URL, a redirect target) cannot inject terminal escape
+ * sequences or newlines into what is shown on the screen. Anything not
+ * printable is replaced by '?'. */
+void tool_sanitize_display(char *dst, size_t sz, const char *s)
+{
+    size_t o = 0;
+
+    if (sz == 0)
+        return;
+    for (; s && *s && o + 1 < sz; s++) {
+        unsigned char c = (unsigned char)*s;
+        dst[o++] = (isprint(c) && c != '\\') ? (char)c : '?';
+    }
+    dst[o] = '\0';
+}
+
+/* Ask before every outgoing request: internet access is granted per URL, not
+ * once and for all, so nothing is downloaded behind the user's back. This is
+ * the default. BRACKETS_LLM_NET_CONFIRM=0 (or no/n/false/off) turns the
+ * question off for scripts and trusted models; a non-terminal stdin cannot be
+ * prompted at all and is treated as "not asked". */
 static int confirm_net(const char *url)
 {
     const char *e = getenv("BRACKETS_LLM_NET_CONFIRM");
-    char prompt[1200];
+    char shown[400];
+    char prompt[512];
 
-    if (!e || !*e)
-        return 1;
-    if (!(strcmp(e, "1") == 0 || strcmp(e, "yes") == 0 ||
-          strcmp(e, "y") == 0 || strcmp(e, "true") == 0))
-        return 1;
+    if (e && *e && (strcmp(e, "0") == 0 || strcmp(e, "no") == 0 ||
+                    strcmp(e, "n") == 0 || strcmp(e, "false") == 0 ||
+                    strcmp(e, "off") == 0))
+        return 1;   /* the user does not want to be asked */
     if (!isatty(STDIN_FILENO))
         return 1;   /* piped/scripted input: cannot prompt */
+    tool_sanitize_display(shown, sizeof(shown), url);
     snprintf(prompt, sizeof(prompt),
-             "The model wants to fetch '%s' from the internet. Allow? [y/N] ",
-             url);
+             "\nThe model wants to download this file from the internet:\n"
+             "    %s\nAllow this request? [y/N] ", shown);
     return input_confirm(prompt, 0);
 }
 
@@ -960,8 +983,12 @@ static int tool_web_fetch(const char *url, long maxbytes, char **out)
     }
     if (!confirm_net(url)) {
         SB m;
+        char shown[2048];
         sb_init(&m);
-        sb_printf(&m, "denied: user did not allow fetching '%s'", url);
+        /* the message is shown in the terminal as well as sent to the model,
+         * so the URL must not carry control bytes into the screen */
+        tool_sanitize_display(shown, sizeof(shown), url);
+        sb_printf(&m, "denied: user did not allow fetching '%s'", shown);
         {
             char *r = strdup(sb_cstr(&m));
             sb_free(&m);
@@ -1191,8 +1218,11 @@ char *tools_definitions_json(void)
             "Use it whenever you need information from the web: "
             "documentation, an API endpoint, a specification, the source of "
             "a page. HTML pages are converted to readable plain text, "
-            "redirects are followed. Never invent an URL: use a URL the user "
-            "gave you or one you are sure about.",
+            "redirects are followed. The user has to approve every request, "
+            "so a result starting with \"denied:\" means they said no: do not "
+            "retry the same URL, just answer without it or ask. "
+            "Never invent an URL: use a URL the user gave you or one you are "
+            "sure about.",
             pn, pt, pd, 2, 1);
         j_obj_set(f, "type", j_str_new("function"));
         j_obj_set(f, "function", fn);

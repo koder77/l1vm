@@ -25,6 +25,8 @@
 #ifndef BRACKETS_TOOLS_H
 #define BRACKETS_TOOLS_H
 
+#include <stddef.h>   /* size_t, for tool_sanitize_display() */
+
 /* Build the JSON "tools" array describing the available functions.
  * Returns a heap-allocated JSON string. Caller frees. */
 char *tools_definitions_json(void);
@@ -52,5 +54,11 @@ int tool_path_inside_cwd(const char *path);
  * directory. Never prompts on piped/scripted input (always allows it then).
  * Returns 1 to allow, 0 to deny. */
 int tool_ask_permission(const char *path);
+
+/* Copy `s` into `dst` (size `sz`) keeping only printable ASCII, replacing
+ * everything else with '?'. Use for model-supplied text (URLs, redirect
+ * targets) that is echoed to the terminal, so it cannot repaint the screen
+ * or fake a prompt. `s` may be NULL. */
+void tool_sanitize_display(char *dst, size_t sz, const char *s);
 
 #endif

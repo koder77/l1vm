@@ -1233,14 +1233,23 @@ static int handle_tool_calls(Hist *hist, const char *model, const char *url,
             }
             free(old_content);
 
-            /* a request to the internet is visible: show the status line */
+            /* a request to the internet is visible: show the status line.
+             * The line is built from the URL and the redirect target, both
+             * chosen by the model/server, so it is sanitized before it goes
+             * to the terminal. */
             if (result && strcmp(name ? name : "", "web_fetch") == 0) {
                 const char *nl = strchr(result, '\n');
                 int l = nl ? (int)(nl - result) : (int)strlen(result);
+                char *line;
                 if (l > 160)
                     l = 160;
-                printf("[fetch] %.*s\n", l, result);
-                fflush(stdout);
+                line = malloc((size_t)l + 1);
+                if (line) {
+                    tool_sanitize_display(line, (size_t)l + 1, result);
+                    printf("[fetch] %s\n", line);
+                    free(line);
+                    fflush(stdout);
+                }
             }
 
             /* verify a freshly written .l1com file with l1vm-lsp and keep it
@@ -1432,6 +1441,10 @@ static void print_help(void)
         "\n"
         "When the model (or /read, /write, /save) wants to access a path\n"
         "OUTSIDE the current directory, you are asked for permission first.\n"
+        "\n"
+        "When the model uses web_fetch, you are asked before every download;\n"
+        "answer y to allow it, anything else refuses it. Set\n"
+        "BRACKETS_LLM_NET_CONFIRM=0 to switch the question off.\n"
         "\n");
 }
 
