@@ -23,9 +23,10 @@
  * Speaks to a llama.cpp server (llama-server) via its OpenAI-compatible
  * /v1/chat/completions endpoint, feeds the L1VM system prompt, then lets
  * the user chat. The model can autonomously use file tools (read_file,
- * write_file, edit_file, list_files) like opencode, and Brackets (.l1com)
- * code in the answer is checked/auto-corrected with the l1vm-lsp language
- * server, then can be built and run.
+ * write_file, edit_file, list_files) and fetch web pages (web_fetch) like
+ * opencode, and Brackets (.l1com) code in the answer is checked/
+ * auto-corrected with the l1vm-lsp language server, then can be built
+ * and run.
  */
 
 #define _POSIX_C_SOURCE 200809L
@@ -1232,6 +1233,16 @@ static int handle_tool_calls(Hist *hist, const char *model, const char *url,
             }
             free(old_content);
 
+            /* a request to the internet is visible: show the status line */
+            if (result && strcmp(name ? name : "", "web_fetch") == 0) {
+                const char *nl = strchr(result, '\n');
+                int l = nl ? (int)(nl - result) : (int)strlen(result);
+                if (l > 160)
+                    l = 160;
+                printf("[fetch] %.*s\n", l, result);
+                fflush(stdout);
+            }
+
             /* verify a freshly written .l1com file with l1vm-lsp and keep it
              * as the "last code" so that /lsp and /code work on it */
             if (lsp && path && strstr(path, ".l1com") &&
@@ -1394,9 +1405,10 @@ static void print_help(void)
         "brackets-llm - opencode-like Brackets (L1VM) environment\n"
         "\n"
         "  Just type a request. The model can use tools (read_file,\n"
-        "  write_file, edit_file, list_files) to create and modify files on\n"
-        "  its own, like opencode. Brackets code in the answer is checked\n"
-        "  with l1vm-lsp and auto-corrected before it is saved to disk.\n"
+        "  write_file, edit_file, list_files, web_fetch) to create and\n"
+        "  modify files and to read web pages on its own, like opencode.\n"
+        "  Brackets code in the answer is checked with l1vm-lsp and\n"
+        "  auto-corrected before it is saved to disk.\n"
         "\n"
         "Commands:\n"
         "  /read <file> [limit=N, offset=M]\n"

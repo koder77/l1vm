@@ -17,13 +17,24 @@ READLINE_OK  := $(shell mkdir -p $(BUILD) && printf '#include <readline/readline
 READLINE_CFLAGS := $(if $(filter 0,$(READLINE_OK)),-DHAVE_LIBREADLINE,)
 READLINE_LIBS   := $(if $(filter 0,$(READLINE_OK)),-lreadline,)
 
+# Optional libcurl, only needed for https:// in the web_fetch tool. The same
+# kind of compile probe as for readline decides: when it succeeds,
+# -DHAVE_LIBCURL and the curl flags are used. Without libcurl the program
+# still speaks plain http:// itself and calls the "curl" program for https.
+# Build without libcurl:  make CURL_OK=1
+CURL_CFLAGS := $(shell curl-config --cflags 2>/dev/null)
+CURL_LIBS   := $(shell curl-config --libs 2>/dev/null)
+CURL_OK     ?= $(shell mkdir -p $(BUILD) && printf '#include <curl/curl.h>\nint main(void){curl_global_init(0); curl_easy_cleanup(curl_easy_init()); return 0;}\n' > $(BUILD)/curl-check.c && $(CC) $(CURL_CFLAGS) $(BUILD)/curl-check.c -o $(BUILD)/curl-check $(CURL_LIBS) >/dev/null 2>&1; echo $$?)
+CURL_DEFINE := $(if $(filter 0,$(CURL_OK)),-DHAVE_LIBCURL,)
+CURL_LINK   := $(if $(filter 0,$(CURL_OK)),$(CURL_LIBS),)
+
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $(OBJS) -o $(TARGET) $(LDFLAGS) $(READLINE_LIBS)
+	$(CC) $(OBJS) -o $(TARGET) $(LDFLAGS) $(READLINE_LIBS) $(CURL_LINK)
 
 $(BUILD)/%.o: src/%.c | $(BUILD)
-	$(CC) $(CFLAGS) $(READLINE_CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(READLINE_CFLAGS) $(CURL_DEFINE) -c $< -o $@
 
 $(BUILD):
 	mkdir -p $(BUILD)

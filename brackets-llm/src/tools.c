@@ -19,6 +19,7 @@
 
 /*
  * brackets-llm - agent tools: read_file / write_file / edit_file / list_files
+ *                 and web_fetch
  *
  * Executes tool calls requested by the LLM, opencode-style. File writes are
  * allowed automatically; set BRACKETS_LLM_CONFIRM=1 to be asked for
@@ -30,19 +31,24 @@
 
 #include "tools.h"
 
+#include <ctype.h>
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "http.h"
 #include "inputline.h"
 #include "json.h"
 #include "sb.h"
 
 #define TOOL_READ_CAP 128000L
 #define TOOL_EDIT_CAP (4 * 1024 * 1024L)
+#define TOOL_WEB_DEFAULT_CAP 64000L
+#define TOOL_WEB_MAX_CAP 200000L
 
 char *tool_expand_path(const char *p)
 {
@@ -528,6 +534,518 @@ static int tool_list(const char *dir, char **out)
 }
 
 /* ---------------------------------------------------------------- */
+/* web_fetch                                                        */
+/* ---------------------------------------------------------------- */
+
+/* Ask before any outgoing request. Off by default, like the file writes.
+ * BRACKETS_LLM_NET_CONFIRM=1 asks the user for every URL. */
+static int confirm_net(const char *url)
+{
+    const char *e = getenv("BRACKETS_LLM_NET_CONFIRM");
+    char prompt[1200];
+
+    if (!e || !*e)
+        return 1;
+    if (!(strcmp(e, "1") == 0 || strcmp(e, "yes") == 0 ||
+          strcmp(e, "y") == 0 || strcmp(e, "true") == 0))
+        return 1;
+    if (!isatty(STDIN_FILENO))
+        return 1;   /* piped/scripted input: cannot prompt */
+    snprintf(prompt, sizeof(prompt),
+             "The model wants to fetch '%s' from the internet. Allow? [y/N] ",
+             url);
+    return input_confirm(prompt, 0);
+}
+
+static int ci_prefix(const char *s, const char *prefix)
+{
+    size_t n = strlen(prefix);
+    size_t i;
+    for (i = 0; i < n && s[i]; i++) {
+        if (tolower((unsigned char)s[i]) != tolower((unsigned char)prefix[i]))
+            return 0;
+    }
+    return i == n;   /* all of prefix matched */
+}
+
+/* Case-insensitive search inside a length-delimited buffer. */
+static const char *find_ci(const char *hay, long hlen, const char *needle)
+{
+    size_t n = strlen(needle);
+    long i;
+
+    if (n == 0 || hlen < (long)n)
+        return NULL;
+    for (i = 0; i <= hlen - (long)n; i++) {
+        if (strncasecmp(hay + i, needle, n) == 0)
+            return hay + i;
+    }
+    return NULL;
+}
+
+/* Append code point `v` (0xA0..0xFF) as UTF-8: the accented letters and the
+ * typographic punctuation of Latin-1. */
+static void sb_add_latin1(SB *out, long v)
+{
+    sb_addc(out, (char)(0xc0 + ((v >> 6) & 0x3)));
+    sb_addc(out, (char)(0x80 + (v & 0x3f)));
+}
+
+/* Turn a decoded code point into readable text. Returns 0 for code points
+ * that are not worth showing, so the caller can keep the entity as it is. */
+static int html_codepoint(SB *out, long v)
+{
+    if (v < 128)
+        sb_addc(out, (char)v);
+    else if (v == 160)                       /* nbsp */
+        sb_addc(out, ' ');
+    else if (v == 169)
+        sb_add(out, "(c)");
+    else if (v == 174)
+        sb_add(out, "(r)");
+    else if (v == 8482)                      /* trade */
+        sb_add(out, "(tm)");
+    else if (v == 8364)                      /* euro */
+        sb_add(out, "EUR");
+    else if (v == 8211 || v == 8212)         /* en/em dash */
+        sb_add(out, "-");
+    else if (v == 8216 || v == 8217 || v == 8249 || v == 8250)
+        sb_addc(out, '\'');
+    else if (v == 8218 || v == 8219)         /* single guillemets */
+        sb_add(out, ">");
+    else if (v == 8220 || v == 8221)
+        sb_addc(out, '"');
+    else if (v == 8222 || v == 8223)         /* double guillemets */
+        sb_add(out, ">");
+    else if (v == 8224 || v == 8226)         /* bullet, dagger */
+        sb_addc(out, '*');
+    else if (v == 8230)                      /* hellip */
+        sb_add(out, "...");
+    else if (v >= 0xa0 && v < 0x100)
+        sb_add_latin1(out, v);
+    else
+        return 0;
+    return 1;
+}
+
+/* Decode the HTML entities that show up in readable text. `n` includes the
+ * trailing ';'. Returns 0 for entities that are not decoded, so the caller
+ * can leave them in the text. */
+static int html_entity(SB *out, const char *s, size_t n)
+{
+    /* entities that map to a replacement text */
+    static const struct { const char *name; const char *text; } texts[] = {
+        { "&amp;",    "&"  }, { "&lt;",     "<"  }, { "&gt;",    ">"  },
+        { "&quot;",   "\"" }, { "&apos;",   "'"  }, { "&nbsp;",  " "  },
+        { "&hellip;", "..." }, { "&mdash;",  "-"  }, { "&ndash;",  "-"  },
+        { "&lsquo;",  "'"  }, { "&rsquo;",  "'"  }, { "&ldquo;",  "\"" },
+        { "&rdquo;",  "\"" }, { "&copy;",   "(c)" }, { "&reg;",    "(r)" },
+        { "&trade;",  "(tm)"}, { "&deg;",    " deg" },{ "&euro;",  "EUR" },
+        { "&#39;",    "'"  }, { "&#47;",    "/"  }, { "&middot;", "*"  },
+        { "&bull;",   "*"  }, { "&times;",  "x"  }, { "&plusmn;", "+/-" },
+        { "&#8230;",  "..." },{ "&shy;",    ""   }, { "&sect;",   "S"  },
+        { "&laquo;",  "<<" }, { "&raquo;",  ">>" }, { "&prime;",  "'"  },
+        { "&frac12;", "1/2 "},{ "&frac14;", "1/4 "},{ "&frac34;", "3/4 " },
+        { "&sup2;",   "^2" }, { "&sup3;",   "^3" }, { "&not;",    "!"   },
+        { "&para;",   "P"  }
+    };
+    /* entities that map to a Latin-1 code point */
+    static const struct { const char *name; long code; } codes[] = {
+        { "&aacute;", 225 }, { "&agrave;", 224 }, { "&acirc;",  226 },
+        { "&atilde;", 227 }, { "&auml;",   228 }, { "&aring;",  229 },
+        { "&aelig;",  230 }, { "&ccedil;", 231 }, { "&egrave;", 232 },
+        { "&eacute;", 233 }, { "&ecirc;",  234 }, { "&euml;",   235 },
+        { "&igrave;", 236 }, { "&iacute;", 237 }, { "&icirc;",  238 },
+        { "&iuml;",   239 }, { "&ntilde;", 241 }, { "&ograve;", 242 },
+        { "&oacute;", 243 }, { "&ocirc;",  244 }, { "&otilde;", 245 },
+        { "&ouml;",   246 }, { "&ugrave;", 249 }, { "&uacute;", 250 },
+        { "&ucirc;",  251 }, { "&uuml;",   252 }, { "&yacute;", 253 },
+        { "&szlig;",  223 }, { "&divide;", 0xf7 }, { "&macr;",  0xaf }
+    };
+    size_t i;
+
+    for (i = 0; i < sizeof(texts) / sizeof(texts[0]); i++) {
+        if (n == strlen(texts[i].name) && strncmp(s, texts[i].name, n) == 0) {
+            sb_add(out, texts[i].text);
+            return 1;
+        }
+    }
+    /* numeric entity: &#NN; or &#xHH; */
+    if (n >= 3 && s[0] == '&' && s[1] == '#') {
+        char num[10];
+        size_t start = 2, k = 2, len = 0;
+        long v;
+        int base = 10;
+
+        if (n >= 4 && (s[2] == 'x' || s[2] == 'X')) {
+            base = 16;
+            start = 3;
+        }
+        for (k = start; k < n && s[k] != ';'; k++) {
+            if (!isxdigit((unsigned char)s[k]) || len >= sizeof(num) - 1)
+                return 0;
+            num[len++] = s[k];
+        }
+        if (k >= n || len == 0)
+            return 0;
+        num[len] = '\0';
+        v = strtol(num, NULL, base);
+        if (v <= 0 || v >= 0x110000)
+            return 0;
+        return html_codepoint(out, v);
+    }
+    for (i = 0; i < sizeof(codes) / sizeof(codes[0]); i++) {
+        if (n == strlen(codes[i].name) && strncmp(s, codes[i].name, n) == 0)
+            return html_codepoint(out, codes[i].code);
+    }
+    return 0;
+}
+
+/* Name of the tag at `tag` (points at '<'), lowercase, "" when unknown.
+ * *closing is set for "</name". */
+static void tag_name(const char *tag, const char *end, char *name, size_t sz,
+                     int *closing)
+{
+    const char *p = tag + 1;
+    size_t n = 0;
+
+    *closing = 0;
+    if (p < end && *p == '/') {
+        *closing = 1;
+        p++;
+    }
+    while (p < end && n < sz - 1 && isalpha((unsigned char)*p))
+        name[n++] = (char)tolower((unsigned char)*p++);
+    name[n] = '\0';
+}
+
+/* Elements without content: only the tag itself, never look for an end. */
+static int tag_is_void(const char *name)
+{
+    static const char *voids[] = { "area", "base", "br", "col", "embed", "hr",
+                                   "img", "input", "link", "meta", "param",
+                                   "source", "track", "wbr" };
+    size_t i;
+    for (i = 0; i < sizeof(voids) / sizeof(voids[0]); i++) {
+        if (strcmp(name, voids[i]) == 0)
+            return 1;
+    }
+    return 0;
+}
+
+/* Elements that are never useful as text for a model. */
+static int tag_is_noise(const char *name)
+{
+    static const char *noise[] = { "script", "style", "svg", "noscript",
+                                   "template", "iframe", "object", "canvas" };
+    size_t i;
+    for (i = 0; i < sizeof(noise) / sizeof(noise[0]); i++) {
+        if (strcmp(name, noise[i]) == 0)
+            return 1;
+    }
+    return 0;
+}
+
+/* Elements that end a text line. */
+static int tag_is_block(const char *name)
+{
+    static const char *blk[] = { "p", "div", "br", "tr", "li", "h1", "h2",
+                                 "h3", "h4", "h5", "h6", "section", "article",
+                                 "header", "footer", "nav", "ul", "ol", "table",
+                                 "pre", "form", "blockquote", "hr", "aside",
+                                 "figure", "figcaption", "dd", "dt", "body" };
+    size_t i;
+    for (i = 0; i < sizeof(blk) / sizeof(blk[0]); i++) {
+        if (strcmp(name, blk[i]) == 0)
+            return 1;
+    }
+    return 0;
+}
+
+/* Drop the whitespace at the end of the string builder. */
+static void sb_rtrim(SB *b)
+{
+    while (b->len && (b->buf[b->len - 1] == '\n' || b->buf[b->len - 1] == ' ' ||
+                      b->buf[b->len - 1] == '\t'))
+        b->buf[--b->len] = '\0';
+}
+
+/* Reduce an HTML document to readable plain text: scripts, styles, comments
+ * and tags are dropped, entities are decoded and whitespace is collapsed. */
+static char *html_to_text(const char *s, long len)
+{
+    SB out;
+    long i = 0;
+
+    sb_init(&out);
+    while (i < len) {
+        char c = s[i];
+        const char *e;
+
+        if (c == '<') {
+            long j = i + 1;
+            char name[32];
+            int closing;
+
+            /* comment: no text at all */
+            if (len - i >= 4 && strncmp(s + i, "<!--", 4) == 0) {
+                e = find_ci(s + i + 4, len - i - 4, "-->");
+                i = e ? (e - s) + 3 : len;
+                continue;
+            }
+            /* doctype, CDATA: no text at all */
+            if (len - i >= 2 && (s[i + 1] == '!' || s[i + 1] == '?')) {
+                e = find_ci(s + i, len - i, ">");
+                i = e ? (e - s) + 1 : len;
+                continue;
+            }
+            while (j < len && s[j] != '>')
+                j++;
+            if (j >= len)
+                break;               /* unterminated tag */
+            tag_name(s + i, s + j, name, sizeof(name), &closing);
+            i = j + 1;
+
+            if (closing) {
+                if (tag_is_block(name))
+                    sb_addc(&out, '\n');
+                continue;
+            }
+            if (tag_is_void(name))
+                continue;            /* <br>, <img>, <meta> ... */
+            if (tag_is_noise(name)) {
+                char endtag[34];
+                snprintf(endtag, sizeof(endtag), "</%s", name);
+                e = find_ci(s + i, len - i, endtag);
+                if (e) {
+                    const char *g = find_ci(e, len - (e - s), ">");
+                    i = g ? (g - s) + 1 : len;
+                } else {
+                    i = len;         /* unterminated: skip the rest */
+                }
+                sb_addc(&out, '\n');
+                continue;
+            }
+            if (strcmp(name, "li") == 0 || strcmp(name, "dd") == 0) {
+                sb_rtrim(&out);
+                sb_add(&out, "\n- ");
+            } else if (tag_is_block(name)) {
+                sb_addc(&out, '\n');
+            }
+            continue;
+        }
+        if (c == '&') {
+            long j = i;
+            while (j < len && j - i < 10 && s[j] != ';' &&
+                   !isspace((unsigned char)s[j]))
+                j++;
+            if (j < len && j > i && s[j] == ';' &&
+                html_entity(&out, s + i, (size_t)(j - i + 1))) {
+                i = j + 1;
+                continue;
+            }
+            sb_addc(&out, c);
+            i++;
+            continue;
+        }
+        if (isspace((unsigned char)c)) {
+            if (sb_len(&out)) {
+                char last = sb_cstr(&out)[sb_len(&out) - 1];
+                if (last != ' ' && last != '\n')
+                    sb_addc(&out, ' ');
+            }
+            i++;
+            continue;
+        }
+        sb_addc(&out, c);
+        i++;
+    }
+
+    /* one space per run, at most one empty line, no leading blanks */
+    {
+        char *r = strdup(sb_cstr(&out));
+        long w = 0, k;
+        int nl = 0;
+        sb_free(&out);
+        if (!r)
+            return NULL;
+        for (k = 0; r[k]; k++) {
+            char c = r[k];
+            if (c == ' ') {
+                if (w == 0 || r[w - 1] == ' ' || r[w - 1] == '\n')
+                    continue;
+                r[w++] = c;
+                continue;
+            }
+            if (c == '\n') {
+                if (w == 0)
+                    continue;
+                if (r[w - 1] == ' ') {
+                    r[w - 1] = '\n';    /* "text \n" -> "text\n" */
+                    continue;
+                }
+                if (r[w - 1] == '\n') {
+                    if (nl >= 2)
+                        continue;       /* max one empty line */
+                    nl++;
+                    r[w++] = '\n';
+                    continue;
+                }
+                nl = 1;
+                r[w++] = '\n';
+                continue;
+            }
+            nl = 0;
+            r[w++] = c;
+        }
+        while (w > 0 && (r[w - 1] == '\n' || r[w - 1] == ' '))
+            w--;
+        r[w] = '\0';
+        return r;
+    }
+}
+
+/* Content a model cannot use as text: a short note beats a screenful of
+ * binary noise in the context window. */
+static int ctype_is_binary(const char *ctype)
+{
+    static const char *pfx[] = { "image/", "video/", "audio/", "font/",
+                                 "application/pdf", "application/zip",
+                                 "application/gzip", "application/x-gzip",
+                                 "application/x-tar", "application/x-bzip2",
+                                 "application/x-7z-compressed",
+                                 "application/x-rar", "application/vnd.rar",
+                                 "application/octet-stream",
+                                 "application/x-executable",
+                                 "application/x-shockwave-flash",
+                                 "application/wasm", "application/vnd." };
+    size_t i;
+
+    if (!ctype || !*ctype)
+        return 0;
+    for (i = 0; i < sizeof(pfx) / sizeof(pfx[0]); i++) {
+        if (ci_prefix(ctype, pfx[i]))
+            return 1;
+    }
+    return 0;
+}
+
+/* Fetch a document from the internet. HTTP errors are reported to the model
+ * as a result (it may want to react to a 404), only transport/URL problems
+ * are tool failures. */
+static int tool_web_fetch(const char *url, long maxbytes, char **out)
+{
+    char *body = NULL, *ctype = NULL, *final = NULL, *err = NULL;
+    long bodylen = 0;
+    int status = 0;
+    SB res;
+    char *text;
+
+    if (!url || !*url)
+        return hasmsg_alloc(out, "error: web_fetch requires \"url\"");
+
+    /* only http:// and https://: no file:// or ftp:// surprises */
+    if (!(ci_prefix(url, "http://") || ci_prefix(url, "https://")) ||
+        strlen(url) > 2048) {
+        SB m;
+        sb_init(&m);
+        sb_printf(&m, "error: '%s' is not a fetchable URL, use an "
+                      "http:// or https:// address", url);
+        {
+            char *r = strdup(sb_cstr(&m));
+            sb_free(&m);
+            *out = r;
+        }
+        return -1;
+    }
+    if (!confirm_net(url)) {
+        SB m;
+        sb_init(&m);
+        sb_printf(&m, "denied: user did not allow fetching '%s'", url);
+        {
+            char *r = strdup(sb_cstr(&m));
+            sb_free(&m);
+            *out = r;
+            return -1;
+        }
+    }
+
+    if (maxbytes <= 0)
+        maxbytes = TOOL_WEB_DEFAULT_CAP;
+    if (maxbytes > TOOL_WEB_MAX_CAP)
+        maxbytes = TOOL_WEB_MAX_CAP;
+
+    if (http_get(url, maxbytes, &body, &bodylen, &status, &ctype, &final,
+                 &err) != 0) {
+        SB m;
+        sb_init(&m);
+        sb_printf(&m, "error: web_fetch failed for '%s': %s", url,
+                  err ? err : "unknown error");
+        free(err);
+        {
+            char *r = strdup(sb_cstr(&m));
+            sb_free(&m);
+            *out = r;
+            return -1;
+        }
+    }
+    free(err);
+
+    /* nothing a language model can read: say so instead of dumping bytes */
+    if (ctype_is_binary(ctype) ||
+        (bodylen > 0 && memchr(body, 0, (size_t)bodylen) != NULL)) {
+        SB m;
+        sb_init(&m);
+        sb_printf(&m,
+                  "note: '%s' is not text (content-type: %s, %ld bytes), so "
+                  "its content was not returned. Try a text or HTML version, "
+                  "an API endpoint, or the raw source URL.",
+                  (final && *final) ? final : url,
+                  (ctype && *ctype) ? ctype : "unknown", bodylen);
+        free(body);
+        free(ctype);
+        free(final);
+        {
+            char *r = strdup(sb_cstr(&m));
+            sb_free(&m);
+            *out = r;
+            return r ? 0 : -1;
+        }
+    }
+
+    /* HTML is much cheaper to read as text */
+    text = body;
+    body = NULL;
+    if (ctype && (ci_prefix(ctype, "text/html") ||
+                  ci_prefix(ctype, "application/xhtml"))) {
+        char *t = html_to_text(text, bodylen);
+        if (t) {
+            free(text);
+            text = t;
+        }
+    }
+
+    sb_init(&res);
+    sb_printf(&res, "HTTP %d %s", status,
+              (final && *final) ? final : url);
+    sb_printf(&res, "  [content-type: %s, %ld bytes%s]\n\n",
+              (ctype && *ctype) ? ctype : "unknown", bodylen,
+              bodylen >= maxbytes ? ", truncated" : "");
+    sb_add(&res, text ? text : "");
+
+    {
+        char *r = strdup(sb_cstr(&res));
+        sb_free(&res);
+        free(text);
+        free(body);
+        free(ctype);
+        free(final);
+        *out = r;
+        return r ? 0 : -1;
+    }
+}
+
+/* ---------------------------------------------------------------- */
 /* tools definitions                                                */
 /* ---------------------------------------------------------------- */
 
@@ -659,6 +1177,27 @@ char *tools_definitions_json(void)
         j_obj_set(f, "function", fn);
         j_arr_push(tools, f);
     }
+    {
+        static const char *pn[] = { "url", "max_bytes" };
+        static const char *pt[] = { "string", "integer" };
+        static const char *pd[] = {
+            "Absolute http:// or https:// URL of the document to download.",
+            "Maximum number of bytes to return (optional; default 64000, "
+            "maximum 200000). Use it for long pages or large files." };
+        JVal *f = j_obj_new();
+        JVal *fn = build_function(
+            "web_fetch",
+            "Download a document from the internet and return its content. "
+            "Use it whenever you need information from the web: "
+            "documentation, an API endpoint, a specification, the source of "
+            "a page. HTML pages are converted to readable plain text, "
+            "redirects are followed. Never invent an URL: use a URL the user "
+            "gave you or one you are sure about.",
+            pn, pt, pd, 2, 1);
+        j_obj_set(f, "type", j_str_new("function"));
+        j_obj_set(f, "function", fn);
+        j_arr_push(tools, f);
+    }
 
     sb_init(&b);
     j_emit(tools, &b);
@@ -745,6 +1284,19 @@ int tool_run(const char *name, const char *args_json, char **out)
         const char *dir = vd ? j_str(vd) : NULL;
         {
             int rc = tool_list(dir, out);
+            j_free(args);
+            return rc;
+        }
+    }
+    if (strcmp(name, "web_fetch") == 0) {
+        const JVal *vu = j_get(args, "url");
+        const JVal *vm = j_get(args, "max_bytes");
+        const char *url = vu ? j_str(vu) : NULL;
+        long maxbytes = 0;
+        if (vm && j_is(vm, J_NUM) && j_num(vm) > 0)
+            maxbytes = (long)j_num(vm);
+        {
+            int rc = tool_web_fetch(url, maxbytes, out);
             j_free(args);
             return rc;
         }

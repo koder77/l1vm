@@ -5,15 +5,16 @@
 Generated with opencode Big Pickle AI
 License: GPL3
 
-brackets-llm is a small program written in plain C (C11, no external
-dependencies) that lets you generate L1VM "Brackets" programs with a local
-LLM. It works like opencode:
+brackets-llm is a small program written in plain C (C11, no mandatory
+external dependencies) that lets you generate L1VM "Brackets" programs with a
+local LLM. It works like opencode:
 
   * A system prompt (l1vm-system-prompt.txt) is sent to the LLM at startup.
   * You chat with the LLM.
-  * The LLM can autonomously use tools (read_file, write_file, list_files)
-    to read and modify files on disk without you typing a slash command,
-    just like opencode.
+  * The LLM can autonomously use tools (read_file, write_file, edit_file,
+    list_files, web_fetch) to read and modify files on disk and to download
+    pages from the internet, without you typing a slash command, just like
+    opencode.
   * Brackets code found in the model's answer is saved to a .l1com file.
   * The code is checked with the L1VM language server (l1vm-lsp), which runs
     real compiler diagnostics (l1com), and errors are automatically corrected
@@ -40,6 +41,15 @@ of your choice.
         - l1vm-build.sh     (build script)
         - l1vm              (the virtual machine to run programs)
     and the L1VM include directory ~/l1vm/include/.
+
+Optional, only for the web_fetch tool:
+
+  * libcurl development files (libcurl4-openssl-dev / libcurl-devel) for
+    https:// downloads. The Makefile probes for libcurl at build time and
+    enables it automatically. Without libcurl the program still downloads
+    plain http:// by itself, and it uses the "curl" program as a helper for
+    https:// (so plain http:// needs no extra package at all). Build without
+    libcurl on purpose with:   make clean && make CURL_OK=1
 
 
 ===============================================================================
@@ -107,6 +117,11 @@ different model family, remove/adapt this option in src/main.c
   BRACKETS_LLM_CONFIRM      If set to 1/yes/y/true, the program asks you
                             (interactive mode) before the model writes any
                             file. By default writes are allowed automatically.
+  BRACKETS_LLM_NET_CONFIRM  If set to 1/yes/y/true, the program asks you
+                            (interactive mode) before the model fetches each
+                            URL. By default web_fetch runs automatically,
+                            like the file writes. Every request is printed as
+                            "[fetch] <status line>" in the terminal.
 
 Example:
 
@@ -150,14 +165,22 @@ type a slash command. When you ask, for example:
 
 the model may:
   1. call read_file to inspect the file,
-  2. call write_file to modify it,
+  2. call write_file (or edit_file) to modify it,
   3. and only then reply with a final text answer.
 
 The program advertises these tools to the server in the chat request:
 
-  read_file(path)    -> returns the file contents (truncated at ~128 KB).
-  write_file(path, content)  -> creates or overwrites a file.
-  list_files(dir)    -> lists the files/directories of a directory.
+  read_file(path, limit?, offset?)   -> returns the file contents
+                                       (truncated at ~128 KB).
+  write_file(path, content)          -> creates or overwrites a file.
+  edit_file(path, oldString, newString)
+                                    -> replaces one exact substring, so the
+                                       model does not have to resend a whole
+                                       large file.
+  list_files(dir?)                   -> lists the files/directories of a
+                                       directory.
+  web_fetch(url, max_bytes?)         -> downloads a document from the
+                                       internet (see below).
 
 While a tool call is running, every [tool] round is shown in the terminal and
 the tool results are fed back into the conversation so the model can continue
@@ -180,6 +203,60 @@ the working directory or start with ~ (expanded to your HOME).
 
 After the final answer, if it contains Brackets (.l1com) code, it is saved,
 checked and auto-corrected exactly as described in section 8.
+
+
+------------------------------------------------------------------------------
+  6.1 web_fetch (the internet)
+------------------------------------------------------------------------------
+
+The model can download data from the internet on its own, so it does not have
+to invent facts or rely on your training data. For example:
+
+    You> What does the L1VM README say about the "push" instruction?
+
+the model may call web_fetch, read the page, and then answer.
+
+    web_fetch(url, max_bytes?)
+
+  * Only absolute http:// and https:// URLs are accepted; file://, ftp://
+    and similar schemes are rejected.
+  * Redirects are followed (up to 5 hops), chunked responses are decoded, and
+    the final URL after the redirects is reported back, so the model knows
+    where the text actually came from.
+  * HTML (and XHTML) is converted to readable plain text: tags, scripts and
+    styles are dropped, block elements become line breaks, list items get
+    markers, and common HTML entities (as well as Latin-1 input) are turned
+    into UTF-8. That keeps pages usable for a model instead of returning a
+    wall of markup.
+  * The body is capped: 64000 bytes by default, 200000 at most. Use the
+    optional max_bytes argument for a long page or a large file. A body that
+    was cut is marked "truncated" in the result header.
+  * Binary content (image/*, video/*, audio/*, application/pdf,
+    application/octet-stream, ...) and bodies that contain NUL bytes are not
+    returned as raw bytes; the model instead gets a short note with the status
+    line, the content type and the size.
+  * HTTP errors are NOT tool failures. A 404 or a 500 is returned to the
+    model as a normal result (starting with "HTTP <status> ...") so it can
+    react to it, e.g. try another URL. Only transport and URL problems
+    (DNS, connection refused, timeout, unsupported scheme) are reported as
+    errors starting with "error:". Refused requests start with "denied:".
+
+Result format:
+
+    HTTP 200 https://example.com/page.html  [content-type: text/html, 18234 bytes]
+
+    <the page as plain text>
+
+Only https:// needs libcurl (or the curl program) - plain http:// is
+downloaded by the built-in HTTP client, so the tool works out of the box.
+Every outgoing request is printed in the terminal as:
+
+    [fetch] HTTP 200 https://example.com/page.html  [content-type: ...]
+
+Like the file writes, network access is allowed automatically. To be asked
+for confirmation before each URL (interactive mode):
+
+    export BRACKETS_LLM_NET_CONFIRM=1
 
 
 ===============================================================================
@@ -291,6 +368,32 @@ PROBLEM: the model never uses the file tools
      support it. If your model only supports plain text, it will simply
      answer with code/text and file changes must be done with /write or /save.
 
+PROBLEM: the model never uses web_fetch
+  -> Same cause as above (tool calling support), or the model does not know
+     the URL. Give it the URL, or ask a question that clearly needs the
+     current documentation, e.g. "look up ... on the web first".
+
+PROBLEM: web_fetch returns "error: ... https is not supported" / no TLS
+  -> The build has no libcurl and no usable "curl" program. Install
+     libcurl4-openssl-dev (Debian/Ubuntu), libcurl-devel (Fedora) or
+     install the curl command line tool, then "make clean && make".
+     To check what the build found, run:  make -n | tr ' ' '\n' | grep -i curl
+     Plain http:// URLs work without any of this.
+
+PROBLEM: web_fetch returns "denied: ..."
+  -> The request needed confirmation and was not allowed: either answer "y"
+     at the prompt, or unset BRACKETS_LLM_NET_CONFIRM (and run
+     non-interactively with stdin not a terminal).
+
+PROBLEM: web_fetch returns "error: connection refused" / "unknown host"
+  -> The URL host/port does not exist or is blocked (firewall, no route,
+     proxy required). Check it yourself:  curl -v <url>
+
+PROBLEM: web_fetch returns only a "note:" with a content type
+  -> The document is binary (image, PDF, zip, ...). The program does not
+     hand raw binary data to the model on purpose. Download it yourself
+     and inspect the parts you need.
+
 
 ===============================================================================
  10. PROJECT LAYOUT
@@ -299,14 +402,19 @@ PROBLEM: the model never uses the file tools
     src/main.c        chat loop, agent tool loop, code extraction,
                       auto-correction, commands
     src/tools.c/h     autonomous tools the LLM can call: read_file,
-                      write_file, list_files
+                      write_file, edit_file, list_files, web_fetch
+                      (incl. the HTML -> plain text conversion)
     src/config.h      configuration via environment variables
-    src/http.c/h      minimal HTTP client (raw POSIX sockets) for the LLM
+    src/http.c/h      HTTP client: raw POSIX sockets for http://, libcurl
+                      or the curl program for https://; GET, redirects,
+                      chunked decoding, used for the LLM and for web_fetch
     src/lspclient.c/h L1VM LSP client (spawns l1vm-lsp, JSON-RPC over stdio)
     src/json.c/h      JSON value model / parser / emitter  (from the L1VM project)
     src/sb.c/h        string builder (from the L1VM project)
+    src/inputline.c/h  input helper (readline when available, else fgets)
+    src/intr.c/h      terminal control helpers
     l1vm-system-prompt.txt  the Brackets/L1VM system prompt sent to the LLM
-    Makefile          build, clean, install
+    Makefile          build, clean, install; auto-detects readline and libcurl
 
 License: GPL v3 (see the header comments in the source files, the JSON/SB
 parts are from the L1VM project by Stefan Pietzonke).
