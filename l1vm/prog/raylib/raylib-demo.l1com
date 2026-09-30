@@ -44,12 +44,17 @@
     (set double 1 spacing~ 1.0)
     (set string s title~ "L1VM raylib demo")
     (set string s helpstr~ "ESC to quit - L1VM raylib 3D demo")
-    (set byte 5 darkgray~ 80 80 80 255 0)
-    (set byte 5 green~ 0 228 48 255 0)
-    (set byte 5 yellow~ 253 249 0 255 0)
-    (set double 4 pos~ 0.0 0.0 0.0 0.0)
-    (set double 4 size~ 1.0 1.0 1.0 0.0)
-    (set double 12 cam~ 10.0 10.0 10.0 0.0 0.0 0.0 0.0 1.0 0.0 45.0 0.0 0.0)
+    // struct arrays hold exactly what the module reads: Color is 4 bytes,
+    // Vector3 is 3 doubles, Camera3D is 11 doubles
+    // (position D,3, target D,3, up D,3, fovy, projection).
+    // The bounds check in the module passes the last byte index it touches,
+    // which matches data_info.end = last valid byte in load-object.c.
+    (set byte 4 darkgray~ 80 80 80 255)
+    (set byte 4 green~ 0 228 48 255)
+    (set byte 4 yellow~ 253 249 0 255)
+    (set double 3 pos~ 0.0 0.0 0.0)
+    (set double 3 size~ 1.0 1.0 1.0)
+    (set double 11 cam~ 10.0 10.0 10.0 0.0 0.0 0.0 0.0 1.0 0.0 45.0 0.0)
     (set int64 1 Pcam~ 0)
     (set int64 1 Ppos~ 0)
     (set int64 1 Psize~ 0)

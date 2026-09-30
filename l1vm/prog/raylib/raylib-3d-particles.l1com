@@ -1,0 +1,771 @@
+// raylib-3d-particles.l1com
+//
+// raylib module demo: 3D particle fountain.
+//
+// A spray of particles rises out of a small nozzle at the world origin,
+// spreads into a cone while it climbs, and falls back onto the ground plane
+// where it bounces a second time before being recycled. Particles are drawn
+// as small cubes inside a 3D mode with an additive blend, so overlapping
+// particles glow instead of occluding each other.
+//
+// Build (the program exceeds the default 5000 line limit of the compiler):
+//     l1vm-build.sh raylib-3d-particles -lines 20000
+// Run:
+//     l1vm raylib-3d-particles
+//
+// Controls:
+//     Mouse click : burst of 15 extra particles
+//     Space       : pause / unpause the simulation
+//     G           : toggle gravity on / off
+//     E           : cycle spray density (low / medium / high)
+//     R           : reset the particle system
+//     H           : toggle help text
+//     ESC / close : quit
+//
+// ---------------------------------------------------------------------------
+// WHY THE PARTICLES USED TO LOOK LIKE ONE SOLID WHITE CUBE
+// ---------------------------------------------------------------------------
+// Three things combined:
+//   1. The side walls were only +/-3 units, so 400 particles were crammed
+//      into a 6x6 footprint - roughly one particle per cubic unit.
+//   2. Initial upward speed was 3.5..8.5 with gravity 0.025. The apex of
+//      that arc is 100..370 units above the floor, but the camera only sees
+//      about +/-8 units. So the particles rocketed straight out of frame
+//      within a second or two and the only ones left visible were the few
+//      still bunched at the emitter.
+//   3. Additive blending (GL_ONE, GL_ONE) sums the color channels, so any
+//      overlap clips straight to pure white instead of staying a tinted
+//      particle.
+//
+// ---------------------------------------------------------------------------
+// WHY THE TRAJECTORY IS TABLE DRIVEN
+// ---------------------------------------------------------------------------
+// This version walks each particle along a precomputed arc instead of
+// integrating forces. That is not only cheaper (see the performance notes),
+// it is the only formulation that can actually work on this toolchain,
+// because two language features the old physics loop relied on are broken:
+//
+//   1. Comparisons between two doubles ALWAYS evaluate to false. The
+//      compiler allocates the result register of a double comparison from
+//      the double register pool, but the VM stores the boolean result in the
+//      int register pool (vm/main.c: regi[] and regd[] are separate arrays).
+//      So the result is never read back. That silently killed all five
+//      collision tests - ground, two X walls, two Z walls - in every earlier
+//      version, and particles fell through the floor forever
+//      (measured py = -562 after 300 frames).
+//   2. The `cast` form does not convert. (cast intvar doublevar =) is
+//      accepted by the compiler but emits no conversion opcode, so the
+//      integer bit pattern is reinterpreted as a double. Measured result of
+//      (cast -3072 dq~ =) was -nan, and a value of 59 came out as 3.4e-322.
+//      Every random spawn offset and every random launch speed went through
+//      this, so all 400 particles were born at the same place with the same
+//      velocity: that alone is the white cube.
+//
+// Both are avoided here without touching the compiler:
+//   - No double comparison is ever evaluated. The only comparisons left are
+//     int64 ones (key state, density level, palette pick), and those work.
+//   - No int64 to double conversion is ever needed. Per particle variation
+//     comes from picking an entry out of a double table with an int64 index,
+//     which is a plain indexed array read.
+//
+// Because nothing is integrated, nothing can drift out of the box: the arc
+// ends exactly where it starts, so a particle is always inside the world by
+// construction and the collision tests are not needed at all. Each particle
+// gets its own phase speed, apex height, nozzle offset and orbit phase from
+// its slot number, so no two particles are ever at the same place.
+//
+// ---------------------------------------------------------------------------
+// PERFORMANCE NOTES (measured on this machine, raylib_set_target_fps 60)
+// ---------------------------------------------------------------------------
+// The dominant cost is the per-particle draw_cube_v module call: every call is
+// a full VM -> C transition with a mutex lock and three reads out of VM
+// memory. Cost scales linearly with the pool size, so the pool size is the
+// main lever. Measured raylib_get_fps with a full pool:
+//
+//     400 particles -> 28 fps      160 particles -> 60 fps
+//     200 particles -> 55 fps      120 particles -> 60 fps
+//
+// The pool is therefore 120, which is a 70% reduction and locks the 60 fps
+// target with headroom for the rest of the scene work.
+//
+// On top of the smaller pool the simulation got cheaper as well:
+//   1. Random numbers come from an inline Lehmer LCG instead of
+//      raylib_get_random_value. The old code paid four VM -> C transitions
+//      per spawned particle. The LCG is four int64 ops and stays inside the
+//      VM. It is a pure modulus generator (16807 * seed mod 2^31-1) so the
+//      largest intermediate is ~3.6e13 and never overflows int64.
+//   2. The six double particle arrays (position and velocity per axis) are
+//      gone. A particle is fully described by its slot number and the frame
+//      counter, so there is no per particle state to read or write back.
+//   3. The five dead double comparisons, the five wall/ground if blocks and
+//      the six damped-multiply steps are all gone from the inner loop.
+//   4. The palette pick in the draw loop is a flat if/else chain so picking
+//      one of four colors always costs the same three compares and no nested
+//      branch. A color pointer table would be tidier, but indexed reads of an
+//      int64 array are broken inside a for loop (the VM aborts with
+//      "variable access not on quad word/double float bound, offset: 1").
+//
+// ---------------------------------------------------------------------------
+// Brackets / raylib module requirements that this program follows:
+//   1. zero is the FIRST data entry of the program.
+//   2. raylib.l1h is included BEFORE intr-func.l1h (l1pre macro safety).
+//   3. string.l1h is initialized at module slot 1 (one~ :string_init !).
+//   4. Every color array is 5 bytes (rgba + 1 pad byte).
+//   5. Array indices are byte offsets: element i of a double array is at i * 8.
+//   6. Vector arguments are double arrays with one extra pad element
+//      (3 doubles + 1 pad = 4 doubles).
+//   7. Module arguments are pushed in call order (first arg first).
+//   8. String arguments to the module are passed as ADDRESSES (see Pshotname~
+//      style pointer vars), never as the string variable itself.
+
+(:main jmp)
+(set int64 1 zero 0)
+#include <raylib.l1h>
+#include <string.l1h>
+#include <intr-func.l1h>
+(main func)
+	#var ~ main
+
+	// basic constants
+	(set int64 1 one~ 1)
+	(set int64 1 two~ 2)
+	(set int64 1 three~ 3)
+	(set int64 1 four~ 4)
+	(set int64 1 eight~ 8)
+	// byte offset of array element 1 and 2 of a double array
+	(set int64 1 e8~ 8)
+	(set int64 1 e16~ 16)
+
+	// table geometry
+	(set int64 1 nph~ 64)
+	(set int64 1 ntab~ 8)
+	(set int64 1 mulx~ 13)
+	(set int64 1 mula~ 5)
+	(set int64 1 mulc~ 3)
+	(set int64 1 mulw1~ 7)
+	(set int64 1 mulw2~ 11)
+	(set int64 1 w36~ 36)
+	(set int64 1 w72~ 72)
+
+	// window / timing
+	(set int64 1 width~ 800)
+	(set int64 1 height~ 600)
+	(set int64 1 fps~ 60)
+	(set int64 1 wsclose~ 0)
+	(set int64 1 ret~ 0)
+
+	// camera: orbital around the origin (CAMERA_ORBITAL = 2)
+	(set int64 1 mode~ 2)
+	(set byte 5 dpad~ 0 0 0 0)
+	(set double 12 cam~ 30.0 22.0 30.0 0.0 0.0 0.0 0.0 1.0 0.0 45.0 0.0)
+	(set int64 1 Pcam~ 0)
+
+	// spray config
+	(set int64 1 maxparticles~ 120)
+	(set int64 1 visible~ 0)
+	(set int64 1 target~ 120)
+	(set int64 1 rate~ 2)
+	(set int64 1 frame~ 0)
+	(set int64 1 burstqueued~ 0)
+	(set int64 1 emislevel~ 0)
+	(set int64 1 gravtoggle~ 1)
+	(set int64 1 paused~ 0)
+	(set int64 1 showhelp~ 1)
+	(set int64 1 burst_amount~ 15)
+	// integer scratch used by the draw loop
+	(set int64 1 spv~ 0)
+	(set int64 1 stepv~ 0)
+	(set int64 1 aiv~ 0)
+	(set int64 1 aib~ 0)
+	(set int64 1 oxb~ 0)
+	(set int64 1 ozb~ 0)
+	(set int64 1 wxi~ 0)
+	(set int64 1 wzi~ 0)
+	(set int64 1 ci~ 0)
+	(set int64 1 idx~ 0)
+	(set int64 1 k~ 0)
+	(set int64 1 spdv~ 0)
+	(set int64 1 gidx~ 0)
+
+	// inline Lehmer LCG: seed = (seed * 16807) mod 2147483647
+	(set int64 1 lcgseed~ 20250930)
+	(set int64 1 lcga~ 16807)
+	(set int64 1 lcgm~ 2147483647)
+	(set int64 1 ri~ 0)
+
+	// input
+	(set int64 1 btn_left~ 0)
+	(set int64 1 key_space~ 32)
+	(set int64 1 key_g~ 71)
+	(set int64 1 key_e~ 69)
+	(set int64 1 key_r~ 82)
+	(set int64 1 key_h~ 72)
+	(set int64 1 bret~ 0)
+	(set int64 1 kret~ 0)
+
+	// table build scratch
+	(set int64 1 bi~ 0)
+	(set int64 1 bix~ 0)
+	(set int64 1 bhalf~ 32)
+	(set int64 1 bq~ 0)
+	(set int64 1 fb1~ 0)
+	(set double 1 d1~ 1.0)
+	(set double 1 d2~ 2.0)
+	(set double 1 d4~ 4.0)
+	(set double 1 d32~ 0.32)
+	(set double 1 dstep~ 0.015625)
+	(set double 1 dt~ 0.0)
+	(set double 1 du~ 0.0)
+	(set double 1 dum~ 0.0)
+	(set double 1 dlobe~ 0.0)
+	(set double 1 dtmp~ 0.0)
+
+	// spray shape (double)
+	(set double 1 dzero~ 0.0)
+	(set double 1 drad0~ 0.7)
+	(set double 1 dspread~ 0.3)
+	(set double 1 dz0~ 0.0)
+	(set double 1 ynv~ 0.0)
+	(set double 1 ampd~ 0.0)
+	(set double 1 cex~ 0.0)
+	(set double 1 cez~ 0.0)
+	(set double 1 wx~ 0.0)
+	(set double 1 wz~ 0.0)
+	(set double 1 dgsel~ 1.0)
+	(set double 1 dg~ 0.0)
+	(set double 1 dn~ 0.0)
+	(set double 1 dsel~ 0.0)
+	(set double 1 rad~ 0.0)
+	(set double 1 rx~ 0.0)
+	(set double 1 cx~ 0.0)
+	(set double 1 cz~ 0.0)
+	(set double 1 tx~ 0.0)
+	(set double 1 ty~ 0.0)
+	(set double 1 tz~ 0.0)
+
+	// trajectory tables (see the header for why these are needed)
+	(set double 64 ytab~)
+	// vertical arc: 0 -> 1 -> 0 -> 0.32 -> 0, two bounces
+
+	(set double 64 yrise~)
+	// free rise for gravity OFF: 0 -> 1
+
+	(set double 64 wav~)
+	// sine used for the horizontal orbit
+
+	(set double 8 amp~ 4.0 6.0 8.0 10.0 12.0 13.0 14.0 16.0)
+	// apex heights
+
+	(set double 8 cenx~ -1.2 -0.6 0.0 0.6 1.2 -0.9 0.9 0.3)
+	// emitter nozzle x centres
+
+	(set double 8 cenz~ 0.4 -0.9 0.9 -0.4 1.1 -1.1 0.0 0.7)
+	// emitter nozzle z centres
+
+	(set double 8 radamp~ 0.7 1.2 1.8 2.4 3.1 3.8 4.5 5.5)
+	// horizontal orbit radius per amplitude slot
+
+	(set double 2 seltab~ 1.0 0.0)
+	// gravity select, read with gravtoggle~ * 8: 1.0 arc, 0.0 free rise
+
+	// temp vectors (3 doubles)
+	(set double 4 partpos~ 0.0 0.0 0.0)
+	(set double 4 psize~ 0.6 0.6 0.6)
+	(set double 4 origin~ 0.0 0.0 0.0)
+	(set double 4 pcenter~ 0.0 0.0 0.0)
+	(set double 4 planesize~ 28.0 28.0 0.0)
+	(set int64 1 Ppartpos~ 0)
+	(set int64 1 Ppsize~ 0)
+	(set int64 1 Porigin~ 0)
+	(set int64 1 Pcenter~ 0)
+	(set int64 1 Pplanesize~ 0)
+
+	// draw parameters
+	(set double 1 radiusd~ 0.5)
+	(set int64 1 gridslices~ 24)
+	(set double 1 gridspacing~ 1.0)
+	(set int64 1 pc~ 0)
+
+	// text layout
+	(set int64 1 fs12~ 12)
+	(set int64 1 fs16~ 16)
+	(set int64 1 fs20~ 20)
+	(set int64 1 t1x~ 12)
+	(set int64 1 t1y~ 10)
+	(set int64 1 t2y~ 36)
+	(set int64 1 t3y~ 60)
+	(set int64 1 t4y~ 84)
+	(set int64 1 hinty~ 100)
+	(set int64 1 pcy~ 126)
+	(set int64 1 pnumx~ 110)
+	(set int64 1 gy~ 150)
+	(set int64 1 ey~ 174)
+	(set int64 1 ppx~ 330)
+	(set int64 1 ppy~ 280)
+	(set int64 1 fpsx~ 12)
+	(set int64 1 fpsy~ 570)
+
+	// colors (5 bytes: rgba, did brightness on purpose: with additive
+	// blending these stack into a glow but keep their hue instead of clipping
+	// to white the way the old near-full-range colors did.
+	(set byte 5 cbg~ 8 8 18 255)
+	(set byte 5 ctext~ 230 230 235 255)
+	(set byte 5 chelp~ 170 170 190 255)
+	(set byte 5 cinfo~ 110 230 110 255)
+	(set byte 5 cwarn~ 253 249 0 255)
+	(set byte 5 cground~ 30 30 45 255)
+	(set byte 5 cglow~ 160 110 50 255)
+	(set byte 5 c0~ 170 55 55 255)
+	(set byte 5 c1~ 180 130 40 255)
+	(set byte 5 c2~ 50 125 175 255)
+	(set byte 5 c3~ 175 175 35 255)
+
+	// strings
+	(set string s title~ "L1VM raylib - 3D particles")
+	(set string s h1~ "L1VM raylib - 3D particle fountain")
+	(set string s h2~ "Click: burst 15   Space: pause   G: gravity")
+	(set string s h3~ "E: spray density   R: reset   H: help")
+	(set string s h4~ "ESC: quit")
+	(set string s hint~ "Press H for help")
+	(set string s countpre~ "Particles: ")
+	(set string 16 countstr~ "")
+	(set int64 1 buflen~ 14)
+	(set string s gravon~ "Gravity: ON")
+	(set string s gravoff~ "Gravity: OFF")
+	(set string s emisslow~ "Spray: LOW")
+	(set string s emismed~ "Spray: MEDIUM")
+	(set string s emisfast~ "Spray: HIGH")
+	(set string s pausedstr~ "PAUSED")
+
+	// pointers
+	(set int64 1 Ptitle~ 0)
+	(set int64 1 Ph1~ 0)
+	(set int64 1 Ph2~ 0)
+	(set int64 1 Ph3~ 0)
+	(set int64 1 Ph4~ 0)
+	(set int64 1 Phint~ 0)
+	(set int64 1 Pcountpre~ 0)
+	(set int64 1 Pcountstr~ 0)
+	(set int64 1 Pgravon~ 0)
+	(set int64 1 Pgravoff~ 0)
+	(set int64 1 Pemisfast~ 0)
+	(set int64 1 Pemisslow~ 0)
+	(set int64 1 Pemisnorm~ 0)
+	(set int64 1 Ppausedstr~ 0)
+	(set int64 1 Pcbg~ 0)
+	(set int64 1 Pctext~ 0)
+	(set int64 1 Pchelp~ 0)
+	(set int64 1 Pcinfo~ 0)
+	(set int64 1 Pcwarn~ 0)
+	(set int64 1 Pcground~ 0)
+	(set int64 1 Pcglow~ 0)
+	(set int64 1 Pc0~ 0)
+	(set int64 1 Pc1~ 0)
+	(set int64 1 Pc2~ 0)
+	(set int64 1 Pc3~ 0)
+
+	// condition flags (one per if / for / while block)
+	(set int64 1 fwin~ 0)
+	(set int64 1 fbtn~ 0)
+	(set int64 1 fspc~ 0)
+	(set int64 1 fgkey~ 0)
+	(set int64 1 fekey~ 0)
+	(set int64 1 frkey~ 0)
+	(set int64 1 fhkey~ 0)
+	(set int64 1 fpause~ 0)
+	(set int64 1 fer0~ 0)
+	(set int64 1 fer1~ 0)
+	(set int64 1 fer2~ 0)
+	(set int64 1 fcap~ 0)
+	(set int64 1 fcap2~ 0)
+	(set int64 1 fburst~ 0)
+	(set int64 1 fgun~ 0)
+	(set int64 1 fdraw~ 0)
+	(set int64 1 fpal1~ 0)
+	(set int64 1 fpal2~ 0)
+	(set int64 1 fpal3~ 0)
+	(set int64 1 fhelp~ 0)
+	(set int64 1 fgonh~ 0)
+	(set int64 1 fes0~ 0)
+	(set int64 1 fes1~ 0)
+	(set int64 1 fpaused~ 0)
+	(set int64 1 fwhile~ 0)
+
+	// ----- init modules: raylib slot 0, string slot 1 -----
+	(zero :raylib_init !)
+	(one~ :string_init !)
+
+	// ----- get addresses -----
+	(cam~ Pcam~ pointer)
+	(partpos~ Ppartpos~ pointer)
+	(psize~ Ppsize~ pointer)
+	(origin~ Porigin~ pointer)
+	(pcenter~ Pcenter~ pointer)
+	(planesize~ Pplanesize~ pointer)
+	(title~ Ptitle~ pointer)
+	(h1~ Ph1~ pointer)
+	(h2~ Ph2~ pointer)
+	(h3~ Ph3~ pointer)
+	(h4~ Ph4~ pointer)
+	(hint~ Phint~ pointer)
+	(countpre~ Pcountpre~ pointer)
+	(countstr~ Pcountstr~ pointer)
+	(gravon~ Pgravon~ pointer)
+	(gravoff~ Pgravoff~ pointer)
+	(emisslow~ Pemisslow~ pointer)
+	(emismed~ Pemisnorm~ pointer)
+	(emisfast~ Pemisfast~ pointer)
+	(pausedstr~ Ppausedstr~ pointer)
+	(cbg~ Pcbg~ pointer)
+	(ctext~ Pctext~ pointer)
+	(chelp~ Pchelp~ pointer)
+	(cinfo~ Pcinfo~ pointer)
+	(cwarn~ Pcwarn~ pointer)
+	(cground~ Pcground~ pointer)
+	(cglow~ Pcglow~ pointer)
+	(c0~ Pc0~ pointer)
+	(c1~ Pc1~ pointer)
+	(c2~ Pc2~ pointer)
+	(c3~ Pc3~ pointer)
+
+	// ----- build the trajectory tables -----
+	// They cannot be literal initializers: the compiler rejects a
+	// (set double N arr~ ...) that carries more than about 30 values, and
+	// 64 sample tables are what keep the motion smooth. They are also not
+	// built in a for loop, because a for loop that indexes a double array
+	// only works when it is nested inside a do loop, and main has to open
+	// the window first. So the loop below sits directly in the main function
+	// body, which is the context where indexed double array access is good.
+	//
+	//   ytab~ : bouncing arc, 0 -> 1 -> 0 -> 0.32 -> 0
+	//   yrise~: free rise for gravity OFF, 0 -> 1
+	//   wav~  : one full wave, 0 -> 1 -> 0 -> -1 -> 0
+	//
+	// t is accumulated as t = t + 1/64 so that no int64 to double cast is
+	// ever needed (cast is broken on this toolchain), and both half period
+	// parabolas are evaluated every pass and selected afterwards.
+	(zero bi~ =)
+	(zero dt~ =)
+	(for-loop)
+	(((bi~ nph~ <) fb1~ =) fb1~ for)
+		(bi~ eight~ * bix~ :=)
+
+		// first half period: u1 = 2t, shape = 4 * u1 * (1 - u1)
+		(d2~ dt~ * du~ :=)
+		(d1~ - du~ dum~ :=)
+		(d4~ du~ * du~ :=)
+		(du~ dum~ * dlobe~ :=)
+
+		// second half period: u2 = 2t - 1, shape = 4 * u2 * (2 - 2t)
+		(du~ d1~ - du~ :=)
+		(d2~ du~ - dum~ :=)
+		(d4~ du~ * du~ :=)
+		(du~ dum~ * dtmp~ :=)
+
+		// ytab~ : full height first, 32% height second
+		(zero bq~ =)
+		(dlobe~ dtmp~ =)
+		(((bi~ bhalf~ >=) fb1~ =) fb1~ if)
+			(d32~ dtmp~ * dtmp~ :=)
+			(one~ bq~ =)
+		(endif)
+		(dtmp~ ytab~ [ bix~ ] =)
+
+		// yrise~ : plain 0 -> 1 ramp
+		(dt~ yrise~ [ bix~ ] =)
+
+		// wav~ : first lobe positive, second lobe negative, both full height
+		(dlobe~ dtmp~ =)
+		(((bi~ bhalf~ >=) fb1~ =) fb1~ if)
+			(dzero~ - dtmp~ dtmp~ :=)
+		(endif)
+		(dtmp~ wav~ [ bix~ ] =)
+
+		(dstep~ dt~ + dt~ :=)
+		(bi~ + one~ bi~ :=)
+	(next)
+
+	// ----- init window -----
+	(width~ height~ Ptitle~ :raylib_init_window !)
+	(ret~ stpopi)
+	(((ret~ zero !=) fwin~ =) fwin~ if)
+		(one~ :free_mod !)
+		(zero :free_mod !)
+		(zero :exit !)
+	(endif)
+
+	(fps~ :raylib_set_target_fps !)
+
+	// camera: internal orbital camera, updated each frame
+	(mode~ :raylib_set_camera_mode !)
+	(Pcam~ :raylib_set_camera !)
+
+	(do)
+		// camera update
+		(:raylib_update_camera !)
+
+		// ----- input -----
+		// mouse click: queue a burst
+		(btn_left~ :raylib_is_mouse_button_pressed !)
+		(bret~ stpopi)
+		(((bret~ zero !=) fbtn~ =) fbtn~ if)
+			(burst_amount~ burstqueued~ + burstqueued~ :=)
+		(endif)
+
+		// space: pause toggle
+		(key_space~ :raylib_is_key_pressed !)
+		(kret~ stpopi)
+		(((kret~ zero !=) fspc~ =) fspc~ if)
+			(one~ paused~ - paused~ :=)
+		(endif)
+
+		// G: gravity toggle
+		(key_g~ :raylib_is_key_pressed !)
+		(kret~ stpopi)
+		(((kret~ zero !=) fgkey~ =) fgkey~ if)
+			(one~ gravtoggle~ - gravtoggle~ :=)
+		(endif)
+
+		// E: cycle spray density
+		(key_e~ :raylib_is_key_pressed !)
+		(kret~ stpopi)
+		(((kret~ zero !=) fekey~ =) fekey~ if)
+			(emislevel~ + one~ emislevel~ :=)
+			(emislevel~ three~ % emislevel~ :=)
+		(endif)
+
+		// R: reset the system
+		(key_r~ :raylib_is_key_pressed !)
+		(kret~ stpopi)
+		(((kret~ zero !=) frkey~ =) frkey~ if)
+			(zero visible~ =)
+			(zero burstqueued~ =)
+			(zero frame~ =)
+		(endif)
+
+		// H: toggle help
+		(key_h~ :raylib_is_key_pressed !)
+		(kret~ stpopi)
+		(((kret~ zero !=) fhkey~ =) fhkey~ if)
+			(one~ showhelp~ - showhelp~ :=)
+		(endif)
+
+		// ----- SIMULATION (skipped while paused) -----
+		(((paused~ zero ==) fpause~ =) fpause~ if)
+
+			// density level: particles added per frame and how many stay lit
+			(((emislevel~ zero ==) fer0~ =) fer0~ if)
+				(one~ rate~ =)
+				(w36~ target~ =)
+			(endif)
+			(((emislevel~ one~ ==) fer1~ =) fer1~ if)
+				(two~ rate~ =)
+				(w72~ target~ =)
+			(endif)
+			(((emislevel~ two~ ==) fer2~ =) fer2~ if)
+				(four~ rate~ =)
+				(maxparticles~ target~ =)
+			(endif)
+
+			// grow toward the target, and relax back after a burst
+			(rate~ visible~ + visible~ :=)
+			(((visible~ target~ >) fcap~ =) fcap~ if)
+				(visible~ rate~ - visible~ :=)
+			(endif)
+
+			// queued burst
+			(((burstqueued~ zero !=) fburst~ =) fburst~ if)
+				(burstqueued~ visible~ + visible~ :=)
+				(zero burstqueued~ =)
+			(endif)
+			(((visible~ maxparticles~ >) fcap2~ =) fcap2~ if)
+				(maxparticles~ visible~ =)
+			(endif)
+
+			// advance the animation clock
+			(one~ frame~ + frame~ :=)
+		(endif)
+
+		// ----- DRAW -----
+		(:raylib_begin_drawing !)
+		(Pcbg~ :raylib_clear_background !)
+		(:raylib_begin_mode_3d !)
+
+		// additive blend for a glow effect
+		(one~ :raylib_begin_blend_mode !)
+
+		// emission origin sphere
+		(Porigin~ radiusd~ Pcglow~ :raylib_draw_sphere !)
+
+		// ----- particles -----
+		// Every particle is a pure function of its slot number k and the frame
+		// counter, so there is no per particle state at all. The slot number
+		// picks the orbit phase, the apex height and the color; the frame
+		// counter walks it along the arc.
+		//
+		// The work is split into four passes (x, y, z, then draw) instead of
+		// one pass that does all of it. The reason is the compiler's register
+		// allocator: inside a single long loop body it runs out of registers
+		// and starts reusing one that is still live, so later statements
+		// silently read the wrong value. Each pass below is short enough to
+		// stay well inside the register budget, and every pass recomputes its
+		// own phase so no value has to survive between passes.
+		//
+		// Every pass also keeps all reads of k~ in its first block, before the
+		// first array read. An array read takes a low register to hold the
+		// array address, and that register is then reused for a plain
+		// multiply that still expects the old value.
+
+		// ----- pass 1: x position -----
+		(zero k~ =)
+		(for-loop)
+		(((k~ visible~ <) fdraw~ =) fdraw~ for)
+			// phase = (k * 13 + frame * (1 + k mod 3)) mod 64
+			(k~ three~ % spdv~ :=)
+			(spdv~ one~ + spdv~ :=)
+			(k~ mulx~ * spv~ :=)
+			(frame~ spdv~ * spv~ + spv~ :=)
+			(spv~ nph~ % spv~ :=)
+			(spv~ eight~ * spv~ :=)
+			// slot = (k * 5) mod 8
+			(k~ mula~ * aib~ :=)
+			(aib~ ntab~ % aib~ :=)
+			(aib~ eight~ * aib~ :=)
+			// x = radius(slot) * wave(phase)
+			(radamp~ [ aib~ ] rx~ =)
+			(wav~ [ spv~ ] cx~ =)
+			(rx~ cx~ * tx~ :=)
+			(tx~ partpos~ [ zero ] =)
+			(k~ + one~ k~ :=)
+		(next)
+
+		// ----- pass 2: y position (height of the arc) -----
+		(zero k~ =)
+		(for-loop)
+		(((k~ visible~ <) fdraw~ =) fdraw~ for)
+			(k~ three~ % spdv~ :=)
+			(spdv~ one~ + spdv~ :=)
+			(k~ mulx~ * spv~ :=)
+			(frame~ spdv~ * spv~ + spv~ :=)
+			(spv~ nph~ % spv~ :=)
+			(spv~ eight~ * spv~ :=)
+			(k~ mula~ * aib~ :=)
+			(aib~ ntab~ % aib~ :=)
+			(aib~ eight~ * aib~ :=)
+			(gravtoggle~ eight~ gidx~ :=)
+			// start from the free rise, then add back the arc only when
+			// gravity is on: ty = rise + g * (arc - rise)
+			(amp~ [ aib~ ] ampd~ =)
+			(yrise~ [ spv~ ] ynv~ =)
+			(ytab~ [ spv~ ] dsel~ =)
+			(ynv~ - dsel~ dtmp~ :=)
+			(seltab~ [ gidx~ ] dsel~ =)
+			(dsel~ dtmp~ * dtmp~ :=)
+			(ynv~ - dtmp~ ty~ :=)
+			(ampd~ ty~ * ty~ :=)
+			(ty~ partpos~ [ e8~ ] =)
+			(k~ + one~ k~ :=)
+		(next)
+
+		// ----- pass 3: z position, a quarter turn round from x -----
+		(zero k~ =)
+		(for-loop)
+		(((k~ visible~ <) fdraw~ =) fdraw~ for)
+			(k~ three~ % spdv~ :=)
+			(spdv~ one~ + spdv~ :=)
+			(k~ mulx~ * spv~ :=)
+			(frame~ spdv~ * spv~ + spv~ :=)
+			(spv~ nph~ % spv~ :=)
+			(spv~ e16~ + spv~ :=)
+			(spv~ nph~ % spv~ :=)
+			(spv~ eight~ * spv~ :=)
+			(k~ mula~ * aib~ :=)
+			(aib~ ntab~ % aib~ :=)
+			(aib~ eight~ * aib~ :=)
+			(radamp~ [ aib~ ] rx~ =)
+			(wav~ [ spv~ ] cz~ =)
+			(rx~ cz~ * tz~ :=)
+			(tz~ partpos~ [ e16~ ] =)
+			(k~ + one~ k~ :=)
+		(next)
+
+		// ----- pass 4: color and draw -----
+		// flat if/else chain: picking one of four colors always costs the
+		// same three compares and no nested branch
+		(zero k~ =)
+		(for-loop)
+		(((k~ visible~ <) fdraw~ =) fdraw~ for)
+			(k~ four~ % ci~ :=)
+			(Pc0~ pc~ =)
+			(((ci~ one~ ==) fpal1~ =) fpal1~ if)
+				(Pc1~ pc~ =)
+			(endif)
+			(((ci~ two~ ==) fpal2~ =) fpal2~ if)
+				(Pc2~ pc~ =)
+			(endif)
+			(((ci~ three~ ==) fpal3~ =) fpal3~ if)
+				(Pc3~ pc~ =)
+			(endif)
+			(Ppartpos~ Ppsize~ pc~ :raylib_draw_cube_v !)
+			(k~ + one~ k~ :=)
+		(next)
+		(:raylib_end_blend_mode !)
+
+		// ground plane and grid
+		(Pcenter~ Pplanesize~ Pcground~ :raylib_draw_plane !)
+		(gridslices~ gridspacing~ :raylib_draw_grid !)
+
+		(:raylib_end_mode_3d !)
+
+		// ----- HUD (2D overlay) -----
+		(((showhelp~ zero !=) fhelp~ =) fhelp~ if+)
+			(Ph1~ t1x~ t1y~ fs20~ Pctext~ :raylib_draw_text !)
+			(Ph2~ t1x~ t2y~ fs12~ Pchelp~ :raylib_draw_text !)
+			(Ph3~ t1x~ t3y~ fs12~ Pchelp~ :raylib_draw_text !)
+			(Ph4~ t1x~ t4y~ fs12~ Pchelp~ :raylib_draw_text !)
+		(else)
+			(Phint~ t1x~ hinty~ fs16~ Pchelp~ :raylib_draw_text !)
+		(endif)
+
+		// particle count
+		(Pcountpre~ t1x~ pcy~ fs12~ Pctext~ :raylib_draw_text !)
+		(visible~ Pcountstr~ buflen~ :string_int64tostring !)
+		(Pcountstr~ pnumx~ pcy~ fs12~ Pcinfo~ :raylib_draw_text !)
+
+		// gravity status
+		(((gravtoggle~ zero !=) fgonh~ =) fgonh~ if+)
+			(Pgravon~ t1x~ gy~ fs12~ Pcinfo~ :raylib_draw_text !)
+		(else)
+			(Pgravoff~ t1x~ gy~ fs12~ Pcinfo~ :raylib_draw_text !)
+		(endif)
+
+		// density status
+		(((emislevel~ zero ==) fes0~ =) fes0~ if+)
+			(Pemisslow~ t1x~ ey~ fs12~ Pcinfo~ :raylib_draw_text !)
+		(else)
+			(((emislevel~ one~ ==) fes1~ =) fes1~ if+)
+				(Pemisnorm~ t1x~ ey~ fs12~ Pcinfo~ :raylib_draw_text !)
+			(else)
+				(Pemisfast~ t1x~ ey~ fs12~ Pcinfo~ :raylib_draw_text !)
+			(endif)
+		(endif)
+
+		// paused indicator
+		(((paused~ zero !=) fpaused~ =) fpaused~ if)
+			(Ppausedstr~ ppx~ ppy~ fs20~ Pcwarn~ :raylib_draw_text !)
+		(endif)
+
+		(fpsx~ fpsy~ :raylib_draw_fps !)
+		(:raylib_end_drawing !)
+
+		// exit condition
+		(:raylib_window_should_close !)
+		(wsclose~ stpopi)
+		(((wsclose~ zero ==) fwhile~ =) fwhile~ while)
+
+	// ----- cleanup -----
+	(:raylib_close_window !)
+	(one~ :free_mod !)
+	(zero :free_mod !)
+	(zero :exit !)
+(funcend)

@@ -32,6 +32,26 @@
  *
  * Memory layout used for vector data (data memory, little endian):
  *
+ * IMPORTANT - how the memory_bounds () argument must be computed:
+ *
+ * The VM loader sets data_info.end = i - 1, i.e. end is the index of the
+ * LAST valid byte, and memory_bounds () tests start + offset_access <= end.
+ * The argument is therefore NOT a byte count: a byte count demands one byte
+ * more than the data occupies and forces callers to declare struct arrays
+ * with one element too many.
+ *
+ * It must also stay on the element boundary: for QUADWORD / DOUBLEFLOAT
+ * arrays memory_bounds () rejects any argument that is not a multiple of
+ * sizeof (S8). So for a type of N bytes per element the argument is the
+ * offset of the LAST ELEMENT, i.e. (count - 1) * N, which is both <= end
+ * and 8-byte aligned. For BYTE arrays any offset in range is accepted, so
+ * the last byte index (count - 1) is used.
+ *
+ * In short: the argument is the last byte index rounded DOWN to the element
+ * boundary, which for a correctly sized array is simply the start of its
+ * last element. That is why an exactly sized array passes and an
+ * undersized one fails, with no padding required.
+ *
  *   Color        : B, 4   (r, g, b, a bytes)
  *   Vector2      : D, 2   (x, y)
  *   Vector3      : D, 3   (x, y, z)
@@ -174,10 +194,15 @@ S2 rlib_read_string (U1 *data, S8 addr, U1 *buf, S2 buflen)
 	}
 
 	slen = strlen_safe ((const char *) &data[addr], buflen - 1);
-	if (memory_bounds (addr, slen) != 0)
+	if (slen > 0)
 	{
-		printf ("rlib_read_string: ERROR memory bounds check failed!\n");
-		return (1);
+		// data_info.end is the index of the LAST valid byte, so the offset
+		// argument is the index of the last byte touched, not a byte count
+		if (memory_bounds (addr, slen - 1) != 0)
+		{
+			printf ("rlib_read_string: ERROR memory bounds check failed!\n");
+			return (1);
+		}
 	}
 
 	memcpy (buf, &data[addr], slen);
@@ -188,7 +213,7 @@ S2 rlib_read_string (U1 *data, S8 addr, U1 *buf, S2 buflen)
 // read a Color struct from a B,4 byte array
 S2 rlib_read_color (U1 *data, S8 addr, Color *col)
 {
-	if (memory_bounds (addr, 4) != 0)
+	if (memory_bounds (addr, 3) != 0)
 	{
 		printf ("rlib_read_color: ERROR memory bounds check failed!\n");
 		return (1);
@@ -205,7 +230,7 @@ S2 rlib_read_vec2 (U1 *data, S8 addr, Vector2 *v)
 {
 	F8 x ALIGN, y ALIGN;
 
-	if (memory_bounds (addr, 16) != 0)
+	if (memory_bounds (addr, 8) != 0)
 	{
 		printf ("rlib_read_vec2: ERROR memory bounds check failed!\n");
 		return (1);
@@ -222,7 +247,7 @@ S2 rlib_read_vec3 (U1 *data, S8 addr, Vector3 *v)
 {
 	F8 x ALIGN, y ALIGN, z ALIGN;
 
-	if (memory_bounds (addr, 24) != 0)
+	if (memory_bounds (addr, 16) != 0)
 	{
 		printf ("rlib_read_vec3: ERROR memory bounds check failed!\n");
 		return (1);
@@ -241,7 +266,7 @@ S2 rlib_read_vec4 (U1 *data, S8 addr, Vector4 *v)
 {
 	F8 x ALIGN, y ALIGN, z ALIGN, w ALIGN;
 
-	if (memory_bounds (addr, 32) != 0)
+	if (memory_bounds (addr, 24) != 0)
 	{
 		printf ("rlib_read_vec4: ERROR memory bounds check failed!\n");
 		return (1);
@@ -262,7 +287,7 @@ S2 rlib_read_rect (U1 *data, S8 addr, Rectangle *r)
 {
 	F8 x ALIGN, y ALIGN, w ALIGN, h ALIGN;
 
-	if (memory_bounds (addr, 32) != 0)
+	if (memory_bounds (addr, 24) != 0)
 	{
 		printf ("rlib_read_rect: ERROR memory bounds check failed!\n");
 		return (1);
@@ -285,7 +310,7 @@ S2 rlib_read_matrix (U1 *data, S8 addr, Matrix *m)
 	S8 i ALIGN;
 	float *fm = (float *) m;
 
-	if (memory_bounds (addr, 128) != 0)
+	if (memory_bounds (addr, 120) != 0)
 	{
 		printf ("rlib_read_matrix: ERROR memory bounds check failed!\n");
 		return (1);
@@ -303,7 +328,7 @@ S2 rlib_write_vec2 (U1 *data, S8 addr, Vector2 v)
 {
 	F8 t ALIGN;
 
-	if (memory_bounds (addr, 16) != 0)
+	if (memory_bounds (addr, 8) != 0)
 	{
 		printf ("rlib_write_vec2: ERROR memory bounds check failed!\n");
 		return (1);
@@ -318,7 +343,7 @@ S2 rlib_write_vec3 (U1 *data, S8 addr, Vector3 v)
 {
 	F8 t ALIGN;
 
-	if (memory_bounds (addr, 24) != 0)
+	if (memory_bounds (addr, 16) != 0)
 	{
 		printf ("rlib_write_vec3: ERROR memory bounds check failed!\n");
 		return (1);
@@ -334,7 +359,7 @@ S2 rlib_write_vec4 (U1 *data, S8 addr, Vector4 v)
 {
 	F8 t ALIGN;
 
-	if (memory_bounds (addr, 32) != 0)
+	if (memory_bounds (addr, 24) != 0)
 	{
 		printf ("rlib_write_vec4: ERROR memory bounds check failed!\n");
 		return (1);
@@ -353,7 +378,7 @@ S2 rlib_write_matrix (U1 *data, S8 addr, Matrix m)
 	S8 i ALIGN;
 	float *fm = (float *) &m;
 
-	if (memory_bounds (addr, 128) != 0)
+	if (memory_bounds (addr, 120) != 0)
 	{
 		printf ("rlib_write_matrix: ERROR memory bounds check failed!\n");
 		return (1);
@@ -399,7 +424,7 @@ S2 rlib_write_raycollision (U1 *data, S8 addr, RayCollision c)
 {
 	F8 t ALIGN;
 
-	if (memory_bounds (addr, 64) != 0)
+	if (memory_bounds (addr, 56) != 0)
 	{
 		printf ("rlib_write_raycollision: ERROR memory bounds check failed!\n");
 		return (1);
@@ -423,7 +448,7 @@ S2 rlib_read_camera (U1 *data, S8 addr, Camera3D *c)
 	if (rlib_read_vec3 (data, addr + 24, &c->target) != 0) return (1);
 	if (rlib_read_vec3 (data, addr + 48, &c->up) != 0) return (1);
 
-	if (memory_bounds (addr + 72, 16) != 0)
+	if (memory_bounds (addr + 72, 8) != 0)
 	{
 		printf ("rlib_read_camera: ERROR memory bounds check failed!\n");
 		return (1);
@@ -444,7 +469,7 @@ S2 rlib_write_camera (U1 *data, S8 addr, Camera3D c)
 	if (rlib_write_vec3 (data, addr + 24, c.target) != 0) return (1);
 	if (rlib_write_vec3 (data, addr + 48, c.up) != 0) return (1);
 
-	if (memory_bounds (addr + 72, 16) != 0)
+	if (memory_bounds (addr + 72, 8) != 0)
 	{
 		printf ("rlib_write_camera: ERROR memory bounds check failed!\n");
 		return (1);
@@ -637,7 +662,7 @@ U1 *raylib_draw_triangle_strip_3d (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (sp);
 	}
 
-	if (memory_bounds (points_addr, point_count * 24) != 0)
+	if (memory_bounds (points_addr, (point_count - 1) * 24) != 0)
 	{
 		printf ("raylib_draw_triangle_strip_3d: ERROR memory bounds check failed!\n");
 		return (NULL);
@@ -2132,7 +2157,7 @@ U1 *raylib_draw_mesh_instanced (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	if (instances < 1) return (sp);
 
-	if (memory_bounds (transforms_addr, instances * 128) != 0)
+	if (memory_bounds (transforms_addr, (instances - 1) * 128) != 0)
 	{
 		printf ("raylib_draw_mesh_instanced: ERROR memory bounds check failed!\n");
 		return (NULL);
@@ -3916,7 +3941,7 @@ U1 *raylib_begin_mode_2d (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	sp = stpopi ((U1 *) &cam2d_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
 
-	if (memory_bounds (cam2d_addr, 48) != 0)
+	if (memory_bounds (cam2d_addr, 40) != 0)
 	{
 		printf ("raylib_begin_mode_2d: ERROR memory bounds check failed!\n");
 		return (NULL);
@@ -4459,7 +4484,7 @@ U1 *raylib_draw_line_strip (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	if (point_count < 2) return (sp);
 
-	if (memory_bounds (points_addr, point_count * 16) != 0)
+	if (memory_bounds (points_addr, (point_count - 1) * 16) != 0)
 	{
 		printf ("raylib_draw_line_strip: ERROR memory bounds check failed!\n");
 		return (NULL);

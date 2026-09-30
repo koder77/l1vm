@@ -26,7 +26,8 @@
 // Brackets / raylib module requirements that this program follows:
 //   1. zero is the FIRST data entry of the program.
 //   2. raylib.l1h is included BEFORE intr-func.l1h (l1pre macro safety).
-//   3. Every color array is 5 bytes (rgba + 1 pad byte).
+//   3. Every color array is 4 bytes (r, g, b, a), exactly what the
+//      module reads in rlib_read_color (). No pad byte is needed.
 //   4. Every interrupt argument is a variable (no inline constants).
 //   5. Module slots: raylib -> 0, string -> 1.
 //   6. Array indices are byte offsets: element i of an int64 array is at i * 8.
@@ -105,7 +106,7 @@
 	(set int64 1 paused~ 0)
 	(set int64 1 showhelp~ 1)
 
-	// particle arrays (int64, 1000 elements)
+	// particle arrays (int64, 150 elements)
 	(set int64 1000 px~)
 	(set int64 1000 py~)
 	(set int64 1000 pvx~)
@@ -161,16 +162,16 @@
 	(set int64 1 fpaused~ 0)
 	(set int64 1 fwhile~ 0)
 
-	// colors (5 bytes: rgba + pad)
-	(set byte 5 cbg~ 8 8 18 255 0)
-	(set byte 5 ctext~ 230 230 235 255 0)
-	(set byte 5 chelp~ 170 170 190 255 0)
-	(set byte 5 cinfo~ 110 230 110 255 0)
-	(set byte 5 cmouse~ 0 200 255 255 0)
-	(set byte 5 c0~ 255 90 90 255 0)
-	(set byte 5 c1~ 255 190 60 255 0)
-	(set byte 5 c2~ 100 210 255 255 0)
-	(set byte 5 c3~ 253 249 0 255 0)
+	// colors (4 bytes: rgba, read by rlib_read_color ())
+	(set byte 4 cbg~ 8 8 18 255)
+	(set byte 4 ctext~ 230 230 235 255)
+	(set byte 4 chelp~ 170 170 190 255)
+	(set byte 4 cinfo~ 110 230 110 255)
+	(set byte 4 cmouse~ 0 200 255 255)
+	(set byte 4 c0~ 255 90 90 255)
+	(set byte 4 c1~ 255 190 60 255)
+	(set byte 4 c2~ 100 210 255 255)
+	(set byte 4 c3~ 253 249 0 255)
 
 	// text layout
 	(set int64 1 fs12~ 12)

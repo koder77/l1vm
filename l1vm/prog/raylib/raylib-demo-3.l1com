@@ -22,10 +22,11 @@
 //      replacer scans for intr-func macro names as substrings anywhere in a
 //      line, incl. inside string literals (e.g. "raylib_get_time" matches
 //      "get_time"), which corrupts the generated raylib.l1h wrapper names.
-//   3. Every color array passed to the module is declared as 5 bytes
-//      (rgba + 1 pad byte). The L1VM memory_bounds() check uses an inclusive
-//      end, so each struct must be one element larger than the data the
-//      module reads.
+//   3. Every color array passed to the module is declared as 4 bytes (r, g,
+//      b, a), which is exactly what the module reads in rlib_read_color ().
+//      No pad byte is needed: the module passes the index of the last byte
+//      it touches to memory_bounds (), matching the inclusive data_info.end.
+//
 //
 (:main jmp)
 (set int64 1 zero 0)
@@ -89,11 +90,11 @@
     (set int64 1 t6y~ 190)
     (set int64 1 fpsx~ 12)
     (set int64 1 fpsy~ 420)
-    // colors (byte arrays, 5 bytes each = rgba + pad)
-    (set byte 5 cbg~ 10 20 40 255 0)
-    (set byte 5 ctext~ 200 200 200 255 0)
-    (set byte 5 cok~ 0 228 48 255 0)
-    (set byte 5 cfail~ 230 41 55 255 0)
+    // colors (byte arrays, 4 bytes each = rgba, read by rlib_read_color ())
+    (set byte 4 cbg~ 10 20 40 255)
+    (set byte 4 ctext~ 200 200 200 255)
+    (set byte 4 cok~ 0 228 48 255)
+    (set byte 4 cfail~ 230 41 55 255)
     // strings
     (set string s title~ "L1VM raylib demo 3 - audio playback")
     (set string s t1~ "Audio demo: music stream + sound playback")
