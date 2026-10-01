@@ -149,6 +149,13 @@ U1 *set_env (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		return (NULL);
 	}
 
+	// sane check:
+	if (strcmp ((const char *) &data[envnameaddr], "L1VM_ROOT") == 0)
+	{
+		printf ("set_env: error setting 'L1VM_ROOT' is not allowed!\n");
+		return (NULL);
+	}
+
 	// set env overwrite old env value
 	#if __linux__
 	ret = setenv ((const char *) &data[envnameaddr], (const char *) &data[strvalueaddr], 1);
