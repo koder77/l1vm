@@ -1,0 +1,1080 @@
+// raylib-demo-4.l1com
+//
+// raylib module demo 4: a big cube built out of many small cubes that then
+// blow apart. The small cubes are drawn as one instanced unit cube mesh with
+// an axis-angle rotation, so every one of them tumbles on its own axis while
+// it travels.
+//
+// Build (the program exceeds the default 5000 line limit of the compiler
+// once raylib.l1h is expanded):
+//     l1vm-build.sh raylib-demo-4 -lines 20000 >build.txt 2>&1
+// Run:
+//     l1vm raylib-demo-4
+//
+// Controls:
+//     SPACE : launch the cubes out of the big cube / reassemble them
+//     R     : reset the scene
+//     H     : toggle the help text
+//     ESC   : quit
+//
+// ---------------------------------------------------------------------------
+// HOW THE EXPLOSION IS COMPUTED
+// ---------------------------------------------------------------------------
+// The whole animation is a closed form function of two integers: the cube
+// slot number k and a millisecond clock tms. There is no per cube state at
+// all, no integration and therefore nothing that can drift, and no double
+// comparison (those are broken on this toolchain, see the notes below).
+//
+//   delay = (k * 13) mod 640          staggered launch, 0 .. 639 ms
+//   age   = tms + 640 - delay         ms since this cube left the big cube
+//   ph    = age / 32                  table index, 0 .. 128, never negative
+//                                        -> 32 ms per step, 4.1 s flight
+//
+// The + 640 keeps age positive for every cube at every clock value, so the
+// phase needs no "has it started yet" test. The upper end is handled by
+// stopping the clock at tcap = 3456, where ph is exactly 128, so the tables
+// need no clamp either. Both ends of the range are therefore handled by the
+// shape of the arithmetic instead of by a comparison inside the loop, which
+// matters a great deal on this toolchain (see the array notes below).
+//
+// Three shared tables of 129 doubles are read with that integer index:
+//   dout [ph]  0 -> 1, ease out. This is how far the cube has travelled.
+//   drop [ph]  0 -> 1, ease in, but held at 0 until ph = 48. This is the
+//               fall to the ground.
+//   rot  [ph]  a linear ramp of up to 2 pi, one full tumble per flight.
+//               Slot 128 of all three tables is the finished state.
+//
+// The radial travel distance of a cube is
+//
+//   travel = (SPREAD + jitter_k) * dout [ph]
+//
+// and SPREAD + jitter is always divided by the cube's own radius, so every
+// cube ends up exactly SPREAD + jitter units away from the middle of the big
+// cube no matter where it started. The centre of the big cube is at
+// (0, 2, 0) and the small cubes sit on the integer lattice -2 .. +2, so a
+// cube's radial components are its lattice coordinates and its radius is
+// sqrt (i^2 + j^2 + l^2). All reachable radii map to the 13 entries of
+// invtab, which is a literal table of 1/r, so no square root and no division
+// by zero is ever evaluated.
+//
+//   x = i * (1 + travel / r)
+//   z = l * (1 + travel / r)
+//   y = 2 + j * (1 + travel / r) * (1 - drop) + 0.46 * drop
+//
+// The y line is a plain lerp towards the resting height 0.46 (half of the
+// small cube edge 0.92), so once drop reaches 1 every cube that is still in
+// the air has come to rest on the ground plane at y = 0. No "hit the floor"
+// test exists, which is what keeps this free of double comparisons.
+//
+// The jitter is read out of a 60 entry ramp that is walked with a stride of
+// 23. gcd (23, 60) = 1, so the 125 cubes get a well spread set of radii and
+// the debris ends up as a filled ball instead of a hollow shell.
+//
+// ---------------------------------------------------------------------------
+// PER CUBE ANGLE
+// ---------------------------------------------------------------------------
+// rot [ph] alone would make all cubes share one orientation once they land
+// (they all sit at ph = 127), which reads as a mechanical grid of identically
+// rotated cubes. Adding the per cube offset aoff (k * 0.2718, a literal ramp
+// built by accumulation) gives 125 visibly different resting orientations
+// without any extra array.
+//
+// ---------------------------------------------------------------------------
+// WHY THE MODEL IS CREATED WITH :call_mod AND NOT WITH THE WRAPPER MACROS
+// ---------------------------------------------------------------------------
+// l1pre replaces macro names as SUBSTRINGS of a line. intr-func.l1h declares
+//
+//     #func load_mod (iNAME, iNUM) :(0 iNAME iNUM 0 intr0)
+//
+// and "load_mod" occurs inside "raylib_load_model_from_mesh" and
+// "raylib_unload_model", so writing
+//
+//     (meshh~ :raylib_load_model_from_mesh !)
+//
+// makes the preprocessor match load_mod first, steal "meshh~" as its iNAME
+// argument and then fail with
+//
+//     check_define_type: ERROR: variable: '' not defined!
+//     ERROR: macro variable type mismatch:  not of type: iNUM: int
+//     line: '(0 meshhmain  0 intr0)'
+//
+// The same trap swallows raylib_load_model. Note that draw_model_ex is safe,
+// it contains no module macro name.
+//
+// The way round it is to skip the wrapper and issue the module call directly.
+// :call_mod is the raw body of every raylib wrapper,
+//
+//     #func call_mod (iNUM, iFUNCNUM) :(3 iNUM iFUNCNUM 0 intr0)
+//
+// but call_mod only takes the module number and the function number, while
+// the module function reads its arguments off the operand stack. So two tiny
+// wrapper functions at the bottom of this file pop the handle, push it back
+// and then fire call_mod with the raw function number from raylib.l1h's own
+// table (26 = load_model_from_mesh, 27 = unload_model). modraylib is the
+// module number raylib.l1h already resolved. Note that modraylib has NO ~
+// suffix: the ~ suffix marks a variable local to main, while the header's own
+// names are declared at file scope and l1pre only appends "main" to the ~
+// names. For the same reason the two function numbers are file scope too, so
+// that the wrapper functions can read them.
+//
+// ---------------------------------------------------------------------------
+// ONE MORE TOOLCHAIN TRAP FOUND WHILE DEBUGGING THIS
+// ---------------------------------------------------------------------------
+// Three more things on this build are worth writing down, because each one
+// looks like a bug in the demo rather than in the toolchain:
+//
+//   3. An if / if+ INSIDE a for body corrupts every array read in that body.
+//      The register allocator does not restore the registers a branch
+//      conditionalises, so the first pushb of the loop reads two clobbered
+//      registers and the run dies with
+//
+//        memory_bounds: FATAL ERROR: variable not found overflow
+//        address: 15278, offset: 15278!
+//
+//      (both numbers equal, which is the tell: address == offset means the
+//      index register held the array's own base address).
+//
+//      Two smaller things ride along with it, both confirmed by bisecting a
+//      minimal reproduction down to a single loop:
+//        a. The index must be produced by a * or a +. A / , a % or a plain
+//           copy leaves a register that the array read cannot use, even
+//           though the value in it is correct.
+//        b. Reads and writes cannot be mixed freely either, and grouping all
+//           the reads into one block at the top of the body, before any
+//           arithmetic, is what makes a multi-read body work.
+//
+//      So every loop in this file is branch free and takes its array indices
+//      from a multiply, and the per frame work is split into six short passes
+//      that each recompute what they need. That is why the fall ramp is built
+//      by two loops instead of one loop with an if+ in it.
+//   4. GenMeshCube + UploadMesh before InitWindow () prints
+//
+//        WARNING: GL: GPU is not ready to load data, trying to load before
+//        InitWindow ()?
+//
+//      and then takes the process down with a SIGSEGV on the first frame.
+//      The mesh has to be created after the window exists.
+//   5. A for-loop flag has to be its own variable for each NESTING level. Two
+//      sequential loops may share a flag, but a flag used by a loop condition
+//      must not also be used by an if inside that loop, or the condition gets
+//      overwritten mid-loop. An if in the do-while body, outside every for,
+//      is fine; only a branch INSIDE a for is poisonous.
+//
+// ---------------------------------------------------------------------------
+// WHY THE DRAW LOOP IS SPLIT INTO SIX SHORT PASSES
+// ---------------------------------------------------------------------------
+// Two language features that the obvious formulation would need are broken on
+// this toolchain, so the simulation is written to avoid them instead:
+//
+//   1. A comparison between two doubles ALWAYS evaluates to false. The
+//      compiler allocates the result register of a double comparison from
+//      the double register pool, but the VM stores the boolean result in the
+//      int register pool (regi[] and regd[] are separate arrays), so the
+//      result is never read back. Everything here is therefore compared as
+//      int64: tms > tcap, k % 4 for the palette, the loop counters. All of
+//      those work.
+//   2. The `cast` form does not convert. (cast intvar doublevar =) is accepted
+//      by the compiler but emits no conversion opcode, so the integer bit
+//      pattern is reinterpreted as a double. Everything that starts life as
+//      an integer that has to become a double goes through a literal table
+//      lookup instead (the grid, invtab, djit ramps), which is a plain
+//      indexed array read.
+//
+// On top of that a single loop body cannot hold more than a certain amount of
+// live state: the allocator hands out a register that a later statement in the
+// same body still needs, and that statement then silently reads the wrong
+// value. So the per frame work is cut into six passes of 15..21 statements,
+// each of which recomputes what it needs and stores its result into a shared
+// double array. Each pass also does all of its array reads in one block at the
+// top of the body, before any arithmetic, and takes every array index from a
+// multiply, which is what the register allocator can actually use as an
+// index. Those two rules together are the reason this file looks the way it
+// does, and they are the reason the phase is computed without a single
+// comparison.
+//
+// Indexed reads of an int64 array are avoided throughout; every per cube
+// value lives in a double array and is addressed by an explicit byte offset.
+//
+// ---------------------------------------------------------------------------
+// Brackets / raylib module requirements that this program follows:
+//   1. zero is the FIRST data entry of the program.
+//   2. raylib.l1h is included BEFORE intr-func.l1h (l1pre macro safety).
+//   3. Every color array is 4 bytes (r, g, b, a), which is exactly what
+//      rlib_read_color () reads.
+//   4. Array indices are byte offsets: element i of a double array is at i * 8.
+//   5. Vector arguments are double arrays; 4 elements (3 + pad) are declared so
+//      that a vector never ends up as the last thing in the data segment.
+//   6. Module arguments are pushed in call order (first arg first).
+//   7. String arguments to the module are passed as ADDRESSES (Ptitle~ style
+//      pointer vars), never as the string variable itself.
+//   8. The small cube mesh is uploaded once and shared, so the draw loop only
+//      costs one module call per cube per frame.
+
+(:main jmp)
+(set int64 1 zero 0)
+#include <raylib.l1h>
+#include <intr-func.l1h>
+
+// Raw raylib module function numbers for the two model functions whose
+// wrapper names cannot be written in this file. See the header note about
+// the load_mod substring collision. These live at FILE SCOPE (no ~ suffix)
+// because the wrapper functions at the bottom of the file have to read them,
+// and l1pre only appends "main" to the ~ names.
+//     26 = raylib_load_model_from_mesh
+//     27 = raylib_unload_model
+(set int64 1 rfnum_mesh 26)
+(set int64 1 rfnum_model 27)
+
+(main func)
+	#var ~ main
+
+	// ----- small integer constants -----
+	(set int64 1 one~ 1)
+	(set int64 1 two~ 2)
+	(set int64 1 three~ 3)
+	(set int64 1 four~ 4)
+	(set int64 1 five~ 5)
+	(set int64 1 six~ 6)
+	(set int64 1 eight~ 8)
+	(set int64 1 thirteen~ 13)
+	(set int64 1 sixteen~ 16)
+	(set int64 1 twentyfive~ 25)
+	(set int64 1 thirtytwo~ 32)
+	(set int64 1 gate~ 64)
+	// ntbl = 129, so the tables hold ph = 0 .. 128 and the last entry is the
+	// finished state. tcap is the clock value that produces exactly that:
+	// ph = (tcap + 640 - delay) / 32 = (3456 + 640) / 32 = 128.
+	(set int64 1 tcap~ 3456)
+	(set int64 1 m640~ 640)
+	(set int64 1 m320~ 320)
+	(set int64 1 d640~ 640)
+	(set int64 1 d2600~ 2600)
+	(set int64 1 jstep~ 23)
+	(set int64 1 jmod~ 60)
+	(set int64 1 ncubes~ 125)
+	// nlast = ncubes - 1, the loop bound for the increment-at-the-top loops
+	(set int64 1 nlast~ 124)
+	(set int64 1 jlast~ 59)
+	(set int64 1 ntablast~ 128)
+
+	// ----- double constants -----
+	// NOTE: never put a trailing // comment on a (set ...) line. l1pre only
+	// appends "main" to a ~ name when the declaration ends the line, so a
+	// trailing comment leaves the DECLARATION named "dinv~" while every USE
+	// of it becomes "dinvmain", and the compiler then reports
+	// checkdef: error: variable 'dinvmain' not defined. All comments in this
+	// declaration block therefore sit on their own line above the set.
+	(set double 1 done~ 1.0)
+	(set double 1 dzero~ 0.0)
+	// All three tables are held flat for the first gate entries and only
+	// then run, so every table has 128 - gate = 64 live entries and the
+	// steps below are 1 / 63 and 2 pi / 63.
+	// dinv   = 1 / 63, step of the travel ramp, so u reaches exactly 1 at
+	// table index 128 and dout [128] is exactly 1
+	(set double 1 dinv~ 0.015873015873015872)
+	// dstep2 = 1 / 63, step of the fall ramp, so drop [128] is exactly 1
+	(set double 1 dstep2~ 0.015873015873015872)
+	// dstep3 = 2 pi / 63, one full tumble by table index 128
+	(set double 1 dstep3~ 0.09973310011396169)
+	// dstep4 = per cube rotation angle offset
+	(set double 1 dstep4~ 0.2718281828459045)
+	// djstep = step of the jitter ramp
+	(set double 1 djstep~ 0.0425)
+	// dspread = base radial travel distance of every small cube
+	(set double 1 dspread~ 7.0)
+	// dcy   = Y of the centre of the big cube
+	(set double 1 dcy~ 2.0)
+	// dresty = resting height, half of the small cube edge
+	(set double 1 dresty~ 0.46)
+	// dcsz  = edge of a small cube
+	// dmsz  = edge of the shared unit cube mesh
+	(set double 1 dmsz~ 1.0)
+
+	// ----- window, timing, clock -----
+	(set int64 1 width~ 1000)
+	(set int64 1 height~ 640)
+	(set int64 1 fps~ 60)
+	// fmsaa = FLAG_MSAA_4X_HINT
+	(set int64 1 fmsaa~ 32)
+	// mode  = CAMERA_ORBITAL
+	(set int64 1 mode~ 2)
+	(set int64 1 ret~ 0)
+	(set int64 1 wsclose~ 0)
+	(set int64 1 kret~ 0)
+	(set int64 1 dtms~ 16)
+	(set int64 1 tms~ 0)
+	(set int64 1 showhelp~ 1)
+
+	// ----- mesh + model handles -----
+	(set int64 1 meshh~ 0)
+	(set int64 1 modelh~ 0)
+
+	// ----- grid literals -----
+	// radial coordinate of a small cube, 0 = centre of the big cube
+	(set double 5 grid~ -2.0 -1.0 0.0 1.0 2.0)
+	// 1 / sqrt (s) for s = i^2 + j^2 + l^2, indexed by s * 8.
+	// s = 0 is the single cube in the middle of the big cube; it gets 1.0,
+	// which is harmless because its radial coordinates are all 0.
+	(set double 13 invtab~ 1.0 1.0 0.7071067811865476 0.5773502691896258 0.5 0.4472135954999579 0.4082482904638631 0.3779644730092272 0.3535533905932738 0.3333333333333333 0.3162277660168379 0.3015113445777636 0.2886751345948129)
+	// jitter ramp, walked with stride 23 so all 60 entries are used
+	(set double 60 djit~)
+
+	// ----- per cube tables (125 slots, byte offset = k * 8) -----
+	// cx, cy, cz    : radial X / Y / Z of the home position
+	// cinv          : 1 / radius of the home position
+	// cjit          : per cube jitter of the travel distance
+	// aoff          : per cube rotation angle offset
+	// fac, drp, cang: per frame values written by the frame passes
+	// cvec          : 125 * (Vector3 + pad), handed to the module directly
+	(set double 125 cx~)
+	(set double 125 cy~)
+	(set double 125 cz~)
+	(set double 125 cinv~)
+	(set double 125 cjit~)
+	(set double 125 aoff~)
+	(set double 125 fac~)
+	(set double 125 drp~)
+	(set double 125 cang~)
+	(set double 500 cvec~)
+
+	// ----- shared animation tables (129 slots, byte offset = ph * 8) -----
+	// dout : 0 -> 1 ease out, fraction of the flight travelled
+	// drop : 0 -> 1 ease in, fraction of the fall onto the ground
+	// rot  : linear angle ramp, one full tumble per flight
+	// The last slot, ph = 128, holds the finished state of all three.
+	(set double 129 dout~)
+	(set double 129 drop~)
+	(set double 129 rot~)
+
+	// ----- fixed vectors -----
+	// rax   : shared tumble axis, unit length, drawn as a Vector3
+	// scale : small cube edge, drawn as a Vector3
+	// cam   : D,11 layout, position + target + up + fovy + projection
+	(set double 4 rax~ 0.30 0.90 0.3162 0.0)
+	(set double 4 scale~ 0.92 0.92 0.92 0.0)
+	(set double 12 cam~ 0.0 10.0 19.0  0.0 1.0 0.0  0.0 1.0 0.0  45.0 0.0 0.0)
+	(set double 4 ground~ 0.0 -0.05 0.0 0.0)
+	(set double 4 planesz~ 44.0 44.0 0.0 0.0)
+
+	// ----- scratch: table build -----
+	(set int64 1 bi~ 0)
+	(set int64 1 bix~ 0)
+	(set int64 1 ti~ 0)
+	(set int64 1 tj~ 0)
+	(set int64 1 tl~ 0)
+	(set int64 1 s~ 0)
+	(set int64 1 s8~ 0)
+	(set int64 1 ti8~ 0)
+	(set int64 1 tj8~ 0)
+	(set int64 1 tl8~ 0)
+	(set int64 1 k8~ 0)
+	(set int64 1 k8b~ 0)
+	(set int64 1 k8c~ 0)
+	(set int64 1 aj~ 0)
+	(set int64 1 aj8~ 0)
+	(set int64 1 bi2~ 0)
+	(set int64 1 bi3~ 0)
+	(set int64 1 q3~ 0)
+	(set int64 1 q4~ 0)
+	(set int64 1 q5~ 0)
+	(set int64 1 q6~ 0)
+	(set double 1 tv~ 0.0)
+	(set double 1 de~ 0.0)
+	(set double 1 dd~ 0.0)
+	(set double 1 dp~ 0.0)
+	(set double 1 dacc~ 0.0)
+	(set double 1 dacc2~ 0.0)
+	(set double 1 dacc3~ 0.0)
+	(set double 1 dacc4~ 0.0)
+	(set double 1 dja~ 0.0)
+
+	// ----- scratch: per frame -----
+	(set int64 1 k~ 0)
+	(set int64 1 p8~ 0)
+	(set int64 1 vaddr~ 0)
+	(set int64 1 ph~ 0)
+	(set int64 1 age~ 0)
+	(set int64 1 dvv~ 0)
+	(set int64 1 tmp~ 0)
+	(set int64 1 pc~ 0)
+	(set double 1 dsp~ 0.0)
+	(set double 1 dpp~ 0.0)
+	(set double 1 rtv~ 0.0)
+	(set double 1 ivv~ 0.0)
+	(set double 1 jtv~ 0.0)
+	(set double 1 aof~ 0.0)
+	(set double 1 spv~ 0.0)
+	(set double 1 fv~ 0.0)
+	(set double 1 hv~ 0.0)
+	(set double 1 xv~ 0.0)
+	(set double 1 yv~ 0.0)
+	(set double 1 zv~ 0.0)
+	(set double 1 dv2~ 0.0)
+	(set double 1 sy~ 0.0)
+	(set double 1 sy2~ 0.0)
+	(set double 1 anglev~ 0.0)
+
+	// ----- HUD layout -----
+	(set int64 1 fnt20~ 20)
+	(set int64 1 fnt16~ 16)
+	(set int64 1 fnt12~ 12)
+	(set int64 1 t1x~ 14)
+	(set int64 1 t1y~ 12)
+	(set int64 1 t2y~ 38)
+	(set int64 1 t3y~ 58)
+	(set int64 1 hinty~ 82)
+	(set int64 1 stx~ 14)
+	(set int64 1 stx2~ 92)
+	(set int64 1 sty~ 110)
+	(set int64 1 fpsx~ 14)
+	(set int64 1 fpsy~ 614)
+	(set int64 1 gridslices~ 40)
+	(set double 1 gridspacing~ 1.0)
+
+	// ----- colors (4 bytes: rgba, exactly what rlib_read_color reads) -----
+	(set byte 4 cbg~ 12 14 26 255)
+	(set byte 4 ctext~ 235 235 240 255)
+	(set byte 4 chelp~ 165 170 190 255)
+	(set byte 4 cinfo~ 110 220 130 255)
+	(set byte 4 cwarn~ 250 200 60 255)
+	(set byte 4 cground~ 34 36 46 255)
+	(set byte 4 c0~ 235 145 60 255)
+
+	// ----- strings -----
+	(set string s title~ "L1VM raylib - big cube explodes")
+	(set string s h1~ "Big cube: 5 x 5 x 5 small cubes, drawn as one mesh")
+	(set string s h2~ "SPACE: launch / reassemble    R: reset    ESC: quit")
+	(set string s h3~ "H: toggle this help")
+	(set string s hint~ "Press SPACE to blow the big cube apart")
+	(set string s stpre~ "Stage: ")
+	(set string s stg1~ "ASSEMBLED")
+	(set string s stg2~ "DISPERSING")
+	(set string s stg3~ "SETTLED")
+
+	// ----- pointers -----
+	(set int64 1 Ptitle~ 0)
+	(set int64 1 Ph1~ 0)
+	(set int64 1 Ph2~ 0)
+	(set int64 1 Ph3~ 0)
+	(set int64 1 Phint~ 0)
+	(set int64 1 Pstpre~ 0)
+	(set int64 1 Pstg1~ 0)
+	(set int64 1 Pstg2~ 0)
+	(set int64 1 Pstg3~ 0)
+	(set int64 1 Pcbg~ 0)
+	(set int64 1 Pctext~ 0)
+	(set int64 1 Pchelp~ 0)
+	(set int64 1 Pcinfo~ 0)
+	(set int64 1 Pcwarn~ 0)
+	(set int64 1 Pcground~ 0)
+	(set int64 1 Pc0~ 0)
+	(set int64 1 Pcam~ 0)
+	(set int64 1 Pcvec~ 0)
+	(set int64 1 Pscale~ 0)
+	(set int64 1 Prax~ 0)
+	(set int64 1 Pground~ 0)
+	(set int64 1 Pplanesz~ 0)
+
+	// ----- condition flags, one per if / for / while block -----
+	(set int64 1 flg1~ 0)
+	(set int64 1 flg2~ 0)
+	(set int64 1 flg3~ 0)
+	(set int64 1 flg4~ 0)
+							
+	// ----- keys -----
+	(set int64 1 key_space~ 32)
+	(set int64 1 key_r~ 82)
+	(set int64 1 key_h~ 72)
+
+	// ------------------------------------------------------------------
+	// module init
+	// ------------------------------------------------------------------
+	(zero :raylib_init !)
+
+	// addresses of everything handed to the module
+	(title~ Ptitle~ pointer)
+	(h1~ Ph1~ pointer)
+	(h2~ Ph2~ pointer)
+	(h3~ Ph3~ pointer)
+	(hint~ Phint~ pointer)
+	(stpre~ Pstpre~ pointer)
+	(stg1~ Pstg1~ pointer)
+	(stg2~ Pstg2~ pointer)
+	(stg3~ Pstg3~ pointer)
+	(cbg~ Pcbg~ pointer)
+	(ctext~ Pctext~ pointer)
+	(chelp~ Pchelp~ pointer)
+	(cinfo~ Pcinfo~ pointer)
+	(cwarn~ Pcwarn~ pointer)
+	(cground~ Pcground~ pointer)
+	(c0~ Pc0~ pointer)
+	(cam~ Pcam~ pointer)
+	(cvec~ Pcvec~ pointer)
+	(scale~ Pscale~ pointer)
+	(rax~ Prax~ pointer)
+	(ground~ Pground~ pointer)
+	(planesz~ Pplanesz~ pointer)
+
+	// ------------------------------------------------------------------
+	// setup pass 1: home position of every small cube
+	//
+	// k is row major: i = k mod 5, j = (k / 5) mod 5, l = k / 25.
+	// The radial coordinates are read straight out of grid~, which keeps them
+	// exact and never needs an int64 to double conversion.
+	//
+	// The three axes are filled by three separate loops rather than by one
+	// loop that fills all three. The single loop version has 6 array accesses
+	// in 17 statements and it does NOT work: the register allocator hands out
+	// a register that a later array access still needs, so the pushb opcode
+	// reads two clobbered registers and the VM aborts with
+	//
+	//   memory_bounds: FATAL ERROR: variable not found overflow address:
+	//   11654, offset: 11654!
+	//
+	// Split down to 2 array accesses per loop the same loop runs clean.
+	// All reads of k sit in the first block, before the first array access.
+	// ------------------------------------------------------------------
+	(zero one~ - k~ :=)
+	(for-loop)
+	(((k~ nlast~ <) flg1~ =) flg1~ for)
+		(k~ + one~ k~ :=)
+		(k~ five~ % ti~ :=)
+		(ti~ eight~ * ti8~ :=)
+		(k~ eight~ * k8~ :=)
+		(grid~ [ ti8~ ] tv~ =)
+		(tv~ tv~ =)
+		(tv~ cx~ [ k8~ ] =)
+	(next)
+
+	(zero one~ - k~ :=)
+	(for-loop)
+	(((k~ nlast~ <) flg1~ =) flg1~ for)
+		(k~ + one~ k~ :=)
+		(k~ five~ / tj~ :=)
+		(tj~ five~ % tj~ :=)
+		(tj~ eight~ * tj8~ :=)
+		(k~ eight~ * k8~ :=)
+		(grid~ [ tj8~ ] tv~ =)
+		(tv~ tv~ =)
+		(tv~ cy~ [ k8~ ] =)
+	(next)
+
+	(zero one~ - k~ :=)
+	(for-loop)
+	(((k~ nlast~ <) flg1~ =) flg1~ for)
+		(k~ + one~ k~ :=)
+		(k~ twentyfive~ / tl~ :=)
+		(tl~ eight~ * tl8~ :=)
+		(k~ eight~ * k8~ :=)
+		(grid~ [ tl8~ ] tv~ =)
+		(tv~ tv~ =)
+		(tv~ cz~ [ k8~ ] =)
+	(next)
+
+	// ------------------------------------------------------------------
+	// setup pass 2: 1 / radius of every small cube
+	//
+	// The radius is sqrt (i^2 + j^2 + l^2) with i, j, l the CENTRED grid
+	// coordinates, so i, j, l are -2 .. 2, the squared radius s is an integer
+	// in 0 .. 12 and invtab has exactly the 13 matching entries. No square
+	// root and no division by zero is ever evaluated, and no cast is used.
+	//
+	// The centring by -2 is mandatory here. Without it the raw loop index
+	// k % 5 gives 0 .. 4 and s reaches 16 + 16 + 16 = 48, which makes the
+	// read run off the end of invtab:
+	//
+	//   memory_bounds: FATAL ERROR: variable not found overflow
+	//   address: 11694, offset: 128!
+	//
+	// (11694 is invtab and 128 = 16 * 8, i.e. the very first cube that
+	// touches the outer shell.)
+	//
+	// ti, tj, tl are squared in place, which keeps this loop down to 2 array
+	// accesses and saves the si / sj / sl scratch variables.
+	// ------------------------------------------------------------------
+	(zero one~ - k~ :=)
+	(for-loop)
+	(((k~ nlast~ <) flg1~ =) flg1~ for)
+		(k~ + one~ k~ :=)
+		(k~ five~ % ti~ :=)
+		(k~ five~ / tj~ :=)
+		(tj~ five~ % tj~ :=)
+		(k~ twentyfive~ / tl~ :=)
+		(two~ ti~ - ti~ :=)
+		(two~ tj~ - tj~ :=)
+		(two~ tl~ - tl~ :=)
+		(ti~ ti~ * ti~ :=)
+		(tj~ tj~ * tj~ :=)
+		(ti~ tj~ + s~ :=)
+		(tl~ tl~ * tl~ :=)
+		(s~ tl~ + s~ :=)
+		(k~ eight~ * k8~ :=)
+		(s~ eight~ * s8~ :=)
+		(invtab~ [ s8~ ] tv~ =)
+		(tv~ tv~ =)
+		(tv~ cinv~ [ k8~ ] =)
+	(next)
+
+	// ------------------------------------------------------------------
+	// setup pass 3: the 60 entry jitter ramp
+	//
+	// A plain linear ramp of jsize entries. It is walked later with stride 23
+	// and gcd (23, 60) = 1, so all 60 values get used and the debris ends up
+	// as a filled ball rather than a hollow shell.
+	// ------------------------------------------------------------------
+	(zero one~ - bi~ :=)
+	(dzero~ dja~ =)
+	(for-loop)
+	(((bi~ jlast~ <) flg1~ =) flg1~ for)
+		(bi~ + one~ bi~ :=)
+		(bi~ eight~ * bix~ :=)
+		(dja~ djit~ [ bix~ ] =)
+		(djstep~ dja~ + dja~ :=)
+	(next)
+
+	// ------------------------------------------------------------------
+	// setup pass 4: per cube jitter and per cube angle offset
+	// ------------------------------------------------------------------
+	(zero one~ - k~ :=)
+	(zero aj~ =)
+	(dzero~ dacc4~ =)
+	(for-loop)
+	(((k~ nlast~ <) flg1~ =) flg1~ for)
+		(k~ + one~ k~ :=)
+		(aj~ jstep~ + aj~ :=)
+		(aj~ jmod~ % aj~ :=)
+		(k~ eight~ * k8~ :=)
+		(aj~ eight~ * aj8~ :=)
+		(djit~ [ aj8~ ] tv~ =)
+		(tv~ tv~ =)
+		(tv~ cjit~ [ k8~ ] =)
+		(dstep4~ dacc4~ + dacc4~ :=)
+		(dacc4~ aoff~ [ k8~ ] =)
+	(next)
+
+	// ------------------------------------------------------------------
+	// setup pass 5: travel ramp, dout = 0 -> 1 with an ease out
+	//
+	// dout = u * (2 - u) with u a double accumulator, so the largest index
+	// lands on u = 1 and the table needs no clamp and no saturation branch.
+	// The accumulation is pure double arithmetic, which is why the integer
+	// index ph never has to be turned into a double.
+	//
+	// The first gate entries are written as a flat 0 by the first loop and
+	// the second loop then runs over the 64 remaining entries, so the big
+	// cube is completely still until every cube's phase has passed the gate.
+	// Two loops instead of one loop with an if+ inside it, for the reason
+	// given in the header.
+	// ------------------------------------------------------------------
+	(gate~ one~ + bi2~ :=)
+	(bi2~ one~ - bi3~ :=)
+	(zero one~ - bi~ :=)
+	(for-loop)
+	(((bi~ bi3~ <) flg1~ =) flg1~ for)
+		(bi~ + one~ bi~ :=)
+		(bi~ eight~ * bix~ :=)
+		(dzero~ dout~ [ bix~ ] =)
+	(next)
+
+	(zero dacc~ =)
+	(bi2~ one~ - bi~ :=)
+	(for-loop)
+	(((bi~ ntablast~ <) flg1~ =) flg1~ for)
+		(bi~ + one~ bi~ :=)
+		(done~ - dacc~ de~ :=)
+		(dacc~ done~ + dd~ :=)
+		(dacc~ dd~ * dd~ :=)
+		(bi~ eight~ * bix~ :=)
+		(dd~ dout~ [ bix~ ] =)
+		(dinv~ dacc~ + dacc~ :=)
+	(next)
+
+	// ------------------------------------------------------------------
+	// setup pass 6: fall ramp, drop = 0 -> 1 with an ease in
+	//
+	// Held at 0 until index gate, so the cubes first travel outwards and only
+	// then start to fall. Squaring the accumulator makes the fall accelerate,
+	// and because it stops rising at 1 the cubes simply come to rest: the
+	// ground contact is the end of the table, not a comparison.
+	//
+	// The hold is two loops rather than one loop with an if+ inside it. An if
+	// inside a for body is what used to break the array reads, and the split
+	// costs nothing here because this is a one off setup cost. bi2 and bi3
+	// were already computed by setup pass 5 and still hold, so the second
+	// loop runs 64 times and dacc2 lands on exactly 1.
+	// ------------------------------------------------------------------
+	(zero one~ - bi~ :=)
+	(for-loop)
+	(((bi~ bi3~ <) flg1~ =) flg1~ for)
+		(bi~ + one~ bi~ :=)
+		(bi~ eight~ * bix~ :=)
+		(dzero~ drop~ [ bix~ ] =)
+	(next)
+
+	(zero dacc2~ =)
+	(bi2~ one~ - bi~ :=)
+	(for-loop)
+	(((bi~ ntablast~ <) flg1~ =) flg1~ for)
+		(bi~ + one~ bi~ :=)
+		(bi~ eight~ * bix~ :=)
+		(dstep2~ dacc2~ + dacc2~ :=)
+		(dacc2~ dacc2~ * dp~ :=)
+		(dp~ drop~ [ bix~ ] =)
+	(next)
+
+	// ------------------------------------------------------------------
+	// setup pass 7: rotation ramp, one full tumble per flight
+	//
+	// Same flat-then-run shape as dout and drop, so the cubes do not start
+	// tumbling before they start moving.
+	// ------------------------------------------------------------------
+	(zero one~ - bi~ :=)
+	(for-loop)
+	(((bi~ bi3~ <) flg1~ =) flg1~ for)
+		(bi~ + one~ bi~ :=)
+		(bi~ eight~ * bix~ :=)
+		(dzero~ rot~ [ bix~ ] =)
+	(next)
+
+	(zero dacc3~ =)
+	(bi2~ one~ - bi~ :=)
+	(for-loop)
+	(((bi~ ntablast~ <) flg1~ =) flg1~ for)
+		(bi~ + one~ bi~ :=)
+		(bi~ eight~ * bix~ :=)
+		(dacc3~ rot~ [ bix~ ] =)
+		(dstep3~ dacc3~ + dacc3~ :=)
+	(next)
+
+	// ------------------------------------------------------------------
+	// window + camera
+	//
+	// The window has to exist BEFORE the mesh is created. GenMeshCube +
+	// UploadMesh before InitWindow () prints
+	//
+	//   WARNING: GL: GPU is not ready to load data, trying to load before
+	//   InitWindow ()?
+	//
+	// and then takes the whole process down with a SIGSEGV as soon as the
+	// first frame is drawn.
+	// ------------------------------------------------------------------
+	(fmsaa~ :raylib_set_config_flags !)
+	(width~ height~ Ptitle~ :raylib_init_window !)
+	(ret~ stpopi)
+	(((ret~ zero !=) flg1~ =) flg1~ if)
+		(zero :free_mod !)
+		(zero :exit !)
+	(endif)
+
+	(fps~ :raylib_set_target_fps !)
+	(mode~ :raylib_set_camera_mode !)
+	(Pcam~ :raylib_set_camera !)
+
+	// ------------------------------------------------------------------
+	// the one shared unit cube mesh, uploaded once
+	//
+	// All 125 small cubes share this single mesh, so only one cube ever
+	// lives on the GPU. They still look different because draw_model_ex
+	// takes a per cube rotation axis angle offset and a per cube tint.
+	// ------------------------------------------------------------------
+	(dmsz~ dmsz~ dmsz~ :raylib_gen_mesh_cube !)
+	(meshh~ stpopi)
+	(meshh~ :raylib_upload_mesh !)
+	(meshh~ :rayraw_meshmodel !)
+	(modelh~ stpopi)
+
+	// ------------------------------------------------------------------
+	// main loop
+	// ------------------------------------------------------------------
+	(do)
+		(:raylib_update_camera !)
+
+		// ----- input: SPACE launches or reassembles, R resets -----
+		(key_space~ :raylib_is_key_pressed !)
+		(kret~ stpopi)
+		(((kret~ zero !=) flg2~ =) flg2~ if)
+			(zero tms~ =)
+		(endif)
+
+		(key_r~ :raylib_is_key_pressed !)
+		(kret~ stpopi)
+		(((kret~ zero !=) flg2~ =) flg2~ if)
+			(zero tms~ =)
+		(endif)
+
+		(key_h~ :raylib_is_key_pressed !)
+		(kret~ stpopi)
+		(((kret~ zero !=) flg2~ =) flg2~ if)
+			(one~ showhelp~ - showhelp~ :=)
+		(endif)
+
+		// ----- clock -----
+		// The frame time comes back as a double and a double cannot be cast to
+		// an int64 on this toolchain, so the step is derived from the integer
+		// frame rate instead. At the 60 fps target this is 16 ms, and the
+		// animation runs off integer milliseconds all the way through.
+		//
+		// GetFrameTime () is a double, and dividing by the result of
+		// GetFps () is a divide by zero on the frames where GetFps () still
+		// reports 0, so the step is fixed once at setup from the target rate
+		// instead of being remeasured per frame. The animation therefore runs
+		// on a fixed 16 ms timestep, which is what a deterministic demo wants
+		// anyway: the motion is identical on every machine.
+		(tms~ dtms~ + tms~ :=)
+		// The clock stops at tcap so ph never exceeds 128 and the tables
+		// never need a clamp or a saturating branch. From there on the demo
+		// just holds the finished picture until a key is pressed.
+		(((tms~ tcap~ >) flg2~ =) flg2~ if)
+			(tcap~ tms~ =)
+		(endif)
+
+		// ----- draw -----
+		(:raylib_begin_drawing !)
+		(Pcbg~ :raylib_clear_background !)
+		(:raylib_begin_mode_3d !)
+
+		(Pground~ Pplanesz~ Pcground~ :raylib_draw_plane !)
+		(gridslices~ gridspacing~ :raylib_draw_grid !)
+
+		// ----- frame pass 1: spread factor and fall amount -----
+		// travel = (dspread + jitter) * dout [ph]
+		// fac    = 1 + travel * inv      -> a true radial expansion of exactly
+		//                                   travel units for every cube
+		//
+		// The phase is computed with NO branch at all:
+		//
+		//   delay = (k * 13) mod 640          a different start time per cube
+		//   age   = tms + 640 - delay          >= 1 for every tms >= 0
+		//   ph    = age / 32                  0 .. 128, never negative
+		//
+		// The + 640 is what removes the need for the "is age negative yet"
+		// test the first version had. It shifts every cube's start time by the
+		// same 640 ms, which just means a different cube sets off first, and
+		// since the delays are spread over the whole 0 .. 639 range the
+		// picture is identical. The upper end is handled by stopping the clock
+		// at tcap, so ph cannot exceed 128 and the tables need no clamp.
+		(zero one~ - k~ :=)
+		(for-loop)
+		(((k~ nlast~ <) flg2~ =) flg2~ for)
+			(k~ + one~ k~ :=)
+			(k~ thirteen~ * dvv~ :=)
+			(dvv~ m320~ % dvv~ :=)
+			(tms~ m640~ + tmp~ :=)
+			(tmp~ dvv~ - age~ :=)
+			(age~ thirtytwo~ / ph~ :=)
+			(k~ eight~ * k8~ :=)
+			(ph~ eight~ * p8~ :=)
+			(dout~ [ p8~ ] dsp~ =)
+			(dsp~ dsp~ =)
+			(drop~ [ p8~ ] dpp~ =)
+			(dpp~ dpp~ =)
+			(cinv~ [ k8~ ] ivv~ =)
+			(ivv~ ivv~ =)
+			(cjit~ [ k8~ ] jtv~ =)
+			(jtv~ jtv~ =)
+			(dspread~ jtv~ + spv~ :=)
+			(dsp~ spv~ * spv~ :=)
+			(ivv~ spv~ * spv~ :=)
+			(done~ spv~ + spv~ :=)
+			(spv~ fac~ [ k8~ ] =)
+			(dpp~ drp~ [ k8~ ] =)
+		(next)
+
+		// ----- frame pass 2: rotation angle -----
+		// Same branchless phase maths as pass 1. The per cube offset keeps the
+		// 125 cubes from sharing one resting orientation.
+		(zero one~ - k~ :=)
+		(for-loop)
+		(((k~ nlast~ <) flg2~ =) flg2~ for)
+			(k~ + one~ k~ :=)
+			(k~ thirteen~ * dvv~ :=)
+			(dvv~ m320~ % dvv~ :=)
+			(tms~ m640~ + tmp~ :=)
+			(tmp~ dvv~ - age~ :=)
+			(age~ thirtytwo~ / ph~ :=)
+			(k~ eight~ * k8~ :=)
+			(ph~ eight~ * p8~ :=)
+			(rot~ [ p8~ ] rtv~ =)
+			(rtv~ rtv~ =)
+			(aoff~ [ k8~ ] aof~ =)
+			(aof~ aof~ =)
+			(rtv~ aof~ + rtv~ :=)
+			(rtv~ cang~ [ k8~ ] =)
+		(next)
+
+		// ----- frame pass 3: X -----
+		(zero one~ - k~ :=)
+		(for-loop)
+		(((k~ nlast~ <) flg2~ =) flg2~ for)
+			(k~ + one~ k~ :=)
+			(k~ eight~ * k8~ :=)
+			(k8~ four~ * p8~ :=)
+			(fac~ [ k8~ ] fv~ =)
+			(fv~ fv~ =)
+			(cx~ [ k8~ ] hv~ =)
+			(hv~ fv~ * xv~ :=)
+			(xv~ cvec~ [ p8~ ] =)
+		(next)
+
+		// ----- frame pass 4: Z -----
+		// Same shape as pass 3, one axis over. cvec holds one 32 byte record
+		// per cube (a Vector3 plus one pad double), so cube k starts at byte
+		// k * 32 = k8 * 4 and its Z sits 16 bytes further in.
+		(zero one~ - k~ :=)
+		(for-loop)
+		(((k~ nlast~ <) flg2~ =) flg2~ for)
+			(k~ + one~ k~ :=)
+			(k~ eight~ * k8~ :=)
+			(k8~ four~ * p8~ :=)
+			(p8~ sixteen~ + p8~ :=)
+			(fac~ [ k8~ ] fv~ =)
+			(fv~ fv~ =)
+			(cz~ [ k8~ ] hv~ =)
+			(hv~ fv~ * zv~ :=)
+			(zv~ cvec~ [ p8~ ] =)
+		(next)
+
+		// ----- frame pass 5: Y, the lerp onto the ground plane -----
+		// y = resting_y + (expanded_y - resting_y) * (1 - drop), so the cubes
+		// settle onto the ground plane instead of sinking through it.
+		(zero one~ - k~ :=)
+		(for-loop)
+		(((k~ nlast~ <) flg2~ =) flg2~ for)
+			(k~ + one~ k~ :=)
+			(k~ eight~ * k8~ :=)
+			(k~ eight~ * k8b~ :=)
+			(k~ eight~ * k8c~ :=)
+			(k~ thirtytwo~ * p8~ :=)
+			(p8~ eight~ + p8~ :=)
+			(fac~ [ k8~ ] fv~ =)
+			(fv~ fv~ =)
+			(drp~ [ k8b~ ] dv2~ =)
+			(dv2~ dv2~ =)
+			(cy~ [ k8c~ ] hv~ =)
+			(hv~ hv~ =)
+			(hv~ fv~ * hv~ :=)
+			(done~ - dv2~ sy~ :=)
+			(hv~ sy~ * yv~ :=)
+			(dcy~ + yv~ yv~ :=)
+			(dresty~ dv2~ * sy2~ :=)
+			(yv~ sy2~ + yv~ :=)
+			(yv~ cvec~ [ p8~ ] =)
+		(next)
+
+		// ----- frame pass 6: draw -----
+		// One module call per cube. The position is the element of cvec~ that
+		// the passes above just filled in, so nothing has to be copied and no
+		// address has to be assembled twice.
+		//
+		// draw_model_ex takes the position as an ADDRESS, not as three
+		// numbers, so vaddr~ has to end up holding Pcvec~ + k * 32 and not
+		// the bare offset k * 32.
+		//
+		// The base is loaded ONCE, before the loop, and the -32 preload lines
+		// it up so that the first add inside the body lands on cube 0.
+		(Pcvec~ vaddr~ =)
+		(vaddr~ thirtytwo~ - vaddr~ :=)
+		(Pc0~ pc~ =)
+		(zero one~ - k~ :=)
+		(for-loop)
+		(((k~ nlast~ <) flg2~ =) flg2~ for)
+			(k~ + one~ k~ :=)
+			(k~ eight~ * k8~ :=)
+			(vaddr~ thirtytwo~ + vaddr~ :=)
+			(cang~ [ k8~ ] anglev~ =)
+			(anglev~ anglev~ =)
+			(modelh~ vaddr~ Prax~ anglev~ Pscale~ pc~ :raylib_draw_model_ex !)
+		(next)
+
+		(:raylib_end_mode_3d !)
+
+		// ----- HUD -----
+		(((showhelp~ zero !=) flg2~ =) flg2~ if+)
+			(Ph1~ t1x~ t1y~ fnt20~ Pctext~ :raylib_draw_text !)
+			(Ph2~ t1x~ t2y~ fnt12~ Pchelp~ :raylib_draw_text !)
+			(Ph3~ t1x~ t3y~ fnt12~ Pchelp~ :raylib_draw_text !)
+		(else)
+			(Phint~ t1x~ hinty~ fnt16~ Pchelp~ :raylib_draw_text !)
+		(endif)
+
+		// stage line, driven by the same integer clock as the animation
+		(Pstpre~ stx~ sty~ fnt12~ Pctext~ :raylib_draw_text !)
+		(((tms~ d640~ <) flg2~ =) flg2~ if+)
+			(Pstg1~ stx2~ sty~ fnt16~ Pcinfo~ :raylib_draw_text !)
+		(else)
+			(((tms~ d2600~ <) flg3~ =) flg3~ if+)
+				(Pstg2~ stx2~ sty~ fnt16~ Pcwarn~ :raylib_draw_text !)
+			(else)
+				(Pstg3~ stx2~ sty~ fnt16~ Pcinfo~ :raylib_draw_text !)
+			(endif)
+		(endif)
+
+		(fpsx~ fpsy~ :raylib_draw_fps !)
+
+		(:raylib_end_drawing !)
+
+		// ----- exit condition -----
+		(:raylib_window_should_close !)
+		(wsclose~ stpopi)
+		(((wsclose~ zero ==) flg1~ =) flg1~ while)
+
+	// ------------------------------------------------------------------
+	// cleanup
+	// ------------------------------------------------------------------
+	(modelh~ :rayraw_unload !)
+	(meshh~ :raylib_unload_mesh !)
+	(:raylib_close_window !)
+	(zero :free_mod !)
+	(zero :exit !)
+(funcend)
+
+// ---------------------------------------------------------------------------
+// RAW MODULE CALL WRAPPERS
+// ---------------------------------------------------------------------------
+// raylib_load_model_from_mesh and raylib_unload_model cannot be called through
+// their :raylib_* wrappers, because l1pre replaces macro names as SUBSTRINGS
+// of a line and intr-func.l1h declares
+//
+//     #func load_mod (iNAME, iNUM) :(0 iNAME iNUM 0 intr0)
+//
+// "load_mod" is a substring of BOTH names, so writing
+//
+//     (meshh~ :raylib_load_model_from_mesh !)
+//
+// makes the preprocessor match load_mod first, steal "meshh~" as its iNAME
+// argument and abort with
+//
+//     check_define_type: ERROR: variable: '' not defined!
+//     ERROR: macro variable type mismatch:  not of type: iNUM: int
+//     line: '(0 meshhmain  0 intr0)'
+//
+// The way round it is to issue the module call directly. :call_mod is the raw
+// body of every raylib wrapper,
+//
+//     #func call_mod (iNUM, iFUNCNUM) :(3 iNUM iFUNCNUM 0 intr0)
+//
+// but it only accepts the module number and the function number, and the
+// module function reads its arguments off the operand stack. So a tiny
+// wrapper function does the stack juggling: pop the handle that the caller
+// pushed, push it straight back, then fire call_mod with the raw function
+// number from raylib.l1h's own table. The module function then leaves its
+// result on the stack for the caller's (modelh~ stpopi).
+//
+// These two functions are the whole workaround, and they are the reason the
+// model is built from a mesh rather than from a file name.
+// ---------------------------------------------------------------------------
+(rayraw_meshmodel func)
+	#var ~ rayraw_meshmodel
+	(set int64 1 mh~ 0)
+	(mh~ stpopi)
+	(mh~ stpushi)
+	(modraylib rfnum_mesh :call_mod !)
+(funcend)
+
+(rayraw_unload func)
+	#var ~ rayraw_unload
+	(set int64 1 mh~ 0)
+	(mh~ stpopi)
+	(mh~ stpushi)
+	(modraylib rfnum_model :call_mod !)
+(funcend)
