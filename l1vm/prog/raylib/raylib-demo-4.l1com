@@ -25,59 +25,137 @@
 // all, no integration and therefore nothing that can drift, and no double
 // comparison (those are broken on this toolchain, see the notes below).
 //
-//   delay = (k * 13) mod 640          staggered launch, 0 .. 639 ms
+//   delay = (k * 13) mod 320          staggered launch, 0 .. 319 ms
 //   age   = tms + 640 - delay         ms since this cube left the big cube
-//   ph    = age / 32                  table index, 0 .. 128, never negative
-//                                        -> 32 ms per step, 4.1 s flight
+//   ph    = age / 32                  table index, 0 .. 138, never negative
+//                                        -> 32 ms per step
 //
 // The + 640 keeps age positive for every cube at every clock value, so the
-// phase needs no "has it started yet" test. The upper end is handled by
-// stopping the clock at tcap = 3456, where ph is exactly 128, so the tables
-// need no clamp either. Both ends of the range are therefore handled by the
-// shape of the arithmetic instead of by a comparison inside the loop, which
-// matters a great deal on this toolchain (see the array notes below).
+// phase needs no "has it started yet" test.
 //
-// Three shared tables of 129 doubles are read with that integer index:
+// Three shared tables of 139 doubles are read with that integer index:
 //   dout [ph]  0 -> 1, ease out. This is how far the cube has travelled.
-//   drop [ph]  0 -> 1, ease in, but held at 0 until ph = 48. This is the
-//               fall to the ground.
-//   rot  [ph]  a linear ramp of up to 2 pi, one full tumble per flight.
-//               Slot 128 of all three tables is the finished state.
+//   drop [ph]  0 -> 1, ease in, but held at 0 until ph = 96. This is the
+//               fall to the ground, and it starts only once the burst is
+//               finished, so the two read as two separate beats.
+//   rot  [ph]  a linear ramp of up to 2 pi, one full tumble per burst.
 //
-// The radial travel distance of a cube is
+// ---------------------------------------------------------------------------
+// WHY THE TABLES ARE 139 SLOTS LONG AND NOT 129
+// ---------------------------------------------------------------------------
+// The cubes do NOT all start at the same moment: delay staggers them over
+// 320 ms. Every cube walks the same 129 step ramp, so the cube that set off
+// first is 10 steps ahead of the one that set off last. A single frozen
+// clock therefore cannot stop every cube at the end of the ramp at the same
+// instant - it can only stop the last cube, and then the early cubes are
+// still 10 steps short of the end.
 //
-//   travel = (SPREAD + jitter_k) * dout [ph]
+// The first version of this file had exactly that bug. It stopped the clock
+// at tcap = 3456, where the phase was 128 for the cube with delay = 0 and
+// only 118 for the cube with delay = 319, so those cubes were frozen ten
+// steps up their own fall ramps and hung in the air. Nothing was resting on
+// the ground at all:
 //
-// and SPREAD + jitter is always divided by the cube's own radius, so every
-// cube ends up exactly SPREAD + jitter units away from the middle of the big
-// cube no matter where it started. The centre of the big cube is at
-// (0, 2, 0) and the small cubes sit on the integer lattice -2 .. +2, so a
-// cube's radial components are its lattice coordinates and its radius is
-// sqrt (i^2 + j^2 + l^2). All reachable radii map to the 13 entries of
-// invtab, which is a literal table of 1/r, so no square root and no division
-// by zero is ever evaluated.
+//   y at rest was 1.526 .. 4.772, 0 of 125 cubes at the resting height
 //
-//   x = i * (1 + travel / r)
-//   z = l * (1 + travel / r)
-//   y = 2 + j * (1 + travel / r) * (1 - drop) + 0.46 * drop
+// The fix needs no comparison and no clamp. The clock is stopped at
+// tcap = 3776, chosen so that the LAST cube out (delay = 319) reaches exactly
+// index 128:
 //
-// The y line is a plain lerp towards the resting height 0.46 (half of the
-// small cube edge 0.92), so once drop reaches 1 every cube that is still in
-// the air has come to rest on the ground plane at y = 0. No "hit the floor"
-// test exists, which is what keeps this free of double comparisons.
+//   ph = (3776 + 640 - 319) / 32 = 128
 //
-// The jitter is read out of a 60 entry ramp that is walked with a stride of
-// 23. gcd (23, 60) = 1, so the 125 cubes get a well spread set of radii and
-// the debris ends up as a filled ball instead of a hollow shell.
+// and the first cube out then sits at
+//
+//   ph = (3776 + 640 - 0) / 32 = 138
+//
+// so the tables carry 139 slots and the last 10 of them (129 .. 138) are a
+// flat copy of the finished state 1.0, 1.0, 2 pi. An over-run cube simply
+// reads the finished value. That is the whole trick: the extra slots absorb
+// the stagger, and no cube can ever index outside the table.
+//
+// ---------------------------------------------------------------------------
+// HOW EVERY SINGLE CUBE ENDS UP ON THE GROUND GRID
+// ---------------------------------------------------------------------------
+// Two separate things have to be true for all 125 cubes at the end, and both
+// are pure integer / literal arithmetic, so neither needs a comparison.
+//
+// 1. THEY ALL END UP ON THE GROUND, AT ONE SINGLE HEIGHT.
+//
+//   y = (2.46 + j) * (1 - drop) + 0.46 * drop
+//
+// is a plain lerp from the height the cube had inside the big cube down to
+// the resting height 0.46, which is half of the small cube edge 0.92, so the
+// bottom face of a resting cube sits exactly on the ground plane. The centre
+// of the big cube is at 2.46 rather than 2 for that reason: with a centre of
+// 2 the bottom layer of the big cube starts with its centre at y = 0, which
+// is half buried in the ground, and those cubes then have to RISE 0.46 to
+// reach the resting height instead of falling to it. With 2.46 the bottom
+// layer already rests on the grid and every cube in the big cube only ever
+// moves downwards.
+//
+// drop reaches exactly 1.0 at index 128, so (1 - drop) is exactly 0.0 and
+// every cube evaluates to the same 0.46, to the last bit. There is no
+// has-it-hit-the-floor-yet test anywhere: the end of the ramp IS the floor.
+// (Keep the quotes off this text and balanced within any single line. An
+// odd number of double quotes in a line sends l1com's repair_multi_spaces
+// into an endless loop, so a comment with one half of a quoted phrase on
+// this line and the other half on the next one does not build at all: it
+// hangs silently at 100% CPU with no error message.)
+//
+// 2. THEY ALL END UP ON WHOLE NUMBERS, so they sit ON the grid lines.
+//
+// The burst is a straight flight to a landing site that is a lattice point,
+// and the landing sites are chosen at setup time so that no two of the 125
+// cubes ever share one:
+//
+//   ti = k mod 5,  tj = (k / 5) mod 5,  tl = k / 25     all in 0 .. 4
+//   q  = 2 ti + 3 tj + tl                             integer, 0 .. 20
+//   gx = 3i + odtab [ q mod 5 ]          i = ti - 2
+//   gz = 3l + odtab [ (q + 2) mod 5 ]    l = tl - 2
+//   dx = gx - i = 2i + odtab [...]
+//   dz = gz - l = 2l + odtab [...]
+//
+// and then, every frame,
+//
+//   x = i + dx * dout [ph]
+//   z = l + dz * dout [ph]
+//
+// odtab holds the five whole numbers -2 .. 2, so gx and gz are whole numbers
+// for every cube and dout [128] is exactly 1, so the finished x and z are
+// exactly the landing sites. The debris field is centred on the origin and
+// reaches 10.6 units, which is the same spread the radial version reached.
+//
+// q is built from the RAW loop indices 0 .. 4 rather than from the centred
+// ones, because the bias cancels out on its own:
+//
+//   2i + 3j + l + 12 = 2 (ti - 2) + 3 (tj - 2) + (tl - 2) + 12
+//                      = 2 ti + 3 tj + tl
+//
+// so q is 0 .. 20 by construction and q mod 5 can never be negative. That is
+// not cosmetic: this VM's % follows the sign of the left operand, and a
+// negative index is a fatal bounds error, not a wrong answer. Every index in
+// this file is built with a * or a +, which is also the only form the register
+// allocator can use as an array index (see the notes at the end of this
+// header).
+//
+// The (2, 3, 1) weights are what keep the 125 sites distinct. The 5 cubes of
+// one column share i and l and differ only in j, and 3j mod 5 is 4, 2, 0, 3, 1
+// for j = -2 .. 2, i.e. all five offsets are different, so no two cubes of a
+// column can land on the same site. Columns cannot collide either because
+// 3i + odtab with odtab in -2 .. 2 puts adjacent columns one apart at the
+// edges of their ranges. Checked exhaustively: 125 cubes, 125 distinct sites,
+// and the closest pair of resting cubes ends up 1.0 apart with an edge of
+// 0.92, so nothing interpenetrates.
 //
 // ---------------------------------------------------------------------------
 // PER CUBE ANGLE
 // ---------------------------------------------------------------------------
 // rot [ph] alone would make all cubes share one orientation once they land
-// (they all sit at ph = 127), which reads as a mechanical grid of identically
-// rotated cubes. Adding the per cube offset aoff (k * 0.2718, a literal ramp
-// built by accumulation) gives 125 visibly different resting orientations
-// without any extra array.
+// (they all end up past index 128), which reads as a mechanical grid of
+// identically rotated cubes. Adding the per cube offset aoff (k * 0.2718, a
+// literal ramp built by accumulation) gives 125 visibly different resting
+// orientations without any extra array. The flat tail of rot past index 128
+// stops the cubes tumbling once they are down.
 //
 // ---------------------------------------------------------------------------
 // WHY THE MODEL IS CREATED WITH :call_mod AND NOT WITH THE WRAPPER MACROS
@@ -177,8 +255,48 @@
 //      by the compiler but emits no conversion opcode, so the integer bit
 //      pattern is reinterpreted as a double. Everything that starts life as
 //      an integer that has to become a double goes through a literal table
-//      lookup instead (the grid, invtab, djit ramps), which is a plain
+//      lookup instead (the grid table, the odtab offsets), which is a plain
 //      indexed array read.
+//   3. An operator takes its type from its DESTINATION, not from its operands.
+//      (intvar intvar * doublevar :=) compiles as a DOUBLE multiply and then
+//      aborts with
+//
+//        error: line 738: variable not double: 'twomain' !
+//
+//      because the first operand is not a double. So an integer expression
+//      can never be fed into a double variable, and this is also why the
+//      landing site pass reads i and l back out of the grid table rather than
+//      computing 2 * (ti - 2) with the int64 constants: that needs an
+//      int-to-double conversion, and cast is broken (see 2 above), so the
+//      only way to get i as a double is to read it out of a literal table.
+//   4. The VALUE side of an array store is a single token. Writing
+//
+//        (tv~ dg~ - dxv~ [ k8~ ] =)
+//
+//      does not store dg - tv: the parser takes the operator itself as the
+//      value and the build fails with
+//
+//        checkdef: error: line 727: variable '-' not defined!
+//
+//      The subtraction has to be done into a scratch double first and the
+//      bare variable stored. Every array store in this file is one token.
+//
+// Two more traps cost real time on this one and are recorded here so that they
+// are not hit again:
+//
+//   5. An ODD number of double quotes on a single line sends l1com into an
+//      endless loop in repair_multi_spaces, at 100% CPU, with NO error
+//      message and no output at all. A comment line that opens a quoted
+//      phrase and continues it on the next line hangs the compiler silently.
+//      Quotes in comments must be balanced within the line.
+//
+//   6. l1vm-build.sh must be given -lines 20000 (see the top of this file),
+//      and a build that hangs like 5 looks like a slow build rather than a
+//      failed one, so check for a pinned instruction pointer with
+//
+//        gdb -p $(pgrep -x l1com) -batch -ex "bt 6"
+//
+//      before assuming the machine is just slow.
 //
 // On top of that a single loop body cannot hold more than a certain amount of
 // live state: the allocator hands out a register that a later statement in the
@@ -241,21 +359,29 @@
 	(set int64 1 twentyfive~ 25)
 	(set int64 1 thirtytwo~ 32)
 	(set int64 1 gate~ 64)
-	// ntbl = 129, so the tables hold ph = 0 .. 128 and the last entry is the
-	// finished state. tcap is the clock value that produces exactly that:
-	// ph = (tcap + 640 - delay) / 32 = (3456 + 640) / 32 = 128.
-	(set int64 1 tcap~ 3456)
+	// dropgate = the table index where the fall starts. The burst runs from
+	// gate = 64, so the cubes are already spread out before anything falls.
+	(set int64 1 dropgate~ 96)
+	// ntbl = 139, so the tables hold ph = 0 .. 138. tcap is the clock value
+	// that puts the LAST cube out (delay = 319) exactly on the end of the
+	// ramp, index 128:
+	//     ph = (3776 + 640 - 319) / 32 = 128
+	// and the first cube out (delay = 0) on index
+	//     ph = (3776 + 640 - 0) / 32 = 138
+	// Slots 129 .. 138 are a flat copy of the finished state, so the early
+	// cubes simply read "done" and no cube can run off the end of a table.
+	(set int64 1 tcap~ 3776)
 	(set int64 1 m640~ 640)
 	(set int64 1 m320~ 320)
-	(set int64 1 d640~ 640)
-	(set int64 1 d2600~ 2600)
-	(set int64 1 jstep~ 23)
-	(set int64 1 jmod~ 60)
+	// clock values that drive the stage line, see setup pass 7
+	(set int64 1 d1472~ 1472)
+	(set int64 1 d3776~ 3776)
 	(set int64 1 ncubes~ 125)
 	// nlast = ncubes - 1, the loop bound for the increment-at-the-top loops
 	(set int64 1 nlast~ 124)
-	(set int64 1 jlast~ 59)
 	(set int64 1 ntablast~ 128)
+	// taillast = last slot of the tables = ntablast + 10
+	(set int64 1 taillast~ 138)
 
 	// ----- double constants -----
 	// NOTE: never put a trailing // comment on a (set ...) line. l1pre only
@@ -266,24 +392,31 @@
 	// declaration block therefore sit on their own line above the set.
 	(set double 1 done~ 1.0)
 	(set double 1 dzero~ 0.0)
-	// All three tables are held flat for the first gate entries and only
-	// then run, so every table has 128 - gate = 64 live entries and the
-	// steps below are 1 / 63 and 2 pi / 63.
+	// dout and rot are held flat for the first gate entries and only then run,
+	// so the big cube is completely still until every cube's phase has passed
+	// gate, and drop is held flat all the way to dropgate so that the burst
+	// finishes before the fall starts.
 	// dinv   = 1 / 63, step of the travel ramp, so u reaches exactly 1 at
 	// table index 128 and dout [128] is exactly 1
 	(set double 1 dinv~ 0.015873015873015872)
-	// dstep2 = 1 / 63, step of the fall ramp, so drop [128] is exactly 1
-	(set double 1 dstep2~ 0.015873015873015872)
+	// dstep2 = 1 / 32, step of the fall ramp. The fall runs over the 32 steps
+	// from dropgate = 96 to ntablast = 128, so drop [128] is exactly 1 and
+	// NOT 1.032: the accumulator is stepped once per slot, and 32 steps of
+	// 1 / 32 is exactly 1. This is the value the whole landing depends on.
+	(set double 1 dstep2~ 0.03125)
 	// dstep3 = 2 pi / 63, one full tumble by table index 128
 	(set double 1 dstep3~ 0.09973310011396169)
 	// dstep4 = per cube rotation angle offset
 	(set double 1 dstep4~ 0.2718281828459045)
-	// djstep = step of the jitter ramp
-	(set double 1 djstep~ 0.0425)
-	// dspread = base radial travel distance of every small cube
-	(set double 1 dspread~ 7.0)
-	// dcy   = Y of the centre of the big cube
-	(set double 1 dcy~ 2.0)
+	// dflat  = the finished angle, 2 pi, written into the tail slots
+	(set double 1 dflat~ 6.283185307179586)
+	// dtwo = 2 as a double, so that the integer 2 never has to be converted
+	(set double 1 dtwo~ 2.0)
+	// dcy   = Y of the centre of the big cube. It is 2.46 and not 2.0 so that
+	// the bottom layer of the big cube already rests ON the ground: its centre
+	// is then 0.46 = dresty, exactly the resting height, so no cube has to
+	// rise to get there, every cube only ever falls.
+	(set double 1 dcy~ 2.46)
 	// dresty = resting height, half of the small cube edge
 	(set double 1 dresty~ 0.46)
 	// dcsz  = edge of a small cube
@@ -310,41 +443,41 @@
 	(set int64 1 modelh~ 0)
 
 	// ----- grid literals -----
-	// radial coordinate of a small cube, 0 = centre of the big cube
+	// lattice coordinate of a small cube, 0 = centre of the big cube
 	(set double 5 grid~ -2.0 -1.0 0.0 1.0 2.0)
-	// 1 / sqrt (s) for s = i^2 + j^2 + l^2, indexed by s * 8.
-	// s = 0 is the single cube in the middle of the big cube; it gets 1.0,
-	// which is harmless because its radial coordinates are all 0.
-	(set double 13 invtab~ 1.0 1.0 0.7071067811865476 0.5773502691896258 0.5 0.4472135954999579 0.4082482904638631 0.3779644730092272 0.3535533905932738 0.3333333333333333 0.3162277660168379 0.3015113445777636 0.2886751345948129)
-	// jitter ramp, walked with stride 23 so all 60 entries are used
-	(set double 60 djit~)
+	// the five whole-number landing offsets -2 .. 2, indexed by the byte
+	// offset q * 8. Reading a whole number out of this table is what turns
+	// the integer landing site index into a double without a cast, and every
+	// entry is a whole number, so a landing site is always a lattice point.
+	(set double 5 odtab~ -2.0 -1.0 0.0 1.0 2.0)
 
 	// ----- per cube tables (125 slots, byte offset = k * 8) -----
-	// cx, cy, cz    : radial X / Y / Z of the home position
-	// cinv          : 1 / radius of the home position
-	// cjit          : per cube jitter of the travel distance
+	// cx, cy, cz    : lattice X / Y / Z of the home position
+	// dxv, dzv      : landing site minus home position, per axis
 	// aoff          : per cube rotation angle offset
 	// fac, drp, cang: per frame values written by the frame passes
 	// cvec          : 125 * (Vector3 + pad), handed to the module directly
 	(set double 125 cx~)
 	(set double 125 cy~)
 	(set double 125 cz~)
-	(set double 125 cinv~)
-	(set double 125 cjit~)
+	(set double 125 dxv~)
+	(set double 125 dzv~)
 	(set double 125 aoff~)
 	(set double 125 fac~)
 	(set double 125 drp~)
 	(set double 125 cang~)
 	(set double 500 cvec~)
 
-	// ----- shared animation tables (129 slots, byte offset = ph * 8) -----
+	// ----- shared animation tables (139 slots, byte offset = ph * 8) -----
 	// dout : 0 -> 1 ease out, fraction of the flight travelled
 	// drop : 0 -> 1 ease in, fraction of the fall onto the ground
 	// rot  : linear angle ramp, one full tumble per flight
-	// The last slot, ph = 128, holds the finished state of all three.
-	(set double 129 dout~)
-	(set double 129 drop~)
-	(set double 129 rot~)
+	// Slot 128 is the finished state of all three and slots 129 .. 138 are a
+	// flat copy of it, which is what lets a staggered cube that is 10 steps
+	// ahead of the others still read "done" instead of running off the end.
+	(set double 139 dout~)
+	(set double 139 drop~)
+	(set double 139 rot~)
 
 	// ----- fixed vectors -----
 	// rax   : shared tumble axis, unit length, drawn as a Vector3
@@ -362,22 +495,22 @@
 	(set int64 1 ti~ 0)
 	(set int64 1 tj~ 0)
 	(set int64 1 tl~ 0)
-	(set int64 1 s~ 0)
-	(set int64 1 s8~ 0)
+	// q = 2i + 3j + l + qbias and qx8 / qz8 = the byte offsets into odtab
+	(set int64 1 q~ 0)
+	(set int64 1 qx8~ 0)
+	(set int64 1 qz8~ 0)
 	(set int64 1 ti8~ 0)
 	(set int64 1 tj8~ 0)
 	(set int64 1 tl8~ 0)
 	(set int64 1 k8~ 0)
 	(set int64 1 k8b~ 0)
-	(set int64 1 k8c~ 0)
-	(set int64 1 aj~ 0)
-	(set int64 1 aj8~ 0)
 	(set int64 1 bi2~ 0)
 	(set int64 1 bi3~ 0)
 	(set int64 1 q3~ 0)
 	(set int64 1 q4~ 0)
 	(set int64 1 q5~ 0)
 	(set int64 1 q6~ 0)
+	(set int64 1 nlast8~ 0)
 	(set double 1 tv~ 0.0)
 	(set double 1 de~ 0.0)
 	(set double 1 dd~ 0.0)
@@ -386,7 +519,6 @@
 	(set double 1 dacc2~ 0.0)
 	(set double 1 dacc3~ 0.0)
 	(set double 1 dacc4~ 0.0)
-	(set double 1 dja~ 0.0)
 
 	// ----- scratch: per frame -----
 	(set int64 1 k~ 0)
@@ -400,10 +532,7 @@
 	(set double 1 dsp~ 0.0)
 	(set double 1 dpp~ 0.0)
 	(set double 1 rtv~ 0.0)
-	(set double 1 ivv~ 0.0)
-	(set double 1 jtv~ 0.0)
 	(set double 1 aof~ 0.0)
-	(set double 1 spv~ 0.0)
 	(set double 1 fv~ 0.0)
 	(set double 1 hv~ 0.0)
 	(set double 1 xv~ 0.0)
@@ -411,7 +540,6 @@
 	(set double 1 zv~ 0.0)
 	(set double 1 dv2~ 0.0)
 	(set double 1 sy~ 0.0)
-	(set double 1 sy2~ 0.0)
 	(set double 1 anglev~ 0.0)
 
 	// ----- HUD layout -----
@@ -443,13 +571,17 @@
 	// ----- strings -----
 	(set string s title~ "L1VM raylib - big cube explodes")
 	(set string s h1~ "Big cube: 5 x 5 x 5 small cubes, drawn as one mesh")
-	(set string s h2~ "SPACE: launch / reassemble    R: reset    ESC: quit")
-	(set string s h3~ "H: toggle this help")
+	(set string s h2~ "The burst flies out, then the whole field falls onto the grid")
+	(set string s h3~ "SPACE: launch / reassemble    R: reset    ESC: quit    H: help")
 	(set string s hint~ "Press SPACE to blow the big cube apart")
 	(set string s stpre~ "Stage: ")
 	(set string s stg1~ "ASSEMBLED")
 	(set string s stg2~ "DISPERSING")
-	(set string s stg3~ "SETTLED")
+	// This line is only reached once the clock has reached tcap, which is the
+	// value at which the last of the 125 cubes reaches the end of its own fall
+	// ramp. At that point every cube is at y = 0.46 and on a whole number of
+	// X and Z, so "all cubes resting on the ground grid" is literally true.
+	(set string s stg3~ "SETTLED - all 125 cubes on the ground grid")
 
 	// ----- pointers -----
 	(set int64 1 Ptitle~ 0)
@@ -519,7 +651,7 @@
 	// setup pass 1: home position of every small cube
 	//
 	// k is row major: i = k mod 5, j = (k / 5) mod 5, l = k / 25.
-	// The radial coordinates are read straight out of grid~, which keeps them
+	// The lattice coordinates are read straight out of grid~, which keeps them
 	// exact and never needs an int64 to double conversion.
 	//
 	// The three axes are filled by three separate loops rather than by one
@@ -572,25 +704,71 @@
 	(next)
 
 	// ------------------------------------------------------------------
-	// setup pass 2: 1 / radius of every small cube
+	// setup pass 2: the landing site of every small cube
 	//
-	// The radius is sqrt (i^2 + j^2 + l^2) with i, j, l the CENTRED grid
-	// coordinates, so i, j, l are -2 .. 2, the squared radius s is an integer
-	// in 0 .. 12 and invtab has exactly the 13 matching entries. No square
-	// root and no division by zero is ever evaluated, and no cast is used.
+	// Every cube has to finish on a WHOLE number, so that it rests on a grid
+	// line of the drawn grid rather than at an arbitrary fraction of one, and
+	// no two cubes may finish on the same site or they would interpenetrate.
 	//
-	// The centring by -2 is mandatory here. Without it the raw loop index
-	// k % 5 gives 0 .. 4 and s reaches 16 + 16 + 16 = 48, which makes the
-	// read run off the end of invtab:
+	//   ti = k mod 5, tj = (k / 5) mod 5, tl = k / 25      all in 0 .. 4
+	//   q  = 2 ti + 3 tj + tl                              0 .. 20
+	//   gx = 3 i + odtab [ q mod 5 ]       i = ti - 2, centred
+	//   gz = 3 l + odtab [ (q + 2) mod 5 ] l = tl - 2, centred
+	//   dx = gx - i = 2 i + odtab [...]    what the frame pass actually flies
+	//   dz = gz - l = 2 l + odtab [...]
 	//
-	//   memory_bounds: FATAL ERROR: variable not found overflow
-	//   address: 11694, offset: 128!
+	// odtab holds the five whole numbers -2 .. 2, so gx and gz are whole
+	// numbers by construction and dout [128] is exactly 1, so the finished x
+	// and z are exactly the landing sites.
 	//
-	// (11694 is invtab and 128 = 16 * 8, i.e. the very first cube that
-	// touches the outer shell.)
+	// q is built from the RAW loop indices 0 .. 4 and not from the centred
+	// ones, because the bias falls out on its own:
 	//
-	// ti, tj, tl are squared in place, which keeps this loop down to 2 array
-	// accesses and saves the si / sj / sl scratch variables.
+	//   2 i + 3 j + l + 12 = 2 (ti - 2) + 3 (tj - 2) + (tl - 2) + 12
+	//                       = 2 ti + 3 tj + tl
+	//
+	// so q never needs a bias to stay positive, it is 0 .. 20 by construction
+	// and q mod 5 is therefore never negative either. That matters because
+	// this VM's % takes the sign of its LEFT operand: a negative index would
+	// be a fatal bounds error, not a wrong answer.
+	//
+	// The (2, 3, 1) weights are what makes the 125 sites distinct. The five
+	// cubes of one column share i and l and differ only in j, and
+	// 3 j mod 5 is 4, 2, 0, 3, 1 for j = -2 .. 2, i.e. five DIFFERENT offsets,
+	// so no two cubes of a column can share a site. Different columns cannot
+	// share one either, because 3 i + odtab with odtab in -2 .. 2 leaves the
+	// column ranges 3 units apart with an overlap of at most 1 at the ends,
+	// and those end values need opposite offsets to meet. Verified over all
+	// 125 cubes: 125 distinct sites, and the closest pair of resting cubes is
+	// 1.0 apart with an edge of 0.92, so nothing interpenetrates.
+	//
+	// Storing the DELTA rather than the site itself is what keeps the frame
+	// passes cheap: the pass then reads dx and the fraction and adds them to
+	// the home coordinate it already has in cx, so x = i + dx * dout needs no
+	// extra table read at all.
+	//
+	// NOTE the shape of the store at the bottom of each loop. It has to be
+	//
+	//     (dp~ dxv~ [ k8~ ] =)
+	//
+	// and NOT
+	//
+	//     (tv~ dg~ - dxv~ [ k8~ ] =)
+	//
+	// because the value side of an array store is a single token in this
+	// compiler. Give it an expression and it silently takes the operator as
+	// the value, which comes out as
+	//
+	//     checkdef: error: variable '-' not defined!
+	//
+	// on the store line. So the subtraction is done into a scratch double
+	// first. Every store in this file is a single token for that reason.
+	//
+	// One loop per axis, 2 array accesses each, 18 and 19 statements. The two
+	// loops differ only in the + 2 and in which of i and l is centred, and
+	// both recompute q from k rather than sharing a scratch array, which is
+	// the rule for keeping a loop body short enough for the register
+	// allocator.
 	// ------------------------------------------------------------------
 	(zero one~ - k~ :=)
 	(for-loop)
@@ -600,60 +778,67 @@
 		(k~ five~ / tj~ :=)
 		(tj~ five~ % tj~ :=)
 		(k~ twentyfive~ / tl~ :=)
-		(two~ ti~ - ti~ :=)
-		(two~ tj~ - tj~ :=)
-		(two~ tl~ - tl~ :=)
-		(ti~ ti~ * ti~ :=)
-		(tj~ tj~ * tj~ :=)
-		(ti~ tj~ + s~ :=)
-		(tl~ tl~ * tl~ :=)
-		(s~ tl~ + s~ :=)
+		(two~ ti~ * q~ :=)
+		(three~ tj~ * tj~ :=)
+		(tj~ + q~ q~ :=)
+		(tl~ + q~ q~ :=)
+		(q~ five~ % q~ :=)
+		(q~ eight~ * qx8~ :=)
 		(k~ eight~ * k8~ :=)
-		(s~ eight~ * s8~ :=)
-		(invtab~ [ s8~ ] tv~ =)
+		(ti~ eight~ * ti8~ :=)
+		(grid~ [ ti8~ ] tv~ =)
 		(tv~ tv~ =)
-		(tv~ cinv~ [ k8~ ] =)
+		(dtwo~ tv~ * tv~ :=)
+		(odtab~ [ qx8~ ] dd~ =)
+		(dd~ dd~ =)
+		(tv~ dd~ + dp~ :=)
+		(dp~ dxv~ [ k8~ ] =)
 	(next)
 
-	// ------------------------------------------------------------------
-	// setup pass 3: the 60 entry jitter ramp
-	//
-	// A plain linear ramp of jsize entries. It is walked later with stride 23
-	// and gcd (23, 60) = 1, so all 60 values get used and the debris ends up
-	// as a filled ball rather than a hollow shell.
-	// ------------------------------------------------------------------
-	(zero one~ - bi~ :=)
-	(dzero~ dja~ =)
+	(zero one~ - k~ :=)
 	(for-loop)
-	(((bi~ jlast~ <) flg1~ =) flg1~ for)
-		(bi~ + one~ bi~ :=)
-		(bi~ eight~ * bix~ :=)
-		(dja~ djit~ [ bix~ ] =)
-		(djstep~ dja~ + dja~ :=)
+	(((k~ nlast~ <) flg1~ =) flg1~ for)
+		(k~ + one~ k~ :=)
+		(k~ five~ % ti~ :=)
+		(k~ five~ / tj~ :=)
+		(tj~ five~ % tj~ :=)
+		(k~ twentyfive~ / tl~ :=)
+		(two~ ti~ * q~ :=)
+		(three~ tj~ * tj~ :=)
+		(tj~ + q~ q~ :=)
+		(tl~ + q~ q~ :=)
+		(two~ + q~ q~ :=)
+		(q~ five~ % q~ :=)
+		(q~ eight~ * qz8~ :=)
+		(k~ eight~ * k8~ :=)
+		(tl~ eight~ * tl8~ :=)
+		(grid~ [ tl8~ ] tv~ =)
+		(tv~ tv~ =)
+		(dtwo~ tv~ * tv~ :=)
+		(odtab~ [ qz8~ ] dd~ =)
+		(dd~ dd~ =)
+		(tv~ dd~ + dp~ :=)
+		(dp~ dzv~ [ k8~ ] =)
 	(next)
 
 	// ------------------------------------------------------------------
-	// setup pass 4: per cube jitter and per cube angle offset
+	// setup pass 3: per cube angle offset
+	//
+	// A plain accumulation of dstep4 per cube, so cube k gets k * 0.2718 and
+	// the 125 cubes come to rest on 125 visibly different orientations.
 	// ------------------------------------------------------------------
 	(zero one~ - k~ :=)
-	(zero aj~ =)
 	(dzero~ dacc4~ =)
 	(for-loop)
 	(((k~ nlast~ <) flg1~ =) flg1~ for)
 		(k~ + one~ k~ :=)
-		(aj~ jstep~ + aj~ :=)
-		(aj~ jmod~ % aj~ :=)
 		(k~ eight~ * k8~ :=)
-		(aj~ eight~ * aj8~ :=)
-		(djit~ [ aj8~ ] tv~ =)
-		(tv~ tv~ =)
-		(tv~ cjit~ [ k8~ ] =)
 		(dstep4~ dacc4~ + dacc4~ :=)
 		(dacc4~ aoff~ [ k8~ ] =)
 	(next)
 
 	// ------------------------------------------------------------------
-	// setup pass 5: travel ramp, dout = 0 -> 1 with an ease out
+	// setup pass 4: travel ramp, dout = 0 -> 1 with an ease out
 	//
 	// dout = u * (2 - u) with u a double accumulator, so the largest index
 	// lands on u = 1 and the table needs no clamp and no saturation branch.
@@ -690,29 +875,40 @@
 	(next)
 
 	// ------------------------------------------------------------------
-	// setup pass 6: fall ramp, drop = 0 -> 1 with an ease in
+	// setup pass 5: fall ramp, drop = 0 -> 1 with an ease in
 	//
-	// Held at 0 until index gate, so the cubes first travel outwards and only
-	// then start to fall. Squaring the accumulator makes the fall accelerate,
-	// and because it stops rising at 1 the cubes simply come to rest: the
-	// ground contact is the end of the table, not a comparison.
+	// Held at 0 until index dropgate = 96, which is LATER than the 64 the
+	// travel ramp starts at. That gap is what makes the animation read as two
+	// beats: the big cube bursts apart first, and only once the burst is over
+	// does the whole field let go and fall. Squaring the accumulator makes the
+	// fall accelerate like gravity, and because the accumulator stops rising
+	// at exactly 1 the cubes simply come to rest: the ground contact is the
+	// end of the table, not a comparison.
+	//
+	// The step is 1 / 32 and the ramp covers the 32 slots from 97 to 128, so
+	// drop [128] is EXACTLY 1.0. The first version of this file used a step of
+	// 1 / 63 over 64 slots but stepped the accumulator once too often, so its
+	// last slot was (64 / 63)^2 = 1.032 instead of 1. Every cube then landed
+	// 0.46 * 1.032 = 0.475 high, and the leftover 0.032 was multiplied by each
+	// cube's own flight height, which threw the cubes up to 0.58 apart from
+	// each other. A landing is only a landing if all 125 cubes agree on it.
 	//
 	// The hold is two loops rather than one loop with an if+ inside it. An if
 	// inside a for body is what used to break the array reads, and the split
-	// costs nothing here because this is a one off setup cost. bi2 and bi3
-	// were already computed by setup pass 5 and still hold, so the second
-	// loop runs 64 times and dacc2 lands on exactly 1.
+	// costs nothing here because this is a one off setup cost.
 	// ------------------------------------------------------------------
+	(dropgate~ one~ - q4~ :=)
+	(dropgate~ one~ + q3~ :=)
 	(zero one~ - bi~ :=)
 	(for-loop)
-	(((bi~ bi3~ <) flg1~ =) flg1~ for)
+	(((bi~ q4~ <) flg1~ =) flg1~ for)
 		(bi~ + one~ bi~ :=)
 		(bi~ eight~ * bix~ :=)
 		(dzero~ drop~ [ bix~ ] =)
 	(next)
 
 	(zero dacc2~ =)
-	(bi2~ one~ - bi~ :=)
+	(q3~ one~ - bi~ :=)
 	(for-loop)
 	(((bi~ ntablast~ <) flg1~ =) flg1~ for)
 		(bi~ + one~ bi~ :=)
@@ -723,11 +919,15 @@
 	(next)
 
 	// ------------------------------------------------------------------
-	// setup pass 7: rotation ramp, one full tumble per flight
+	// setup pass 6: rotation ramp, one full tumble per burst
 	//
-	// Same flat-then-run shape as dout and drop, so the cubes do not start
-	// tumbling before they start moving.
+	// Same flat-then-run shape as dout, so the cubes do not start tumbling
+	// before they start moving. The two bounds are recomputed here rather
+	// than carried over from setup pass 4, so that this pass does not depend
+	// on a scratch variable that an earlier pass happens to have left behind.
 	// ------------------------------------------------------------------
+	(gate~ one~ - bi3~ :=)
+	(gate~ one~ + bi2~ :=)
 	(zero one~ - bi~ :=)
 	(for-loop)
 	(((bi~ bi3~ <) flg1~ =) flg1~ for)
@@ -739,11 +939,61 @@
 	(zero dacc3~ =)
 	(bi2~ one~ - bi~ :=)
 	(for-loop)
-	(((bi~ ntablast~ <) flg1~ =) flg1~ for)
+	(((bi~ bi3~ <) flg1~ =) flg1~ for)
 		(bi~ + one~ bi~ :=)
 		(bi~ eight~ * bix~ :=)
 		(dacc3~ rot~ [ bix~ ] =)
 		(dstep3~ dacc3~ + dacc3~ :=)
+	(next)
+
+	// ------------------------------------------------------------------
+	// setup pass 7: the flat tail, and the exact finished state
+	//
+	// This pass is the reason all 125 cubes land instead of 115 of them.
+	// The cubes are staggered over 320 ms, so when the clock is frozen at
+	// tcap = 3776 the first cube out is 10 table slots PAST the end of its
+	// ramp while the last cube out is exactly on the end of it. Without the
+	// tail the early cubes would read whatever happened to be in slots
+	// 129 .. 138, which is nothing at all, so they would sit at drop = 0 and
+	// never fall at all.
+	//
+	// So slots 129 .. 138 are written with the finished state of each table
+	// and the ramp's own last slot is written with the exact literal. Both
+	// ends are pure data, no comparison, and a cube can then never index
+	// outside a table however the stagger works out.
+	//
+	// The exact slot matters as much as the tail: an accumulator stepped 63
+	// times by 1 / 63 lands on 0.99999999999999822 rather than 1, and a
+	// landing that is 1 - 2e-17 out is a landing that is 2e-17 short of a
+	// grid line. Writing done~ and dflat~ into slot 128 removes the drift.
+	// ------------------------------------------------------------------
+	(ntablast~ eight~ * nlast8~ :=)
+	(done~ dout~ [ nlast8~ ] =)
+	(done~ drop~ [ nlast8~ ] =)
+	(dflat~ rot~ [ nlast8~ ] =)
+
+	(ntablast~ bi~ =)
+	(for-loop)
+	(((bi~ taillast~ <) flg1~ =) flg1~ for)
+		(bi~ + one~ bi~ :=)
+		(bi~ eight~ * bix~ :=)
+		(done~ dout~ [ bix~ ] =)
+	(next)
+
+	(ntablast~ bi~ =)
+	(for-loop)
+	(((bi~ taillast~ <) flg1~ =) flg1~ for)
+		(bi~ + one~ bi~ :=)
+		(bi~ eight~ * bix~ :=)
+		(done~ drop~ [ bix~ ] =)
+	(next)
+
+	(ntablast~ bi~ =)
+	(for-loop)
+	(((bi~ taillast~ <) flg1~ =) flg1~ for)
+		(bi~ + one~ bi~ :=)
+		(bi~ eight~ * bix~ :=)
+		(dflat~ rot~ [ bix~ ] =)
 	(next)
 
 	// ------------------------------------------------------------------
@@ -821,9 +1071,13 @@
 		// on a fixed 16 ms timestep, which is what a deterministic demo wants
 		// anyway: the motion is identical on every machine.
 		(tms~ dtms~ + tms~ :=)
-		// The clock stops at tcap so ph never exceeds 128 and the tables
-		// never need a clamp or a saturating branch. From there on the demo
-		// just holds the finished picture until a key is pressed.
+		// The clock stops at tcap so ph never exceeds 138 and the tables never
+		// need a clamp or a saturating branch. tcap = 3776 is the value that
+		// puts the LAST cube out exactly on the end of the ramp (index 128) and
+		// the first cube out 10 slots into the flat tail (index 138), so every
+		// cube has reached the finished state by the time the clock stops. From
+		// there on the demo just holds the finished picture until a key is
+		// pressed.
 		(((tms~ tcap~ >) flg2~ =) flg2~ if)
 			(tcap~ tms~ =)
 		(endif)
@@ -836,23 +1090,28 @@
 		(Pground~ Pplanesz~ Pcground~ :raylib_draw_plane !)
 		(gridslices~ gridspacing~ :raylib_draw_grid !)
 
-		// ----- frame pass 1: spread factor and fall amount -----
-		// travel = (dspread + jitter) * dout [ph]
-		// fac    = 1 + travel * inv      -> a true radial expansion of exactly
-		//                                   travel units for every cube
+		// ----- frame pass 1: travel fraction and fall amount -----
+		// fac = dout [ph]    how much of the flight the cube has flown
+		// drp = drop [ph]    how far the cube has fallen, 0 then 1
+		//
+		// Both are straight table reads: the flight is a straight line to a
+		// fixed landing site, so there is nothing per cube left to scale. The
+		// radial expansion the first version of this file used to apply is
+		// what forced it to store a per cube 1 / radius and a per cube jitter,
+		// and a radial landing can NEVER be a whole number, which is precisely
+		// why nothing in it ever landed on a grid line.
 		//
 		// The phase is computed with NO branch at all:
 		//
-		//   delay = (k * 13) mod 640          a different start time per cube
-		//   age   = tms + 640 - delay          >= 1 for every tms >= 0
-		//   ph    = age / 32                  0 .. 128, never negative
+		//   delay = (k * 13) mod 320          a different start time per cube
+		//   age   = tms + 640 - delay          >= 321 for every tms >= 0
+		//   ph    = age / 32                  0 .. 138, never negative
 		//
 		// The + 640 is what removes the need for the "is age negative yet"
 		// test the first version had. It shifts every cube's start time by the
-		// same 640 ms, which just means a different cube sets off first, and
-		// since the delays are spread over the whole 0 .. 639 range the
-		// picture is identical. The upper end is handled by stopping the clock
-		// at tcap, so ph cannot exceed 128 and the tables need no clamp.
+		// same 640 ms, which just means a different cube sets off first. The
+		// upper end is handled by the 10 flat tail slots of each table plus
+		// stopping the clock at tcap, so ph can never index past a table.
 		(zero one~ - k~ :=)
 		(for-loop)
 		(((k~ nlast~ <) flg2~ =) flg2~ for)
@@ -868,15 +1127,7 @@
 			(dsp~ dsp~ =)
 			(drop~ [ p8~ ] dpp~ =)
 			(dpp~ dpp~ =)
-			(cinv~ [ k8~ ] ivv~ =)
-			(ivv~ ivv~ =)
-			(cjit~ [ k8~ ] jtv~ =)
-			(jtv~ jtv~ =)
-			(dspread~ jtv~ + spv~ :=)
-			(dsp~ spv~ * spv~ :=)
-			(ivv~ spv~ * spv~ :=)
-			(done~ spv~ + spv~ :=)
-			(spv~ fac~ [ k8~ ] =)
+			(dsp~ fac~ [ k8~ ] =)
 			(dpp~ drp~ [ k8~ ] =)
 		(next)
 
@@ -903,6 +1154,10 @@
 		(next)
 
 		// ----- frame pass 3: X -----
+		// x = cx + dx * fac, a straight line from the home lattice point to
+		// the landing site, which setup pass 2 put a whole number away. At
+		// fac = 1 this is exactly the landing site, so the finished X is
+		// exactly a grid line and not nearly one.
 		(zero one~ - k~ :=)
 		(for-loop)
 		(((k~ nlast~ <) flg2~ =) flg2~ for)
@@ -911,8 +1166,12 @@
 			(k8~ four~ * p8~ :=)
 			(fac~ [ k8~ ] fv~ =)
 			(fv~ fv~ =)
-			(cx~ [ k8~ ] hv~ =)
-			(hv~ fv~ * xv~ :=)
+			(dxv~ [ k8~ ] hv~ =)
+			(hv~ hv~ =)
+			(cx~ [ k8~ ] dv2~ =)
+			(dv2~ dv2~ =)
+			(fv~ hv~ * hv~ :=)
+			(dv2~ hv~ + xv~ :=)
 			(xv~ cvec~ [ p8~ ] =)
 		(next)
 
@@ -929,35 +1188,53 @@
 			(p8~ sixteen~ + p8~ :=)
 			(fac~ [ k8~ ] fv~ =)
 			(fv~ fv~ =)
-			(cz~ [ k8~ ] hv~ =)
-			(hv~ fv~ * zv~ :=)
+			(dzv~ [ k8~ ] hv~ =)
+			(hv~ hv~ =)
+			(cz~ [ k8~ ] dv2~ =)
+			(dv2~ dv2~ =)
+			(fv~ hv~ * hv~ :=)
+			(dv2~ hv~ + zv~ :=)
 			(zv~ cvec~ [ p8~ ] =)
 		(next)
 
 		// ----- frame pass 5: Y, the lerp onto the ground plane -----
-		// y = resting_y + (expanded_y - resting_y) * (1 - drop), so the cubes
-		// settle onto the ground plane instead of sinking through it.
+		// y = (dcy + cy) * (1 - drop) + dresty * drop
+		//
+		// A plain lerp from the height the cube had inside the big cube down
+		// to the resting height dresty = 0.46, which is half of the small cube
+		// edge, so the bottom face of a resting cube sits exactly ON the ground
+		// plane rather than in it.
+		//
+		// Note what is NOT here any more. The first version of this file
+		// applied the same expansion factor fac that it applied to X and Z to
+		// Y as well, and only THEN lerped, which meant the resting height was
+		// not reached: it put the bottom layer of the big cube at y = 0, half
+		// buried in the ground, and the leftover (1 - drop) then had to
+		// multiply a big negative number, so even a cube that had flown its
+		// whole flight came to rest well above the others. The Y now depends
+		// on drop alone.
+		//
+		// drop is exactly 1 in slot 128 and in the flat tail, so (1 - drop) is
+		// exactly 0 and all 125 cubes evaluate to the SAME 0.46, to the last
+		// bit. There is no "has it hit the floor yet" test anywhere: the end
+		// of the ramp IS the floor.
 		(zero one~ - k~ :=)
 		(for-loop)
 		(((k~ nlast~ <) flg2~ =) flg2~ for)
 			(k~ + one~ k~ :=)
 			(k~ eight~ * k8~ :=)
 			(k~ eight~ * k8b~ :=)
-			(k~ eight~ * k8c~ :=)
 			(k~ thirtytwo~ * p8~ :=)
 			(p8~ eight~ + p8~ :=)
-			(fac~ [ k8~ ] fv~ =)
-			(fv~ fv~ =)
 			(drp~ [ k8b~ ] dv2~ =)
 			(dv2~ dv2~ =)
-			(cy~ [ k8c~ ] hv~ =)
+			(cy~ [ k8~ ] hv~ =)
 			(hv~ hv~ =)
-			(hv~ fv~ * hv~ :=)
+			(dcy~ + hv~ hv~ :=)
 			(done~ - dv2~ sy~ :=)
 			(hv~ sy~ * yv~ :=)
-			(dcy~ + yv~ yv~ :=)
-			(dresty~ dv2~ * sy2~ :=)
-			(yv~ sy2~ + yv~ :=)
+			(dresty~ dv2~ * sy~ :=)
+			(yv~ sy~ + yv~ :=)
 			(yv~ cvec~ [ p8~ ] =)
 		(next)
 
@@ -997,12 +1274,24 @@
 			(Phint~ t1x~ hinty~ fnt16~ Pchelp~ :raylib_draw_text !)
 		(endif)
 
-		// stage line, driven by the same integer clock as the animation
+		// stage line, driven by the same integer clock as the animation.
+		// The three stages are the three beats of the two ramps:
+		//
+		//   before 1472  the cube is whole: ph < 32 and dout is still flat 0
+		//   before 3776  the burst runs and then the fall: the whole field is
+		//                in the air
+		//   from 3776    tcap, every cube is on the ground grid
+		//
+		// The thresholds are the clock values at which the first and the last
+		// cube leave the assembled state and the last one lands, so the label
+		// cannot claim SETTLED one frame early the way the old 640 / 2600 pair
+		// did - at 2600 ms the last cube was still 22 table slots up its own
+		// fall ramp and hanging in mid air.
 		(Pstpre~ stx~ sty~ fnt12~ Pctext~ :raylib_draw_text !)
-		(((tms~ d640~ <) flg2~ =) flg2~ if+)
+		(((tms~ d1472~ <) flg2~ =) flg2~ if+)
 			(Pstg1~ stx2~ sty~ fnt16~ Pcinfo~ :raylib_draw_text !)
 		(else)
-			(((tms~ d2600~ <) flg3~ =) flg3~ if+)
+			(((tms~ d3776~ <) flg3~ =) flg3~ if+)
 				(Pstg2~ stx2~ sty~ fnt16~ Pcwarn~ :raylib_draw_text !)
 			(else)
 				(Pstg3~ stx2~ sty~ fnt16~ Pcinfo~ :raylib_draw_text !)
