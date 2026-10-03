@@ -69,9 +69,58 @@ int http_get(const char *url, long maxbytes,
  * the response body (JSON) into `resp` (heap-allocated, NUL-terminated).
  * Returns -1 on connection/HTTP error. If http_status != NULL it receives
  * the HTTP status code (e.g. 200).
+ *
+ * `url` may carry a path prefix (e.g. "http://localhost:11434/v1"); `path`
+ * is appended to it, so the request target becomes "/v1" + "/chat/...".
  */
 int http_post_json(const char *url, const char *path,
                    const char *body, long bodylen,
                    char **resp, long *resplen, int *http_status);
+
+/*
+ * Same as http_post_json() but with extra request headers, an error message
+ * and a receive timeout (0 = wait as long as needed).
+ *
+ * `extra_hdrs` is an array of `nextra` complete header lines, each written
+ * verbatim followed by CRLF, e.g. "Authorization: Bearer token". Use it for
+ * the OpenAI-compatible authentication header.
+ *
+ * A 4xx/5xx status is an error: *http_status is still filled in and the
+ * server's error body is summarized in *errmsg (heap-allocated, caller
+ * frees). Every output pointer is optional.
+ */
+int http_post_json_ex(const char *url, const char *path,
+                      const char *const *extra_hdrs, size_t nextra,
+                      const char *body, long bodylen,
+                      char **resp, long *resplen, int *http_status,
+                      int timeout_sec, char **errmsg);
+
+/*
+ * Receive callback for http_post_stream(). `line` holds one body line
+ * without its trailing CR/LF and is NUL-terminated (it may also contain
+ * embedded NULs, so `n` is authoritative). Returning 0 continues the
+ * transfer, returning anything else stops it early - that is not an
+ * error, http_post_stream() then still returns 0 (used to stop at
+ * "data: [DONE]").
+ */
+typedef int (*http_line_fn)(const char *line, size_t n, void *ud);
+
+/*
+ * POST a JSON body and consume the response body line by line while it
+ * arrives. Nothing is buffered: this is how Server-Sent Events
+ * ("data: {...}\n\n", terminated by "data: [DONE]") and newline delimited
+ * JSON are consumed, so a streamed answer can be printed token by token.
+ * "chunked" transfer encoding is decoded on the fly.
+ *
+ * Returns 0 when the transfer completed (or the callback stopped it) and
+ * -1 on a transport error, an interrupt or a 4xx/5xx status; *errmsg then
+ * holds a short description. *http_status receives the status code when
+ * known (may stay 0 when the callback stopped the transfer early).
+ */
+int http_post_stream(const char *url, const char *path,
+                     const char *const *extra_hdrs, size_t nextra,
+                     const char *body, long bodylen,
+                     http_line_fn cb, void *ud,
+                     int timeout_sec, int *http_status, char **errmsg);
 
 #endif

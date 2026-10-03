@@ -20,13 +20,13 @@
 /*
  * brackets-llm - an opencode-like Brackets (L1VM) code environment.
  *
- * Speaks to a llama.cpp server (llama-server) via its OpenAI-compatible
- * /v1/chat/completions endpoint, feeds the L1VM system prompt, then lets
- * the user chat. The model can autonomously use file tools (read_file,
- * write_file, edit_file, list_files) and fetch web pages (web_fetch) like
- * opencode, and Brackets (.l1com) code in the answer is checked/
- * auto-corrected with the l1vm-lsp language server, then can be built
- * and run.
+ * Talks to any OpenAI-compatible REST backend (llama-server, Ollama, vLLM,
+ * LM Studio, a local opencode model server ...) through the provider layer in
+ * provider.h, feeds the L1VM system prompt, then lets the user chat. The
+ * model can autonomously use file tools (read_file, write_file, edit_file,
+ * list_files) and fetch web pages (web_fetch) like opencode, and Brackets
+ * (.l1com) code in the answer is checked/auto-corrected with the l1vm-lsp
+ * language server, then can be built and run.
  */
 
 #define _POSIX_C_SOURCE 200809L
@@ -235,140 +235,114 @@ static int write_file(const char *path, const char *content)
     return 0;
 }
 
-/* ================== llama-server interaction ================== */
+/* ================== model backend (provider) ================== */
 
 /* rough budget in characters for history beyond the (large) system prompt.
    Server context is 65536 tokens; system prompt ~18k tokens stays under that,
    leaving room for a bounded conversation + the generated response. */
 #define LLM_HISTORY_CHAR_BUDGET 150000
 
-/* Send a chat request to the LLM. If `tools_json` (a JSON "tools" array or
- * NULL) is given it is included so the server may answer with tool_calls.
- * On success (0) the RAW JSON response body is stored in *out_raw (heap,
- * caller frees) and parsed and examined by the caller. */
-static int llm_call(const Hist *hist, const char *model, const char *url,
-                    const char *tools_json, char **out_raw,
-                    long *out_in_tok, long *out_out_tok)
+/* Streaming sink: the provider hands every content fragment to this, and the
+ * flag tells the caller that the answer was already printed while it arrived
+ * (so it must not be printed a second time). */
+typedef struct {
+    int printed;
+} Echo;
+
+static void on_delta(const char *text, void *ud)
 {
-    JVal *payload = j_obj_new();
-    JVal *msgs = j_arr_new();
-    SB b;
-    char *body;
-    char *resp = NULL;
-    long resplen = 0;
-    int status = 0;
+    Echo *e = ud;
+    fputs(text, stdout);
+    fflush(stdout);
+    e->printed = 1;
+}
+
+/* Copy the in-memory conversation into the provider-neutral request. The
+ * history budget lives in the provider, so this only adapts the storage. */
+static void chat_from_hist(LlmChat *chat, const Hist *hist,
+                           const char *tools_json)
+{
+    LlmMsg *msgs;
     size_t i;
-    long budget_rem = LLM_HISTORY_CHAR_BUDGET;
-    int ret = -1;
 
-    *out_raw = NULL;
-
-    j_obj_set(payload, "model", j_str_new(model));
-
-    /* Walk the history backwards, keeping the system prompt plus the most
-     * recent messages within the budget so we never overflow the server's
-     * context (the system prompt alone is ~18k tokens). */
-    {
-        size_t sys_i = 0;
-        int drop_tail = 0;
-        long *acc = malloc((hist->len ? hist->len : 1) * sizeof(long));
-        if (!acc)
-            acc = NULL;
-        for (i = 0; i < hist->len; i++) {
-            if (hist->items[i].role && strcmp(hist->items[i].role, "system") == 0)
-                sys_i = i;
-            acc[i] = (long)strlen(hist->items[i].content);
-        }
-        /* compute, from the end, how many messages fit in budget */
-        for (i = hist->len; i-- > 0;) {
-            if ((long)i == (long)sys_i)
-                continue;
-            if (acc[i] <= budget_rem) {
-                budget_rem -= acc[i];
-            } else {
-                drop_tail = (int)i + 1;
-                break;
-            }
-        }
-        for (i = 0; i < hist->len; i++) {
-            if ((long)i < (long)drop_tail && (long)i != (long)sys_i)
-                continue;
-            {
-                JVal *m = j_obj_new();
-                j_obj_set(m, "role", j_str_new(hist->items[i].role));
-                j_obj_set(m, "content", j_str_new(hist->items[i].content));
-                j_arr_push(msgs, m);
-            }
-        }
-        free(acc);
+    llm_chat_init(chat, tools_json);
+    if (hist->len == 0)
+        return;
+    msgs = malloc(hist->len * sizeof(LlmMsg));
+    if (!msgs)
+        return;
+    for (i = 0; i < hist->len; i++) {
+        msgs[i].role = hist->items[i].role;
+        msgs[i].content = hist->items[i].content;
     }
-
-    j_obj_set(payload, "messages", msgs);
-    j_obj_set(payload, "stream", j_bool_new(0));
-    j_obj_set(payload, "temperature", j_num_new(0.7));
-    if (tools_json) {
-        JVal *t = j_parse(tools_json);
-        if (t)
-            j_obj_set(payload, "tools", t);
-    }
-    {
-        JVal *ctk = j_obj_new();
-        j_obj_set(ctk, "enable_thinking", j_bool_new(0));
-        j_obj_set(payload, "chat_template_kwargs", ctk);
-    }
-
-    sb_init(&b);
-    j_emit(payload, &b);
-    body = strdup(sb_cstr(&b));
-    sb_free(&b);
-    j_free(payload);
-
-    if (http_post_json(url, "/v1/chat/completions",
-                       body, (long)strlen(body), &resp, &resplen,
-                       &status) == 0) {
-        if (resp && *resp) {
-            *out_raw = resp;
-            resp = NULL;
-            if (out_in_tok)
-                *out_in_tok = -1;
-            if (out_out_tok)
-                *out_out_tok = -1;
-            if (out_in_tok || out_out_tok) {
-                JVal *ru = j_parse(*out_raw);
-                const JVal *usage = ru ? j_get(ru, "usage") : NULL;
-                if (usage) {
-                    const JVal *pn = j_get(usage, "prompt_tokens");
-                    const JVal *cn = j_get(usage, "completion_tokens");
-                    if (pn && j_is(pn, J_NUM) && out_in_tok)
-                        *out_in_tok = (long)j_num(pn);
-                    if (cn && j_is(cn, J_NUM) && out_out_tok)
-                        *out_out_tok = (long)j_num(cn);
-                }
-                j_free(ru);
-            }
-            ret = 0;
-        } else {
-            ret = -1;
-        }
-    }
-    free(resp);
-    free(body);
-    return ret;
+    llm_chat_add_history(chat, msgs, hist->len, LLM_HISTORY_CHAR_BUDGET);
+    free(msgs);
 }
 
 /*
- * Convenience wrapper used by the auto-correction loop: returns just the
- * assistant's text reply (first choice), not tool calls. If `tools_json` is
- * NULL the server may not emit tool calls; otherwise any tool_calls are
- * ignored here (the caller wants plain text).
+ * Send the conversation to the configured backend. On success the assistant's
+ * raw JSON answer is stored in *out_raw (heap, caller frees) - it always has
+ * the OpenAI shape (choices[0].message.content / .tool_calls), whether the
+ * backend answered in one piece or as a stream of deltas.
  */
-static int llm_text(const Hist *hist, const char *model, const char *url,
-                    const char *tools_json, char **out_text,
-                    long *out_in_tok, long *out_out_tok)
+static int llm_call(Hist *hist, LlmProvider *prov, const char *tools_json,
+                    Echo *echo, char **out_raw, long *out_in_tok,
+                    long *out_out_tok, char **errmsg)
+{
+    LlmChat chat;
+    LlmReply rep;
+    LlmStatus rc;
+
+    *out_raw = NULL;
+    if (errmsg)
+        *errmsg = NULL;
+    if (out_in_tok)
+        *out_in_tok = -1;
+    if (out_out_tok)
+        *out_out_tok = -1;
+
+    chat_from_hist(&chat, hist, tools_json);
+    if (chat.nmsgs == 0) {
+        llm_chat_free(&chat);
+        if (errmsg)
+            *errmsg = strdup("nothing to send to the model");
+        return -1;
+    }
+    if (echo)
+        chat.on_delta = on_delta;
+    chat.on_delta_ud = echo;
+
+    llm_reply_init(&rep);
+    rc = prov->complete(prov, &chat, &rep, errmsg);
+    llm_chat_free(&chat);
+
+    if (rc != LLM_OK) {
+        llm_reply_clear(&rep);
+        if (errmsg && !*errmsg && rc == LLM_ERR_INTERRUPTED)
+            *errmsg = strdup("interrupted");
+        return -1;
+    }
+    *out_raw = rep.raw;             /* ownership moves to the caller */
+    rep.raw = NULL;
+    if (out_in_tok)
+        *out_in_tok = rep.in_tokens;
+    if (out_out_tok)
+        *out_out_tok = rep.out_tokens;
+    llm_reply_clear(&rep);
+    return 0;
+}
+
+/*
+ * Convenience wrapper used by the auto-correction loop and /compact:
+ * returns just the assistant's text reply (first choice), not tool calls.
+ */
+static int llm_text(Hist *hist, LlmProvider *prov, const char *tools_json,
+                    char **out_text, long *out_in_tok, long *out_out_tok,
+                    char **errmsg)
 {
     char *raw = NULL;
-    int rc = llm_call(hist, model, url, tools_json, &raw,
-                      out_in_tok, out_out_tok);
+    int rc = llm_call(hist, prov, tools_json, NULL, &raw,
+                      out_in_tok, out_out_tok, errmsg);
     JVal *r;
     const JVal *choices, *msg, *content;
 
@@ -403,7 +377,7 @@ static void print_token_usage(long in_tok, long out_tok)
  * fewer context tokens are sent to the server. Keeps the system prompt and
  * the COMPACT_KEEP_RECENT most recent messages. Returns the number of
  * messages removed, or -1 when there was nothing to compact. */
-static int compact_history(Hist *h, const char *model, const char *url)
+static int compact_history(Hist *h, LlmProvider *prov)
 {
     size_t lsys = 0;
     size_t i, old_start, old_end, keep;
@@ -440,10 +414,14 @@ static int compact_history(Hist *h, const char *model, const char *url)
 
     {
         Hist tmp = {0};
+        char *cerr = NULL;
         hist_push(&tmp, "system", h->items[lsys].content);
         hist_push(&tmp, "user", sb_cstr(&p));
-        rc = llm_text(&tmp, model, url, NULL, &summary, &tin, &tout);
+        rc = llm_text(&tmp, prov, NULL, &summary, &tin, &tout, &cerr);
         hist_free(&tmp);
+        if (rc != 0 && cerr)
+            fprintf(stderr, "[compact] %s\n", cerr);
+        free(cerr);
     }
     print_token_usage(tin, tout);
     if (rc != 0 || !summary || !*summary) {
@@ -756,8 +734,8 @@ static int ask_continue(void)
  * each failed iteration (the /lsp behaviour); `max_iters` <= 0 loops
  * repeatedly until the code is clean, prompting nothing and aborting
  * immediately on Ctrl+C (the /loop command). */
-static int code_workflow(LspClient *lsp, Hist *hist, const char *model,
-                         const char *url, const char *filename,
+static int code_workflow(LspClient *lsp, Hist *hist, LlmProvider *prov,
+                         const char *filename,
                          const char *initial_code, int max_iters,
                          char **final_code, LspDiagVec *final_diags)
 {
@@ -846,15 +824,18 @@ static int code_workflow(LspClient *lsp, Hist *hist, const char *model,
 
             {
                 char *reply = NULL;
-                    long tin = -1, tout = -1;
-                    printf("[asking model to fix...]\n");
-                    fflush(stdout);
-                    if (llm_text(hist, model, url, NULL, &reply,
-                                 &tin, &tout) == 0 && reply) {
-                        print_token_usage(tin, tout);
+                long tin = -1, tout = -1;
+                char *cerr = NULL;
+                int mrc;
+                printf("[asking model to fix...]\n");
+                fflush(stdout);
+                mrc = llm_text(hist, prov, NULL, &reply, &tin, &tout, &cerr);
+                if (mrc == 0 && reply) {
+                    print_token_usage(tin, tout);
                     /* strip the code from the reply */
                     char fixedname[256];
-                    char *newcode = extract_code(reply, fixedname, sizeof(fixedname));
+                    char *newcode = extract_code(reply, fixedname,
+                                                 sizeof(fixedname));
                     if (newcode) {
                         /* keep file name if unchanged or not provided */
                         free(code);
@@ -862,8 +843,11 @@ static int code_workflow(LspClient *lsp, Hist *hist, const char *model,
                     } else {
                         /* model didn't emit code; keep last code */
                     }
-                    free(reply);
                 }
+                if (mrc != 0 && cerr)
+                    fprintf(stderr, "[model] %s\n", cerr);
+                free(cerr);
+                free(reply);
             }
         }
         lsp_diagvec_free(&diags);
@@ -1158,10 +1142,9 @@ static int tool_calls_emitted(const JVal *r)
  * assistant's function-call message in the conversation, and append one
  * "tool" result message per call. Returns 0 if at least one call was handled.
  */
-static int handle_tool_calls(Hist *hist, const char *model, const char *url,
-                             const JVal *r, LspClient *lsp,
+static int handle_tool_calls(Hist *hist, const JVal *r, LspClient *lsp,
                              char **last_code, char *last_name,
-                             size_t last_name_sz)
+                             size_t last_name_sz, int content_echoed)
 {
     const JVal *choices = j_get(r, "choices");
     const JVal *msg = (choices && j_len(choices) > 0)
@@ -1172,14 +1155,14 @@ static int handle_tool_calls(Hist *hist, const char *model, const char *url,
     size_t i;
     int count = 0;
 
-    (void)model;
-    (void)url;
     if (!tc || !j_is(tc, J_ARR))
         return 0;
 
-    /* keep the assistant's natural-language text (often explains the plan) */
+    /* keep the assistant's natural-language text (often explains the plan);
+     * with streaming it was already printed while it arrived */
     if (c && *c) {
-        printf("%s\n", c);
+        if (!content_echoed)
+            printf("%s\n", c);
         hist_push(hist, "assistant", c);
     }
 
@@ -1299,7 +1282,7 @@ static int handle_tool_calls(Hist *hist, const char *model, const char *url,
  * with the LSP and auto-correct it. Preserves the newest code + its name.
  */
 static void process_code_reply(const char *text, LspClient *lsp, Hist *hist,
-                               const char *model, const char *url,
+                               LlmProvider *prov,
                                char **last_code, char *last_name,
                                size_t last_name_sz)
 {
@@ -1325,7 +1308,7 @@ static void process_code_reply(const char *text, LspClient *lsp, Hist *hist,
     {
         char *final = NULL;
         LspDiagVec diags = {0};
-        int rc = code_workflow(lsp, hist, model, url, fname, code,
+        int rc = code_workflow(lsp, hist, prov, fname, code,
                                MAX_FIX_ITERS, &final, &diags);
         if (final) {
             *last_code = strdup(final);
@@ -1435,9 +1418,18 @@ static void print_help(void)
         "  /save <name> [limit=N, offset=M]\n"
         "                 save the last code block (or a line range) to <name>.l1com\n"
         "  /compact         summarize + collapse old messages in the context\n"
+        "  /status          show the backend config and the server's models\n"
+        "  /backend [name]  show or switch the backend (openai, llamacpp,\n"
+        "                  auto)\n"
         "  /new             reset the conversation\n"
         "  /help            this help\n"
         "  /quit            exit\n"
+        "\n"
+        "The model backend is any OpenAI-compatible server (Ollama, vLLM,\n"
+        "LM Studio, llama-server, a local opencode server). Configure it with\n"
+        "BRACKETS_LLM_BASE_URL, BRACKETS_LLM_MODEL, BRACKETS_LLM_API_KEY,\n"
+        "BRACKETS_LLM_TEMPERATURE, BRACKETS_LLM_TOP_P, BRACKETS_LLM_MAX_TOKENS\n"
+        "and BRACKETS_LLM_STREAM=1; see section 4 of README.txt.\n"
         "\n"
         "When the model (or /read, /write, /save) wants to access a path\n"
         "OUTSIDE the current directory, you are asked for permission first.\n"
@@ -1448,7 +1440,36 @@ static void print_help(void)
         "\n");
 }
 
-/* ================== main ================== */
+/* Print the effective backend configuration and ask the server for its
+ * model ids - the quickest way to find out whether base_url/model match. */
+static void print_backend_status(LlmProvider *prov)
+{
+    const LlmConfig *c = prov->cfg;
+    char *models;
+
+    printf("backend   : %s\n", prov->name);
+    printf("base_url  : %s\n", c->base_url);
+    printf("endpoint  : %s\n", prov->endpoint);
+    printf("model     : %s\n", c->model);
+    printf("api_key   : %s\n", c->api_key[0] ? "(set)" : "(none)");
+    printf("temperature: %.2f%s\n", c->temperature,
+           c->temperature < 0 ? " (server default)" : "");
+    printf("top_p     : %.2f%s\n", c->top_p,
+           c->top_p < 0 ? " (server default)" : "");
+    printf("max_tokens: %s\n", c->max_tokens > 0 ? "set" : "(server default)");
+    printf("stream    : %s\n", c->stream ? "yes (SSE)" : "no");
+    fflush(stdout);
+
+    printf("models    :\n");
+    models = llm_provider_list_models(prov);
+    if (models) {
+        fputs(models, stdout);
+        free(models);
+    } else {
+        printf("  (the server did not answer)\n");
+    }
+    fflush(stdout);
+}
 
 /* ================== interrupt (Ctrl+C) support ================== */
 
@@ -1499,11 +1520,12 @@ int main(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    const char *volatile url = cfg_server_url();
-    const char *volatile model = cfg_model();
     const char *volatile lsp_path = cfg_lsp_path();
     const char *volatile l1com_path = cfg_l1com_path();
     const char *volatile sysprompt_path = cfg_system_prompt_path();
+    LlmConfig llmcfg;
+    LlmProvider *prov;
+    char *perr = NULL;
     char *sysprompt = read_file(sysprompt_path);
     char *last_code = NULL;
     char last_name[256] = "";
@@ -1517,12 +1539,31 @@ int main(int argc, char **argv)
                 sysprompt_path);
         return 1;
     }
+
+    /* one provider for the whole session: the prompt hand-over no longer
+     * knows which model executor is behind it */
+    cfg_llm(&llmcfg);
+    prov = llm_provider_create(&llmcfg, cfg_backend(), &perr);
+    if (!prov) {
+        fprintf(stderr, "brackets-llm: %s\n",
+                perr ? perr : "no usable model backend");
+        fprintf(stderr, "  set BRACKETS_LLM_BASE_URL (e.g. "
+                "http://localhost:11434/v1) and BRACKETS_LLM_MODEL\n");
+        free(perr);
+        free(sysprompt);
+        return 1;
+    }
+    free(perr);
+
     hist_push(&hist, "system", sysprompt);
     printf("brackets-llm v%s\n", BRACKETS_LLM_VERSION);
-    printf("  server : %s\n", url);
-    printf("  model  : %s\n", model);
-    printf("  lsp    : %s\n", lsp_path);
-    printf("  prompt : %s (%zu bytes)\n\n", sysprompt_path, strlen(sysprompt));
+    printf("  backend : %s\n", prov->name);
+    printf("  server  : %s\n", prov->endpoint);
+    printf("  model   : %s\n", llmcfg.model);
+    if (llmcfg.stream)
+        printf("  stream  : yes (SSE deltas printed while generating)\n");
+    printf("  lsp     : %s\n", lsp_path);
+    printf("  prompt  : %s (%zu bytes)\n\n", sysprompt_path, strlen(sysprompt));
 
     lsp = lsp_start(lsp_path, 1, l1com_path, cfg_include_dir());
     if (!lsp) {
@@ -1775,7 +1816,7 @@ int main(int argc, char **argv)
                     else
                         snprintf(fname, sizeof(fname), "program-%lu.l1com",
                                  (unsigned long)hist.len);
-                    rc = code_workflow(lsp, &hist, model, url, fname,
+                    rc = code_workflow(lsp, &hist, prov, fname,
                                        last_code, MAX_FIX_ITERS, &final, &diags);
                     if (final) {
                         free(last_code);
@@ -1832,7 +1873,7 @@ int main(int argc, char **argv)
                     else
                         snprintf(fname, sizeof(fname), "program-%lu.l1com",
                                  (unsigned long)hist.len);
-                    rc = code_workflow(lsp, &hist, model, url, fname,
+                    rc = code_workflow(lsp, &hist, prov, fname,
                                        last_code, -1, &final, &diags);
                     if (final) {
                         free(last_code);
@@ -1862,7 +1903,36 @@ int main(int argc, char **argv)
                 }
                 continue;
             } else if (strncmp(line, "/compact", 8) == 0) {
-                compact_history(&hist, model, url);
+                compact_history(&hist, prov);
+                continue;
+            } else if (strcmp(line, "/status") == 0 ||
+                       strncmp(line, "/status ", 8) == 0) {
+                print_backend_status(prov);
+                continue;
+            } else if (strcmp(line, "/backend") == 0 ||
+                       strncmp(line, "/backend ", 9) == 0) {
+                const char *arg = line + 8;
+                while (*arg == ' ')
+                    arg++;
+                if (!*arg) {
+                    printf("backend: %s (%s)\n", prov->name, prov->endpoint);
+                    printf("use /backend openai|llamacpp|auto to switch.\n");
+                    continue;
+                }
+                {
+                    char *cerr = NULL;
+                    LlmProvider *np = llm_provider_create(&llmcfg, arg, &cerr);
+                    if (!np) {
+                        printf("%s\n", cerr ? cerr : "cannot switch backend");
+                        free(cerr);
+                        continue;
+                    }
+                    free(cerr);
+                    llm_provider_free(prov);
+                    prov = np;
+                    printf("backend switched to: %s (%s)\n", prov->name,
+                           prov->endpoint);
+                }
                 continue;
             } else {
                 printf("unknown command: %s (try /help)\n", line);
@@ -1882,21 +1952,31 @@ int main(int argc, char **argv)
             for (iter = 0; iter <= MAX_TOOL_ITERS; iter++) {
                 char *reply = NULL;
                 long tin = -1, tout = -1;
+                char *cerr = NULL;
+                Echo echo = {0};
                 int rc;
                 if (g_intr_request)
                     break;   /* Ctrl+C during a tool call */
-                rc = llm_call(&hist, model, url, tools, &reply,
-                              &tin, &tout);
+                rc = llm_call(&hist, prov, tools, &echo, &reply,
+                              &tin, &tout, &cerr);
+                if (echo.printed)
+                    printf("\n");   /* close the streamed line */
                 print_token_usage(tin, tout);
                 if (g_intr_request) {
                     free(reply);
+                    free(cerr);
                     break;   /* Ctrl+C during the model call */
                 }
                 if (rc != 0 || !reply) {
-                    printf("<error: could not reach llama-server at %s%s>\n",
-                           url, " - is it running?");
+                    fprintf(stderr, "<error: %s>\n",
+                            cerr ? cerr : "the model backend failed");
+                    if (!cerr)
+                        fprintf(stderr, "  (%s: %s - is it running?)\n",
+                                prov->name, prov->endpoint);
+                    free(cerr);
                     break;
                 }
+                free(cerr);
                 {
                     JVal *r = j_parse(reply);
                     if (r && tool_calls_emitted(r)) {
@@ -1907,9 +1987,10 @@ int main(int argc, char **argv)
                             break;
                         }
                         printf("[tool] ");
-                        if (handle_tool_calls(&hist, model, url, r, lsp,
-                                              &last_code, last_name,
-                                              sizeof(last_name)) == 0) {
+                        fflush(stdout);
+                        if (handle_tool_calls(&hist, r, lsp, &last_code,
+                                              last_name, sizeof(last_name),
+                                              echo.printed) == 0) {
                             j_free(r);
                             free(reply);
                             continue;   /* loop: run the model again */
@@ -1921,12 +2002,16 @@ int main(int argc, char **argv)
                     {
                         const JVal *c;
                         const char *text;
-                        c = r ? j_get(j_at(j_get(r, "choices"), 0), "message") : NULL;
+                        c = r ? j_get(j_at(j_get(r, "choices"), 0),
+                                      "message") : NULL;
                         text = c ? j_str(j_get(c, "content")) : NULL;
                         if (text && *text) {
-                            printf("%s\n", text);
+                            /* with streaming the deltas were already printed
+                             * as they arrived (and the line was closed above) */
+                            if (!echo.printed)
+                                printf("%s\n", text);
                             hist_push(&hist, "assistant", text);
-                            process_code_reply(text, lsp, &hist, model, url,
+                            process_code_reply(text, lsp, &hist, prov,
                                                &last_code, last_name,
                                                sizeof(last_name));
                         }
@@ -1941,6 +2026,7 @@ int main(int argc, char **argv)
     }
 
     hist_free(&hist);
+    llm_provider_free(prov);
     free(last_code);
     free(sysprompt);
     input_shutdown();

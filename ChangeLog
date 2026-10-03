@@ -4,7 +4,9 @@ L1VM (3.7.1)
 
 	Brackets-LLM now can connect to the internet and load data from the web.
 
--- Stefan Pietzonke <info@midnight-coding.de> Sun 27 September 2026 12:09 +020
+	Brackets-LLM now has support for the OpenAI compatible API. And should be able to connect to non llama.cpp servers too.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 03 October 2026 18:05 +020
 
 L1VM (3.7.0)
 	NEW: OpenCL vector math module. See "prog/math-opencl".

@@ -21,9 +21,10 @@ local LLM. It works like opencode:
     by asking the model to fix them (up to 4 iterations).
   * The program can build (l1vm-build.sh) and run (l1vm) the result.
 
-The program does NOT start an LLM server. It connects to a llama.cpp
-llama-server (or any OpenAI-compatible server) that YOU start with the model
-of your choice.
+The program does NOT start an LLM server. It talks to ANY OpenAI-compatible
+/v1/chat/completions server that YOU start with the model of your choice
+(llama.cpp llama-server, Ollama, vLLM, LM Studio, a local opencode model
+server, ...) and you can switch between them with one environment variable.
 
 
 ===============================================================================
@@ -31,9 +32,11 @@ of your choice.
 ===============================================================================
 
   * A Linux/Unix system with gcc/cc and make.
-  * A running llama.cpp llama-server (https://github.com/ggml-org/llama.cpp)
-    serving an OpenAI-compatible /v1/chat/completions endpoint, OR any other
-    OpenAI-compatible server. Recommended context size: 65536.
+  * A running OpenAI-compatible server. Any of these works:
+        - llama.cpp llama-server  (https://github.com/ggml-org/llama.cpp)
+        - Ollama                   (https://ollama.com)
+        - vLLM, LM Studio, SGLang, a local opencode model server, ...
+    Recommended context size: 65536.
   * The L1VM toolchain in ~/l1vm/bin/:
         - l1vm-lsp          (the L1VM language server)
         - l1com             (the Brackets compiler)
@@ -70,42 +73,100 @@ Optionally install it:
  3. STARTING YOUR LLM SERVER
 ===============================================================================
 
-Start llama-server yourself. Example with a 65k context:
+brackets-llm only speaks the OpenAI REST protocol, so any server that offers
+/v1/chat/completions works. Pick one:
 
+  llama.cpp
     ~/llama.cpp/build/bin/llama-server \
         -m /path/to/your-model.gguf \
         --port 8080 \
         -c 65536 \
         --host 127.0.0.1
 
-Wait until the log shows "server is listening on http://127.0.0.1:8080".
+    -> export BRACKETS_LLM_BASE_URL=http://127.0.0.1:8080/v1
+
+  Ollama
+    ollama serve
+    ollama pull qwen2.5-coder:14b
+
+    -> export BRACKETS_LLM_BASE_URL=http://localhost:11434/v1
+       export BRACKETS_LLM_MODEL=qwen2.5-coder:14b
+
+  vLLM
+    vllm serve Qwen/Qwen2.5-Coder-14B-Instruct --port 8000
+
+    -> export BRACKETS_LLM_BASE_URL=http://localhost:8000/v1
+
+  LM Studio (local server tab) or a local opencode model server: same
+  protocol, just point BRACKETS_LLM_BASE_URL at it.
+
+Wait until the server log says it is listening.
 
 Find the exact model id your server reports (brackets-llm must send it):
 
-    curl http://127.0.0.1:8080/v1/models
+    curl http://127.0.0.1:8080/v1/models          # llama.cpp / vLLM / LM Studio
+    curl http://localhost:11434/v1/models         # Ollama
+    # or, inside brackets-llm:  /status
 
-The model id is usually the full path to the .gguf file, e.g.:
+With llama.cpp the model id is usually the full path to the .gguf file, e.g.:
 
     /home/you/llama-models/model.gguf
 
 NOTE for Qwen3.x "thinking" models:
-brackets-llm automatically disables thinking (sends
-"chat_template_kwargs": {"enable_thinking": false}) so that the model
-produces code instead of spending tokens on reasoning. If you use a
-different model family, remove/adapt this option in src/main.c
-(function llm_call).
+The "llamacpp" backend sends "chat_template_kwargs":
+{"enable_thinking": false} so that the model produces code instead of
+spending tokens on reasoning. The generic "openai" backend does not send that
+field (not every server understands it), so use
+BRACKETS_LLM_BACKEND=llamacpp for llama-server and the default
+BRACKETS_LLM_BACKEND=openai for everything else.
 
 
 ===============================================================================
  4. CONFIGURATION (ENVIRONMENT VARIABLES)
 ===============================================================================
 
-  BRACKETS_LLM_URL          Address of the LLM server.
-                            Default: http://127.0.0.1:8080
+  BRACKETS_LLM_BACKEND      Which backend to use:
+                              openai   (default) POST
+                                       {base_url}/chat/completions with
+                                       "Authorization: Bearer <api_key>"
+                              llamacpp same protocol, plus
+                                       chat_template_kwargs.enable_thinking
+                                       =false, no auth header, never streams
+                              auto     probe GET {base_url}/models and fall
+                                       back to llamacpp with a warning
+  BRACKETS_LLM_BASE_URL     Base URL of the OpenAI-compatible API. A missing
+                            path is completed with "/v1", and a trailing
+                            "/chat/completions" is accepted too, so all of
+                            these work:
+                              http://localhost:11434      (Ollama)
+                              http://localhost:8000       (vLLM)
+                              http://127.0.0.1:1234/v1    (LM Studio)
+                              http://127.0.0.1:8080/v1    (llama-server)
+                            Default: http://127.0.0.1:8080/v1
+                            (BRACKETS_LLM_URL is still read as a fallback)
   BRACKETS_LLM_MODEL        Model id as reported by the server.
                             Default: Qwen3.6-35B-A3B
                             (in practice you must set this to the id from
-                            "curl http://127.0.0.1:8080/v1/models")
+                            "curl <base_url>/models" or from /status)
+  BRACKETS_LLM_API_KEY      Value for "Authorization: Bearer ...". Most local
+                            servers ignore it; a gateway in front of the
+                            model may require it. OPENAI_API_KEY is used as a
+                            fallback. Default: (no header)
+  BRACKETS_LLM_TEMPERATURE  Sampling temperature. Unset = do not send the
+                            field, the server default is used.
+                            Default: 0.7 was hardcoded before, now unset
+  BRACKETS_LLM_TOP_P        Nucleus sampling, same rule as temperature.
+  BRACKETS_LLM_MAX_TOKENS   Limit for the answer; 0/unset = server default.
+  BRACKETS_LLM_STREAM       1 = request Server-Sent Events and print the
+                            answer while it is generated. 0 (default) waits
+                            for the complete answer.
+  BRACKETS_LLM_TIMEOUT      Socket read/send timeout in seconds.
+                            0 (default) = wait as long as the model needs.
+  BRACKETS_LLM_DEBUG        1 = print one line per request to stderr.
+  BRACKETS_LLM_HISTORY_BUDGET
+                            Character budget for the conversation sent with
+                            each request (the system prompt is always kept).
+                            Default: 150000
   BRACKETS_LLM_SYSTEM_PROMPT  Path to the system prompt file.
                             Default: l1vm-system-prompt.txt
   L1VM_LSP                  Path to the l1vm-lsp binary.
@@ -124,10 +185,22 @@ different model family, remove/adapt this option in src/main.c
                              printed as "[fetch] <status line>" in the
                              terminal.
 
-Example:
+Example (llama.cpp, the old way still works):
 
+    export BRACKETS_LLM_BACKEND=llamacpp
     export BRACKETS_LLM_MODEL="/home/you/llama-models/qwen-llm.gguf"
     export BRACKETS_LLM_URL="http://127.0.0.1:8080"
+
+Example (Ollama, streaming):
+
+    export BRACKETS_LLM_BASE_URL=http://localhost:11434/v1
+    export BRACKETS_LLM_MODEL=qwen2.5-coder:14b
+    export BRACKETS_LLM_STREAM=1
+    export BRACKETS_LLM_TEMPERATURE=0.2
+
+Inside a session, /status prints the effective configuration plus the model
+ids the server reports, and /backend openai|llamacpp|auto switches the backend
+without restarting.
 
 
 ===============================================================================
@@ -153,6 +226,11 @@ The assistant reply is printed. If it contains Brackets code, the program
 
 The conversation is kept in memory; on each request the system prompt plus
 the most recent messages are sent to the server.
+
+With BRACKETS_LLM_STREAM=1 the answer is printed piece by piece while the model
+generates it (Server-Sent Events). The tool call handling and the token count
+work exactly as without streaming: the deltas are collected into the same
+answer object the non-streaming request would have returned.
 
 
 ===============================================================================
@@ -291,6 +369,10 @@ unattended, exactly like before.
   /code            Print the last generated code block.
   /compact         Summarize + collapse old messages in the context window
                    (keeps the system prompt and the last 8 messages).
+  /status          Show the backend configuration and the model ids the
+                   server reports.
+  /backend [name]  Show the current backend, or switch at runtime to
+                   openai, llamacpp or auto.
   /new             Reset the conversation (new chat session).
   /help            Show the help text.
   /quit            Exit.
@@ -335,14 +417,20 @@ without code checking.
  9. TROUBLESHOOTING
 ===============================================================================
 
-PROBLEM: "could not reach llama-server at http://127.0.0.1:8080"
-  -> The server is not running or the URL/port is wrong. Start llama-server
-     (section 3) or set BRACKETS_LLM_URL.
+PROBLEM: "cannot connect to 127.0.0.1:8080" / "no usable model backend"
+  -> The server is not running or BRACKETS_LLM_BASE_URL is wrong. Start it
+     (section 3) and check:  /status  (it prints the URL, endpoint and the
+     model ids the server reports).
 
-PROBLEM: "error: model not found" / unsupported model response
+PROBLEM: "HTTP 404 ... model 'x' not found" / "error: model not found"
   -> BRACKETS_LLM_MODEL does not match the id reported by the server.
-     Run:  curl http://127.0.0.1:8080/v1/models
-     and export exactly that id.
+     Run:  curl <base_url>/models   or use /status, then export exactly
+     that id.
+
+PROBLEM: "no usable event in the stream"
+  -> You set BRACKETS_LLM_STREAM=1 but the server does not stream that way.
+     Use BRACKETS_LLM_STREAM=0 (or the llamacpp backend, which never
+     streams).
 
 PROBLEM: server returns "request (N tokens) exceeds the available context
          size"
@@ -417,13 +505,25 @@ PROBLEM: web_fetch returns only a "note:" with a content type
 
     src/main.c        chat loop, agent tool loop, code extraction,
                       auto-correction, commands
+    src/provider.h    the model backend interface: LlmConfig, LlmChat,
+                      LlmReply, LlmProvider (the abstraction main.c uses)
+    src/provider.c    backend factory, config defaults, base_url
+                      normalization, history budget, /models listing
+    src/provider_openai.c
+                      the OpenAI-compatible REST core: request payload,
+                      auth headers, JSON answer parsing, SSE streaming
+                      (accumulates deltas back into an OpenAI-shaped answer)
+    src/provider_llamacpp.c
+                      the llama.cpp flavour of that core (thinking off,
+                      no auth, no streaming)
     src/tools.c/h     autonomous tools the LLM can call: read_file,
                       write_file, edit_file, list_files, web_fetch
                       (incl. the HTML -> plain text conversion)
     src/config.h      configuration via environment variables
     src/http.c/h      HTTP client: raw POSIX sockets for http://, libcurl
                       or the curl program for https://; GET, redirects,
-                      chunked decoding, used for the LLM and for web_fetch
+                      chunked decoding, buffered POST and line-by-line POST
+                      for streams; used for the LLM and for web_fetch
     src/lspclient.c/h L1VM LSP client (spawns l1vm-lsp, JSON-RPC over stdio)
     src/json.c/h      JSON value model / parser / emitter  (from the L1VM project)
     src/sb.c/h        string builder (from the L1VM project)

@@ -6,7 +6,8 @@ BUILD   = build
 TARGET  = $(BUILD)/brackets-llm
 
 SRCS = src/main.c src/http.c src/lspclient.c src/json.c src/sb.c src/tools.c \
-       src/inputline.c src/intr.c
+       src/inputline.c src/intr.c src/provider.c src/provider_openai.c \
+       src/provider_llamacpp.c
 OBJS = $(SRCS:src/%.c=$(BUILD)/%.o)
 
 # Optional GNU readline (line editing + history for interactive input).

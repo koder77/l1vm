@@ -20,8 +20,14 @@
 /*
  * brackets-llm - minimal HTTP client over raw POSIX sockets
  *
- * Speaks HTTP/1.1 to llama-server's OpenAI-compatible REST API.
- * No external dependencies beyond the C standard library + POSIX.
+ * Speaks HTTP/1.1 to any OpenAI-compatible REST API (llama-server, Ollama,
+ * vLLM, LM Studio, a local opencode server, ...) plus a plain GET used by
+ * the web_fetch tool. No external dependencies beyond the C standard
+ * library + POSIX.
+ *
+ * POST requests go through one core (post_core): either buffering the whole
+ * response (http_post_json[_ex]) or handing it to a callback line by line
+ * (http_post_stream), which is how "text/event-stream" answers are consumed.
  *
  * http_get() additionally fetches documents from the internet for the
  * web_fetch tool. Plain http:// is done here, always. https:// needs TLS and
@@ -43,6 +49,7 @@
 #include <string.h>
 #include <strings.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -54,7 +61,7 @@
 #include <curl/curl.h>
 #endif
 
-#define HTTP_UA "brackets-llm (web_fetch tool)"
+#define HTTP_UA "brackets-llm"
 #define HTTP_MAX_REDIRS 5
 #define HTTP_META_TAG "<<<BRACKETS_HTTP_META"
 #define HTTP_HEAD_SLACK 65536L     /* room for response headers */
@@ -245,6 +252,17 @@ typedef struct {
     char *location;   /* Location header (heap) */
     long body_off;    /* offset of the body inside the raw buffer */
 } RespInfo;
+
+/* Release what parse_response() allocated. Safe to call more than once. */
+static void ri_free(RespInfo *ri)
+{
+    if (!ri)
+        return;
+    free(ri->ctype);
+    free(ri->location);
+    ri->ctype = NULL;
+    ri->location = NULL;
+}
 
 /* Read until EOF, until `cap` bytes were collected or Ctrl+C arrives.
  * Returns 1 when interrupted, 0 otherwise (a read error is handled like
@@ -621,82 +639,551 @@ static int fetch_plain(const char *url, long maxbytes, char **body,
 }
 
 /* ---------------------------------------------------------------- */
-/* the llama-server POST (plain HTTP, no TLS)                        */
+/* POST over plain HTTP: buffered body or incremental (SSE) lines   */
 /* ---------------------------------------------------------------- */
+
+/* limits that keep a misbehaving server from eating all memory */
+#define POST_MAX_HEAD    65536L          /* response headers */
+#define POST_MAX_BODY    (32L * 1024L * 1024L)
+#define POST_MAX_LINE    (4L * 1024L * 1024L)
+#define POST_ERR_BODY    16384L          /* error body snippet */
+
+/* Incremental body reader: hands complete lines to `cb` and removes the
+ * "chunked" framing on the fly, so a streamed answer never has to be
+ * buffered as a whole. */
+typedef struct {
+    int          chunked;
+    long         chunk_left;   /* bytes left in the current chunk */
+    int          need_size;    /* the next line is a chunk size line */
+    int          skip_eol;     /* ...but first drop the CRLF after a chunk */
+    int          done;         /* last chunk seen: stop feeding */
+    int          stopped;      /* the callback asked to stop early */
+    SB           pend;         /* partial line */
+    http_line_fn cb;
+    void        *ud;
+} StreamSt;
+
+static void stream_init(StreamSt *st, int chunked, http_line_fn cb, void *ud)
+{
+    memset(st, 0, sizeof(*st));
+    st->chunked = chunked;
+    st->need_size = chunked ? 1 : 0;   /* a chunked body starts with "<hex>\r\n" */
+    st->cb = cb;
+    st->ud = ud;
+    sb_init(&st->pend);
+}
+
+static void stream_free(StreamSt *st)
+{
+    sb_free(&st->pend);
+}
+
+/* Deliver every complete line contained in the pending buffer. */
+static void stream_deliver(StreamSt *st)
+{
+    size_t start = 0;
+
+    while (start < st->pend.len) {
+        char *nl = memchr(st->pend.buf + start, '\n', st->pend.len - start);
+        size_t len;
+        char *line;
+
+        if (!nl)
+            break;
+        len = (size_t)(nl - (st->pend.buf + start));
+        if (len && st->pend.buf[start + len - 1] == '\r')
+            len--;
+        line = malloc(len + 1);
+        if (!line)
+            return;
+        memcpy(line, st->pend.buf + start, len);
+        line[len] = '\0';
+        if (st->cb(line, len, st->ud) != 0)
+            st->stopped = 1;
+        free(line);
+        if (st->stopped)
+            break;
+        start += (size_t)(nl - (st->pend.buf + start)) + 1;
+    }
+
+    if (st->stopped) {
+        sb_reset(&st->pend);
+        return;
+    }
+    if (start) {                       /* keep the incomplete tail */
+        size_t rest = st->pend.len - start;
+        memmove(st->pend.buf, st->pend.buf + start, rest);
+        st->pend.len = rest;
+        if (st->pend.buf)
+            st->pend.buf[rest] = '\0';
+    }
+}
+
+/* Append body bytes and deliver the lines they complete. */
+static void stream_feed(StreamSt *st, const char *s, size_t n)
+{
+    size_t i = 0;
+
+    while (i < n && !st->done && !st->stopped) {
+        long take;
+
+        if (st->chunked && st->need_size && st->skip_eol) {
+            /* the CRLF that terminates the previous chunk is not part of the
+             * next size line: drop everything up to the next newline */
+            const char *nl = memchr(s + i, '\n', n - i);
+            if (!nl)
+                return;              /* wait for the rest of it */
+            i += (size_t)(nl - (s + i)) + 1;
+            st->skip_eol = 0;
+            continue;
+        }
+
+        if (st->chunked && st->need_size) {
+            const char *nl = memchr(s + i, '\n', n - i);
+            size_t linelen;
+            char tmp[64];
+            long sz = 0;
+            size_t k;
+
+            if (!nl)
+                break;              /* the size line is still incomplete */
+            linelen = (size_t)(nl - (s + i));
+            if (linelen && s[i + linelen - 1] == '\r')
+                linelen--;
+            if (linelen >= sizeof(tmp))
+                linelen = sizeof(tmp) - 1;
+            memcpy(tmp, s + i, linelen);
+            tmp[linelen] = '\0';
+            i += (size_t)(nl - (s + i)) + 1;
+
+            for (k = 0; tmp[k]; k++) {          /* hex size, ignore extensions */
+                char c = tmp[k];
+                int d;
+                if (c >= '0' && c <= '9')      d = c - '0';
+                else if (c >= 'a' && c <= 'f') d = c - 'a' + 10;
+                else if (c >= 'A' && c <= 'F') d = c - 'A' + 10;
+                else break;
+                sz = sz * 16 + d;
+            }
+            if (sz <= 0) {                     /* last chunk */
+                st->done = 1;
+                break;
+            }
+            st->chunk_left = sz;
+            st->need_size = 0;
+            continue;
+        }
+
+        if (st->chunked) {
+            take = st->chunk_left;
+            if (take > (long)(n - i))
+                take = (long)(n - i);
+            sb_addn(&st->pend, s + i, (size_t)take);
+            st->chunk_left -= take;
+            i += (size_t)take;
+            if (st->chunk_left == 0) {
+                st->need_size = 1;      /* next: CRLF + size line */
+                st->skip_eol = 1;
+            }
+            stream_deliver(st);
+            continue;
+        }
+
+        sb_addn(&st->pend, s + i, n - i);
+        stream_deliver(st);
+        if ((long)st->pend.len > POST_MAX_LINE) {
+            st->done = 1;               /* a single endless line: give up */
+            st->stopped = 1;
+        }
+        i = n;
+    }
+}
+
+/* A server may close without a final newline: hand the rest over anyway. */
+static void stream_flush(StreamSt *st)
+{
+    if (st->stopped || !st->pend.len)
+        return;
+    sb_addc(&st->pend, '\n');
+    stream_deliver(st);
+}
+
+/* Request target: the path of `u` followed by `path` ("/v1" + "/chat/..."). */
+static char *join_target(const HttpUrl *u, const char *path)
+{
+    const char *base = (u->path && *u->path) ? u->path : "/";
+    size_t bl = strlen(base);
+    const char *p = path ? path : "/";
+    size_t pl;
+    char *t;
+
+    if (bl > 1 && base[bl - 1] == '/')
+        bl--;                          /* no double slash */
+    while (*p == '/')
+        p++;
+    pl = strlen(p);
+    t = malloc(bl + pl + 2);
+    if (!t)
+        return NULL;
+    memcpy(t, base, bl);
+    t[bl] = '/';
+    memcpy(t + bl + 1, p, pl);
+    t[bl + 1 + pl] = '\0';
+    return t;
+}
+
+/* Collapse an error body into one short line for a log message. */
+static void add_error_snippet(SB *err, const char *body, size_t n)
+{
+    SB one;
+    size_t i;
+
+    sb_init(&one);
+    for (i = 0; i < n; i++) {
+        char c = body[i];
+        if (c == '\n' || c == '\r' || c == '\t')
+            c = ' ';
+        if ((unsigned char)c < 0x20)
+            continue;
+        sb_addc(&one, c);
+        if (one.len >= 400)
+            break;
+    }
+    if (one.len)
+        sb_printf(err, ": %s", sb_cstr(&one));
+    sb_free(&one);
+}
+
+/*
+ * The one POST implementation. `streaming` selects between buffering the
+ * whole body and feeding it to `cb` line by line.
+ *
+ * Return values (also used by http_post_json_ex/http_post_stream):
+ *    0  the request completed
+ *   -1  transport error (write/read/socket)
+ *   -2  the connection could not be established
+ *   -3  the server answered with a 4xx/5xx status
+ *   -4  interrupted with Ctrl+C
+ * `http_status` holds the status code in any case where one was received.
+ */
+static int post_core(const char *url, const char *path,
+                     const char *const *extra_hdrs, size_t nextra,
+                     const char *body, long bodylen,
+                     int streaming,
+                     char **resp, long *resplen, int *http_status,
+                     http_line_fn cb, void *ud,
+                     int timeout_sec, char **errmsg)
+{
+    char norm[2048];
+    const char *in = url;
+    HttpUrl u;
+    SB raw, err;
+    char *target = NULL;
+    char buf[32768];
+    int fd = -1;
+    int rc = -1;
+    int err_kind = -1;      /* what to report when rc != 0 */
+    long hdrend = 0;
+    RespInfo ri;
+    SB dummy;
+    StreamSt st;
+    int have_st = 0;
+    size_t i;
+
+    if (resp)
+        *resp = NULL;
+    if (resplen)
+        *resplen = 0;
+    if (http_status)
+        *http_status = 0;
+    sb_init(&err);
+    sb_init(&raw);
+    memset(&u, 0, sizeof(u));
+    memset(&ri, 0, sizeof(ri));
+    sb_init(&dummy);
+
+    /* a bare "host:port" is accepted, the way older configs used it */
+    if (!url || !*url) {
+        sb_add(&err, "no server URL given");
+        goto done;
+    }
+    if (!strstr(url, "://") && strchr(url, ':')) {
+        if (strlen(url) + 8 >= sizeof(norm)) {
+            sb_add(&err, "server URL is too long");
+            goto done;
+        }
+        snprintf(norm, sizeof(norm), "http://%s", url);
+        in = norm;
+    }
+    if (http_split_url(in, &u) != 0) {
+        sb_printf(&err, "invalid server URL '%s'", url);
+        goto done;
+    }
+    if (u.https) {
+        sb_add(&err, "https is not available for POST requests in this "
+                     "build (use http:// for a local model server)");
+        goto done;
+    }
+    target = join_target(&u, path);
+    if (!target) {
+        sb_add(&err, "out of memory");
+        goto done;
+    }
+
+    fd = connect_host(u.host, u.port);
+    if (fd < 0) {
+        sb_printf(&err, "cannot connect to %s:%d", u.host, u.port);
+        err_kind = -2;
+        goto done;
+    }
+    if (timeout_sec > 0) {
+        struct timeval tv;
+        tv.tv_sec = timeout_sec;
+        tv.tv_usec = 0;
+        setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+        setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+    }
+
+    /* ---- request ---- */
+    {
+        SB h;
+        int w;
+
+        sb_init(&h);
+        sb_printf(&h, "POST %s HTTP/1.1\r\n", target);
+        sb_printf(&h, "Host: %s:%d\r\n", u.host, u.port);
+        sb_printf(&h, "User-Agent: %s\r\n", HTTP_UA);
+        sb_add(&h, "Accept: application/json\r\n");
+        sb_add(&h, "Content-Type: application/json\r\n");
+        for (i = 0; i < nextra; i++) {
+            if (!extra_hdrs[i] || !*extra_hdrs[i])
+                continue;
+            sb_add(&h, extra_hdrs[i]);
+            sb_add(&h, "\r\n");
+        }
+        sb_printf(&h, "Content-Length: %ld\r\n", bodylen > 0 ? bodylen : 0L);
+        sb_add(&h, "Connection: close\r\n\r\n");
+
+        w = write_all(fd, sb_cstr(&h), sb_len(&h));
+        sb_free(&h);
+        if (w < 0) {
+            sb_add(&err, "cannot send the request");
+            goto done;
+        }
+        if (bodylen > 0 && write_all(fd, body, (size_t)bodylen) < 0) {
+            sb_add(&err, "cannot send the request body");
+            goto done;
+        }
+    }
+
+    /* ---- response headers ---- */
+    while (!hdrend) {
+        ssize_t n;
+
+        if (g_intr_request) {
+            sb_add(&err, "interrupted");
+            goto done;
+        }
+        n = read(fd, buf, sizeof(buf));
+        if (n > 0) {
+            sb_addn(&raw, buf, (size_t)n);
+            if (find_bytes(sb_cstr(&raw), (long)sb_len(&raw), "\r\n\r\n", 4) ||
+                find_bytes(sb_cstr(&raw), (long)sb_len(&raw), "\n\n", 2))
+                break;
+            if ((long)sb_len(&raw) > POST_MAX_HEAD) {
+                sb_add(&err, "response headers are too large");
+                goto done;
+            }
+        } else if (n < 0 && errno == EINTR) {
+            continue;                 /* unrelated signal: keep reading */
+        } else if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+            sb_add(&err, "timeout while waiting for the response headers");
+            goto done;
+        } else {
+            sb_add(&err, "the server closed the connection without a response");
+            goto done;
+        }
+    }
+    /* the header phase: only status/framing matter here, the body bytes are
+     * fed to the stream reader from `raw` directly */
+    ri_free(&ri);
+    parse_response(sb_cstr(&raw), (long)sb_len(&raw), &ri, &dummy);
+    hdrend = ri.body_off;
+    if (http_status)
+        *http_status = ri.status;
+
+    /* ---- error status: collect a snippet of the body for the message ---- */
+    if (ri.status >= 400) {
+        SB eb;
+        sb_init(&eb);
+        while ((long)sb_len(&raw) < POST_ERR_BODY) {
+            ssize_t n = read(fd, buf, sizeof(buf));
+            if (n > 0) {
+                sb_addn(&raw, buf, (size_t)n);
+                continue;
+            }
+            if (n < 0 && errno == EINTR)
+                continue;
+            break;
+        }
+        if (ri.chunked)
+            dechunk(raw.buf + hdrend, (long)sb_len(&raw) - hdrend, &eb);
+        else if ((long)sb_len(&raw) > hdrend)
+            sb_addn(&eb, raw.buf + hdrend, (long)sb_len(&raw) - hdrend);
+        sb_printf(&err, "HTTP %d from %s", ri.status, target);
+        add_error_snippet(&err, sb_cstr(&eb), sb_len(&eb));
+        sb_free(&eb);
+        goto done;
+    }
+
+    /* ---- body ---- */
+    if (streaming) {
+        stream_init(&st, ri.chunked, cb, ud);
+        have_st = 1;
+        stream_feed(&st, raw.buf + hdrend, (size_t)((long)sb_len(&raw) - hdrend));
+        while (!st.done && !st.stopped) {
+            ssize_t n;
+
+            if (g_intr_request) {
+                sb_add(&err, "interrupted");
+                goto done;
+            }
+            n = read(fd, buf, sizeof(buf));
+            if (n > 0) {
+                stream_feed(&st, buf, (size_t)n);
+                continue;
+            }
+            if (n < 0 && errno == EINTR)
+                continue;
+            if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+                sb_add(&err, "timeout while waiting for the server");
+                goto done;
+            }
+            break;                     /* EOF: the stream is over */
+        }
+        stream_flush(&st);
+        rc = 0;
+        goto done;
+    }
+
+    /* buffered: read the rest, then let parse_response de-chunk it */
+    for (;;) {
+        ssize_t n;
+        long have;
+
+        if (g_intr_request) {
+            sb_add(&err, "interrupted");
+            goto done;
+        }
+        if (!ri.chunked && ri.clen >= 0) {
+            have = (long)sb_len(&raw) - hdrend;
+            if (have >= ri.clen)
+                break;                 /* the announced body is complete */
+        }
+        n = read(fd, buf, sizeof(buf));
+        if (n > 0) {
+            sb_addn(&raw, buf, (size_t)n);
+            if ((long)sb_len(&raw) > POST_MAX_HEAD + POST_MAX_BODY) {
+                sb_add(&err, "response body is too large");
+                goto done;
+            }
+            continue;
+        }
+        if (n < 0 && errno == EINTR)
+            continue;
+        if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+            sb_add(&err, "timeout while waiting for the response body");
+            goto done;
+        }
+        break;                         /* EOF */
+    }
+    {
+        SB body_sb;
+        char *out;
+
+        sb_init(&body_sb);
+        /* parse again to de-chunk the finished body; drop the old header
+         * strings first so they are not lost */
+        ri_free(&ri);
+        parse_response(sb_cstr(&raw), (long)sb_len(&raw), &ri, &body_sb);
+        out = strdup(sb_cstr(&body_sb));
+        if (!out) {
+            sb_add(&err, "out of memory");
+            sb_free(&body_sb);
+            goto done;
+        }
+        if (resp)
+            *resp = out;
+        else
+            free(out);
+        if (resplen)
+            *resplen = (long)sb_len(&body_sb);
+        sb_free(&body_sb);
+    }
+    rc = 0;
+
+done:
+    if (have_st)
+        stream_free(&st);
+    if (fd >= 0)
+        close(fd);
+    if (target)
+        free(target);
+    ri_free(&ri);
+    http_url_free(&u);
+    sb_free(&raw);
+    sb_free(&dummy);
+    if (rc != 0) {
+        if (resp && *resp) {
+            free(*resp);
+            *resp = NULL;
+        }
+        if (http_status && *http_status >= 400)
+            err_kind = -3;                /* the server said no */
+        else if (g_intr_request)
+            err_kind = -4;                /* Ctrl+C */
+        if (errmsg) {
+            /* the caller owns the slot: hand back a fresh message */
+            free(*errmsg);
+            *errmsg = strdup(sb_len(&err) ? sb_cstr(&err)
+                                          : "the request failed");
+        }
+        sb_free(&err);
+        return err_kind;
+    }
+    sb_free(&err);
+    return 0;
+}
+
+int http_post_json_ex(const char *url, const char *path,
+                      const char *const *extra_hdrs, size_t nextra,
+                      const char *body, long bodylen,
+                      char **resp, long *resplen, int *http_status,
+                      int timeout_sec, char **errmsg)
+{
+    return post_core(url, path, extra_hdrs, nextra, body, bodylen, 0,
+                     resp, resplen, http_status, NULL, NULL,
+                     timeout_sec, errmsg);
+}
 
 int http_post_json(const char *url, const char *path,
                    const char *body, long bodylen,
                    char **resp, long *resplen, int *http_status)
 {
-    char host[256];
-    int port;
-    char req[4096];
-    int fd;
-    SB out;
-    long total = 0;
-    int status = 0;
-    char *rbody = NULL;
-
-    *resp = NULL;
-    if (resplen)
-        *resplen = 0;
-    if (http_status)
-        *http_status = 0;
-
-    if (http_parse_url(url, host, sizeof(host), &port) != 0)
-        return -1;
-
-    fd = connect_host(host, port);
-    if (fd < 0)
-        return -1;
-
-    snprintf(req, sizeof(req),
-             "POST %s HTTP/1.1\r\n"
-             "Host: %s:%d\r\n"
-             "Content-Type: application/json\r\n"
-             "Accept: application/json\r\n"
-             "Content-Length: %ld\r\n"
-             "Connection: close\r\n"
-             "\r\n",
-             path, host, port, bodylen);
-
-    if (write(fd, req, strlen(req)) < 0) {
-        close(fd);
-        return -1;
-    }
-    if (bodylen > 0 && write(fd, body, (size_t)bodylen) < 0) {
-        close(fd);
-        return -1;
-    }
-
-    sb_init(&out);
-    read_all(fd, &out, 0);
-    close(fd);
-
-    /* split the response: status line, headers, (de-chunked) body */
-    {
-        RespInfo ri;
-        SB bodysb;
-
-        parse_response(sb_cstr(&out), (long)sb_len(&out), &ri, &bodysb);
-        status = ri.status;
-        total = (long)sb_len(&bodysb);
-        rbody = strdup(sb_cstr(&bodysb));
-        free(ri.ctype);
-        free(ri.location);
-        sb_free(&bodysb);
-    }
-
-    if (http_status)
-        *http_status = status;
-    if (rbody) {
-        *resp = rbody;
-        if (resplen)
-            *resplen = total;
-    }
-    sb_free(&out);
-    return rbody ? 0 : -1;
+    return post_core(url, path, NULL, 0, body, bodylen, 0,
+                     resp, resplen, http_status, NULL, NULL, 0, NULL);
 }
+
+int http_post_stream(const char *url, const char *path,
+                     const char *const *extra_hdrs, size_t nextra,
+                     const char *body, long bodylen,
+                     http_line_fn cb, void *ud,
+                     int timeout_sec, int *http_status, char **errmsg)
+{
+    return post_core(url, path, extra_hdrs, nextra, body, bodylen, 1,
+                     NULL, NULL, http_status, cb, ud, timeout_sec, errmsg);
+}
+
 
 /* ---------------------------------------------------------------- */
 /* https: libcurl, or the curl program used as a helper             */
