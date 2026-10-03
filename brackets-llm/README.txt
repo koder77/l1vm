@@ -25,6 +25,8 @@ The program does NOT start an LLM server. It talks to ANY OpenAI-compatible
 /v1/chat/completions server that YOU start with the model of your choice
 (llama.cpp llama-server, Ollama, vLLM, LM Studio, a local opencode model
 server, ...) and you can switch between them with one environment variable.
+Hosted APIs work too: https://api.openai.com/v1 (or OpenRouter, Groq, ...) is
+just another base URL, together with BRACKETS_LLM_API_KEY.
 
 
 ===============================================================================
@@ -45,14 +47,15 @@ server, ...) and you can switch between them with one environment variable.
         - l1vm              (the virtual machine to run programs)
     and the L1VM include directory ~/l1vm/include/.
 
-Optional, only for the web_fetch tool:
+Optional, only for https (the web_fetch tool and hosted LLM APIs such as
+OpenAI):
 
   * libcurl development files (libcurl4-openssl-dev / libcurl-devel) for
-    https:// downloads. The Makefile probes for libcurl at build time and
-    enables it automatically. Without libcurl the program still downloads
-    plain http:// by itself, and it uses the "curl" program as a helper for
-    https:// (so plain http:// needs no extra package at all). Build without
-    libcurl on purpose with:   make clean && make CURL_OK=1
+    https:// requests. The Makefile probes for libcurl at build time and
+    enables it automatically. Without libcurl the program still talks to
+    plain http:// model servers by itself, and it uses the "curl" program as a
+    helper for https:// downloads (so plain http:// needs no extra package at
+    all). Build without libcurl on purpose with:   make clean && make CURL_OK=1
 
 
 ===============================================================================
@@ -100,6 +103,16 @@ brackets-llm only speaks the OpenAI REST protocol, so any server that offers
   LM Studio (local server tab) or a local opencode model server: same
   protocol, just point BRACKETS_LLM_BASE_URL at it.
 
+  OpenAI (hosted, https)
+    No local server needed, but you need an API key:
+
+    -> export BRACKETS_LLM_BASE_URL=https://api.openai.com/v1
+       export BRACKETS_LLM_API_KEY=sk-...
+       export BRACKETS_LLM_MODEL=gpt-4.1-mini
+
+    Any other OpenAI-compatible https endpoint works the same way
+    (OpenRouter, Groq, Together, Azure OpenAI, a corporate gateway).
+
 Wait until the server log says it is listening.
 
 Find the exact model id your server reports (brackets-llm must send it):
@@ -142,6 +155,7 @@ BRACKETS_LLM_BACKEND=openai for everything else.
                               http://localhost:8000       (vLLM)
                               http://127.0.0.1:1234/v1    (LM Studio)
                               http://127.0.0.1:8080/v1    (llama-server)
+                              https://api.openai.com/v1   (hosted API)
                             Default: http://127.0.0.1:8080/v1
                             (BRACKETS_LLM_URL is still read as a fallback)
   BRACKETS_LLM_MODEL        Model id as reported by the server.
@@ -149,9 +163,15 @@ BRACKETS_LLM_BACKEND=openai for everything else.
                             (in practice you must set this to the id from
                             "curl <base_url>/models" or from /status)
   BRACKETS_LLM_API_KEY      Value for "Authorization: Bearer ...". Most local
-                            servers ignore it; a gateway in front of the
-                            model may require it. OPENAI_API_KEY is used as a
-                            fallback. Default: (no header)
+                            servers ignore it; OpenAI and other hosted APIs
+                            require it. OPENAI_API_KEY is used as a fallback.
+                            Default: (no header)
+  BRACKETS_LLM_CA_FILE      Extra CA bundle for https, if the server does not
+                            use a publicly trusted certificate (corporate TLS
+                            interception, a self-signed gateway):
+                              export BRACKETS_LLM_CA_FILE=/path/to/ca.pem
+                            Unset = the trust store libcurl was built with.
+                            Local http:// servers ignore this.
   BRACKETS_LLM_TEMPERATURE  Sampling temperature. Unset = do not send the
                             field, the server default is used.
                             Default: 0.7 was hardcoded before, now unset
@@ -197,6 +217,17 @@ Example (Ollama, streaming):
     export BRACKETS_LLM_MODEL=qwen2.5-coder:14b
     export BRACKETS_LLM_STREAM=1
     export BRACKETS_LLM_TEMPERATURE=0.2
+
+Example (OpenAI over https):
+
+    export BRACKETS_LLM_BASE_URL=https://api.openai.com/v1
+    export BRACKETS_LLM_API_KEY=sk-...
+    export BRACKETS_LLM_MODEL=gpt-4.1-mini
+
+https requests go through libcurl (the same library that fetches URLs), so
+there is no separate TLS code path. http:// still uses the plain socket path
+and needs no libraries at all. If the program was built without libcurl, only
+http:// works.
 
 Inside a session, /status prints the effective configuration plus the model
 ids the server reports, and /backend openai|llamacpp|auto switches the backend
@@ -422,6 +453,22 @@ PROBLEM: "cannot connect to 127.0.0.1:8080" / "no usable model backend"
      (section 3) and check:  /status  (it prints the URL, endpoint and the
      model ids the server reports).
 
+PROBLEM: "HTTP 401 ... invalid_api_key" against a hosted API
+  -> BRACKETS_LLM_API_KEY is missing, wrong or expired. Check with:
+     curl https://api.openai.com/v1/models -H "Authorization: Bearer $BRACKETS_LLM_API_KEY"
+     The key must be sent with BRACKETS_LLM_BACKEND=openai (llamacpp sends
+     no Authorization header at all).
+
+PROBLEM: "SSL peer certificate or SSH remote key was not OK"
+  -> The https server uses a certificate that the system trust store does not
+     know. For a corporate gateway: export BRACKETS_LLM_CA_FILE=/path/to/ca.pem
+     (ask whoever runs the gateway). Do not work around it by disabling the
+     certificate check - the api_key would go to an unverified peer.
+
+PROBLEM: "https is not available for POST requests in this build"
+  -> The binary was compiled without libcurl. Rebuild (the Makefile detects
+     libcurl automatically), or use an http:// endpoint.
+
 PROBLEM: "HTTP 404 ... model 'x' not found" / "error: model not found"
   -> BRACKETS_LLM_MODEL does not match the id reported by the server.
      Run:  curl <base_url>/models   or use /status, then export exactly
@@ -521,7 +568,8 @@ PROBLEM: web_fetch returns only a "note:" with a content type
                       (incl. the HTML -> plain text conversion)
     src/config.h      configuration via environment variables
     src/http.c/h      HTTP client: raw POSIX sockets for http://, libcurl
-                      or the curl program for https://; GET, redirects,
+                      for https:// (GET and POST, with or without streaming);
+                      the curl program as a fallback for https GET; redirects,
                       chunked decoding, buffered POST and line-by-line POST
                       for streams; used for the LLM and for web_fetch
     src/lspclient.c/h L1VM LSP client (spawns l1vm-lsp, JSON-RPC over stdio)

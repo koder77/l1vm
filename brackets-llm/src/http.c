@@ -854,9 +854,22 @@ static void add_error_snippet(SB *err, const char *body, size_t n)
     sb_free(&one);
 }
 
+#ifdef HAVE_LIBCURL
+/* https POST (see post_curl at the end of this file). Same return codes. */
+static int post_curl(const char *abs_url, const char *const *extra_hdrs,
+                     size_t nextra, const char *body, long bodylen,
+                     int streaming, char **resp, long *resplen,
+                     int *http_status, http_line_fn cb, void *ud,
+                     int timeout_sec, SB *err);
+#endif
+
 /*
  * The one POST implementation. `streaming` selects between buffering the
  * whole body and feeding it to `cb` line by line.
+ *
+ * Plain http:// goes over a raw socket. https:// is handed to libcurl (when
+ * the build found it), because the socket path has no TLS; the callback and
+ * the error classification are the same in both cases.
  *
  * Return values (also used by http_post_json_ex/http_post_stream):
  *    0  the request completed
@@ -919,15 +932,41 @@ static int post_core(const char *url, const char *path,
         sb_printf(&err, "invalid server URL '%s'", url);
         goto done;
     }
-    if (u.https) {
-        sb_add(&err, "https is not available for POST requests in this "
-                     "build (use http:// for a local model server)");
-        goto done;
-    }
     target = join_target(&u, path);
     if (!target) {
         sb_add(&err, "out of memory");
         goto done;
+    }
+
+    if (u.https) {
+#ifdef HAVE_LIBCURL
+        /* TLS is libcurl's job: build the absolute URL and let it do the POST */
+        char abs[2048];
+        char *slash;
+        size_t base_len;
+
+        if (strlen(in) + strlen(target) + 8 >= sizeof(abs)) {
+            sb_add(&err, "server URL is too long");
+            goto done;
+        }
+        /* the base URL may carry its own path: append the target behind it */
+        snprintf(abs, sizeof(abs), "%s", in);
+        slash = strstr(abs, "://");
+        slash = slash ? strchr(slash + 3, '/') : NULL;
+        base_len = slash ? (size_t)(slash - abs) : strlen(abs);
+        abs[base_len] = '\0';
+        strncat(abs, target, sizeof(abs) - strlen(abs) - 1);
+
+        rc = post_curl(abs, extra_hdrs, nextra, body, bodylen, streaming,
+                       resp, resplen, http_status, cb, ud, timeout_sec, &err);
+        err_kind = rc;
+        goto done;
+#else
+        sb_add(&err, "https is not available for POST requests in this build "
+                     "(no libcurl found; use http:// for a local model "
+                     "server)");
+        goto done;
+#endif
     }
 
     fd = connect_host(u.host, u.port);
@@ -1219,6 +1258,17 @@ static int curl_progress(void *ud, curl_off_t d, curl_off_t dn,
     return g_intr_request ? 1 : 0;
 }
 
+/* An extra CA bundle for private endpoints (corporate TLS interception, a
+ * self-signed gateway): BRACKETS_LLM_CA_FILE=/path/to/ca.pem. Without it
+ * libcurl verifies against its compiled-in trust store only. */
+static void curl_apply_ca(CURL *c)
+{
+    const char *ca = getenv("BRACKETS_LLM_CA_FILE");
+
+    if (ca && *ca)
+        curl_easy_setopt(c, CURLOPT_CAINFO, ca);
+}
+
 static int fetch_curl(const char *url, long maxbytes, char **body,
                       long *bodylen, int *http_status, char **content_type,
                       char **final_url, SB *err)
@@ -1250,6 +1300,7 @@ static int fetch_curl(const char *url, long maxbytes, char **body,
     curl_easy_setopt(c, CURLOPT_NOSIGNAL, 1L);
     curl_easy_setopt(c, CURLOPT_ACCEPT_ENCODING, "");  /* gzip/deflate/brotli */
     curl_easy_setopt(c, CURLOPT_XFERINFOFUNCTION, curl_progress);
+    curl_apply_ca(c);
 #if LIBCURL_VERSION_NUM >= 0x075500
     curl_easy_setopt(c, CURLOPT_PROTOCOLS_STR, "http,https");
     curl_easy_setopt(c, CURLOPT_REDIR_PROTOCOLS_STR, "http,https");
@@ -1317,6 +1368,210 @@ static int fetch_curl(const char *url, long maxbytes, char **body,
     free(ct);
     sb_free(&sink.buf);
     return 0;
+}
+
+/* ---------------------------------------------------------------- */
+/* https POST: same contract as post_core, but TLS comes from libcurl */
+/* ---------------------------------------------------------------- */
+
+/* Where the answer goes: either into a buffer (plain request) or straight
+ * into the line reader (streaming). libcurl has already removed the chunked
+ * framing, so the line reader runs in its plain mode here. */
+typedef struct {
+    SB        buf;    /* buffered: the whole body */
+    SB        keep;   /* streaming: the first bytes, for an error message */
+    StreamSt *st;     /* streaming: the line reader, else NULL */
+} PostSink;
+
+static size_t curl_post_write(void *ptr, size_t size, size_t nmemb, void *ud)
+{
+    PostSink *s = ud;
+    size_t n = size * nmemb;
+    long room;
+
+    if (g_intr_request)
+        return 0;                                /* Ctrl+C: abort the transfer */
+
+    if (s->st) {
+        if (s->st->stopped)
+            return 0;                            /* the consumer is finished */
+        if ((long)sb_len(&s->keep) < POST_ERR_BODY) {
+            room = POST_ERR_BODY - (long)sb_len(&s->keep);
+            sb_addn(&s->keep, ptr, (size_t)(n < (size_t)room ? n : (size_t)room));
+        }
+        stream_feed(s->st, ptr, n);
+        return s->st->stopped ? 0 : n;
+    }
+
+    room = (long)sb_len(&s->buf) + (long)n > POST_MAX_BODY
+             ? POST_MAX_BODY - (long)sb_len(&s->buf)
+             : (long)n;
+    if (room > 0)
+        sb_addn(&s->buf, ptr, (size_t)room);
+    if (room < (long)n)
+        return (size_t)room;                      /* short: abort the transfer */
+    return n;
+}
+
+/* A TLS handshake or name resolution that never got a connection. */
+static int curl_is_connect_error(CURLcode rc)
+{
+    switch (rc) {
+    case CURLE_COULDNT_CONNECT:
+    case CURLE_COULDNT_RESOLVE_HOST:
+    case CURLE_COULDNT_RESOLVE_PROXY:
+    case CURLE_SSL_CONNECT_ERROR:
+    case CURLE_PEER_FAILED_VERIFICATION:      /* == CURLE_SSL_CACERT */
+    case CURLE_SSL_CIPHER:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+/*
+ * The https counterpart of post_core: a POST with body and extra headers,
+ * either buffered or streamed line by line, with the same return codes
+ * (0 ok, -1 transport, -2 connect, -3 HTTP status, -4 interrupted).
+ * `err` collects the message, the caller turns it into *errmsg.
+ */
+static int post_curl(const char *abs_url, const char *const *extra_hdrs,
+                     size_t nextra, const char *body, long bodylen,
+                     int streaming, char **resp, long *resplen,
+                     int *http_status, http_line_fn cb, void *ud,
+                     int timeout_sec, SB *err)
+{
+    CURL *c = NULL;
+    CURLcode rc;
+    struct curl_slist *hl = NULL;
+    PostSink sink;
+    StreamSt st;
+    long code = 0;
+    size_t i;
+    int ret = 0;
+    int stopped = 0;
+
+    if (bodylen > 0 && (!body || strlen(body) < (size_t)bodylen)) {
+        sb_add(err, "the request body is not NUL terminated");
+        return -1;
+    }
+
+    memset(&sink, 0, sizeof(sink));
+    sb_init(&sink.buf);
+    sb_init(&sink.keep);
+    if (streaming) {
+        stream_init(&st, 0, cb, ud);
+        sink.st = &st;
+    }
+
+    c = curl_easy_init();
+    if (!c) {
+        sb_add(err, "cannot initialize libcurl");
+        ret = -1;
+        goto done;
+    }
+
+    curl_easy_setopt(c, CURLOPT_URL, abs_url);
+    curl_easy_setopt(c, CURLOPT_POST, 1L);
+    curl_easy_setopt(c, CURLOPT_POSTFIELDS, body ? body : "");
+    curl_easy_setopt(c, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)(bodylen > 0 ? bodylen : 0));
+    curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, curl_post_write);
+    curl_easy_setopt(c, CURLOPT_WRITEDATA, &sink);
+    curl_easy_setopt(c, CURLOPT_NOSIGNAL, 1L);
+    curl_easy_setopt(c, CURLOPT_USERAGENT, HTTP_UA);
+    curl_easy_setopt(c, CURLOPT_XFERINFOFUNCTION, curl_progress);
+    curl_easy_setopt(c, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(c, CURLOPT_MAXREDIRS, (long)HTTP_MAX_REDIRS);
+    curl_easy_setopt(c, CURLOPT_POSTREDIR, (long)CURL_REDIR_POST_ALL);
+#if LIBCURL_VERSION_NUM >= 0x075500
+    curl_easy_setopt(c, CURLOPT_PROTOCOLS_STR, "http,https");
+    curl_easy_setopt(c, CURLOPT_REDIR_PROTOCOLS_STR, "http,https");
+#else
+    curl_easy_setopt(c, CURLOPT_PROTOCOLS,
+                     (long)(CURLPROTO_HTTP | CURLPROTO_HTTPS));
+    curl_easy_setopt(c, CURLOPT_REDIR_PROTOCOLS,
+                     (long)(CURLPROTO_HTTP | CURLPROTO_HTTPS));
+#endif
+    if (timeout_sec > 0) {
+        /* an idle limit like the socket path, not a limit for the whole
+         * answer: a long generation may take minutes */
+        curl_easy_setopt(c, CURLOPT_CONNECTTIMEOUT, (long)timeout_sec);
+        curl_easy_setopt(c, CURLOPT_LOW_SPEED_LIMIT, 1L);
+        curl_easy_setopt(c, CURLOPT_LOW_SPEED_TIME, (long)timeout_sec);
+    }
+    curl_apply_ca(c);
+    if (getenv("BRACKETS_LLM_NET_DEBUG"))
+        curl_easy_setopt(c, CURLOPT_VERBOSE, 1L);
+
+    hl = curl_slist_append(hl, "Content-Type: application/json");
+    hl = curl_slist_append(hl, "Expect:");            /* no 100-continue wait */
+    for (i = 0; i < nextra; i++) {
+        if (extra_hdrs[i] && *extra_hdrs[i])
+            hl = curl_slist_append(hl, extra_hdrs[i]);
+    }
+    if (hl)
+        curl_easy_setopt(c, CURLOPT_HTTPHEADER, hl);
+
+    rc = curl_easy_perform(c);
+    curl_easy_getinfo(c, CURLINFO_RESPONSE_CODE, &code);
+    if (http_status)
+        *http_status = (int)code;
+
+    stopped = sink.st ? sink.st->stopped : 0;
+    if (streaming && !stopped)
+        stream_flush(sink.st);        /* a last line without newline */
+
+    if (g_intr_request) {
+        sb_add(err, "interrupted");
+        ret = -4;
+    } else if (rc != CURLE_OK && !(stopped && code < 400)) {
+        if (code >= 400) {
+            sb_printf(err, "HTTP %d from %s", (int)code, abs_url);
+            add_error_snippet(err, sb_cstr(&sink.keep), sb_len(&sink.keep));
+            ret = -3;
+        } else if (curl_is_connect_error(rc)) {
+            sb_printf(err, "cannot reach %s: %s", abs_url,
+                      curl_easy_strerror(rc));
+            ret = -2;
+        } else {
+            sb_printf(err, "%s failed: %s", abs_url, curl_easy_strerror(rc));
+            ret = -1;
+        }
+    } else if (code >= 400) {
+        sb_printf(err, "HTTP %d from %s", (int)code, abs_url);
+        add_error_snippet(err,
+                          streaming ? sb_cstr(&sink.keep) : sb_cstr(&sink.buf),
+                          streaming ? sb_len(&sink.keep) : sb_len(&sink.buf));
+        ret = -3;
+    } else if (!streaming) {
+        char *out = strdup(sb_cstr(&sink.buf));
+        if (!out) {
+            sb_add(err, "out of memory");
+            ret = -1;
+        } else {
+            if (resp)
+                *resp = out;
+            else
+                free(out);
+            if (resplen)
+                *resplen = (long)sb_len(&sink.buf);
+        }
+    }
+
+done:
+    if (hl)
+        curl_slist_free_all(hl);
+    if (c)
+        curl_easy_cleanup(c);
+    if (sink.st)
+        stream_free(sink.st);
+    sb_free(&sink.buf);
+    sb_free(&sink.keep);
+    if (ret != 0 && resp && *resp) {
+        free(*resp);
+        *resp = NULL;
+    }
+    return ret;
 }
 
 #else   /* !HAVE_LIBCURL: use the curl command line program as a helper */
