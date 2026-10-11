@@ -6,7 +6,9 @@ L1VM (3.7.1)
 
 	Brackets-LLM now has support for the OpenAI compatible API. And should be able to connect to non llama.cpp servers too.
 
--- Stefan Pietzonke <info@midnight-coding.de> Sat 03 October 2026 18:05 +020
+	VM: stack code optimzed with memcpy().
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sun 11 October 2026 06:38 +020
 
 L1VM (3.7.0)
 	NEW: OpenCL vector math module. See "prog/math-opencl".
