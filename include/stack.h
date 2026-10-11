@@ -17,7 +17,6 @@
  * along with L1vm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
 
 // stack operations ---------------------------------------
 // byte
@@ -93,114 +92,241 @@ U1 *stpopb (U1 *data, U1 *sp, U1 *sp_top)
 
 
 // quadword
-U1 *stpushi(S8 data, U1 *sp, U1 *sp_bottom)
+
+U1 *stpushi (S8 data, U1 *sp, U1 *sp_bottom)
 {
-#if STACK_CHECK
-    if (sp < sp_bottom + 9) {
-        return NULL; // fatal ERROR: stack overflow
-    }
+	U1 *bptr;
 
-    sp -= 9;
-    *sp = STACK_QUADWORD;        // Tag an die Basis schreiben
-    memcpy(sp + 1, &data, 8);   // 8 Bytes als Block kopieren
+	#if STACK_CHECK
+	if (sp >= sp_bottom + 9)
+	{
+		// set stack pointer to lower address
 
-    return sp;
-#else
-    if (sp < sp_bottom + 8) {
-        return NULL;
-    }
+		bptr = (U1 *) &data;
 
-    sp -= 8;
-    memcpy(sp, &data, 8);       // Inlined zu 1x SIMD/Register store
+		sp--;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		*sp = STACK_QUADWORD;
 
-    return sp;
-#endif
+		return (sp);			// success
+	}
+	else
+	{
+		// fatal ERROR: stack pointer can't go below address ZERO!
+		return (NULL);			// FAIL
+	}
+	#else
+	if (sp >= sp_bottom + 8)
+	{
+		// set stack pointer to lower address
+
+		bptr = (U1 *) &data;
+
+		sp--;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp = *bptr;
+
+		return (sp);			// success
+	}
+	else
+	{
+		// fatal ERROR: stack pointer can't go below address ZERO!
+		return (NULL);			// FAIL
+	}
+	#endif
 }
 
-U1 *stpopi(U1 *data, U1 *sp, U1 *sp_top)
+U1 *stpopi (U1 *data, U1 *sp, U1 *sp_top)
 {
-#if STACK_CHECK
-    if (sp >= sp_top - 8) {
-        printf("ERROR: nothing on stack!!!\n");
-        return NULL;
-    }
+	#if STACK_CHECK 
+	if (sp >= sp_top - 8)
+	{
+		// nothing on stack!! can't pop!!
+		printf ("ERROR: nothing on stack!!!\n");
+		return (NULL);			// FAIL
+	}
 
-    if (*sp != STACK_QUADWORD) {
-        printf("stpopi: FATAL ERROR! stack element not int64!\n");
-        printf("FOUND: %i\n", *sp);
-        return NULL;
-    }
+	if (*sp != STACK_QUADWORD)
+	{
+		printf ("stpopi: FATAL ERROR! stack element not int64!\n");
+		printf ("FOUND: %i\n", *sp);
+		return (NULL);
+	}
+	sp++;
 
-    sp++;
-    memcpy(data, sp, 8);        // 8 Bytes als Block lesen
+	data[7] = *sp++;
+	data[6] = *sp++;
+	data[5] = *sp++;
+	data[4] = *sp++;
+	data[3] = *sp++;
+	data[2] = *sp++;
+	data[1] = *sp++;
+	data[0] = *sp++;
 
-    return sp + 8;
-#else
-    if (sp >= sp_top - 7) {
-        return NULL;
-    }
+	return (sp);			// success
+	#else
+	if (sp >= sp_top - 7)
+	{
+		// nothing on stack!! can't pop!!
+		return (NULL);			// FAIL
+	}
 
-    memcpy(data, sp, 8);
+	data[7] = *sp++;
+	data[6] = *sp++;
+	data[5] = *sp++;
+	data[4] = *sp++;
+	data[3] = *sp++;
+	data[2] = *sp++;
+	data[1] = *sp++;
+	data[0] = *sp++;
 
-    return sp + 8;
-#endif
+	return (sp);			// success
+	#endif
 }
 
-
-// double
-U1 *stpushd(F8 data, U1 *sp, U1 *sp_bottom)
+U1 *stpushd (F8 data, U1 *sp, U1 *sp_bottom)
 {
-#if STACK_CHECK
-    if (sp < sp_bottom + 9) {
-        return NULL; // fatal ERROR: stack overflow
-    }
+	U1 *bptr;
 
-    sp -= 9;
-    *sp = STACK_DOUBLEFLOAT;        // Tag an die Basis schreiben
-    memcpy(sp + 1, &data, 8);   // 8 Bytes als Block kopieren
+	#if STACK_CHECK 
+	if (sp >= sp_bottom + 9)
+	{
+		// set stack pointer to lower address
 
-    return sp;
-#else
-    if (sp < sp_bottom + 8) {
-        return NULL;
-    }
+		bptr = (U1 *) &data;
 
-    sp -= 8;
-    memcpy(sp, &data, 8);       // Inlined zu 1x SIMD/Register store
+		sp--;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		*sp = STACK_DOUBLEFLOAT;
 
-    return sp;
-#endif
+		return (sp);			// success
+	}
+	else
+	{
+		// fatal ERROR: stack pointer can't go below address ZERO!
+		return (NULL);			// FAIL
+	}
+	#else 
+	if (sp >= sp_bottom + 8)
+	{
+		// set stack pointer to lower address
+
+		bptr = (U1 *) &data;
+
+		sp--;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp-- = *bptr;
+		bptr++;
+		*sp = *bptr;
+
+		return (sp);			// success
+	}
+	else
+	{
+		// fatal ERROR: stack pointer can't go below address ZERO!
+		return (NULL);			// FAIL
+	}
+	#endif
 }
 
-U1 *stpopd(U1 *data, U1 *sp, U1 *sp_top)
+U1 *stpopd (U1 *data, U1 *sp, U1 *sp_top)
 {
-#if STACK_CHECK
-    if (sp >= sp_top - 8) {
-        printf("ERROR: nothing on stack!!!\n");
-        return NULL;
-    }
+	#if STACK_CHECK
+	if (sp >= sp_top - 8)
+	{
+		printf ("ERROR: nothing on stack!!!\n");
+		// nothing on stack!! can't pop!!
+		return (NULL);			// FAIL
+	}
 
-    if (*sp != STACK_DOUBLEFLOAT) {
-        printf("stpopi: FATAL ERROR! stack element not int64!\n");
-        printf("FOUND: %i\n", *sp);
-        return NULL;
-    }
+	if (*sp != STACK_DOUBLEFLOAT)
+	{
+		printf ("stpopd: FATAL ERROR! stack element not double!\n");
+		return (NULL);
+	}
+	sp++;
 
-    sp++;
-    memcpy(data, sp, 8);        // 8 Bytes als Block lesen
+	data[7] = *sp++;
+	data[6] = *sp++;
+	data[5] = *sp++;
+	data[4] = *sp++;
+	data[3] = *sp++;
+	data[2] = *sp++;
+	data[1] = *sp++;
+	data[0] = *sp++;
 
-    return sp + 8;
-#else
-    if (sp >= sp_top - 7) {
-        return NULL;
-    }
+	return (sp);			// success
+	#else
+	if (sp >= sp_top - 7)
+	{
+		// nothing on stack!! can't pop!!
+		return (NULL);			// FAIL
+	}
 
-    memcpy(data, sp, 8);
+	data[7] = *sp++;
+	data[6] = *sp++;
+	data[5] = *sp++;
+	data[4] = *sp++;
+	data[3] = *sp++;
+	data[2] = *sp++;
+	data[1] = *sp++;
+	data[0] = *sp++;
 
-    return sp + 8;
-#endif
+	return (sp);			// success
+	#endif
 }
-
 
 U1 *stack_type (U1 *data, U1 *sp, U1 *sp_top)
 {
