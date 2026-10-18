@@ -1,3 +1,8 @@
+L1VM (3.8.0)
+	Added new Raylib 6.2 library module.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Sun 18 October 2026 12:41 +020
+
 L1VM (3.7.1)
 	Added brackets-llm code assistant, like opencode for Brackets.
 	Added raylib 2D, 3D and audio module. See "prog/raylib".

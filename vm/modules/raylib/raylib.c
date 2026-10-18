@@ -62,9 +62,18 @@
  *   BoundingBox  : D, 6   (min D,3, max D,3)
  *   Ray          : D, 6   (position D,3, direction D,3)
  *   RayCollision : D, 8   (hit, distance, point D,3, normal D,3)
+ *   Camera2D     : D, 6   (offset D,2, target D,2, rotation, zoom)
+ *   NPatchInfo   : D, 9   (source D,4, left, top, right, bottom, layout)
+ *   VrDeviceInfo : D, 15  (hResolution, vResolution, hScreenSize, vScreenSize,
+ *                          eyeToScreenDistance, lensSeparationDistance,
+ *                          interpupillaryDistance, lensDistortionValues D,4,
+ *                          chromaAbCorrection D,4)
+ *   AutomationEvent: D, 6 (frame, type, params D,4)
  *
- * Textures, models, meshes, shaders, materials, fonts and images are
- * referenced by integer handles returned by the loading functions.
+ * Textures, models, meshes, shaders, materials, fonts, images, waves,
+ * audio streams, model animations, vr stereo configs, automation event
+ * lists and file path lists are referenced by integer handles returned
+ * by the loading functions.
  */
 
 #if __OpenBSD__
@@ -106,9 +115,14 @@ S2 init_memory_bounds (struct data_info *data_info_orig, S8 data_info_ind_orig)
 #define RAYLIB_MAX_FONTS		64
 #define RAYLIB_MAX_IMAGES		128
 #define RAYLIB_MAX_RENDERTEX	64
-#define RAYLIB_MAX_ANIMATIONS	64
+#define RAYLIB_MAX_ANIMATIONS	256
 #define RAYLIB_MAX_SOUNDS		64
 #define RAYLIB_MAX_MUSICS		64
+#define RAYLIB_MAX_WAVES		64
+#define RAYLIB_MAX_AUDIOSTREAMS	64
+#define RAYLIB_MAX_VRCONFIGS	16
+#define RAYLIB_MAX_AUTOMATION	16
+#define RAYLIB_MAX_FILEPATHLISTS 16
 
 Model raylib_models[RAYLIB_MAX_MODELS];
 S2 raylib_models_used[RAYLIB_MAX_MODELS];
@@ -137,11 +151,34 @@ S2 raylib_rendertextures_used[RAYLIB_MAX_RENDERTEX];
 ModelAnimation raylib_animations[RAYLIB_MAX_ANIMATIONS];
 S2 raylib_animations_used[RAYLIB_MAX_ANIMATIONS];
 
+// one animation file is one array returned by raylib, the array pointer and
+// its count are stored at the base slot, every animation in the array gets
+// its own handle (base handle + index), the owner field of every slot points
+// back to the base slot
+ModelAnimation *raylib_animations_array[RAYLIB_MAX_ANIMATIONS];
+S8 raylib_animations_owner[RAYLIB_MAX_ANIMATIONS];
+S8 raylib_animations_count[RAYLIB_MAX_ANIMATIONS];
+
 Sound raylib_sounds[RAYLIB_MAX_SOUNDS];
 S2 raylib_sounds_used[RAYLIB_MAX_SOUNDS];
 
 Music raylib_musics[RAYLIB_MAX_MUSICS];
 S2 raylib_musics_used[RAYLIB_MAX_MUSICS];
+
+Wave raylib_waves[RAYLIB_MAX_WAVES];
+S2 raylib_waves_used[RAYLIB_MAX_WAVES];
+
+AudioStream raylib_audiostreams[RAYLIB_MAX_AUDIOSTREAMS];
+S2 raylib_audiostreams_used[RAYLIB_MAX_AUDIOSTREAMS];
+
+VrStereoConfig raylib_vrconfigs[RAYLIB_MAX_VRCONFIGS];
+S2 raylib_vrconfigs_used[RAYLIB_MAX_VRCONFIGS];
+
+AutomationEventList raylib_automationlists[RAYLIB_MAX_AUTOMATION];
+S2 raylib_automationlists_used[RAYLIB_MAX_AUTOMATION];
+
+FilePathList raylib_filepathlists[RAYLIB_MAX_FILEPATHLISTS];
+S2 raylib_filepathlists_used[RAYLIB_MAX_FILEPATHLISTS];
 
 // internal camera state
 Camera3D raylib_camera;
@@ -226,6 +263,21 @@ S2 rlib_read_color (U1 *data, S8 addr, Color *col)
 	return (0);
 }
 
+S2 rlib_write_color (U1 *data, S8 addr, Color col)
+{
+	if (memory_bounds (addr, 3) != 0)
+	{
+		printf ("rlib_write_color: ERROR memory bounds check failed!\n");
+		return (1);
+	}
+
+	data[addr] = col.r;
+	data[addr + 1] = col.g;
+	data[addr + 2] = col.b;
+	data[addr + 3] = col.a;
+	return (0);
+}
+
 S2 rlib_read_vec2 (U1 *data, S8 addr, Vector2 *v)
 {
 	F8 x ALIGN, y ALIGN;
@@ -301,6 +353,23 @@ S2 rlib_read_rect (U1 *data, S8 addr, Rectangle *r)
 	r->y = (float) y;
 	r->width = (float) w;
 	r->height = (float) h;
+	return (0);
+}
+
+S2 rlib_write_rect (U1 *data, S8 addr, Rectangle r)
+{
+	F8 t ALIGN;
+
+	if (memory_bounds (addr, 24) != 0)
+	{
+		printf ("rlib_write_rect: ERROR memory bounds check failed!\n");
+		return (1);
+	}
+
+	t = r.x; memcpy (&data[addr], &t, sizeof (F8));
+	t = r.y; memcpy (&data[addr + 8], &t, sizeof (F8));
+	t = r.width; memcpy (&data[addr + 16], &t, sizeof (F8));
+	t = r.height; memcpy (&data[addr + 24], &t, sizeof (F8));
 	return (0);
 }
 
@@ -482,6 +551,118 @@ S2 rlib_write_camera (U1 *data, S8 addr, Camera3D c)
 	return (0);
 }
 
+// read camera2d struct from a D,6 memory array
+S2 rlib_read_camera2d (U1 *data, S8 addr, Camera2D *c)
+{
+	F8 rotation ALIGN, zoom ALIGN;
+
+	if (memory_bounds (addr, 40) != 0)
+	{
+		printf ("rlib_read_camera2d: ERROR memory bounds check failed!\n");
+		return (1);
+	}
+
+	if (rlib_read_vec2 (data, addr, &c->offset) != 0) return (1);
+	if (rlib_read_vec2 (data, addr + 16, &c->target) != 0) return (1);
+	memcpy (&rotation, &data[addr + 32], sizeof (F8));
+	memcpy (&zoom, &data[addr + 40], sizeof (F8));
+	c->rotation = (float) rotation;
+	c->zoom = (float) zoom;
+	return (0);
+}
+
+// read n-patch info from a D,9 memory array:
+// source rectangle, left, top, right, bottom, layout
+S2 rlib_read_npatchinfo (U1 *data, S8 addr, NPatchInfo *n)
+{
+	F8 l ALIGN, t ALIGN, r ALIGN, b ALIGN, layout ALIGN;
+
+	if (memory_bounds (addr, 64) != 0)
+	{
+		printf ("rlib_read_npatchinfo: ERROR memory bounds check failed!\n");
+		return (1);
+	}
+
+	if (rlib_read_rect (data, addr, &n->source) != 0) return (1);
+	memcpy (&l, &data[addr + 32], sizeof (F8));
+	memcpy (&t, &data[addr + 40], sizeof (F8));
+	memcpy (&r, &data[addr + 48], sizeof (F8));
+	memcpy (&b, &data[addr + 56], sizeof (F8));
+	memcpy (&layout, &data[addr + 64], sizeof (F8));
+	n->left = (int) l;
+	n->top = (int) t;
+	n->right = (int) r;
+	n->bottom = (int) b;
+	n->layout = (int) layout;
+	return (0);
+}
+
+// read vr device info from a D,15 memory array:
+// hResolution, vResolution, hScreenSize, vScreenSize, eyeToScreenDistance,
+// lensSeparationDistance, interpupillaryDistance, lensDistortionValues[4],
+// chromaAbCorrection[4]
+S2 rlib_read_vrdeviceinfo (U1 *data, S8 addr, VrDeviceInfo *d)
+{
+	F8 t ALIGN;
+	S8 i ALIGN;
+
+	if (memory_bounds (addr, 112) != 0)
+	{
+		printf ("rlib_read_vrdeviceinfo: ERROR memory bounds check failed!\n");
+		return (1);
+	}
+
+	memcpy (&t, &data[addr], sizeof (F8));
+	d->hResolution = (int) t;
+	memcpy (&t, &data[addr + 8], sizeof (F8));
+	d->vResolution = (int) t;
+	memcpy (&t, &data[addr + 16], sizeof (F8));
+	d->hScreenSize = (float) t;
+	memcpy (&t, &data[addr + 24], sizeof (F8));
+	d->vScreenSize = (float) t;
+	memcpy (&t, &data[addr + 32], sizeof (F8));
+	d->eyeToScreenDistance = (float) t;
+	memcpy (&t, &data[addr + 40], sizeof (F8));
+	d->lensSeparationDistance = (float) t;
+	memcpy (&t, &data[addr + 48], sizeof (F8));
+	d->interpupillaryDistance = (float) t;
+
+	for (i = 0; i < 4; i++)
+	{
+		memcpy (&t, &data[addr + 56 + (i * 8)], sizeof (F8));
+		d->lensDistortionValues[i] = (float) t;
+		memcpy (&t, &data[addr + 88 + (i * 8)], sizeof (F8));
+		d->chromaAbCorrection[i] = (float) t;
+	}
+	return (0);
+}
+
+// read automation event from a D,6 memory array:
+// frame, type, params[4]
+S2 rlib_read_automationevent (U1 *data, S8 addr, AutomationEvent *e)
+{
+	F8 t ALIGN;
+	S8 i ALIGN;
+
+	if (memory_bounds (addr, 40) != 0)
+	{
+		printf ("rlib_read_automationevent: ERROR memory bounds check failed!\n");
+		return (1);
+	}
+
+	memcpy (&t, &data[addr], sizeof (F8));
+	e->frame = (unsigned int) t;
+	memcpy (&t, &data[addr + 8], sizeof (F8));
+	e->type = (unsigned int) t;
+
+	for (i = 0; i < 4; i++)
+	{
+		memcpy (&t, &data[addr + 16 + (i * 8)], sizeof (F8));
+		e->params[i] = (int) t;
+	}
+	return (0);
+}
+
 // load a filename from VM data memory for raylib file functions,
 // using the L1vm sandbox file access
 S2 rlib_load_filename (U1 *data, S8 addr, U1 *out, S2 outlen)
@@ -517,6 +698,36 @@ S2 rlib_find_slot (S2 *used, S8 max)
 		}
 	}
 	printf ("raylib: ERROR object table full! (max: %lli)\n", max);
+	return (-1);
+}
+
+// find num free slots in a used-flag table, returns index of the first
+// slot of the range or -1
+S2 rlib_find_slots (S2 *used, S8 max, S8 num)
+{
+	S8 i ALIGN;
+	S8 j ALIGN;
+
+	if (num < 1)
+	{
+		return (-1);
+	}
+
+	for (i = 0; i <= max - num; i++)
+	{
+		for (j = 0; j < num; j++)
+		{
+			if (used[i + j] != 0)
+			{
+				break;
+			}
+		}
+		if (j == num)
+		{
+			return ((S2) i);
+		}
+	}
+	printf ("raylib: ERROR object table full! (need: %lli, max: %lli)\n", num, max);
 	return (-1);
 }
 
@@ -7187,6 +7398,9630 @@ U1 *raylib_get_music_time_played (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	pthread_mutex_unlock (&rlib_mutex);
 
 	sp = stpushd (ret, sp, sp_bottom);
+	return (sp);
+}
+
+// ---------------------------------------------------------------------------
+// raylib 6.2 API functions added on top of the base module
+// ---------------------------------------------------------------------------
+
+// All raylib 6.2 API functions that can be mapped onto the L1vm stack
+// machine and its data memory are wrapped below. The following functions
+// are not wrapped:
+//
+// callback setters: AttachAudioMixedProcessor, AttachAudioStreamProcessor,
+//   DetachAudioMixedProcessor, DetachAudioStreamProcessor,
+//   SetAudioStreamCallback, SetTraceLogCallback, SetLoadFileDataCallback,
+//   SetLoadFileTextCallback, SetSaveFileDataCallback, SetSaveFileTextCallback
+// variadic functions: TraceLog, TextFormat
+// raw pointers: MemAlloc, MemFree, MemRealloc, GetWindowHandle, LoadFileData,
+//   SetPixelColor, GetPixelColor, SetShaderValueV, UpdateTexture,
+//   UpdateTextureRec, UpdateAudioStream, UpdateSound, LoadCodepoints,
+//   UnloadCodepoints, LoadImageColors, LoadImagePalette, LoadTextLines,
+//   UnloadTextLines, LoadWaveSamples, LoadRandomSequence,
+//   UnloadRandomSequence, LoadMaterials, LoadFontData, UnloadFontData,
+//   GenImageFontAtlas, ComputeMD5, ComputeSHA1, ComputeSHA256, UnloadUTF8
+// text pointer arrays: TextSplit, TextJoin, TextAppend, TextCopy
+// out parameters without a VM mapping: LoadImageAnim,
+//   LoadImageAnimFromMemory, GetGlyphInfo
+// other: SetWindowIcons (array of image handles), GetShapesTexture
+//   (returns the internal shapes texture without a matching unload)
+//
+// Model animation arrays are handled by hand written wrappers, because an
+// animation file is returned as one pointer to an array of animations.
+
+
+U1 *raylib_begin_shader_mode (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: shader_handle
+	S8 shader_handle ALIGN;
+
+	sp = stpopi ((U1 *) &shader_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (shader_handle < 0 || shader_handle >= RAYLIB_MAX_SHADERS || raylib_shaders_used[shader_handle] == 0)
+	{
+		printf ("raylib_begin_shader_mode: ERROR invalid shader handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	BeginShaderMode (raylib_shaders[shader_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_begin_texture_mode (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: target_handle
+	S8 target_handle ALIGN;
+
+	sp = stpopi ((U1 *) &target_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (target_handle < 0 || target_handle >= RAYLIB_MAX_RENDERTEX || raylib_rendertextures_used[target_handle] == 0)
+	{
+		printf ("raylib_begin_texture_mode: ERROR invalid render texture handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	BeginTextureMode (raylib_rendertextures[target_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_begin_vr_stereo_mode (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: config_handle
+	S8 config_handle ALIGN;
+
+	sp = stpopi ((U1 *) &config_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (config_handle < 0 || config_handle >= RAYLIB_MAX_VRCONFIGS || raylib_vrconfigs_used[config_handle] == 0)
+	{
+		printf ("raylib_begin_vr_stereo_mode: ERROR invalid vr stereo config handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	BeginVrStereoMode (raylib_vrconfigs[config_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_change_directory (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dir_path_addr
+	// return: integer result
+	S8 dir_path_addr ALIGN;
+	U1 dir_path_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &dir_path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, dir_path_addr, dir_path_buf, sizeof (dir_path_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ChangeDirectory ((const char *) dir_path_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_check_collision_circle_line (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: center_addr, radius, p1_addr, p2_addr
+	// return: 1 true, 0 false
+	Vector2 center;
+	S8 center_addr ALIGN;
+	F8 radius ALIGN;
+	Vector2 p1;
+	S8 p1_addr ALIGN;
+	Vector2 p2;
+	S8 p2_addr ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &p2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &radius, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, center_addr, &center) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p1_addr, &p1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p2_addr, &p2) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = CheckCollisionCircleLine (center, (float) radius, p1, p2) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_check_collision_circle_rec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: center_addr, radius, rec_addr
+	// return: 1 true, 0 false
+	Vector2 center;
+	S8 center_addr ALIGN;
+	F8 radius ALIGN;
+	Rectangle rec;
+	S8 rec_addr ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &rec_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &radius, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, center_addr, &center) != 0) return (NULL);
+	if (rlib_read_rect (data, rec_addr, &rec) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = CheckCollisionCircleRec (center, (float) radius, rec) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_check_collision_circles (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: center1_addr, radius1, center2_addr, radius2
+	// return: 1 true, 0 false
+	Vector2 center1;
+	S8 center1_addr ALIGN;
+	F8 radius1 ALIGN;
+	Vector2 center2;
+	S8 center2_addr ALIGN;
+	F8 radius2 ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopd ((U1 *) &radius2, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &radius1, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, center1_addr, &center1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, center2_addr, &center2) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = CheckCollisionCircles (center1, (float) radius1, center2, (float) radius2) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_check_collision_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: start_pos1_addr, end_pos1_addr, start_pos2_addr, end_pos2_addr, out_addr
+	// return: 1 true, 0 false
+	Vector2 start_pos1;
+	S8 start_pos1_addr ALIGN;
+	Vector2 end_pos1;
+	S8 end_pos1_addr ALIGN;
+	Vector2 start_pos2;
+	S8 start_pos2_addr ALIGN;
+	Vector2 end_pos2;
+	S8 end_pos2_addr ALIGN;
+	Vector2 collision_point;
+	S8 out_addr ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &end_pos2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &start_pos2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &end_pos1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &start_pos1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, start_pos1_addr, &start_pos1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, end_pos1_addr, &end_pos1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, start_pos2_addr, &start_pos2) != 0) return (NULL);
+	if (rlib_read_vec2 (data, end_pos2_addr, &end_pos2) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = CheckCollisionLines (start_pos1, end_pos1, start_pos2, end_pos2, &collision_point) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_vec2 (data, out_addr, collision_point) != 0) return (NULL);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_check_collision_point_circle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: point_addr, center_addr, radius
+	// return: 1 true, 0 false
+	Vector2 point;
+	S8 point_addr ALIGN;
+	Vector2 center;
+	S8 center_addr ALIGN;
+	F8 radius ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopd ((U1 *) &radius, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &point_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, point_addr, &point) != 0) return (NULL);
+	if (rlib_read_vec2 (data, center_addr, &center) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = CheckCollisionPointCircle (point, center, (float) radius) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_check_collision_point_line (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: point_addr, p1_addr, p2_addr, threshold
+	// return: 1 true, 0 false
+	Vector2 point;
+	S8 point_addr ALIGN;
+	Vector2 p1;
+	S8 p1_addr ALIGN;
+	Vector2 p2;
+	S8 p2_addr ALIGN;
+	S8 threshold ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &threshold, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &point_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, point_addr, &point) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p1_addr, &p1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p2_addr, &p2) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = CheckCollisionPointLine (point, p1, p2, (int) threshold) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_check_collision_point_poly (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: point_addr, points_addr, point_count
+	// return: 1 true, 0 false
+	Vector2 point;
+	S8 point_addr ALIGN;
+	S8 points_addr ALIGN;
+	Vector2 *points_ptr = NULL;
+	S8 point_count ALIGN;
+	S8 ret ALIGN;
+	S8 i ALIGN;
+
+	sp = stpopi ((U1 *) &point_count, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &points_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &point_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, point_addr, &point) != 0) return (NULL);
+	if (point_count > 0)
+	{
+		if (memory_bounds (points_addr, (point_count - 1) * 16) != 0)
+		{
+			printf ("raylib_check_collision_point_poly: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+		points_ptr = calloc (point_count, sizeof (Vector2));
+		if (points_ptr == NULL)
+		{
+			printf ("raylib_check_collision_point_poly: ERROR out of memory!\n");
+			return (NULL);
+		}
+		for (i = 0; i < point_count; i++)
+		{
+			if (rlib_read_vec2 (data, points_addr + (i * 16), &points_ptr[i]) != 0)
+			{
+				free (points_ptr);
+				return (NULL);
+			}
+		}
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = CheckCollisionPointPoly (point, (const Vector2 *) points_ptr, (int) point_count) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	free (points_ptr);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_check_collision_point_rec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: point_addr, rec_addr
+	// return: 1 true, 0 false
+	Vector2 point;
+	S8 point_addr ALIGN;
+	Rectangle rec;
+	S8 rec_addr ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &rec_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &point_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, point_addr, &point) != 0) return (NULL);
+	if (rlib_read_rect (data, rec_addr, &rec) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = CheckCollisionPointRec (point, rec) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_check_collision_point_triangle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: point_addr, p1_addr, p2_addr, p3_addr
+	// return: 1 true, 0 false
+	Vector2 point;
+	S8 point_addr ALIGN;
+	Vector2 p1;
+	S8 p1_addr ALIGN;
+	Vector2 p2;
+	S8 p2_addr ALIGN;
+	Vector2 p3;
+	S8 p3_addr ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &p3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &point_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, point_addr, &point) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p1_addr, &p1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p2_addr, &p2) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p3_addr, &p3) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = CheckCollisionPointTriangle (point, p1, p2, p3) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_check_collision_recs (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: rec1_addr, rec2_addr
+	// return: 1 true, 0 false
+	Rectangle rec1;
+	S8 rec1_addr ALIGN;
+	Rectangle rec2;
+	S8 rec2_addr ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &rec2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &rec1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_rect (data, rec1_addr, &rec1) != 0) return (NULL);
+	if (rlib_read_rect (data, rec2_addr, &rec2) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = CheckCollisionRecs (rec1, rec2) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_codepoint_to_utf8 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: codepoint, out_addr
+	// return: string written to out_addr
+	S8 codepoint ALIGN;
+	int utf_8size_out = 0;
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &codepoint, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = CodepointToUTF8 ((int) codepoint, &utf_8size_out);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_codepoint_to_utf8: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_color_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: color_addr, alpha, out_addr
+	// return: struct written to out_addr
+	Color color;
+	S8 color_addr ALIGN;
+	F8 alpha ALIGN;
+	S8 out_addr ALIGN;
+	Color ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &alpha, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ColorAlpha (color, (float) alpha);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_color (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_color_alpha_blend (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_addr, src_addr, tint_addr, out_addr
+	// return: struct written to out_addr
+	Color dst;
+	S8 dst_addr ALIGN;
+	Color src;
+	S8 src_addr ALIGN;
+	Color tint;
+	S8 tint_addr ALIGN;
+	S8 out_addr ALIGN;
+	Color ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &src_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_color (data, dst_addr, &dst) != 0) return (NULL);
+	if (rlib_read_color (data, src_addr, &src) != 0) return (NULL);
+	if (rlib_read_color (data, tint_addr, &tint) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ColorAlphaBlend (dst, src, tint);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_color (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_color_brightness (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: color_addr, factor, out_addr
+	// return: struct written to out_addr
+	Color color;
+	S8 color_addr ALIGN;
+	F8 factor ALIGN;
+	S8 out_addr ALIGN;
+	Color ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &factor, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ColorBrightness (color, (float) factor);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_color (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_color_contrast (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: color_addr, contrast, out_addr
+	// return: struct written to out_addr
+	Color color;
+	S8 color_addr ALIGN;
+	F8 contrast ALIGN;
+	S8 out_addr ALIGN;
+	Color ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &contrast, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ColorContrast (color, (float) contrast);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_color (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_color_from_hsv (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: hue, saturation, value, out_addr
+	// return: struct written to out_addr
+	F8 hue ALIGN;
+	F8 saturation ALIGN;
+	F8 value ALIGN;
+	S8 out_addr ALIGN;
+	Color ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &value, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &saturation, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &hue, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ColorFromHSV ((float) hue, (float) saturation, (float) value);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_color (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_color_from_normalized (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: normalized_addr, out_addr
+	// return: struct written to out_addr
+	Vector4 normalized;
+	S8 normalized_addr ALIGN;
+	S8 out_addr ALIGN;
+	Color ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &normalized_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec4 (data, normalized_addr, &normalized) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ColorFromNormalized (normalized);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_color (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_color_is_equal (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: col1_addr, col2_addr
+	// return: 1 true, 0 false
+	Color col1;
+	S8 col1_addr ALIGN;
+	Color col2;
+	S8 col2_addr ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &col2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &col1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_color (data, col1_addr, &col1) != 0) return (NULL);
+	if (rlib_read_color (data, col2_addr, &col2) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ColorIsEqual (col1, col2) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_color_lerp (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: color1_addr, color2_addr, factor, out_addr
+	// return: struct written to out_addr
+	Color color1;
+	S8 color1_addr ALIGN;
+	Color color2;
+	S8 color2_addr ALIGN;
+	F8 factor ALIGN;
+	S8 out_addr ALIGN;
+	Color ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &factor, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &color2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &color1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_color (data, color1_addr, &color1) != 0) return (NULL);
+	if (rlib_read_color (data, color2_addr, &color2) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ColorLerp (color1, color2, (float) factor);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_color (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_color_normalize (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: color_addr, out_addr
+	// return: struct written to out_addr
+	Color color;
+	S8 color_addr ALIGN;
+	S8 out_addr ALIGN;
+	Vector4 ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ColorNormalize (color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_vec4 (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_color_tint (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: color_addr, tint_addr, out_addr
+	// return: struct written to out_addr
+	Color color;
+	S8 color_addr ALIGN;
+	Color tint;
+	S8 tint_addr ALIGN;
+	S8 out_addr ALIGN;
+	Color ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+	if (rlib_read_color (data, tint_addr, &tint) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ColorTint (color, tint);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_color (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_color_to_hsv (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: color_addr, out_addr
+	// return: struct written to out_addr
+	Color color;
+	S8 color_addr ALIGN;
+	S8 out_addr ALIGN;
+	Vector3 ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ColorToHSV (color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_vec3 (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_color_to_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: color_addr
+	// return: integer result
+	Color color;
+	S8 color_addr ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ColorToInt (color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_compute_crc32 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: data_addr, data_size
+	// return: integer result
+	S8 data_addr ALIGN;
+	S8 data_size ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &data_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &data_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (data_size > 0)
+	{
+		if (memory_bounds (data_addr, data_size - 1) != 0)
+		{
+			printf ("raylib_compute_crc32: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ComputeCRC32 ((const unsigned char *) &data[data_addr], (int) data_size);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_directory_exists (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dir_path_addr
+	// return: 1 true, 0 false
+	S8 dir_path_addr ALIGN;
+	U1 dir_path_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &dir_path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, dir_path_addr, dir_path_buf, sizeof (dir_path_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = DirectoryExists ((const char *) dir_path_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_disable_cursor (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+
+	pthread_mutex_lock (&rlib_mutex);
+	DisableCursor ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_circle_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: center_addr, radius, thick, color_addr
+	Vector2 center;
+	S8 center_addr ALIGN;
+	F8 radius ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &radius, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, center_addr, &center) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawCircleLinesEx (center, (float) radius, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_circle_sector_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: center_addr, radius, start_angle, end_angle, segments, color_addr
+	Vector2 center;
+	S8 center_addr ALIGN;
+	F8 radius ALIGN;
+	F8 start_angle ALIGN;
+	F8 end_angle ALIGN;
+	S8 segments ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &segments, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &end_angle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &start_angle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &radius, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, center_addr, &center) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawCircleSectorLines (center, (float) radius, (float) start_angle, (float) end_angle, (int) segments, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_circle_sector_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: center_addr, radius, start_angle, end_angle, segments, thick, color_addr
+	Vector2 center;
+	S8 center_addr ALIGN;
+	F8 radius ALIGN;
+	F8 start_angle ALIGN;
+	F8 end_angle ALIGN;
+	S8 segments ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &segments, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &end_angle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &start_angle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &radius, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, center_addr, &center) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawCircleSectorLinesEx (center, (float) radius, (float) start_angle, (float) end_angle, (int) segments, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_ellipse_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: center_addr, radius_h, radius_v, thick, color_addr
+	Vector2 center;
+	S8 center_addr ALIGN;
+	F8 radius_h ALIGN;
+	F8 radius_v ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &radius_v, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &radius_h, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, center_addr, &center) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawEllipseLinesEx (center, (float) radius_h, (float) radius_v, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_ellipse_lines_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: center_addr, radius_h, radius_v, color_addr
+	Vector2 center;
+	S8 center_addr ALIGN;
+	F8 radius_h ALIGN;
+	F8 radius_v ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &radius_v, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &radius_h, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, center_addr, &center) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawEllipseLinesV (center, (float) radius_h, (float) radius_v, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_ellipse_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: center_addr, radius_h, radius_v, color_addr
+	Vector2 center;
+	S8 center_addr ALIGN;
+	F8 radius_h ALIGN;
+	F8 radius_v ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &radius_v, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &radius_h, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, center_addr, &center) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawEllipseV (center, (float) radius_h, (float) radius_v, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_line_bezier (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: start_pos_addr, end_pos_addr, thick, color_addr
+	Vector2 start_pos;
+	S8 start_pos_addr ALIGN;
+	Vector2 end_pos;
+	S8 end_pos_addr ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &end_pos_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &start_pos_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, start_pos_addr, &start_pos) != 0) return (NULL);
+	if (rlib_read_vec2 (data, end_pos_addr, &end_pos) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawLineBezier (start_pos, end_pos, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_line_dashed (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: start_pos_addr, end_pos_addr, dash_size, space_size, color_addr
+	Vector2 start_pos;
+	S8 start_pos_addr ALIGN;
+	Vector2 end_pos;
+	S8 end_pos_addr ALIGN;
+	S8 dash_size ALIGN;
+	S8 space_size ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &space_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dash_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &end_pos_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &start_pos_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, start_pos_addr, &start_pos) != 0) return (NULL);
+	if (rlib_read_vec2 (data, end_pos_addr, &end_pos) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawLineDashed (start_pos, end_pos, (int) dash_size, (int) space_size, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_poly_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: center_addr, sides, radius, rotation, thick, color_addr
+	Vector2 center;
+	S8 center_addr ALIGN;
+	S8 sides ALIGN;
+	F8 radius ALIGN;
+	F8 rotation ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &rotation, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &radius, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &sides, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, center_addr, &center) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawPolyLinesEx (center, (int) sides, (float) radius, (float) rotation, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_rectangle_gradient_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: rec_addr, col1_addr, col2_addr, col3_addr, col4_addr
+	Rectangle rec;
+	S8 rec_addr ALIGN;
+	Color col1;
+	S8 col1_addr ALIGN;
+	Color col2;
+	S8 col2_addr ALIGN;
+	Color col3;
+	S8 col3_addr ALIGN;
+	Color col4;
+	S8 col4_addr ALIGN;
+
+	sp = stpopi ((U1 *) &col4_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &col3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &col2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &col1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &rec_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_rect (data, rec_addr, &rec) != 0) return (NULL);
+	if (rlib_read_color (data, col1_addr, &col1) != 0) return (NULL);
+	if (rlib_read_color (data, col2_addr, &col2) != 0) return (NULL);
+	if (rlib_read_color (data, col3_addr, &col3) != 0) return (NULL);
+	if (rlib_read_color (data, col4_addr, &col4) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawRectangleGradientEx (rec, col1, col2, col3, col4);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_rectangle_gradient_h (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: pos_x, pos_y, width, height, left_addr, right_addr
+	S8 pos_x ALIGN;
+	S8 pos_y ALIGN;
+	S8 width ALIGN;
+	S8 height ALIGN;
+	Color left;
+	S8 left_addr ALIGN;
+	Color right;
+	S8 right_addr ALIGN;
+
+	sp = stpopi ((U1 *) &right_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &left_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &pos_y, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &pos_x, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_color (data, left_addr, &left) != 0) return (NULL);
+	if (rlib_read_color (data, right_addr, &right) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawRectangleGradientH ((int) pos_x, (int) pos_y, (int) width, (int) height, left, right);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_rectangle_gradient_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: pos_x, pos_y, width, height, top_addr, bottom_addr
+	S8 pos_x ALIGN;
+	S8 pos_y ALIGN;
+	S8 width ALIGN;
+	S8 height ALIGN;
+	Color top;
+	S8 top_addr ALIGN;
+	Color bottom;
+	S8 bottom_addr ALIGN;
+
+	sp = stpopi ((U1 *) &bottom_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &top_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &pos_y, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &pos_x, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_color (data, top_addr, &top) != 0) return (NULL);
+	if (rlib_read_color (data, bottom_addr, &bottom) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawRectangleGradientV ((int) pos_x, (int) pos_y, (int) width, (int) height, top, bottom);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_rectangle_rounded_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: rec_addr, roundness, segments, color_addr
+	Rectangle rec;
+	S8 rec_addr ALIGN;
+	F8 roundness ALIGN;
+	S8 segments ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &segments, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &roundness, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &rec_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_rect (data, rec_addr, &rec) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawRectangleRoundedLines (rec, (float) roundness, (int) segments, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_rectangle_rounded_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: rec_addr, roundness, segments, thick, color_addr
+	Rectangle rec;
+	S8 rec_addr ALIGN;
+	F8 roundness ALIGN;
+	S8 segments ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &segments, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &roundness, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &rec_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_rect (data, rec_addr, &rec) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawRectangleRoundedLinesEx (rec, (float) roundness, (int) segments, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_ring_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: center_addr, inner_radius, outer_radius, start_angle, end_angle, segments, thick, color_addr
+	Vector2 center;
+	S8 center_addr ALIGN;
+	F8 inner_radius ALIGN;
+	F8 outer_radius ALIGN;
+	F8 start_angle ALIGN;
+	F8 end_angle ALIGN;
+	S8 segments ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &segments, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &end_angle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &start_angle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &outer_radius, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &inner_radius, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, center_addr, &center) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawRingLinesEx (center, (float) inner_radius, (float) outer_radius, (float) start_angle, (float) end_angle, (int) segments, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_spline_basis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: points_addr, point_count, thick, color_addr
+	S8 points_addr ALIGN;
+	Vector2 *points_ptr = NULL;
+	S8 point_count ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+	S8 i ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &point_count, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &points_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (point_count > 0)
+	{
+		if (memory_bounds (points_addr, (point_count - 1) * 16) != 0)
+		{
+			printf ("raylib_draw_spline_basis: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+		points_ptr = calloc (point_count, sizeof (Vector2));
+		if (points_ptr == NULL)
+		{
+			printf ("raylib_draw_spline_basis: ERROR out of memory!\n");
+			return (NULL);
+		}
+		for (i = 0; i < point_count; i++)
+		{
+			if (rlib_read_vec2 (data, points_addr + (i * 16), &points_ptr[i]) != 0)
+			{
+				free (points_ptr);
+				return (NULL);
+			}
+		}
+	}
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawSplineBasis ((const Vector2 *) points_ptr, (int) point_count, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	free (points_ptr);
+
+	return (sp);
+}
+
+U1 *raylib_draw_spline_bezier_cubic (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: points_addr, point_count, thick, color_addr
+	S8 points_addr ALIGN;
+	Vector2 *points_ptr = NULL;
+	S8 point_count ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+	S8 i ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &point_count, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &points_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (point_count > 0)
+	{
+		if (memory_bounds (points_addr, (point_count - 1) * 16) != 0)
+		{
+			printf ("raylib_draw_spline_bezier_cubic: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+		points_ptr = calloc (point_count, sizeof (Vector2));
+		if (points_ptr == NULL)
+		{
+			printf ("raylib_draw_spline_bezier_cubic: ERROR out of memory!\n");
+			return (NULL);
+		}
+		for (i = 0; i < point_count; i++)
+		{
+			if (rlib_read_vec2 (data, points_addr + (i * 16), &points_ptr[i]) != 0)
+			{
+				free (points_ptr);
+				return (NULL);
+			}
+		}
+	}
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawSplineBezierCubic ((const Vector2 *) points_ptr, (int) point_count, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	free (points_ptr);
+
+	return (sp);
+}
+
+U1 *raylib_draw_spline_bezier_quadratic (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: points_addr, point_count, thick, color_addr
+	S8 points_addr ALIGN;
+	Vector2 *points_ptr = NULL;
+	S8 point_count ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+	S8 i ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &point_count, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &points_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (point_count > 0)
+	{
+		if (memory_bounds (points_addr, (point_count - 1) * 16) != 0)
+		{
+			printf ("raylib_draw_spline_bezier_quadratic: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+		points_ptr = calloc (point_count, sizeof (Vector2));
+		if (points_ptr == NULL)
+		{
+			printf ("raylib_draw_spline_bezier_quadratic: ERROR out of memory!\n");
+			return (NULL);
+		}
+		for (i = 0; i < point_count; i++)
+		{
+			if (rlib_read_vec2 (data, points_addr + (i * 16), &points_ptr[i]) != 0)
+			{
+				free (points_ptr);
+				return (NULL);
+			}
+		}
+	}
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawSplineBezierQuadratic ((const Vector2 *) points_ptr, (int) point_count, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	free (points_ptr);
+
+	return (sp);
+}
+
+U1 *raylib_draw_spline_catmull_rom (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: points_addr, point_count, thick, color_addr
+	S8 points_addr ALIGN;
+	Vector2 *points_ptr = NULL;
+	S8 point_count ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+	S8 i ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &point_count, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &points_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (point_count > 0)
+	{
+		if (memory_bounds (points_addr, (point_count - 1) * 16) != 0)
+		{
+			printf ("raylib_draw_spline_catmull_rom: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+		points_ptr = calloc (point_count, sizeof (Vector2));
+		if (points_ptr == NULL)
+		{
+			printf ("raylib_draw_spline_catmull_rom: ERROR out of memory!\n");
+			return (NULL);
+		}
+		for (i = 0; i < point_count; i++)
+		{
+			if (rlib_read_vec2 (data, points_addr + (i * 16), &points_ptr[i]) != 0)
+			{
+				free (points_ptr);
+				return (NULL);
+			}
+		}
+	}
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawSplineCatmullRom ((const Vector2 *) points_ptr, (int) point_count, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	free (points_ptr);
+
+	return (sp);
+}
+
+U1 *raylib_draw_spline_linear (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: points_addr, point_count, thick, color_addr
+	S8 points_addr ALIGN;
+	Vector2 *points_ptr = NULL;
+	S8 point_count ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+	S8 i ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &point_count, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &points_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (point_count > 0)
+	{
+		if (memory_bounds (points_addr, (point_count - 1) * 16) != 0)
+		{
+			printf ("raylib_draw_spline_linear: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+		points_ptr = calloc (point_count, sizeof (Vector2));
+		if (points_ptr == NULL)
+		{
+			printf ("raylib_draw_spline_linear: ERROR out of memory!\n");
+			return (NULL);
+		}
+		for (i = 0; i < point_count; i++)
+		{
+			if (rlib_read_vec2 (data, points_addr + (i * 16), &points_ptr[i]) != 0)
+			{
+				free (points_ptr);
+				return (NULL);
+			}
+		}
+	}
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawSplineLinear ((const Vector2 *) points_ptr, (int) point_count, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	free (points_ptr);
+
+	return (sp);
+}
+
+U1 *raylib_draw_spline_segment_basis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: p1_addr, p2_addr, p3_addr, p4_addr, thick, color_addr
+	Vector2 p1;
+	S8 p1_addr ALIGN;
+	Vector2 p2;
+	S8 p2_addr ALIGN;
+	Vector2 p3;
+	S8 p3_addr ALIGN;
+	Vector2 p4;
+	S8 p4_addr ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p4_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, p1_addr, &p1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p2_addr, &p2) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p3_addr, &p3) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p4_addr, &p4) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawSplineSegmentBasis (p1, p2, p3, p4, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_spline_segment_bezier_cubic (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: p1_addr, c2_addr, c3_addr, p4_addr, thick, color_addr
+	Vector2 p1;
+	S8 p1_addr ALIGN;
+	Vector2 c2;
+	S8 c2_addr ALIGN;
+	Vector2 c3;
+	S8 c3_addr ALIGN;
+	Vector2 p4;
+	S8 p4_addr ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p4_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &c3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &c2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, p1_addr, &p1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, c2_addr, &c2) != 0) return (NULL);
+	if (rlib_read_vec2 (data, c3_addr, &c3) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p4_addr, &p4) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawSplineSegmentBezierCubic (p1, c2, c3, p4, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_spline_segment_bezier_quadratic (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: p1_addr, c2_addr, p3_addr, thick, color_addr
+	Vector2 p1;
+	S8 p1_addr ALIGN;
+	Vector2 c2;
+	S8 c2_addr ALIGN;
+	Vector2 p3;
+	S8 p3_addr ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &c2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, p1_addr, &p1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, c2_addr, &c2) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p3_addr, &p3) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawSplineSegmentBezierQuadratic (p1, c2, p3, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_spline_segment_catmull_rom (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: p1_addr, p2_addr, p3_addr, p4_addr, thick, color_addr
+	Vector2 p1;
+	S8 p1_addr ALIGN;
+	Vector2 p2;
+	S8 p2_addr ALIGN;
+	Vector2 p3;
+	S8 p3_addr ALIGN;
+	Vector2 p4;
+	S8 p4_addr ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p4_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, p1_addr, &p1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p2_addr, &p2) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p3_addr, &p3) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p4_addr, &p4) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawSplineSegmentCatmullRom (p1, p2, p3, p4, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_spline_segment_linear (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: p1_addr, p2_addr, thick, color_addr
+	Vector2 p1;
+	S8 p1_addr ALIGN;
+	Vector2 p2;
+	S8 p2_addr ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, p1_addr, &p1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p2_addr, &p2) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawSplineSegmentLinear (p1, p2, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_text_codepoint (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: font_handle, codepoint, position_addr, font_size, tint_addr
+	S8 font_handle ALIGN;
+	S8 codepoint ALIGN;
+	Vector2 position;
+	S8 position_addr ALIGN;
+	F8 font_size ALIGN;
+	Color tint;
+	S8 tint_addr ALIGN;
+
+	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &font_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &position_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &codepoint, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &font_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (font_handle < 0 || font_handle >= RAYLIB_MAX_FONTS || raylib_fonts_used[font_handle] == 0)
+	{
+		printf ("raylib_draw_text_codepoint: ERROR invalid font handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_vec2 (data, position_addr, &position) != 0) return (NULL);
+	if (rlib_read_color (data, tint_addr, &tint) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawTextCodepoint (raylib_fonts[font_handle], (int) codepoint, position, (float) font_size, tint);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_text_codepoints (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: font_handle, codepoints_addr, codepoint_count, position_addr, font_size, spacing, tint_addr
+	S8 font_handle ALIGN;
+	S8 codepoints_addr ALIGN;
+	int *codepoints_ptr = NULL;
+	S8 codepoint_count ALIGN;
+	Vector2 position;
+	S8 position_addr ALIGN;
+	F8 font_size ALIGN;
+	F8 spacing ALIGN;
+	Color tint;
+	S8 tint_addr ALIGN;
+	S8 i ALIGN;
+	F8 t ALIGN;
+
+	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &spacing, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &font_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &position_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &codepoint_count, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &codepoints_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &font_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (font_handle < 0 || font_handle >= RAYLIB_MAX_FONTS || raylib_fonts_used[font_handle] == 0)
+	{
+		printf ("raylib_draw_text_codepoints: ERROR invalid font handle!\n");
+		return (NULL);
+	}
+
+	if (codepoint_count > 0)
+	{
+		if (memory_bounds (codepoints_addr, (codepoint_count - 1) * 8) != 0)
+		{
+			printf ("raylib_draw_text_codepoints: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+		codepoints_ptr = calloc (codepoint_count, sizeof (int));
+		if (codepoints_ptr == NULL)
+		{
+			printf ("raylib_draw_text_codepoints: ERROR out of memory!\n");
+			return (NULL);
+		}
+		for (i = 0; i < codepoint_count; i++)
+		{
+			memcpy (&t, &data[codepoints_addr + (i * 8)], sizeof (F8));
+			codepoints_ptr[i] = (int) t;
+		}
+	}
+	if (rlib_read_vec2 (data, position_addr, &position) != 0) return (NULL);
+	if (rlib_read_color (data, tint_addr, &tint) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawTextCodepoints (raylib_fonts[font_handle], (const int *) codepoints_ptr, (int) codepoint_count, position, (float) font_size, (float) spacing, tint);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	free (codepoints_ptr);
+
+	return (sp);
+}
+
+U1 *raylib_draw_texture_n_patch (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: texture_handle, n_patch_info_addr, dstrec_addr, origin_addr, rotation, tint_addr
+	S8 texture_handle ALIGN;
+	NPatchInfo n_patch_info;
+	S8 n_patch_info_addr ALIGN;
+	Rectangle dstrec;
+	S8 dstrec_addr ALIGN;
+	Vector2 origin;
+	S8 origin_addr ALIGN;
+	F8 rotation ALIGN;
+	Color tint;
+	S8 tint_addr ALIGN;
+
+	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &rotation, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &origin_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dstrec_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &n_patch_info_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &texture_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (texture_handle < 0 || texture_handle >= RAYLIB_MAX_TEXTURES || raylib_textures_used[texture_handle] == 0)
+	{
+		printf ("raylib_draw_texture_n_patch: ERROR invalid texture handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_npatchinfo (data, n_patch_info_addr, &n_patch_info) != 0) return (NULL);
+	if (rlib_read_rect (data, dstrec_addr, &dstrec) != 0) return (NULL);
+	if (rlib_read_vec2 (data, origin_addr, &origin) != 0) return (NULL);
+	if (rlib_read_color (data, tint_addr, &tint) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawTextureNPatch (raylib_textures[texture_handle], n_patch_info, dstrec, origin, (float) rotation, tint);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_triangle_fan (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: points_addr, point_count, color_addr
+	S8 points_addr ALIGN;
+	Vector2 *points_ptr = NULL;
+	S8 point_count ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+	S8 i ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &point_count, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &points_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (point_count > 0)
+	{
+		if (memory_bounds (points_addr, (point_count - 1) * 16) != 0)
+		{
+			printf ("raylib_draw_triangle_fan: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+		points_ptr = calloc (point_count, sizeof (Vector2));
+		if (points_ptr == NULL)
+		{
+			printf ("raylib_draw_triangle_fan: ERROR out of memory!\n");
+			return (NULL);
+		}
+		for (i = 0; i < point_count; i++)
+		{
+			if (rlib_read_vec2 (data, points_addr + (i * 16), &points_ptr[i]) != 0)
+			{
+				free (points_ptr);
+				return (NULL);
+			}
+		}
+	}
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawTriangleFan ((const Vector2 *) points_ptr, (int) point_count, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	free (points_ptr);
+
+	return (sp);
+}
+
+U1 *raylib_draw_triangle_gradient (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: v1_addr, v2_addr, v3_addr, c1_addr, c2_addr, c3_addr
+	Vector2 v1;
+	S8 v1_addr ALIGN;
+	Vector2 v2;
+	S8 v2_addr ALIGN;
+	Vector2 v3;
+	S8 v3_addr ALIGN;
+	Color c1;
+	S8 c1_addr ALIGN;
+	Color c2;
+	S8 c2_addr ALIGN;
+	Color c3;
+	S8 c3_addr ALIGN;
+
+	sp = stpopi ((U1 *) &c3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &c2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &c1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &v3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &v2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &v1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, v1_addr, &v1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, v2_addr, &v2) != 0) return (NULL);
+	if (rlib_read_vec2 (data, v3_addr, &v3) != 0) return (NULL);
+	if (rlib_read_color (data, c1_addr, &c1) != 0) return (NULL);
+	if (rlib_read_color (data, c2_addr, &c2) != 0) return (NULL);
+	if (rlib_read_color (data, c3_addr, &c3) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawTriangleGradient (v1, v2, v3, c1, c2, c3);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_triangle_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: v1_addr, v2_addr, v3_addr, thick, color_addr
+	Vector2 v1;
+	S8 v1_addr ALIGN;
+	Vector2 v2;
+	S8 v2_addr ALIGN;
+	Vector2 v3;
+	S8 v3_addr ALIGN;
+	F8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &v3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &v2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &v1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, v1_addr, &v1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, v2_addr, &v2) != 0) return (NULL);
+	if (rlib_read_vec2 (data, v3_addr, &v3) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawTriangleLinesEx (v1, v2, v3, (float) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_draw_triangle_strip (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: points_addr, point_count, color_addr
+	S8 points_addr ALIGN;
+	Vector2 *points_ptr = NULL;
+	S8 point_count ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+	S8 i ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &point_count, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &points_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (point_count > 0)
+	{
+		if (memory_bounds (points_addr, (point_count - 1) * 16) != 0)
+		{
+			printf ("raylib_draw_triangle_strip: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+		points_ptr = calloc (point_count, sizeof (Vector2));
+		if (points_ptr == NULL)
+		{
+			printf ("raylib_draw_triangle_strip: ERROR out of memory!\n");
+			return (NULL);
+		}
+		for (i = 0; i < point_count; i++)
+		{
+			if (rlib_read_vec2 (data, points_addr + (i * 16), &points_ptr[i]) != 0)
+			{
+				free (points_ptr);
+				return (NULL);
+			}
+		}
+	}
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	DrawTriangleStrip ((const Vector2 *) points_ptr, (int) point_count, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	free (points_ptr);
+
+	return (sp);
+}
+
+U1 *raylib_enable_cursor (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+
+	pthread_mutex_lock (&rlib_mutex);
+	EnableCursor ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_end_shader_mode (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+
+	pthread_mutex_lock (&rlib_mutex);
+	EndShaderMode ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_end_texture_mode (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+
+	pthread_mutex_lock (&rlib_mutex);
+	EndTextureMode ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_end_vr_stereo_mode (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+
+	pthread_mutex_lock (&rlib_mutex);
+	EndVrStereoMode ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_export_automation_event_list (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: list_handle, file_name_addr
+	// return: 1 true, 0 false
+	S8 list_handle ALIGN;
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &list_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (list_handle < 0 || list_handle >= RAYLIB_MAX_AUTOMATION || raylib_automationlists_used[list_handle] == 0)
+	{
+		printf ("raylib_export_automation_event_list: ERROR invalid automation list handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ExportAutomationEventList (raylib_automationlists[list_handle], (const char *) file_name_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_export_data_as_code (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: data_addr, data_size, file_name_addr
+	// return: 1 true, 0 false
+	S8 data_addr ALIGN;
+	S8 data_size ALIGN;
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &data_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &data_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (data_size > 0)
+	{
+		if (memory_bounds (data_addr, data_size - 1) != 0)
+		{
+			printf ("raylib_export_data_as_code: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+	}
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ExportDataAsCode ((const unsigned char *) &data[data_addr], (int) data_size, (const char *) file_name_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_export_font_as_code (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: font_handle, file_name_addr
+	// return: 1 true, 0 false
+	S8 font_handle ALIGN;
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &font_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (font_handle < 0 || font_handle >= RAYLIB_MAX_FONTS || raylib_fonts_used[font_handle] == 0)
+	{
+		printf ("raylib_export_font_as_code: ERROR invalid font handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ExportFontAsCode (raylib_fonts[font_handle], (const char *) file_name_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_export_image (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, file_name_addr
+	// return: 1 true, 0 false
+	S8 image_handle ALIGN;
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_export_image: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ExportImage (raylib_images[image_handle], (const char *) file_name_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_export_image_as_code (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, file_name_addr
+	// return: 1 true, 0 false
+	S8 image_handle ALIGN;
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_export_image_as_code: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ExportImageAsCode (raylib_images[image_handle], (const char *) file_name_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_export_mesh (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: mesh_handle, file_name_addr
+	// return: 1 true, 0 false
+	S8 mesh_handle ALIGN;
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &mesh_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (mesh_handle < 0 || mesh_handle >= RAYLIB_MAX_MESHES || raylib_meshes_used[mesh_handle] == 0)
+	{
+		printf ("raylib_export_mesh: ERROR invalid mesh handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ExportMesh (raylib_meshes[mesh_handle], (const char *) file_name_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_export_mesh_as_code (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: mesh_handle, file_name_addr
+	// return: 1 true, 0 false
+	S8 mesh_handle ALIGN;
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &mesh_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (mesh_handle < 0 || mesh_handle >= RAYLIB_MAX_MESHES || raylib_meshes_used[mesh_handle] == 0)
+	{
+		printf ("raylib_export_mesh_as_code: ERROR invalid mesh handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ExportMeshAsCode (raylib_meshes[mesh_handle], (const char *) file_name_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_export_wave (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: wave_handle, file_name_addr
+	// return: 1 true, 0 false
+	S8 wave_handle ALIGN;
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &wave_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (wave_handle < 0 || wave_handle >= RAYLIB_MAX_WAVES || raylib_waves_used[wave_handle] == 0)
+	{
+		printf ("raylib_export_wave: ERROR invalid wave handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ExportWave (raylib_waves[wave_handle], (const char *) file_name_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_export_wave_as_code (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: wave_handle, file_name_addr
+	// return: 1 true, 0 false
+	S8 wave_handle ALIGN;
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &wave_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (wave_handle < 0 || wave_handle >= RAYLIB_MAX_WAVES || raylib_waves_used[wave_handle] == 0)
+	{
+		printf ("raylib_export_wave_as_code: ERROR invalid wave handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = ExportWaveAsCode (raylib_waves[wave_handle], (const char *) file_name_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_fade (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: color_addr, alpha, out_addr
+	// return: struct written to out_addr
+	Color color;
+	S8 color_addr ALIGN;
+	F8 alpha ALIGN;
+	S8 out_addr ALIGN;
+	Color ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &alpha, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = Fade (color, (float) alpha);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_color (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_file_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: src_path_addr, dst_path_addr
+	// return: integer result
+	S8 src_path_addr ALIGN;
+	U1 src_path_buf[512];
+	S8 dst_path_addr ALIGN;
+	U1 dst_path_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &dst_path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &src_path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, src_path_addr, src_path_buf, sizeof (src_path_buf)) != 0) return (NULL);
+	if (rlib_load_filename (data, dst_path_addr, dst_path_buf, sizeof (dst_path_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = FileCopy ((const char *) src_path_buf, (const char *) dst_path_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_file_exists (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_name_addr
+	// return: 1 true, 0 false
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = FileExists ((const char *) file_name_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_file_move (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: src_path_addr, dst_path_addr
+	// return: integer result
+	S8 src_path_addr ALIGN;
+	U1 src_path_buf[512];
+	S8 dst_path_addr ALIGN;
+	U1 dst_path_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &dst_path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &src_path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, src_path_addr, src_path_buf, sizeof (src_path_buf)) != 0) return (NULL);
+	if (rlib_load_filename (data, dst_path_addr, dst_path_buf, sizeof (dst_path_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = FileMove ((const char *) src_path_buf, (const char *) dst_path_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_file_remove (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_name_addr
+	// return: integer result
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = FileRemove ((const char *) file_name_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_file_rename (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_name_addr, file_rename_addr
+	// return: integer result
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 file_rename_addr ALIGN;
+	U1 file_rename_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &file_rename_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, file_rename_addr, file_rename_buf, sizeof (file_rename_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = FileRename ((const char *) file_name_buf, (const char *) file_rename_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_file_text_find_index (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_name_addr, search_addr
+	// return: integer result
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 search_addr ALIGN;
+	U1 search_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &search_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, search_addr, search_buf, sizeof (search_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = FileTextFindIndex ((const char *) file_name_buf, (const char *) search_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_file_text_replace (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_name_addr, search_addr, replacement_addr
+	// return: integer result
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 search_addr ALIGN;
+	U1 search_buf[512];
+	S8 replacement_addr ALIGN;
+	U1 replacement_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &replacement_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &search_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, search_addr, search_buf, sizeof (search_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, replacement_addr, replacement_buf, sizeof (replacement_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = FileTextReplace ((const char *) file_name_buf, (const char *) search_buf, (const char *) replacement_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_gen_image_cellular (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: width, height, tile_size
+	// return: image handle or -1 on error
+	S8 width ALIGN;
+	S8 height ALIGN;
+	S8 tile_size ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &tile_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	ind = rlib_find_slot (raylib_images_used, RAYLIB_MAX_IMAGES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_images[ind] = GenImageCellular ((int) width, (int) height, (int) tile_size);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_images[ind].data == NULL)
+	{
+		printf ("raylib_gen_image_cellular: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_images_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_gen_image_gradient_linear (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: width, height, direction, start_addr, end_addr
+	// return: image handle or -1 on error
+	S8 width ALIGN;
+	S8 height ALIGN;
+	S8 direction ALIGN;
+	Color start;
+	S8 start_addr ALIGN;
+	Color end;
+	S8 end_addr ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &end_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &start_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &direction, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_color (data, start_addr, &start) != 0) return (NULL);
+	if (rlib_read_color (data, end_addr, &end) != 0) return (NULL);
+
+	ind = rlib_find_slot (raylib_images_used, RAYLIB_MAX_IMAGES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_images[ind] = GenImageGradientLinear ((int) width, (int) height, (int) direction, start, end);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_images[ind].data == NULL)
+	{
+		printf ("raylib_gen_image_gradient_linear: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_images_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_gen_image_gradient_radial (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: width, height, density, inner_addr, outer_addr
+	// return: image handle or -1 on error
+	S8 width ALIGN;
+	S8 height ALIGN;
+	F8 density ALIGN;
+	Color inner;
+	S8 inner_addr ALIGN;
+	Color outer;
+	S8 outer_addr ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &outer_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &inner_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &density, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_color (data, inner_addr, &inner) != 0) return (NULL);
+	if (rlib_read_color (data, outer_addr, &outer) != 0) return (NULL);
+
+	ind = rlib_find_slot (raylib_images_used, RAYLIB_MAX_IMAGES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_images[ind] = GenImageGradientRadial ((int) width, (int) height, (float) density, inner, outer);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_images[ind].data == NULL)
+	{
+		printf ("raylib_gen_image_gradient_radial: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_images_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_gen_image_gradient_square (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: width, height, density, inner_addr, outer_addr
+	// return: image handle or -1 on error
+	S8 width ALIGN;
+	S8 height ALIGN;
+	F8 density ALIGN;
+	Color inner;
+	S8 inner_addr ALIGN;
+	Color outer;
+	S8 outer_addr ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &outer_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &inner_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &density, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_color (data, inner_addr, &inner) != 0) return (NULL);
+	if (rlib_read_color (data, outer_addr, &outer) != 0) return (NULL);
+
+	ind = rlib_find_slot (raylib_images_used, RAYLIB_MAX_IMAGES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_images[ind] = GenImageGradientSquare ((int) width, (int) height, (float) density, inner, outer);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_images[ind].data == NULL)
+	{
+		printf ("raylib_gen_image_gradient_square: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_images_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_gen_image_perlin_noise (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: width, height, offset_x, offset_y, scale
+	// return: image handle or -1 on error
+	S8 width ALIGN;
+	S8 height ALIGN;
+	S8 offset_x ALIGN;
+	S8 offset_y ALIGN;
+	F8 scale ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopd ((U1 *) &scale, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &offset_y, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &offset_x, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	ind = rlib_find_slot (raylib_images_used, RAYLIB_MAX_IMAGES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_images[ind] = GenImagePerlinNoise ((int) width, (int) height, (int) offset_x, (int) offset_y, (float) scale);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_images[ind].data == NULL)
+	{
+		printf ("raylib_gen_image_perlin_noise: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_images_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_gen_image_text (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: width, height, text_addr
+	// return: image handle or -1 on error
+	S8 width ALIGN;
+	S8 height ALIGN;
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+
+	ind = rlib_find_slot (raylib_images_used, RAYLIB_MAX_IMAGES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_images[ind] = GenImageText ((int) width, (int) height, (const char *) text_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_images[ind].data == NULL)
+	{
+		printf ("raylib_gen_image_text: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_images_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_gen_image_white_noise (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: width, height, factor
+	// return: image handle or -1 on error
+	S8 width ALIGN;
+	S8 height ALIGN;
+	F8 factor ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopd ((U1 *) &factor, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	ind = rlib_find_slot (raylib_images_used, RAYLIB_MAX_IMAGES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_images[ind] = GenImageWhiteNoise ((int) width, (int) height, (float) factor);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_images[ind].data == NULL)
+	{
+		printf ("raylib_gen_image_white_noise: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_images_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_gen_mesh_tangents (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: mesh_handle
+	S8 mesh_handle ALIGN;
+
+	sp = stpopi ((U1 *) &mesh_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (mesh_handle < 0 || mesh_handle >= RAYLIB_MAX_MESHES || raylib_meshes_used[mesh_handle] == 0)
+	{
+		printf ("raylib_gen_mesh_tangents: ERROR invalid mesh handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	GenMeshTangents (&raylib_meshes[mesh_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_gen_texture_mipmaps (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: texture_handle
+	S8 texture_handle ALIGN;
+
+	sp = stpopi ((U1 *) &texture_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (texture_handle < 0 || texture_handle >= RAYLIB_MAX_TEXTURES || raylib_textures_used[texture_handle] == 0)
+	{
+		printf ("raylib_gen_texture_mipmaps: ERROR invalid texture handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	GenTextureMipmaps (&raylib_textures[texture_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_get_application_directory (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: out_addr
+	// return: string written to out_addr
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = GetApplicationDirectory ();
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_get_application_directory: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_get_camera_matrix (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: camera_addr, out_addr
+	// return: struct written to out_addr
+	Camera camera;
+	S8 camera_addr ALIGN;
+	S8 out_addr ALIGN;
+	Matrix ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &camera_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_camera (data, camera_addr, &camera) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetCameraMatrix (camera);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_matrix (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_camera_matrix_2d (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: camera_addr, out_addr
+	// return: struct written to out_addr
+	Camera2D camera;
+	S8 camera_addr ALIGN;
+	S8 out_addr ALIGN;
+	Matrix ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &camera_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_camera2d (data, camera_addr, &camera) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetCameraMatrix2D (camera);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_matrix (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_clipboard_image (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// return: image handle or -1 on error
+	S8 ind ALIGN;
+
+	ind = rlib_find_slot (raylib_images_used, RAYLIB_MAX_IMAGES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_images[ind] = GetClipboardImage ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_images[ind].data == NULL)
+	{
+		printf ("raylib_get_clipboard_image: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_images_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_codepoint (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr
+	// return: integer result
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	int codepoint_size_out = 0;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetCodepoint ((const char *) text_buf, &codepoint_size_out);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_codepoint_count (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr
+	// return: integer result
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetCodepointCount ((const char *) text_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_codepoint_next (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr
+	// return: integer result
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	int codepoint_size_out = 0;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetCodepointNext ((const char *) text_buf, &codepoint_size_out);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_codepoint_previous (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr
+	// return: integer result
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	int codepoint_size_out = 0;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetCodepointPrevious ((const char *) text_buf, &codepoint_size_out);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_collision_rec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: rec1_addr, rec2_addr, out_addr
+	// return: struct written to out_addr
+	Rectangle rec1;
+	S8 rec1_addr ALIGN;
+	Rectangle rec2;
+	S8 rec2_addr ALIGN;
+	S8 out_addr ALIGN;
+	Rectangle ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &rec2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &rec1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_rect (data, rec1_addr, &rec1) != 0) return (NULL);
+	if (rlib_read_rect (data, rec2_addr, &rec2) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetCollisionRec (rec1, rec2);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_rect (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_color (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: hex_value, out_addr
+	// return: struct written to out_addr
+	S8 hex_value ALIGN;
+	S8 out_addr ALIGN;
+	Color ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &hex_value, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetColor ((unsigned int) hex_value);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_color (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_directory_file_count (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dir_path_addr
+	// return: integer result
+	S8 dir_path_addr ALIGN;
+	U1 dir_path_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &dir_path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, dir_path_addr, dir_path_buf, sizeof (dir_path_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetDirectoryFileCount ((const char *) dir_path_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_directory_file_count_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: base_path_addr, filter_addr, scan_subdirs
+	// return: integer result
+	S8 base_path_addr ALIGN;
+	U1 base_path_buf[512];
+	S8 filter_addr ALIGN;
+	U1 filter_buf[512];
+	S8 scan_subdirs ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &scan_subdirs, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &filter_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &base_path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, base_path_addr, base_path_buf, sizeof (base_path_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, filter_addr, filter_buf, sizeof (filter_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetDirectoryFileCountEx ((const char *) base_path_buf, (const char *) filter_buf, (bool) scan_subdirs);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_directory_path (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_path_addr, out_addr
+	// return: string written to out_addr
+	S8 file_path_addr ALIGN;
+	U1 file_path_buf[512];
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_path_addr, file_path_buf, sizeof (file_path_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = GetDirectoryPath ((const char *) file_path_buf);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_get_directory_path: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_get_file_extension (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_name_addr, out_addr
+	// return: string written to out_addr
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = GetFileExtension ((const char *) file_name_buf);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_get_file_extension: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_get_file_mod_time (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_name_addr
+	// return: integer result
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetFileModTime ((const char *) file_name_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_file_name (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_path_addr, out_addr
+	// return: string written to out_addr
+	S8 file_path_addr ALIGN;
+	U1 file_path_buf[512];
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_path_addr, file_path_buf, sizeof (file_path_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = GetFileName ((const char *) file_path_buf);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_get_file_name: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_get_file_name_without_ext (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_path_addr, out_addr
+	// return: string written to out_addr
+	S8 file_path_addr ALIGN;
+	U1 file_path_buf[512];
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_path_addr, file_path_buf, sizeof (file_path_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = GetFileNameWithoutExt ((const char *) file_path_buf);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_get_file_name_without_ext: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_get_file_length (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_name_addr
+	// return: integer result
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetFileLength ((const char *) file_name_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_gesture_detected (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// return: integer result
+	S8 ret ALIGN;
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetGestureDetected ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_gesture_drag_angle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// return: double value
+	F8 ret ALIGN;
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetGestureDragAngle ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushd (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_gesture_drag_vector (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: out_addr
+	// return: struct written to out_addr
+	S8 out_addr ALIGN;
+	Vector2 ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetGestureDragVector ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_vec2 (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_gesture_hold_duration (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// return: double value
+	F8 ret ALIGN;
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetGestureHoldDuration ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushd (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_gesture_pinch_angle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// return: double value
+	F8 ret ALIGN;
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetGesturePinchAngle ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushd (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_gesture_pinch_vector (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: out_addr
+	// return: struct written to out_addr
+	S8 out_addr ALIGN;
+	Vector2 ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetGesturePinchVector ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_vec2 (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_glyph_atlas_rec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: font_handle, codepoint, out_addr
+	// return: struct written to out_addr
+	S8 font_handle ALIGN;
+	S8 codepoint ALIGN;
+	S8 out_addr ALIGN;
+	Rectangle ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &codepoint, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &font_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (font_handle < 0 || font_handle >= RAYLIB_MAX_FONTS || raylib_fonts_used[font_handle] == 0)
+	{
+		printf ("raylib_get_glyph_atlas_rec: ERROR invalid font handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetGlyphAtlasRec (raylib_fonts[font_handle], (int) codepoint);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_rect (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_glyph_index (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: font_handle, codepoint
+	// return: integer result
+	S8 font_handle ALIGN;
+	S8 codepoint ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &codepoint, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &font_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (font_handle < 0 || font_handle >= RAYLIB_MAX_FONTS || raylib_fonts_used[font_handle] == 0)
+	{
+		printf ("raylib_get_glyph_index: ERROR invalid font handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetGlyphIndex (raylib_fonts[font_handle], (int) codepoint);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_image_alpha_border (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, threshold, out_addr
+	// return: struct written to out_addr
+	S8 image_handle ALIGN;
+	F8 threshold ALIGN;
+	S8 out_addr ALIGN;
+	Rectangle ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &threshold, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_get_image_alpha_border: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetImageAlphaBorder (raylib_images[image_handle], (float) threshold);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_rect (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_image_color (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, x, y, out_addr
+	// return: struct written to out_addr
+	S8 image_handle ALIGN;
+	S8 x ALIGN;
+	S8 y ALIGN;
+	S8 out_addr ALIGN;
+	Color ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &y, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &x, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_get_image_color: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetImageColor (raylib_images[image_handle], (int) x, (int) y);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_color (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_master_volume (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// return: double value
+	F8 ret ALIGN;
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetMasterVolume ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushd (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_monitor_name (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: monitor, out_addr
+	// return: string written to out_addr
+	S8 monitor ALIGN;
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &monitor, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = GetMonitorName ((int) monitor);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_get_monitor_name: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_get_monitor_position (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: monitor, out_addr
+	// return: struct written to out_addr
+	S8 monitor ALIGN;
+	S8 out_addr ALIGN;
+	Vector2 ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &monitor, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetMonitorPosition ((int) monitor);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_vec2 (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_mouse_wheel_move_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: out_addr
+	// return: struct written to out_addr
+	S8 out_addr ALIGN;
+	Vector2 ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetMouseWheelMoveV ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_vec2 (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_pixel_data_size (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: width, height, format
+	// return: integer result
+	S8 width ALIGN;
+	S8 height ALIGN;
+	S8 format ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &format, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetPixelDataSize ((int) width, (int) height, (int) format);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_prev_directory_path (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dir_path_addr, out_addr
+	// return: string written to out_addr
+	S8 dir_path_addr ALIGN;
+	U1 dir_path_buf[512];
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dir_path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, dir_path_addr, dir_path_buf, sizeof (dir_path_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = GetPrevDirectoryPath ((const char *) dir_path_buf);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_get_prev_directory_path: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_get_ray_collision_mesh (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: ray_addr, mesh_handle, transform_addr, out_addr
+	// return: struct written to out_addr
+	Ray ray;
+	S8 ray_addr ALIGN;
+	S8 mesh_handle ALIGN;
+	Matrix transform;
+	S8 transform_addr ALIGN;
+	S8 out_addr ALIGN;
+	RayCollision ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &transform_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &mesh_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &ray_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_ray (data, ray_addr, &ray) != 0) return (NULL);
+
+	if (mesh_handle < 0 || mesh_handle >= RAYLIB_MAX_MESHES || raylib_meshes_used[mesh_handle] == 0)
+	{
+		printf ("raylib_get_ray_collision_mesh: ERROR invalid mesh handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_matrix (data, transform_addr, &transform) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetRayCollisionMesh (ray, raylib_meshes[mesh_handle], transform);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_raycollision (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_screen_to_world_2d (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: position_addr, camera_addr, out_addr
+	// return: struct written to out_addr
+	Vector2 position;
+	S8 position_addr ALIGN;
+	Camera2D camera;
+	S8 camera_addr ALIGN;
+	S8 out_addr ALIGN;
+	Vector2 ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &camera_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &position_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, position_addr, &position) != 0) return (NULL);
+	if (rlib_read_camera2d (data, camera_addr, &camera) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetScreenToWorld2D (position, camera);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_vec2 (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_screen_to_world_ray_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: position_addr, camera_addr, width, height, out_addr
+	// return: struct written to out_addr
+	Vector2 position;
+	S8 position_addr ALIGN;
+	Camera camera;
+	S8 camera_addr ALIGN;
+	S8 width ALIGN;
+	S8 height ALIGN;
+	S8 out_addr ALIGN;
+	Ray ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &camera_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &position_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, position_addr, &position) != 0) return (NULL);
+	if (rlib_read_camera (data, camera_addr, &camera) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetScreenToWorldRayEx (position, camera, (int) width, (int) height);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_ray (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_shader_location_attrib (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: shader_handle, attrib_name_addr
+	// return: integer result
+	S8 shader_handle ALIGN;
+	S8 attrib_name_addr ALIGN;
+	U1 attrib_name_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &attrib_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &shader_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (shader_handle < 0 || shader_handle >= RAYLIB_MAX_SHADERS || raylib_shaders_used[shader_handle] == 0)
+	{
+		printf ("raylib_get_shader_location_attrib: ERROR invalid shader handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_string (data, attrib_name_addr, attrib_name_buf, sizeof (attrib_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetShaderLocationAttrib (raylib_shaders[shader_handle], (const char *) attrib_name_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_shapes_texture_rectangle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: out_addr
+	// return: struct written to out_addr
+	S8 out_addr ALIGN;
+	Rectangle ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetShapesTextureRectangle ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_rect (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_spline_point_basis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: p1_addr, p2_addr, p3_addr, p4_addr, t, out_addr
+	// return: struct written to out_addr
+	Vector2 p1;
+	S8 p1_addr ALIGN;
+	Vector2 p2;
+	S8 p2_addr ALIGN;
+	Vector2 p3;
+	S8 p3_addr ALIGN;
+	Vector2 p4;
+	S8 p4_addr ALIGN;
+	F8 t ALIGN;
+	S8 out_addr ALIGN;
+	Vector2 ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &t, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p4_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, p1_addr, &p1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p2_addr, &p2) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p3_addr, &p3) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p4_addr, &p4) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetSplinePointBasis (p1, p2, p3, p4, (float) t);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_vec2 (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_spline_point_bezier_cubic (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: p1_addr, c2_addr, c3_addr, p4_addr, t, out_addr
+	// return: struct written to out_addr
+	Vector2 p1;
+	S8 p1_addr ALIGN;
+	Vector2 c2;
+	S8 c2_addr ALIGN;
+	Vector2 c3;
+	S8 c3_addr ALIGN;
+	Vector2 p4;
+	S8 p4_addr ALIGN;
+	F8 t ALIGN;
+	S8 out_addr ALIGN;
+	Vector2 ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &t, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p4_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &c3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &c2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, p1_addr, &p1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, c2_addr, &c2) != 0) return (NULL);
+	if (rlib_read_vec2 (data, c3_addr, &c3) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p4_addr, &p4) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetSplinePointBezierCubic (p1, c2, c3, p4, (float) t);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_vec2 (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_spline_point_bezier_quadratic (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: p1_addr, c2_addr, p3_addr, t, out_addr
+	// return: struct written to out_addr
+	Vector2 p1;
+	S8 p1_addr ALIGN;
+	Vector2 c2;
+	S8 c2_addr ALIGN;
+	Vector2 p3;
+	S8 p3_addr ALIGN;
+	F8 t ALIGN;
+	S8 out_addr ALIGN;
+	Vector2 ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &t, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &c2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, p1_addr, &p1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, c2_addr, &c2) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p3_addr, &p3) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetSplinePointBezierQuadratic (p1, c2, p3, (float) t);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_vec2 (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_spline_point_catmull_rom (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: p1_addr, p2_addr, p3_addr, p4_addr, t, out_addr
+	// return: struct written to out_addr
+	Vector2 p1;
+	S8 p1_addr ALIGN;
+	Vector2 p2;
+	S8 p2_addr ALIGN;
+	Vector2 p3;
+	S8 p3_addr ALIGN;
+	Vector2 p4;
+	S8 p4_addr ALIGN;
+	F8 t ALIGN;
+	S8 out_addr ALIGN;
+	Vector2 ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &t, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p4_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &p1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, p1_addr, &p1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p2_addr, &p2) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p3_addr, &p3) != 0) return (NULL);
+	if (rlib_read_vec2 (data, p4_addr, &p4) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetSplinePointCatmullRom (p1, p2, p3, p4, (float) t);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_vec2 (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_spline_point_linear (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: start_pos_addr, end_pos_addr, t, out_addr
+	// return: struct written to out_addr
+	Vector2 start_pos;
+	S8 start_pos_addr ALIGN;
+	Vector2 end_pos;
+	S8 end_pos_addr ALIGN;
+	F8 t ALIGN;
+	S8 out_addr ALIGN;
+	Vector2 ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &t, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &end_pos_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &start_pos_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, start_pos_addr, &start_pos) != 0) return (NULL);
+	if (rlib_read_vec2 (data, end_pos_addr, &end_pos) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetSplinePointLinear (start_pos, end_pos, (float) t);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_vec2 (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_text_between (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr, begin_addr, end_addr, out_addr
+	// return: string written to out_addr
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 begin_addr ALIGN;
+	U1 begin_buf[512];
+	S8 end_addr ALIGN;
+	U1 end_buf[512];
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &end_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &begin_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, begin_addr, begin_buf, sizeof (begin_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, end_addr, end_buf, sizeof (end_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = GetTextBetween ((const char *) text_buf, (const char *) begin_buf, (const char *) end_buf);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_get_text_between: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_get_touch_point_id (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: index
+	// return: integer result
+	S8 index ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &index, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetTouchPointId ((int) index);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_working_directory (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: out_addr
+	// return: string written to out_addr
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = GetWorkingDirectory ();
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_get_working_directory: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_get_world_to_screen_2d (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: position_addr, camera_addr, out_addr
+	// return: struct written to out_addr
+	Vector2 position;
+	S8 position_addr ALIGN;
+	Camera2D camera;
+	S8 camera_addr ALIGN;
+	S8 out_addr ALIGN;
+	Vector2 ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &camera_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &position_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec2 (data, position_addr, &position) != 0) return (NULL);
+	if (rlib_read_camera2d (data, camera_addr, &camera) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetWorldToScreen2D (position, camera);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_vec2 (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_get_world_to_screen_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: position_addr, camera_addr, width, height, out_addr
+	// return: struct written to out_addr
+	Vector3 position;
+	S8 position_addr ALIGN;
+	Camera camera;
+	S8 camera_addr ALIGN;
+	S8 width ALIGN;
+	S8 height ALIGN;
+	S8 out_addr ALIGN;
+	Vector2 ret;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &camera_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &position_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vec3 (data, position_addr, &position) != 0) return (NULL);
+	if (rlib_read_camera (data, camera_addr, &camera) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = GetWorldToScreenEx (position, camera, (int) width, (int) height);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (rlib_write_vec2 (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_hide_cursor (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+
+	pthread_mutex_lock (&rlib_mutex);
+	HideCursor ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_alpha_clear (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, color_addr, threshold
+	S8 image_handle ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+	F8 threshold ALIGN;
+
+	sp = stpopd ((U1 *) &threshold, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_alpha_clear: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageAlphaClear (&raylib_images[image_handle], color, (float) threshold);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_alpha_crop (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, threshold
+	S8 image_handle ALIGN;
+	F8 threshold ALIGN;
+
+	sp = stpopd ((U1 *) &threshold, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_alpha_crop: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageAlphaCrop (&raylib_images[image_handle], (float) threshold);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_alpha_mask (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, alpha_mask_handle
+	S8 image_handle ALIGN;
+	S8 alpha_mask_handle ALIGN;
+
+	sp = stpopi ((U1 *) &alpha_mask_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_alpha_mask: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+	if (alpha_mask_handle < 0 || alpha_mask_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[alpha_mask_handle] == 0)
+	{
+		printf ("raylib_image_alpha_mask: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageAlphaMask (&raylib_images[image_handle], raylib_images[alpha_mask_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_alpha_premultiply (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle
+	S8 image_handle ALIGN;
+
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_alpha_premultiply: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageAlphaPremultiply (&raylib_images[image_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_blur_gaussian (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, blur_size
+	S8 image_handle ALIGN;
+	S8 blur_size ALIGN;
+
+	sp = stpopi ((U1 *) &blur_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_blur_gaussian: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageBlurGaussian (&raylib_images[image_handle], (int) blur_size);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_clear_background (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, color_addr
+	S8 dst_handle ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_clear_background: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageClearBackground (&raylib_images[dst_handle], color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_color_brightness (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, brightness
+	S8 image_handle ALIGN;
+	S8 brightness ALIGN;
+
+	sp = stpopi ((U1 *) &brightness, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_color_brightness: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageColorBrightness (&raylib_images[image_handle], (int) brightness);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_color_contrast (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, contrast
+	S8 image_handle ALIGN;
+	S8 contrast ALIGN;
+
+	sp = stpopi ((U1 *) &contrast, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_color_contrast: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageColorContrast (&raylib_images[image_handle], (int) contrast);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_color_grayscale (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle
+	S8 image_handle ALIGN;
+
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_color_grayscale: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageColorGrayscale (&raylib_images[image_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_color_invert (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle
+	S8 image_handle ALIGN;
+
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_color_invert: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageColorInvert (&raylib_images[image_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_color_replace (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, color_addr, replace_addr
+	S8 image_handle ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+	Color replace;
+	S8 replace_addr ALIGN;
+
+	sp = stpopi ((U1 *) &replace_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_color_replace: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+	if (rlib_read_color (data, replace_addr, &replace) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageColorReplace (&raylib_images[image_handle], color, replace);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_color_tint (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, color_addr
+	S8 image_handle ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_color_tint: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageColorTint (&raylib_images[image_handle], color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle
+	// return: image handle or -1 on error
+	S8 image_handle ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_copy: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	ind = rlib_find_slot (raylib_images_used, RAYLIB_MAX_IMAGES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_images[ind] = ImageCopy (raylib_images[image_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_images[ind].data == NULL)
+	{
+		printf ("raylib_image_copy: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_images_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_image_crop (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, crop_addr
+	S8 image_handle ALIGN;
+	Rectangle crop;
+	S8 crop_addr ALIGN;
+
+	sp = stpopi ((U1 *) &crop_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_crop: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_rect (data, crop_addr, &crop) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageCrop (&raylib_images[image_handle], crop);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_dither (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, r_bpp, g_bpp, b_bpp, a_bpp
+	S8 image_handle ALIGN;
+	S8 r_bpp ALIGN;
+	S8 g_bpp ALIGN;
+	S8 b_bpp ALIGN;
+	S8 a_bpp ALIGN;
+
+	sp = stpopi ((U1 *) &a_bpp, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &b_bpp, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &g_bpp, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &r_bpp, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_dither: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDither (&raylib_images[image_handle], (int) r_bpp, (int) g_bpp, (int) b_bpp, (int) a_bpp);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_circle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, center_x, center_y, radius, color_addr
+	S8 dst_handle ALIGN;
+	S8 center_x ALIGN;
+	S8 center_y ALIGN;
+	S8 radius ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &radius, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_y, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_x, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_circle: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawCircle (&raylib_images[dst_handle], (int) center_x, (int) center_y, (int) radius, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_circle_gradient (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, center_addr, radius, inner_addr, outer_addr
+	S8 dst_handle ALIGN;
+	Vector2 center;
+	S8 center_addr ALIGN;
+	F8 radius ALIGN;
+	Color inner;
+	S8 inner_addr ALIGN;
+	Color outer;
+	S8 outer_addr ALIGN;
+
+	sp = stpopi ((U1 *) &outer_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &inner_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &radius, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_circle_gradient: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_vec2 (data, center_addr, &center) != 0) return (NULL);
+	if (rlib_read_color (data, inner_addr, &inner) != 0) return (NULL);
+	if (rlib_read_color (data, outer_addr, &outer) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawCircleGradient (&raylib_images[dst_handle], center, (float) radius, inner, outer);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_circle_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, center_x, center_y, radius, color_addr
+	S8 dst_handle ALIGN;
+	S8 center_x ALIGN;
+	S8 center_y ALIGN;
+	S8 radius ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &radius, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_y, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_x, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_circle_lines: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawCircleLines (&raylib_images[dst_handle], (int) center_x, (int) center_y, (int) radius, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_circle_lines_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, center_addr, radius, color_addr
+	S8 dst_handle ALIGN;
+	Vector2 center;
+	S8 center_addr ALIGN;
+	S8 radius ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &radius, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_circle_lines_v: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_vec2 (data, center_addr, &center) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawCircleLinesV (&raylib_images[dst_handle], center, (int) radius, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_circle_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, center_addr, radius, color_addr
+	S8 dst_handle ALIGN;
+	Vector2 center;
+	S8 center_addr ALIGN;
+	S8 radius ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &radius, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &center_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_circle_v: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_vec2 (data, center_addr, &center) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawCircleV (&raylib_images[dst_handle], center, (int) radius, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_image (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, src_handle, pos_x, pos_y, tint_addr
+	S8 dst_handle ALIGN;
+	S8 src_handle ALIGN;
+	S8 pos_x ALIGN;
+	S8 pos_y ALIGN;
+	Color tint;
+	S8 tint_addr ALIGN;
+
+	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &pos_y, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &pos_x, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &src_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_image: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+	if (src_handle < 0 || src_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[src_handle] == 0)
+	{
+		printf ("raylib_image_draw_image: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_color (data, tint_addr, &tint) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawImage (&raylib_images[dst_handle], raylib_images[src_handle], (int) pos_x, (int) pos_y, tint);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_image_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, src_handle, position_addr, rotation, scale, tint_addr
+	S8 dst_handle ALIGN;
+	S8 src_handle ALIGN;
+	Vector2 position;
+	S8 position_addr ALIGN;
+	F8 rotation ALIGN;
+	F8 scale ALIGN;
+	Color tint;
+	S8 tint_addr ALIGN;
+
+	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &scale, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &rotation, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &position_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &src_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_image_ex: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+	if (src_handle < 0 || src_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[src_handle] == 0)
+	{
+		printf ("raylib_image_draw_image_ex: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_vec2 (data, position_addr, &position) != 0) return (NULL);
+	if (rlib_read_color (data, tint_addr, &tint) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawImageEx (&raylib_images[dst_handle], raylib_images[src_handle], position, (float) rotation, (float) scale, tint);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_image_pro (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, src_handle, src_rec_addr, dst_rec_addr, origin_addr, rotation, tint_addr
+	S8 dst_handle ALIGN;
+	S8 src_handle ALIGN;
+	Rectangle src_rec;
+	S8 src_rec_addr ALIGN;
+	Rectangle dst_rec;
+	S8 dst_rec_addr ALIGN;
+	Vector2 origin;
+	S8 origin_addr ALIGN;
+	F8 rotation ALIGN;
+	Color tint;
+	S8 tint_addr ALIGN;
+
+	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &rotation, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &origin_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_rec_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &src_rec_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &src_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_image_pro: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+	if (src_handle < 0 || src_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[src_handle] == 0)
+	{
+		printf ("raylib_image_draw_image_pro: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_rect (data, src_rec_addr, &src_rec) != 0) return (NULL);
+	if (rlib_read_rect (data, dst_rec_addr, &dst_rec) != 0) return (NULL);
+	if (rlib_read_vec2 (data, origin_addr, &origin) != 0) return (NULL);
+	if (rlib_read_color (data, tint_addr, &tint) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawImagePro (&raylib_images[dst_handle], raylib_images[src_handle], src_rec, dst_rec, origin, (float) rotation, tint);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_image_rec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, src_handle, src_rec_addr, position_addr, tint_addr
+	S8 dst_handle ALIGN;
+	S8 src_handle ALIGN;
+	Rectangle src_rec;
+	S8 src_rec_addr ALIGN;
+	Vector2 position;
+	S8 position_addr ALIGN;
+	Color tint;
+	S8 tint_addr ALIGN;
+
+	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &position_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &src_rec_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &src_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_image_rec: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+	if (src_handle < 0 || src_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[src_handle] == 0)
+	{
+		printf ("raylib_image_draw_image_rec: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_rect (data, src_rec_addr, &src_rec) != 0) return (NULL);
+	if (rlib_read_vec2 (data, position_addr, &position) != 0) return (NULL);
+	if (rlib_read_color (data, tint_addr, &tint) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawImageRec (&raylib_images[dst_handle], raylib_images[src_handle], src_rec, position, tint);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_line (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, start_pos_x, start_pos_y, end_pos_x, end_pos_y, color_addr
+	S8 dst_handle ALIGN;
+	S8 start_pos_x ALIGN;
+	S8 start_pos_y ALIGN;
+	S8 end_pos_x ALIGN;
+	S8 end_pos_y ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &end_pos_y, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &end_pos_x, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &start_pos_y, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &start_pos_x, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_line: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawLine (&raylib_images[dst_handle], (int) start_pos_x, (int) start_pos_y, (int) end_pos_x, (int) end_pos_y, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_line_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, start_addr, end_addr, thick, color_addr
+	S8 dst_handle ALIGN;
+	Vector2 start;
+	S8 start_addr ALIGN;
+	Vector2 end;
+	S8 end_addr ALIGN;
+	S8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &end_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &start_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_line_ex: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_vec2 (data, start_addr, &start) != 0) return (NULL);
+	if (rlib_read_vec2 (data, end_addr, &end) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawLineEx (&raylib_images[dst_handle], start, end, (int) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_line_strip (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, points_addr, point_count, color_addr
+	S8 dst_handle ALIGN;
+	S8 points_addr ALIGN;
+	Vector2 *points_ptr = NULL;
+	S8 point_count ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+	S8 i ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &point_count, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &points_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_line_strip: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (point_count > 0)
+	{
+		if (memory_bounds (points_addr, (point_count - 1) * 16) != 0)
+		{
+			printf ("raylib_image_draw_line_strip: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+		points_ptr = calloc (point_count, sizeof (Vector2));
+		if (points_ptr == NULL)
+		{
+			printf ("raylib_image_draw_line_strip: ERROR out of memory!\n");
+			return (NULL);
+		}
+		for (i = 0; i < point_count; i++)
+		{
+			if (rlib_read_vec2 (data, points_addr + (i * 16), &points_ptr[i]) != 0)
+			{
+				free (points_ptr);
+				return (NULL);
+			}
+		}
+	}
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawLineStrip (&raylib_images[dst_handle], (const Vector2 *) points_ptr, (int) point_count, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	free (points_ptr);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_line_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, start_addr, end_addr, color_addr
+	S8 dst_handle ALIGN;
+	Vector2 start;
+	S8 start_addr ALIGN;
+	Vector2 end;
+	S8 end_addr ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &end_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &start_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_line_v: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_vec2 (data, start_addr, &start) != 0) return (NULL);
+	if (rlib_read_vec2 (data, end_addr, &end) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawLineV (&raylib_images[dst_handle], start, end, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_pixel (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, pos_x, pos_y, color_addr
+	S8 dst_handle ALIGN;
+	S8 pos_x ALIGN;
+	S8 pos_y ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &pos_y, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &pos_x, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_pixel: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawPixel (&raylib_images[dst_handle], (int) pos_x, (int) pos_y, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_pixel_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, position_addr, color_addr
+	S8 dst_handle ALIGN;
+	Vector2 position;
+	S8 position_addr ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &position_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_pixel_v: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_vec2 (data, position_addr, &position) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawPixelV (&raylib_images[dst_handle], position, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_rectangle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, pos_x, pos_y, width, height, color_addr
+	S8 dst_handle ALIGN;
+	S8 pos_x ALIGN;
+	S8 pos_y ALIGN;
+	S8 width ALIGN;
+	S8 height ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &pos_y, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &pos_x, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_rectangle: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawRectangle (&raylib_images[dst_handle], (int) pos_x, (int) pos_y, (int) width, (int) height, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_rectangle_gradient_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, rec_addr, col1_addr, col2_addr, col3_addr, col4_addr
+	S8 dst_handle ALIGN;
+	Rectangle rec;
+	S8 rec_addr ALIGN;
+	Color col1;
+	S8 col1_addr ALIGN;
+	Color col2;
+	S8 col2_addr ALIGN;
+	Color col3;
+	S8 col3_addr ALIGN;
+	Color col4;
+	S8 col4_addr ALIGN;
+
+	sp = stpopi ((U1 *) &col4_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &col3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &col2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &col1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &rec_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_rectangle_gradient_ex: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_rect (data, rec_addr, &rec) != 0) return (NULL);
+	if (rlib_read_color (data, col1_addr, &col1) != 0) return (NULL);
+	if (rlib_read_color (data, col2_addr, &col2) != 0) return (NULL);
+	if (rlib_read_color (data, col3_addr, &col3) != 0) return (NULL);
+	if (rlib_read_color (data, col4_addr, &col4) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawRectangleGradientEx (&raylib_images[dst_handle], rec, col1, col2, col3, col4);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_rectangle_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, pos_x, pos_y, width, height, color_addr
+	S8 dst_handle ALIGN;
+	S8 pos_x ALIGN;
+	S8 pos_y ALIGN;
+	S8 width ALIGN;
+	S8 height ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &pos_y, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &pos_x, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_rectangle_lines: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawRectangleLines (&raylib_images[dst_handle], (int) pos_x, (int) pos_y, (int) width, (int) height, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_rectangle_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, rec_addr, thick, color_addr
+	S8 dst_handle ALIGN;
+	Rectangle rec;
+	S8 rec_addr ALIGN;
+	S8 thick ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &thick, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &rec_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_rectangle_lines_ex: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_rect (data, rec_addr, &rec) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawRectangleLinesEx (&raylib_images[dst_handle], rec, (int) thick, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_rectangle_pro (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, rec_addr, origin_addr, rotation, color_addr
+	S8 dst_handle ALIGN;
+	Rectangle rec;
+	S8 rec_addr ALIGN;
+	Vector2 origin;
+	S8 origin_addr ALIGN;
+	F8 rotation ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &rotation, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &origin_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &rec_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_rectangle_pro: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_rect (data, rec_addr, &rec) != 0) return (NULL);
+	if (rlib_read_vec2 (data, origin_addr, &origin) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawRectanglePro (&raylib_images[dst_handle], rec, origin, (float) rotation, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_rectangle_rec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, rec_addr, color_addr
+	S8 dst_handle ALIGN;
+	Rectangle rec;
+	S8 rec_addr ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &rec_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_rectangle_rec: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_rect (data, rec_addr, &rec) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawRectangleRec (&raylib_images[dst_handle], rec, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_rectangle_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, position_addr, size_addr, color_addr
+	S8 dst_handle ALIGN;
+	Vector2 position;
+	S8 position_addr ALIGN;
+	Vector2 size;
+	S8 size_addr ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &size_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &position_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_rectangle_v: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_vec2 (data, position_addr, &position) != 0) return (NULL);
+	if (rlib_read_vec2 (data, size_addr, &size) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawRectangleV (&raylib_images[dst_handle], position, size, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_text (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, text_addr, pos_x, pos_y, font_size, color_addr
+	S8 dst_handle ALIGN;
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 pos_x ALIGN;
+	S8 pos_y ALIGN;
+	S8 font_size ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &font_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &pos_y, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &pos_x, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_text: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawText (&raylib_images[dst_handle], (const char *) text_buf, (int) pos_x, (int) pos_y, (int) font_size, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_text_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, font_handle, text_addr, position_addr, font_size, spacing, tint_addr
+	S8 dst_handle ALIGN;
+	S8 font_handle ALIGN;
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	Vector2 position;
+	S8 position_addr ALIGN;
+	F8 font_size ALIGN;
+	F8 spacing ALIGN;
+	Color tint;
+	S8 tint_addr ALIGN;
+
+	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &spacing, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &font_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &position_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &font_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_text_ex: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+	if (font_handle < 0 || font_handle >= RAYLIB_MAX_FONTS || raylib_fonts_used[font_handle] == 0)
+	{
+		printf ("raylib_image_draw_text_ex: ERROR invalid font handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+	if (rlib_read_vec2 (data, position_addr, &position) != 0) return (NULL);
+	if (rlib_read_color (data, tint_addr, &tint) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawTextEx (&raylib_images[dst_handle], raylib_fonts[font_handle], (const char *) text_buf, position, (float) font_size, (float) spacing, tint);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_text_pro (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, font_handle, text_addr, position_addr, origin_addr, rotation, font_size, spacing, tint_addr
+	S8 dst_handle ALIGN;
+	S8 font_handle ALIGN;
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	Vector2 position;
+	S8 position_addr ALIGN;
+	Vector2 origin;
+	S8 origin_addr ALIGN;
+	F8 rotation ALIGN;
+	F8 font_size ALIGN;
+	F8 spacing ALIGN;
+	Color tint;
+	S8 tint_addr ALIGN;
+
+	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &spacing, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &font_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &rotation, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &origin_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &position_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &font_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_text_pro: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+	if (font_handle < 0 || font_handle >= RAYLIB_MAX_FONTS || raylib_fonts_used[font_handle] == 0)
+	{
+		printf ("raylib_image_draw_text_pro: ERROR invalid font handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+	if (rlib_read_vec2 (data, position_addr, &position) != 0) return (NULL);
+	if (rlib_read_vec2 (data, origin_addr, &origin) != 0) return (NULL);
+	if (rlib_read_color (data, tint_addr, &tint) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawTextPro (&raylib_images[dst_handle], raylib_fonts[font_handle], (const char *) text_buf, position, origin, (float) rotation, (float) font_size, (float) spacing, tint);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_triangle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, v1_addr, v2_addr, v3_addr, color_addr
+	S8 dst_handle ALIGN;
+	Vector2 v1;
+	S8 v1_addr ALIGN;
+	Vector2 v2;
+	S8 v2_addr ALIGN;
+	Vector2 v3;
+	S8 v3_addr ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &v3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &v2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &v1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_triangle: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_vec2 (data, v1_addr, &v1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, v2_addr, &v2) != 0) return (NULL);
+	if (rlib_read_vec2 (data, v3_addr, &v3) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawTriangle (&raylib_images[dst_handle], v1, v2, v3, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_triangle_fan (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, points_addr, point_count, color_addr
+	S8 dst_handle ALIGN;
+	S8 points_addr ALIGN;
+	Vector2 *points_ptr = NULL;
+	S8 point_count ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+	S8 i ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &point_count, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &points_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_triangle_fan: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (point_count > 0)
+	{
+		if (memory_bounds (points_addr, (point_count - 1) * 16) != 0)
+		{
+			printf ("raylib_image_draw_triangle_fan: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+		points_ptr = calloc (point_count, sizeof (Vector2));
+		if (points_ptr == NULL)
+		{
+			printf ("raylib_image_draw_triangle_fan: ERROR out of memory!\n");
+			return (NULL);
+		}
+		for (i = 0; i < point_count; i++)
+		{
+			if (rlib_read_vec2 (data, points_addr + (i * 16), &points_ptr[i]) != 0)
+			{
+				free (points_ptr);
+				return (NULL);
+			}
+		}
+	}
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawTriangleFan (&raylib_images[dst_handle], (const Vector2 *) points_ptr, (int) point_count, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	free (points_ptr);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_triangle_gradient (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, v1_addr, v2_addr, v3_addr, c1_addr, c2_addr, c3_addr
+	S8 dst_handle ALIGN;
+	Vector2 v1;
+	S8 v1_addr ALIGN;
+	Vector2 v2;
+	S8 v2_addr ALIGN;
+	Vector2 v3;
+	S8 v3_addr ALIGN;
+	Color c1;
+	S8 c1_addr ALIGN;
+	Color c2;
+	S8 c2_addr ALIGN;
+	Color c3;
+	S8 c3_addr ALIGN;
+
+	sp = stpopi ((U1 *) &c3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &c2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &c1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &v3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &v2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &v1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_triangle_gradient: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_vec2 (data, v1_addr, &v1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, v2_addr, &v2) != 0) return (NULL);
+	if (rlib_read_vec2 (data, v3_addr, &v3) != 0) return (NULL);
+	if (rlib_read_color (data, c1_addr, &c1) != 0) return (NULL);
+	if (rlib_read_color (data, c2_addr, &c2) != 0) return (NULL);
+	if (rlib_read_color (data, c3_addr, &c3) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawTriangleGradient (&raylib_images[dst_handle], v1, v2, v3, c1, c2, c3);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_triangle_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, v1_addr, v2_addr, v3_addr, color_addr
+	S8 dst_handle ALIGN;
+	Vector2 v1;
+	S8 v1_addr ALIGN;
+	Vector2 v2;
+	S8 v2_addr ALIGN;
+	Vector2 v3;
+	S8 v3_addr ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &v3_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &v2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &v1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_triangle_lines: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_vec2 (data, v1_addr, &v1) != 0) return (NULL);
+	if (rlib_read_vec2 (data, v2_addr, &v2) != 0) return (NULL);
+	if (rlib_read_vec2 (data, v3_addr, &v3) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawTriangleLines (&raylib_images[dst_handle], v1, v2, v3, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_draw_triangle_strip (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dst_handle, points_addr, point_count, color_addr
+	S8 dst_handle ALIGN;
+	S8 points_addr ALIGN;
+	Vector2 *points_ptr = NULL;
+	S8 point_count ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+	S8 i ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &point_count, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &points_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &dst_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (dst_handle < 0 || dst_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[dst_handle] == 0)
+	{
+		printf ("raylib_image_draw_triangle_strip: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (point_count > 0)
+	{
+		if (memory_bounds (points_addr, (point_count - 1) * 16) != 0)
+		{
+			printf ("raylib_image_draw_triangle_strip: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+		points_ptr = calloc (point_count, sizeof (Vector2));
+		if (points_ptr == NULL)
+		{
+			printf ("raylib_image_draw_triangle_strip: ERROR out of memory!\n");
+			return (NULL);
+		}
+		for (i = 0; i < point_count; i++)
+		{
+			if (rlib_read_vec2 (data, points_addr + (i * 16), &points_ptr[i]) != 0)
+			{
+				free (points_ptr);
+				return (NULL);
+			}
+		}
+	}
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageDrawTriangleStrip (&raylib_images[dst_handle], (const Vector2 *) points_ptr, (int) point_count, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	free (points_ptr);
+
+	return (sp);
+}
+
+U1 *raylib_image_flip_horizontal (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle
+	S8 image_handle ALIGN;
+
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_flip_horizontal: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageFlipHorizontal (&raylib_images[image_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_flip_vertical (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle
+	S8 image_handle ALIGN;
+
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_flip_vertical: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageFlipVertical (&raylib_images[image_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_format (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, new_format
+	S8 image_handle ALIGN;
+	S8 new_format ALIGN;
+
+	sp = stpopi ((U1 *) &new_format, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_format: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageFormat (&raylib_images[image_handle], (int) new_format);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_from_channel (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, selected_channel
+	// return: image handle or -1 on error
+	S8 image_handle ALIGN;
+	S8 selected_channel ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &selected_channel, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_from_channel: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	ind = rlib_find_slot (raylib_images_used, RAYLIB_MAX_IMAGES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_images[ind] = ImageFromChannel (raylib_images[image_handle], (int) selected_channel);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_images[ind].data == NULL)
+	{
+		printf ("raylib_image_from_channel: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_images_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_image_from_image (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, rec_addr
+	// return: image handle or -1 on error
+	S8 image_handle ALIGN;
+	Rectangle rec;
+	S8 rec_addr ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &rec_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_from_image: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_rect (data, rec_addr, &rec) != 0) return (NULL);
+
+	ind = rlib_find_slot (raylib_images_used, RAYLIB_MAX_IMAGES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_images[ind] = ImageFromImage (raylib_images[image_handle], rec);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_images[ind].data == NULL)
+	{
+		printf ("raylib_image_from_image: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_images_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_image_kernel_convolution (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, kernel_addr, kernel_size
+	S8 image_handle ALIGN;
+	S8 kernel_addr ALIGN;
+	float *kernel_ptr = NULL;
+	S8 kernel_size ALIGN;
+	S8 i ALIGN;
+	F8 t ALIGN;
+
+	sp = stpopi ((U1 *) &kernel_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &kernel_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_kernel_convolution: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (kernel_size > 0)
+	{
+		if (memory_bounds (kernel_addr, (kernel_size - 1) * 8) != 0)
+		{
+			printf ("raylib_image_kernel_convolution: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+		kernel_ptr = calloc (kernel_size, sizeof (float));
+		if (kernel_ptr == NULL)
+		{
+			printf ("raylib_image_kernel_convolution: ERROR out of memory!\n");
+			return (NULL);
+		}
+		for (i = 0; i < kernel_size; i++)
+		{
+			memcpy (&t, &data[kernel_addr + (i * 8)], sizeof (F8));
+			kernel_ptr[i] = (float) t;
+		}
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageKernelConvolution (&raylib_images[image_handle], (const float *) kernel_ptr, (int) kernel_size);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	free (kernel_ptr);
+
+	return (sp);
+}
+
+U1 *raylib_image_mipmaps (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle
+	S8 image_handle ALIGN;
+
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_mipmaps: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageMipmaps (&raylib_images[image_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_resize (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, new_width, new_height
+	S8 image_handle ALIGN;
+	S8 new_width ALIGN;
+	S8 new_height ALIGN;
+
+	sp = stpopi ((U1 *) &new_height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &new_width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_resize: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageResize (&raylib_images[image_handle], (int) new_width, (int) new_height);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_resize_canvas (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, new_width, new_height, offset_x, offset_y, fill_addr
+	S8 image_handle ALIGN;
+	S8 new_width ALIGN;
+	S8 new_height ALIGN;
+	S8 offset_x ALIGN;
+	S8 offset_y ALIGN;
+	Color fill;
+	S8 fill_addr ALIGN;
+
+	sp = stpopi ((U1 *) &fill_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &offset_y, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &offset_x, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &new_height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &new_width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_resize_canvas: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_color (data, fill_addr, &fill) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageResizeCanvas (&raylib_images[image_handle], (int) new_width, (int) new_height, (int) offset_x, (int) offset_y, fill);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_resize_nn (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, new_width, new_height
+	S8 image_handle ALIGN;
+	S8 new_width ALIGN;
+	S8 new_height ALIGN;
+
+	sp = stpopi ((U1 *) &new_height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &new_width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_resize_nn: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageResizeNN (&raylib_images[image_handle], (int) new_width, (int) new_height);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_rotate (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, degrees
+	S8 image_handle ALIGN;
+	S8 degrees ALIGN;
+
+	sp = stpopi ((U1 *) &degrees, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_rotate: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageRotate (&raylib_images[image_handle], (int) degrees);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_rotate_ccw (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle
+	S8 image_handle ALIGN;
+
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_rotate_ccw: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageRotateCCW (&raylib_images[image_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_rotate_cw (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle
+	S8 image_handle ALIGN;
+
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_rotate_cw: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageRotateCW (&raylib_images[image_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_image_text (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr, font_size, color_addr
+	// return: image handle or -1 on error
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 font_size ALIGN;
+	Color color;
+	S8 color_addr ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &font_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+
+	ind = rlib_find_slot (raylib_images_used, RAYLIB_MAX_IMAGES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_images[ind] = ImageText ((const char *) text_buf, (int) font_size, color);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_images[ind].data == NULL)
+	{
+		printf ("raylib_image_text: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_images_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_image_text_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: font_handle, text_addr, font_size, spacing, tint_addr
+	// return: image handle or -1 on error
+	S8 font_handle ALIGN;
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	F8 font_size ALIGN;
+	F8 spacing ALIGN;
+	Color tint;
+	S8 tint_addr ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &spacing, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &font_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &font_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (font_handle < 0 || font_handle >= RAYLIB_MAX_FONTS || raylib_fonts_used[font_handle] == 0)
+	{
+		printf ("raylib_image_text_ex: ERROR invalid font handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+	if (rlib_read_color (data, tint_addr, &tint) != 0) return (NULL);
+
+	ind = rlib_find_slot (raylib_images_used, RAYLIB_MAX_IMAGES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_images[ind] = ImageTextEx (raylib_fonts[font_handle], (const char *) text_buf, (float) font_size, (float) spacing, tint);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_images[ind].data == NULL)
+	{
+		printf ("raylib_image_text_ex: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_images_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_image_to_pot (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, fill_addr
+	S8 image_handle ALIGN;
+	Color fill;
+	S8 fill_addr ALIGN;
+
+	sp = stpopi ((U1 *) &fill_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_image_to_pot: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_color (data, fill_addr, &fill) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ImageToPOT (&raylib_images[image_handle], fill);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_is_audio_stream_playing (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: stream_handle
+	// return: 1 true, 0 false
+	S8 stream_handle ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &stream_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (stream_handle < 0 || stream_handle >= RAYLIB_MAX_AUDIOSTREAMS || raylib_audiostreams_used[stream_handle] == 0)
+	{
+		printf ("raylib_is_audio_stream_playing: ERROR invalid audio stream handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsAudioStreamPlaying (raylib_audiostreams[stream_handle]) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_is_audio_stream_processed (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: stream_handle
+	// return: 1 true, 0 false
+	S8 stream_handle ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &stream_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (stream_handle < 0 || stream_handle >= RAYLIB_MAX_AUDIOSTREAMS || raylib_audiostreams_used[stream_handle] == 0)
+	{
+		printf ("raylib_is_audio_stream_processed: ERROR invalid audio stream handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsAudioStreamProcessed (raylib_audiostreams[stream_handle]) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_is_audio_stream_valid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: stream_handle
+	// return: 1 true, 0 false
+	S8 stream_handle ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &stream_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (stream_handle < 0 || stream_handle >= RAYLIB_MAX_AUDIOSTREAMS || raylib_audiostreams_used[stream_handle] == 0)
+	{
+		printf ("raylib_is_audio_stream_valid: ERROR invalid audio stream handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsAudioStreamValid (raylib_audiostreams[stream_handle]) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_is_cursor_hidden (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// return: 1 true, 0 false
+	S8 ret ALIGN;
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsCursorHidden () ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_is_cursor_on_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// return: 1 true, 0 false
+	S8 ret ALIGN;
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsCursorOnScreen () ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_is_file_dropped (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// return: 1 true, 0 false
+	S8 ret ALIGN;
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsFileDropped () ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_is_file_extension (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_name_addr, ext_addr
+	// return: 1 true, 0 false
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 ext_addr ALIGN;
+	U1 ext_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &ext_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, ext_addr, ext_buf, sizeof (ext_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsFileExtension ((const char *) file_name_buf, (const char *) ext_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_is_file_hidden (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_path_addr
+	// return: 1 true, 0 false
+	S8 file_path_addr ALIGN;
+	U1 file_path_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &file_path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_path_addr, file_path_buf, sizeof (file_path_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsFileHidden ((const char *) file_path_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_is_file_name_valid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_name_addr
+	// return: 1 true, 0 false
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsFileNameValid ((const char *) file_name_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_is_gesture_detected (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: gesture
+	// return: 1 true, 0 false
+	S8 gesture ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &gesture, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsGestureDetected ((unsigned int) gesture) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_is_key_pressed_repeat (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: key
+	// return: 1 true, 0 false
+	S8 key ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &key, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsKeyPressedRepeat ((int) key) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_is_music_valid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: music_handle
+	// return: 1 true, 0 false
+	S8 music_handle ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &music_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (music_handle < 0 || music_handle >= RAYLIB_MAX_MUSICS || raylib_musics_used[music_handle] == 0)
+	{
+		printf ("raylib_is_music_valid: ERROR invalid music handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsMusicValid (raylib_musics[music_handle]) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_is_path_absolute (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: path_addr
+	// return: 1 true, 0 false
+	S8 path_addr ALIGN;
+	U1 path_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, path_addr, path_buf, sizeof (path_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsPathAbsolute ((const char *) path_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_is_path_directory (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: path_addr
+	// return: 1 true, 0 false
+	S8 path_addr ALIGN;
+	U1 path_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, path_addr, path_buf, sizeof (path_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsPathDirectory ((const char *) path_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_is_path_file (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: path_addr
+	// return: 1 true, 0 false
+	S8 path_addr ALIGN;
+	U1 path_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, path_addr, path_buf, sizeof (path_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsPathFile ((const char *) path_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_is_render_texture_valid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: target_handle
+	// return: 1 true, 0 false
+	S8 target_handle ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &target_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (target_handle < 0 || target_handle >= RAYLIB_MAX_RENDERTEX || raylib_rendertextures_used[target_handle] == 0)
+	{
+		printf ("raylib_is_render_texture_valid: ERROR invalid render texture handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsRenderTextureValid (raylib_rendertextures[target_handle]) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_is_wave_valid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: wave_handle
+	// return: 1 true, 0 false
+	S8 wave_handle ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &wave_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (wave_handle < 0 || wave_handle >= RAYLIB_MAX_WAVES || raylib_waves_used[wave_handle] == 0)
+	{
+		printf ("raylib_is_wave_valid: ERROR invalid wave handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsWaveValid (raylib_waves[wave_handle]) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_audio_stream (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: sample_rate, sample_size, channels
+	// return: audio stream handle or -1 on error
+	S8 sample_rate ALIGN;
+	S8 sample_size ALIGN;
+	S8 channels ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &channels, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &sample_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &sample_rate, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	ind = rlib_find_slot (raylib_audiostreams_used, RAYLIB_MAX_AUDIOSTREAMS);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_audiostreams[ind] = LoadAudioStream ((unsigned int) sample_rate, (unsigned int) sample_size, (unsigned int) channels);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_audiostreams[ind].buffer == NULL)
+	{
+		printf ("raylib_load_audio_stream: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_audiostreams_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_automation_event_list (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_name_addr
+	// return: automation list handle or -1 on error
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	ind = rlib_find_slot (raylib_automationlists_used, RAYLIB_MAX_AUTOMATION);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_automationlists[ind] = LoadAutomationEventList ((const char *) file_name_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_automationlists[ind].events == NULL)
+	{
+		printf ("raylib_load_automation_event_list: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_automationlists_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_directory_files (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dir_path_addr
+	// return: file path list handle or -1 on error
+	S8 dir_path_addr ALIGN;
+	U1 dir_path_buf[512];
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &dir_path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, dir_path_addr, dir_path_buf, sizeof (dir_path_buf)) != 0) return (NULL);
+
+	ind = rlib_find_slot (raylib_filepathlists_used, RAYLIB_MAX_FILEPATHLISTS);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_filepathlists[ind] = LoadDirectoryFiles ((const char *) dir_path_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	raylib_filepathlists_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_directory_files_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: base_path_addr, filter_addr, scan_subdirs
+	// return: file path list handle or -1 on error
+	S8 base_path_addr ALIGN;
+	U1 base_path_buf[512];
+	S8 filter_addr ALIGN;
+	U1 filter_buf[512];
+	S8 scan_subdirs ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &scan_subdirs, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &filter_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &base_path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, base_path_addr, base_path_buf, sizeof (base_path_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, filter_addr, filter_buf, sizeof (filter_buf)) != 0) return (NULL);
+
+	ind = rlib_find_slot (raylib_filepathlists_used, RAYLIB_MAX_FILEPATHLISTS);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_filepathlists[ind] = LoadDirectoryFilesEx ((const char *) base_path_buf, (const char *) filter_buf, (bool) scan_subdirs);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	raylib_filepathlists_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_dropped_files (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// return: file path list handle or -1 on error
+	S8 ind ALIGN;
+
+	ind = rlib_find_slot (raylib_filepathlists_used, RAYLIB_MAX_FILEPATHLISTS);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_filepathlists[ind] = LoadDroppedFiles ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	raylib_filepathlists_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_file_text (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_name_addr, out_addr
+	// return: string written to out_addr
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = LoadFileText ((const char *) file_name_buf);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_load_file_text: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	UnloadFileText ((char *) text);
+
+	return (sp);
+}
+
+U1 *raylib_load_font_from_image (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, key_addr, first_char
+	// return: font handle or -1 on error
+	S8 image_handle ALIGN;
+	Color key;
+	S8 key_addr ALIGN;
+	S8 first_char ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &first_char, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &key_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_load_font_from_image: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_color (data, key_addr, &key) != 0) return (NULL);
+
+	ind = rlib_find_slot (raylib_fonts_used, RAYLIB_MAX_FONTS);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_fonts[ind] = LoadFontFromImage (raylib_images[image_handle], key, (int) first_char);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_fonts[ind].glyphCount == 0)
+	{
+		printf ("raylib_load_font_from_image: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_fonts_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_font_from_memory (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_type_addr, file_data_addr, data_size, font_size, codepoints_addr, codepoint_count
+	// return: font handle or -1 on error
+	S8 file_type_addr ALIGN;
+	U1 file_type_buf[512];
+	S8 file_data_addr ALIGN;
+	S8 data_size ALIGN;
+	S8 font_size ALIGN;
+	S8 codepoints_addr ALIGN;
+	int *codepoints_ptr = NULL;
+	S8 codepoint_count ALIGN;
+	S8 ind ALIGN;
+	S8 i ALIGN;
+	F8 t ALIGN;
+
+	sp = stpopi ((U1 *) &codepoint_count, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &codepoints_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &font_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &data_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_data_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_type_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, file_type_addr, file_type_buf, sizeof (file_type_buf)) != 0) return (NULL);
+	if (data_size > 0)
+	{
+		if (memory_bounds (file_data_addr, data_size - 1) != 0)
+		{
+			printf ("raylib_load_font_from_memory: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+	}
+	if (codepoint_count > 0)
+	{
+		if (memory_bounds (codepoints_addr, (codepoint_count - 1) * 8) != 0)
+		{
+			printf ("raylib_load_font_from_memory: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+		codepoints_ptr = calloc (codepoint_count, sizeof (int));
+		if (codepoints_ptr == NULL)
+		{
+			printf ("raylib_load_font_from_memory: ERROR out of memory!\n");
+			return (NULL);
+		}
+		for (i = 0; i < codepoint_count; i++)
+		{
+			memcpy (&t, &data[codepoints_addr + (i * 8)], sizeof (F8));
+			codepoints_ptr[i] = (int) t;
+		}
+	}
+
+	ind = rlib_find_slot (raylib_fonts_used, RAYLIB_MAX_FONTS);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_fonts[ind] = LoadFontFromMemory ((const char *) file_type_buf, (const unsigned char *) &data[file_data_addr], (int) data_size, (int) font_size, (const int *) codepoints_ptr, (int) codepoint_count);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	free (codepoints_ptr);
+
+	if (raylib_fonts[ind].glyphCount == 0)
+	{
+		printf ("raylib_load_font_from_memory: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_fonts_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_image_from_memory (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_type_addr, file_data_addr, data_size
+	// return: image handle or -1 on error
+	S8 file_type_addr ALIGN;
+	U1 file_type_buf[512];
+	S8 file_data_addr ALIGN;
+	S8 data_size ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &data_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_data_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_type_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, file_type_addr, file_type_buf, sizeof (file_type_buf)) != 0) return (NULL);
+	if (data_size > 0)
+	{
+		if (memory_bounds (file_data_addr, data_size - 1) != 0)
+		{
+			printf ("raylib_load_image_from_memory: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+	}
+
+	ind = rlib_find_slot (raylib_images_used, RAYLIB_MAX_IMAGES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_images[ind] = LoadImageFromMemory ((const char *) file_type_buf, (const unsigned char *) &data[file_data_addr], (int) data_size);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_images[ind].data == NULL)
+	{
+		printf ("raylib_load_image_from_memory: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_images_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_image_from_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// return: image handle or -1 on error
+	S8 ind ALIGN;
+
+	ind = rlib_find_slot (raylib_images_used, RAYLIB_MAX_IMAGES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_images[ind] = LoadImageFromScreen ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_images[ind].data == NULL)
+	{
+		printf ("raylib_load_image_from_screen: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_images_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_image_raw (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_name_addr, width, height, format, header_size
+	// return: image handle or -1 on error
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 width ALIGN;
+	S8 height ALIGN;
+	S8 format ALIGN;
+	S8 header_size ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &header_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &format, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	ind = rlib_find_slot (raylib_images_used, RAYLIB_MAX_IMAGES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_images[ind] = LoadImageRaw ((const char *) file_name_buf, (int) width, (int) height, (int) format, (int) header_size);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_images[ind].data == NULL)
+	{
+		printf ("raylib_load_image_raw: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_images_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_music_stream_from_memory (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_type_addr, data_addr, data_size
+	// return: music handle or -1 on error
+	S8 file_type_addr ALIGN;
+	U1 file_type_buf[512];
+	S8 data_addr ALIGN;
+	S8 data_size ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &data_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &data_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_type_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, file_type_addr, file_type_buf, sizeof (file_type_buf)) != 0) return (NULL);
+	if (data_size > 0)
+	{
+		if (memory_bounds (data_addr, data_size - 1) != 0)
+		{
+			printf ("raylib_load_music_stream_from_memory: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+	}
+
+	ind = rlib_find_slot (raylib_musics_used, RAYLIB_MAX_MUSICS);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_musics[ind] = LoadMusicStreamFromMemory ((const char *) file_type_buf, (const unsigned char *) &data[data_addr], (int) data_size);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_musics[ind].stream.buffer == NULL || raylib_musics[ind].ctxData == NULL)
+	{
+		printf ("raylib_load_music_stream_from_memory: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_musics_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_render_texture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: width, height
+	// return: render texture handle or -1 on error
+	S8 width ALIGN;
+	S8 height ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	ind = rlib_find_slot (raylib_rendertextures_used, RAYLIB_MAX_RENDERTEX);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_rendertextures[ind] = LoadRenderTexture ((int) width, (int) height);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_rendertextures[ind].texture.id == 0)
+	{
+		printf ("raylib_load_render_texture: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_rendertextures_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_render_texture_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: width, height, format
+	// return: render texture handle or -1 on error
+	S8 width ALIGN;
+	S8 height ALIGN;
+	S8 format ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &format, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &height, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &width, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	ind = rlib_find_slot (raylib_rendertextures_used, RAYLIB_MAX_RENDERTEX);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_rendertextures[ind] = LoadRenderTextureEx ((int) width, (int) height, (int) format);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_rendertextures[ind].texture.id == 0)
+	{
+		printf ("raylib_load_render_texture_ex: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_rendertextures_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_sound_alias (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: source_handle
+	// return: sound handle or -1 on error
+	S8 source_handle ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &source_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (source_handle < 0 || source_handle >= RAYLIB_MAX_SOUNDS || raylib_sounds_used[source_handle] == 0)
+	{
+		printf ("raylib_load_sound_alias: ERROR invalid sound handle!\n");
+		return (NULL);
+	}
+
+	ind = rlib_find_slot (raylib_sounds_used, RAYLIB_MAX_SOUNDS);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_sounds[ind] = LoadSoundAlias (raylib_sounds[source_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_sounds[ind].stream.buffer == NULL)
+	{
+		printf ("raylib_load_sound_alias: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_sounds_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_sound_from_wave (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: wave_handle
+	// return: sound handle or -1 on error
+	S8 wave_handle ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &wave_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (wave_handle < 0 || wave_handle >= RAYLIB_MAX_WAVES || raylib_waves_used[wave_handle] == 0)
+	{
+		printf ("raylib_load_sound_from_wave: ERROR invalid wave handle!\n");
+		return (NULL);
+	}
+
+	ind = rlib_find_slot (raylib_sounds_used, RAYLIB_MAX_SOUNDS);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_sounds[ind] = LoadSoundFromWave (raylib_waves[wave_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_sounds[ind].stream.buffer == NULL)
+	{
+		printf ("raylib_load_sound_from_wave: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_sounds_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_texture_cubemap (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle, layout
+	// return: texture handle or -1 on error
+	S8 image_handle ALIGN;
+	S8 layout ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &layout, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_load_texture_cubemap: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	ind = rlib_find_slot (raylib_textures_used, RAYLIB_MAX_TEXTURES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_textures[ind] = LoadTextureCubemap (raylib_images[image_handle], (int) layout);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_textures[ind].id == 0)
+	{
+		printf ("raylib_load_texture_cubemap: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_textures_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_utf8 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: codepoints_addr, length, out_addr
+	// return: string written to out_addr
+	S8 codepoints_addr ALIGN;
+	int *codepoints_ptr = NULL;
+	S8 length ALIGN;
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+	S8 i ALIGN;
+	F8 t ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &length, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &codepoints_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (length > 0)
+	{
+		if (memory_bounds (codepoints_addr, (length - 1) * 8) != 0)
+		{
+			printf ("raylib_load_utf8: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+		codepoints_ptr = calloc (length, sizeof (int));
+		if (codepoints_ptr == NULL)
+		{
+			printf ("raylib_load_utf8: ERROR out of memory!\n");
+			return (NULL);
+		}
+		for (i = 0; i < length; i++)
+		{
+			memcpy (&t, &data[codepoints_addr + (i * 8)], sizeof (F8));
+			codepoints_ptr[i] = (int) t;
+		}
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = LoadUTF8 ((const int *) codepoints_ptr, (int) length);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	free (codepoints_ptr);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_load_utf8: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	UnloadUTF8 ((char *) text);
+
+	return (sp);
+}
+
+U1 *raylib_load_vr_stereo_config (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: device_addr
+	// return: vr stereo config handle or -1 on error
+	VrDeviceInfo device;
+	S8 device_addr ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &device_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_vrdeviceinfo (data, device_addr, &device) != 0) return (NULL);
+
+	ind = rlib_find_slot (raylib_vrconfigs_used, RAYLIB_MAX_VRCONFIGS);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_vrconfigs[ind] = LoadVrStereoConfig (device);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	raylib_vrconfigs_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_wave (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_name_addr
+	// return: wave handle or -1 on error
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	ind = rlib_find_slot (raylib_waves_used, RAYLIB_MAX_WAVES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_waves[ind] = LoadWave ((const char *) file_name_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_waves[ind].frameCount == 0)
+	{
+		printf ("raylib_load_wave: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_waves_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_load_wave_from_memory (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_type_addr, file_data_addr, data_size
+	// return: wave handle or -1 on error
+	S8 file_type_addr ALIGN;
+	U1 file_type_buf[512];
+	S8 file_data_addr ALIGN;
+	S8 data_size ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &data_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_data_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_type_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, file_type_addr, file_type_buf, sizeof (file_type_buf)) != 0) return (NULL);
+	if (data_size > 0)
+	{
+		if (memory_bounds (file_data_addr, data_size - 1) != 0)
+		{
+			printf ("raylib_load_wave_from_memory: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+	}
+
+	ind = rlib_find_slot (raylib_waves_used, RAYLIB_MAX_WAVES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_waves[ind] = LoadWaveFromMemory ((const char *) file_type_buf, (const unsigned char *) &data[file_data_addr], (int) data_size);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_waves[ind].frameCount == 0)
+	{
+		printf ("raylib_load_wave_from_memory: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_waves_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_make_directory (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: dir_path_addr
+	// return: integer result
+	S8 dir_path_addr ALIGN;
+	U1 dir_path_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &dir_path_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, dir_path_addr, dir_path_buf, sizeof (dir_path_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = MakeDirectory ((const char *) dir_path_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_measure_text_codepoints (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: font_handle, codepoints_addr, length, font_size, spacing, out_addr
+	// return: struct written to out_addr
+	S8 font_handle ALIGN;
+	S8 codepoints_addr ALIGN;
+	int *codepoints_ptr = NULL;
+	S8 length ALIGN;
+	F8 font_size ALIGN;
+	F8 spacing ALIGN;
+	S8 out_addr ALIGN;
+	Vector2 ret;
+	S8 i ALIGN;
+	F8 t ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &spacing, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &font_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &length, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &codepoints_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &font_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (font_handle < 0 || font_handle >= RAYLIB_MAX_FONTS || raylib_fonts_used[font_handle] == 0)
+	{
+		printf ("raylib_measure_text_codepoints: ERROR invalid font handle!\n");
+		return (NULL);
+	}
+
+	if (length > 0)
+	{
+		if (memory_bounds (codepoints_addr, (length - 1) * 8) != 0)
+		{
+			printf ("raylib_measure_text_codepoints: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+		codepoints_ptr = calloc (length, sizeof (int));
+		if (codepoints_ptr == NULL)
+		{
+			printf ("raylib_measure_text_codepoints: ERROR out of memory!\n");
+			return (NULL);
+		}
+		for (i = 0; i < length; i++)
+		{
+			memcpy (&t, &data[codepoints_addr + (i * 8)], sizeof (F8));
+			codepoints_ptr[i] = (int) t;
+		}
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = MeasureTextCodepoints (raylib_fonts[font_handle], (const int *) codepoints_ptr, (int) length, (float) font_size, (float) spacing);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	free (codepoints_ptr);
+
+	if (rlib_write_vec2 (data, out_addr, ret) != 0) return (NULL);
+
+	return (sp);
+}
+
+U1 *raylib_pause_audio_stream (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: stream_handle
+	S8 stream_handle ALIGN;
+
+	sp = stpopi ((U1 *) &stream_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (stream_handle < 0 || stream_handle >= RAYLIB_MAX_AUDIOSTREAMS || raylib_audiostreams_used[stream_handle] == 0)
+	{
+		printf ("raylib_pause_audio_stream: ERROR invalid audio stream handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	PauseAudioStream (raylib_audiostreams[stream_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_play_audio_stream (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: stream_handle
+	S8 stream_handle ALIGN;
+
+	sp = stpopi ((U1 *) &stream_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (stream_handle < 0 || stream_handle >= RAYLIB_MAX_AUDIOSTREAMS || raylib_audiostreams_used[stream_handle] == 0)
+	{
+		printf ("raylib_play_audio_stream: ERROR invalid audio stream handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	PlayAudioStream (raylib_audiostreams[stream_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_play_automation_event (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: event_addr
+	AutomationEvent event;
+	S8 event_addr ALIGN;
+
+	sp = stpopi ((U1 *) &event_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_automationevent (data, event_addr, &event) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	PlayAutomationEvent (event);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_resume_audio_stream (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: stream_handle
+	S8 stream_handle ALIGN;
+
+	sp = stpopi ((U1 *) &stream_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (stream_handle < 0 || stream_handle >= RAYLIB_MAX_AUDIOSTREAMS || raylib_audiostreams_used[stream_handle] == 0)
+	{
+		printf ("raylib_resume_audio_stream: ERROR invalid audio stream handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ResumeAudioStream (raylib_audiostreams[stream_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_save_file_data (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_name_addr, data_addr, data_size
+	// return: 1 true, 0 false
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 data_addr ALIGN;
+	S8 data_size ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &data_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &data_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+	if (data_size > 0)
+	{
+		if (memory_bounds (data_addr, data_size - 1) != 0)
+		{
+			printf ("raylib_save_file_data: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = SaveFileData ((const char *) file_name_buf, (const void *) &data[data_addr], (int) data_size) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_save_file_text (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_name_addr, text_addr
+	// return: 1 true, 0 false
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = SaveFileText ((const char *) file_name_buf, (const char *) text_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_seek_music_stream (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: music_handle, position
+	S8 music_handle ALIGN;
+	F8 position ALIGN;
+
+	sp = stpopd ((U1 *) &position, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &music_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (music_handle < 0 || music_handle >= RAYLIB_MAX_MUSICS || raylib_musics_used[music_handle] == 0)
+	{
+		printf ("raylib_seek_music_stream: ERROR invalid music handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	SeekMusicStream (raylib_musics[music_handle], (float) position);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_set_audio_stream_buffer_size_default (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: size
+	S8 size ALIGN;
+
+	sp = stpopi ((U1 *) &size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetAudioStreamBufferSizeDefault ((int) size);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_set_audio_stream_pan (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: stream_handle, pan
+	S8 stream_handle ALIGN;
+	F8 pan ALIGN;
+
+	sp = stpopd ((U1 *) &pan, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &stream_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (stream_handle < 0 || stream_handle >= RAYLIB_MAX_AUDIOSTREAMS || raylib_audiostreams_used[stream_handle] == 0)
+	{
+		printf ("raylib_set_audio_stream_pan: ERROR invalid audio stream handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetAudioStreamPan (raylib_audiostreams[stream_handle], (float) pan);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_set_audio_stream_pitch (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: stream_handle, pitch
+	S8 stream_handle ALIGN;
+	F8 pitch ALIGN;
+
+	sp = stpopd ((U1 *) &pitch, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &stream_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (stream_handle < 0 || stream_handle >= RAYLIB_MAX_AUDIOSTREAMS || raylib_audiostreams_used[stream_handle] == 0)
+	{
+		printf ("raylib_set_audio_stream_pitch: ERROR invalid audio stream handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetAudioStreamPitch (raylib_audiostreams[stream_handle], (float) pitch);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_set_audio_stream_volume (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: stream_handle, volume
+	S8 stream_handle ALIGN;
+	F8 volume ALIGN;
+
+	sp = stpopd ((U1 *) &volume, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &stream_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (stream_handle < 0 || stream_handle >= RAYLIB_MAX_AUDIOSTREAMS || raylib_audiostreams_used[stream_handle] == 0)
+	{
+		printf ("raylib_set_audio_stream_volume: ERROR invalid audio stream handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetAudioStreamVolume (raylib_audiostreams[stream_handle], (float) volume);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_set_automation_event_base_frame (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: frame
+	S8 frame ALIGN;
+
+	sp = stpopi ((U1 *) &frame, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetAutomationEventBaseFrame ((int) frame);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_set_automation_event_list (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: list_handle
+	S8 list_handle ALIGN;
+
+	sp = stpopi ((U1 *) &list_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (list_handle < 0 || list_handle >= RAYLIB_MAX_AUTOMATION || raylib_automationlists_used[list_handle] == 0)
+	{
+		printf ("raylib_set_automation_event_list: ERROR invalid automation list handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetAutomationEventList (&raylib_automationlists[list_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_set_gamepad_mappings (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: mappings_addr
+	// return: integer result
+	S8 mappings_addr ALIGN;
+	U1 mappings_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &mappings_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, mappings_addr, mappings_buf, sizeof (mappings_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = SetGamepadMappings ((const char *) mappings_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_set_gestures_enabled (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: flags
+	S8 flags ALIGN;
+
+	sp = stpopi ((U1 *) &flags, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetGesturesEnabled ((unsigned int) flags);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_set_mouse_offset (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: offset_x, offset_y
+	S8 offset_x ALIGN;
+	S8 offset_y ALIGN;
+
+	sp = stpopi ((U1 *) &offset_y, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &offset_x, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetMouseOffset ((int) offset_x, (int) offset_y);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_set_mouse_scale (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: scale_x, scale_y
+	F8 scale_x ALIGN;
+	F8 scale_y ALIGN;
+
+	sp = stpopd ((U1 *) &scale_y, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &scale_x, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetMouseScale ((float) scale_x, (float) scale_y);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_set_shapes_texture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: texture_handle, rec_addr
+	S8 texture_handle ALIGN;
+	Rectangle rec;
+	S8 rec_addr ALIGN;
+
+	sp = stpopi ((U1 *) &rec_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &texture_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (texture_handle < 0 || texture_handle >= RAYLIB_MAX_TEXTURES || raylib_textures_used[texture_handle] == 0)
+	{
+		printf ("raylib_set_shapes_texture: ERROR invalid texture handle!\n");
+		return (NULL);
+	}
+
+	if (rlib_read_rect (data, rec_addr, &rec) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetShapesTexture (raylib_textures[texture_handle], rec);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_set_text_line_spacing (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: spacing
+	S8 spacing ALIGN;
+
+	sp = stpopi ((U1 *) &spacing, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetTextLineSpacing ((int) spacing);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_set_window_focused (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetWindowFocused ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_set_window_icon (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: image_handle
+	S8 image_handle ALIGN;
+
+	sp = stpopi ((U1 *) &image_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (image_handle < 0 || image_handle >= RAYLIB_MAX_IMAGES || raylib_images_used[image_handle] == 0)
+	{
+		printf ("raylib_set_window_icon: ERROR invalid image handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetWindowIcon (raylib_images[image_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_set_window_monitor (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: monitor
+	S8 monitor ALIGN;
+
+	sp = stpopi ((U1 *) &monitor, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetWindowMonitor ((int) monitor);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_show_cursor (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+
+	pthread_mutex_lock (&rlib_mutex);
+	ShowCursor ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_start_automation_event_recording (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+
+	pthread_mutex_lock (&rlib_mutex);
+	StartAutomationEventRecording ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_stop_audio_stream (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: stream_handle
+	S8 stream_handle ALIGN;
+
+	sp = stpopi ((U1 *) &stream_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (stream_handle < 0 || stream_handle >= RAYLIB_MAX_AUDIOSTREAMS || raylib_audiostreams_used[stream_handle] == 0)
+	{
+		printf ("raylib_stop_audio_stream: ERROR invalid audio stream handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	StopAudioStream (raylib_audiostreams[stream_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_stop_automation_event_recording (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+
+	pthread_mutex_lock (&rlib_mutex);
+	StopAutomationEventRecording ();
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_text_find_index (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr, search_addr
+	// return: integer result
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 search_addr ALIGN;
+	U1 search_buf[512];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &search_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, search_addr, search_buf, sizeof (search_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = TextFindIndex ((const char *) text_buf, (const char *) search_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_text_insert (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr, insert_addr, position, out_addr
+	// return: string written to out_addr
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 insert_addr ALIGN;
+	U1 insert_buf[512];
+	S8 position ALIGN;
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &position, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &insert_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, insert_addr, insert_buf, sizeof (insert_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = TextInsert ((const char *) text_buf, (const char *) insert_buf, (int) position);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_text_insert: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_text_is_equal (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text1_addr, text2_addr
+	// return: 1 true, 0 false
+	S8 text1_addr ALIGN;
+	U1 text1_buf[4096];
+	S8 text2_addr ALIGN;
+	U1 text2_buf[4096];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &text2_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text1_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text1_addr, text1_buf, sizeof (text1_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, text2_addr, text2_buf, sizeof (text2_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = TextIsEqual ((const char *) text1_buf, (const char *) text2_buf) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_text_length (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr
+	// return: integer result
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = TextLength ((const char *) text_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_text_remove_spaces (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr, out_addr
+	// return: string written to out_addr
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = TextRemoveSpaces ((const char *) text_buf);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_text_remove_spaces: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_text_replace (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr, search_addr, replacement_addr, out_addr
+	// return: string written to out_addr
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 search_addr ALIGN;
+	U1 search_buf[512];
+	S8 replacement_addr ALIGN;
+	U1 replacement_buf[512];
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &replacement_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &search_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, search_addr, search_buf, sizeof (search_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, replacement_addr, replacement_buf, sizeof (replacement_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = TextReplace ((const char *) text_buf, (const char *) search_buf, (const char *) replacement_buf);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_text_replace: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_text_replace_between (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr, begin_addr, end_addr, replacement_addr, out_addr
+	// return: string written to out_addr
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 begin_addr ALIGN;
+	U1 begin_buf[512];
+	S8 end_addr ALIGN;
+	U1 end_buf[512];
+	S8 replacement_addr ALIGN;
+	U1 replacement_buf[512];
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &replacement_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &end_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &begin_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, begin_addr, begin_buf, sizeof (begin_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, end_addr, end_buf, sizeof (end_buf)) != 0) return (NULL);
+	if (rlib_read_string (data, replacement_addr, replacement_buf, sizeof (replacement_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = TextReplaceBetween ((const char *) text_buf, (const char *) begin_buf, (const char *) end_buf, (const char *) replacement_buf);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_text_replace_between: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_text_subtext (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr, position, length, out_addr
+	// return: string written to out_addr
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 position ALIGN;
+	S8 length ALIGN;
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &length, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &position, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = TextSubtext ((const char *) text_buf, (int) position, (int) length);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_text_subtext: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_text_to_camel (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr, out_addr
+	// return: string written to out_addr
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = TextToCamel ((const char *) text_buf);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_text_to_camel: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_text_to_float (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr
+	// return: double value
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	F8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = TextToFloat ((const char *) text_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushd (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_text_to_integer (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr
+	// return: integer result
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = TextToInteger ((const char *) text_buf);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_text_to_lower (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr, out_addr
+	// return: string written to out_addr
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = TextToLower ((const char *) text_buf);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_text_to_lower: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_text_to_pascal (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr, out_addr
+	// return: string written to out_addr
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = TextToPascal ((const char *) text_buf);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_text_to_pascal: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_text_to_snake (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr, out_addr
+	// return: string written to out_addr
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = TextToSnake ((const char *) text_buf);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_text_to_snake: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_text_to_upper (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr, out_addr
+	// return: string written to out_addr
+	S8 text_addr ALIGN;
+	U1 text_buf[4096];
+	S8 out_addr ALIGN;
+	const char *text;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_read_string (data, text_addr, text_buf, sizeof (text_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	text = TextToUpper ((const char *) text_buf);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, 4095);
+	}
+	else
+	{
+		len = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_text_to_upper: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], text, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_unload_audio_stream (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: stream_handle
+	S8 stream_handle ALIGN;
+
+	sp = stpopi ((U1 *) &stream_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (stream_handle < 0 || stream_handle >= RAYLIB_MAX_AUDIOSTREAMS || raylib_audiostreams_used[stream_handle] == 0)
+	{
+		printf ("raylib_unload_audio_stream: ERROR invalid audio stream handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	UnloadAudioStream (raylib_audiostreams[stream_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	memset (&raylib_audiostreams[stream_handle], 0, sizeof (raylib_audiostreams[0]));
+	raylib_audiostreams_used[stream_handle] = 0;
+
+	return (sp);
+}
+
+U1 *raylib_unload_automation_event_list (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: list_handle
+	S8 list_handle ALIGN;
+
+	sp = stpopi ((U1 *) &list_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (list_handle < 0 || list_handle >= RAYLIB_MAX_AUTOMATION || raylib_automationlists_used[list_handle] == 0)
+	{
+		printf ("raylib_unload_automation_event_list: ERROR invalid automation list handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	UnloadAutomationEventList (raylib_automationlists[list_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	memset (&raylib_automationlists[list_handle], 0, sizeof (raylib_automationlists[0]));
+	raylib_automationlists_used[list_handle] = 0;
+
+	return (sp);
+}
+
+U1 *raylib_unload_directory_files (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: files_handle
+	S8 files_handle ALIGN;
+
+	sp = stpopi ((U1 *) &files_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (files_handle < 0 || files_handle >= RAYLIB_MAX_FILEPATHLISTS || raylib_filepathlists_used[files_handle] == 0)
+	{
+		printf ("raylib_unload_directory_files: ERROR invalid file path list handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	UnloadDirectoryFiles (raylib_filepathlists[files_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	memset (&raylib_filepathlists[files_handle], 0, sizeof (raylib_filepathlists[0]));
+	raylib_filepathlists_used[files_handle] = 0;
+
+	return (sp);
+}
+
+U1 *raylib_unload_dropped_files (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: files_handle
+	S8 files_handle ALIGN;
+
+	sp = stpopi ((U1 *) &files_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (files_handle < 0 || files_handle >= RAYLIB_MAX_FILEPATHLISTS || raylib_filepathlists_used[files_handle] == 0)
+	{
+		printf ("raylib_unload_dropped_files: ERROR invalid file path list handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	UnloadDroppedFiles (raylib_filepathlists[files_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	memset (&raylib_filepathlists[files_handle], 0, sizeof (raylib_filepathlists[0]));
+	raylib_filepathlists_used[files_handle] = 0;
+
+	return (sp);
+}
+
+U1 *raylib_unload_render_texture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: target_handle
+	S8 target_handle ALIGN;
+
+	sp = stpopi ((U1 *) &target_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (target_handle < 0 || target_handle >= RAYLIB_MAX_RENDERTEX || raylib_rendertextures_used[target_handle] == 0)
+	{
+		printf ("raylib_unload_render_texture: ERROR invalid render texture handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	UnloadRenderTexture (raylib_rendertextures[target_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	memset (&raylib_rendertextures[target_handle], 0, sizeof (raylib_rendertextures[0]));
+	raylib_rendertextures_used[target_handle] = 0;
+
+	return (sp);
+}
+
+U1 *raylib_unload_sound_alias (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: alias_handle
+	S8 alias_handle ALIGN;
+
+	sp = stpopi ((U1 *) &alias_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (alias_handle < 0 || alias_handle >= RAYLIB_MAX_SOUNDS || raylib_sounds_used[alias_handle] == 0)
+	{
+		printf ("raylib_unload_sound_alias: ERROR invalid sound handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	UnloadSoundAlias (raylib_sounds[alias_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	memset (&raylib_sounds[alias_handle], 0, sizeof (raylib_sounds[0]));
+	raylib_sounds_used[alias_handle] = 0;
+
+	return (sp);
+}
+
+U1 *raylib_unload_vr_stereo_config (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: config_handle
+	S8 config_handle ALIGN;
+
+	sp = stpopi ((U1 *) &config_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (config_handle < 0 || config_handle >= RAYLIB_MAX_VRCONFIGS || raylib_vrconfigs_used[config_handle] == 0)
+	{
+		printf ("raylib_unload_vr_stereo_config: ERROR invalid vr stereo config handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	UnloadVrStereoConfig (raylib_vrconfigs[config_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	memset (&raylib_vrconfigs[config_handle], 0, sizeof (raylib_vrconfigs[0]));
+	raylib_vrconfigs_used[config_handle] = 0;
+
+	return (sp);
+}
+
+U1 *raylib_unload_wave (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: wave_handle
+	S8 wave_handle ALIGN;
+
+	sp = stpopi ((U1 *) &wave_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (wave_handle < 0 || wave_handle >= RAYLIB_MAX_WAVES || raylib_waves_used[wave_handle] == 0)
+	{
+		printf ("raylib_unload_wave: ERROR invalid wave handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	UnloadWave (raylib_waves[wave_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	memset (&raylib_waves[wave_handle], 0, sizeof (raylib_waves[0]));
+	raylib_waves_used[wave_handle] = 0;
+
+	return (sp);
+}
+
+U1 *raylib_update_mesh_buffer (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: mesh_handle, index, data_addr, data_size, offset
+	S8 mesh_handle ALIGN;
+	S8 index ALIGN;
+	S8 data_addr ALIGN;
+	S8 data_size ALIGN;
+	S8 offset ALIGN;
+
+	sp = stpopi ((U1 *) &offset, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &data_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &data_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &index, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &mesh_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (mesh_handle < 0 || mesh_handle >= RAYLIB_MAX_MESHES || raylib_meshes_used[mesh_handle] == 0)
+	{
+		printf ("raylib_update_mesh_buffer: ERROR invalid mesh handle!\n");
+		return (NULL);
+	}
+
+	if (data_size > 0)
+	{
+		if (memory_bounds (data_addr, data_size - 1) != 0)
+		{
+			printf ("raylib_update_mesh_buffer: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	UpdateMeshBuffer (raylib_meshes[mesh_handle], (int) index, (const void *) &data[data_addr], (int) data_size, (int) offset);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_wave_copy (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: wave_handle
+	// return: wave handle or -1 on error
+	S8 wave_handle ALIGN;
+	S8 ind ALIGN;
+
+	sp = stpopi ((U1 *) &wave_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (wave_handle < 0 || wave_handle >= RAYLIB_MAX_WAVES || raylib_waves_used[wave_handle] == 0)
+	{
+		printf ("raylib_wave_copy: ERROR invalid wave handle!\n");
+		return (NULL);
+	}
+
+	ind = rlib_find_slot (raylib_waves_used, RAYLIB_MAX_WAVES);
+	if (ind < 0)
+	{
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	raylib_waves[ind] = WaveCopy (raylib_waves[wave_handle]);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (raylib_waves[ind].frameCount == 0)
+	{
+		printf ("raylib_wave_copy: ERROR operation failed!\n");
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	raylib_waves_used[ind] = 1;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_wave_crop (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: wave_handle, init_frame, final_frame
+	S8 wave_handle ALIGN;
+	S8 init_frame ALIGN;
+	S8 final_frame ALIGN;
+
+	sp = stpopi ((U1 *) &final_frame, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &init_frame, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &wave_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (wave_handle < 0 || wave_handle >= RAYLIB_MAX_WAVES || raylib_waves_used[wave_handle] == 0)
+	{
+		printf ("raylib_wave_crop: ERROR invalid wave handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	WaveCrop (&raylib_waves[wave_handle], (int) init_frame, (int) final_frame);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_wave_format (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: wave_handle, sample_rate, sample_size, channels
+	S8 wave_handle ALIGN;
+	S8 sample_rate ALIGN;
+	S8 sample_size ALIGN;
+	S8 channels ALIGN;
+
+	sp = stpopi ((U1 *) &channels, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &sample_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &sample_rate, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &wave_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (wave_handle < 0 || wave_handle >= RAYLIB_MAX_WAVES || raylib_waves_used[wave_handle] == 0)
+	{
+		printf ("raylib_wave_format: ERROR invalid wave handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	WaveFormat (&raylib_waves[wave_handle], (int) sample_rate, (int) sample_size, (int) channels);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+// ---------------------------------------------------------------------------
+// model animation functions
+// ---------------------------------------------------------------------------
+
+U1 *raylib_load_model_animations (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: file_name_addr
+	// return: base animation handle or -1 on error
+	S8 file_name_addr ALIGN;
+	U1 file_name_buf[512];
+	ModelAnimation *anims = NULL;
+	int anim_count = 0;
+	S8 ind ALIGN;
+	S8 i ALIGN;
+
+	sp = stpopi ((U1 *) &file_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (rlib_load_filename (data, file_name_addr, file_name_buf, sizeof (file_name_buf)) != 0) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	anims = LoadModelAnimations ((const char *) file_name_buf, &anim_count);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	if (anims == NULL || anim_count <= 0)
+	{
+		printf ("raylib_load_model_animations: ERROR loading model animations: %s!\n", file_name_buf);
+		sp = stpushi (-1, sp, sp_bottom);
+		return (sp);
+	}
+
+	ind = rlib_find_slots (raylib_animations_used, RAYLIB_MAX_ANIMATIONS, anim_count);
+	if (ind < 0)
+	{
+		pthread_mutex_lock (&rlib_mutex);
+		UnloadModelAnimations (anims, anim_count);
+		pthread_mutex_unlock (&rlib_mutex);
+		return (NULL);
+	}
+
+	for (i = 0; i < anim_count; i++)
+	{
+		raylib_animations[ind + i] = anims[i];
+		raylib_animations_used[ind + i] = 1;
+		raylib_animations_owner[ind + i] = ind;
+		raylib_animations_count[ind + i] = anim_count;
+	}
+	raylib_animations_array[ind] = anims;
+
+	sp = stpushi (ind, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_unload_model_animations (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: animation_handle
+	// takes the base handle returned by raylib_load_model_animations and
+	// frees the whole animation array
+	S8 animation_handle ALIGN;
+	S8 base ALIGN;
+	S8 count ALIGN;
+	S8 i ALIGN;
+
+	sp = stpopi ((U1 *) &animation_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (animation_handle < 0 || animation_handle >= RAYLIB_MAX_ANIMATIONS || raylib_animations_used[animation_handle] == 0)
+	{
+		printf ("raylib_unload_model_animations: ERROR invalid model animation handle!\n");
+		return (NULL);
+	}
+
+	base = raylib_animations_owner[animation_handle];
+	if (base < 0 || base >= RAYLIB_MAX_ANIMATIONS || raylib_animations_array[base] == NULL)
+	{
+		printf ("raylib_unload_model_animations: ERROR invalid animation array!\n");
+		return (NULL);
+	}
+	count = raylib_animations_count[base];
+
+	pthread_mutex_lock (&rlib_mutex);
+	UnloadModelAnimations (raylib_animations_array[base], (int) count);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	for (i = 0; i < count; i++)
+	{
+		memset (&raylib_animations[base + i], 0, sizeof (ModelAnimation));
+		raylib_animations_used[base + i] = 0;
+		raylib_animations_owner[base + i] = 0;
+		raylib_animations_count[base + i] = 0;
+	}
+	raylib_animations_array[base] = NULL;
+
+	return (sp);
+}
+
+U1 *raylib_get_model_animation_count (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: animation_handle
+	// return: number of animations in the loaded animation array
+	S8 animation_handle ALIGN;
+	S8 count ALIGN;
+
+	sp = stpopi ((U1 *) &animation_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (animation_handle < 0 || animation_handle >= RAYLIB_MAX_ANIMATIONS || raylib_animations_used[animation_handle] == 0)
+	{
+		printf ("raylib_get_model_animation_count: ERROR invalid model animation handle!\n");
+		return (NULL);
+	}
+
+	count = raylib_animations_count[animation_handle];
+
+	sp = stpushi (count, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_update_model_animation (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: model_handle, animation_handle, frame
+	S8 model_handle ALIGN;
+	S8 animation_handle ALIGN;
+	F8 frame ALIGN;
+
+	sp = stpopd ((U1 *) &frame, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &animation_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &model_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (model_handle < 0 || model_handle >= RAYLIB_MAX_MODELS || raylib_models_used[model_handle] == 0)
+	{
+		printf ("raylib_update_model_animation: ERROR invalid model handle!\n");
+		return (NULL);
+	}
+
+	if (animation_handle < 0 || animation_handle >= RAYLIB_MAX_ANIMATIONS || raylib_animations_used[animation_handle] == 0)
+	{
+		printf ("raylib_update_model_animation: ERROR invalid model animation handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	UpdateModelAnimation (raylib_models[model_handle], raylib_animations[animation_handle], (float) frame);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_update_model_animation_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: model_handle, anim_a_handle, frame_a, anim_b_handle, frame_b, blend
+	S8 model_handle ALIGN;
+	S8 anim_a_handle ALIGN;
+	F8 frame_a ALIGN;
+	S8 anim_b_handle ALIGN;
+	F8 frame_b ALIGN;
+	F8 blend ALIGN;
+
+	sp = stpopd ((U1 *) &blend, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &frame_b, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &anim_b_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopd ((U1 *) &frame_a, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &anim_a_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &model_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (model_handle < 0 || model_handle >= RAYLIB_MAX_MODELS || raylib_models_used[model_handle] == 0)
+	{
+		printf ("raylib_update_model_animation_ex: ERROR invalid model handle!\n");
+		return (NULL);
+	}
+
+	if (anim_a_handle < 0 || anim_a_handle >= RAYLIB_MAX_ANIMATIONS || raylib_animations_used[anim_a_handle] == 0)
+	{
+		printf ("raylib_update_model_animation_ex: ERROR invalid model animation handle!\n");
+		return (NULL);
+	}
+
+	if (anim_b_handle < 0 || anim_b_handle >= RAYLIB_MAX_ANIMATIONS || raylib_animations_used[anim_b_handle] == 0)
+	{
+		printf ("raylib_update_model_animation_ex: ERROR invalid model animation handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	UpdateModelAnimationEx (raylib_models[model_handle], raylib_animations[anim_a_handle], (float) frame_a,
+		raylib_animations[anim_b_handle], (float) frame_b, (float) blend);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_is_model_animation_valid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: model_handle, animation_handle
+	// return: 1 true, 0 false
+	S8 model_handle ALIGN;
+	S8 animation_handle ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &animation_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &model_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (model_handle < 0 || model_handle >= RAYLIB_MAX_MODELS || raylib_models_used[model_handle] == 0)
+	{
+		printf ("raylib_is_model_animation_valid: ERROR invalid model handle!\n");
+		return (NULL);
+	}
+
+	if (animation_handle < 0 || animation_handle >= RAYLIB_MAX_ANIMATIONS || raylib_animations_used[animation_handle] == 0)
+	{
+		printf ("raylib_is_model_animation_valid: ERROR invalid model animation handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	ret = IsModelAnimationValid (raylib_models[model_handle], raylib_animations[animation_handle]) ? 1 : 0;
+	pthread_mutex_unlock (&rlib_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
 	return (sp);
 }
 
