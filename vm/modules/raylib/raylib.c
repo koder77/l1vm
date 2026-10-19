@@ -7409,10 +7409,11 @@ U1 *raylib_get_music_time_played (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 // machine and its data memory are wrapped below. The following functions
 // are not wrapped:
 //
-// callback setters: AttachAudioMixedProcessor, AttachAudioStreamProcessor,
-//   DetachAudioMixedProcessor, DetachAudioStreamProcessor,
-//   SetAudioStreamCallback, SetTraceLogCallback, SetLoadFileDataCallback,
-//   SetLoadFileTextCallback, SetSaveFileDataCallback, SetSaveFileTextCallback
+// The callback setters (SetTraceLogCallback, SetLoadFileDataCallback,
+//   SetSaveFileDataCallback, SetLoadFileTextCallback, SetSaveFileTextCallback,
+//   SetAudioStreamCallback, AttachAudioStreamProcessor, AttachAudioMixedProcessor)
+//   are wrapped in the callback section at the end of this file; the detach
+//   operations are covered by the enable flag arguments of those wrappers.
 // variadic functions: TraceLog, TextFormat
 // raw pointers: MemAlloc, MemFree, MemRealloc, GetWindowHandle, LoadFileData,
 //   SetPixelColor, GetPixelColor, SetShaderValueV, UpdateTexture,
@@ -17022,6 +17023,1162 @@ U1 *raylib_is_model_animation_valid (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data
 	pthread_mutex_unlock (&rlib_mutex);
 
 	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+// ---------------------------------------------------------------------------
+// raylib 6.2 callback wrappers
+// ---------------------------------------------------------------------------
+//
+// The raylib callback API has two halves: raylib invokes the C callback itself
+// (either from inside a raylib call made by the VM, or from the audio thread),
+// and the VM function enables/disables the callback and polls the data it
+// captured. All state the callbacks need lives in the static "rlib_cb_*"
+// variables below.
+//
+// Locking rules:
+//
+//   rlib_mutex     - serializes the raylib calls made by the VM (module rule)
+//   rlib_cb_mutex  - protects the static callback storage
+//
+// The two mutexes are NEVER nested. The C callbacks only take rlib_cb_mutex,
+// because they run while the VM thread already holds rlib_mutex (trace log,
+// file IO callbacks fire inside the raylib call that triggers them) or on the
+// audio thread (audio callbacks). VM poll functions only take rlib_cb_mutex
+// and never call raylib while holding it, so no lock order cycle exists.
+
+// callback storage limits ----------------------------------------------------
+#define RLIB_CB_LOG_MAX			64				// queued trace log messages
+#define RLIB_CB_LOG_MSG_LEN		1024			// max length of one log message
+#define RLIB_CB_PATH_LEN		512				// max file name length
+#define RLIB_CB_FILEDATA_MAX	(1024*1024)		// staged/captured binary data
+#define RLIB_CB_FILETEXT_MAX	(256*1024)		// staged/captured file text
+#define RLIB_CB_AUDIO_STAGE		8192			// sample stage, in stereo frames
+#define RLIB_CB_AUDIO_CAP		16384			// processor capture, in samples
+
+static pthread_mutex_t rlib_cb_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+// SetTraceLogCallback: ring of formatted messages, oldest at head - count
+static char rlib_cb_log[RLIB_CB_LOG_MAX][RLIB_CB_LOG_MSG_LEN];
+static S2 rlib_cb_log_level[RLIB_CB_LOG_MAX];
+static S8 rlib_cb_log_head;
+static S8 rlib_cb_log_count;
+
+// SetLoadFileDataCallback: last request + staged response data
+static U1 rlib_cb_load_data_name[RLIB_CB_PATH_LEN];
+static S2 rlib_cb_load_data_req;
+static U1 rlib_cb_load_data_resp[RLIB_CB_FILEDATA_MAX];
+static S8 rlib_cb_load_data_resp_size;
+static S2 rlib_cb_load_data_resp_staged;
+
+// SetSaveFileDataCallback: last request + captured binary data
+static U1 rlib_cb_save_data_name[RLIB_CB_PATH_LEN];
+static U1 rlib_cb_save_data_buf[RLIB_CB_FILEDATA_MAX];
+static S8 rlib_cb_save_data_size;
+static S2 rlib_cb_save_data_req;
+
+// SetLoadFileTextCallback: last request + staged text
+static U1 rlib_cb_load_text_name[RLIB_CB_PATH_LEN];
+static S2 rlib_cb_load_text_req;
+static char rlib_cb_load_text_resp[RLIB_CB_FILETEXT_MAX];
+static S2 rlib_cb_load_text_resp_staged;
+
+// SetSaveFileTextCallback: last request + captured text
+static U1 rlib_cb_save_text_name[RLIB_CB_PATH_LEN];
+static char rlib_cb_save_text_buf[RLIB_CB_FILETEXT_MAX];
+static S2 rlib_cb_save_text_req;
+
+// SetAudioStreamCallback: sample stage ring (interleaved L,R float pairs)
+static float rlib_cb_audio_stage[RLIB_CB_AUDIO_STAGE * 2];
+static S8 rlib_cb_audio_stage_head;
+static S8 rlib_cb_audio_stage_count;
+static S2 rlib_cb_stream_cb_set[RAYLIB_MAX_AUDIOSTREAMS];
+static S8 rlib_cb_stream_fmt[RAYLIB_MAX_AUDIOSTREAMS];	// sampleSize | channels << 8
+
+// audio processors: capture ring (interleaved stereo float) + call counter
+static float rlib_cb_audio_cap[RLIB_CB_AUDIO_CAP];
+static S8 rlib_cb_audio_cap_head;
+static S8 rlib_cb_audio_cap_count;
+static S8 rlib_cb_audio_proc_calls;
+static S2 rlib_cb_stream_proc_set[RAYLIB_MAX_AUDIOSTREAMS];
+static S2 rlib_cb_mixed_proc_set;
+
+// callback helpers -----------------------------------------------------------
+
+// copy a C string into a fixed buffer, always NUL terminated
+static void rlib_cb_copy_name (U1 *dst, const char *src, S8 dstlen)
+{
+	S8 i ALIGN = 0;
+
+	if (dstlen < 1) return;
+	if (src == NULL)
+	{
+		dst[0] = '\0';
+		return;
+	}
+	while ((i < dstlen - 1) && (src[i] != '\0'))
+	{
+		dst[i] = (U1) src[i];
+		i++;
+	}
+	dst[i] = '\0';
+}
+
+static float rlib_audio_clamp (float v)
+{
+	if (v < -1.0f) return (-1.0f);
+	if (v > 1.0f) return (1.0f);
+	return (v);
+}
+
+// trace log callback ---------------------------------------------------------
+// formats the message (the callback gets the format string and the va_list)
+// and queues it for raylib_get_trace_log_message ()
+
+static void rlib_trace_log_cb (int log_level, const char *text, va_list args)
+{
+	S8 slot ALIGN;
+
+	if (text == NULL) return;
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	slot = rlib_cb_log_head;
+	vsnprintf (rlib_cb_log[slot], RLIB_CB_LOG_MSG_LEN, text, args);
+	rlib_cb_log_level[slot] = (S2) log_level;
+	rlib_cb_log_head = (slot + 1) % RLIB_CB_LOG_MAX;
+	if (rlib_cb_log_count < RLIB_CB_LOG_MAX) rlib_cb_log_count++;
+	// when the ring is full the write slot IS the oldest entry, so the ring
+	// keeps the newest RLIB_CB_LOG_MAX messages
+	pthread_mutex_unlock (&rlib_cb_mutex);
+}
+
+// file IO callbacks ----------------------------------------------------------
+// LoadFileDataCallback: records the request and returns the staged response.
+// The buffer is allocated with MemAlloc (), because raylib releases it with
+// UnloadFileData () (RL_FREE). Without staged data NULL is returned, which
+// makes the raylib load function fail for this request.
+
+static unsigned char *rlib_load_file_data_cb (const char *file_name, int *data_size)
+{
+	unsigned char *out = NULL;
+	S8 size ALIGN = 0;
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	rlib_cb_copy_name (rlib_cb_load_data_name, file_name, RLIB_CB_PATH_LEN);
+	rlib_cb_load_data_req = 1;
+
+	if (rlib_cb_load_data_resp_staged && (rlib_cb_load_data_resp_size > 0))
+	{
+		size = rlib_cb_load_data_resp_size;
+		out = MemAlloc ((unsigned int) size);
+		if (out != NULL)
+		{
+			memcpy (out, rlib_cb_load_data_resp, size);
+		}
+		else
+		{
+			size = 0;
+		}
+	}
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	if (data_size != NULL) *data_size = (int) size;
+	return (out);
+}
+
+// SaveFileDataCallback: records the request (name + data copy) and reports
+// the data as saved. Data bigger than RLIB_CB_FILEDATA_MAX is truncated.
+
+static bool rlib_save_file_data_cb (const char *file_name, const void *data, int data_size)
+{
+	S8 size ALIGN;
+
+	if (data_size < 0) data_size = 0;
+	size = data_size;
+	if (size > RLIB_CB_FILEDATA_MAX) size = RLIB_CB_FILEDATA_MAX;
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	rlib_cb_copy_name (rlib_cb_save_data_name, file_name, RLIB_CB_PATH_LEN);
+	if ((data != NULL) && (size > 0))
+	{
+		memcpy (rlib_cb_save_data_buf, data, size);
+	}
+	rlib_cb_save_data_size = size;
+	rlib_cb_save_data_req = 1;
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	return (true);
+}
+
+// LoadFileTextCallback: records the request and returns the staged text.
+// The buffer is allocated with MemAlloc (), because raylib releases it with
+// UnloadFileText () (RL_FREE). Without staged text NULL is returned.
+
+static char *rlib_load_file_text_cb (const char *file_name)
+{
+	char *out = NULL;
+	S8 len ALIGN = 0;
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	rlib_cb_copy_name (rlib_cb_load_text_name, file_name, RLIB_CB_PATH_LEN);
+	rlib_cb_load_text_req = 1;
+
+	if (rlib_cb_load_text_resp_staged)
+	{
+		len = strlen_safe (rlib_cb_load_text_resp, RLIB_CB_FILETEXT_MAX - 1);
+		out = MemAlloc ((unsigned int) len + 1);
+		if (out != NULL)
+		{
+			memcpy (out, rlib_cb_load_text_resp, len + 1);
+		}
+	}
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	return (out);
+}
+
+// SaveFileTextCallback: records the request (name + text copy) and reports
+// the text as saved. Text bigger than RLIB_CB_FILETEXT_MAX is truncated.
+
+static bool rlib_save_file_text_cb (const char *file_name, const char *text)
+{
+	S8 len ALIGN;
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	rlib_cb_copy_name (rlib_cb_save_text_name, file_name, RLIB_CB_PATH_LEN);
+	if (text != NULL)
+	{
+		len = strlen_safe (text, RLIB_CB_FILETEXT_MAX - 1);
+		memcpy (rlib_cb_save_text_buf, text, len);
+		rlib_cb_save_text_buf[len] = '\0';
+	}
+	else
+	{
+		rlib_cb_save_text_buf[0] = '\0';
+	}
+	rlib_cb_save_text_req = 1;
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	return (true);
+}
+
+// audio callbacks ------------------------------------------------------------
+// SetAudioStreamCallback: fills the stream buffer from the sample stage.
+// The AudioCallback signature carries no user data, so every audio stream
+// slot gets its own trampoline that knows which stream is calling. The
+// stream format (sample size and channels) is cached when the callback is
+// installed, so the audio thread never touches the live AudioStream struct.
+
+static void rlib_audio_stream_fill (S8 handle, void *buffer, unsigned int frames)
+{
+	unsigned int sample_size, channels, i;
+	float l, r;
+	S8 slot ALIGN;
+
+	if (handle < 0 || handle >= RAYLIB_MAX_AUDIOSTREAMS) return;
+
+	sample_size = (unsigned int) (rlib_cb_stream_fmt[handle] & 0xff);
+	channels = (unsigned int) ((rlib_cb_stream_fmt[handle] >> 8) & 0xff);
+
+	if ((sample_size != 8) && (sample_size != 16) && (sample_size != 32)) return;
+	if (channels < 1) return;
+
+	// unknown channel positions start silent (mono only uses channel 0)
+	memset (buffer, 0, (size_t) frames * channels * (sample_size / 8));
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	for (i = 0; i < frames; i++)
+	{
+		// pop the next stereo frame, silence on underrun
+		if (rlib_cb_audio_stage_count > 0)
+		{
+			slot = (rlib_cb_audio_stage_head - rlib_cb_audio_stage_count + RLIB_CB_AUDIO_STAGE) % RLIB_CB_AUDIO_STAGE;
+			l = rlib_cb_audio_stage[slot * 2];
+			r = rlib_cb_audio_stage[slot * 2 + 1];
+			rlib_cb_audio_stage_count--;
+		}
+		else
+		{
+			l = 0.0f;
+			r = 0.0f;
+		}
+
+		switch (sample_size)
+		{
+			case 8:
+			{
+				unsigned char *out = (unsigned char *) buffer;
+				out[i * channels] = (unsigned char) ((rlib_audio_clamp (l) + 1.0f) * 127.5f);
+				if (channels > 1) out[i * channels + 1] = (unsigned char) ((rlib_audio_clamp (r) + 1.0f) * 127.5f);
+				break;
+			}
+			case 16:
+			{
+				short *out = (short *) buffer;
+				out[i * channels] = (short) (rlib_audio_clamp (l) * 32767.0f);
+				if (channels > 1) out[i * channels + 1] = (short) (rlib_audio_clamp (r) * 32767.0f);
+				break;
+			}
+			case 32:
+			{
+				float *out = (float *) buffer;
+				out[i * channels] = l;
+				if (channels > 1) out[i * channels + 1] = r;
+				break;
+			}
+		}
+	}
+	pthread_mutex_unlock (&rlib_cb_mutex);
+}
+
+#define RLIB_STREAM_CB(N) \
+	static void rlib_stream_cb_##N (void *buffer, unsigned int frames) \
+	{ \
+		rlib_audio_stream_fill (N, buffer, frames); \
+	}
+
+RLIB_STREAM_CB (0)
+RLIB_STREAM_CB (1)
+RLIB_STREAM_CB (2)
+RLIB_STREAM_CB (3)
+RLIB_STREAM_CB (4)
+RLIB_STREAM_CB (5)
+RLIB_STREAM_CB (6)
+RLIB_STREAM_CB (7)
+RLIB_STREAM_CB (8)
+RLIB_STREAM_CB (9)
+RLIB_STREAM_CB (10)
+RLIB_STREAM_CB (11)
+RLIB_STREAM_CB (12)
+RLIB_STREAM_CB (13)
+RLIB_STREAM_CB (14)
+RLIB_STREAM_CB (15)
+RLIB_STREAM_CB (16)
+RLIB_STREAM_CB (17)
+RLIB_STREAM_CB (18)
+RLIB_STREAM_CB (19)
+RLIB_STREAM_CB (20)
+RLIB_STREAM_CB (21)
+RLIB_STREAM_CB (22)
+RLIB_STREAM_CB (23)
+RLIB_STREAM_CB (24)
+RLIB_STREAM_CB (25)
+RLIB_STREAM_CB (26)
+RLIB_STREAM_CB (27)
+RLIB_STREAM_CB (28)
+RLIB_STREAM_CB (29)
+RLIB_STREAM_CB (30)
+RLIB_STREAM_CB (31)
+RLIB_STREAM_CB (32)
+RLIB_STREAM_CB (33)
+RLIB_STREAM_CB (34)
+RLIB_STREAM_CB (35)
+RLIB_STREAM_CB (36)
+RLIB_STREAM_CB (37)
+RLIB_STREAM_CB (38)
+RLIB_STREAM_CB (39)
+RLIB_STREAM_CB (40)
+RLIB_STREAM_CB (41)
+RLIB_STREAM_CB (42)
+RLIB_STREAM_CB (43)
+RLIB_STREAM_CB (44)
+RLIB_STREAM_CB (45)
+RLIB_STREAM_CB (46)
+RLIB_STREAM_CB (47)
+RLIB_STREAM_CB (48)
+RLIB_STREAM_CB (49)
+RLIB_STREAM_CB (50)
+RLIB_STREAM_CB (51)
+RLIB_STREAM_CB (52)
+RLIB_STREAM_CB (53)
+RLIB_STREAM_CB (54)
+RLIB_STREAM_CB (55)
+RLIB_STREAM_CB (56)
+RLIB_STREAM_CB (57)
+RLIB_STREAM_CB (58)
+RLIB_STREAM_CB (59)
+RLIB_STREAM_CB (60)
+RLIB_STREAM_CB (61)
+RLIB_STREAM_CB (62)
+RLIB_STREAM_CB (63)
+
+static AudioCallback rlib_stream_cbs[RAYLIB_MAX_AUDIOSTREAMS] =
+{
+	rlib_stream_cb_0, rlib_stream_cb_1, rlib_stream_cb_2, rlib_stream_cb_3,
+	rlib_stream_cb_4, rlib_stream_cb_5, rlib_stream_cb_6, rlib_stream_cb_7,
+	rlib_stream_cb_8, rlib_stream_cb_9, rlib_stream_cb_10, rlib_stream_cb_11,
+	rlib_stream_cb_12, rlib_stream_cb_13, rlib_stream_cb_14, rlib_stream_cb_15,
+	rlib_stream_cb_16, rlib_stream_cb_17, rlib_stream_cb_18, rlib_stream_cb_19,
+	rlib_stream_cb_20, rlib_stream_cb_21, rlib_stream_cb_22, rlib_stream_cb_23,
+	rlib_stream_cb_24, rlib_stream_cb_25, rlib_stream_cb_26, rlib_stream_cb_27,
+	rlib_stream_cb_28, rlib_stream_cb_29, rlib_stream_cb_30, rlib_stream_cb_31,
+	rlib_stream_cb_32, rlib_stream_cb_33, rlib_stream_cb_34, rlib_stream_cb_35,
+	rlib_stream_cb_36, rlib_stream_cb_37, rlib_stream_cb_38, rlib_stream_cb_39,
+	rlib_stream_cb_40, rlib_stream_cb_41, rlib_stream_cb_42, rlib_stream_cb_43,
+	rlib_stream_cb_44, rlib_stream_cb_45, rlib_stream_cb_46, rlib_stream_cb_47,
+	rlib_stream_cb_48, rlib_stream_cb_49, rlib_stream_cb_50, rlib_stream_cb_51,
+	rlib_stream_cb_52, rlib_stream_cb_53, rlib_stream_cb_54, rlib_stream_cb_55,
+	rlib_stream_cb_56, rlib_stream_cb_57, rlib_stream_cb_58, rlib_stream_cb_59,
+	rlib_stream_cb_60, rlib_stream_cb_61, rlib_stream_cb_62, rlib_stream_cb_63
+};
+
+// AudioProcessCallback (AttachAudioStreamProcessor, AttachAudioMixedProcessor):
+// copies the float stereo frames it receives into the capture ring for
+// raylib_get_audio_processor_capture (). One shared processor function is
+// used for every stream and for the mixed pipeline, so it can be detached
+// again by passing the same function to the detach wrappers.
+
+static void rlib_audio_capture_cb (void *buffer, unsigned int frames)
+{
+	float *in = (float *) buffer;
+	S8 i, n ALIGN;
+
+	if (in == NULL) return;
+
+	n = (S8) frames * 2;
+	if (n > RLIB_CB_AUDIO_CAP)
+	{
+		// only the newest part fits into the ring
+		in += n - RLIB_CB_AUDIO_CAP;
+		n = RLIB_CB_AUDIO_CAP;
+	}
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	for (i = 0; i < n; i++)
+	{
+		rlib_cb_audio_cap[rlib_cb_audio_cap_head] = in[i];
+		rlib_cb_audio_cap_head = (rlib_cb_audio_cap_head + 1) % RLIB_CB_AUDIO_CAP;
+		if (rlib_cb_audio_cap_count < RLIB_CB_AUDIO_CAP) rlib_cb_audio_cap_count++;
+	}
+	rlib_cb_audio_proc_calls++;
+	pthread_mutex_unlock (&rlib_cb_mutex);
+}
+
+// ---------------------------------------------------------------------------
+// trace log wrappers
+// ---------------------------------------------------------------------------
+
+U1 *raylib_set_trace_log_callback (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: enable (1 = install, 0 = remove)
+	// return: nothing
+	S8 enable ALIGN;
+
+	sp = stpopi ((U1 *) &enable, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetTraceLogCallback (enable ? rlib_trace_log_cb : NULL);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_get_trace_log_count (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// return: number of queued trace log messages
+	S8 ret ALIGN;
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	ret = rlib_cb_log_count;
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_trace_log_message (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: msg_index (0 = oldest), out_addr
+	// return: message string written to out_addr
+	S8 msg_index ALIGN;
+	S8 out_addr ALIGN;
+	char msg_buf[RLIB_CB_LOG_MSG_LEN];
+	S8 slot ALIGN;
+	S8 len ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &msg_index, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	if ((msg_index < 0) || (msg_index >= rlib_cb_log_count))
+	{
+		pthread_mutex_unlock (&rlib_cb_mutex);
+		printf ("raylib_get_trace_log_message: ERROR message index out of range!\n");
+		return (NULL);
+	}
+	slot = (rlib_cb_log_head - rlib_cb_log_count + msg_index + RLIB_CB_LOG_MAX) % RLIB_CB_LOG_MAX;
+	strcpy (msg_buf, rlib_cb_log[slot]);
+	len = strlen_safe (msg_buf, RLIB_CB_LOG_MSG_LEN - 1);
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_get_trace_log_message: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], msg_buf, len);
+	data[out_addr + len] = '\0';
+
+	return (sp);
+}
+
+U1 *raylib_get_trace_log_level (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: msg_index (0 = oldest)
+	// return: log level (LOG_ALL 0 ... LOG_NONE 7)
+	S8 msg_index ALIGN;
+	S8 ret ALIGN;
+	S8 slot ALIGN;
+
+	sp = stpopi ((U1 *) &msg_index, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	if ((msg_index < 0) || (msg_index >= rlib_cb_log_count))
+	{
+		pthread_mutex_unlock (&rlib_cb_mutex);
+		printf ("raylib_get_trace_log_level: ERROR message index out of range!\n");
+		return (NULL);
+	}
+	slot = (rlib_cb_log_head - rlib_cb_log_count + msg_index + RLIB_CB_LOG_MAX) % RLIB_CB_LOG_MAX;
+	ret = rlib_cb_log_level[slot];
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_clear_trace_log (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: none
+	// return: nothing (drops all queued trace log messages)
+	pthread_mutex_lock (&rlib_cb_mutex);
+	rlib_cb_log_head = 0;
+	rlib_cb_log_count = 0;
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	return (sp);
+}
+
+// ---------------------------------------------------------------------------
+// file data callback wrappers
+// ---------------------------------------------------------------------------
+
+U1 *raylib_set_load_file_data_callback (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: enable (1 = install, 0 = remove)
+	// return: nothing
+	S8 enable ALIGN;
+
+	sp = stpopi ((U1 *) &enable, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetLoadFileDataCallback (enable ? rlib_load_file_data_cb : NULL);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_set_load_file_data_response (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: data_addr, data_size
+	// return: 1 ok, 0 error
+	//
+	// Stages the binary data the load callback hands to raylib. The staging
+	// stays active until it is replaced, data_size 0 clears it. LoadFileData
+	// is synchronous, so the response has to be staged BEFORE the raylib call
+	// that triggers the load request.
+	S8 data_addr ALIGN;
+	S8 data_size ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &data_size, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &data_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if ((data_size < 0) || (data_size > RLIB_CB_FILEDATA_MAX))
+	{
+		printf ("raylib_set_load_file_data_response: ERROR data size out of range!\n");
+		sp = stpushi (0, sp, sp_bottom);
+		return (sp);
+	}
+	if (data_size > 0)
+	{
+		if (memory_bounds (data_addr, data_size - 1) != 0)
+		{
+			printf ("raylib_set_load_file_data_response: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+	}
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	if (data_size > 0)
+	{
+		memcpy (rlib_cb_load_data_resp, &data[data_addr], data_size);
+		rlib_cb_load_data_resp_size = data_size;
+		rlib_cb_load_data_resp_staged = 1;
+	}
+	else
+	{
+		rlib_cb_load_data_resp_size = 0;
+		rlib_cb_load_data_resp_staged = 0;
+	}
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	ret = 1;
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_load_file_data_request (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: out_addr
+	// return: 1 if a load request is pending (file name written to out_addr),
+	//         0 otherwise; the request flag is cleared by the call
+	S8 out_addr ALIGN;
+	char name_buf[RLIB_CB_PATH_LEN];
+	S8 len ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	if (rlib_cb_load_data_req == 0)
+	{
+		pthread_mutex_unlock (&rlib_cb_mutex);
+		ret = 0;
+		sp = stpushi (ret, sp, sp_bottom);
+		return (sp);
+	}
+	rlib_cb_copy_name ((U1 *) name_buf, (const char *) rlib_cb_load_data_name, RLIB_CB_PATH_LEN);
+	rlib_cb_load_data_req = 0;
+	len = strlen_safe (name_buf, RLIB_CB_PATH_LEN - 1);
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_get_load_file_data_request: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], name_buf, len);
+	data[out_addr + len] = '\0';
+
+	ret = 1;
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_set_save_file_data_callback (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: enable (1 = install, 0 = remove)
+	// return: nothing
+	S8 enable ALIGN;
+
+	sp = stpopi ((U1 *) &enable, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetSaveFileDataCallback (enable ? rlib_save_file_data_cb : NULL);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_get_save_file_data_request (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: out_name_addr, out_data_addr
+	// return: data size written to out_data_addr (bytes), -1 if no save
+	//         request is pending; the request flag is cleared by the call
+	S8 out_name_addr ALIGN;
+	S8 out_data_addr ALIGN;
+	S8 name_len ALIGN;
+	S8 size ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &out_data_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &out_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	if (rlib_cb_save_data_req == 0)
+	{
+		pthread_mutex_unlock (&rlib_cb_mutex);
+		ret = -1;
+		sp = stpushi (ret, sp, sp_bottom);
+		return (sp);
+	}
+	name_len = strlen_safe ((const char *) rlib_cb_save_data_name, RLIB_CB_PATH_LEN - 1);
+	size = rlib_cb_save_data_size;
+
+	if (memory_bounds (out_name_addr, name_len) != 0)
+	{
+		pthread_mutex_unlock (&rlib_cb_mutex);
+		printf ("raylib_get_save_file_data_request: ERROR memory bounds check failed (name)!\n");
+		return (NULL);
+	}
+	if (size > 0)
+	{
+		if (memory_bounds (out_data_addr, size - 1) != 0)
+		{
+			pthread_mutex_unlock (&rlib_cb_mutex);
+			printf ("raylib_get_save_file_data_request: ERROR memory bounds check failed (data)!\n");
+			return (NULL);
+		}
+	}
+
+	if (name_len > 0) memcpy (&data[out_name_addr], rlib_cb_save_data_name, name_len);
+	data[out_name_addr + name_len] = '\0';
+	if (size > 0) memcpy (&data[out_data_addr], rlib_cb_save_data_buf, size);
+	rlib_cb_save_data_req = 0;
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	ret = size;
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+// ---------------------------------------------------------------------------
+// file text callback wrappers
+// ---------------------------------------------------------------------------
+
+U1 *raylib_set_load_file_text_callback (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: enable (1 = install, 0 = remove)
+	// return: nothing
+	S8 enable ALIGN;
+
+	sp = stpopi ((U1 *) &enable, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetLoadFileTextCallback (enable ? rlib_load_file_text_cb : NULL);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_set_load_file_text_response (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: text_addr
+	// return: 1 ok, 0 error
+	//
+	// Stages the NUL terminated text the load callback hands to raylib. The
+	// staging stays active until it is replaced; call with an empty string
+	// to clear it. LoadFileText is synchronous, so the response has to be
+	// staged BEFORE the raylib call that triggers the load request.
+	S8 text_addr ALIGN;
+	S8 slen ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (text_addr < 0)
+	{
+		printf ("raylib_set_load_file_text_response: ERROR illegal address!\n");
+		return (NULL);
+	}
+
+	slen = strlen_safe ((const char *) &data[text_addr], RLIB_CB_FILETEXT_MAX - 1);
+	// slen counts the characters, the NUL byte sits at text_addr + slen
+	if (memory_bounds (text_addr, slen) != 0)
+	{
+		printf ("raylib_set_load_file_text_response: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	memcpy (rlib_cb_load_text_resp, &data[text_addr], slen + 1);
+	rlib_cb_load_text_resp_staged = 1;
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	ret = 1;
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_load_file_text_request (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: out_addr
+	// return: 1 if a load request is pending (file name written to out_addr),
+	//         0 otherwise; the request flag is cleared by the call
+	S8 out_addr ALIGN;
+	char name_buf[RLIB_CB_PATH_LEN];
+	S8 len ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	if (rlib_cb_load_text_req == 0)
+	{
+		pthread_mutex_unlock (&rlib_cb_mutex);
+		ret = 0;
+		sp = stpushi (ret, sp, sp_bottom);
+		return (sp);
+	}
+	rlib_cb_copy_name ((U1 *) name_buf, (const char *) rlib_cb_load_text_name, RLIB_CB_PATH_LEN);
+	rlib_cb_load_text_req = 0;
+	len = strlen_safe (name_buf, RLIB_CB_PATH_LEN - 1);
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	if (memory_bounds (out_addr, len) != 0)
+	{
+		printf ("raylib_get_load_file_text_request: ERROR memory bounds check failed!\n");
+		return (NULL);
+	}
+	if (len > 0) memcpy (&data[out_addr], name_buf, len);
+	data[out_addr + len] = '\0';
+
+	ret = 1;
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_set_save_file_text_callback (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: enable (1 = install, 0 = remove)
+	// return: nothing
+	S8 enable ALIGN;
+
+	sp = stpopi ((U1 *) &enable, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	SetSaveFileTextCallback (enable ? rlib_save_file_text_cb : NULL);
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_get_save_file_text_request (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: out_name_addr, out_text_addr
+	// return: 1 if a save request is pending (file name and text written to
+	//         out_name_addr / out_text_addr), 0 otherwise; the request flag
+	//         is cleared by the call
+	S8 out_name_addr ALIGN;
+	S8 out_text_addr ALIGN;
+	S8 name_len ALIGN;
+	S8 text_len ALIGN;
+	S8 ret ALIGN;
+
+	sp = stpopi ((U1 *) &out_text_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &out_name_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	if (rlib_cb_save_text_req == 0)
+	{
+		pthread_mutex_unlock (&rlib_cb_mutex);
+		ret = 0;
+		sp = stpushi (ret, sp, sp_bottom);
+		return (sp);
+	}
+	name_len = strlen_safe ((const char *) rlib_cb_save_text_name, RLIB_CB_PATH_LEN - 1);
+	text_len = strlen_safe (rlib_cb_save_text_buf, RLIB_CB_FILETEXT_MAX - 1);
+
+	if (memory_bounds (out_name_addr, name_len) != 0)
+	{
+		pthread_mutex_unlock (&rlib_cb_mutex);
+		printf ("raylib_get_save_file_text_request: ERROR memory bounds check failed (name)!\n");
+		return (NULL);
+	}
+	if (memory_bounds (out_text_addr, text_len) != 0)
+	{
+		pthread_mutex_unlock (&rlib_cb_mutex);
+		printf ("raylib_get_save_file_text_request: ERROR memory bounds check failed (text)!\n");
+		return (NULL);
+	}
+
+	if (name_len > 0) memcpy (&data[out_name_addr], rlib_cb_save_text_name, name_len);
+	data[out_name_addr + name_len] = '\0';
+	if (text_len > 0) memcpy (&data[out_text_addr], rlib_cb_save_text_buf, text_len);
+	data[out_text_addr + text_len] = '\0';
+	rlib_cb_save_text_req = 0;
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	ret = 1;
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+// ---------------------------------------------------------------------------
+// audio callback wrappers
+// ---------------------------------------------------------------------------
+
+U1 *raylib_set_audio_stream_callback (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: stream_handle, enable (1 = fill from sample stage, 0 = remove)
+	// return: nothing
+	//
+	// With enable 1 raylib requests audio data from the callback on the audio
+	// thread; the frames are pulled from the sample stage (raylib_stage_audio_
+	// data), silence is played when the stage runs dry. Disable the callback
+	// before unloading the stream.
+	S8 stream_handle ALIGN;
+	S8 enable ALIGN;
+
+	sp = stpopi ((U1 *) &enable, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &stream_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if ((stream_handle < 0) || (stream_handle >= RAYLIB_MAX_AUDIOSTREAMS) || (raylib_audiostreams_used[stream_handle] == 0))
+	{
+		printf ("raylib_set_audio_stream_callback: ERROR invalid audio stream handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	if (enable)
+	{
+		rlib_cb_stream_fmt[stream_handle] = (S8) raylib_audiostreams[stream_handle].sampleSize |
+			((S8) raylib_audiostreams[stream_handle].channels << 8);
+		SetAudioStreamCallback (raylib_audiostreams[stream_handle], rlib_stream_cbs[stream_handle]);
+		rlib_cb_stream_cb_set[stream_handle] = 1;
+	}
+	else
+	{
+		SetAudioStreamCallback (raylib_audiostreams[stream_handle], NULL);
+		rlib_cb_stream_cb_set[stream_handle] = 0;
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_stage_audio_data (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: data_addr, sample_count
+	// return: number of samples accepted into the stage
+	//
+	// Copies interleaved stereo float pairs (L,R,L,R...) from VM data memory
+	// (F8 array) into the sample stage that feeds the audio stream callback.
+	// A trailing unpaired sample is dropped. Samples are dropped when the
+	// stage is full, poll raylib_get_audio_stage_count () to avoid that.
+	S8 data_addr ALIGN;
+	S8 sample_count ALIGN;
+	S8 i ALIGN;
+	S8 accepted ALIGN;
+	F8 ld ALIGN, rd ALIGN;
+	float l, r;
+
+	sp = stpopi ((U1 *) &sample_count, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &data_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (sample_count < 0)
+	{
+		printf ("raylib_stage_audio_data: ERROR sample count out of range!\n");
+		return (NULL);
+	}
+	if (sample_count > 0)
+	{
+		if (memory_bounds (data_addr, (sample_count - 1) * 8) != 0)
+		{
+			printf ("raylib_stage_audio_data: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+	}
+
+	accepted = 0;
+	pthread_mutex_lock (&rlib_cb_mutex);
+	for (i = 0; i + 1 < sample_count; i += 2)
+	{
+		if (rlib_cb_audio_stage_count >= RLIB_CB_AUDIO_STAGE) break;
+
+		memcpy (&ld, &data[data_addr + i * 8], sizeof (F8));
+		memcpy (&rd, &data[data_addr + i * 8 + 8], sizeof (F8));
+		l = (float) ld;
+		r = (float) rd;
+
+		rlib_cb_audio_stage[rlib_cb_audio_stage_head * 2] = l;
+		rlib_cb_audio_stage[rlib_cb_audio_stage_head * 2 + 1] = r;
+		rlib_cb_audio_stage_head = (rlib_cb_audio_stage_head + 1) % RLIB_CB_AUDIO_STAGE;
+		if (rlib_cb_audio_stage_count < RLIB_CB_AUDIO_STAGE) rlib_cb_audio_stage_count++;
+		accepted += 2;
+	}
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	sp = stpushi (accepted, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_audio_stage_count (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// return: number of samples (stereo pairs x 2) waiting in the stage
+	S8 ret ALIGN;
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	ret = rlib_cb_audio_stage_count * 2;
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_attach_audio_stream_processor (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: stream_handle, enable (1 = attach, 0 = detach)
+	// return: nothing
+	//
+	// The attached processor captures the float stereo frames it receives
+	// (frames x 2 samples) into the capture ring of
+	// raylib_get_audio_processor_capture ().
+	S8 stream_handle ALIGN;
+	S8 enable ALIGN;
+
+	sp = stpopi ((U1 *) &enable, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &stream_handle, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if ((stream_handle < 0) || (stream_handle >= RAYLIB_MAX_AUDIOSTREAMS) || (raylib_audiostreams_used[stream_handle] == 0))
+	{
+		printf ("raylib_attach_audio_stream_processor: ERROR invalid audio stream handle!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_mutex);
+	if (enable)
+	{
+		if (rlib_cb_stream_proc_set[stream_handle] == 0)
+		{
+			AttachAudioStreamProcessor (raylib_audiostreams[stream_handle], rlib_audio_capture_cb);
+			rlib_cb_stream_proc_set[stream_handle] = 1;
+		}
+	}
+	else
+	{
+		if (rlib_cb_stream_proc_set[stream_handle] != 0)
+		{
+			DetachAudioStreamProcessor (raylib_audiostreams[stream_handle], rlib_audio_capture_cb);
+			rlib_cb_stream_proc_set[stream_handle] = 0;
+		}
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_attach_audio_mixed_processor (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: enable (1 = attach, 0 = detach)
+	// return: nothing
+	//
+	// The attached processor captures the float stereo frames of the whole
+	// audio pipeline (frames x 2 samples) into the capture ring of
+	// raylib_get_audio_processor_capture ().
+	S8 enable ALIGN;
+
+	sp = stpopi ((U1 *) &enable, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	pthread_mutex_lock (&rlib_mutex);
+	if (enable)
+	{
+		if (rlib_cb_mixed_proc_set == 0)
+		{
+			AttachAudioMixedProcessor (rlib_audio_capture_cb);
+			rlib_cb_mixed_proc_set = 1;
+		}
+	}
+	else
+	{
+		if (rlib_cb_mixed_proc_set != 0)
+		{
+			DetachAudioMixedProcessor (rlib_audio_capture_cb);
+			rlib_cb_mixed_proc_set = 0;
+		}
+	}
+	pthread_mutex_unlock (&rlib_mutex);
+
+	return (sp);
+}
+
+U1 *raylib_get_audio_processor_capture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: out_addr, max_samples
+	// return: number of samples written to out_addr (oldest captured first,
+	//         interleaved stereo float pairs as F8 values)
+	S8 out_addr ALIGN;
+	S8 max_samples ALIGN;
+	S8 n ALIGN;
+	S8 i, idx ALIGN;
+	F8 d ALIGN;
+
+	sp = stpopi ((U1 *) &max_samples, sp, sp_top);
+	if (sp == NULL) return (NULL);
+	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
+	if (sp == NULL) return (NULL);
+
+	if (max_samples < 0)
+	{
+		printf ("raylib_get_audio_processor_capture: ERROR sample count out of range!\n");
+		return (NULL);
+	}
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	n = max_samples;
+	if (n > rlib_cb_audio_cap_count) n = rlib_cb_audio_cap_count;
+
+	if (n > 0)
+	{
+		if (memory_bounds (out_addr, (n - 1) * 8) != 0)
+		{
+			pthread_mutex_unlock (&rlib_cb_mutex);
+			printf ("raylib_get_audio_processor_capture: ERROR memory bounds check failed!\n");
+			return (NULL);
+		}
+
+		idx = (rlib_cb_audio_cap_head - rlib_cb_audio_cap_count + RLIB_CB_AUDIO_CAP) % RLIB_CB_AUDIO_CAP;
+		for (i = 0; i < n; i++)
+		{
+			d = (F8) rlib_cb_audio_cap[(idx + i) % RLIB_CB_AUDIO_CAP];
+			memcpy (&data[out_addr + i * 8], &d, sizeof (F8));
+		}
+	}
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	sp = stpushi (n, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_get_audio_processor_invocations (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// return: number of times the attached audio processors were invoked
+	//         since the last raylib_clear_audio_capture ()
+	S8 ret ALIGN;
+
+	pthread_mutex_lock (&rlib_cb_mutex);
+	ret = rlib_cb_audio_proc_calls;
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
+	sp = stpushi (ret, sp, sp_bottom);
+	return (sp);
+}
+
+U1 *raylib_clear_audio_capture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
+{
+	// args: none
+	// return: nothing (drops all captured samples and the call counter)
+	pthread_mutex_lock (&rlib_cb_mutex);
+	rlib_cb_audio_cap_head = 0;
+	rlib_cb_audio_cap_count = 0;
+	rlib_cb_audio_proc_calls = 0;
+	pthread_mutex_unlock (&rlib_cb_mutex);
+
 	return (sp);
 }
 

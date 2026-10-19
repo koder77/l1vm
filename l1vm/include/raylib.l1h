@@ -592,6 +592,31 @@
 	(set string s wave_cropstrraylib "raylib_wave_crop")
 	(set string s wave_formatstrraylib "raylib_wave_format")
 	(set string s get_model_animation_countstrraylib "raylib_get_model_animation_count")
+
+	// ----- raylib 6.2 callback functions -----
+	(set string s set_trace_log_callbackstrraylib "raylib_set_trace_log_callback")
+	(set string s get_trace_log_countstrraylib "raylib_get_trace_log_count")
+	(set string s get_trace_log_messagestrraylib "raylib_get_trace_log_message")
+	(set string s get_trace_log_levelstrraylib "raylib_get_trace_log_level")
+	(set string s clear_trace_logstrraylib "raylib_clear_trace_log")
+	(set string s set_load_file_data_callbackstrraylib "raylib_set_load_file_data_callback")
+	(set string s set_load_file_data_responsestrraylib "raylib_set_load_file_data_response")
+	(set string s get_load_file_data_requeststrraylib "raylib_get_load_file_data_request")
+	(set string s set_save_file_data_callbackstrraylib "raylib_set_save_file_data_callback")
+	(set string s get_save_file_data_requeststrraylib "raylib_get_save_file_data_request")
+	(set string s set_load_file_text_callbackstrraylib "raylib_set_load_file_text_callback")
+	(set string s set_load_file_text_responsestrraylib "raylib_set_load_file_text_response")
+	(set string s get_load_file_text_requeststrraylib "raylib_get_load_file_text_request")
+	(set string s set_save_file_text_callbackstrraylib "raylib_set_save_file_text_callback")
+	(set string s get_save_file_text_requeststrraylib "raylib_get_save_file_text_request")
+	(set string s set_audio_stream_callbackstrraylib "raylib_set_audio_stream_callback")
+	(set string s stage_audio_datastrraylib "raylib_stage_audio_data")
+	(set string s get_audio_stage_countstrraylib "raylib_get_audio_stage_count")
+	(set string s attach_audio_stream_processorstrraylib "raylib_attach_audio_stream_processor")
+	(set string s attach_audio_mixed_processorstrraylib "raylib_attach_audio_mixed_processor")
+	(set string s get_audio_processor_capturestrraylib "raylib_get_audio_processor_capture")
+	(set string s get_audio_processor_invocationsstrraylib "raylib_get_audio_processor_invocations")
+	(set string s clear_audio_capturestrraylib "raylib_clear_audio_capture")
 	// ----- module function indexes (export order) -----
 	(set int64 1 draw_line_3draylib 0)
 	(set int64 1 draw_point_3draylib 1)
@@ -1176,6 +1201,31 @@
 	(set int64 1 wave_formatraylib 580)
 	(set int64 1 get_model_animation_countraylib 581)
 
+	// ----- raylib 6.2 callback function indexes -----
+	(set int64 1 set_trace_log_callbackraylib 582)
+	(set int64 1 get_trace_log_countraylib 583)
+	(set int64 1 get_trace_log_messageraylib 584)
+	(set int64 1 get_trace_log_levelraylib 585)
+	(set int64 1 clear_trace_lograylib 586)
+	(set int64 1 set_load_file_data_callbackraylib 587)
+	(set int64 1 set_load_file_data_responseraylib 588)
+	(set int64 1 get_load_file_data_requestraylib 589)
+	(set int64 1 set_save_file_data_callbackraylib 590)
+	(set int64 1 get_save_file_data_requestraylib 591)
+	(set int64 1 set_load_file_text_callbackraylib 592)
+	(set int64 1 set_load_file_text_responseraylib 593)
+	(set int64 1 get_load_file_text_requestraylib 594)
+	(set int64 1 set_save_file_text_callbackraylib 595)
+	(set int64 1 get_save_file_text_requestraylib 596)
+	(set int64 1 set_audio_stream_callbackraylib 597)
+	(set int64 1 stage_audio_dataraylib 598)
+	(set int64 1 get_audio_stage_countraylib 599)
+	(set int64 1 attach_audio_stream_processorraylib 600)
+	(set int64 1 attach_audio_mixed_processorraylib 601)
+	(set int64 1 get_audio_processor_captureraylib 602)
+	(set int64 1 get_audio_processor_invocationsraylib 603)
+	(set int64 1 clear_audio_captureraylib 604)
+
 	// module handle and module name string
 	(set int64 1 modraylib 0)
 	(set string s modulestrraylib "libl1vmraylib")
@@ -1284,6 +1334,7 @@
 	(:raylib_init_mid3 !)
 	(:raylib_init_mid4 !)
 	(:raylib_init_mid5 !)
+	(:raylib_init_mid6 !)
 (funcend)
 
 (raylib_init_mid func)
@@ -1798,6 +1849,33 @@
 	(2 modraylib wave_cropraylib wave_cropstrraylibaddr intr0)
 	(2 modraylib wave_formatraylib wave_formatstrraylibaddr intr0)
 	(2 modraylib get_model_animation_countraylib get_model_animation_countstrraylibaddr intr0)
+(funcend)
+
+(raylib_init_mid6 func)
+	// ----- module functions 582..604: raylib 6.2 callbacks -----
+	(2 modraylib set_trace_log_callbackraylib set_trace_log_callbackstrraylibaddr intr0)
+	(2 modraylib get_trace_log_countraylib get_trace_log_countstrraylibaddr intr0)
+	(2 modraylib get_trace_log_messageraylib get_trace_log_messagestrraylibaddr intr0)
+	(2 modraylib get_trace_log_levelraylib get_trace_log_levelstrraylibaddr intr0)
+	(2 modraylib clear_trace_lograylib clear_trace_logstrraylibaddr intr0)
+	(2 modraylib set_load_file_data_callbackraylib set_load_file_data_callbackstrraylibaddr intr0)
+	(2 modraylib set_load_file_data_responseraylib set_load_file_data_responsestrraylibaddr intr0)
+	(2 modraylib get_load_file_data_requestraylib get_load_file_data_requeststrraylibaddr intr0)
+	(2 modraylib set_save_file_data_callbackraylib set_save_file_data_callbackstrraylibaddr intr0)
+	(2 modraylib get_save_file_data_requestraylib get_save_file_data_requeststrraylibaddr intr0)
+	(2 modraylib set_load_file_text_callbackraylib set_load_file_text_callbackstrraylibaddr intr0)
+	(2 modraylib set_load_file_text_responseraylib set_load_file_text_responsestrraylibaddr intr0)
+	(2 modraylib get_load_file_text_requestraylib get_load_file_text_requeststrraylibaddr intr0)
+	(2 modraylib set_save_file_text_callbackraylib set_save_file_text_callbackstrraylibaddr intr0)
+	(2 modraylib get_save_file_text_requestraylib get_save_file_text_requeststrraylibaddr intr0)
+	(2 modraylib set_audio_stream_callbackraylib set_audio_stream_callbackstrraylibaddr intr0)
+	(2 modraylib stage_audio_dataraylib stage_audio_datastrraylibaddr intr0)
+	(2 modraylib get_audio_stage_countraylib get_audio_stage_countstrraylibaddr intr0)
+	(2 modraylib attach_audio_stream_processorraylib attach_audio_stream_processorstrraylibaddr intr0)
+	(2 modraylib attach_audio_mixed_processorraylib attach_audio_mixed_processorstrraylibaddr intr0)
+	(2 modraylib get_audio_processor_captureraylib get_audio_processor_capturestrraylibaddr intr0)
+	(2 modraylib get_audio_processor_invocationsraylib get_audio_processor_invocationsstrraylibaddr intr0)
+	(2 modraylib clear_audio_captureraylib clear_audio_capturestrraylibaddr intr0)
 (funcend)
 
 // ----- wrapper functions -----
@@ -4128,4 +4206,98 @@
 
 (raylib_get_model_animation_count func)
 	(3 modraylib get_model_animation_countraylib 0 intr0)
+(funcend)
+
+// ----- raylib 6.2 callback wrappers -----
+
+(raylib_set_trace_log_callback func)
+	(3 modraylib set_trace_log_callbackraylib 0 intr0)
+(funcend)
+
+(raylib_get_trace_log_count func)
+	(3 modraylib get_trace_log_countraylib 0 intr0)
+(funcend)
+
+(raylib_get_trace_log_message func)
+	(3 modraylib get_trace_log_messageraylib 0 intr0)
+(funcend)
+
+(raylib_get_trace_log_level func)
+	(3 modraylib get_trace_log_levelraylib 0 intr0)
+(funcend)
+
+(raylib_clear_trace_log func)
+	(3 modraylib clear_trace_lograylib 0 intr0)
+(funcend)
+
+(raylib_set_load_file_data_callback func)
+	(3 modraylib set_load_file_data_callbackraylib 0 intr0)
+(funcend)
+
+(raylib_set_load_file_data_response func)
+	(3 modraylib set_load_file_data_responseraylib 0 intr0)
+(funcend)
+
+(raylib_get_load_file_data_request func)
+	(3 modraylib get_load_file_data_requestraylib 0 intr0)
+(funcend)
+
+(raylib_set_save_file_data_callback func)
+	(3 modraylib set_save_file_data_callbackraylib 0 intr0)
+(funcend)
+
+(raylib_get_save_file_data_request func)
+	(3 modraylib get_save_file_data_requestraylib 0 intr0)
+(funcend)
+
+(raylib_set_load_file_text_callback func)
+	(3 modraylib set_load_file_text_callbackraylib 0 intr0)
+(funcend)
+
+(raylib_set_load_file_text_response func)
+	(3 modraylib set_load_file_text_responseraylib 0 intr0)
+(funcend)
+
+(raylib_get_load_file_text_request func)
+	(3 modraylib get_load_file_text_requestraylib 0 intr0)
+(funcend)
+
+(raylib_set_save_file_text_callback func)
+	(3 modraylib set_save_file_text_callbackraylib 0 intr0)
+(funcend)
+
+(raylib_get_save_file_text_request func)
+	(3 modraylib get_save_file_text_requestraylib 0 intr0)
+(funcend)
+
+(raylib_set_audio_stream_callback func)
+	(3 modraylib set_audio_stream_callbackraylib 0 intr0)
+(funcend)
+
+(raylib_stage_audio_data func)
+	(3 modraylib stage_audio_dataraylib 0 intr0)
+(funcend)
+
+(raylib_get_audio_stage_count func)
+	(3 modraylib get_audio_stage_countraylib 0 intr0)
+(funcend)
+
+(raylib_attach_audio_stream_processor func)
+	(3 modraylib attach_audio_stream_processorraylib 0 intr0)
+(funcend)
+
+(raylib_attach_audio_mixed_processor func)
+	(3 modraylib attach_audio_mixed_processorraylib 0 intr0)
+(funcend)
+
+(raylib_get_audio_processor_capture func)
+	(3 modraylib get_audio_processor_captureraylib 0 intr0)
+(funcend)
+
+(raylib_get_audio_processor_invocations func)
+	(3 modraylib get_audio_processor_invocationsraylib 0 intr0)
+(funcend)
+
+(raylib_clear_audio_capture func)
+	(3 modraylib clear_audio_captureraylib 0 intr0)
 (funcend)
