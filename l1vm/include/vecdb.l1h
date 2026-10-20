@@ -1,0 +1,307 @@
+// vecdb library
+//
+// L1VM wrapper for the embedded "vector-db" database.
+// The C side lives in "vm/modules/vecdb/vecdb.c".
+//
+// A database handle is an int64 index (0..63). "vecdb_open" returns one.
+//
+// Vectors are L1VM double arrays: an address and the number of elements.
+// Payloads are opaque byte arrays: an address and a length in bytes.
+// Text is a NUL terminated string: an address.
+// A vector/payload/text argument is omitted by passing address 0 (and/or
+// length 0).
+//
+// Status codes (negative = error):
+//   VECDB_OK            0
+//   VECDB_ERR_IO       -1
+//   VECDB_ERR_NOMEM    -2
+//   VECDB_ERR_INVALID  -3
+//   VECDB_ERR_NOTFOUND -4
+//   VECDB_ERR_EXISTS   -5
+//   VECDB_ERR_DIM      -6
+//   VECDB_ERR_CORRUPT  -7
+//   VECDB_ERR_NODIM    -8
+//
+// Useful option values:
+//   metric: 0 = L2 (default), 1 = inner product, 2 = cosine
+//   index : 0 = FLAT (default, exact), 1 = HNSW (approximate)
+//
+(vecdb_init func)
+    #var ~ vecdb
+
+    (set int64 1 mod~ 0)
+
+    (set string s modulestr~ "libl1vmvecdb")
+
+    (set string s openstr~ "l1_vecdb_open")
+    (set string s open_exstr~ "l1_vecdb_open_ex")
+    (set string s closestr~ "l1_vecdb_close")
+    (set string s flushstr~ "l1_vecdb_flush")
+    (set string s compactstr~ "l1_vecdb_compact")
+    (set string s countstr~ "l1_vecdb_count")
+    (set string s capacitystr~ "l1_vecdb_capacity")
+    (set string s dimstr~ "l1_vecdb_dim")
+    (set string s metricstr~ "l1_vecdb_metric")
+    (set string s indexstr~ "l1_vecdb_index")
+    (set string s pathstr~ "l1_vecdb_path")
+    (set string s set_ef_searchstr~ "l1_vecdb_set_ef_search")
+    (set string s strerrorstr~ "l1_vecdb_strerror")
+    (set string s last_errorstr~ "l1_vecdb_last_error")
+    (set string s list_idsstr~ "l1_vecdb_list_ids")
+    (set string s putstr~ "l1_vecdb_put")
+    (set string s put_exstr~ "l1_vecdb_put_ex")
+    (set string s getstr~ "l1_vecdb_get")
+    (set string s deletestr~ "l1_vecdb_delete")
+    (set string s search_vectorstr~ "l1_vecdb_search_vector")
+    (set string s search_textstr~ "l1_vecdb_search_text")
+    (set string s search_hybridstr~ "l1_vecdb_search_hybrid")
+    (set string s match_countstr~ "l1_vecdb_match_count")
+    (set string s match_idstr~ "l1_vecdb_match_id")
+    (set string s match_scorestr~ "l1_vecdb_match_score")
+    (set string s match_textstr~ "l1_vecdb_match_text")
+    (set string s match_payloadstr~ "l1_vecdb_match_payload")
+
+    (set int64 1 open~ 0)
+    (set int64 1 open_ex~ 1)
+    (set int64 1 close~ 2)
+    (set int64 1 flush~ 3)
+    (set int64 1 compact~ 4)
+    (set int64 1 count~ 5)
+    (set int64 1 capacity~ 6)
+    (set int64 1 dim~ 7)
+    (set int64 1 metric~ 8)
+    (set int64 1 index~ 9)
+    (set int64 1 path~ 10)
+    (set int64 1 set_ef_search~ 11)
+    (set int64 1 strerror~ 12)
+    (set int64 1 last_error~ 13)
+    (set int64 1 list_ids~ 14)
+    (set int64 1 put~ 15)
+    (set int64 1 put_ex~ 16)
+    (set int64 1 get~ 17)
+    (set int64 1 delete~ 18)
+    (set int64 1 search_vector~ 19)
+    (set int64 1 search_text~ 20)
+    (set int64 1 search_hybrid~ 21)
+    (set int64 1 match_count~ 22)
+    (set int64 1 match_id~ 23)
+    (set int64 1 match_score~ 24)
+    (set int64 1 match_text~ 25)
+    (set int64 1 match_payload~ 26)
+
+    // get argument from stack
+    (mod~ stpopi)
+    // load vecdb module
+    (0 modulestr~ mod~ 0 intr0)
+    // set functions
+    (2 mod~ open~ openstr~ intr0)
+    (2 mod~ open_ex~ open_exstr~ intr0)
+    (2 mod~ close~ closestr~ intr0)
+    (2 mod~ flush~ flushstr~ intr0)
+    (2 mod~ compact~ compactstr~ intr0)
+    (2 mod~ count~ countstr~ intr0)
+    (2 mod~ capacity~ capacitystr~ intr0)
+    (2 mod~ dim~ dimstr~ intr0)
+    (2 mod~ metric~ metricstr~ intr0)
+    (2 mod~ index~ indexstr~ intr0)
+    (2 mod~ path~ pathstr~ intr0)
+    (2 mod~ set_ef_search~ set_ef_searchstr~ intr0)
+    (2 mod~ strerror~ strerrorstr~ intr0)
+    (2 mod~ last_error~ last_errorstr~ intr0)
+    (2 mod~ list_ids~ list_idsstr~ intr0)
+    (2 mod~ put~ putstr~ intr0)
+    (2 mod~ put_ex~ put_exstr~ intr0)
+    (2 mod~ get~ getstr~ intr0)
+    (2 mod~ delete~ deletestr~ intr0)
+    (2 mod~ search_vector~ search_vectorstr~ intr0)
+    (2 mod~ search_text~ search_textstr~ intr0)
+    (2 mod~ search_hybrid~ search_hybridstr~ intr0)
+    (2 mod~ match_count~ match_countstr~ intr0)
+    (2 mod~ match_id~ match_idstr~ intr0)
+    (2 mod~ match_score~ match_scorestr~ intr0)
+    (2 mod~ match_text~ match_textstr~ intr0)
+    (2 mod~ match_payload~ match_payloadstr~ intr0)
+(funcend)
+
+// open a database:
+// (pathaddr dim metric index :vecdb_open !)
+// pushes: handle, status (status on top)
+(vecdb_open func)
+    #var ~ vecdb
+    (3 mod~ open~ 0 intr0)
+(funcend)
+
+// open a database with the full HNSW options:
+// (pathaddr dim metric index hnsw_m ef_construction ef_search seed :vecdb_open_ex !)
+// pushes: handle, status (status on top)
+(vecdb_open_ex func)
+    #var ~ vecdb
+    (3 mod~ open_ex~ 0 intr0)
+(funcend)
+
+// flush and close a database: (handle :vecdb_close !) -> status
+(vecdb_close func)
+    #var ~ vecdb
+    (3 mod~ close~ 0 intr0)
+(funcend)
+
+// persist a database: (handle :vecdb_flush !) -> status
+(vecdb_flush func)
+    #var ~ vecdb
+    (3 mod~ flush~ 0 intr0)
+(funcend)
+
+// drop tombstones and rebuild the indexes: (handle :vecdb_compact !) -> status
+(vecdb_compact func)
+    #var ~ vecdb
+    (3 mod~ compact~ 0 intr0)
+(funcend)
+
+// number of live records: (handle :vecdb_count !) -> count
+(vecdb_count func)
+    #var ~ vecdb
+    (3 mod~ count~ 0 intr0)
+(funcend)
+
+// number of used slots (incl. tombstones): (handle :vecdb_capacity !) -> capacity
+(vecdb_capacity func)
+    #var ~ vecdb
+    (3 mod~ capacity~ 0 intr0)
+(funcend)
+
+// vector dimension (0 if not known yet): (handle :vecdb_dim !) -> dim
+(vecdb_dim func)
+    #var ~ vecdb
+    (3 mod~ dim~ 0 intr0)
+(funcend)
+
+// distance metric: (handle :vecdb_metric !) -> metric
+(vecdb_metric func)
+    #var ~ vecdb
+    (3 mod~ metric~ 0 intr0)
+(funcend)
+
+// index type: (handle :vecdb_index !) -> index
+(vecdb_index func)
+    #var ~ vecdb
+    (3 mod~ index~ 0 intr0)
+(funcend)
+
+// copy the file path of a database:
+// (handle destaddr destlen :vecdb_path !) -> status
+(vecdb_path func)
+    #var ~ vecdb
+    (3 mod~ path~ 0 intr0)
+(funcend)
+
+// set the HNSW search breadth:
+// (handle ef :vecdb_set_ef_search !) -> status
+(vecdb_set_ef_search func)
+    #var ~ vecdb
+    (3 mod~ set_ef_search~ 0 intr0)
+(funcend)
+
+// copy the description of a status code:
+// (status destaddr destlen :vecdb_strerror !) -> status
+(vecdb_strerror func)
+    #var ~ vecdb
+    (3 mod~ strerror~ 0 intr0)
+(funcend)
+
+// copy the last error message of a database:
+// (handle destaddr destlen :vecdb_last_error !) -> status
+(vecdb_last_error func)
+    #var ~ vecdb
+    (3 mod~ last_error~ 0 intr0)
+(funcend)
+
+// list live ids into an int64 array:
+// (handle outaddr cap :vecdb_list_ids !) -> count
+// pass outaddr 0 / cap 0 to query the number of live records
+(vecdb_list_ids func)
+    #var ~ vecdb
+    (3 mod~ list_ids~ 0 intr0)
+(funcend)
+
+// store a record (upsert):
+// (handle id vecaddr dim payloadaddr payloadlen textaddr :vecdb_put !) -> status
+(vecdb_put func)
+    #var ~ vecdb
+    (3 mod~ put~ 0 intr0)
+(funcend)
+
+// store a record with flags:
+// (handle id vecaddr dim payloadaddr payloadlen textaddr flags :vecdb_put_ex !) -> status
+// flags: 1 = VECDB_INSERT_ONLY, 2 = VECDB_SYNC
+(vecdb_put_ex func)
+    #var ~ vecdb
+    (3 mod~ put_ex~ 0 intr0)
+(funcend)
+
+// fetch one record into caller supplied buffers:
+// (handle id vecaddr vecmax payloadaddr payloadmax textaddr textmax :vecdb_get !)
+// pushes: payload_len, status (status on top)
+(vecdb_get func)
+    #var ~ vecdb
+    (3 mod~ get~ 0 intr0)
+(funcend)
+
+// delete a record: (handle id :vecdb_delete !) -> status
+(vecdb_delete func)
+    #var ~ vecdb
+    (3 mod~ delete~ 0 intr0)
+(funcend)
+
+// nearest neighbour vector search:
+// (handle queryaddr dim k :vecdb_search_vector !) -> hit count
+// the hits are cached, read them with vecdb_match_*
+(vecdb_search_vector func)
+    #var ~ vecdb
+    (3 mod~ search_vector~ 0 intr0)
+(funcend)
+
+// full-text (BM25) search:
+// (handle queryaddr k :vecdb_search_text !) -> hit count
+(vecdb_search_text func)
+    #var ~ vecdb
+    (3 mod~ search_text~ 0 intr0)
+(funcend)
+
+// hybrid vector + text search:
+// (handle vecaddr dim textaddr k alpha :vecdb_search_hybrid !) -> hit count
+(vecdb_search_hybrid func)
+    #var ~ vecdb
+    (3 mod~ search_hybrid~ 0 intr0)
+(funcend)
+
+// number of hits of the last search: ( :vecdb_match_count !) -> count
+(vecdb_match_count func)
+    #var ~ vecdb
+    (3 mod~ match_count~ 0 intr0)
+(funcend)
+
+// id of a cached hit: (index :vecdb_match_id !) -> id
+(vecdb_match_id func)
+    #var ~ vecdb
+    (3 mod~ match_id~ 0 intr0)
+(funcend)
+
+// score of a cached hit: (index :vecdb_match_score !) -> score
+(vecdb_match_score func)
+    #var ~ vecdb
+    (3 mod~ match_score~ 0 intr0)
+(funcend)
+
+// copy the text of a cached hit:
+// (index destaddr destlen :vecdb_match_text !) -> status
+(vecdb_match_text func)
+    #var ~ vecdb
+    (3 mod~ match_text~ 0 intr0)
+(funcend)
+
+// copy the payload of a cached hit:
+// (index destaddr destlen :vecdb_match_payload !) -> payload_len
+(vecdb_match_payload func)
+    #var ~ vecdb
+    (3 mod~ match_payload~ 0 intr0)
+(funcend)
