@@ -1,0 +1,16 @@
+[package]
+name = "vecdb"
+version = "1.0.0"
+edition = "2021"
+description = "Rust bindings for the vecdb embedded vector + full-text database"
+license = "MIT"
+repository = "https://github.com/koder77/l1vm"
+links = "vecdb"
+build = "build.rs"
+
+[lib]
+name = "vecdb"
+path = "src/lib.rs"
+
+[dependencies]
+# Intentionally empty: payloads are opaque byte blobs, like in the C API.

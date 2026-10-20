@@ -1,0 +1,38 @@
+/* Linker version script: export only the public vecdb API and hide the
+ * internal text_index_* / hnsw_* / vecdb_sim / vecdb_tokenize helpers. */
+{
+  global:
+    vecdb_options_default;
+    vecdb_open;
+    vecdb_close;
+    vecdb_flush;
+    vecdb_compact;
+    vecdb_count;
+    vecdb_capacity;
+    vecdb_dim;
+    vecdb_metric_of;
+    vecdb_index_of;
+    vecdb_path;
+    vecdb_set_ef_search;
+    vecdb_strerror;
+    vecdb_last_error;
+    vecdb_list_ids;
+    vecdb_put;
+    vecdb_put_ex;
+    vecdb_get;
+    vecdb_delete;
+    vecdb_search_vector;
+    vecdb_search_text;
+    vecdb_search_hybrid;
+    vecdb_pack_i64;
+    vecdb_unpack_i64;
+    vecdb_pack_u64;
+    vecdb_unpack_u64;
+    vecdb_pack_f64;
+    vecdb_unpack_f64;
+    vecdb_pack_f32;
+    vecdb_unpack_f32;
+    vecdb_pack_str;
+  local:
+    *;
+};

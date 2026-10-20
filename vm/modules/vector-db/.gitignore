@@ -1,0 +1,27 @@
+# build artifacts
+*.o
+*.so
+/demo
+/test_vecdb
+/bench
+/fuzz
+/cpp_demo
+/vecdb-cli
+
+# python
+__pycache__/
+*.py[cod]
+
+# javascript
+node_modules/
+
+# rust
+/bindings/rust/target/
+/bindings/rust/Cargo.lock
+
+# java
+/bindings/java/build/
+
+# databases created while testing
+*.db
+*.db.tmp

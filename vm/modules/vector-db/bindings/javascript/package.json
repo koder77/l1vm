@@ -1,0 +1,25 @@
+{
+  "name": "vecdb",
+  "version": "1.0.0",
+  "description": "JavaScript (Node.js) bindings for the vecdb embedded vector + full-text database",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "dependencies": {
+    "koffi": "^3.3.3"
+  },
+  "keywords": [
+    "vector",
+    "database",
+    "embeddings",
+    "hnsw",
+    "bm25",
+    "full-text",
+    "hybrid-search"
+  ],
+  "license": "MIT"
+}

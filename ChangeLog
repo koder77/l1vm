@@ -1,7 +1,8 @@
 L1VM (3.8.0)
 	Added new Raylib 6.2 library module.
+        Added vecdb module, a simple vector database.
 
--- Stefan Pietzonke <info@midnight-coding.de> Sun 18 October 2026 12:41 +020
+-- Stefan Pietzonke <info@midnight-coding.de> Tue 20 October 2026 17:58 +020
 
 L1VM (3.7.1)
 	Added brackets-llm code assistant, like opencode for Brackets.
