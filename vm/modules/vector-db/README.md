@@ -514,4 +514,4 @@ tools/vecdb-cli.c      command line tool
 
 ## 14. License
 
-MIT.
+GPL V3.
