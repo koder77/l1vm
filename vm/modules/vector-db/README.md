@@ -1,7 +1,7 @@
-# vecdb V1.0
+# vecdb 1.0
 
 Generated with the help of opencode AI.
-The code is GPL licensed.
+The code is LGPL licensed.
 
 An embedded **vector + full-text database** for C, shipped as a shared
 library (`libvecdb.so`). It stores arbitrary payloads alongside dense float
@@ -514,4 +514,4 @@ tools/vecdb-cli.c      command line tool
 
 ## 14. License
 
-GPL V3.
+LGPL V3.
