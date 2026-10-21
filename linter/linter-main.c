@@ -791,6 +791,11 @@ S2 parse_line (U1 *line)
 
     S8 return_args_i = 0;
 
+    // save current pointer name:
+    U1 last_pointer_name[MAXSTRLEN + 1];
+    // set to 1 if pointer was set
+    U1 pointer_in_use = 0;
+
     line_len = strlen_safe ((const char *) line, MAXSTRLEN);
 
     if_pos = searchstr (line, (U1 *) " if)", 0, 0, TRUE);
@@ -1610,10 +1615,31 @@ S2 parse_line (U1 *line)
                     type_len = strlen_safe ((const char *) type, MAXSTRLEN);
                     if (type_len > 1)
                     {
-                        if (type[type_len - 1] != 'R')
                         {
-                            printf ("parse_line: call function: variable ends with 'R'! It is a return value!\n");
+                        if (type[type_len - 1] == 'R')
+                        {
+                            printf ("DEBUG: parse_line: call function: variable ends with 'R'! It is a return value!\n");
                             return (1);
+                        }
+                        else
+                        {   
+                            S2 ending_len;
+                            U1 endingstr[MAXSTRLEN] = "R";
+                            S2 pos;
+
+                            strcat ((char *) endingstr, (const char*) function_name_current);
+                            ending_len = strlen_safe ((const char *) endingstr, MAXSTRLEN);
+
+                            // EDITNEU
+                            pos = searchstr (type, endingstr, 0, 0, TRUE);
+                            printf ("type: '%s', type-len: %i, ending: '%s', ending_len: %i, pos: %i\n",type, type_len, endingstr, ending_len, pos);
+                            printf ("%i\n", type_len - ending_len);
+                            if (pos == type_len - ending_len)
+                            {
+                                printf ("DEBUG: parse_line: call function: variable ends with 'R'! It is a return value!\n");
+                                return (1);
+                            }
+                        }
                         }
                     }
                 }
@@ -1771,12 +1797,30 @@ S2 parse_line (U1 *line)
                                 return (1);
                             }
 
-                            if (type_ind >= 2)
+                            // EDIT NEU
                             {
-                                if (type[type_ind - 1] != 'R')
+                                if (type[type_len - 1] == 'R')
                                 {
-                                    printf ("parse-line: variable '%s' is not return type variable!\n", type);
+                                    printf ("DEBUG: parse_line: call function: variable ends with 'R'! It is a return value!\n");
                                     return (1);
+                                }
+                                else
+                                {
+                                    S2 ending_len;
+                                    U1 endingstr[MAXSTRLEN] = "R";
+                                    S2 pos;
+
+                                    strcat ((char *) endingstr, (const char*) function_name_current);
+                                    ending_len = strlen_safe ((const char *) endingstr, MAXSTRLEN);
+
+                                    pos = searchstr (type, endingstr, 0, 0, TRUE);
+                                    printf ("type: '%s', type-len: %i, ending: '%s', ending_len: %i, pos: %i\n",type, type_len, endingstr, ending_len, pos);
+                                    printf ("%i\n", type_len - ending_len);
+                                    if (pos == type_len - ending_len)
+                                    {
+                                        printf ("DEBUG: parse_line: call function: variable ends with 'R'! It is a return value!\n");
+                                        return (1);
+                                    }
                                 }
                             }
                         }
@@ -2028,6 +2072,61 @@ S2 parse_line (U1 *line)
         }
     }
 
+    // check pointer
+    if (pointer_in_use == 1)
+    {
+        pointer_pos = searchstr (line, (U1 *) ":check_pointer !)", 0, 0, TRUE);
+        if (pointer_pos != -1)
+        {
+            printf ("parse-line: error: no ':check_pointer !' after 'pointer' !\n");
+            return (1);
+        }
+
+        pos = searchstr (line, (U1 *) "(", 0, 0, TRUE);
+        if (pos >= pointer_pos)
+        {
+            printf ("parse-line: error: no variables found!\n");
+            return (1);
+        }
+
+        {
+             S2 li = pos + 1;
+             S2 i = 0;
+             U1 pointer_name[MAXSTRLEN + 1];
+
+             while (i < MAXSTRLEN)
+             {
+
+                 if (line[li] != ' ')
+                 {
+                     // save pointer name char
+                     pointer_name[i] = line[li];
+                     i++;
+
+                     if (li < line_len - 1)
+                     {
+                         li++;
+                     }
+                 }
+                 else
+                 {
+                     break;
+                 }
+             }
+             pointer_name[i] = '\0';
+
+             // check pointer name is the same as on "pointer" set:
+             if (strcmp ((const char *) pointer_name, (const char *) last_pointer_name) != 0)
+             {
+                  printf ("parse-line: error: current pointer name: '%s' is not the same as on pointer set: '%s'!\n", pointer_name, last_pointer_name);
+                  return (1);
+             }
+
+             // all ok:
+             pointer_in_use = 0;
+        }
+    }
+
     // EDIT POINTER
     pointer_pos = searchstr (line, (U1 *) "pointer)", 0, 0, TRUE);
     if (pointer_pos != -1)
@@ -2157,8 +2256,15 @@ S2 parse_line (U1 *line)
                 printf ("parse-line: error: pointer name '%s' not valid!\n", pointer_name);
                 return (1);
             }
+
+            // save pointer name:
+            strcpy ((char *) last_pointer_name, (const char *) pointer_name);
+            // set flag:
+            pointer_in_use = 1;
         }
     }
+
+
 
     if (function_check_stpop == 1)
     {
