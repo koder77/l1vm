@@ -1632,8 +1632,6 @@ S2 parse_line (U1 *line)
 
                             // EDITNEU
                             pos = searchstr (type, endingstr, 0, 0, TRUE);
-                            printf ("type: '%s', type-len: %i, ending: '%s', ending_len: %i, pos: %i\n",type, type_len, endingstr, ending_len, pos);
-                            printf ("%i\n", type_len - ending_len);
                             if (pos == type_len - ending_len)
                             {
                                 printf ("DEBUG: parse_line: call function: variable ends with 'R'! It is a return value!\n");
@@ -1814,8 +1812,6 @@ S2 parse_line (U1 *line)
                                     ending_len = strlen_safe ((const char *) endingstr, MAXSTRLEN);
 
                                     pos = searchstr (type, endingstr, 0, 0, TRUE);
-                                    printf ("type: '%s', type-len: %i, ending: '%s', ending_len: %i, pos: %i\n",type, type_len, endingstr, ending_len, pos);
-                                    printf ("%i\n", type_len - ending_len);
                                     if (pos == type_len - ending_len)
                                     {
                                         printf ("DEBUG: parse_line: call function: variable ends with 'R'! It is a return value!\n");
