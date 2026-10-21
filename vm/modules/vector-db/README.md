@@ -1,4 +1,4 @@
-# vecdb
+# vecdb V1.0
 
 Generated with the help of opencode AI.
 The code is GPL licensed.
