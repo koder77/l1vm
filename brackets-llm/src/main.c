@@ -82,6 +82,19 @@ static void hist_push(Hist *h, const char *role, const char *content)
     h->len++;
 }
 
+/* Remove the newest message (used for one-shot prompts that must not pollute
+ * the conversation, e.g. the individual rounds of the auto-fix loop). */
+static void hist_pop(Hist *h)
+{
+    if (h->len == 0)
+        return;
+    h->len--;
+    free(h->items[h->len].role);
+    free(h->items[h->len].content);
+    h->items[h->len].role = NULL;
+    h->items[h->len].content = NULL;
+}
+
 static void hist_free(Hist *h)
 {
     size_t i;
@@ -505,67 +518,88 @@ static void derive_name(const char *text, char *out_name, size_t outname_sz)
  * trimmed body starts with "(main func)". Returns a heap string or NULL.
  * If out_name != NULL, "name.l1com" is derived from a leading
  * "// name.l1com" comment if present.
+ *
+ * When a reply contains several fenced blocks (for example a model that
+ * echoes the old program before the corrected one), the *last* valid block
+ * wins. The answer is normally at the end, and preferring it prevents an
+ * echoed current version from being mistaken for the fix.
  */
 static char *extract_code(const char *text, char *out_name, size_t outname_sz)
 {
-    const char *p;
+    const char *p = text;
+    char *best = NULL;
 
     if (out_name)
         out_name[0] = '\0';
 
-    /* try to capture a fenced code block */
-    if ((p = strstr(text, "```")) != NULL) {
+    if (!text)
+        return NULL;
+
+    while ((p = strstr(p, "```")) != NULL) {
         const char *start = p + 3;
         const char *nl = strchr(start, '\n');
         const char *end;
-        if (nl) {
-            /* fence info line ends at newline */
-            start = nl + 1;
-        }
+        size_t n;
+        char *block;
+
+        if (!nl)
+            break;              /* unterminated fence info line */
+        start = nl + 1;         /* fence info line ends at newline */
         end = strstr(start, "```");
-        if (end) {
-            size_t n = (size_t)(end - start);
-            char *block = malloc(n + 1);
-            if (block) {
-                memcpy(block, start, n);
-                block[n] = '\0';
-                if (strstr(block, "(main func)") || strstr(block, "(main function")) {
-                    if (out_name)
-                        derive_name(block, out_name, outname_sz);
-                    return block;
-                }
+        if (!end)
+            break;              /* unterminated block */
+
+        n = (size_t)(end - start);
+        block = malloc(n + 1);
+        if (block) {
+            memcpy(block, start, n);
+            block[n] = '\0';
+            if (strstr(block, "(main func)") ||
+                strstr(block, "(main function")) {
+                free(best);
+                best = block;
+                if (out_name)
+                    derive_name(block, out_name, outname_sz);
+            } else {
                 free(block);
             }
         }
+        p = end + 3;
     }
+    if (best)
+        return best;
 
     /* fallback: find "(main func)" and take to end of file (best-effort) */
     p = strstr(text, "(main func)");
     if (p) {
-        size_t n = strlen(p);
         char *block = strdup(p);
-        if (block) {
-            if (out_name)
-                derive_name(text, out_name, outname_sz);
-            (void)n;
-            return block;
-        }
+        if (block && out_name)
+            derive_name(text, out_name, outname_sz);
+        return block;
     }
     return NULL;
 }
 
 /* ================== diagnostics formatting ================== */
 
-static char *format_diags(const LspDiagVec *v, const char *label)
+static int diag_effective_line(const LspDiag *d);
+
+static char *format_diags(const LspDiagVec *v, const char *label,
+                          int errors_only)
 {
     SB b;
-    size_t i;
+    size_t i, n = 0;
     char *out;
+    for (i = 0; i < v->len; i++)
+        if (!errors_only || v->items[i].severity == 1)
+            n++;
     sb_init(&b);
-    sb_printf(&b, "%s (%zu):\n", label, v->len);
+    sb_printf(&b, "%s (%zu):\n", label, n);
     for (i = 0; i < v->len; i++) {
+        if (errors_only && v->items[i].severity != 1)
+            continue;
         sb_printf(&b, "  line %d [%s]: %s\n",
-                  v->items[i].line + 1,
+                  diag_effective_line(&v->items[i]) + 1,
                   v->items[i].source ? v->items[i].source : "lsp",
                   v->items[i].message);
     }
@@ -597,19 +631,232 @@ static int run_cmd_capture(const char *cmd, char **out)
 /* ================== LSP check + auto-correct ================== */
 
 #define MAX_FIX_ITERS 5
+#define FIX_MAX_CONTEXT_ERRORS 12   /* errors shown with source context */
+#define FIX_DEFAULT_STALLS 3        /* failed attempts without improvement */
+#define MAX_NO_CODE_REPLIES 2       /* replies without a code block */
+#define MAX_SAME_CODE_REPLIES 2     /* byte-identical "fixes" in a row */
+
+/* session-wide counter so every LSP check opens a genuinely fresh document:
+ * l1vm-lsp ignores didOpen for an already-open URI (publishing nothing). A
+ * fresh URI per check keeps each document's state independent and cheap. */
+static unsigned long g_check_seq = 0;
+
+/* Let the user tune the correction loop. A value <= 0 keeps the default. */
+static int fix_max_iters(void)
+{
+    long v = cfg_long("BRACKETS_LLM_MAX_FIX_ITERS", MAX_FIX_ITERS);
+    if (v < 1)
+        v = MAX_FIX_ITERS;
+    if (v > 100)
+        v = 100;
+    return (int)v;
+}
+
+static int fix_stall_limit(void)
+{
+    long v = cfg_long("BRACKETS_LLM_FIX_STALLS", FIX_DEFAULT_STALLS);
+    if (v < 1)
+        v = FIX_DEFAULT_STALLS;
+    if (v > 50)
+        v = 50;
+    return (int)v;
+}
+
+/* Number of real errors (severity 1) in a diagnostics vector. */
+static int diag_error_count(const LspDiagVec *v)
+{
+    size_t i;
+    int n = 0;
+    if (!v)
+        return 0;
+    for (i = 0; i < v->len; i++)
+        if (v->items[i].severity == 1)
+            n++;
+    return n;
+}
+
+static int cmp_strptr(const void *a, const void *b)
+{
+    const char *const *sa = a;
+    const char *const *sb = b;
+    return strcmp(*sa, *sb);
+}
+
+/* Compiler diagnostics often carry only "line: N" inside the message while
+ * the LSP range points at line 1. Prefer the line written by the compiler so
+ * the source context shown to the model is the offending line. */
+static int diag_effective_line(const LspDiag *d)
+{
+    const char *p;
+    long n = 0;
+    if (!d)
+        return 0;
+    p = d->message ? strstr(d->message, "line:") : NULL;
+    if (!p)
+        return d->line;
+    p += 5;
+    while (*p == ' ' || *p == '\t')
+        p++;
+    if (!isdigit((unsigned char)*p))
+        return d->line;
+    while (isdigit((unsigned char)*p)) {
+        n = n * 10 + (*p - '0');
+        p++;
+    }
+    return n > 0 && n < 1000000 ? (int)n - 1 : d->line;
+}
+
+/*
+ * A stable signature of the error set. Line numbers are left out on purpose:
+ * they change when code is inserted or removed, but that does not mean an
+ * error was fixed. Sorting makes the signature independent of the compiler's
+ * message order. Two equal signatures mean "exactly the same bugs remain".
+ */
+static char *diag_error_signature(const LspDiagVec *v)
+{
+    char **keys;
+    size_t i, n = 0;
+    SB b;
+    char *out;
+
+    if (!v || v->len == 0)
+        return strdup("");
+    keys = calloc(v->len, sizeof(*keys));
+    if (!keys)
+        return strdup("");
+    for (i = 0; i < v->len; i++) {
+        const char *src, *msg;
+        size_t need;
+        char *k;
+        if (v->items[i].severity != 1)
+            continue;
+        src = v->items[i].source ? v->items[i].source : "lsp";
+        msg = v->items[i].message ? v->items[i].message : "";
+        need = strlen(src) + strlen(msg) + 2;
+        k = malloc(need);
+        if (!k)
+            continue;
+        snprintf(k, need, "%s|%s", src, msg);
+        keys[n++] = k;
+    }
+    qsort(keys, n, sizeof(*keys), cmp_strptr);
+    sb_init(&b);
+    for (i = 0; i < n; i++) {
+        sb_add(&b, keys[i]);
+        sb_addc(&b, '\n');
+        free(keys[i]);
+    }
+    free(keys);
+    out = strdup(sb_cstr(&b));
+    sb_free(&b);
+    return out;
+}
+
+/* Copy one 0-based source line out of `text` (NULL when it does not exist). */
+static char *text_line_at(const char *text, int lineno)
+{
+    const char *p = text, *e;
+    size_t n;
+    char *r;
+    int i = 0;
+
+    if (!text || lineno < 0)
+        return NULL;
+    while (i < lineno) {
+        e = strchr(p, '\n');
+        if (!e)
+            return NULL;
+        p = e + 1;
+        i++;
+    }
+    e = strchr(p, '\n');
+    n = e ? (size_t)(e - p) : strlen(p);
+    while (n > 0 && (p[n - 1] == '\r' || p[n - 1] == '\n'))
+        n--;
+    r = malloc(n + 1);
+    if (!r)
+        return NULL;
+    memcpy(r, p, n);
+    r[n] = '\0';
+    return r;
+}
+
+/*
+ * Format the errors together with one line of source context around each.
+ * A model can fix "line 42: undefined symbol" much more reliably when it
+ * also sees the actual line, especially when the same text occurs often.
+ */
+static char *format_errors_with_context(const LspDiagVec *v,
+                                        const char *code, const char *label,
+                                        size_t max_errors)
+{
+    SB b;
+    size_t i, shown = 0;
+    int total = diag_error_count(v);
+    char *out;
+
+    sb_init(&b);
+    sb_printf(&b, "%s (%d):\n", label, total);
+    for (i = 0; i < v->len; i++) {
+        int ln, d;
+        if (v->items[i].severity != 1)
+            continue;
+        if (shown >= max_errors) {
+            sb_printf(&b, "  ... (%d more error%s; they will be shown after "
+                          "these are fixed)\n",
+                      total - (int)shown, total - (int)shown == 1 ? "" : "s");
+            break;
+        }
+        ln = diag_effective_line(&v->items[i]);
+        sb_printf(&b, "  line %d [%s]: %s\n", ln + 1,
+                  v->items[i].source ? v->items[i].source : "lsp",
+                  v->items[i].message ? v->items[i].message : "");
+        for (d = -1; d <= 1; d++) {
+            char *src = text_line_at(code, ln + d);
+            if (!src)
+                continue;
+            if (d == 0)
+                sb_printf(&b, "      > %5d | %s\n", ln + d + 1, src);
+            else
+                sb_printf(&b, "        %5d | %s\n", ln + d + 1, src);
+            free(src);
+        }
+        shown++;
+    }
+    out = strdup(sb_cstr(&b));
+    sb_free(&b);
+    return out;
+}
+
+/* Run exactly one LSP check on `code` via a fresh temporary document. */
+static int check_code_once(LspClient *lsp, const char *cwd, const char *code,
+                           LspDiagVec *diags)
+{
+    char checkpath[131072];
+    char uri[262144];
+    char *diskcode;
+    int ck;
+
+    snprintf(checkpath, sizeof(checkpath),
+             "%s/.brackets-check-%d-%lu.l1com", cwd, (int)getpid(),
+             ++g_check_seq);
+    snprintf(uri, sizeof(uri), "file://%s", checkpath);
+    write_file(checkpath, code);
+    diskcode = read_file_part(checkpath, -1, 1);
+    ck = lsp_check(lsp, uri, checkpath, diskcode ? diskcode : code, diags);
+    free(diskcode);
+    unlink(checkpath);
+    return ck;
+}
 
 /*
  * Save `code` to path `name.l1com`, check with the LSP. If errors are found,
- * iterate: present diagnostics to the LLM and ask for a full corrected
- * program until clean or MAX_FIX_ITERS. Returns final diagnostics (may be
- * non-empty if not fixed). On success (0 errors) returns the last code.
+ * iterate: present the *current* code and diagnostics to the LLM and ask for
+ * a complete corrected program. The loop stops when the code is clean, when
+ * the user aborts it, or when it detects that it is not converging (same
+ * errors, identical answer, or no improvement). On failure the best attempt
+ * (fewest errors) is kept, not simply the last one.
  */
-/* session-wide counter so every LSP check opens a genuinely fresh document:
- * l1vm-lsp ignores didOpen for an already-open URI (publishing nothing). The
- * current server also runs the real l1com compiler on didChange, but a fresh
- * URI per check keeps each document's state independent and cheap. */
-static unsigned long g_check_seq = 0;
-
 static int is_l1com_file(const char *p)
 {
     size_t n = p ? strlen(p) : 0;
@@ -692,20 +939,12 @@ static char *lsp_summary_for_write(LspClient *lsp, const char *path)
             sb_printf(&b, "LSP check: OK (%zu diagnostic%s, no errors)",
                       diags.len, diags.len == 1 ? "" : "s");
         } else {
-            sb_printf(&b, "LSP check: %d error%s:\n",
-                      nerr, nerr == 1 ? "" : "s");
-            for (i = 0; i < diags.len; i++) {
-                if (diags.items[i].severity != 1)
-                    continue;
-                if (i >= 6) {
-                    sb_add(&b, "  ... (more)\n");
-                    break;
-                }
-                sb_printf(&b, "  line %d [%s]: %s\n",
-                          diags.items[i].line + 1,
-                          diags.items[i].source ? diags.items[i].source : "lsp",
-                          diags.items[i].message);
-            }
+            char *ctx = format_errors_with_context(&diags, buf, "LSP errors",
+                                                  8);
+            sb_printf(&b, "LSP check: %d error%s. Fix the listed lines with "
+                          "edit_file (or write_file) before continuing:\n%s",
+                      nerr, nerr == 1 ? "" : "s", ctx ? ctx : "");
+            free(ctx);
         }
     }
     free(buf);
@@ -721,6 +960,35 @@ static char *lsp_summary_for_write(LspClient *lsp, const char *path)
 static int ask_continue(void)
 {
     return input_confirm("Continue? [y/N] ", 1);
+}
+
+/* Keep the conversation in sync with the version on disk: after a correction
+ * run the latest code - not the first answer - is what the user refers to. */
+static void hist_record_program(Hist *hist, const char *filename,
+                                const char *code, int clean)
+{
+    SB s;
+    size_t n = code ? strlen(code) : 0;
+    int need_nl = (n == 0 || code[n - 1] != '\n');
+
+    sb_init(&s);
+    sb_printf(&s,
+              "Automatic correction: the %s version of %s is now:\n"
+              "```l1com\n%s%s```",
+              clean ? "verified" : "current (still not error-free)",
+              filename, code ? code : "", need_nl ? "\n" : "");
+    hist_push(hist, "assistant", sb_cstr(&s));
+    sb_free(&s);
+}
+
+/* Replace `code` with the best attempt kept by the correction loop. */
+static void take_best_code(char **code, char **best_code)
+{
+    if (*best_code) {
+        free(*code);
+        *code = *best_code;
+        *best_code = NULL;
+    }
 }
 
 /* check + auto-correct a program. Returns 0 when the saved file is clean,
@@ -739,10 +1007,19 @@ static int code_workflow(LspClient *lsp, Hist *hist, LlmProvider *prov,
                          const char *initial_code, int max_iters,
                          char **final_code, LspDiagVec *final_diags)
 {
-    char *code = strdup(initial_code);
+    char *code = initial_code ? strdup(initial_code) : NULL;
+    char *best_code = NULL;
+    char **seen_sigs = NULL;
+    size_t seen_len = 0, seen_cap = 0;
+    int best_errors = -1;
+    int prev_errors = -1;
+    int stall = 0, no_code_replies = 0, same_code_replies = 0;
+    int max_stalls = fix_stall_limit();
     char cwd[4096];
-    int iter;
+    int iter, ret = 0;
 
+    if (!code)
+        code = strdup("");
     getcwd(cwd, sizeof(cwd));
 
     *final_code = NULL;
@@ -758,148 +1035,281 @@ static int code_workflow(LspClient *lsp, Hist *hist, LlmProvider *prov,
 
     for (iter = 0; max_iters <= 0 || iter < max_iters; iter++) {
         LspDiagVec diags = {0};
-        char checkpath[131072];
-        char uri[262144];
-        /* a unique temp file + uri per check so each didOpen is a fresh
-         * document (and the compiler always runs) */
-        snprintf(checkpath, sizeof(checkpath),
-                 "%s/.brackets-check-%d-%lu.l1com", cwd, (int)getpid(),
-                 ++g_check_seq);
-        snprintf(uri, sizeof(uri), "file://%s", checkpath);
-        write_file(checkpath, code);
+        char *sig = NULL;
+        char *dtext = NULL;
+        int errors, ck, cycle = 0;
+        size_t j;
+
         printf("\n[checking with l1vm-lsp...]\n");
         fflush(stdout);
-        {
-            char *diskcode = read_file_part(checkpath, -1, 1);
-            int ck = lsp_check(lsp, uri, checkpath,
-                               diskcode ? diskcode : code, &diags);
-            free(diskcode);
-            unlink(checkpath);
-            if (ck != 0) {
-                fprintf(stderr, "LSP check failed (is l1vm-lsp built/installed?)\n");
-                lsp_diagvec_free(&diags);
-                *final_code = code;
-                return -1;
+        ck = check_code_once(lsp, cwd, code, &diags);
+        if (ck != 0) {
+            fprintf(stderr, "LSP check failed (is l1vm-lsp built/installed?)\n");
+            lsp_diagvec_free(&diags);
+            take_best_code(&code, &best_code);
+            *final_code = code;
+            ret = -1;
+            goto done;
+        }
+
+        errors = diag_error_count(&diags);
+        if (errors == 0) {
+            char *d = format_diags(&diags, "no errors, diagnostics", 0);
+            printf("%s", d);
+            free(d);
+            lsp_diagvec_free(&diags);
+            write_file(filename, code);
+            *final_code = code;
+            hist_record_program(hist, filename, code, 1);
+            ret = 0;
+            goto done;
+        }
+
+        sig = diag_error_signature(&diags);
+
+        /* Have we seen exactly this error set before? */
+        for (j = 0; j < seen_len; j++) {
+            if (strcmp(seen_sigs[j], sig) == 0) {
+                cycle = 1;
+                break;
             }
         }
 
-        {
-            size_t i;
-            int errors = 0;
-            for (i = 0; i < diags.len; i++)
-                if (diags.items[i].severity == 1)
-                    errors++;
-            if (errors == 0) {
-                char *d = format_diags(&diags, "no errors, diagnostics");
-                printf("%s", d);
-                free(d);
-                lsp_diagvec_free(&diags);
-                write_file(filename, code);
-                *final_code = code;
-                return 0;
+        /* Remember the attempt with the fewest errors. On failure this is
+         * what gets saved, so a bad last rewrite cannot throw away earlier
+         * progress. */
+        if (best_errors < 0 || errors < best_errors) {
+            best_errors = errors;
+            free(best_code);
+            best_code = strdup(code);
+            stall = 0;
+        } else {
+            stall++;
+        }
+
+        if (seen_len == seen_cap) {
+            size_t nc = seen_cap ? seen_cap * 2 : 8;
+            char **ns = realloc(seen_sigs, nc * sizeof(*ns));
+            if (ns) {
+                seen_sigs = ns;
+                seen_cap = nc;
             }
+        }
+        if (seen_len < seen_cap) {
+            seen_sigs[seen_len++] = sig;
+        } else {
+            free(sig);
+        }
+        sig = NULL;
+
+        if (stall >= max_stalls) {
+            printf("\n[fix] no progress for %d attempts (still %d error%s); "
+                   "stopping to avoid an endless loop.\n",
+                   stall, errors, errors == 1 ? "" : "s");
+            lsp_diagvec_free(&diags);
+            break;
         }
 
         /* report errors and ask the model to correct */
+        dtext = format_errors_with_context(&diags, code, "LSP errors",
+                                           FIX_MAX_CONTEXT_ERRORS);
+        if (max_iters > 0)
+            printf("Found errors; asking the model to fix (iteration %d/%d)...\n",
+                   iter + 1, max_iters);
+        else
+            printf("Found errors; asking the model to fix (iteration %d, "
+                   "unlimited loop; Ctrl+C to stop)...\n", iter + 1);
+        printf("%s", dtext);
+
         {
-            char *dtext = format_diags(&diags, "LSP errors");
-            if (max_iters > 0)
-                printf("Found errors; asking the model to fix (iteration %d/%d)...\n",
-                       iter + 1, max_iters);
-            else
-                printf("Found errors; asking the model to fix (iteration %d, "
-                       "unlimited loop; Ctrl+C to stop)...\n", iter + 1);
-            printf("%s", dtext);
             SB fix;
+            size_t nl = strlen(code);
+            int need_nl = (nl == 0 || code[nl - 1] != '\n');
+
             sb_init(&fix);
             sb_printf(&fix,
-                "The Brackets program above has the following errors. "
-                "Please output the COMPLETE corrected .l1com program as a "
-                "single fenced block ```l1com ... ```, fixing every error. "
-                "Do not describe anything; just output the corrected code.\n\n"
-                "%s", dtext);
+                "The Brackets program below is the CURRENT version of %s. "
+                "l1vm-lsp reports %d error%s. Fix the program and output the "
+                "COMPLETE corrected .l1com program as a single fenced block "
+                "```l1com ... ```.\n"
+                "\n"
+                "Current program (authoritative; this supersedes every earlier "
+                "version in this conversation):\n"
+                "```l1com\n%s%s```\n"
+                "\n"
+                "%s",
+                filename, errors, errors == 1 ? "" : "s",
+                code, need_nl ? "\n" : "", dtext);
+
+            if (iter > 0) {
+                sb_printf(&fix,
+                    "\nProgress: the previous attempt had %d error%s, the "
+                    "current version has %d. Best so far: %d.\n",
+                    prev_errors < 0 ? 0 : prev_errors,
+                    prev_errors == 1 ? "" : "s", errors, best_errors);
+                if (errors > prev_errors && prev_errors >= 0)
+                    sb_add(&fix,
+                        "The last attempt made things worse. Revert the part "
+                        "that introduced the new errors instead of piling more "
+                        "changes on top.\n");
+                else if (errors >= prev_errors && prev_errors >= 0)
+                    sb_add(&fix,
+                        "The last attempt did not fix anything. Do not repeat "
+                        "the same change; rethink the cause from the source "
+                        "lines shown above.\n");
+            }
+            if (cycle)
+                sb_add(&fix,
+                    "WARNING: this exact set of errors already occurred in an "
+                    "earlier attempt. You are cycling. Try a different fix "
+                    "strategy rather than reproducing the previous program.\n");
+            if (stall > 0)
+                sb_printf(&fix,
+                    "WARNING: %d attempt%s in a row did not reduce the number "
+                    "of errors. Make the smallest possible correction to the "
+                    "lines shown above.\n",
+                    stall, stall == 1 ? "" : "s");
+            sb_printf(&fix,
+                "\nRules for the fix:\n"
+                "- Keep the parts that already work; change only what is needed.\n"
+                "- Fix every listed error and do not introduce new ones.\n"
+                "- Keep the same filename comment and the same program structure.\n"
+                "- The corrected program MUST differ from the current version.\n"
+                "- Output only the complete corrected program in one ```l1com "
+                "block.\n");
+
             hist_push(hist, "user", sb_cstr(&fix));
             sb_free(&fix);
-            free(dtext);
+        }
+        free(dtext);
+        dtext = NULL;
 
-            {
-                char *reply = NULL;
-                long tin = -1, tout = -1;
-                char *cerr = NULL;
-                int mrc;
-                printf("[asking model to fix...]\n");
-                fflush(stdout);
-                mrc = llm_text(hist, prov, NULL, &reply, &tin, &tout, &cerr);
-                if (mrc == 0 && reply) {
-                    print_token_usage(tin, tout);
-                    /* strip the code from the reply */
-                    char fixedname[256];
-                    char *newcode = extract_code(reply, fixedname,
-                                                 sizeof(fixedname));
-                    if (newcode) {
-                        /* keep file name if unchanged or not provided */
+        {
+            char *reply = NULL;
+            long tin = -1, tout = -1;
+            char *cerr = NULL;
+            int mrc;
+
+            printf("[asking model to fix...]\n");
+            fflush(stdout);
+            mrc = llm_text(hist, prov, NULL, &reply, &tin, &tout, &cerr);
+            /* The per-round prompt carries the complete current code, so it
+             * must not stay in the conversation and go stale. */
+            hist_pop(hist);
+            if (mrc == 0 && reply) {
+                char fixedname[256];
+                char *newcode = extract_code(reply, fixedname,
+                                             sizeof(fixedname));
+                print_token_usage(tin, tout);
+                if (newcode) {
+                    if (strcmp(newcode, code) == 0) {
+                        same_code_replies++;
+                        no_code_replies = 0;
+                        free(newcode);
+                        printf("[fix] the model returned the unchanged program; "
+                               "not counting it as a fix.\n");
+                    } else {
                         free(code);
                         code = newcode;
-                    } else {
-                        /* model didn't emit code; keep last code */
+                        same_code_replies = 0;
+                        no_code_replies = 0;
                     }
+                } else {
+                    no_code_replies++;
+                    same_code_replies = 0;
+                    printf("[fix] the reply did not contain a complete ```l1com "
+                           "code block.\n");
                 }
+            } else {
+                no_code_replies++;
                 if (mrc != 0 && cerr)
                     fprintf(stderr, "[model] %s\n", cerr);
-                free(cerr);
-                free(reply);
             }
+            free(cerr);
+            free(reply);
         }
         lsp_diagvec_free(&diags);
+        prev_errors = errors;
+
+        if (same_code_replies >= MAX_SAME_CODE_REPLIES) {
+            printf("\n[fix] the model returned an identical program twice; "
+                   "stopping to avoid an endless loop.\n");
+            break;
+        }
+        if (no_code_replies >= MAX_NO_CODE_REPLIES) {
+            printf("\n[fix] the model produced no code twice; stopping to "
+                   "avoid an endless loop.\n");
+            break;
+        }
+
         if (max_iters > 0) {
             if (!ask_continue()) {
                 printf("\nAuto-fix aborted by user; %s was NOT saved.\n", filename);
+                take_best_code(&code, &best_code);
                 *final_code = code;   /* caller still owns the last code */
-                return -2;
+                ret = -2;
+                goto done;
             }
         } else if (g_intr_request) {
             /* /loop mode: a Ctrl+C stops the loop without asking */
             printf("\nAuto-fix aborted by user; %s was NOT saved.\n", filename);
+            take_best_code(&code, &best_code);
             *final_code = code;   /* caller still owns the last code */
-            return -2;
+            ret = -2;
+            goto done;
         }
     }
 
-    /* give up after max iterations: report last state */
+    /* Stopped because of the iteration limit or a stall. Check the latest
+     * code first: the last fix may have made it clean even though the loop
+     * ended before checking it. Only fall back to the best earlier attempt
+     * when it really has fewer errors. Save that version and report its
+     * diagnostics. */
     {
         LspDiagVec diags = {0};
-        char checkpath[131072];
-        char uri[262144];
         int ck;
-        size_t i;
         int nerr = 0;
-        snprintf(checkpath, sizeof(checkpath),
-                 "%s/.brackets-check-%d-%lu.l1com", cwd, (int)getpid(),
-                 ++g_check_seq);
-        snprintf(uri, sizeof(uri), "file://%s", checkpath);
-        write_file(checkpath, code);
-        {
-            char *diskcode = read_file_part(checkpath, -1, 1);
-            ck = lsp_check(lsp, uri, checkpath, diskcode ? diskcode : code,
-                           &diags);
-            free(diskcode);
+
+        ck = check_code_once(lsp, cwd, code, &diags);
+        if (ck == 0) {
+            nerr = diag_error_count(&diags);
+            if (best_code && best_errors >= 0 && nerr > best_errors) {
+                lsp_diagvec_free(&diags);
+                memset(&diags, 0, sizeof(diags));
+                take_best_code(&code, &best_code);
+                ck = check_code_once(lsp, cwd, code, &diags);
+            }
+        } else if (best_code) {
+            lsp_diagvec_free(&diags);
+            memset(&diags, 0, sizeof(diags));
+            take_best_code(&code, &best_code);
+            ck = check_code_once(lsp, cwd, code, &diags);
         }
-        unlink(checkpath);
+
         write_file(filename, code);
-        *final_code = code;   /* caller owns */
+        *final_code = code;
+        *final_diags = diags;
         if (ck != 0) {
-            *final_diags = diags;
             fprintf(stderr, "\n[WARNING] LSP check failed on the final "
                             "attempt; %s was saved without verification.\n",
                     filename);
-            return 2;
+            ret = 2;
+        } else {
+            nerr = diag_error_count(&diags);
+            hist_record_program(hist, filename, code, nerr == 0);
+            ret = nerr > 0 ? 1 : 0;
         }
-        *final_diags = diags;
-        for (i = 0; i < diags.len; i++)
-            if (diags.items[i].severity == 1)
-                nerr++;
-        return nerr > 0 ? 1 : 0;
     }
+
+done:
+    free(best_code);
+    {
+        size_t j;
+        for (j = 0; j < seen_len; j++)
+            free(seen_sigs[j]);
+    }
+    free(seen_sigs);
+    return ret;
 }
 
 /* ================== code diff display ================== */
@@ -1137,6 +1547,33 @@ static int tool_calls_emitted(const JVal *r)
     return (tc && j_is(tc, J_ARR) && j_len(tc) > 0) ? 1 : 0;
 }
 
+/* Canonical name+arguments text of all tool calls in a reply, used to detect
+ * a model that keeps issuing exactly the same request instead of making
+ * progress. */
+static char *tool_calls_fingerprint(const JVal *r)
+{
+    const JVal *choices = j_get(r, "choices");
+    const JVal *msg = (choices && j_len(choices) > 0) ? j_at(choices, 0) : NULL;
+    const JVal *tc = msg ? j_get(j_get(msg, "message"), "tool_calls") : NULL;
+    SB b;
+    size_t i;
+    char *out;
+
+    if (!tc || !j_is(tc, J_ARR))
+        return NULL;
+    sb_init(&b);
+    for (i = 0; i < j_len(tc); i++) {
+        const JVal *call = j_at(tc, i);
+        const JVal *fn = call ? j_get(call, "function") : NULL;
+        const char *name = fn ? j_str(j_get(fn, "name")) : NULL;
+        const char *args = fn ? j_str(j_get(fn, "arguments")) : NULL;
+        sb_printf(&b, "%s|%s\n", name ? name : "", args ? args : "");
+    }
+    out = strdup(sb_cstr(&b));
+    sb_free(&b);
+    return out;
+}
+
 /*
  * Process a list of tool_calls from the model: run each tool, keep the
  * assistant's function-call message in the conversation, and append one
@@ -1308,8 +1745,9 @@ static void process_code_reply(const char *text, LspClient *lsp, Hist *hist,
     {
         char *final = NULL;
         LspDiagVec diags = {0};
+        int maxfix = fix_max_iters();
         int rc = code_workflow(lsp, hist, prov, fname, code,
-                               MAX_FIX_ITERS, &final, &diags);
+                               maxfix, &final, &diags);
         if (final) {
             *last_code = strdup(final);
             free(final);
@@ -1325,11 +1763,12 @@ static void process_code_reply(const char *text, LspClient *lsp, Hist *hist,
                     nerr++;
             fprintf(stderr,
                     "\n========================================================\n"
-                    "WARNING: %s was SAVED but still contains %d error(s) "
-                    "after %d fix attempts.\n",
-                    fname, nerr, MAX_FIX_ITERS);
+                    "WARNING: %s was SAVED but still contains %d error(s).\n"
+                    "The automatic correction stopped; the best attempt "
+                    "(fewest errors) was kept.\n",
+                    fname, nerr);
             if (diags.len > 0) {
-                char *d = format_diags(&diags, "remaining errors");
+                char *d = format_diags(&diags, "remaining errors", 1);
                 fprintf(stderr, "%s", d);
                 free(d);
             }
@@ -1810,6 +2249,7 @@ int main(int argc, char **argv)
                     char fname[256];
                     char *final = NULL;
                     LspDiagVec diags = {0};
+                    int maxfix = fix_max_iters();
                     int rc;
                     if (last_name[0])
                         snprintf(fname, sizeof(fname), "%s", last_name);
@@ -1817,7 +2257,7 @@ int main(int argc, char **argv)
                         snprintf(fname, sizeof(fname), "program-%lu.l1com",
                                  (unsigned long)hist.len);
                     rc = code_workflow(lsp, &hist, prov, fname,
-                                       last_code, MAX_FIX_ITERS, &final, &diags);
+                                       last_code, maxfix, &final, &diags);
                     if (final) {
                         free(last_code);
                         last_code = strdup(final);
@@ -1833,11 +2273,11 @@ int main(int argc, char **argv)
                             if (diags.items[i].severity == 1)
                                 nerr++;
                         fprintf(stderr,
-                                "WARNING: %s still contains %d error(s) after "
-                                "%d fix attempts.\n",
-                                fname, nerr, MAX_FIX_ITERS);
+                                "WARNING: %s still contains %d error(s). "
+                                "The best attempt was kept.\n",
+                                fname, nerr);
                         if (diags.len > 0) {
-                            char *d = format_diags(&diags, "remaining errors");
+                            char *d = format_diags(&diags, "remaining errors", 1);
                             fprintf(stderr, "%s", d);
                             free(d);
                         }
@@ -1883,6 +2323,21 @@ int main(int argc, char **argv)
                     }
                     if (rc == 0) {
                         printf("saved %s (LSP check OK)\n", fname);
+                    } else if (rc == 1) {
+                        size_t i;
+                        int nerr = 0;
+                        for (i = 0; i < diags.len; i++)
+                            if (diags.items[i].severity == 1)
+                                nerr++;
+                        fprintf(stderr,
+                                "/loop stopped: %s still contains %d error(s). "
+                                "The best attempt was kept.\n",
+                                fname, nerr);
+                        if (diags.len > 0) {
+                            char *d = format_diags(&diags, "remaining errors", 1);
+                            fprintf(stderr, "%s", d);
+                            free(d);
+                        }
                     } else if (rc == -1) {
                         fprintf(stderr, "/loop aborted (LSP check failed).\n");
                     }
@@ -1947,6 +2402,8 @@ int main(int argc, char **argv)
         fflush(stdout);
         {
             char *tools = tools_definitions_json();
+            char *prev_tool_sig = NULL;
+            int repeated_tool_rounds = 0;
             int iter;
 
             for (iter = 0; iter <= MAX_TOOL_ITERS; iter++) {
@@ -1980,6 +2437,30 @@ int main(int argc, char **argv)
                 {
                     JVal *r = j_parse(reply);
                     if (r && tool_calls_emitted(r)) {
+                        char *sig = tool_calls_fingerprint(r);
+                        int repeated = (sig && prev_tool_sig &&
+                                        strcmp(sig, prev_tool_sig) == 0);
+                        if (repeated)
+                            repeated_tool_rounds++;
+                        else
+                            repeated_tool_rounds = 0;
+                        free(prev_tool_sig);
+                        prev_tool_sig = sig;
+                        if (repeated_tool_rounds >= 2) {
+                            printf("\n[tool] the model repeated exactly the "
+                                   "same tool request %d times; stopping to "
+                                   "avoid a loop.\n",
+                                   repeated_tool_rounds + 1);
+                            hist_push(&hist, "user",
+                                "Automatic stop: you sent exactly the same "
+                                "tool request several times in a row. Running "
+                                "it again cannot change anything. Explain the "
+                                "remaining LSP errors and make a different, "
+                                "targeted change instead.");
+                            j_free(r);
+                            free(reply);
+                            break;
+                        }
                         if (iter >= MAX_TOOL_ITERS) {
                             printf("(tool call limit reached, giving up)\n");
                             j_free(r);
@@ -1991,6 +2472,13 @@ int main(int argc, char **argv)
                         if (handle_tool_calls(&hist, r, lsp, &last_code,
                                               last_name, sizeof(last_name),
                                               echo.printed) == 0) {
+                            if (repeated_tool_rounds == 1)
+                                hist_push(&hist, "user",
+                                    "WARNING: that tool call was exactly the "
+                                    "same as the previous round. Repeating it "
+                                    "will not fix the Brackets errors. Change "
+                                    "the code itself, or stop and explain what "
+                                    "is blocking you.");
                             j_free(r);
                             free(reply);
                             continue;   /* loop: run the model again */
@@ -2021,6 +2509,7 @@ int main(int argc, char **argv)
                     break;
                 }
             }
+            free(prev_tool_sig);
             free(tools);
         }
     }

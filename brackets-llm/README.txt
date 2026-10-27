@@ -18,7 +18,8 @@ local LLM. It works like opencode:
   * Brackets code found in the model's answer is saved to a .l1com file.
   * The code is checked with the L1VM language server (l1vm-lsp), which runs
     real compiler diagnostics (l1com), and errors are automatically corrected
-    by asking the model to fix them (up to 4 iterations).
+    by asking the model to fix them (up to 5 iterations, or until the program
+    detects that a correction is not making progress).
   * The program can build (l1vm-build.sh) and run (l1vm) the result.
 
 The program does NOT start an LLM server. It talks to ANY OpenAI-compatible
@@ -187,6 +188,14 @@ BRACKETS_LLM_BACKEND=openai for everything else.
                             Character budget for the conversation sent with
                             each request (the system prompt is always kept).
                             Default: 150000
+  BRACKETS_LLM_MAX_FIX_ITERS
+                            Maximum number of model attempts in the
+                            auto-correction loop. Default: 5
+                            (/loop ignores this limit but still stops when it
+                            detects that no progress is being made.)
+  BRACKETS_LLM_FIX_STALLS   Number of consecutive correction attempts that
+                            do not reduce the error count before the loop
+                            gives up to avoid an endless loop. Default: 3
   BRACKETS_LLM_SYSTEM_PROMPT  Path to the system prompt file.
                             Default: l1vm-system-prompt.txt
   L1VM_LSP                  Path to the l1vm-lsp binary.
@@ -251,8 +260,8 @@ The assistant reply is printed. If it contains Brackets code, the program
   * saves it to a .l1com file,
   * checks it with l1vm-lsp (static analysis + real l1com compiler
     diagnostics),
-  * if there are errors, asks the model again (up to 4 times) until the code
-    compiles cleanly or gives up,
+  * if there are errors, asks the model again (up to 5 times, and only while
+    the corrections are making progress) until the code compiles cleanly,
   * writes the final code to the .l1com file.
 
 The conversation is kept in memory; on each request the system prompt plus
@@ -295,13 +304,16 @@ The program advertises these tools to the server in the chat request:
 While a tool call is running, every [tool] round is shown in the terminal and
 the tool results are fed back into the conversation so the model can continue
 until it is finished. To prevent endless loops the model may run at most
-MAX_TOOL_ITERS (8) consecutive tool rounds before the program stops it.
+MAX_TOOL_ITERS (8) consecutive tool rounds before the program stops it. In
+addition, the exact same tool request (same tool, same arguments) is detected:
+the model is warned after the second repetition, and the loop is stopped if it
+repeats it a third time.
 
 Every tool write of a .l1com source file is verified with l1vm-lsp right
 after the write (like the code blocks in section 5): the program prints an
-"LSP check" summary listing any errors (up to the first 6) and feeds that
-summary back into the conversation, so the model sees the diagnostics and can
-fix the file in a follow-up tool round.
+"LSP check" summary showing the errors with the offending source lines (up to
+the first 8) and feeds that summary back into the conversation, so the model
+sees the diagnostics and can fix the file in a follow-up tool round.
 
 File writes happen automatically by default (opencode-like). To be asked for
 confirmation on every write, start with:
@@ -426,19 +438,46 @@ is followed by a token count line: "[tokens in: N, out: M]".
    only on didOpen, not on didChange.
 3. l1vm-lsp publishes diagnostics (severity 1 = error). These include the
    static analysis and the real l1com/l1pre compiler output.
-4. If any error is present, the diagnostics are appended to the conversation
-   and the model is asked to output the complete corrected program.
-5. The new code is checked again. This repeats until there are no errors or
-   MAX_FIX_ITERS (4) is reached. When you run brackets-llm in a terminal,
-   it asks "Continue: y/n" after every failed fix attempt; answer "n" to
-   abort the auto-fix loop immediately (the file is then NOT saved).
-6. The final code is saved under the program name (e.g. hello.l1com if the
+4. If any error is present, the model is asked for a complete corrected
+   program. The request always contains the *current* program in full, the
+   error list, and the offending source lines with one line of context around
+   each error. It does not rely on "the program above" from an earlier turn,
+   which used to make the model fix a stale version.
+5. The new code is checked again. The loop tracks whether the correction is
+   actually making progress:
+     * the number of errors and the error set are compared with earlier
+       attempts (line numbers are ignored, so moving code is not mistaken
+       for a fix),
+     * an error set that occurred before is reported as a cycle,
+     * a reply with no ```l1com block, or with a byte-identical program, is
+       not counted as a fix,
+     * a correction that makes things worse is called out explicitly, so the
+       model can revert that change.
+   The loop stops when the code is clean, when MAX_FIX_ITERS (default 5,
+   BRACKETS_LLM_MAX_FIX_ITERS) is reached, or when
+   BRACKETS_LLM_FIX_STALLS (default 3) consecutive attempts do not reduce the
+   error count. It also stops immediately when the model returns the same
+   program twice or produces no code twice, so it cannot spin forever on the
+   same answer.
+6. When you run brackets-llm in a terminal, it asks "Continue: y/n" after every
+   failed fix attempt; answer "n" to abort the auto-fix loop immediately (the
+   file is then NOT saved).
+7. The final code is saved under the program name (e.g. hello.l1com if the
    model put "// hello.l1com" at the top, otherwise program-<n>.l1com).
-   A clean result prints "saved <name> (LSP check OK)". If MAX_FIX_ITERS is
-   reached and the code still has errors, the file is saved anyway to keep
-   the work, but a loud WARNING with the remaining errors is printed (and
-   the file must not be treated as verified). If the LSP itself fails, an
-   unverified-save warning is printed instead.
+   A clean result prints "saved <name> (LSP check OK)". If the loop gives up,
+   the attempt with the FEWEST errors is saved, not simply the last attempt,
+   so a bad final rewrite cannot throw away earlier progress. A loud WARNING
+   with the remaining errors is printed (and the file must not be treated as
+   verified). If the LSP itself fails, an unverified-save warning is printed
+   instead.
+8. The corrected program is also recorded in the conversation, so follow-up
+   requests refer to the version on disk instead of the first answer.
+
+/loop runs the same correction loop without the iteration limit, but it keeps
+the progress detection: if the model stops improving or repeats itself, /loop
+stops with "no progress ... stopping to avoid an endless loop" instead of
+running forever. You can run /loop again later (for example after editing the
+code or changing the model).
 
 If the LSP cannot be started, the program prints a warning and continues
 without code checking.
