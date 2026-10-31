@@ -98,10 +98,10 @@ size_t strlen_safe (const char *str, S8 maxlen)
 }
 
 // stack helpers --------------------------------------------------------
-#define POP_I(v)  do { sp = stpopi ((U1 *) &(v), sp, sp_top); if (sp == NULL) { printf ("%s: ERROR: stack corrupt!\n", __func__); return (NULL); } } while (0)
-#define POP_D(v)  do { sp = stpopd ((U1 *) &(v), sp, sp_top); if (sp == NULL) { printf ("%s: ERROR: stack corrupt!\n", __func__); return (NULL); } } while (0)
-#define PUSH_I(v) do { sp = stpushi ((S8) (v), sp, sp_bottom); if (sp == NULL) { printf ("%s: ERROR: stack corrupt!\n", __func__); return (NULL); } } while (0)
-#define PUSH_D(v) do { sp = stpushd ((F8) (v), sp, sp_bottom); if (sp == NULL) { printf ("%s: ERROR: stack corrupt!\n", __func__); return (NULL); } } while (0)
+#define POP_I(v) sp = stpopi ((U1 *) &(v), sp, sp_top); if (sp == NULL) { printf ("%s: ERROR: stack corrupt!\n", __func__); return (NULL); }
+#define POP_D(v) sp = stpopd ((U1 *) &(v), sp, sp_top); if (sp == NULL) { printf ("%s: ERROR: stack corrupt!\n", __func__); return (NULL); }
+#define PUSH_I(v) sp = stpushi ((S8) (v), sp, sp_bottom); if (sp == NULL) { printf ("%s: ERROR: stack corrupt!\n", __func__); return (NULL); }
+#define PUSH_D(v) sp = stpushd ((F8) (v), sp, sp_bottom); if (sp == NULL) { printf ("%s: ERROR: stack corrupt!\n", __func__); return (NULL); }
 
 // helpers --------------------------------------------------------------
 static S8 mod_find_slot (void)
