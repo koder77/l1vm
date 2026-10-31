@@ -190,7 +190,13 @@ extern "C" U1 *free_mem (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	cleanup ();
 	// free global mem
-	if (mem) free (mem);
+	if (mem)
+	{
+		free (mem);
+		mem = NULL;
+		memmax = 0;
+	}
+
 	return (sp);
 }
 
