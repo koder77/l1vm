@@ -1,3 +1,21 @@
+L1VM (3.9.0)
+	NEW: added "l1vm-optimize" assembly code optimizer.
+
+	$ ./l1vm-optimize
+	l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6] <assembly> <optimized-assembly>
+
+	optimizes the L1VM assembly file '<assembly>.l1asm' and writes
+	the result to '<optimized-assembly>.l1asm'.
+
+	-O0  no optimization
+	-O1  loop and peephole optimizations (default)
+	-O2  additionally promote function local variables to registers
+	-O4  additionally promote plain-suffix locals and reuse their registers
+	-O5  additionally inline small leaf functions
+	-O6  all from -O4 and -O5 plus loop unrolling
+
+-- Stefan Pietzonke <info@midnight-coding.de> Tue 3 November 2026 19:58 +010
+
 L1VM (3.8.0)
 	Added new Raylib 6.2 library module.
         Added vecdb module, a simple vector database.
