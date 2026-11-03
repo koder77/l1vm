@@ -22,7 +22,7 @@
  * Developed with the help of AI.
  *
  * Usage:
- *   l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6] <assembly> <optimized-assembly>
+ *   l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6|-O7] <assembly> <optimized-assembly>
  *
  * The ".l1asm" suffix is added automatically to both file names.
  * "-O1" is the default.  "-O0" disables all optimizations.
@@ -153,6 +153,14 @@
  * can be removed as well when their complete block is found.  An unused
  * initial "loada zero, 0, 0" is not copied.
  *
+ * With "-O6" the optimizer also unrolls small rotated loops which use the
+ * "inclsijmpi" / "decgrijmpi" superopcodes.
+ *
+ * "-O7" enables all of the above with more aggressive limits (96 body
+ * instructions and 16 call sites for the inliner, unroll factor 8) and adds
+ * a constant propagation and folding pass, forward copy propagation inside
+ * straight line blocks and liveness based dead code elimination.
+ *
  * All transformations are conservative: a loop is only changed if the
  * complete canonical pattern is found and the temporaries used by the
  * transformation are provably dead.
@@ -166,6 +174,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
+#include <stdint.h>
 
 #include "../include/global.h"
 #include "../include/opcodes.h"
@@ -177,6 +186,7 @@
 
 #define INLINE_MAX_BODY 32
 #define INLINE_MAX_CALLS 4
+#define UNROLL_MAX_FACTOR 4
 #define INLINE_MAX_ARGS 16
 #define INLINE_MAX_PUSHES 64
 #define INLINE_SCAN_MAX 512
@@ -235,6 +245,11 @@ static int symbol_cap = 0;
 
 static int opcode_count = 0;
 static int opt_level = 1;
+
+/* -O7 relaxes the conservative inliner and unroller limits. */
+static int inline_max_body = INLINE_MAX_BODY;
+static int inline_max_calls = INLINE_MAX_CALLS;
+static int unroll_max_factor = UNROLL_MAX_FACTOR;
 
 /* ------------------------------------------------------------------------- */
 /* small helpers                                                             */
@@ -4908,7 +4923,7 @@ static int inline_analyze_function (int start, InlineFunc *info)
     }
 
     info->body_count = pos + 1;
-    if (info->body_count <= 0 || info->body_count > INLINE_MAX_BODY)
+    if (info->body_count <= 0 || info->body_count > inline_max_body)
     {
         return (0);
     }
@@ -5761,7 +5776,7 @@ static int inline_call_site (int jsr)
 
     target_ord = function_ordinal (target);
     if (target_ord < 0 || func_skip == NULL || func_skip[target_ord] ||
-        inline_count_calls (target) > INLINE_MAX_CALLS)
+        inline_count_calls (target) > inline_max_calls)
     {
         return (0);
     }
@@ -5970,8 +5985,6 @@ static void inline_functions (void)
 /* ------------------------------------------------------------------------- */
 /* -O6: loop unrolling                                                       */
 /* ------------------------------------------------------------------------- */
-
-#define UNROLL_MAX_FACTOR 4
 
 /*
  * The unroll pass runs after -O5, which materialised every pre/replace/post
@@ -6384,7 +6397,7 @@ static int try_unroll_loop (int label_index)
     int use_i[MAXREG];
     int map_i[MAXREG];
     int map_d[MAXREG];
-    char buf[131072];
+    char buf[262144];
     int ret;
 
     if ((ret = locate_unroll_loop (label_index, &bottom_i, &end_i)) != 0)
@@ -6550,7 +6563,7 @@ static int try_unroll_loop (int label_index)
         map_i[counter_reg] = -1;
     }
 
-    if (! unroll_format_body (body_start, body_end, UNROLL_MAX_FACTOR,
+    if (! unroll_format_body (body_start, body_end, unroll_max_factor,
                                map_i, map_d, buf, sizeof (buf)))
     {
         return (0);
@@ -6631,6 +6644,1177 @@ static void optimize_loop_unroll (void)
         }
     }
 }
+
+/* ------------------------------------------------------------------------- */
+/* -O7: aggressive constant folding, copy propagation and dead code removal  */
+/* ------------------------------------------------------------------------- */
+
+#define AGGR_REGSET_WORDS ((MAXREG + 63) / 64)
+
+typedef struct
+{
+    uint64_t word[AGGR_REGSET_WORDS];
+} AggrRegSet;
+
+static void aggr_set_clear (AggrRegSet *set)
+{
+    memset (set, 0, sizeof (*set));
+}
+
+static void aggr_set_add (AggrRegSet *set, int reg)
+{
+    if (reg >= 0 && reg < MAXREG)
+    {
+        set->word[reg >> 6] |= ((uint64_t) 1) << (reg & 63);
+    }
+}
+
+static int aggr_set_has (const AggrRegSet *set, int reg)
+{
+    if (reg < 0 || reg >= MAXREG)
+    {
+        return (0);
+    }
+    return ((set->word[reg >> 6] & (((uint64_t) 1) << (reg & 63))) != 0);
+}
+
+static void aggr_set_or (AggrRegSet *dest, const AggrRegSet *src)
+{
+    int i;
+
+    for (i = 0; i < AGGR_REGSET_WORDS; i++)
+    {
+        dest->word[i] |= src->word[i];
+    }
+}
+
+static int aggr_set_equal (const AggrRegSet *a, const AggrRegSet *b)
+{
+    return (memcmp (a->word, b->word, sizeof (a->word)) == 0);
+}
+
+static void aggr_set_all (AggrRegSet *set)
+{
+    int i;
+
+    aggr_set_clear (set);
+    for (i = 0; i < MAXREG; i++)
+    {
+        aggr_set_add (set, i);
+    }
+}
+
+static int aggr_opaque (const Line *line)
+{
+    const char *op = line->op;
+
+    if (opcode_index (op) < 0)
+    {
+        return (1);
+    }
+    if (op_is (line, "intr0") || op_is (line, "intr1") ||
+        op_is (line, "jsr") || op_is (line, "jsra") ||
+        op_is (line, "jmpa"))
+    {
+        return (1);
+    }
+    return (0);
+}
+
+static void aggr_rewrite_line (Line *line)
+{
+    char buf[OPT_LINE_MAX];
+    size_t pos;
+    int arg;
+
+    pos = (size_t) snprintf (buf, sizeof (buf), "%s", line->op);
+    for (arg = 0; arg < line->argc && arg < OPT_MAX_ARGS; arg++)
+    {
+        int n = snprintf (buf + pos, sizeof (buf) - pos,
+                          (arg == 0) ? " %s" : ", %s", line->args[arg]);
+
+        if (n < 0 || pos + (size_t) n >= sizeof (buf))
+        {
+            die ("aggressive rewrite line too long");
+        }
+        pos += (size_t) n;
+    }
+
+    free (line->replace);
+    line->replace = xstrdup (buf);
+}
+
+/*
+ * Replace an instruction with "movi <src>, <dest>".  "dest" is copied first
+ * because both arguments live in the same Line structure.
+ */
+static void aggr_rewrite_move (Line *line, const char *src)
+{
+    char dest[OPT_ARG_MAX];
+    char source[OPT_ARG_MAX];
+
+    strcpy (dest, line->args[2]);
+    strcpy (source, src);
+
+    strcpy (line->op, "movi");
+    line->argc = 2;
+    strcpy (line->args[0], source);
+    strcpy (line->args[1], dest);
+
+    aggr_rewrite_line (line);
+}
+
+static int aggr_find_constant_reg (const unsigned char *known,
+                                   const long long *value, long long wanted)
+{
+    int reg;
+
+    for (reg = 0; reg < MAXREG; reg++)
+    {
+        if (known[reg] && value[reg] == wanted)
+        {
+            return (reg);
+        }
+    }
+    return (-1);
+}
+
+static int aggr_fold_constants (const char *op, long long a, long long b,
+                                long long *result)
+{
+    if (strcmp (op, "addi") == 0)
+    {
+        *result = (long long) ((unsigned long long) a +
+                               (unsigned long long) b);
+        return (1);
+    }
+    if (strcmp (op, "subi") == 0)
+    {
+        *result = (long long) ((unsigned long long) a -
+                               (unsigned long long) b);
+        return (1);
+    }
+    if (strcmp (op, "muli") == 0)
+    {
+        *result = (long long) ((unsigned long long) a *
+                               (unsigned long long) b);
+        return (1);
+    }
+    if (strcmp (op, "divi") == 0 || strcmp (op, "modi") == 0)
+    {
+        if (b == 0 || (a == LLONG_MIN && b == -1))
+        {
+            return (0);
+        }
+        *result = (strcmp (op, "divi") == 0) ? (a / b) : (a % b);
+        return (1);
+    }
+    if (strcmp (op, "andi") == 0)
+    {
+        *result = (a != 0 && b != 0) ? 1 : 0;
+        return (1);
+    }
+    if (strcmp (op, "ori") == 0)
+    {
+        *result = (a != 0 || b != 0) ? 1 : 0;
+        return (1);
+    }
+    if (strcmp (op, "bandi") == 0)
+    {
+        *result = a & b;
+        return (1);
+    }
+    if (strcmp (op, "bori") == 0)
+    {
+        *result = a | b;
+        return (1);
+    }
+    if (strcmp (op, "bxori") == 0)
+    {
+        *result = a ^ b;
+        return (1);
+    }
+    if (strcmp (op, "smuli") == 0)
+    {
+        if (b < 0 || b >= 64)
+        {
+            return (0);
+        }
+        *result = (long long) ((unsigned long long) a << (unsigned int) b);
+        return (1);
+    }
+    if (strcmp (op, "eqi") == 0)
+    {
+        *result = (a == b) ? 1 : 0;
+        return (1);
+    }
+    if (strcmp (op, "neqi") == 0)
+    {
+        *result = (a != b) ? 1 : 0;
+        return (1);
+    }
+    if (strcmp (op, "gri") == 0)
+    {
+        *result = (a > b) ? 1 : 0;
+        return (1);
+    }
+    if (strcmp (op, "lsi") == 0)
+    {
+        *result = (a < b) ? 1 : 0;
+        return (1);
+    }
+    if (strcmp (op, "greqi") == 0)
+    {
+        *result = (a >= b) ? 1 : 0;
+        return (1);
+    }
+    if (strcmp (op, "lseqi") == 0)
+    {
+        *result = (a <= b) ? 1 : 0;
+        return (1);
+    }
+    return (0);
+}
+
+static int aggr_symbol_index (const char *name)
+{
+    int low = 0;
+    int high = nsymbols - 1;
+
+    while (low <= high)
+    {
+        int mid = low + (high - low) / 2;
+        int cmp = strcmp (name, symbols[mid].name);
+
+        if (cmp == 0)
+        {
+            return (mid);
+        }
+        if (cmp < 0)
+        {
+            high = mid - 1;
+        }
+        else
+        {
+            low = mid + 1;
+        }
+    }
+    return (-1);
+}
+
+static int aggressive_constant_fold (void)
+{
+    unsigned char known[MAXREG];
+    long long value[MAXREG];
+    int *readonly = NULL;
+    int in_code = 0;
+    int changed = 0;
+    int i;
+
+    if (nsymbols > 0)
+    {
+        readonly = (int *) xmalloc ((size_t) nsymbols * sizeof (int));
+        for (i = 0; i < nsymbols; i++)
+        {
+            readonly[i] = symbol_is_readonly (i);
+        }
+    }
+
+    memset (known, 0, sizeof (known));
+    memset (value, 0, sizeof (value));
+
+    for (i = 0; i < nlines; i++)
+    {
+        Line *line = &lines[i];
+        const char *op;
+        int a_arg;
+        int b_arg;
+        int d_arg;
+        int d_reg;
+        int a_known;
+        int b_known;
+        long long a_value = 0;
+        long long b_value = 0;
+
+        if (! line->active)
+        {
+            continue;
+        }
+
+        if (line->kind == LINE_DIRECTIVE)
+        {
+            if (strcmp (line->op, ".code") == 0)
+            {
+                in_code = 1;
+            }
+            else if (strcmp (line->op, ".cend") == 0)
+            {
+                in_code = 0;
+            }
+            memset (known, 0, sizeof (known));
+            continue;
+        }
+
+        if (! in_code)
+        {
+            continue;
+        }
+
+        if (line->kind == LINE_BLANK || line->kind == LINE_COMMENT)
+        {
+            continue;
+        }
+
+        if (line->kind == LINE_LABEL)
+        {
+            memset (known, 0, sizeof (known));
+            continue;
+        }
+
+        if (line->kind != LINE_INSTR || line->pre != NULL ||
+            line->post != NULL)
+        {
+            memset (known, 0, sizeof (known));
+            continue;
+        }
+
+        /*
+         * The print and delay interrupts are known not to write integer
+         * registers, so constants can flow across them.
+         */
+        if (op_is (line, "intr0") && intr0_readonly (line))
+        {
+            continue;
+        }
+
+        if (aggr_opaque (line))
+        {
+            memset (known, 0, sizeof (known));
+            continue;
+        }
+
+        op = line->op;
+
+        if (strcmp (op, "movi") == 0 && line->argc >= 2)
+        {
+            int src = parse_register_token (line->args[0]);
+            int dst = parse_register_token (line->args[1]);
+
+            if (dst >= 0)
+            {
+                if (src >= 0 && known[src])
+                {
+                    known[dst] = 1;
+                    value[dst] = value[src];
+                }
+                else
+                {
+                    known[dst] = 0;
+                }
+            }
+            continue;
+        }
+
+        if (strcmp (op, "loada") == 0 && line->argc >= 3)
+        {
+            long long offset;
+            long long constant;
+            int dst = parse_register_token (line->args[2]);
+            int sym = aggr_symbol_index (line->args[0]);
+
+            if (dst >= 0)
+            {
+                if (parse_number_token (line->args[1], &offset) && offset == 0 &&
+                    sym >= 0 && ! symbols[sym].ambiguous &&
+                    readonly != NULL && readonly[sym] &&
+                    data_const_value (line->args[0], &constant))
+                {
+                    known[dst] = 1;
+                    value[dst] = constant;
+                }
+                else
+                {
+                    known[dst] = 0;
+                }
+            }
+            continue;
+        }
+
+        if (strcmp (op, "loadd") == 0 || strcmp (op, "load") == 0 ||
+            strcmp (op, "loadl") == 0)
+        {
+            int arg;
+
+            for (arg = 0; arg < line->argc && arg < OPT_MAX_ARGS; arg++)
+            {
+                if (instr_arg_is_ireg (line, arg) &&
+                    instr_arg_writes (line, arg))
+                {
+                    int reg = parse_register_token (line->args[arg]);
+
+                    if (reg >= 0)
+                    {
+                        known[reg] = 0;
+                    }
+                }
+            }
+            continue;
+        }
+
+        if (strcmp (op, "jmpi") == 0 && line->argc >= 2)
+        {
+            int cond = parse_register_token (line->args[0]);
+
+            if (cond >= 0 && known[cond])
+            {
+                if (value[cond] == 0)
+                {
+                    line->active = 0;
+                }
+                else
+                {
+                    char label[OPT_ARG_MAX];
+
+                    strcpy (label, line->args[1]);
+                    strcpy (line->op, "jmp");
+                    line->argc = 1;
+                    strcpy (line->args[0], label);
+                    aggr_rewrite_line (line);
+                }
+                changed = 1;
+            }
+            memset (known, 0, sizeof (known));
+            continue;
+        }
+
+        if (strcmp (op, "jmp") == 0 || strcmp (op, "rts") == 0 ||
+            strcmp (op, "inclsijmpi") == 0 ||
+            strcmp (op, "decgrijmpi") == 0)
+        {
+            memset (known, 0, sizeof (known));
+            continue;
+        }
+
+        if (strcmp (op, "noti") == 0 && line->argc >= 2)
+        {
+            a_arg = 0;
+            b_arg = -1;
+            d_arg = 1;
+        }
+        else if (line->argc >= 3)
+        {
+            a_arg = 0;
+            b_arg = 1;
+            d_arg = 2;
+        }
+        else
+        {
+            int arg;
+
+            for (arg = 0; arg < line->argc && arg < OPT_MAX_ARGS; arg++)
+            {
+                if (instr_arg_is_ireg (line, arg) &&
+                    instr_arg_writes (line, arg))
+                {
+                    int reg = parse_register_token (line->args[arg]);
+
+                    if (reg >= 0)
+                    {
+                        known[reg] = 0;
+                    }
+                }
+            }
+            continue;
+        }
+
+        d_reg = parse_register_token (line->args[d_arg]);
+        if (d_reg < 0 || ! instr_arg_is_ireg (line, d_arg) ||
+            ! instr_arg_writes (line, d_arg))
+        {
+            int arg;
+
+            for (arg = 0; arg < line->argc && arg < OPT_MAX_ARGS; arg++)
+            {
+                if (instr_arg_is_ireg (line, arg) &&
+                    instr_arg_writes (line, arg))
+                {
+                    int reg = parse_register_token (line->args[arg]);
+
+                    if (reg >= 0)
+                    {
+                        known[reg] = 0;
+                    }
+                }
+            }
+            continue;
+        }
+
+        {
+            int ar = parse_register_token (line->args[a_arg]);
+            int br = (b_arg >= 0) ? parse_register_token (line->args[b_arg]) : -1;
+
+            a_known = (ar >= 0 && known[ar]);
+            b_known = (b_arg < 0) ? 1 : (br >= 0 && known[br]);
+            if (a_known)
+            {
+                a_value = value[ar];
+            }
+            if (b_arg >= 0 && b_known)
+            {
+                b_value = value[br];
+            }
+        }
+
+        /* fold a fully constant operation into a constant register */
+        if (a_known && b_known)
+        {
+            long long result;
+
+            if (strcmp (op, "noti") == 0)
+            {
+                result = (a_value == 0) ? 1 : 0;
+            }
+            else if (! aggr_fold_constants (op, a_value, b_value, &result))
+            {
+                result = 0;
+                goto identity_or_unknown;
+            }
+
+            {
+                int src = aggr_find_constant_reg (known, value, result);
+
+                if (src >= 0)
+                {
+                    char dest[OPT_ARG_MAX];
+
+                    strcpy (dest, line->args[d_arg]);
+                    strcpy (line->op, "movi");
+                    line->argc = 2;
+                    snprintf (line->args[0], OPT_ARG_MAX, "%d", src);
+                    strcpy (line->args[1], dest);
+                    aggr_rewrite_line (line);
+                    known[d_reg] = 1;
+                    value[d_reg] = result;
+                    changed = 1;
+                    continue;
+                }
+            }
+        }
+
+identity_or_unknown:
+        /* algebraic identities which avoid a full constant materialisation */
+        {
+            const char *copy_src = NULL;
+            char one_buf[16];
+
+            if (strcmp (op, "addi") == 0)
+            {
+                if (b_known && b_value == 0)
+                {
+                    copy_src = line->args[0];
+                }
+                else if (a_known && a_value == 0)
+                {
+                    copy_src = line->args[1];
+                }
+            }
+            else if (strcmp (op, "subi") == 0)
+            {
+                if (b_known && b_value == 0)
+                {
+                    copy_src = line->args[0];
+                }
+            }
+            else if (strcmp (op, "muli") == 0)
+            {
+                if (a_known && a_value == 0)
+                {
+                    copy_src = line->args[0];
+                }
+                else if (b_known && b_value == 0)
+                {
+                    copy_src = line->args[1];
+                }
+                else if (b_known && b_value == 1)
+                {
+                    copy_src = line->args[0];
+                }
+                else if (a_known && a_value == 1)
+                {
+                    copy_src = line->args[1];
+                }
+            }
+            else if (strcmp (op, "divi") == 0)
+            {
+                if (b_known && b_value == 1)
+                {
+                    copy_src = line->args[0];
+                }
+                else if (a_known && a_value == 0 && b_known && b_value != 0)
+                {
+                    copy_src = line->args[0];
+                }
+            }
+            else if (strcmp (op, "modi") == 0)
+            {
+                if (b_known && b_value == 1)
+                {
+                    int zero = aggr_find_constant_reg (known, value, 0);
+
+                    if (zero >= 0)
+                    {
+                        snprintf (one_buf, sizeof (one_buf), "%d", zero);
+                        copy_src = one_buf;
+                    }
+                }
+                else if (a_known && a_value == 0 && b_known && b_value != 0)
+                {
+                    copy_src = line->args[0];
+                }
+            }
+            else if (strcmp (op, "andi") == 0 || strcmp (op, "bandi") == 0)
+            {
+                if (a_known && a_value == 0)
+                {
+                    copy_src = line->args[0];
+                }
+                else if (b_known && b_value == 0)
+                {
+                    copy_src = line->args[1];
+                }
+                else if (strcmp (op, "bandi") == 0 &&
+                         b_known && b_value == -1)
+                {
+                    copy_src = line->args[0];
+                }
+                else if (strcmp (op, "bandi") == 0 &&
+                         a_known && a_value == -1)
+                {
+                    copy_src = line->args[1];
+                }
+            }
+            else if (strcmp (op, "ori") == 0)
+            {
+                if (a_known && a_value != 0)
+                {
+                    int one = aggr_find_constant_reg (known, value, 1);
+
+                    if (one >= 0)
+                    {
+                        snprintf (one_buf, sizeof (one_buf), "%d", one);
+                        copy_src = one_buf;
+                    }
+                }
+                else if (b_known && b_value != 0)
+                {
+                    int one = aggr_find_constant_reg (known, value, 1);
+
+                    if (one >= 0)
+                    {
+                        snprintf (one_buf, sizeof (one_buf), "%d", one);
+                        copy_src = one_buf;
+                    }
+                }
+            }
+            else if (strcmp (op, "bori") == 0 || strcmp (op, "bxori") == 0)
+            {
+                if (a_known && a_value == 0)
+                {
+                    copy_src = line->args[1];
+                }
+                else if (b_known && b_value == 0)
+                {
+                    copy_src = line->args[0];
+                }
+                else if (strcmp (op, "bori") == 0 &&
+                         b_known && b_value == -1)
+                {
+                    copy_src = line->args[1];
+                }
+                else if (strcmp (op, "bori") == 0 &&
+                         a_known && a_value == -1)
+                {
+                    copy_src = line->args[0];
+                }
+            }
+            else if (strcmp (op, "smuli") == 0)
+            {
+                if (b_known && b_value == 0)
+                {
+                    copy_src = line->args[0];
+                }
+            }
+
+            if (copy_src != NULL)
+            {
+                int src_reg = parse_register_token (copy_src);
+
+                aggr_rewrite_move (line, copy_src);
+                if (src_reg >= 0 && known[src_reg])
+                {
+                    known[d_reg] = 1;
+                    value[d_reg] = value[src_reg];
+                }
+                else
+                {
+                    known[d_reg] = 0;
+                }
+                changed = 1;
+                continue;
+            }
+        }
+
+        /* unknown result: invalidate the destination */
+        known[d_reg] = 0;
+    }
+
+    free (readonly);
+    return (changed);
+}
+
+/*
+ * Propagate "movi src, dst" forward inside one straight line block.  Uses of
+ * "dst" are rewritten to "src" until either register is written or control
+ * flow starts.  The dead move is removed later by the liveness pass.
+ */
+static int aggressive_copy_propagate (void)
+{
+    int changed = 0;
+    int i;
+
+    for (i = 0; i < nlines; i++)
+    {
+        Line *line = &lines[i];
+        int src;
+        int dst;
+        int j;
+
+        if (! line->active || line->kind != LINE_INSTR ||
+            line->pre != NULL || line->post != NULL ||
+            ! op_is (line, "movi") || line->argc < 2)
+        {
+            continue;
+        }
+
+        src = parse_register_token (line->args[0]);
+        dst = parse_register_token (line->args[1]);
+        if (src < 0 || dst < 0 || src == dst)
+        {
+            continue;
+        }
+
+        for (j = i + 1; j < nlines; j++)
+        {
+            Line *next = &lines[j];
+            int arg;
+            int line_changed = 0;
+            int writes_src;
+            int writes_dst;
+            int control_flow;
+            int no_replace;
+
+            if (! next->active)
+            {
+                continue;
+            }
+            if (next->kind == LINE_BLANK || next->kind == LINE_COMMENT)
+            {
+                continue;
+            }
+            if (next->kind != LINE_INSTR || next->pre != NULL ||
+                next->post != NULL)
+            {
+                break;
+            }
+            if (! (op_is (next, "intr0") && intr0_readonly (next)) &&
+                aggr_opaque (next))
+            {
+                break;
+            }
+
+            writes_src = instr_writes_ireg (next, src);
+            writes_dst = instr_writes_ireg (next, dst);
+            control_flow = (is_jump_op (next->op) ||
+                            op_is (next, "inclsijmpi") ||
+                            op_is (next, "decgrijmpi"));
+
+            /*
+             * The loop superopcodes increment/decrement before comparing the
+             * counter with the limit.  Rewriting the limit to the counter
+             * register would therefore change the loop condition.
+             */
+            no_replace = (op_is (next, "inclsijmpi") ||
+                          op_is (next, "decgrijmpi"));
+
+            /*
+             * Interrupt arguments are typed "ALL" and may refer to the
+             * double register bank, so their numeric tokens must not be
+             * rewritten as if they were integer registers.
+             */
+            if (! no_replace && ! op_is (next, "intr0") && ! op_is (next, "intr1"))
+            {
+                for (arg = 0; arg < next->argc && arg < OPT_MAX_ARGS; arg++)
+                {
+                    if (instr_arg_is_ireg (next, arg) &&
+                        instr_arg_reads (next, arg) &&
+                        ! instr_arg_writes (next, arg) &&
+                        parse_register_token (next->args[arg]) == dst)
+                    {
+                        snprintf (next->args[arg], OPT_ARG_MAX, "%d", src);
+                        line_changed = 1;
+                    }
+                }
+            }
+
+            if (line_changed)
+            {
+                aggr_rewrite_line (next);
+                changed = 1;
+            }
+
+            if (control_flow)
+            {
+                break;
+            }
+            if (writes_dst)
+            {
+                break;
+            }
+            if (writes_src)
+            {
+                break;
+            }
+        }
+    }
+    return (changed);
+}
+
+static int aggr_line_pure (const Line *line)
+{
+    static const char *pure_ops[] =
+    {
+        "movi", "movd",
+        "load", "loadl",
+        "addi", "subi", "muli", "smuli",
+        "andi", "ori", "bandi", "bori", "bxori", "noti",
+        "eqi", "neqi", "gri", "lsi", "greqi", "lseqi",
+        "addd", "subd", "muld",
+        "eqd", "neqd", "grd", "lsd", "greqd", "lseqd",
+        NULL
+    };
+    int i;
+
+    for (i = 0; pure_ops[i] != NULL; i++)
+    {
+        if (strcmp (line->op, pure_ops[i]) == 0)
+        {
+            return (1);
+        }
+    }
+    return (0);
+}
+
+static int aggressive_dead_code (void)
+{
+    AggrRegSet *uses = NULL;
+    AggrRegSet *defs = NULL;
+    AggrRegSet *live_in = NULL;
+    AggrRegSet *live_out = NULL;
+    int *succ1 = NULL;
+    int *succ2 = NULL;
+    int *fall = NULL;
+    int code_start = -1;
+    int code_end = -1;
+    int changed;
+    int removed = 0;
+    int i;
+    int k;
+
+    for (i = 0; i < nlines; i++)
+    {
+        if (! lines[i].active || lines[i].kind != LINE_DIRECTIVE)
+        {
+            continue;
+        }
+        if (strcmp (lines[i].op, ".code") == 0)
+        {
+            code_start = i + 1;
+            break;
+        }
+    }
+    for (i = (code_start < 0) ? nlines - 1 : nlines - 1; i >= 0; i--)
+    {
+        if (! lines[i].active || lines[i].kind != LINE_DIRECTIVE)
+        {
+            continue;
+        }
+        if (strcmp (lines[i].op, ".cend") == 0 && i >= code_start)
+        {
+            code_end = i;
+            break;
+        }
+    }
+    if (code_start < 0 || code_end <= code_start)
+    {
+        return (0);
+    }
+
+    uses = (AggrRegSet *) xmalloc ((size_t) nlines * sizeof (AggrRegSet));
+    defs = (AggrRegSet *) xmalloc ((size_t) nlines * sizeof (AggrRegSet));
+    live_in = (AggrRegSet *) xmalloc ((size_t) nlines * sizeof (AggrRegSet));
+    live_out = (AggrRegSet *) xmalloc ((size_t) nlines * sizeof (AggrRegSet));
+    succ1 = (int *) xmalloc ((size_t) nlines * sizeof (int));
+    succ2 = (int *) xmalloc ((size_t) nlines * sizeof (int));
+    fall = (int *) xmalloc ((size_t) nlines * sizeof (int));
+
+    for (i = 0; i < nlines; i++)
+    {
+        aggr_set_clear (&uses[i]);
+        aggr_set_clear (&defs[i]);
+        aggr_set_clear (&live_in[i]);
+        aggr_set_clear (&live_out[i]);
+        succ1[i] = -1;
+        succ2[i] = -1;
+        fall[i] = -1;
+    }
+
+    {
+        int next = -1;
+
+        for (i = code_end - 1; i >= code_start; i--)
+        {
+            fall[i] = next;
+            if (lines[i].active && lines[i].kind != LINE_BLANK &&
+                lines[i].kind != LINE_COMMENT)
+            {
+                next = i;
+            }
+        }
+    }
+
+    for (i = code_start; i < code_end; i++)
+    {
+        Line *line = &lines[i];
+        int arg;
+
+        if (! line->active || line->kind == LINE_BLANK ||
+            line->kind == LINE_COMMENT)
+        {
+            continue;
+        }
+
+        if (line->kind == LINE_LABEL)
+        {
+            succ1[i] = fall[i];
+            continue;
+        }
+        if (line->kind == LINE_DIRECTIVE)
+        {
+            succ1[i] = fall[i];
+            continue;
+        }
+        if (line->kind != LINE_INSTR)
+        {
+            succ1[i] = fall[i];
+            continue;
+        }
+
+        if (aggr_opaque (line))
+        {
+            aggr_set_all (&uses[i]);
+        }
+        else
+        {
+            for (arg = 0; arg < line->argc && arg < OPT_MAX_ARGS; arg++)
+            {
+                if (instr_arg_is_ireg (line, arg))
+                {
+                    int reg = parse_register_token (line->args[arg]);
+
+                    if (reg >= 0)
+                    {
+                        if (instr_arg_reads (line, arg))
+                        {
+                            aggr_set_add (&uses[i], reg);
+                        }
+                        if (instr_arg_writes (line, arg))
+                        {
+                            aggr_set_add (&defs[i], reg);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (op_is (line, "jmp") && line->argc >= 1)
+        {
+            int target = find_label (line->args[0]);
+
+            succ1[i] = (target >= 0) ? fall[target] : -1;
+        }
+        else if (op_is (line, "jmpi") && line->argc >= 2)
+        {
+            int target = find_label (line->args[1]);
+
+            succ1[i] = (target >= 0) ? fall[target] : -1;
+            succ2[i] = fall[i];
+        }
+        else if ((op_is (line, "inclsijmpi") ||
+                  op_is (line, "decgrijmpi")) && line->argc >= 3)
+        {
+            int target = find_label (line->args[2]);
+
+            succ1[i] = (target >= 0) ? fall[target] : -1;
+            succ2[i] = fall[i];
+        }
+        else if (op_is (line, "rts") || op_is (line, "jmpa") ||
+                 op_is (line, "jsra"))
+        {
+            succ1[i] = -1;
+            succ2[i] = -1;
+        }
+        else
+        {
+            succ1[i] = fall[i];
+        }
+    }
+
+    changed = 1;
+    while (changed)
+    {
+        changed = 0;
+
+        for (i = code_end - 1; i >= code_start; i--)
+        {
+            AggrRegSet out;
+            AggrRegSet in;
+
+            if (! lines[i].active || lines[i].kind == LINE_BLANK ||
+                lines[i].kind == LINE_COMMENT)
+            {
+                continue;
+            }
+
+            aggr_set_clear (&out);
+            if (succ1[i] >= 0 && succ1[i] < nlines)
+            {
+                aggr_set_or (&out, &live_in[succ1[i]]);
+            }
+            if (succ2[i] >= 0 && succ2[i] < nlines)
+            {
+                aggr_set_or (&out, &live_in[succ2[i]]);
+            }
+
+            in = uses[i];
+            for (k = 0; k < AGGR_REGSET_WORDS; k++)
+            {
+                in.word[k] |= out.word[k] & ~defs[i].word[k];
+            }
+
+            if (! aggr_set_equal (&in, &live_in[i]) ||
+                ! aggr_set_equal (&out, &live_out[i]))
+            {
+                live_in[i] = in;
+                live_out[i] = out;
+                changed = 1;
+            }
+        }
+    }
+
+    for (i = code_start; i < code_end; i++)
+    {
+        Line *line = &lines[i];
+        int arg;
+        int writes = 0;
+        int live = 0;
+        int has_double = 0;
+
+        if (! line->active || line->kind != LINE_INSTR ||
+            ! aggr_line_pure (line))
+        {
+            continue;
+        }
+
+        for (arg = 0; arg < line->argc && arg < OPT_MAX_ARGS; arg++)
+        {
+            if (instr_arg_is_dreg (line, arg) && instr_arg_writes (line, arg))
+            {
+                has_double = 1;
+                break;
+            }
+        }
+        if (has_double)
+        {
+            continue;
+        }
+
+        for (arg = 0; arg < line->argc && arg < OPT_MAX_ARGS; arg++)
+        {
+            if (instr_arg_is_ireg (line, arg) &&
+                instr_arg_writes (line, arg))
+            {
+                int reg = parse_register_token (line->args[arg]);
+
+                if (reg >= 0)
+                {
+                    writes = 1;
+                    if (aggr_set_has (&live_out[i], reg))
+                    {
+                        live = 1;
+                    }
+                }
+            }
+        }
+
+        if (writes && ! live)
+        {
+            line->active = 0;
+            removed++;
+        }
+    }
+
+    free (uses);
+    free (defs);
+    free (live_in);
+    free (live_out);
+    free (succ1);
+    free (succ2);
+    free (fall);
+    return (removed);
+}
+
+static void optimize_aggressive (void)
+{
+    int round;
+
+    if (materialize_transformations ())
+    {
+        build_function_starts ();
+        build_call_graph ();
+        compute_recursive_functions ();
+        recompute_used_regs ();
+    }
+
+    for (round = 0; round < 3; round++)
+    {
+        int changed = 0;
+
+        changed |= aggressive_constant_fold ();
+        changed |= aggressive_copy_propagate ();
+        changed |= (aggressive_dead_code () > 0);
+
+        if (! changed)
+        {
+            break;
+        }
+    }
+
+    recompute_used_regs ();
+}
+
+/* ------------------------------------------------------------------------- */
+/* peephole                                                                  */
+/* ------------------------------------------------------------------------- */
 
 static void peephole (void)
 {
@@ -6798,7 +7982,7 @@ static void read_input (const char *filename)
 
 static void show_info (void)
 {
-    printf ("l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6] <assembly> <optimized-assembly>\n\n");
+    printf ("l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6|-O7] <assembly> <optimized-assembly>\n\n");
     printf ("optimizes the L1VM assembly file '<assembly>.l1asm' and writes\n");
     printf ("the result to '<optimized-assembly>.l1asm'.\n\n");
     printf ("  -O0  no optimization\n");
@@ -6808,6 +7992,8 @@ static void show_info (void)
     printf ("       and read only globals to registers\n");
     printf ("  -O5  additionally inline small leaf functions\n");
     printf ("  -O6  all from -O4 and -O5 plus loop unrolling\n");
+    printf ("  -O7  all from -O6 plus aggressive inlining and unrolling, constant\n");
+    printf ("       folding, copy propagation and dead code elimination\n");
 }
 
 int main (int ac, char *av[])
@@ -6852,12 +8038,23 @@ int main (int ac, char *av[])
         {
             opt_level = 6;
         }
+        else if (strcmp (av[arg], "-O7") == 0)
+        {
+            opt_level = 7;
+        }
         else
         {
             show_info ();
             return (1);
         }
         arg++;
+    }
+
+    if (opt_level >= 7)
+    {
+        inline_max_body = 96;
+        inline_max_calls = 16;
+        unroll_max_factor = 8;
     }
 
     if (ac - arg != 2)
@@ -6908,6 +8105,11 @@ int main (int ac, char *av[])
     if (opt_level >= 6)
     {
         optimize_loop_unroll ();
+    }
+
+    if (opt_level >= 7)
+    {
+        optimize_aggressive ();
     }
 
     if (opt_level >= 1)
