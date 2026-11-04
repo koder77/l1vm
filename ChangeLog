@@ -2,7 +2,7 @@ L1VM (3.9.0)
 	NEW: added "l1vm-optimize" assembly code optimizer.
 
 	$ ./l1vm-optimize
-	l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6|-O7] <assembly> <optimized-assembly>
+	l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6|-O7|-O8] <assembly> <optimized-assembly>
 
 	optimizes the L1VM assembly file '<assembly>.l1asm' and writes
 	the result to '<optimized-assembly>.l1asm'.
@@ -15,6 +15,8 @@ L1VM (3.9.0)
 	-O6  all from -O4 and -O5 plus loop unrolling
 	-O7  all from -O6 plus aggressive inlining and unrolling, constant
 	     folding, copy propagation and dead code elimination
+	-O8  all from -O7 with higher limits, repeated up to four rounds
+	     until stable, plus strength reduction of multiplications by two
 
 -- Stefan Pietzonke <info@midnight-coding.de> Tue 3 November 2026 19:58 +010
 

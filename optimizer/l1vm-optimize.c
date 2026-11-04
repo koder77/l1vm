@@ -22,7 +22,7 @@
  * Developed with the help of AI.
  *
  * Usage:
- *   l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6|-O7] <assembly> <optimized-assembly>
+ *   l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6|-O7|-O8] <assembly> <optimized-assembly>
  *
  * The ".l1asm" suffix is added automatically to both file names.
  * "-O1" is the default.  "-O0" disables all optimizations.
@@ -161,6 +161,13 @@
  * a constant propagation and folding pass, forward copy propagation inside
  * straight line blocks and liveness based dead code elimination.
  *
+ * "-O8" repeats the complete -O7 pipeline until no further changes are made
+ * and raises the limits once more (192 body instructions, 32 call sites for
+ * the inliner and unroll factor 16).  It additionally turns a multiplication
+ * by the constant two into an addition, which keeps the L1VM integer
+ * overflow check intact.  Every pass is still run to a fixed point with the
+ * same conservative safety checks as the lower levels.
+ *
  * All transformations are conservative: a loop is only changed if the
  * complete canonical pattern is found and the temporaries used by the
  * transformation are provably dead.
@@ -246,10 +253,11 @@ static int symbol_cap = 0;
 static int opcode_count = 0;
 static int opt_level = 1;
 
-/* -O7 relaxes the conservative inliner and unroller limits. */
+/* -O7/-O8 relax the conservative inliner and unroller limits. */
 static int inline_max_body = INLINE_MAX_BODY;
 static int inline_max_calls = INLINE_MAX_CALLS;
 static int unroll_max_factor = UNROLL_MAX_FACTOR;
+static int strength_reduce = 0;
 
 /* ------------------------------------------------------------------------- */
 /* small helpers                                                             */
@@ -7201,6 +7209,46 @@ static int aggressive_constant_fold (void)
             }
         }
 
+        /*
+         * -O8: replace a multiplication by the constant two with an
+         * addition.  This uses the same two's complement result and the
+         * same integer overflow check as "muli", so it is safe even in
+         * builds with MATH_LIMITS_INT enabled.  Larger powers of two are
+         * not rewritten because the shift instructions have no overflow
+         * check.
+         */
+        if (strength_reduce && strcmp (op, "muli") == 0)
+        {
+            const char *var_src = NULL;
+
+            if (b_known && b_value == 2)
+            {
+                var_src = line->args[0];
+            }
+            else if (a_known && a_value == 2)
+            {
+                var_src = line->args[1];
+            }
+
+            if (var_src != NULL)
+            {
+                char dest[OPT_ARG_MAX];
+                char source[OPT_ARG_MAX];
+
+                strcpy (dest, line->args[d_arg]);
+                strcpy (source, var_src);
+                strcpy (line->op, "addi");
+                line->argc = 3;
+                strcpy (line->args[0], source);
+                strcpy (line->args[1], source);
+                strcpy (line->args[2], dest);
+                aggr_rewrite_line (line);
+                known[d_reg] = 0;
+                changed = 1;
+                continue;
+            }
+        }
+
 identity_or_unknown:
         /* algebraic identities which avoid a full constant materialisation */
         {
@@ -7812,6 +7860,89 @@ static void optimize_aggressive (void)
     recompute_used_regs ();
 }
 
+static void peephole (void);
+
+/*
+ * Signature of the active code lines.  Used by -O8 to stop when a complete
+ * optimizer round no longer changes any instruction, label or argument.
+ */
+static uint64_t optimize_code_signature (void)
+{
+    uint64_t hash = 1469598103934665603ULL;
+    int i;
+
+    for (i = 0; i < nlines; i++)
+    {
+        Line *line = &lines[i];
+        int arg;
+
+        if (! line->active)
+        {
+            continue;
+        }
+
+        hash = (hash ^ (uint64_t) line->kind) * 1099511628211ULL;
+        hash = (hash ^ (uint64_t) line->argc) * 1099511628211ULL;
+
+        {
+            const char *p = line->op;
+
+            while (*p != '\0')
+            {
+                hash = (hash ^ (unsigned char) *p) * 1099511628211ULL;
+                p++;
+            }
+        }
+
+        for (arg = 0; arg < line->argc && arg < OPT_MAX_ARGS; arg++)
+        {
+            const char *p = line->args[arg];
+
+            hash = (hash ^ 0xff) * 1099511628211ULL;
+            while (*p != '\0')
+            {
+                hash = (hash ^ (unsigned char) *p) * 1099511628211ULL;
+                p++;
+            }
+        }
+    }
+    return (hash);
+}
+
+/*
+ * -O8: run the complete pipeline repeatedly.  Every individual pass is the
+ * same conservative pass used by the lower levels; repeating the pipeline
+ * only exposes optimization opportunities created by the previous round.
+ */
+static void optimize_o8 (void)
+{
+    uint64_t last_signature = 0;
+    int round;
+
+    for (round = 0; round < 4; round++)
+    {
+        uint64_t signature;
+
+        compute_used_regs ();
+        optimize_simple_loops ();
+        optimize_rotated_loops ();
+        promote_function_locals (opt_level);
+        inline_functions ();
+        optimize_loop_unroll ();
+        optimize_aggressive ();
+        peephole ();
+
+        signature = optimize_code_signature ();
+        if (round > 0 && signature == last_signature)
+        {
+            break;
+        }
+        last_signature = signature;
+    }
+
+    recompute_used_regs ();
+}
+
 /* ------------------------------------------------------------------------- */
 /* peephole                                                                  */
 /* ------------------------------------------------------------------------- */
@@ -7982,7 +8113,7 @@ static void read_input (const char *filename)
 
 static void show_info (void)
 {
-    printf ("l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6|-O7] <assembly> <optimized-assembly>\n\n");
+    printf ("l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6|-O7|-O8] <assembly> <optimized-assembly>\n\n");
     printf ("optimizes the L1VM assembly file '<assembly>.l1asm' and writes\n");
     printf ("the result to '<optimized-assembly>.l1asm'.\n\n");
     printf ("  -O0  no optimization\n");
@@ -7994,6 +8125,8 @@ static void show_info (void)
     printf ("  -O6  all from -O4 and -O5 plus loop unrolling\n");
     printf ("  -O7  all from -O6 plus aggressive inlining and unrolling, constant\n");
     printf ("       folding, copy propagation and dead code elimination\n");
+    printf ("  -O8  all from -O7 with higher limits, repeated up to four rounds\n");
+    printf ("       until stable, plus strength reduction of multiplications by two\n");
 }
 
 int main (int ac, char *av[])
@@ -8042,6 +8175,10 @@ int main (int ac, char *av[])
         {
             opt_level = 7;
         }
+        else if (strcmp (av[arg], "-O8") == 0)
+        {
+            opt_level = 8;
+        }
         else
         {
             show_info ();
@@ -8055,6 +8192,14 @@ int main (int ac, char *av[])
         inline_max_body = 96;
         inline_max_calls = 16;
         unroll_max_factor = 8;
+    }
+
+    if (opt_level >= 8)
+    {
+        inline_max_body = 192;
+        inline_max_calls = 32;
+        unroll_max_factor = 16;
+        strength_reduce = 1;
     }
 
     if (ac - arg != 2)
@@ -8086,35 +8231,42 @@ int main (int ac, char *av[])
     collect_data_symbols ();
     compute_used_regs ();
 
-    if (opt_level >= 1)
+    if (opt_level >= 8)
     {
-        optimize_simple_loops ();
-        optimize_rotated_loops ();
+        optimize_o8 ();
     }
-
-    if (opt_level >= 2)
+    else
     {
-        promote_function_locals (opt_level);
-    }
+        if (opt_level >= 1)
+        {
+            optimize_simple_loops ();
+            optimize_rotated_loops ();
+        }
 
-    if (opt_level >= 5)
-    {
-        inline_functions ();
-    }
+        if (opt_level >= 2)
+        {
+            promote_function_locals (opt_level);
+        }
 
-    if (opt_level >= 6)
-    {
-        optimize_loop_unroll ();
-    }
+        if (opt_level >= 5)
+        {
+            inline_functions ();
+        }
 
-    if (opt_level >= 7)
-    {
-        optimize_aggressive ();
-    }
+        if (opt_level >= 6)
+        {
+            optimize_loop_unroll ();
+        }
 
-    if (opt_level >= 1)
-    {
-        peephole ();
+        if (opt_level >= 7)
+        {
+            optimize_aggressive ();
+        }
+
+        if (opt_level >= 1)
+        {
+            peephole ();
+        }
     }
 
     write_output (output_name);
