@@ -94,8 +94,11 @@ struct vars
     U1 freed;                   // 1 = pointer was passed to dealloc/free
     U1 warned_null;             // null pointer warning already printed
     U1 warned_freed;            // use after free warning already printed
-    U1 value_known;             // 1 = value is known at compile time
-    S8 value ALIGN;             // known compile time value
+    U1 value_known;             // 1 = integer value is known at compile time
+    S8 value ALIGN;             // known compile time integer value
+    U1 dvalue_known;            // 1 = double value is known at compile time
+    double dvalue;              // known compile time double value
+    U1 aliased;                 // 1 = a pointer to this variable may write it
     S8 array_size ALIGN;        // number of elements, -1 = unknown
 };
 
@@ -107,7 +110,7 @@ U1 pointer_check_active = 0;
 U1 pointer_check_name[MAXSTRLEN + 1] = "";
 S8 pointer_check_line ALIGN = -1;
 
-// number of warnings (warnings do not make the linter fail)
+// number of warning-level diagnostics (all are treated as errors at exit)
 S8 linter_warnings ALIGN = 0;
 
 // current function name
@@ -635,8 +638,8 @@ U1 is_ident_char (U1 c)
 
 U1 is_operator_suffix (U1 c)
 {
-    // typed operator suffixes: int64 (i), double (d), byte (b), int16 (w)
-    return (U1) (c == 'i' || c == 'd' || c == 'b' || c == 'w');
+    // typed operator suffixes: int64 (i), double (d), byte (b), int16 (w), int32 (l)
+    return (U1) (c == 'i' || c == 'd' || c == 'b' || c == 'w' || c == 'l');
 }
 
 U1 operator_takes_suffix (U1 c)
@@ -957,6 +960,7 @@ void mark_var_written (U1 *name)
         vars[vi].initialized = 1;
         vars[vi].pointer_set = 1;
         vars[vi].value_known = 0;
+        vars[vi].dvalue_known = 0;
         vars[vi].warned_uninit = 0;
         vars[vi].pointer_null = 0;
         vars[vi].freed = 0;
@@ -985,7 +989,7 @@ void warn_uninitialized (U1 *name, U1 *line)
 
     vars[vi].warned_uninit = 1;
     linter_warnings++;
-    printf ("linter warning: variable '%s' is used before it is initialized!\n", name);
+    printf ("linter error: variable '%s' is used before it is initialized!\n", name);
     printf (" > %s\n", line);
 }
 
@@ -1156,6 +1160,578 @@ S8 var_element_size (U1 type)
     }
 }
 
+// find the closing ')' for an opening '('
+S2 find_close_paren (S2 nt, U1 tokens[][MAXSTRLEN + 1], S2 open)
+{
+    S2 i;
+    S2 depth = 0;
+
+    for (i = open; i < nt; i++)
+    {
+        if (strcmp ((const char *) tokens[i], "(") == 0)
+        {
+            depth++;
+        }
+        else if (strcmp ((const char *) tokens[i], ")") == 0)
+        {
+            depth--;
+            if (depth == 0)
+            {
+                return (i);
+            }
+        }
+    }
+    return (-1);
+}
+
+// find the opening '(' for a closing ')'
+S2 find_open_paren (S2 nt, U1 tokens[][MAXSTRLEN + 1], S2 close)
+{
+    S2 i;
+    S2 depth = 0;
+
+    (void) nt;
+
+    for (i = close; i >= 0; i--)
+    {
+        if (strcmp ((const char *) tokens[i], ")") == 0)
+        {
+            depth++;
+        }
+        else if (strcmp ((const char *) tokens[i], "(") == 0)
+        {
+            depth--;
+            if (depth == 0)
+            {
+                return (i);
+            }
+        }
+    }
+    return (-1);
+}
+
+// find the ']' for an opening '['
+S2 find_close_bracket (S2 nt, U1 tokens[][MAXSTRLEN + 1], S2 open)
+{
+    S2 i;
+    S2 depth = 0;
+
+    for (i = open; i < nt; i++)
+    {
+        if (strcmp ((const char *) tokens[i], "[") == 0)
+        {
+            depth++;
+        }
+        else if (strcmp ((const char *) tokens[i], "]") == 0)
+        {
+            depth--;
+            if (depth == 0)
+            {
+                return (i);
+            }
+        }
+    }
+    return (-1);
+}
+
+// find the innermost '(' ... ')' group containing pos
+U1 find_enclosing_paren (S2 nt, U1 tokens[][MAXSTRLEN + 1], S2 pos, S2 *open, S2 *close)
+{
+    S2 i;
+    S2 depth = 0;
+
+    *open = -1;
+    *close = -1;
+
+    for (i = pos; i >= 0; i--)
+    {
+        if (strcmp ((const char *) tokens[i], ")") == 0)
+        {
+            depth++;
+        }
+        else if (strcmp ((const char *) tokens[i], "(") == 0)
+        {
+            if (depth == 0)
+            {
+                *open = i;
+                break;
+            }
+            depth--;
+        }
+    }
+    if (*open < 0)
+    {
+        return (0);
+    }
+    *close = find_close_paren (nt, tokens, *open);
+    if (*close < 0)
+    {
+        *open = -1;
+        return (0);
+    }
+    return (1);
+}
+
+U1 is_operator_like (U1 *tok)
+{
+    if (tok[0] == '\0')
+    {
+        return (0);
+    }
+    if (is_number_token (tok) == 1)
+    {
+        return (0);
+    }
+    return (U1) (strchr ("+-*/%&|^<>=!", tok[0]) != NULL);
+}
+
+// apply a constant integer operator. Returns 1 on success.
+U1 eval_apply (U1 *tok, S8 a, S8 b, S8 *result, U1 *overflow)
+{
+    S2 len;
+    U1 suffix = 0;
+
+    len = (S2) strlen_safe ((const char *) tok, MAXSTRLEN);
+    if (len == 2 && is_operator_suffix (tok[1]) == 1)
+    {
+        suffix = tok[1];
+    }
+
+    // floating point and narrower integer types are not evaluated here
+    if (suffix == 'd' || suffix == 'b' || suffix == 'w' || suffix == 'l')
+    {
+        return (0);
+    }
+
+    if (strcmp ((const char *) tok, "==") == 0)
+    {
+        *result = (S8) (a == b);
+        return (1);
+    }
+    if (strcmp ((const char *) tok, "!=") == 0)
+    {
+        *result = (S8) (a != b);
+        return (1);
+    }
+    if (strcmp ((const char *) tok, "<") == 0 || strcmp ((const char *) tok, "<i") == 0)
+    {
+        *result = (S8) (a < b);
+        return (1);
+    }
+    if (strcmp ((const char *) tok, ">") == 0 || strcmp ((const char *) tok, ">i") == 0)
+    {
+        *result = (S8) (a > b);
+        return (1);
+    }
+    if (strcmp ((const char *) tok, "<=") == 0 || strcmp ((const char *) tok, "<=i") == 0)
+    {
+        *result = (S8) (a <= b);
+        return (1);
+    }
+    if (strcmp ((const char *) tok, ">=") == 0 || strcmp ((const char *) tok, ">=i") == 0)
+    {
+        *result = (S8) (a >= b);
+        return (1);
+    }
+    if (strcmp ((const char *) tok, "&&") == 0)
+    {
+        *result = (S8) (a != 0 && b != 0);
+        return (1);
+    }
+    if (strcmp ((const char *) tok, "||") == 0)
+    {
+        *result = (S8) (a != 0 || b != 0);
+        return (1);
+    }
+
+    switch (tok[0])
+    {
+        case '+':
+            if (__builtin_add_overflow (a, b, result) != 0)
+            {
+                *overflow = 1;
+                return (0);
+            }
+            return (1);
+
+        case '-':
+            if (__builtin_sub_overflow (a, b, result) != 0)
+            {
+                *overflow = 1;
+                return (0);
+            }
+            return (1);
+
+        case '*':
+            if (__builtin_mul_overflow (a, b, result) != 0)
+            {
+                *overflow = 1;
+                return (0);
+            }
+            return (1);
+
+        case '/':
+            if (b == 0)
+            {
+                return (0);
+            }
+            if (a == LLONG_MIN && b == -1)
+            {
+                *overflow = 1;
+                return (0);
+            }
+            *result = a / b;
+            return (1);
+
+        case '%':
+            if (b == 0)
+            {
+                return (0);
+            }
+            if (a == LLONG_MIN && b == -1)
+            {
+                *overflow = 1;
+                return (0);
+            }
+            *result = a % b;
+            return (1);
+
+        case '&':
+            *result = a & b;
+            return (1);
+
+        case '|':
+            *result = a | b;
+            return (1);
+
+        case '^':
+            *result = a ^ b;
+            return (1);
+
+        default:
+            return (0);
+    }
+}
+
+// evaluate a constant integer expression. Supports nested parentheses and both
+// L1VM notations: infix "(a + b)" and reverse Polish "((a b +) c =)".
+// Returns 1 if a value is known, 0 otherwise.
+U1 eval_expr (S2 nt, U1 tokens[][MAXSTRLEN + 1], S2 start, S2 end, S8 *value, U1 *overflow)
+{
+    S2 i;
+    S2 close;
+    S2 first_op = -1;
+    S2 last_op = -1;
+    S2 op_count = 0;
+    S8 left_value ALIGN;
+    S8 right_value ALIGN;
+    U1 left_overflow = 0;
+    U1 right_overflow = 0;
+    U1 left_known;
+    U1 right_known;
+    S2 right_start;
+
+    if (start < 0 || end < 0 || start > end || end >= nt)
+    {
+        return (0);
+    }
+
+    // single literal, variable or parenthesized group
+    if (start == end)
+    {
+        if (is_number_token (tokens[start]) == 1)
+        {
+            char *endptr = NULL;
+            S8 v ALIGN;
+
+            errno = 0;
+            v = (S8) strtoll ((const char *) tokens[start], &endptr, 10);
+            if (errno == ERANGE)
+            {
+                *overflow = 1;
+                return (0);
+            }
+            *value = v;
+            return (1);
+        }
+        else
+        {
+            S8 vi ALIGN = find_var_index (tokens[start]);
+            if (vi >= 0 && vars[vi].value_known == 1)
+            {
+                *value = vars[vi].value;
+                return (1);
+            }
+            return (0);
+        }
+    }
+
+    if (strcmp ((const char *) tokens[start], "(") == 0)
+    {
+        close = find_close_paren (nt, tokens, start);
+        if (close == end)
+        {
+            return (eval_expr (nt, tokens, start + 1, end - 1, value, overflow));
+        }
+    }
+
+    // find top level operators, skipping nested groups and array subscripts
+    for (i = start; i <= end; i++)
+    {
+        if (strcmp ((const char *) tokens[i], "(") == 0)
+        {
+            close = find_close_paren (nt, tokens, i);
+            if (close < 0 || close > end)
+            {
+                return (0);
+            }
+            i = close;
+            continue;
+        }
+        if (strcmp ((const char *) tokens[i], "[") == 0)
+        {
+            close = find_close_bracket (nt, tokens, i);
+            if (close < 0 || close > end)
+            {
+                return (0);
+            }
+            i = close;
+            continue;
+        }
+        if (is_operator_like (tokens[i]) == 1)
+        {
+            if (op_count == 0)
+            {
+                first_op = i;
+            }
+            last_op = i;
+            op_count++;
+        }
+    }
+
+    // reverse Polish: the last token is the operator
+    if (op_count >= 1 && last_op == end)
+    {
+        if (end - 1 < start)
+        {
+            return (0);
+        }
+        if (strcmp ((const char *) tokens[end - 1], ")") == 0)
+        {
+            right_start = find_open_paren (nt, tokens, end - 1);
+            if (right_start < start)
+            {
+                return (0);
+            }
+        }
+        else
+        {
+            right_start = end - 1;
+        }
+        if (right_start <= start)
+        {
+            return (0);
+        }
+
+        left_known = eval_expr (nt, tokens, start, right_start - 1, &left_value, &left_overflow);
+        right_known = eval_expr (nt, tokens, right_start, end - 1, &right_value, &right_overflow);
+        if (left_overflow == 1 || right_overflow == 1)
+        {
+            *overflow = 1;
+            return (0);
+        }
+        if (left_known == 1 && right_known == 1)
+        {
+            return (eval_apply (tokens[last_op], left_value, right_value, value, overflow));
+        }
+        return (0);
+    }
+
+    // infix: exactly one top level operator, between two operands
+    if (op_count == 1 && first_op > start && first_op < end)
+    {
+        left_known = eval_expr (nt, tokens, start, first_op - 1, &left_value, &left_overflow);
+        right_known = eval_expr (nt, tokens, first_op + 1, end, &right_value, &right_overflow);
+        if (left_overflow == 1 || right_overflow == 1)
+        {
+            *overflow = 1;
+            return (0);
+        }
+        if (left_known == 1 && right_known == 1)
+        {
+            return (eval_apply (tokens[first_op], left_value, right_value, value, overflow));
+        }
+        return (0);
+    }
+
+    return (0);
+}
+
+// evaluate the operand starting at pos (literal, variable or "( ... )")
+U1 eval_operand_after (S2 nt, U1 tokens[][MAXSTRLEN + 1], S2 pos, S8 *value, U1 *overflow)
+{
+    S2 close;
+
+    if (pos < 0 || pos >= nt)
+    {
+        return (0);
+    }
+    if (strcmp ((const char *) tokens[pos], "(") == 0)
+    {
+        close = find_close_paren (nt, tokens, pos);
+        if (close < 0)
+        {
+            return (0);
+        }
+        return (eval_expr (nt, tokens, pos, close, value, overflow));
+    }
+    return (eval_expr (nt, tokens, pos, pos, value, overflow));
+}
+
+// evaluate the operand ending at pos (literal, variable or "( ... )")
+U1 eval_operand_before (S2 nt, U1 tokens[][MAXSTRLEN + 1], S2 pos, S8 *value, U1 *overflow)
+{
+    S2 open;
+
+    if (pos < 0 || pos >= nt)
+    {
+        return (0);
+    }
+    if (strcmp ((const char *) tokens[pos], ")") == 0)
+    {
+        open = find_open_paren (nt, tokens, pos);
+        if (open < 0)
+        {
+            return (0);
+        }
+        return (eval_expr (nt, tokens, open, pos, value, overflow));
+    }
+    return (eval_expr (nt, tokens, pos, pos, value, overflow));
+}
+
+U1 is_float_token (U1 *tok)
+{
+    char *endptr = NULL;
+
+    if (tok[0] == '\0')
+    {
+        return (0);
+    }
+    if (! (isdigit ((unsigned char) tok[0]) ||
+           ((tok[0] == '-' || tok[0] == '+') &&
+            (isdigit ((unsigned char) tok[1]) || tok[1] == '.'))))
+    {
+        return (0);
+    }
+    errno = 0;
+    (void) strtod ((const char *) tok, &endptr);
+    if (errno == ERANGE)
+    {
+        return (0);
+    }
+    return (U1) (endptr != (char *) tok && endptr != NULL && *endptr == '\0');
+}
+
+// evaluate a simple double operand: literal or variable with known value
+U1 eval_operand_double_before (S2 nt, U1 tokens[][MAXSTRLEN + 1], S2 pos, double *value)
+{
+    S8 vi ALIGN;
+
+    if (pos < 0 || pos >= nt)
+    {
+        return (0);
+    }
+    if (is_float_token (tokens[pos]) == 1)
+    {
+        *value = strtod ((const char *) tokens[pos], NULL);
+        return (1);
+    }
+    vi = find_var_index (tokens[pos]);
+    if (vi >= 0 && vars[vi].dvalue_known == 1)
+    {
+        *value = vars[vi].dvalue;
+        return (1);
+    }
+    return (0);
+}
+
+// decide if an expression group uses reverse Polish notation
+U1 group_is_postfix (S2 nt, U1 tokens[][MAXSTRLEN + 1], S2 open, S2 close)
+{
+    S2 i;
+    S2 start = open + 1;
+    S2 end = close - 1;
+    S2 operands = 0;
+    S2 assign_op = -1;
+
+    if (start > end)
+    {
+        return (0);
+    }
+
+    // remove a trailing assignment target and operator
+    for (i = start; i <= end; i++)
+    {
+        if (strcmp ((const char *) tokens[i], "(") == 0)
+        {
+            S2 c = find_close_paren (nt, tokens, i);
+            if (c < 0 || c > end)
+            {
+                return (0);
+            }
+            i = c;
+        }
+        else if (strcmp ((const char *) tokens[i], "=") == 0 ||
+                 strcmp ((const char *) tokens[i], ":=") == 0)
+        {
+            assign_op = i;
+        }
+    }
+    if (assign_op >= 0)
+    {
+        if (assign_op - 1 < start)
+        {
+            return (0);
+        }
+        end = assign_op - 2;
+    }
+    if (start > end)
+    {
+        return (0);
+    }
+
+    for (i = start; i <= end; i++)
+    {
+        if (strcmp ((const char *) tokens[i], "(") == 0)
+        {
+            S2 c = find_close_paren (nt, tokens, i);
+            if (c < 0 || c > end)
+            {
+                return (0);
+            }
+            operands++;
+            i = c;
+            continue;
+        }
+        if (strcmp ((const char *) tokens[i], "[") == 0)
+        {
+            S2 c = find_close_bracket (nt, tokens, i);
+            if (c < 0 || c > end)
+            {
+                return (0);
+            }
+            i = c;
+            continue;
+        }
+        if (is_operator_like (tokens[i]) == 1)
+        {
+            break;
+        }
+        operands++;
+    }
+    return (U1) (operands >= 2);
+}
+
 // main safety check, called for every parsed line
 S2 safety_check_line (U1 *line)
 {
@@ -1165,11 +1741,9 @@ S2 safety_check_line (U1 *line)
     S8 vi ALIGN;
     S8 vj ALIGN;
     U1 *base;
-    U1 *idx;
     U1 *dest;
     U1 *src;
     U1 *name;
-    S8 value ALIGN;
     U1 is_set = 0;
     U1 is_intr = 0;
     U1 is_pointer_instruction = 0;
@@ -1179,7 +1753,6 @@ S2 safety_check_line (U1 *line)
     {
         return (0);
     }
-
     // preprocessor lines and file markers
     if (line[0] == '#')
     {
@@ -1201,6 +1774,12 @@ S2 safety_check_line (U1 *line)
             {
                 vars[k].freed = 0;
                 vars[k].warned_freed = 0;
+                // do not carry compile time values across function boundaries
+                if (vars[k].is_const == 0)
+                {
+                    vars[k].value_known = 0;
+                    vars[k].dvalue_known = 0;
+                }
             }
             break;
         }
@@ -1240,7 +1819,7 @@ S2 safety_check_line (U1 *line)
             if (find_var_index (name) != -1)
             {
                 linter_warnings++;
-                printf ("linter warning: variable '%s' is declared more than once (last declaration wins)!\n", name);
+                printf ("linter error: variable '%s' is declared more than once (last declaration wins)!\n", name);
                 printf (" > %s\n", line);
             }
         }
@@ -1400,10 +1979,16 @@ S2 safety_check_line (U1 *line)
                     }
                 }
 
+                // the source variable can now be modified through the pointer
+                vars[vi].aliased = 1;
+                vars[vi].value_known = 0;
+                vars[vi].dvalue_known = 0;
+
                 vars[vj].initialized = 1;
                 vars[vj].pointer_set = 1;
                 vars[vj].is_pointer = 1;
                 vars[vj].value_known = 0;
+                vars[vj].dvalue_known = 0;
                 vars[vj].warned_uninit = 0;
                 vars[vj].pointer_null = 0;
                 if ((vars[vi].value_known == 1 && vars[vi].value == 0) ||
@@ -1451,6 +2036,48 @@ S2 safety_check_line (U1 *line)
         }
     }
 
+    // a function call can change non-const global variables; drop their values
+    {
+        U1 has_function_call = 0;
+
+        for (i = 0; i < nt; i++)
+        {
+            if (strcmp ((const char *) safety_tokens[i], "call") == 0)
+            {
+                has_function_call = 1;
+                break;
+            }
+            if (strcmp ((const char *) safety_tokens[i], "!") == 0)
+            {
+                S2 k;
+                for (k = 0; k < nt; k++)
+                {
+                    if (strcmp ((const char *) safety_tokens[k], ":") == 0)
+                    {
+                        has_function_call = 1;
+                        break;
+                    }
+                }
+                if (has_function_call == 1)
+                {
+                    break;
+                }
+            }
+        }
+        if (has_function_call == 1)
+        {
+            S8 k;
+            for (k = 0; k <= vars_ind; k++)
+            {
+                if (vars[k].is_const == 0)
+                {
+                    vars[k].value_known = 0;
+                    vars[k].dvalue_known = 0;
+                }
+            }
+        }
+    }
+
     // assignments: the token before ':=' or '=' is the target
     for (i = 0; i < nt; i++)
     {
@@ -1468,34 +2095,118 @@ S2 safety_check_line (U1 *line)
                 }
             }
         }
-        // division / modulo by a known zero (also typed operators like /d, %i)
+    }
+
+    // division / modulo by a known zero
+    for (i = 1; i + 1 < nt; i++)
+    {
+        S2 op_len = (S2) strlen_safe ((const char *) safety_tokens[i], MAXSTRLEN);
+
         if ((safety_tokens[i][0] == '/' || safety_tokens[i][0] == '%') &&
-            (safety_tokens[i][1] == '\0' || is_operator_suffix (safety_tokens[i][1])) &&
-            safety_tokens[i][2] == '\0')
+            (op_len == 1 || (op_len == 2 && is_operator_suffix (safety_tokens[i][1]) == 1)))
         {
-            if (i + 1 < nt)
+            S2 group_open;
+            S2 group_close;
+            S2 divisor_pos;
+            S8 divisor_value ALIGN;
+            U1 divisor_overflow = 0;
+            U1 divisor_known;
+            U1 postfix;
+
+            // floating point division by zero is not a hard error
+            if (safety_tokens[i][1] == 'd')
             {
-                idx = safety_tokens[i + 1];
-                if (is_number_token (idx))
+                continue;
+            }
+
+            if (find_enclosing_paren (nt, safety_tokens, i, &group_open, &group_close) == 0)
+            {
+                continue;
+            }
+            postfix = group_is_postfix (nt, safety_tokens, group_open, group_close);
+            divisor_pos = postfix == 1 ? i - 1 : i + 1;
+            if (divisor_pos < 0 || divisor_pos >= nt)
+            {
+                continue;
+            }
+
+            if (postfix == 1)
+            {
+                divisor_known = eval_operand_before (nt, safety_tokens, divisor_pos, &divisor_value, &divisor_overflow);
+            }
+            else
+            {
+                divisor_known = eval_operand_after (nt, safety_tokens, divisor_pos, &divisor_value, &divisor_overflow);
+            }
+            if (divisor_overflow == 1)
+            {
+                printf ("linter error: integer overflow in constant expression!\n");
+                printf (" > %s\n", line);
+                return (1);
+            }
+            if (divisor_known == 1 && divisor_value == 0)
+            {
+                if (safety_tokens[i][0] == '%')
                 {
-                    value = (S8) strtoll ((const char *) idx, NULL, 10);
-                    if (value == 0)
-                    {
-                        printf ("linter error: division by zero!\n");
-                        printf (" > %s\n", line);
-                        return (1);
-                    }
+                    printf ("linter error: modulo by zero!\n");
                 }
                 else
                 {
-                    vi = find_var_index (idx);
-                    if (vi >= 0)
+                    printf ("linter error: division by zero!\n");
+                }
+                printf (" > %s\n", line);
+                return (1);
+            }
+        }
+    }
+
+    // constant propagation for assignments outside conditional blocks
+    for (i = 0; i < nt; i++)
+    {
+        if (strcmp ((const char *) safety_tokens[i], ":=") == 0 ||
+            strcmp ((const char *) safety_tokens[i], "=") == 0)
+        {
+            if (i > 0 && strcmp ((const char *) safety_tokens[i - 1], "]") != 0 &&
+                is_ident_start (safety_tokens[i - 1][0]))
+            {
+                S2 group_open;
+                S2 group_close;
+                S2 expr_start;
+                S2 expr_end;
+                S8 const_value ALIGN;
+                U1 const_overflow = 0;
+                U1 const_known;
+
+                if (find_enclosing_paren (nt, safety_tokens, i, &group_open, &group_close) == 0)
+                {
+                    continue;
+                }
+                expr_start = group_open + 1;
+                expr_end = i - 2;
+                if (expr_end < expr_start)
+                {
+                    continue;
+                }
+
+                const_known = eval_expr (nt, safety_tokens, expr_start, expr_end, &const_value, &const_overflow);
+                if (const_overflow == 1)
+                {
+                    printf ("linter error: integer overflow in constant expression!\n");
+                    printf (" > %s\n", line);
+                    return (1);
+                }
+                if (const_known == 1 &&
+                    if_inside == 0 && switch_inside == 0 && for_inside == 0 && do_inside == 0)
+                {
+                    vj = find_var_index (safety_tokens[i - 1]);
+                    if (vj >= 0 && vars[vj].is_array == 0 && vars[vj].is_string == 0 &&
+                        vars[vj].aliased == 0)
                     {
-                        if (vars[vi].value_known == 1 && vars[vi].value == 0)
+                        vars[vj].value_known = 1;
+                        vars[vj].value = const_value;
+                        if (safety_tokens[i - 1][0] == 'P')
                         {
-                            printf ("linter error: division by zero (variable '%s' is zero)!\n", idx);
-                            printf (" > %s\n", line);
-                            return (1);
+                            vars[vj].pointer_null = (U1) (const_value == 0);
                         }
                     }
                 }
@@ -1536,14 +2247,14 @@ S2 safety_check_line (U1 *line)
                 {
                     vars[vi].warned_null = 1;
                     linter_warnings++;
-                    printf ("linter warning: pointer '%s' is known to be null and is dereferenced!\n", base);
+                    printf ("linter error: pointer '%s' is known to be null and is dereferenced!\n", base);
                     printf (" > %s\n", line);
                 }
                 if (vars[vi].freed == 1 && vars[vi].warned_freed == 0)
                 {
                     vars[vi].warned_freed = 1;
                     linter_warnings++;
-                    printf ("linter warning: pointer '%s' is used after it was freed!\n", base);
+                    printf ("linter error: pointer '%s' is used after it was freed!\n", base);
                     printf (" > %s\n", line);
                 }
                 vars[vi].is_pointer = 1;
@@ -1552,35 +2263,106 @@ S2 safety_check_line (U1 *line)
             // check compile time known indices of real arrays
             if (vars[vi].is_array == 1 && vars[vi].array_size > 1 && i + 1 < nt)
             {
-                idx = safety_tokens[i + 1];
-                value = 0;
-                vj = -1;
-                if (is_number_token (idx))
+                S8 index_value ALIGN;
+                U1 index_overflow = 0;
+                U1 index_known;
+
+                index_known = eval_operand_after (nt, safety_tokens, i + 1, &index_value, &index_overflow);
+                if (index_overflow == 1)
                 {
-                    value = (S8) strtoll ((const char *) idx, NULL, 10);
-                }
-                else
-                {
-                    vj = find_var_index (idx);
-                    if (vj >= 0 && vars[vj].value_known == 1)
-                    {
-                        value = vars[vj].value;
-                    }
-                    else
-                    {
-                        vj = -1;
-                    }
+                    printf ("linter error: integer overflow in array index expression!\n");
+                    printf (" > %s\n", line);
+                    return (1);
                 }
 
-                if (is_number_token (idx) || vj >= 0)
+                if (index_known == 1)
                 {
                     S8 elem_size ALIGN = var_element_size (vars[vi].type);
                     S8 array_bytes ALIGN = vars[vi].array_size * elem_size;
 
-                    if (value < 0 || value > array_bytes - elem_size)
+                    if (index_value < 0 || index_value > array_bytes - elem_size)
                     {
                         printf ("linter error: array index out of bounds: '%s[%lli]', array size is %lli byte (element size %lli)!\n",
-                                base, value, array_bytes, elem_size);
+                                base, index_value, array_bytes, elem_size);
+                        printf (" > %s\n", line);
+                        return (1);
+                    }
+                }
+            }
+        }
+    }
+
+    // compile-time range checks: (value min max range)
+    for (i = 4; i + 1 < nt; i++)
+    {
+        if (strcmp ((const char *) safety_tokens[i], "range") == 0 &&
+            strcmp ((const char *) safety_tokens[i + 1], ")") == 0)
+        {
+            S8 range_var ALIGN = find_var_index (safety_tokens[i - 3]);
+            U1 is_double_range = (U1) ((range_var >= 0 && vars[range_var].type == DOUBLEFLOAT) ||
+                                        is_float_token (safety_tokens[i - 3]));
+
+            if (is_double_range == 1)
+            {
+                double range_dvalue;
+                double range_dmin;
+                double range_dmax;
+                U1 dvalue_known = eval_operand_double_before (nt, safety_tokens, i - 3, &range_dvalue);
+                U1 dmin_known = eval_operand_double_before (nt, safety_tokens, i - 2, &range_dmin);
+                U1 dmax_known = eval_operand_double_before (nt, safety_tokens, i - 1, &range_dmax);
+
+                if (dmin_known == 1 && dmax_known == 1)
+                {
+                    if (range_dmin > range_dmax)
+                    {
+                        printf ("linter error: invalid range: minimum %g is greater than maximum %g!\n",
+                                range_dmin, range_dmax);
+                        printf (" > %s\n", line);
+                        return (1);
+                    }
+                    if (dvalue_known == 1 && (range_dvalue < range_dmin || range_dvalue > range_dmax))
+                    {
+                        printf ("linter error: value %g is outside compile-time range [%g, %g]!\n",
+                                range_dvalue, range_dmin, range_dmax);
+                        printf (" > %s\n", line);
+                        return (1);
+                    }
+                }
+            }
+            else
+            {
+                S8 range_value ALIGN;
+                S8 range_min ALIGN;
+                S8 range_max ALIGN;
+                U1 value_known;
+                U1 min_known;
+                U1 max_known;
+                U1 value_overflow = 0;
+                U1 min_overflow = 0;
+                U1 max_overflow = 0;
+
+                max_known = eval_operand_before (nt, safety_tokens, i - 1, &range_max, &max_overflow);
+                min_known = eval_operand_before (nt, safety_tokens, i - 2, &range_min, &min_overflow);
+                value_known = eval_operand_before (nt, safety_tokens, i - 3, &range_value, &value_overflow);
+                if (value_overflow == 1 || min_overflow == 1 || max_overflow == 1)
+                {
+                    printf ("linter error: integer overflow in range check expression!\n");
+                    printf (" > %s\n", line);
+                    return (1);
+                }
+                if (min_known == 1 && max_known == 1)
+                {
+                    if (range_min > range_max)
+                    {
+                        printf ("linter error: invalid range: minimum %lli is greater than maximum %lli!\n",
+                                range_min, range_max);
+                        printf (" > %s\n", line);
+                        return (1);
+                    }
+                    if (value_known == 1 && (range_value < range_min || range_value > range_max))
+                    {
+                        printf ("linter error: value %lli is outside compile-time range [%lli, %lli]!\n",
+                                range_value, range_min, range_max);
                         printf (" > %s\n", line);
                         return (1);
                     }
@@ -1623,7 +2405,7 @@ S2 safety_check_line (U1 *line)
         {
             vars[vi].warned_freed = 1;
             linter_warnings++;
-            printf ("linter warning: pointer '%s' is used after it was freed!\n", name);
+            printf ("linter error: pointer '%s' is used after it was freed!\n", name);
             printf (" > %s\n", line);
         }
     }
@@ -2189,8 +2971,10 @@ S2 parse_line (U1 *line)
             U1 is_const = 0;
             U1 initialized = 0;
             U1 value_known = 0;
+            U1 dvalue_known = 0;
             S8 array_size ALIGN = -1;
             S8 known_value ALIGN = 0;
+            double known_dvalue = 0.0;
             S2 ss ALIGN;
             S2 se ALIGN;
             S2 vp ALIGN;
@@ -2284,6 +3068,21 @@ S2 parse_line (U1 *line)
                     {
                         value_known = 1;
                     }
+
+                    if (vartype == DOUBLEFLOAT)
+                    {
+                        char *dendptr = NULL;
+                        double dval;
+
+                        errno = 0;
+                        dval = strtod ((const char *) value_str, &dendptr);
+                        if (errno != ERANGE && dendptr != NULL &&
+                            dendptr != (char *) value_str && *dendptr == '\0')
+                        {
+                            known_dvalue = dval;
+                            dvalue_known = 1;
+                        }
+                    }
                 }
             }
 
@@ -2303,8 +3102,11 @@ S2 parse_line (U1 *line)
             vars[vars_ind].freed = 0;
             vars[vars_ind].warned_null = 0;
             vars[vars_ind].warned_freed = 0;
+            vars[vars_ind].aliased = 0;
             vars[vars_ind].value_known = value_known;
             vars[vars_ind].value = known_value;
+            vars[vars_ind].dvalue_known = dvalue_known;
+            vars[vars_ind].dvalue = known_dvalue;
             vars[vars_ind].array_size = array_size;
 
             #if DEBUG
@@ -3722,7 +4524,8 @@ int main (int ac, char *av[])
 
     if (linter_warnings > 0)
     {
-        printf ("l1vm-linter: %lli warning(s) found!\n", linter_warnings);
+        printf ("l1vm-linter: %lli warning(s) treated as errors!\n", linter_warnings);
+        ret = 1;
     }
 
     if (ret == 0) printf ("\033[0ml1vm-linter %s, no errors found!\n", VM_VERSION_STR );

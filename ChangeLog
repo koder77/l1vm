@@ -1,5 +1,6 @@
 L1VM (3.9.0)
 	NEW: added "l1vm-optimize" assembly code optimizer.
+	Linter: added more checks with AI.
 
 	$ ./l1vm-optimize
 	l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6|-O7|-O8] <assembly> <optimized-assembly>
@@ -18,7 +19,7 @@ L1VM (3.9.0)
 	-O8  all from -O7 with higher limits, repeated up to four rounds
 	     until stable, plus strength reduction of multiplications by two
 
--- Stefan Pietzonke <info@midnight-coding.de> Tue 3 November 2026 19:58 +010
+-- Stefan Pietzonke <info@midnight-coding.de> Tue 05 November 2026 18:54 +010
 
 L1VM (3.8.0)
 	Added new Raylib 6.2 library module.
