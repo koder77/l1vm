@@ -90,6 +90,10 @@ struct vars
     U1 is_string;               // 1 = string variable
     U1 is_const;                // 1 = const-* variable
     U1 warned_uninit;           // warning about uninitialized use already printed
+    U1 pointer_null;            // 1 = pointer was set from a known zero value
+    U1 freed;                   // 1 = pointer was passed to dealloc/free
+    U1 warned_null;             // null pointer warning already printed
+    U1 warned_freed;            // use after free warning already printed
     U1 value_known;             // 1 = value is known at compile time
     S8 value ALIGN;             // known compile time value
     S8 array_size ALIGN;        // number of elements, -1 = unknown
@@ -665,6 +669,89 @@ U1 is_number_token (U1 *tok)
 }
 
 // simple tokenizer for one source line. Strings are kept as one token.
+// scan an integer or floating point number; returns the next input position
+S2 scan_number (S2 i, U1 *line, S2 len, U1 *token)
+{
+    S2 j = 0;
+
+    if (i < len && (line[i] == '-' || line[i] == '+'))
+    {
+        if (j < MAXSTRLEN)
+        {
+            token[j] = line[i];
+            j++;
+        }
+        i++;
+    }
+    while (i < len && isdigit ((unsigned char) line[i]))
+    {
+        if (j < MAXSTRLEN)
+        {
+            token[j] = line[i];
+            j++;
+        }
+        i++;
+    }
+    if (i < len && line[i] == '.')
+    {
+        if (j < MAXSTRLEN)
+        {
+            token[j] = line[i];
+            j++;
+        }
+        i++;
+        while (i < len && isdigit ((unsigned char) line[i]))
+        {
+            if (j < MAXSTRLEN)
+            {
+                token[j] = line[i];
+                j++;
+            }
+            i++;
+        }
+    }
+    if (i < len && (line[i] == 'e' || line[i] == 'E'))
+    {
+        S2 exp_start = i;
+        S2 exp_pos = j;
+        if (j < MAXSTRLEN)
+        {
+            token[j] = line[i];
+            j++;
+        }
+        i++;
+        if (i < len && (line[i] == '-' || line[i] == '+'))
+        {
+            if (j < MAXSTRLEN)
+            {
+                token[j] = line[i];
+                j++;
+            }
+            i++;
+        }
+        if (i < len && isdigit ((unsigned char) line[i]))
+        {
+            while (i < len && isdigit ((unsigned char) line[i]))
+            {
+                if (j < MAXSTRLEN)
+                {
+                    token[j] = line[i];
+                    j++;
+                }
+                i++;
+            }
+        }
+        else
+        {
+            // not an exponent, keep the number without the 'e'
+            i = exp_start;
+            j = exp_pos;
+        }
+    }
+    token[j] = '\0';
+    return (i);
+}
+
 S2 tokenize_line (U1 *line, U1 tokens[][MAXSTRLEN + 1], S2 max_tokens)
 {
     S2 i = 0;
@@ -755,17 +842,7 @@ S2 tokenize_line (U1 *line, U1 tokens[][MAXSTRLEN + 1], S2 max_tokens)
         // negative number
         if ((c == '-' || c == '+') && i + 1 < len && isdigit ((unsigned char) line[i + 1]))
         {
-            j = 0;
-            tokens[n][j] = c;
-            j++;
-            i++;
-            while (i < len && isdigit ((unsigned char) line[i]) && j < MAXSTRLEN)
-            {
-                tokens[n][j] = line[i];
-                j++;
-                i++;
-            }
-            tokens[n][j] = '\0';
+            i = scan_number (i, line, len, tokens[n]);
             n++;
             continue;
         }
@@ -789,8 +866,16 @@ S2 tokenize_line (U1 *line, U1 tokens[][MAXSTRLEN + 1], S2 max_tokens)
             continue;
         }
 
-        // identifier or digit sequence
-        if (is_ident_start (c) || isdigit ((unsigned char) c))
+        // number
+        if (isdigit ((unsigned char) c))
+        {
+            i = scan_number (i, line, len, tokens[n]);
+            n++;
+            continue;
+        }
+
+        // identifier
+        if (is_ident_start (c))
         {
             j = 0;
             while (i < len && (is_ident_char (line[i]) || isdigit ((unsigned char) line[i])))
@@ -873,6 +958,10 @@ void mark_var_written (U1 *name)
         vars[vi].pointer_set = 1;
         vars[vi].value_known = 0;
         vars[vi].warned_uninit = 0;
+        vars[vi].pointer_null = 0;
+        vars[vi].freed = 0;
+        vars[vi].warned_null = 0;
+        vars[vi].warned_freed = 0;
     }
 }
 
@@ -1101,6 +1190,22 @@ S2 safety_check_line (U1 *line)
         return (0);
     }
 
+    // do not carry deallocation state across function boundaries
+    for (i = 0; i < nt; i++)
+    {
+        if (strcmp ((const char *) safety_tokens[i], "func") == 0 ||
+            strcmp ((const char *) safety_tokens[i], "funcend") == 0)
+        {
+            S8 k;
+            for (k = 0; k <= vars_ind; k++)
+            {
+                vars[k].freed = 0;
+                vars[k].warned_freed = 0;
+            }
+            break;
+        }
+    }
+
     // check the pointer check requirement (strict pointer mode)
     if (pointer_check_active == 1)
     {
@@ -1139,6 +1244,43 @@ S2 safety_check_line (U1 *line)
                 printf (" > %s\n", line);
             }
         }
+
+        // check array initializer count against the declared array size
+        if (nt > 5 && is_number_token (safety_tokens[3]))
+        {
+            S8 decl_size ALIGN = (S8) strtoll ((const char *) safety_tokens[3], NULL, 10);
+            if (decl_size > 1)
+            {
+                S2 vcount = 0;
+                S2 k = 5;
+                while (k < nt)
+                {
+                    if (strcmp ((const char *) safety_tokens[k], ")") == 0)
+                    {
+                        break;
+                    }
+                    // multiline initializer markers
+                    if (strcmp ((const char *) safety_tokens[k], "/") == 0 ||
+                        strcmp ((const char *) safety_tokens[k], ",") == 0 ||
+                        strcmp ((const char *) safety_tokens[k], ";") == 0 ||
+                        strcmp ((const char *) safety_tokens[k], "\\") == 0)
+                    {
+                        k++;
+                        continue;
+                    }
+                    vcount++;
+                    k++;
+                }
+                if (vcount > decl_size)
+                {
+                    printf ("linter error: array '%s' has %i initializer values but size is %lli!\n",
+                            (const char *) safety_tokens[4], vcount, decl_size);
+                    printf (" > %s\n", line);
+                    return (1);
+                }
+            }
+        }
+
         // declarations are handled in parse_line
         return (0);
     }
@@ -1263,6 +1405,15 @@ S2 safety_check_line (U1 *line)
                 vars[vj].is_pointer = 1;
                 vars[vj].value_known = 0;
                 vars[vj].warned_uninit = 0;
+                vars[vj].pointer_null = 0;
+                if ((vars[vi].value_known == 1 && vars[vi].value == 0) ||
+                    vars[vi].pointer_null == 1)
+                {
+                    vars[vj].pointer_null = 1;
+                }
+                vars[vj].freed = vars[vi].freed;
+                vars[vj].warned_null = 0;
+                vars[vj].warned_freed = 0;
 
                 if (pointer_strict == 1)
                 {
@@ -1381,6 +1532,20 @@ S2 safety_check_line (U1 *line)
                     printf (" > %s\n", line);
                     return (1);
                 }
+                if (vars[vi].pointer_null == 1 && vars[vi].warned_null == 0)
+                {
+                    vars[vi].warned_null = 1;
+                    linter_warnings++;
+                    printf ("linter warning: pointer '%s' is known to be null and is dereferenced!\n", base);
+                    printf (" > %s\n", line);
+                }
+                if (vars[vi].freed == 1 && vars[vi].warned_freed == 0)
+                {
+                    vars[vi].warned_freed = 1;
+                    linter_warnings++;
+                    printf ("linter warning: pointer '%s' is used after it was freed!\n", base);
+                    printf (" > %s\n", line);
+                }
                 vars[vi].is_pointer = 1;
             }
 
@@ -1452,6 +1617,35 @@ S2 safety_check_line (U1 *line)
             continue;
         }
         warn_uninitialized (name, line);
+
+        vi = find_var_index (name);
+        if (vi >= 0 && vars[vi].freed == 1 && vars[vi].warned_freed == 0)
+        {
+            vars[vi].warned_freed = 1;
+            linter_warnings++;
+            printf ("linter warning: pointer '%s' is used after it was freed!\n", name);
+            printf (" > %s\n", line);
+        }
+    }
+
+    // deallocation: mark the pointer argument as freed for follow-up checks
+    for (i = 1; i + 1 < nt; i++)
+    {
+        if (strcmp ((const char *) safety_tokens[i - 1], ":") == 0 &&
+            (strcmp ((const char *) safety_tokens[i], "dealloc") == 0 ||
+             strcmp ((const char *) safety_tokens[i], "dealloc_vect") == 0 ||
+             strcmp ((const char *) safety_tokens[i], "free_obj_memobj") == 0))
+        {
+            if (i >= 2 && is_ident_start (safety_tokens[i - 2][0]))
+            {
+                vj = find_var_index (safety_tokens[i - 2]);
+                if (vj >= 0 && (vars[vj].pointer_set == 1 || vars[vj].is_array == 1))
+                {
+                    vars[vj].freed = 1;
+                    vars[vj].warned_freed = 0;
+                }
+            }
+        }
     }
 
     return (0);
@@ -2105,6 +2299,10 @@ S2 parse_line (U1 *line)
             vars[vars_ind].is_string = is_string;
             vars[vars_ind].is_const = is_const;
             vars[vars_ind].warned_uninit = 0;
+            vars[vars_ind].pointer_null = 0;
+            vars[vars_ind].freed = 0;
+            vars[vars_ind].warned_null = 0;
+            vars[vars_ind].warned_freed = 0;
             vars[vars_ind].value_known = value_known;
             vars[vars_ind].value = known_value;
             vars[vars_ind].array_size = array_size;
