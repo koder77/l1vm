@@ -49,6 +49,7 @@
     (set int64 1 num~ 0)
     (set int64 1 ret~ 0)
     (set int64 1 f~ 0)
+    (set int64 1 status~ 0)
     (set const-string s exception_str~ "add_inc: exception variable overflow!")
 
     (num~ stpop)
@@ -58,12 +59,11 @@
         // variable would overflow!
         (exception_str~ :print_s !)
         (:print_n !)
-
-        (ret~ one~ stpush) (return)
+        (one~ status~ :=)
     (else)
         // variable less than maximum value
         (num~ + one~ ret~ :=)
-        (ret~ zero~ stpush) (return)
+        (zero~ status~ :=)
     (endif)
-         (ret~ one~ stpush) (return)
+    (ret~ status~ stpush) (return)
 (funcend)
