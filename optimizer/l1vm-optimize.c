@@ -263,7 +263,13 @@ static int strength_reduce = 0;
 /* small helpers                                                             */
 /* ------------------------------------------------------------------------- */
 
-static void die (const char *msg)
+#if defined(__GNUC__) || defined(__clang__)
+#define OPT_NORETURN __attribute__((noreturn))
+#else
+#define OPT_NORETURN
+#endif
+
+static OPT_NORETURN void die (const char *msg)
 {
     fprintf (stderr, "l1vm-optimize: %s\n", msg);
     exit (1);
@@ -2228,10 +2234,10 @@ static int try_rotated_loop (int label_index)
     int load_var_i;
     int load_lim_i;
     int cmp_i;
-    int jmpi_i = -1;
+    int jmpi_i;
     int spill = 0;
-    int f_load_i = -1;
-    int f_store_i = -1;
+    int f_load_i;
+    int f_store_i;
     int f_reload_i = -1;
     int false_jmp_i;
     int body_i;
@@ -6122,7 +6128,6 @@ static void unroll_map_dregs (int start, int end, int *map_d)
                         if (map_d[reg] < 0)
                         {
                             memset (map_d, -1, sizeof (int) * MAXREG);
-                            i = start;
                             return;
                         }
                     }
