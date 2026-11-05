@@ -209,7 +209,7 @@ S2 set_function_name (U1 *name)
 S2 get_function_index (U1 *name)
 {
     S8 name_len ALIGN;
-    S8 i ALIGN = -1;
+    S8 i ALIGN;
 
     name_len = strlen_safe ((const char *) name, MAXSTRLEN);
     if (name_len > MAXSTRLEN)
@@ -235,7 +235,7 @@ S2 get_function_index (U1 *name)
 S2 get_return_index (U1 *name)
 {
     S8 name_len ALIGN;
-    S8 i ALIGN = -1;
+    S8 i ALIGN;
 
     #if DEBUG
     printf ("get_return_index...\n");
@@ -2604,12 +2604,12 @@ S2 parse_line (U1 *line)
     S2 name_pos, name_ind = 0;
     S2 line_len = 0;
     U1 get_type = 1;
-    U1 get_name = 1;
+    U1 get_name;
     S2 vartype = 0;
     S2 type_len = 0;
     S2 name_len = 0;
     S2 args_ind = -1;
-    U1 do_parse_vars = 1;
+    U1 do_parse_vars;
     S2 function_call = 0;
     S8 function_index ALIGN = 0;
     S2 func_pos = 0;
@@ -3967,9 +3967,6 @@ S2 parse_line (U1 *line)
                 printf ("parse-line: set return function type %i: %i\n", args_ind, vartype);
                 #endif
 
-                type_len = strlen_safe ((const char *) type, MAXSTRLEN);
-                type_pos = type_pos + type_len + 1 ;
-
                 if (i == line_len - 1)
                 {
                     do_parse_vars = 0;
@@ -4239,7 +4236,6 @@ int main (int ac, char *av[])
     S4 file_name_len = 0;
 
     char *read = NULL;
-    S4 slen = 0;
     U1 ok = 0;
     S2 ret = 0;
     U1 rbuf[MAXSTRLEN + 1] = "";                        /* read-buffer for one line */
@@ -4347,7 +4343,6 @@ int main (int ac, char *av[])
 
 			strcpy ((char *) buf, (const char *) rbuf);
 			convtabs (buf);
-			slen = strlen_safe ((const char *) buf, MAXLINELEN);
 
             // EDIT MAIN FLAGS
             // DEBUG:
