@@ -65,4 +65,5 @@
         (num~ + one~ ret~ :=)
         (ret~ zero~ stpush) (return)
     (endif)
+         (ret~ one~ stpush) (return)
 (funcend)

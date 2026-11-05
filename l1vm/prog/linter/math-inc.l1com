@@ -2,7 +2,7 @@
 //
 // contracts: precondition/postcondition demo
 //
-// (func args incP int64&)
+// (func args incP int64)
 // (return args incP int64 int64)
 (linter)
 
