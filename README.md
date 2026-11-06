@@ -1,4 +1,4 @@
-L1VM README  2026-05-04
+L1VM README  2026-11-06
 =======================
 ![alt text](https://midnight-coding.de/blog/assets/l1vm/L1VM-stern-3-300x424.png "L1VM logo")
 
@@ -9,6 +9,8 @@ Running my blog and keep my hardware going costs money! So you can support me on
 [![C/C++ CI](https://github.com/koder77/l1vm/actions/workflows/github-ci.yaml/badge.svg)](https://github.com/koder77/l1vm/actions/workflows/github-ci.yaml)
 
 NOTE: You can join me at my [![Discord](https://img.shields.io/badge/Discord-L1VM%20Community-7289da?style=for-the-badge&logo=discord)](https://discord.gg/R584N4KWMQ) 
+
+There is a [L1VM code playground](https://www.midnight-coding.de/blog/assets/l1vm/l1vm-3.9.0-wasm-playground/index.html)
 
 NOTE: <a href="https://midnight-coding.de/blog/software/l1vm/2025/11/30/L1VM-install-guide.html">The programs and includes installation guide is here. You need the base package to use L1VM.</a>
 
