@@ -1,5 +1,7 @@
 L1VM (3.9.1)
+	Linter update: added more checks
 
+-- Stefan Pietzonke <info@midnight-coding.de> Fri 06 November 2026 02:00 +010
 
 L1VM (3.9.0)
 	NEW: added "l1vm-optimize" assembly code optimizer.
@@ -22,7 +24,7 @@ L1VM (3.9.0)
 	-O8  all from -O7 with higher limits, repeated up to four rounds
 	     until stable, plus strength reduction of multiplications by two
 
--- Stefan Pietzonke <info@midnight-coding.de> Tue 05 November 2026 18:54 +010
+-- Stefan Pietzonke <info@midnight-coding.de> Thu 05 November 2026 18:54 +010
 
 L1VM (3.8.0)
 	Added new Raylib 6.2 library module.
