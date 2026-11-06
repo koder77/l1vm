@@ -100,6 +100,19 @@ struct vars
     double dvalue;              // known compile time double value
     U1 aliased;                 // 1 = a pointer to this variable may write it
     S8 array_size ALIGN;        // number of elements, -1 = unknown
+    S8 capacity ALIGN;          // bytes for arrays, characters (incl. NUL) for strings, -1 = unknown
+    U1 str_len_known;           // 1 = string length is known at compile time
+    S8 str_len ALIGN;           // current known string length (without NUL)
+    U1 range_known;             // 1 = integer value range is known
+    S8 range_min ALIGN;         // lower bound of known value range
+    S8 range_max ALIGN;         // upper bound of known value range
+    U1 may_zero;                // 1 = value may be zero on at least one path
+    U1 heap_state;              // 0 = not heap, 1 = allocated, 2 = freed
+    U1 heap_size_known;         // 1 = heap allocation size is known
+    S8 heap_size ALIGN;         // heap allocation size in bytes, -1 = unknown
+    U1 heap_origin;             // 0 = unknown, 1 = points to object/stack, 2 = heap memory
+    U1 ptr_off_known;           // 1 = pointer offset is known at compile time
+    S8 ptr_off ALIGN;           // known pointer offset from the start of the object
 };
 
 struct vars *vars;
@@ -961,6 +974,9 @@ void mark_var_written (U1 *name)
         vars[vi].pointer_set = 1;
         vars[vi].value_known = 0;
         vars[vi].dvalue_known = 0;
+        vars[vi].range_known = 0;
+        vars[vi].may_zero = 0;
+        vars[vi].str_len_known = 0;
         vars[vi].warned_uninit = 0;
         vars[vi].pointer_null = 0;
         vars[vi].freed = 0;
@@ -1732,6 +1748,2631 @@ U1 group_is_postfix (S2 nt, U1 tokens[][MAXSTRLEN + 1], S2 open, S2 close)
     return (U1) (operands >= 2);
 }
 
+// ---------------------------------------------------------------------------
+// CBMC-style abstract interpretation support
+//
+// The checks below go beyond the purely local checks of the original linter:
+//  - integer value ranges (intervals) and overflow detection
+//  - path sensitive initialization (if/else, for, do/while, switch)
+//  - pointer provenance and heap allocation state (use after free, double
+//    free, invalid free, leaks)
+//  - string buffer capacities and known string lengths
+//  - stack balance (push/pop) to catch stack underflow
+// ---------------------------------------------------------------------------
+
+#define FLOW_STACK_MAX      1024
+#define LABEL_STATE_MAX     8192
+
+#define OP_ANY              0
+
+#define HEAP_NONE           0
+#define HEAP_ALLOCATED      1
+#define HEAP_FREED          2
+
+#define ORIGIN_UNKNOWN      0
+#define ORIGIN_OBJECT       1
+#define ORIGIN_HEAP         2
+
+struct int_range
+{
+    U1 known;
+    S8 lo ALIGN;
+    S8 hi ALIGN;
+};
+
+struct flow_var
+{
+    U1 initialized;
+    U1 pointer_set;
+    U1 is_pointer;
+    U1 pointer_null;
+    U1 warned_null;
+    U1 freed;
+    U1 heap_state;
+    U1 heap_size_known;
+    U1 heap_origin;
+    U1 range_known;
+    U1 value_known;
+    U1 dvalue_known;
+    U1 may_zero;
+    U1 str_len_known;
+    U1 ptr_off_known;
+    S8 heap_size ALIGN;
+    S8 range_min ALIGN;
+    S8 range_max ALIGN;
+    S8 value ALIGN;
+    double dvalue;
+    S8 str_len ALIGN;
+    S8 ptr_off ALIGN;
+};
+
+struct flow_state
+{
+    S8 n;
+    struct flow_var *v;
+    S8 stack_depth ALIGN;
+    U1 stack_known;
+};
+
+#define FRAME_IF        1
+#define FRAME_FOR       2
+#define FRAME_DO        3
+#define FRAME_SWITCH    4
+
+struct flow_frame
+{
+    S2 kind;
+    U1 has_else;
+    U1 has_then;
+    U1 then_reachable;
+    S2 cond_truth;              // 1 = always true, 0 = always false, -1 = unknown
+    U1 has_else_pre;            // state of the false branch of the condition
+    struct flow_state pre;
+    struct flow_state then_state;
+    struct flow_state else_pre;
+};
+
+struct label_state
+{
+    U1 name[MAXSTRLEN + 1];
+    U1 used;
+    struct flow_state state;
+};
+
+struct flow_frame flow_frames[FLOW_STACK_MAX];
+S2 flow_frame_ind = -1;
+
+struct label_state *label_states = NULL;
+S2 label_states_ind = -1;
+
+U1 flow_reachable = 1;
+S8 flow_stack_depth ALIGN = 0;
+U1 flow_stack_known = 1;
+U1 flow_loop_widen = 0;
+
+// pending result of a library / allocation call, consumed by the next stpop
+U1 pending_alloc = 0;
+U1 pending_alloc_known = 0;
+S8 pending_alloc_size ALIGN = -1;
+S8 pending_alloc_elem_size ALIGN = 1;
+U1 pending_result = 0;      // 1 = known library result
+S8 pending_result_value ALIGN = 0;
+S8 pending_result_min ALIGN = 0;
+S8 pending_result_max ALIGN = -1;
+
+// one-time initialization of label state table
+S2 init_label_states (void)
+{
+    if (label_states == NULL)
+    {
+        label_states = (struct label_state *) calloc (LABEL_STATE_MAX, sizeof (struct label_state));
+        if (label_states == NULL)
+        {
+            printf ("error: can't allocate label state table!\n");
+            return (1);
+        }
+        label_states_ind = -1;
+    }
+    return (0);
+}
+
+void free_flow_state (struct flow_state *s)
+{
+    if (s->v != NULL)
+    {
+        free (s->v);
+        s->v = NULL;
+    }
+    s->n = 0;
+    s->stack_depth = 0;
+    s->stack_known = 1;
+}
+
+S2 capture_flow_state (struct flow_state *s)
+{
+    S8 i ALIGN;
+
+    s->n = vars_ind + 1;
+    s->stack_depth = flow_stack_depth;
+    s->stack_known = flow_stack_known;
+
+    if (s->n <= 0)
+    {
+        s->v = NULL;
+        return (0);
+    }
+    s->v = (struct flow_var *) calloc ((size_t) s->n, sizeof (struct flow_var));
+    if (s->v == NULL)
+    {
+        printf ("error: can't allocate flow state!\n");
+        s->n = 0;
+        return (1);
+    }
+    for (i = 0; i <= vars_ind; i++)
+    {
+        s->v[i].initialized = vars[i].initialized;
+        s->v[i].pointer_set = vars[i].pointer_set;
+        s->v[i].is_pointer = vars[i].is_pointer;
+        s->v[i].pointer_null = vars[i].pointer_null;
+        s->v[i].warned_null = vars[i].warned_null;
+        s->v[i].freed = vars[i].freed;
+        s->v[i].heap_state = vars[i].heap_state;
+        s->v[i].heap_size_known = vars[i].heap_size_known;
+        s->v[i].heap_origin = vars[i].heap_origin;
+        s->v[i].range_known = vars[i].range_known;
+        s->v[i].value_known = vars[i].value_known;
+        s->v[i].dvalue_known = vars[i].dvalue_known;
+        s->v[i].may_zero = vars[i].may_zero;
+        s->v[i].str_len_known = vars[i].str_len_known;
+        s->v[i].ptr_off_known = vars[i].ptr_off_known;
+        s->v[i].heap_size = vars[i].heap_size;
+        s->v[i].range_min = vars[i].range_min;
+        s->v[i].range_max = vars[i].range_max;
+        s->v[i].value = vars[i].value;
+        s->v[i].dvalue = vars[i].dvalue;
+        s->v[i].str_len = vars[i].str_len;
+        s->v[i].ptr_off = vars[i].ptr_off;
+    }
+    return (0);
+}
+
+void restore_flow_state (const struct flow_state *s)
+{
+    S8 i ALIGN;
+
+    for (i = 0; i <= vars_ind && i < s->n; i++)
+    {
+        vars[i].initialized = s->v[i].initialized;
+        vars[i].pointer_set = s->v[i].pointer_set;
+        vars[i].is_pointer = s->v[i].is_pointer;
+        vars[i].pointer_null = s->v[i].pointer_null;
+        vars[i].warned_null = s->v[i].warned_null;
+        vars[i].freed = s->v[i].freed;
+        vars[i].heap_state = s->v[i].heap_state;
+        vars[i].heap_size_known = s->v[i].heap_size_known;
+        vars[i].heap_origin = s->v[i].heap_origin;
+        vars[i].range_known = s->v[i].range_known;
+        vars[i].value_known = s->v[i].value_known;
+        vars[i].dvalue_known = s->v[i].dvalue_known;
+        vars[i].may_zero = s->v[i].may_zero;
+        vars[i].str_len_known = s->v[i].str_len_known;
+        vars[i].ptr_off_known = s->v[i].ptr_off_known;
+        vars[i].heap_size = s->v[i].heap_size;
+        vars[i].range_min = s->v[i].range_min;
+        vars[i].range_max = s->v[i].range_max;
+        vars[i].value = s->v[i].value;
+        vars[i].dvalue = s->v[i].dvalue;
+        vars[i].str_len = s->v[i].str_len;
+        vars[i].ptr_off = s->v[i].ptr_off;
+    }
+    flow_stack_depth = s->stack_depth;
+    flow_stack_known = s->stack_known;
+}
+
+// merge the state "b" into the state "a". a and b are not modified.
+void merge_flow_states_to_current (const struct flow_state *a, const struct flow_state *b)
+{
+    S8 i ALIGN;
+    const struct flow_var *fa;
+    const struct flow_var *fb;
+
+    for (i = 0; i <= vars_ind; i++)
+    {
+        fa = (i < a->n ? &a->v[i] : NULL);
+        fb = (i < b->n ? &b->v[i] : NULL);
+
+        if (fa == NULL)
+        {
+            if (fb == NULL)
+            {
+                continue;
+            }
+            vars[i].initialized = fb->initialized;
+            vars[i].range_known = fb->range_known;
+            vars[i].range_min = fb->range_min;
+            vars[i].range_max = fb->range_max;
+            vars[i].may_zero = fb->may_zero;
+            continue;
+        }
+        if (fb == NULL)
+        {
+            vars[i].initialized = fa->initialized;
+            vars[i].range_known = fa->range_known;
+            vars[i].range_min = fa->range_min;
+            vars[i].range_max = fa->range_max;
+            vars[i].may_zero = fa->may_zero;
+            continue;
+        }
+
+        // definite initialization: initialized on both paths
+        vars[i].initialized = (U1) (fa->initialized && fb->initialized);
+
+        // a value is only known if it is identical on both paths
+        vars[i].value_known = (U1) (fa->value_known && fb->value_known &&
+                                    fa->value == fb->value);
+        if (vars[i].value_known == 1)
+        {
+            vars[i].value = fa->value;
+        }
+        vars[i].dvalue_known = (U1) (fa->dvalue_known && fb->dvalue_known &&
+                                     fa->dvalue == fb->dvalue);
+        if (vars[i].dvalue_known == 1)
+        {
+            vars[i].dvalue = fa->dvalue;
+        }
+
+        // range: union (hull) of both paths
+        if (fa->range_known == 1 && fb->range_known == 1)
+        {
+            vars[i].range_known = 1;
+            vars[i].range_min = (fa->range_min < fb->range_min ? fa->range_min : fb->range_min);
+            vars[i].range_max = (fa->range_max > fb->range_max ? fa->range_max : fb->range_max);
+            if (vars[i].value_known == 1)
+            {
+                vars[i].range_min = vars[i].value;
+                vars[i].range_max = vars[i].value;
+            }
+        }
+        else
+        {
+            vars[i].range_known = 0;
+        }
+        vars[i].may_zero = (U1) (fa->may_zero || fb->may_zero);
+
+        // pointer state: be conservative, a pointer may be null/freed on one path
+        vars[i].pointer_set = (U1) (fa->pointer_set || fb->pointer_set);
+        vars[i].is_pointer = (U1) (fa->is_pointer || fb->is_pointer);
+        vars[i].pointer_null = (U1) (fa->pointer_null || fb->pointer_null);
+        vars[i].freed = (U1) (fa->freed || fb->freed);
+        vars[i].warned_null = (U1) (fa->warned_null && fb->warned_null);
+        if (fa->heap_state == HEAP_FREED || fb->heap_state == HEAP_FREED)
+        {
+            vars[i].heap_state = HEAP_FREED;
+        }
+        else if (fa->heap_state == HEAP_ALLOCATED && fb->heap_state == HEAP_ALLOCATED)
+        {
+            vars[i].heap_state = HEAP_ALLOCATED;
+        }
+        else
+        {
+            vars[i].heap_state = HEAP_NONE;
+        }
+
+        if (fa->heap_size_known == 1 && fb->heap_size_known == 1 &&
+            fa->heap_size == fb->heap_size)
+        {
+            vars[i].heap_size_known = 1;
+            vars[i].heap_size = fa->heap_size;
+        }
+        else
+        {
+            vars[i].heap_size_known = 0;
+            vars[i].heap_size = -1;
+        }
+
+        if (fa->heap_origin == fb->heap_origin)
+        {
+            vars[i].heap_origin = fa->heap_origin;
+        }
+        else
+        {
+            vars[i].heap_origin = ORIGIN_UNKNOWN;
+        }
+
+        if (fa->str_len_known == 1 && fb->str_len_known == 1 &&
+            fa->str_len == fb->str_len)
+        {
+            vars[i].str_len_known = 1;
+            vars[i].str_len = fa->str_len;
+        }
+        else
+        {
+            vars[i].str_len_known = 0;
+        }
+
+        if (fa->ptr_off_known == 1 && fb->ptr_off_known == 1 &&
+            fa->ptr_off == fb->ptr_off)
+        {
+            vars[i].ptr_off_known = 1;
+            vars[i].ptr_off = fa->ptr_off;
+        }
+        else
+        {
+            vars[i].ptr_off_known = 0;
+        }
+    }
+
+    // stack depth is only known if both paths agree
+    if (a->stack_known == 1 && b->stack_known == 1 &&
+        a->stack_depth == b->stack_depth)
+    {
+        flow_stack_depth = a->stack_depth;
+        flow_stack_known = 1;
+    }
+    else
+    {
+        flow_stack_known = 0;
+    }
+}
+
+// merge a second state into an already captured state (used for label joins)
+void merge_into_captured_state (struct flow_state *a, const struct flow_state *b)
+{
+    S8 i ALIGN;
+    S8 n ALIGN = (a->n > b->n ? a->n : b->n);
+    struct flow_var *nv;
+
+    if (n <= 0)
+    {
+        return;
+    }
+    if (a->n < n)
+    {
+        nv = (struct flow_var *) realloc (a->v, (size_t) n * sizeof (struct flow_var));
+        if (nv == NULL)
+        {
+            return;
+        }
+        memset (&nv[a->n], 0, (size_t) (n - a->n) * sizeof (struct flow_var));
+        a->v = nv;
+        a->n = n;
+    }
+
+    for (i = 0; i < n; i++)
+    {
+        if (i >= b->n)
+        {
+            continue;
+        }
+        a->v[i].initialized = (U1) (a->v[i].initialized && b->v[i].initialized);
+        a->v[i].pointer_set = (U1) (a->v[i].pointer_set || b->v[i].pointer_set);
+        a->v[i].is_pointer = (U1) (a->v[i].is_pointer || b->v[i].is_pointer);
+        a->v[i].pointer_null = (U1) (a->v[i].pointer_null || b->v[i].pointer_null);
+        a->v[i].freed = (U1) (a->v[i].freed || b->v[i].freed);
+        if (b->v[i].heap_state == HEAP_FREED || a->v[i].heap_state == HEAP_FREED)
+        {
+            a->v[i].heap_state = HEAP_FREED;
+        }
+        else if (b->v[i].heap_state == HEAP_ALLOCATED || a->v[i].heap_state == HEAP_ALLOCATED)
+        {
+            a->v[i].heap_state = HEAP_ALLOCATED;
+        }
+        if (a->v[i].range_known == 1 && b->v[i].range_known == 1)
+        {
+            a->v[i].range_min = (a->v[i].range_min < b->v[i].range_min ? a->v[i].range_min : b->v[i].range_min);
+            a->v[i].range_max = (a->v[i].range_max > b->v[i].range_max ? a->v[i].range_max : b->v[i].range_max);
+        }
+        else
+        {
+            a->v[i].range_known = 0;
+        }
+        a->v[i].may_zero = (U1) (a->v[i].may_zero || b->v[i].may_zero);
+        if (a->v[i].str_len_known == 1 && b->v[i].str_len_known == 1 &&
+            a->v[i].str_len != b->v[i].str_len)
+        {
+            a->v[i].str_len_known = 0;
+        }
+    }
+}
+
+struct int_range range_unknown (void)
+{
+    struct int_range r;
+
+    r.known = 0;
+    r.lo = 0;
+    r.hi = 0;
+    return r;
+}
+
+struct int_range range_exact (S8 v)
+{
+    struct int_range r;
+
+    r.known = 1;
+    r.lo = v;
+    r.hi = v;
+    return r;
+}
+
+struct int_range range_of_var (U1 *name)
+{
+    S8 vi ALIGN;
+
+    vi = find_var_index (name);
+    if (vi >= 0)
+    {
+        if (vars[vi].range_known == 1)
+        {
+            return (struct int_range) { 1, vars[vi].range_min, vars[vi].range_max };
+        }
+        if (vars[vi].value_known == 1)
+        {
+            return range_exact (vars[vi].value);
+        }
+    }
+    return range_unknown ();
+}
+
+S2 operator_precedence (U1 *tok)
+{
+    S2 len;
+
+    if (tok[0] == '\0')
+    {
+        return (-1);
+    }
+    len = (S2) strlen_safe ((const char *) tok, MAXSTRLEN);
+    if (len >= 2 && is_operator_suffix (tok[len - 1]))
+    {
+        // typed operator suffix, ignore suffix for precedence
+    }
+
+    if (strcmp ((const char *) tok, "||") == 0) return (1);
+    if (strcmp ((const char *) tok, "&&") == 0) return (2);
+    if (strcmp ((const char *) tok, "|") == 0) return (3);
+    if (strcmp ((const char *) tok, "^") == 0) return (4);
+    if (strcmp ((const char *) tok, "&") == 0) return (5);
+    if (strcmp ((const char *) tok, "==") == 0 || strcmp ((const char *) tok, "!=") == 0) return (6);
+    if (tok[0] == '<' && tok[1] == '=') return (7);
+    if (tok[0] == '>' && tok[1] == '=') return (7);
+    if (tok[0] == '<' && tok[1] == '|') return (8);
+    if (tok[0] == '>' && tok[1] == '|') return (8);
+    if (tok[0] == '<' && tok[1] != '|') return (7);
+    if (tok[0] == '>' && tok[1] != '|') return (7);
+    if (tok[0] == '+' || tok[0] == '-') return (9);
+    if (tok[0] == '*' || tok[0] == '/' || tok[0] == '%') return (10);
+    return (-1);
+}
+
+void range_clamp (__int128 v, struct int_range *r, U1 *overflow)
+{
+    if (v < (__int128) LLONG_MIN)
+    {
+        r->lo = LLONG_MIN;
+        *overflow = 1;
+    }
+    else if (v > (__int128) LLONG_MAX)
+    {
+        r->hi = LLONG_MAX;
+        *overflow = 1;
+    }
+}
+
+U1 range_apply (U1 *op, struct int_range a, struct int_range b, struct int_range *r, U1 *overflow)
+{
+    __int128 lo;
+    __int128 hi;
+    __int128 v1, v2, v3, v4;
+    S2 prec;
+    U1 first;
+
+    r->known = 0;
+    if (a.known == 0 || b.known == 0)
+    {
+        return (0);
+    }
+
+    prec = operator_precedence (op);
+    first = op[0];
+
+    if (strcmp ((const char *) op, "==") == 0 || strcmp ((const char *) op, "!=") == 0 ||
+        (first == '<' && op[1] != '|') || (first == '>' && op[1] != '|') ||
+        strcmp ((const char *) op, "&&") == 0 || strcmp ((const char *) op, "||") == 0)
+    {
+        // comparison / logic: result is in {0,1}. If both operands are exact
+        // the exact result can be computed.
+        S8 res ALIGN;
+
+        if (a.lo == a.hi && b.lo == b.hi)
+        {
+            U1 ov = 0;
+            if (eval_apply (op, a.lo, b.lo, &res, &ov) == 1)
+            {
+                *r = range_exact (res);
+                return (1);
+            }
+        }
+        r->known = 1;
+        r->lo = 0;
+        r->hi = 1;
+        return (1);
+    }
+
+    lo = 0;
+    hi = 0;
+
+    switch (first)
+    {
+        case '+':
+            lo = (__int128) a.lo + (__int128) b.lo;
+            hi = (__int128) a.hi + (__int128) b.hi;
+            break;
+
+        case '-':
+            lo = (__int128) a.lo - (__int128) b.hi;
+            hi = (__int128) a.hi - (__int128) b.lo;
+            break;
+
+        case '*':
+            v1 = (__int128) a.lo * (__int128) b.lo;
+            v2 = (__int128) a.lo * (__int128) b.hi;
+            v3 = (__int128) a.hi * (__int128) b.lo;
+            v4 = (__int128) a.hi * (__int128) b.hi;
+            lo = v1; hi = v1;
+            if (v2 < lo) lo = v2;
+            if (v2 > hi) hi = v2;
+            if (v3 < lo) lo = v3;
+            if (v3 > hi) hi = v3;
+            if (v4 < lo) lo = v4;
+            if (v4 > hi) hi = v4;
+            break;
+
+        case '/':
+        case '%':
+            if (b.lo <= 0 && b.hi >= 0)
+            {
+                return (0);     // divisor can be zero: result unknown
+            }
+            if (first == '/')
+            {
+                v1 = (__int128) a.lo / (__int128) b.lo;
+                v2 = (__int128) a.lo / (__int128) b.hi;
+                v3 = (__int128) a.hi / (__int128) b.lo;
+                v4 = (__int128) a.hi / (__int128) b.hi;
+            }
+            else
+            {
+                v1 = (__int128) a.lo % (__int128) b.lo;
+                v2 = (__int128) a.lo % (__int128) b.hi;
+                v3 = (__int128) a.hi % (__int128) b.lo;
+                v4 = (__int128) a.hi % (__int128) b.hi;
+            }
+            lo = v1; hi = v1;
+            if (v2 < lo) lo = v2;
+            if (v2 > hi) hi = v2;
+            if (v3 < lo) lo = v3;
+            if (v3 > hi) hi = v3;
+            if (v4 < lo) lo = v4;
+            if (v4 > hi) hi = v4;
+            break;
+
+        case '&':
+            if (a.lo == a.hi && b.lo == b.hi)
+            {
+                *r = range_exact (a.lo & b.lo);
+                return (1);
+            }
+            r->known = 1;
+            r->lo = 0;
+            r->hi = (a.hi > b.hi ? a.hi : b.hi);
+            if (r->hi < 0)
+            {
+                return (0);
+            }
+            return (1);
+
+        case '|':
+        case '^':
+            if (a.lo == a.hi && b.lo == b.hi)
+            {
+                *r = range_exact (first == '|' ? (a.lo | b.lo) : (a.lo ^ b.lo));
+                return (1);
+            }
+            return (0);
+
+        case '<':
+            if (op[1] == '|')
+            {
+                if (b.lo < 0 || b.hi > 63)
+                {
+                    return (0);
+                }
+                lo = (__int128) a.lo << (S2) b.lo;
+                hi = (__int128) a.hi << (S2) b.hi;
+                if (b.lo != b.hi)
+                {
+                    // conservative: take the widest hull
+                    __int128 t1 = (__int128) a.lo << (S2) b.hi;
+                    __int128 t2 = (__int128) a.hi << (S2) b.lo;
+                    if (t1 < lo) lo = t1;
+                    if (t1 > hi) hi = t1;
+                    if (t2 < lo) lo = t2;
+                    if (t2 > hi) hi = t2;
+                }
+            }
+            else
+            {
+                return (0);
+            }
+            break;
+
+        case '>':
+            if (op[1] == '|')
+            {
+                if (b.lo < 0 || b.hi > 63)
+                {
+                    return (0);
+                }
+                lo = (__int128) a.lo >> (S2) b.lo;
+                hi = (__int128) a.hi >> (S2) b.hi;
+                if (b.lo != b.hi)
+                {
+                    __int128 t1 = (__int128) a.lo >> (S2) b.hi;
+                    __int128 t2 = (__int128) a.hi >> (S2) b.lo;
+                    if (t1 < lo) lo = t1;
+                    if (t1 > hi) hi = t1;
+                    if (t2 < lo) lo = t2;
+                    if (t2 > hi) hi = t2;
+                }
+            }
+            else
+            {
+                return (0);
+            }
+            break;
+
+        default:
+            (void) prec;
+            return (0);
+    }
+
+    r->known = 1;
+    r->lo = (lo < (__int128) LLONG_MIN ? LLONG_MIN : (lo > (__int128) LLONG_MAX ? LLONG_MAX : (S8) lo));
+    r->hi = (hi < (__int128) LLONG_MIN ? LLONG_MIN : (hi > (__int128) LLONG_MAX ? LLONG_MAX : (S8) hi));
+    if (lo < (__int128) LLONG_MIN || hi > (__int128) LLONG_MAX)
+    {
+        *overflow = 1;
+    }
+    (void) range_clamp;
+    return (1);
+}
+
+// evaluate an integer expression to an interval
+U1 range_eval (S2 nt, U1 tokens[][MAXSTRLEN + 1], S2 start, S2 end, struct int_range *r, U1 *overflow)
+{
+    S2 i;
+    S2 close;
+    S2 op_pos = -1;
+    S2 op_prec_best = 1000;
+    S2 prec;
+    struct int_range a;
+    struct int_range b;
+    U1 aov = 0;
+    U1 bov = 0;
+
+    r->known = 0;
+    if (start < 0 || end < 0 || start > end || end >= nt)
+    {
+        return (0);
+    }
+
+    // strip enclosing parentheses
+    if (strcmp ((const char *) tokens[start], "(") == 0)
+    {
+        close = find_close_paren (nt, tokens, start);
+        if (close == end)
+        {
+            return (range_eval (nt, tokens, start + 1, end - 1, r, overflow));
+        }
+    }
+
+    if (start == end)
+    {
+        if (is_number_token (tokens[start]) == 1)
+        {
+            char *endptr = NULL;
+            S8 v ALIGN;
+
+            errno = 0;
+            v = (S8) strtoll ((const char *) tokens[start], &endptr, 10);
+            if (errno == ERANGE)
+            {
+                *overflow = 1;
+                return (0);
+            }
+            *r = range_exact (v);
+            return (1);
+        }
+        if (is_ident_start (tokens[start][0]) == 1 &&
+            token_is_keyword (tokens[start]) == 0)
+        {
+            *r = range_of_var (tokens[start]);
+            return (r->known);
+        }
+        return (0);
+    }
+
+    // array element access: value unknown
+    for (i = start; i <= end; i++)
+    {
+        if (strcmp ((const char *) tokens[i], "[") == 0)
+        {
+            return (0);
+        }
+    }
+
+    // find the lowest precedence top level operator. For left associative
+    // infix and for postfix (RPN) expressions the right most operator of the
+    // lowest precedence is the root.
+    for (i = start; i <= end; i++)
+    {
+        if (strcmp ((const char *) tokens[i], "(") == 0)
+        {
+            close = find_close_paren (nt, tokens, i);
+            if (close < 0 || close > end)
+            {
+                return (0);
+            }
+            i = close;
+            continue;
+        }
+        if (strcmp ((const char *) tokens[i], "[") == 0)
+        {
+            close = find_close_bracket (nt, tokens, i);
+            if (close < 0 || close > end)
+            {
+                return (0);
+            }
+            i = close;
+            continue;
+        }
+        prec = operator_precedence (tokens[i]);
+        if (prec > 0)
+        {
+            if (prec <= op_prec_best)
+            {
+                op_prec_best = prec;
+                op_pos = i;
+            }
+        }
+    }
+
+    if (op_pos > start && op_pos < end)
+    {
+        if (range_eval (nt, tokens, start, op_pos - 1, &a, &aov) == 0)
+        {
+            return (0);
+        }
+        if (range_eval (nt, tokens, op_pos + 1, end, &b, &bov) == 0)
+        {
+            return (0);
+        }
+        if (aov == 1 || bov == 1)
+        {
+            *overflow = 1;
+        }
+        return (range_apply (tokens[op_pos], a, b, r, overflow));
+    }
+
+    return (0);
+}
+
+void range_intersect_lo (S8 *lo, S8 *hi, S8 nlo, S8 nhi)
+{
+    if (nlo > *lo)
+    {
+        *lo = nlo;
+    }
+    if (nhi < *hi)
+    {
+        *hi = nhi;
+    }
+}
+
+U1 range_refine_compare (U1 *var, U1 *op, S8 other_lo, S8 other_hi, U1 truth)
+{
+    S8 vi ALIGN;
+    S8 lo ALIGN;
+    S8 hi ALIGN;
+    S8 nlo ALIGN;
+    S8 nhi ALIGN;
+    U1 first = op[0];
+    U1 is_le = (U1) (op[1] == '=');
+    U1 is_shift = (U1) (op[1] == '|');
+
+    if (is_shift == 1)
+    {
+        return (0);
+    }
+    vi = find_var_index (var);
+    if (vi < 0)
+    {
+        return (0);
+    }
+    if (vars[vi].range_known == 1)
+    {
+        lo = vars[vi].range_min;
+        hi = vars[vi].range_max;
+    }
+    else if (vars[vi].value_known == 1)
+    {
+        lo = vars[vi].value;
+        hi = vars[vi].value;
+    }
+    else
+    {
+        lo = LLONG_MIN;
+        hi = LLONG_MAX;
+    }
+
+    nlo = lo;
+    nhi = hi;
+
+    if (truth == 1)
+    {
+        if (first == '<')
+        {
+            if (is_le == 1)
+            {
+                nhi = other_hi;
+            }
+            else
+            {
+                nhi = other_hi - 1;
+            }
+        }
+        else if (first == '>')
+        {
+            if (is_le == 1)
+            {
+                nlo = other_lo;
+            }
+            else
+            {
+                nlo = other_lo + 1;
+            }
+        }
+        else if (strcmp ((const char *) op, "==") == 0)
+        {
+            nlo = other_lo;
+            nhi = other_hi;
+        }
+        else if (strcmp ((const char *) op, "!=") == 0)
+        {
+            // cannot represent a hole in the middle of an interval, but
+            // excluding a boundary value is easy and very useful.
+            if (other_lo == other_hi)
+            {
+                S8 c ALIGN = other_lo;
+
+                if (c == lo && c == hi)
+                {
+                    nhi = lo - 1;       // contradiction
+                }
+                else if (c == lo)
+                {
+                    nlo = c + 1;
+                }
+                else if (c == hi)
+                {
+                    nhi = c - 1;
+                }
+                else
+                {
+                    if (c == 0)
+                    {
+                        // excluding zero proves the value is not zero
+                        vars[vi].may_zero = 0;
+                    }
+                    return (0);
+                }
+            }
+            else
+            {
+                return (0);
+            }
+        }
+        else
+        {
+            return (0);
+        }
+    }
+    else
+    {
+        if (first == '<')
+        {
+            if (is_le == 1)
+            {
+                nlo = other_lo + 1;
+            }
+            else
+            {
+                nlo = other_lo;
+            }
+        }
+        else if (first == '>')
+        {
+            if (is_le == 1)
+            {
+                nhi = other_hi - 1;
+            }
+            else
+            {
+                nhi = other_hi;
+            }
+        }
+        else if (strcmp ((const char *) op, "==") == 0)
+        {
+            // not equal: exclude a boundary value if possible
+            if (other_lo == other_hi)
+            {
+                S8 c ALIGN = other_lo;
+
+                if (c == lo && c == hi)
+                {
+                    nhi = lo - 1;       // contradiction
+                }
+                else if (c == lo)
+                {
+                    nlo = c + 1;
+                }
+                else if (c == hi)
+                {
+                    nhi = c - 1;
+                }
+                else
+                {
+                    if (c == 0)
+                    {
+                        // excluding zero proves the value is not zero
+                        vars[vi].may_zero = 0;
+                    }
+                    return (0);
+                }
+            }
+            else
+            {
+                return (0);
+            }
+        }
+        else if (strcmp ((const char *) op, "!=") == 0)
+        {
+            nlo = other_lo;
+            nhi = other_hi;
+        }
+        else
+        {
+            return (0);
+        }
+    }
+
+    if (flow_loop_widen == 1 && truth == 1 && first == '<')
+    {
+        lo = (vars[vi].range_known == 1 ? vars[vi].range_min :
+              (vars[vi].value_known == 1 ? vars[vi].value : LLONG_MIN));
+        hi = (is_le == 1 ? other_hi : other_hi - 1);
+        if (lo > hi)
+        {
+            return (2);
+        }
+    }
+    else if (flow_loop_widen == 1 && truth == 1 && first == '>')
+    {
+        lo = (is_le == 1 ? other_lo : other_lo + 1);
+        hi = (vars[vi].range_known == 1 ? vars[vi].range_max :
+              (vars[vi].value_known == 1 ? vars[vi].value : LLONG_MAX));
+        if (lo > hi)
+        {
+            return (2);
+        }
+    }
+    else
+    {
+        range_intersect_lo (&lo, &hi, nlo, nhi);
+    }
+    if (lo > hi)
+    {
+        return (2);     // contradiction: branch is impossible
+    }
+    vars[vi].range_known = 1;
+    vars[vi].range_min = lo;
+    vars[vi].range_max = hi;
+    vars[vi].may_zero = (U1) (lo <= 0 && hi >= 0);
+    if (vars[vi].is_const == 0)
+    {
+        // keep exact value information consistent with the refined range:
+        // a stale exact value would defeat the interval based checks.
+        if (lo == hi)
+        {
+            vars[vi].value_known = 1;
+            vars[vi].value = lo;
+            vars[vi].dvalue_known = 0;
+        }
+        else
+        {
+            vars[vi].value_known = 0;
+            vars[vi].dvalue_known = 0;
+        }
+    }
+    return (1);
+}
+
+// refine variable ranges from a comparison in an if / for / while condition.
+// returns 2 if the condition is impossible, 1 if refined, 0 if untouched.
+S2 refine_condition (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 truth)
+{
+    S2 i;
+    S2 op = -1;
+    S2 left;
+    S2 right;
+    S8 left_start;
+    S8 right_end;
+    S2 lend;
+    S2 rstart;
+    S2 rend;
+    S2 lop_pos;
+    S2 rop_pos;
+    struct int_range lr;
+    struct int_range rr;
+    U1 lov = 0;
+    U1 rov = 0;
+    S2 ret = 0;
+    S2 rr_ret;
+    U1 *lop;
+    U1 *rop;
+
+    for (i = 0; i < nt; i++)
+    {
+        if (strcmp ((const char *) tokens[i], "(") == 0)
+        {
+            S2 c = find_close_paren (nt, tokens, i);
+            if (c > i)
+            {
+                // only scan inside condition groups, not skip them completely
+            }
+        }
+        if (strcmp ((const char *) tokens[i], "==") == 0 ||
+            strcmp ((const char *) tokens[i], "!=") == 0 ||
+            strcmp ((const char *) tokens[i], "<") == 0 ||
+            strcmp ((const char *) tokens[i], "<=") == 0 ||
+            strcmp ((const char *) tokens[i], ">") == 0 ||
+            strcmp ((const char *) tokens[i], ">=") == 0)
+        {
+            op = i;
+            break;
+        }
+    }
+    if (op < 0)
+    {
+        return (0);
+    }
+
+    left = op - 1;
+    right = op + 1;
+    if (left < 0)
+    {
+        return (0);
+    }
+    if (right < nt && strcmp ((const char *) tokens[right], ")") == 0)
+    {
+        // postfix comparison: (left right op)
+        S2 r_end = op - 1;
+        S2 r_start;
+        S2 l_end;
+        S2 l_start;
+
+        if (r_end < 0)
+        {
+            return (0);
+        }
+        if (strcmp ((const char *) tokens[r_end], ")") == 0)
+        {
+            r_start = find_open_paren (nt, tokens, r_end);
+            if (r_start < 0)
+            {
+                return (0);
+            }
+        }
+        else
+        {
+            r_start = r_end;
+        }
+        l_end = r_start - 1;
+        if (l_end < 0)
+        {
+            return (0);
+        }
+        if (strcmp ((const char *) tokens[l_end], ")") == 0)
+        {
+            l_start = find_open_paren (nt, tokens, l_end);
+            if (l_start < 0)
+            {
+                return (0);
+            }
+        }
+        else if (is_number_token (tokens[l_end]) == 0 &&
+                 is_ident_start (tokens[l_end][0]) == 0 &&
+                 l_end >= 2)
+        {
+            // left operand is a postfix expression ending at l_end
+            S2 le2 = l_end - 1;
+            S2 ls2;
+
+            if (strcmp ((const char *) tokens[le2], ")") == 0)
+            {
+                ls2 = find_open_paren (nt, tokens, le2);
+                if (ls2 < 0)
+                {
+                    return (0);
+                }
+            }
+            else
+            {
+                ls2 = le2;
+            }
+            l_start = ls2 - 1;
+            if (l_start < 0)
+            {
+                return (0);
+            }
+            if (strcmp ((const char *) tokens[l_start], ")") == 0)
+            {
+                l_start = find_open_paren (nt, tokens, l_start);
+                if (l_start < 0)
+                {
+                    return (0);
+                }
+            }
+        }
+        else
+        {
+            l_start = l_end;
+        }
+        left_start = l_start;
+        right_end = r_end;
+        lend = l_end;
+        rstart = r_start;
+        rend = r_end;
+    }
+    else
+    {
+        if (right >= nt)
+        {
+            return (0);
+        }
+        // unwrap a group before the operator
+        if (strcmp ((const char *) tokens[left], ")") == 0)
+        {
+            left = find_open_paren (nt, tokens, left);
+            if (left < 0)
+            {
+                return (0);
+            }
+        }
+        // unwrap a group after the operator
+        if (strcmp ((const char *) tokens[right], "(") == 0)
+        {
+            S2 c = find_close_paren (nt, tokens, right);
+            if (c < 0)
+            {
+                return (0);
+            }
+            right = c;
+        }
+
+        left_start = left;
+        right_end = right;
+
+        if (strcmp ((const char *) tokens[left], "(") == 0)
+        {
+            left_start = left + 1;
+        }
+        if (strcmp ((const char *) tokens[right], ")") == 0)
+        {
+            right_end = right - 1;
+        }
+        lend = op - 1;
+        rstart = op + 1;
+        rend = right_end;
+    }
+    if (left_start > op - 1 || rstart > rend)
+    {
+        return (0);
+    }
+
+    lr = range_unknown ();
+    rr = range_unknown ();
+    (void) range_eval (nt, tokens, left_start, lend, &lr, &lov);
+    (void) range_eval (nt, tokens, rstart, rend, &rr, &rov);
+    (void) lov;
+    (void) rov;
+
+    lop_pos = (S2) left_start;
+    rop_pos = rstart;
+    while (lop_pos < lend && strcmp ((const char *) tokens[lop_pos], "(") == 0)
+    {
+        lop_pos++;
+    }
+    while (rop_pos < rend && strcmp ((const char *) tokens[rop_pos], "(") == 0)
+    {
+        rop_pos++;
+    }
+    lop = tokens[lop_pos];
+    rop = tokens[rop_pos];
+
+    if (lr.known == 1 && is_ident_start (rop[0]) == 1 &&
+        token_is_keyword (rop) == 0 && rr.known == 0)
+    {
+        // refine the right variable using the left range, inverted operator
+        U1 inv[MAXSTRLEN + 1];
+
+        if (strcmp ((const char *) tokens[op], "<") == 0) strcpy ((char *) inv, ">");
+        else if (strcmp ((const char *) tokens[op], "<=") == 0) strcpy ((char *) inv, ">=");
+        else if (strcmp ((const char *) tokens[op], ">") == 0) strcpy ((char *) inv, "<");
+        else if (strcmp ((const char *) tokens[op], ">=") == 0) strcpy ((char *) inv, "<=");
+        else strcpy ((char *) inv, (const char *) tokens[op]);
+
+        rr_ret = range_refine_compare (rop, inv, lr.lo, lr.hi, truth);
+        if (rr_ret == 2)
+        {
+            return (2);
+        }
+        if (rr_ret == 1)
+        {
+            ret = 1;
+        }
+    }
+
+    if ((lr.known == 1 || rr.known == 1) && is_ident_start (lop[0]) == 1 &&
+        token_is_keyword (lop) == 0)
+    {
+        if (rr.known == 1)
+        {
+            rr_ret = range_refine_compare (lop, tokens[op], rr.lo, rr.hi, truth);
+        }
+        else
+        {
+            rr_ret = range_refine_compare (lop, tokens[op], lr.lo, lr.hi, truth);
+        }
+        if (rr_ret == 2)
+        {
+            return (2);
+        }
+        if (rr_ret == 1)
+        {
+            ret = 1;
+        }
+    }
+
+    return (ret);
+}
+
+// check for an allocation call and remember its size for the next stpop
+void note_allocation_call (U1 *name, S2 nt, U1 tokens[][MAXSTRLEN + 1])
+{
+    S8 elem ALIGN = 1;
+    U1 is_alloc = 0;
+    U1 is_vect = 0;
+    S2 arg_pos = -1;
+    S2 i;
+    struct int_range r;
+
+    pending_alloc = 0;
+    pending_alloc_known = 0;
+    pending_alloc_size = -1;
+    pending_alloc_elem_size = 1;
+
+    if (strcmp ((const char *) name, "alloc_byte") == 0) { is_alloc = 1; elem = 1; }
+    else if (strcmp ((const char *) name, "alloc_int16") == 0) { is_alloc = 1; elem = 2; }
+    else if (strcmp ((const char *) name, "alloc_int32") == 0) { is_alloc = 1; elem = 4; }
+    else if (strcmp ((const char *) name, "alloc_int64") == 0) { is_alloc = 1; elem = 8; }
+    else if (strcmp ((const char *) name, "alloc_double") == 0) { is_alloc = 1; elem = 8; }
+    else if (strcmp ((const char *) name, "alloc_byte_vect") == 0) { is_alloc = 1; is_vect = 1; elem = 1; }
+    else if (strcmp ((const char *) name, "alloc_int16_vect") == 0) { is_alloc = 1; is_vect = 1; elem = 2; }
+    else if (strcmp ((const char *) name, "alloc_int32_vect") == 0) { is_alloc = 1; is_vect = 1; elem = 4; }
+    else if (strcmp ((const char *) name, "alloc_int64_vect") == 0) { is_alloc = 1; is_vect = 1; elem = 8; }
+    else if (strcmp ((const char *) name, "alloc_double_vect") == 0) { is_alloc = 1; is_vect = 1; elem = 8; }
+
+    if (is_alloc == 0)
+    {
+        return;
+    }
+
+    // first argument of the call: token after the opening '(' group name
+    for (i = 0; i < nt; i++)
+    {
+        if (strcmp ((const char *) tokens[i], ":") == 0 ||
+            strcmp ((const char *) tokens[i], "!") == 0)
+        {
+            break;
+        }
+        if (is_ident_start (tokens[i][0]) == 1 &&
+            strcmp ((const char *) tokens[i], (const char *) name) != 0 &&
+            token_is_keyword (tokens[i]) == 0)
+        {
+            arg_pos = i;
+        }
+    }
+    if (arg_pos < 0)
+    {
+        return;
+    }
+
+    r = range_of_var (tokens[arg_pos]);
+    if (r.known == 1)
+    {
+        pending_alloc_known = 1;
+        if (r.lo < 1)
+        {
+            printf ("linter error: allocation size '%s' can be zero or negative (%lli..%lli)!\n",
+                    tokens[arg_pos], r.lo, r.hi);
+            linter_warnings++;
+        }
+        pending_alloc_elem_size = elem;
+        if ((__int128) r.hi * (__int128) elem > (__int128) LLONG_MAX)
+        {
+            printf ("linter error: allocation size overflow: %lli elements * %lli bytes!\n",
+                    r.hi, elem);
+            linter_warnings++;
+            pending_alloc_known = 0;
+        }
+        else
+        {
+            pending_alloc_size = (is_vect == 1 ? r.hi * elem : r.hi * elem);
+        }
+    }
+    pending_alloc = 1;
+    pending_alloc_elem_size = elem;
+}
+
+// check that a string destination has room for "len" characters plus NUL
+U1 check_string_capacity (U1 *name, S8 len, U1 *line)
+{
+    S8 vi ALIGN;
+
+    vi = find_var_index (name);
+    if (vi < 0)
+    {
+        return (0);
+    }
+    if (vars[vi].is_string == 0)
+    {
+        return (0);
+    }
+    if (vars[vi].capacity >= 0 && len >= 0 && len + 1 > vars[vi].capacity)
+    {
+        linter_warnings++;
+        printf ("linter error: string buffer overflow: '%s' needs %lli bytes (including NUL) but has capacity %lli!\n",
+                name, len + 1, vars[vi].capacity);
+        printf (" > %s\n", line);
+        return (1);
+    }
+    return (0);
+}
+
+// update the known length of a string after a library call
+void update_string_length (U1 *name, S8 len)
+{
+    S8 vi ALIGN;
+
+    vi = find_var_index (name);
+    if (vi < 0 || vars[vi].is_string == 0 || len < 0)
+    {
+        return;
+    }
+    vars[vi].str_len_known = 1;
+    vars[vi].str_len = len;
+}
+
+S8 get_string_length (U1 *name)
+{
+    S8 vi ALIGN;
+
+    vi = find_var_index (name);
+    if (vi < 0 || vars[vi].is_string == 0 || vars[vi].str_len_known == 0)
+    {
+        return (-1);
+    }
+    return (vars[vi].str_len);
+}
+
+// ---------------------------------------------------------------------------
+// control flow state machine used by the abstract interpreter
+// ---------------------------------------------------------------------------
+
+S2 push_flow_frame (S2 kind)
+{
+    if (flow_frame_ind >= FLOW_STACK_MAX - 1)
+    {
+        printf ("linter error: control flow nesting too deep!\n");
+        return (1);
+    }
+    flow_frame_ind++;
+    memset (&flow_frames[flow_frame_ind], 0, sizeof (struct flow_frame));
+    flow_frames[flow_frame_ind].kind = kind;
+    flow_frames[flow_frame_ind].cond_truth = -1;
+    if (capture_flow_state (&flow_frames[flow_frame_ind].pre) != 0)
+    {
+        return (1);
+    }
+    return (0);
+}
+
+void pop_flow_frame (void)
+{
+    if (flow_frame_ind >= 0)
+    {
+        free_flow_state (&flow_frames[flow_frame_ind].pre);
+        free_flow_state (&flow_frames[flow_frame_ind].then_state);
+        free_flow_state (&flow_frames[flow_frame_ind].else_pre);
+        flow_frame_ind--;
+    }
+}
+
+S2 save_label_state (U1 *name)
+{
+    S2 i;
+    struct flow_state *dst = NULL;
+
+    if (init_label_states () != 0)
+    {
+        return (1);
+    }
+
+    for (i = 0; i <= label_states_ind; i++)
+    {
+        if (label_states[i].used == 1 &&
+            strcmp ((const char *) label_states[i].name, (const char *) name) == 0)
+        {
+            dst = &label_states[i].state;
+            break;
+        }
+    }
+    if (dst == NULL)
+    {
+        if (label_states_ind >= LABEL_STATE_MAX - 1)
+        {
+            printf ("linter error: too many jump labels!\n");
+            return (1);
+        }
+        label_states_ind++;
+        label_states[label_states_ind].used = 1;
+        strcpy ((char *) label_states[label_states_ind].name, (const char *) name);
+        dst = &label_states[label_states_ind].state;
+        dst->n = 0;
+        dst->v = NULL;
+        // "or" merge needs a complete state: capture the current one
+        if (capture_flow_state (dst) != 0)
+        {
+            return (1);
+        }
+    }
+    else
+    {
+        struct flow_state cur;
+
+        if (capture_flow_state (&cur) != 0)
+        {
+            return (1);
+        }
+        merge_into_captured_state (dst, &cur);
+        free_flow_state (&cur);
+    }
+    return (0);
+}
+
+S2 restore_label_state (U1 *name)
+{
+    S2 i;
+    struct flow_state *src = NULL;
+
+    if (label_states == NULL)
+    {
+        return (1);
+    }
+    for (i = 0; i <= label_states_ind; i++)
+    {
+        if (label_states[i].used == 1 &&
+            strcmp ((const char *) label_states[i].name, (const char *) name) == 0)
+        {
+            src = &label_states[i].state;
+            break;
+        }
+    }
+    if (src == NULL)
+    {
+        return (1);
+    }
+    if (flow_reachable == 1)
+    {
+        struct flow_state cur;
+
+        if (capture_flow_state (&cur) != 0)
+        {
+            return (1);
+        }
+        merge_into_captured_state (src, &cur);
+        free_flow_state (&cur);
+    }
+    restore_flow_state (src);
+    free_flow_state (src);
+    label_states[i].used = 0;
+    return (0);
+}
+
+void reset_flow_analysis (void)
+{
+    S2 i;
+
+    for (i = 0; i <= flow_frame_ind; i++)
+    {
+        free_flow_state (&flow_frames[i].pre);
+        free_flow_state (&flow_frames[i].then_state);
+        free_flow_state (&flow_frames[i].else_pre);
+    }
+    flow_frame_ind = -1;
+    if (label_states != NULL)
+    {
+        for (i = 0; i <= label_states_ind; i++)
+        {
+            if (label_states[i].used == 1)
+            {
+                free_flow_state (&label_states[i].state);
+                label_states[i].used = 0;
+            }
+        }
+    }
+    label_states_ind = -1;
+    flow_reachable = 1;
+    flow_stack_depth = 0;
+    flow_stack_known = 1;
+    pending_alloc = 0;
+    pending_alloc_known = 0;
+    pending_alloc_size = -1;
+    pending_result = 0;
+    pending_result_min = 0;
+    pending_result_max = -1;
+    flow_loop_widen = 0;
+}
+
+U1 line_has_token (S2 nt, U1 tokens[][MAXSTRLEN + 1], const char *what)
+{
+    S2 i;
+
+    for (i = 0; i < nt; i++)
+    {
+        if (strcmp ((const char *) tokens[i], what) == 0)
+        {
+            return (1);
+        }
+    }
+    return (0);
+}
+
+// Handle structured control flow and label joins. Returns 1 if the line is a
+// pure control line and should not be analyzed further, 0 otherwise.
+U1 handle_flow_control (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 *line)
+{
+    S2 i;
+
+    (void) line;
+    U1 has_func = 0;
+    U1 has_funcend = 0;
+    U1 has_else = 0;
+    U1 has_endif = 0;
+    U1 has_break = 0;
+    U1 has_next = 0;
+    U1 has_do = 0;
+    U1 has_switch = 0;
+    U1 has_switchend = 0;
+    U1 has_forloop = 0;
+    U1 has_for = 0;
+    U1 has_while = 0;
+    U1 has_return = 0;
+    U1 has_case = 0;
+    S2 jmp_label = -1;
+    U1 is_jmp = 0;
+    U1 is_jmpi = 0;
+    S2 label_pos = -1;
+    S2 cond_truth = -1;
+
+    for (i = 0; i < nt; i++)
+    {
+        if (strcmp ((const char *) tokens[i], "func") == 0) has_func = 1;
+        if (strcmp ((const char *) tokens[i], "funcend") == 0) has_funcend = 1;
+        if (strcmp ((const char *) tokens[i], "else") == 0) has_else = 1;
+        if (strcmp ((const char *) tokens[i], "endif") == 0) has_endif = 1;
+        if (strcmp ((const char *) tokens[i], "break") == 0) has_break = 1;
+        if (strcmp ((const char *) tokens[i], "next") == 0) has_next = 1;
+        if (strcmp ((const char *) tokens[i], "do") == 0) has_do = 1;
+        if (strcmp ((const char *) tokens[i], "switch") == 0) has_switch = 1;
+        if (strcmp ((const char *) tokens[i], "switchend") == 0) has_switchend = 1;
+        if (strcmp ((const char *) tokens[i], "for") == 0) has_for = 1;
+        if (strcmp ((const char *) tokens[i], "for-loop") == 0) has_forloop = 1;
+        if (strcmp ((const char *) tokens[i], "while") == 0) has_while = 1;
+        if (strcmp ((const char *) tokens[i], "return") == 0) has_return = 1;
+        if (strcmp ((const char *) tokens[i], "jmp") == 0) is_jmp = 1;
+        if (strcmp ((const char *) tokens[i], "jmpi") == 0) is_jmpi = 1;
+        if (strcmp ((const char *) tokens[i], "?") == 0) has_case = 1;
+    }
+
+    // function boundaries reset the intra-procedural analysis
+    if (has_func == 1 && has_funcend == 0)
+    {
+        U1 fname[MAXSTRLEN + 1];
+        S2 fn_pos = -1;
+
+        fname[0] = '\0';
+        for (i = 1; i < nt; i++)
+        {
+            if (strcmp ((const char *) tokens[i], "func") == 0)
+            {
+                fn_pos = i - 1;
+                break;
+            }
+        }
+        if (fn_pos >= 0 && is_ident_start (tokens[fn_pos][0]) == 1)
+        {
+            strcpy ((char *) fname, (const char *) tokens[fn_pos]);
+        }
+
+        reset_flow_analysis ();
+        if (strcmp ((const char *) fname, "main") == 0)
+        {
+            // main has no arguments on the stack
+            flow_stack_depth = 0;
+            flow_stack_known = 1;
+        }
+        else
+        {
+            S2 fi = get_function_index (fname);
+
+            if (fi >= 0 && function_args[fi].args >= 0)
+            {
+                // the caller has pushed the function arguments
+                flow_stack_depth = function_args[fi].args;
+                flow_stack_known = 1;
+            }
+            else
+            {
+                // unannotated function: argument/return stack effect unknown
+                flow_stack_known = 0;
+            }
+        }
+        return (0);
+    }
+    if (has_funcend == 1)
+    {
+        // report leaks of allocations made in main
+        reset_flow_analysis ();
+        return (0);
+    }
+
+    if (flow_reachable == 0)
+    {
+        // only labels and block delimiters can make code reachable again
+        if (is_jmp == 1 || is_jmpi == 1)
+        {
+            return (1);
+        }
+        if (has_else == 1 && flow_frame_ind >= 0 && flow_frames[flow_frame_ind].kind == FRAME_IF)
+        {
+            struct flow_frame *f = &flow_frames[flow_frame_ind];
+
+            free_flow_state (&f->then_state);
+            f->has_then = 0;
+            f->then_reachable = 0;
+            if (f->has_else_pre == 1)
+            {
+                restore_flow_state (&f->else_pre);
+                flow_reachable = 1;
+            }
+            else
+            {
+                restore_flow_state (&f->pre);
+                flow_reachable = 0;
+            }
+            f->has_else = 1;
+            return (1);
+        }
+        if (has_endif == 1 && flow_frame_ind >= 0 && flow_frames[flow_frame_ind].kind == FRAME_IF)
+        {
+            struct flow_frame *f = &flow_frames[flow_frame_ind];
+
+            if (f->has_else == 1)
+            {
+                if (f->then_reachable == 1)
+                {
+                    restore_flow_state (&f->then_state);
+                    flow_reachable = 1;
+                }
+                else
+                {
+                    // both branches ended unreachable
+                    flow_reachable = 0;
+                }
+            }
+            else
+            {
+                if (f->has_else_pre == 1)
+                {
+                    restore_flow_state (&f->else_pre);
+                    flow_reachable = 1;
+                }
+                else
+                {
+                    flow_reachable = 0;
+                }
+            }
+            pop_flow_frame ();
+            return (1);
+        }
+        if (has_next == 1 && flow_frame_ind >= 0 && flow_frames[flow_frame_ind].kind == FRAME_FOR)
+        {
+            struct flow_frame *f = &flow_frames[flow_frame_ind];
+
+            restore_flow_state (&f->pre);
+            flow_reachable = 1;
+            pop_flow_frame ();
+            return (1);
+        }
+        if (has_switchend == 1 && flow_frame_ind >= 0 && flow_frames[flow_frame_ind].kind == FRAME_SWITCH)
+        {
+            struct flow_frame *f = &flow_frames[flow_frame_ind];
+
+            restore_flow_state (&f->pre);
+            flow_reachable = 1;
+            pop_flow_frame ();
+            return (1);
+        }
+        if (has_while == 1 && flow_frame_ind >= 0 && flow_frames[flow_frame_ind].kind == FRAME_DO)
+        {
+            struct flow_frame *f = &flow_frames[flow_frame_ind];
+
+            restore_flow_state (&f->pre);
+            flow_reachable = 1;
+            pop_flow_frame ();
+            return (1);
+        }
+
+        // label definition is a join point
+        for (i = 1; i + 1 < nt; i++)
+        {
+            if (strcmp ((const char *) tokens[i - 1], ":") == 0 &&
+                strcmp ((const char *) tokens[i + 1], ")") == 0 &&
+                is_ident_start (tokens[i][0]) == 1 &&
+                token_is_keyword (tokens[i]) == 0)
+            {
+                if (restore_label_state (tokens[i]) == 0)
+                {
+                    flow_reachable = 1;
+                }
+                return (1);
+            }
+        }
+        return (1);
+    }
+
+    // if / if+ : start of a conditional. Capture the state before refinement.
+    if ((line_has_token (nt, tokens, "if") == 1 ||
+         line_has_token (nt, tokens, "if+") == 1) &&
+        has_for == 0 && has_while == 0 && has_case == 0)
+    {
+        if (push_flow_frame (FRAME_IF) != 0)
+        {
+            return (1);
+        }
+        {
+            struct flow_frame *f = &flow_frames[flow_frame_ind];
+            struct flow_state then_cur;
+            U1 have_then_cur = 0;
+            S2 rc = refine_condition (nt, tokens, 1);
+
+            if (rc == 2)
+            {
+                f->cond_truth = 0;
+                flow_reachable = 0;
+            }
+            else
+            {
+                f->cond_truth = -1;
+            }
+
+            if (flow_reachable == 1)
+            {
+                if (capture_flow_state (&then_cur) == 0)
+                {
+                    have_then_cur = 1;
+                }
+            }
+
+            // compute the state of the false branch from the pre-if state
+            restore_flow_state (&f->pre);
+            flow_reachable = 1;
+            if (refine_condition (nt, tokens, 0) != 2)
+            {
+                if (capture_flow_state (&f->else_pre) == 0)
+                {
+                    f->has_else_pre = 1;
+                }
+            }
+
+            if (have_then_cur == 1)
+            {
+                restore_flow_state (&then_cur);
+                free_flow_state (&then_cur);
+                flow_reachable = 1;
+            }
+            else
+            {
+                restore_flow_state (&f->pre);
+                flow_reachable = 0;
+            }
+            f->has_else = (U1) (line_has_token (nt, tokens, "if+") == 1);
+        }
+        // the condition itself is normal code and must still be checked
+        return (0);
+    }
+
+    // for-loop marker
+    if (has_forloop == 1)
+    {
+        if (push_flow_frame (FRAME_FOR) != 0)
+        {
+            return (1);
+        }
+        return (1);
+    }
+
+    // for condition line
+    if (has_for == 1 && has_forloop == 0)
+    {
+        flow_loop_widen = 1;
+        cond_truth = refine_condition (nt, tokens, 1);
+        flow_loop_widen = 0;
+        if (cond_truth == 2)
+        {
+            flow_reachable = 0;
+        }
+        return (0);
+    }
+
+    // (do) marker
+    if (has_do == 1)
+    {
+        if (push_flow_frame (FRAME_DO) != 0)
+        {
+            return (1);
+        }
+        return (1);
+    }
+
+    // while condition line: merge body state with the pre-loop state
+    if (has_while == 1)
+    {
+        struct flow_frame *f = NULL;
+
+        if (flow_frame_ind >= 0 && flow_frames[flow_frame_ind].kind == FRAME_DO)
+        {
+            f = &flow_frames[flow_frame_ind];
+        }
+        // exit condition for the code after the loop
+        cond_truth = refine_condition (nt, tokens, 0);
+        if (f != NULL)
+        {
+            struct flow_state body;
+
+            if (capture_flow_state (&body) != 0)
+            {
+                return (1);
+            }
+            // code after the loop sees the union of pre and body state
+            merge_flow_states_to_current (&f->pre, &body);
+            free_flow_state (&body);
+            pop_flow_frame ();
+            flow_reachable = 1;
+        }
+        if (cond_truth == 2)
+        {
+            // the exit condition contradicts the current state only in weird
+            // cases; keep the code reachable
+        }
+        return (0);
+    }
+
+    // switch marker
+    if (has_switch == 1)
+    {
+        if (push_flow_frame (FRAME_SWITCH) != 0)
+        {
+            return (1);
+        }
+        return (1);
+    }
+
+    // switch case: (value constant ?)
+    if (has_case == 1 && flow_frame_ind >= 0 && flow_frames[flow_frame_ind].kind == FRAME_SWITCH)
+    {
+        struct flow_frame *f = &flow_frames[flow_frame_ind];
+
+        // the previous case may fall through into this case
+        if (flow_reachable == 1)
+        {
+            struct flow_state cur;
+
+            if (f->has_then == 0)
+            {
+                if (capture_flow_state (&f->then_state) != 0)
+                {
+                    return (1);
+                }
+                f->has_then = 1;
+            }
+            else
+            {
+                if (capture_flow_state (&cur) != 0)
+                {
+                    return (1);
+                }
+                merge_into_captured_state (&f->then_state, &cur);
+                free_flow_state (&cur);
+            }
+        }
+        restore_flow_state (&f->pre);
+        flow_reachable = 1;
+        // refine the switch value to the case constant
+        if (nt >= 4)
+        {
+            S2 vi = find_var_index (tokens[1]);
+            struct int_range r = range_of_var (tokens[2]);
+            if (vi >= 0 && r.known == 1 && r.lo == r.hi)
+            {
+                vars[vi].range_known = 1;
+                vars[vi].range_min = r.lo;
+                vars[vi].range_max = r.hi;
+            }
+        }
+        return (1);
+    }
+
+    if (has_break == 1)
+    {
+        if (flow_frame_ind >= 0 && flow_frames[flow_frame_ind].kind == FRAME_SWITCH)
+        {
+            struct flow_frame *f = &flow_frames[flow_frame_ind];
+            struct flow_state cur;
+
+            if (flow_reachable == 1)
+            {
+                if (capture_flow_state (&cur) != 0)
+                {
+                    return (1);
+                }
+                if (f->has_then == 0)
+                {
+                    f->then_state = cur;
+                    f->has_then = 1;
+                }
+                else
+                {
+                    merge_into_captured_state (&f->then_state, &cur);
+                    free_flow_state (&cur);
+                }
+            }
+            flow_reachable = 0;
+        }
+        return (1);
+    }
+
+    if (has_switchend == 1)
+    {
+        struct flow_frame *f = NULL;
+
+        if (flow_frame_ind >= 0 && flow_frames[flow_frame_ind].kind == FRAME_SWITCH)
+        {
+            f = &flow_frames[flow_frame_ind];
+        }
+        if (f != NULL)
+        {
+            struct flow_state cur;
+
+            if (capture_flow_state (&cur) != 0)
+            {
+                return (1);
+            }
+            if (f->has_then == 0)
+            {
+                merge_flow_states_to_current (&f->pre, &cur);
+            }
+            else
+            {
+                struct flow_state merged;
+
+                // merge accumulated cases and the current fall-through case
+                merged.n = 0;
+                merged.v = NULL;
+                merged.stack_depth = cur.stack_depth;
+                merged.stack_known = cur.stack_known;
+                merge_into_captured_state (&f->then_state, &cur);
+                merged.v = f->then_state.v;
+                merged.n = f->then_state.n;
+                merged.stack_depth = f->then_state.stack_depth;
+                merged.stack_known = f->then_state.stack_known;
+                merge_flow_states_to_current (&f->pre, &merged);
+            }
+            free_flow_state (&cur);
+            pop_flow_frame ();
+        }
+        flow_reachable = 1;
+        return (1);
+    }
+
+    if (has_else == 1)
+    {
+        if (flow_frame_ind >= 0 && flow_frames[flow_frame_ind].kind == FRAME_IF)
+        {
+            struct flow_frame *f = &flow_frames[flow_frame_ind];
+
+            free_flow_state (&f->then_state);
+            if (flow_reachable == 1)
+            {
+                if (capture_flow_state (&f->then_state) != 0)
+                {
+                    return (1);
+                }
+                f->has_then = 1;
+                f->then_reachable = 1;
+            }
+            else
+            {
+                f->has_then = 0;
+                f->then_reachable = 0;
+            }
+            if (f->has_else_pre == 1)
+            {
+                restore_flow_state (&f->else_pre);
+                flow_reachable = 1;
+            }
+            else
+            {
+                restore_flow_state (&f->pre);
+                flow_reachable = 0;
+            }
+            f->has_else = 1;
+        }
+        return (1);
+    }
+
+    if (has_endif == 1)
+    {
+        if (flow_frame_ind >= 0 && flow_frames[flow_frame_ind].kind == FRAME_IF)
+        {
+            struct flow_frame *f = &flow_frames[flow_frame_ind];
+            struct flow_state then_state;
+            U1 have_then = 0;
+
+            if (f->has_else == 1 && f->has_then == 1)
+            {
+                then_state = f->then_state;
+                f->then_state.v = NULL;
+                f->then_state.n = 0;
+                have_then = 1;
+            }
+            else if (f->has_else == 0 && f->cond_truth != 0)
+            {
+                // then-branch state is the current one
+                if (flow_reachable == 1)
+                {
+                    if (capture_flow_state (&then_state) != 0)
+                    {
+                        return (1);
+                    }
+                    have_then = 1;
+                }
+            }
+
+            if (f->has_else == 1)
+            {
+                struct flow_state else_state;
+                U1 have_else = 0;
+
+                if (flow_reachable == 1)
+                {
+                    if (capture_flow_state (&else_state) != 0)
+                    {
+                        return (1);
+                    }
+                    have_else = 1;
+                }
+                if (have_then == 1 && have_else == 1)
+                {
+                    merge_flow_states_to_current (&then_state, &else_state);
+                    flow_reachable = 1;
+                }
+                else if (have_then == 1)
+                {
+                    restore_flow_state (&then_state);
+                    flow_reachable = 1;
+                }
+                else if (have_else == 1)
+                {
+                    restore_flow_state (&else_state);
+                    flow_reachable = 1;
+                }
+                else
+                {
+                    flow_reachable = 0;
+                }
+                if (have_then == 1) free_flow_state (&then_state);
+                if (have_else == 1) free_flow_state (&else_state);
+            }
+            else
+            {
+                // if without else: merge the then branch with the
+                // (condition false) fall-through branch
+                if (have_then == 1 && f->has_else_pre == 1)
+                {
+                    merge_flow_states_to_current (&f->else_pre, &then_state);
+                    flow_reachable = 1;
+                    free_flow_state (&then_state);
+                }
+                else if (have_then == 1)
+                {
+                    restore_flow_state (&then_state);
+                    flow_reachable = 1;
+                    free_flow_state (&then_state);
+                }
+                else if (f->has_else_pre == 1)
+                {
+                    restore_flow_state (&f->else_pre);
+                    flow_reachable = 1;
+                }
+                else
+                {
+                    restore_flow_state (&f->pre);
+                    flow_reachable = 0;
+                }
+            }
+            pop_flow_frame ();
+        }
+        return (1);
+    }
+
+    if (has_next == 1)
+    {
+        if (flow_frame_ind >= 0 && flow_frames[flow_frame_ind].kind == FRAME_FOR)
+        {
+            struct flow_frame *f = &flow_frames[flow_frame_ind];
+            struct flow_state body;
+
+            if (capture_flow_state (&body) != 0)
+            {
+                return (1);
+            }
+            if (flow_reachable == 1)
+            {
+                merge_flow_states_to_current (&f->pre, &body);
+            }
+            else
+            {
+                restore_flow_state (&f->pre);
+            }
+            free_flow_state (&body);
+            pop_flow_frame ();
+            flow_reachable = 1;
+        }
+        return (1);
+    }
+
+    // labels and jumps
+    for (i = 1; i + 1 < nt; i++)
+    {
+        if (strcmp ((const char *) tokens[i - 1], ":") == 0 &&
+            strcmp ((const char *) tokens[i + 1], ")") == 0 &&
+            is_ident_start (tokens[i][0]) == 1 &&
+            token_is_keyword (tokens[i]) == 0)
+        {
+            label_pos = i;
+            break;
+        }
+    }
+    if (label_pos >= 0)
+    {
+        if (restore_label_state (tokens[label_pos]) == 0)
+        {
+            flow_reachable = 1;
+        }
+        return (1);
+    }
+
+    if (is_jmp == 1 || is_jmpi == 1)
+    {
+        // find label after ':'
+        for (i = 1; i < nt; i++)
+        {
+            if (strcmp ((const char *) tokens[i - 1], ":") == 0)
+            {
+                jmp_label = i;
+                break;
+            }
+        }
+        if (jmp_label >= 0)
+        {
+            (void) save_label_state (tokens[jmp_label]);
+        }
+        if (is_jmp == 1 && is_jmpi == 0)
+        {
+            flow_reachable = 0;
+        }
+        return (0);
+    }
+
+    if (has_return == 1)
+    {
+        flow_reachable = 0;
+        return (0);
+    }
+
+    return (0);
+}
+
+void type_range (U1 type, S8 *lo, S8 *hi)
+{
+    switch (type)
+    {
+        case BYTE:
+            *lo = 0;
+            *hi = 255;
+            break;
+        case WORD:
+            *lo = -32768;
+            *hi = 32767;
+            break;
+        case DOUBLEWORD:
+            *lo = -2147483648LL;
+            *hi = 2147483647LL;
+            break;
+        default:
+            *lo = LLONG_MIN;
+            *hi = LLONG_MAX;
+            break;
+    }
+}
+
+void set_var_range (U1 *name, S8 lo, S8 hi)
+{
+    S8 vi ALIGN;
+
+    vi = find_var_index (name);
+    if (vi < 0 || vars[vi].is_array == 1 || vars[vi].is_string == 1)
+    {
+        return;
+    }
+    vars[vi].range_known = 1;
+    vars[vi].range_min = lo;
+    vars[vi].range_max = hi;
+    vars[vi].may_zero = (U1) (lo <= 0 && hi >= 0);
+}
+
+// report heap blocks which are still allocated. Only allocations made in main
+// are reported: library functions may intentionally return allocated memory.
+void check_heap_leaks (U1 *line)
+{
+    S8 i ALIGN;
+    U1 reported = 0;
+
+    if (strcmp ((const char *) function_name_current, "main") != 0)
+    {
+        return;
+    }
+    for (i = 0; i <= vars_ind; i++)
+    {
+        if (vars[i].heap_state == HEAP_ALLOCATED && vars[i].heap_origin == ORIGIN_HEAP)
+        {
+            if (reported == 0)
+            {
+                printf ("linter error: memory leak: allocated heap memory is not freed before exit!\n");
+                printf (" > %s\n", line);
+                reported = 1;
+            }
+            printf ("linter error: leaked allocation in variable '%s' (%lli bytes)!\n",
+                    vars[i].name, vars[i].heap_size_known == 1 ? vars[i].heap_size : -1);
+            linter_warnings++;
+        }
+    }
+}
+
+// collect simple call arguments (identifiers / numbers / string literals)
+S2 collect_call_args (S2 nt, U1 tokens[][MAXSTRLEN + 1], S2 colon, U1 *args[], S2 max_args)
+{
+    S2 i;
+    S2 count = 0;
+    S2 first = 0;
+
+    (void) nt;
+    for (i = 0; i < colon; i++)
+    {
+        if (strcmp ((const char *) tokens[i], "(") == 0)
+        {
+            first = i + 1;
+        }
+    }
+    for (i = first; i < colon && count < max_args; i++)
+    {
+        if (tokens[i][0] == '"')
+        {
+            args[count++] = tokens[i];
+        }
+        else if (is_number_token (tokens[i]) == 1)
+        {
+            args[count++] = tokens[i];
+        }
+        else if (is_ident_start (tokens[i][0]) == 1 &&
+                 token_is_keyword (tokens[i]) == 0)
+        {
+            args[count++] = tokens[i];
+        }
+    }
+    return (count);
+}
+
+S8 token_string_length (U1 *tok)
+{
+    S8 len ALIGN;
+
+    if (tok[0] != '"')
+    {
+        return (-1);
+    }
+    len = (S8) strlen_safe ((const char *) tok, MAXSTRLEN);
+    if (len < 2)
+    {
+        return (0);
+    }
+    return (len - 2);
+}
+
+S8 call_arg_length (U1 *arg)
+{
+    S8 len ALIGN;
+
+    len = token_string_length (arg);
+    if (len >= 0)
+    {
+        return (len);
+    }
+    return (get_string_length (arg));
+}
+
+S8 call_arg_count (U1 *arg)
+{
+    struct int_range r;
+
+    if (is_number_token (arg) == 1)
+    {
+        return ((S8) strtoll ((const char *) arg, NULL, 10));
+    }
+    r = range_of_var (arg);
+    if (r.known == 1)
+    {
+        // the upper bound is the safe value for capacity checks
+        return (r.hi);
+    }
+    return (-1);
+}
+
+// check library calls which write into string buffers
+void check_string_call (U1 *callee, S2 nargs, U1 *args[], U1 *line)
+{
+    S8 src_len ALIGN;
+    S8 dst_len ALIGN;
+    S8 cap ALIGN;
+    S8 vi ALIGN;
+    S8 count ALIGN;
+
+    if (strcmp ((const char *) callee, "string_copy") == 0 && nargs >= 2)
+    {
+        // first argument is the destination, second the source
+        src_len = call_arg_length (args[1]);
+        vi = find_var_index (args[0]);
+        cap = (vi >= 0 ? vars[vi].capacity : -1);
+        if (src_len >= 0 && cap >= 0 && src_len + 1 > cap)
+        {
+            linter_warnings++;
+            printf ("linter error: string_copy overflows destination '%s': %lli bytes needed, capacity %lli!\n",
+                    args[0], src_len + 1, cap);
+            printf (" > %s\n", line);
+        }
+        update_string_length (args[0], src_len);
+        return;
+    }
+
+    if (strcmp ((const char *) callee, "string_cat") == 0 && nargs >= 2)
+    {
+        // first argument is the destination, second the source
+        src_len = call_arg_length (args[1]);
+        dst_len = call_arg_length (args[0]);
+        vi = find_var_index (args[0]);
+        cap = (vi >= 0 ? vars[vi].capacity : -1);
+        if (src_len >= 0 && dst_len >= 0 && cap >= 0 &&
+            dst_len + src_len + 1 > cap)
+        {
+            linter_warnings++;
+            printf ("linter error: string_cat overflows destination '%s': %lli bytes needed, capacity %lli!\n",
+                    args[0], dst_len + src_len + 1, cap);
+            printf (" > %s\n", line);
+        }
+        else if (src_len >= 0 && cap >= 0 && dst_len < 0 && src_len + 1 > cap)
+        {
+            linter_warnings++;
+            printf ("linter error: string_cat may overflow destination '%s' (capacity %lli)!\n",
+                    args[0], cap);
+            printf (" > %s\n", line);
+        }
+        if (src_len >= 0 && dst_len >= 0)
+        {
+            update_string_length (args[0], dst_len + src_len);
+        }
+        else
+        {
+            update_string_length (args[0], -1);
+        }
+        return;
+    }
+
+    if ((strcmp ((const char *) callee, "string_left") == 0 ||
+         strcmp ((const char *) callee, "string_right") == 0) && nargs >= 3)
+    {
+        src_len = call_arg_length (args[0]);
+        count = call_arg_count (args[2]);
+        vi = find_var_index (args[1]);
+        cap = (vi >= 0 ? vars[vi].capacity : -1);
+        if (count >= 0 && cap >= 0 && count + 1 > cap)
+        {
+            linter_warnings++;
+            printf ("linter error: %s overflows destination '%s': %lli bytes needed, capacity %lli!\n",
+                    callee, args[1], count + 1, cap);
+            printf (" > %s\n", line);
+        }
+        if (count >= 0)
+        {
+            if (src_len >= 0 && src_len < count)
+            {
+                count = src_len;
+            }
+            update_string_length (args[1], count);
+        }
+        else
+        {
+            update_string_length (args[1], -1);
+        }
+        return;
+    }
+
+    if ((strcmp ((const char *) callee, "string_int64tostring") == 0 ||
+         strcmp ((const char *) callee, "string_doubletostring") == 0 ||
+         strcmp ((const char *) callee, "string_bytetohexstring") == 0 ||
+         strcmp ((const char *) callee, "string_bytenumtostring") == 0) && nargs >= 3)
+    {
+        count = call_arg_count (args[2]);
+        vi = find_var_index (args[1]);
+        cap = (vi >= 0 ? vars[vi].capacity : -1);
+        if (count >= 0 && cap >= 0 && count > cap)
+        {
+            linter_warnings++;
+            printf ("linter error: %s needs %lli bytes but destination '%s' has capacity %lli!\n",
+                    callee, count, args[1], cap);
+            printf (" > %s\n", line);
+        }
+        if (count >= 0)
+        {
+            // upper bound for the formatted result length (conservative)
+            if (strcmp ((const char *) callee, "string_int64tostring") == 0)
+            {
+                update_string_length (args[1], 20);
+            }
+            else if (strcmp ((const char *) callee, "string_doubletostring") == 0)
+            {
+                update_string_length (args[1], 32);
+            }
+            else if (strcmp ((const char *) callee, "string_bytetohexstring") == 0)
+            {
+                update_string_length (args[1], 2);
+            }
+            else
+            {
+                update_string_length (args[1], 3);
+            }
+        }
+        else
+        {
+            update_string_length (args[1], -1);
+        }
+        return;
+    }
+
+    if ((strcmp ((const char *) callee, "file_get_string") == 0 ||
+         strcmp ((const char *) callee, "socket_read_string") == 0) && nargs >= 3)
+    {
+        count = call_arg_count (args[2]);
+        vi = find_var_index (args[1]);
+        cap = (vi >= 0 ? vars[vi].capacity : -1);
+        if (count >= 0 && cap >= 0 && count + 1 > cap)
+        {
+            linter_warnings++;
+            printf ("linter error: %s can write %lli bytes into '%s' (capacity %lli)!\n",
+                    callee, count + 1, args[1], cap);
+            printf (" > %s\n", line);
+        }
+        update_string_length (args[1], -1);
+        return;
+    }
+
+    if (strcmp ((const char *) callee, "string_len") == 0 && nargs >= 1)
+    {
+        S8 vi_len = find_var_index (args[0]);
+
+        pending_result = 1;
+        pending_result_value = get_string_length (args[0]);
+        pending_result_min = 0;
+        pending_result_max = (vi_len >= 0 && vars[vi_len].capacity >= 0 ?
+                              vars[vi_len].capacity - 1 : -1);
+        return;
+    }
+
+    if (strcmp ((const char *) callee, "string_search") == 0 && nargs >= 1)
+    {
+        S8 vi_len = find_var_index (args[0]);
+
+        pending_result = 1;
+        pending_result_value = -2;      // not an exact known value
+        pending_result_min = -1;        // -1 = not found
+        pending_result_max = (vi_len >= 0 && vars[vi_len].capacity >= 0 ?
+                              vars[vi_len].capacity - 1 : -1);
+        return;
+    }
+}
+
+// evaluate the operand which starts/ends at token position pos to a range
+U1 operand_range_at (S2 nt, U1 tokens[][MAXSTRLEN + 1], S2 pos, struct int_range *r, U1 *overflow)
+{
+    S2 start = pos;
+    S2 end = pos;
+
+    if (pos < 0 || pos >= nt)
+    {
+        return (0);
+    }
+    if (strcmp ((const char *) tokens[pos], ")") == 0)
+    {
+        start = find_open_paren (nt, tokens, pos);
+        if (start < 0)
+        {
+            return (0);
+        }
+    }
+    else if (strcmp ((const char *) tokens[pos], "(") == 0)
+    {
+        end = find_close_paren (nt, tokens, pos);
+        if (end < 0)
+        {
+            return (0);
+        }
+    }
+    return (range_eval (nt, tokens, start, end, r, overflow));
+}
+
 // main safety check, called for every parsed line
 S2 safety_check_line (U1 *line)
 {
@@ -1763,6 +4404,16 @@ S2 safety_check_line (U1 *line)
         return (0);
     }
 
+    // structured control flow / path sensitive state
+    if (handle_flow_control (nt, safety_tokens, line) == 1)
+    {
+        return (0);
+    }
+    if (flow_reachable == 0)
+    {
+        return (0);
+    }
+
     // do not carry deallocation state across function boundaries
     for (i = 0; i < nt; i++)
     {
@@ -1779,7 +4430,15 @@ S2 safety_check_line (U1 *line)
                 {
                     vars[k].value_known = 0;
                     vars[k].dvalue_known = 0;
+                    vars[k].range_known = 0;
+                    vars[k].may_zero = 0;
+                    vars[k].str_len_known = 0;
                 }
+                vars[k].heap_state = HEAP_NONE;
+                vars[k].heap_size_known = 0;
+                vars[k].heap_size = -1;
+                vars[k].heap_origin = ORIGIN_UNKNOWN;
+                vars[k].ptr_off_known = 0;
             }
             break;
         }
@@ -1892,6 +4551,12 @@ S2 safety_check_line (U1 *line)
             }
         }
 
+        if (op == 255)
+        {
+            check_heap_leaks (line);
+            // the exit call terminates the program: code after it is unreachable
+            flow_reachable = 0;
+        }
         mark_intr_writes (op, nt, safety_tokens);
         return (0);
     }
@@ -1980,6 +4645,14 @@ S2 safety_check_line (U1 *line)
                 }
 
                 // the source variable can now be modified through the pointer
+                U1 src_is_null = 0;
+
+                if ((vars[vi].value_known == 1 && vars[vi].value == 0) ||
+                    vars[vi].pointer_null == 1)
+                {
+                    src_is_null = 1;
+                }
+
                 vars[vi].aliased = 1;
                 vars[vi].value_known = 0;
                 vars[vi].dvalue_known = 0;
@@ -1989,14 +4662,18 @@ S2 safety_check_line (U1 *line)
                 vars[vj].is_pointer = 1;
                 vars[vj].value_known = 0;
                 vars[vj].dvalue_known = 0;
+                vars[vj].range_known = 0;
+                vars[vj].may_zero = 0;
                 vars[vj].warned_uninit = 0;
-                vars[vj].pointer_null = 0;
-                if ((vars[vi].value_known == 1 && vars[vi].value == 0) ||
-                    vars[vi].pointer_null == 1)
-                {
-                    vars[vj].pointer_null = 1;
-                }
+                vars[vj].pointer_null = src_is_null;
                 vars[vj].freed = vars[vi].freed;
+                vars[vj].heap_state = HEAP_NONE;
+                vars[vj].heap_size_known = 0;
+                vars[vj].heap_size = -1;
+                vars[vj].heap_origin = (vars[vi].heap_state == HEAP_ALLOCATED ?
+                                        ORIGIN_HEAP : ORIGIN_OBJECT);
+                vars[vj].ptr_off_known = 1;
+                vars[vj].ptr_off = 0;
                 vars[vj].warned_null = 0;
                 vars[vj].warned_freed = 0;
 
@@ -2016,6 +4693,63 @@ S2 safety_check_line (U1 *line)
         return (0);
     }
 
+    // function / library call: allocation results, string buffer writes, ...
+    {
+        S2 colon = -1;
+        U1 *callee = NULL;
+        U1 *call_args[16];
+        S2 nargs = 0;
+        U1 is_call = 0;
+
+        for (i = 0; i < nt; i++)
+        {
+            if (strcmp ((const char *) safety_tokens[i], "!") == 0 ||
+                strcmp ((const char *) safety_tokens[i], "call") == 0)
+            {
+                is_call = 1;
+            }
+        }
+        if (is_call == 1)
+        {
+            for (i = 1; i + 1 < nt; i++)
+            {
+                if (strcmp ((const char *) safety_tokens[i], ":") == 0 &&
+                    is_ident_start (safety_tokens[i + 1][0]) == 1)
+                {
+                    colon = i;
+                    callee = safety_tokens[i + 1];
+                    break;
+                }
+            }
+            if (callee != NULL)
+            {
+                nargs = collect_call_args (nt, safety_tokens, colon, call_args, 16);
+                note_allocation_call (callee, nt, safety_tokens);
+                check_string_call (callee, nargs, call_args, line);
+
+                // without a full signature of the callee the stack effect is
+                // unknown. This never produces false positives: checks are
+                // only emitted while the stack depth is known.
+                if (strcmp ((const char *) callee, "stpush") != 0)
+                {
+                    flow_stack_known = 0;
+                }
+            }
+        }
+    }
+
+    // jsr / jsrind call a function through the stack: the stack effect is
+    // unknown here.
+    for (i = 0; i < nt; i++)
+    {
+        if (strcmp ((const char *) safety_tokens[i], "jsr") == 0 ||
+            strcmp ((const char *) safety_tokens[i], "jsrind") == 0)
+        {
+            flow_stack_known = 0;
+            break;
+        }
+    }
+
     // stpop: all variables before stpop are written
     for (i = 0; i < nt; i++)
     {
@@ -2025,11 +4759,180 @@ S2 safety_check_line (U1 *line)
             strcmp ((const char *) safety_tokens[i], "stpopb") == 0)
         {
             S2 k;
+            S2 target_count = 0;
+            U1 pop_type = 0;
+            U1 used_pending = 0;
+
+            if (strcmp ((const char *) safety_tokens[i], "stpopi") == 0)
+            {
+                pop_type = QUADWORD;
+            }
+            else if (strcmp ((const char *) safety_tokens[i], "stpopd") == 0)
+            {
+                pop_type = DOUBLEFLOAT;
+            }
+            else if (strcmp ((const char *) safety_tokens[i], "stpopb") == 0)
+            {
+                pop_type = BYTE;
+            }
+
             for (k = 0; k < i; k++)
             {
-                if (is_ident_start (safety_tokens[k][0]))
+                if (is_ident_start (safety_tokens[k][0]) == 1 &&
+                    token_is_keyword (safety_tokens[k]) == 0)
                 {
+                    target_count++;
+                }
+            }
+
+            if (flow_stack_known == 1 && flow_stack_depth < target_count)
+            {
+                linter_warnings++;
+                printf ("linter error: stack underflow: stpop needs %i value(s) but only %lli are on the stack!\n",
+                        target_count, flow_stack_depth);
+                printf (" > %s\n", line);
+                flow_stack_known = 0;
+            }
+
+            for (k = 0; k < i; k++)
+            {
+                if (is_ident_start (safety_tokens[k][0]) == 1 &&
+                    token_is_keyword (safety_tokens[k]) == 0)
+                {
+                    S8 tv ALIGN;
+
                     mark_var_written (safety_tokens[k]);
+                    tv = find_var_index (safety_tokens[k]);
+
+                    if (tv >= 0 && pop_type != 0 && vars[tv].type != pop_type &&
+                        vars[tv].is_string == 0 && vars[tv].is_array == 0 &&
+                        !(pop_type == QUADWORD &&
+                          (vars[tv].type == QUADWORD || vars[tv].type == DOUBLEWORD ||
+                           vars[tv].type == WORD || vars[tv].type == BYTE ||
+                           vars[tv].type == BOOL)) &&
+                        !(pop_type == BYTE &&
+                          (vars[tv].type == BYTE || vars[tv].type == BOOL)))
+                    {
+                        linter_warnings++;
+                        printf ("linter error: %s pops type %s but variable '%s' has a different type!\n",
+                                safety_tokens[i],
+                                pop_type == QUADWORD ? "int64" :
+                                (pop_type == DOUBLEFLOAT ? "double" : "byte"),
+                                safety_tokens[k]);
+                        printf (" > %s\n", line);
+                    }
+
+                    if (tv >= 0 && used_pending == 0 && pending_alloc == 1)
+                    {
+                        vars[tv].initialized = 1;
+                        vars[tv].pointer_set = 1;
+                        vars[tv].is_pointer = 1;
+                        vars[tv].pointer_null = 0;
+                        vars[tv].freed = 0;
+                        vars[tv].warned_freed = 0;
+                        vars[tv].heap_state = HEAP_ALLOCATED;
+                        vars[tv].heap_origin = ORIGIN_HEAP;
+                        vars[tv].heap_size_known = pending_alloc_known;
+                        vars[tv].heap_size = (pending_alloc_known ? pending_alloc_size : -1);
+                        vars[tv].ptr_off_known = 1;
+                        vars[tv].ptr_off = 0;
+                        vars[tv].range_known = 0;
+                        vars[tv].may_zero = 0;
+                        used_pending = 1;
+                    }
+                    else if (tv >= 0 && used_pending == 0 && pending_result == 1)
+                    {
+                        if (pending_result_value >= 0)
+                        {
+                            vars[tv].range_known = 1;
+                            vars[tv].range_min = pending_result_value;
+                            vars[tv].range_max = pending_result_value;
+                            vars[tv].value_known = 1;
+                            vars[tv].value = pending_result_value;
+                            vars[tv].may_zero = (U1) (pending_result_value == 0);
+                        }
+                        else if (vars[tv].is_string == 0 && pending_result_max >= 0)
+                        {
+                            vars[tv].range_known = 1;
+                            vars[tv].range_min = pending_result_min;
+                            vars[tv].range_max = pending_result_max;
+                            vars[tv].value_known = 0;
+                            vars[tv].may_zero = (U1) (pending_result_min <= 0 &&
+                                                       pending_result_max >= 0);
+                        }
+                        else if (vars[tv].is_string == 0)
+                        {
+                            vars[tv].range_known = 1;
+                            vars[tv].range_min = 0;
+                            vars[tv].range_max = LLONG_MAX;
+                            vars[tv].may_zero = 1;
+                        }
+                        used_pending = 1;
+                    }
+                    else if (tv >= 0 && vars[tv].is_pointer == 1)
+                    {
+                        // unknown pointer returned from a function
+                        vars[tv].heap_state = HEAP_NONE;
+                        vars[tv].heap_size_known = 0;
+                        vars[tv].heap_size = -1;
+                    }
+                }
+            }
+            pending_alloc = 0;
+            pending_alloc_known = 0;
+            pending_alloc_size = -1;
+            pending_result = 0;
+            pending_result_min = 0;
+            pending_result_max = -1;
+            if (flow_stack_known == 1)
+            {
+                flow_stack_depth -= target_count;
+            }
+            break;
+        }
+    }
+
+    // stpush: track the number of pushed values
+    for (i = 0; i < nt; i++)
+    {
+        if (strcmp ((const char *) safety_tokens[i], "stpush") == 0 ||
+            strcmp ((const char *) safety_tokens[i], "stpushi") == 0 ||
+            strcmp ((const char *) safety_tokens[i], "stpushd") == 0 ||
+            strcmp ((const char *) safety_tokens[i], "stpushb") == 0)
+        {
+            S2 k;
+            S2 push_count = 0;
+            U1 has_operator = 0;
+
+            for (k = 0; k < i; k++)
+            {
+                S2 prec = operator_precedence (safety_tokens[k]);
+
+                if (strcmp ((const char *) safety_tokens[k], "(") == 0 ||
+                    strcmp ((const char *) safety_tokens[k], ")") == 0)
+                {
+                    continue;
+                }
+                if (prec > 0)
+                {
+                    has_operator = 1;
+                    break;
+                }
+                if (is_ident_start (safety_tokens[k][0]) == 1 ||
+                    is_number_token (safety_tokens[k]) == 1)
+                {
+                    push_count++;
+                }
+            }
+            if (has_operator == 1)
+            {
+                flow_stack_known = 0;
+            }
+            else if (push_count > 0)
+            {
+                if (flow_stack_known == 1)
+                {
+                    flow_stack_depth += push_count;
                 }
             }
             break;
@@ -2160,6 +5063,114 @@ S2 safety_check_line (U1 *line)
         }
     }
 
+    // division / modulo by a variable whose range can contain zero
+    for (i = 1; i + 1 < nt; i++)
+    {
+        S2 op_len = (S2) strlen_safe ((const char *) safety_tokens[i], MAXSTRLEN);
+
+        if ((safety_tokens[i][0] == '/' || safety_tokens[i][0] == '%') &&
+            (op_len == 1 || (op_len == 2 && is_operator_suffix (safety_tokens[i][1]) == 1)))
+        {
+            S2 group_open;
+            S2 group_close;
+            S2 divisor_pos;
+            U1 postfix;
+            struct int_range dr;
+            U1 dov = 0;
+
+            if (safety_tokens[i][1] == 'd')
+            {
+                continue;
+            }
+            if (find_enclosing_paren (nt, safety_tokens, i, &group_open, &group_close) == 0)
+            {
+                continue;
+            }
+            postfix = group_is_postfix (nt, safety_tokens, group_open, group_close);
+            divisor_pos = (postfix == 1 ? i - 1 : i + 1);
+            (void) operand_range_at (nt, safety_tokens, divisor_pos, &dr, &dov);
+            if (dov == 1)
+            {
+                printf ("linter error: integer overflow in divisor expression!\n");
+                printf (" > %s\n", line);
+                return (1);
+            }
+            if (dr.known == 1 && dr.lo <= 0 && dr.hi >= 0)
+            {
+                linter_warnings++;
+                printf ("linter error: %s by a value which can be zero (range [%lli, %lli])!\n",
+                        safety_tokens[i][0] == '%' ? "modulo" : "division", dr.lo, dr.hi);
+                printf (" > %s\n", line);
+            }
+            else if (dr.known == 0 && divisor_pos >= 0 && divisor_pos < nt &&
+                     is_ident_start (safety_tokens[divisor_pos][0]) == 1 &&
+                     token_is_keyword (safety_tokens[divisor_pos]) == 0)
+            {
+                S8 dv ALIGN = find_var_index (safety_tokens[divisor_pos]);
+
+                if (dv >= 0 && vars[dv].may_zero == 1)
+                {
+                    linter_warnings++;
+                    printf ("linter error: %s by a value which may be zero!\n",
+                            safety_tokens[i][0] == '%' ? "modulo" : "division");
+                    printf (" > %s\n", line);
+                }
+            }
+            if ((safety_tokens[i][0] == '/' || safety_tokens[i][0] == '%') &&
+                dr.known == 1 && dr.lo == -1 && dr.hi == -1)
+            {
+                struct int_range nr;
+                U1 nov = 0;
+                S2 left_pos = (postfix == 1 ? i - 2 : group_open + 1);
+
+                if (operand_range_at (nt, safety_tokens, left_pos, &nr, &nov) == 1 &&
+                    nr.known == 1 && nr.lo <= LLONG_MIN)
+                {
+                    linter_warnings++;
+                    printf ("linter error: INT64_MIN / -1 or %% -1 overflow possible!\n");
+                    printf (" > %s\n", line);
+                }
+            }
+        }
+    }
+
+    // shift amount out of range (undefined behaviour in C, and rejected by
+    // the L1VM for amounts outside 0..63). The tokenizer splits '<|' into
+    // '<' and '|', so check adjacent tokens.
+    for (i = 1; i + 1 < nt; i++)
+    {
+        if ((strcmp ((const char *) safety_tokens[i], "<") == 0 ||
+             strcmp ((const char *) safety_tokens[i], ">") == 0) &&
+            strcmp ((const char *) safety_tokens[i + 1], "|") == 0)
+        {
+            S2 group_open;
+            S2 group_close;
+            S2 amount_pos;
+            U1 postfix;
+            struct int_range sr;
+            U1 sov = 0;
+
+            if (find_enclosing_paren (nt, safety_tokens, i, &group_open, &group_close) == 0)
+            {
+                continue;
+            }
+            postfix = group_is_postfix (nt, safety_tokens, group_open, group_close);
+            amount_pos = (postfix == 1 ? i - 1 : i + 2);
+            if (operand_range_at (nt, safety_tokens, amount_pos, &sr, &sov) == 0)
+            {
+                continue;
+            }
+            (void) sov;
+            if (sr.known == 1 && (sr.lo < 0 || sr.hi > 63))
+            {
+                linter_warnings++;
+                printf ("linter error: shift amount out of range [0, 63]: [%lli, %lli]!\n",
+                        sr.lo, sr.hi);
+                printf (" > %s\n", line);
+            }
+        }
+    }
+
     // constant propagation for assignments outside conditional blocks
     for (i = 0; i < nt; i++)
     {
@@ -2176,6 +5187,8 @@ S2 safety_check_line (U1 *line)
                 S8 const_value ALIGN;
                 U1 const_overflow = 0;
                 U1 const_known;
+                struct int_range rr;
+                U1 range_overflow = 0;
 
                 if (find_enclosing_paren (nt, safety_tokens, i, &group_open, &group_close) == 0)
                 {
@@ -2195,19 +5208,106 @@ S2 safety_check_line (U1 *line)
                     printf (" > %s\n", line);
                     return (1);
                 }
-                if (const_known == 1 &&
-                    if_inside == 0 && switch_inside == 0 && for_inside == 0 && do_inside == 0)
+
+                rr = range_unknown ();
+                (void) range_eval (nt, safety_tokens, expr_start, expr_end, &rr, &range_overflow);
+                if (range_overflow == 1 && const_known == 0)
                 {
-                    vj = find_var_index (safety_tokens[i - 1]);
-                    if (vj >= 0 && vars[vj].is_array == 0 && vars[vj].is_string == 0 &&
+                    if (rr.known == 1 && (rr.lo == LLONG_MIN || rr.hi == LLONG_MAX))
+                    {
+                        // saturated: only report if the range clearly leaves int64
+                    }
+                    linter_warnings++;
+                    printf ("linter error: integer overflow possible in assignment!\n");
+                    printf (" > %s\n", line);
+                }
+
+                vj = find_var_index (safety_tokens[i - 1]);
+                if (vj >= 0 && vars[vj].is_array == 0 && vars[vj].is_string == 0)
+                {
+                    if (rr.known == 1)
+                    {
+                        S8 type_lo ALIGN;
+                        S8 type_hi ALIGN;
+
+                        vars[vj].range_known = 1;
+                        vars[vj].range_min = rr.lo;
+                        vars[vj].range_max = rr.hi;
+                        vars[vj].may_zero = (U1) (rr.lo <= 0 && rr.hi >= 0);
+                        type_range (vars[vj].type, &type_lo, &type_hi);
+                        if (rr.lo < type_lo || rr.hi > type_hi)
+                        {
+                            linter_warnings++;
+                            printf ("linter error: value range [%lli, %lli] does not fit into type of '%s'!\n",
+                                    rr.lo, rr.hi, safety_tokens[i - 1]);
+                            printf (" > %s\n", line);
+                        }
+                    }
+                    else
+                    {
+                        vars[vj].range_known = 0;
+                        vars[vj].may_zero = 0;
+                    }
+                    if (expr_start == expr_end &&
+                        is_ident_start (safety_tokens[expr_start][0]) == 1)
+                    {
+                        S8 src_zero_vi ALIGN = find_var_index (safety_tokens[expr_start]);
+
+                        if (src_zero_vi >= 0 && src_zero_vi != vj)
+                        {
+                            vars[vj].may_zero = vars[src_zero_vi].may_zero;
+                        }
+                    }
+
+                    if (const_known == 1 &&
+                        if_inside == 0 && switch_inside == 0 && for_inside == 0 && do_inside == 0 &&
                         vars[vj].aliased == 0)
                     {
                         vars[vj].value_known = 1;
                         vars[vj].value = const_value;
-                        if (safety_tokens[i - 1][0] == 'P')
+                    }
+
+                    if (safety_tokens[i - 1][0] == 'P' || vars[vj].is_pointer == 1)
+                    {
+                        vars[vj].pointer_null = (U1) (rr.known == 1 && rr.lo == 0 && rr.hi == 0);
+                        if (expr_start == expr_end && is_ident_start (safety_tokens[expr_start][0]) == 1)
                         {
-                            vars[vj].pointer_null = (U1) (const_value == 0);
+                            S8 src_vi ALIGN = find_var_index (safety_tokens[expr_start]);
+
+                            if (src_vi >= 0 && src_vi != vj)
+                            {
+                                vars[vj].heap_state = vars[src_vi].heap_state;
+                                vars[vj].heap_size_known = vars[src_vi].heap_size_known;
+                                vars[vj].heap_size = vars[src_vi].heap_size;
+                                vars[vj].heap_origin = vars[src_vi].heap_origin;
+                                vars[vj].ptr_off_known = vars[src_vi].ptr_off_known;
+                                vars[vj].ptr_off = vars[src_vi].ptr_off;
+                                vars[vj].freed = vars[src_vi].freed;
+                                vars[vj].pointer_null = vars[src_vi].pointer_null;
+                            }
                         }
+                        else if (rr.known == 1)
+                        {
+                            vars[vj].heap_state = HEAP_NONE;
+                            vars[vj].heap_origin = ORIGIN_UNKNOWN;
+                        }
+                    }
+                }
+                else if (vj >= 0 && vars[vj].is_string == 1)
+                {
+                    S8 lit_len ALIGN = token_string_length (safety_tokens[expr_start]);
+
+                    if (expr_start == expr_end && lit_len >= 0)
+                    {
+                        if (check_string_capacity (safety_tokens[i - 1], lit_len, line) == 1)
+                        {
+                            // capacity violation already reported
+                        }
+                        update_string_length (safety_tokens[i - 1], lit_len);
+                    }
+                    else
+                    {
+                        update_string_length (safety_tokens[i - 1], -1);
                     }
                 }
             }
@@ -2286,6 +5386,81 @@ S2 safety_check_line (U1 *line)
                                 base, index_value, array_bytes, elem_size);
                         printf (" > %s\n", line);
                         return (1);
+                    }
+                }
+            }
+
+            // interval analysis of the index expression
+            {
+                S2 close_idx = find_close_bracket (nt, safety_tokens, i);
+                struct int_range ir;
+                U1 iov = 0;
+
+                if (close_idx > i + 1 &&
+                    range_eval (nt, safety_tokens, i + 1, close_idx - 1, &ir, &iov) == 1 &&
+                    iov == 0 && ir.known == 1)
+                {
+                    if (vars[vi].is_array == 1 && vars[vi].array_size > 1)
+                    {
+                        S8 elem_size ALIGN = var_element_size (vars[vi].type);
+                        S8 max_off ALIGN = vars[vi].array_size * elem_size - elem_size;
+
+                        if (ir.hi < 0 || ir.lo > max_off)
+                        {
+                            linter_warnings++;
+                            printf ("linter error: array index out of bounds: '%s' index range [%lli, %lli], valid byte range [0, %lli]!\n",
+                                    base, ir.lo, ir.hi, max_off);
+                            printf (" > %s\n", line);
+                        }
+                        else if (ir.hi > max_off ||
+                                 (ir.lo < 0 && ir.lo != LLONG_MIN))
+                        {
+                            linter_warnings++;
+                            printf ("linter error: array index may be out of bounds: '%s' index range [%lli, %lli], valid byte range [0, %lli]!\n",
+                                    base, ir.lo, ir.hi, max_off);
+                            printf (" > %s\n", line);
+                        }
+                    }
+                    else if (vars[vi].is_string == 1 && vars[vi].capacity >= 0)
+                    {
+                        if (ir.hi < 0 || ir.lo > vars[vi].capacity - 1)
+                        {
+                            linter_warnings++;
+                            printf ("linter error: string index out of bounds: '%s' index range [%lli, %lli], capacity %lli!\n",
+                                    base, ir.lo, ir.hi, vars[vi].capacity);
+                            printf (" > %s\n", line);
+                        }
+                        else if (ir.hi > vars[vi].capacity - 1 ||
+                                 (ir.lo < 0 && ir.lo != LLONG_MIN))
+                        {
+                            linter_warnings++;
+                            printf ("linter error: string index may be out of bounds: '%s' index range [%lli, %lli], capacity %lli!\n",
+                                    base, ir.lo, ir.hi, vars[vi].capacity);
+                            printf (" > %s\n", line);
+                        }
+                    }
+                    else if (vars[vi].heap_state == HEAP_ALLOCATED &&
+                             vars[vi].heap_size_known == 1 &&
+                             vars[vi].ptr_off_known == 1)
+                    {
+                        S8 off ALIGN = vars[vi].ptr_off;
+                        S8 max_off ALIGN = vars[vi].heap_size - 1 - off;
+
+                        if (ir.hi < -off || ir.lo > max_off)
+                        {
+                            linter_warnings++;
+                            printf ("linter error: heap access out of bounds: '%s' pointer offset range [%lli, %lli], allocation size %lli!\n",
+                                    base, ir.lo + off, ir.hi + off, vars[vi].heap_size);
+                            printf (" > %s\n", line);
+                        }
+                        else if (ir.hi > max_off ||
+                                 (ir.lo < -off && ir.lo != LLONG_MIN))
+                        {
+                            linter_warnings++;
+                            printf ("linter error: heap access may be out of bounds: '%s' pointer offset range [%lli, %lli], allocation size %lli!\n",
+                                    base, ir.lo + off, ir.hi + off, vars[vi].heap_size);
+                            printf (" > %s\n", line);
+                        }
                     }
                 }
             }
@@ -2410,7 +5585,7 @@ S2 safety_check_line (U1 *line)
         }
     }
 
-    // deallocation: mark the pointer argument as freed for follow-up checks
+    // deallocation: invalid free, double free, use after free
     for (i = 1; i + 1 < nt; i++)
     {
         if (strcmp ((const char *) safety_tokens[i - 1], ":") == 0 &&
@@ -2418,13 +5593,50 @@ S2 safety_check_line (U1 *line)
              strcmp ((const char *) safety_tokens[i], "dealloc_vect") == 0 ||
              strcmp ((const char *) safety_tokens[i], "free_obj_memobj") == 0))
         {
+            U1 builtin = (U1) (strcmp ((const char *) safety_tokens[i], "free_obj_memobj") != 0);
+
             if (i >= 2 && is_ident_start (safety_tokens[i - 2][0]))
             {
                 vj = find_var_index (safety_tokens[i - 2]);
-                if (vj >= 0 && (vars[vj].pointer_set == 1 || vars[vj].is_array == 1))
+                if (vj >= 0)
                 {
-                    vars[vj].freed = 1;
-                    vars[vj].warned_freed = 0;
+                    if (vars[vj].heap_state == HEAP_FREED || vars[vj].freed == 1)
+                    {
+                        linter_warnings++;
+                        printf ("linter error: double free: pointer '%s' was already freed!\n",
+                                safety_tokens[i - 2]);
+                        printf (" > %s\n", line);
+                    }
+                    else if (builtin == 1 && vars[vj].is_array == 1)
+                    {
+                        linter_warnings++;
+                        printf ("linter error: invalid free: '%s' is a static array/object, not heap memory!\n",
+                                safety_tokens[i - 2]);
+                        printf (" > %s\n", line);
+                    }
+                    else if (builtin == 1 && vars[vj].heap_origin == ORIGIN_OBJECT)
+                    {
+                        linter_warnings++;
+                        printf ("linter error: invalid free: pointer '%s' points to a static array/object!\n",
+                                safety_tokens[i - 2]);
+                        printf (" > %s\n", line);
+                    }
+                    else if (builtin == 1 && vars[vj].heap_state == HEAP_NONE &&
+                             vars[vj].heap_origin == ORIGIN_UNKNOWN &&
+                             vars[vj].pointer_set == 1 &&
+                             vars[vj].is_pointer == 1)
+                    {
+                        // This can be a pointer returned by a library function.
+                        // Do not reject it, but remember it was freed.
+                    }
+
+                    if (vars[vj].pointer_set == 1 || vars[vj].is_array == 1 ||
+                        vars[vj].heap_state == HEAP_ALLOCATED)
+                    {
+                        vars[vj].freed = 1;
+                        vars[vj].heap_state = HEAP_FREED;
+                        vars[vj].warned_freed = 0;
+                    }
                 }
             }
         }
@@ -3108,6 +6320,84 @@ S2 parse_line (U1 *line)
             vars[vars_ind].dvalue_known = dvalue_known;
             vars[vars_ind].dvalue = known_dvalue;
             vars[vars_ind].array_size = array_size;
+            vars[vars_ind].str_len_known = 0;
+            vars[vars_ind].str_len = 0;
+            vars[vars_ind].range_known = 0;
+            vars[vars_ind].range_min = 0;
+            vars[vars_ind].range_max = 0;
+            vars[vars_ind].may_zero = 0;
+            vars[vars_ind].heap_state = 0;
+            vars[vars_ind].heap_size_known = 0;
+            vars[vars_ind].heap_size = -1;
+            vars[vars_ind].heap_origin = 0;
+
+            // capacity and initializer range/string length
+            if (is_string == 1)
+            {
+                // explicit string length: (set string N name "text")
+                if (size_str[0] != '\0' && size_str[0] != 's' && is_number_token (size_str))
+                {
+                    vars[vars_ind].capacity = (S8) strtoll ((const char *) size_str, NULL, 10);
+                }
+                else
+                {
+                    // auto length: size of the literal including NUL
+                    S8 slen ALIGN = -1;
+                    S2 qpos ALIGN;
+                    S2 qend ALIGN;
+
+                    qpos = searchstr (line, (U1 *) "\"", 0, 0, TRUE);
+                    if (qpos != -1)
+                    {
+                        qend = searchstr (line, (U1 *) "\"", qpos + 1, 0, TRUE);
+                        if (qend != -1)
+                        {
+                            slen = qend - qpos - 1;
+                        }
+                    }
+                    vars[vars_ind].capacity = (slen >= 0 ? slen + 1 : -1);
+                }
+                if (initialized == 1)
+                {
+                    S2 qpos ALIGN;
+                    S2 qend ALIGN;
+
+                    qpos = searchstr (line, (U1 *) "\"", 0, 0, TRUE);
+                    if (qpos != -1)
+                    {
+                        qend = searchstr (line, (U1 *) "\"", qpos + 1, 0, TRUE);
+                        if (qend != -1)
+                        {
+                            vars[vars_ind].str_len_known = 1;
+                            vars[vars_ind].str_len = (S8) (qend - qpos - 1);
+                        }
+                    }
+                }
+            }
+            else if (array_size > 1)
+            {
+                vars[vars_ind].capacity = array_size * var_element_size (vartype);
+            }
+            else
+            {
+                vars[vars_ind].capacity = var_element_size (vartype);
+            }
+
+            // known integer / double range of the initial value
+            if (is_string == 0 && array_size <= 1 && initialized == 1 && value_known == 1)
+            {
+                vars[vars_ind].range_known = 1;
+                vars[vars_ind].range_min = known_value;
+                vars[vars_ind].range_max = known_value;
+                vars[vars_ind].may_zero = (U1) (known_value == 0);
+            }
+            if (is_string == 0 && array_size <= 1 && initialized == 1 && dvalue_known == 1)
+            {
+                vars[vars_ind].range_known = 0;
+            }
+
+            // a string literal is not a numeric range, but constant numeric
+            // declarations are tracked above
 
             #if DEBUG
             printf ("variable: index: %lli, name: '%s', type: %lli, size: %lli, init: %i\n", vars_ind, vars[vars_ind].name, vars[vars_ind].type, vars[vars_ind].array_size, vars[vars_ind].initialized);
