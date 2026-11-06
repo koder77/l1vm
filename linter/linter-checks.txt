@@ -1,0 +1,132 @@
+The linter has two layers: a per-line **safety check** (`safety_check_line`) and the **structural/type parser** (`parse_line`). The safety layer now includes a path-sensitive **abstract interpreter** that tracks value ranges, initialization, pointer/heap state, string lengths and stack balance through branches, loops, switches and labels. Here is what it can detect.
+
+## 1. Control-flow / structure
+
+- Function not closed by `(funcend)` before the next function or at EOF
+- `(funcend)` without an open function
+- Unclosed `if` / `switch` / `for` / `do` blocks (inside a function or at EOF)
+- `(else)` or `(endif)` without an open `if`
+- `(switchend)` without an open `switch`
+- `(break)` outside a `switch`
+- `(next)` without an open `for`
+- `while` without an open `do`
+- No `(return)` found in a function that declares return values
+- No exit call (`(255 ... intr0)`) in the program
+- Invalid exit call syntax, undefined/ non-integer exit variable
+
+## 2. Function signatures / contracts
+
+Using the annotation comments `// (func args ...)` and `// (return args ...)`:
+
+- Wrong number of call arguments
+- Argument type mismatch
+- Return-value type mismatch
+- Wrong number of return values
+- Calling an undefined function when `// (func-strict)` is active
+- Invalid type names in prototypes
+- Strict mode (`// (func args S ...)`):
+  - variables ending in `R` used as call arguments
+  - variables consumed by a strict call being reused later
+- `// (func args stpop)` mode: checks the order/types of variables popped with `stpop`
+- `// (remove var)`: using a variable after it was marked invalid
+- Function-call syntax errors (missing space/`(`/`:`, etc.)
+
+## 3. Variables and types
+
+- Invalid variable type in `(set ...)`
+- Undefined variable used in a function call
+- Duplicate variable declaration (treated as error)
+- `(set ...)` without a variable name
+- Pointer declared without uppercase `P` in strict pointer mode
+- Pointer not `const-int64` in strict pointer mode
+
+## 4. Safety checks (abstract interpretation)
+
+### 4.1 Path-sensitive control flow
+
+The safety layer follows the value and memory state through structured control flow:
+
+- `if` / `else` / `endif`
+- `for` / `next` and `do` / `while`
+- `switch` / `case` / `break` / `switchend`
+- labels and `jmp` / `jmpi`
+- function boundaries
+
+Comparisons in conditions refine integer ranges (`==`, `!=`, `<`, `<=`, `>`, `>=`). The false branch gets the negated condition, so guard patterns such as `(x zero ==) ... exit` are understood. At branch joins, definite initialization is the intersection of both paths, ranges are the union (hull), and "may" flags (may be null, may be freed, may be zero) are merged with OR. Code after an unconditional `return` or exit is treated as unreachable until a jump label makes it reachable again. Loops are analysed with widening so induction and loop variables get body-wide bounds instead of only first-iteration values.
+
+### 4.2 Integer safety
+
+- **Uninitialized use**: reading a variable before it is definitely written on every reachable path
+- **Integer overflow** in constant expressions, assignments, array indices, divisor expressions and range checks
+- **Type narrowing**: source range does not fit the target `byte`, `word` or `doubleword`
+- **Division / modulo** by:
+  - a compile-time known zero
+  - a range which contains zero
+  - a value which may be zero on some path (for example after a branch merge)
+- **`INT64_MIN / -1`** and **`INT64_MIN % -1`** overflow
+- **Shift amounts** outside the range 0..63
+
+Double division by zero is allowed.
+
+### 4.3 Memory safety
+
+- **Array indexing**: compile-time index, index interval, and actual byte offsets; detects negative, definitely out-of-bounds and may-be-out-of-bounds accesses
+- **String indexing**: indexed access checked against the string capacity, including may-be-out-of-bounds
+- **Heap indexing**: pointer offset and allocation size are tracked; detects heap access out of bounds and may-be-out-of-bounds
+- **Pointers**:
+  - pointer instruction with missing/undefined source or destination
+  - destination not int64
+  - destination not named `P<source>` in strict mode
+  - pointer used before being set by a `pointer` instruction
+  - pointer known to be `null` and then dereferenced
+  - use after `dealloc` / `dealloc_vect` / `free_obj_memobj`
+  - double free
+  - invalid free of static arrays/objects
+  - value used as array/pointer base without being an array and without a `pointer` instruction
+  - strict mode requires a following `:check_pointer !`/`pointer_type` after a pointer is set
+- **Heap leaks**: allocations still live at the final exit call are reported per variable
+- **Array initializer count** greater than the declared array size
+- **Compile-time ranges**: `(value min max range)`
+  - minimum > maximum
+  - value outside the range
+  - works for int64 and double
+
+### 4.4 Allocation and string buffers
+
+- **Allocation size** known to be zero or negative
+- **Allocation size overflow**: element count multiplied by element size exceeds `int64`
+- Known allocation sizes are propagated to the following `stpop`, so later heap accesses can be bounds-checked
+- **String buffer capacity** checks for:
+  - `string_copy`
+  - `string_cat`
+  - `string_left` / `string_right`
+  - `string_int64tostring` / `string_doubletostring`
+  - `string_bytetohexstring` / `string_bytenumtostring`
+  - `file_get_string` / `socket_read_string`
+- Known string lengths are updated through copy, concatenation, substring and formatting calls. `string_len` and `string_search` results are modelled as ranges, so their results can be used in later bounds checks.
+
+### 4.5 Stack safety
+
+- **Stack underflow**: `stpop` needs more values than are known to be on the stack
+- **Stack type mismatch**: `stpopi` / `stpopd` / `stpopb` and the popped variable type
+- `stpush`, `stpushi`, `stpushd` and `stpushb` all contribute to the tracked stack depth
+- Calls through `jsr` / `jsrind` and unknown library functions make the stack depth unknown instead of producing false positives
+
+## 5. Opt-in controls
+
+- `// lint-on` / `// lint-off`
+- `// (func-strict)`
+- `// (pointer strict on)` / `// (pointer strict off)`
+- `// (func args stpop)`
+- `// (func args S ...)` for strict function signatures
+- `// (remove variable)`
+
+## Important limitations
+
+The analysis is **compile-time** and mostly **intraprocedural**. It does not do full interprocedural data-flow analysis, and only a small set of known library functions (allocations and string functions) is modelled. Values returned by unknown functions or loaded from unknown memory are treated conservatively.
+
+Ranges are intervals, not relational constraints: the linter may lose the correlation between two variables, so it can miss a bug or report that a value *may* be unsafe. At control-flow joins, ranges are widened to a hull and may-flags are unioned. For loops, widening gives bounds that cover all iterations, which is safe but imprecise. An unknown lower bound (`LLONG_MIN`) is not by itself treated as an out-of-bounds proof, to avoid false positives from imprecise joins.
+
+A "may" warning means the linter cannot prove the access safe on every path; it does not necessarily mean the program is wrong. Bounds, null, overflow and range checks fire only when the required information is known or a definite/may-unsafe condition can be derived.
+
+The final exit code is nonzero if any warning was emitted — warnings are reported as `linter error` and treated as errors (`l1vm-linter: N warning(s) treated as errors!`).
