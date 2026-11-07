@@ -1,7 +1,14 @@
 L1VM (3.9.1)
-	Linter update: added more checks
+	Linter update: added more checks.
+	Linter: CBMC-style control flow analysis. It reports contradictory
+	dead branches, unreachable code, tautological self-comparisons,
+	duplicate switch cases, assignments to constants, self-assignments,
+	missing return paths and violations of // (assert ...) and
+	// (assume ...) annotations. New // (logic-strict) and
+	// (assert-strict) opt-in annotations control how inferred ranges
+	are used.
 
--- Stefan Pietzonke <info@midnight-coding.de> Fri 06 November 2026 02:00 +010
+-- Stefan Pietzonke <info@midnight-coding.de> Sat 07 November 2026 20:43 +010
 
 L1VM (3.9.0)
 	NEW: added "l1vm-optimize" assembly code optimizer.

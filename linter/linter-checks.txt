@@ -10,9 +10,10 @@ The linter has two layers: a per-line **safety check** (`safety_check_line`) and
 - `(break)` outside a `switch`
 - `(next)` without an open `for`
 - `while` without an open `do`
-- No `(return)` found in a function that declares return values
+- Missing return value on at least one path in a function that declares return values (path-sensitive)
 - No exit call (`(255 ... intr0)`) in the program
 - Invalid exit call syntax, undefined/ non-integer exit variable
+- Logical-flow bugs (dead branches, unreachable code, duplicate switch cases, missing return paths, ...) — see section 4.6
 
 ## 2. Function signatures / contracts
 
@@ -52,7 +53,7 @@ The safety layer follows the value and memory state through structured control f
 - labels and `jmp` / `jmpi`
 - function boundaries
 
-Comparisons in conditions refine integer ranges (`==`, `!=`, `<`, `<=`, `>`, `>=`). The false branch gets the negated condition, so guard patterns such as `(x zero ==) ... exit` are understood. At branch joins, definite initialization is the intersection of both paths, ranges are the union (hull), and "may" flags (may be null, may be freed, may be zero) are merged with OR. Code after an unconditional `return` or exit is treated as unreachable until a jump label makes it reachable again. Loops are analysed with widening so induction and loop variables get body-wide bounds instead of only first-iteration values.
+Comparisons in conditions refine integer ranges (`==`, `!=`, `<`, `<=`, `>`, `>=`). The false branch gets the negated condition, so guard patterns such as `(x zero ==) ... exit` are understood. At branch joins, definite initialization is the intersection of both paths, ranges are the union (hull), and "may" flags (may be null, may be freed, may be zero) are merged with OR. Code after an unconditional `return`, jump or exit is treated as unreachable until a jump label makes it reachable again. Loops are analysed with widening so induction and loop variables get body-wide bounds instead of only first-iteration values.
 
 ### 4.2 Integer safety
 
@@ -112,6 +113,23 @@ Double division by zero is allowed.
 - `stpush`, `stpushi`, `stpushd` and `stpushb` all contribute to the tracked stack depth
 - Calls through `jsr` / `jsrind` and unknown library functions make the stack depth unknown instead of producing false positives
 
+### 4.6 Logical bugs (CBMC-style)
+
+The path-sensitive state is also used to report conditions which cannot behave as written:
+
+- **Contradictory branch**: a constant comparison whose then or else branch can never be selected
+- **Dead branch from ranges**: an interval proof that a branch is always taken or never taken (only with `// (logic-strict)`, see below)
+- **Unreachable code**: statements after an unconditional `jmp`, `(return)` or program exit, until a jump label makes the code reachable again
+  - compiler epilogue markers (`loadreg`, `break`, `(unsafe-end)` and the `intr0` tail ops 39/40/255) are not reported
+  - code inside a branch already reported as dead, or inside a loop body, is not reported twice
+- **Self-comparison tautology / contradiction**: `(x x ==)` is always true and `(x x !=)` is always false (floating point values are skipped because of NaN)
+- **Duplicate switch case**: two cases of the same switch compare the same subject with the same value
+- **Assignment to a constant**: writing to a `set const-...` variable
+- **Self-assignment**: `(x x =)` which does nothing
+- **Missing return path**: a function with a `// (return args ...)` contract can fall through to `(funcend)`
+- **Assertions**: `// (assert (condition))` reports a condition which is always false at that point
+- **Assumptions**: `// (assume (condition))` reports a condition which can never hold and therefore makes the following code dead
+
 ## 5. Opt-in controls
 
 - `// lint-on` / `// lint-off`
@@ -120,6 +138,8 @@ Double division by zero is allowed.
 - `// (func args stpop)`
 - `// (func args S ...)` for strict function signatures
 - `// (remove variable)`
+- `// (logic-strict)` / `// (logic-lenient)`: trust or ignore branch reachability inferred from tracked value ranges (default: trust only compile-time constants and self-comparisons)
+- `// (assert-strict)` / `// (assert-lenient)`: with strict, also report assertions which cannot be proven (default: only provably false assertions)
 
 ## Important limitations
 

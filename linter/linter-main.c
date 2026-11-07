@@ -637,6 +637,7 @@ void cleanup (void)
 #define MAXTOKENS 256
 
 U1 safety_tokens[MAXTOKENS][MAXSTRLEN + 1];
+U1 annotation_tokens[MAXTOKENS][MAXSTRLEN + 1];
 
 U1 is_ident_start (U1 c)
 {
@@ -1819,6 +1820,8 @@ struct flow_state
 #define FRAME_DO        3
 #define FRAME_SWITCH    4
 
+#define FLOW_MAX_CASES  256
+
 struct flow_frame
 {
     S2 kind;
@@ -1827,6 +1830,9 @@ struct flow_frame
     U1 then_reachable;
     S2 cond_truth;              // 1 = always true, 0 = always false, -1 = unknown
     U1 has_else_pre;            // state of the false branch of the condition
+    S2 case_count;              // number of switch cases seen so far
+    S8 case_values[FLOW_MAX_CASES] ALIGN; // switch case constants
+    S8 case_subject_hash[FLOW_MAX_CASES] ALIGN; // switch subject identifier hash
     struct flow_state pre;
     struct flow_state then_state;
     struct flow_state else_pre;
@@ -1859,6 +1865,293 @@ U1 pending_result = 0;      // 1 = known library result
 S8 pending_result_value ALIGN = 0;
 S8 pending_result_min ALIGN = 0;
 S8 pending_result_max ALIGN = -1;
+
+// ---------------------------------------------------------------------------
+// CBMC-style logical flow diagnostics
+//
+// The interval analysis above can prove that a condition is always true or
+// always false at a given program point. The helpers below turn that
+// information into user visible diagnostics about dead branches, unreachable
+// code, missing return paths and related logical bugs.
+// ---------------------------------------------------------------------------
+
+S2 flow_cond_truth = -1;        // last analysed relation: -1 unknown, 1 true, 0 false
+U1 flow_cond_stable = 0;        // relation only depends on constants / same value
+U1 flow_logic_strict = 0;       // // (logic-strict): also use inferred ranges
+U1 flow_unreachable_warned = 0; // suppress repeated warnings in one dead region
+U1 flow_dead_branch = 0;        // unreachability was caused by a dead condition
+U1 flow_line_unreachable = 0;   // current line is an ordinary statement in dead code
+U1 flow_case_dead = 0;          // previous switch case ended before this case
+U1 flow_assert_strict = 0;      // // (assert-strict): require assertions to be proven
+U1 flow_missing_return = 0;     // function can reach (funcend) without a return
+S8 flow_assert_count ALIGN = 0; // number of assertions checked
+
+// evaluate a relation between two known intervals.
+// returns -1 if the result is unknown, 1 if it is always true, 0 if always false.
+S2 range_relation_truth (const struct int_range *l, U1 *op, const struct int_range *r)
+{
+    if (l->known == 0 || r->known == 0)
+    {
+        return (-1);
+    }
+
+    if (strcmp ((const char *) op, "==") == 0)
+    {
+        if (l->hi < r->lo || r->hi < l->lo)
+        {
+            return (0);     // disjoint intervals can never be equal
+        }
+        if (l->lo == l->hi && r->lo == r->hi && l->lo == r->lo)
+        {
+            return (1);
+        }
+        return (-1);
+    }
+    if (strcmp ((const char *) op, "!=") == 0)
+    {
+        if (l->hi < r->lo || r->hi < l->lo)
+        {
+            return (1);
+        }
+        if (l->lo == l->hi && r->lo == r->hi && l->lo == r->lo)
+        {
+            return (0);
+        }
+        return (-1);
+    }
+    if (strcmp ((const char *) op, "<") == 0)
+    {
+        if (l->hi < r->lo)
+        {
+            return (1);
+        }
+        if (l->lo >= r->hi)
+        {
+            return (0);
+        }
+        return (-1);
+    }
+    if (strcmp ((const char *) op, "<=") == 0)
+    {
+        if (l->hi <= r->lo)
+        {
+            return (1);
+        }
+        if (l->lo > r->hi)
+        {
+            return (0);
+        }
+        return (-1);
+    }
+    if (strcmp ((const char *) op, ">") == 0)
+    {
+        if (l->lo > r->hi)
+        {
+            return (1);
+        }
+        if (l->hi <= r->lo)
+        {
+            return (0);
+        }
+        return (-1);
+    }
+    if (strcmp ((const char *) op, ">=") == 0)
+    {
+        if (l->lo >= r->hi)
+        {
+            return (1);
+        }
+        if (l->hi < r->lo)
+        {
+            return (0);
+        }
+        return (-1);
+    }
+    return (-1);
+}
+
+// a literal or a const-* variable never changes at run time
+U1 token_is_stable_constant (U1 *tok)
+{
+    S8 vi ALIGN;
+
+    if (is_number_token (tok) == 1)
+    {
+        return (1);
+    }
+    vi = find_var_index (tok);
+    if (vi >= 0 && vars[vi].is_const == 1)
+    {
+        return (1);
+    }
+    return (0);
+}
+
+// a comparison of a value with itself is a tautology / contradiction
+S2 same_operand_truth (U1 *op)
+{
+    if (strcmp ((const char *) op, "==") == 0 ||
+        strcmp ((const char *) op, "<=") == 0 ||
+        strcmp ((const char *) op, ">=") == 0)
+    {
+        return (1);
+    }
+    if (strcmp ((const char *) op, "!=") == 0 ||
+        strcmp ((const char *) op, "<") == 0 ||
+        strcmp ((const char *) op, ">") == 0)
+    {
+        return (0);
+    }
+    return (-1);
+}
+
+void warn_condition_truth (S2 truth, U1 *line)
+{
+    linter_warnings++;
+    if (truth == 1)
+    {
+        printf ("linter error: logical bug: condition is always true, the else branch is dead code!\n");
+    }
+    else
+    {
+        printf ("linter error: logical bug: condition is always false, the then branch is dead code!\n");
+    }
+    printf (" > %s\n", line);
+}
+
+void warn_condition_contradiction (U1 *line)
+{
+    linter_warnings++;
+    printf ("linter error: logical bug: condition can never be true here (it contradicts the preceding checks)!\n");
+    printf (" > %s\n", line);
+}
+
+void warn_dead_loop (U1 *line)
+{
+    linter_warnings++;
+    printf ("linter error: logical bug: loop condition is always false, the loop body is dead code!\n");
+    printf (" > %s\n", line);
+}
+
+void warn_duplicate_case (S8 value, U1 *line)
+{
+    linter_warnings++;
+    printf ("linter error: logical bug: duplicate switch case value %lli!\n", value);
+    printf (" > %s\n", line);
+}
+
+// stable 64 bit hash of an identifier, used to remember switch subjects
+S8 flow_token_hash (U1 *tok)
+{
+    S8 h ALIGN = 1469598103934665603LL;
+    S2 i;
+
+    for (i = 0; tok[i] != '\0'; i++)
+    {
+        h ^= (S8) tok[i];
+        h *= 1099511628211LL;
+    }
+    return (h);
+}
+
+// The interval state inside a loop body describes the first iteration only.
+// Conditions that depend on values modified by the loop can therefore look
+// constant without being a real logical bug. Suppress those diagnostics while
+// at least one loop is open.
+U1 flow_inside_loop (void)
+{
+    S2 k;
+
+    for (k = 0; k <= flow_frame_ind; k++)
+    {
+        if (flow_frames[k].kind == FRAME_FOR || flow_frames[k].kind == FRAME_DO)
+        {
+            return (1);
+        }
+    }
+    return (0);
+}
+
+// Epilogue and terminator instructions are emitted by the compiler after an
+// explicit exit or an unconditional jump. They are technically unreachable but
+// carry no intent, unlike a skipped assignment or call. Do not report them.
+U1 flow_line_is_ignorable (S2 nt, U1 tokens[][MAXSTRLEN + 1])
+{
+    S2 i;
+    U1 *op = NULL;
+    U1 is_intr = 0;
+
+    if (nt < 2)
+    {
+        return (0);
+    }
+    op = tokens[1];
+    if (strcmp ((const char *) op, "loadreg") == 0 ||
+        strcmp ((const char *) op, "break") == 0 ||
+        strcmp ((const char *) op, "rts") == 0)
+    {
+        return (1);
+    }
+    // "unsafe-end" is split into "unsafe", "-", "end" by the tokenizer
+    if (strcmp ((const char *) op, "unsafe") == 0 && nt > 3 &&
+        strcmp ((const char *) tokens[2], "-") == 0 &&
+        strcmp ((const char *) tokens[3], "end") == 0)
+    {
+        return (1);
+    }
+    for (i = 0; i < nt; i++)
+    {
+        if (strcmp ((const char *) tokens[i], "intr0") == 0 ||
+            strcmp ((const char *) tokens[i], "intr1") == 0)
+        {
+            is_intr = 1;
+            break;
+        }
+    }
+    if (is_intr == 1)
+    {
+        // 39/40: memory bounds on/off, 255: program exit. These are the
+        // usual tail markers after the last real instruction of a function.
+        if (strcmp ((const char *) op, "39") == 0 ||
+            strcmp ((const char *) op, "40") == 0 ||
+            strcmp ((const char *) op, "255") == 0)
+        {
+            return (1);
+        }
+    }
+    return (0);
+}
+
+void warn_unreachable_code (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 *line)
+{
+    S2 k;
+
+    // loop bodies are only analyzed for one iteration; do not turn a
+    // first-iteration reachability into a permanent claim.
+    if (flow_unreachable_warned == 1 || flow_inside_loop () == 1)
+    {
+        return;
+    }
+    // a branch which was already reported as dead by a constant condition
+    // does not need a second unreachable-code warning
+    for (k = 0; k <= flow_frame_ind; k++)
+    {
+        if ((flow_frames[k].kind == FRAME_IF ||
+             flow_frames[k].kind == FRAME_FOR) &&
+            flow_frames[k].cond_truth != -1)
+        {
+            return;
+        }
+    }
+    if (flow_line_is_ignorable (nt, tokens) == 1)
+    {
+        return;
+    }
+    flow_unreachable_warned = 1;
+    linter_warnings++;
+    printf ("linter error: logical bug: unreachable code (control flow ends before this line)!\n");
+    printf (" > %s\n", line);
+}
 
 // one-time initialization of label state table
 S2 init_label_states (void)
@@ -2832,6 +3125,9 @@ S2 refine_condition (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 truth)
     U1 *lop;
     U1 *rop;
 
+    flow_cond_truth = -1;
+    flow_cond_stable = 0;
+
     for (i = 0; i < nt; i++)
     {
         if (strcmp ((const char *) tokens[i], "(") == 0)
@@ -3010,6 +3306,40 @@ S2 refine_condition (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 truth)
     }
     lop = tokens[lop_pos];
     rop = tokens[rop_pos];
+
+    // CBMC-style feasibility: if the compiler can prove the relation from the
+    // current interval state, remember whether the condition is a tautology or
+    // a contradiction. This is independent of the branch being refined.
+    flow_cond_truth = range_relation_truth (&lr, tokens[op], &rr);
+    if (left_start == lend && rstart == rend &&
+        token_is_stable_constant (lop) == 1 &&
+        token_is_stable_constant (rop) == 1)
+    {
+        // both operands are compile time constants: the comparison is stable
+        flow_cond_stable = 1;
+    }
+    if (left_start == lend && rstart == rend &&
+        strcmp ((const char *) lop, (const char *) rop) == 0 &&
+        (is_ident_start (lop[0]) == 1 || is_number_token (lop) == 1) &&
+        token_is_keyword (lop) == 0)
+    {
+        // (x x ==), (x x !=), ... : compare the same value with itself.
+        // This holds regardless of the current interval. Floating point
+        // values can be NaN, where x != x is true, so skip doubles.
+        S2 self_truth = same_operand_truth (tokens[op]);
+        S2 self_vi = find_var_index (lop);
+        U1 self_float = 0;
+
+        if (self_vi >= 0 && vars[self_vi].type == DOUBLEFLOAT)
+        {
+            self_float = 1;
+        }
+        if (self_truth != -1 && self_float == 0)
+        {
+            flow_cond_truth = self_truth;
+            flow_cond_stable = 1;
+        }
+    }
 
     if (lr.known == 1 && is_ident_start (rop[0]) == 1 &&
         token_is_keyword (rop) == 0 && rr.known == 0)
@@ -3335,6 +3665,8 @@ void reset_flow_analysis (void)
     }
     label_states_ind = -1;
     flow_reachable = 1;
+    flow_case_dead = 0;
+    flow_dead_branch = 0;
     flow_stack_depth = 0;
     flow_stack_known = 1;
     pending_alloc = 0;
@@ -3360,13 +3692,89 @@ U1 line_has_token (S2 nt, U1 tokens[][MAXSTRLEN + 1], const char *what)
     return (0);
 }
 
+U1 line_has_comparison (S2 nt, U1 tokens[][MAXSTRLEN + 1])
+{
+    S2 i;
+
+    for (i = 0; i < nt; i++)
+    {
+        if (strcmp ((const char *) tokens[i], "==") == 0 ||
+            strcmp ((const char *) tokens[i], "!=") == 0 ||
+            strcmp ((const char *) tokens[i], "<") == 0 ||
+            strcmp ((const char *) tokens[i], "<=") == 0 ||
+            strcmp ((const char *) tokens[i], ">") == 0 ||
+            strcmp ((const char *) tokens[i], ">=") == 0)
+        {
+            return (1);
+        }
+    }
+    return (0);
+}
+
+// truth value of a simple constant boolean variable used as a condition,
+// e.g. "(f if)". The line must not assign to or call anything, otherwise the
+// variable may just have been changed by the condition expression itself.
+S2 condition_variable_truth (S2 nt, U1 tokens[][MAXSTRLEN + 1], const char *keyword)
+{
+    S2 i;
+    S2 vi;
+    S2 ident_count = 0;
+
+    for (i = 1; i < nt; i++)
+    {
+        if (strcmp ((const char *) tokens[i], keyword) == 0)
+        {
+            S2 k;
+
+            for (k = 0; k < i; k++)
+            {
+                if (strcmp ((const char *) tokens[k], "=") == 0 ||
+                    strcmp ((const char *) tokens[k], ":=") == 0 ||
+                    strcmp ((const char *) tokens[k], "!") == 0 ||
+                    strcmp ((const char *) tokens[k], "call") == 0 ||
+                    strcmp ((const char *) tokens[k], "stpop") == 0 ||
+                    strcmp ((const char *) tokens[k], "stpopi") == 0 ||
+                    strcmp ((const char *) tokens[k], "stpopd") == 0 ||
+                    strcmp ((const char *) tokens[k], "stpopb") == 0)
+                {
+                    return (-1);
+                }
+                if (is_ident_start (tokens[k][0]) == 1 &&
+                    token_is_keyword (tokens[k]) == 0)
+                {
+                    ident_count++;
+                }
+            }
+            if (ident_count != 1)
+            {
+                return (-1);
+            }
+            if (is_ident_start (tokens[i - 1][0]) == 0 ||
+                token_is_keyword (tokens[i - 1]) == 1)
+            {
+                return (-1);
+            }
+            vi = find_var_index (tokens[i - 1]);
+            if (vi < 0 || vars[vi].is_const == 0)
+            {
+                return (-1);
+            }
+            if (vars[vi].value_known == 1)
+            {
+                return (vars[vi].value != 0 ? 1 : 0);
+            }
+            return (-1);
+        }
+    }
+    return (-1);
+}
+
 // Handle structured control flow and label joins. Returns 1 if the line is a
 // pure control line and should not be analyzed further, 0 otherwise.
 U1 handle_flow_control (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 *line)
 {
     S2 i;
 
-    (void) line;
     U1 has_func = 0;
     U1 has_funcend = 0;
     U1 has_else = 0;
@@ -3454,6 +3862,16 @@ U1 handle_flow_control (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 *line)
     }
     if (has_funcend == 1)
     {
+        // CBMC-style return path check: if the function can still fall through
+        // to its end and it declares return arguments, a return value is
+        // missing on at least one path.
+        flow_missing_return = 0;
+        if (flow_reachable == 1 &&
+            strcmp ((const char *) function_name_current, "main") != 0 &&
+            get_return_index (function_name_current) != -1)
+        {
+            flow_missing_return = 1;
+        }
         // report leaks of allocations made in main
         reset_flow_analysis ();
         return (0);
@@ -3461,6 +3879,17 @@ U1 handle_flow_control (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 *line)
 
     if (flow_reachable == 0)
     {
+        if (has_case == 1 && flow_frame_ind >= 0 &&
+            flow_frames[flow_frame_ind].kind == FRAME_SWITCH)
+        {
+            // a case label is a new entry point: the previous case ended
+            // with break, but the switch value may select this case.
+            restore_flow_state (&flow_frames[flow_frame_ind].pre);
+            flow_reachable = 1;
+            flow_case_dead = 1;
+        }
+        else
+        {
         // only labels and block delimiters can make code reachable again
         if (is_jmp == 1 || is_jmpi == 1)
         {
@@ -3554,14 +3983,17 @@ U1 handle_flow_control (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 *line)
                 is_ident_start (tokens[i][0]) == 1 &&
                 token_is_keyword (tokens[i]) == 0)
             {
-                if (restore_label_state (tokens[i]) == 0)
-                {
-                    flow_reachable = 1;
-                }
+                // a label can be an independent entry point (thread start,
+                // function pointer target), so it makes the code reachable
+                (void) restore_label_state (tokens[i]);
+                flow_reachable = 1;
                 return (1);
             }
         }
+        // ordinary statement inside dead code
+        flow_line_unreachable = 1;
         return (1);
+        }
     }
 
     // if / if+ : start of a conditional. Capture the state before refinement.
@@ -3578,15 +4010,55 @@ U1 handle_flow_control (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 *line)
             struct flow_state then_cur;
             U1 have_then_cur = 0;
             S2 rc = refine_condition (nt, tokens, 1);
+            S2 cond = flow_cond_truth;
+            U1 cond_stable = flow_cond_stable;
+            U1 trust;
 
-            if (rc == 2)
+            if (cond == -1 && line_has_comparison (nt, tokens) == 0)
+            {
+                cond = condition_variable_truth (nt, tokens, "if");
+                if (cond == -1)
+                {
+                    cond = condition_variable_truth (nt, tokens, "if+");
+                }
+                if (cond != -1)
+                {
+                    cond_stable = 1;
+                }
+            }
+            // Inferred ranges are not a loop invariant and unstructured jumps
+            // can invalidate them. Only trust them in strict logic mode or if
+            // the comparison only uses compile time constants.
+            trust = (U1) (cond_stable == 1 || flow_logic_strict == 1);
+
+            if (trust == 1 && cond == 1)
+            {
+                f->cond_truth = 1;
+                if (flow_inside_loop () == 0)
+                {
+                    warn_condition_truth (1, line);
+                }
+            }
+            else if (trust == 1 && (cond == 0 || rc == 2))
             {
                 f->cond_truth = 0;
                 flow_reachable = 0;
+                flow_dead_branch = 1;
+                if (flow_inside_loop () == 0)
+                {
+                    warn_condition_truth (0, line);
+                }
             }
             else
             {
                 f->cond_truth = -1;
+            }
+
+            if (rc == 2 && trust == 0)
+            {
+                // do not discard the then branch based on an unstable range
+                restore_flow_state (&f->pre);
+                flow_reachable = 1;
             }
 
             if (flow_reachable == 1)
@@ -3600,7 +4072,13 @@ U1 handle_flow_control (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 *line)
             // compute the state of the false branch from the pre-if state
             restore_flow_state (&f->pre);
             flow_reachable = 1;
-            if (refine_condition (nt, tokens, 0) != 2)
+            rc = refine_condition (nt, tokens, 0);
+            if (rc == 2 && trust == 0)
+            {
+                // the false branch may still be reachable
+                restore_flow_state (&f->pre);
+            }
+            if (rc != 2 || trust == 0)
             {
                 if (capture_flow_state (&f->else_pre) == 0)
                 {
@@ -3638,12 +4116,27 @@ U1 handle_flow_control (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 *line)
     // for condition line
     if (has_for == 1 && has_forloop == 0)
     {
+        U1 trust;
+
         flow_loop_widen = 1;
         cond_truth = refine_condition (nt, tokens, 1);
         flow_loop_widen = 0;
-        if (cond_truth == 2)
+        trust = (U1) (flow_cond_stable == 1 || flow_logic_strict == 1);
+
+        if (cond_truth == 2 && trust == 1)
         {
+            // only report a top level loop here: inside an outer loop the
+            // current ranges describe just one iteration.
+            if (flow_frame_ind >= 0 && flow_frames[flow_frame_ind].kind == FRAME_FOR)
+            {
+                flow_frames[flow_frame_ind].cond_truth = 0;
+            }
+            if (flow_frame_ind == 0 && flow_frames[0].kind == FRAME_FOR)
+            {
+                warn_dead_loop (line);
+            }
             flow_reachable = 0;
+            flow_dead_branch = 1;
         }
         return (0);
     }
@@ -3706,8 +4199,54 @@ U1 handle_flow_control (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 *line)
     {
         struct flow_frame *f = &flow_frames[flow_frame_ind];
 
-        // the previous case may fall through into this case
-        if (flow_reachable == 1)
+        // CBMC-style switch check: the same case value must not appear twice.
+        if (nt >= 3)
+        {
+            S8 case_value ALIGN;
+            U1 case_known = 0;
+
+            case_value = 0;
+            if (is_number_token (tokens[2]))
+            {
+                case_value = (S8) strtoll ((const char *) tokens[2], NULL, 10);
+                case_known = 1;
+            }
+            else
+            {
+                S2 cvi = find_var_index (tokens[2]);
+                if (cvi >= 0 && vars[cvi].is_const == 1 && vars[cvi].value_known == 1)
+                {
+                    case_value = vars[cvi].value;
+                    case_known = 1;
+                }
+            }
+            if (case_known == 1)
+            {
+                S2 k;
+                S8 subject_hash ALIGN = flow_token_hash (tokens[1]);
+
+                for (k = 0; k < f->case_count; k++)
+                {
+                    if (f->case_values[k] == case_value &&
+                        f->case_subject_hash[k] == subject_hash)
+                    {
+                        warn_duplicate_case (case_value, line);
+                        break;
+                    }
+                }
+                if (f->case_count < FLOW_MAX_CASES)
+                {
+                    f->case_values[f->case_count] = case_value;
+                    f->case_subject_hash[f->case_count] = subject_hash;
+                    f->case_count++;
+                }
+            }
+        }
+
+        // the previous case may fall through into this case. A case which is
+        // entered directly after a break/return must not contribute the dead
+        // state of the previous case.
+        if (flow_reachable == 1 && flow_case_dead == 0)
         {
             struct flow_state cur;
 
@@ -3729,6 +4268,7 @@ U1 handle_flow_control (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 *line)
                 free_flow_state (&cur);
             }
         }
+        flow_case_dead = 0;
         restore_flow_state (&f->pre);
         flow_reachable = 1;
         // refine the switch value to the case constant
@@ -4394,10 +4934,22 @@ S2 safety_check_line (U1 *line)
     {
         return (0);
     }
-    // preprocessor lines and file markers
+    // preprocessor lines, comments and file markers
     if (line[0] == '#')
     {
         return (0);
+    }
+    {
+        S2 cpos = 0;
+
+        while (line[cpos] == ' ' || line[cpos] == '\t')
+        {
+            cpos++;
+        }
+        if (line[cpos] == '/' && line[cpos + 1] == '/')
+        {
+            return (0);
+        }
     }
     if (strcmp ((const char *) safety_tokens[0], "FILE:") == 0)
     {
@@ -4405,9 +4957,25 @@ S2 safety_check_line (U1 *line)
     }
 
     // structured control flow / path sensitive state
+    flow_line_unreachable = 0;
     if (handle_flow_control (nt, safety_tokens, line) == 1)
     {
+        if (flow_line_unreachable == 1)
+        {
+            warn_unreachable_code (nt, safety_tokens, line);
+            flow_line_unreachable = 0;
+        }
+        if (flow_reachable == 1)
+        {
+            flow_unreachable_warned = 0;
+            flow_dead_branch = 0;
+        }
         return (0);
+    }
+    if (flow_reachable == 1)
+    {
+        flow_unreachable_warned = 0;
+        flow_dead_branch = 0;
     }
     if (flow_reachable == 0)
     {
@@ -4976,6 +5544,8 @@ S2 safety_check_line (U1 *line)
                 {
                     vars[k].value_known = 0;
                     vars[k].dvalue_known = 0;
+                    vars[k].range_known = 0;
+                    vars[k].may_zero = 0;
                 }
             }
         }
@@ -4993,6 +5563,27 @@ S2 safety_check_line (U1 *line)
                 {
                     if (is_ident_start (safety_tokens[i - 1][0]))
                     {
+                        S8 target_vi ALIGN = find_var_index (safety_tokens[i - 1]);
+
+                        if (target_vi >= 0 && vars[target_vi].is_const == 1)
+                        {
+                            linter_warnings++;
+                            printf ("linter error: logical bug: assignment to constant variable '%s'!\n",
+                                    (const char *) safety_tokens[i - 1]);
+                            printf (" > %s\n", line);
+                        }
+                        // (x x =) / (x x :=) is a no-op, usually a typo
+                        if (i >= 2 &&
+                            strcmp ((const char *) safety_tokens[i - 2],
+                                    (const char *) safety_tokens[i - 1]) == 0 &&
+                            is_ident_start (safety_tokens[i - 2][0]) == 1 &&
+                            token_is_keyword (safety_tokens[i - 2]) == 0)
+                        {
+                            linter_warnings++;
+                            printf ("linter error: logical bug: self-assignment of variable '%s' (no-op)!\n",
+                                    (const char *) safety_tokens[i - 1]);
+                            printf (" > %s\n", line);
+                        }
                         mark_var_written (safety_tokens[i - 1]);
                     }
                 }
@@ -5909,18 +6500,13 @@ S2 parse_line (U1 *line)
             }
 
             function_inside = 0;
-            if (function_return == 0)
+            if (flow_missing_return == 1)
             {
-                if (strcmp ((const char *) function_name_current, "main") != 0)
-                {
-                    if (get_return_index (function_name_current) != -1)
-                    {
-                        // return arguments in function
-                        // ńo return found at function end, show message
-                        printf ("parse-line function: %s, no unnested return found!\n", function_name_current);
-                        return (1);
-                    }
-                }
+                // the path sensitive analysis found a path which falls through
+                // the end of a function which has to return a value
+                printf ("linter error: logical bug: function '%s' can reach (funcend) without a return value!\n",
+                        function_name_current);
+                return (1);
             }
             function_return = 0;  // reset
         }
@@ -7518,6 +8104,119 @@ S2 parse_line (U1 *line)
     return (0);
 }
 
+// CBMC-style annotations in comments:
+//   // (assert (x 0 >))   the condition must hold at this program point
+//   // (assume (x 0 >))   the condition is assumed to hold from here on
+//   // (assert-strict)     also report assertions which cannot be proven
+//   // (assert-lenient)    only report assertions which are provably false
+// Returns 1 if the comment was consumed as an annotation.
+U1 handle_annotation_comment (U1 *line)
+{
+    U1 *p;
+    U1 text[MAXSTRLEN + 1];
+    S2 nt;
+    S2 rc;
+    S2 truth;
+    U1 is_assert = 0;
+    U1 is_assume = 0;
+    struct flow_state saved;
+
+    p = (U1 *) strstr ((char *) line, "//");
+    if (p == NULL)
+    {
+        return (0);
+    }
+    p += 2;
+    while (*p == ' ' || *p == '\t')
+    {
+        p++;
+    }
+
+    if (strncmp ((char *) p, "(assert-strict)", 15) == 0)
+    {
+        flow_assert_strict = 1;
+        return (1);
+    }
+    if (strncmp ((char *) p, "(assert-lenient)", 16) == 0)
+    {
+        flow_assert_strict = 0;
+        return (1);
+    }
+    if (strncmp ((char *) p, "(logic-strict)", 14) == 0)
+    {
+        flow_logic_strict = 1;
+        return (1);
+    }
+    if (strncmp ((char *) p, "(logic-lenient)", 15) == 0)
+    {
+        flow_logic_strict = 0;
+        return (1);
+    }
+    if (strncmp ((char *) p, "(assert ", 8) == 0)
+    {
+        is_assert = 1;
+    }
+    else if (strncmp ((char *) p, "(assume ", 8) == 0)
+    {
+        is_assume = 1;
+    }
+    else
+    {
+        return (0);
+    }
+
+    strncpy ((char *) text, (const char *) p, MAXSTRLEN);
+    text[MAXSTRLEN] = '\0';
+
+    nt = tokenize_line (text, annotation_tokens, MAXTOKENS);
+    if (nt == 0)
+    {
+        return (1);
+    }
+
+    if (is_assert == 1)
+    {
+        if (capture_flow_state (&saved) != 0)
+        {
+            return (1);
+        }
+        flow_cond_truth = -1;
+        rc = refine_condition (nt, annotation_tokens, 1);
+        truth = flow_cond_truth;
+        restore_flow_state (&saved);
+        free_flow_state (&saved);
+
+        flow_assert_count++;
+        if (truth == 0)
+        {
+            linter_warnings++;
+            printf ("linter error: logical bug: assertion is always false at this point!\n");
+            printf (" > %s\n", line);
+        }
+        else if (truth != 1 && (rc == 2 || flow_assert_strict == 1))
+        {
+            linter_warnings++;
+            printf ("linter error: logical bug: assertion could not be proven (assert-strict)!\n");
+            printf (" > %s\n", line);
+        }
+        return (1);
+    }
+
+    if (is_assume == 1)
+    {
+        rc = refine_condition (nt, annotation_tokens, 1);
+        if (rc == 2)
+        {
+            linter_warnings++;
+            printf ("linter error: logical bug: assumption can never hold at this point!\n");
+            printf (" > %s\n", line);
+        }
+        return (1);
+    }
+
+    return (0);
+}
+
 int main (int ac, char *av[])
 {
     FILE *finptr = NULL;
@@ -7700,6 +8399,13 @@ int main (int ac, char *av[])
                  if (func_stricton != -1)
                  {
                      func_strict = 1;
+                 }
+
+                 // CBMC-style assertions and assumptions in comments
+                 if (do_lint == 1 && handle_annotation_comment (buf) == 1)
+                 {
+                     linenum++;
+                     continue;
                  }
 
                  if (pos == -1 && pos2 == -1 && pos3 == -1)
