@@ -130,6 +130,57 @@ S8 linter_warnings ALIGN = 0;
 U1 function_name_current[MAXSTRLEN + 1];
 U1 function_check_stpop = 0;    // set to 1 by: // (func args stpop)
 
+// ---------------------------------------------------------------------------
+// interprocedural data-flow analysis
+//
+// The linter is a single pass over the file. To analyse a call with the
+// caller's actual value ranges a pre-pass collects all function bodies and
+// their annotations. At a call site the callee body is then executed in a
+// sandbox: a private copy of the variable table, a private control flow
+// state and a private value stack. The diagnostics produced in the sandbox
+// are attributed to the call site, the effects on globals and the return
+// value ranges are fed back into the caller.
+// ---------------------------------------------------------------------------
+
+#define IP_MAX_FUNCS        4096
+#define IP_MAX_FUNCS_LINES  200000
+#define IP_MAX_RETURNS      32
+#define IP_MAX_CALL_ARGS    32
+#define IP_MAX_DEPTH        12
+#define IP_MAX_DECLS        256
+#define IP_MAX_EFFECTS      4096
+#define IP_VSTACK_MAX       128
+
+struct ip_func
+{
+    U1 name[MAXSTRLEN + 1];
+    U1 **lines;
+    S2 line_count;
+    S2 line_cap;
+    S2 args;                    // number of arguments, -1 = unknown
+    S2 returns;                 // number of return values, -1 = unknown
+    U1 has_body;
+};
+
+struct ip_func *ip_funcs = NULL;
+S2 ip_funcs_ind = -1;
+U1 ip_enabled = 1;
+S8 ip_total_lines ALIGN = 0;
+U1 ip_sandbox_active = 0;
+S2 ip_sandbox_depth = 0;
+U1 ip_call_precise = 0;         // the last call was analysed by a sandbox
+U1 ip_active_funcs[IP_MAX_DEPTH][MAXSTRLEN + 1];
+
+U1 *ip_written = NULL;          // per sandbox variable written map
+U1 ip_effect_mark[IP_MAX_EFFECTS]; // caller variables written by the last call
+S8 ip_budget ALIGN = 0;
+
+S2 ip_analyze_call (U1 *callee, S2 nargs, U1 *call_args[], U1 *line);
+S2 ip_raw_callee_name (U1 *line, U1 *name);
+void ip_capture_return (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 *line);
+void ip_cleanup (void);
+S2 ip_find_func (U1 *name);
+
 // pointer only const type and not as a target to vallue copy
 U1 pointer_strict = 0;
 
@@ -625,6 +676,7 @@ S2 check_line_strict (U1 *line)
 
 void cleanup (void)
 {
+    ip_cleanup ();
     if (vars != NULL) free (vars);
     if (function_args != NULL) free (function_args);
     if (return_args != NULL) free (return_args);
@@ -971,6 +1023,10 @@ void mark_var_written (U1 *name)
     vi = find_var_index (name);
     if (vi >= 0)
     {
+        if (ip_written != NULL && vi < MAXVARS)
+        {
+            ip_written[vi] = 1;
+        }
         vars[vi].initialized = 1;
         vars[vi].pointer_set = 1;
         vars[vi].value_known = 0;
@@ -1780,6 +1836,17 @@ struct int_range
     S8 lo ALIGN;
     S8 hi ALIGN;
 };
+
+// interprocedural value stack: used to feed caller arguments into a callee
+// and callee return values back to the caller
+struct int_range ip_vstack[IP_VSTACK_MAX];
+S2 ip_vstack_ind = -1;
+S2 ip_vstack_floor = -1;
+
+// return values captured from the current (return) line in a sandbox
+struct int_range ip_last_return[IP_MAX_RETURNS];
+S2 ip_last_return_count = 0;
+U1 ip_last_return_seen = 0;
 
 struct flow_var
 {
@@ -3836,6 +3903,8 @@ U1 handle_flow_control (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 *line)
         }
 
         reset_flow_analysis ();
+        ip_vstack_ind = -1;
+        ip_vstack_floor = -1;
         if (strcmp ((const char *) fname, "main") == 0)
         {
             // main has no arguments on the stack
@@ -3874,6 +3943,8 @@ U1 handle_flow_control (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 *line)
         }
         // report leaks of allocations made in main
         reset_flow_analysis ();
+        ip_vstack_ind = -1;
+        ip_vstack_floor = -1;
         return (0);
     }
 
@@ -4913,6 +4984,193 @@ U1 operand_range_at (S2 nt, U1 tokens[][MAXSTRLEN + 1], S2 pos, struct int_range
     return (range_eval (nt, tokens, start, end, r, overflow));
 }
 
+// evaluate a (mostly postfix) expression into a list of pushed values.
+// This is used for stpush and for the value list of a (return) line.
+S2 ip_eval_rpn (S2 nt, U1 tokens[][MAXSTRLEN + 1], S2 start, S2 end, struct int_range *out, S2 max_out)
+{
+    struct int_range stack[IP_VSTACK_MAX];
+    S2 sp = -1;
+    S2 i;
+    S2 count;
+
+    if (max_out <= 0)
+    {
+        return (0);
+    }
+
+    for (i = start; i <= end && i < nt; i++)
+    {
+        U1 *tok = tokens[i];
+
+        if (strcmp ((const char *) tok, "(") == 0)
+        {
+            S2 close = find_close_paren (nt, tokens, i);
+            S2 sub_count;
+
+            if (close < 0 || close > end)
+            {
+                continue;
+            }
+            sub_count = ip_eval_rpn (nt, tokens, i + 1, close - 1, stack + sp + 1,
+                                     (S2) (IP_VSTACK_MAX - 1 - sp));
+            if (sub_count > 0)
+            {
+                sp += sub_count;
+            }
+            i = close;
+            continue;
+        }
+        if (strcmp ((const char *) tok, ")") == 0)
+        {
+            continue;
+        }
+        if (is_number_token (tok) == 1)
+        {
+            if (sp < IP_VSTACK_MAX - 1)
+            {
+                sp++;
+                stack[sp] = range_exact ((S8) strtoll ((const char *) tok, NULL, 10));
+            }
+            continue;
+        }
+        if (strcmp ((const char *) tok, "true") == 0)
+        {
+            if (sp < IP_VSTACK_MAX - 1)
+            {
+                sp++;
+                stack[sp] = range_exact (1);
+            }
+            continue;
+        }
+        if (strcmp ((const char *) tok, "false") == 0)
+        {
+            if (sp < IP_VSTACK_MAX - 1)
+            {
+                sp++;
+                stack[sp] = range_exact (0);
+            }
+            continue;
+        }
+        if (operator_precedence (tok) > 0)
+        {
+            if (sp >= 1)
+            {
+                struct int_range b = stack[sp];
+                struct int_range a = stack[sp - 1];
+                struct int_range r = range_unknown ();
+                U1 ov = 0;
+
+                sp -= 2;
+                (void) range_apply (tok, a, b, &r, &ov);
+                sp++;
+                stack[sp] = r;
+            }
+            continue;
+        }
+        if (is_ident_start (tok[0]) == 1 && token_is_keyword (tok) == 0)
+        {
+            if (sp < IP_VSTACK_MAX - 1)
+            {
+                sp++;
+                stack[sp] = range_of_var (tok);
+            }
+            continue;
+        }
+        if (tok[0] == '"')
+        {
+            if (sp < IP_VSTACK_MAX - 1)
+            {
+                sp++;
+                stack[sp] = range_unknown ();
+            }
+            continue;
+        }
+    }
+
+    count = sp + 1;
+    if (count > max_out)
+    {
+        count = max_out;
+    }
+    for (i = 0; i < count; i++)
+    {
+        out[i] = stack[i];
+    }
+    return (count);
+}
+
+void ip_push_range (struct int_range r)
+{
+    if (ip_vstack_ind < IP_VSTACK_MAX - 1)
+    {
+        ip_vstack_ind++;
+        ip_vstack[ip_vstack_ind] = r;
+    }
+}
+
+struct int_range ip_pop_range (void)
+{
+    if (ip_vstack_ind > ip_vstack_floor)
+    {
+        struct int_range r = ip_vstack[ip_vstack_ind];
+
+        ip_vstack_ind--;
+        return (r);
+    }
+    return (range_unknown ());
+}
+
+// capture the return values of a (return) line. The return line often looks
+// like "(ret~ stpush) (return)", so the pushed values are evaluated from the
+// line. If the values were pushed on an earlier line they are taken from the
+// value stack.
+void ip_capture_return (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 *line)
+{
+    S2 i;
+    S2 stpush_pos = -1;
+    S2 go = -1;
+    S2 gc = -1;
+
+    (void) line;
+
+    ip_last_return_seen = 1;
+    ip_last_return_count = 0;
+
+    for (i = 0; i < nt; i++)
+    {
+        if (strncmp ((const char *) tokens[i], "stpush", 6) == 0)
+        {
+            stpush_pos = i;
+        }
+    }
+
+    if (stpush_pos >= 0)
+    {
+        if (find_enclosing_paren (nt, tokens, stpush_pos, &go, &gc) == 1)
+        {
+            ip_last_return_count = ip_eval_rpn (nt, tokens, go + 1, stpush_pos - 1,
+                                                ip_last_return, IP_MAX_RETURNS);
+        }
+        else
+        {
+            ip_last_return_count = ip_eval_rpn (nt, tokens, 0, stpush_pos - 1,
+                                                ip_last_return, IP_MAX_RETURNS);
+        }
+    }
+    else
+    {
+        S2 k;
+        S2 n = 0;
+
+        for (k = ip_vstack_floor + 1; k <= ip_vstack_ind && n < IP_MAX_RETURNS; k++)
+        {
+            ip_last_return[n] = ip_vstack[k];
+            n++;
+        }
+        ip_last_return_count = n;
+    }
+}
+
 // main safety check, called for every parsed line
 S2 safety_check_line (U1 *line)
 {
@@ -4934,6 +5192,7 @@ S2 safety_check_line (U1 *line)
     {
         return (0);
     }
+    ip_call_precise = 0;
     // preprocessor lines, comments and file markers
     if (line[0] == '#')
     {
@@ -4954,6 +5213,14 @@ S2 safety_check_line (U1 *line)
     if (strcmp ((const char *) safety_tokens[0], "FILE:") == 0)
     {
         return (0);
+    }
+
+    // interprocedural analysis: remember the values of a (return) line before
+    // the flow analysis marks the following code unreachable
+    if (ip_sandbox_active == 1 && flow_reachable == 1 &&
+        line_has_token (nt, safety_tokens, "return") == 1)
+    {
+        ip_capture_return (nt, safety_tokens, line);
     }
 
     // structured control flow / path sensitive state
@@ -5291,9 +5558,25 @@ S2 safety_check_line (U1 *line)
             }
             if (callee != NULL)
             {
+                U1 raw_callee[MAXSTRLEN + 1];
+                U1 *ip_callee = callee;
+
+                if (ip_raw_callee_name (line, raw_callee) == 1)
+                {
+                    ip_callee = raw_callee;
+                }
                 nargs = collect_call_args (nt, safety_tokens, colon, call_args, 16);
                 note_allocation_call (callee, nt, safety_tokens);
                 check_string_call (callee, nargs, call_args, line);
+
+                // full interprocedural analysis of user defined functions
+                if (ip_enabled == 1 && ip_find_func (ip_callee) != -1)
+                {
+                    if (ip_analyze_call (ip_callee, nargs, call_args, line) == 1)
+                    {
+                        ip_call_precise = 1;
+                    }
+                }
 
                 // without a full signature of the callee the stack effect is
                 // unknown. This never produces false positives: checks are
@@ -5303,6 +5586,72 @@ S2 safety_check_line (U1 *line)
                     flow_stack_known = 0;
                 }
             }
+        }
+    }
+
+    // a function call can change non-const global variables; drop their values.
+    // Variables written by the interprocedural callee summary are kept: the
+    // sandbox already computed their new state.
+    {
+        U1 has_function_call = 0;
+
+        for (i = 0; i < nt; i++)
+        {
+            if (strcmp ((const char *) safety_tokens[i], "call") == 0)
+            {
+                has_function_call = 1;
+                break;
+            }
+            if (strcmp ((const char *) safety_tokens[i], "!") == 0)
+            {
+                S2 k;
+                for (k = 0; k < nt; k++)
+                {
+                    if (strcmp ((const char *) safety_tokens[k], ":") == 0)
+                    {
+                        has_function_call = 1;
+                        break;
+                    }
+                }
+                if (has_function_call == 1)
+                {
+                    break;
+                }
+            }
+        }
+        if (has_function_call == 1)
+        {
+            if (ip_call_precise == 1)
+            {
+                // the sandbox already copied the callee's precise effects into
+                // the caller variable table. In particular, arguments which the
+                // callee did not write keep their known values.
+                memset (ip_effect_mark, 0, sizeof (ip_effect_mark));
+            }
+            else
+            {
+                S8 k;
+                for (k = 0; k <= vars_ind; k++)
+                {
+                    if (ip_effect_mark[k] == 1)
+                    {
+                        ip_effect_mark[k] = 0;
+                        continue;
+                    }
+                    if (vars[k].is_const == 0)
+                    {
+                        vars[k].value_known = 0;
+                        vars[k].dvalue_known = 0;
+                        vars[k].range_known = 0;
+                        vars[k].may_zero = 0;
+                    }
+                }
+            }
+        }
+        else
+        {
+            // no call on this line: there is no effect to keep
+            memset (ip_effect_mark, 0, sizeof (ip_effect_mark));
         }
     }
 
@@ -5368,9 +5717,48 @@ S2 safety_check_line (U1 *line)
                     token_is_keyword (safety_tokens[k]) == 0)
                 {
                     S8 tv ALIGN;
+                    U1 used_vstack = 0;
 
                     mark_var_written (safety_tokens[k]);
                     tv = find_var_index (safety_tokens[k]);
+
+                    // value propagated from a callee / caller through the
+                    // interprocedural value stack
+                    if (tv >= 0 && ip_vstack_ind > ip_vstack_floor)
+                    {
+                        struct int_range pr = ip_pop_range ();
+
+                        used_vstack = 1;
+                        vars[tv].initialized = 1;
+                        vars[tv].pointer_set = 1;
+                        vars[tv].warned_uninit = 0;
+                        vars[tv].range_known = pr.known;
+                        if (pr.known == 1)
+                        {
+                            vars[tv].range_min = pr.lo;
+                            vars[tv].range_max = pr.hi;
+                            vars[tv].may_zero = (U1) (pr.lo <= 0 && pr.hi >= 0);
+                            if (pr.lo == pr.hi)
+                            {
+                                vars[tv].value_known = 1;
+                                vars[tv].value = pr.lo;
+                            }
+                            else
+                            {
+                                vars[tv].value_known = 0;
+                            }
+                            if (vars[tv].is_pointer == 1 || safety_tokens[k][0] == 'P')
+                            {
+                                vars[tv].pointer_null = (U1) (pr.lo == 0 && pr.hi == 0);
+                            }
+                        }
+                        else
+                        {
+                            vars[tv].range_known = 0;
+                            vars[tv].value_known = 0;
+                            vars[tv].may_zero = 0;
+                        }
+                    }
 
                     if (tv >= 0 && pop_type != 0 && vars[tv].type != pop_type &&
                         vars[tv].is_string == 0 && vars[tv].is_array == 0 &&
@@ -5390,7 +5778,11 @@ S2 safety_check_line (U1 *line)
                         printf (" > %s\n", line);
                     }
 
-                    if (tv >= 0 && used_pending == 0 && pending_alloc == 1)
+                    if (used_vstack == 1)
+                    {
+                        // value already applied from the interprocedural stack
+                    }
+                    else if (tv >= 0 && used_pending == 0 && pending_alloc == 1)
                     {
                         vars[tv].initialized = 1;
                         vars[tv].pointer_set = 1;
@@ -5503,51 +5895,26 @@ S2 safety_check_line (U1 *line)
                     flow_stack_depth += push_count;
                 }
             }
-            break;
-        }
-    }
 
-    // a function call can change non-const global variables; drop their values
-    {
-        U1 has_function_call = 0;
+            // remember the pushed value ranges for later stpop / return
+            {
+                S2 go = -1;
+                S2 gc = -1;
 
-        for (i = 0; i < nt; i++)
-        {
-            if (strcmp ((const char *) safety_tokens[i], "call") == 0)
-            {
-                has_function_call = 1;
-                break;
-            }
-            if (strcmp ((const char *) safety_tokens[i], "!") == 0)
-            {
-                S2 k;
-                for (k = 0; k < nt; k++)
+                if (find_enclosing_paren (nt, safety_tokens, i, &go, &gc) == 1)
                 {
-                    if (strcmp ((const char *) safety_tokens[k], ":") == 0)
+                    struct int_range pushes[IP_MAX_RETURNS];
+                    S2 pc = ip_eval_rpn (nt, safety_tokens, go + 1, i - 1,
+                                         pushes, IP_MAX_RETURNS);
+                    S2 pi;
+
+                    for (pi = 0; pi < pc; pi++)
                     {
-                        has_function_call = 1;
-                        break;
+                        ip_push_range (pushes[pi]);
                     }
                 }
-                if (has_function_call == 1)
-                {
-                    break;
-                }
             }
-        }
-        if (has_function_call == 1)
-        {
-            S8 k;
-            for (k = 0; k <= vars_ind; k++)
-            {
-                if (vars[k].is_const == 0)
-                {
-                    vars[k].value_known = 0;
-                    vars[k].dvalue_known = 0;
-                    vars[k].range_known = 0;
-                    vars[k].may_zero = 0;
-                }
-            }
+            break;
         }
     }
 
@@ -8217,6 +8584,1294 @@ U1 handle_annotation_comment (U1 *line)
     return (0);
 }
 
+// ---------------------------------------------------------------------------
+// interprocedural data-flow analysis: collection pre-pass and call sandbox
+// ---------------------------------------------------------------------------
+
+S8 ip_find_var_in (struct vars *arr, S8 ind, U1 *name)
+{
+    S8 i ALIGN;
+
+    for (i = 0; i <= ind; i++)
+    {
+        if (strcmp ((const char *) arr[i].name, (const char *) name) == 0)
+        {
+            return (i);
+        }
+    }
+    return (-1);
+}
+
+// extract the raw function name of a call from the line. The tokenizer
+// splits names like "alloc->circle", so the name is read from the raw text
+// after the call colon. Labels ("label:") and ":=" are skipped.
+S2 ip_raw_callee_name (U1 *line, U1 *name)
+{
+    S2 i = 0;
+    S2 start;
+    S2 n;
+
+    while (line[i] != '\0')
+    {
+        if (line[i] == '"')
+        {
+            i++;
+            while (line[i] != '\0' && line[i] != '"')
+            {
+                i++;
+            }
+            if (line[i] == '"')
+            {
+                i++;
+            }
+            continue;
+        }
+        if (line[i] == ':')
+        {
+            S2 p;
+
+            if (line[i + 1] == '=')
+            {
+                i += 2;
+                continue;
+            }
+            p = i - 1;
+            if (p >= 0 &&
+                (is_ident_char (line[p]) == 1 || isdigit ((unsigned char) line[p])))
+            {
+                // label, not a call
+                i++;
+                continue;
+            }
+            start = i + 1;
+            while (line[start] == ' ' || line[start] == '\t')
+            {
+                start++;
+            }
+            n = start;
+            while (line[n] != '\0' && line[n] != ' ' && line[n] != '\t' &&
+                   line[n] != '!' && line[n] != ')' && line[n] != '(' &&
+                   line[n] != '\n' && line[n] != '\r')
+            {
+                n++;
+            }
+            if (n == start)
+            {
+                return (0);
+            }
+            if (n - start > MAXSTRLEN)
+            {
+                n = start + MAXSTRLEN;
+            }
+            memcpy (name, &line[start], (size_t) (n - start));
+            name[n - start] = '\0';
+            return (1);
+        }
+        i++;
+    }
+    return (0);
+}
+
+// extract the variable name from a "(set TYPE SIZE NAME ...)" declaration.
+// The name is parsed from the raw line because names may contain characters
+// which the tokenizer treats as operators.
+S2 ip_decl_name (U1 *line, U1 *name)
+{
+    S2 p = 0;
+    S2 start;
+
+    while (line[p] == ' ' || line[p] == '\t')
+    {
+        p++;
+    }
+    if (strncmp ((const char *) &line[p], "(set", 4) != 0)
+    {
+        return (0);
+    }
+    if (line[p + 4] != ' ' && line[p + 4] != '\t')
+    {
+        return (0);
+    }
+    p += 5;
+
+    // skip type
+    while (line[p] != '\0' && line[p] != ' ' && line[p] != '\t' &&
+           line[p] != ')' && line[p] != '\n' && line[p] != '\r')
+    {
+        p++;
+    }
+    while (line[p] == ' ' || line[p] == '\t')
+    {
+        p++;
+    }
+    // skip size
+    while (line[p] != '\0' && line[p] != ' ' && line[p] != '\t' &&
+           line[p] != ')' && line[p] != '\n' && line[p] != '\r')
+    {
+        p++;
+    }
+    while (line[p] == ' ' || line[p] == '\t')
+    {
+        p++;
+    }
+
+    start = p;
+    while (line[p] != '\0' && line[p] != ' ' && line[p] != '\t' &&
+           line[p] != ')' && line[p] != '\n' && line[p] != '\r')
+    {
+        p++;
+    }
+    if (p == start)
+    {
+        return (0);
+    }
+    if (p - start > MAXSTRLEN)
+    {
+        p = start + MAXSTRLEN;
+    }
+    memcpy (name, &line[start], (size_t) (p - start));
+    name[p - start] = '\0';
+    return (1);
+}
+
+// parse a raw function definition line "(name func)". Function names may
+// contain operator characters ("alloc->circle"), so the tokenizer is not used.
+S2 ip_extract_func_start (U1 *line, U1 *name)
+{
+    S2 p = 0;
+    S2 q;
+    S2 start;
+    S2 end;
+    S2 r;
+    S2 len;
+
+    while (line[p] == ' ' || line[p] == '\t')
+    {
+        p++;
+    }
+    if (line[p] != '(')
+    {
+        return (0);
+    }
+    if (strncmp ((const char *) &line[p], "(set", 4) == 0 &&
+        (line[p + 4] == ' ' || line[p + 4] == '\t' || line[p + 4] == '\0'))
+    {
+        return (0);
+    }
+
+    q = searchstr (line, (U1 *) " func)", p, 0, TRUE);
+    if (q < 0)
+    {
+        return (0);
+    }
+    r = q + 6;
+    while (line[r] == ' ' || line[r] == '\t' ||
+           line[r] == '\n' || line[r] == '\r')
+    {
+        r++;
+    }
+    if (line[r] != '\0' && !(line[r] == '/' && line[r + 1] == '/'))
+    {
+        return (0);
+    }
+
+    start = p + 1;
+    end = q;
+    if (end <= start)
+    {
+        return (0);
+    }
+    len = end - start;
+    if (len > MAXSTRLEN)
+    {
+        len = MAXSTRLEN;
+    }
+    memcpy (name, &line[start], (size_t) len);
+    name[len] = '\0';
+    return (1);
+}
+
+S2 ip_is_funcend (U1 *line)
+{
+    S2 p = 0;
+
+    while (line[p] == ' ' || line[p] == '\t')
+    {
+        p++;
+    }
+    if (strncmp ((const char *) &line[p], "(funcend)", 9) == 0)
+    {
+        return (1);
+    }
+    return (0);
+}
+
+S2 ip_new_func (U1 *name)
+{
+    S2 fi;
+
+    fi = ip_find_func (name);
+    if (fi >= 0)
+    {
+        return (fi);
+    }
+    if (ip_funcs_ind >= IP_MAX_FUNCS - 1)
+    {
+        return (-1);
+    }
+    ip_funcs_ind++;
+    memset (&ip_funcs[ip_funcs_ind], 0, sizeof (struct ip_func));
+    strcpy ((char *) ip_funcs[ip_funcs_ind].name, (const char *) name);
+    ip_funcs[ip_funcs_ind].args = -1;
+    ip_funcs[ip_funcs_ind].returns = -1;
+    return (ip_funcs_ind);
+}
+
+S2 ip_find_func (U1 *name)
+{
+    S2 i;
+
+    if (ip_funcs == NULL)
+    {
+        return (-1);
+    }
+    for (i = 0; i <= ip_funcs_ind; i++)
+    {
+        if (ip_funcs[i].name[0] != '\0' &&
+            strcmp ((const char *) ip_funcs[i].name, (const char *) name) == 0)
+        {
+            return (i);
+        }
+    }
+    return (-1);
+}
+
+// parse "// (func args [S] name type ...)" and "// (return args name type ...)"
+S2 ip_parse_annotation_raw (U1 *line, const char *prefix, S2 is_func)
+{
+    S2 p;
+    S2 prefix_len;
+    S2 name_start;
+    S2 count = 0;
+    S2 fi;
+    U1 name[MAXSTRLEN + 1];
+
+    p = searchstr (line, (U1 *) prefix, 0, 0, TRUE);
+    if (p < 0)
+    {
+        return (0);
+    }
+    prefix_len = (S2) strlen (prefix);
+    p += prefix_len;
+
+    while (line[p] == ' ' || line[p] == '\t')
+    {
+        p++;
+    }
+    if (is_func == 1 && line[p] == 'S' &&
+        (line[p + 1] == ' ' || line[p + 1] == '\t'))
+    {
+        p++;
+        while (line[p] == ' ' || line[p] == '\t')
+        {
+            p++;
+        }
+    }
+
+    name_start = p;
+    while (line[p] != '\0' && line[p] != ' ' && line[p] != '\t' &&
+           line[p] != ')' && line[p] != '\n' && line[p] != '\r')
+    {
+        p++;
+    }
+    if (p == name_start)
+    {
+        return (0);
+    }
+    if (p - name_start > MAXSTRLEN)
+    {
+        p = name_start + MAXSTRLEN;
+    }
+    memcpy (name, &line[name_start], (size_t) (p - name_start));
+    name[p - name_start] = '\0';
+
+    while (line[p] == ' ' || line[p] == '\t')
+    {
+        p++;
+    }
+    while (line[p] != '\0' && line[p] != ')' &&
+           line[p] != '\n' && line[p] != '\r')
+    {
+        while (line[p] == ' ' || line[p] == '\t')
+        {
+            p++;
+        }
+        if (line[p] == ')' || line[p] == '\0' ||
+            line[p] == '\n' || line[p] == '\r')
+        {
+            break;
+        }
+        while (line[p] != '\0' && line[p] != ' ' && line[p] != '\t' &&
+               line[p] != ')' && line[p] != '\n' && line[p] != '\r')
+        {
+            p++;
+        }
+        count++;
+    }
+
+    // "// (func args stpop)" is the stack check marker, not a function
+    if (is_func == 1 && strcmp ((const char *) name, "stpop") == 0 && count == 0)
+    {
+        return (0);
+    }
+
+    fi = ip_new_func (name);
+    if (fi < 0)
+    {
+        return (0);
+    }
+    if (is_func == 1)
+    {
+        ip_funcs[fi].args = count;
+    }
+    else
+    {
+        ip_funcs[fi].returns = count;
+    }
+    return (1);
+}
+
+void ip_free_funcs (void)
+{
+    S2 i;
+    S2 j;
+
+    if (ip_funcs == NULL)
+    {
+        return;
+    }
+    for (i = 0; i <= ip_funcs_ind; i++)
+    {
+        for (j = 0; j < ip_funcs[i].line_count; j++)
+        {
+            free (ip_funcs[i].lines[j]);
+        }
+        free (ip_funcs[i].lines);
+    }
+    free (ip_funcs);
+    ip_funcs = NULL;
+    ip_funcs_ind = -1;
+    ip_total_lines = 0;
+}
+
+void ip_cleanup (void)
+{
+    ip_free_funcs ();
+}
+
+S2 ip_collect_functions (FILE *finptr, const char *fname)
+{
+    U1 rbuf[MAXSTRLEN + 1];
+    U1 buf[MAXSTRLEN + 1];
+    U1 cur[MAXSTRLEN + 1];
+    U1 name[MAXSTRLEN + 1];
+    char *read;
+    S2 cur_i = -1;
+    U1 in_body = 0;
+    S2 cpos;
+    S2 i;
+
+    (void) fname;
+
+    ip_funcs = (struct ip_func *) calloc (IP_MAX_FUNCS, sizeof (struct ip_func));
+    if (ip_funcs == NULL)
+    {
+        ip_enabled = 0;
+        return (1);
+    }
+    ip_funcs_ind = -1;
+    ip_total_lines = 0;
+    cur[0] = '\0';
+
+    rewind (finptr);
+    while (1)
+    {
+        read = fgets_uni ((char *) rbuf, MAXLINELEN, finptr);
+        if (read == NULL)
+        {
+            break;
+        }
+        strcpy ((char *) buf, (const char *) rbuf);
+        convtabs (buf);
+
+        // annotations
+        if (searchstr (buf, (U1 *) "// (func args ", 0, 0, TRUE) >= 0)
+        {
+            (void) ip_parse_annotation_raw (buf, "// (func args ", 1);
+        }
+        if (searchstr (buf, (U1 *) "// (return args ", 0, 0, TRUE) >= 0)
+        {
+            (void) ip_parse_annotation_raw (buf, "// (return args ", 0);
+        }
+
+        cpos = 0;
+        while (buf[cpos] == ' ' || buf[cpos] == '\t')
+        {
+            cpos++;
+        }
+        if (buf[cpos] == '\0' || buf[cpos] == '\n' || buf[cpos] == '\r')
+        {
+            continue;
+        }
+        if (buf[cpos] == '#')
+        {
+            continue;
+        }
+        if (buf[cpos] == '/' && buf[cpos + 1] == '/')
+        {
+            continue;
+        }
+        if (strncmp ((const char *) &buf[cpos], "FILE:", 5) == 0 ||
+            strncmp ((const char *) &buf[cpos], "FILE END", 8) == 0)
+        {
+            continue;
+        }
+
+        if (ip_is_funcend (buf) == 1)
+        {
+            in_body = 0;
+            cur_i = -1;
+            cur[0] = '\0';
+            continue;
+        }
+
+        if (ip_extract_func_start (buf, name) == 1)
+        {
+            strcpy ((char *) cur, (const char *) name);
+            cur_i = ip_new_func (cur);
+            if (cur_i >= 0 && ip_funcs[cur_i].has_body == 0)
+            {
+                ip_funcs[cur_i].has_body = 1;
+                in_body = 1;
+            }
+            else
+            {
+                in_body = 0;
+            }
+            continue;
+        }
+
+        if (in_body == 1 && cur_i >= 0)
+        {
+            U1 **new_lines;
+            S2 new_cap;
+
+            if (ip_total_lines >= IP_MAX_FUNCS_LINES)
+            {
+                ip_enabled = 0;
+                break;
+            }
+            if (ip_funcs[cur_i].line_count >= ip_funcs[cur_i].line_cap)
+            {
+                new_cap = ip_funcs[cur_i].line_cap == 0 ? 64 :
+                          ip_funcs[cur_i].line_cap * 2;
+                new_lines = (U1 **) realloc (ip_funcs[cur_i].lines,
+                                             (size_t) new_cap * sizeof (U1 *));
+                if (new_lines == NULL)
+                {
+                    ip_enabled = 0;
+                    break;
+                }
+                ip_funcs[cur_i].lines = new_lines;
+                ip_funcs[cur_i].line_cap = new_cap;
+            }
+            i = ip_funcs[cur_i].line_count;
+            ip_funcs[cur_i].lines[i] = (U1 *) strdup ((const char *) buf);
+            if (ip_funcs[cur_i].lines[i] == NULL)
+            {
+                ip_enabled = 0;
+                break;
+            }
+            ip_funcs[cur_i].line_count++;
+            ip_total_lines++;
+        }
+    }
+
+    rewind (finptr);
+    clearerr (finptr);
+
+    if (ip_enabled == 0)
+    {
+        ip_free_funcs ();
+    }
+    return (0);
+}
+
+// merge one return path into the summary of a function
+void ip_merge_return (struct int_range *summary, U1 *seen, S2 *count,
+                      struct int_range *last, S2 last_count)
+{
+    S2 old = *count;
+    S2 n;
+    S2 j;
+
+    n = old > last_count ? old : last_count;
+    if (n > IP_MAX_RETURNS)
+    {
+        n = IP_MAX_RETURNS;
+    }
+    for (j = old; j < n; j++)
+    {
+        summary[j] = range_unknown ();
+        seen[j] = 0;
+    }
+    for (j = 0; j < n; j++)
+    {
+        if (j < last_count)
+        {
+            if (seen[j] == 1)
+            {
+                struct int_range a = summary[j];
+                struct int_range b = last[j];
+                struct int_range r = range_unknown ();
+
+                if (a.known == 1 && b.known == 1)
+                {
+                    r.known = 1;
+                    r.lo = a.lo < b.lo ? a.lo : b.lo;
+                    r.hi = a.hi > b.hi ? a.hi : b.hi;
+                }
+                summary[j] = r;
+            }
+            else
+            {
+                summary[j] = last[j];
+                seen[j] = 1;
+            }
+        }
+        else
+        {
+            // this return path does not provide a value for this position
+            summary[j] = range_unknown ();
+            seen[j] = 1;
+        }
+    }
+    *count = n;
+}
+
+// only forward data-flow findings of the callee. Structural findings (parse
+// errors, duplicate declarations, ...) are already reported by the main pass.
+U1 ip_keep_message (const char *msg)
+{
+    static const char *skip[] = {
+        "declared more than once", "unclosed", "without an open",
+        "not closed", "no exit call", "function args", "return args",
+        "type mismatch", "not defined", "unknown variable",
+        "stack underflow", "logical bug:", "unreachable code",
+        "duplicate switch", "self-assignment", "assignment to constant",
+        "loop condition", "condition is always", "condition can never",
+        "condition is never", "used before it is initialized", NULL
+    };
+    static const char *keep[] = {
+        "division by", "modulo by", "array index", "array bounds",
+        "string index", "string buffer", "heap access", "out of bounds",
+        "used before it is initialized", "pointer", "null", "freed",
+        "allocation", "memory leak", "overflow", "shift amount",
+        "value range", "does not fit", "too small", "capacity",
+        "negative size", "invalid free", "double free", NULL
+    };
+    S2 i;
+
+    for (i = 0; skip[i] != NULL; i++)
+    {
+        if (strstr (msg, skip[i]) != NULL)
+        {
+            return (0);
+        }
+    }
+    for (i = 0; keep[i] != NULL; i++)
+    {
+        if (strstr (msg, keep[i]) != NULL)
+        {
+            return (1);
+        }
+    }
+    return (0);
+}
+
+// print the findings of one sandbox. At the top level the message is
+// attributed to the call site. In a nested sandbox the text is written to the
+// capture of the outer sandbox, so it is reported once at the real call site.
+void ip_report_capture (char *capture, U1 *callee, U1 *caller, U1 nested)
+{
+    char *p;
+    S8 emitted = 0;
+    S8 seen[256];
+    S2 i;
+    U1 caller_name[MAXSTRLEN + 1];
+
+    if (capture == NULL)
+    {
+        return;
+    }
+    for (i = 0; i < 256; i++)
+    {
+        seen[i] = 0;
+    }
+    if (caller[0] == '\0')
+    {
+        strcpy ((char *) caller_name, "unknown");
+    }
+    else
+    {
+        strcpy ((char *) caller_name, (const char *) caller);
+    }
+
+    p = capture;
+    while (p != NULL && *p != '\0')
+    {
+        char *nl = strchr (p, '\n');
+        char *after;
+
+        if (nl != NULL)
+        {
+            *nl = '\0';
+            after = nl + 1;
+        }
+        else
+        {
+            after = p + strlen (p);
+        }
+
+        if (strncmp (p, "linter error: ", 14) == 0)
+        {
+            char *msg = p + 14;
+            char *src = NULL;
+            U1 keep;
+            S8 hash = 0;
+            S2 slot;
+
+            if (*after == ' ' && *(after + 1) == '>')
+            {
+                char *snl = strchr (after, '\n');
+
+                src = after;
+                if (snl != NULL)
+                {
+                    *snl = '\0';
+                    after = snl + 1;
+                }
+                else
+                {
+                    after = after + strlen (after);
+                }
+            }
+
+            if (strncmp (msg, "interprocedural: ", 16) == 0)
+            {
+                keep = 1;
+            }
+            else
+            {
+                keep = ip_keep_message (msg);
+            }
+
+            if (keep == 1)
+            {
+                char *q;
+
+                for (q = msg; *q != '\0'; q++)
+                {
+                    hash = hash * 31 + (unsigned char) *q;
+                }
+                if (src != NULL)
+                {
+                    for (q = src; *q != '\0'; q++)
+                    {
+                        hash = hash * 31 + (unsigned char) *q;
+                    }
+                }
+                slot = (S2) (hash & 255);
+                if (seen[slot] != hash)
+                {
+                    seen[slot] = hash;
+                    if (strncmp (msg, "interprocedural: ", 16) == 0)
+                    {
+                        printf ("linter error: %s\n", msg);
+                    }
+                    else if (nested == 1)
+                    {
+                        printf ("linter error: interprocedural: in function '%s': %s\n",
+                                callee, msg);
+                    }
+                    else
+                    {
+                        printf ("linter error: interprocedural: in function '%s' called from '%s': %s\n",
+                                callee, caller_name, msg);
+                    }
+                    if (src != NULL)
+                    {
+                        printf ("%s\n", src);
+                    }
+                    emitted++;
+                }
+            }
+        }
+        p = after;
+    }
+    if (nested == 0)
+    {
+        linter_warnings += emitted;
+    }
+}
+
+// execute the body of "callee" with the actual argument ranges. Returns 1 if
+// the callee was analysed. The caller's state is fully restored; only the
+// computed effects on caller variables and the return value ranges survive.
+S2 ip_analyze_call (U1 *callee, S2 nargs, U1 *call_args[], U1 *line)
+{
+    struct ip_func *f;
+    S2 fi;
+    S2 i;
+    S2 j;
+    S2 nargs_used = 0;
+    S2 formal;
+    struct int_range argr[IP_MAX_CALL_ARGS];
+    struct int_range summary[IP_MAX_RETURNS];
+    U1 summary_seen[IP_MAX_RETURNS];
+    S2 summary_count;
+    U1 callee_name[MAXSTRLEN + 1];
+
+    struct vars *saved_vars;
+    S8 saved_vars_ind;
+    U1 saved_funcname[MAXSTRLEN + 1];
+    U1 s_function_check_stpop;
+    U1 s_function_inside;
+    U1 s_function_return;
+    U1 s_if_inside;
+    U1 s_switch_inside;
+    U1 s_for_inside;
+    U1 s_do_inside;
+    U1 s_pointer_strict;
+    U1 s_pointer_check_active;
+    U1 s_pointer_check_name[MAXSTRLEN + 1];
+    S8 s_pointer_check_line;
+    S8 s_linenum;
+    U1 s_file_inside;
+    S8 s_file_index;
+    U1 s_found_exit;
+    U1 s_func_strict;
+    S8 s_warnings;
+    S2 s_flow_frame_ind;
+    struct flow_frame *saved_frames = NULL;
+    struct label_state *saved_label_states;
+    S2 saved_label_states_ind;
+    U1 s_flow_reachable;
+    S8 s_flow_stack_depth;
+    U1 s_flow_stack_known;
+    U1 s_flow_loop_widen;
+    S2 s_flow_cond_truth;
+    U1 s_flow_cond_stable;
+    U1 s_flow_logic_strict;
+    U1 s_flow_unreachable_warned;
+    U1 s_flow_dead_branch;
+    U1 s_flow_line_unreachable;
+    U1 s_flow_case_dead;
+    U1 s_flow_assert_strict;
+    U1 s_flow_missing_return;
+    S8 s_flow_assert_count;
+    U1 s_pending_alloc;
+    U1 s_pending_alloc_known;
+    S8 s_pending_alloc_size;
+    S8 s_pending_alloc_elem_size;
+    U1 s_pending_result;
+    S8 s_pending_result_value;
+    S8 s_pending_result_min;
+    S8 s_pending_result_max;
+    struct int_range s_vstack[IP_VSTACK_MAX];
+    S2 s_vstack_ind;
+    S2 s_vstack_floor;
+    struct int_range s_last_return[IP_MAX_RETURNS];
+    S2 s_last_return_count;
+    U1 s_last_return_seen;
+    U1 *s_written;
+    U1 *s_safety_tokens = NULL;
+    struct vars *sandbox = NULL;
+    U1 *written = NULL;
+    U1 *removed = NULL;
+    S2 removed_count = 0;
+    FILE *capfile = NULL;
+    int saved_stdout = -1;
+    char *capture = NULL;
+    U1 nested;
+
+    (void) line;
+
+    if (ip_enabled == 0 || ip_budget <= 0)
+    {
+        return (0);
+    }
+    strcpy ((char *) callee_name, (const char *) callee);
+    if (ip_sandbox_depth >= IP_MAX_DEPTH)
+    {
+        return (0);
+    }
+    fi = ip_find_func (callee_name);
+    if (fi < 0)
+    {
+        return (0);
+    }
+    f = &ip_funcs[fi];
+    if (f->has_body == 0 || f->line_count == 0)
+    {
+        return (0);
+    }
+    for (i = 0; i < ip_sandbox_depth; i++)
+    {
+        if (strcmp ((const char *) ip_active_funcs[i], (const char *) callee_name) == 0)
+        {
+            // recursion: leave the return values unknown
+            return (0);
+        }
+    }
+
+    for (i = 0; i < nargs && i < IP_MAX_CALL_ARGS; i++)
+    {
+        U1 *a = call_args[i];
+
+        if (a == NULL)
+        {
+            argr[i] = range_unknown ();
+        }
+        else if (is_number_token (a) == 1)
+        {
+            argr[i] = range_exact ((S8) strtoll ((const char *) a, NULL, 10));
+        }
+        else if (a[0] == '"')
+        {
+            argr[i] = range_unknown ();
+        }
+        else
+        {
+            argr[i] = range_of_var (a);
+        }
+        nargs_used++;
+    }
+
+    sandbox = (struct vars *) malloc ((size_t) MAXVARS * sizeof (struct vars));
+    written = (U1 *) calloc ((size_t) MAXVARS, 1);
+    removed = (U1 *) calloc ((size_t) IP_MAX_DECLS, (size_t) MAXSTRLEN + 1);
+    s_safety_tokens = (U1 *) malloc ((size_t) MAXTOKENS * ((size_t) MAXSTRLEN + 1));
+    if (sandbox == NULL || written == NULL || removed == NULL ||
+        s_safety_tokens == NULL)
+    {
+        free (sandbox);
+        free (written);
+        free (removed);
+        free (s_safety_tokens);
+        return (0);
+    }
+
+    s_flow_frame_ind = flow_frame_ind;
+    if (s_flow_frame_ind >= 0)
+    {
+        saved_frames = (struct flow_frame *) malloc ((size_t) (s_flow_frame_ind + 1) *
+                                                     sizeof (struct flow_frame));
+        if (saved_frames == NULL)
+        {
+            free (sandbox);
+            free (written);
+            free (removed);
+            free (s_safety_tokens);
+            return (0);
+        }
+        memcpy (saved_frames, flow_frames,
+                (size_t) (s_flow_frame_ind + 1) * sizeof (struct flow_frame));
+    }
+
+    // capture stdout before any state is modified
+    fflush (stdout);
+    saved_stdout = dup (1);
+    if (saved_stdout < 0)
+    {
+        free (saved_frames);
+        free (sandbox);
+        free (written);
+        free (removed);
+        free (s_safety_tokens);
+        return (0);
+    }
+    capfile = tmpfile ();
+    if (capfile == NULL)
+    {
+        close (saved_stdout);
+        free (saved_frames);
+        free (sandbox);
+        free (written);
+        free (removed);
+        free (s_safety_tokens);
+        return (0);
+    }
+
+    // save the caller state
+    saved_vars = vars;
+    saved_vars_ind = vars_ind;
+    strcpy ((char *) saved_funcname, (const char *) function_name_current);
+    s_function_check_stpop = function_check_stpop;
+    s_function_inside = function_inside;
+    s_function_return = function_return;
+    s_if_inside = if_inside;
+    s_switch_inside = switch_inside;
+    s_for_inside = for_inside;
+    s_do_inside = do_inside;
+    s_pointer_strict = pointer_strict;
+    s_pointer_check_active = pointer_check_active;
+    strcpy ((char *) s_pointer_check_name, (const char *) pointer_check_name);
+    s_pointer_check_line = pointer_check_line;
+    s_linenum = linenum;
+    s_file_inside = file_inside;
+    s_file_index = file_index;
+    s_found_exit = found_exit;
+    s_func_strict = func_strict;
+    s_warnings = linter_warnings;
+    saved_label_states = label_states;
+    saved_label_states_ind = label_states_ind;
+
+    s_flow_reachable = flow_reachable;
+    s_flow_stack_depth = flow_stack_depth;
+    s_flow_stack_known = flow_stack_known;
+    s_flow_loop_widen = flow_loop_widen;
+    s_flow_cond_truth = flow_cond_truth;
+    s_flow_cond_stable = flow_cond_stable;
+    s_flow_logic_strict = flow_logic_strict;
+    s_flow_unreachable_warned = flow_unreachable_warned;
+    s_flow_dead_branch = flow_dead_branch;
+    s_flow_line_unreachable = flow_line_unreachable;
+    s_flow_case_dead = flow_case_dead;
+    s_flow_assert_strict = flow_assert_strict;
+    s_flow_missing_return = flow_missing_return;
+    s_flow_assert_count = flow_assert_count;
+
+    s_pending_alloc = pending_alloc;
+    s_pending_alloc_known = pending_alloc_known;
+    s_pending_alloc_size = pending_alloc_size;
+    s_pending_alloc_elem_size = pending_alloc_elem_size;
+    s_pending_result = pending_result;
+    s_pending_result_value = pending_result_value;
+    s_pending_result_min = pending_result_min;
+    s_pending_result_max = pending_result_max;
+
+    memcpy (s_vstack, ip_vstack, sizeof (ip_vstack));
+    s_vstack_ind = ip_vstack_ind;
+    s_vstack_floor = ip_vstack_floor;
+    memcpy (s_last_return, ip_last_return, sizeof (ip_last_return));
+    s_last_return_count = ip_last_return_count;
+    s_last_return_seen = ip_last_return_seen;
+    s_written = ip_written;
+    memcpy (s_safety_tokens, safety_tokens,
+            (size_t) MAXTOKENS * ((size_t) MAXSTRLEN + 1));
+
+    // detach the caller control flow
+    flow_frame_ind = -1;
+    label_states = NULL;
+    label_states_ind = -1;
+
+    // sandbox variable table
+    for (i = 0; i <= saved_vars_ind; i++)
+    {
+        sandbox[i] = saved_vars[i];
+    }
+    vars = sandbox;
+    vars_ind = saved_vars_ind;
+    ip_written = written;
+
+    // remove the callee's own declarations from the copy so parse_line
+    // declares them fresh with their initial values
+    for (i = 0; i < f->line_count; i++)
+    {
+        U1 dname[MAXSTRLEN + 1];
+        U1 duplicate = 0;
+
+        if (ip_decl_name (f->lines[i], dname) == 1)
+        {
+            for (j = 0; j < removed_count; j++)
+            {
+                if (strcmp ((const char *) (removed + (size_t) j * ((size_t) MAXSTRLEN + 1)),
+                            (const char *) dname) == 0)
+                {
+                    duplicate = 1;
+                    break;
+                }
+            }
+            if (duplicate == 0 && removed_count < IP_MAX_DECLS)
+            {
+                strcpy ((char *) (removed + (size_t) removed_count * ((size_t) MAXSTRLEN + 1)),
+                        (const char *) dname);
+                removed_count++;
+            }
+        }
+    }
+    for (i = 0; i < removed_count; i++)
+    {
+        U1 *rname = removed + (size_t) i * ((size_t) MAXSTRLEN + 1);
+        S8 ri;
+
+        while ((ri = ip_find_var_in (vars, vars_ind, rname)) >= 0)
+        {
+            for (j = ri; j < vars_ind; j++)
+            {
+                vars[j] = vars[j + 1];
+            }
+            vars_ind--;
+        }
+    }
+
+    // sandbox function environment
+    strcpy ((char *) function_name_current, (const char *) callee_name);
+    function_inside = 1;
+    function_return = 0;
+    function_check_stpop = 0;
+    if_inside = 0;
+    switch_inside = 0;
+    for_inside = 0;
+    do_inside = 0;
+    pointer_check_active = 0;
+    pointer_check_name[0] = '\0';
+    pointer_check_line = -1;
+    linenum = 1;
+    found_exit = 0;
+    linter_warnings = 0;
+
+    reset_flow_analysis ();
+    flow_cond_truth = -1;
+    flow_cond_stable = 0;
+    flow_logic_strict = 0;
+    flow_unreachable_warned = 0;
+    flow_dead_branch = 0;
+    flow_line_unreachable = 0;
+    flow_case_dead = 0;
+    flow_assert_count = 0;
+    flow_missing_return = 0;
+
+    // seed the value stack with the actual arguments
+    ip_vstack_ind = s_vstack_ind;
+    ip_vstack_floor = s_vstack_ind;
+    formal = (f->args >= 0) ? f->args : nargs_used;
+    if (formal > IP_VSTACK_MAX - 1 - ip_vstack_ind)
+    {
+        formal = IP_VSTACK_MAX - 1 - ip_vstack_ind;
+    }
+    if (formal < 0)
+    {
+        formal = 0;
+    }
+    for (i = 0; i < formal; i++)
+    {
+        ip_push_range (i < nargs_used ? argr[i] : range_unknown ());
+    }
+    // the callee's formal arguments are on the stack
+    flow_stack_depth = formal;
+    flow_stack_known = 1;
+    ip_last_return_seen = 0;
+    ip_last_return_count = 0;
+
+    summary_count = (f->returns >= 0) ? f->returns : 0;
+    if (summary_count > IP_MAX_RETURNS)
+    {
+        summary_count = IP_MAX_RETURNS;
+    }
+    for (i = 0; i < IP_MAX_RETURNS; i++)
+    {
+        summary[i] = range_unknown ();
+        summary_seen[i] = 0;
+    }
+
+    strcpy ((char *) ip_active_funcs[ip_sandbox_depth], (const char *) callee_name);
+    ip_sandbox_depth++;
+    ip_sandbox_active = 1;
+
+    fflush (stdout);
+    if (dup2 (fileno (capfile), 1) < 0)
+    {
+        // should not happen; run without capture
+    }
+
+    for (i = 0; i < f->line_count; i++)
+    {
+        if (ip_budget <= 0)
+        {
+            break;
+        }
+        ip_budget--;
+        ip_last_return_seen = 0;
+        ip_last_return_count = 0;
+        (void) parse_line (f->lines[i]);
+        if (ip_last_return_seen == 1)
+        {
+            ip_merge_return (summary, summary_seen, &summary_count,
+                             ip_last_return, ip_last_return_count);
+        }
+    }
+
+    fflush (stdout);
+    if (saved_stdout >= 0)
+    {
+        dup2 (saved_stdout, 1);
+        close (saved_stdout);
+        saved_stdout = -1;
+    }
+
+    // read the captured diagnostics
+    if (capfile != NULL)
+    {
+        long sz;
+
+        fseek (capfile, 0, SEEK_END);
+        sz = ftell (capfile);
+        if (sz > 0)
+        {
+            capture = (char *) malloc ((size_t) sz + 1);
+            if (capture != NULL)
+            {
+                size_t rd;
+
+                fseek (capfile, 0, SEEK_SET);
+                rd = fread (capture, 1, (size_t) sz, capfile);
+                capture[rd] = '\0';
+            }
+        }
+        fclose (capfile);
+        capfile = NULL;
+    }
+
+    ip_sandbox_depth--;
+    ip_sandbox_active = (ip_sandbox_depth > 0) ? 1 : 0;
+    nested = (ip_sandbox_depth > 0) ? 1 : 0;
+
+    // copy the state of all pre-existing caller variables back by name. The
+    // sandbox started as a copy of the caller table, so unchanged variables
+    // keep their state and written/invalidated variables carry the precise
+    // effect of the callee.
+    for (i = 0; i <= vars_ind; i++)
+    {
+        U1 is_removed = 0;
+        S8 ci;
+
+        for (j = 0; j < removed_count; j++)
+        {
+            if (strcmp ((const char *) (removed + (size_t) j * ((size_t) MAXSTRLEN + 1)),
+                        (const char *) vars[i].name) == 0)
+            {
+                is_removed = 1;
+                break;
+            }
+        }
+        if (is_removed == 1)
+        {
+            continue;
+        }
+        ci = ip_find_var_in (saved_vars, saved_vars_ind, vars[i].name);
+        if (ci >= 0)
+        {
+            saved_vars[ci] = vars[i];
+            if (ci < IP_MAX_EFFECTS)
+            {
+                ip_effect_mark[ci] = 1;
+            }
+        }
+    }
+
+    // free the sandbox and restore the caller state
+    free (sandbox);
+    vars = saved_vars;
+    vars_ind = saved_vars_ind;
+
+    reset_flow_analysis ();
+    if (label_states != NULL)
+    {
+        free (label_states);
+    }
+    label_states = saved_label_states;
+    label_states_ind = saved_label_states_ind;
+    if (saved_frames != NULL)
+    {
+        memcpy (flow_frames, saved_frames,
+                (size_t) (s_flow_frame_ind + 1) * sizeof (struct flow_frame));
+    }
+    flow_frame_ind = s_flow_frame_ind;
+    free (saved_frames);
+
+    flow_reachable = s_flow_reachable;
+    flow_stack_depth = s_flow_stack_depth;
+    flow_stack_known = s_flow_stack_known;
+    flow_loop_widen = s_flow_loop_widen;
+    flow_cond_truth = s_flow_cond_truth;
+    flow_cond_stable = s_flow_cond_stable;
+    flow_logic_strict = s_flow_logic_strict;
+    flow_unreachable_warned = s_flow_unreachable_warned;
+    flow_dead_branch = s_flow_dead_branch;
+    flow_line_unreachable = s_flow_line_unreachable;
+    flow_case_dead = s_flow_case_dead;
+    flow_assert_strict = s_flow_assert_strict;
+    flow_missing_return = s_flow_missing_return;
+    flow_assert_count = s_flow_assert_count;
+
+    pending_alloc = s_pending_alloc;
+    pending_alloc_known = s_pending_alloc_known;
+    pending_alloc_size = s_pending_alloc_size;
+    pending_alloc_elem_size = s_pending_alloc_elem_size;
+    pending_result = s_pending_result;
+    pending_result_value = s_pending_result_value;
+    pending_result_min = s_pending_result_min;
+    pending_result_max = s_pending_result_max;
+
+    function_check_stpop = s_function_check_stpop;
+    function_inside = s_function_inside;
+    function_return = s_function_return;
+    if_inside = s_if_inside;
+    switch_inside = s_switch_inside;
+    for_inside = s_for_inside;
+    do_inside = s_do_inside;
+    pointer_strict = s_pointer_strict;
+    pointer_check_active = s_pointer_check_active;
+    strcpy ((char *) pointer_check_name, (const char *) s_pointer_check_name);
+    pointer_check_line = s_pointer_check_line;
+    linenum = s_linenum;
+    file_inside = s_file_inside;
+    file_index = s_file_index;
+    found_exit = s_found_exit;
+    func_strict = s_func_strict;
+    linter_warnings = s_warnings;
+    strcpy ((char *) function_name_current, (const char *) saved_funcname);
+
+    ip_written = s_written;
+    memcpy (safety_tokens, s_safety_tokens,
+            (size_t) MAXTOKENS * ((size_t) MAXSTRLEN + 1));
+    memcpy (ip_last_return, s_last_return, sizeof (ip_last_return));
+    ip_last_return_count = s_last_return_count;
+    ip_last_return_seen = s_last_return_seen;
+
+    // restore the caller value stack and put the return values on top
+    memcpy (ip_vstack, s_vstack, sizeof (ip_vstack));
+    ip_vstack_ind = s_vstack_ind;
+    ip_vstack_floor = s_vstack_floor;
+    for (i = 0; i < summary_count && i < IP_MAX_RETURNS; i++)
+    {
+        ip_push_range (summary[i]);
+    }
+
+    if (capture != NULL)
+    {
+        ip_report_capture (capture, callee_name, saved_funcname, nested);
+        free (capture);
+    }
+
+    free (removed);
+    free (written);
+    free (s_safety_tokens);
+    return (1);
+}
+
 int main (int ac, char *av[])
 {
     FILE *finptr = NULL;
@@ -8301,6 +9956,11 @@ int main (int ac, char *av[])
          cleanup ();
          exit (1);
      }
+
+     // collect all function bodies for the interprocedural analysis. The
+     // function rewinds the input file when it is done.
+     ip_budget = 2000000;
+     (void) ip_collect_functions (finptr, av[1]);
 
      // dummys
      /*

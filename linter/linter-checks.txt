@@ -130,6 +130,16 @@ The path-sensitive state is also used to report conditions which cannot behave a
 - **Assertions**: `// (assert (condition))` reports a condition which is always false at that point
 - **Assumptions**: `// (assume (condition))` reports a condition which can never hold and therefore makes the following code dead
 
+### 4.7 Interprocedural data-flow analysis
+
+A pre-pass collects every function body and its `// (func args ...)` / `// (return args ...)` annotations. At each call of a known user function the callee is executed in a sandbox with the **actual argument value ranges** of the caller:
+
+- **Argument-dependent findings**: a bug inside the callee that only happens for the concrete argument values (for example `division by zero` after the argument is divided) is reported at the call site, including the callee name and the source line inside the callee.
+- **Return values**: the value ranges produced by `stpush` on the callee's `(return)` paths are merged and put on the caller's value stack, so a following `stpop` and the caller's own analysis can detect unsafe uses (for example a division by the returned value).
+- **Effects on caller variables and globals**: the callee's final state of the caller variables is copied back by name, so writes and invalidations caused by unknown library calls inside the callee are applied. Arguments which the callee does not write keep their known values.
+- **Nested calls**: calls inside the callee are analysed recursively. Diagnostics of a nested callee are forwarded once to the outer call site.
+- **Recursion / limits**: recursive calls are not followed, the nesting depth is bounded and a global line budget stops very large analyses. Function-local declarations of the callee are removed from the sandbox first, so they cannot overwrite caller variables with the same name.
+
 ## 5. Opt-in controls
 
 - `// lint-on` / `// lint-off`
@@ -143,7 +153,7 @@ The path-sensitive state is also used to report conditions which cannot behave a
 
 ## Important limitations
 
-The analysis is **compile-time** and mostly **intraprocedural**. It does not do full interprocedural data-flow analysis, and only a small set of known library functions (allocations and string functions) is modelled. Values returned by unknown functions or loaded from unknown memory are treated conservatively.
+The analysis is **compile-time**. Calls of known user functions are analysed interprocedurally with the argument ranges that are known at the call site; calls whose arguments are unknown, recursive calls and calls beyond the nesting or budget limit are treated conservatively. Only a small set of known library functions (allocations and string functions) is modelled. Values returned by unknown functions or loaded from unknown memory are treated conservatively.
 
 Ranges are intervals, not relational constraints: the linter may lose the correlation between two variables, so it can miss a bug or report that a value *may* be unsafe. At control-flow joins, ranges are widened to a hull and may-flags are unioned. For loops, widening gives bounds that cover all iterations, which is safe but imprecise. An unknown lower bound (`LLONG_MIN`) is not by itself treated as an out-of-bounds proof, to avoid false positives from imprecise joins.
 

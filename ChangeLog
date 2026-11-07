@@ -7,6 +7,12 @@ L1VM (3.9.1)
 	// (assume ...) annotations. New // (logic-strict) and
 	// (assert-strict) opt-in annotations control how inferred ranges
 	are used.
+	Linter: full interprocedural data-flow analysis. Function bodies are
+	collected in a pre-pass and user function calls are analysed in a
+	sandbox with the actual argument value ranges. Findings inside a
+	callee are reported at the call site, return value ranges are
+	propagated to the caller and global effects are carried back.
+	Nested calls are supported with recursion and budget limits.
 
 -- Stefan Pietzonke <info@midnight-coding.de> Sat 07 November 2026 20:43 +010
 

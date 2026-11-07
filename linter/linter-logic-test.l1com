@@ -1,0 +1,146 @@
+// Regression test for the CBMC-style logical bug checks.
+// Every comment marked "EXPECT" names a diagnostic the linter must emit.
+(main func)
+    (set const-int64 1 zero 0)
+    (set int64 1 x 1)
+    (set int64 1 y 2)
+
+    // not constant: no warning
+    ((x y <) if)
+        (set int64 1 a 1)
+    (else)
+        (set int64 1 b 2)
+    (endif)
+
+    // EXPECT: condition is always true, the else branch is dead code
+    ((x x ==) if)
+        (set int64 1 e 4)
+    (endif)
+
+    // EXPECT: condition is always false, the then branch is dead code
+    ((x x !=) if)
+        (set int64 1 f 5)
+    (endif)
+
+    // EXPECT: assertion is always false at this point
+    // (assert (x y >))
+
+    // EXPECT: assumption can never hold at this point
+    // (assume (y 3 ==))
+
+    // EXPECT: assignment to constant variable 'zero'
+    (1 zero =)
+
+    // EXPECT: self-assignment of variable 'x' (no-op)
+    (x x =)
+
+    // EXPECT: condition is always false, the then branch is dead code
+    ((zero 23 ==) if)
+        (set int64 1 g 6)
+    (endif)
+
+    // -----------------------------------------------------------------
+    // interprocedural data-flow analysis
+    // -----------------------------------------------------------------
+
+    // argument value makes the division inside the callee unsafe
+    // EXPECT: interprocedural: in function 'divarg' called from 'main': division by zero
+    (set int64 1 ip_argzero 0)
+    (ip_argzero :divarg !)
+
+    // return value makes the division in the caller unsafe
+    // EXPECT: division by zero
+    (set int64 1 ip_retval 1)
+    (set int64 1 ip_quot 0)
+    (:getzero !) (ip_retval stpop)
+    (set const-int64 1 ip_ten 10)
+    (ip_ten ip_retval / ip_quot :=)
+
+    // callee writes a global which is used by the caller
+    // EXPECT: shift amount out of range
+    (set int64 1 ip_shglob 1)
+    (set int64 1 ip_shres 0)
+    (set const-int64 1 ip_one 1)
+    (:setbig !)
+    (ip_one ip_shglob <| ip_shres :=)
+
+    // nested call: outer forwards its argument to inner
+    // EXPECT: interprocedural: in function 'inner': division by zero
+    (ip_argzero :outer !)
+
+    // function names containing "->" are reconstructed from the raw line
+    // EXPECT: interprocedural: in function 'arrow->div' called from 'main': division by zero
+    (ip_argzero :arrow->div !)
+
+    // EXPECT: unreachable code (control flow ends before this line)
+    (255 zero 0 0 intr0)
+    (set int64 1 dead 1)
+(funcend)
+
+// EXPECT: function 'inc' can reach (funcend) without a return value
+// (return args inc int64)
+(inc func)
+    (set const-int64 1 zero 0)
+    (set int64 1 v 1)
+    (switch)
+        (v 1 ?)
+            (set int64 1 r 1)
+        (break)
+        (v 2 ?)
+            (set int64 1 r 2)
+        (break)
+        // EXPECT: duplicate switch case value 1
+        (v 1 ?)
+            (set int64 1 r 3)
+        (break)
+    (switchend)
+    (r stpush)
+(funcend)
+
+// interprocedural test helpers
+(divarg func)
+    (set int64 1 ip_div_a 0)
+    (set int64 1 ip_div_r 0)
+    (set const-int64 1 ip_div_hundred 100)
+    (ip_div_a stpop)
+    (ip_div_hundred ip_div_a / ip_div_r :=)
+(funcend)
+
+(getzero func)
+    (set const-int64 1 ip_z 0)
+    (ip_z stpush)
+    (return)
+(funcend)
+
+(setbig func)
+    (set const-int64 1 ip_64 64)
+    (ip_64 ip_shglob :=)
+    (return)
+(funcend)
+
+(outer func)
+    (set int64 1 ip_oa 0)
+    (set int64 1 ip_or 0)
+    (ip_oa stpop)
+    (ip_oa :inner !)
+    (ip_or stpush)
+    (return)
+(funcend)
+
+(inner func)
+    (set int64 1 ip_ib 0)
+    (set int64 1 ip_iq 0)
+    (set const-int64 1 ip_in_hundred 100)
+    (ip_ib stpop)
+    (ip_in_hundred ip_ib / ip_iq :=)
+    (ip_iq stpush)
+    (return)
+(funcend)
+
+(arrow->div func)
+    (set int64 1 ip_ad_a 0)
+    (set int64 1 ip_ad_r 0)
+    (set const-int64 1 ip_ad_hundred 100)
+    (ip_ad_a stpop)
+    (ip_ad_hundred ip_ad_a / ip_ad_r :=)
+(funcend)
