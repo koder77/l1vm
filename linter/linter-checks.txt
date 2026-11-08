@@ -43,6 +43,8 @@ Using the annotation comments `// (func args ...)` and `// (return args ...)`:
 
 ## 4. Safety checks (abstract interpretation)
 
+The safety layer combines a fast interval analysis with an optional, more precise constraint solver pass. The interval analysis is described first; section 4.8 covers the solver.
+
 ### 4.1 Path-sensitive control flow
 
 The safety layer follows the value and memory state through structured control flow:
@@ -140,6 +142,33 @@ A pre-pass collects every function body and its `// (func args ...)` / `// (retu
 - **Nested calls**: calls inside the callee are analysed recursively. Diagnostics of a nested callee are forwarded once to the outer call site.
 - **Recursion / limits**: recursive calls are not followed, the nesting depth is bounded and a global line budget stops very large analyses. Function-local declarations of the callee are removed from the sandbox first, so they cannot overwrite caller variables with the same name.
 
+### 4.8 Optional constraint solver (bounded model checking)
+
+When the linter is built with the Z3 development files available, an additional path-sensitive pass searches for mathematical contradictions that the interval analysis cannot express. `make.sh` enables it automatically (`-DHAVE_Z3`); without Z3 the linter is unchanged. The pass works like a small CBMC-style bounded model checker:
+
+- **Split into parts**: every function is analysed separately.
+- **Structured control flow**: the statements of a part are parsed into a tree of blocks, `if`/`else`, `for`/`next`, `do`/`while`, `switch`/`case`, returns and jumps.
+- **Path constraints**: feasible paths are executed symbolically. Each integer expression becomes an exact 64 bit bit-vector; assignments, relations and assumptions are added to the path condition instead of being reduced to intervals.
+- **Solver queries**: Z3 decides whether a branch is reachable, an assertion can fail, an assumption can hold, or a division/modulo/shift is unsafe on every feasible path.
+
+Because it keeps relations such as `x + y == 10` and `x == y` instead of widening them to ranges, it can prove statements like "from `x + y == 10` and `x == 4` follows `y == 6`". It reports:
+
+- **Assertions**: `// (assert (...))` which is always false on every feasible path leading to it
+- **Assumptions**: `// (assume (...))` which can never hold, and therefore makes the rest of the path dead
+- **Dead branches**: an `if` condition which is a tautology or a contradiction under the path constraints
+- **Dead loops**: a `for` loop whose condition is already false before the first iteration
+- **Division / modulo by zero** and **shift amounts outside 0..63** which are forced on every feasible path
+
+Solver diagnostics start with `linter error: solver:`. A line already reported by the interval pass is not reported again.
+
+The pass is deliberately conservative:
+
+- Loops are unrolled up to a fixed bound; after that the affected variables become unknown and the path is marked imprecise.
+- Calls of unknown functions, unsupported statements and exhausted query/path budgets mark the affected path imprecise.
+- Diagnostics are only emitted from fully precise paths, so an incomplete model never causes a warning.
+- Floating point variables, arrays and memory contents are not modelled by the solver; they fall back to the interval analysis.
+- Function calls are not analysed interprocedurally by the solver; the caller state is over-approximated instead.
+
 ## 5. Opt-in controls
 
 - `// lint-on` / `// lint-off`
@@ -154,6 +183,8 @@ A pre-pass collects every function body and its `// (func args ...)` / `// (retu
 ## Important limitations
 
 The analysis is **compile-time**. Calls of known user functions are analysed interprocedurally with the argument ranges that are known at the call site; calls whose arguments are unknown, recursive calls and calls beyond the nesting or budget limit are treated conservatively. Only a small set of known library functions (allocations and string functions) is modelled. Values returned by unknown functions or loaded from unknown memory are treated conservatively.
+
+The optional solver pass is bounded: loops are only unrolled a few times, it does not model arrays, memory contents or floating point values, and it does not follow function calls. Its diagnostics are therefore only a subset of the possible findings; when the model is incomplete it stays silent instead of guessing.
 
 Ranges are intervals, not relational constraints: the linter may lose the correlation between two variables, so it can miss a bug or report that a value *may* be unsafe. At control-flow joins, ranges are widened to a hull and may-flags are unioned. For loops, widening gives bounds that cover all iterations, which is safe but imprecise. An unknown lower bound (`LLONG_MIN`) is not by itself treated as an out-of-bounds proof, to avoid false positives from imprecise joins.
 

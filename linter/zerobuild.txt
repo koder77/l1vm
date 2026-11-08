@@ -1,7 +1,7 @@
 # zerobuild makefile
 
 [executable, name = l1vm-linter]
-sources = linter-main.c, ../lib-func/file.c, ../lib-func/string.c
+sources = linter-main.c, linter-solver.c, ../lib-func/file.c, ../lib-func/string.c
 
 ccompiler = $CC
 

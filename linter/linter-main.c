@@ -23,6 +23,13 @@
 
 #include "../include/global.h"
 
+// Optional Z3 based bounded model checker. The build script defines HAVE_Z3
+// when the Z3 headers and library are available. Without Z3 the linter keeps
+// working exactly as before.
+#ifdef HAVE_Z3
+#include <z3.h>
+#endif
+
 // struct for function argument type definitions
 // function arguments to check with function call arguments
 #define MAXFUNC 4096        // maximum of function definitions
@@ -125,6 +132,55 @@ S8 pointer_check_line ALIGN = -1;
 
 // number of warning-level diagnostics (all are treated as errors at exit)
 S8 linter_warnings ALIGN = 0;
+
+// optional Z3-backed bounded model checker (see linter-solver.c)
+void linter_solver_file (const char *fname);
+
+// lines which already produced a logical/assertion diagnostic. The solver
+// pass runs after the interval pass and uses this table to avoid printing the
+// same source line twice.
+#define WARN_LINE_MAX 8192
+S8 warn_lines[WARN_LINE_MAX] ALIGN;
+S2 warn_lines_count = 0;
+
+extern U1 file_inside;
+
+void warn_line_mark (S8 line)
+{
+    S2 i;
+
+    if (file_inside != 0)
+    {
+        return;
+    }
+    for (i = 0; i < warn_lines_count; i++)
+    {
+        if (warn_lines[i] == line)
+        {
+            return;
+        }
+    }
+    if (warn_lines_count < WARN_LINE_MAX)
+    {
+        warn_lines[warn_lines_count] = line;
+        warn_lines_count++;
+    }
+}
+
+U1 warn_line_marked (S8 line)
+{
+    S2 i;
+
+    for (i = 0; i < warn_lines_count; i++)
+    {
+        if (warn_lines[i] == line)
+        {
+            return (1);
+        }
+    }
+    return (0);
+}
+
 
 // current function name
 U1 function_name_current[MAXSTRLEN + 1];
@@ -2075,6 +2131,7 @@ S2 same_operand_truth (U1 *op)
 void warn_condition_truth (S2 truth, U1 *line)
 {
     linter_warnings++;
+    warn_line_mark (linenum);
     if (truth == 1)
     {
         printf ("linter error: logical bug: condition is always true, the else branch is dead code!\n");
@@ -2089,6 +2146,7 @@ void warn_condition_truth (S2 truth, U1 *line)
 void warn_condition_contradiction (U1 *line)
 {
     linter_warnings++;
+    warn_line_mark (linenum);
     printf ("linter error: logical bug: condition can never be true here (it contradicts the preceding checks)!\n");
     printf (" > %s\n", line);
 }
@@ -2096,6 +2154,7 @@ void warn_condition_contradiction (U1 *line)
 void warn_dead_loop (U1 *line)
 {
     linter_warnings++;
+    warn_line_mark (linenum);
     printf ("linter error: logical bug: loop condition is always false, the loop body is dead code!\n");
     printf (" > %s\n", line);
 }
@@ -2216,6 +2275,7 @@ void warn_unreachable_code (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 *line)
     }
     flow_unreachable_warned = 1;
     linter_warnings++;
+    warn_line_mark (linenum);
     printf ("linter error: logical bug: unreachable code (control flow ends before this line)!\n");
     printf (" > %s\n", line);
 }
@@ -2624,7 +2684,6 @@ U1 range_apply (U1 *op, struct int_range a, struct int_range b, struct int_range
     __int128 lo;
     __int128 hi;
     __int128 v1, v2, v3, v4;
-    S2 prec;
     U1 first;
 
     r->known = 0;
@@ -2633,7 +2692,6 @@ U1 range_apply (U1 *op, struct int_range a, struct int_range b, struct int_range
         return (0);
     }
 
-    prec = operator_precedence (op);
     first = op[0];
 
     if (strcmp ((const char *) op, "==") == 0 || strcmp ((const char *) op, "!=") == 0 ||
@@ -2793,7 +2851,6 @@ U1 range_apply (U1 *op, struct int_range a, struct int_range b, struct int_range
             break;
 
         default:
-            (void) prec;
             return (0);
     }
 
@@ -3303,7 +3360,6 @@ S2 refine_condition (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 truth)
             l_start = l_end;
         }
         left_start = l_start;
-        right_end = r_end;
         lend = l_end;
         rstart = r_start;
         rend = r_end;
@@ -3860,7 +3916,7 @@ U1 handle_flow_control (S2 nt, U1 tokens[][MAXSTRLEN + 1], U1 *line)
     U1 is_jmp = 0;
     U1 is_jmpi = 0;
     S2 label_pos = -1;
-    S2 cond_truth = -1;
+    S2 cond_truth;
 
     for (i = 0; i < nt; i++)
     {
@@ -4768,17 +4824,24 @@ S8 call_arg_length (U1 *arg)
 
 S8 call_arg_count (U1 *arg)
 {
-    struct int_range r;
+    S8 vi;
 
     if (is_number_token (arg) == 1)
     {
         return ((S8) strtoll ((const char *) arg, NULL, 10));
     }
-    r = range_of_var (arg);
-    if (r.known == 1)
+    vi = find_var_index (arg);
+    if (vi >= 0)
     {
-        // the upper bound is the safe value for capacity checks
-        return (r.hi);
+        if (vars[vi].range_known == 1)
+        {
+            // the upper bound is the safe value for capacity checks
+            return (vars[vi].range_max);
+        }
+        if (vars[vi].value_known == 1)
+        {
+            return (vars[vi].value);
+        }
     }
     return (-1);
 }
@@ -6007,6 +6070,7 @@ S2 safety_check_line (U1 *line)
             }
             if (divisor_known == 1 && divisor_value == 0)
             {
+                warn_line_mark (linenum);
                 if (safety_tokens[i][0] == '%')
                 {
                     printf ("linter error: modulo by zero!\n");
@@ -6056,6 +6120,7 @@ S2 safety_check_line (U1 *line)
             if (dr.known == 1 && dr.lo <= 0 && dr.hi >= 0)
             {
                 linter_warnings++;
+                warn_line_mark (linenum);
                 printf ("linter error: %s by a value which can be zero (range [%lli, %lli])!\n",
                         safety_tokens[i][0] == '%' ? "modulo" : "division", dr.lo, dr.hi);
                 printf (" > %s\n", line);
@@ -6069,6 +6134,7 @@ S2 safety_check_line (U1 *line)
                 if (dv >= 0 && vars[dv].may_zero == 1)
                 {
                     linter_warnings++;
+                    warn_line_mark (linenum);
                     printf ("linter error: %s by a value which may be zero!\n",
                             safety_tokens[i][0] == '%' ? "modulo" : "division");
                     printf (" > %s\n", line);
@@ -6085,6 +6151,7 @@ S2 safety_check_line (U1 *line)
                     nr.known == 1 && nr.lo <= LLONG_MIN)
                 {
                     linter_warnings++;
+                    warn_line_mark (linenum);
                     printf ("linter error: INT64_MIN / -1 or %% -1 overflow possible!\n");
                     printf (" > %s\n", line);
                 }
@@ -6122,6 +6189,7 @@ S2 safety_check_line (U1 *line)
             if (sr.known == 1 && (sr.lo < 0 || sr.hi > 63))
             {
                 linter_warnings++;
+                warn_line_mark (linenum);
                 printf ("linter error: shift amount out of range [0, 63]: [%lli, %lli]!\n",
                         sr.lo, sr.hi);
                 printf (" > %s\n", line);
@@ -8557,12 +8625,14 @@ U1 handle_annotation_comment (U1 *line)
         if (truth == 0)
         {
             linter_warnings++;
+            warn_line_mark (linenum);
             printf ("linter error: logical bug: assertion is always false at this point!\n");
             printf (" > %s\n", line);
         }
         else if (truth != 1 && (rc == 2 || flow_assert_strict == 1))
         {
             linter_warnings++;
+            warn_line_mark (linenum);
             printf ("linter error: logical bug: assertion could not be proven (assert-strict)!\n");
             printf (" > %s\n", line);
         }
@@ -8575,6 +8645,7 @@ U1 handle_annotation_comment (U1 *line)
         if (rc == 2)
         {
             linter_warnings++;
+            warn_line_mark (linenum);
             printf ("linter error: logical bug: assumption can never hold at this point!\n");
             printf (" > %s\n", line);
         }
@@ -9401,7 +9472,7 @@ S2 ip_analyze_call (U1 *callee, S2 nargs, U1 *call_args[], U1 *line)
     U1 *removed = NULL;
     S2 removed_count = 0;
     FILE *capfile = NULL;
-    int saved_stdout = -1;
+    int saved_stdout;
     char *capture = NULL;
     U1 nested;
 
@@ -9718,7 +9789,6 @@ S2 ip_analyze_call (U1 *callee, S2 nargs, U1 *call_args[], U1 *line)
     {
         dup2 (saved_stdout, 1);
         close (saved_stdout);
-        saved_stdout = -1;
     }
 
     // read the captured diagnostics
@@ -10021,7 +10091,6 @@ int main (int ac, char *av[])
 
                      printf ("linting: ON: line: %lli\n", linenum);
 
-                     linenum++;
                      continue;
                  }
                  if (lintoff != -1)
@@ -10030,14 +10099,12 @@ int main (int ac, char *av[])
 
                      printf ("linting: OFF: line: %lli\n", linenum);
 
-                     linenum++;
                      continue;
                  }
 
                  if (function_args_check != -1)
                  {
                      function_check_stpop = 1;
-                     linenum++;
                      continue;
                  }
 
@@ -10045,14 +10112,12 @@ int main (int ac, char *av[])
                  if (pointer_strict_on != -1)
                  {
                      pointer_strict = 1;
-                     linenum++;
                      continue;
                  }
 
                  if (pointer_strict_off != -1)
                  {
                      pointer_strict = 0;
-                     linenum++;
                      continue;
                  }
 
@@ -10064,13 +10129,11 @@ int main (int ac, char *av[])
                  // CBMC-style assertions and assumptions in comments
                  if (do_lint == 1 && handle_annotation_comment (buf) == 1)
                  {
-                     linenum++;
                      continue;
                  }
 
                  if (pos == -1 && pos2 == -1 && pos3 == -1)
                  {
-                     linenum++;
                      continue;
                  }
             }
@@ -10150,6 +10213,11 @@ int main (int ac, char *av[])
     fclose (flint_status);
 
     fclose (finptr);
+
+    // Optional path-sensitive constraint solving with exact 64 bit L1VM
+    // semantics. It complements the interval analysis and only reports
+    // findings which are proven from the collected path constraints.
+    linter_solver_file (av[1]);
 
     // check if exit interrupt was found
     if (found_exit == 0)
