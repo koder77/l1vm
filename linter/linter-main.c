@@ -7925,6 +7925,17 @@ S2 parse_line (U1 *line)
             }
         }
 
+        // check if "stpop)" is in call line too:
+        {
+            S2 stpop;
+            stpop = searchstr (line, (U1 *) "stpop)", 0, 0, TRUE);
+            if (stpop == -1)
+            {
+                printf ("parse_line: no stpop statement after function call!\n");
+                return (1);
+            }
+        }
+
         i = searchstr (line, (U1 *) "(", 0, 0, TRUE);
         if (i == -1)
         {
