@@ -22,7 +22,7 @@
 
     (set const-string s error_inc_str~ "inc: error!")
 
-    (x~ :incP !) (retR~ incxR~ stpop)
+    (x~ :incP !) (x~ incxR~ stpop)
     (((retR~ zero !=) f~ :=) f~ if)
         (error_inc_str~ :print_s !)
         (:print_n !)

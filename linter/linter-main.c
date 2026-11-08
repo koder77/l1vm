@@ -8206,15 +8206,36 @@ S2 parse_line (U1 *line)
                                 S2 ending_len;
                                 U1 endingstr[MAXSTRLEN] = "R";
                                 S2 pos;
+                                S2 fpos;
+                                S2 function_call = 0;
 
                                 strcat ((char *) endingstr, (const char*) function_name_current);
                                 ending_len = strlen_safe ((const char *) endingstr, MAXSTRLEN);
 
                                 pos = searchstr (type, endingstr, 0, 0, TRUE);
                                 // printf ("DEBUG: pos: %i, type_len: %i, ending_len: %i\n\n", pos, type_ind - 1, ending_len);
-                                if (pos == (type_ind -1) - ending_len)
+                                if (pos == (type_ind - 1) - ending_len)
                                 {
                                     printf ("parse_line: call function: variable ends not with 'R': '%s'!\n", type);
+                                    return (1);
+                                }
+
+                                // check if function call before stpop:
+                                fpos = searchstr (line, (U1 *) "call", 0, 0, TRUE);
+                                if (fpos >= 0)
+                                {
+                                     function_call = 1;
+                                }
+
+                                fpos = searchstr (line, (U1 *) "!", 0, 0, TRUE);
+                                if (fpos >= 0)
+                                {
+                                     function_call = 1;
+                                }
+
+                                if (function_call == 0)
+                                {
+                                    printf ("parse_line: no function call in line before 'stpop' !\n");
                                     return (1);
                                 }
                             }
