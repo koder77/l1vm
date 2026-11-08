@@ -8024,7 +8024,7 @@ S2 parse_line (U1 *line)
                         {
                         if (type[type_len - 1] == 'R')
                         {
-                            printf ("DEBUG: 1 parse_line: call function: variable ends with 'R'! It is a return value!\n");
+                            printf ("parse_line: call function: variable ends with 'R'! It is a return value!\n");
                             return (1);
                         }
                         else
@@ -8040,7 +8040,7 @@ S2 parse_line (U1 *line)
                             pos = searchstr (type, endingstr, 0, 0, TRUE);
                             if (pos == type_len - ending_len)
                             {
-                                printf ("DEBUG: 2 parse_line: call function: variable ends with 'R'! It is a return value!\n");
+                                printf ("parse_line: call function: variable ends with 'R'! It is a return value!\n");
                                 return (1);
                             }
                         }
@@ -8214,7 +8214,7 @@ S2 parse_line (U1 *line)
                                 // printf ("DEBUG: pos: %i, type_len: %i, ending_len: %i\n\n", pos, type_ind - 1, ending_len);
                                 if (pos == (type_ind -1) - ending_len)
                                 {
-                                    printf ("DEBUG: 4 parse_line: call function: variable ends not with 'R': '%s'!\n", type);
+                                    printf ("parse_line: call function: variable ends not with 'R': '%s'!\n", type);
                                     return (1);
                                 }
                             }
