@@ -22,7 +22,7 @@
  * Developed with the help of AI.
  *
  * Usage:
- *   l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6|-O7|-O8] <assembly> <optimized-assembly>
+ *   l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6|-O7|-O8|-Oz] <assembly> <optimized-assembly>
  *
  * The ".l1asm" suffix is added automatically to both file names.
  * "-O1" is the default.  "-O0" disables all optimizations.
@@ -168,6 +168,18 @@
  * overflow check intact.  Every pass is still run to a fixed point with the
  * same conservative safety checks as the lower levels.
  *
+ * "-Oz" is the size oriented mode.  It runs all speed optimizations which do
+ * not increase the generated code: loop rotation and superopcodes, register
+ * promotion, constant folding, copy propagation, dead code elimination,
+ * strength reduction, jump threading and the peephole pass.  Inlining and
+ * loop unrolling are deliberately disabled because they duplicate code.
+ * Additionally -Oz removes everything which is not required to run the
+ * program: unreachable instructions, labels which are never used and
+ * functions which cannot be reached from ":main".  Function and label
+ * removal is skipped completely if the program contains a computed
+ * "jsra"/"jmpa" transfer or uses the JIT compiler, because such code can
+ * be entered without a static call graph edge.
+ *
  * All transformations are conservative: a loop is only changed if the
  * complete canonical pattern is found and the temporaries used by the
  * transformation are provably dead.
@@ -252,6 +264,7 @@ static int symbol_cap = 0;
 
 static int opcode_count = 0;
 static int opt_level = 1;
+static int size_opt = 0;
 
 /* -O7/-O8 relax the conservative inliner and unroller limits. */
 static int inline_max_body = INLINE_MAX_BODY;
@@ -4793,6 +4806,9 @@ typedef struct
     int body_count;                             /* instructions excluding rts */
 } InlineFunc;
 
+static int size_label_in_data (const char *label);
+static int size_has_computed_transfer (void);
+
 /*
  * A function is only a candidate if its body is straight line code with a
  * single exit.  The compiler passes arguments with leading "stpop" and the
@@ -5786,6 +5802,22 @@ static int inline_call_site (int jsr)
     if (target < 0 || strcmp (lines[target].op, ":main") == 0)
     {
         return (0);
+    }
+
+    /*
+     * -Oz only inlines a function when the single jsr is its only reference.
+     * Otherwise the original function has to stay (address taken, tail call
+     * or data reference) and inlining would duplicate the body.
+     */
+    if (size_opt)
+    {
+        int calls = inline_count_calls (target);
+
+        if (count_label_refs (lines[target].op) != calls ||
+            size_label_in_data (lines[target].op))
+        {
+            return (0);
+        }
     }
 
     target_ord = function_ordinal (target);
@@ -7547,7 +7579,7 @@ static int aggr_line_pure (const Line *line)
     static const char *pure_ops[] =
     {
         "movi", "movd",
-        "load", "loadl",
+        "load", "loada", "loadl", "loadd",
         "addi", "subi", "muli", "smuli",
         "andi", "ori", "bandi", "bori", "bxori", "noti",
         "eqi", "neqi", "gri", "lsi", "greqi", "lseqi",
@@ -7949,6 +7981,667 @@ static void optimize_o8 (void)
 }
 
 /* ------------------------------------------------------------------------- */
+/* -Oz: size optimizations                                                   */
+/* ------------------------------------------------------------------------- */
+
+/*
+ * A computed "jsra"/"jmpa" transfer or JIT compiled code can enter code
+ * which is not part of the static call graph.  In that case no code or
+ * label may be removed.
+ */
+static int size_has_computed_transfer (void)
+{
+    int in_code = 0;
+    int i;
+
+    for (i = 0; i < nlines; i++)
+    {
+        Line *line = &lines[i];
+
+        if (! line->active)
+        {
+            continue;
+        }
+
+        if (line->kind == LINE_DIRECTIVE)
+        {
+            if (strcmp (line->op, ".code") == 0)
+            {
+                in_code = 1;
+            }
+            else if (strcmp (line->op, ".cend") == 0)
+            {
+                in_code = 0;
+            }
+            continue;
+        }
+
+        if (! in_code || line->kind != LINE_INSTR)
+        {
+            continue;
+        }
+
+        if (op_is (line, "jsra") || op_is (line, "jmpa"))
+        {
+            return (1);
+        }
+
+        /* the JIT compiler can execute code which is not in the call graph */
+        if (op_is (line, "intr0") && line->argc >= 1 &&
+            (strcmp (line->args[0], "253") == 0 ||
+             strcmp (line->args[0], "254") == 0))
+        {
+            return (1);
+        }
+    }
+    return (0);
+}
+
+/*
+ * Check whether "label" is mentioned by an active instruction or data line.
+ * Data lines are parsed as instructions too, so a label stored in the data
+ * section keeps the label alive.
+ */
+static int size_label_has_reference (const char *label)
+{
+    int i;
+
+    for (i = 0; i < nlines; i++)
+    {
+        Line *line = &lines[i];
+        int arg;
+
+        if (! line->active || line->kind != LINE_INSTR)
+        {
+            continue;
+        }
+
+        for (arg = 0; arg < line->argc && arg < OPT_MAX_ARGS; arg++)
+        {
+            if (strcmp (line->args[arg], label) == 0)
+            {
+                return (1);
+            }
+        }
+    }
+    return (0);
+}
+
+/* Check whether a label is stored in the data section. */
+static int size_label_in_data (const char *label)
+{
+    int in_data = 0;
+    int i;
+
+    for (i = 0; i < nlines; i++)
+    {
+        Line *line = &lines[i];
+        int arg;
+
+        if (! line->active)
+        {
+            continue;
+        }
+
+        if (line->kind == LINE_DIRECTIVE)
+        {
+            if (strcmp (line->op, ".data") == 0)
+            {
+                in_data = 1;
+            }
+            else if (strcmp (line->op, ".dend") == 0)
+            {
+                in_data = 0;
+            }
+            continue;
+        }
+
+        if (! in_data || line->kind != LINE_INSTR)
+        {
+            continue;
+        }
+
+        for (arg = 0; arg < line->argc && arg < OPT_MAX_ARGS; arg++)
+        {
+            if (strcmp (line->args[arg], label) == 0)
+            {
+                return (1);
+            }
+        }
+    }
+    return (0);
+}
+
+/*
+ * Follow a label through directly following labels and unconditional
+ * "jmp" instructions.  Jumping to the first label is then equivalent to
+ * jumping to the returned label.
+ */
+static void size_resolve_label (const char *label, char *out, size_t out_size)
+{
+    char current[OPT_ARG_MAX];
+    int guard;
+
+    strncpy (current, label, OPT_ARG_MAX - 1);
+    current[OPT_ARG_MAX - 1] = '\0';
+
+    for (guard = 0; guard < 256; guard++)
+    {
+        int index = find_label (current);
+        int next;
+
+        if (index < 0)
+        {
+            break;
+        }
+
+        next = next_line_any (index);
+        if (next < 0)
+        {
+            break;
+        }
+
+        if (lines[next].kind == LINE_LABEL)
+        {
+            if (strcmp (lines[next].op, current) == 0)
+            {
+                break;
+            }
+            strncpy (current, lines[next].op, OPT_ARG_MAX - 1);
+            current[OPT_ARG_MAX - 1] = '\0';
+            continue;
+        }
+
+        if (lines[next].kind == LINE_INSTR && op_is (&lines[next], "jmp") &&
+            lines[next].argc >= 1)
+        {
+            if (strcmp (lines[next].args[0], current) == 0)
+            {
+                break;
+            }
+            strncpy (current, lines[next].args[0], OPT_ARG_MAX - 1);
+            current[OPT_ARG_MAX - 1] = '\0';
+            continue;
+        }
+
+        break;
+    }
+
+    strncpy (out, current, out_size - 1);
+    out[out_size - 1] = '\0';
+}
+
+/*
+ * Retarget direct jumps and calls to the final target of a label chain.
+ * This removes a jump at runtime and lets the size passes delete the now
+ * unused intermediate label.
+ */
+static int size_thread_jumps (void)
+{
+    int changed = 0;
+    int i;
+
+    for (i = 0; i < nlines; i++)
+    {
+        Line *line = &lines[i];
+        int label_arg = -1;
+        char resolved[OPT_ARG_MAX];
+
+        if (! line->active || line->kind != LINE_INSTR)
+        {
+            continue;
+        }
+
+        if (op_is (line, "jmp") || op_is (line, "jsr"))
+        {
+            label_arg = 0;
+        }
+        else if (op_is (line, "jmpi"))
+        {
+            label_arg = 1;
+        }
+        else if (op_is (line, "inclsijmpi") || op_is (line, "decgrijmpi"))
+        {
+            label_arg = 2;
+        }
+
+        if (label_arg < 0 || label_arg >= line->argc)
+        {
+            continue;
+        }
+
+        size_resolve_label (line->args[label_arg], resolved, sizeof (resolved));
+        if (strcmp (resolved, line->args[label_arg]) != 0)
+        {
+            strcpy (line->args[label_arg], resolved);
+            aggr_rewrite_line (line);
+            changed = 1;
+        }
+    }
+    return (changed);
+}
+
+/*
+ * Remove instructions which are not reachable because the previous
+ * instruction transfers control unconditionally.  Labels start a new
+ * reachable block.
+ */
+static int size_remove_unreachable (void)
+{
+    int in_code = 0;
+    int dead = 0;
+    int removed = 0;
+    int i;
+
+    if (size_has_computed_transfer ())
+    {
+        return (0);
+    }
+
+    for (i = 0; i < nlines; i++)
+    {
+        Line *line = &lines[i];
+
+        if (! line->active)
+        {
+            continue;
+        }
+
+        if (line->kind == LINE_DIRECTIVE)
+        {
+            if (strcmp (line->op, ".code") == 0)
+            {
+                in_code = 1;
+                dead = 0;
+            }
+            else if (strcmp (line->op, ".cend") == 0)
+            {
+                in_code = 0;
+                dead = 0;
+            }
+            continue;
+        }
+
+        if (! in_code)
+        {
+            continue;
+        }
+
+        if (line->kind == LINE_LABEL)
+        {
+            dead = 0;
+            continue;
+        }
+
+        if (line->kind != LINE_INSTR)
+        {
+            continue;
+        }
+
+        if (dead)
+        {
+            line->active = 0;
+            removed++;
+            continue;
+        }
+
+        if (op_is (line, "jmp") || op_is (line, "rts") || op_is (line, "jmpa"))
+        {
+            dead = 1;
+        }
+    }
+    return (removed);
+}
+
+/* Remove labels which are neither a function entry nor referenced. */
+static int size_remove_unused_labels (void)
+{
+    int in_code = 0;
+    int removed = 0;
+    int i;
+
+    if (size_has_computed_transfer ())
+    {
+        return (0);
+    }
+
+    for (i = 0; i < nlines; i++)
+    {
+        Line *line = &lines[i];
+
+        if (! line->active)
+        {
+            continue;
+        }
+
+        if (line->kind == LINE_DIRECTIVE)
+        {
+            if (strcmp (line->op, ".code") == 0)
+            {
+                in_code = 1;
+            }
+            else if (strcmp (line->op, ".cend") == 0)
+            {
+                in_code = 0;
+            }
+            continue;
+        }
+
+        if (! in_code || line->kind != LINE_LABEL)
+        {
+            continue;
+        }
+
+        if (strcmp (line->op, ":main") == 0 || function_ordinal (i) >= 0)
+        {
+            continue;
+        }
+
+        if (! size_label_has_reference (line->op))
+        {
+            line->active = 0;
+            removed++;
+        }
+    }
+    return (removed);
+}
+
+/*
+ * Check whether a label inside [start, end) is referenced from outside the
+ * function region.  This catches jumps, calls, loaded addresses and labels
+ * stored in the data section.
+ */
+static int size_region_externally_referenced (int start, int end)
+{
+    int i;
+
+    for (i = 0; i < nlines; i++)
+    {
+        Line *line = &lines[i];
+        int arg;
+
+        if (! line->active || (i >= start && i < end) ||
+            line->kind != LINE_INSTR)
+        {
+            continue;
+        }
+
+        for (arg = 0; arg < line->argc && arg < OPT_MAX_ARGS; arg++)
+        {
+            const char *name = line->args[arg];
+            int target;
+
+            if (name[0] != ':')
+            {
+                continue;
+            }
+
+            target = find_label (name);
+            if (target >= start && target < end)
+            {
+                return (1);
+            }
+        }
+    }
+    return (0);
+}
+
+/*
+ * The line before a function entry must transfer control unconditionally,
+ * otherwise the function can be entered by fallthrough.
+ */
+static int size_function_has_clean_entry (int start)
+{
+    int i;
+
+    for (i = start - 1; i >= 0; i--)
+    {
+        Line *line = &lines[i];
+
+        if (! line->active || line->kind == LINE_BLANK ||
+            line->kind == LINE_COMMENT)
+        {
+            continue;
+        }
+
+        if (line->kind == LINE_DIRECTIVE)
+        {
+            return (strcmp (line->op, ".code") == 0);
+        }
+
+        if (line->kind != LINE_INSTR)
+        {
+            return (0);
+        }
+
+        return (op_is (line, "jmp") || op_is (line, "rts") ||
+                op_is (line, "jmpa"));
+    }
+    return (1);
+}
+
+/*
+ * End of the code region which starts at "start".  This is the next function
+ * entry, but never beyond the terminating ".cend" directive.  Otherwise the
+ * last function in a file would extend into a following ".data" section and
+ * the removal pass would delete its data lines.
+ */
+static int size_code_region_end (int start)
+{
+    int end = function_region_end (start);
+    int i;
+
+    for (i = start; i < end; i++)
+    {
+        Line *line = &lines[i];
+
+        if (! line->active || line->kind != LINE_DIRECTIVE)
+        {
+            continue;
+        }
+
+        if (strcmp (line->op, ".cend") == 0)
+        {
+            return (i);
+        }
+    }
+    return (end);
+}
+
+/*
+ * Remove functions which are not reachable from ":main".  The reachability
+ * walk follows calls, jumps and loaded label addresses.  A function is only
+ * removed if it is not referenced from outside its own region and cannot be
+ * entered by fallthrough.
+ */
+static int size_remove_unused_functions (void)
+{
+    int *reachable = NULL;
+    int *queue = NULL;
+    int head = 0;
+    int tail = 0;
+    int main_ord;
+    int removed = 0;
+    int i;
+
+    if (size_has_computed_transfer ())
+    {
+        return (0);
+    }
+
+    main_ord = function_ordinal (find_label (":main"));
+    if (main_ord < 0)
+    {
+        return (0);
+    }
+
+    reachable = (int *) xmalloc ((size_t) nfunc_starts * sizeof (int));
+    queue = (int *) xmalloc ((size_t) nfunc_starts * sizeof (int));
+    memset (reachable, 0, (size_t) nfunc_starts * sizeof (int));
+
+    /* a function address stored in the data section can be called indirectly */
+    for (i = 0; i < nfunc_starts; i++)
+    {
+        if (size_label_in_data (lines[func_starts[i]].op) && ! reachable[i])
+        {
+            reachable[i] = 1;
+            queue[tail++] = i;
+        }
+    }
+
+    if (! reachable[main_ord])
+    {
+        reachable[main_ord] = 1;
+        queue[tail++] = main_ord;
+    }
+
+    while (head < tail)
+    {
+        int ord = queue[head++];
+        int start = func_starts[ord];
+        int end = size_code_region_end (start);
+        int j;
+
+        for (j = start; j < end; j++)
+        {
+            Line *line = &lines[j];
+            int arg;
+
+            if (! line->active || line->kind != LINE_INSTR)
+            {
+                continue;
+            }
+
+            if (op_is (line, "jsra") || op_is (line, "jmpa"))
+            {
+                /* should have been caught above, keep everything */
+                int k;
+
+                for (k = 0; k < nfunc_starts; k++)
+                {
+                    if (! reachable[k])
+                    {
+                        reachable[k] = 1;
+                        queue[tail++] = k;
+                    }
+                }
+                continue;
+            }
+
+            for (arg = 0; arg < line->argc && arg < OPT_MAX_ARGS; arg++)
+            {
+                int target;
+
+                if (! instr_arg_is_label (line, arg))
+                {
+                    continue;
+                }
+
+                target = function_ordinal (find_label (line->args[arg]));
+                if (target >= 0 && ! reachable[target])
+                {
+                    reachable[target] = 1;
+                    queue[tail++] = target;
+                }
+            }
+        }
+    }
+
+    for (i = 0; i < nfunc_starts; i++)
+    {
+        int start;
+        int end;
+        int j;
+
+        if (reachable[i] || strcmp (lines[func_starts[i]].op, ":main") == 0)
+        {
+            continue;
+        }
+
+        start = func_starts[i];
+        end = size_code_region_end (start);
+        if (start < 0 || end <= start)
+        {
+            continue;
+        }
+
+        if (! size_function_has_clean_entry (start) ||
+            size_region_externally_referenced (start, end))
+        {
+            continue;
+        }
+
+        for (j = start; j < end; j++)
+        {
+            if (lines[j].active &&
+                (lines[j].kind == LINE_INSTR || lines[j].kind == LINE_LABEL))
+            {
+                lines[j].active = 0;
+                removed++;
+            }
+        }
+    }
+
+    free (reachable);
+    free (queue);
+    return (removed);
+}
+
+/*
+ * -Oz: run the speed optimizations which do not grow the code and then
+ * remove everything which is not needed to run the program.
+ */
+static void optimize_oz (void)
+{
+    uint64_t last_signature = 0;
+    int round;
+
+    for (round = 0; round < 8; round++)
+    {
+        uint64_t signature;
+
+        materialize_transformations ();
+
+        compute_used_regs ();
+        optimize_simple_loops ();
+        optimize_rotated_loops ();
+        promote_function_locals (opt_level);
+
+        /*
+         * Inline only single call functions.  Their body is moved instead of
+         * copied and the original function is removed by the size pass
+         * below, so this improves speed without growing the code.  Computed
+         * transfers prevent the removal pass, therefore don't inline then.
+         */
+        if (! size_has_computed_transfer ())
+        {
+            inline_functions ();
+        }
+
+        optimize_aggressive ();
+        peephole ();
+
+        materialize_transformations ();
+        build_function_starts ();
+
+        size_thread_jumps ();
+        size_remove_unused_functions ();
+        size_remove_unreachable ();
+        size_remove_unused_labels ();
+        recompute_used_regs ();
+
+        signature = optimize_code_signature ();
+        if (round > 0 && signature == last_signature)
+        {
+            break;
+        }
+        last_signature = signature;
+    }
+
+    recompute_used_regs ();
+}
+
+/* ------------------------------------------------------------------------- */
 /* peephole                                                                  */
 /* ------------------------------------------------------------------------- */
 
@@ -8118,7 +8811,7 @@ static void read_input (const char *filename)
 
 static void show_info (void)
 {
-    printf ("l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6|-O7|-O8] <assembly> <optimized-assembly>\n\n");
+    printf ("l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6|-O7|-O8|-Oz] <assembly> <optimized-assembly>\n\n");
     printf ("optimizes the L1VM assembly file '<assembly>.l1asm' and writes\n");
     printf ("the result to '<optimized-assembly>.l1asm'.\n\n");
     printf ("  -O0  no optimization\n");
@@ -8132,6 +8825,9 @@ static void show_info (void)
     printf ("       folding, copy propagation and dead code elimination\n");
     printf ("  -O8  all from -O7 with higher limits, repeated up to four rounds\n");
     printf ("       until stable, plus strength reduction of multiplications by two\n");
+    printf ("  -Oz  size optimized: all speed passes which do not grow the code,\n");
+    printf ("       no inlining or unrolling, plus removal of unreachable code,\n");
+    printf ("       unused labels and functions not reachable from ':main'\n");
 }
 
 int main (int ac, char *av[])
@@ -8184,6 +8880,11 @@ int main (int ac, char *av[])
         {
             opt_level = 8;
         }
+        else if (strcmp (av[arg], "-Oz") == 0)
+        {
+            opt_level = 8;
+            size_opt = 1;
+        }
         else
         {
             show_info ();
@@ -8205,6 +8906,13 @@ int main (int ac, char *av[])
         inline_max_calls = 32;
         unroll_max_factor = 16;
         strength_reduce = 1;
+    }
+
+    if (size_opt)
+    {
+        /* -Oz moves single call functions instead of copying them. */
+        inline_max_body = 32;
+        inline_max_calls = 1;
     }
 
     if (ac - arg != 2)
@@ -8236,7 +8944,11 @@ int main (int ac, char *av[])
     collect_data_symbols ();
     compute_used_regs ();
 
-    if (opt_level >= 8)
+    if (size_opt)
+    {
+        optimize_oz ();
+    }
+    else if (opt_level >= 8)
     {
         optimize_o8 ();
     }
