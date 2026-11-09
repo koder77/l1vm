@@ -74,6 +74,8 @@
  *
  *  - Redundant self moves ("movi 1, 1") are removed.
  *  - An unconditional jump to the directly following label is removed.
+ *  - An address load whose destination register is overwritten before it is
+ *    read is removed.
  *
  * With "-O2" the optimizer also promotes scalar variables of non-main
  * functions into registers. Variables which the compiler scoped to a
@@ -89,11 +91,11 @@
  * variable is kept in its register only.  Otherwise the value is loaded
  * once on function entry and written back before every "rts".
  *
- * With "-O4" the optimizer also recognizes compiler locals which use the
- * plain "namefunction" suffix, for example "numsquare_int" inside
- * ":square_int".  If a local is always stored from and read into the same
- * register, that register is reused, so the memory accesses can be removed
- * completely:
+ * "-O2" also promotes compiler locals which use the plain "namefunction"
+ * suffix, for example "numsquare_int" inside ":square_int", and globals
+ * which are referenced by only one function.  These are first moved into
+ * fresh registers.  "-O4" then reuses the register which already holds the
+ * value when possible, so the memory accesses can be removed completely:
  *
  *        load numsquare_int, 0, 2        (removed)
  *        pullqw 1, 2, 0
@@ -105,9 +107,9 @@
  * Register reuse is limited to straight line code without calls; otherwise
  * a fresh register is used as in "-O2".
  *
- * "-O4" also promotes plain globals which are referenced by only one
- * function.  Such a variable cannot be observed by another function, so it
- * is handled like a function local:
+ * The same treatment applies to plain globals which are referenced by only
+ * one function.  Such a variable cannot be observed by another function, so
+ * it is handled like a function local:
  *
  *        max, ind, num and friends in ":3x1"
  *
@@ -2886,11 +2888,158 @@ static int function_region_end (int start)
 }
 
 /*
+ * Labels passed to "intr0 253" as the JIT start/end address are code
+ * addresses, not function entries.  Treating them as function entries splits
+ * the surrounding function and can place read-only global entry loads inside
+ * the JIT region.  The JIT compiler flushes dirty registers at loop labels,
+ * which can clobber values which are live across a back edge.
+ */
+static int *find_jit_boundary_labels (void)
+{
+    int *marked;
+    int i;
+
+    if (nlines <= 0)
+    {
+        return (NULL);
+    }
+
+    marked = (int *) xmalloc ((size_t) nlines * sizeof (int));
+    memset (marked, 0, (size_t) nlines * sizeof (int));
+
+    for (i = 0; i < nlines; i++)
+    {
+        Line *line = &lines[i];
+        long long intr;
+        int start_reg;
+        int end_reg;
+        int start_resolved;
+        int end_resolved;
+        int j;
+
+        if (! line->active || line->kind != LINE_INSTR ||
+            ! op_is (line, "intr0") || line->argc < 3)
+        {
+            continue;
+        }
+        if (! parse_number_token (line->args[0], &intr) || intr != 253)
+        {
+            continue;
+        }
+
+        start_reg = parse_register_token (line->args[1]);
+        end_reg = parse_register_token (line->args[2]);
+        if (start_reg < 0 || end_reg < 0)
+        {
+            continue;
+        }
+
+        start_resolved = 0;
+        end_resolved = 0;
+
+        for (j = i - 1; j >= 0 && (! start_resolved || ! end_resolved); j--)
+        {
+            Line *prev = &lines[j];
+
+            if (! prev->active)
+            {
+                continue;
+            }
+            if (prev->kind == LINE_BLANK || prev->kind == LINE_COMMENT)
+            {
+                continue;
+            }
+            if (prev->kind != LINE_INSTR)
+            {
+                break;
+            }
+            if (is_jump_op (prev->op) ||
+                op_is (prev, "inclsijmpi") || op_is (prev, "decgrijmpi"))
+            {
+                break;
+            }
+
+            if (! start_resolved && instr_writes_ireg (prev, start_reg))
+            {
+                if (op_is (prev, "loadl") && prev->argc >= 2 &&
+                    parse_register_token (prev->args[1]) == start_reg)
+                {
+                    int label_line = find_label (prev->args[0]);
+
+                    if (label_line >= 0)
+                    {
+                        marked[label_line] = 1;
+                    }
+                }
+                start_resolved = 1;
+            }
+
+            if (! end_resolved && instr_writes_ireg (prev, end_reg))
+            {
+                if (op_is (prev, "loadl") && prev->argc >= 2 &&
+                    parse_register_token (prev->args[1]) == end_reg)
+                {
+                    int label_line = find_label (prev->args[0]);
+
+                    if (label_line >= 0)
+                    {
+                        marked[label_line] = 1;
+                    }
+                }
+                end_resolved = 1;
+            }
+        }
+    }
+    return (marked);
+}
+
+/*
+ * Mark every line which belongs to a JIT region.  The optimizer must not
+ * move or remove instructions across the loop labels of a JIT region: the
+ * JIT compiler keeps its own register state at those labels and a rewrite
+ * which is valid for the interpreter can be miscompiled by the JIT.
+ */
+static int *find_jit_region_mask (void)
+{
+    int *boundary;
+    int *mask;
+    int in_region = 0;
+    int i;
+
+    if (nlines <= 0)
+    {
+        return (NULL);
+    }
+
+    boundary = find_jit_boundary_labels ();
+    mask = (int *) xmalloc ((size_t) nlines * sizeof (int));
+    memset (mask, 0, (size_t) nlines * sizeof (int));
+
+    for (i = 0; i < nlines; i++)
+    {
+        if (boundary != NULL && boundary[i])
+        {
+            in_region = ! in_region;
+            mask[i] = 1;
+        }
+        else
+        {
+            mask[i] = in_region;
+        }
+    }
+
+    free (boundary);
+    return (mask);
+}
+
+/*
  * Function entries are "main", every label used by jsr or loadl and every
  * label which has compiler generated local variables ("name@function").
+ * Labels which the JIT uses as code addresses are not function entries.
  */
 static void build_function_starts (void)
 {
+    int *jit_labels;
     int i;
 
     free (func_starts);
@@ -2898,6 +3047,8 @@ static void build_function_starts (void)
     nfunc_starts = 0;
 
     add_function_start (find_label (":main"));
+
+    jit_labels = find_jit_boundary_labels ();
 
     for (i = 0; i < nlines; i++)
     {
@@ -2918,10 +3069,19 @@ static void build_function_starts (void)
         {
             if (instr_arg_is_label (line, arg))
             {
-                add_function_start (find_label (line->args[arg]));
+                int label_line = find_label (line->args[arg]);
+
+                if (jit_labels != NULL && label_line >= 0 &&
+                    jit_labels[label_line])
+                {
+                    continue;
+                }
+                add_function_start (label_line);
             }
         }
     }
+
+    free (jit_labels);
 
     for (i = 0; i < nsymbols; i++)
     {
@@ -2996,6 +3156,7 @@ static int function_label_for_suffix (const char *name)
 
 static void build_call_graph (void)
 {
+    int *jit_labels;
     int i;
 
     if (func_nodes != NULL)
@@ -3010,6 +3171,7 @@ static void build_call_graph (void)
     func_nodes = (FuncNode *) xmalloc ((size_t) nfunc_starts * sizeof (FuncNode));
     memset (func_nodes, 0, (size_t) nfunc_starts * sizeof (FuncNode));
     func_nodes_count = nfunc_starts;
+    jit_labels = find_jit_boundary_labels ();
 
     for (i = 0; i < nfunc_starts; i++)
     {
@@ -3026,10 +3188,23 @@ static void build_call_graph (void)
                 continue;
             }
 
-            if (op_is (line, "jsra") || op_is (line, "loadl") ||
-                op_is (line, "jmpa"))
+            if (op_is (line, "jsra") || op_is (line, "jmpa"))
             {
                 func_nodes[i].unsafe = 1;
+            }
+            else if (op_is (line, "loadl"))
+            {
+                int target = (line->argc > 0) ? find_label (line->args[0]) : -1;
+
+                /*
+                 * Loading the start or end address of a JIT region is not a
+                 * computed call.  The JIT region is part of this function and
+                 * is entered at the matching "intr0 254".
+                 */
+                if (jit_labels == NULL || target < 0 || ! jit_labels[target])
+                {
+                    func_nodes[i].unsafe = 1;
+                }
             }
 
             if (! op_is (line, "jsr"))
@@ -3065,6 +3240,8 @@ static void build_call_graph (void)
             }
         }
     }
+
+    free (jit_labels);
 }
 
 static int function_reaches (int from, int current, int *visited)
@@ -4503,7 +4680,7 @@ static void promote_function_locals (int level)
             snprintf (label, sizeof (label), ":%s", at + 1);
             owner = find_label (label);
         }
-        else if (aggressive)
+        else if (aggressive || level >= 2)
         {
             owner = function_label_for_suffix (sym->name);
             if (owner < 0)
@@ -7464,6 +7641,7 @@ identity_or_unknown:
  */
 static int aggressive_copy_propagate (void)
 {
+    int *jit_region = find_jit_region_mask ();
     int changed = 0;
     int i;
 
@@ -7477,6 +7655,12 @@ static int aggressive_copy_propagate (void)
         if (! line->active || line->kind != LINE_INSTR ||
             line->pre != NULL || line->post != NULL ||
             ! op_is (line, "movi") || line->argc < 2)
+        {
+            continue;
+        }
+
+        /* the JIT compiler has its own register state at region labels */
+        if (jit_region != NULL && jit_region[i])
         {
             continue;
         }
@@ -7571,6 +7755,7 @@ static int aggressive_copy_propagate (void)
             }
         }
     }
+    free (jit_region);
     return (changed);
 }
 
@@ -8645,6 +8830,56 @@ static void optimize_oz (void)
 /* peephole                                                                  */
 /* ------------------------------------------------------------------------- */
 
+/*
+ * A "loada"/"loadl" only computes an address in a register.  If the target
+ * register is overwritten before it is read, the load has no effect.  Labels,
+ * control flow and instructions with attached text stop the search because
+ * another path may use the register.
+ */
+static int dead_address_load (int index, int dst)
+{
+    int i;
+
+    for (i = index + 1; i < nlines; i++)
+    {
+        Line *line = &lines[i];
+
+        if (! line->active)
+        {
+            continue;
+        }
+        if (line->kind == LINE_BLANK || line->kind == LINE_COMMENT)
+        {
+            continue;
+        }
+        if (line->kind != LINE_INSTR)
+        {
+            return (0);
+        }
+        if (line->pre != NULL || line->post != NULL || line->replace != NULL)
+        {
+            return (0);
+        }
+        if (is_jump_op (line->op) ||
+            op_is (line, "inclsijmpi") || op_is (line, "decgrijmpi") ||
+            op_is (line, "rts") || op_is (line, "intr0") ||
+            op_is (line, "intr1") || op_is (line, "jsr") ||
+            op_is (line, "jsra"))
+        {
+            return (0);
+        }
+        if (instr_reads_ireg (line, dst))
+        {
+            return (0);
+        }
+        if (instr_writes_ireg (line, dst))
+        {
+            return (1);
+        }
+    }
+    return (0);
+}
+
 static void peephole (void)
 {
     int in_code = 0;
@@ -8682,6 +8917,27 @@ static void peephole (void)
         {
             line->active = 0;
             continue;
+        }
+
+        if ((op_is (line, "loada") || op_is (line, "loadl")) &&
+            line->pre == NULL && line->post == NULL && line->replace == NULL)
+        {
+            int dst = -1;
+
+            if (op_is (line, "loada") && line->argc >= 3)
+            {
+                dst = parse_register_token (line->args[2]);
+            }
+            else if (op_is (line, "loadl") && line->argc >= 2)
+            {
+                dst = parse_register_token (line->args[1]);
+            }
+
+            if (dst >= 0 && dead_address_load (i, dst))
+            {
+                line->active = 0;
+                continue;
+            }
         }
 
         if (op_is (line, "jmp") && line->argc >= 1)
@@ -8816,9 +9072,10 @@ static void show_info (void)
     printf ("the result to '<optimized-assembly>.l1asm'.\n\n");
     printf ("  -O0  no optimization\n");
     printf ("  -O1  loop and peephole optimizations (default)\n");
-    printf ("  -O2  additionally promote function local variables to registers\n");
-    printf ("  -O4  additionally promote plain-suffix locals, single-function globals\n");
-    printf ("       and read only globals to registers\n");
+    printf ("  -O2  additionally promote function locals, plain-suffix locals and\n");
+    printf ("       single-function globals to registers\n");
+    printf ("  -O4  additionally reuse natural registers and promote read only\n");
+    printf ("       globals to registers\n");
     printf ("  -O5  additionally inline small leaf functions\n");
     printf ("  -O6  all from -O4 and -O5 plus loop unrolling\n");
     printf ("  -O7  all from -O6 plus aggressive inlining and unrolling, constant\n");
