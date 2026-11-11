@@ -161,7 +161,9 @@
  * "-O7" enables all of the above with more aggressive limits (96 body
  * instructions and 16 call sites for the inliner, unroll factor 8) and adds
  * a constant propagation and folding pass, forward copy propagation inside
- * straight line blocks and liveness based dead code elimination.
+ * straight line blocks and liveness based dead code elimination.  Interrupt
+ * liveness uses the register operands an interrupt actually accesses, so
+ * unused placeholder registers do not keep dead values alive.
  *
  * "-O8" repeats the complete -O7 pipeline until no further changes are made
  * and raises the limits once more (192 body instructions, 32 call sites for
@@ -6873,6 +6875,14 @@ static void optimize_loop_unroll (void)
 
 #define AGGR_REGSET_WORDS ((MAXREG + 63) / 64)
 
+/*
+ * Liveness is tracked by register number, not by bank.  The integer and
+ * double banks both use the numbers 0..MAXREG-1, so marking a number keeps
+ * both the integer and the double register of that number alive.  This is
+ * intentionally conservative: it can keep an unrelated integer value alive
+ * when only the double register with the same number is used, but it never
+ * removes a live value.
+ */
 typedef struct
 {
     uint64_t word[AGGR_REGSET_WORDS];
@@ -7759,6 +7769,57 @@ static int aggressive_copy_propagate (void)
     return (changed);
 }
 
+/*
+ * Interrupts normally access only the register operands encoded in the
+ * instruction.  Return the number of encoded register operands which the
+ * interrupt actually uses.  A negative result means the interrupt can access
+ * the complete register file (debugger, JIT compiler, JIT execution, or an
+ * unknown opcode), so liveness has to keep every register alive.
+ */
+static int intr_reg_operand_count (const Line *line)
+{
+    long long number;
+
+    if (! (op_is (line, "intr0") || op_is (line, "intr1")))
+    {
+        return (-1);
+    }
+    if (line->argc < 1 || ! parse_number_token (line->args[0], &number))
+    {
+        return (-1);
+    }
+
+    if (op_is (line, "intr0"))
+    {
+        switch (number)
+        {
+            case 7:  case 14: case 24: case 26: case 27:
+            case 38: case 39: case 40:
+                return (0);
+            case 0:  case 3:  case 11: case 13: case 20:
+            case 21: case 30: case 31: case 33:
+                return (2);
+            case 2:  case 17: case 18: case 28: case 29:
+                return (3);
+            case 37:                                /* debugger */
+            case 253:                               /* JIT compiler */
+            case 254:                               /* run JIT code */
+                return (-1);
+            default:
+                return (1);
+        }
+    }
+
+    switch (number)
+    {
+        case 1:  case 2:  case 3:  case 8:  case 9:
+        case 10: case 11: case 12: case 13: case 14:
+            return (0);
+        default:
+            return (1);
+    }
+}
+
 static int aggr_line_pure (const Line *line)
 {
     static const char *pure_ops[] =
@@ -7891,7 +7952,35 @@ static int aggressive_dead_code (void)
 
         if (aggr_opaque (line))
         {
-            aggr_set_all (&uses[i]);
+            int intr_operands = intr_reg_operand_count (line);
+
+            if (intr_operands < 0)
+            {
+                aggr_set_all (&uses[i]);
+            }
+            else
+            {
+                /*
+                 * The interrupt number is not a register.  Only the encoded
+                 * register operands it actually uses may be read or written.
+                 * Marking both keeps the liveness conservative while no
+                 * longer keeping every unrelated register alive.
+                 */
+                for (arg = 1; arg <= intr_operands && arg < line->argc &&
+                              arg < OPT_MAX_ARGS; arg++)
+                {
+                    if (instr_arg_is_ireg (line, arg))
+                    {
+                        int reg = parse_register_token (line->args[arg]);
+
+                        if (reg >= 0)
+                        {
+                            aggr_set_add (&uses[i], reg);
+                            aggr_set_add (&defs[i], reg);
+                        }
+                    }
+                }
+            }
         }
         else
         {
