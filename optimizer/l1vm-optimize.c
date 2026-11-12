@@ -22,7 +22,7 @@
  * Developed with the help of AI.
  *
  * Usage:
- *   l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6|-O7|-O8|-Oz] <assembly> <optimized-assembly>
+ *   l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6|-O7|-O8|-Oz|-Oz2] <assembly> <optimized-assembly>
  *
  * The ".l1asm" suffix is added automatically to both file names.
  * "-O1" is the default.  "-O0" disables all optimizations.
@@ -184,6 +184,17 @@
  * "jsra"/"jmpa" transfer or uses the JIT compiler, because such code can
  * be entered without a static call graph edge.
  *
+ * "-Oz2" is compactness first, speed second.  It first runs the complete
+ * "-Oz" size pipeline and uses the resulting size as a budget.  Then it runs
+ * the aggressive "-O8" speed pipeline on the original code, because the size
+ * passes may remove the conventional function prologue which the inliner
+ * needs.  The faster version is kept only if neither its rendered size nor
+ * its instruction count is larger than the compact result.  So "-Oz2" never
+ * produces bigger code than "-Oz", but it can still inline or unroll when
+ * those transformations fit into the same size and therefore make the
+ * program faster.  The same computed transfer and JIT safety checks as in
+ * "-Oz" apply to the removal passes.
+ *
  * All transformations are conservative: a loop is only changed if the
  * complete canonical pattern is found and the temporaries used by the
  * transformation are provably dead.
@@ -269,6 +280,7 @@ static int symbol_cap = 0;
 static int opcode_count = 0;
 static int opt_level = 1;
 static int size_opt = 0;
+static int size_opt2 = 0;
 
 /* -O7/-O8 relax the conservative inliner and unroller limits. */
 static int inline_max_body = INLINE_MAX_BODY;
@@ -321,6 +333,25 @@ static char *xstrdup (const char *str)
 
     memcpy (copy, str, len + 1);
     return (copy);
+}
+
+static void free_line_array (Line *arr, int count)
+{
+    int i;
+
+    if (arr == NULL)
+    {
+        return;
+    }
+
+    for (i = 0; i < count; i++)
+    {
+        free (arr[i].text);
+        free (arr[i].pre);
+        free (arr[i].replace);
+        free (arr[i].post);
+    }
+    free (arr);
 }
 
 static char *trim (char *str)
@@ -4958,14 +4989,7 @@ static int materialize_transformations (void)
         }
     }
 
-    for (i = 0; i < nlines; i++)
-    {
-        free (lines[i].text);
-        free (lines[i].pre);
-        free (lines[i].replace);
-        free (lines[i].post);
-    }
-    free (lines);
+    free_line_array (lines, nlines);
 
     lines = newlines;
     nlines = newcount;
@@ -8915,6 +8939,239 @@ static void optimize_oz (void)
     recompute_used_regs ();
 }
 
+/*
+ * Rendered size of the active output in bytes.  This mirrors write_output()
+ * and includes replacements and the text attached to a line.
+ */
+static long long output_size_bytes (void)
+{
+    long long size = 0;
+    int i;
+
+    for (i = 0; i < nlines; i++)
+    {
+        Line *line = &lines[i];
+
+        if (! line->active)
+        {
+            continue;
+        }
+
+        if (line->pre != NULL)
+        {
+            size += (long long) strlen (line->pre) + 1;
+        }
+
+        if (line->replace != NULL)
+        {
+            size += (long long) strlen (line->replace) + 1;
+        }
+        else if (line->text != NULL)
+        {
+            size += (long long) strlen (line->text) + 1;
+        }
+
+        if (line->post != NULL)
+        {
+            size += (long long) strlen (line->post) + 1;
+        }
+    }
+    return (size);
+}
+
+/* Number of active instruction lines; data lines are unchanged by -Oz2. */
+static int output_instruction_count (void)
+{
+    int count = 0;
+    int i;
+
+    for (i = 0; i < nlines; i++)
+    {
+        if (lines[i].active && lines[i].kind == LINE_INSTR)
+        {
+            count++;
+        }
+    }
+    return (count);
+}
+
+typedef struct
+{
+    Line *lines;
+    int nlines;
+    int line_cap;
+} LineState;
+
+static Line *clone_line_array (const Line *src, int count)
+{
+    Line *dst;
+    int alloc_count = (count > 0) ? count : 1;
+    int i;
+
+    dst = (Line *) xmalloc ((size_t) alloc_count * sizeof (Line));
+    memset (dst, 0, (size_t) alloc_count * sizeof (Line));
+
+    for (i = 0; i < count; i++)
+    {
+        dst[i] = src[i];
+        dst[i].text = (src[i].text != NULL) ? xstrdup (src[i].text) : NULL;
+        dst[i].pre = (src[i].pre != NULL) ? xstrdup (src[i].pre) : NULL;
+        dst[i].replace = (src[i].replace != NULL) ? xstrdup (src[i].replace) : NULL;
+        dst[i].post = (src[i].post != NULL) ? xstrdup (src[i].post) : NULL;
+    }
+    return (dst);
+}
+
+static void line_state_save (LineState *state)
+{
+    state->lines = clone_line_array (lines, nlines);
+    state->nlines = nlines;
+    state->line_cap = (nlines > 0) ? nlines : 1;
+}
+
+static void line_state_free (LineState *state)
+{
+    free_line_array (state->lines, state->nlines);
+    state->lines = NULL;
+    state->nlines = 0;
+    state->line_cap = 0;
+}
+
+static void line_state_restore (LineState *state)
+{
+    free_line_array (lines, nlines);
+
+    lines = state->lines;
+    nlines = state->nlines;
+    line_cap = state->line_cap;
+
+    state->lines = NULL;
+    state->nlines = 0;
+    state->line_cap = 0;
+
+    build_function_starts ();
+    build_call_graph ();
+    compute_recursive_functions ();
+    recompute_used_regs ();
+    last_loop_end = -1;
+}
+
+/*
+ * -Oz2 speed phase: the aggressive -O8 pipeline followed by the size removal
+ * passes, so the result can still shrink enough to fit the compact budget.
+ */
+static void optimize_oz2_speed (void)
+{
+    uint64_t last_signature = 0;
+    int round;
+
+    for (round = 0; round < 8; round++)
+    {
+        uint64_t signature;
+
+        materialize_transformations ();
+
+        compute_used_regs ();
+        optimize_simple_loops ();
+        optimize_rotated_loops ();
+        promote_function_locals (opt_level);
+        inline_functions ();
+        optimize_loop_unroll ();
+        optimize_aggressive ();
+        peephole ();
+
+        materialize_transformations ();
+        build_function_starts ();
+
+        size_thread_jumps ();
+        size_remove_unused_functions ();
+        size_remove_unreachable ();
+        size_remove_unused_labels ();
+        recompute_used_regs ();
+
+        signature = optimize_code_signature ();
+        if (round > 0 && signature == last_signature)
+        {
+            break;
+        }
+        last_signature = signature;
+    }
+
+    recompute_used_regs ();
+}
+
+/*
+ * -Oz2: compactness first, then speed.
+ *
+ * The original code is first reduced with the complete -Oz size pipeline.
+ * The compact result is the reference and its size is the budget.  Then the
+ * aggressive -O8 speed pipeline runs on the original code, because size
+ * optimization can remove the conventional function prologue the inliner
+ * needs.  The faster result is only kept if it is not larger than the
+ * compact reference, so -Oz2 never produces bigger code than -Oz while it
+ * can still take advantage of inlining or unrolling when those end up
+ * fitting into the same size.
+ */
+static void optimize_oz2 (void)
+{
+    LineState original;
+    LineState compact;
+    long long compact_size;
+    long long speed_size;
+    int compact_instructions;
+    int speed_instructions;
+    int saved_size_opt = size_opt;
+    int saved_inline_body = inline_max_body;
+    int saved_inline_calls = inline_max_calls;
+    int saved_unroll = unroll_max_factor;
+    int saved_strength = strength_reduce;
+    int saved_opt_level = opt_level;
+
+    line_state_save (&original);
+
+    /* Phase 1: most compact code, exactly like -Oz. */
+    size_opt = 1;
+    inline_max_body = INLINE_MAX_BODY;
+    inline_max_calls = 1;
+    optimize_oz ();
+
+    materialize_transformations ();
+    compact_size = output_size_bytes ();
+    compact_instructions = output_instruction_count ();
+    line_state_save (&compact);
+
+    /* Phase 2: aggressive speed from the original code. */
+    line_state_restore (&original);
+    size_opt = 0;
+    inline_max_body = saved_inline_body;
+    inline_max_calls = saved_inline_calls;
+    unroll_max_factor = saved_unroll;
+    strength_reduce = saved_strength;
+    opt_level = saved_opt_level;
+    optimize_oz2_speed ();
+
+    materialize_transformations ();
+    speed_size = output_size_bytes ();
+    speed_instructions = output_instruction_count ();
+
+    if (speed_size > compact_size ||
+        speed_instructions > compact_instructions)
+    {
+        line_state_restore (&compact);
+    }
+    else
+    {
+        line_state_free (&compact);
+    }
+
+    size_opt = saved_size_opt;
+    inline_max_body = saved_inline_body;
+    inline_max_calls = saved_inline_calls;
+    unroll_max_factor = saved_unroll;
+    strength_reduce = saved_strength;
+    opt_level = saved_opt_level;
+}
+
 /* ------------------------------------------------------------------------- */
 /* peephole                                                                  */
 /* ------------------------------------------------------------------------- */
@@ -9156,7 +9413,7 @@ static void read_input (const char *filename)
 
 static void show_info (void)
 {
-    printf ("l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6|-O7|-O8|-Oz] <assembly> <optimized-assembly>\n\n");
+    printf ("l1vm-optimize [-O0|-O1|-O2|-O4|-O5|-O6|-O7|-O8|-Oz|-Oz2] <assembly> <optimized-assembly>\n\n");
     printf ("optimizes the L1VM assembly file '<assembly>.l1asm' and writes\n");
     printf ("the result to '<optimized-assembly>.l1asm'.\n\n");
     printf ("  -O0  no optimization\n");
@@ -9174,6 +9431,9 @@ static void show_info (void)
     printf ("  -Oz  size optimized: all speed passes which do not grow the code,\n");
     printf ("       no inlining or unrolling, plus removal of unreachable code,\n");
     printf ("       unused labels and functions not reachable from ':main'\n");
+    printf ("  -Oz2 compactness first, then speed: starts from the compact -Oz\n");
+    printf ("       result and keeps the aggressive speed result only if it is\n");
+    printf ("       not larger, so the code is never bigger than with -Oz\n");
 }
 
 int main (int ac, char *av[])
@@ -9230,6 +9490,11 @@ int main (int ac, char *av[])
         {
             opt_level = 8;
             size_opt = 1;
+        }
+        else if (strcmp (av[arg], "-Oz2") == 0)
+        {
+            opt_level = 8;
+            size_opt2 = 1;
         }
         else
         {
@@ -9290,7 +9555,11 @@ int main (int ac, char *av[])
     collect_data_symbols ();
     compute_used_regs ();
 
-    if (size_opt)
+    if (size_opt2)
+    {
+        optimize_oz2 ();
+    }
+    else if (size_opt)
     {
         optimize_oz ();
     }
