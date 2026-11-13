@@ -244,6 +244,7 @@ typedef struct
     char args[OPT_MAX_ARGS][OPT_ARG_MAX];
 
     int active;                                 /* 0: line is removed */
+    int inline_body;                            /* inserted as an inlined callee body */
     char *pre;                                  /* text printed before this line */
     char *replace;                              /* replacement text (may be multiline) */
     char *post;                                 /* text printed after this line */
@@ -4976,11 +4977,27 @@ static int materialize_transformations (void)
 
         if (line->replace != NULL)
         {
+            int first = newcount;
+            int k;
+
             append_text_block (&newlines, &newcount, &newcap, line->replace);
+            if (line->inline_body)
+            {
+                for (k = first; k < newcount; k++)
+                {
+                    newlines[k].inline_body = 1;
+                }
+            }
         }
         else
         {
+            int first = newcount;
+
             append_parsed_line (&newlines, &newcount, &newcap, line->text);
+            if (line->inline_body && newcount > first)
+            {
+                newlines[first].inline_body = 1;
+            }
         }
 
         if (line->post != NULL)
@@ -5011,6 +5028,8 @@ typedef struct
 
 static int size_label_in_data (const char *label);
 static int size_has_computed_transfer (void);
+static int size_function_has_clean_entry (int start);
+static int size_code_region_end (int start);
 
 /*
  * A function is only a candidate if its body is straight line code with a
@@ -6180,6 +6199,7 @@ static int inline_call_site (int jsr)
     }
 
     call->replace = body;
+    call->inline_body = 1;
 
     for (i = first_arg; i < npushes; i++)
     {
@@ -6203,8 +6223,121 @@ static int inline_call_site (int jsr)
     return (1);
 }
 
+static int inline_pending_mentions (const char *label)
+{
+    int i;
+
+    for (i = 0; i < nlines; i++)
+    {
+        Line *line = &lines[i];
+
+        if (! line->active)
+        {
+            continue;
+        }
+        if ((line->pre != NULL && text_mentions_name (line->pre, label)) ||
+            (line->replace != NULL && text_mentions_name (line->replace, label)) ||
+            (line->post != NULL && text_mentions_name (line->post, label)))
+        {
+            return (1);
+        }
+    }
+    return (0);
+}
+
+/*
+ * References from a line with a "replace" text are not real references
+ * anymore: the original instruction is not emitted, only the replacement.
+ * Pending replacement text is checked separately.
+ */
+static int inline_label_has_reference (const char *label)
+{
+    int i;
+
+    for (i = 0; i < nlines; i++)
+    {
+        Line *line = &lines[i];
+        int arg;
+
+        if (! line->active || line->kind != LINE_INSTR ||
+            line->replace != NULL)
+        {
+            continue;
+        }
+
+        for (arg = 0; arg < line->argc && arg < OPT_MAX_ARGS; arg++)
+        {
+            if (strcmp (line->args[arg], label) == 0)
+            {
+                return (1);
+            }
+        }
+    }
+    return (0);
+}
+
+/*
+ * Remove a function whose calls have all been inlined.  The check only drops
+ * the function when nothing can enter or reference it anymore: no remaining
+ * code/data reference, no pending replacement text, no fallthrough entry and
+ * no computed or JIT transfer.
+ */
+static int inline_remove_function (const char *label)
+{
+    int start;
+    int end;
+    int removed = 0;
+    int i;
+
+    if (strcmp (label, ":main") == 0 || size_has_computed_transfer () ||
+        inline_label_has_reference (label) || inline_pending_mentions (label))
+    {
+        return (0);
+    }
+
+    start = find_label (label);
+    if (start < 0)
+    {
+        return (0);
+    }
+
+    end = size_code_region_end (start);
+    if (end <= start || ! size_function_has_clean_entry (start))
+    {
+        return (0);
+    }
+
+    for (i = start; i < end; i++)
+    {
+        if (lines[i].active &&
+            (lines[i].kind == LINE_INSTR || lines[i].kind == LINE_LABEL))
+        {
+            lines[i].active = 0;
+            removed++;
+        }
+    }
+    return (removed > 0);
+}
+
+static int inline_label_in_list (char **labels, int count, const char *label)
+{
+    int i;
+
+    for (i = 0; i < count; i++)
+    {
+        if (strcmp (labels[i], label) == 0)
+        {
+            return (1);
+        }
+    }
+    return (0);
+}
+
 static void inline_functions (void)
 {
+    char **inlined_labels = NULL;
+    int inlined_count = 0;
+    int inlined_cap = 0;
     int i;
 
     if (materialize_transformations ())
@@ -6226,9 +6359,28 @@ static void inline_functions (void)
         if (lines[i].active && lines[i].kind == LINE_INSTR &&
             op_is (&lines[i], "jsr"))
         {
-            inline_call_site (i);
+            if (inline_call_site (i) &&
+                ! inline_label_in_list (inlined_labels, inlined_count,
+                                        lines[i].args[0]))
+            {
+                if (inlined_count >= inlined_cap)
+                {
+                    inlined_cap = (inlined_cap == 0) ? 8 : inlined_cap * 2;
+                    inlined_labels = (char **) xrealloc (
+                        inlined_labels,
+                        (size_t) inlined_cap * sizeof (char *));
+                }
+                inlined_labels[inlined_count++] = xstrdup (lines[i].args[0]);
+            }
         }
     }
+
+    for (i = 0; i < inlined_count; i++)
+    {
+        inline_remove_function (inlined_labels[i]);
+        free (inlined_labels[i]);
+    }
+    free (inlined_labels);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -7419,6 +7571,19 @@ static int aggressive_constant_fold (void)
             {
                 b_value = value[br];
             }
+        }
+
+        /*
+         * Keep arithmetic which was inserted by the function inliner.  The
+         * callee is not necessarily marked as pure, so its body must remain
+         * visible even when the caller happens to pass constants.  Otherwise
+         * -O7 and above can constant fold an inlined call to a bare result and
+         * it looks like both the call and its calculation were dropped.
+         */
+        if (line->inline_body)
+        {
+            known[d_reg] = 0;
+            continue;
         }
 
         /* fold a fully constant operation into a constant register */
