@@ -8,7 +8,7 @@
 
 (linter)
 (main func)
-    #var ~  main
+    #var ~ main
 	(set const-int64 1 zero 0)
     (set const-int64 1 numi~ 32)
     (set int64 1 squarei~ 0)
