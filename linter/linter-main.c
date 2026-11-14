@@ -7928,8 +7928,33 @@ S2 parse_line (U1 *line)
         // check if "stpop)" is in call line too:
         {
             S2 stpop;
+            S2 found_stpop = 0;
+
             stpop = searchstr (line, (U1 *) "stpop)", 0, 0, TRUE);
-            if (stpop == -1)
+            if (stpop > -1)
+            {
+                found_stpop = 1;
+            }
+
+            stpop = searchstr (line, (U1 *) "stpopb)", 0, 0, TRUE);
+            if (stpop > -1)
+            {
+                found_stpop = 1;
+            }
+
+            stpop = searchstr (line, (U1 *) "stpopi)", 0, 0, TRUE);
+            if (stpop > -1)
+            {
+                found_stpop = 1;
+            }
+
+            stpop = searchstr (line, (U1 *) "stpopd)", 0, 0, TRUE);
+            if (stpop > -1)
+            {
+                found_stpop = 1;
+            }
+
+            if (found_stpop == 0)
             {
                 printf ("parse_line: no stpop statement after function call!\n");
                 return (1);

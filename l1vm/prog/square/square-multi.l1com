@@ -4,32 +4,34 @@
 #include <vars.l1h>
 
 // (func args square any)
-// (return args square any)
+// (return args square int64 any)
 
 (linter)
 (main func)
+    #var ~ main
 	(set const-int64 1 zero 0)
-	(set const-int64 1 numi 32)
-	(set int64 1 squarei 0)
-	(set const-double 1 numd 16.0)
-	(set double 1 squared 0.0)
-	(set const-string s sqr_str "square of: ")
-	(set const-string s eq_str " = ")
+    (set const-int64 1 numi~ 32)
+    (set int64 1 squarei~ 0)
+    (set const-double 1 numd~ 16.0)
+    (set double 1 squared~ 0.0)
+    (set int64 1 ret~ 0)
+	(set const-string s sqr_str~ "square of: ")
+	(set const-string s eq_str~ " = ")
 
 	// int64
-	(sqr_str :print_s !)
-	(numi :print_i !)
-	(eq_str :print_s !)
-    (numi :square !) (squarei stpopi)
-	(squarei :print_i !)
+	(sqr_str~ :print_s !)
+	(numi~ :print_i !)
+	(eq_str~ :print_s !)
+    (numi~ :square !) (ret~ squarei~ stpop)
+	(squarei~ :print_i !)
 	(:print_n !)
 
 	// double
-	(sqr_str :print_s !)
-	(numd :print_d !)
-	(eq_str :print_s !)
-	(numd :square !) (squared stpopd)
-	(squared :print_d !)
+	(sqr_str~ :print_s !)
+	(numd~ :print_d !)
+	(eq_str~ :print_s !)
+	(numd~ :square !) (ret~ squared~ stpop)
+	(squared~ :print_d !)
 	(:print_n !)
 
 	(zero :exit !)
@@ -46,6 +48,8 @@
     (set double 1 squared~ 0.0)
     (set int64 1 st_type~ 0)
     (set int64 1 f~ 0)
+    (set const-int64 1 ret_ok~ 0)
+    (set const-int64 1 ret_fail~ 1)
 
     // get type of stack variable
     (st_type~ :stack_type !)
@@ -55,20 +59,22 @@
        // stack arg type = int64
        (numi~ stpop)
        (numi~ * numi~ squarei~ :=)
-       (squarei~ stpushi) (return)
+       (squarei~ ret_ok~ stpush) (return)
     (endif)
 
     (((st_type~ double_stack ==) f~ =) f~ if)
        // stack arg type = double
        (numd~ stpop)
        (numd~ * numd~ squared~ :=)
-       (squared~ stpushd) (return)
+       (squared~ ret_ok~ stpush) (return)
     (endif)
 
     (((st_type~ byte_stack ==) f~ =) f~ if)
        // stack arg type = byte
        (numb~ stpop)
        (numb~ * numb~ squarei~ :=)
-       (squarei~ stpushb) (return)
+       (squarei~ ret_ok~ stpush) (return)
     (endif)
+
+    (zero ret_fail~ stpush) (return)
 (funcend)
