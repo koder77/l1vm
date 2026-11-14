@@ -268,7 +268,7 @@ S2 set_varname (U1 *line_str)
 
 	U1 new_define[MAXLINELEN];
 
-	// printf ("DEBUG: set_varname: index: %i, '%s'\n", defines_ind, line_str);
+	//printf ("DEBUG: set_varname: index: %i, '%s'\n", defines_ind, line_str);
 
 	slen = strlen_safe ((const char*) line_str, MAXLINELEN);
 	pos = searchstr (line_str, (U1 *) FUNC_VAR_NAMES_SB, 0, 0, TRUE);
@@ -349,15 +349,18 @@ S2 set_varname (U1 *line_str)
 	{
 		if (line_str[k] != '\n')
 		{
-			defines[defines_ind].out[j] = line_str[k];
-			j++;
+			if (line_str[k] != ' ')
+			{
+				defines[defines_ind].out[j] = line_str[k];
+				j++;
+			}
 		}
 	}
 	defines[defines_ind].out[j] = '\0';
 
 	defines[defines_ind].type = 0;	// normal define
 
-	// printf ("set_varname: def: %i: '%s', out: '%s'\n\n", defines_ind, defines[defines_ind].def, defines[defines_ind].out);
+	//printf ("set_varname: def: %i: '%s', out: '%s'\n\n", defines_ind, defines[defines_ind].def, defines[defines_ind].out);
 	return (0);
 }
 
