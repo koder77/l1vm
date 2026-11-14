@@ -13,7 +13,7 @@
 	(set int64 1 zero 0)
 	(set int64 1 one 1)
 	(set int64 1 mod_vecdb 0)
-	(set string s dbpathstr "/tmp/vecdb_demo.db")
+	(set string s dbpathstr "vecdb_demo.db")
 
 	// the embedding space: 4 topics
 	//   [0] = storage   [1] = cars   [2] = food   [3] = space

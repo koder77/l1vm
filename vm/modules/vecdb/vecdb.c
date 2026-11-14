@@ -40,6 +40,7 @@
 // protos
 S2 memory_bounds (S8 start, S8 offset_access);
 size_t strlen_safe (const char * str, S8 maxlen);
+U1 get_sandbox_filename (U1 *filename, U1 *sandbox_filename, S2 max_name_len);
 
 // Windows MSYS2 fix for false positive bounds error:
 #if _WIN32
@@ -300,6 +301,7 @@ U1 *l1_vecdb_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 
 	vecdb_options opt;
 	vecdb *db;
+	U1 file_name [256];
 
 	POP_I (index);
 	POP_I (metric);
@@ -328,7 +330,25 @@ U1 *l1_vecdb_open (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 		opt.index = (vecdb_index) index;
 	}
 
-	db = vecdb_open ((const char *) &data[pathaddr], &opt);
+	#if SANDBOX
+	if (get_sandbox_filename (&data[pathaddr], file_name, 255) != 0)
+	{
+		printf ("ERROR: vecd_open: illegal filename: %s\n", &data[pathaddr]);
+		return (NULL);
+	}
+	#else
+	if (strlen_safe ((char *) &data[pathaddr], 255) < 255)
+	{
+    	strcpy ((char *) file_name, (char *) &data[pathaddr]);
+	}
+	else
+	{
+		printf ("ERROR: vecdb_open: filename %s too long!\n", &data[nameaddr]);
+		return (NULL);
+	}
+	#endif
+
+	db = vecdb_open ((const char *) file_name, &opt);
 	if (db == NULL)
 	{
 		handle = -1;
@@ -374,6 +394,8 @@ U1 *l1_vecdb_open_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	vecdb_options opt;
 	vecdb *db;
 
+	U1 file_name [256];
+
 	POP_I (seed);
 	POP_I (ef_search);
 	POP_I (ef_construction);
@@ -418,7 +440,25 @@ U1 *l1_vecdb_open_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	}
 	opt.seed = (uint64_t) seed;
 
-	db = vecdb_open ((const char *) &data[pathaddr], &opt);
+	#if SANDBOX
+	if (get_sandbox_filename (&data[pathaddr], file_name, 255) != 0)
+	{
+		printf ("ERROR: vecdb_open_ex: illegal filename: %s\n", &data[pathaddr]);
+		return (NULL);
+	}
+	#else
+	if (strlen_safe ((char *) &data[pathaddr], 255) < 255)
+	{
+    	strcpy ((char *) file_name, (char *) &data[pathaddr]);
+	}
+	else
+	{
+		printf ("ERROR: vecdb_open_ex: filename %s too long!\n", &data[nameaddr]);
+		return (NULL);
+	}
+	#endif
+
+	db = vecdb_open ((const char *) file_name, &opt);
 	if (db == NULL)
 	{
 		handle = -1;

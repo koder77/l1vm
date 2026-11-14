@@ -1,1395 +1,1069 @@
 .data
-F, 1, m_emath
-@, 0Q, 2.7182818284590452354
-F, 1, m_log2emath
-@, 8Q, 1.4426950408889634074
-F, 1, m_log10emath
-@, 16Q, 0.43429448190325182765
-F, 1, m_ln2math
-@, 24Q, 0.69314718055994530942
-F, 1, m_ln1math
-@, 32Q, 2.30258509299404568402
-F, 1, m_pimath
-@, 40Q, 3.14159265358979323846
-F, 1, m_pi_2math
-@, 48Q, 1.57079632679489661923
-F, 1, m_pi_4math
-@, 56Q, 0.78539816339744830962
-F, 1, m_1_pimath
-@, 64Q, 0.31830988618379067154
-F, 1, m_2_pimath
-@, 72Q, 0.63661977236758134308
-F, 1, m_2_sqrtpimath
-@, 80Q, 1.12837916709551257390
-F, 1, m_sqrt2math
-@, 88Q, 1.41421356237309504880
-F, 1, m_sqrt1_2math
-@, 96Q, 0.70710678118654752440
+Q, 1, file_seek_set
+@, 0Q, 0
+Q, 1, file_seek_cur
+@, 8Q, 1
+Q, 1, file_seek_end
+@, 16Q, 2
+Q, 1, array_byte
+@, 24Q, 8
+Q, 1, array_int16
+@, 32Q, 9
+Q, 1, array_int32
+@, 40Q, 10
+Q, 1, array_int64
+@, 48Q, 11
+Q, 1, array_double
+@, 56Q, 12
+B, 1, file_mode_read
+@, 64Q, 1
+B, 1, file_mode_write
+@, 65Q, 2
+B, 1, file_mode_readwrite
+@, 66Q, 3
+B, 1, file_mode_writeread
+@, 67Q, 4
+B, 1, file_append
+@, 68Q, 5
 Q, 1, zero
-@, 104Q, 0
+@, 69Q, 0
 Q, 1, one
-@, 112Q, 1
-B, 14, bytecode
-@, 120Q, 10, 0, 1, 0, 29, 0, 2, 5, 39, 5, 0, 40, 0, 41, ;
-Q, 256, regi
-@, 134Q, 
-F, 256, regd
-@, 2182Q, 
-Q, 1, arg1
-@, 4230Q, 0
-Q, 1, arg2
-@, 4238Q, 0
-Q, 1, arg3
-@, 4246Q, 0
-Q, 1, ep
-@, 4254Q, 0
-Q, 1, bp
-@, 4262Q, 0
-Q, 1, offset
-@, 4270Q, 8
-Q, 1, ind
-@, 4278Q, 0
-Q, 1, time_ms_i
-@, 4286Q, 0
-B, 12, messagestr
-@, 4294Q, "starting..."
-Q, 1, messagestraddr
-@, 4306Q, 4294Q
-Q, 1, maxloop
-@, 4314Q, 1000000000
-F, 1, time_ms_d
-@, 4322Q, 0.0
-F, 1, opcodes_loop_d
-@, 4330Q, 195.0
-F, 1, maxloop_d
-@, 4338Q, 0.0
-F, 1, opcodes_sec_d
-@, 4346Q, 0.0
-F, 1, ticks_per_sec_d
-@, 4354Q, 1000.0
-F, 1, points_ref_d
-@, 4362Q, 37469016.0
-F, 1, points_d
-@, 4370Q, 0.0
-Q, 1, points_i
-@, 4378Q, 0
-F, 1, thousand_d
-@, 4386Q, 1000.0
-B, 18, opcodes_str
-@, 4394Q, "opcodes per sec: "
-Q, 1, opcodes_straddr
-@, 4412Q, 4394Q
-B, 9, points_str
-@, 4420Q, "points: "
-Q, 1, points_straddr
-@, 4429Q, 4420Q
-B, 256, opcodes_str_s
-@, 4437Q, ""
-Q, 1, opcodes_str_saddr
-@, 4693Q, 4437Q
-B, 256, opcodes_str_form
-@, 4701Q, ""
-Q, 1, opcodes_str_formaddr
-@, 4957Q, 4701Q
-Q, 1, opcodes_str_len
-@, 4965Q, 255
-Q, 1, bp@addi
-@, 4973Q, 0
-Q, 1, r1@addi
-@, 4981Q, 
-Q, 1, r2@addi
-@, 4989Q, 
-Q, 1, r3@addi
-@, 4997Q, 
-Q, 1, four@addi
-@, 5005Q, 4
-Q, 1, offset@addi
-@, 5013Q, 8
-Q, 1, bp_offset@addi
-@, 5021Q, 32
-Q, 1, bp@lsi
-@, 5029Q, 0
-Q, 1, r1@lsi
-@, 5037Q, 
-Q, 1, r2@lsi
-@, 5045Q, 
-Q, 1, r3@lsi
-@, 5053Q, 
-Q, 1, four@lsi
-@, 5061Q, 4
-Q, 1, offset@lsi
-@, 5069Q, 8
-Q, 1, bp_offset@lsi
-@, 5077Q, 32
-Q, 1, f
-@, 5085Q, 0
-Q, 1, bp@jmpi
-@, 5093Q, 0
-Q, 1, r1@jmpi
-@, 5101Q, 
-Q, 1, r2@jmpi
-@, 5109Q, 
-Q, 1, r3@jmpi
-@, 5117Q, 
-Q, 1, three@jmpi
-@, 5125Q, 3
-Q, 1, offset@jmpi
-@, 5133Q, 8
-Q, 1, bp_offset@jmpi
-@, 5141Q, 24
-Q, 1, f@jmpi
-@, 5149Q, 0
-Q, 1, bp@printi
-@, 5157Q, 0
-Q, 1, r1@printi
-@, 5165Q, 
-Q, 1, r2@printi
-@, 5173Q, 
-Q, 1, r3@printi
-@, 5181Q, 
-Q, 1, two@printi
-@, 5189Q, 2
-Q, 1, offset@printi
-@, 5197Q, 8
-Q, 1, bp_offset@printi
-@, 5205Q, 16
-Q, 1, f@printi
-@, 5213Q, 0
-Q, 1, lsi_pos
-@, 5221Q, 32
-Q, 1, jmpi_pos
-@, 5229Q, 64
-Q, 1, printi_pos
-@, 5237Q, 88
-Q, 1, end_pos
-@, 5245Q, 104
-Q, 1, lab_addi
-@, 5253Q, 0
-Q, 1, lab_lsi
-@, 5261Q, 0
-Q, 1, lab_jmpi
-@, 5269Q, 0
-Q, 1, lab_printi
-@, 5277Q, 0
-Q, 1, lab_end
-@, 5285Q, 0
-Q, 14, jmp_array
-@, 5293Q, 0
-Q, 1, i
-@, 5405Q, 0
-Q, 1, op_label
-@, 5413Q, 0
-B, 12, modulestr@math
-@, 5421Q, "libl1vmmath"
-Q, 1, modulestr@mathaddr
-@, 5433Q, 5421Q
-B, 11, int2doublestr@math
-@, 5441Q, "int2double"
-Q, 1, int2doublestr@mathaddr
-@, 5452Q, 5441Q
-B, 11, double2intstr@math
-@, 5460Q, "double2int"
-Q, 1, double2intstr@mathaddr
-@, 5471Q, 5460Q
-B, 11, sqrtdoublestr@math
-@, 5479Q, "sqrtdouble"
-Q, 1, sqrtdoublestr@mathaddr
-@, 5490Q, 5479Q
-B, 10, logdoublestr@math
-@, 5498Q, "logdouble"
-Q, 1, logdoublestr@mathaddr
-@, 5508Q, 5498Q
-B, 11, log2doublestr@math
-@, 5516Q, "log2double"
-Q, 1, log2doublestr@mathaddr
-@, 5527Q, 5516Q
-B, 10, randinitstr@math
-@, 5535Q, "rand_init"
-Q, 1, randinitstr@mathaddr
-@, 5545Q, 5535Q
-B, 9, randintstr@math
-@, 5553Q, "rand_int"
-Q, 1, randintstr@mathaddr
-@, 5562Q, 5553Q
-B, 12, randdoublestr@math
-@, 5570Q, "rand_double"
-Q, 1, randdoublestr@mathaddr
-@, 5582Q, 5570Q
-B, 13, randintmaxstr@math
-@, 5590Q, "rand_int_max"
-Q, 1, randintmaxstr@mathaddr
-@, 5603Q, 5590Q
-B, 10, randombytestr@math
-@, 5611Q, "rand_byte"
-Q, 1, randombytestr@mathaddr
-@, 5621Q, 5611Q
-B, 22, doubleroundedstringstr@math
-@, 5629Q, "double_rounded_string"
-Q, 1, doubleroundedstringstr@mathaddr
-@, 5651Q, 5629Q
-B, 14, stringtointstr@math
-@, 5659Q, "string_to_int"
-Q, 1, stringtointstr@mathaddr
-@, 5673Q, 5659Q
-B, 17, stringtodoublestr@math
-@, 5681Q, "string_to_double"
-Q, 1, stringtodoublestr@mathaddr
-@, 5698Q, 5681Q
-B, 11, acosdoublestr@math
-@, 5706Q, "acosdouble"
-Q, 1, acosdoublestr@mathaddr
-@, 5717Q, 5706Q
-B, 11, asindoublestr@math
-@, 5725Q, "asindouble"
-Q, 1, asindoublestr@mathaddr
-@, 5736Q, 5725Q
-B, 11, atandoublestr@math
-@, 5744Q, "atandouble"
-Q, 1, atandoublestr@mathaddr
-@, 5755Q, 5744Q
-B, 12, atan2doublestr@math
-@, 5763Q, "atan2double"
-Q, 1, atan2doublestr@mathaddr
-@, 5775Q, 5763Q
-B, 10, cosdoublestr@math
-@, 5783Q, "cosdouble"
-Q, 1, cosdoublestr@mathaddr
-@, 5793Q, 5783Q
-B, 11, coshdoublestr@math
-@, 5801Q, "coshdouble"
-Q, 1, coshdoublestr@mathaddr
-@, 5812Q, 5801Q
-B, 10, sindoublestr@math
-@, 5820Q, "sindouble"
-Q, 1, sindoublestr@mathaddr
-@, 5830Q, 5820Q
-B, 11, sinhdoublestr@math
-@, 5838Q, "sinhdouble"
-Q, 1, sinhdoublestr@mathaddr
-@, 5849Q, 5838Q
-B, 10, tandoublestr@math
-@, 5857Q, "tandouble"
-Q, 1, tandoublestr@mathaddr
-@, 5867Q, 5857Q
-B, 11, tanhdoublestr@math
-@, 5875Q, "tanhdouble"
-Q, 1, tanhdoublestr@mathaddr
-@, 5886Q, 5875Q
-B, 10, expdoublestr@math
-@, 5894Q, "expdouble"
-Q, 1, expdoublestr@mathaddr
-@, 5904Q, 5894Q
-B, 12, frexpdoublestr@math
-@, 5912Q, "frexpdouble"
-Q, 1, frexpdoublestr@mathaddr
-@, 5924Q, 5912Q
-B, 12, ldexpdoublestr@math
-@, 5932Q, "ldexpdouble"
-Q, 1, ldexpdoublestr@mathaddr
-@, 5944Q, 5932Q
-B, 12, log10doublestr@math
-@, 5952Q, "log10double"
-Q, 1, log10doublestr@mathaddr
-@, 5964Q, 5952Q
-B, 11, modfdoublestr@math
-@, 5972Q, "modfdouble"
-Q, 1, modfdoublestr@mathaddr
-@, 5983Q, 5972Q
-B, 10, powdoublestr@math
-@, 5991Q, "powdouble"
-Q, 1, powdoublestr@mathaddr
-@, 6001Q, 5991Q
-B, 11, ceildoublestr@math
-@, 6009Q, "ceildouble"
-Q, 1, ceildoublestr@mathaddr
-@, 6020Q, 6009Q
-B, 11, fabsdoublestr@math
-@, 6028Q, "fabsdouble"
-Q, 1, fabsdoublestr@mathaddr
-@, 6039Q, 6028Q
-B, 12, floordoublestr@math
-@, 6047Q, "floordouble"
-Q, 1, floordoublestr@mathaddr
-@, 6059Q, 6047Q
-B, 11, fmoddoublestr@math
-@, 6067Q, "fmoddouble"
-Q, 1, fmoddoublestr@mathaddr
-@, 6078Q, 6067Q
-B, 9, byte2intstr@math
-@, 6086Q, "byte2int"
-Q, 1, byte2intstr@mathaddr
-@, 6095Q, 6086Q
-Q, 1, int2double@math
-@, 6103Q, 0
-Q, 1, double2int@math
-@, 6111Q, 1
-Q, 1, sqrtdouble@math
-@, 6119Q, 2
-Q, 1, logdouble@math
-@, 6127Q, 3
-Q, 1, log2double@math
-@, 6135Q, 4
-Q, 1, randinit@math
-@, 6143Q, 5
-Q, 1, randint@math
-@, 6151Q, 6
-Q, 1, randdouble@math
-@, 6159Q, 7
-Q, 1, randintmax@math
-@, 6167Q, 8
-Q, 1, doubleroundedstring@math
-@, 6175Q, 9
-Q, 1, stringtoint@math
-@, 6183Q, 10
-Q, 1, stringtodouble@math
-@, 6191Q, 11
-Q, 1, acosdouble@math
-@, 6199Q, 12
-Q, 1, asindouble@math
-@, 6207Q, 13
-Q, 1, atandouble@math
-@, 6215Q, 14
-Q, 1, atan2double@math
-@, 6223Q, 15
-Q, 1, cosdouble@math
-@, 6231Q, 16
-Q, 1, coshdouble@math
-@, 6239Q, 17
-Q, 1, sindouble@math
-@, 6247Q, 18
-Q, 1, sinhdouble@math
-@, 6255Q, 19
-Q, 1, tanhdouble@math
-@, 6263Q, 20
-Q, 1, expdouble@math
-@, 6271Q, 21
-Q, 1, frexpdouble@math
-@, 6279Q, 22
-Q, 1, ldexpdouble@math
-@, 6287Q, 23
-Q, 1, log10double@math
-@, 6295Q, 24
-Q, 1, modfdouble@math
-@, 6303Q, 25
-Q, 1, powdouble@math
-@, 6311Q, 26
-Q, 1, ceildouble@math
-@, 6319Q, 27
-Q, 1, fabsdouble@math
-@, 6327Q, 28
-Q, 1, floordouble@math
-@, 6335Q, 29
-Q, 1, fmoddouble@math
-@, 6343Q, 30
-Q, 1, tandouble@math
-@, 6351Q, 31
-Q, 1, randombyte@math
-@, 6359Q, 32
-Q, 1, byte2int@math
-@, 6367Q, 33
-Q, 1, mod@math
-@, 6375Q, 0
-F, 1, degreemath_degree_to_rad
-@, 6383Q, 0.0
-F, 1, radmath_degree_to_rad
-@, 6391Q, 0.0
-F, 1, half_circlemath_degree_to_rad
-@, 6399Q, 180.0
-F, 1, degreemath_rad_to_degree
-@, 6407Q, 0.0
-F, 1, radmath_rad_to_degree
-@, 6415Q, 0.0
-F, 1, half_circlemath_rad_to_degree
-@, 6423Q, 180.0
+@, 77Q, 1
+Q, 1, MOD_VECDB
+@, 85Q, 1
+Q, 1, MOD_STRING
+@, 93Q, 2
+Q, 1, MOD_FILE
+@, 101Q, 3
+Q, 1, MOD_PROCESS
+@, 109Q, 0
+Q, 1, MAXIND
+@, 117Q, 256
+Q, 1, modvec
+@, 125Q, 0
+Q, 1, modstr
+@, 133Q, 0
+Q, 1, handle
+@, 141Q, 0
+Q, 1, status
+@, 149Q, 0
+Q, 1, lhandle
+@, 157Q, 0
+B, 256, dbpath
+@, 165Q, "/tmp/test.db"
+Q, 1, dbpathaddr
+@, 421Q, 165Q
+B, 256, listpath
+@, 429Q, "/tmp/l1vm-ai-files.txt"
+Q, 1, listpathaddr
+@, 685Q, 429Q
+Q, 1, Pdb
+@, 693Q, 0
+Q, 1, Plistp
+@, 701Q, 0
+B, 17, s_test
+@, 709Q, "test file_open: "
+Q, 1, s_testaddr
+@, 726Q, 709Q
+Q, 1, modvecdb
+@, 734Q, 0
+B, 13, modulestrvecdb
+@, 742Q, "libl1vmvecdb"
+Q, 1, modulestrvecdbaddr
+@, 755Q, 742Q
+B, 14, openstrvecdb
+@, 763Q, "l1_vecdb_open"
+Q, 1, openstrvecdbaddr
+@, 777Q, 763Q
+B, 17, open_exstrvecdb
+@, 785Q, "l1_vecdb_open_ex"
+Q, 1, open_exstrvecdbaddr
+@, 802Q, 785Q
+B, 15, closestrvecdb
+@, 810Q, "l1_vecdb_close"
+Q, 1, closestrvecdbaddr
+@, 825Q, 810Q
+B, 15, flushstrvecdb
+@, 833Q, "l1_vecdb_flush"
+Q, 1, flushstrvecdbaddr
+@, 848Q, 833Q
+B, 17, compactstrvecdb
+@, 856Q, "l1_vecdb_compact"
+Q, 1, compactstrvecdbaddr
+@, 873Q, 856Q
+B, 15, countstrvecdb
+@, 881Q, "l1_vecdb_count"
+Q, 1, countstrvecdbaddr
+@, 896Q, 881Q
+B, 18, capacitystrvecdb
+@, 904Q, "l1_vecdb_capacity"
+Q, 1, capacitystrvecdbaddr
+@, 922Q, 904Q
+B, 13, dimstrvecdb
+@, 930Q, "l1_vecdb_dim"
+Q, 1, dimstrvecdbaddr
+@, 943Q, 930Q
+B, 16, metricstrvecdb
+@, 951Q, "l1_vecdb_metric"
+Q, 1, metricstrvecdbaddr
+@, 967Q, 951Q
+B, 15, indexstrvecdb
+@, 975Q, "l1_vecdb_index"
+Q, 1, indexstrvecdbaddr
+@, 990Q, 975Q
+B, 14, pathstrvecdb
+@, 998Q, "l1_vecdb_path"
+Q, 1, pathstrvecdbaddr
+@, 1012Q, 998Q
+B, 23, set_ef_searchstrvecdb
+@, 1020Q, "l1_vecdb_set_ef_search"
+Q, 1, set_ef_searchstrvecdbaddr
+@, 1043Q, 1020Q
+B, 18, strerrorstrvecdb
+@, 1051Q, "l1_vecdb_strerror"
+Q, 1, strerrorstrvecdbaddr
+@, 1069Q, 1051Q
+B, 20, last_errorstrvecdb
+@, 1077Q, "l1_vecdb_last_error"
+Q, 1, last_errorstrvecdbaddr
+@, 1097Q, 1077Q
+B, 18, list_idsstrvecdb
+@, 1105Q, "l1_vecdb_list_ids"
+Q, 1, list_idsstrvecdbaddr
+@, 1123Q, 1105Q
+B, 13, putstrvecdb
+@, 1131Q, "l1_vecdb_put"
+Q, 1, putstrvecdbaddr
+@, 1144Q, 1131Q
+B, 16, put_exstrvecdb
+@, 1152Q, "l1_vecdb_put_ex"
+Q, 1, put_exstrvecdbaddr
+@, 1168Q, 1152Q
+B, 13, getstrvecdb
+@, 1176Q, "l1_vecdb_get"
+Q, 1, getstrvecdbaddr
+@, 1189Q, 1176Q
+B, 16, deletestrvecdb
+@, 1197Q, "l1_vecdb_delete"
+Q, 1, deletestrvecdbaddr
+@, 1213Q, 1197Q
+B, 23, search_vectorstrvecdb
+@, 1221Q, "l1_vecdb_search_vector"
+Q, 1, search_vectorstrvecdbaddr
+@, 1244Q, 1221Q
+B, 21, search_textstrvecdb
+@, 1252Q, "l1_vecdb_search_text"
+Q, 1, search_textstrvecdbaddr
+@, 1273Q, 1252Q
+B, 23, search_hybridstrvecdb
+@, 1281Q, "l1_vecdb_search_hybrid"
+Q, 1, search_hybridstrvecdbaddr
+@, 1304Q, 1281Q
+B, 21, match_countstrvecdb
+@, 1312Q, "l1_vecdb_match_count"
+Q, 1, match_countstrvecdbaddr
+@, 1333Q, 1312Q
+B, 18, match_idstrvecdb
+@, 1341Q, "l1_vecdb_match_id"
+Q, 1, match_idstrvecdbaddr
+@, 1359Q, 1341Q
+B, 21, match_scorestrvecdb
+@, 1367Q, "l1_vecdb_match_score"
+Q, 1, match_scorestrvecdbaddr
+@, 1388Q, 1367Q
+B, 20, match_textstrvecdb
+@, 1396Q, "l1_vecdb_match_text"
+Q, 1, match_textstrvecdbaddr
+@, 1416Q, 1396Q
+B, 23, match_payloadstrvecdb
+@, 1424Q, "l1_vecdb_match_payload"
+Q, 1, match_payloadstrvecdbaddr
+@, 1447Q, 1424Q
+Q, 1, openvecdb
+@, 1455Q, 0
+Q, 1, open_exvecdb
+@, 1463Q, 1
+Q, 1, closevecdb
+@, 1471Q, 2
+Q, 1, flushvecdb
+@, 1479Q, 3
+Q, 1, compactvecdb
+@, 1487Q, 4
+Q, 1, countvecdb
+@, 1495Q, 5
+Q, 1, capacityvecdb
+@, 1503Q, 6
+Q, 1, dimvecdb
+@, 1511Q, 7
+Q, 1, metricvecdb
+@, 1519Q, 8
+Q, 1, indexvecdb
+@, 1527Q, 9
+Q, 1, pathvecdb
+@, 1535Q, 10
+Q, 1, set_ef_searchvecdb
+@, 1543Q, 11
+Q, 1, strerrorvecdb
+@, 1551Q, 12
+Q, 1, last_errorvecdb
+@, 1559Q, 13
+Q, 1, list_idsvecdb
+@, 1567Q, 14
+Q, 1, putvecdb
+@, 1575Q, 15
+Q, 1, put_exvecdb
+@, 1583Q, 16
+Q, 1, getvecdb
+@, 1591Q, 17
+Q, 1, deletevecdb
+@, 1599Q, 18
+Q, 1, search_vectorvecdb
+@, 1607Q, 19
+Q, 1, search_textvecdb
+@, 1615Q, 20
+Q, 1, search_hybridvecdb
+@, 1623Q, 21
+Q, 1, match_countvecdb
+@, 1631Q, 22
+Q, 1, match_idvecdb
+@, 1639Q, 23
+Q, 1, match_scorevecdb
+@, 1647Q, 24
+Q, 1, match_textvecdb
+@, 1655Q, 25
+Q, 1, match_payloadvecdb
+@, 1663Q, 26
+B, 15, modulestr@process
+@, 1671Q, "libl1vmprocess"
+Q, 1, modulestr@processaddr
+@, 1686Q, 1671Q
+B, 10, run_shellstr@process
+@, 1694Q, "run_shell"
+Q, 1, run_shellstr@processaddr
+@, 1704Q, 1694Q
+Q, 1, run_shell@process
+@, 1712Q, 0
+Q, 1, mod@process
+@, 1720Q, 0
+B, 12, modulestr@file
+@, 1728Q, "libl1vmfile"
+Q, 1, modulestr@fileaddr
+@, 1740Q, 1728Q
+B, 10, openstr@file
+@, 1748Q, "file_open"
+Q, 1, openstr@fileaddr
+@, 1758Q, 1748Q
+B, 11, closestr@file
+@, 1766Q, "file_close"
+Q, 1, closestr@fileaddr
+@, 1777Q, 1766Q
+B, 10, seekstr@file
+@, 1785Q, "file_seek"
+Q, 1, seekstr@fileaddr
+@, 1795Q, 1785Q
+B, 10, putcstr@file
+@, 1803Q, "file_putc"
+Q, 1, putcstr@fileaddr
+@, 1813Q, 1803Q
+B, 10, getcstr@file
+@, 1821Q, "file_getc"
+Q, 1, getcstr@fileaddr
+@, 1831Q, 1821Q
+B, 15, put_int16str@file
+@, 1839Q, "file_put_int16"
+Q, 1, put_int16str@fileaddr
+@, 1854Q, 1839Q
+B, 15, get_int16str@file
+@, 1862Q, "file_get_int16"
+Q, 1, get_int16str@fileaddr
+@, 1877Q, 1862Q
+B, 15, put_int32str@file
+@, 1885Q, "file_put_int32"
+Q, 1, put_int32str@fileaddr
+@, 1900Q, 1885Q
+B, 15, get_int32str@file
+@, 1908Q, "file_get_int32"
+Q, 1, get_int32str@fileaddr
+@, 1923Q, 1908Q
+B, 15, put_int64str@file
+@, 1931Q, "file_put_int64"
+Q, 1, put_int64str@fileaddr
+@, 1946Q, 1931Q
+B, 15, get_int64str@file
+@, 1954Q, "file_get_int64"
+Q, 1, get_int64str@fileaddr
+@, 1969Q, 1954Q
+B, 16, put_doublestr@file
+@, 1977Q, "file_put_double"
+Q, 1, put_doublestr@fileaddr
+@, 1993Q, 1977Q
+B, 16, get_doublestr@file
+@, 2001Q, "file_get_double"
+Q, 1, get_doublestr@fileaddr
+@, 2017Q, 2001Q
+B, 16, put_stringstr@file
+@, 2025Q, "file_put_string"
+Q, 1, put_stringstr@fileaddr
+@, 2041Q, 2025Q
+B, 16, get_stringstr@file
+@, 2049Q, "file_get_string"
+Q, 1, get_stringstr@fileaddr
+@, 2065Q, 2049Q
+B, 16, fileinitstr@file
+@, 2073Q, "file_init_state"
+Q, 1, fileinitstr@fileaddr
+@, 2089Q, 2073Q
+B, 9, freememstr@file
+@, 2097Q, "free_mem"
+Q, 1, freememstr@fileaddr
+@, 2106Q, 2097Q
+B, 16, read_arraystr@file
+@, 2114Q, "file_read_array"
+Q, 1, read_arraystr@fileaddr
+@, 2130Q, 2114Q
+B, 17, write_arraystr@file
+@, 2138Q, "file_write_array"
+Q, 1, write_arraystr@fileaddr
+@, 2155Q, 2138Q
+B, 11, flushstr@file
+@, 2163Q, "file_flush"
+Q, 1, flushstr@fileaddr
+@, 2174Q, 2163Q
+Q, 1, open@file
+@, 2182Q, 0
+Q, 1, close@file
+@, 2190Q, 1
+Q, 1, seek@file
+@, 2198Q, 2
+Q, 1, putc@file
+@, 2206Q, 3
+Q, 1, getc@file
+@, 2214Q, 4
+Q, 1, put_int16@file
+@, 2222Q, 5
+Q, 1, get_int16@file
+@, 2230Q, 6
+Q, 1, put_int32@file
+@, 2238Q, 7
+Q, 1, get_int32@file
+@, 2246Q, 8
+Q, 1, put_int64@file
+@, 2254Q, 9
+Q, 1, get_int64@file
+@, 2262Q, 10
+Q, 1, put_double@file
+@, 2270Q, 11
+Q, 1, get_double@file
+@, 2278Q, 12
+Q, 1, get_string@file
+@, 2286Q, 13
+Q, 1, put_string@file
+@, 2294Q, 14
+Q, 1, fileinit@file
+@, 2302Q, 15
+Q, 1, freemem@file
+@, 2310Q, 16
+Q, 1, read_array@file
+@, 2318Q, 17
+Q, 1, write_array@file
+@, 2326Q, 18
+Q, 1, flush@file
+@, 2334Q, 19
+Q, 1, mod@file
+@, 2342Q, 0
+Q, 1, maxind@file
+@, 2350Q, 0
 B, 14, modulestr@string
-@, 6431Q, "libl1vmstring"
+@, 2358Q, "libl1vmstring"
 Q, 1, modulestr@stringaddr
-@, 6445Q, 6431Q
+@, 2372Q, 2358Q
 B, 11, lenstr@string
-@, 6453Q, "string_len"
+@, 2380Q, "string_len"
 Q, 1, lenstr@stringaddr
-@, 6464Q, 6453Q
+@, 2391Q, 2380Q
 B, 12, copystr@string
-@, 6472Q, "string_copy"
+@, 2399Q, "string_copy"
 Q, 1, copystr@stringaddr
-@, 6484Q, 6472Q
+@, 2411Q, 2399Q
 B, 11, catstr@string
-@, 6492Q, "string_cat"
+@, 2419Q, "string_cat"
 Q, 1, catstr@stringaddr
-@, 6503Q, 6492Q
+@, 2430Q, 2419Q
 B, 23, int64tostringstr@string
-@, 6511Q, "string_int64_to_string"
+@, 2438Q, "string_int64_to_string"
 Q, 1, int64tostringstr@stringaddr
-@, 6534Q, 6511Q
+@, 2461Q, 2438Q
 B, 25, bytetohexstringstr@string
-@, 6542Q, "string_byte_to_hexstring"
+@, 2469Q, "string_byte_to_hexstring"
 Q, 1, bytetohexstringstr@stringaddr
-@, 6567Q, 6542Q
+@, 2494Q, 2469Q
 B, 24, doubletostringstr@string
-@, 6575Q, "string_double_to_string"
+@, 2502Q, "string_double_to_string"
 Q, 1, doubletostringstr@stringaddr
-@, 6599Q, 6575Q
+@, 2526Q, 2502Q
 B, 25, bytenumtostringstr@string
-@, 6607Q, "string_bytenum_to_string"
+@, 2534Q, "string_bytenum_to_string"
 Q, 1, bytenumtostringstr@stringaddr
-@, 6632Q, 6607Q
+@, 2559Q, 2534Q
 B, 23, stringtoarraystr@string
-@, 6640Q, "string_string_to_array"
+@, 2567Q, "string_string_to_array"
 Q, 1, stringtoarraystr@stringaddr
-@, 6663Q, 6640Q
+@, 2590Q, 2567Q
 B, 23, arraytostringstr@string
-@, 6671Q, "string_array_to_string"
+@, 2598Q, "string_array_to_string"
 Q, 1, arraytostringstr@stringaddr
-@, 6694Q, 6671Q
+@, 2621Q, 2598Q
 B, 12, stringleftstr@string
-@, 6702Q, "string_left"
+@, 2629Q, "string_left"
 Q, 1, stringleftstr@stringaddr
-@, 6714Q, 6702Q
+@, 2641Q, 2629Q
 B, 13, stringrightstr@string
-@, 6722Q, "string_right"
+@, 2649Q, "string_right"
 Q, 1, stringrightstr@stringaddr
-@, 6735Q, 6722Q
+@, 2662Q, 2649Q
 B, 11, stringmidstr@string
-@, 6743Q, "string_mid"
+@, 2670Q, "string_mid"
 Q, 1, stringmidstr@stringaddr
-@, 6754Q, 6743Q
+@, 2681Q, 2670Q
 B, 17, stringtostringstr@string
-@, 6762Q, "string_to_string"
+@, 2689Q, "string_to_string"
 Q, 1, stringtostringstr@stringaddr
-@, 6779Q, 6762Q
+@, 2706Q, 2689Q
 B, 15, stringcomparestr@string
-@, 6787Q, "string_compare"
+@, 2714Q, "string_compare"
 Q, 1, stringcomparestr@stringaddr
-@, 6802Q, 6787Q
+@, 2729Q, 2714Q
 B, 20, stringmemtostringstr@string
-@, 6810Q, "stringmem_to_string"
+@, 2737Q, "stringmem_to_string"
 Q, 1, stringmemtostringstr@stringaddr
-@, 6830Q, 6810Q
+@, 2757Q, 2737Q
 B, 24, stringmemsearchstr@string
-@, 6838Q, "stringmem_search_string"
+@, 2765Q, "stringmem_search_string"
 Q, 1, stringmemsearchstr@stringaddr
-@, 6862Q, 6838Q
+@, 2789Q, 2765Q
 B, 13, stringregexstr@string
-@, 6870Q, "string_regex"
+@, 2797Q, "string_regex"
 Q, 1, stringregexstr@stringaddr
-@, 6883Q, 6870Q
+@, 2810Q, 2797Q
 B, 14, stringsearchstr@string
-@, 6891Q, "string_search"
+@, 2818Q, "string_search"
 Q, 1, stringsearchstr@stringaddr
-@, 6905Q, 6891Q
+@, 2832Q, 2818Q
 B, 18, string_array_sortstr@string
-@, 6913Q, "string_array_sort"
+@, 2840Q, "string_array_sort"
 Q, 1, string_array_sortstr@stringaddr
-@, 6931Q, 6913Q
+@, 2858Q, 2840Q
 B, 20, string_array_searchstr@string
-@, 6939Q, "string_array_search"
+@, 2866Q, "string_array_search"
 Q, 1, string_array_searchstr@stringaddr
-@, 6959Q, 6939Q
+@, 2886Q, 2866Q
 B, 19, string_mid_to_bytestr@string
-@, 6967Q, "string_mid_to_byte"
+@, 2894Q, "string_mid_to_byte"
 Q, 1, string_mid_to_bytestr@stringaddr
-@, 6986Q, 6967Q
+@, 2913Q, 2894Q
 B, 22, bytenumbytetostringstr@string
-@, 6994Q, "string_byte_to_string"
+@, 2921Q, "string_byte_to_string"
 Q, 1, bytenumbytetostringstr@stringaddr
-@, 7016Q, 6994Q
+@, 2943Q, 2921Q
 B, 14, stringverifystr@string
-@, 7024Q, "string_verify"
+@, 2951Q, "string_verify"
 Q, 1, stringverifystr@stringaddr
-@, 7038Q, 7024Q
+@, 2965Q, 2951Q
 B, 8, get_envstr@string
-@, 7046Q, "get_env"
+@, 2973Q, "get_env"
 Q, 1, get_envstr@stringaddr
-@, 7054Q, 7046Q
+@, 2981Q, 2973Q
 B, 8, set_envstr@string
-@, 7062Q, "set_env"
+@, 2989Q, "set_env"
 Q, 1, set_envstr@stringaddr
-@, 7070Q, 7062Q
+@, 2997Q, 2989Q
 B, 18, stringparsejsonstr@string
-@, 7078Q, "string_parse_json"
+@, 3005Q, "string_parse_json"
 Q, 1, stringparsejsonstr@stringaddr
-@, 7096Q, 7078Q
+@, 3023Q, 3005Q
 B, 18, string_format_numstr@string
-@, 7104Q, "string_format_num"
+@, 3031Q, "string_format_num"
 Q, 1, string_format_numstr@stringaddr
-@, 7122Q, 7104Q
+@, 3049Q, 3031Q
 B, 12, string_paddstr@string
-@, 7130Q, "string_padd"
+@, 3057Q, "string_padd"
 Q, 1, string_paddstr@stringaddr
-@, 7142Q, 7130Q
+@, 3069Q, 3057Q
 B, 15, tolowerstr@string
-@, 7150Q, "string_tolower"
+@, 3077Q, "string_tolower"
 Q, 1, tolowerstr@stringaddr
-@, 7165Q, 7150Q
+@, 3092Q, 3077Q
 B, 15, toupperstr@string
-@, 7173Q, "string_toupper"
+@, 3100Q, "string_toupper"
 Q, 1, toupperstr@stringaddr
-@, 7188Q, 7173Q
+@, 3115Q, 3100Q
 Q, 1, len@string
-@, 7196Q, 0
+@, 3123Q, 0
 Q, 1, copy@string
-@, 7204Q, 1
+@, 3131Q, 1
 Q, 1, cat@string
-@, 7212Q, 2
+@, 3139Q, 2
 Q, 1, int64tostring@string
-@, 7220Q, 3
+@, 3147Q, 3
 Q, 1, bytetohexstring@string
-@, 7228Q, 4
+@, 3155Q, 4
 Q, 1, doubletostring@string
-@, 7236Q, 5
+@, 3163Q, 5
 Q, 1, bytenumtostring@string
-@, 7244Q, 6
+@, 3171Q, 6
 Q, 1, stringtoarray@string
-@, 7252Q, 7
+@, 3179Q, 7
 Q, 1, arraytostring@string
-@, 7260Q, 8
+@, 3187Q, 8
 Q, 1, stringleft@string
-@, 7268Q, 9
+@, 3195Q, 9
 Q, 1, stringright@string
-@, 7276Q, 10
+@, 3203Q, 10
 Q, 1, stringmid@string
-@, 7284Q, 11
+@, 3211Q, 11
 Q, 1, stringtostring@string
-@, 7292Q, 12
+@, 3219Q, 12
 Q, 1, stringcompare@string
-@, 7300Q, 13
+@, 3227Q, 13
 Q, 1, stringmemtostring@string
-@, 7308Q, 14
+@, 3235Q, 14
 Q, 1, stringmemsearch@string
-@, 7316Q, 15
+@, 3243Q, 15
 Q, 1, stringregex@string
-@, 7324Q, 16
+@, 3251Q, 16
 Q, 1, stringsearch@string
-@, 7332Q, 17
+@, 3259Q, 17
 Q, 1, get_env@string
-@, 7340Q, 18
+@, 3267Q, 18
 Q, 1, set_env@string
-@, 7348Q, 19
+@, 3275Q, 19
 Q, 1, stringparsejson@string
-@, 7356Q, 20
+@, 3283Q, 20
 Q, 1, string_array_sort@string
-@, 7364Q, 21
+@, 3291Q, 21
 Q, 1, string_array_search@string
-@, 7372Q, 22
+@, 3299Q, 22
 Q, 1, string_mid_to_byte@string
-@, 7380Q, 23
+@, 3307Q, 23
 Q, 1, bytenumbytetostring@string
-@, 7388Q, 24
+@, 3315Q, 24
 Q, 1, stringverify@string
-@, 7396Q, 25
+@, 3323Q, 25
 Q, 1, string_format_num@string
-@, 7404Q, 26
+@, 3331Q, 26
 Q, 1, string_padd@string
-@, 7412Q, 27
+@, 3339Q, 27
 Q, 1, tolower@string
-@, 7420Q, 28
+@, 3347Q, 28
 Q, 1, toupper@string
-@, 7428Q, 29
+@, 3355Q, 29
 Q, 1, mod@string
-@, 7436Q, 0
+@, 3363Q, 0
 .dend
 .code
 :main
 loada zero, 0, 0
 stpushi 0
-loada zero, 0, 1
+loada modvec, 0, 1
 stpushi 1
-jsr :math_init
+loada MOD_VECDB, 0, 2
+stpushi 2
+jsr :vecdb_init
 stpopi 0
-loada one, 0, 1
+loada modstr, 0, 1
 stpushi 1
+loada MOD_STRING, 0, 2
+stpushi 2
 jsr :string_init
-load zero, 0, 1
-pushqw 1, 0, 2
-loada ind, 0, 3
-load regi, 0, 4
-pullqw 2, 4, 3
-loada offset, 0, 4
-addi 3, 4, 5
-load ind, 0, 6
-pullqw 5, 6, 0
-load one, 0, 1
-pushqw 1, 0, 2
-loada ind, 0, 3
-load regi, 0, 4
-pullqw 2, 4, 3
-loada offset, 0, 4
-addi 3, 4, 5
-load ind, 0, 6
-pullqw 5, 6, 0
-load maxloop, 0, 1
-pushqw 1, 0, 2
-loada ind, 0, 3
-load regi, 0, 4
-pullqw 2, 4, 3
-loada messagestraddr, 0, 4
-intr0 6, 4, 0, 0
-intr0 7, 0, 0, 0
+loada MOD_FILE, 0, 1
 stpushi 1
+loada MAXIND, 0, 2
 stpushi 2
-stpushi 3
-stpushi 4
-jsr :start
-stpopi 4
-stpopi 3
-stpopi 2
-stpopi 1
-loada zero, 0, 1
-intr0 255, 1, 0, 0
-rts
-:opcodes_per_sec
-loada zero, 0, 0
-stpushi 0
-loada time_ms_i, 0, 1
+jsr :file_init
+loada MOD_PROCESS, 0, 1
 stpushi 1
-jsr :math_int2double
-stpopd 1
-load time_ms_d, 0, 2
-pulld 1, 2, 0
-stpopi 0
-loada maxloop, 0, 1
-stpushi 1
-jsr :math_int2double
-stpopd 1
-load maxloop_d, 0, 2
-pulld 1, 2, 0
-loadd opcodes_loop_d, 0, 2
-muld 1, 2, 3
-loadd ticks_per_sec_d, 0, 4
-muld 3, 4, 5
-loadd time_ms_d, 0, 6
-divd 5, 6, 7
-load opcodes_sec_d, 0, 8
-pulld 7, 8, 0
-loada opcodes_straddr, 0, 1
-intr0 6, 1, 0, 0
-stpushi 1
-loadd opcodes_sec_d, 0, 1
-stpushd 1
-loada opcodes_str_saddr, 0, 2
-stpushi 2
-loada opcodes_str_len, 0, 3
-stpushi 3
-jsr :string_doubletostring
-stpopi 1
-loada opcodes_str_formaddr, 0, 1
-stpushi 1
-loada opcodes_str_saddr, 0, 2
-stpushi 2
-jsr :string_format_num
-loada opcodes_str_formaddr, 0, 1
-intr0 6, 1, 0, 0
-intr0 7, 0, 0, 0
-loadd thousand_d, 0, 1
-loadd points_ref_d, 0, 2
-divd 1, 2, 3
-loadd opcodes_sec_d, 0, 4
-muld 3, 4, 5
-load points_d, 0, 6
-pulld 5, 6, 0
-stpushi 1
-stpushd 1
-stpushd 2
-stpushd 3
-stpushd 4
-loadd points_d, 0, 5
-stpushd 5
-jsr :math_double2int
-stpopi 2
-load points_i, 0, 3
-pullqw 2, 3, 0
-stpopd 4
-stpopd 3
-stpopd 2
-stpopd 1
-stpopi 1
-intr0 7, 0, 0, 0
-loada points_straddr, 0, 1
-intr0 6, 1, 0, 0
-loada points_i, 0, 2
-intr0 4, 2, 0, 0
-intr0 7, 0, 0, 0
-rts
-:addi
-loada zero, 0, 0
-loada ep, 0, 1
-loada one, 0, 2
-addi 1, 2, 3
-load bp@addi, 0, 4
-pullqw 3, 4, 0
-loada arg1, 0, 5
-loada bp@addi, 0, 6
-load bytecode, 0, 7
-pushb 7, 6, 5
-addi 6, 2, 7
-load bp@addi, 0, 8
-pullqw 7, 8, 0
-loada arg2, 0, 6
-loada bp@addi, 0, 9
-load bytecode, 0, 10
-pushb 10, 9, 6
-addi 9, 2, 10
-load bp@addi, 0, 11
-pullqw 10, 11, 0
-loada arg3, 0, 9
-loada bp@addi, 0, 12
-load bytecode, 0, 13
-pushb 13, 12, 9
-loada offset@addi, 0, 13
-muli 5, 13, 14
-load arg1, 0, 15
-pullqw 14, 15, 0
-muli 6, 13, 5
-load arg2, 0, 16
-pullqw 5, 16, 0
-muli 9, 13, 6
-load arg3, 0, 17
-pullqw 6, 17, 0
-loada r1@addi, 0, 9
-loada arg1, 0, 18
-load regi, 0, 19
-pushqw 19, 18, 9
-loada r2@addi, 0, 19
-loada arg2, 0, 20
-load regi, 0, 21
-pushqw 21, 20, 19
-addi 9, 19, 21
-load r3@addi, 0, 22
-pullqw 21, 22, 0
-load r3@addi, 0, 1
-pushqw 1, 0, 2
-loada arg3, 0, 3
-load regi, 0, 4
-pullqw 2, 4, 3
-loada ep, 0, 4
-loada four@addi, 0, 5
-addi 4, 5, 6
-load ep, 0, 7
-pullqw 6, 7, 0
-loada bp, 0, 4
-loada bp_offset@addi, 0, 8
-addi 4, 8, 9
-load bp, 0, 10
-pullqw 9, 10, 0
-rts
-:lsi
-loada zero, 0, 0
-loada ep, 0, 1
-loada one, 0, 2
-addi 1, 2, 3
-load bp@lsi, 0, 4
-pullqw 3, 4, 0
-loada arg1, 0, 5
-loada bp@lsi, 0, 6
-load bytecode, 0, 7
-pushb 7, 6, 5
-addi 5, 0, 7
-load arg1, 0, 8
-pullqw 7, 8, 0
-addi 6, 2, 5
-load bp@lsi, 0, 9
-pullqw 5, 9, 0
-loada arg2, 0, 6
-loada bp@lsi, 0, 10
-load bytecode, 0, 11
-pushb 11, 10, 6
-addi 6, 0, 11
-load arg2, 0, 12
-pullqw 11, 12, 0
-addi 10, 2, 6
-load bp@lsi, 0, 13
-pullqw 6, 13, 0
-loada arg3, 0, 10
-loada bp@lsi, 0, 14
-load bytecode, 0, 15
-pushb 15, 14, 10
-addi 10, 0, 15
-load arg3, 0, 16
-pullqw 15, 16, 0
-loada arg1, 0, 1
-loada offset@lsi, 0, 2
-muli 1, 2, 3
-load arg1, 0, 4
-pullqw 3, 4, 0
-loada arg2, 0, 1
-muli 1, 2, 5
-load arg2, 0, 6
-pullqw 5, 6, 0
-loada arg3, 0, 1
-muli 1, 2, 7
-load arg3, 0, 8
-pullqw 7, 8, 0
-loada r1@lsi, 0, 1
-loada arg1, 0, 2
-load regi, 0, 3
-pushqw 3, 2, 1
-loada r2@lsi, 0, 3
-loada arg2, 0, 4
-load regi, 0, 5
-pushqw 5, 4, 3
-lsi 1, 3, 5
-load f, 0, 6
-pullqw 5, 6, 0
-loada f, 0, 1
-jmpi 1, :if_0
-jmp :else_0
-:if_0
-load one, 0, 1
-pushqw 1, 0, 2
-loada arg3, 0, 3
-load regi, 0, 4
-pullqw 2, 4, 3
-jmp :endif_0
-:else_0
-load zero, 0, 1
-pushqw 1, 0, 2
-loada arg3, 0, 3
-load regi, 0, 4
-pullqw 2, 4, 3
-:endif_0
-loada ep, 0, 1
-loada four@lsi, 0, 2
-addi 1, 2, 3
-load ep, 0, 4
-pullqw 3, 4, 0
-loada bp, 0, 1
-loada bp_offset@lsi, 0, 5
-addi 1, 5, 6
-load bp, 0, 7
-pullqw 6, 7, 0
-rts
-:jmpi
-loada zero, 0, 0
-loada ep, 0, 1
-loada one, 0, 2
-addi 1, 2, 3
-load bp@jmpi, 0, 4
-pullqw 3, 4, 0
-loada arg1, 0, 5
-loada bp@jmpi, 0, 6
-load bytecode, 0, 7
-pushb 7, 6, 5
-addi 5, 0, 7
-load arg1, 0, 8
-pullqw 7, 8, 0
-addi 6, 2, 5
-load bp@jmpi, 0, 9
-pullqw 5, 9, 0
-loada arg2, 0, 6
-loada bp@jmpi, 0, 10
-load bytecode, 0, 11
-pushb 11, 10, 6
-addi 6, 0, 11
-load arg2, 0, 12
-pullqw 11, 12, 0
-loada arg1, 0, 6
-loada offset@jmpi, 0, 13
-muli 6, 13, 14
-load arg1, 0, 15
-pullqw 14, 15, 0
-loada r1@jmpi, 0, 6
-loada arg1, 0, 16
-load regi, 0, 17
-pushqw 17, 16, 6
-neqi 6, 0, 17
-load f, 0, 18
-pullqw 17, 18, 0
-loada f, 0, 1
-jmpi 1, :if_1
-jmp :else_1
-:if_1
-load ep, 0, 1
-loada arg2, 0, 2
-pullqw 2, 1, 0
-load bp, 0, 1
-loada arg2, 0, 2
-pullqw 2, 1, 0
-loada bp, 0, 1
-loada offset@jmpi, 0, 2
-muli 1, 2, 3
-load bp, 0, 4
-pullqw 3, 4, 0
-jmp :endif_1
-:else_1
-loada ep, 0, 1
-loada three@jmpi, 0, 2
-addi 1, 2, 3
-load ep, 0, 4
-pullqw 3, 4, 0
-loada bp, 0, 1
-loada bp_offset@jmpi, 0, 5
-addi 1, 5, 6
-load bp, 0, 7
-pullqw 6, 7, 0
-:endif_1
-rts
-:printi
-loada zero, 0, 0
-loada ep, 0, 1
-loada one, 0, 2
-addi 1, 2, 3
-load bp@printi, 0, 4
-pullqw 3, 4, 0
-loada arg1, 0, 5
-loada bp@printi, 0, 6
-load bytecode, 0, 7
-pushb 7, 6, 5
-addi 5, 0, 7
-load arg1, 0, 8
-pullqw 7, 8, 0
-loada arg1, 0, 5
-loada offset@printi, 0, 9
-muli 5, 9, 10
-load arg1, 0, 11
-pullqw 10, 11, 0
-loada r1@printi, 0, 5
-loada arg1, 0, 12
-load regi, 0, 13
-pushqw 13, 12, 5
-intr0 4, 5, 0, 0
-intr0 7, 0, 0, 0
-loada two@printi, 0, 13
-addi 1, 13, 14
-load ep, 0, 15
-pullqw 14, 15, 0
-loada bp, 0, 1
-loada bp_offset@printi, 0, 16
-addi 1, 16, 17
-load bp, 0, 18
-pullqw 17, 18, 0
-rts
-:end
-loada zero, 0, 0
-loada time_ms_i, 0, 1
-intr0 25, 1, 0, 0
-addi 1, 0, 2
-load time_ms_i, 0, 3
-pullqw 2, 3, 0
-stpushi 0
-jsr :opcodes_per_sec
-stpopi 0
-loada zero, 0, 1
-intr0 255, 1, 0, 0
-rts
-:start
-loada zero, 0, 0
-intr0 40, 0, 0, 0
-:set_labels
-loada lab_addi, 0, 1
-loadl :addi, 1
-loada zero, 0, 3
-addi 1, 3, 4
-load lab_addi, 0, 5
-pullqw 4, 5, 0
-loada lab_lsi, 0, 1
-loadl :lsi, 1
-addi 1, 3, 5
-load lab_lsi, 0, 6
-pullqw 5, 6, 0
-loada lab_jmpi, 0, 1
-loadl :jmpi, 1
-addi 1, 3, 6
-load lab_jmpi, 0, 7
-pullqw 6, 7, 0
-loada lab_printi, 0, 1
-loadl :printi, 1
-addi 1, 3, 7
-load lab_printi, 0, 8
-pullqw 7, 8, 0
-loada lab_end, 0, 1
-loadl :end, 1
-addi 1, 3, 8
-load lab_end, 0, 9
-pullqw 8, 9, 0
-load i, 0, 1
-loada zero, 0, 2
-pullqw 2, 1, 0
-load lab_addi, 0, 1
-pushqw 1, 0, 2
-loada i, 0, 3
-load jmp_array, 0, 4
-pullqw 2, 4, 3
-load lab_lsi, 0, 1
-pushqw 1, 0, 2
-loada lsi_pos, 0, 3
-load jmp_array, 0, 4
-pullqw 2, 4, 3
-load lab_jmpi, 0, 1
-pushqw 1, 0, 2
-loada jmpi_pos, 0, 3
-load jmp_array, 0, 4
-pullqw 2, 4, 3
-load lab_printi, 0, 1
-pushqw 1, 0, 2
-loada printi_pos, 0, 3
-load jmp_array, 0, 4
-pullqw 2, 4, 3
-load lab_end, 0, 1
-pushqw 1, 0, 2
-loada end_pos, 0, 3
-load jmp_array, 0, 4
-pullqw 2, 4, 3
-load bp, 0, 4
-loada zero, 0, 5
-pullqw 5, 4, 0
-intr0 24, 0, 0, 0
-:load_opcode
-loada op_label, 0, 1
-loada bp, 0, 2
-load jmp_array, 0, 3
-pushqw 3, 2, 1
-jsra 1
-jmp :load_opcode
-intr0 39, 0, 0, 0
-rts
-:math_init
-loada zero, 0, 0
-stpopi 1
-load mod@math, 0, 2
+jsr :process_init
+load dbpath, 0, 1
+load Pdb, 0, 2
 pullqw 1, 2, 0
-loada modulestr@mathaddr, 0, 2
+load listpath, 0, 2
+load Plistp, 0, 3
+pullqw 2, 3, 0
+intr0 7, 0, 0, 0
+stpushi 1
+stpushi 2
+load file_mode_read, 0, 3
+pushb 3, 0, 4
+stpushb 4
+loada Plistp, 0, 5
+stpushi 5
+jsr :file_open
+stpopi 6
+load status, 0, 7
+pullqw 6, 7, 0
+stpopi 7
+load lhandle, 0, 8
+pullqw 7, 8, 0
+stpopi 2
+stpopi 1
+intr0 7, 0, 0, 0
+loada one, 0, 1
+intr0 255, 1, 0, 0
+rts
+:vecdb_init
+loada zero, 0, 0
+stpopi 1
+load modvecdb, 0, 2
+pullqw 1, 2, 0
+loada modulestrvecdbaddr, 0, 2
 intr0 0, 2, 1, 0
-loada int2double@math, 0, 3
-loada int2doublestr@mathaddr, 0, 4
+loada openvecdb, 0, 3
+loada openstrvecdbaddr, 0, 4
 intr0 2, 1, 3, 4
-loada double2int@math, 0, 5
-loada double2intstr@mathaddr, 0, 6
+loada open_exvecdb, 0, 5
+loada open_exstrvecdbaddr, 0, 6
 intr0 2, 1, 5, 6
-loada sqrtdouble@math, 0, 7
-loada sqrtdoublestr@mathaddr, 0, 8
+loada closevecdb, 0, 7
+loada closestrvecdbaddr, 0, 8
 intr0 2, 1, 7, 8
-loada logdouble@math, 0, 9
-loada logdoublestr@mathaddr, 0, 10
+loada flushvecdb, 0, 9
+loada flushstrvecdbaddr, 0, 10
 intr0 2, 1, 9, 10
-loada log2double@math, 0, 11
-loada log2doublestr@mathaddr, 0, 12
+loada compactvecdb, 0, 11
+loada compactstrvecdbaddr, 0, 12
 intr0 2, 1, 11, 12
-loada randinit@math, 0, 13
-loada randinitstr@mathaddr, 0, 14
+loada countvecdb, 0, 13
+loada countstrvecdbaddr, 0, 14
 intr0 2, 1, 13, 14
-loada randint@math, 0, 15
-loada randintstr@mathaddr, 0, 16
+loada capacityvecdb, 0, 15
+loada capacitystrvecdbaddr, 0, 16
 intr0 2, 1, 15, 16
-loada randdouble@math, 0, 17
-loada randdoublestr@mathaddr, 0, 18
+loada dimvecdb, 0, 17
+loada dimstrvecdbaddr, 0, 18
 intr0 2, 1, 17, 18
-loada randintmax@math, 0, 19
-loada randintmaxstr@mathaddr, 0, 20
+loada metricvecdb, 0, 19
+loada metricstrvecdbaddr, 0, 20
 intr0 2, 1, 19, 20
-loada randombyte@math, 0, 21
-loada randombytestr@mathaddr, 0, 22
+loada indexvecdb, 0, 21
+loada indexstrvecdbaddr, 0, 22
 intr0 2, 1, 21, 22
-loada doubleroundedstring@math, 0, 23
-loada doubleroundedstringstr@mathaddr, 0, 24
+loada pathvecdb, 0, 23
+loada pathstrvecdbaddr, 0, 24
 intr0 2, 1, 23, 24
-loada stringtoint@math, 0, 25
-loada stringtointstr@mathaddr, 0, 26
+loada set_ef_searchvecdb, 0, 25
+loada set_ef_searchstrvecdbaddr, 0, 26
 intr0 2, 1, 25, 26
-loada stringtodouble@math, 0, 27
-loada stringtodoublestr@mathaddr, 0, 28
+loada strerrorvecdb, 0, 27
+loada strerrorstrvecdbaddr, 0, 28
 intr0 2, 1, 27, 28
-loada acosdouble@math, 0, 29
-loada acosdoublestr@mathaddr, 0, 30
+loada last_errorvecdb, 0, 29
+loada last_errorstrvecdbaddr, 0, 30
 intr0 2, 1, 29, 30
-loada asindouble@math, 0, 31
-loada asindoublestr@mathaddr, 0, 32
+loada list_idsvecdb, 0, 31
+loada list_idsstrvecdbaddr, 0, 32
 intr0 2, 1, 31, 32
-loada atandouble@math, 0, 33
-loada atandoublestr@mathaddr, 0, 34
+loada putvecdb, 0, 33
+loada putstrvecdbaddr, 0, 34
 intr0 2, 1, 33, 34
-loada atan2double@math, 0, 35
-loada atan2doublestr@mathaddr, 0, 36
+loada put_exvecdb, 0, 35
+loada put_exstrvecdbaddr, 0, 36
 intr0 2, 1, 35, 36
-loada cosdouble@math, 0, 37
-loada cosdoublestr@mathaddr, 0, 38
+loada getvecdb, 0, 37
+loada getstrvecdbaddr, 0, 38
 intr0 2, 1, 37, 38
-loada coshdouble@math, 0, 39
-loada coshdoublestr@mathaddr, 0, 40
+loada deletevecdb, 0, 39
+loada deletestrvecdbaddr, 0, 40
 intr0 2, 1, 39, 40
-loada sindouble@math, 0, 41
-loada sindoublestr@mathaddr, 0, 42
+loada search_vectorvecdb, 0, 41
+loada search_vectorstrvecdbaddr, 0, 42
 intr0 2, 1, 41, 42
-loada sinhdouble@math, 0, 43
-loada sinhdoublestr@mathaddr, 0, 44
+loada search_textvecdb, 0, 43
+loada search_textstrvecdbaddr, 0, 44
 intr0 2, 1, 43, 44
-loada tanhdouble@math, 0, 45
-loada tanhdoublestr@mathaddr, 0, 46
+loada search_hybridvecdb, 0, 45
+loada search_hybridstrvecdbaddr, 0, 46
 intr0 2, 1, 45, 46
-loada expdouble@math, 0, 47
-loada expdoublestr@mathaddr, 0, 48
+loada match_countvecdb, 0, 47
+loada match_countstrvecdbaddr, 0, 48
 intr0 2, 1, 47, 48
-loada frexpdouble@math, 0, 49
-loada frexpdoublestr@mathaddr, 0, 50
+loada match_idvecdb, 0, 49
+loada match_idstrvecdbaddr, 0, 50
 intr0 2, 1, 49, 50
-loada ldexpdouble@math, 0, 51
-loada ldexpdoublestr@mathaddr, 0, 52
+loada match_scorevecdb, 0, 51
+loada match_scorestrvecdbaddr, 0, 52
 intr0 2, 1, 51, 52
-loada log10double@math, 0, 53
-loada log10doublestr@mathaddr, 0, 54
+loada match_textvecdb, 0, 53
+loada match_textstrvecdbaddr, 0, 54
 intr0 2, 1, 53, 54
-loada modfdouble@math, 0, 55
-loada modfdoublestr@mathaddr, 0, 56
+loada match_payloadvecdb, 0, 55
+loada match_payloadstrvecdbaddr, 0, 56
 intr0 2, 1, 55, 56
-loada powdouble@math, 0, 57
-loada powdoublestr@mathaddr, 0, 58
-intr0 2, 1, 57, 58
-loada ceildouble@math, 0, 59
-loada ceildoublestr@mathaddr, 0, 60
-intr0 2, 1, 59, 60
-loada fabsdouble@math, 0, 61
-loada fabsdoublestr@mathaddr, 0, 62
-intr0 2, 1, 61, 62
-loada floordouble@math, 0, 63
-loada floordoublestr@mathaddr, 0, 64
-intr0 2, 1, 63, 64
-loada tandouble@math, 0, 65
-loada tandoublestr@mathaddr, 0, 66
-intr0 2, 1, 65, 66
-loada byte2int@math, 0, 67
-loada byte2intstr@mathaddr, 0, 68
-intr0 2, 1, 67, 68
-loada fmoddouble@math, 0, 69
-loada fmoddoublestr@mathaddr, 0, 70
-intr0 2, 1, 69, 70
 rts
-:math_int2double
+:vecdb_open
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada int2double@math, 0, 2
+loada modvecdb, 0, 1
+loada openvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_double2int
+:vecdb_open_ex
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada double2int@math, 0, 2
+loada modvecdb, 0, 1
+loada open_exvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_sqrtdouble
+:vecdb_close
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada sqrtdouble@math, 0, 2
+loada modvecdb, 0, 1
+loada closevecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_logdouble
+:vecdb_flush
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada logdouble@math, 0, 2
+loada modvecdb, 0, 1
+loada flushvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_log2double
+:vecdb_compact
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada log2double@math, 0, 2
+loada modvecdb, 0, 1
+loada compactvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_randinit
+:vecdb_count
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada randinit@math, 0, 2
+loada modvecdb, 0, 1
+loada countvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_randint
+:vecdb_capacity
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada randint@math, 0, 2
+loada modvecdb, 0, 1
+loada capacityvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_randdouble
+:vecdb_dim
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada randdouble@math, 0, 2
+loada modvecdb, 0, 1
+loada dimvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_randintmax
+:vecdb_metric
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada randintmax@math, 0, 2
+loada modvecdb, 0, 1
+loada metricvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_randbyte
+:vecdb_index
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada randombyte@math, 0, 2
+loada modvecdb, 0, 1
+loada indexvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:double_rounded_string
+:vecdb_path
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada doubleroundedstring@math, 0, 2
+loada modvecdb, 0, 1
+loada pathvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:string_to_int
+:vecdb_set_ef_search
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada stringtoint@math, 0, 2
+loada modvecdb, 0, 1
+loada set_ef_searchvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:string_to_double
+:vecdb_strerror
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada stringtodouble@math, 0, 2
+loada modvecdb, 0, 1
+loada strerrorvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_byte2int
+:vecdb_last_error
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada byte2int@math, 0, 2
+loada modvecdb, 0, 1
+loada last_errorvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_not
+:vecdb_list_ids
 loada zero, 0, 0
- stpopi 1
- noti 1, 2
- stpushi 2
- rts
-rts
-:math_acosdouble
-loada zero, 0, 0
-loada mod@math, 0, 1
-loada acosdouble@math, 0, 2
+loada modvecdb, 0, 1
+loada list_idsvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_asindouble
+:vecdb_put
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada asindouble@math, 0, 2
+loada modvecdb, 0, 1
+loada putvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_atandouble
+:vecdb_put_ex
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada atandouble@math, 0, 2
+loada modvecdb, 0, 1
+loada put_exvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_atan2double
+:vecdb_get
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada atan2double@math, 0, 2
+loada modvecdb, 0, 1
+loada getvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_cosdouble
+:vecdb_delete
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada cosdouble@math, 0, 2
+loada modvecdb, 0, 1
+loada deletevecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_coshdouble
+:vecdb_search_vector
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada coshdouble@math, 0, 2
+loada modvecdb, 0, 1
+loada search_vectorvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_sindouble
+:vecdb_search_text
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada sindouble@math, 0, 2
+loada modvecdb, 0, 1
+loada search_textvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_sinhdouble
+:vecdb_search_hybrid
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada sinhdouble@math, 0, 2
+loada modvecdb, 0, 1
+loada search_hybridvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_tanhdouble
+:vecdb_match_count
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada tanhdouble@math, 0, 2
+loada modvecdb, 0, 1
+loada match_countvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_tandouble
+:vecdb_match_id
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada tandouble@math, 0, 2
+loada modvecdb, 0, 1
+loada match_idvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_expdouble
+:vecdb_match_score
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada expdouble@math, 0, 2
+loada modvecdb, 0, 1
+loada match_scorevecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_frexpdouble
+:vecdb_match_text
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada frexpdouble@math, 0, 2
+loada modvecdb, 0, 1
+loada match_textvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_ldexpdouble
+:vecdb_match_payload
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada ldexpdouble@math, 0, 2
+loada modvecdb, 0, 1
+loada match_payloadvecdb, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_log10double
+:process_init
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada log10double@math, 0, 2
+stpopi 1
+load mod@process, 0, 2
+pullqw 1, 2, 0
+loada modulestr@processaddr, 0, 2
+intr0 0, 2, 1, 0
+loada run_shell@process, 0, 3
+loada run_shellstr@processaddr, 0, 4
+intr0 2, 1, 3, 4
+rts
+:run_shell
+loada zero, 0, 0
+loada mod@process, 0, 1
+loada run_shell@process, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_modfdouble
+:file_init
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada modfdouble@math, 0, 2
+stpopi 1
+load maxind@file, 0, 2
+pullqw 1, 2, 0
+stpopi 2
+load mod@file, 0, 3
+pullqw 2, 3, 0
+loada modulestr@fileaddr, 0, 3
+intr0 0, 3, 2, 0
+loada open@file, 0, 4
+loada openstr@fileaddr, 0, 5
+intr0 2, 2, 4, 5
+loada close@file, 0, 6
+loada closestr@fileaddr, 0, 7
+intr0 2, 2, 6, 7
+loada seek@file, 0, 8
+loada seekstr@fileaddr, 0, 9
+intr0 2, 2, 8, 9
+loada putc@file, 0, 10
+loada putcstr@fileaddr, 0, 11
+intr0 2, 2, 10, 11
+loada getc@file, 0, 12
+loada getcstr@fileaddr, 0, 13
+intr0 2, 2, 12, 13
+loada put_int16@file, 0, 14
+loada put_int16str@fileaddr, 0, 15
+intr0 2, 2, 14, 15
+loada get_int16@file, 0, 16
+loada get_int16str@fileaddr, 0, 17
+intr0 2, 2, 16, 17
+loada put_int32@file, 0, 18
+loada put_int32str@fileaddr, 0, 19
+intr0 2, 2, 18, 19
+loada get_int32@file, 0, 20
+loada get_int32str@fileaddr, 0, 21
+intr0 2, 2, 20, 21
+loada put_int64@file, 0, 22
+loada put_int64str@fileaddr, 0, 23
+intr0 2, 2, 22, 23
+loada get_int64@file, 0, 24
+loada get_int64str@fileaddr, 0, 25
+intr0 2, 2, 24, 25
+loada put_double@file, 0, 26
+loada put_doublestr@fileaddr, 0, 27
+intr0 2, 2, 26, 27
+loada get_double@file, 0, 28
+loada get_doublestr@fileaddr, 0, 29
+intr0 2, 2, 28, 29
+loada put_string@file, 0, 30
+loada put_stringstr@fileaddr, 0, 31
+intr0 2, 2, 30, 31
+loada get_string@file, 0, 32
+loada get_stringstr@fileaddr, 0, 33
+intr0 2, 2, 32, 33
+loada fileinit@file, 0, 34
+loada fileinitstr@fileaddr, 0, 35
+intr0 2, 2, 34, 35
+loada freemem@file, 0, 36
+loada freememstr@fileaddr, 0, 37
+intr0 2, 2, 36, 37
+loada read_array@file, 0, 38
+loada read_arraystr@fileaddr, 0, 39
+intr0 2, 2, 38, 39
+loada write_array@file, 0, 40
+loada write_arraystr@fileaddr, 0, 41
+intr0 2, 2, 40, 41
+loada flush@file, 0, 42
+loada flushstr@fileaddr, 0, 43
+intr0 2, 2, 42, 43
+stpushi 1
+intr0 3, 2, 34, 0
+rts
+:file_open
+loada zero, 0, 0
+loada mod@file, 0, 1
+loada open@file, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_powdouble
+:file_close
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada powdouble@math, 0, 2
+loada mod@file, 0, 1
+loada close@file, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_ceildouble
+:file_seek
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada ceildouble@math, 0, 2
+loada mod@file, 0, 1
+loada seek@file, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_fabsdouble
+:file_flush
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada fabsdouble@math, 0, 2
+loada mod@file, 0, 1
+loada flush@file, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_floordouble
+:file_putc
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada floordouble@math, 0, 2
+loada mod@file, 0, 1
+loada putc@file, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_fmoddouble
+:file_getc
 loada zero, 0, 0
-loada mod@math, 0, 1
-loada fmoddouble@math, 0, 2
+loada mod@file, 0, 1
+loada getc@file, 0, 2
 intr0 3, 1, 2, 0
 rts
-:math_degree_to_rad
+:file_put_int16
 loada zero, 0, 0
-stpopd 1
-load degreemath_degree_to_rad, 0, 2
-pulld 1, 2, 0
-loadd m_pimath, 0, 2
-muld 1, 2, 3
-loadd half_circlemath_degree_to_rad, 0, 4
-divd 3, 4, 5
-load radmath_degree_to_rad, 0, 6
-pulld 5, 6, 0
-loadd radmath_degree_to_rad, 0, 5
-stpushd 5
+loada mod@file, 0, 1
+loada put_int16@file, 0, 2
+intr0 3, 1, 2, 0
 rts
-:math_rad_to_degree
+:file_get_int16
 loada zero, 0, 0
-stpopd 1
-load radmath_rad_to_degree, 0, 2
-pulld 1, 2, 0
-loadd half_circlemath_rad_to_degree, 0, 2
-muld 1, 2, 3
-loadd m_pimath, 0, 4
-divd 3, 4, 5
-load degreemath_rad_to_degree, 0, 6
-pulld 5, 6, 0
-loadd degreemath_rad_to_degree, 0, 5
-stpushd 5
+loada mod@file, 0, 1
+loada get_int16@file, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_put_int32
+loada zero, 0, 0
+loada mod@file, 0, 1
+loada put_int32@file, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_get_int32
+loada zero, 0, 0
+loada mod@file, 0, 1
+loada get_int32@file, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_put_int64
+loada zero, 0, 0
+loada mod@file, 0, 1
+loada put_int64@file, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_get_int64
+loada zero, 0, 0
+loada mod@file, 0, 1
+loada get_int64@file, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_put_double
+loada zero, 0, 0
+loada mod@file, 0, 1
+loada put_double@file, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_get_double
+loada zero, 0, 0
+loada mod@file, 0, 1
+loada get_double@file, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_put_string
+loada zero, 0, 0
+loada mod@file, 0, 1
+loada put_string@file, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_get_string
+loada zero, 0, 0
+loada mod@file, 0, 1
+loada get_string@file, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_free_mem
+loada zero, 0, 0
+loada mod@file, 0, 1
+loada freemem@file, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_read_array
+loada zero, 0, 0
+loada mod@file, 0, 1
+loada read_array@file, 0, 2
+intr0 3, 1, 2, 0
+rts
+:file_write_array
+loada zero, 0, 0
+loada mod@file, 0, 1
+loada write_array@file, 0, 2
+intr0 3, 1, 2, 0
 rts
 :string_init
 loada zero, 0, 0

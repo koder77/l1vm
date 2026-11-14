@@ -1,7 +1,7 @@
 # zerobuild makefile
 
 [executable, shared, name = libl1vmvecdb.so]
-sources = vecdb.c, ../vector-db/src/db.c, ../vector-db/src/text.c, ../vector-db/src/hnsw.c
+sources = vecdb.c, ../vector-db/src/db.c, ../vector-db/src/text.c, ../vector-db/src/hnsw.c, file-sandbox.c
 
 includes = ../vector-db/include, ../vector-db/src, ../include, /usr/local/include
 
