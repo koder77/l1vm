@@ -752,6 +752,220 @@ static char *diag_error_signature(const LspDiagVec *v)
     return out;
 }
 
+/* ================== targeted repair hints ================== */
+
+/* Function names the language server accepts as built-ins, grouped by the
+ * header that provides them. This is the same set l1vm-lsp knows, so a name
+ * listed here will not be reported as "undefined" by the LSP. Used only when
+ * a check fails: the most common failure is an invented function name (or a
+ * library function whose header/include was forgotten). */
+static const char *const g_builtin_function_reference =
+    "  intr-func.l1h:    print_i print_d print_s print_n print_lni print_lnd\n"
+    "                    print_lns printf_d input_i input_d input_s exit detime\n"
+    "                    time date epochms start_timer stop_timer shell_args\n"
+    "                    get_shell_arg\n"
+    "  string.l1h:       string_init string_cat string_len string_copy\n"
+    "                    string_compare string_left string_right string_mid\n"
+    "                    string_search string_replace string_int64tostring\n"
+    "                    string_doubletostring string_bytetohexstring string_padd\n"
+    "                    string_regex string_verify string_to_array array_to_string\n"
+    "                    get_env set_env free_mod\n"
+    "  file-lib.l1h:     file_init file_open file_close file_get_int64\n"
+    "                    file_get_double file_get_string file_put_int64\n"
+    "                    file_put_double file_put_string file_getc file_putc\n"
+    "                    file_seek file_flush file_free_mem\n"
+    "  mem-lib.l1h:      mem_init alloc_byte alloc_int16 alloc_int32 alloc_int64\n"
+    "                    alloc_double alloc_int64_vect alloc_double_vect dealloc\n"
+    "                    int_to_array double_to_array array_to_int array_to_double\n"
+    "                    int_to_vect vect_to_int vect_erase get_vect_size free_mem\n"
+    "  mem-obj-lib.l1h:  mem_obj_init alloc_obj_memobj save_obj_memobj\n"
+    "                    load_obj_memobj load_obj_string_memobj free_obj_memobj\n"
+    "  math-lib.l1h:     math_init math_randinit math_randint math_not\n"
+    "                    math_degree_to_rad math_sindouble\n"
+    "  process-lib.l1h:  process_init run_shell\n"
+    "  net-lib.l1h:      net_init get_hostbyname open_server_socket\n"
+    "                    open_accept_server socket_read_string close_server_socket\n"
+    "  sdl-lib.l1h:      sdl_open_screen sdl_font_ttf sdl_rectangle_fill\n"
+    "                    sdl_text_ttf sdl_update set_gadget_button set_gadget_string\n"
+    "  crypto.l1h:       crypto_init encrypt\n"
+    "  json.l1h:         parse_json create_json\n"
+    "  messages-lib.l1h: msg_init msg_put_message msg_wait_message\n"
+    "  host.l1h:         get_host_cpu get_host_os\n"
+    "  misc-macros.l1h:  pull_int64_var pull_double_var pull_byte_var inc dec\n";
+
+/* True when the diagnostic message contains `needle`. */
+static int diag_msg_has(const char *msg, const char *needle)
+{
+    return msg && needle && strstr(msg, needle) != NULL;
+}
+
+/* Copy the text between the first two single quotes at/after `marker` from
+ * `msg` into `out`. Returns 1 on success, 0 when the pattern is absent. */
+static int quoted_after(const char *msg, const char *marker,
+                        char *out, size_t outsz)
+{
+    const char *p, *a, *b;
+    size_t n;
+
+    if (!msg || !marker || !out || outsz == 0)
+        return 0;
+    p = strstr(msg, marker);
+    if (!p)
+        return 0;
+    a = strchr(p, '\'');
+    if (!a)
+        return 0;
+    b = strchr(a + 1, '\'');
+    if (!b || b == a + 1)
+        return 0;
+    n = (size_t)(b - (a + 1));
+    if (n >= outsz)
+        n = outsz - 1;
+    memcpy(out, a + 1, n);
+    out[n] = '\0';
+    return 1;
+}
+
+/* Extract the missing symbol name from every supported diagnostic dialect:
+ *   l1vm-lsp static: "undefined function or label 'foo'"
+ *                    "undefined label 'bar'"
+ *   l1com compiler:  "ERROR: line: 7, label: ':foo' not defined!"
+ */
+static int undefined_symbol_name(const char *msg, char *out, size_t outsz)
+{
+    if (quoted_after(msg, "undefined function or label", out, outsz))
+        return 1;
+    if (quoted_after(msg, "undefined label", out, outsz))
+        return 1;
+    if (diag_msg_has(msg, "not defined") &&
+        quoted_after(msg, "label", out, outsz))
+        return 1;
+    return 0;
+}
+
+/*
+ * Build a short, error-specific explanation to attach to the correction
+ * prompt. A bare diagnostic ("undefined label 'foo'") does not tell a model
+ * what to do; this turns the diagnostic family into an actionable rule and,
+ * for undefined functions, lists the names that really exist. Returns a
+ * heap string, or NULL when no targeted hint applies.
+ */
+static char *build_repair_hint(const LspDiagVec *v)
+{
+    SB hints;
+    char seen[32][256];
+    int nseen = 0;
+    size_t i;
+    int undef = 0, unknown_var = 0, tilde = 0, no_end = 0, block = 0;
+    char *out;
+
+    if (!v || v->len == 0)
+        return NULL;
+
+    sb_init(&hints);
+    for (i = 0; i < v->len; i++) {
+        const char *msg = v->items[i].message;
+        char name[256];
+
+        if (undefined_symbol_name(msg, name, sizeof(name))) {
+            const char *disp = name[0] == ':' ? name + 1 : name;
+            int j, dup = 0;
+            for (j = 0; j < nseen; j++) {
+                if (strcmp(seen[j], disp) == 0) {
+                    dup = 1;
+                    break;
+                }
+            }
+            if (!dup && nseen < (int)(sizeof(seen) / sizeof(seen[0])))
+                snprintf(seen[nseen++], sizeof(seen[0]), "%s", disp);
+            undef = 1;
+        }
+        if (diag_msg_has(msg, "unknown variable"))
+            unknown_var = 1;
+        if (diag_msg_has(msg, "without the '~' suffix"))
+            tilde = 1;
+        if (diag_msg_has(msg, "missing (funcend)") ||
+            diag_msg_has(msg, "missing (objectend)"))
+            no_end = 1;
+        if (diag_msg_has(msg, "without endif") ||
+            diag_msg_has(msg, "without else") ||
+            diag_msg_has(msg, "without next") ||
+            diag_msg_has(msg, "without while") ||
+            diag_msg_has(msg, "without switchend") ||
+            diag_msg_has(msg, "without precondition-end") ||
+            diag_msg_has(msg, "without postcondition-end"))
+            block = 1;
+    }
+
+    if (undef) {
+        int j;
+        sb_add(&hints,
+            "\n--- DIAGNOSIS: undefined function/label ---\n"
+            "The program calls one or more labels that do not exist:\n");
+        for (j = 0; j < nseen; j++)
+            sb_printf(&hints, "  - :%s\n", seen[j]);
+        sb_add(&hints,
+            "\nA call of the form (args... :name !) is valid ONLY when ':name' is\n"
+            "  (1) a built-in function from an included .l1h header, or\n"
+            "  (2) a function defined in this same .l1com file, or\n"
+            "  (3) a label defined in this same .l1com file.\n"
+            "Fix each missing label in exactly one way:\n"
+            "  a) replace it with an existing built-in that does the job, or\n"
+            "  b) define it yourself AFTER main's (funcend):\n"
+            "         (name func)\n"
+            "             #var ~ name\n"
+            "             ...\n"
+            "         (funcend)\n"
+            "     (declare its argument/result variables, pop arguments with\n"
+            "     stpopi/stpopd, push the result with stpush/stpushd), or\n"
+            "  c) if the call is unnecessary, remove the call AND the value\n"
+            "     pushes that existed only for it.\n"
+            "Do not invent function names and do not leave any call to an\n"
+            "undefined label in the corrected program.\n"
+            "\nRecognised built-in function names (the .l1h header must be\n"
+            "included, e.g. #include <string.l1h>, and library modules usually\n"
+            "need an init call such as (zero :string_init !)):\n");
+        sb_add(&hints, g_builtin_function_reference);
+    }
+    if (tilde) {
+        sb_add(&hints,
+            "\n--- DIAGNOSIS: missing '~' suffix ---\n"
+            "Every variable declared with (set TYPE SIZE name ...) must carry the\n"
+            "'~' suffix, e.g. (set int64 1 count~ 0). The only exceptions are the\n"
+            "global 'zero' variable and global constants. Rename the variable to\n"
+            "name~ in its declaration AND in every use.\n");
+    }
+    if (unknown_var) {
+        sb_add(&hints,
+            "\n--- DIAGNOSIS: unknown variable ---\n"
+            "Every variable must be declared with (set TYPE SIZE name~ value)\n"
+            "before it is used, in the same scope (main or the function). Check\n"
+            "the spelling and the '~' suffix; a function-local name~ is not\n"
+            "visible outside its function.\n");
+    }
+    if (no_end) {
+        sb_add(&hints,
+            "\n--- DIAGNOSIS: missing block end ---\n"
+            "Every (name func) needs a matching (funcend), and every\n"
+            "(name object) needs (objectend). Add the missing terminator.\n");
+    }
+    if (block) {
+        sb_add(&hints,
+            "\n--- DIAGNOSIS: unbalanced control flow ---\n"
+            "Every (if) needs (endif), (if+) needs (else) and (endif),\n"
+            "(for) needs (next), (do) needs (while-cond), (switch) needs\n"
+            "(switchend). Add the missing terminator; do not delete the opener.\n");
+    }
+
+    if (sb_len(&hints) == 0) {
+        sb_free(&hints);
+        return NULL;
+    }
+    out = strdup(sb_cstr(&hints));
+    sb_free(&hints);
+    return out;
+}
+
 /* Copy one 0-based source line out of `text` (NULL when it does not exist). */
 static char *text_line_at(const char *text, int lineno)
 {
@@ -819,6 +1033,123 @@ static char *format_errors_with_context(const LspDiagVec *v,
                 sb_printf(&b, "      > %5d | %s\n", ln + d + 1, src);
             else
                 sb_printf(&b, "        %5d | %s\n", ln + d + 1, src);
+            free(src);
+        }
+        shown++;
+    }
+    out = strdup(sb_cstr(&b));
+    sb_free(&b);
+    return out;
+}
+
+/* A warning/hint that explains where a line-less compiler error comes from. */
+static int is_location_warning(const LspDiag *d)
+{
+    const char *m;
+
+    if (!d || d->severity == 1)
+        return 0;
+    m = d->message;
+    return diag_msg_has(m, "unknown variable") ||
+           diag_msg_has(m, "undefined") ||
+           diag_msg_has(m, "without the '~' suffix") ||
+           diag_msg_has(m, "out of range") ||
+           diag_msg_has(m, "already defined");
+}
+
+/* Two diagnostics carry the same message at the same effective source line. */
+static int diag_same_location(const LspDiag *a, const LspDiag *b)
+{
+    return diag_effective_line(a) == diag_effective_line(b) &&
+           strcmp(a->message ? a->message : "",
+                  b->message ? b->message : "") == 0;
+}
+
+/*
+ * Compiler diagnostics sometimes lose the line number (e.g. a bad macro
+ * argument produces "ERROR: macro variable type mismatch"), which leaves the
+ * model looking at line 1. The static LSP pass usually still knows the real
+ * line and reports it as a warning ("unknown variable 'y~'"). Show those
+ * warnings/hints with source context, skipping any line that an error already
+ * covers so the output stays short and non-redundant.
+ */
+static char *format_location_warnings(const LspDiagVec *v, const char *code,
+                                      size_t max_items)
+{
+    SB b;
+    size_t i, k, shown = 0;
+    int total = 0;
+    int errlines[256];
+    int nerrlines = 0;
+    char *out;
+
+    if (!v || v->len == 0)
+        return NULL;
+
+    for (i = 0; i < v->len; i++) {
+        if (v->items[i].severity == 1 && nerrlines < 256)
+            errlines[nerrlines++] = diag_effective_line(&v->items[i]);
+    }
+    for (i = 0; i < v->len; i++) {
+        const LspDiag *d = &v->items[i];
+        int j, dup = 0;
+
+        if (!is_location_warning(d))
+            continue;
+        for (j = 0; j < nerrlines; j++) {
+            if (errlines[j] == diag_effective_line(d)) {
+                dup = 1;
+                break;
+            }
+        }
+        for (k = 0; !dup && k < i; k++) {
+            if (is_location_warning(&v->items[k]) &&
+                diag_same_location(&v->items[k], d))
+                dup = 1;
+        }
+        if (!dup)
+            total++;
+    }
+    if (total == 0)
+        return NULL;
+
+    sb_init(&b);
+    sb_printf(&b, "Related warnings/hints that locate the problem (%d):\n",
+              total);
+    for (i = 0; i < v->len; i++) {
+        const LspDiag *d = &v->items[i];
+        int ln, j, dup = 0;
+
+        if (!is_location_warning(d))
+            continue;
+        ln = diag_effective_line(d);
+        for (j = 0; j < nerrlines; j++) {
+            if (errlines[j] == ln) {
+                dup = 1;
+                break;
+            }
+        }
+        for (k = 0; !dup && k < i; k++) {
+            if (is_location_warning(&v->items[k]) &&
+                diag_same_location(&v->items[k], d))
+                dup = 1;
+        }
+        if (dup)
+            continue;
+        if (shown >= max_items) {
+            sb_printf(&b, "  ... (%d more)\n", total - (int)shown);
+            break;
+        }
+        sb_printf(&b, "  line %d: %s\n", ln + 1,
+                  d->message ? d->message : "");
+        for (j = -1; j <= 1; j++) {
+            char *src = text_line_at(code, ln + j);
+            if (!src)
+                continue;
+            if (j == 0)
+                sb_printf(&b, "      > %5d | %s\n", ln + j + 1, src);
+            else
+                sb_printf(&b, "        %5d | %s\n", ln + j + 1, src);
             free(src);
         }
         shown++;
@@ -941,10 +1272,15 @@ static char *lsp_summary_for_write(LspClient *lsp, const char *path)
         } else {
             char *ctx = format_errors_with_context(&diags, buf, "LSP errors",
                                                   8);
+            char *wtext = format_location_warnings(&diags, buf, 8);
+            char *hint = build_repair_hint(&diags);
             sb_printf(&b, "LSP check: %d error%s. Fix the listed lines with "
-                          "edit_file (or write_file) before continuing:\n%s",
-                      nerr, nerr == 1 ? "" : "s", ctx ? ctx : "");
+                          "edit_file (or write_file) before continuing:\n%s%s%s",
+                      nerr, nerr == 1 ? "" : "s", ctx ? ctx : "",
+                      wtext ? wtext : "", hint ? hint : "");
             free(ctx);
+            free(wtext);
+            free(hint);
         }
     }
     free(buf);
@@ -1141,6 +1477,15 @@ static int code_workflow(LspClient *lsp, Hist *hist, LlmProvider *prov,
                 filename, errors, errors == 1 ? "" : "s",
                 code, need_nl ? "\n" : "", dtext);
 
+            {
+                char *wtext = format_location_warnings(&diags, code, 8);
+                if (wtext) {
+                    printf("%s", wtext);
+                    sb_add(&fix, wtext);
+                    free(wtext);
+                }
+            }
+
             if (iter > 0) {
                 sb_printf(&fix,
                     "\nProgress: the previous attempt had %d error%s, the "
@@ -1169,6 +1514,22 @@ static int code_workflow(LspClient *lsp, Hist *hist, LlmProvider *prov,
                     "of errors. Make the smallest possible correction to the "
                     "lines shown above.\n",
                     stall, stall == 1 ? "" : "s");
+            if (same_code_replies > 0)
+                sb_add(&fix,
+                    "Your previous answer was byte-identical to the current "
+                    "program, so it changed nothing. You MUST actually change "
+                    "the code this time.\n");
+
+            /* Diagnostic-specific guidance: turn "undefined label 'foo'" into
+             * an actionable rule and list the functions that really exist. */
+            {
+                char *hint = build_repair_hint(&diags);
+                if (hint) {
+                    sb_add(&fix, hint);
+                    free(hint);
+                }
+            }
+
             sb_printf(&fix,
                 "\nRules for the fix:\n"
                 "- Keep the parts that already work; change only what is needed.\n"
