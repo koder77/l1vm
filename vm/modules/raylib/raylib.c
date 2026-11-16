@@ -181,7 +181,7 @@ FilePathList raylib_filepathlists[RAYLIB_MAX_FILEPATHLISTS];
 S2 raylib_filepathlists_used[RAYLIB_MAX_FILEPATHLISTS];
 
 // internal camera state
-Camera3D raylib_camera;
+Camera3D raylib_camera = { 0 };
 int raylib_camera_mode = CAMERA_ORBITAL;
 
 // default font handle (loaded lazy at first use)
@@ -750,8 +750,8 @@ U1 *raylib_draw_line_3d (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args (push order): start_addr, end_addr, color_addr
 	S8 start_addr ALIGN, end_addr ALIGN, color_addr ALIGN;
-	Vector3 start, end;
-	Color col;
+	Vector3 start = { 0 }, end = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -775,8 +775,8 @@ U1 *raylib_draw_point_3d (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: pos_addr, color_addr
 	S8 pos_addr ALIGN, color_addr ALIGN;
-	Vector3 pos;
-	Color col;
+	Vector3 pos = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -798,8 +798,8 @@ U1 *raylib_draw_circle_3d (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: center_addr, radius, axis_addr, angle, color_addr
 	S8 center_addr ALIGN, axis_addr ALIGN, color_addr ALIGN;
 	F8 radius ALIGN, angle ALIGN;
-	Vector3 center, axis;
-	Color col;
+	Vector3 center = { 0 }, axis = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -827,8 +827,8 @@ U1 *raylib_draw_triangle_3d (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: v1_addr, v2_addr, v3_addr, color_addr
 	S8 v1_addr ALIGN, v2_addr ALIGN, v3_addr ALIGN, color_addr ALIGN;
-	Vector3 v1, v2, v3;
-	Color col;
+	Vector3 v1 = { 0 }, v2 = { 0 }, v3 = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -858,7 +858,7 @@ U1 *raylib_draw_triangle_strip_3d (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 points_addr ALIGN, color_addr ALIGN;
 	S8 point_count ALIGN;
 	Vector3 *points = NULL;
-	Color col;
+	Color col = { 0 };
 	S8 i ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -912,8 +912,8 @@ U1 *raylib_draw_cube (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: pos_addr, width, height, length, color_addr
 	S8 pos_addr ALIGN, color_addr ALIGN;
 	F8 width ALIGN, height ALIGN, length ALIGN;
-	Vector3 pos;
-	Color col;
+	Vector3 pos = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -940,8 +940,8 @@ U1 *raylib_draw_cube_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: pos_addr, size_addr, color_addr
 	S8 pos_addr ALIGN, size_addr ALIGN, color_addr ALIGN;
-	Vector3 pos, size;
-	Color col;
+	Vector3 pos = { 0 }, size = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -966,8 +966,8 @@ U1 *raylib_draw_cube_wires (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: pos_addr, width, height, length, color_addr
 	S8 pos_addr ALIGN, color_addr ALIGN;
 	F8 width ALIGN, height ALIGN, length ALIGN;
-	Vector3 pos;
-	Color col;
+	Vector3 pos = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -994,8 +994,8 @@ U1 *raylib_draw_cube_wires_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: pos_addr, size_addr, color_addr
 	S8 pos_addr ALIGN, size_addr ALIGN, color_addr ALIGN;
-	Vector3 pos, size;
-	Color col;
+	Vector3 pos = { 0 }, size = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1020,8 +1020,8 @@ U1 *raylib_draw_sphere (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: center_addr, radius, color_addr
 	S8 center_addr ALIGN, color_addr ALIGN;
 	F8 radius ALIGN;
-	Vector3 center;
-	Color col;
+	Vector3 center = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1046,8 +1046,8 @@ U1 *raylib_draw_sphere_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 center_addr ALIGN, color_addr ALIGN;
 	F8 radius ALIGN;
 	S8 rings ALIGN, slices ALIGN;
-	Vector3 center;
-	Color col;
+	Vector3 center = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1076,8 +1076,8 @@ U1 *raylib_draw_sphere_wires (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 center_addr ALIGN, color_addr ALIGN;
 	F8 radius ALIGN;
 	S8 rings ALIGN, slices ALIGN;
-	Vector3 center;
-	Color col;
+	Vector3 center = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1106,8 +1106,8 @@ U1 *raylib_draw_cylinder (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 pos_addr ALIGN, color_addr ALIGN;
 	F8 radius_top ALIGN, radius_bottom ALIGN, height ALIGN;
 	S8 sides ALIGN;
-	Vector3 pos;
-	Color col;
+	Vector3 pos = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1138,8 +1138,8 @@ U1 *raylib_draw_cylinder_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 start_addr ALIGN, end_addr ALIGN, color_addr ALIGN;
 	F8 start_radius ALIGN, end_radius ALIGN;
 	S8 sides ALIGN;
-	Vector3 start, end;
-	Color col;
+	Vector3 start = { 0 }, end = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1171,8 +1171,8 @@ U1 *raylib_draw_cylinder_wires (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 pos_addr ALIGN, color_addr ALIGN;
 	F8 radius_top ALIGN, radius_bottom ALIGN, height ALIGN;
 	S8 sides ALIGN;
-	Vector3 pos;
-	Color col;
+	Vector3 pos = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1203,8 +1203,8 @@ U1 *raylib_draw_cylinder_wires_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 start_addr ALIGN, end_addr ALIGN, color_addr ALIGN;
 	F8 start_radius ALIGN, end_radius ALIGN;
 	S8 sides ALIGN;
-	Vector3 start, end;
-	Color col;
+	Vector3 start = { 0 }, end = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1236,8 +1236,8 @@ U1 *raylib_draw_capsule (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 start_addr ALIGN, end_addr ALIGN, color_addr ALIGN;
 	F8 radius ALIGN;
 	S8 rings ALIGN, slices ALIGN;
-	Vector3 start, end;
-	Color col;
+	Vector3 start = { 0 }, end = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1269,8 +1269,8 @@ U1 *raylib_draw_capsule_wires (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 start_addr ALIGN, end_addr ALIGN, color_addr ALIGN;
 	F8 radius ALIGN;
 	S8 rings ALIGN, slices ALIGN;
-	Vector3 start, end;
-	Color col;
+	Vector3 start = { 0 }, end = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1300,9 +1300,9 @@ U1 *raylib_draw_plane (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: center_addr, size_addr, color_addr
 	S8 center_addr ALIGN, size_addr ALIGN, color_addr ALIGN;
-	Vector3 center;
-	Vector2 size;
-	Color col;
+	Vector3 center = { 0 };
+	Vector2 size = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1326,8 +1326,8 @@ U1 *raylib_draw_ray (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: ray_addr, color_addr
 	S8 ray_addr ALIGN, color_addr ALIGN;
-	Ray ray;
-	Color col;
+	Ray ray = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1366,8 +1366,8 @@ U1 *raylib_draw_bounding_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: bbox_addr, color_addr
 	S8 bbox_addr ALIGN, color_addr ALIGN;
-	BoundingBox bbox;
-	Color col;
+	BoundingBox bbox = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1390,8 +1390,8 @@ U1 *raylib_draw_billboard (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// uses internal camera
 	S8 texture_handle ALIGN, pos_addr ALIGN, tint_addr ALIGN;
 	F8 scale ALIGN;
-	Vector3 pos;
-	Color tint;
+	Vector3 pos = { 0 };
+	Color tint = { 0 };
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1422,10 +1422,10 @@ U1 *raylib_draw_billboard_rec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: texture_handle, rec_addr, pos_addr, size_addr, tint_addr
 	S8 texture_handle ALIGN, rec_addr ALIGN, pos_addr ALIGN, size_addr ALIGN, tint_addr ALIGN;
-	Rectangle rec;
-	Vector3 pos;
-	Vector2 size;
-	Color tint;
+	Rectangle rec = { 0 };
+	Vector3 pos = { 0 };
+	Vector2 size = { 0 };
+	Color tint = { 0 };
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1462,10 +1462,10 @@ U1 *raylib_draw_billboard_pro (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 texture_handle ALIGN, rec_addr ALIGN, pos_addr ALIGN, up_addr ALIGN;
 	S8 size_addr ALIGN, origin_addr ALIGN, tint_addr ALIGN;
 	F8 rotation ALIGN;
-	Rectangle rec;
-	Vector3 pos, up;
-	Vector2 size, origin;
-	Color tint;
+	Rectangle rec = { 0 };
+	Vector3 pos = { 0 }, up = { 0 };
+	Vector2 size = { 0 }, origin = { 0 };
+	Color tint = { 0 };
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1624,8 +1624,8 @@ U1 *raylib_draw_model (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: model_handle, pos_addr, scale, tint_addr
 	S8 model_handle ALIGN, pos_addr ALIGN, tint_addr ALIGN;
 	F8 scale ALIGN;
-	Vector3 pos;
-	Color tint;
+	Vector3 pos = { 0 };
+	Color tint = { 0 };
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1657,8 +1657,8 @@ U1 *raylib_draw_model_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: model_handle, pos_addr, rot_axis_addr, rot_angle, scale_addr, tint_addr
 	S8 model_handle ALIGN, pos_addr ALIGN, rot_axis_addr ALIGN, scale_addr ALIGN, tint_addr ALIGN;
 	F8 rot_angle ALIGN;
-	Vector3 pos, rot_axis, scale;
-	Color tint;
+	Vector3 pos = { 0 }, rot_axis = { 0 }, scale = { 0 };
+	Color tint = { 0 };
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1696,8 +1696,8 @@ U1 *raylib_draw_model_wires (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: model_handle, pos_addr, scale, tint_addr
 	S8 model_handle ALIGN, pos_addr ALIGN, tint_addr ALIGN;
 	F8 scale ALIGN;
-	Vector3 pos;
-	Color tint;
+	Vector3 pos = { 0 };
+	Color tint = { 0 };
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1729,8 +1729,8 @@ U1 *raylib_draw_model_wires_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: model_handle, pos_addr, rot_axis_addr, rot_angle, scale_addr, tint_addr
 	S8 model_handle ALIGN, pos_addr ALIGN, rot_axis_addr ALIGN, scale_addr ALIGN, tint_addr ALIGN;
 	F8 rot_angle ALIGN;
-	Vector3 pos, rot_axis, scale;
-	Color tint;
+	Vector3 pos = { 0 }, rot_axis = { 0 }, scale = { 0 };
+	Color tint = { 0 };
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1768,7 +1768,7 @@ U1 *raylib_get_model_bounding_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: model_handle, out_addr
 	// out: BoundingBox (B,6 / D,6: min D,3 + max D,3)
 	S8 model_handle ALIGN, out_addr ALIGN;
-	BoundingBox bbox;
+	BoundingBox bbox = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -1819,7 +1819,7 @@ U1 *raylib_set_model_transform (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: model_handle, matrix_addr
 	S8 model_handle ALIGN, matrix_addr ALIGN;
-	Matrix m;
+	Matrix m = { 0 };
 
 	sp = stpopi ((U1 *) &matrix_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -2141,7 +2141,7 @@ U1 *raylib_gen_mesh_heightmap (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: image_handle, size_addr
 	// return: mesh handle or -1
 	S8 image_handle ALIGN, size_addr ALIGN;
-	Vector3 size;
+	Vector3 size = { 0 };
 	S8 ind ALIGN;
 
 	sp = stpopi ((U1 *) &size_addr, sp, sp_top);
@@ -2179,7 +2179,7 @@ U1 *raylib_gen_mesh_cubicmap (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: image_handle, cubesize_addr
 	// return: mesh handle or -1
 	S8 image_handle ALIGN, cubesize_addr ALIGN;
-	Vector3 cube_size;
+	Vector3 cube_size = { 0 };
 	S8 ind ALIGN;
 
 	sp = stpopi ((U1 *) &cubesize_addr, sp, sp_top);
@@ -2261,7 +2261,7 @@ U1 *raylib_get_mesh_bounding_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: mesh_handle, out_addr
 	S8 mesh_handle ALIGN, out_addr ALIGN;
-	BoundingBox bbox;
+	BoundingBox bbox = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -2306,7 +2306,7 @@ U1 *raylib_draw_mesh (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: mesh_handle, material_handle, transform_addr
 	S8 mesh_handle ALIGN, material_handle ALIGN, transform_addr ALIGN;
-	Matrix m;
+	Matrix m = { 0 };
 
 	sp = stpopi ((U1 *) &transform_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -2516,7 +2516,7 @@ U1 *raylib_set_material_color (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: model_handle, material_id, map_index, color_addr
 	S8 model_handle ALIGN, material_id ALIGN, map_index ALIGN, color_addr ALIGN;
-	Color col;
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -2790,7 +2790,7 @@ U1 *raylib_set_shader_value_vec2 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: shader_handle, loc, vec_addr
 	S8 shader_handle ALIGN, loc ALIGN, vec_addr ALIGN;
-	Vector2 v;
+	Vector2 v = { 0 };
 
 	sp = stpopi ((U1 *) &vec_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -2820,7 +2820,7 @@ U1 *raylib_set_shader_value_vec3 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: shader_handle, loc, vec_addr
 	S8 shader_handle ALIGN, loc ALIGN, vec_addr ALIGN;
-	Vector3 v;
+	Vector3 v = { 0 };
 
 	sp = stpopi ((U1 *) &vec_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -2850,7 +2850,7 @@ U1 *raylib_set_shader_value_vec4 (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: shader_handle, loc, vec_addr
 	S8 shader_handle ALIGN, loc ALIGN, vec_addr ALIGN;
-	Vector4 v;
+	Vector4 v = { 0 };
 
 	sp = stpopi ((U1 *) &vec_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -2880,7 +2880,7 @@ U1 *raylib_set_shader_value_matrix (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: shader_handle, loc, matrix_addr
 	S8 shader_handle ALIGN, loc ALIGN, matrix_addr ALIGN;
-	Matrix m;
+	Matrix m = { 0 };
 
 	sp = stpopi ((U1 *) &matrix_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -2943,7 +2943,7 @@ U1 *raylib_set_camera (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: camera_addr (D,11 layout)
 	S8 camera_addr ALIGN;
-	Camera3D cam;
+	Camera3D cam = { 0 };
 
 	sp = stpopi ((U1 *) &camera_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3006,7 +3006,7 @@ U1 *raylib_update_camera_pro (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: movement_addr, rotation_addr, zoom
 	S8 movement_addr ALIGN, rotation_addr ALIGN;
 	F8 zoom ALIGN;
-	Vector3 movement, rotation;
+	Vector3 movement = { 0 }, rotation = { 0 };
 
 	sp = stpopd ((U1 *) &zoom, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3029,8 +3029,8 @@ U1 *raylib_get_world_to_screen (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: pos_addr, out_addr
 	S8 pos_addr ALIGN, out_addr ALIGN;
-	Vector3 pos;
-	Vector2 screen;
+	Vector3 pos = { 0 };
+	Vector2 screen = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3052,8 +3052,8 @@ U1 *raylib_get_screen_to_world_ray (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: pos2d_addr, out_addr
 	S8 pos2d_addr ALIGN, out_addr ALIGN;
-	Vector2 mouse;
-	Ray ray;
+	Vector2 mouse = { 0 };
+	Ray ray = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3081,7 +3081,7 @@ U1 *raylib_check_collision_spheres (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// return: 1 collision, 0 no collision
 	S8 center1_addr ALIGN, center2_addr ALIGN;
 	F8 radius1 ALIGN, radius2 ALIGN;
-	Vector3 c1, c2;
+	Vector3 c1 = { 0 }, c2 = { 0 };
 	S8 ret ALIGN;
 
 	sp = stpopd ((U1 *) &radius2, sp, sp_top);
@@ -3109,7 +3109,7 @@ U1 *raylib_check_collision_boxes (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: box1_addr, box2_addr
 	// return: 1 collision, 0 no collision
 	S8 box1_addr ALIGN, box2_addr ALIGN;
-	BoundingBox b1, b2;
+	BoundingBox b1 = { 0 }, b2 = { 0 };
 	S8 ret ALIGN;
 
 	sp = stpopi ((U1 *) &box2_addr, sp, sp_top);
@@ -3134,8 +3134,8 @@ U1 *raylib_check_collision_box_sphere (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *da
 	// return: 1 collision, 0 no collision
 	S8 box_addr ALIGN, center_addr ALIGN;
 	F8 radius ALIGN;
-	BoundingBox box;
-	Vector3 center;
+	BoundingBox box = { 0 };
+	Vector3 center = { 0 };
 	S8 ret ALIGN;
 
 	sp = stpopd ((U1 *) &radius, sp, sp_top);
@@ -3161,9 +3161,9 @@ U1 *raylib_get_ray_collision_sphere (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data
 	// args: ray_addr, center_addr, radius, out_addr
 	S8 ray_addr ALIGN, center_addr ALIGN, out_addr ALIGN;
 	F8 radius ALIGN;
-	Ray ray;
-	Vector3 center;
-	RayCollision col;
+	Ray ray = { 0 };
+	Vector3 center = { 0 };
+	RayCollision col = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3190,9 +3190,9 @@ U1 *raylib_get_ray_collision_box (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: ray_addr, box_addr, out_addr
 	S8 ray_addr ALIGN, box_addr ALIGN, out_addr ALIGN;
-	Ray ray;
-	BoundingBox box;
-	RayCollision col;
+	Ray ray = { 0 };
+	BoundingBox box = { 0 };
+	RayCollision col = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3217,9 +3217,9 @@ U1 *raylib_get_ray_collision_triangle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *da
 {
 	// args: ray_addr, p1_addr, p2_addr, p3_addr, out_addr
 	S8 ray_addr ALIGN, p1_addr ALIGN, p2_addr ALIGN, p3_addr ALIGN, out_addr ALIGN;
-	Ray ray;
-	Vector3 p1, p2, p3;
-	RayCollision col;
+	Ray ray = { 0 };
+	Vector3 p1 = { 0 }, p2 = { 0 }, p3 = { 0 };
+	RayCollision col = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3250,9 +3250,9 @@ U1 *raylib_get_ray_collision_quad (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: ray_addr, p1_addr, p2_addr, p3_addr, p4_addr, out_addr
 	S8 ray_addr ALIGN, p1_addr ALIGN, p2_addr ALIGN, p3_addr ALIGN, p4_addr ALIGN, out_addr ALIGN;
-	Ray ray;
-	Vector3 p1, p2, p3, p4;
-	RayCollision col;
+	Ray ray = { 0 };
+	Vector3 p1 = { 0 }, p2 = { 0 }, p3 = { 0 }, p4 = { 0 };
+	RayCollision col = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3290,7 +3290,7 @@ U1 *raylib_vec2_add (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: v1_addr, v2_addr, out_addr
 	S8 v1_addr ALIGN, v2_addr ALIGN, out_addr ALIGN;
-	Vector2 a, b, r;
+	Vector2 a = { 0 }, b = { 0 }, r = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3312,7 +3312,7 @@ U1 *raylib_vec2_subtract (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: v1_addr, v2_addr, out_addr
 	S8 v1_addr ALIGN, v2_addr ALIGN, out_addr ALIGN;
-	Vector2 a, b, r;
+	Vector2 a = { 0 }, b = { 0 }, r = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3335,7 +3335,7 @@ U1 *raylib_vec2_scale (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: v_addr, scale, out_addr
 	S8 v_addr ALIGN, out_addr ALIGN;
 	F8 scale ALIGN;
-	Vector2 a, r;
+	Vector2 a = { 0 }, r = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3356,7 +3356,7 @@ U1 *raylib_vec3_add (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: v1_addr, v2_addr, out_addr
 	S8 v1_addr ALIGN, v2_addr ALIGN, out_addr ALIGN;
-	Vector3 a, b, r;
+	Vector3 a = { 0 }, b = { 0 }, r = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3378,7 +3378,7 @@ U1 *raylib_vec3_subtract (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: v1_addr, v2_addr, out_addr
 	S8 v1_addr ALIGN, v2_addr ALIGN, out_addr ALIGN;
-	Vector3 a, b, r;
+	Vector3 a = { 0 }, b = { 0 }, r = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3401,7 +3401,7 @@ U1 *raylib_vec3_scale (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: v_addr, scale, out_addr
 	S8 v_addr ALIGN, out_addr ALIGN;
 	F8 scale ALIGN;
-	Vector3 a, r;
+	Vector3 a = { 0 }, r = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3422,7 +3422,7 @@ U1 *raylib_vec3_normalize (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: v_addr, out_addr
 	S8 v_addr ALIGN, out_addr ALIGN;
-	Vector3 a, r;
+	Vector3 a = { 0 }, r = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3442,7 +3442,7 @@ U1 *raylib_vec3_length (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: v_addr
 	// return: length
 	S8 v_addr ALIGN;
-	Vector3 a;
+	Vector3 a = { 0 };
 
 	sp = stpopi ((U1 *) &v_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3458,7 +3458,7 @@ U1 *raylib_vec3_dot_product (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: v1_addr, v2_addr
 	// return: dot product
 	S8 v1_addr ALIGN, v2_addr ALIGN;
-	Vector3 a, b;
+	Vector3 a = { 0 }, b = { 0 };
 
 	sp = stpopi ((U1 *) &v2_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3476,7 +3476,7 @@ U1 *raylib_vec3_cross_product (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: v1_addr, v2_addr, out_addr
 	S8 v1_addr ALIGN, v2_addr ALIGN, out_addr ALIGN;
-	Vector3 a, b, r;
+	Vector3 a = { 0 }, b = { 0 }, r = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3499,7 +3499,7 @@ U1 *raylib_vec3_distance (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: v1_addr, v2_addr
 	// return: distance
 	S8 v1_addr ALIGN, v2_addr ALIGN;
-	Vector3 a, b;
+	Vector3 a = { 0 }, b = { 0 };
 
 	sp = stpopi ((U1 *) &v2_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3517,8 +3517,8 @@ U1 *raylib_vec3_transform (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: v_addr, matrix_addr, out_addr
 	S8 v_addr ALIGN, matrix_addr ALIGN, out_addr ALIGN;
-	Vector3 v, r;
-	Matrix m;
+	Vector3 v = { 0 }, r = { 0 };
+	Matrix m = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3540,7 +3540,7 @@ U1 *raylib_matrix_multiply (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: m1_addr, m2_addr, out_addr
 	S8 m1_addr ALIGN, m2_addr ALIGN, out_addr ALIGN;
-	Matrix a, b, r;
+	Matrix a = { 0 }, b = { 0 }, r = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3563,7 +3563,7 @@ U1 *raylib_matrix_translate (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: x, y, z, out_addr
 	S8 out_addr ALIGN;
 	F8 x ALIGN, y ALIGN, z ALIGN;
-	Matrix r;
+	Matrix r = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3585,8 +3585,8 @@ U1 *raylib_matrix_rotate_xyz (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: angle_addr, out_addr
 	// angle: Vector3 (x, y, z angles)
 	S8 angle_addr ALIGN, out_addr ALIGN;
-	Vector3 angles;
-	Matrix r;
+	Vector3 angles = { 0 };
+	Matrix r = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3606,7 +3606,7 @@ U1 *raylib_matrix_scale (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: x, y, z, out_addr
 	S8 out_addr ALIGN;
 	F8 x ALIGN, y ALIGN, z ALIGN;
-	Matrix r;
+	Matrix r = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -3627,7 +3627,7 @@ U1 *raylib_matrix_identity (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: out_addr
 	S8 out_addr ALIGN;
-	Matrix r;
+	Matrix r = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4106,7 +4106,7 @@ U1 *raylib_clear_background (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: color_addr
 	S8 color_addr ALIGN;
-	Color col;
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4467,7 +4467,7 @@ U1 *raylib_get_window_position (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: out_addr
 	S8 out_addr ALIGN;
-	Vector2 pos;
+	Vector2 pos = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4484,7 +4484,7 @@ U1 *raylib_get_window_scale_dpi (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: out_addr
 	S8 out_addr ALIGN;
-	Vector2 scale;
+	Vector2 scale = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4557,7 +4557,7 @@ U1 *raylib_draw_pixel (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: x, y, color_addr
 	S8 x ALIGN, y ALIGN, color_addr ALIGN;
-	Color col;
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4579,8 +4579,8 @@ U1 *raylib_draw_pixel_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: pos_addr, color_addr
 	S8 pos_addr ALIGN, color_addr ALIGN;
-	Vector2 pos;
-	Color col;
+	Vector2 pos = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4601,7 +4601,7 @@ U1 *raylib_draw_line (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: x1, y1, x2, y2, color_addr
 	S8 x1 ALIGN, y1 ALIGN, x2 ALIGN, y2 ALIGN, color_addr ALIGN;
-	Color col;
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4627,8 +4627,8 @@ U1 *raylib_draw_line_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: start_addr, end_addr, color_addr
 	S8 start_addr ALIGN, end_addr ALIGN, color_addr ALIGN;
-	Vector2 start, end;
-	Color col;
+	Vector2 start = { 0 }, end = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4653,8 +4653,8 @@ U1 *raylib_draw_line_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: start_addr, end_addr, thick, color_addr
 	S8 start_addr ALIGN, end_addr ALIGN, color_addr ALIGN;
 	F8 thick ALIGN;
-	Vector2 start, end;
-	Color col;
+	Vector2 start = { 0 }, end = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4683,7 +4683,7 @@ U1 *raylib_draw_line_strip (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 points_addr ALIGN, color_addr ALIGN;
 	S8 point_count ALIGN;
 	Vector2 *points = NULL;
-	Color col;
+	Color col = { 0 };
 	S8 i ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -4733,7 +4733,7 @@ U1 *raylib_draw_circle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: cx, cy, radius, color_addr
 	S8 cx ALIGN, cy ALIGN, color_addr ALIGN;
 	F8 radius ALIGN;
-	Color col;
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4758,8 +4758,8 @@ U1 *raylib_draw_circle_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: center_addr, radius, color_addr
 	S8 center_addr ALIGN, color_addr ALIGN;
 	F8 radius ALIGN;
-	Vector2 center;
-	Color col;
+	Vector2 center = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4783,7 +4783,7 @@ U1 *raylib_draw_circle_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: cx, cy, radius, color_addr
 	S8 cx ALIGN, cy ALIGN, color_addr ALIGN;
 	F8 radius ALIGN;
-	Color col;
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4808,8 +4808,8 @@ U1 *raylib_draw_circle_lines_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: center_addr, radius, color_addr
 	S8 center_addr ALIGN, color_addr ALIGN;
 	F8 radius ALIGN;
-	Vector2 center;
-	Color col;
+	Vector2 center = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4834,8 +4834,8 @@ U1 *raylib_draw_circle_sector (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 center_addr ALIGN, color_addr ALIGN;
 	F8 radius ALIGN, start_angle ALIGN, end_angle ALIGN;
 	S8 segments ALIGN;
-	Vector2 center;
-	Color col;
+	Vector2 center = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4865,8 +4865,8 @@ U1 *raylib_draw_circle_gradient (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: center_addr, radius, inner_addr, outer_addr
 	S8 center_addr ALIGN, inner_addr ALIGN, outer_addr ALIGN;
 	F8 radius ALIGN;
-	Vector2 center;
-	Color inner, outer;
+	Vector2 center = { 0 };
+	Color inner = { 0 }, outer = { 0 };
 
 	sp = stpopi ((U1 *) &outer_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4892,7 +4892,7 @@ U1 *raylib_draw_rectangle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: x, y, width, height, color_addr
 	S8 x ALIGN, y ALIGN, width ALIGN, height ALIGN, color_addr ALIGN;
-	Color col;
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4918,8 +4918,8 @@ U1 *raylib_draw_rectangle_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: pos_addr, size_addr, color_addr
 	S8 pos_addr ALIGN, size_addr ALIGN, color_addr ALIGN;
-	Vector2 pos, size;
-	Color col;
+	Vector2 pos = { 0 }, size = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4943,8 +4943,8 @@ U1 *raylib_draw_rectangle_rec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: rec_addr, color_addr
 	S8 rec_addr ALIGN, color_addr ALIGN;
-	Rectangle rec;
-	Color col;
+	Rectangle rec = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4966,9 +4966,9 @@ U1 *raylib_draw_rectangle_pro (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: rec_addr, origin_addr, rotation, color_addr
 	S8 rec_addr ALIGN, origin_addr ALIGN, color_addr ALIGN;
 	F8 rotation ALIGN;
-	Rectangle rec;
-	Vector2 origin;
-	Color col;
+	Rectangle rec = { 0 };
+	Vector2 origin = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -4994,7 +4994,7 @@ U1 *raylib_draw_rectangle_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: x, y, width, height, color_addr
 	S8 x ALIGN, y ALIGN, width ALIGN, height ALIGN, color_addr ALIGN;
-	Color col;
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5021,8 +5021,8 @@ U1 *raylib_draw_rectangle_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: rec_addr, thick, color_addr
 	S8 rec_addr ALIGN, color_addr ALIGN;
 	F8 thick ALIGN;
-	Rectangle rec;
-	Color col;
+	Rectangle rec = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5047,8 +5047,8 @@ U1 *raylib_draw_rectangle_rounded (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 rec_addr ALIGN, color_addr ALIGN;
 	F8 roundness ALIGN;
 	S8 segments ALIGN;
-	Rectangle rec;
-	Color col;
+	Rectangle rec = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5074,8 +5074,8 @@ U1 *raylib_draw_poly (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: center_addr, sides, radius, rotation, color_addr
 	S8 center_addr ALIGN, sides ALIGN, color_addr ALIGN;
 	F8 radius ALIGN, rotation ALIGN;
-	Vector2 center;
-	Color col;
+	Vector2 center = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5103,8 +5103,8 @@ U1 *raylib_draw_poly_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: center_addr, sides, radius, rotation, color_addr
 	S8 center_addr ALIGN, sides ALIGN, color_addr ALIGN;
 	F8 radius ALIGN, rotation ALIGN;
-	Vector2 center;
-	Color col;
+	Vector2 center = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5131,8 +5131,8 @@ U1 *raylib_draw_triangle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: v1_addr, v2_addr, v3_addr, color_addr
 	S8 v1_addr ALIGN, v2_addr ALIGN, v3_addr ALIGN, color_addr ALIGN;
-	Vector2 v1, v2, v3;
-	Color col;
+	Vector2 v1 = { 0 }, v2 = { 0 }, v3 = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5159,8 +5159,8 @@ U1 *raylib_draw_triangle_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: v1_addr, v2_addr, v3_addr, color_addr
 	S8 v1_addr ALIGN, v2_addr ALIGN, v3_addr ALIGN, color_addr ALIGN;
-	Vector2 v1, v2, v3;
-	Color col;
+	Vector2 v1 = { 0 }, v2 = { 0 }, v3 = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5188,7 +5188,7 @@ U1 *raylib_draw_ellipse (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: cx, cy, rh, rv, color_addr
 	S8 cx ALIGN, cy ALIGN, color_addr ALIGN;
 	F8 rh ALIGN, rv ALIGN;
-	Color col;
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5215,7 +5215,7 @@ U1 *raylib_draw_ellipse_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: cx, cy, rh, rv, color_addr
 	S8 cx ALIGN, cy ALIGN, color_addr ALIGN;
 	F8 rh ALIGN, rv ALIGN;
-	Color col;
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5243,8 +5243,8 @@ U1 *raylib_draw_ring (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 center_addr ALIGN, color_addr ALIGN;
 	F8 inner_radius ALIGN, outer_radius ALIGN, start_angle ALIGN, end_angle ALIGN;
 	S8 segments ALIGN;
-	Vector2 center;
-	Color col;
+	Vector2 center = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5277,8 +5277,8 @@ U1 *raylib_draw_ring_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 center_addr ALIGN, color_addr ALIGN;
 	F8 inner_radius ALIGN, outer_radius ALIGN, start_angle ALIGN, end_angle ALIGN;
 	S8 segments ALIGN;
-	Vector2 center;
-	Color col;
+	Vector2 center = { 0 };
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5327,7 +5327,7 @@ U1 *raylib_draw_text (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: text_addr, x, y, font_size, color_addr
 	S8 text_addr ALIGN, x ALIGN, y ALIGN, font_size ALIGN, color_addr ALIGN;
 	U1 text[4096];
-	Color col;
+	Color col = { 0 };
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5379,8 +5379,8 @@ U1 *raylib_draw_text_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 font_handle ALIGN, text_addr ALIGN, pos_addr ALIGN, tint_addr ALIGN;
 	F8 font_size ALIGN, spacing ALIGN;
 	U1 text[4096];
-	Vector2 pos;
-	Color tint;
+	Vector2 pos = { 0 };
+	Color tint = { 0 };
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5418,7 +5418,7 @@ U1 *raylib_measure_text_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 font_handle ALIGN, text_addr ALIGN, out_addr ALIGN;
 	F8 font_size ALIGN, spacing ALIGN;
 	U1 text[4096];
-	Vector2 size;
+	Vector2 size = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5453,8 +5453,8 @@ U1 *raylib_draw_text_pro (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 font_handle ALIGN, text_addr ALIGN, pos_addr ALIGN, origin_addr ALIGN, tint_addr ALIGN;
 	F8 rotation ALIGN, font_size ALIGN, spacing ALIGN;
 	U1 text[4096];
-	Vector2 pos, origin;
-	Color tint;
+	Vector2 pos = { 0 }, origin = { 0 };
+	Color tint = { 0 };
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5618,7 +5618,7 @@ U1 *raylib_draw_texture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: texture_handle, x, y, tint_addr
 	S8 texture_handle ALIGN, x ALIGN, y ALIGN, tint_addr ALIGN;
-	Color tint;
+	Color tint = { 0 };
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5648,8 +5648,8 @@ U1 *raylib_draw_texture_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: texture_handle, pos_addr, tint_addr
 	S8 texture_handle ALIGN, pos_addr ALIGN, tint_addr ALIGN;
-	Vector2 pos;
-	Color tint;
+	Vector2 pos = { 0 };
+	Color tint = { 0 };
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5679,8 +5679,8 @@ U1 *raylib_draw_texture_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: texture_handle, pos_addr, rotation, scale, tint_addr
 	S8 texture_handle ALIGN, pos_addr ALIGN, tint_addr ALIGN;
 	F8 rotation ALIGN, scale ALIGN;
-	Vector2 pos;
-	Color tint;
+	Vector2 pos = { 0 };
+	Color tint = { 0 };
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5713,9 +5713,9 @@ U1 *raylib_draw_texture_rec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: texture_handle, rec_addr, pos_addr, tint_addr
 	S8 texture_handle ALIGN, rec_addr ALIGN, pos_addr ALIGN, tint_addr ALIGN;
-	Rectangle rec;
-	Vector2 pos;
-	Color tint;
+	Rectangle rec = { 0 };
+	Vector2 pos = { 0 };
+	Color tint = { 0 };
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5748,9 +5748,9 @@ U1 *raylib_draw_texture_pro (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: texture_handle, src_addr, dst_addr, origin_addr, rotation, tint_addr
 	S8 texture_handle ALIGN, src_addr ALIGN, dst_addr ALIGN, origin_addr ALIGN, tint_addr ALIGN;
 	F8 rotation ALIGN;
-	Rectangle src, dst;
-	Vector2 origin;
-	Color tint;
+	Rectangle src = { 0 }, dst = { 0 };
+	Vector2 origin = { 0 };
+	Color tint = { 0 };
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -5957,7 +5957,7 @@ U1 *raylib_gen_image_color (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: width, height, color_addr
 	// return: image handle or -1
 	S8 width ALIGN, height ALIGN, color_addr ALIGN;
-	Color col;
+	Color col = { 0 };
 	S8 ind ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -5992,7 +5992,7 @@ U1 *raylib_gen_image_checked (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// return: image handle or -1
 	S8 width ALIGN, height ALIGN, checks_x ALIGN, checks_y ALIGN;
 	S8 color1_addr ALIGN, color2_addr ALIGN;
-	Color c1, c2;
+	Color c1 = { 0 }, c2 = { 0 };
 	S8 ind ALIGN;
 
 	sp = stpopi ((U1 *) &color2_addr, sp, sp_top);
@@ -6425,7 +6425,7 @@ U1 *raylib_get_mouse_position (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: out_addr
 	S8 out_addr ALIGN;
-	Vector2 pos;
+	Vector2 pos = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -6442,7 +6442,7 @@ U1 *raylib_get_mouse_delta (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: out_addr
 	S8 out_addr ALIGN;
-	Vector2 delta;
+	Vector2 delta = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -6741,7 +6741,7 @@ U1 *raylib_get_touch_position (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: index, out_addr
 	S8 index ALIGN, out_addr ALIGN;
-	Vector2 pos;
+	Vector2 pos = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -7520,12 +7520,12 @@ U1 *raylib_check_collision_circle_line (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *d
 {
 	// args: center_addr, radius, p1_addr, p2_addr
 	// return: 1 true, 0 false
-	Vector2 center;
+	Vector2 center = { 0 };
 	S8 center_addr ALIGN;
 	F8 radius ALIGN;
-	Vector2 p1;
+	Vector2 p1 = { 0 };
 	S8 p1_addr ALIGN;
-	Vector2 p2;
+	Vector2 p2 = { 0 };
 	S8 p2_addr ALIGN;
 	S8 ret ALIGN;
 
@@ -7554,10 +7554,10 @@ U1 *raylib_check_collision_circle_rec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *da
 {
 	// args: center_addr, radius, rec_addr
 	// return: 1 true, 0 false
-	Vector2 center;
+	Vector2 center = { 0 };
 	S8 center_addr ALIGN;
 	F8 radius ALIGN;
-	Rectangle rec;
+	Rectangle rec = { 0 };
 	S8 rec_addr ALIGN;
 	S8 ret ALIGN;
 
@@ -7583,10 +7583,10 @@ U1 *raylib_check_collision_circles (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: center1_addr, radius1, center2_addr, radius2
 	// return: 1 true, 0 false
-	Vector2 center1;
+	Vector2 center1 = { 0 };
 	S8 center1_addr ALIGN;
 	F8 radius1 ALIGN;
-	Vector2 center2;
+	Vector2 center2 = { 0 };
 	S8 center2_addr ALIGN;
 	F8 radius2 ALIGN;
 	S8 ret ALIGN;
@@ -7615,15 +7615,15 @@ U1 *raylib_check_collision_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: start_pos1_addr, end_pos1_addr, start_pos2_addr, end_pos2_addr, out_addr
 	// return: 1 true, 0 false
-	Vector2 start_pos1;
+	Vector2 start_pos1 = { 0 };
 	S8 start_pos1_addr ALIGN;
-	Vector2 end_pos1;
+	Vector2 end_pos1 = { 0 };
 	S8 end_pos1_addr ALIGN;
-	Vector2 start_pos2;
+	Vector2 start_pos2 = { 0 };
 	S8 start_pos2_addr ALIGN;
-	Vector2 end_pos2;
+	Vector2 end_pos2 = { 0 };
 	S8 end_pos2_addr ALIGN;
-	Vector2 collision_point;
+	Vector2 collision_point = { 0 };
 	S8 out_addr ALIGN;
 	S8 ret ALIGN;
 
@@ -7657,9 +7657,9 @@ U1 *raylib_check_collision_point_circle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *
 {
 	// args: point_addr, center_addr, radius
 	// return: 1 true, 0 false
-	Vector2 point;
+	Vector2 point = { 0 };
 	S8 point_addr ALIGN;
-	Vector2 center;
+	Vector2 center = { 0 };
 	S8 center_addr ALIGN;
 	F8 radius ALIGN;
 	S8 ret ALIGN;
@@ -7686,11 +7686,11 @@ U1 *raylib_check_collision_point_line (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *da
 {
 	// args: point_addr, p1_addr, p2_addr, threshold
 	// return: 1 true, 0 false
-	Vector2 point;
+	Vector2 point = { 0 };
 	S8 point_addr ALIGN;
-	Vector2 p1;
+	Vector2 p1 = { 0 };
 	S8 p1_addr ALIGN;
-	Vector2 p2;
+	Vector2 p2 = { 0 };
 	S8 p2_addr ALIGN;
 	S8 threshold ALIGN;
 	S8 ret ALIGN;
@@ -7720,7 +7720,7 @@ U1 *raylib_check_collision_point_poly (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *da
 {
 	// args: point_addr, points_addr, point_count
 	// return: 1 true, 0 false
-	Vector2 point;
+	Vector2 point = { 0 };
 	S8 point_addr ALIGN;
 	S8 points_addr ALIGN;
 	Vector2 *points_ptr = NULL;
@@ -7773,9 +7773,9 @@ U1 *raylib_check_collision_point_rec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *dat
 {
 	// args: point_addr, rec_addr
 	// return: 1 true, 0 false
-	Vector2 point;
+	Vector2 point = { 0 };
 	S8 point_addr ALIGN;
-	Rectangle rec;
+	Rectangle rec = { 0 };
 	S8 rec_addr ALIGN;
 	S8 ret ALIGN;
 
@@ -7799,13 +7799,13 @@ U1 *raylib_check_collision_point_triangle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1
 {
 	// args: point_addr, p1_addr, p2_addr, p3_addr
 	// return: 1 true, 0 false
-	Vector2 point;
+	Vector2 point = { 0 };
 	S8 point_addr ALIGN;
-	Vector2 p1;
+	Vector2 p1 = { 0 };
 	S8 p1_addr ALIGN;
-	Vector2 p2;
+	Vector2 p2 = { 0 };
 	S8 p2_addr ALIGN;
-	Vector2 p3;
+	Vector2 p3 = { 0 };
 	S8 p3_addr ALIGN;
 	S8 ret ALIGN;
 
@@ -7835,9 +7835,9 @@ U1 *raylib_check_collision_recs (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: rec1_addr, rec2_addr
 	// return: 1 true, 0 false
-	Rectangle rec1;
+	Rectangle rec1 = { 0 };
 	S8 rec1_addr ALIGN;
-	Rectangle rec2;
+	Rectangle rec2 = { 0 };
 	S8 rec2_addr ALIGN;
 	S8 ret ALIGN;
 
@@ -7899,11 +7899,11 @@ U1 *raylib_color_alpha (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: color_addr, alpha, out_addr
 	// return: struct written to out_addr
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	F8 alpha ALIGN;
 	S8 out_addr ALIGN;
-	Color ret;
+	Color ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -7927,14 +7927,14 @@ U1 *raylib_color_alpha_blend (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: dst_addr, src_addr, tint_addr, out_addr
 	// return: struct written to out_addr
-	Color dst;
+	Color dst = { 0 };
 	S8 dst_addr ALIGN;
-	Color src;
+	Color src = { 0 };
 	S8 src_addr ALIGN;
-	Color tint;
+	Color tint = { 0 };
 	S8 tint_addr ALIGN;
 	S8 out_addr ALIGN;
-	Color ret;
+	Color ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -7962,11 +7962,11 @@ U1 *raylib_color_brightness (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: color_addr, factor, out_addr
 	// return: struct written to out_addr
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	F8 factor ALIGN;
 	S8 out_addr ALIGN;
-	Color ret;
+	Color ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -7990,11 +7990,11 @@ U1 *raylib_color_contrast (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: color_addr, contrast, out_addr
 	// return: struct written to out_addr
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	F8 contrast ALIGN;
 	S8 out_addr ALIGN;
-	Color ret;
+	Color ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -8022,7 +8022,7 @@ U1 *raylib_color_from_hsv (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	F8 saturation ALIGN;
 	F8 value ALIGN;
 	S8 out_addr ALIGN;
-	Color ret;
+	Color ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -8046,10 +8046,10 @@ U1 *raylib_color_from_normalized (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: normalized_addr, out_addr
 	// return: struct written to out_addr
-	Vector4 normalized;
+	Vector4 normalized = { 0 };
 	S8 normalized_addr ALIGN;
 	S8 out_addr ALIGN;
-	Color ret;
+	Color ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -8071,9 +8071,9 @@ U1 *raylib_color_is_equal (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: col1_addr, col2_addr
 	// return: 1 true, 0 false
-	Color col1;
+	Color col1 = { 0 };
 	S8 col1_addr ALIGN;
-	Color col2;
+	Color col2 = { 0 };
 	S8 col2_addr ALIGN;
 	S8 ret ALIGN;
 
@@ -8097,13 +8097,13 @@ U1 *raylib_color_lerp (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: color1_addr, color2_addr, factor, out_addr
 	// return: struct written to out_addr
-	Color color1;
+	Color color1 = { 0 };
 	S8 color1_addr ALIGN;
-	Color color2;
+	Color color2 = { 0 };
 	S8 color2_addr ALIGN;
 	F8 factor ALIGN;
 	S8 out_addr ALIGN;
-	Color ret;
+	Color ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -8130,10 +8130,10 @@ U1 *raylib_color_normalize (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: color_addr, out_addr
 	// return: struct written to out_addr
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	S8 out_addr ALIGN;
-	Vector4 ret;
+	Vector4 ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -8155,12 +8155,12 @@ U1 *raylib_color_tint (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: color_addr, tint_addr, out_addr
 	// return: struct written to out_addr
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
-	Color tint;
+	Color tint = { 0 };
 	S8 tint_addr ALIGN;
 	S8 out_addr ALIGN;
-	Color ret;
+	Color ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -8185,10 +8185,10 @@ U1 *raylib_color_to_hsv (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: color_addr, out_addr
 	// return: struct written to out_addr
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	S8 out_addr ALIGN;
-	Vector3 ret;
+	Vector3 ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -8210,7 +8210,7 @@ U1 *raylib_color_to_int (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: color_addr
 	// return: integer result
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	S8 ret ALIGN;
 
@@ -8291,11 +8291,11 @@ U1 *raylib_disable_cursor (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *raylib_draw_circle_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: center_addr, radius, thick, color_addr
-	Vector2 center;
+	Vector2 center = { 0 };
 	S8 center_addr ALIGN;
 	F8 radius ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -8320,13 +8320,13 @@ U1 *raylib_draw_circle_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *raylib_draw_circle_sector_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: center_addr, radius, start_angle, end_angle, segments, color_addr
-	Vector2 center;
+	Vector2 center = { 0 };
 	S8 center_addr ALIGN;
 	F8 radius ALIGN;
 	F8 start_angle ALIGN;
 	F8 end_angle ALIGN;
 	S8 segments ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -8355,14 +8355,14 @@ U1 *raylib_draw_circle_sector_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data
 U1 *raylib_draw_circle_sector_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: center_addr, radius, start_angle, end_angle, segments, thick, color_addr
-	Vector2 center;
+	Vector2 center = { 0 };
 	S8 center_addr ALIGN;
 	F8 radius ALIGN;
 	F8 start_angle ALIGN;
 	F8 end_angle ALIGN;
 	S8 segments ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -8393,12 +8393,12 @@ U1 *raylib_draw_circle_sector_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *d
 U1 *raylib_draw_ellipse_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: center_addr, radius_h, radius_v, thick, color_addr
-	Vector2 center;
+	Vector2 center = { 0 };
 	S8 center_addr ALIGN;
 	F8 radius_h ALIGN;
 	F8 radius_v ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -8425,11 +8425,11 @@ U1 *raylib_draw_ellipse_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *raylib_draw_ellipse_lines_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: center_addr, radius_h, radius_v, color_addr
-	Vector2 center;
+	Vector2 center = { 0 };
 	S8 center_addr ALIGN;
 	F8 radius_h ALIGN;
 	F8 radius_v ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -8454,11 +8454,11 @@ U1 *raylib_draw_ellipse_lines_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *raylib_draw_ellipse_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: center_addr, radius_h, radius_v, color_addr
-	Vector2 center;
+	Vector2 center = { 0 };
 	S8 center_addr ALIGN;
 	F8 radius_h ALIGN;
 	F8 radius_v ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -8483,12 +8483,12 @@ U1 *raylib_draw_ellipse_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *raylib_draw_line_bezier (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: start_pos_addr, end_pos_addr, thick, color_addr
-	Vector2 start_pos;
+	Vector2 start_pos = { 0 };
 	S8 start_pos_addr ALIGN;
-	Vector2 end_pos;
+	Vector2 end_pos = { 0 };
 	S8 end_pos_addr ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -8514,13 +8514,13 @@ U1 *raylib_draw_line_bezier (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *raylib_draw_line_dashed (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: start_pos_addr, end_pos_addr, dash_size, space_size, color_addr
-	Vector2 start_pos;
+	Vector2 start_pos = { 0 };
 	S8 start_pos_addr ALIGN;
-	Vector2 end_pos;
+	Vector2 end_pos = { 0 };
 	S8 end_pos_addr ALIGN;
 	S8 dash_size ALIGN;
 	S8 space_size ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -8548,13 +8548,13 @@ U1 *raylib_draw_line_dashed (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *raylib_draw_poly_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: center_addr, sides, radius, rotation, thick, color_addr
-	Vector2 center;
+	Vector2 center = { 0 };
 	S8 center_addr ALIGN;
 	S8 sides ALIGN;
 	F8 radius ALIGN;
 	F8 rotation ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -8583,15 +8583,15 @@ U1 *raylib_draw_poly_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *raylib_draw_rectangle_gradient_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: rec_addr, col1_addr, col2_addr, col3_addr, col4_addr
-	Rectangle rec;
+	Rectangle rec = { 0 };
 	S8 rec_addr ALIGN;
-	Color col1;
+	Color col1 = { 0 };
 	S8 col1_addr ALIGN;
-	Color col2;
+	Color col2 = { 0 };
 	S8 col2_addr ALIGN;
-	Color col3;
+	Color col3 = { 0 };
 	S8 col3_addr ALIGN;
-	Color col4;
+	Color col4 = { 0 };
 	S8 col4_addr ALIGN;
 
 	sp = stpopi ((U1 *) &col4_addr, sp, sp_top);
@@ -8625,9 +8625,9 @@ U1 *raylib_draw_rectangle_gradient_h (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *dat
 	S8 pos_y ALIGN;
 	S8 width ALIGN;
 	S8 height ALIGN;
-	Color left;
+	Color left = { 0 };
 	S8 left_addr ALIGN;
-	Color right;
+	Color right = { 0 };
 	S8 right_addr ALIGN;
 
 	sp = stpopi ((U1 *) &right_addr, sp, sp_top);
@@ -8660,9 +8660,9 @@ U1 *raylib_draw_rectangle_gradient_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *dat
 	S8 pos_y ALIGN;
 	S8 width ALIGN;
 	S8 height ALIGN;
-	Color top;
+	Color top = { 0 };
 	S8 top_addr ALIGN;
-	Color bottom;
+	Color bottom = { 0 };
 	S8 bottom_addr ALIGN;
 
 	sp = stpopi ((U1 *) &bottom_addr, sp, sp_top);
@@ -8691,11 +8691,11 @@ U1 *raylib_draw_rectangle_gradient_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *dat
 U1 *raylib_draw_rectangle_rounded_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: rec_addr, roundness, segments, color_addr
-	Rectangle rec;
+	Rectangle rec = { 0 };
 	S8 rec_addr ALIGN;
 	F8 roundness ALIGN;
 	S8 segments ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -8720,12 +8720,12 @@ U1 *raylib_draw_rectangle_rounded_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *
 U1 *raylib_draw_rectangle_rounded_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: rec_addr, roundness, segments, thick, color_addr
-	Rectangle rec;
+	Rectangle rec = { 0 };
 	S8 rec_addr ALIGN;
 	F8 roundness ALIGN;
 	S8 segments ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -8752,7 +8752,7 @@ U1 *raylib_draw_rectangle_rounded_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U
 U1 *raylib_draw_ring_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: center_addr, inner_radius, outer_radius, start_angle, end_angle, segments, thick, color_addr
-	Vector2 center;
+	Vector2 center = { 0 };
 	S8 center_addr ALIGN;
 	F8 inner_radius ALIGN;
 	F8 outer_radius ALIGN;
@@ -8760,7 +8760,7 @@ U1 *raylib_draw_ring_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	F8 end_angle ALIGN;
 	S8 segments ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -8797,7 +8797,7 @@ U1 *raylib_draw_spline_basis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	Vector2 *points_ptr = NULL;
 	S8 point_count ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	S8 i ALIGN;
 
@@ -8832,7 +8832,10 @@ U1 *raylib_draw_spline_basis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			}
 		}
 	}
-	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) {
+			free (points_ptr);
+			return (NULL);
+		}
 
 	pthread_mutex_lock (&rlib_mutex);
 	DrawSplineBasis ((const Vector2 *) points_ptr, (int) point_count, (float) thick, color);
@@ -8850,7 +8853,7 @@ U1 *raylib_draw_spline_bezier_cubic (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data
 	Vector2 *points_ptr = NULL;
 	S8 point_count ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	S8 i ALIGN;
 
@@ -8885,7 +8888,10 @@ U1 *raylib_draw_spline_bezier_cubic (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data
 			}
 		}
 	}
-	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) {
+			free (points_ptr);
+			return (NULL);
+		}
 
 	pthread_mutex_lock (&rlib_mutex);
 	DrawSplineBezierCubic ((const Vector2 *) points_ptr, (int) point_count, (float) thick, color);
@@ -8903,7 +8909,7 @@ U1 *raylib_draw_spline_bezier_quadratic (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *
 	Vector2 *points_ptr = NULL;
 	S8 point_count ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	S8 i ALIGN;
 
@@ -8938,7 +8944,10 @@ U1 *raylib_draw_spline_bezier_quadratic (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *
 			}
 		}
 	}
-	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) {
+			free (points_ptr);
+			return (NULL);
+		}
 
 	pthread_mutex_lock (&rlib_mutex);
 	DrawSplineBezierQuadratic ((const Vector2 *) points_ptr, (int) point_count, (float) thick, color);
@@ -8956,7 +8965,7 @@ U1 *raylib_draw_spline_catmull_rom (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	Vector2 *points_ptr = NULL;
 	S8 point_count ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	S8 i ALIGN;
 
@@ -8991,7 +9000,10 @@ U1 *raylib_draw_spline_catmull_rom (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			}
 		}
 	}
-	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) {
+			free (points_ptr);
+			return (NULL);
+		}
 
 	pthread_mutex_lock (&rlib_mutex);
 	DrawSplineCatmullRom ((const Vector2 *) points_ptr, (int) point_count, (float) thick, color);
@@ -9009,7 +9021,7 @@ U1 *raylib_draw_spline_linear (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	Vector2 *points_ptr = NULL;
 	S8 point_count ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	S8 i ALIGN;
 
@@ -9044,7 +9056,10 @@ U1 *raylib_draw_spline_linear (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			}
 		}
 	}
-	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) {
+			free (points_ptr);
+			return (NULL);
+		}
 
 	pthread_mutex_lock (&rlib_mutex);
 	DrawSplineLinear ((const Vector2 *) points_ptr, (int) point_count, (float) thick, color);
@@ -9058,16 +9073,16 @@ U1 *raylib_draw_spline_linear (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *raylib_draw_spline_segment_basis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: p1_addr, p2_addr, p3_addr, p4_addr, thick, color_addr
-	Vector2 p1;
+	Vector2 p1 = { 0 };
 	S8 p1_addr ALIGN;
-	Vector2 p2;
+	Vector2 p2 = { 0 };
 	S8 p2_addr ALIGN;
-	Vector2 p3;
+	Vector2 p3 = { 0 };
 	S8 p3_addr ALIGN;
-	Vector2 p4;
+	Vector2 p4 = { 0 };
 	S8 p4_addr ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -9099,16 +9114,16 @@ U1 *raylib_draw_spline_segment_basis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *dat
 U1 *raylib_draw_spline_segment_bezier_cubic (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: p1_addr, c2_addr, c3_addr, p4_addr, thick, color_addr
-	Vector2 p1;
+	Vector2 p1 = { 0 };
 	S8 p1_addr ALIGN;
-	Vector2 c2;
+	Vector2 c2 = { 0 };
 	S8 c2_addr ALIGN;
-	Vector2 c3;
+	Vector2 c3 = { 0 };
 	S8 c3_addr ALIGN;
-	Vector2 p4;
+	Vector2 p4 = { 0 };
 	S8 p4_addr ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -9140,14 +9155,14 @@ U1 *raylib_draw_spline_segment_bezier_cubic (U1 *sp, U1 *sp_top, U1 *sp_bottom, 
 U1 *raylib_draw_spline_segment_bezier_quadratic (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: p1_addr, c2_addr, p3_addr, thick, color_addr
-	Vector2 p1;
+	Vector2 p1 = { 0 };
 	S8 p1_addr ALIGN;
-	Vector2 c2;
+	Vector2 c2 = { 0 };
 	S8 c2_addr ALIGN;
-	Vector2 p3;
+	Vector2 p3 = { 0 };
 	S8 p3_addr ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -9176,16 +9191,16 @@ U1 *raylib_draw_spline_segment_bezier_quadratic (U1 *sp, U1 *sp_top, U1 *sp_bott
 U1 *raylib_draw_spline_segment_catmull_rom (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: p1_addr, p2_addr, p3_addr, p4_addr, thick, color_addr
-	Vector2 p1;
+	Vector2 p1 = { 0 };
 	S8 p1_addr ALIGN;
-	Vector2 p2;
+	Vector2 p2 = { 0 };
 	S8 p2_addr ALIGN;
-	Vector2 p3;
+	Vector2 p3 = { 0 };
 	S8 p3_addr ALIGN;
-	Vector2 p4;
+	Vector2 p4 = { 0 };
 	S8 p4_addr ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -9217,12 +9232,12 @@ U1 *raylib_draw_spline_segment_catmull_rom (U1 *sp, U1 *sp_top, U1 *sp_bottom, U
 U1 *raylib_draw_spline_segment_linear (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: p1_addr, p2_addr, thick, color_addr
-	Vector2 p1;
+	Vector2 p1 = { 0 };
 	S8 p1_addr ALIGN;
-	Vector2 p2;
+	Vector2 p2 = { 0 };
 	S8 p2_addr ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -9250,10 +9265,10 @@ U1 *raylib_draw_text_codepoint (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: font_handle, codepoint, position_addr, font_size, tint_addr
 	S8 font_handle ALIGN;
 	S8 codepoint ALIGN;
-	Vector2 position;
+	Vector2 position = { 0 };
 	S8 position_addr ALIGN;
 	F8 font_size ALIGN;
-	Color tint;
+	Color tint = { 0 };
 	S8 tint_addr ALIGN;
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
@@ -9290,11 +9305,11 @@ U1 *raylib_draw_text_codepoints (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 codepoints_addr ALIGN;
 	int *codepoints_ptr = NULL;
 	S8 codepoint_count ALIGN;
-	Vector2 position;
+	Vector2 position = { 0 };
 	S8 position_addr ALIGN;
 	F8 font_size ALIGN;
 	F8 spacing ALIGN;
-	Color tint;
+	Color tint = { 0 };
 	S8 tint_addr ALIGN;
 	S8 i ALIGN;
 	F8 t ALIGN;
@@ -9339,8 +9354,14 @@ U1 *raylib_draw_text_codepoints (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			codepoints_ptr[i] = (int) t;
 		}
 	}
-	if (rlib_read_vec2 (data, position_addr, &position) != 0) return (NULL);
-	if (rlib_read_color (data, tint_addr, &tint) != 0) return (NULL);
+	if (rlib_read_vec2 (data, position_addr, &position) != 0) {
+			free (codepoints_ptr);
+			return (NULL);
+		}
+	if (rlib_read_color (data, tint_addr, &tint) != 0) {
+			free (codepoints_ptr);
+			return (NULL);
+		}
 
 	pthread_mutex_lock (&rlib_mutex);
 	DrawTextCodepoints (raylib_fonts[font_handle], (const int *) codepoints_ptr, (int) codepoint_count, position, (float) font_size, (float) spacing, tint);
@@ -9355,14 +9376,14 @@ U1 *raylib_draw_texture_n_patch (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: texture_handle, n_patch_info_addr, dstrec_addr, origin_addr, rotation, tint_addr
 	S8 texture_handle ALIGN;
-	NPatchInfo n_patch_info;
+	NPatchInfo n_patch_info = { 0 };
 	S8 n_patch_info_addr ALIGN;
-	Rectangle dstrec;
+	Rectangle dstrec = { 0 };
 	S8 dstrec_addr ALIGN;
-	Vector2 origin;
+	Vector2 origin = { 0 };
 	S8 origin_addr ALIGN;
 	F8 rotation ALIGN;
-	Color tint;
+	Color tint = { 0 };
 	S8 tint_addr ALIGN;
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
@@ -9402,7 +9423,7 @@ U1 *raylib_draw_triangle_fan (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 points_addr ALIGN;
 	Vector2 *points_ptr = NULL;
 	S8 point_count ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	S8 i ALIGN;
 
@@ -9435,7 +9456,10 @@ U1 *raylib_draw_triangle_fan (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			}
 		}
 	}
-	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) {
+			free (points_ptr);
+			return (NULL);
+		}
 
 	pthread_mutex_lock (&rlib_mutex);
 	DrawTriangleFan ((const Vector2 *) points_ptr, (int) point_count, color);
@@ -9449,17 +9473,17 @@ U1 *raylib_draw_triangle_fan (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *raylib_draw_triangle_gradient (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: v1_addr, v2_addr, v3_addr, c1_addr, c2_addr, c3_addr
-	Vector2 v1;
+	Vector2 v1 = { 0 };
 	S8 v1_addr ALIGN;
-	Vector2 v2;
+	Vector2 v2 = { 0 };
 	S8 v2_addr ALIGN;
-	Vector2 v3;
+	Vector2 v3 = { 0 };
 	S8 v3_addr ALIGN;
-	Color c1;
+	Color c1 = { 0 };
 	S8 c1_addr ALIGN;
-	Color c2;
+	Color c2 = { 0 };
 	S8 c2_addr ALIGN;
-	Color c3;
+	Color c3 = { 0 };
 	S8 c3_addr ALIGN;
 
 	sp = stpopi ((U1 *) &c3_addr, sp, sp_top);
@@ -9492,14 +9516,14 @@ U1 *raylib_draw_triangle_gradient (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 U1 *raylib_draw_triangle_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: v1_addr, v2_addr, v3_addr, thick, color_addr
-	Vector2 v1;
+	Vector2 v1 = { 0 };
 	S8 v1_addr ALIGN;
-	Vector2 v2;
+	Vector2 v2 = { 0 };
 	S8 v2_addr ALIGN;
-	Vector2 v3;
+	Vector2 v3 = { 0 };
 	S8 v3_addr ALIGN;
 	F8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -9531,7 +9555,7 @@ U1 *raylib_draw_triangle_strip (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 points_addr ALIGN;
 	Vector2 *points_ptr = NULL;
 	S8 point_count ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	S8 i ALIGN;
 
@@ -9564,7 +9588,10 @@ U1 *raylib_draw_triangle_strip (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			}
 		}
 	}
-	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) {
+			free (points_ptr);
+			return (NULL);
+		}
 
 	pthread_mutex_lock (&rlib_mutex);
 	DrawTriangleStrip ((const Vector2 *) points_ptr, (int) point_count, color);
@@ -9894,11 +9921,11 @@ U1 *raylib_fade (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: color_addr, alpha, out_addr
 	// return: struct written to out_addr
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	F8 alpha ALIGN;
 	S8 out_addr ALIGN;
-	Color ret;
+	Color ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -10142,9 +10169,9 @@ U1 *raylib_gen_image_gradient_linear (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *dat
 	S8 width ALIGN;
 	S8 height ALIGN;
 	S8 direction ALIGN;
-	Color start;
+	Color start = { 0 };
 	S8 start_addr ALIGN;
-	Color end;
+	Color end = { 0 };
 	S8 end_addr ALIGN;
 	S8 ind ALIGN;
 
@@ -10193,9 +10220,9 @@ U1 *raylib_gen_image_gradient_radial (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *dat
 	S8 width ALIGN;
 	S8 height ALIGN;
 	F8 density ALIGN;
-	Color inner;
+	Color inner = { 0 };
 	S8 inner_addr ALIGN;
-	Color outer;
+	Color outer = { 0 };
 	S8 outer_addr ALIGN;
 	S8 ind ALIGN;
 
@@ -10244,9 +10271,9 @@ U1 *raylib_gen_image_gradient_square (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *dat
 	S8 width ALIGN;
 	S8 height ALIGN;
 	F8 density ALIGN;
-	Color inner;
+	Color inner = { 0 };
 	S8 inner_addr ALIGN;
-	Color outer;
+	Color outer = { 0 };
 	S8 outer_addr ALIGN;
 	S8 ind ALIGN;
 
@@ -10500,7 +10527,7 @@ U1 *raylib_get_camera_matrix (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	Camera camera;
 	S8 camera_addr ALIGN;
 	S8 out_addr ALIGN;
-	Matrix ret;
+	Matrix ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -10525,7 +10552,7 @@ U1 *raylib_get_camera_matrix_2d (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	Camera2D camera;
 	S8 camera_addr ALIGN;
 	S8 out_addr ALIGN;
-	Matrix ret;
+	Matrix ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -10663,12 +10690,12 @@ U1 *raylib_get_collision_rec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: rec1_addr, rec2_addr, out_addr
 	// return: struct written to out_addr
-	Rectangle rec1;
+	Rectangle rec1 = { 0 };
 	S8 rec1_addr ALIGN;
-	Rectangle rec2;
+	Rectangle rec2 = { 0 };
 	S8 rec2_addr ALIGN;
 	S8 out_addr ALIGN;
-	Rectangle ret;
+	Rectangle ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -10695,7 +10722,7 @@ U1 *raylib_get_color (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// return: struct written to out_addr
 	S8 hex_value ALIGN;
 	S8 out_addr ALIGN;
-	Color ret;
+	Color ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -10994,7 +11021,7 @@ U1 *raylib_get_gesture_drag_vector (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: out_addr
 	// return: struct written to out_addr
 	S8 out_addr ALIGN;
-	Vector2 ret;
+	Vector2 ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11039,7 +11066,7 @@ U1 *raylib_get_gesture_pinch_vector (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data
 	// args: out_addr
 	// return: struct written to out_addr
 	S8 out_addr ALIGN;
-	Vector2 ret;
+	Vector2 ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11060,7 +11087,7 @@ U1 *raylib_get_glyph_atlas_rec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 font_handle ALIGN;
 	S8 codepoint ALIGN;
 	S8 out_addr ALIGN;
-	Rectangle ret;
+	Rectangle ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11118,7 +11145,7 @@ U1 *raylib_get_image_alpha_border (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 image_handle ALIGN;
 	F8 threshold ALIGN;
 	S8 out_addr ALIGN;
-	Rectangle ret;
+	Rectangle ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11150,7 +11177,7 @@ U1 *raylib_get_image_color (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 x ALIGN;
 	S8 y ALIGN;
 	S8 out_addr ALIGN;
-	Color ret;
+	Color ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11232,7 +11259,7 @@ U1 *raylib_get_monitor_position (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// return: struct written to out_addr
 	S8 monitor ALIGN;
 	S8 out_addr ALIGN;
-	Vector2 ret;
+	Vector2 ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11253,7 +11280,7 @@ U1 *raylib_get_mouse_wheel_move_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: out_addr
 	// return: struct written to out_addr
 	S8 out_addr ALIGN;
-	Vector2 ret;
+	Vector2 ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11335,13 +11362,13 @@ U1 *raylib_get_ray_collision_mesh (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: ray_addr, mesh_handle, transform_addr, out_addr
 	// return: struct written to out_addr
-	Ray ray;
+	Ray ray = { 0 };
 	S8 ray_addr ALIGN;
 	S8 mesh_handle ALIGN;
-	Matrix transform;
+	Matrix transform = { 0 };
 	S8 transform_addr ALIGN;
 	S8 out_addr ALIGN;
-	RayCollision ret;
+	RayCollision ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11375,12 +11402,12 @@ U1 *raylib_get_screen_to_world_2d (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: position_addr, camera_addr, out_addr
 	// return: struct written to out_addr
-	Vector2 position;
+	Vector2 position = { 0 };
 	S8 position_addr ALIGN;
 	Camera2D camera;
 	S8 camera_addr ALIGN;
 	S8 out_addr ALIGN;
-	Vector2 ret;
+	Vector2 ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11405,14 +11432,14 @@ U1 *raylib_get_screen_to_world_ray_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *da
 {
 	// args: position_addr, camera_addr, width, height, out_addr
 	// return: struct written to out_addr
-	Vector2 position;
+	Vector2 position = { 0 };
 	S8 position_addr ALIGN;
 	Camera camera;
 	S8 camera_addr ALIGN;
 	S8 width ALIGN;
 	S8 height ALIGN;
 	S8 out_addr ALIGN;
-	Ray ret;
+	Ray ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11472,7 +11499,7 @@ U1 *raylib_get_shapes_texture_rectangle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *
 	// args: out_addr
 	// return: struct written to out_addr
 	S8 out_addr ALIGN;
-	Rectangle ret;
+	Rectangle ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11490,17 +11517,17 @@ U1 *raylib_get_spline_point_basis (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: p1_addr, p2_addr, p3_addr, p4_addr, t, out_addr
 	// return: struct written to out_addr
-	Vector2 p1;
+	Vector2 p1 = { 0 };
 	S8 p1_addr ALIGN;
-	Vector2 p2;
+	Vector2 p2 = { 0 };
 	S8 p2_addr ALIGN;
-	Vector2 p3;
+	Vector2 p3 = { 0 };
 	S8 p3_addr ALIGN;
-	Vector2 p4;
+	Vector2 p4 = { 0 };
 	S8 p4_addr ALIGN;
 	F8 t ALIGN;
 	S8 out_addr ALIGN;
-	Vector2 ret;
+	Vector2 ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11533,17 +11560,17 @@ U1 *raylib_get_spline_point_bezier_cubic (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 
 {
 	// args: p1_addr, c2_addr, c3_addr, p4_addr, t, out_addr
 	// return: struct written to out_addr
-	Vector2 p1;
+	Vector2 p1 = { 0 };
 	S8 p1_addr ALIGN;
-	Vector2 c2;
+	Vector2 c2 = { 0 };
 	S8 c2_addr ALIGN;
-	Vector2 c3;
+	Vector2 c3 = { 0 };
 	S8 c3_addr ALIGN;
-	Vector2 p4;
+	Vector2 p4 = { 0 };
 	S8 p4_addr ALIGN;
 	F8 t ALIGN;
 	S8 out_addr ALIGN;
-	Vector2 ret;
+	Vector2 ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11576,15 +11603,15 @@ U1 *raylib_get_spline_point_bezier_quadratic (U1 *sp, U1 *sp_top, U1 *sp_bottom,
 {
 	// args: p1_addr, c2_addr, p3_addr, t, out_addr
 	// return: struct written to out_addr
-	Vector2 p1;
+	Vector2 p1 = { 0 };
 	S8 p1_addr ALIGN;
-	Vector2 c2;
+	Vector2 c2 = { 0 };
 	S8 c2_addr ALIGN;
-	Vector2 p3;
+	Vector2 p3 = { 0 };
 	S8 p3_addr ALIGN;
 	F8 t ALIGN;
 	S8 out_addr ALIGN;
-	Vector2 ret;
+	Vector2 ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11614,17 +11641,17 @@ U1 *raylib_get_spline_point_catmull_rom (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *
 {
 	// args: p1_addr, p2_addr, p3_addr, p4_addr, t, out_addr
 	// return: struct written to out_addr
-	Vector2 p1;
+	Vector2 p1 = { 0 };
 	S8 p1_addr ALIGN;
-	Vector2 p2;
+	Vector2 p2 = { 0 };
 	S8 p2_addr ALIGN;
-	Vector2 p3;
+	Vector2 p3 = { 0 };
 	S8 p3_addr ALIGN;
-	Vector2 p4;
+	Vector2 p4 = { 0 };
 	S8 p4_addr ALIGN;
 	F8 t ALIGN;
 	S8 out_addr ALIGN;
-	Vector2 ret;
+	Vector2 ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11657,13 +11684,13 @@ U1 *raylib_get_spline_point_linear (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: start_pos_addr, end_pos_addr, t, out_addr
 	// return: struct written to out_addr
-	Vector2 start_pos;
+	Vector2 start_pos = { 0 };
 	S8 start_pos_addr ALIGN;
-	Vector2 end_pos;
+	Vector2 end_pos = { 0 };
 	S8 end_pos_addr ALIGN;
 	F8 t ALIGN;
 	S8 out_addr ALIGN;
-	Vector2 ret;
+	Vector2 ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11792,12 +11819,12 @@ U1 *raylib_get_world_to_screen_2d (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: position_addr, camera_addr, out_addr
 	// return: struct written to out_addr
-	Vector2 position;
+	Vector2 position = { 0 };
 	S8 position_addr ALIGN;
 	Camera2D camera;
 	S8 camera_addr ALIGN;
 	S8 out_addr ALIGN;
-	Vector2 ret;
+	Vector2 ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11822,14 +11849,14 @@ U1 *raylib_get_world_to_screen_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: position_addr, camera_addr, width, height, out_addr
 	// return: struct written to out_addr
-	Vector3 position;
+	Vector3 position = { 0 };
 	S8 position_addr ALIGN;
 	Camera camera;
 	S8 camera_addr ALIGN;
 	S8 width ALIGN;
 	S8 height ALIGN;
 	S8 out_addr ALIGN;
-	Vector2 ret;
+	Vector2 ret = { 0 };
 
 	sp = stpopi ((U1 *) &out_addr, sp, sp_top);
 	if (sp == NULL) return (NULL);
@@ -11868,7 +11895,7 @@ U1 *raylib_image_alpha_clear (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: image_handle, color_addr, threshold
 	S8 image_handle ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	F8 threshold ALIGN;
 
@@ -11996,7 +12023,7 @@ U1 *raylib_image_clear_background (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: dst_handle, color_addr
 	S8 dst_handle ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -12113,9 +12140,9 @@ U1 *raylib_image_color_replace (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: image_handle, color_addr, replace_addr
 	S8 image_handle ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
-	Color replace;
+	Color replace = { 0 };
 	S8 replace_addr ALIGN;
 
 	sp = stpopi ((U1 *) &replace_addr, sp, sp_top);
@@ -12145,7 +12172,7 @@ U1 *raylib_image_color_tint (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: image_handle, color_addr
 	S8 image_handle ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -12212,7 +12239,7 @@ U1 *raylib_image_crop (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: image_handle, crop_addr
 	S8 image_handle ALIGN;
-	Rectangle crop;
+	Rectangle crop = { 0 };
 	S8 crop_addr ALIGN;
 
 	sp = stpopi ((U1 *) &crop_addr, sp, sp_top);
@@ -12275,7 +12302,7 @@ U1 *raylib_image_draw_circle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 center_x ALIGN;
 	S8 center_y ALIGN;
 	S8 radius ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -12308,12 +12335,12 @@ U1 *raylib_image_draw_circle_gradient (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *da
 {
 	// args: dst_handle, center_addr, radius, inner_addr, outer_addr
 	S8 dst_handle ALIGN;
-	Vector2 center;
+	Vector2 center = { 0 };
 	S8 center_addr ALIGN;
 	F8 radius ALIGN;
-	Color inner;
+	Color inner = { 0 };
 	S8 inner_addr ALIGN;
-	Color outer;
+	Color outer = { 0 };
 	S8 outer_addr ALIGN;
 
 	sp = stpopi ((U1 *) &outer_addr, sp, sp_top);
@@ -12351,7 +12378,7 @@ U1 *raylib_image_draw_circle_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 center_x ALIGN;
 	S8 center_y ALIGN;
 	S8 radius ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -12384,10 +12411,10 @@ U1 *raylib_image_draw_circle_lines_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *dat
 {
 	// args: dst_handle, center_addr, radius, color_addr
 	S8 dst_handle ALIGN;
-	Vector2 center;
+	Vector2 center = { 0 };
 	S8 center_addr ALIGN;
 	S8 radius ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -12419,10 +12446,10 @@ U1 *raylib_image_draw_circle_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: dst_handle, center_addr, radius, color_addr
 	S8 dst_handle ALIGN;
-	Vector2 center;
+	Vector2 center = { 0 };
 	S8 center_addr ALIGN;
 	S8 radius ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -12457,7 +12484,7 @@ U1 *raylib_image_draw_image (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 src_handle ALIGN;
 	S8 pos_x ALIGN;
 	S8 pos_y ALIGN;
-	Color tint;
+	Color tint = { 0 };
 	S8 tint_addr ALIGN;
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
@@ -12496,11 +12523,11 @@ U1 *raylib_image_draw_image_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: dst_handle, src_handle, position_addr, rotation, scale, tint_addr
 	S8 dst_handle ALIGN;
 	S8 src_handle ALIGN;
-	Vector2 position;
+	Vector2 position = { 0 };
 	S8 position_addr ALIGN;
 	F8 rotation ALIGN;
 	F8 scale ALIGN;
-	Color tint;
+	Color tint = { 0 };
 	S8 tint_addr ALIGN;
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
@@ -12542,14 +12569,14 @@ U1 *raylib_image_draw_image_pro (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: dst_handle, src_handle, src_rec_addr, dst_rec_addr, origin_addr, rotation, tint_addr
 	S8 dst_handle ALIGN;
 	S8 src_handle ALIGN;
-	Rectangle src_rec;
+	Rectangle src_rec = { 0 };
 	S8 src_rec_addr ALIGN;
-	Rectangle dst_rec;
+	Rectangle dst_rec = { 0 };
 	S8 dst_rec_addr ALIGN;
-	Vector2 origin;
+	Vector2 origin = { 0 };
 	S8 origin_addr ALIGN;
 	F8 rotation ALIGN;
-	Color tint;
+	Color tint = { 0 };
 	S8 tint_addr ALIGN;
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
@@ -12595,11 +12622,11 @@ U1 *raylib_image_draw_image_rec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: dst_handle, src_handle, src_rec_addr, position_addr, tint_addr
 	S8 dst_handle ALIGN;
 	S8 src_handle ALIGN;
-	Rectangle src_rec;
+	Rectangle src_rec = { 0 };
 	S8 src_rec_addr ALIGN;
-	Vector2 position;
+	Vector2 position = { 0 };
 	S8 position_addr ALIGN;
-	Color tint;
+	Color tint = { 0 };
 	S8 tint_addr ALIGN;
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
@@ -12643,7 +12670,7 @@ U1 *raylib_image_draw_line (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 start_pos_y ALIGN;
 	S8 end_pos_x ALIGN;
 	S8 end_pos_y ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -12678,12 +12705,12 @@ U1 *raylib_image_draw_line_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: dst_handle, start_addr, end_addr, thick, color_addr
 	S8 dst_handle ALIGN;
-	Vector2 start;
+	Vector2 start = { 0 };
 	S8 start_addr ALIGN;
-	Vector2 end;
+	Vector2 end = { 0 };
 	S8 end_addr ALIGN;
 	S8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -12721,7 +12748,7 @@ U1 *raylib_image_draw_line_strip (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 points_addr ALIGN;
 	Vector2 *points_ptr = NULL;
 	S8 point_count ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	S8 i ALIGN;
 
@@ -12762,7 +12789,10 @@ U1 *raylib_image_draw_line_strip (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			}
 		}
 	}
-	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) {
+			free (points_ptr);
+			return (NULL);
+		}
 
 	pthread_mutex_lock (&rlib_mutex);
 	ImageDrawLineStrip (&raylib_images[dst_handle], (const Vector2 *) points_ptr, (int) point_count, color);
@@ -12777,11 +12807,11 @@ U1 *raylib_image_draw_line_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: dst_handle, start_addr, end_addr, color_addr
 	S8 dst_handle ALIGN;
-	Vector2 start;
+	Vector2 start = { 0 };
 	S8 start_addr ALIGN;
-	Vector2 end;
+	Vector2 end = { 0 };
 	S8 end_addr ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -12816,7 +12846,7 @@ U1 *raylib_image_draw_pixel (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 dst_handle ALIGN;
 	S8 pos_x ALIGN;
 	S8 pos_y ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -12847,9 +12877,9 @@ U1 *raylib_image_draw_pixel_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: dst_handle, position_addr, color_addr
 	S8 dst_handle ALIGN;
-	Vector2 position;
+	Vector2 position = { 0 };
 	S8 position_addr ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -12883,7 +12913,7 @@ U1 *raylib_image_draw_rectangle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 pos_y ALIGN;
 	S8 width ALIGN;
 	S8 height ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -12918,15 +12948,15 @@ U1 *raylib_image_draw_rectangle_gradient_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, 
 {
 	// args: dst_handle, rec_addr, col1_addr, col2_addr, col3_addr, col4_addr
 	S8 dst_handle ALIGN;
-	Rectangle rec;
+	Rectangle rec = { 0 };
 	S8 rec_addr ALIGN;
-	Color col1;
+	Color col1 = { 0 };
 	S8 col1_addr ALIGN;
-	Color col2;
+	Color col2 = { 0 };
 	S8 col2_addr ALIGN;
-	Color col3;
+	Color col3 = { 0 };
 	S8 col3_addr ALIGN;
-	Color col4;
+	Color col4 = { 0 };
 	S8 col4_addr ALIGN;
 
 	sp = stpopi ((U1 *) &col4_addr, sp, sp_top);
@@ -12969,7 +12999,7 @@ U1 *raylib_image_draw_rectangle_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *da
 	S8 pos_y ALIGN;
 	S8 width ALIGN;
 	S8 height ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -13004,10 +13034,10 @@ U1 *raylib_image_draw_rectangle_lines_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 
 {
 	// args: dst_handle, rec_addr, thick, color_addr
 	S8 dst_handle ALIGN;
-	Rectangle rec;
+	Rectangle rec = { 0 };
 	S8 rec_addr ALIGN;
 	S8 thick ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -13039,12 +13069,12 @@ U1 *raylib_image_draw_rectangle_pro (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data
 {
 	// args: dst_handle, rec_addr, origin_addr, rotation, color_addr
 	S8 dst_handle ALIGN;
-	Rectangle rec;
+	Rectangle rec = { 0 };
 	S8 rec_addr ALIGN;
-	Vector2 origin;
+	Vector2 origin = { 0 };
 	S8 origin_addr ALIGN;
 	F8 rotation ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -13079,9 +13109,9 @@ U1 *raylib_image_draw_rectangle_rec (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data
 {
 	// args: dst_handle, rec_addr, color_addr
 	S8 dst_handle ALIGN;
-	Rectangle rec;
+	Rectangle rec = { 0 };
 	S8 rec_addr ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -13111,11 +13141,11 @@ U1 *raylib_image_draw_rectangle_v (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: dst_handle, position_addr, size_addr, color_addr
 	S8 dst_handle ALIGN;
-	Vector2 position;
+	Vector2 position = { 0 };
 	S8 position_addr ALIGN;
-	Vector2 size;
+	Vector2 size = { 0 };
 	S8 size_addr ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -13153,7 +13183,7 @@ U1 *raylib_image_draw_text (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 pos_x ALIGN;
 	S8 pos_y ALIGN;
 	S8 font_size ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -13192,11 +13222,11 @@ U1 *raylib_image_draw_text_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 font_handle ALIGN;
 	S8 text_addr ALIGN;
 	U1 text_buf[4096];
-	Vector2 position;
+	Vector2 position = { 0 };
 	S8 position_addr ALIGN;
 	F8 font_size ALIGN;
 	F8 spacing ALIGN;
-	Color tint;
+	Color tint = { 0 };
 	S8 tint_addr ALIGN;
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
@@ -13243,14 +13273,14 @@ U1 *raylib_image_draw_text_pro (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 font_handle ALIGN;
 	S8 text_addr ALIGN;
 	U1 text_buf[4096];
-	Vector2 position;
+	Vector2 position = { 0 };
 	S8 position_addr ALIGN;
-	Vector2 origin;
+	Vector2 origin = { 0 };
 	S8 origin_addr ALIGN;
 	F8 rotation ALIGN;
 	F8 font_size ALIGN;
 	F8 spacing ALIGN;
-	Color tint;
+	Color tint = { 0 };
 	S8 tint_addr ALIGN;
 
 	sp = stpopi ((U1 *) &tint_addr, sp, sp_top);
@@ -13299,13 +13329,13 @@ U1 *raylib_image_draw_triangle (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: dst_handle, v1_addr, v2_addr, v3_addr, color_addr
 	S8 dst_handle ALIGN;
-	Vector2 v1;
+	Vector2 v1 = { 0 };
 	S8 v1_addr ALIGN;
-	Vector2 v2;
+	Vector2 v2 = { 0 };
 	S8 v2_addr ALIGN;
-	Vector2 v3;
+	Vector2 v3 = { 0 };
 	S8 v3_addr ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -13344,7 +13374,7 @@ U1 *raylib_image_draw_triangle_fan (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 points_addr ALIGN;
 	Vector2 *points_ptr = NULL;
 	S8 point_count ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	S8 i ALIGN;
 
@@ -13385,7 +13415,10 @@ U1 *raylib_image_draw_triangle_fan (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 			}
 		}
 	}
-	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) {
+			free (points_ptr);
+			return (NULL);
+		}
 
 	pthread_mutex_lock (&rlib_mutex);
 	ImageDrawTriangleFan (&raylib_images[dst_handle], (const Vector2 *) points_ptr, (int) point_count, color);
@@ -13400,17 +13433,17 @@ U1 *raylib_image_draw_triangle_gradient (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *
 {
 	// args: dst_handle, v1_addr, v2_addr, v3_addr, c1_addr, c2_addr, c3_addr
 	S8 dst_handle ALIGN;
-	Vector2 v1;
+	Vector2 v1 = { 0 };
 	S8 v1_addr ALIGN;
-	Vector2 v2;
+	Vector2 v2 = { 0 };
 	S8 v2_addr ALIGN;
-	Vector2 v3;
+	Vector2 v3 = { 0 };
 	S8 v3_addr ALIGN;
-	Color c1;
+	Color c1 = { 0 };
 	S8 c1_addr ALIGN;
-	Color c2;
+	Color c2 = { 0 };
 	S8 c2_addr ALIGN;
-	Color c3;
+	Color c3 = { 0 };
 	S8 c3_addr ALIGN;
 
 	sp = stpopi ((U1 *) &c3_addr, sp, sp_top);
@@ -13452,13 +13485,13 @@ U1 *raylib_image_draw_triangle_lines (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *dat
 {
 	// args: dst_handle, v1_addr, v2_addr, v3_addr, color_addr
 	S8 dst_handle ALIGN;
-	Vector2 v1;
+	Vector2 v1 = { 0 };
 	S8 v1_addr ALIGN;
-	Vector2 v2;
+	Vector2 v2 = { 0 };
 	S8 v2_addr ALIGN;
-	Vector2 v3;
+	Vector2 v3 = { 0 };
 	S8 v3_addr ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 
 	sp = stpopi ((U1 *) &color_addr, sp, sp_top);
@@ -13497,7 +13530,7 @@ U1 *raylib_image_draw_triangle_strip (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *dat
 	S8 points_addr ALIGN;
 	Vector2 *points_ptr = NULL;
 	S8 point_count ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	S8 i ALIGN;
 
@@ -13538,7 +13571,10 @@ U1 *raylib_image_draw_triangle_strip (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *dat
 			}
 		}
 	}
-	if (rlib_read_color (data, color_addr, &color) != 0) return (NULL);
+	if (rlib_read_color (data, color_addr, &color) != 0) {
+			free (points_ptr);
+			return (NULL);
+		}
 
 	pthread_mutex_lock (&rlib_mutex);
 	ImageDrawTriangleStrip (&raylib_images[dst_handle], (const Vector2 *) points_ptr, (int) point_count, color);
@@ -13663,7 +13699,7 @@ U1 *raylib_image_from_image (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: image_handle, rec_addr
 	// return: image handle or -1 on error
 	S8 image_handle ALIGN;
-	Rectangle rec;
+	Rectangle rec = { 0 };
 	S8 rec_addr ALIGN;
 	S8 ind ALIGN;
 
@@ -13812,7 +13848,7 @@ U1 *raylib_image_resize_canvas (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 new_height ALIGN;
 	S8 offset_x ALIGN;
 	S8 offset_y ALIGN;
-	Color fill;
+	Color fill = { 0 };
 	S8 fill_addr ALIGN;
 
 	sp = stpopi ((U1 *) &fill_addr, sp, sp_top);
@@ -13943,7 +13979,7 @@ U1 *raylib_image_text (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	S8 text_addr ALIGN;
 	U1 text_buf[4096];
 	S8 font_size ALIGN;
-	Color color;
+	Color color = { 0 };
 	S8 color_addr ALIGN;
 	S8 ind ALIGN;
 
@@ -13990,7 +14026,7 @@ U1 *raylib_image_text_ex (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	U1 text_buf[4096];
 	F8 font_size ALIGN;
 	F8 spacing ALIGN;
-	Color tint;
+	Color tint = { 0 };
 	S8 tint_addr ALIGN;
 	S8 ind ALIGN;
 
@@ -14042,7 +14078,7 @@ U1 *raylib_image_to_pot (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: image_handle, fill_addr
 	S8 image_handle ALIGN;
-	Color fill;
+	Color fill = { 0 };
 	S8 fill_addr ALIGN;
 
 	sp = stpopi ((U1 *) &fill_addr, sp, sp_top);
@@ -14629,7 +14665,7 @@ U1 *raylib_load_font_from_image (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	// args: image_handle, key_addr, first_char
 	// return: font handle or -1 on error
 	S8 image_handle ALIGN;
-	Color key;
+	Color key = { 0 };
 	S8 key_addr ALIGN;
 	S8 first_char ALIGN;
 	S8 ind ALIGN;
@@ -15354,7 +15390,7 @@ U1 *raylib_measure_text_codepoints (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 	F8 font_size ALIGN;
 	F8 spacing ALIGN;
 	S8 out_addr ALIGN;
-	Vector2 ret;
+	Vector2 ret = { 0 };
 	S8 i ALIGN;
 	F8 t ALIGN;
 
@@ -15773,7 +15809,7 @@ U1 *raylib_set_shapes_texture (U1 *sp, U1 *sp_top, U1 *sp_bottom, U1 *data)
 {
 	// args: texture_handle, rec_addr
 	S8 texture_handle ALIGN;
-	Rectangle rec;
+	Rectangle rec = { 0 };
 	S8 rec_addr ALIGN;
 
 	sp = stpopi ((U1 *) &rec_addr, sp, sp_top);
