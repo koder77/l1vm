@@ -9088,9 +9088,11 @@ static void optimize_oz (void)
         build_function_starts ();
 
         size_thread_jumps ();
+        peephole ();
         size_remove_unused_functions ();
         size_remove_unreachable ();
         size_remove_unused_labels ();
+        peephole ();
         recompute_used_regs ();
 
         signature = optimize_code_signature ();
@@ -9249,9 +9251,11 @@ static void optimize_oz2_speed (void)
         build_function_starts ();
 
         size_thread_jumps ();
+        peephole ();
         size_remove_unused_functions ();
         size_remove_unreachable ();
         size_remove_unused_labels ();
+        peephole ();
         recompute_used_regs ();
 
         signature = optimize_code_signature ();
@@ -9269,22 +9273,23 @@ static void optimize_oz2_speed (void)
  * -Oz2: compactness first, then speed.
  *
  * The original code is first reduced with the complete -Oz size pipeline.
- * The compact result is the reference and its size is the budget.  Then the
- * aggressive -O8 speed pipeline runs on the original code, because size
- * optimization can remove the conventional function prologue the inliner
- * needs.  The faster result is only kept if it is not larger than the
- * compact reference, so -Oz2 never produces bigger code than -Oz while it
- * can still take advantage of inlining or unrolling when those end up
- * fitting into the same size.
+ * The compact result is the reference and its size is the budget.  Then
+ * aggressive speed pipelines run both from the original code (where size
+ * optimization has not removed prologues the inliner needs) and from the
+ * compact code.  The best result which is not larger than the compact
+ * reference in bytes or instruction count is kept, so -Oz2 never produces
+ * bigger code than -Oz while it can still take advantage of inlining,
+ * unrolling and speed transformations when they fit into the same size.
  */
 static void optimize_oz2 (void)
 {
     LineState original;
     LineState compact;
+    LineState best;
     long long compact_size;
-    long long speed_size;
+    long long best_size;
     int compact_instructions;
-    int speed_instructions;
+    int best_instructions;
     int saved_size_opt = size_opt;
     int saved_inline_body = inline_max_body;
     int saved_inline_calls = inline_max_calls;
@@ -9303,31 +9308,68 @@ static void optimize_oz2 (void)
     materialize_transformations ();
     compact_size = output_size_bytes ();
     compact_instructions = output_instruction_count ();
+    best_size = compact_size;
+    best_instructions = compact_instructions;
     line_state_save (&compact);
+    line_state_save (&best);
 
     /* Phase 2: aggressive speed from the original code. */
     line_state_restore (&original);
     size_opt = 0;
-    inline_max_body = saved_inline_body;
-    inline_max_calls = saved_inline_calls;
-    unroll_max_factor = saved_unroll;
-    strength_reduce = saved_strength;
-    opt_level = saved_opt_level;
+    opt_level = 8;
+    inline_max_body = (saved_inline_body > 192) ? saved_inline_body : 192;
+    inline_max_calls = (saved_inline_calls > 32) ? saved_inline_calls : 32;
+    unroll_max_factor = (saved_unroll > 16) ? saved_unroll : 16;
+    strength_reduce = 1;
     optimize_oz2_speed ();
 
     materialize_transformations ();
-    speed_size = output_size_bytes ();
-    speed_instructions = output_instruction_count ();
+    {
+        long long speed_size = output_size_bytes ();
+        int speed_instructions = output_instruction_count ();
 
-    if (speed_size > compact_size ||
-        speed_instructions > compact_instructions)
-    {
-        line_state_restore (&compact);
+        if (speed_size <= compact_size &&
+            speed_instructions <= compact_instructions &&
+            (speed_instructions < best_instructions ||
+             (speed_instructions == best_instructions && speed_size < best_size)))
+        {
+            line_state_restore (&best);
+            line_state_save (&best);
+            best_size = speed_size;
+            best_instructions = speed_instructions;
+        }
     }
-    else
+
+    /* Phase 3: aggressive speed from the compact code. */
+    line_state_restore (&compact);
+    size_opt = 0;
+    opt_level = 8;
+    inline_max_body = (saved_inline_body > 192) ? saved_inline_body : 192;
+    inline_max_calls = (saved_inline_calls > 32) ? saved_inline_calls : 32;
+    unroll_max_factor = (saved_unroll > 16) ? saved_unroll : 16;
+    strength_reduce = 1;
+    optimize_oz2_speed ();
+
+    materialize_transformations ();
     {
-        line_state_free (&compact);
+        long long speed_size = output_size_bytes ();
+        int speed_instructions = output_instruction_count ();
+
+        if (speed_size <= compact_size &&
+            speed_instructions <= compact_instructions &&
+            (speed_instructions < best_instructions ||
+             (speed_instructions == best_instructions && speed_size < best_size)))
+        {
+            line_state_restore (&best);
+            line_state_save (&best);
+            best_size = speed_size;
+            best_instructions = speed_instructions;
+        }
     }
+
+    line_state_restore (&best);
+    line_state_free (&compact);
+    line_state_free (&original);
 
     size_opt = saved_size_opt;
     inline_max_body = saved_inline_body;
@@ -9459,6 +9501,29 @@ static void peephole (void)
                 strcmp (lines[next].op, line->args[0]) == 0)
             {
                 line->active = 0;
+                continue;
+            }
+        }
+
+        /*
+         * jmpi r, L
+         * jmp  L
+         * -> jmp L
+         *
+         * Both paths reach the same label, so the conditional branch is
+         * redundant and can be removed for both speed and size.
+         */
+        if (op_is (line, "jmpi") && line->argc >= 2)
+        {
+            int next = next_line_any (i);
+
+            if (next >= 0 && lines[next].active &&
+                lines[next].kind == LINE_INSTR &&
+                op_is (&lines[next], "jmp") && lines[next].argc >= 1 &&
+                strcmp (line->args[1], lines[next].args[0]) == 0)
+            {
+                line->active = 0;
+                continue;
             }
         }
     }
