@@ -3,7 +3,9 @@
 // cat two arrays a and b to array c
 // get first array element
 // get rest of array: index 1 - end of array
-//
+// cons element/array onto array
+// member: check if value is in array
+
 // byte
 (array_byte_cat func)
 	#var ~ array_byte_cat
@@ -17,172 +19,156 @@
 	(set int64 1 arrayb_size~ 0)
 	(set int64 1 index~ 0)
 	(set int64 1 cindex~ 0)
-    (set const-int64 1 offset~ 1)
-    (set int64 1 f~ 0)
-    (set byte 1 var~ 0)
+	(set const-int64 1 offset~ 1)
+	(set int64 1 f~ 0)
+	(set byte 1 var~ 0)
 
 	(Parrayc~ stpop)
 	(Parrayb~ stpop)
-    (Parraya~ stpop)
+	(Parraya~ stpop)
 
-    (zero~ index~ :=)
-    (zero~ cindex~ :=)
+	(zero~ index~ :=)
+	(zero~ cindex~ :=)
 
-    // copy array a to c
-    (Parraya~ arraya_size~ :get_size !)
-    (arraya_size~ :pull_int64_var !)
+	// copy array a to c
+	(Parraya~ arraya_size~ :get_size !)
+	(arraya_size~ :pull_int64_var !)
 
-    (:copy_a_array_byte_cat)
-        (Parraya~ [ index~ ] var~ :=)
-        (var~ :pull_byte_var !)
+	(:copy_a_array_byte_cat)
+		(index~ < arraya_size~ f~ :=)
+		(f~ if+)
+			(Parraya~ [ index~ ] var~ :=)
+			(var~ :pull_byte_var !)
+			(var~ Parrayc~ [ cindex~ ] :=)
+			(index~ + offset~ index~ :=)
+			(cindex~ + offset~ cindex~ :=)
+			(:copy_a_array_byte_cat jmp)
+		(endif)
 
-        (var~ Parrayc~ [ cindex~ ] :=)
+	// copy array b to c
+	(zero~ index~ :=)
+	(Parrayb~ arrayb_size~ :get_size !)
+	(arrayb_size~ :pull_int64_var !)
 
-        (index~ + offset~ index~ :=)
-        (cindex~ + offset~ cindex~ :=)
-
-        (index~ < arraya_size~ f~ :=)
-        (f~ if)
-            (:copy_a_array_byte_cat jmp)
-        (endif)
-
-    // copy array b to c
-    (zero~ index~ :=)
-
-    (Parrayb~ arrayb_size~ :get_size !)
-    (arrayb_size~ :pull_int64_var !)
-
-    (:copy_b_array_byte_cat)
-        (Parrayb~ [ index~ ] var~ :=)
-        (var~ :pull_byte_var !)
-
-        (var~ Parrayc~ [ cindex~ ] :=)
-
-        (index~ + offset~ index~ :=)
-        (cindex~ + offset~ cindex~ :=)
-
-        (index~ < arraya_size~ f~ :=)
-        (f~ if)
-            (:copy_b_array_byte_cat jmp)
-        (endif)
+	(:copy_b_array_byte_cat)
+		(index~ < arrayb_size~ f~ :=)
+		(f~ if+)
+			(Parrayb~ [ index~ ] var~ :=)
+			(var~ :pull_byte_var !)
+			(var~ Parrayc~ [ cindex~ ] :=)
+			(index~ + offset~ index~ :=)
+			(cindex~ + offset~ cindex~ :=)
+			(:copy_b_array_byte_cat jmp)
+		(endif)
 (funcend)
 
 (array_byte_cat_range func)
 	#var ~ array_byte_cat_range
 
 	(set const-int64 1 zero~ 0)
-    (set const-int64 1 one~ 1)
+	(set const-int64 1 one~ 1)
 	(set int64 1 Parraya~ 0)
 	(set int64 1 Parrayb~ 0)
 	(set int64 1 Parrayc~ 0)
 
 	(set int64 1 index~ 0)
 	(set int64 1 cindex~ 0)
-    (set int64 1 ind_count~ 0)
-    (set const-int64 1 offset~ 1)
-    (set int64 1 f~ 0)
-    (set byte 1 var~ 0)
+	(set int64 1 ind_count~ 0)
+	(set const-int64 1 offset~ 1)
+	(set int64 1 f~ 0)
+	(set byte 1 var~ 0)
 
-    (set int64 1 arraya_min~ 0)
-    (set int64 1 arraya_max~ 0)
-    (set int64 1 arrayb_min~ 0)
-    (set int64 1 arrayb_max~ 0)
+	(set int64 1 arraya_min~ 0)
+	(set int64 1 arraya_max~ 0)
+	(set int64 1 arrayb_min~ 0)
+	(set int64 1 arrayb_max~ 0)
 
-    (arrayb_max~ stpop)
-    (arrayb_min~ stpop)
-    (arraya_max~ stpop)
-    (arraya_min~ stpop)
+	(arrayb_max~ stpop)
+	(arrayb_min~ stpop)
+	(arraya_max~ stpop)
+	(arraya_min~ stpop)
 
 	(Parrayc~ stpop)
 	(Parrayb~ stpop)
-    (Parraya~ stpop)
+	(Parraya~ stpop)
 
-    (zero~ index~ :=)
-    (zero~ cindex~ :=)
+	(zero~ cindex~ :=)
 
-    // copy array a to c
-    (arraya_min~ ind_count~ :=)
-    (ind_count~ * offset~ index~ :=)
+	// copy array a range [arraya_min..arraya_max] to c
+	(arraya_min~ ind_count~ :=)
+	(ind_count~ * offset~ index~ :=)
 
-    (:copy_a_array_byte_cat_range)
-        (Parraya~ [ index~ ] var~ :=)
-        (var~ :pull_byte_var !)
+	(:copy_a_array_byte_cat_range)
+		(ind_count~ <= arraya_max~ f~ :=)
+		(f~ if+)
+			(Parraya~ [ index~ ] var~ :=)
+			(var~ :pull_byte_var !)
+			(var~ Parrayc~ [ cindex~ ] :=)
+			(index~ + offset~ index~ :=)
+			(cindex~ + offset~ cindex~ :=)
+			(ind_count~ + one~ ind_count~ :=)
+			(:copy_a_array_byte_cat_range jmp)
+		(endif)
 
-        (var~ Parrayc~ [ cindex~ ] :=)
+	(arrayb_min~ < zero~ f~ :=)
+	(f~ if)
+		(return)
+	(endif)
 
-        (index~ + offset~ index~ :=)
-        (cindex~ + offset~ cindex~ :=)
+	// copy array b range [arrayb_min..arrayb_max] to c
+	(arrayb_min~ ind_count~ :=)
+	(ind_count~ * offset~ index~ :=)
 
-        (ind_count~ + one~ ind_count~ :=)
-
-        (ind_count~ <= arraya_max~ f~ :=)
-        (f~ if)
-            (:copy_a_array_byte_cat_range jmp)
-        (endif)
-
-    (((arrayb_min~ zero~ <) f~ =) f~ if)
-       // skip array b copy
-       (return)
-    (endif)
-
-    // copy array b to c
-    (zero~ index~ :=)
-    (arrayb_min~ ind_count~ :=)
-    (ind_count~ * offset~ index~ :=)
-
-    (:copy_b_array_byte_cat_range)
-        (Parrayb~ [ index~ ] var~ :=)
-        (var~ :pull_byte_var !)
-
-        (var~ Parrayc~ [ cindex~ ] :=)
-
-        (index~ + offset~ index~ :=)
-        (cindex~ + offset~ cindex~ :=)
-
-        (ind_count~ + one~ ind_count~ :=)
-
-        (ind_count~ <= arrayb_max~ f~ :=)
-        (f~ if)
-            (:copy_b_array_byte_cat_range jmp)
-        (endif)
+	(:copy_b_array_byte_cat_range)
+		(ind_count~ <= arrayb_max~ f~ :=)
+		(f~ if+)
+			(Parrayb~ [ index~ ] var~ :=)
+			(var~ :pull_byte_var !)
+			(var~ Parrayc~ [ cindex~ ] :=)
+			(index~ + offset~ index~ :=)
+			(cindex~ + offset~ cindex~ :=)
+			(ind_count~ + one~ ind_count~ :=)
+			(:copy_b_array_byte_cat_range jmp)
+		(endif)
 (funcend)
 
 // return first element
 (array_byte_first func)
-    #var ~ array_byte_first
+	#var ~ array_byte_first
 
-    (set const-int64 1 zero~ 0)
-    (set int64 1 Parray~ 0)
-    (set byte 1 var~ 0)
+	(set const-int64 1 zero~ 0)
+	(set int64 1 Parray~ 0)
+	(set byte 1 var~ 0)
 
-    (Parray~ stpop)
-    (Parray~ [ zero~ ] var~ :=)
-    (var~ :pull_byte_var !)
+	(Parray~ stpop)
+	(Parray~ [ zero~ ] var~ :=)
+	(var~ :pull_byte_var !)
 
-    (var~ stpush)
+	(var~ stpush)
 (funcend)
 
-// return rest = index 1 - to array size
+// return rest = index 1 - last element index
 (array_byte_rest func)
-    #var ~ array_byte_rest
+	#var ~ array_byte_rest
 
-    (set const-int64 1 zero~ 0)
-    (set const-int64 1 one~ 1)
-    (set const-int64 1 neg_one~ -1)
-    (set int64 1 Parraya~)
-    (set int64 1 Parrayb~)
-    (set int64 1 array_size~ 0)
-    (set const-int64 1 offset~ 1)
+	(set const-int64 1 zero~ 0)
+	(set const-int64 1 one~ 1)
+	(set const-int64 1 neg_one~ -1)
+	(set const-int64 1 offset~ 1)
+	(set int64 1 Parraya~ 0)
+	(set int64 1 Parrayb~ 0)
+	(set int64 1 array_bytes~ 0)
+	(set int64 1 last_idx~ 0)
 
-    (Parrayb~ stpop)
-    (Parraya~ stpop)
+	(Parrayb~ stpop)
+	(Parraya~ stpop)
 
-    (Parraya~ array_size~ :get_size !)
-    (array_size~ :pull_int64_var !)
-    (array_size~ / offset~ array_size~ :=)
-    (array_size~ - one~ array_size~ :=)
+	(Parraya~ array_bytes~ :get_size !)
+	(array_bytes~ :pull_int64_var !)
+	(array_bytes~ / offset~ last_idx~ :=)
+	(last_idx~ - one~ last_idx~ :=)
 
-    (Parraya~ Parraya~ Parrayb~ one~ array_size~ neg_one~ zero~ :array_byte_cat_range !)
+	(Parraya~ Parraya~ Parrayb~ one~ last_idx~ neg_one~ zero~ :array_byte_cat_range !)
 (funcend)
 
 // int16
@@ -198,172 +184,156 @@
 	(set int64 1 arrayb_size~ 0)
 	(set int64 1 index~ 0)
 	(set int64 1 cindex~ 0)
-    (set const-int64 1 offset~ 2)
-    (set int64 1 f~ 0)
-    (set int16 1 var~ 0)
+	(set const-int64 1 offset~ 2)
+	(set int64 1 f~ 0)
+	(set int16 1 var~ 0)
 
 	(Parrayc~ stpop)
 	(Parrayb~ stpop)
-    (Parraya~ stpop)
+	(Parraya~ stpop)
 
-    (zero~ index~ :=)
-    (zero~ cindex~ :=)
+	(zero~ index~ :=)
+	(zero~ cindex~ :=)
 
-    // copy array a to c
-    (Parraya~ arraya_size~ :get_size !)
-    (arraya_size~ :pull_int64_var !)
+	// copy array a to c
+	(Parraya~ arraya_size~ :get_size !)
+	(arraya_size~ :pull_int64_var !)
 
-    (:copy_a_array_int16_cat)
-        (Parraya~ [ index~ ] var~ :=)
-        (var~ :pull_int16_var !)
+	(:copy_a_array_int16_cat)
+		(index~ < arraya_size~ f~ :=)
+		(f~ if+)
+			(Parraya~ [ index~ ] var~ :=)
+			(var~ :pull_int16_var !)
+			(var~ Parrayc~ [ cindex~ ] :=)
+			(index~ + offset~ index~ :=)
+			(cindex~ + offset~ cindex~ :=)
+			(:copy_a_array_int16_cat jmp)
+		(endif)
 
-        (var~ Parrayc~ [ cindex~ ] :=)
+	// copy array b to c
+	(zero~ index~ :=)
+	(Parrayb~ arrayb_size~ :get_size !)
+	(arrayb_size~ :pull_int64_var !)
 
-        (index~ + offset~ index~ :=)
-        (cindex~ + offset~ cindex~ :=)
-
-        (index~ < arraya_size~ f~ :=)
-        (f~ if)
-            (:copy_a_array_int16_cat jmp)
-        (endif)
-
-    // copy array b to c
-    (zero~ index~ :=)
-
-    (Parrayb~ arrayb_size~ :get_size !)
-    (arrayb_size~ :pull_int64_var !)
-
-    (:copy_b_array_int16_cat)
-        (Parrayb~ [ index~ ] var~ :=)
-        (var~ :pull_int16_var !)
-
-        (var~ Parrayc~ [ cindex~ ] :=)
-
-        (index~ + offset~ index~ :=)
-        (cindex~ + offset~ cindex~ :=)
-
-        (index~ < arraya_size~ f~ :=)
-        (f~ if)
-            (:copy_b_array_int16_cat jmp)
-        (endif)
+	(:copy_b_array_int16_cat)
+		(index~ < arrayb_size~ f~ :=)
+		(f~ if+)
+			(Parrayb~ [ index~ ] var~ :=)
+			(var~ :pull_int16_var !)
+			(var~ Parrayc~ [ cindex~ ] :=)
+			(index~ + offset~ index~ :=)
+			(cindex~ + offset~ cindex~ :=)
+			(:copy_b_array_int16_cat jmp)
+		(endif)
 (funcend)
 
 (array_int16_cat_range func)
 	#var ~ array_int16_cat_range
 
 	(set const-int64 1 zero~ 0)
-    (set const-int64 1 one~ 1)
+	(set const-int64 1 one~ 1)
 	(set int64 1 Parraya~ 0)
 	(set int64 1 Parrayb~ 0)
 	(set int64 1 Parrayc~ 0)
 
 	(set int64 1 index~ 0)
 	(set int64 1 cindex~ 0)
-    (set int64 1 ind_count~ 0)
-    (set const-int64 1 offset~ 2)
-    (set int64 1 f~ 0)
-    (set int16 1 var~ 0)
+	(set int64 1 ind_count~ 0)
+	(set const-int64 1 offset~ 2)
+	(set int64 1 f~ 0)
+	(set int16 1 var~ 0)
 
-    (set int64 1 arraya_min~ 0)
-    (set int64 1 arraya_max~ 0)
-    (set int64 1 arrayb_min~ 0)
-    (set int64 1 arrayb_max~ 0)
+	(set int64 1 arraya_min~ 0)
+	(set int64 1 arraya_max~ 0)
+	(set int64 1 arrayb_min~ 0)
+	(set int64 1 arrayb_max~ 0)
 
-    (arrayb_max~ stpop)
-    (arrayb_min~ stpop)
-    (arraya_max~ stpop)
-    (arraya_min~ stpop)
+	(arrayb_max~ stpop)
+	(arrayb_min~ stpop)
+	(arraya_max~ stpop)
+	(arraya_min~ stpop)
 
 	(Parrayc~ stpop)
 	(Parrayb~ stpop)
-    (Parraya~ stpop)
+	(Parraya~ stpop)
 
-    (zero~ index~ :=)
-    (zero~ cindex~ :=)
+	(zero~ cindex~ :=)
 
-    // copy array a to c
-    (arraya_min~ ind_count~ :=)
-    (ind_count~ * offset~ index~ :=)
+	// copy array a range [arraya_min..arraya_max] to c
+	(arraya_min~ ind_count~ :=)
+	(ind_count~ * offset~ index~ :=)
 
-    (:copy_a_array_int16_cat_range)
-        (Parraya~ [ index~ ] var~ :=)
-        (var~ :pull_int16_var !)
+	(:copy_a_array_int16_cat_range)
+		(ind_count~ <= arraya_max~ f~ :=)
+		(f~ if+)
+			(Parraya~ [ index~ ] var~ :=)
+			(var~ :pull_int16_var !)
+			(var~ Parrayc~ [ cindex~ ] :=)
+			(index~ + offset~ index~ :=)
+			(cindex~ + offset~ cindex~ :=)
+			(ind_count~ + one~ ind_count~ :=)
+			(:copy_a_array_int16_cat_range jmp)
+		(endif)
 
-        (var~ Parrayc~ [ cindex~ ] :=)
+	(arrayb_min~ < zero~ f~ :=)
+	(f~ if)
+		(return)
+	(endif)
 
-        (index~ + offset~ index~ :=)
-        (cindex~ + offset~ cindex~ :=)
+	// copy array b range [arrayb_min..arrayb_max] to c
+	(arrayb_min~ ind_count~ :=)
+	(ind_count~ * offset~ index~ :=)
 
-        (ind_count~ + one~ ind_count~ :=)
-
-        (ind_count~ <= arraya_max~ f~ :=)
-        (f~ if)
-            (:copy_a_array_int16_cat_range jmp)
-        (endif)
-
-    (((arrayb_min~ zero~ <) f~ =) f~ if)
-       // skip array b copy
-       (return)
-    (endif)
-
-    // copy array b to c
-    (zero~ index~ :=)
-    (arrayb_min~ ind_count~ :=)
-    (ind_count~ * offset~ index~ :=)
-
-    (:copy_b_array_int16_cat_range)
-        (Parrayb~ [ index~ ] var~ :=)
-        (var~ :pull_int16_var !)
-
-        (var~ Parrayc~ [ cindex~ ] :=)
-
-        (index~ + offset~ index~ :=)
-        (cindex~ + offset~ cindex~ :=)
-
-        (ind_count~ + one~ ind_count~ :=)
-
-        (ind_count~ <= arrayb_max~ f~ :=)
-        (f~ if)
-            (:copy_b_array_int16_cat_range jmp)
-        (endif)
+	(:copy_b_array_int16_cat_range)
+		(ind_count~ <= arrayb_max~ f~ :=)
+		(f~ if+)
+			(Parrayb~ [ index~ ] var~ :=)
+			(var~ :pull_int16_var !)
+			(var~ Parrayc~ [ cindex~ ] :=)
+			(index~ + offset~ index~ :=)
+			(cindex~ + offset~ cindex~ :=)
+			(ind_count~ + one~ ind_count~ :=)
+			(:copy_b_array_int16_cat_range jmp)
+		(endif)
 (funcend)
 
 // return first element
 (array_int16_first func)
-    #var ~ array_int16_first
+	#var ~ array_int16_first
 
-    (set const-int64 1 zero~ 0)
-    (set int64 1 Parray~ 0)
-    (set int16 1 var~ 0)
+	(set const-int64 1 zero~ 0)
+	(set int64 1 Parray~ 0)
+	(set int16 1 var~ 0)
 
-    (Parray~ stpop)
-    (Parray~ [ zero~ ] var~ :=)
-    (var~ :pull_int16_var !)
+	(Parray~ stpop)
+	(Parray~ [ zero~ ] var~ :=)
+	(var~ :pull_int16_var !)
 
-    (var~ stpush)
+	(var~ stpush)
 (funcend)
 
-// return rest = index 1 - to array size
+// return rest = index 1 - last element index
 (array_int16_rest func)
-    #var ~ array_int16_rest
+	#var ~ array_int16_rest
 
-    (set const-int64 1 zero~ 0)
-    (set const-int64 1 one~ 1)
-    (set const-int64 1 neg_one~ -1)
-    (set int64 1 Parraya~)
-    (set int64 1 Parrayb~)
-    (set int64 1 array_size~ 0)
-    (set const-int64 1 offset~ 2)
+	(set const-int64 1 zero~ 0)
+	(set const-int64 1 one~ 1)
+	(set const-int64 1 neg_one~ -1)
+	(set const-int64 1 offset~ 2)
+	(set int64 1 Parraya~ 0)
+	(set int64 1 Parrayb~ 0)
+	(set int64 1 array_bytes~ 0)
+	(set int64 1 last_idx~ 0)
 
-    (Parrayb~ stpop)
-    (Parraya~ stpop)
+	(Parrayb~ stpop)
+	(Parraya~ stpop)
 
-    (Parraya~ array_size~ :get_size !)
-    (array_size~ :pull_int64_var !)
-    (array_size~ / offset~ array_size~ :=)
-    (array_size~ - one~ array_size~ :=)
+	(Parraya~ array_bytes~ :get_size !)
+	(array_bytes~ :pull_int64_var !)
+	(array_bytes~ / offset~ last_idx~ :=)
+	(last_idx~ - one~ last_idx~ :=)
 
-    (Parraya~ Parraya~ Parrayb~ one~ array_size~ neg_one~ zero~ :array_byte_cat_range !)
+	(Parraya~ Parraya~ Parrayb~ one~ last_idx~ neg_one~ zero~ :array_int16_cat_range !)
 (funcend)
 
 // int32
@@ -379,422 +349,391 @@
 	(set int64 1 arrayb_size~ 0)
 	(set int64 1 index~ 0)
 	(set int64 1 cindex~ 0)
-    (set const-int64 1 offset~ 4)
-    (set int64 1 f~ 0)
-    (set int32 1 var~ 0)
+	(set const-int64 1 offset~ 4)
+	(set int64 1 f~ 0)
+	(set int32 1 var~ 0)
 
 	(Parrayc~ stpop)
 	(Parrayb~ stpop)
-    (Parraya~ stpop)
+	(Parraya~ stpop)
 
-    (zero~ index~ :=)
-    (zero~ cindex~ :=)
+	(zero~ index~ :=)
+	(zero~ cindex~ :=)
 
-    // copy array a to c
-    (Parraya~ arraya_size~ :get_size !)
-    (arraya_size~ :pull_int64_var !)
+	// copy array a to c
+	(Parraya~ arraya_size~ :get_size !)
+	(arraya_size~ :pull_int64_var !)
 
-    (:copy_a_array_int32_cat)
-        (Parraya~ [ index~ ] var~ :=)
-        (var~ :pull_int32_var !)
+	(:copy_a_array_int32_cat)
+		(index~ < arraya_size~ f~ :=)
+		(f~ if+)
+			(Parraya~ [ index~ ] var~ :=)
+			(var~ :pull_int32_var !)
+			(var~ Parrayc~ [ cindex~ ] :=)
+			(index~ + offset~ index~ :=)
+			(cindex~ + offset~ cindex~ :=)
+			(:copy_a_array_int32_cat jmp)
+		(endif)
 
-        (var~ Parrayc~ [ cindex~ ] :=)
+	// copy array b to c
+	(zero~ index~ :=)
+	(Parrayb~ arrayb_size~ :get_size !)
+	(arrayb_size~ :pull_int64_var !)
 
-        (index~ + offset~ index~ :=)
-        (cindex~ + offset~ cindex~ :=)
-
-        (index~ < arraya_size~ f~ :=)
-        (f~ if)
-            (:copy_a_array_int32_cat jmp)
-        (endif)
-
-    // copy array b to c
-    (zero~ index~ :=)
-
-    (Parrayb~ arrayb_size~ :get_size !)
-    (arrayb_size~ :pull_int64_var !)
-
-    (:copy_b_array_int32_cat)
-        (Parrayb~ [ index~ ] var~ :=)
-        (var~ :pull_int32_var !)
-
-        (var~ Parrayc~ [ cindex~ ] :=)
-
-        (index~ + offset~ index~ :=)
-        (cindex~ + offset~ cindex~ :=)
-
-        (index~ < arraya_size~ f~ :=)
-        (f~ if)
-            (:copy_b_array_int32_cat jmp)
-        (endif)
+	(:copy_b_array_int32_cat)
+		(index~ < arrayb_size~ f~ :=)
+		(f~ if+)
+			(Parrayb~ [ index~ ] var~ :=)
+			(var~ :pull_int32_var !)
+			(var~ Parrayc~ [ cindex~ ] :=)
+			(index~ + offset~ index~ :=)
+			(cindex~ + offset~ cindex~ :=)
+			(:copy_b_array_int32_cat jmp)
+		(endif)
 (funcend)
 
 (array_int32_cat_range func)
 	#var ~ array_int32_cat_range
 
 	(set const-int64 1 zero~ 0)
-    (set const-int64 1 one~ 1)
+	(set const-int64 1 one~ 1)
 	(set int64 1 Parraya~ 0)
 	(set int64 1 Parrayb~ 0)
 	(set int64 1 Parrayc~ 0)
 
 	(set int64 1 index~ 0)
 	(set int64 1 cindex~ 0)
-    (set int64 1 ind_count~ 0)
-    (set const-int64 1 offset~ 4)
-    (set int64 1 f~ 0)
-    (set int32 1 var~ 0)
+	(set int64 1 ind_count~ 0)
+	(set const-int64 1 offset~ 4)
+	(set int64 1 f~ 0)
+	(set int32 1 var~ 0)
 
-    (set int64 1 arraya_min~ 0)
-    (set int64 1 arraya_max~ 0)
-    (set int64 1 arrayb_min~ 0)
-    (set int64 1 arrayb_max~ 0)
+	(set int64 1 arraya_min~ 0)
+	(set int64 1 arraya_max~ 0)
+	(set int64 1 arrayb_min~ 0)
+	(set int64 1 arrayb_max~ 0)
 
-    (arrayb_max~ stpop)
-    (arrayb_min~ stpop)
-    (arraya_max~ stpop)
-    (arraya_min~ stpop)
+	(arrayb_max~ stpop)
+	(arrayb_min~ stpop)
+	(arraya_max~ stpop)
+	(arraya_min~ stpop)
 
 	(Parrayc~ stpop)
 	(Parrayb~ stpop)
-    (Parraya~ stpop)
+	(Parraya~ stpop)
 
-    (zero~ index~ :=)
-    (zero~ cindex~ :=)
+	(zero~ cindex~ :=)
 
-    // copy array a to c
-    (arraya_min~ ind_count~ :=)
-    (ind_count~ * offset~ index~ :=)
+	// copy array a range [arraya_min..arraya_max] to c
+	(arraya_min~ ind_count~ :=)
+	(ind_count~ * offset~ index~ :=)
 
-    (:copy_a_array_int32_cat_range)
-        (Parraya~ [ index~ ] var~ :=)
-        (var~ :pull_int32_var !)
+	(:copy_a_array_int32_cat_range)
+		(ind_count~ <= arraya_max~ f~ :=)
+		(f~ if+)
+			(Parraya~ [ index~ ] var~ :=)
+			(var~ :pull_int32_var !)
+			(var~ Parrayc~ [ cindex~ ] :=)
+			(index~ + offset~ index~ :=)
+			(cindex~ + offset~ cindex~ :=)
+			(ind_count~ + one~ ind_count~ :=)
+			(:copy_a_array_int32_cat_range jmp)
+		(endif)
 
-        (var~ Parrayc~ [ cindex~ ] :=)
+	(arrayb_min~ < zero~ f~ :=)
+	(f~ if)
+		(return)
+	(endif)
 
-        (index~ + offset~ index~ :=)
-        (cindex~ + offset~ cindex~ :=)
+	// copy array b range [arrayb_min..arrayb_max] to c
+	(arrayb_min~ ind_count~ :=)
+	(ind_count~ * offset~ index~ :=)
 
-        (ind_count~ + one~ ind_count~ :=)
-
-        (ind_count~ <= arraya_max~ f~ :=)
-        (f~ if)
-            (:copy_a_array_int32_cat_range jmp)
-        (endif)
-
-    (((arrayb_min~ zero~ <) f~ =) f~ if)
-       // skip array b copy
-       (return)
-    (endif)
-
-    // copy array b to c
-    (zero~ index~ :=)
-    (arrayb_min~ ind_count~ :=)
-    (ind_count~ * offset~ index~ :=)
-
-    (:copy_b_array_int32_cat_range)
-        (Parrayb~ [ index~ ] var~ :=)
-        (var~ :pull_int32_var !)
-
-        (var~ Parrayc~ [ cindex~ ] :=)
-
-        (index~ + offset~ index~ :=)
-        (cindex~ + offset~ cindex~ :=)
-
-        (ind_count~ + one~ ind_count~ :=)
-
-        (ind_count~ <= arrayb_max~ f~ :=)
-        (f~ if)
-            (:copy_b_array_int32_cat_range jmp)
-        (endif)
+	(:copy_b_array_int32_cat_range)
+		(ind_count~ <= arrayb_max~ f~ :=)
+		(f~ if+)
+			(Parrayb~ [ index~ ] var~ :=)
+			(var~ :pull_int32_var !)
+			(var~ Parrayc~ [ cindex~ ] :=)
+			(index~ + offset~ index~ :=)
+			(cindex~ + offset~ cindex~ :=)
+			(ind_count~ + one~ ind_count~ :=)
+			(:copy_b_array_int32_cat_range jmp)
+		(endif)
 (funcend)
 
 // return first element
 (array_int32_first func)
-    #var ~ array_int32_first
+	#var ~ array_int32_first
 
-    (set const-int64 1 zero~ 0)
-    (set int64 1 Parray~ 0)
-    (set int32 1 var~ 0)
+	(set const-int64 1 zero~ 0)
+	(set int64 1 Parray~ 0)
+	(set int32 1 var~ 0)
 
-    (Parray~ stpop)
-    (Parray~ [ zero~ ] var~ :=)
-    (var~ :pull_int32_var !)
+	(Parray~ stpop)
+	(Parray~ [ zero~ ] var~ :=)
+	(var~ :pull_int32_var !)
 
-    (var~ stpush)
+	(var~ stpush)
 (funcend)
 
-// return rest = index 1 - to array size
+// return rest = index 1 - last element index
 (array_int32_rest func)
-    #var ~ array_int32_rest
+	#var ~ array_int32_rest
 
-    (set const-int64 1 zero~ 0)
-    (set const-int64 1 one~ 1)
-    (set const-int64 1 neg_one~ -1)
-    (set int64 1 Parraya~)
-    (set int64 1 Parrayb~)
-    (set int64 1 array_size~ 0)
-    (set const-int64 1 offset~ 2)
+	(set const-int64 1 zero~ 0)
+	(set const-int64 1 one~ 1)
+	(set const-int64 1 neg_one~ -1)
+	(set const-int64 1 offset~ 4)
+	(set int64 1 Parraya~ 0)
+	(set int64 1 Parrayb~ 0)
+	(set int64 1 array_bytes~ 0)
+	(set int64 1 last_idx~ 0)
 
-    (Parrayb~ stpop)
-    (Parraya~ stpop)
+	(Parrayb~ stpop)
+	(Parraya~ stpop)
 
-    (Parraya~ array_size~ :get_size !)
-    (array_size~ :pull_int64_var !)
-    (array_size~ / offset~ array_size~ :=)
-    (array_size~ - one~ array_size~ :=)
+	(Parraya~ array_bytes~ :get_size !)
+	(array_bytes~ :pull_int64_var !)
+	(array_bytes~ / offset~ last_idx~ :=)
+	(last_idx~ - one~ last_idx~ :=)
 
-    (Parraya~ Parraya~ Parrayb~ one~ array_size~ neg_one~ zero~ :array_int32_cat_range !)
+	(Parraya~ Parraya~ Parrayb~ one~ last_idx~ neg_one~ zero~ :array_int32_cat_range !)
 (funcend)
 
 // cons array
-// put first element of Parraya~ and the full array of Parrayb~ to Parrayc~
+// put element 0 of Parraya~ and full array of Parrayb~ to Parrayc~
 (array_byte_cons func)
-    #var ~ array_byte_cons
+	#var ~ array_byte_cons
 
-    (set const-int64 1 zero~ 0)
-    (set const-int64 1 one~ 1)
-    (set int64 1 Parraya~)
-    (set int64 1 Parrayb~)
-    (set int64 1 Parrayc~)
-    (set int64 1 var~)
-    (set int64 1 array_size~ 0)
-    (set const-int64 1 offset~ 8)
+	(set const-int64 1 zero~ 0)
+	(set const-int64 1 one~ 1)
+	(set const-int64 1 offset~ 1)
+	(set int64 1 Parraya~ 0)
+	(set int64 1 Parrayb~ 0)
+	(set int64 1 Parrayc~ 0)
+	(set int64 1 arrayb_bytes~ 0)
+	(set int64 1 last_b_idx~ 0)
 
-    (Parrayc~ stpop)
-    (Parrayb~ stpop)
-    (Parraya~ stpop)
+	(Parrayc~ stpop)
+	(Parrayb~ stpop)
+	(Parraya~ stpop)
 
-    (Parrayb~ array_size~ :get_size !)
-    (array_size~ :pull_int64_var !)
-    (array_size~ / offset~ array_size~ :=)
-    (array_size~ - one~ array_size~ :=)
+	(Parrayb~ arrayb_bytes~ :get_size !)
+	(arrayb_bytes~ :pull_int64_var !)
+	(arrayb_bytes~ / offset~ last_b_idx~ :=)
+	(last_b_idx~ - one~ last_b_idx~ :=)
 
-    (Parraya~ Parrayb~ Parrayc~ zero~ zero~ zero~ array_size~ :array_byte_cat_range !)
+	(Parraya~ Parrayb~ Parrayc~ zero~ zero~ zero~ last_b_idx~ :array_byte_cat_range !)
 (funcend)
 
 (array_int16_cons func)
-    #var ~ array_int16_cons
+	#var ~ array_int16_cons
 
-    (set const-int64 1 zero~ 0)
-    (set const-int64 1 one~ 1)
-    (set int64 1 Parraya~)
-    (set int64 1 Parrayb~)
-    (set int64 1 Parrayc~)
-    (set int64 1 var~)
-    (set int64 1 array_size~ 0)
-    (set const-int64 1 offset~ 8)
+	(set const-int64 1 zero~ 0)
+	(set const-int64 1 one~ 1)
+	(set const-int64 1 offset~ 2)
+	(set int64 1 Parraya~ 0)
+	(set int64 1 Parrayb~ 0)
+	(set int64 1 Parrayc~ 0)
+	(set int64 1 arrayb_bytes~ 0)
+	(set int64 1 last_b_idx~ 0)
 
-    (Parrayc~ stpop)
-    (Parrayb~ stpop)
-    (Parraya~ stpop)
+	(Parrayc~ stpop)
+	(Parrayb~ stpop)
+	(Parraya~ stpop)
 
-    (Parrayb~ array_size~ :get_size !)
-    (array_size~ :pull_int64_var !)
-    (array_size~ / offset~ array_size~ :=)
-    (array_size~ - one~ array_size~ :=)
+	(Parrayb~ arrayb_bytes~ :get_size !)
+	(arrayb_bytes~ :pull_int64_var !)
+	(arrayb_bytes~ / offset~ last_b_idx~ :=)
+	(last_b_idx~ - one~ last_b_idx~ :=)
 
-    (Parraya~ Parrayb~ Parrayc~ zero~ zero~ zero~ array_size~ :array_int16_cat_range !)
+	(Parraya~ Parrayb~ Parrayc~ zero~ zero~ zero~ last_b_idx~ :array_int16_cat_range !)
 (funcend)
 
 (array_int32_cons func)
-    #var ~ array_int32_cons
+	#var ~ array_int32_cons
 
-    (set const-int64 1 zero~ 0)
-    (set const-int64 1 one~ 1)
-    (set int64 1 Parraya~)
-    (set int64 1 Parrayb~)
-    (set int64 1 Parrayc~)
-    (set int64 1 var~)
-    (set int64 1 array_size~ 0)
-    (set const-int64 1 offset~ 8)
+	(set const-int64 1 zero~ 0)
+	(set const-int64 1 one~ 1)
+	(set const-int64 1 offset~ 4)
+	(set int64 1 Parraya~ 0)
+	(set int64 1 Parrayb~ 0)
+	(set int64 1 Parrayc~ 0)
+	(set int64 1 arrayb_bytes~ 0)
+	(set int64 1 last_b_idx~ 0)
 
-    (Parrayc~ stpop)
-    (Parrayb~ stpop)
-    (Parraya~ stpop)
+	(Parrayc~ stpop)
+	(Parrayb~ stpop)
+	(Parraya~ stpop)
 
-    (Parrayb~ array_size~ :get_size !)
-    (array_size~ :pull_int64_var !)
-    (array_size~ / offset~ array_size~ :=)
-    (array_size~ - one~ array_size~ :=)
+	(Parrayb~ arrayb_bytes~ :get_size !)
+	(arrayb_bytes~ :pull_int64_var !)
+	(arrayb_bytes~ / offset~ last_b_idx~ :=)
+	(last_b_idx~ - one~ last_b_idx~ :=)
 
-    (Parraya~ Parrayb~ Parrayc~ zero~ zero~ zero~ array_size~ :array_int32_cat_range !)
+	(Parraya~ Parrayb~ Parrayc~ zero~ zero~ zero~ last_b_idx~ :array_int32_cat_range !)
 (funcend)
 
- // member: check if variable is in list, if it is then get copy of array
+// member: check if match is in Parraya~; if found, copy Parraya~ to Parrayc~ and push 0, else push 1
 (array_byte_member func)
 	#var ~ array_byte_member
 
 	(set const-int64 1 zero~ 0)
-    (set const-int64 1 one~ 1)
-    (set const-int64 1 neg_one~ -1)
+	(set const-int64 1 one~ 1)
+	(set const-int64 1 neg_one~ -1)
+	(set const-int64 1 offset~ 1)
 
 	(set int64 1 Parraya~ 0)
-	(set int64 1 Parrayb~ 0)
 	(set int64 1 Parrayc~ 0)
-
-	(set int64 1 arraya_size~ 0)
-    (set int64 1 array_size~ 0)
-	(set int64 1 index~ 0)
-    (set const-int64 1 offset~ 1)
-    (set int64 1 f~ 0)
-    (set byte 1 var~ 0)
-    (set int64 1 found_var~ 0)
-    (set byte 1 match~ 0)
+	(set int64 1 arraya_bytes~ 0)
+	(set int64 1 last_idx~ 0)
+	(set int64 1 byte_idx~ 0)
+	(set int64 1 f~ 0)
+	(set byte 1 var~ 0)
+	(set int64 1 found_var~ 0)
+	(set byte 1 match~ 0)
 
 	(Parrayc~ stpop)
 	(match~ stpop)
-    (Parraya~ stpop)
+	(Parraya~ stpop)
 
-    (zero~ index~ :=)
-    (zero~ found_var~ :=)
+	(zero~ byte_idx~ :=)
+	(zero~ found_var~ :=)
 
-    // search array Parraya~ for Parrayb~
-    (Parraya~ arraya_size~ :get_size !)
-    (arraya_size~ :pull_int64_var !)
+	(Parraya~ arraya_bytes~ :get_size !)
+	(arraya_bytes~ :pull_int64_var !)
+	(arraya_bytes~ / offset~ last_idx~ :=)
+	(last_idx~ - one~ last_idx~ :=)
 
-    (arraya_size~ / offset~ array_size~ :=)
-    (array_size~ - one~ array_size~ :=)
+	(:check_a_array_byte_member)
+		(byte_idx~ < arraya_bytes~ f~ :=)
+		(f~ if+)
+			(Parraya~ [ byte_idx~ ] var~ :=)
+			(var~ :pull_byte_var !)
+			(var~ == match~ f~ :=)
+			(f~ if)
+				(one~ found_var~ :=)
+				(:check_a_array_end_byte_member jmp)
+			(endif)
+			(byte_idx~ + offset~ byte_idx~ :=)
+			(:check_a_array_byte_member jmp)
+		(endif)
 
-    (:check_a_array_byte_member)
-        (Parraya~ [ index~ ] var~ :=)
-        (var~ :pull_byte_var !)
-
-        (((var~ match~ ==) f~ :=) f~ if)
-           (one~ found_var~ :=)
-           (:check_a_array_end_byte_member jmp)
-        (endif)
-
-        (index~ + offset~ index~ :=)
-        (index~ < arraya_size~ f~ :=)
-        (f~ if)
-            (:check_a_array_byte_member jmp)
-        (endif)
-
-    (:check_a_array_end_byte_member)
-    (((found_var~ one~ ==) f~ :=) f~ if+)
-        // member found in array copy array to Parrayc~
-        (Parraya~ Parraya~ Parrayc~ zero~ array_size~ neg_one~ zero~ :array_byte_cat_range !)
-        (zero~ stpush)
-    (else)
-         (one~ stpush)
-    (endif)
+	(:check_a_array_end_byte_member)
+	(found_var~ == one~ f~ :=)
+	(f~ if+)
+		(Parraya~ Parraya~ Parrayc~ zero~ last_idx~ neg_one~ zero~ :array_byte_cat_range !)
+		(zero~ stpush)
+	(else)
+		(one~ stpush)
+	(endif)
 (funcend)
 
 (array_int16_member func)
 	#var ~ array_int16_member
 
 	(set const-int64 1 zero~ 0)
-    (set const-int64 1 one~ 1)
-    (set const-int64 1 neg_one~ -1)
+	(set const-int64 1 one~ 1)
+	(set const-int64 1 neg_one~ -1)
+	(set const-int64 1 offset~ 2)
 
 	(set int64 1 Parraya~ 0)
-	(set int64 1 Parrayb~ 0)
 	(set int64 1 Parrayc~ 0)
-
-	(set int64 1 arraya_size~ 0)
-    (set int64 1 array_size~ 0)
-	(set int64 1 index~ 0)
-    (set const-int64 1 offset~ 2)
-    (set int64 1 f~ 0)
-    (set int16 1 var~ 0)
-    (set int64 1 found_var~ 0)
-    (set int16 1 match~ 0)
+	(set int64 1 arraya_bytes~ 0)
+	(set int64 1 last_idx~ 0)
+	(set int64 1 byte_idx~ 0)
+	(set int64 1 f~ 0)
+	(set int16 1 var~ 0)
+	(set int64 1 found_var~ 0)
+	(set int16 1 match~ 0)
 
 	(Parrayc~ stpop)
 	(match~ stpop)
-    (Parraya~ stpop)
+	(Parraya~ stpop)
 
-    (zero~ index~ :=)
-    (zero~ found_var~ :=)
+	(zero~ byte_idx~ :=)
+	(zero~ found_var~ :=)
 
-    // search array Parraya~ for Parrayb~
-    (Parraya~ arraya_size~ :get_size !)
-    (arraya_size~ :pull_int64_var !)
+	(Parraya~ arraya_bytes~ :get_size !)
+	(arraya_bytes~ :pull_int64_var !)
+	(arraya_bytes~ / offset~ last_idx~ :=)
+	(last_idx~ - one~ last_idx~ :=)
 
-    (arraya_size~ / offset~ array_size~ :=)
-    (array_size~ - one~ array_size~ :=)
+	(:check_a_array_int16_member)
+		(byte_idx~ < arraya_bytes~ f~ :=)
+		(f~ if+)
+			(Parraya~ [ byte_idx~ ] var~ :=)
+			(var~ :pull_int16_var !)
+			(var~ == match~ f~ :=)
+			(f~ if)
+				(one~ found_var~ :=)
+				(:check_a_array_end_int16_member jmp)
+			(endif)
+			(byte_idx~ + offset~ byte_idx~ :=)
+			(:check_a_array_int16_member jmp)
+		(endif)
 
-    (:check_a_array_int16_member)
-        (Parraya~ [ index~ ] var~ :=)
-        (var~ :pull_int16_var !)
-
-        (((var~ match~ ==) f~ :=) f~ if)
-           (one~ found_var~ :=)
-           (:check_a_array_end_int16_member jmp)
-        (endif)
-
-        (index~ + offset~ index~ :=)
-        (index~ < arraya_size~ f~ :=)
-        (f~ if)
-            (:check_a_array_int16_member jmp)
-        (endif)
-
-    (:check_a_array_end_int16_member)
-    (((found_var~ one~ ==) f~ :=) f~ if+)
-        // member found in array copy array to Parrayc~
-        (Parraya~ Parraya~ Parrayc~ zero~ array_size~ neg_one~ zero~ :array_int16_cat_range !)
-        (zero~ stpush)
-    (else)
-         (one~ stpush)
-    (endif)
+	(:check_a_array_end_int16_member)
+	(found_var~ == one~ f~ :=)
+	(f~ if+)
+		(Parraya~ Parraya~ Parrayc~ zero~ last_idx~ neg_one~ zero~ :array_int16_cat_range !)
+		(zero~ stpush)
+	(else)
+		(one~ stpush)
+	(endif)
 (funcend)
 
 (array_int32_member func)
 	#var ~ array_int32_member
 
 	(set const-int64 1 zero~ 0)
-    (set const-int64 1 one~ 1)
-    (set const-int64 1 neg_one~ -1)
+	(set const-int64 1 one~ 1)
+	(set const-int64 1 neg_one~ -1)
+	(set const-int64 1 offset~ 4)
 
 	(set int64 1 Parraya~ 0)
-	(set int64 1 Parrayb~ 0)
 	(set int64 1 Parrayc~ 0)
-
-	(set int64 1 arraya_size~ 0)
-    (set int64 1 array_size~ 0)
-	(set int64 1 index~ 0)
-    (set const-int64 1 offset~ 4)
-    (set int64 1 f~ 0)
-    (set int32 1 var~ 0)
-    (set int64 1 found_var~ 0)
-    (set int32 1 match~ 0)
+	(set int64 1 arraya_bytes~ 0)
+	(set int64 1 last_idx~ 0)
+	(set int64 1 byte_idx~ 0)
+	(set int64 1 f~ 0)
+	(set int32 1 var~ 0)
+	(set int64 1 found_var~ 0)
+	(set int32 1 match~ 0)
 
 	(Parrayc~ stpop)
 	(match~ stpop)
-    (Parraya~ stpop)
+	(Parraya~ stpop)
 
-    (zero~ index~ :=)
-    (zero~ found_var~ :=)
+	(zero~ byte_idx~ :=)
+	(zero~ found_var~ :=)
 
-    // search array Parraya~ for Parrayb~
-    (Parraya~ arraya_size~ :get_size !)
-    (arraya_size~ :pull_int64_var !)
+	(Parraya~ arraya_bytes~ :get_size !)
+	(arraya_bytes~ :pull_int64_var !)
+	(arraya_bytes~ / offset~ last_idx~ :=)
+	(last_idx~ - one~ last_idx~ :=)
 
-    (arraya_size~ / offset~ array_size~ :=)
-    (array_size~ - one~ array_size~ :=)
+	(:check_a_array_int32_member)
+		(byte_idx~ < arraya_bytes~ f~ :=)
+		(f~ if+)
+			(Parraya~ [ byte_idx~ ] var~ :=)
+			(var~ :pull_int32_var !)
+			(var~ == match~ f~ :=)
+			(f~ if)
+				(one~ found_var~ :=)
+				(:check_a_array_end_int32_member jmp)
+			(endif)
+			(byte_idx~ + offset~ byte_idx~ :=)
+			(:check_a_array_int32_member jmp)
+		(endif)
 
-    (:check_a_array_int32_member)
-        (Parraya~ [ index~ ] var~ :=)
-        (var~ :pull_int32_var !)
-
-        (((var~ match~ ==) f~ :=) f~ if)
-           (one~ found_var~ :=)
-           (:check_a_array_end_int32_member jmp)
-        (endif)
-
-        (index~ + offset~ index~ :=)
-        (index~ < arraya_size~ f~ :=)
-        (f~ if)
-            (:check_a_array_int32_member jmp)
-        (endif)
-
-    (:check_a_array_end_int32_member)
-    (((found_var~ one~ ==) f~ :=) f~ if+)
-        // member found in array copy array to Parrayc~
-        (Parraya~ Parraya~ Parrayc~ zero~ array_size~ neg_one~ zero~ :array_int32_cat_range !)
-        (zero~ stpush)
-    (else)
-         (one~ stpush)
-    (endif)
+	(:check_a_array_end_int32_member)
+	(found_var~ == one~ f~ :=)
+	(f~ if+)
+		(Parraya~ Parraya~ Parrayc~ zero~ last_idx~ neg_one~ zero~ :array_int32_cat_range !)
+		(zero~ stpush)
+	(else)
+		(one~ stpush)
+	(endif)
 (funcend)

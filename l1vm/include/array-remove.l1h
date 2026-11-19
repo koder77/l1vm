@@ -38,10 +38,10 @@
             (var~ :pull_int64_var !)
 
             (var~ Parrayb~ [ bindex~ ] :=)
+            (bindex~ + offset~ bindex~ :=)
         (endif)
 
         (index~ + offset~ index~ :=)
-        (bindex~ + offset~ bindex~ :=)
         (ind~ + one~ ind~ :=)
 
         (index~ < arraya_size~ f~ :=)
@@ -87,10 +87,10 @@
             (var~ :pull_double_var !)
 
             (var~ Parrayb~ [ bindex~ ] :=)
+            (bindex~ + offset~ bindex~ :=)
         (endif)
 
         (index~ + offset~ index~ :=)
-        (bindex~ + offset~ bindex~ :=)
         (ind~ + one~ ind~ :=)
 
         (index~ < arraya_size~ f~ :=)
