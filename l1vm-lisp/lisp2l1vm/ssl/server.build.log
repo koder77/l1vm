@@ -1,0 +1,13 @@
+building: server
+assembling file: 'out'
+[31m[0mcodesize: 14640 , 14.297 KB
+datasize: 36531 , 35.675 KB
+filesize: 54473 , 53.196 KB
+[0m[✔] out assembled
+
+Allocated 50000 lines for code and for data.
+[31m[0mcode lines compiled: 943
+[0m[✔] out compiled
+assembler args: ' '
+build in 0.0300 seconds
+copying files...

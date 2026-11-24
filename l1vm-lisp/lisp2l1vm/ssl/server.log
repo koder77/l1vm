@@ -1,0 +1,43 @@
+l1vm - 3.8.0 - 2026 (C) 2017-2026 Stefan Pietzonke - software research
+>>> Level 1 VM - supernova <<<
+CPU cores: 9 (STATIC)
+internal type check: S8 = 8 bytes, F8 = 8 bytes. All OK!
+Host OS: Linux
+C compiler: clang version 19.1.7 (3+b1)
+build on: Nov  1 2026
+sandbox root = /home/stefan/l1vm/
+JIT-compiler: ready!
+>> math int overflow check << >> boundscheck << >> divisioncheck << >> stackcheck <<
+machine: little endianess
+0 stack size: 4096
+0 sp top: 94655375756618
+0 sp bottom: 94655375752523
+0 sp: 94655375756618
+0 sp caller top: 94655375756618
+0 sp caller bottom: 94655375752523
+CPU 0 ready
+codesize: 14640 , 14.297 KB
+datasize: 73387 , 71.667 KB
+ep: 16
+
+Donate at: https://ko-fi.com/P5P2Y3KP
+Talk to me: https://midnight-coding.de/blog/chat
+Thank you!
+module: 0 libl1vmstring.so loaded
+module: 2 libl1vmnet.so loaded
+ok   open ssl server
+ok   ssl is socket
+ok   integer is not ssl socket
+No certificates.
+ok   accept ssl
+ok   ssl write-line
+ok   ssl read-line
+ok   ssl write-char
+ok   ssl read-char
+ok   close ssl connection
+ok   close ssl server
+ok   closed is not ssl socket
+ssl server done
+free_module: 0 libl1vmstring.so
+free_module: 2 libl1vmnet.so
+EXIT

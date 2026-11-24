@@ -1,3 +1,12 @@
+L1VM (4.0.0)
+	NEW directory "l1vm-lisp" with a CLISP lisp 2 L1VM Brackets compiler.
+	So now parts of programs can be written in a subset of Lisp.
+	See the examples there. This is a big step forward.
+	You still can write code in Brackets. I did not make any changes to the Brackets compiler.
+	The Lisp to Brackets translation is done by a CLISP program.
+
+-- Stefan Pietzonke <info@midnight-coding.de> Tue 24 November 2026 17:11 +010
+
 L1VM (3.9.1)
 	Linter update: added more checks.
 	Linter: CBMC-style control flow analysis. It reports contradictory

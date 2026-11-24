@@ -1,0 +1,13 @@
+building: client
+assembling file: 'out'
+[31m[0mcodesize: 13443 , 13.128 KB
+datasize: 36304 , 35.453 KB
+filesize: 52833 , 51.595 KB
+[0m[✔] out assembled
+
+Allocated 50000 lines for code and for data.
+[31m[0mcode lines compiled: 880
+[0m[✔] out compiled
+assembler args: ' '
+build in 0.0296 seconds
+copying files...
