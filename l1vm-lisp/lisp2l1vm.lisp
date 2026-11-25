@@ -34,6 +34,7 @@
 (defvar *functions*   (make-hash-table :test 'eq))   ; name -> plist
 (defvar *function-order* nil)                        ; names in source order
 (defvar *globals*     (make-hash-table :test 'eq))   ; sym -> (bname . type)
+(defvar *implicit-globals* nil)                      ; SETQ-created globals, in order
 (defvar *literals*    (make-hash-table :test 'equal)); (type value) -> bname
 (defvar *out*         nil)   ; emitted lines, reversed
 (defvar *decls*       nil)   ; literal declarations, reversed
@@ -135,6 +136,7 @@
   (setf *defined-macros* nil)
   (clrhash *functions*)
   (clrhash *globals*)
+  (setf *implicit-globals* nil)
   (clrhash *literals*)
   (clrhash *lisp-symbols*)
   (clrhash *lisp-strings*)
@@ -401,6 +403,18 @@
 
 (defun var-name (sym) (car (var-info sym)))
 (defun var-type (sym) (cdr (var-info sym)))
+
+(defun register-global (sym type)
+  "Register SYM as a Brackets global unless it is already known."
+  (unless (gethash sym *globals*)
+    (setf (gethash sym *globals*)
+          (cons (safe-name sym) (normalize-type type)))))
+
+(defun register-implicit-global (sym type)
+  "Make a SETQ to an otherwise undeclared symbol create a global variable."
+  (unless (gethash sym *globals*)
+    (register-global sym type)
+    (pushnew sym *implicit-globals*)))
 
 (defun unique-base (sym)
   (let ((base (safe-name sym)))
@@ -1700,6 +1714,86 @@
          (setf (gethash name *globals*)
                (cons (safe-name name) (guess-type init))))))))
 
+;;; A SETQ to a symbol that is neither a local binding nor a declared global
+;;; creates an implicit global.  This is what lets source such as
+;;; (defun show-x () (setq x 42) (write x)) compile without a separate DEFVAR.
+;;; The scan is scope-aware so SETQs of parameters and LET bindings remain
+;;; local, and it runs before any function is compiled so reads of the new
+;;; global are visible too.
+
+(defun binding-symbols (bindings)
+  (mapcar (lambda (b) (if (symbolp b) b (first b))) bindings))
+
+(defun scan-implicit-setqs (form bound)
+  (cond
+    ((atom form) nil)
+    ((eq (car form) 'quote) nil)
+    (t
+     (let ((head (car form)))
+       (cond
+         ((or (op= head "setq") (op= head "setf"))
+          (loop for (target value) on (cdr form) by #'cddr
+                do (when (and (symbolp target) (not (member target bound)))
+                     (register-implicit-global target (guess-type value)))
+                   (scan-implicit-setqs value bound)))
+         ((op= head "defmacro") nil)
+         ((or (op= head "incf") (op= head "decf"))
+          (let ((target (second form)))
+            (when (and (symbolp target) (not (member target bound)))
+              (register-implicit-global target
+                                        (guess-type (or (third form) 1)))))
+          (dolist (sub (cddr form))
+            (scan-implicit-setqs sub bound)))
+         ((and (consp head) (eq (car head) 'lambda))
+          ;; Immediate lambda application: ((lambda (args) ...) values...).
+          (scan-implicit-setqs head bound)
+          (dolist (arg (cdr form))
+            (scan-implicit-setqs arg bound)))
+         ((op= head "defun")
+          (let ((params (third form)))
+            (dolist (f (cdddr form))
+              (scan-implicit-setqs f (append (binding-symbols params) bound)))))
+         ((op= head "lambda")
+          (let ((params (second form)))
+            (dolist (f (cddr form))
+              (scan-implicit-setqs f (append (binding-symbols params) bound)))))
+         ((op= head "macrolet")
+          ;; Only the body is compiled; definitions run on the host at compile
+          ;; time and may use ordinary SETQs on their own parameters.
+          (dolist (f (cddr form))
+            (scan-implicit-setqs f bound)))
+         ((or (op= head "let") (op= head "let*"))
+          (let ((bindings (second form)))
+            (dolist (b bindings)
+              (when (and (consp b) (consp (cdr b)))
+                (scan-implicit-setqs (second b) bound)))
+            (dolist (f (cddr form))
+              (scan-implicit-setqs f (append (binding-symbols bindings) bound)))))
+         ((op= head "do")
+          (let* ((specs (second form))
+                 (vars (binding-symbols specs)))
+            (dolist (spec specs)
+              (when (consp spec)
+                (when (cdr spec) (scan-implicit-setqs (second spec) bound))
+                (when (cddr spec)
+                  (scan-implicit-setqs (third spec) (append vars bound)))))
+            (dolist (f (cddr form))
+              (scan-implicit-setqs f (append vars bound)))))
+         ((or (op= head "dotimes") (op= head "dolist"))
+          (let* ((spec (second form))
+                 (var (first spec)))
+            (when (and (consp spec) (cdr spec))
+              (scan-implicit-setqs (second spec) bound))
+            (dolist (f (cddr form))
+              (scan-implicit-setqs f (append (list var) bound)))))
+         (t
+          (dolist (sub (cdr form))
+            (scan-implicit-setqs sub bound))))))))
+
+(defun scan-implicit-globals (forms)
+  (dolist (form forms)
+    (scan-implicit-setqs form nil)))
+
 ;;; Infer parameter types from call sites.  The source dialect has no type
 ;;; declarations; without this a string passed to a helper prints as an address.
 
@@ -2136,13 +2230,23 @@
 (defun compile-setq (args)
   (let ((name "zero") (type :int))
     (loop for (sym val) on args by #'cddr
-          do (let* ((v (compile-expr val))
-                    (target (var-name sym)))
-               (emitf "    (~a ~a :=)" v target)
-               (setf name target type (var-type sym))))
+          do (multiple-value-bind (v vtype) (compile-expr val)
+               ;; A SETQ in a macro expansion can appear after the implicit
+               ;; global scan, so create the global here as a fallback too.
+               (when (and (symbolp sym)
+                          (not (lookup-var sym))
+                          (not (gethash sym *globals*)))
+                 (register-implicit-global sym vtype))
+               (let ((target (var-name sym)))
+                 (emitf "    (~a ~a :=)" v target)
+                 (setf name target type (var-type sym)))))
     (values name type)))
 
 (defun compile-incf (args increment)
+  (when (and (symbolp (car args))
+             (not (lookup-var (car args)))
+             (not (gethash (car args) *globals*)))
+    (register-implicit-global (car args) (guess-type (or (second args) 1))))
   (let* ((place (car args))
          (target (var-name place))
          (ty (var-type place))
@@ -3992,6 +4096,7 @@
         (setf (gethash (second f) *functions*)
               (append (gethash (second f) *functions*) (list :body (cdddr f))))))
     (scan-top-level forms)
+    (scan-implicit-globals forms)
     (infer-parameter-types forms)
     (infer-all-return-types)
     (validate-function-types)
@@ -4092,6 +4197,14 @@
       (dolist (d (runtime-declarations)) (format stream "    ~a~%" d)))
     (dolist (d (reverse *rec-decls*)) (format stream "~a~%" d))
     (dolist (d (reverse *decls*)) (format stream "~a~%" d))
+    ;; SETQ-created globals need a storage declaration in MAIN before any
+    ;; generated code (including function bodies) reads or writes them.
+    (dolist (sym (reverse *implicit-globals*))
+      (let* ((g (gethash sym *globals*))
+             (type (normalize-type (cdr g))))
+        (format stream "    (set ~a 1 ~a ~a)~%"
+                (storage-type type) (car g)
+                (if (eq type :double) "0.0" "0"))))
     (dolist (l *main-code*) (format stream "~a~%" l))
     (when *sdl-module-needed*
       (format stream "    (l2v_sdlmod :free_mod !)~%"))
