@@ -10,6 +10,8 @@
 ;;;;
 ;;;; The source language is Lisp data, so the compiler can walk, transform
 ;;;; and generate programs with ordinary list operations.
+;;;;
+;;;; Syntax and compile errors are reported as FILE:LINE: KIND: MESSAGE.
 
 ;;;; Developed with the help of open code Big Pickle AI
 ;;;; Checked with tests.
@@ -47,6 +49,14 @@
 (defvar *user-package* (find-package "CL2BRACKETS-USER"))
 (defvar *lambda-env* nil)                    ; let-bound lambdas, compile-time only
 (defvar *local-macros* nil)                  ; MACROLET definitions
+
+;; Source locations for error messages.  *FORM-LINE-TABLE* maps a top-level
+;; form to its source line; *CURRENT-SOURCE-LINE* is rebound while that form is
+;; being translated or compiled.
+(defvar *form-line-table* nil)
+(defvar *current-source-line* nil)
+(defvar *source-file* "<string>")
+(defvar *source-text* nil)
 
 ;; Tail-call lowering.  *TAIL-POSITION* is true while compiling an expression
 ;; whose value is returned directly from the current function.  A self call in
@@ -1669,6 +1679,7 @@
 
 (defun scan-top-level (forms)
   (dolist (form forms)
+    (setf *current-source-line* (form-line form))
     (cond
       ((and (consp form) (eq (car form) 'defun))
        (let* ((name (second form))
@@ -1682,6 +1693,7 @@
                                      params)
                      :return nil
                      :recursive (form-calls-p body name)
+                     :line *current-source-line*
                      :body body))))
       ((and (consp form) (member (car form) '(defvar defparameter defconstant)))
        (let* ((name (second form)) (init (third form)))
@@ -1723,6 +1735,7 @@
 (defun infer-parameter-types (forms)
   (let ((inferred (make-hash-table :test 'eq)))
     (dolist (form forms)
+      (setf *current-source-line* (form-line form))
       (collect-call-arg-types form inferred))
     (maphash
      (lambda (name bucket)
@@ -2704,7 +2717,11 @@
 
 (defun compile-call (op args)
   (let ((fi (gethash op *functions*)))
-    (unless fi (error "Unknown function: ~a" op))
+    (unless fi
+      (error 'lisp-compile-error
+             :file *source-file*
+             :line (or (source-line-of-symbol op) *current-source-line* 1)
+             :detail (format nil "Unknown function: ~a" op)))
     (if (and *current-recursive* (rec-same-group-p op *current-recursive*))
         ;; Tail-call reuse is only safe for a direct self call: a peer in the
         ;; group may have different parameters and its own local variables.
@@ -3949,17 +3966,28 @@
   ;; definitions, and printed quoted data all use the same package.
   (let ((*package* *user-package*))
     (reset-state)
-    (setf forms (translate-dialect-forms forms))
+    ;; Translate form by form so each translated form keeps its source line.
+    (let ((translated nil)
+          (translated-lines nil))
+      (dolist (f forms)
+        (setf *current-source-line* (form-line f))
+        (push (translate-dialect-form f t) translated)
+        (push *current-source-line* translated-lines))
+      (setf forms (nreverse translated))
+      (loop for f in forms for l in (nreverse translated-lines)
+            do (remember-form-line f l)))
     (ensure-fixed-symbols)
     ;; DEFMACRO is evaluated by the host Lisp before any expansion.  This is
     ;; the clearest example of source code being ordinary Lisp data: the
     ;; compiler EVALs a list in order to teach itself a new syntactic form.
     (dolist (f forms)
+      (setf *current-source-line* (form-line f))
       (when (and (consp f) (op= (car f) "defmacro"))
         (eval f)
         (pushnew (second f) *defined-macros*)))
     ;; Store function bodies for pass two.
     (dolist (f forms)
+      (setf *current-source-line* (form-line f))
       (when (and (consp f) (eq (car f) 'defun))
         (setf (gethash (second f) *functions*)
               (append (gethash (second f) *functions*) (list :body (cdddr f))))))
@@ -3971,11 +3999,15 @@
     ;; Compile main.
     (let ((*vars* nil) (*lambda-env* nil) (*local-macros* nil)
           (*used-names* nil) (*temp-count* 0) (*out* nil))
-      (dolist (f forms) (compile-top f))
+      (dolist (f forms)
+        (setf *current-source-line* (form-line f))
+        (compile-top f))
       (setf *main-code* (reverse *out*)))
     ;; Compile functions.
     (setf *func-code* nil)
     (dolist (name (reverse *function-order*))
+      (setf *current-source-line*
+            (or (getf (gethash name *functions*) :line) *current-source-line*))
       (push (compile-function name) *func-code*))
     ;; The global return dispatcher is generated after all call sites are
     ;; known, so it can restore any caller's saved locals.
@@ -4159,29 +4191,235 @@
              (write-char ch out)
              (incf i))))))))
 
-(defun compile-source-string (source &optional (stream *standard-output*))
+;;; ---------------------------------------------------------------------------
+;;; Source reading and error reporting
+;;; ---------------------------------------------------------------------------
+
+;; Reader and compiler errors are re-signalled with the source line, so an
+;; error prints its location and the original message instead of only stopping
+;; the translation.
+
+(define-condition lisp-source-error (error)
+  ((file   :initarg :file   :initform "<string>" :reader source-error-file)
+   (line   :initarg :line   :initform 1          :reader source-error-line)
+   (kind   :initarg :kind   :initform "error"    :reader source-error-kind)
+   (detail :initarg :detail :initform ""         :reader source-error-detail))
+  (:report (lambda (condition stream)
+             (format stream "~a:~a: ~a: ~a"
+                     (source-error-file condition)
+                     (source-error-line condition)
+                     (source-error-kind condition)
+                     (source-error-detail condition)))))
+
+(define-condition lisp-syntax-error (lisp-source-error)
+  ((kind :initform "syntax error")))
+
+(define-condition lisp-compile-error (lisp-source-error)
+  ((kind :initform "error")))
+
+(defun condition-text (condition)
+  "The condition's message, without CLisp's leading newline."
+  (string-trim '(#\Newline #\Return #\Space #\Tab)
+               (princ-to-string condition)))
+
+(defun form-line (form &optional (default 1))
+  "Source line of FORM, or DEFAULT when it has no recorded location."
+  (or (and *form-line-table* (gethash form *form-line-table*))
+      default))
+
+(defun remember-form-line (form line)
+  "Record LINE as the source line of FORM, when line tracking is active."
+  (when *form-line-table*
+    (setf (gethash form *form-line-table*) line)))
+
+(defun line-number-at (source position)
+  "Return the 1-based source line containing character offset POSITION."
+  (let ((line 1)
+        (end (min (max position 0) (length source))))
+    (loop for i from 0 below end do
+      (when (char= (char source i) #\Newline)
+        (incf line)))
+    line))
+
+(defun skip-source-whitespace (source position)
+  "Move POSITION past whitespace and line comments to the next form's first
+   character.  READ skips this text itself, but we need the form's real line."
+  (let ((i (min (max position 0) (length source)))
+        (n (length source)))
+    (loop
+      (cond
+        ((>= i n) (return i))
+        ((member (char source i) '(#\Space #\Tab #\Newline #\Return #\Page)
+                 :test #'char=)
+         (incf i))
+        ((char= (char source i) #\;)
+         (incf i)
+         (loop while (and (< i n)
+                          (not (char= (char source i) #\Newline)))
+               do (incf i)))
+        (t (return i))))))
+
+(defun line-start-position (source line)
+  "Character offset of the first character of LINE (1-based)."
+  (let ((pos 0)
+        (n (length source)))
+    (loop repeat (1- (max 1 line)) while (< pos n) do
+      (let ((newline (position #\Newline source :start pos)))
+        (setf pos (if newline (1+ newline) n))))
+    pos))
+
+(defun search-text-case-insensitive (needle text start)
+  "First case-insensitive occurrence of NEEDLE at or after START, or NIL."
+  (let ((len (length needle))
+        (limit (- (length text) (length needle))))
+    (loop for i from (max 0 start) to limit do
+      (when (string-equal needle text :start2 i :end2 (+ i len))
+        (return i))
+      finally (return nil))))
+
+(defun source-line-of-symbol (name)
+  "Best-effort line of NAME in the source, starting at the current form's line."
+  (when (and *source-text* name)
+    (let ((pos (search-text-case-insensitive
+                (string name) *source-text*
+                (line-start-position *source-text*
+                                     (or *current-source-line* 1)))))
+      (when pos (line-number-at *source-text* pos)))))
+
+(defun unmatched-paren-position (source)
+  "Return (position . :open|:close) for the first unmatched parenthesis, or NIL.
+   Strings, comments, escaped symbols and character literals are ignored."
+  (let ((stack nil)
+        (i 0)
+        (n (length source)))
+    (loop while (< i n) do
+      (let ((ch (char source i)))
+        (cond
+          ;; Line comment.
+          ((char= ch #\;)
+           (incf i)
+           (loop while (and (< i n)
+                            (not (char= (char source i) #\Newline)))
+                 do (incf i)))
+          ;; Block comment #| ... |#.
+          ((and (char= ch #\#) (< (1+ i) n) (char= (char source (1+ i)) #\|))
+           (incf i 2)
+           (loop while (< i n) do
+             (if (and (char= (char source i) #\|)
+                      (< (1+ i) n)
+                      (char= (char source (1+ i)) #\#))
+                 (progn (incf i 2) (return))
+                 (incf i))))
+          ;; Escaped symbol |a ( b|.
+          ((char= ch #\|)
+           (incf i)
+           (loop while (< i n) do
+             (let ((c (char source i)))
+               (cond ((char= c #\\) (incf i 2))
+                     ((char= c #\|) (incf i) (return))
+                     (t (incf i))))))
+          ;; String literal.
+          ((char= ch #\")
+           (incf i)
+           (loop while (< i n) do
+             (let ((c (char source i)))
+               (cond ((char= c #\\) (incf i 2))
+                     ((char= c #\") (incf i) (return))
+                     (t (incf i))))))
+          ;; Character literal, e.g. #\(, is not an open parenthesis.
+          ((and (char= ch #\#) (< (1+ i) n) (char= (char source (1+ i)) #\\))
+           (incf i 2)
+           (when (< i n) (incf i)))
+          ((char= ch #\()
+           (push i stack)
+           (incf i))
+          ((char= ch #\))
+           (if stack
+               (progn (pop stack) (incf i))
+               (return (cons i :close))))
+          (t (incf i)))))
+    (when stack
+      (cons (car (last stack)) :open))))
+
+(defun read-source-forms (source file &optional (package *user-package*))
+  "Read all top-level forms from SOURCE.  Return the forms, their source lines
+   and SOURCE itself as three values.  Reader errors become LISP-SYNTAX-ERROR
+   carrying FILE and the exact source line."
   (let ((forms nil)
-        (*readtable* *readtable*)
+        (lines nil)
+        (*package* package))
+    (with-input-from-string (in source)
+      (loop
+        (let ((start (file-position in)))
+          (handler-case
+              (let ((form (read in nil :eof)))
+                (if (eq form :eof)
+                    (return (values (nreverse forms) (nreverse lines) source))
+                    (progn
+                      (push form forms)
+                      (push (line-number-at
+                             source (skip-source-whitespace source start))
+                            lines))))
+            (error (condition)
+              ;; The reader consumes the offending token, so use the scanner
+              ;; for unmatched parentheses and the stream position otherwise.
+              (let* ((mismatch (unmatched-paren-position source))
+                     (position
+                       (cond
+                         ((typep condition 'end-of-file)
+                          (if (and mismatch (eq (cdr mismatch) :open))
+                              (car mismatch)
+                              start))
+                         ((typep condition 'reader-error)
+                          (if (and mismatch (eq (cdr mismatch) :close))
+                              (car mismatch)
+                              (file-position in)))
+                         (t (file-position in)))))
+                (error 'lisp-syntax-error
+                       :file file
+                       :line (line-number-at source position)
+                       :detail (condition-text condition))))))))))
+
+(defun compile-with-source (forms stream lines file source)
+  "Run COMPILE-SOURCE with source line tracking and location-aware errors."
+  (let* ((table (make-hash-table :test 'eq))
+         (first-line (or (first lines) 1)))
+    (loop for form in forms for line in lines
+          do (setf (gethash form table) line))
+    (let ((*form-line-table* table)
+          (*source-file* file)
+          (*source-text* source)
+          (*current-source-line* first-line))
+      (handler-case
+          (compile-source forms stream)
+        (lisp-source-error (condition)
+          (error condition))
+        (error (condition)
+          (error 'lisp-compile-error
+                 :file file
+                 :line (or *current-source-line* first-line)
+                 :detail (condition-text condition)))))))
+
+(defun compile-source-string (source &optional (stream *standard-output*))
+  (let ((*readtable* *readtable*)
         (*package* *user-package*))
-    (with-input-from-string (in (normalize-lisp-number-syntax source))
-      (loop for form = (read in nil :eof)
-            until (eq form :eof)
-            do (push form forms)))
-    (compile-source (reverse forms) stream)))
+    (multiple-value-bind (forms lines text)
+        (read-source-forms (normalize-lisp-number-syntax source) "<string>")
+      (compile-with-source forms stream lines "<string>" text))))
 
 (defun compile-source-file (input output)
-  (with-input-from-string (in (normalize-lisp-number-syntax
-                               (with-open-file (f input :direction :input)
-                                 (let ((text (make-string (file-length f))))
-                                   (read-sequence text f)
-                                   text))))
-    (let ((forms nil)
-          (*package* *user-package*))
-      (loop for form = (read in nil :eof)
-            until (eq form :eof)
-            do (push form forms))
-      (with-open-file (out output :direction :output :if-exists :supersede)
-        (compile-source (reverse forms) out)))))
+  (let ((text (with-open-file (f input :direction :input)
+                (let ((content (make-string (file-length f))))
+                  (read-sequence content f)
+                  content))))
+    (multiple-value-bind (forms lines source)
+        (read-source-forms (normalize-lisp-number-syntax text) input)
+      ;; Compile into memory first so a failed compilation never leaves a
+      ;; partial output file behind.
+      (let ((result (with-output-to-string (out)
+                      (compile-with-source forms out lines input source))))
+        (with-open-file (out output :direction :output :if-exists :supersede)
+          (write-string result out))))))
 
 ;;; ---------------------------------------------------------------------------
 ;;; Command line entry point
@@ -4199,7 +4437,11 @@
         (format *error-output*
                 "usage: clisp lisp2l1vm.lisp input.lisp output.l1com~%")
         #+clisp (ext:exit 2))
-      (progn
-        (compile-source-file (first args) (second args))
-        (format *error-output* "Compiled ~a -> ~a~%"
-                (first args) (second args)))))
+      (handler-case
+          (progn
+            (compile-source-file (first args) (second args))
+            (format *error-output* "Compiled ~a -> ~a~%"
+                    (first args) (second args)))
+        (lisp-source-error (condition)
+          (format *error-output* "~a~%" condition)
+          #+clisp (ext:exit 1)))))
