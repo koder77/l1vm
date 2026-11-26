@@ -37,7 +37,16 @@
 (defvar *implicit-globals* nil)                      ; SETQ-created globals, in order
 (defvar *literals*    (make-hash-table :test 'equal)); (type value) -> bname
 (defvar *out*         nil)   ; emitted lines, reversed
-(defvar *decls*       nil)   ; literal declarations, reversed
+;; Literals are declared by name at assembly time.  Keeping the declaration
+;; text in a table lets the emitter drop literals no generated code uses
+;; (for example the reserved NIL/T symbol names in non-Lisp programs).
+(defvar *literal-decls* (make-hash-table :test 'equal))
+(defvar *literal-order* nil) ; names in declaration order
+;; A call used only for its side effects still has to pop its return value.
+;; Reuse one scratch variable per type instead of allocating a fresh temporary
+;; whose value is never read.
+(defvar *discard-value* nil)
+(defvar *call-scratch* nil)  ; type -> scratch variable, per function
 (defvar *cur-fun*     nil)
 (defvar *vars*        nil)   ; alist: sym -> (bname . type)
 (defvar *used-names*  nil)   ; base names already used in current function
@@ -125,7 +134,6 @@
 
 (defun emit (s) (push s *out*))
 (defun emitf (fmt &rest args) (emit (apply #'format nil fmt args)))
-(defun decl (s) (push s *decls*))
 
 (defun reset-state ()
   ;; User macros live in CL2BRACKETS-USER.  Undefine them so one compilation
@@ -140,8 +148,10 @@
   (clrhash *literals*)
   (clrhash *lisp-symbols*)
   (clrhash *lisp-strings*)
-  (setf *function-order* nil *decls* nil *lambda-env* nil *local-macros* nil
-        *lit-count* 0 *label-count* 0
+  (setf *function-order* nil *lambda-env* nil *local-macros* nil
+        *literal-order* nil)
+  (clrhash *literal-decls*)
+  (setf *lit-count* 0 *label-count* 0
         *lisp-symbol-count* 0 *lisp-string-count* 0
         *lisp-symbol-names* nil *lisp-string-texts* nil
         *runtime-code* nil *runtime-needed* nil *runtime-fns* nil
@@ -157,7 +167,9 @@
         *rec-group-of* (make-hash-table :test 'eq)
         *rec-depth-name* (make-hash-table :test 'eq)
         *rec-depth-declared* (make-hash-table :test 'equal)
-        *rec-cont-frames* nil))
+        *rec-cont-frames* nil
+        *call-scratch* (make-hash-table)
+        *discard-value* nil))
 
 ;;; ---------------------------------------------------------------------------
 ;;; Types
@@ -250,10 +262,12 @@
         found
         (let ((name (format nil "lit~a" (incf *lit-count*))))
           (setf (gethash key *literals*) name)
-          (decl (format nil "    (set ~a ~a ~a ~a)"
+          (setf (gethash name *literal-decls*)
+                (format nil "    (set ~a ~a ~a ~a)"
                         (type->bracket-type type)
                         (if (eq type :string) "s" "1")
                         name (literal-text value type)))
+          (push name *literal-order*)
           name))))
 
 ;;; ---------------------------------------------------------------------------
@@ -455,13 +469,30 @@
     (emitf "    (set string ~a ~a \"\")" +string-buffer-size+ name)
     name))
 
+(defun literal-string-name (name)
+  "If NAME is the generated address variable of a string literal, return
+   the literal's string-variable name.  Literals are already proper Brackets
+   string variables, so they can be printed/compared directly; only values
+   held as int64 addresses need a copy into a string buffer."
+  (when (and (stringp name) (>= (length name) 8)
+             (string= "lit" name :end2 3)
+             (string= "addr" name :start2 (- (length name) 4)))
+    (let* ((base (subseq name 0 (- (length name) 4)))
+           (digits (subseq name 3 (- (length name) 4))))
+      (when (and (plusp (length digits))
+                 (every #'digit-char-p digits)
+                 (gethash base *literal-decls*))
+        base))))
+
 (defun printable-string (name type)
   "Return an operand suitable for :print_s/:print_lns.
-   A :string value is an int64 address; copy its text into a local buffer."
+   A :string value held as an int64 address is copied into a local buffer;
+   a literal string variable is used directly."
   (if (eq (normalize-type type) :string)
-      (let ((buf (fresh-string-buffer)))
-        (emitf "    (~a ~a :string_copy !)" buf name)
-        buf)
+      (or (literal-string-name name)
+          (let ((buf (fresh-string-buffer)))
+            (emitf "    (~a ~a :string_copy !)" buf name)
+            buf))
       name))
 
 (defun string-buffer-address (buf)
@@ -480,6 +511,13 @@
 
 (defun string-builtin-op-p (op)
   (some (lambda (name) (op= op name)) *string-builtin-ops*))
+
+(defun discard-scratch (type)
+  "Return a reusable scratch variable for popping a discarded call result."
+  (let* ((ty (normalize-type type))
+         (name (gethash ty *call-scratch*)))
+    (or name
+        (setf (gethash ty *call-scratch*) (fresh-temp ty "discard")))))
 
 (defun fresh-byte-temp (&optional init)
   (fresh-temp :byte "by" init))
@@ -1856,6 +1894,100 @@
     ((/=) '!=)
     (t sym)))
 
+;;; Pure numeric expressions whose operands are all compile-time constants can
+;;; be replaced by a single literal.  Folding happens before code generation,
+;;; so no temporary, comparison or arithmetic instruction is emitted at all.
+;;; Only integer/float operators with well-defined host equivalents are folded;
+;;; MOD is left alone because L1VM's % has C remainder semantics.
+
+(defun constant-value-and-type (expr)
+  "Folded value and type of a constant EXPR, or two NILs when not constant."
+  (cond ((integerp expr) (values expr :int))
+        ((floatp expr) (values expr :double))
+        ((eq expr 't) (values 1 :int))
+        ((eq expr 'nil) (values 0 :int))
+        ((consp expr) (fold-constant-expr expr))
+        (t (values nil nil))))
+
+(defun constant-number-value (expr)
+  "Numeric value of a constant EXPR, or NIL when it is not constant."
+  (multiple-value-bind (v ty) (constant-value-and-type expr)
+    (when (member ty '(:int :double)) v)))
+
+(defun fold-constant-expr (expr)
+  "Return two values: folded value and type, or NIL when EXPR is not foldable."
+  (unless (consp expr)
+    (return-from fold-constant-expr (values nil nil)))
+  (let* ((op (car expr))
+         (args (cdr expr))
+         (vals (mapcar #'constant-number-value args)))
+    ;; A constant test selects one branch; fold only when that branch is
+    ;; itself a pure constant expression.
+    (when (op= op "if")
+      (return-from fold-constant-expr
+        (let ((test (constant-number-value (car args))))
+          (if (null test)
+              (values nil nil)
+              (constant-value-and-type
+               (if (zerop test) (third args) (second args)))))))
+    (unless (every (lambda (v) (not (null v))) vals)
+      (return-from fold-constant-expr (values nil nil)))
+    (let ((double (some #'floatp vals)))
+      (flet ((res (v) (values (if double (float v) v)
+                              (if double :double :int))))
+        (cond
+          ((or (op= op "+") (op= op "-") (op= op "*"))
+           (let ((f (cond ((op= op "+") #'+) ((op= op "-") #'-) (t #'*))))
+             (res (cond ((null vals) (if (op= op "*") 1 0))
+                        ((and (op= op "-") (null (cdr vals))) (- (car vals)))
+                        (t (apply f vals))))))
+          ((and (op= op "/") (cdr vals))
+           (handler-case
+               (if double
+                   (res (apply #'/ (mapcar #'float vals)))
+                   (let ((v (car vals)))
+                     (dolist (a (cdr vals)) (setf v (truncate v a)))
+                     (res v)))
+             (error () (values nil nil))))
+          ((and (or (op= op "1+") (op= op "1-")) (= (length vals) 1))
+           (res (if (op= op "1+") (1+ (car vals)) (1- (car vals)))))
+          ((or (op= op "max") (op= op "min"))
+           (res (apply (if (op= op "max") #'max #'min) vals)))
+          ((and (op= op "abs") (= (length vals) 1))
+           (res (abs (car vals))))
+          ((op= op "not")
+           (values (if (zerop (car vals)) 1 0) :int))
+          ;; AND returns the last operand when all are true (matching the
+          ;; compiler's short-circuit lowering), not a normalized boolean.
+          ((op= op "and")
+           (values (if (every (lambda (v) (not (zerop v))) vals)
+                       (if vals (car (last vals)) 1) 0)
+                   :int))
+          ((op= op "or")
+           (values (if (some (lambda (v) (not (zerop v))) vals) 1 0) :int))
+          ((and (or (op= op "zerop") (op= op "evenp") (op= op "oddp"))
+                (= (length vals) 1) (integerp (car vals)))
+           (values (if (if (op= op "zerop") (zerop (car vals))
+                        (if (op= op "evenp") (evenp (car vals)) (oddp (car vals))))
+                       1 0)
+                   :int))
+          ((and (or (op= op "=") (op= op "/=") (op= op "<") (op= op ">")
+                    (op= op "<=") (op= op ">=") (op= op "eq") (op= op "eql")
+                    (op= op "equal") (op= op "equal?"))
+                (>= (length vals) 2))
+           (let* ((f (cond ((or (op= op "=") (op= op "eq") (op= op "eql")
+                                (op= op "equal") (op= op "equal?")) #'=)
+                           ((op= op "/=") #'/=)
+                           ((op= op "<") #'<)
+                           ((op= op ">") #'>)
+                           ((op= op "<=") #'<=)
+                           (t #'>=)))
+                  (ok t))
+             (loop for (a b) on vals while b do
+               (unless (funcall f a b) (setf ok nil)))
+             (values (if ok 1 0) :int)))
+          (t (values nil nil)))))))
+
 (defun compile-expr (expr)
   "Compile EXPR, returning two values: Brackets variable name and type."
   (cond
@@ -1869,6 +2001,12 @@
        (when (equal expansion expr)
          (error "Macro ~a did not expand" (car expr)))
        (compile-expr expansion)))
+    ;; Fold side-effect-free constant arithmetic/comparisons before emitting
+    ;; any instructions for them.
+    ((multiple-value-bind (folded ftype) (fold-constant-expr expr)
+       (when folded
+         (return-from compile-expr (values (ensure-literal folded ftype) ftype))))
+     nil)
     ((integerp expr) (values (ensure-literal expr :int) :int))
     ((floatp expr)   (values (ensure-literal expr :double) :double))
     ;; A Brackets string literal is a global buffer; its value is the int64
@@ -1894,7 +2032,8 @@
   "Only the final form is in tail position."
   (let ((name "zero") (type :int))
     (dolist (f (butlast forms))
-      (let ((*tail-position* nil))
+      (let ((*tail-position* nil)
+            (*discard-value* t))
         (multiple-value-setq (name type) (compile-expr f))))
     (when forms
       (multiple-value-setq (name type) (compile-expr (car (last forms)))))
@@ -1906,7 +2045,8 @@
       (values "zero" :int)
       (let ((name "zero") (type :int))
         (dolist (f (butlast forms))
-          (let ((*tail-position* nil))
+          (let ((*tail-position* nil)
+                (*discard-value* t))
             (multiple-value-setq (name type) (compile-expr f))))
         (multiple-value-setq (name type)
           (if (eq (normalize-type rtype) :lisp)
@@ -2819,7 +2959,7 @@
       ;; (any assignment emitted after the jump is unreachable).
       (values "zero" rtype))))
 
-(defun compile-call (op args)
+(defun compile-call (op args &optional discard)
   (let ((fi (gethash op *functions*)))
     (unless fi
       (error 'lisp-compile-error
@@ -2846,7 +2986,7 @@
                 (emitf "    (~{~a~^ ~} :~a !)"
                        (mapcar #'car emit-vals) (safe-name op))
                 (emitf "    (:~a !)" (safe-name op))))
-          (let ((res (fresh-temp rtype)))
+          (let ((res (if discard (discard-scratch rtype) (fresh-temp rtype))))
             (emit-call-result res rtype)
             (values res rtype))))))
 
@@ -2989,11 +3129,15 @@
 
 (defun compile-form (form)
   (let ((op (car form))
-        (args (cdr form)))
+        (args (cdr form))
+        ;; Only this form's own result may be discarded: subexpressions still
+        ;; feed an enclosing operation and need their own result variables.
+        (discard *discard-value*))
     ;; Tail position only flows through forms that return the value of a
     ;; subform directly.  Everything else consumes its operands, so a self
     ;; call there must use the ordinary frame-saving path.
-    (let ((*tail-position*
+    (let ((*discard-value* nil)
+          (*tail-position*
             (and *tail-position*
                  (or (and (consp op) (lambda-form-p op))
                      (gethash op *functions*)
@@ -3117,7 +3261,7 @@
       ((or (op= op "terpri") (op= op "print-line") (op= op "newline"))
        (compile-print nil t))
       ((op= op "format") (compile-format args))
-      (t (compile-call op args))))))
+      (t (compile-call op args discard))))))
 
 ;;; ---------------------------------------------------------------------------
 ;;; Generated Lisp-data runtime
@@ -3654,6 +3798,8 @@
          (*local-macros* nil)
          (*used-names* nil)
          (*temp-count* 0)
+         (*call-scratch* (make-hash-table))
+         (*discard-value* nil)
          (*current-recursive* (and recursive name))
          (*rec-tracking* recursive)
          (*rec-vars* nil)
@@ -4065,6 +4211,40 @@
                (list "    (endif)"
                      "(funcend)"))))))))
 
+(defun name-referenced-p (name lines)
+  "True when NAME appears as a complete token in any of LINES.
+   Used to drop literal declarations whose name is never emitted."
+  (let ((len (length name)))
+    (dolist (line lines nil)
+      (let ((n (length line))
+            (start 0))
+        (loop
+          (let ((p (search name line :start2 start)))
+            (unless p (return))
+            (when (and (or (= p 0)
+                           (not (alphanumericp (char line (1- p)))))
+                       (or (>= (+ p len) n)
+                           (not (alphanumericp (char line (+ p len))))))
+              (return-from name-referenced-p t))
+            (setf start (1+ p))))))))
+
+(defun emitted-code-lines ()
+  "All generated Brackets lines that can reference a literal."
+  (append *main-code*
+          (apply #'append (mapcar #'copy-list *func-code*))
+          *runtime-code*))
+
+(defun emit-literal-declarations (stream)
+  "Emit declarations only for literals used by the generated code."
+  (let ((lines (emitted-code-lines)))
+    (dolist (name (reverse *literal-order*))
+      (let ((decl-line (gethash name *literal-decls*)))
+        (when (and decl-line
+                   (or (name-referenced-p name lines)
+                       (name-referenced-p
+                        (concatenate 'string name "addr") lines)))
+          (format stream "~a~%" decl-line))))))
+
 (defun compile-source (forms stream)
   ;; Bind *PACKAGE* for the whole compilation: source symbols, macro
   ;; definitions, and printed quoted data all use the same package.
@@ -4103,7 +4283,11 @@
     (compute-recursion-groups)
     ;; Compile main.
     (let ((*vars* nil) (*lambda-env* nil) (*local-macros* nil)
-          (*used-names* nil) (*temp-count* 0) (*out* nil))
+          (*used-names* nil) (*temp-count* 0) (*out* nil)
+          (*call-scratch* (make-hash-table))
+          ;; MAIN never returns a value: even its last form's result is
+          ;; discarded before :exit.
+          (*discard-value* t))
       (dolist (f forms)
         (setf *current-source-line* (form-line f))
         (compile-top f))
@@ -4196,7 +4380,7 @@
     (when *runtime-needed*
       (dolist (d (runtime-declarations)) (format stream "    ~a~%" d)))
     (dolist (d (reverse *rec-decls*)) (format stream "~a~%" d))
-    (dolist (d (reverse *decls*)) (format stream "~a~%" d))
+    (emit-literal-declarations stream)
     ;; SETQ-created globals need a storage declaration in MAIN before any
     ;; generated code (including function bodies) reads or writes them.
     (dolist (sym (reverse *implicit-globals*))
