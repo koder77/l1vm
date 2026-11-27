@@ -2091,6 +2091,16 @@
       (convert-int-to-double name)
       name))
 
+(defun flatten-arith-args (op args)
+  "Flatten nested applications of the same associative operator.
+   (+ a (+ b c)) emits one Brackets expression instead of two temporaries."
+  (if (member op '(+ *))
+      (loop for a in args
+            append (if (and (consp a) (eq (car a) op) (cdr a))
+                       (flatten-arith-args op (cdr a))
+                       (list a)))
+      args))
+
 (defun compile-arith (op args)
   (cond
     ((null args)
@@ -2103,6 +2113,7 @@
          (emitf "    (~a ~a ~a ~a :=)" zero op name res)
          (values res ty))))
     (t
+     (setf args (flatten-arith-args op args))
      (let ((names nil) (types nil))
        (dolist (a args)
          (multiple-value-bind (n ty) (compile-expr a)
@@ -2130,14 +2141,24 @@
            (setf result (car names))
            (when (eq op '%)
              (setf *math-module-needed* t)))
-         (dolist (rest (cdr names))
-           (let ((tmp (fresh-temp rtype)))
-             (if (and (eq op '%) (eq rtype :double))
-                 (progn
-                   (emitf "    (~a ~a :math_fmoddouble !)" result rest)
-                   (emit-call-result tmp :double))
-                 (emitf "    (~a ~a ~a ~a :=)" result op rest tmp))
-             (setf result tmp)))
+         (if (and (member op '(+ *)) (> (length names) 2))
+             ;; Brackets accepts chained infix expressions; emit one line
+             ;; instead of a temporary for every intermediate sum/product.
+             (let ((tmp (fresh-temp rtype))
+                   (text (format nil "~{~a~^ ~}"
+                                 (loop for n in names
+                                       for first = t then nil
+                                       append (if first (list n) (list op n))))))
+               (emitf "    (~a ~a :=)" text tmp)
+               (setf result tmp))
+             (dolist (rest (cdr names))
+               (let ((tmp (fresh-temp rtype)))
+                 (if (and (eq op '%) (eq rtype :double))
+                     (progn
+                       (emitf "    (~a ~a :math_fmoddouble !)" result rest)
+                       (emit-call-result tmp :double))
+                     (emitf "    (~a ~a ~a ~a :=)" result op rest tmp))
+                 (setf result tmp))))
          (values result rtype))))))
 
 (defun double-compare-op (op)
@@ -4211,6 +4232,309 @@
                (list "    (endif)"
                      "(funcend)"))))))))
 
+;;; ---------------------------------------------------------------------------
+;;; Peephole optimization of the emitted Brackets code
+;;;
+;;; The expression compiler deliberately emits a fresh temporary for every
+;;; intermediate value.  That is simple and correct, but it leaves two
+;;; recurring patterns in the output:
+;;;
+;;;   (a OP b t~ :=)        (i < limit t1~ :=)
+;;;   (t~ target :=)   ->   (t1~ zero == t2~ :=)
+;;;                         (t2~ :LOOPE1 jmpi)
+;;;
+;;; The first pair stores a result in a temporary only to copy it into the
+;;; real destination.  The second computes a condition, inverts it and then
+;;; branches.  Both can be folded: write the expression straight into its
+;;; final destination, and branch on the inverse comparison instead.  The
+;;; pass below also drops declarations of temporaries that become unused.
+;;;
+;;; Everything here works on the final text, after all compiler phases have
+;;; run, so the existing constant folding, tail-call lowering, recursion
+;;; frames and runtime pruning remain untouched.
+;;; ---------------------------------------------------------------------------
+
+(defvar *inverse-comparisons*
+  (let ((table (make-hash-table :test 'equal)))
+    (dolist (pair '(("==" . "!=") ("!=" . "==")
+                    ("<" . ">=") (">=" . "<")
+                    (">" . "<=") ("<=" . ">")
+                    ("==d" . "!=d") ("!=d" . "==d")
+                    ("<d" . ">=d") (">=d" . "<d")
+                    (">d" . "<=d") ("<=d" . ">d")))
+      (setf (gethash (car pair) table) (cdr pair))
+      (setf (gethash (cdr pair) table) (car pair)))
+    table))
+
+(defun br-tokenize (text)
+  "Split the inside of a Brackets expression into tokens.
+   Quoted strings (which may contain spaces) stay in one token."
+  (let ((i 0)
+        (n (length text))
+        (start nil)
+        (in-string nil)
+        (escaped nil)
+        (tokens nil))
+    (loop while (< i n) do
+      (let ((ch (char text i)))
+        (cond
+          (in-string
+           (when (and (not escaped) (char= ch #\"))
+             (setf in-string nil))
+           (setf escaped (and (not escaped) (char= ch #\\)))
+           (incf i))
+          ((char= ch #\")
+           (setf start i in-string t escaped nil)
+           (incf i))
+          ((or (char= ch #\Space) (char= ch #\Tab) (char= ch #\Newline))
+           (when start
+             (push (subseq text start i) tokens)
+             (setf start nil))
+           (incf i))
+          (t
+           (unless start (setf start i))
+           (incf i)))))
+    (when start (push (subseq text start n) tokens))
+    (nreverse tokens)))
+
+(defun br-line-parts (line)
+  "Return (indent tokens) for a parenthesized Brackets line, NIL otherwise."
+  (let ((lp (position #\( line)))
+    (when lp
+      (let ((rp (position #\) line :from-end t)))
+        (when (and rp (> rp lp))
+          (list (subseq line 0 lp)
+                (br-tokenize (subseq line (1+ lp) rp))))))))
+
+(defun br-render (parts)
+  (destructuring-bind (indent tokens) parts
+    (concatenate 'string indent "(" (format nil "~{~a~^ ~}" tokens) ")")))
+
+(defun br-replace-nth (tokens index value)
+  (let ((copy (copy-list tokens)))
+    (setf (nth index copy) value)
+    copy))
+
+(defun br-generated-temp-p (name)
+  "True for compiler-created scalar temporaries: t1~, t23~, ..."
+  (and (stringp name)
+       (> (length name) 2)
+       (char= (char name 0) #\t)
+       (char= (char name (1- (length name))) #\~)
+       (loop for i from 1 below (1- (length name))
+             always (digit-char-p (char name i)))))
+
+(defun br-declaration-name (tokens)
+  (when (and (>= (length tokens) 4)
+             (string= (first tokens) "set"))
+    (fourth tokens)))
+
+(defun br-assignment-dest (tokens)
+  (when (and (>= (length tokens) 3)
+             (member (car (last tokens)) '("=" ":=") :test #'string=))
+    (nth (- (length tokens) 2) tokens)))
+
+(defun br-copy-operands (tokens)
+  (when (and (= (length tokens) 3)
+             (member (third tokens) '("=" ":=") :test #'string=))
+    (values (first tokens) (second tokens))))
+
+(defun br-pop-variable (tokens)
+  (when (and (= (length tokens) 2)
+             (member (second tokens)
+                     '("stpop" "stpopi" "stpopd" "stpopb") :test #'string=))
+    (first tokens)))
+
+(defun br-comparison-assignment (tokens)
+  "Match (a OP b dst :=) and return the destination and inverse operator."
+  (when (= (length tokens) 5)
+    (let ((op (second tokens))
+          (dst (fourth tokens)))
+      (when (and (member (fifth tokens) '("=" ":=") :test #'string=)
+                 (gethash op *inverse-comparisons*))
+        (values dst op (gethash op *inverse-comparisons*))))))
+
+(defun br-zero-equality (tokens)
+  "Match (flag zero == neg :=) or (zero flag == neg :=)."
+  (when (= (length tokens) 5)
+    (destructuring-bind (a b op dst assign) tokens
+      (when (and (string= op "==")
+                 (member assign '("=" ":=") :test #'string=))
+        (cond ((and (string= b "zero") (br-generated-temp-p a))
+               (values a dst))
+              ((and (string= a "zero") (br-generated-temp-p b))
+               (values b dst)))))))
+
+(defun br-conditional-jump (tokens)
+  (when (= (length tokens) 3)
+    (destructuring-bind (var label insn) tokens
+      (when (and (string= insn "jmpi")
+                 (> (length label) 0)
+                 (char= (char label 0) #\:))
+        (values var label)))))
+
+(defun br-collect-declarations (blocks)
+  "All variable names declared anywhere in the generated program.
+   Declarations written by the main prologue are included too."
+  (let ((names (make-hash-table :test 'equal)))
+    (dolist (block blocks)
+      (dolist (line block)
+        (let ((parts (br-line-parts line)))
+          (when parts
+            (let ((name (br-declaration-name (second parts))))
+              (when name (setf (gethash name names) t)))))))
+    names))
+
+(defun optimize-brackets-block (lines external-decls)
+  "Apply local peephole rewrites to one function body."
+  (let* ((vector (coerce lines 'vector))
+         (count (length vector))
+         (dead (make-array count :initial-element nil))
+         (parts (map 'vector #'br-line-parts vector))
+         (decl-positions (make-hash-table :test 'equal)))
+    (labels ((tokens (i) (second (aref parts i)))
+             (set-tokens (i ts)
+               (setf (aref parts i)
+                     (list (first (aref parts i)) ts)))
+             (declared-before-p (name i)
+               (let ((pos (gethash name decl-positions)))
+                 (cond (pos (< pos i))
+                       ((gethash name external-decls) t)
+                       (t nil)))))
+
+      ;; Record declaration positions for destination-before-use checks.
+      (dotimes (i count)
+        (let ((ts (tokens i)))
+          (when (and ts (br-declaration-name ts))
+            (let ((name (br-declaration-name ts)))
+              (unless (gethash name decl-positions)
+                (setf (gethash name decl-positions) i))))))
+
+      ;; Usage counts before any rewriting: loop inversion may only reuse the
+      ;; flag temporary when the negation is its sole consumer.
+      (let ((pre-uses (make-hash-table :test 'equal)))
+        (dotimes (i count)
+          (let ((ts (tokens i)))
+            (when (and ts (not (br-declaration-name ts)))
+              (dolist (token ts)
+                (when (br-generated-temp-p token)
+                  (incf (gethash token pre-uses 0)))))))
+        ;; Pass 1: branch on the inverse comparison instead of materializing a
+        ;; boolean, inverting it, and then branching on the inversion.
+        (dotimes (i count)
+          (unless (aref dead i)
+            (multiple-value-bind (flag negated) (br-zero-equality (tokens i))
+              (when (and flag negated
+                         (= (gethash flag pre-uses 0) 2)
+                         (< (1+ i) count))
+                (multiple-value-bind (jump-var label)
+                    (br-conditional-jump (tokens (1+ i)))
+                  (declare (ignore label))
+                  (when (and jump-var (string= jump-var negated))
+                    ;; Find the comparison that produced FLAG.  Comparisons are
+                    ;; emitted immediately before the inversion in all current
+                    ;; control forms, but allow a few intervening lines.
+                    (let ((producer nil))
+                      (loop for j from (1- i) downto (max 0 (- i 8))
+                            while (not producer)
+                            do (let ((ts (tokens j)))
+                                 (when (and ts (br-assignment-dest ts)
+                                            (string= (br-assignment-dest ts) flag))
+                                   (multiple-value-bind (dst op inverse)
+                                       (br-comparison-assignment ts)
+                                     (declare (ignore dst))
+                                     (when op
+                                       (setf producer (list j inverse)))))))
+                      (when producer
+                        (let* ((j (first producer))
+                               (ts (tokens j))
+                               (jump-ts (tokens (1+ i))))
+                          (setf ts (br-replace-nth ts 1 (second producer)))
+                          (set-tokens j ts)
+                          (set-tokens (1+ i) (br-replace-nth jump-ts 0 flag))
+                          (setf (aref dead i) t)))))))))))
+
+      ;; Count how often each generated temporary is read.  Copy propagation
+      ;; is only safe when the producer is consumed exactly once.
+      (let ((uses (make-hash-table :test 'equal)))
+        (dotimes (i count)
+          (unless (aref dead i)
+            (let ((ts (tokens i)))
+              (when (and ts (not (br-declaration-name ts)))
+                (dolist (token ts)
+                  (when (br-generated-temp-p token)
+                    (incf (gethash token uses 0))))))))
+        ;; Pass 2: write an expression result straight into its final
+        ;; destination instead of through a single-use temporary.
+        (let ((producers (make-hash-table :test 'equal)))
+          (dotimes (i count)
+            (unless (aref dead i)
+              (let ((ts (tokens i)))
+                (cond
+                  ((null ts) (clrhash producers))
+                  ((br-declaration-name ts) nil)
+                  ((br-pop-variable ts)
+                   (let ((var (br-pop-variable ts)))
+                     (when (br-generated-temp-p var)
+                       (setf (gethash var producers) (list i :pop ts)))))
+                  ((br-assignment-dest ts)
+                   (let ((dst (br-assignment-dest ts)))
+                     (when (br-generated-temp-p dst)
+                       (setf (gethash dst producers) (list i :math ts)))
+                     (multiple-value-bind (src target) (br-copy-operands ts)
+                       (when (and src target)
+                         (cond
+                           ((string= src target)
+                            (setf (aref dead i) t)
+                            (clrhash producers))
+                           ((and (br-generated-temp-p src)
+                                 (= (gethash src uses 0) 2)
+                                 (gethash src producers)
+                                 (= (first (gethash src producers)) (1- i))
+                                 (declared-before-p target i))
+                            (destructuring-bind (pos kind pts)
+                                (gethash src producers)
+                              (declare (ignore pos))
+                              (let ((new-ts
+                                      (if (eq kind :pop)
+                                          (br-replace-nth pts 0 target)
+                                          (br-replace-nth pts
+                                                          (- (length pts) 2)
+                                                          target))))
+                                (set-tokens (1- i) new-ts)
+                                (setf (aref dead i) t)
+                                 (remhash src producers)))))))))
+                  (t (clrhash producers))))))
+
+        ;; Pass 3: declarations whose temporary disappeared in the passes
+        ;; above are dead.  Zero-initialized declarations emit no instructions
+        ;; but still enlarge the generated source and data segment.  Recount
+        ;; references after the rewrites: propagation can remove the last use
+        ;; of a temporary.
+        (let ((remaining (make-hash-table :test 'equal)))
+          (dotimes (i count)
+            (unless (aref dead i)
+              (let ((ts (tokens i)))
+                (when (and ts (not (br-declaration-name ts)))
+                  (dolist (token ts)
+                    (when (br-generated-temp-p token)
+                      (incf (gethash token remaining 0))))))))
+          (dotimes (i count)
+            (unless (aref dead i)
+              (let* ((ts (tokens i))
+                     (name (and ts (br-declaration-name ts))))
+                (when (and name (br-generated-temp-p name)
+                           (zerop (gethash name remaining 0)))
+                  (setf (aref dead i) t))))))
+
+      ;; Render the surviving lines.
+      (let ((result nil))
+        (dotimes (i count)
+          (unless (aref dead i)
+            (let ((p (aref parts i)))
+              (push (if p (br-render p) (aref vector i)) result))))
+        (nreverse result)))))))
+
 (defun name-referenced-p (name lines)
   "True when NAME appears as a complete token in any of LINES.
    Used to drop literal declarations whose name is never emitted."
@@ -4321,6 +4645,15 @@
     (ensure-net-helpers)
     (ensure-file-helpers)
     (ensure-sdl-helpers)
+    ;; Optimize the emitted Brackets before literal declarations are selected:
+    ;; rewrites here can remove the last reference to a literal.
+    (let ((decls (br-collect-declarations
+                  (list *main-code* (apply #'append *func-code*) *runtime-code*))))
+      (setf *main-code* (optimize-brackets-block *main-code* decls))
+      (setf *func-code* (mapcar (lambda (block)
+                                  (optimize-brackets-block block decls))
+                                *func-code*))
+      (setf *runtime-code* (optimize-brackets-block *runtime-code* decls)))
     ;; Assemble output.
     (format stream "(:main jmp)~%")
     (format stream "#include <intr-func.l1h>~%~%")
